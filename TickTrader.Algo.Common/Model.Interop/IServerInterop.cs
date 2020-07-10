@@ -54,7 +54,7 @@ namespace TickTrader.Algo.Common.Model
         event Action<CurrencyEntity[]> CurrencyInfo;
 
         Task<Domain.CurrencyInfo[]> GetCurrencies();
-        Task<SymbolEntity[]> GetSymbols();
+        Task<Domain.SymbolInfo[]> GetSymbols();
         Task<QuoteEntity[]> SubscribeToQuotes(string[] symbols, int depth);
         Task<QuoteEntity[]> GetQuoteSnapshot(string[] symbols, int depth);
         void DownloadBars(BlockingChannel<BarEntity> stream, string symbol, DateTime from, DateTime to, BarPriceType priceType, TimeFrames barPeriod);

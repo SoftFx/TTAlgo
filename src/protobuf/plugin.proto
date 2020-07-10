@@ -52,7 +52,7 @@ message CommissonInfo {
     ChargeMethod charge_method = 4;
     ChargeType charge_type = 5;
     double min_commission = 6;
-    double min_commission_currency = 7;
+    string min_commission_currency = 7;
 }
 
 message MarginInfo {
@@ -64,22 +64,23 @@ message MarginInfo {
         CFD_LEVERAGE = 4;
     }
 
-    double factor = 1;
-    double hedged = 2;
-    double stop_order_reduction = 3;
-    google.protobuf.DoubleValue hidden_limit_order_reduction = 4;
+    CalculationMode mode = 1;
+    double factor = 2;
+    double hedged = 3;
+    google.protobuf.DoubleValue stop_order_reduction = 4;
+    google.protobuf.DoubleValue hidden_limit_order_reduction = 5;
 }
 
 message SwapInfo {
-    enum SwapType {
+    enum Type {
         POINTS = 0;
         PERCENT_PER_YEAR = 1;
     }
 
     bool enabled = 1;
-    SwapType type = 2;
-    float size_long = 3;
-    float size_short = 4;
+    Type type = 2;
+    google.protobuf.DoubleValue size_long = 3;
+    google.protobuf.DoubleValue size_short = 4;
     int32 triple_swap_day = 5;
 }
 
@@ -99,8 +100,8 @@ message SymbolInfo {
     SwapInfo swap = 13;
     string description = 14;
     string security = 16;
-    int32 sort_order = 16;
-    int32 group_sort_order = 17;
+    int32 sort_order = 17;
+    int32 group_sort_order = 18;
 }
 
 message SymbolListRequest { }

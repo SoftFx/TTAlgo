@@ -268,7 +268,7 @@ namespace TickTrader.Algo.Common.Model
             return currencies.Select(Convert).ToArray();
         }
 
-        public async Task<SymbolEntity[]> GetSymbols()
+        public async Task<Domain.SymbolInfo[]> GetSymbols()
         {
             var symbols = await _feedProxy.GetSymbolListAsync();
             return symbols.Select(Convert).ToArray();
@@ -538,24 +538,38 @@ namespace TickTrader.Algo.Common.Model
 
         #region Convertors
 
-        private static SymbolEntity Convert(SFX.SymbolInfo info)
+        private static Domain.SymbolInfo Convert(SFX.SymbolInfo info)
         {
-            return new SymbolEntity(info.Name)
+            return new Domain.SymbolInfo(info.Name)
             {
+                Name = info.Name,
+                TradeAllowed = info.IsTradeEnabled,
+                BaseCurrency = info.Currency,
+                CounterCurrency = info.SettlementCurrency,
                 Digits = info.Precision,
                 LotSize = info.RoundLot,
-                MinAmount = info.RoundLot != 0 ? info.MinTradeVolume / info.RoundLot : double.NaN,
-                MaxAmount = info.RoundLot != 0 ? info.MaxTradeVolume / info.RoundLot : double.NaN,
-                AmountStep = info.RoundLot != 0 ? info.TradeVolumeStep / info.RoundLot : double.NaN,
-                BaseCurrencyCode = info.Currency,
-                CounterCurrencyCode = info.SettlementCurrency,
-                IsTradeAllowed = info.IsTradeEnabled,
-                Commission = info.Commission,
-                LimitsCommission = info.LimitsCommission,
-                CommissionChargeMethod = Convert(info.CommissionChargeMethod),
-                CommissionChargeType = Convert(info.CommissionChargeType),
-                CommissionType = Convert(info.CommissionType),
-                ContractSizeFractional = info.RoundLot,
+                MinTradeVolume = info.RoundLot != 0 ? info.MinTradeVolume / info.RoundLot : double.NaN,
+                MaxTradeVolume = info.RoundLot != 0 ? info.MaxTradeVolume / info.RoundLot : double.NaN,
+                TradeVolumeStep = info.RoundLot != 0 ? info.TradeVolumeStep / info.RoundLot : double.NaN,
+                DefaultSlippage = info.DefaultSlippage,
+
+                Commission = new Domain.CommissonInfo
+                {
+                    Commission = info.Commission,
+                    LimitsCommission = info.LimitsCommission,
+                    Type = Convert(info.CommissionType),
+                    ChargeType = Convert(info.CommissionChargeType),
+                    ChargeMethod = Convert(info.CommissionChargeMethod),
+                },
+
+                Margin = new Domain.MarginInfo
+                {
+                    Factor = info.MarginFactorFractional ?? 1,
+                    Hedged = info.MarginHedge,
+                    StopOrderReduction = info.StopOrderMarginReduction ?? 0,
+                    HiddenLimitOrderReduction = info.HiddenLimitOrderMarginReduction,
+                }
+
                 MarginFactor = info.MarginFactorFractional ?? 1,
                 StopOrderMarginReduction = info.StopOrderMarginReduction ?? 0,
                 MarginHedged = info.MarginHedge,
@@ -570,7 +584,6 @@ namespace TickTrader.Algo.Common.Model
                 TripleSwapDay = info.TripleSwapDay,
                 IsTradeEnabled = info.IsTradeEnabled,
                 Description = info.Description,
-                DefaultSlippage = info.DefaultSlippage,
                 HiddenLimitOrderMarginReduction = info.HiddenLimitOrderMarginReduction
             };
         }
@@ -585,38 +598,38 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private static Api.CommissionChargeType Convert(SFX.CommissionChargeType fdkChargeType)
+        private static Domain.CommissonInfo.Types.ChargeType Convert(SFX.CommissionChargeType fdkChargeType)
         {
             switch (fdkChargeType)
             {
-                case SFX.CommissionChargeType.PerLot: return Api.CommissionChargeType.PerLot;
-                case SFX.CommissionChargeType.PerTrade: return Api.CommissionChargeType.PerTrade;
+                case SFX.CommissionChargeType.PerLot: return Domain.CommissonInfo.Types.ChargeType.PerLot;
+                case SFX.CommissionChargeType.PerTrade: return Domain.CommissonInfo.Types.ChargeType.PerTrade;
 
                 default: throw new ArgumentException("Unsupported commission charge type: " + fdkChargeType);
             }
         }
 
-        private static Api.CommissionChargeMethod Convert(SFX.CommissionChargeMethod fdkChargeMethod)
+        private static Domain.CommissonInfo.Types.ChargeMethod Convert(SFX.CommissionChargeMethod fdkChargeMethod)
         {
             switch (fdkChargeMethod)
             {
-                case SFX.CommissionChargeMethod.OneWay: return Api.CommissionChargeMethod.OneWay;
-                case SFX.CommissionChargeMethod.RoundTurn: return Api.CommissionChargeMethod.RoundTurn;
+                case SFX.CommissionChargeMethod.OneWay: return Domain.CommissonInfo.Types.ChargeMethod.OneWay;
+                case SFX.CommissionChargeMethod.RoundTurn: return Domain.CommissonInfo.Types.ChargeMethod.RoundTurn;
 
                 default: throw new ArgumentException("Unsupported commission charge method: " + fdkChargeMethod);
             }
         }
 
-        private static Api.CommissionType Convert(SFX.CommissionType fdkType)
+        private static Domain.CommissonInfo.Types.Type Convert(SFX.CommissionType fdkType)
         {
             switch (fdkType)
             {
-                case SFX.CommissionType.Absolute: return Api.CommissionType.Absolute;
-                case SFX.CommissionType.PerBond: return Api.CommissionType.PerBond;
-                case SFX.CommissionType.PerUnit: return Api.CommissionType.PerUnit;
-                case SFX.CommissionType.Percent: return Api.CommissionType.Percent;
-                case SFX.CommissionType.PercentageWaivedCash: return Api.CommissionType.PercentageWaivedCash;
-                case SFX.CommissionType.PercentageWaivedEnhanced: return Api.CommissionType.PercentageWaivedEnhanced;
+                case SFX.CommissionType.Absolute: return Domain.CommissonInfo.Types.Type.Absolute;
+                case SFX.CommissionType.PerBond: return Domain.CommissonInfo.Types.Type.PerBond;
+                case SFX.CommissionType.PerUnit: return Domain.CommissonInfo.Types.Type.PerUnit;
+                case SFX.CommissionType.Percent: return Domain.CommissonInfo.Types.Type.Percent;
+                case SFX.CommissionType.PercentageWaivedCash: return Domain.CommissonInfo.Types.Type.PercentageWaivedCash;
+                case SFX.CommissionType.PercentageWaivedEnhanced: return Domain.CommissonInfo.Types.Type.PercentageWaivedEnhanced;
 
                 default: throw new ArgumentException("Unsupported commission type: " + fdkType);
             }

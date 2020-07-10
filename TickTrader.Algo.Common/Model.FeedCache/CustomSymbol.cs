@@ -1,6 +1,5 @@
 ﻿using ProtoBuf;
 using System;
-using TickTrader.Algo.Core;
 using BO = TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Common.Model
@@ -72,94 +71,106 @@ namespace TickTrader.Algo.Common.Model
         public string MinCommissionCurr { get; set; }
 
 
-        public SymbolEntity ToAlgo()
+        public Domain.SymbolInfo ToAlgo()
         {
-            return new SymbolEntity(Name)
+            return new Domain.SymbolInfo
             {
-                Description = Description,
-                IsTradeAllowed = true,
-                MinAmount = MinVolume,
-                MaxAmount = MaxVolume,
-                AmountStep = VolumeStep,
-                LotSize = ContractSize,
-                ContractSizeFractional = ContractSize,
+                Name = Name,
+                TradeAllowed = true,
+                BaseCurrency = BaseCurr,
+                CounterCurrency = ProfitCurr,
                 Digits = Digits,
-                BaseCurrencyCode = BaseCurr,
-                CounterCurrencyCode = ProfitCurr,
+                LotSize = ContractSize,
+                MinTradeVolume = MinVolume,
+                MaxTradeVolume = MaxVolume,
+                TradeVolumeStep = VolumeStep,
                 DefaultSlippage = Slippage,
 
-                Commission = Commission,
-                CommissionType = Convert(CommissionType),
-                CommissionChargeMethod = Api.CommissionChargeMethod.OneWay,
-                CommissionChargeType = CommissionType != CustomCommissionType.Money ? Api.CommissionChargeType.PerTrade : Api.CommissionChargeType.PerLot,
-                LimitsCommission = LimitsCommission,
-                MinCommission = MinCommission,
-                MinCommissionCurrency = MinCommissionCurr,
+                Description = Description,
 
-                SwapEnabled = SwapEnabled,
-                SwapType = SwapType,
-                SwapSizeLong = (float)SwapSizeLong,
-                SwapSizeShort = (float)SwapSizeShort,
-                TripleSwapDay = TripleSwap ? (int)DayOfWeek.Wednesday : 0,
+                Commission = new Domain.CommissonInfo
+                {
+                    Commission = Commission,
+                    LimitsCommission = LimitsCommission,
+                    Type = Convert(CommissionType),
+                    ChargeMethod = Domain.CommissonInfo.Types.ChargeMethod.OneWay,
+                    ChargeType = CommissionType != CustomCommissionType.Money
+                        ? Domain.CommissonInfo.Types.ChargeType.PerTrade
+                        : Domain.CommissonInfo.Types.ChargeType.PerLot,
+                    MinCommission = MinCommission,
+                    MinCommissionCurrency = MinCommissionCurr,
+                },
 
-                ProfitCalcMode = ProfitMode,
+                Swap = new Domain.SwapInfo
+                {
+                    Enabled = SwapEnabled,
+                    Type = Convert(SwapType),
+                    SizeLong = SwapSizeLong,
+                    SizeShort = SwapSizeShort,
+                    TripleSwapDay = TripleSwap ? (int)DayOfWeek.Wednesday : 0,
+                },
 
-                MarginMode = MarginMode,
-                MarginHedged = MarginHedged,
-                MarginFactor = MarginFactor,
-                StopOrderMarginReduction = StopOrderMarginReduction,
-                HiddenLimitOrderMarginReduction = HiddenLimitOrderMarginReduction,
+                Margin = new Domain.MarginInfo
+                {
+                    Mode = Convert(MarginMode),
+                    Factor = MarginFactor,
+                    Hedged = MarginHedged,
+                    StopOrderReduction = StopOrderMarginReduction,
+                    HiddenLimitOrderReduction = HiddenLimitOrderMarginReduction,
+                },
+
+                //ProfitCalcMode = ProfitMode,
             };
         }
 
-        public static CustomSymbol FromAlgo(SymbolEntity symbol)
+        public static CustomSymbol FromAlgo(Domain.SymbolInfo symbol)
         {
             return new CustomSymbol
             {
                 Name = symbol.Name,
-                Description = symbol.Description,
-                BaseCurr = symbol.BaseCurrencyCode,
-                ProfitCurr = symbol.CounterCurrencyCode,
+                BaseCurr = symbol.BaseCurrency,
+                ProfitCurr = symbol.CounterCurrency,
                 Digits = symbol.Digits,
-                ContractSize = symbol.ContractSizeFractional,
-                MinVolume = symbol.MinAmount,
-                MaxVolume = symbol.MaxAmount,
-                VolumeStep = symbol.AmountStep,
+                ContractSize = symbol.LotSize,
+                MinVolume = symbol.MinTradeVolume,
+                MaxVolume = symbol.MaxTradeVolume,
+                VolumeStep = symbol.TradeVolumeStep,
                 Slippage = (int)(symbol.DefaultSlippage ?? 0),
+                Description = symbol.Description,
 
-                Commission = symbol.Commission,
-                CommissionType = Convert(symbol.CommissionType),
-                LimitsCommission = symbol.LimitsCommission,
-                MinCommission = symbol.MinCommission,
-                MinCommissionCurr = symbol.MinCommissionCurrency,
+                Commission = symbol.Commission.Commission,
+                LimitsCommission = symbol.Commission.LimitsCommission,
+                CommissionType = Convert(symbol.Commission.Type),
+                MinCommission = symbol.Commission.MinCommission,
+                MinCommissionCurr = symbol.Commission.MinCommissionCurrency,
 
-                SwapEnabled = symbol.SwapEnabled,
-                SwapType = symbol.SwapType,
-                SwapSizeLong = symbol.SwapSizeLong,
-                SwapSizeShort = symbol.SwapSizeShort,
-                TripleSwap = symbol.TripleSwapDay > 0,
+                SwapEnabled = symbol.Swap.Enabled,
+                SwapType = Convert(symbol.Swap.Type),
+                SwapSizeLong = symbol.Swap.SizeLong ?? 0,
+                SwapSizeShort = symbol.Swap.SizeShort ?? 0,
+                TripleSwap = symbol.Swap.TripleSwapDay > 0,
 
-                ProfitMode = symbol.ProfitCalcMode,
+                MarginMode = Convert(symbol.Margin.Mode),
+                MarginHedged = symbol.Margin.Hedged,
+                MarginFactor = symbol.Margin.Factor,
+                StopOrderMarginReduction = symbol.Margin.StopOrderReduction,
+                HiddenLimitOrderMarginReduction = symbol.Margin.HiddenLimitOrderReduction ?? 0
 
-                MarginMode = symbol.MarginMode,
-                MarginHedged = symbol.MarginHedged,
-                MarginFactor = symbol.MarginFactor,
-                StopOrderMarginReduction = symbol.StopOrderMarginReduction,
-                HiddenLimitOrderMarginReduction = symbol.HiddenLimitOrderMarginReduction.Value
+                //ProfitMode = symbol.ProfitCalcMode,
             };
         }
 
-        private static CustomCommissionType Convert(Api.CommissionType type)
+        private static CustomCommissionType Convert(Domain.CommissonInfo.Types.Type type)
         {
             switch (type)
             {
-                case Api.CommissionType.Absolute:
+                case Domain.CommissonInfo.Types.Type.Absolute:
                     return CustomCommissionType.Money;
 
-                case Api.CommissionType.Percent:
+                case Domain.CommissonInfo.Types.Type.Percent:
                     return CustomCommissionType.Percentage;
 
-                case Api.CommissionType.PerUnit:
+                case Domain.CommissonInfo.Types.Type.PerUnit:
                     return CustomCommissionType.Points;
 
                 default:
@@ -167,21 +178,85 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private static Api.CommissionType Convert(CustomCommissionType type)
+        private static Domain.CommissonInfo.Types.Type Convert(CustomCommissionType type)
         {
             switch (type)
             {
                 case CustomCommissionType.Money:
-                    return Api.CommissionType.Absolute;
+                    return Domain.CommissonInfo.Types.Type.Absolute;
 
                 case CustomCommissionType.Percentage:
-                    return Api.CommissionType.Percent;
+                    return Domain.CommissonInfo.Types.Type.Percent;
 
                 case CustomCommissionType.Points:
-                    return Api.CommissionType.PerUnit;
+                    return Domain.CommissonInfo.Types.Type.PerUnit;
 
                 default:
                     throw new InvalidCastException($"Commission type not found: {type}");
+            }
+        }
+
+        private static Domain.SwapInfo.Types.Type Convert(BO.SwapType type)
+        {
+            switch (type)
+            {
+                case BO.SwapType.Points:
+                    return Domain.SwapInfo.Types.Type.Points;
+                case BO.SwapType.PercentPerYear:
+                    return Domain.SwapInfo.Types.Type.PercentPerYear;
+                default:
+                    throw new InvalidCastException($"Swap type not found: {type}");
+            }
+        }
+
+        private static BO.SwapType Convert(Domain.SwapInfo.Types.Type type)
+        {
+            switch (type)
+            {
+                case Domain.SwapInfo.Types.Type.Points:
+                    return BO.SwapType.Points;
+                case Domain.SwapInfo.Types.Type.PercentPerYear:
+                    return BO.SwapType.PercentPerYear;
+                default:
+                    throw new InvalidCastException($"Swap type not found: {type}");
+            }
+        }
+
+        private static Domain.MarginInfo.Types.CalculationMode Convert(BO.MarginCalculationModes mode)
+        {
+            switch (mode)
+            {
+                case BO.MarginCalculationModes.Forex:
+                    return Domain.MarginInfo.Types.CalculationMode.Forex;
+                case BO.MarginCalculationModes.CFD:
+                    return Domain.MarginInfo.Types.CalculationMode.Cfd;
+                case BO.MarginCalculationModes.Futures:
+                    return Domain.MarginInfo.Types.CalculationMode.Futures;
+                case BO.MarginCalculationModes.CFD_Index:
+                    return Domain.MarginInfo.Types.CalculationMode.CfdIndex;
+                case BO.MarginCalculationModes.CFD_Leverage:
+                    return Domain.MarginInfo.Types.CalculationMode.CfdLeverage;
+                default:
+                    throw new InvalidCastException($"Margin calculation mode not found: {mode}");
+            }
+        }
+
+        private static BO.MarginCalculationModes Convert(Domain.MarginInfo.Types.CalculationMode mode)
+        {
+            switch (mode)
+            {
+                case Domain.MarginInfo.Types.CalculationMode.Forex:
+                    return BO.MarginCalculationModes.Forex;
+                case Domain.MarginInfo.Types.CalculationMode.Cfd:
+                    return BO.MarginCalculationModes.CFD;
+                case Domain.MarginInfo.Types.CalculationMode.Futures:
+                    return BO.MarginCalculationModes.Futures;
+                case Domain.MarginInfo.Types.CalculationMode.CfdIndex:
+                    return BO.MarginCalculationModes.CFD_Index;
+                case Domain.MarginInfo.Types.CalculationMode.CfdLeverage:
+                    return BO.MarginCalculationModes.CFD_Leverage;
+                default:
+                    throw new InvalidCastException($"Margin calculation mode not found: {mode}");
             }
         }
     }
