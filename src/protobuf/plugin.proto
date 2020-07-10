@@ -84,6 +84,16 @@ message SwapInfo {
     int32 triple_swap_day = 5;
 }
 
+message SlippageInfo {
+    enum Type {
+        PIPS = 0;
+        PERCENT = 1;
+    }
+
+    google.protobuf.DoubleValue default_value = 1;
+    Type type = 2;
+}
+
 message SymbolInfo {
     string name = 1;
     bool trade_allowed = 2;
@@ -94,7 +104,7 @@ message SymbolInfo {
     double min_trade_volume = 7;
     double max_trade_volume = 8;
     double trade_volume_step = 9;
-    google.protobuf.DoubleValue default_slippage = 10;
+    SlippageInfo slippage = 10;
     CommissonInfo commission = 11;
     MarginInfo margin = 12;
     SwapInfo swap = 13;

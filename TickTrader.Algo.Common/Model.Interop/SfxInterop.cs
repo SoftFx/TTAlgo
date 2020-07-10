@@ -405,7 +405,7 @@ namespace TickTrader.Algo.Common.Model
         public event Action<ExecutionReport> ExecutionReport;
         public event Action<TradeReportEntity> TradeTransactionReport;
         public event Action<BalanceOperationReport> BalanceOperation;
-        public event Action<SymbolEntity[]> SymbolInfo { add { } remove { } }
+        public event Action<Domain.SymbolInfo[]> SymbolInfo { add { } remove { } }
         public event Action<CurrencyEntity[]> CurrencyInfo { add { } remove { } }
 
         public Task<AccountEntity> GetAccountInfo()
@@ -540,7 +540,7 @@ namespace TickTrader.Algo.Common.Model
 
         private static Domain.SymbolInfo Convert(SFX.SymbolInfo info)
         {
-            return new Domain.SymbolInfo(info.Name)
+            return new Domain.SymbolInfo
             {
                 Name = info.Name,
                 TradeAllowed = info.IsTradeEnabled,
@@ -551,7 +551,17 @@ namespace TickTrader.Algo.Common.Model
                 MinTradeVolume = info.RoundLot != 0 ? info.MinTradeVolume / info.RoundLot : double.NaN,
                 MaxTradeVolume = info.RoundLot != 0 ? info.MaxTradeVolume / info.RoundLot : double.NaN,
                 TradeVolumeStep = info.RoundLot != 0 ? info.TradeVolumeStep / info.RoundLot : double.NaN,
-                DefaultSlippage = info.DefaultSlippage,
+
+                Description = info.Description,
+                Security = info.SecurityName,
+                GroupSortOrder = info.GroupSortOrder,
+                SortOrder = info.SortOrder,
+
+                Slippage = new Domain.SlippageInfo
+                {
+                    DefaultValue = info.DefaultSlippage,
+                    Type = Convert(info.SlippageType),
+                },
 
                 Commission = new Domain.CommissonInfo
                 {
@@ -564,36 +574,40 @@ namespace TickTrader.Algo.Common.Model
 
                 Margin = new Domain.MarginInfo
                 {
+                    Mode = Convert(info.MarginCalcMode),
                     Factor = info.MarginFactorFractional ?? 1,
                     Hedged = info.MarginHedge,
-                    StopOrderReduction = info.StopOrderMarginReduction ?? 0,
+                    StopOrderReduction = info.StopOrderMarginReduction,
                     HiddenLimitOrderReduction = info.HiddenLimitOrderMarginReduction,
-                }
+                },
 
-                MarginFactor = info.MarginFactorFractional ?? 1,
-                StopOrderMarginReduction = info.StopOrderMarginReduction ?? 0,
-                MarginHedged = info.MarginHedge,
-                MarginMode = Convert(info.MarginCalcMode),
-                SwapEnabled = info.IsSwapEnabled(),
-                SwapSizeLong = (float)(info.SwapSizeLong ?? 0),
-                SwapSizeShort = (float)(info.SwapSizeShort ?? 0),
-                Security = info.SecurityName,
-                GroupSortOrder = info.GroupSortOrder,
-                SortOrder = info.SortOrder,
-                SwapType = Convert(info.SwapType),
-                TripleSwapDay = info.TripleSwapDay,
-                IsTradeEnabled = info.IsTradeEnabled,
-                Description = info.Description,
-                HiddenLimitOrderMarginReduction = info.HiddenLimitOrderMarginReduction
+                Swap = new Domain.SwapInfo
+                {
+                    Enabled = info.SwapEnabled,
+                    Type = Convert(info.SwapType),
+                    SizeLong = info.SwapSizeLong,
+                    SizeShort = info.SwapSizeShort,
+                    TripleSwapDay = info.TripleSwapDay,
+                },
             };
         }
 
-        private static BO.SwapType Convert(SwapType type)
+        private static Domain.SlippageInfo.Types.Type Convert(SlippageType type)
         {
             switch (type)
             {
-                case SwapType.PercentPerYear: return BO.SwapType.PercentPerYear;
-                case SwapType.Points: return BO.SwapType.Points;
+                case SlippageType.Pips: return Domain.SlippageInfo.Types.Type.Pips;
+                case SlippageType.Percent: return Domain.SlippageInfo.Types.Type.Percent;
+                default: throw new NotImplementedException();
+            }
+        }
+
+        private static Domain.SwapInfo.Types.Type Convert(SwapType type)
+        {
+            switch (type)
+            {
+                case SwapType.PercentPerYear: return Domain.SwapInfo.Types.Type.PercentPerYear;
+                case SwapType.Points: return Domain.SwapInfo.Types.Type.Points;
                 default: throw new NotImplementedException();
             }
         }
@@ -635,15 +649,15 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private static TickTrader.BusinessObjects.MarginCalculationModes Convert(MarginCalcMode mode)
+        private static Domain.MarginInfo.Types.CalculationMode Convert(MarginCalcMode mode)
         {
             switch (mode)
             {
-                case MarginCalcMode.Cfd: return BusinessObjects.MarginCalculationModes.CFD;
-                case MarginCalcMode.CfdIndex: return BusinessObjects.MarginCalculationModes.CFD_Index;
-                case MarginCalcMode.CfdLeverage: return BusinessObjects.MarginCalculationModes.CFD_Leverage;
-                case MarginCalcMode.Forex: return BusinessObjects.MarginCalculationModes.Forex;
-                case MarginCalcMode.Futures: return BusinessObjects.MarginCalculationModes.Futures;
+                case MarginCalcMode.Cfd: return Domain.MarginInfo.Types.CalculationMode.Cfd;
+                case MarginCalcMode.CfdIndex: return Domain.MarginInfo.Types.CalculationMode.CfdIndex;
+                case MarginCalcMode.CfdLeverage: return Domain.MarginInfo.Types.CalculationMode.CfdLeverage;
+                case MarginCalcMode.Forex: return Domain.MarginInfo.Types.CalculationMode.Forex;
+                case MarginCalcMode.Futures: return Domain.MarginInfo.Types.CalculationMode.Futures;
                 default: throw new NotImplementedException();
             }
         }

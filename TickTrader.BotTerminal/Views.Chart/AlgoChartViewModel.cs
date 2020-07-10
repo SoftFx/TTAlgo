@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -62,7 +63,7 @@ namespace TickTrader.BotTerminal
         public BoolProperty IsCrosshairEnabled { get; } = new BoolProperty();
         public Var<double?> CurrentAsk => _askProp.Var;
         public Var<double?> CurrentBid => _bidProp.Var;
-        public Property<SymbolEntity> SymbolInfo { get; } = new Property<SymbolEntity>();
+        public Property<SymbolInfo> SymbolInfo { get; } = new Property<SymbolInfo>();
         public int Precision { get; private set; }
         public Property<string> YAxisLabelFormat { get; } = new Property<string>();
         public Var<TimeFrames> Timeframe => _timeframeProp.Var;
@@ -162,7 +163,7 @@ namespace TickTrader.BotTerminal
 
         private void UpdatePrecision()
         {
-            Precision = SymbolInfo.Value?.Precision ?? 2;
+            Precision = SymbolInfo.Value?.Digits ?? 2;
             foreach (var o in OutputGroups.Values)
             {
                 Precision = Math.Max(Precision, o.Precision);

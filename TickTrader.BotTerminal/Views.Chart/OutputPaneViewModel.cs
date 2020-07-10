@@ -17,12 +17,13 @@ using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
     internal class OutputPaneViewModel : PropertyChangedBase
     {
-        private SymbolEntity _symbol;
+        private SymbolInfo _symbol;
         private VarList<OutputSeriesModel> _outputs;
 
         public IPluginModel Model { get; }
@@ -46,7 +47,7 @@ namespace TickTrader.BotTerminal
         public BoolVar IsCrosshairEnabled { get; }
 
         public OutputPaneViewModel(IPluginModel plugin, IEnumerable<OutputSeriesModel> ouputModels, string windowId, IPluginDataChartModel chart,
-            SymbolEntity symbol, OutputTargets target, BoolVar isCrosshairEnabled)
+            SymbolInfo symbol, OutputTargets target, BoolVar isCrosshairEnabled)
         {
             Model = plugin;
             ChartWindowId = windowId;
@@ -75,7 +76,7 @@ namespace TickTrader.BotTerminal
             Precision = 0;
             foreach (var output in _outputs.Values)
             {
-                Precision = Math.Max(Precision, output.Descriptor.Precision == -1 ? _symbol.Precision : output.Descriptor.Precision);
+                Precision = Math.Max(Precision, output.Descriptor.Precision == -1 ? _symbol.Digits : output.Descriptor.Precision);
             }
             UpdateLabelFormat();
         }

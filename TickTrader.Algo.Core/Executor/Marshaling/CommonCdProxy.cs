@@ -60,7 +60,7 @@ namespace TickTrader.Algo.Core
             return _meta.GetCurrencyMetadata();
         }
 
-        public IEnumerable<SymbolEntity> GetSymbolMetadata()
+        public IEnumerable<Domain.SymbolInfo> GetSymbolMetadata()
         {
             return _meta.GetSymbolMetadata();
         }

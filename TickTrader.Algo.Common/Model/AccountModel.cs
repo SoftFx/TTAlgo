@@ -49,7 +49,7 @@ namespace TickTrader.Algo.Common.Model
         public string BalanceCurrency { get; private set; }
         public int BalanceDigits { get; private set; }
         public int Leverage { get; private set; }
-        public AccountCalculatorModel Calc { get; private set; }
+        //public AccountCalculatorModel Calc { get; private set; }
 
         public event Action<OrderUpdateInfo> OrderUpdate;
         public event Action<PositionModel, OrderExecAction> PositionUpdate;
@@ -73,8 +73,8 @@ namespace TickTrader.Algo.Common.Model
             {
                 _isCalcStarted = true;
 
-                Calc = AccountCalculatorModel.Create(this, marketData);
-                Calc.Recalculate();
+                //Calc = AccountCalculatorModel.Create(this, marketData);
+                //Calc.Recalculate();
             }
         }
 
@@ -110,12 +110,12 @@ namespace TickTrader.Algo.Common.Model
             //_client.ExecutionReportReceived -= OnReport;
             //_client.PositionReportReceived -= OnReport;
 
-            if (_isCalcStarted && Calc != null)
-            {
-                Calc.Dispose();
-                Calc = null;
-                _isCalcStarted = false;
-            }
+            //if (_isCalcStarted && Calc != null)
+            //{
+            //    Calc.Dispose();
+            //    Calc = null;
+            //    _isCalcStarted = false;
+            //}
         }
 
         public AccountEntity GetAccountInfo()
@@ -149,8 +149,8 @@ namespace TickTrader.Algo.Common.Model
 
         private void OnBalanceChanged()
         {
-            if (_isCalcStarted)
-                Calc.Recalculate();
+            //if (_isCalcStarted)
+            //    Calc.Recalculate();
         }
 
         internal EntityCacheUpdate GetBalanceUpdate(BalanceOperationReport report)

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -35,7 +36,7 @@ namespace TickTrader.BotTerminal
             _client.Clear();
         }
 
-        public void Start(Backtester backtester, IEnumerable<CurrencyEntity> currencies, IEnumerable<SymbolEntity> symbols)
+        public void Start(Backtester backtester, IEnumerable<CurrencyEntity> currencies, IEnumerable<SymbolInfo> symbols)
         {
             var accInfo = new AccountEntity();
             var settings = backtester.CommonSettings;

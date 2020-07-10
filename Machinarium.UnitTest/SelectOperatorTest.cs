@@ -22,11 +22,11 @@ namespace Machinarium.UnitTest
 
             var intRef = prop.Ref(p => p.Prop);
 
-            Assert.AreEqual(10, intRef.Value);
+            Assert.AreEqual(10, intRef.Value.Value);
 
             prop.Value = entity2;
 
-            Assert.AreEqual(11, intRef.Value);
+            Assert.AreEqual(11, intRef.Value.Value);
         }
 
         [TestMethod]
@@ -39,11 +39,11 @@ namespace Machinarium.UnitTest
 
             var intRef = prop.Ref(p => p.Prop);
 
-            Assert.AreEqual(10, intRef.Value);
+            Assert.AreEqual(10, intRef.Value.Value);
 
             entity1.Change(11);
 
-            Assert.AreEqual(11, intRef.Value);
+            Assert.AreEqual(11, intRef.Value.Value);
         }
 
         [TestMethod]
@@ -54,15 +54,16 @@ namespace Machinarium.UnitTest
 
             var intRef = prop.Ref(p => p.Prop);
 
-            Assert.AreEqual(0, intRef.Value);
+            Assert.AreEqual(null, intRef.Value);
 
             prop.Value = entity1;
 
-            Assert.AreEqual(10, intRef.Value);
+            Assert.AreNotEqual(null, intRef.Value);
+            Assert.AreEqual(10, intRef.Value.Value);
 
             prop.Value = null;
 
-            Assert.AreEqual(0, intRef.Value);
+            Assert.AreEqual(null, intRef.Value);
         }
 
         public class MockEntity : EntityBase

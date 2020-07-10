@@ -31,7 +31,7 @@ namespace TickTrader.Algo.Core
 
     public interface IPluginMetadata
     {
-        IEnumerable<SymbolEntity> GetSymbolMetadata();
+        IEnumerable<Domain.SymbolInfo> GetSymbolMetadata();
         IEnumerable<CurrencyEntity> GetCurrencyMetadata();
     }
 

@@ -28,7 +28,9 @@ namespace TickTrader.Algo.Core.Calc
             //if (this.SymbolInfo.ProfitCurrency == null && this.SymbolInfo.MarginCurrency == null)
             //    throw new SymbolConfigException("Currency configuration is missing for symbol " + this.SymbolInfo.Symbol + ".");
 
-            if (this.SymbolInfo != null && SymbolInfo.MarginMode != MarginCalculationModes.Forex && SymbolInfo.MarginMode != MarginCalculationModes.CFD_Leverage)
+            if (this.SymbolInfo != null 
+                && SymbolInfo.MarginMode != Domain.MarginInfo.Types.CalculationMode.Forex 
+                && SymbolInfo.MarginMode != Domain.MarginInfo.Types.CalculationMode.CfdLeverage)
                 _leverageProvider = _ => 1;
             else
                 _leverageProvider = n => n;
@@ -245,9 +247,9 @@ namespace TickTrader.Algo.Core.Calc
             double swapAmount = GetSwapModifier(side) * amount;
             double swap = 0;
 
-            if (SymbolInfo.SwapType == SwapType.Points)
+            if (SymbolInfo.SwapType == Domain.SwapInfo.Types.Type.Points)
                 swap = ConvertProfitToAccountCurrency(swapAmount, out error);
-            else if (SymbolInfo.SwapType == SwapType.PercentPerYear)
+            else if (SymbolInfo.SwapType == Domain.SwapInfo.Types.Type.PercentPerYear)
                 swap = ConvertMarginToAccountCurrency(swapAmount, out error);
 
             if (SymbolInfo.TripleSwapDay > 0)
@@ -267,14 +269,14 @@ namespace TickTrader.Algo.Core.Calc
         {
             if (SymbolInfo.SwapEnabled)
             {
-                if (SymbolInfo.SwapType == SwapType.Points)
+                if (SymbolInfo.SwapType == Domain.SwapInfo.Types.Type.Points)
                 {
                     if (side == OrderSides.Buy)
                         return SymbolInfo.SwapSizeLong / Math.Pow(10, SymbolInfo.Precision);
                     if (side == OrderSides.Sell)
                         return SymbolInfo.SwapSizeShort / Math.Pow(10, SymbolInfo.Precision);
                 }
-                else if (SymbolInfo.SwapType == SwapType.PercentPerYear)
+                else if (SymbolInfo.SwapType == Domain.SwapInfo.Types.Type.PercentPerYear)
                 {
                     const double power = 1.0 / 365.0;
                     double factor = 0.0;

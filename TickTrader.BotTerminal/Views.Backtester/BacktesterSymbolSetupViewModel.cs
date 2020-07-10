@@ -111,11 +111,11 @@ namespace TickTrader.BotTerminal
         public string AsText()
         {
             var smb = SelectedSymbol.Value.InfoEntity;
-            var swapLong = smb.SwapEnabled ? smb.SwapSizeLong : 0;
-            var swapShort = smb.SwapEnabled ? smb.SwapSizeShort : 0;
+            var swapLong = smb.Swap.Enabled ? smb.Swap.SizeLong : 0;
+            var swapShort = smb.Swap.Enabled ? smb.Swap.SizeShort : 0;
 
             return string.Format("{0} {1}, commission={2} {3}, swapLong={4} swapShort={5} ",
-                smb.Name, SelectedTimeframe.Value, smb.Commission, smb.CommissionType, swapLong, swapShort);
+                smb.Name, SelectedTimeframe.Value, smb.Commission, smb.Commission.Type, swapLong, swapShort);
         }
 
         public void UpdateSelectedSymbol(SymbolSetupType type)

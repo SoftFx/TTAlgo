@@ -409,7 +409,7 @@ namespace TickTrader.Algo.Core
 
             #region IPluginMetadata
 
-            IEnumerable<SymbolEntity> IPluginMetadata.GetSymbolMetadata() => CommonSettings.Symbols.Values;
+            IEnumerable<Domain.SymbolInfo> IPluginMetadata.GetSymbolMetadata() => CommonSettings.Symbols.Values;
             IEnumerable<CurrencyEntity> IPluginMetadata.GetCurrencyMetadata() => CommonSettings.Currencies.Values;
 
             void IBacktestQueue.Enqueue(OptCaseConfig caseCfg)

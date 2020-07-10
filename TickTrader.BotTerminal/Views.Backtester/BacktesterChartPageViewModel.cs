@@ -16,6 +16,7 @@ using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Entities;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 using TickTrader.BotTerminal.Lib;
 using static TickTrader.BotTerminal.TransactionReport;
 
@@ -31,7 +32,7 @@ namespace TickTrader.BotTerminal
         private bool _visualizing;
         private AccountTypes _acctype;
         private string _mainSymbol;
-        private Dictionary<string, SymbolEntity> _symbolMap;
+        private Dictionary<string, SymbolInfo> _symbolMap;
 
         public BacktesterChartPageViewModel()
         {
@@ -61,7 +62,7 @@ namespace TickTrader.BotTerminal
 
         public AlgoChartViewModel ChartControlModel { get; }
 
-        public void OnStart(bool visualizing, SymbolEntity mainSymbol, PluginSetupModel setup, Backtester backtester, IEnumerable<SymbolEntity> symbols)
+        public void OnStart(bool visualizing, SymbolInfo mainSymbol, PluginSetupModel setup, Backtester backtester, IEnumerable<SymbolInfo> symbols)
         {
             _visualizing = visualizing;
             _acctype = backtester.CommonSettings.AccountType;

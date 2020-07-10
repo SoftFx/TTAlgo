@@ -33,6 +33,7 @@ namespace TickTrader.Algo.RpcTest
 
             server.Start().GetAwaiter().GetResult();
             var executor = server.CreateExecutor(pluginRef, new NullSyncContext());
+            executor.Launch(server.Address, server.BoundPort);
 
             Console.ReadLine();
         }

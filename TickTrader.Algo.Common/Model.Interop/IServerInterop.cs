@@ -50,7 +50,7 @@ namespace TickTrader.Algo.Common.Model
         bool AutoSymbols { get; }
 
         event Action<QuoteEntity> Tick;
-        event Action<SymbolEntity[]> SymbolInfo;
+        event Action<Domain.SymbolInfo[]> SymbolInfo;
         event Action<CurrencyEntity[]> CurrencyInfo;
 
         Task<Domain.CurrencyInfo[]> GetCurrencies();

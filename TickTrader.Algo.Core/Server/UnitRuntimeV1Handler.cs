@@ -36,22 +36,12 @@ namespace TickTrader.Algo.Core
             return res.Currencies.Select(c => new CurrencyEntity(c));
         }
 
-        IEnumerable<SymbolEntity> IPluginMetadata.GetSymbolMetadata()
+        IEnumerable<Domain.SymbolInfo> IPluginMetadata.GetSymbolMetadata()
         {
             var context = new RpcResponseTaskContext<SymbolListResponse>(SymbolListResponseHandler);
             _session.Ask(RpcMessage.Request(new SymbolListRequest()), context);
             var res = context.TaskSrc.Task.GetAwaiter().GetResult();
-            return res.Symbols.Select(s => new SymbolEntity(s.Name)
-            {
-                IsTradeAllowed = s.TradeAllowed,
-                BaseCurrencyCode = s.BaseCurrency,
-                CounterCurrencyCode = s.CounterCurrency,
-                Digits = s.Digits,
-                LotSize = s.LotSize,
-                MinAmount = s.MinTradeVolume,
-                MaxAmount = s.MaxTradeVolume,
-                AmountStep = s.TradeVolumeStep,
-            });
+            return res.Symbols;
         }
 
 

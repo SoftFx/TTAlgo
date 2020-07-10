@@ -79,7 +79,7 @@ namespace TickTrader.Algo.Common.Info
             };
         }
 
-        public static SymbolKey ToInfo(this SymbolEntity symbol)
+        public static SymbolKey ToInfo(this Domain.SymbolInfo symbol)
         {
             return new SymbolKey(symbol.Name, SymbolOrigin.Online);
         }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Infrastructure;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreUsageSample
 {
@@ -83,7 +84,7 @@ namespace TickTrader.Algo.CoreUsageSample
         {
         }
 
-        public IEnumerable<SymbolEntity> GetSymbolMetadata()
+        public IEnumerable<SymbolInfo> GetSymbolMetadata()
         {
             return null;
         }

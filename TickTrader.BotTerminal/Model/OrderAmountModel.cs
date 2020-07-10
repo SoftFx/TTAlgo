@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -11,9 +12,9 @@ namespace TickTrader.BotTerminal
     {
         private static decimal[] predefinedLotsCollection = new decimal[] { 0.01M, 0.02M, 0.05M, 0.1M, 0.2M, 0.5M, 1, 2, 5, 10, 20, 50, 100, 200, 500 };
 
-        public OrderAmountModel(SymbolEntity symbolDescriptor)
+        public OrderAmountModel(SymbolInfo symbolDescriptor)
         {
-            LotSize = (decimal)symbolDescriptor.RoundLot;
+            LotSize = (decimal)symbolDescriptor.LotSize;
             if (LotSize != 0)
             {
                 MinAmount = (decimal)symbolDescriptor.MinTradeVolume / LotSize;

@@ -77,20 +77,7 @@ namespace TickTrader.Algo.Core
         private Any SymbolListRequestHandler()
         {
             var response = new SymbolListResponse();
-            response.Symbols.Add(
-                _executor.Metadata.GetSymbolMetadata()
-                .Select(s => new SymbolInfo
-                {
-                    Name = s.Name,
-                    TradeAllowed = s.IsTradeAllowed,
-                    BaseCurrency = s.BaseCurrencyCode,
-                    CounterCurrency = s.CounterCurrencyCode,
-                    Digits = s.Digits,
-                    LotSize = s.LotSize,
-                    MinTradeVolume = s.MinTradeVolume,
-                    MaxTradeVolume = s.MaxTradeVolume,
-                    TradeVolumeStep = s.TradeVolumeStep,
-                }));
+            response.Symbols.Add(_executor.Metadata.GetSymbolMetadata());
             return Any.Pack(response);
         }
     }

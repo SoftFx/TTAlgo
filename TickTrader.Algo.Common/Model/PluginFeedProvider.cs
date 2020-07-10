@@ -91,7 +91,7 @@ namespace TickTrader.Algo.Common.Model
 
         #region IPluginMetadata
 
-        public IEnumerable<SymbolEntity> GetSymbolMetadata()
+        public IEnumerable<Domain.SymbolInfo> GetSymbolMetadata()
         {
             return symbols.Snapshot.Select(m => m.Value.Descriptor).ToList();
         }

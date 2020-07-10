@@ -27,6 +27,7 @@ using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Core.Lib;
 using System.Globalization;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -47,7 +48,7 @@ namespace TickTrader.BotTerminal
         private BoolProperty _isRunning;
         private BoolProperty _isVisualizing;
         private ITestExecController _tester;
-        private Dictionary<string, SymbolEntity> _testingSymbols;
+        private Dictionary<string, SymbolInfo> _testingSymbols;
         private Property<EmulatorStates> _stateProp;
         private BoolProperty _pauseRequestedProp;
         private BoolProperty _resumeRequestedProp;

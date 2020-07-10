@@ -40,8 +40,6 @@ namespace TickTrader.BotTerminal
             DetailsPanel = new SymbolDetailsViewModel(Ask, Bid);
             Level2Panel = new SymbolLevel2ViewModel();
 
-            Color = model.Descriptor.Color;
-
             if (_shell != null)
             {
                 this.DetailsPanel.OnBuyClick = () => _shell.OrderCommands.OpenMarkerOrder(model.Name);
@@ -51,7 +49,6 @@ namespace TickTrader.BotTerminal
 
         public string SymbolName { get { return _model.Name; } }
         public string Group { get { return "Forex"; } }
-        public int Color { get; private set; }
         public bool ShowLocalTime { get; }
         public bool CanOpenChart => _shell != null;
 
@@ -129,8 +126,8 @@ namespace TickTrader.BotTerminal
 
         private void OnInfoUpdated(SymbolModel symbol)
         {
-            Bid.Precision = symbol.Descriptor.Precision;
-            Ask.Precision = symbol.Descriptor.Precision;
+            Bid.Precision = symbol.Descriptor.Digits;
+            Ask.Precision = symbol.Descriptor.Digits;
         }
 
         public void OpenOrder()

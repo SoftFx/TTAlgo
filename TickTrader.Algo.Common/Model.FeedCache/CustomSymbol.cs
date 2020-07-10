@@ -84,9 +84,14 @@ namespace TickTrader.Algo.Common.Model
                 MinTradeVolume = MinVolume,
                 MaxTradeVolume = MaxVolume,
                 TradeVolumeStep = VolumeStep,
-                DefaultSlippage = Slippage,
 
                 Description = Description,
+
+                Slippage = new Domain.SlippageInfo
+                {
+                    DefaultValue = Slippage,
+                    Type = Domain.SlippageInfo.Types.Type.Pips,
+                },
 
                 Commission = new Domain.CommissonInfo
                 {
@@ -135,7 +140,7 @@ namespace TickTrader.Algo.Common.Model
                 MinVolume = symbol.MinTradeVolume,
                 MaxVolume = symbol.MaxTradeVolume,
                 VolumeStep = symbol.TradeVolumeStep,
-                Slippage = (int)(symbol.DefaultSlippage ?? 0),
+                Slippage = (int)(symbol.Slippage.DefaultValue ?? 0),
                 Description = symbol.Description,
 
                 Commission = symbol.Commission.Commission,
@@ -153,8 +158,8 @@ namespace TickTrader.Algo.Common.Model
                 MarginMode = Convert(symbol.Margin.Mode),
                 MarginHedged = symbol.Margin.Hedged,
                 MarginFactor = symbol.Margin.Factor,
-                StopOrderMarginReduction = symbol.Margin.StopOrderReduction,
-                HiddenLimitOrderMarginReduction = symbol.Margin.HiddenLimitOrderReduction ?? 0
+                StopOrderMarginReduction = symbol.Margin.StopOrderReduction ?? 1,
+                HiddenLimitOrderMarginReduction = symbol.Margin.HiddenLimitOrderReduction ?? 1
 
                 //ProfitMode = symbol.ProfitCalcMode,
             };

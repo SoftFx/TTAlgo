@@ -731,6 +731,7 @@
     <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndexBBands\RBCI_GBPUSD_H1_87_1.42.bin" />
     <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndexBBands\RBCI_USDCAD_H1_99_0.00.bin" />
     <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndexBBands\RBCI_USDCAD_M15_21_1.00.bin" />
+    <None Include="app.config" />
     <None Include="TestsData\Extractors\AT&amp;CF Method\Fast Adaptive Trend Line.mq4" />
     <None Include="TestsData\Extractors\AT&amp;CF Method\Fast Trend Line Momentum.mq4" />
     <None Include="TestsData\Extractors\AT&amp;CF Method\FATL Signal.mq4" />
@@ -2196,6 +2197,10 @@
     <EmbeddedResource Include="TestsData\VolumesTests\Volumes\Volumes_USDCHF_M30.bin" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Domain\TickTrader.Algo.Domain.csproj">
+      <Project>{6c7fc318-5848-4206-8431-3695c70143fa}</Project>
+      <Name>TickTrader.Algo.Domain</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
       <Project>{8901c84d-fb62-433c-a25f-4d24255b9453}</Project>
       <Name>TickTrader.Algo.Api</Name>

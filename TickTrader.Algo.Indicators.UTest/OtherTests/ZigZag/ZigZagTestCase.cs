@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using TickTrader.Algo.Indicators.UTest.TestCases;
 
 namespace TickTrader.Algo.Indicators.UTest.OtherTests.ZigZag
@@ -25,11 +24,12 @@ namespace TickTrader.Algo.Indicators.UTest.OtherTests.ZigZag
             SetParameter("Depth", Depth);
             SetParameter("Deviation", Deviation);
             SetParameter("Backstep", Backstep);
-            Builder.Symbols.Add(new Core.SymbolEntity(Symbol)
+            Builder.Symbols.Add(new Domain.SymbolInfo
             {
+                Name = Symbol,
                 Digits = Digits,
-                BaseCurrencyCode = string.Empty,
-                CounterCurrencyCode = string.Empty
+                BaseCurrency = string.Empty,
+                CounterCurrency = string.Empty
             }, new Core.CurrenciesCollection());
         }
 

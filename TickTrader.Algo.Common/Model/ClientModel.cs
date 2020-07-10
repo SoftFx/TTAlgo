@@ -136,10 +136,10 @@ namespace TickTrader.Algo.Common.Model
                 await Connection.CloseHandler();
             }
 
-            public Task<List<SymbolEntity>> GetSymbols() => Actor.Call(a => a.ExecDataRequest(c => c.GetSymbolsCopy()));
+            public Task<List<Domain.SymbolInfo>> GetSymbols() => Actor.Call(a => a.ExecDataRequest(c => c.GetSymbolsCopy()));
             public Task<List<CurrencyEntity>> GetCurrecnies() => Actor.Call(a => a.ExecDataRequest(c => c.GetCurrenciesCopy()));
             public Task<AccountTypes> GetAccountType() => Actor.Call(a => a.ExecDataRequest(c => c.Account.Type.Value));
-            public Task<SymbolEntity> GetDefaultSymbol() => Actor.Call(a => a.ExecDataRequest(c => c.GetDefaultSymbol()));
+            public Task<Domain.SymbolInfo> GetDefaultSymbol() => Actor.Call(a => a.ExecDataRequest(c => c.GetDefaultSymbol()));
 
             public Task<PluginFeedProvider> CreateFeedProvider()
             {

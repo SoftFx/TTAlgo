@@ -32,7 +32,7 @@ namespace TickTrader.Algo.Common.Model
             Account.Clear();
         }
 
-        internal List<SymbolUpdate> GetMergeUpdate(IEnumerable<SymbolEntity> snapshot)
+        internal List<SymbolUpdate> GetMergeUpdate(IEnumerable<Domain.SymbolInfo> snapshot)
         {
             var updates = new List<SymbolUpdate>();
 
@@ -68,7 +68,7 @@ namespace TickTrader.Algo.Common.Model
             return updates;
         }
 
-        internal List<SymbolEntity> GetSymbolsCopy()
+        internal List<Domain.SymbolInfo> GetSymbolsCopy()
         {
             return _symbols.Values.Select(s => s.Descriptor).ToList();
         }
@@ -78,7 +78,7 @@ namespace TickTrader.Algo.Common.Model
             return _currencies.Values.ToList();
         }
 
-        public SymbolEntity GetDefaultSymbol()
+        public Domain.SymbolInfo GetDefaultSymbol()
         {
             return _symbols.Values.OrderBy(s => s.Descriptor.GroupSortOrder).ThenBy(s => s.Descriptor.SortOrder).ThenBy(s => s.Descriptor.Name).Select(s => s.Descriptor).Where(d => !d.Name.EndsWith("_L")).FirstOrDefault();
         }
@@ -97,13 +97,13 @@ namespace TickTrader.Algo.Common.Model
         [Serializable]
         public class SymbolUpdate : EntityCacheUpdate
         {
-            public SymbolUpdate(SymbolEntity symbol, EntityCacheActions action)
+            public SymbolUpdate(Domain.SymbolInfo symbol, EntityCacheActions action)
             {
                 Symbol = symbol ?? throw new ArgumentNullException("symbol");
                 Action = action;
             }
 
-            private SymbolEntity Symbol { get; }
+            private Domain.SymbolInfo Symbol { get; }
             public EntityCacheActions Action { get; }
 
             public void Apply(EntityCache cache)

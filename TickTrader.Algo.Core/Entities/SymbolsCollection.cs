@@ -36,7 +36,7 @@ namespace TickTrader.Algo.Core
             fixture.MainSymbol = fixture[mainSymbolCode];
         }
 
-        public void Add(SymbolEntity symbol, CurrenciesCollection currencies)
+        public void Add(Domain.SymbolInfo symbol, CurrenciesCollection currencies)
         {
             fixture.Add(new SymbolAccessor(symbol, subscriptionHandler, currencies));
 
@@ -44,7 +44,7 @@ namespace TickTrader.Algo.Core
                 InitCurrentSymbol();
         }
 
-        public void Init(IEnumerable<SymbolEntity> symbols, CurrenciesCollection currencies)
+        public void Init(IEnumerable<Domain.SymbolInfo> symbols, CurrenciesCollection currencies)
         {
             fixture.Clear();
 
@@ -57,7 +57,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public void Merge(IEnumerable<SymbolEntity> symbols, CurrenciesCollection currencies)
+        public void Merge(IEnumerable<Domain.SymbolInfo> symbols, CurrenciesCollection currencies)
         {
             if (symbols != null)
             {

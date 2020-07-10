@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Core
         public double InitialBalance { get; set; } = 10000;
         public TimeSpan ServerPing { get; set; }
         public Dictionary<string, double> InitialAssets { get; } = new Dictionary<string, double>();
-        public Dictionary<string, SymbolEntity> Symbols { get; } = new Dictionary<string, SymbolEntity>();
+        public Dictionary<string, Domain.SymbolInfo> Symbols { get; } = new Dictionary<string, Domain.SymbolInfo>();
         public Dictionary<string, CurrencyEntity> Currencies { get; } = new Dictionary<string, CurrencyEntity>();
         public TimeFrames MainTimeframe { get; set; }
         public DateTime? EmulationPeriodStart { get; set; }

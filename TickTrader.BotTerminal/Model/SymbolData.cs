@@ -13,6 +13,7 @@ using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 using TickTrader.BotTerminal.Lib;
 using TickTrader.SeriesStorage;
 using ISymbolInfo = TickTrader.BusinessObjects.ISymbolInfo;
@@ -37,7 +38,7 @@ namespace TickTrader.BotTerminal
         public abstract string Key { get; }
         public abstract string Security { get; }
         public abstract bool IsCustom { get; }
-        public abstract SymbolEntity InfoEntity { get; }
+        public abstract SymbolInfo InfoEntity { get; }
         public abstract bool IsDataAvailable { get; }
 
         public IVarSet<SymbolStorageSeries> SeriesCollection { get; }
@@ -106,7 +107,7 @@ namespace TickTrader.BotTerminal
         public override string Key => "online->" + Name;
         public override string Description => _symbolInfo.Description;
         public override string Security => _symbolInfo.Descriptor.Security;
-        public override SymbolEntity InfoEntity => _symbolInfo.Descriptor;
+        public override SymbolInfo InfoEntity => _symbolInfo.Descriptor;
         public override bool IsDataAvailable => _client.IsConnected.Value;
 
         public override Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(TimeFrames timeFrame, BarPriceType? priceType = null)
@@ -221,7 +222,7 @@ namespace TickTrader.BotTerminal
         public override bool IsCustom => true;
         public override string Description => _symbolInfo.Description;
         public override string Security => "";
-        public override SymbolEntity InfoEntity => _symbolInfo.ToAlgo();
+        public override SymbolInfo InfoEntity => _symbolInfo.ToAlgo();
         public override bool IsDataAvailable => true;
 
         public override Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(TimeFrames timeFrame, BarPriceType? priceType = null)

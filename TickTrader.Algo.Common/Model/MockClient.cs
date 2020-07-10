@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Common.Model
 
         public AccountModel Acc { get; }
 
-        public void Init(AccountEntity accInfo, IEnumerable<SymbolEntity> symbols, IEnumerable<CurrencyEntity> currencies)
+        public void Init(AccountEntity accInfo, IEnumerable<Domain.SymbolInfo> symbols, IEnumerable<CurrencyEntity> currencies)
         {
             _symbols.Clear();
             _currencies.Clear();
