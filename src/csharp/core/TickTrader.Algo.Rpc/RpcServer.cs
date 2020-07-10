@@ -65,18 +65,13 @@ namespace TickTrader.Algo.Rpc
         private void OnNewConnection(ITransportProxy transport)
         {
             var session = new RpcSession(transport, _rpcHost);
-            var waitTask = session.WaitConnect();
-            session.Open();
-            waitTask.ContinueWith(t =>
+
+            session.Connect().ContinueWith(t =>
             {
                 if (t.IsCompleted && session.State == RpcSessionState.Connected)
-                {
                     AddSession(session);
-                }
                 else
-                {
                     session.Close();
-                }
             });
         }
 

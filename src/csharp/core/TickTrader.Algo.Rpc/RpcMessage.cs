@@ -8,10 +8,7 @@ namespace TickTrader.Algo.Rpc
     {
         public static string GenerateCallId() => Guid.NewGuid().ToString("N");
 
-        public static RpcMessage Request(IMessage payload)
-        {
-            return new RpcMessage { CallId = GenerateCallId(), Flags = RpcFlags.Request, Payload = Any.Pack(payload) };
-        }
+        public static RpcMessage Request(IMessage payload) => Request(Any.Pack(payload));
 
         public static RpcMessage Request(Any payload)
         {

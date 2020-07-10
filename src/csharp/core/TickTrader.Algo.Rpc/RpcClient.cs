@@ -29,7 +29,6 @@ namespace TickTrader.Algo.Rpc
             await _transportClient.Start(address, port);
             var transport = _transportClient.Transport;
             var session = new RpcSession(transport, _rpcHost);
-            session.Open();
             await session.Connect(_protocolSpec);
 
             Session = session;

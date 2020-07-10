@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Rpc
     }
 
 
-    public struct RpcSessionStateChangedArgs
+    public readonly struct RpcSessionStateChangedArgs
     {
         public RpcSession Session { get; }
 
@@ -49,7 +49,6 @@ namespace TickTrader.Algo.Rpc
         private CancellationTokenSource _heartbeatCancelTokenSrc;
         private int _inHeartbeatCnt, _outHeartbeatCnt;
         private TaskCompletionSource<bool> _connectTaskSrc;
-        private TaskCompletionSource<bool> _waitConnectTaskSrc;
         private TaskCompletionSource<bool> _disconnectTaskSrc;
 
 
@@ -62,26 +61,25 @@ namespace TickTrader.Algo.Rpc
         {
             _transport = transport;
             _rpcHost = rpcHost;
+
+            _transport.AttachListener(this);
         }
 
 
-        public Task Connect(ProtocolSpec protocol)
+        public Task Connect(ProtocolSpec protocol = null)
         {
             if (State != RpcSessionState.Disconnected)
-                return _connectTaskSrc?.Task ?? Task.FromResult(true);
+                return _connectTaskSrc?.Task ?? Task.CompletedTask;
 
             _connectTaskSrc = new TaskCompletionSource<bool>();
-            SendConnect(protocol);
+
+            if (protocol != null)
+            {
+                ChangeState(RpcSessionState.Connecting);
+                SendMessage(RpcMessage.Request(new ConnectRequest { Protocol = protocol }));
+            }
+
             return _connectTaskSrc.Task;
-        }
-
-        public Task WaitConnect()
-        {
-            if (State == RpcSessionState.Connected)
-                return Task.CompletedTask;
-
-            _waitConnectTaskSrc = new TaskCompletionSource<bool>();
-            return _waitConnectTaskSrc.Task;
         }
 
         public Task Disconnect(string reason)
@@ -133,12 +131,6 @@ namespace TickTrader.Algo.Rpc
 
         #endregion IObsever<RpcMessage> implementation
 
-
-        internal void Open()
-        {
-            _transport.AttachListener(this);
-        }
-
         internal void SendMessage(RpcMessage msg)
         {
             Debug.WriteLine($"RPC < {AppDomain.CurrentDomain.Id}: {msg}");
@@ -166,14 +158,14 @@ namespace TickTrader.Algo.Rpc
             _sessionStateSubject.OnNext(changeArgs);
         }
 
-        private void SendConnect(ProtocolSpec protocol)
-        {
-            if (State != RpcSessionState.Disconnected)
-                return;
+        //private void SendConnect(ProtocolSpec protocol)
+        //{
+        //    if (State != RpcSessionState.Disconnected)
+        //        return;
 
-            ChangeState(RpcSessionState.Connecting);
-            SendMessage(RpcMessage.Request(new ConnectRequest { Protocol = protocol }));
-        }
+        //    ChangeState(RpcSessionState.Connecting);
+        //    SendMessage(RpcMessage.Request(new ConnectRequest { Protocol = protocol }));
+        //}
 
         private void SendDisconnect(string reason)
         {
@@ -205,23 +197,18 @@ namespace TickTrader.Algo.Rpc
             if (State != RpcSessionState.Disconnected)
                 return;
 
+            var connectSuссessful = false;
+
             try
             {
                 ChangeState(RpcSessionState.Connecting);
-                var request = msg.Payload.Unpack<ConnectRequest>();
 
+                var request = msg.Payload.Unpack<ConnectRequest>();
                 var response = ExecuteConnectRequest(request.Protocol);
+
                 SendMessage(RpcMessage.Response(msg.CallId, response));
-                if (response is ConnectResponse)
-                {
-                    ChangeState(RpcSessionState.Connected);
-                    _waitConnectTaskSrc.TrySetResult(true);
-                }
-                else
-                {
-                    ChangeState(RpcSessionState.Disconnected);
-                    _waitConnectTaskSrc.TrySetResult(false);
-                }
+
+                connectSuссessful = response is ConnectResponse; //Must be last, SendMessage throw Exception protection
             }
             catch (Exception ex)
             {
@@ -230,8 +217,11 @@ namespace TickTrader.Algo.Rpc
                     Message = "Internal error: Failed to process ConnectRequest",
                     Details = ex.ToString(),
                 }));
-                ChangeState(RpcSessionState.Disconnected);
-                _waitConnectTaskSrc.TrySetResult(false);
+            }
+            finally
+            {
+                ChangeState(connectSuссessful ? RpcSessionState.Connected : RpcSessionState.Disconnected);
+                _connectTaskSrc.TrySetResult(connectSuссessful);
             }
         }
 
