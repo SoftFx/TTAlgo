@@ -30,7 +30,8 @@ namespace TickTrader.Algo.Api
         CommissionChargeType CommissionChargeType { get; }
         CommissionType CommissionType { get; }
         double HedgingFactor { get; }
-        double? Slippage { get; }
+        double Slippage { get; }
+        SlippageType SlippageType { get; }
 
         void Subscribe(int depth = 1);
         void Unsubscribe();
@@ -57,6 +58,12 @@ namespace TickTrader.Algo.Api
         PercentageWaivedEnhanced,
         PerBond
     };
+
+    public enum SlippageType
+    {
+        Percent,
+        Pips,
+    }
 
     public interface SymbolProvider
     {

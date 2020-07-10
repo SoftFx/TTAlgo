@@ -170,7 +170,7 @@ namespace TickTrader.Algo.Common.Model
                         case Api.AccountTypes.Cash: return AccountingTypes.Cash;
                         case Api.AccountTypes.Gross: return AccountingTypes.Gross;
                         case Api.AccountTypes.Net: return AccountingTypes.Net;
-                        default: throw new NotImplementedException("Account type is not supported: " + acc.Type);
+                        default: throw new NotImplementedException("Account type is not supported: " + acc.Type); //sometime error after change acc type
                     }
                 }
             }

@@ -197,7 +197,7 @@ namespace TickTrader.Algo.Core
         public void LogOrderCloseResults(CloseOrderCoreRequest request, OrderResultEntity result)
         {
             var suffix = result.IsServerResponse ? "[In]" : "[Self]";
-            var postfix = result.ResultingOrder.RemainingVolume != 0 ? $", remaining volume={result.ResultingOrder.RemainingVolume}" : "";
+            var postfix = result.ResultingOrder.RemainingVolume != 0 ? $", remaining volume={result.ResultingOrder.RemainingVolume}" : $", volume={result.ResultingOrder.LastFillVolume}";
             if (result.IsCompleted)
             {
                 PrintTradeSuccess($"{suffix} SUCCESS: Order #{request.OrderId} closed{postfix}");

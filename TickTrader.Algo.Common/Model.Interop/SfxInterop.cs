@@ -571,6 +571,7 @@ namespace TickTrader.Algo.Common.Model
                 IsTradeEnabled = info.IsTradeEnabled,
                 Description = info.Description,
                 DefaultSlippage = info.DefaultSlippage,
+                SlippageType = Convert(info.SlippageType),
                 HiddenLimitOrderMarginReduction = info.HiddenLimitOrderMarginReduction
             };
         }
@@ -581,6 +582,16 @@ namespace TickTrader.Algo.Common.Model
             {
                 case SwapType.PercentPerYear: return BO.SwapType.PercentPerYear;
                 case SwapType.Points: return BO.SwapType.Points;
+                default: throw new NotImplementedException();
+            }
+        }
+
+        private static Api.SlippageType Convert(SFX.SlippageType type)
+        {
+            switch (type)
+            {
+                case SFX.SlippageType.Percent: return API.SlippageType.Percent;
+                case SFX.SlippageType.Pips: return API.SlippageType.Pips;
                 default: throw new NotImplementedException();
             }
         }
@@ -910,6 +921,8 @@ namespace TickTrader.Algo.Common.Model
                                 return Api.OrderCmdResultCodes.ReadOnlyAccount;
                             else if (message == "Internal server error")
                                 return Api.OrderCmdResultCodes.TradeServerError;
+                            else if (message.StartsWith("Only Limit, Stop and StopLimit orders can be canceled."))
+                                return Api.OrderCmdResultCodes.IncorrectType;
                         }
                         break;
                     }
@@ -1249,7 +1262,7 @@ namespace TickTrader.Algo.Common.Model
             throw new NotImplementedException("Unsupported price type: " + priceType);
         }
 
-        private ConnectionErrorCodes Convert(LogoutReason fdkCode)
+        private static ConnectionErrorCodes Convert(LogoutReason fdkCode)
         {
             switch (fdkCode)
             {

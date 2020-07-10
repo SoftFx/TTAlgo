@@ -52,7 +52,8 @@ namespace TickTrader.Algo.Core
         public double HedgingFactor => entity.MarginHedged;
         public NumberFormatInfo PriceFormat { get; private set; }
         public int AmountDigits { get; private set; }
-        public double? Slippage => entity.DefaultSlippage;
+        public double Slippage => entity.DefaultSlippage ?? 0;
+        public SlippageType SlippageType => entity.SlippageType;
 
         public double ContractSizeFractional => entity.ContractSizeFractional;
         public double MarginFactorFractional => entity.MarginFactor;
@@ -68,8 +69,6 @@ namespace TickTrader.Algo.Core
         public BO.SwapType SwapType => entity.SwapType;
         public int TripleSwapDay => entity.TripleSwapDay;
         public double HiddenLimitOrderMarginReduction => entity.HiddenLimitOrderMarginReduction ?? double.NaN;
-
-        public double DefaultSlippage => entity.DefaultSlippage ?? 0;
 
         #region BO.ISymbolInfo
 
@@ -150,7 +149,8 @@ namespace TickTrader.Algo.Core
         public CommissionChargeType CommissionChargeType { get { return CommissionChargeType.PerTrade; } }
         public CommissionType CommissionType { get { return CommissionType.Percent; } }
         public double HedgingFactor => double.NaN;
-        public double? Slippage => null;
+        public double Slippage => double.NaN;
+        public SlippageType SlippageType => SlippageType.Percent;
 
         public void Subscribe(int depth = 1)
         {

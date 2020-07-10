@@ -53,6 +53,7 @@ namespace TickTrader.Algo.Core
         public string MinCommissionCurrency { get; set; }
         //public BL.SwapType SwapType { get; }
         public double? DefaultSlippage { get; set; }
+        public SlippageType SlippageType { get; set; }
         public bool IsTradeEnabled { get; set; }
         public int CurrencySortOrder { get; }
         public int SettlementCurrencySortOrder { get; }

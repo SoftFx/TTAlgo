@@ -419,7 +419,7 @@ namespace TickTrader.Algo.Core
                 order.Price = order.Side == OrderSide.Buy ? symbol.Ask : symbol.Bid;
                 if (acc.Type == AccountTypes.Cash)
                 {
-                    order.Price += symbol.Point * symbol.DefaultSlippage * (order.Side == OrderSide.Buy ? 1 : -1);
+                    order.Price += symbol.Point * symbol.Slippage * (order.Side == OrderSide.Buy ? 1 : -1);
                 }
             }
 
@@ -434,7 +434,7 @@ namespace TickTrader.Algo.Core
                         break;
                     case OrderType.Stop:
                         order.Type = OrderType.StopLimit;
-                        order.Price = order.StopPrice + symbol.Point * symbol.DefaultSlippage * (order.Side == OrderSide.Buy ? -1 : 1);
+                        order.Price = order.StopPrice + symbol.Point * symbol.Slippage * (order.Side == OrderSide.Buy ? -1 : 1);
                         break;
                 }
             }

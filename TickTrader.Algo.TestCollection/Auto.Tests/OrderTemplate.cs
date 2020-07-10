@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Math;
 
 namespace TickTrader.Algo.TestCollection.Auto.Tests
 {
-    public class OrderTemplate : TestParamsSet, ICloneable
+    public class OrderTemplate : TestParamsSet
     {
         private string _id;
 
@@ -18,17 +19,15 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         public bool IsStopOrder => Type == OrderType.Stop || Type == OrderType.StopLimit;
 
-        public bool IsImmediateFill => Type == OrderType.Market ||
-                                       (Type == OrderType.Limit && Options.HasFlag(OrderExecOptions.ImmediateOrCancel)) ||
-                                       (Type == OrderType.Position && AccountType == AccountTypes.Gross);
+        public bool IsImmediateFill => (Type == OrderType.Market) || (Type == OrderType.Limit && Options.HasFlag(OrderExecOptions.ImmediateOrCancel));
+
+
+
+        public double SlippagePrecision { get; }
 
         public bool IsIoc { get; }
 
         public OrderType InitType { get; protected set; }
-
-        public double? InitOpenPrice { get; set; } //remove?
-
-        public double? InitOpenStopPrice { get; set; } //remove?
 
         public string RelatedId { get; private set; }
 
@@ -73,20 +72,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             IsIoc = Type == OrderType.Limit && Options.HasFlag(OrderExecOptions.ImmediateOrCancel);
 
             InitType = Type;
-        }
-
-        public OrderTemplate SaveTemplateState() //remove?
-        {
-            InitOpenPrice = Price;
-            InitOpenStopPrice = StopPrice;
-
-            return this;
-        }
-
-        public void RestoreTemplateState() //remove?
-        {
-            Price = InitOpenPrice;
-            StopPrice = InitOpenStopPrice;
+            SlippagePrecision = Math.Pow(10, Math.Min(Symbol.Digits, 4));
         }
 
         public void UpdateTemplate(Order order, bool activate = false, bool position = false)
@@ -103,50 +89,60 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         public void Verification(bool close = false)
         {
-            if (close || IsImmediateFill)
+            if (close || IsImmediateFill || Type == OrderType.Position) //to do: create verification for Position
                 return;
 
             if (RealOrder.IsNull != close)
                 throw new VerificationException(Id, close);
 
             if (RealOrder.Type != Type)
-                throw new VerificationException(RealOrder.Id, nameof(RealOrder.Type), Type, RealOrder.Type);
+                ThrowVerificationException(nameof(RealOrder.Type), Type, RealOrder.Type);
 
             if (RealOrder.Side != Side)
-                throw new VerificationException(RealOrder.Id, nameof(RealOrder.Side), Side, RealOrder.Side);
+                ThrowVerificationException(nameof(RealOrder.Side), Side, RealOrder.Side);
 
             if (!RealOrder.RemainingVolume.EI(Volume))
-                throw new VerificationException(RealOrder.Id, nameof(RealOrder.RemainingVolume), Volume, RealOrder.RemainingVolume);
+                ThrowVerificationException(nameof(RealOrder.RemainingVolume), Volume, RealOrder.RemainingVolume);
 
             if (Type != OrderType.Stop && !CheckPrice(RealOrder.Price))
-                throw new VerificationException(RealOrder.Id, nameof(RealOrder.Price), Price, RealOrder.Price);
+                ThrowVerificationException(nameof(RealOrder.Price), Price, RealOrder.Price);
 
             if (IsStopOrder && !RealOrder.StopPrice.EI(StopPrice))
-                throw new VerificationException(RealOrder.Id, nameof(RealOrder.StopPrice), StopPrice, RealOrder.StopPrice);
+                ThrowVerificationException(nameof(RealOrder.StopPrice), StopPrice, RealOrder.StopPrice);
 
             if (!RealOrder.MaxVisibleVolume.EI(MaxVisibleVolume) && !(-1.0).EI(MaxVisibleVolume) && !double.IsNaN(RealOrder.MaxVisibleVolume))
-                throw new VerificationException(RealOrder.Id, nameof(RealOrder.MaxVisibleVolume), MaxVisibleVolume, RealOrder.MaxVisibleVolume);
+                ThrowVerificationException(nameof(RealOrder.MaxVisibleVolume), MaxVisibleVolume, RealOrder.MaxVisibleVolume);
 
             if (!RealOrder.TakeProfit.EI(TP) && !0.0.EI(TP) && !double.IsNaN(RealOrder.TakeProfit))
-                throw new VerificationException(RealOrder.Id, nameof(RealOrder.TakeProfit), TP, RealOrder.TakeProfit);
+                ThrowVerificationException(nameof(RealOrder.TakeProfit), TP, RealOrder.TakeProfit);
 
             if (!RealOrder.StopLoss.EI(SL) && !0.0.EI(SL) && !double.IsNaN(RealOrder.StopLoss))
-                throw new VerificationException(RealOrder.Id, nameof(RealOrder.StopLoss), SL, RealOrder.StopLoss);
+                ThrowVerificationException(nameof(RealOrder.StopLoss), SL, RealOrder.StopLoss);
 
-            var expectedSlippage = Slippage == null || Slippage > MaxSlippage ? MaxSlippage : Slippage;
-
-            if ((Type == OrderType.Stop || Type == OrderType.Market) && !RealOrder.Slippage.EI(expectedSlippage))
-                throw new VerificationException(RealOrder.Id, nameof(RealOrder.Slippage), expectedSlippage, RealOrder.Slippage);
+            if (IsSlippageSupported)
+                CheckSlippage(RealOrder.Slippage, (realSlippage, expectedSlippage) =>
+                {
+                    if (!realSlippage.E(expectedSlippage))
+                        ThrowVerificationException(nameof(RealOrder.Slippage), expectedSlippage, realSlippage);
+                });
 
             if (Comment != null && RealOrder.Comment != Comment)
-                throw new VerificationException(RealOrder.Id, nameof(RealOrder.Comment), Comment, RealOrder.Comment);
+                ThrowVerificationException(nameof(RealOrder.Comment), Comment, RealOrder.Comment);
 
             if (Expiration != null && RealOrder.Expiration != Expiration)
-                throw new VerificationException(RealOrder.Id, nameof(RealOrder.Expiration), Expiration, RealOrder.Expiration);
+                ThrowVerificationException(nameof(RealOrder.Expiration), Expiration, RealOrder.Expiration);
 
 
             if (RealOrder.Tag != Tag)
-                throw new VerificationException(RealOrder.Id, nameof(RealOrder.Tag), Tag, RealOrder.Tag);
+                ThrowVerificationException(nameof(RealOrder.Tag), Tag, RealOrder.Tag);
+        }
+
+        public double? GetSlippageInPercent()
+        {
+            if (Slippage != null)
+                Slippage = SlippageConverters.SlippagePipsToFractions(Slippage.Value, (IsStopOrder ? StopPrice : Price).Value, Symbol);
+
+            return Slippage;
         }
 
         public string GetInfo(TestPropertyAction action, string property) => $"{action} {property}{GetAllProperties()}";
@@ -155,12 +151,26 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         public string GetAction(TestPropertyAction action, string property) => $"{(Async ? "Async " : "")}{action} {property} {Type} {(Options == OrderExecOptions.ImmediateOrCancel ? "IoC" : "")} {Side} to order {Id}";
 
+        private void ThrowVerificationException(string property, object expected, object current) => throw new VerificationException(RealOrder.Id, property, expected, current);
+
         private bool CheckPrice(double cur)
         {
-            if (IsImmediateFill)
+            if (IsImmediateFill || Type == OrderType.Position)
                 return Side == OrderSide.Buy ? cur.LteI(Price) : cur.GteI(Price);
 
             return cur.EI(Price);
+        }
+
+        protected double CeilSlippage(double slippage) => Math.Round(Math.Ceiling(slippage * SlippagePrecision) / SlippagePrecision, Symbol.Digits);
+
+        protected double GetMaxSlippage() => SlippageConverters.SlippagePipsToFractions(Symbol.Slippage, (IsStopOrder ? StopPrice : Price).Value, Symbol);
+
+        protected void CheckSlippage(double serverSlippage, Action<double, double> comparer)
+        {
+            var calcSlippage = GetMaxSlippage();
+            var expectedSlippage = CeilSlippage(Slippage == null || Slippage.Value > calcSlippage ? calcSlippage : Slippage.Value);
+
+            comparer(expectedSlippage, CeilSlippage(serverSlippage));
         }
 
         private string GetAllProperties()
@@ -173,7 +183,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             SetProperty(str, Price, nameof(Price));
             SetProperty(str, Volume, nameof(Volume));
             SetProperty(str, Side, nameof(Side));
-            SetProperty(str, Type, nameof(Type));
+            SetProperty(str, InitType, nameof(Type)); //InitType as Type
             SetProperty(str, StopPrice, nameof(StopPrice));
             SetProperty(str, MaxVisibleVolume, nameof(MaxVisibleVolume));
             SetProperty(str, SL, nameof(SL));
@@ -189,23 +199,23 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             return str.ToString();
         }
 
-        private void SetProperty(StringBuilder str, double? value, string name)
+        private static void SetProperty(StringBuilder str, double? value, string name)
         {
             if (value != null && !double.IsNaN(value.Value) && !value.Value.LteI(0.0))
                 str.Append($", {name}={value.Value}");
         }
 
-        private void SetProperty(StringBuilder str, object value, string name)
+        private static void SetProperty(StringBuilder str, object value, string name)
         {
             if (value != null && !string.IsNullOrEmpty(value as string))
                 str.Append($", {name}={value}");
         }
 
-        public object Clone() => MemberwiseClone();
+        public OrderTemplate Copy() => (OrderTemplate)MemberwiseClone();
 
         public OrderTemplate InversedCopy(double? volume = null)
         {
-            var copy = (OrderTemplate)Clone();
+            var copy = Copy();
 
             copy.Side = Side == OrderSide.Buy ? OrderSide.Sell : OrderSide.Buy;
             copy.Volume = volume ?? Volume;

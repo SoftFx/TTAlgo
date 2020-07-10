@@ -31,20 +31,14 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             Id = template.Id;
             Side = template.Side;
             Type = template.Type;
+            InitType = template.InitType;
             Volume = template.Volume;
             Price = template.Price;
             StopPrice = template.StopPrice;
             TP = template.TP;
             SL = template.SL;
+            Slippage = template.Slippage;
             Options = template.Options;
-
-            InitOpenPrice = template.InitOpenPrice; //remove?
-            InitType = template.InitType;
-        }
-
-        public void FillHistoryTemplate(OrderTemplate template)
-        {
-
         }
 
         private static HistoryOrderTemplate Create(OrderTemplate template, OrderFilledEventArgs args) =>
@@ -100,42 +94,39 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         public void VerifyTradeReport(TradeReport report)
         {
-            //try
-            //{
             HistoryVerificationException.StorageId = Id;
             HistoryVerificationException.HistoryId = Type == OrderType.Position ? report.PositionId : report.OrderId;
 
-            if (Id != HistoryVerificationException.HistoryId)
+            if (Id != HistoryVerificationException.HistoryId) //add strong exception for this case
                 throw new HistoryVerificationException();
 
             AssertEquals(nameof(report.ActionType), TradeReportAction, report.ActionType);
             AssertEquals(nameof(report.TradeRecordSide), Side, report.TradeRecordSide);
             AssertEquals(nameof(report.TradeRecordType), Type, report.TradeRecordType);
 
-            var price = Price.Value;
+            if (IsSlippageSupported)
+                CheckSlippage(report.Slippage.Value, (realSlippage, expectedSlippage) => AssertEquals(nameof(Slippage), expectedSlippage, realSlippage));
 
-            if (InitType == OrderType.Stop)
-                price = StopPrice.Value;
+            //TestReqOpenPrice(report);
+        }
+
+        private void TestReqOpenPrice(TradeReport report)
+        {
+            var price = InitType == OrderType.Stop ? StopPrice.Value : Price.Value;
 
             if (InitType == OrderType.StopLimit && (TradeReportAction == TradeExecActions.OrderActivated || TradeReportAction == TradeExecActions.OrderCanceled))
                 price = StopPrice.Value;
 
-            //if (TradeReportAction != TradeExecActions.PositionClosed)
-            //AssertEqualsDouble(nameof(report.ReqOpenPrice), price, report.ReqOpenPrice.Value);
-            //}
-            //catch (Exception ex)
-            //{
-
-            //}
+            AssertEqualsDouble(nameof(report.ReqOpenPrice), price, report.ReqOpenPrice.Value);
         }
 
-        private void AssertEquals<T>(string property, T current, T expected)
+        private static void AssertEquals<T>(string property, T current, T expected)
         {
             if (!expected.Equals(current))
                 throw new HistoryVerificationException(property, current, expected);
         }
 
-        private void AssertEqualsDouble(string property, double current, double expected)
+        private static void AssertEqualsDouble(string property, double current, double expected)
         {
             if (!expected.E(current))
                 throw new HistoryVerificationException(property, current, expected);
@@ -149,8 +140,8 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         { }
 
 
-        public VerificationException(string id, string property, object req, object cur) :
-            base($"{GetTitle(id)} has wrong {property}: required = {req}, current = {cur}")
+        public VerificationException(string id, string property, object exp, object cur) :
+            base($"{GetTitle(id)} has wrong {property}: required = {exp}, current = {cur}")
         { }
 
 
