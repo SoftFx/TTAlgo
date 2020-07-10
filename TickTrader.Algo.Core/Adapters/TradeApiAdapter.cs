@@ -279,8 +279,8 @@ namespace TickTrader.Algo.Core
             if (!ValidateSlippage(request.Slippage, ref code))
                 return;
 
-            if (!ValidateMargin(request, smbMetadata, ref code))
-                return;
+            //if (!ValidateMargin(request, smbMetadata, ref code)) //incorrect behavior when Margine Call
+            //    return;
         }
 
         private void PreprocessAndValidateCancelOrderRequest(CancelOrderRequest request, out Order orderToCancel, ref OrderCmdResultCodes code)
