@@ -30,3 +30,28 @@ message AccountInfoRequest { }
 message AccountInfoResponse {
     AccountInfo account = 1;
 }
+
+message Order {
+
+    enum Type {
+        MARKET = 0;
+        POSITION = 1;
+        LIMIT = 2;
+        STOP = 3;
+        STOP_LIMIT = 4;
+    }
+
+    enum Side {
+        BUY = 0;
+        SELL = 1;
+    }
+
+    // flags
+    enum Options {
+        NONE = 0;
+        IMMEDIATE_OR_CANCEL = 1;
+        MARKET_WITH_SLIPPAGE = 2;
+        HIDDEN_ICEBERG = 4;
+    }
+
+}
