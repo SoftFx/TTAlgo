@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package ticktrader.algo.domain;
+
+option csharp_namespace = "TickTrader.Algo.Domain";
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+
+message AssetInfo {
+    google.protobuf.StringValue currency = 1;
+    double balance = 2;
+}
+
+message AccountInfo {
+    enum Type {
+        GROSS = 0;
+        NET = 1;
+        CASH = 2;
+    }
+
+    google.protobuf.StringValue id = 1;
+    Type type = 2;
+    int32 leverage = 3;
+    repeated AssetInfo assets = 4;
+}
+
+message AccountInfoRequest { }
+
+message AccountInfoResponse {
+    AccountInfo account = 1;
+}

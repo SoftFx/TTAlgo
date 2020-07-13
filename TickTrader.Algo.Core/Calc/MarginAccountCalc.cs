@@ -131,7 +131,7 @@ namespace TickTrader.Algo.Core.Calc
             }
             else
             {
-                if (Info.AccountingType == AccountingTypes.Gross)
+                if (Info.AccountingType == Domain.AccountInfo.Types.Type.Gross)
                 {
                     var marginBuy = netting.Buy.Margin;
                     var marginSell = netting.Sell.Margin;
@@ -142,7 +142,7 @@ namespace TickTrader.Algo.Core.Calc
                     else
                         newSmbMargin = Math.Max(marginSell + orderMargin, marginBuy);
                 }
-                else if (Info.AccountingType == AccountingTypes.Net)
+                else if (Info.AccountingType == Domain.AccountInfo.Types.Type.Net)
                 {
                     var marginBuy = netting.Buy.Margin;
                     var marginSell = netting.Sell.Margin;

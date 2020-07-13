@@ -170,7 +170,7 @@ namespace TickTrader.Algo.Core.Calc
         /// <summary>
         /// Account type.
         /// </summary>
-        AccountingTypes AccountingType { get; }
+        Domain.AccountInfo.Types.Type AccountingType { get; }
 
         /// <summary>
         /// Account orders.

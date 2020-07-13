@@ -4,6 +4,7 @@ using System.Linq;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Calc;
 using TickTrader.Algo.Core.Infrastructure;
+using TickTrader.Algo.Domain;
 using BL = TickTrader.BusinessLogic;
 using BO = TickTrader.BusinessObjects;
 
@@ -60,7 +61,7 @@ namespace TickTrader.Algo.Core
             {
                 _context.Builder.Account.OnTradeInfoAccess();
 
-                if (acc.Type == Api.AccountTypes.Gross || acc.Type == Api.AccountTypes.Net)
+                if (acc.IsMarginType)
                 {
                     _marginCalc = new MarginAccountCalc(acc, Market, true);
                     acc.MarginCalc = _marginCalc;
@@ -164,7 +165,7 @@ namespace TickTrader.Algo.Core
                     throw new OrderValidationError(e.Message, Api.OrderCmdResultCodes.InternalError);
                 }
             }
-            else if (acc.AccountingType == BusinessObjects.AccountingTypes.Cash)
+            else if (acc.IsCashType)
             {
 
             }
@@ -417,14 +418,14 @@ namespace TickTrader.Algo.Core
             if (order.Type == OrderType.Market && order.Price == null)
             {
                 order.Price = order.Side == OrderSide.Buy ? symbol.Ask : symbol.Bid;
-                if (acc.Type == AccountTypes.Cash)
+                if (acc.Type == AccountInfo.Types.Type.Cash)
                 {
                     order.Price += symbol.Point * symbol.DefaultSlippage * (order.Side == OrderSide.Buy ? 1 : -1);
                 }
             }
 
             //convert order types for cash accounts
-            if (acc.Type == AccountTypes.Cash)
+            if (acc.Type == AccountInfo.Types.Type.Cash)
             {
                 switch (order.Type)
                 {

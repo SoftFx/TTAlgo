@@ -11,10 +11,10 @@ namespace TickTrader.Algo.Common.Model
 {
     public class AccountModel : CrossDomainObject, IOrderDependenciesResolver
     {
-        private readonly VarDictionary<string, PositionModel> positions = new VarDictionary<string, PositionModel>();
-        private readonly VarDictionary<string, AssetModel> assets = new VarDictionary<string, AssetModel>();
-        private readonly VarDictionary<string, OrderModel> orders = new VarDictionary<string, OrderModel>();
-        private AccountTypes? accType;
+        private readonly VarDictionary<string, PositionModel> _positions = new VarDictionary<string, PositionModel>();
+        private readonly VarDictionary<string, AssetModel> _assets = new VarDictionary<string, AssetModel>();
+        private readonly VarDictionary<string, OrderModel> _orders = new VarDictionary<string, OrderModel>();
+        private Domain.AccountInfo.Types.Type? _accType;
         private readonly IReadOnlyDictionary<string, CurrencyEntity> _currencies;
         private readonly IReadOnlyDictionary<string, SymbolModel> _symbols;
         private bool _isCalcStarted;
@@ -27,18 +27,18 @@ namespace TickTrader.Algo.Common.Model
         }
 
         public event System.Action AccountTypeChanged = delegate { };
-        public IVarSet<string, PositionModel> Positions { get { return positions; } }
-        public IVarSet<string, OrderModel> Orders { get { return orders; } }
-        public IVarSet<string, AssetModel> Assets { get { return assets; } }
+        public IVarSet<string, PositionModel> Positions => _positions;
+        public IVarSet<string, OrderModel> Orders => _orders;
+        public IVarSet<string, AssetModel> Assets => _assets;
 
-        public AccountTypes? Type
+        public Domain.AccountInfo.Types.Type? Type
         {
-            get { return accType; }
+            get { return _accType; }
             private set
             {
-                if (accType != value)
+                if (_accType != value)
                 {
-                    accType = value;
+                    _accType = value;
                     AccountTypeChanged();
                 }
             }
@@ -55,7 +55,7 @@ namespace TickTrader.Algo.Common.Model
         public event Action<PositionModel, OrderExecAction> PositionUpdate;
         public event Action<BalanceOperationReport> BalanceUpdate;
 
-        public EntityCacheUpdate CreateSnaphotUpdate(AccountEntity accInfo, List<OrderEntity> tradeRecords, List<PositionEntity> positions, List<AssetEntity> assets)
+        public EntityCacheUpdate CreateSnaphotUpdate(Domain.AccountInfo accInfo, List<OrderEntity> tradeRecords, List<PositionEntity> positions, List<Domain.AssetInfo> assets)
         {
             System.Diagnostics.Debug.WriteLine(string.Format("Init() symbols:{0} orders:{1} positions:{2}",
                 _symbols.Count, tradeRecords.Count, positions.Count));
@@ -78,12 +78,12 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        internal void Init(AccountEntity accInfo, IEnumerable<OrderEntity> orders,
-            IEnumerable<PositionEntity> positions, IEnumerable<AssetEntity> assets)
+        internal void Init(Domain.AccountInfo accInfo, IEnumerable<OrderEntity> orders,
+            IEnumerable<PositionEntity> positions, IEnumerable<Domain.AssetInfo> assets)
         {
-            this.positions.Clear();
-            this.orders.Clear();
-            this.assets.Clear();
+            _positions.Clear();
+            _orders.Clear();
+            _assets.Clear();
 
             var balanceCurrencyInfo = _currencies.Read(accInfo.BalanceCurrency);
 
@@ -95,13 +95,13 @@ namespace TickTrader.Algo.Common.Model
             BalanceDigits = balanceCurrencyInfo?.Digits ?? 2;
 
             foreach (var fdkPosition in positions)
-                this.positions.Add(fdkPosition.Symbol, new PositionModel(fdkPosition, this));
+                this._positions.Add(fdkPosition.Symbol, new PositionModel(fdkPosition, this));
 
             foreach (var fdkOrder in orders)
-                this.orders.Add(fdkOrder.Id, new OrderModel(fdkOrder, this));
+                this._orders.Add(fdkOrder.Id, new OrderModel(fdkOrder, this));
 
             foreach (var fdkAsset in assets)
-                this.assets.Add(fdkAsset.Currency, new AssetModel(fdkAsset, _currencies));
+                this._assets.Add(fdkAsset.Currency, new AssetModel(fdkAsset, _currencies));
         }
 
         public void Deinit()
@@ -118,24 +118,22 @@ namespace TickTrader.Algo.Common.Model
             //}
         }
 
-        public AccountEntity GetAccountInfo()
+        public Domain.AccountInfo GetAccountInfo()
         {
-            return new AccountEntity
+            return new Domain.AccountInfo(_accType != Domain.AccountInfo.Types.Type.Cash ? Balance : (double?)null, BalanceCurrency,
+                Assets.Snapshot.Values.Select(a => a.GetInfo()).ToArray())
             {
                 Id = Id,
-                Balance = Balance,
-                BalanceCurrency = BalanceCurrency,
                 Leverage = Leverage,
-                Type = Type ?? AccountTypes.Gross,
-                Assets = Assets.Snapshot.Values.Select(a => a.GetEntity()).ToArray()
+                Type = Type ?? Domain.AccountInfo.Types.Type.Gross,
             };
         }
 
         internal void Clear()
         {
-            positions.Clear();
-            orders.Clear();
-            assets.Clear();
+            _positions.Clear();
+            _orders.Clear();
+            _assets.Clear();
 
             Id = "";
             Type = null;
@@ -160,7 +158,7 @@ namespace TickTrader.Algo.Common.Model
 
         private void UpdateBalance(ExecutionReport report)
         {
-            if (Type == AccountTypes.Net && report.ExecutionType == ExecutionType.Trade)
+            if (Type == Domain.AccountInfo.Types.Type.Net && report.ExecutionType == ExecutionType.Trade)
             {
                 switch (report.OrderStatus)
                 {
@@ -171,12 +169,12 @@ namespace TickTrader.Algo.Common.Model
                 }
             }
 
-            if (Type == AccountTypes.Gross)
+            if (Type == Domain.AccountInfo.Types.Type.Gross)
             {
                 UpdateBalance(report.Balance);
             }
 
-            if (Type == AccountTypes.Cash)
+            if (Type == Domain.AccountInfo.Types.Type.Cash)
             {
                 foreach (var asset in report.Assets)
                     UpdateAsset(asset);
@@ -192,29 +190,29 @@ namespace TickTrader.Algo.Common.Model
             OnBalanceChanged();
         }
 
-        private void UpdateAsset(AssetEntity assetInfo)
+        private void UpdateAsset(Domain.AssetInfo assetInfo)
         {
-            if (assetInfo.IsEmpty)
-                assets.Remove(assetInfo.Currency);
+            if (assetInfo.Balance == 0)
+                _assets.Remove(assetInfo.Currency);
             else
-                assets[assetInfo.Currency] = new AssetModel(assetInfo, _currencies);
+                _assets[assetInfo.Currency] = new AssetModel(assetInfo, _currencies);
         }
 
         public void UpdateBalance(double newBalance, string currency = null)
         {
-            if (Type == AccountTypes.Gross || Type == AccountTypes.Net)
+            if (Type == Domain.AccountInfo.Types.Type.Gross || Type == Domain.AccountInfo.Types.Type.Net)
             {
                 Balance = newBalance;
                 OnBalanceChanged();
             }
-            else if (Type == AccountTypes.Cash)
+            else if (Type == Domain.AccountInfo.Types.Type.Cash)
             {
                 if (newBalance != 0)
-                    assets[currency] = new AssetModel(newBalance, currency, _currencies);
+                    _assets[currency] = new AssetModel(newBalance, currency, _currencies);
                 else
                 {
-                    if (assets.ContainsKey(currency))
-                        assets.Remove(currency);
+                    if (_assets.ContainsKey(currency))
+                        _assets.Remove(currency);
                 }
             }
         }
@@ -242,7 +240,7 @@ namespace TickTrader.Algo.Common.Model
         {
             if (report.IsEmpty)
                 return new PositionUpdateAction(report, OrderEntityAction.Removed, notify);
-            else if (!positions.ContainsKey(report.Symbol))
+            else if (!_positions.ContainsKey(report.Symbol))
                 return new PositionUpdateAction(report, OrderEntityAction.Added, notify);
             else
                 return new PositionUpdateAction(report, OrderEntityAction.Updated, notify);
@@ -273,10 +271,10 @@ namespace TickTrader.Algo.Common.Model
         {
             PositionModel model;
 
-            if (!positions.TryGetValue(position.Symbol, out model))
+            if (!_positions.TryGetValue(position.Symbol, out model))
                 return;
 
-            positions.Remove(model.Symbol);
+            _positions.Remove(model.Symbol);
             if (notify)
                 PositionUpdate?.Invoke(model, OrderExecAction.Closed);
         }
@@ -284,7 +282,7 @@ namespace TickTrader.Algo.Common.Model
         private PositionModel UpsertPosition(PositionEntity position)
         {
             var positionModel = new PositionModel(position, this);
-            positions[position.Symbol] = positionModel;
+            _positions[position.Symbol] = positionModel;
 
             return positionModel;
         }
@@ -300,12 +298,12 @@ namespace TickTrader.Algo.Common.Model
             if (entityAction == OrderEntityAction.Added)
             {
                 order = new OrderModel(report, this);
-                orders[order.Id] = order;
+                _orders[order.Id] = order;
             }
             else if (entityAction == OrderEntityAction.Removed)
             {
                 order = Orders.GetOrDefault(report.OrderId);
-                orders.Remove(report.OrderId);
+                _orders.Remove(report.OrderId);
                 order?.Update(report);
             }
             else if (entityAction == OrderEntityAction.Updated)
@@ -320,7 +318,7 @@ namespace TickTrader.Algo.Common.Model
 
                     // workaround: dynamic collection filter can't react on field change
                     if (replaceOrder)
-                        orders[order.Id] = order;
+                        _orders[order.Id] = order;
                 }
             }
             else
@@ -336,12 +334,12 @@ namespace TickTrader.Algo.Common.Model
             if (entityAction == OrderEntityAction.Added)
             {
                 order = new OrderModel(report, this);
-                orders[order.Id] = order;
+                _orders[order.Id] = order;
             }
             else if (entityAction == OrderEntityAction.Removed)
             {
                 order = Orders.GetOrDefault(report.Id);
-                orders.Remove(report.Id);
+                _orders.Remove(report.Id);
                 order?.Update(report);
             }
             else if (entityAction == OrderEntityAction.Updated)
@@ -354,7 +352,7 @@ namespace TickTrader.Algo.Common.Model
 
                 // workaround: dynamic collection filter can't react on field change
                 if (typeChanged)
-                    orders[order.Id] = order;
+                    _orders[order.Id] = order;
             }
             else
                 order = new OrderModel(report, this);
@@ -373,10 +371,10 @@ namespace TickTrader.Algo.Common.Model
                     break;
 
                 case ExecutionType.Calculated:
-                    bool ignoreCalculate = (accType == AccountTypes.Gross && report.OrderType == OrderType.Market);
+                    bool ignoreCalculate = (_accType == Domain.AccountInfo.Types.Type.Gross && report.OrderType == OrderType.Market);
                     if (!ignoreCalculate)
                     {
-                        if (orders.ContainsKey(report.OrderId))
+                        if (_orders.ContainsKey(report.OrderId))
                             return OnOrderUpdated(report, OrderExecAction.Opened);
                         else
                             return OnOrderAdded(report, OrderExecAction.Opened);
@@ -417,7 +415,7 @@ namespace TickTrader.Algo.Common.Model
                         if (report.LeavesVolume != 0)
                             return OnOrderUpdated(report, OrderExecAction.Filled);
 
-                        if (Type == AccountTypes.Gross)
+                        if (Type == Domain.AccountInfo.Types.Type.Gross)
                             return OnOrderUpdated(report, OrderExecAction.Filled);
                         else
                             return OnOrderRemoved(report, OrderExecAction.Filled);
@@ -516,7 +514,7 @@ namespace TickTrader.Algo.Common.Model
         /// bread ration: position updates should be joined with exec reports to be atomic
         private OrderUpdateAction JoinWithPosition(OrderUpdateAction update)
         {
-            if ((Type == AccountTypes.Gross || Type == AccountTypes.Net) && update.ExecAction == OrderExecAction.Filled)
+            if ((Type == Domain.AccountInfo.Types.Type.Gross || Type == Domain.AccountInfo.Types.Type.Net) && update.ExecAction == OrderExecAction.Filled)
             {
                 _updateWatingForPosition = update;
                 return null;
@@ -536,7 +534,7 @@ namespace TickTrader.Algo.Common.Model
             var info = GetAccountInfo();
             var orders = Orders.Snapshot.Values.Select(o => o.GetEntity()).ToList();
             var positions = Positions.Snapshot.Values.Select(p => p.GetEntity()).ToList();
-            var assets = Assets.Snapshot.Values.Select(a => a.GetEntity()).ToList();
+            var assets = Assets.Snapshot.Values.Select(a => a.GetInfo()).ToList();
 
             return new Snapshot(info, orders, positions, assets);
         }
@@ -544,18 +542,18 @@ namespace TickTrader.Algo.Common.Model
         [Serializable]
         public class Snapshot : EntityCacheUpdate
         {
-            private AccountEntity _accInfo;
+            private Domain.AccountInfo _accInfo;
             private IEnumerable<OrderEntity> _orders;
             private IEnumerable<PositionEntity> _positions;
-            private IEnumerable<AssetEntity> _assets;
+            private IEnumerable<Domain.AssetInfo> _assets;
 
-            public Snapshot(AccountEntity accInfo, IEnumerable<OrderEntity> orders,
-                IEnumerable<PositionEntity> positions, IEnumerable<AssetEntity> assets)
+            public Snapshot(Domain.AccountInfo accInfo, IEnumerable<OrderEntity> orders,
+                IEnumerable<PositionEntity> positions, IEnumerable<Domain.AssetInfo> assets)
             {
                 _accInfo = accInfo;
                 _orders = orders ?? Enumerable.Empty<OrderEntity>();
                 _positions = positions ?? Enumerable.Empty<PositionEntity>();
-                _assets = assets ?? Enumerable.Empty<AssetEntity>();
+                _assets = assets ?? Enumerable.Empty<Domain.AssetInfo>();
             }
 
             public void Apply(EntityCache cache)
@@ -577,7 +575,7 @@ namespace TickTrader.Algo.Common.Model
             public void Apply(EntityCache cache)
             {
                 var acc = cache.Account;
-                acc.orders.Add(Order.Id, new OrderModel(Order, acc));
+                acc._orders.Add(Order.Id, new OrderModel(Order, acc));
             }
         }
 

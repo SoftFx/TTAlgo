@@ -30,7 +30,7 @@ namespace TickTrader.Algo.Common.Model
         public bool MarketWithSlippage { get; set; }
         public string ClosePositionRequestId { get; set; }
         public double TradePrice { get; set; }
-        public AssetEntity[] Assets { get; set; }
+        public Domain.AssetInfo[] Assets { get; set; }
         public double? StopPrice { get; set; }
         public double? AveragePrice { get; set; }
         public string ClientOrderId { get; set; }

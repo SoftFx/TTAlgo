@@ -19,6 +19,7 @@ using System.Windows.Threading;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal
@@ -442,7 +443,7 @@ namespace TickTrader.BotTerminal
 
         private void AccountTypeChanged()
         {
-            GridView.AccType.Value = _tradeClient.Account.Type ?? AccountTypes.Gross;
+            GridView.AccType.Value = _tradeClient.Account.Type ?? AccountInfo.Types.Type.Gross;
         }
 
         private async Task TruncateHistoryAsync(DateTime from, CancellationToken cToken)

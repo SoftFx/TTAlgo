@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Machinarium.Qnil;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -37,9 +38,9 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        protected override bool SupportsAccount(AccountTypes accType)
+        protected override bool SupportsAccount(AccountInfo.Types.Type accType)
         {
-            return accType == AccountTypes.Gross;
+            return accType == AccountInfo.Types.Type.Gross;
         }
 
         public IObservableList<OrderViewModel> Positions { get; private set; }

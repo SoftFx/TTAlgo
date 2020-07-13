@@ -6,14 +6,6 @@ option csharp_namespace = "TickTrader.Algo.Domain";
 
 import "google/protobuf/wrappers.proto";
 
-message AttachPluginRequest {
-    string id = 1;
-}
-
-message AttachPluginResponse {
-    bool success = 1;
-}
-
 message CurrencyInfo {
     string name = 1;
     int32 digits = 2;

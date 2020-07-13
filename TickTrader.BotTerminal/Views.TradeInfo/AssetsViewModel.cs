@@ -10,6 +10,7 @@ using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -24,9 +25,9 @@ namespace TickTrader.BotTerminal
                 .AsObservable();
         }
 
-        protected override bool SupportsAccount(AccountTypes accType)
+        protected override bool SupportsAccount(AccountInfo.Types.Type accType)
         {
-            return accType == AccountTypes.Cash;
+            return accType == AccountInfo.Types.Type.Cash;
         }
 
         public IObservableList<AssetViewModel> Assets { get; private set; }

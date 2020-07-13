@@ -69,7 +69,7 @@ namespace TickTrader.Algo.Core
 
         #region IAccountInfoProvider
 
-        public AccountEntity AccountInfo => _acc.AccountInfo;
+        public Domain.AccountInfo AccountInfo => _acc.AccountInfo;
 
         public event Action<OrderExecReport> OrderUpdated;
         public event Action<BalanceOperationReport> BalanceUpdated;

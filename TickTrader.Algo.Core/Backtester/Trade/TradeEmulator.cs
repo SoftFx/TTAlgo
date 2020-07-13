@@ -12,6 +12,7 @@ using BL = TickTrader.BusinessLogic;
 using BO = TickTrader.BusinessObjects;
 using TickTrader.BusinessObjects.Messaging;
 using TickTrader.Algo.Core.Calc;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -49,7 +50,7 @@ namespace TickTrader.Algo.Core
 
             if (pluginType == AlgoTypes.Robot)
             {
-                if (_settings.CommonSettings.AccountType == AccountTypes.Net || _settings.CommonSettings.AccountType == AccountTypes.Gross)
+                if (_settings.CommonSettings.AccountType == AccountInfo.Types.Type.Net || _settings.CommonSettings.AccountType == AccountInfo.Types.Type.Gross)
                     _scheduler.Scheduler.AddDailyJob(b => Rollover(), 0, 0);
             }
 
@@ -95,7 +96,7 @@ namespace TickTrader.Algo.Core
                 var currencies = _context.Builder.Currencies.CurrencyListImp.ToDictionary(c => c.Name);
 
                 foreach (var asset in _settings.CommonSettings.InitialAssets)
-                    _acc.Assets.Update(new AssetEntity(asset.Value, asset.Key), currencies);
+                    _acc.Assets.Update(new AssetInfo(asset.Value, asset.Key), currencies);
             }
         }
 
@@ -326,7 +327,7 @@ namespace TickTrader.Algo.Core
 
                 try
                 {
-                    if (_acc.Type == AccountTypes.Gross)
+                    if (_acc.Type == AccountInfo.Types.Type.Gross)
                     {
                         var order = _acc.GetOrderOrThrow(request.OrderId);
                         var smbMetadata = order.SymbolInfo;
@@ -537,7 +538,7 @@ namespace TickTrader.Algo.Core
             {
                 // fill order
                 fillInfo = FillOrder(order, execPrice, execAmount, trReason);
-                isInstantOrder = _acc.Type != AccountTypes.Gross;
+                isInstantOrder = _acc.Type != AccountInfo.Types.Type.Gross;
             }
             else if (order.Type == OrderType.Limit && order.HasOption(OrderExecOptions.ImmediateOrCancel))
             {
@@ -555,7 +556,7 @@ namespace TickTrader.Algo.Core
                     //ConfirmOrderCancelation(acc, BO.TradeTransReasons.DealerDecision, order.OrderId, null, clientRequestId, false);
                 }
 
-                isInstantOrder = _acc.Type != AccountTypes.Gross;
+                isInstantOrder = _acc.Type != AccountInfo.Types.Type.Gross;
             }
             else if (order.Type == OrderType.Limit || order.Type == OrderType.Stop || order.Type == OrderType.StopLimit)
             {
@@ -816,7 +817,7 @@ namespace TickTrader.Algo.Core
                     order.Entity.Expiration = null;
             }
 
-            if (_acc.AccountingType == BO.AccountingTypes.Gross)
+            if (_acc.Type == AccountInfo.Types.Type.Gross)
             {
                 if (request.StopLoss.HasValue)
                     order.Entity.StopLoss = (request.StopLoss.Value != 0) ? request.StopLoss : null;
@@ -949,7 +950,7 @@ namespace TickTrader.Algo.Core
             order.Entity.LastFillPrice = fillPrice;
             order.Entity.LastFillVolume = (double)fillAmount;
 
-            if ((_acc.AccountingType == BO.AccountingTypes.Net) || (_acc.AccountingType == BO.AccountingTypes.Cash))
+            if ((_acc.Type == AccountInfo.Types.Type.Net) || (_acc.Type == AccountInfo.Types.Type.Cash))
             {
                 // increase reported action number
                 //order.ActionNo++;
@@ -957,11 +958,11 @@ namespace TickTrader.Algo.Core
 
             // Create reports
             TradeReportAdapter tradeReport = null;
-            if (_acc.AccountingType != BO.AccountingTypes.Gross)
+            if (_acc.Type != AccountInfo.Types.Type.Gross)
                 tradeReport = _history.Create(ExecutionTime, order.SymbolInfo, TradeExecActions.OrderFilled, reason);
 
             // do account-specific fill
-            if (_acc.Type == AccountTypes.Cash)
+            if (_acc.Type == Domain.AccountInfo.Types.Type.Cash)
                 UpdateAssetsOnFill(order, (decimal)fillPrice, fillAmount);
             //acc.FillOrder(order, this, fillPrice, fillAmount, partialFill, isExecutedAsClient, execReport, fillReport);
 
@@ -1001,9 +1002,9 @@ namespace TickTrader.Algo.Core
             OrderAccessor newPos = null;
             NetPositionOpenInfo netInfo = null;
 
-            if (_acc.Type == AccountTypes.Gross)
+            if (_acc.Type == AccountInfo.Types.Type.Gross)
                 newPos = CreatePositionFromOrder(BO.TradeTransReasons.PndOrdAct, order, fillPrice, fillAmount, !partialFill);
-            else if (_acc.Type == AccountTypes.Net)
+            else if (_acc.Type == AccountInfo.Types.Type.Net)
             {
                 netInfo = OpenNetPositionFromOrder(order, fillAmount, fillPrice, tradeReport);
                 //profit = netInfo.CloseInfo.BalanceMovement;
@@ -1181,7 +1182,7 @@ namespace TickTrader.Algo.Core
             position.Entity.Modified = _scheduler.UnsafeVirtualTimePoint;
             position.Entity.Expiration = null;
 
-            if (_acc.AccountingType == BO.AccountingTypes.Gross && position.Entity.TakeProfit.HasValue)
+            if (_acc.Type == AccountInfo.Types.Type.Gross && position.Entity.TakeProfit.HasValue)
             {
                 double? currentRateBid = currentRate?.NullableBid();
                 double? currentRateAsk = currentRate?.NullableAsk();
@@ -1555,7 +1556,7 @@ namespace TickTrader.Algo.Core
                     }
                 }
             }
-            else if ((_acc.AccountingType == BO.AccountingTypes.Gross) && (record.ActivationType == BO.ActivationTypes.StopLoss || record.ActivationType == BO.ActivationTypes.TakeProfit))
+            else if ((_acc.Type == AccountInfo.Types.Type.Gross) && (record.ActivationType == BO.ActivationTypes.StopLoss || record.ActivationType == BO.ActivationTypes.TakeProfit))
             {
                 BO.TradeTransReasons trReason = BO.TradeTransReasons.DealerDecision;
                 if (record.ActivationType == BO.ActivationTypes.StopLoss)
@@ -1921,12 +1922,12 @@ namespace TickTrader.Algo.Core
                 {
                     decimal swapAmount = 0;
 
-                    if (_acc.Type == AccountTypes.Gross)
+                    if (_acc.Type == AccountInfo.Types.Type.Gross)
                     {
                         if (UpdateGrossSwaps(info, out swapAmount))
                             updated = true;
                     }
-                    else if (_acc.Type == AccountTypes.Net)
+                    else if (_acc.Type == AccountInfo.Types.Type.Net)
                     {
                         if (UpdateNetSwaps(info, out swapAmount))
                             updated = true;
@@ -2180,7 +2181,7 @@ namespace TickTrader.Algo.Core
             var currentQuote = _calcFixture.GetCurrentRateOrNull(symbolInfo.Name);
             if (currentQuote == null)
             {
-                if ((_acc.AccountingType != BO.AccountingTypes.Cash) || (orderType == OrderType.Market))
+                if ((_acc.Type != AccountInfo.Types.Type.Cash) || (orderType == OrderType.Market))
                     throw new OrderValidationError("No quote for symbol " + symbolInfo.Name, OrderCmdResultCodes.OffQuotes);
             }
 
@@ -2232,7 +2233,7 @@ namespace TickTrader.Algo.Core
             if ((orderType != OrderType.Limit) && (orderType != OrderType.Market) && (orderType != OrderType.Stop) && (orderType != OrderType.StopLimit))
                 throw new OrderValidationError("Invalid order type.", OrderCmdResultCodes.Unsupported);
 
-            if ((_acc.AccountingType == BO.AccountingTypes.Cash) &&
+            if ((_acc.Type == AccountInfo.Types.Type.Cash) &&
                 ((orderType == OrderType.Limit) || (orderType == OrderType.Stop) || (orderType == OrderType.StopLimit)) &&
                 (sl.HasValue || tp.HasValue))
                 throw new OrderValidationError("SL/TP is not supported by pending order for cash account!", OrderCmdResultCodes.Unsupported);

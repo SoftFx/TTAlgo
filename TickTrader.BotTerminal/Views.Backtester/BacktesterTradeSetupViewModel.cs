@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -98,7 +99,7 @@ namespace TickTrader.BotTerminal
 
         public IEnumerable<AccountTypes> AvailableAccountTypes { get; private set; }
         public IObservableList<string> AvailableCurrencies { get; private set; }
-        public Property<AccountTypes> SelectedAccType { get; private set; }
+        public Property<AccountInfo.Types.Type> SelectedAccType { get; private set; }
         public Validable<string> BalanceCurrency { get; private set; }
         public DoubleValidable InitialBalance { get; private set; }
         public IntValidable Leverage { get; private set; }

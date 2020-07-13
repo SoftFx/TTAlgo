@@ -86,7 +86,7 @@ namespace TickTrader.Algo.Common.Model
             _sync.Invoke(syncAction);
         }
 
-        AccountEntity IAccountInfoProvider.AccountInfo => _cache.Account.GetAccountInfo();
+        Domain.AccountInfo IAccountInfoProvider.AccountInfo => _cache.Account.GetAccountInfo();
 
         List<OrderEntity> IAccountInfoProvider.GetOrders()
         {

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.Core.Calc;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -781,7 +782,7 @@ namespace TickTrader.Algo.Core
         {
             var quote = symbol.LastQuote;
 
-            if (_account.Type != AccountTypes.Cash && (!quote.HasBid || !quote.HasAsk))
+            if (_account.Type != AccountInfo.Types.Type.Cash && (!quote.HasBid || !quote.HasAsk))
             {
                 code = OrderCmdResultCodes.OffQuotes;
                 return false;

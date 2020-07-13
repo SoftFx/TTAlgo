@@ -39,7 +39,7 @@ namespace TickTrader.Algo.Core
             CommonSettings.Leverage = 100;
             CommonSettings.InitialBalance = 10000;
             CommonSettings.BalanceCurrency = "USD";
-            CommonSettings.AccountType = AccountTypes.Gross;
+            CommonSettings.AccountType = Domain.AccountInfo.Types.Type.Gross;
 
             _control.StateUpdated += s => _sync.Send(() =>
             {

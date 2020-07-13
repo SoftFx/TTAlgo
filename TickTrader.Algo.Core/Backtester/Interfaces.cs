@@ -27,7 +27,7 @@ namespace TickTrader.Algo.Core
     public class CommonTestSettings
     {
         public string MainSymbol { get; set; }
-        public AccountTypes AccountType { get; set; }
+        public Domain.AccountInfo.Types.Type AccountType { get; set; }
         public string BalanceCurrency { get; set; }
         public int Leverage { get; set; } = 100;
         public double InitialBalance { get; set; } = 10000;

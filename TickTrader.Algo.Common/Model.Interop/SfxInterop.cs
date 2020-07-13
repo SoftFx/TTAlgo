@@ -408,7 +408,7 @@ namespace TickTrader.Algo.Common.Model
         public event Action<Domain.SymbolInfo[]> SymbolInfo { add { } remove { } }
         public event Action<CurrencyEntity[]> CurrencyInfo { add { } remove { } }
 
-        public Task<AccountEntity> GetAccountInfo()
+        public Task<Domain.AccountInfo> GetAccountInfo()
         {
             return _tradeProxyAdapter.GetAccountInfoAsync()
                 .ContinueWith(t => Convert(t.Result));
@@ -672,13 +672,13 @@ namespace TickTrader.Algo.Common.Model
             };
         }
 
-        private static Api.AccountTypes Convert(AccountType fdkType)
+        private static Domain.AccountInfo.Types.Type Convert(AccountType fdkType)
         {
             switch (fdkType)
             {
-                case AccountType.Cash: return Algo.Api.AccountTypes.Cash;
-                case AccountType.Gross: return Algo.Api.AccountTypes.Gross;
-                case AccountType.Net: return Algo.Api.AccountTypes.Net;
+                case AccountType.Cash: return Domain.AccountInfo.Types.Type.Cash;
+                case AccountType.Gross: return Domain.AccountInfo.Types.Type.Gross;
+                case AccountType.Net: return Domain.AccountInfo.Types.Type.Net;
 
                 default: throw new ArgumentException("Unsupported account type: " + fdkType);
             }
@@ -754,24 +754,22 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private static AccountEntity Convert(AccountInfo info)
+        private static Domain.AccountInfo Convert(AccountInfo info)
         {
-            return new AccountEntity()
+            return new Domain.AccountInfo(info.Type != AccountType.Cash ? info.Balance : null, info.Currency, info.Assets.Select(Convert))
             {
                 Id = info.AccountId,
-                Balance = info.Balance ?? 0.0D,
-                BalanceCurrency = info.Currency,
                 Type = Convert(info.Type),
                 Leverage = info.Leverage ?? 1,
-                Assets = info.Assets.Select(Convert).ToArray()
             };
         }
 
-        private static AssetEntity Convert(AssetInfo info)
+        private static Domain.AssetInfo Convert(AssetInfo info)
         {
-            return new AssetEntity(info.Balance, info.Currency)
+            return new Domain.AssetInfo
             {
-                TradeVolume = info.TradeAmount
+                Currency = info.Currency,
+                Balance = info.Balance,
             };
         }
 

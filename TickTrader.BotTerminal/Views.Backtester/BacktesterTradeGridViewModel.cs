@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -23,13 +24,13 @@ namespace TickTrader.BotTerminal
             GridView = new TradeHistoryGridViewModel(new List<TransactionReport>(), profile, true);
             GridView.ConvertTimeToLocal = false;
             GridView.IsSlippageSupported = false;
-            GridView.AccType.Value = Algo.Api.AccountTypes.Gross;
+            GridView.AccType.Value = AccountInfo.Types.Type.Gross;
             GridView.SetCollection(_reports);
         }
 
         public TradeHistoryGridViewModel GridView { get; }
 
-        public void OnTesterStart(AccountTypes newAccType)
+        public void OnTesterStart(AccountInfo.Types.Type newAccType)
         {
             _reports.Clear();
             GridView.AccType.Value = newAccType;

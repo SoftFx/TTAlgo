@@ -9,20 +9,14 @@ namespace TickTrader.Algo.Core
         {
             switch (type)
             {
-                case Domain.CommissonInfo.Types.Type.PerUnit:
-                    return CommissionType.PerUnit;
-                case Domain.CommissonInfo.Types.Type.Percent:
-                    return CommissionType.Percent;
-                case Domain.CommissonInfo.Types.Type.Absolute:
-                    return CommissionType.Absolute;
-                case Domain.CommissonInfo.Types.Type.PercentageWaivedCash:
-                    return CommissionType.PercentageWaivedCash;
-                case Domain.CommissonInfo.Types.Type.PercentageWaivedEnhanced:
-                    return CommissionType.PercentageWaivedEnhanced;
-                case Domain.CommissonInfo.Types.Type.PerBond:
-                    return CommissionType.PerBond;
-                default:
-                    throw new ArgumentException($"Unsupported commission charge type: {type}");
+                case Domain.CommissonInfo.Types.Type.PerUnit: return CommissionType.PerUnit;
+                case Domain.CommissonInfo.Types.Type.Percent: return CommissionType.Percent;
+                case Domain.CommissonInfo.Types.Type.Absolute: return CommissionType.Absolute;
+                case Domain.CommissonInfo.Types.Type.PercentageWaivedCash: return CommissionType.PercentageWaivedCash;
+                case Domain.CommissonInfo.Types.Type.PercentageWaivedEnhanced: return CommissionType.PercentageWaivedEnhanced;
+                case Domain.CommissonInfo.Types.Type.PerBond: return CommissionType.PerBond;
+
+                default: throw new ArgumentException($"Unsupported commission charge type: {type}");
             }
         }
 
@@ -30,12 +24,10 @@ namespace TickTrader.Algo.Core
         {
             switch (type)
             {
-                case Domain.CommissonInfo.Types.ChargeType.PerTrade:
-                    return CommissionChargeType.PerTrade;
-                case Domain.CommissonInfo.Types.ChargeType.PerLot:
-                    return CommissionChargeType.PerLot;
-                default:
-                    throw new ArgumentException($"Unsupported commission charge type: {type}");
+                case Domain.CommissonInfo.Types.ChargeType.PerTrade: return CommissionChargeType.PerTrade;
+                case Domain.CommissonInfo.Types.ChargeType.PerLot: return CommissionChargeType.PerLot;
+
+                default: throw new ArgumentException($"Unsupported commission charge type: {type}");
             }
         }
 
@@ -43,12 +35,22 @@ namespace TickTrader.Algo.Core
         {
             switch (method)
             {
-                case Domain.CommissonInfo.Types.ChargeMethod.OneWay:
-                    return CommissionChargeMethod.OneWay;
-                case Domain.CommissonInfo.Types.ChargeMethod.RoundTurn:
-                    return CommissionChargeMethod.RoundTurn;
-                default:
-                    throw new ArgumentException($"Unsupported commission charge method: {method}");
+                case Domain.CommissonInfo.Types.ChargeMethod.OneWay: return CommissionChargeMethod.OneWay;
+                case Domain.CommissonInfo.Types.ChargeMethod.RoundTurn: return CommissionChargeMethod.RoundTurn;
+
+                default: throw new ArgumentException($"Unsupported commission charge method: {method}");
+            }
+        }
+
+        public static AccountTypes Convert(Domain.AccountInfo.Types.Type type)
+        {
+            switch (type)
+            {
+                case Domain.AccountInfo.Types.Type.Gross: return AccountTypes.Gross;
+                case Domain.AccountInfo.Types.Type.Net: return AccountTypes.Net;
+                case Domain.AccountInfo.Types.Type.Cash: return AccountTypes.Cash;
+
+                default: throw new ArgumentException($"Unsupported commission charge type: {type}");
             }
         }
     }

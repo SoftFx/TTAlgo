@@ -25,15 +25,14 @@ namespace TickTrader.Algo.Core
             builder.InvokePluginMethod((b, p) => fixture.FireModified(p), args);
         }
 
-        public AssetAccessor Update(AssetEntity entity, Dictionary<string, Currency> currencies)
+        public AssetAccessor Update(Domain.AssetInfo info, Dictionary<string, Currency> currencies)
         {
-            AssetChangeType cType;
-            return Update(entity, currencies, out cType);
+            return Update(info, currencies, out _);
         }
 
-        public AssetAccessor Update(AssetEntity entity, Dictionary<string, Currency> currencies, out AssetChangeType cType)
+        public AssetAccessor Update(Domain.AssetInfo info, Dictionary<string, Currency> currencies, out AssetChangeType cType)
         {
-            var result = fixture.Update(entity, builder.Currencies.GetOrDefault, out cType);
+            var result = fixture.Update(info, builder.Currencies.GetOrDefault, out cType);
             if (cType != AssetChangeType.NoChanges)
                 AssetChanged?.Invoke(result, cType);
             return result;
@@ -103,25 +102,25 @@ namespace TickTrader.Algo.Core
 
             public event Action<AssetModifiedEventArgs> Modified = delegate { };
 
-            public AssetAccessor Update(AssetEntity entity, Func<string, Currency> currencyInfoProvider, out AssetChangeType cType)
+            public AssetAccessor Update(Domain.AssetInfo info, Func<string, Currency> currencyInfoProvider, out AssetChangeType cType)
             {
                 AssetAccessor asset;
-                if (!assets.TryGetValue(entity.Currency, out asset))
+                if (!assets.TryGetValue(info.Currency, out asset))
                 {
-                    asset = new AssetAccessor(entity, currencyInfoProvider);
-                    assets.Add(entity.Currency, asset);
+                    asset = new AssetAccessor(info, currencyInfoProvider);
+                    assets.Add(info.Currency, asset);
                     cType = AssetChangeType.Added;
                 }
-                else if (entity.Volume <= 0)
+                else if (info.Balance <= 0)
                 {
-                    if (assets.Remove(entity.Currency))
+                    if (assets.Remove(info.Currency))
                         cType = AssetChangeType.Removed;
                     else
                         cType = AssetChangeType.NoChanges;
                 }
                 else
                 {
-                    if (asset.Update((decimal)entity.Volume))
+                    if (asset.Update((decimal)info.Balance))
                         cType = AssetChangeType.Updated;
                     else
                         cType = AssetChangeType.NoChanges;
@@ -135,7 +134,7 @@ namespace TickTrader.Algo.Core
                 AssetAccessor asset;
                 if (!assets.TryGetValue(currency, out asset))
                 {
-                    asset = new AssetAccessor(new AssetEntity(0, currency), currencyInfoProvider);
+                    asset = new AssetAccessor(new Domain.AssetInfo(0, currency), currencyInfoProvider);
                     assets.Add(currency, asset);
                     cType = AssetChangeType.Added;
                 }

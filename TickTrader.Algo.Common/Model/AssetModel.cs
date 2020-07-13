@@ -24,17 +24,16 @@ namespace TickTrader.Algo.Common.Model
             currencyInfo = currencies.GetOrDefault(currency) ?? Null.Currency;
         }
 
-        public AssetModel(AssetEntity asset, IReadOnlyDictionary<string, CurrencyEntity> currencies)
+        public AssetModel(Domain.AssetInfo asset, IReadOnlyDictionary<string, CurrencyEntity> currencies)
         {
             Currency = asset.Currency;
             currencyInfo = currencies.GetOrDefault(currency) ?? Null.Currency;
             Update(asset);
         }
 
-        private void Update(AssetEntity asset)
+        private void Update(Domain.AssetInfo asset)
         {
-            Amount = (decimal)asset.Volume;
-            TradeAmount = asset.TradeVolume;
+            Amount = (decimal)asset.Balance;
         }
 
         public string Currency
@@ -63,19 +62,6 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        public double TradeAmount
-        {
-            get { return tradeAmount; }
-            private set
-            {
-                if (tradeAmount != value)
-                {
-                    tradeAmount = value;
-                    NotifyOfPropertyChange(nameof(TradeAmount));
-                }
-            }
-        }
-
         public decimal Margin
         {
             get { return margin; }
@@ -94,9 +80,14 @@ namespace TickTrader.Algo.Common.Model
         public decimal FreeAmount => Amount - Margin;
         public decimal LockedAmount => Margin;
 
-        public Algo.Core.AssetEntity GetEntity()
+        public Domain.AssetInfo GetInfo()
         {
-            return new Algo.Core.AssetEntity((double)amount, currency);
+            return new Domain.AssetInfo((double)amount, currency);
+        }
+
+        public AssetEntity GetEntity()
+        {
+            return new AssetEntity((double)amount, currency);
         }
     }
 }

@@ -17,6 +17,7 @@ using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -462,7 +463,7 @@ namespace TickTrader.BotTerminal
 
         private void UpdateTradeSummary()
         {
-            if (Settings.AccType == AccountTypes.Gross || Settings.AccType == AccountTypes.Net)
+            if (Settings.AccType == AccountInfo.Types.Type.Gross || Settings.AccType == AccountInfo.Types.Type.Net)
                 TradeSettingsSummary.Value = string.Format("{0} {1} {2} L={3}, D={4}, {5}ms", Settings.AccType,
                     Settings.InitialBalance, Settings.BalanceCurrency, Settings.Leverage, "Default", Settings.ServerPingMs);
         }

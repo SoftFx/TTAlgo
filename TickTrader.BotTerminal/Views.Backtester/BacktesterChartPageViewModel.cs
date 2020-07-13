@@ -30,7 +30,7 @@ namespace TickTrader.BotTerminal
         private VarList<IRenderableSeriesViewModel> _mainSeriesCollection = new VarList<IRenderableSeriesViewModel>();
         private ChartNavigator _navigator = new UniformChartNavigator();
         private bool _visualizing;
-        private AccountTypes _acctype;
+        private AccountInfo.Types.Type _acctype;
         private string _mainSymbol;
         private Dictionary<string, SymbolInfo> _symbolMap;
 
@@ -148,14 +148,14 @@ namespace TickTrader.BotTerminal
             ChartControlModel.OutputGroups.Clear();
         }
 
-        public void Append(Algo.Api.AccountTypes acctype, TransactionReport trRep)
+        public void Append(AccountInfo.Types.Type acctype, TransactionReport trRep)
         {
             if (_visualizing || trRep.Symbol != _mainSymbol)
                 return;
 
             long orderId = trRep.OrderNum;
 
-            if (acctype == AccountTypes.Gross)
+            if (acctype == AccountInfo.Types.Type.Gross)
             {
                 if (trRep.ActionType == TradeExecActions.PositionClosed)
                 {
@@ -169,7 +169,7 @@ namespace TickTrader.BotTerminal
                     AddMarker(new PosMarkerKey(orderId, "b" + trRep.ActionId), trRep.CloseTime, trRep.Side == TransactionSide.Sell, closeDescription);
                 }
             }
-            else if (acctype == AccountTypes.Net)
+            else if (acctype == AccountInfo.Types.Type.Net)
             {
                 if (trRep.ActionType == TradeExecActions.OrderFilled)
                 {
@@ -187,7 +187,7 @@ namespace TickTrader.BotTerminal
         {
             _actionIdSeed++;
 
-            if (_acctype == AccountTypes.Gross)
+            if (_acctype == AccountInfo.Types.Type.Gross)
             {
                 if (tt.OrderExecAction == OrderExecAction.Filled
                     || (tt.OrderExecAction == OrderExecAction.Opened && tt.OrderUpdate.Type == OrderType.Position))
@@ -230,7 +230,7 @@ namespace TickTrader.BotTerminal
                     AddMarker(new PosMarkerKey(order.OrderNum, "c" + _actionIdSeed), order.Modified.Value, order.Side == OrderSide.Sell, closeDescription);
                 }
             }
-            else if (_acctype == AccountTypes.Net)
+            else if (_acctype == AccountInfo.Types.Type.Net)
             {
                 if (tt.OrderExecAction == OrderExecAction.Filled
                     || (tt.OrderExecAction == OrderExecAction.Opened && tt.NetPositionUpdate != null))

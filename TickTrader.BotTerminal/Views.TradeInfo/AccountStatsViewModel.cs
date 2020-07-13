@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -25,7 +26,7 @@ namespace TickTrader.BotTerminal
                 //if (account.Calc != null)
                 //    account.Calc.Updated += Calc_Updated;
                 currencyFormatStr = NumberFormat.GetCurrencyFormatString(account.BalanceDigits, account.BalanceCurrency);
-                IsStatsVisible = account.Type != AccountTypes.Cash;
+                IsStatsVisible = account.Type != AccountInfo.Types.Type.Cash;
                 NotifyOfPropertyChange(nameof(IsStatsVisible));
                 //Calc_Updated(account.Calc);
             };

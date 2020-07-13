@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -116,7 +117,7 @@ namespace TickTrader.Algo.Core
             var orderType = eReport.OrderCopy.Type;
             var instantOrder = orderType == OrderType.Market;;
 
-            if (instantOrder && accProxy.Type == AccountTypes.Gross) // workaround for Gross accounts
+            if (instantOrder && accProxy.Type == AccountInfo.Types.Type.Gross) // workaround for Gross accounts
             {
                 eReport.OrderCopy.Type = OrderType.Position;
                 if (eReport.ExecAction != OrderExecAction.Canceled)
@@ -139,7 +140,7 @@ namespace TickTrader.Algo.Core
             {
                 var accProxy = context.Builder.Account;
 
-                if (accProxy.Type == Api.AccountTypes.Gross || accProxy.Type == Api.AccountTypes.Net)
+                if (accProxy.Type == AccountInfo.Types.Type.Gross || accProxy.Type == AccountInfo.Types.Type.Net)
                 {
                     accProxy.Balance = (decimal)report.Balance;
                     var currencyInfo = currencies.GetOrStub(report.CurrencyCode);
@@ -156,10 +157,10 @@ namespace TickTrader.Algo.Core
                         context.EnqueueEvent(builder => accProxy.FireBalanceDividendEvent(new BalanceDividendEventArgsImpl(report)));
                     }
                 }
-                else if (accProxy.Type == Api.AccountTypes.Cash)
+                else if (accProxy.Type == AccountInfo.Types.Type.Cash)
                 {
                     AssetChangeType assetChange;
-                    var asset = accProxy.Assets.Update(new AssetEntity(report.Balance, report.CurrencyCode), currencies, out assetChange);
+                    var asset = accProxy.Assets.Update(new Domain.AssetInfo(report.Balance, report.CurrencyCode), currencies, out assetChange);
                     var currencyInfo = currencies.GetOrStub(report.CurrencyCode);
                     if (assetChange != AssetChangeType.NoChanges)
                     {
@@ -349,7 +350,7 @@ namespace TickTrader.Algo.Core
 
             var acc = builder.Account;
 
-            if (acc.Type == Api.AccountTypes.Gross || acc.Type == Api.AccountTypes.Net)
+            if (acc.Type == AccountInfo.Types.Type.Gross || acc.Type == AccountInfo.Types.Type.Net)
             {
                 var newBalance = (decimal?)eReport.NewBalance;
 
@@ -359,7 +360,7 @@ namespace TickTrader.Algo.Core
                     context.EnqueueEvent(b => acc.FireBalanceUpdateEvent());
                 }
             }
-            else if (acc.Type == Api.AccountTypes.Cash)
+            else if (acc.Type == AccountInfo.Types.Type.Cash)
             {
                 if (eReport.Assets != null)
                 {
@@ -367,7 +368,7 @@ namespace TickTrader.Algo.Core
                     foreach (var asset in eReport.Assets)
                     {
                         AssetChangeType assetChange;
-                        var assetModel = acc.Assets.Update(new AssetEntity(asset.Volume, asset.Currency), currencies, out assetChange);
+                        var assetModel = acc.Assets.Update(new Domain.AssetInfo(asset.Volume, asset.Currency), currencies, out assetChange);
                         if (assetChange != AssetChangeType.NoChanges)
                         {
                             hasChanges = true;

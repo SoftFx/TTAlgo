@@ -27,7 +27,7 @@ namespace TickTrader.Algo.Common.Model
     {
         bool AutoAccountInfo { get; }
 
-        Task<AccountEntity> GetAccountInfo();
+        Task<Domain.AccountInfo> GetAccountInfo();
         Task<PositionEntity[]> GetPositions();
 
         void GetTradeRecords(BlockingChannel<OrderEntity> rxStream);

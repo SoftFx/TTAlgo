@@ -10,6 +10,7 @@ using Machinarium.Qnil;
 using Caliburn.Micro;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -42,7 +43,7 @@ namespace TickTrader.BotTerminal
 
         public ViewModelStorageEntry StateProvider { get; private set; }
         public IObservableList<OrderViewModel> Orders { get; private set; }
-        public bool IsGrossAccount => Account.Type == AccountTypes.Gross;
+        public bool IsGrossAccount => Account.Type == AccountInfo.Types.Type.Gross;
         public bool AutoSizeColumns { get; set; }
 
         private void UpdateProvider()

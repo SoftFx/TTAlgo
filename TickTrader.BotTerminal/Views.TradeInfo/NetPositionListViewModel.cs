@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Machinarium.Qnil;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -38,9 +39,9 @@ namespace TickTrader.BotTerminal
         public ViewModelStorageEntry StateProvider { get; private set; }
         public bool AutoSizeColumns { get; set; }
 
-        protected override bool SupportsAccount(AccountTypes accType)
+        protected override bool SupportsAccount(AccountInfo.Types.Type accType)
         {
-            return accType == AccountTypes.Net;
+            return accType == AccountInfo.Types.Type.Net;
         }
 
         public IObservableList<PositionViewModel> Positions { get; private set; }

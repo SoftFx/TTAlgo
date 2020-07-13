@@ -277,7 +277,7 @@ namespace TickTrader.Algo.Core
 
             if (symbol.MarginCurrency != null)
             {
-                if (acc.Acc.AccountingType != Bo.AccountingTypes.Cash)
+                if (acc.Acc.Type != Domain.AccountInfo.Types.Type.Cash)
                 {
                     //try
                     //{
@@ -301,7 +301,7 @@ namespace TickTrader.Algo.Core
 
             if (symbol.ProfitCurrency != null)
             {
-                if (acc.Acc.AccountingType != Bo.AccountingTypes.Cash)
+                if (acc.Acc.Type != Domain.AccountInfo.Types.Type.Cash)
                 {
                     //try
                     //{

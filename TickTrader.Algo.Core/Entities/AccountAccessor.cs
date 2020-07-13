@@ -9,6 +9,7 @@ using TickTrader.Algo.Api;
 using System.Globalization;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Calc;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -27,7 +28,8 @@ namespace TickTrader.Algo.Core
         private double _dblBalance;
         private string _balanceCurrency;
         private string _id;
-        private AccountTypes _type;
+        private AccountInfo.Types.Type _type;
+        private AccountTypes _apiType;
 
         public AccountAccessor(PluginBuilder builder)
         {
@@ -102,7 +104,7 @@ namespace TickTrader.Algo.Core
         }
         public Currency BalanceCurrencyInfo { get; private set; }
         public int Leverage { get; internal set; }
-        public AccountTypes Type
+        public AccountInfo.Types.Type Type
         {
             get
             {
@@ -112,18 +114,20 @@ namespace TickTrader.Algo.Core
             internal set
             {
                 _type = value;
+                _apiType = ApiEnumConverter.Convert(value);
             }
         }
         public bool Isolated { get; set; }
         public string InstanceId { get; internal set; }
         public NumberFormatInfo BalanceCurrencyFormat { get; private set; }
 
-        public bool IsMarginType => Type == AccountTypes.Net || Type == AccountTypes.Gross;
-        public bool IsCashType => Type == AccountTypes.Cash;
+        public bool IsMarginType => Type == AccountInfo.Types.Type.Net || Type == AccountInfo.Types.Type.Gross;
+        public bool IsCashType => Type == AccountInfo.Types.Type.Cash;
 
         double IMarginAccountInfo2.Balance => _dblBalance;
+        AccountTypes AccountDataProvider.Type => _apiType;
 
-        public void Update(AccountEntity info, Dictionary<string, Currency> currencies)
+        public void Update(Domain.AccountInfo info, Dictionary<string, Currency> currencies)
         {
             Id = info.Id;
             Type = info.Type;
@@ -296,7 +300,7 @@ namespace TickTrader.Algo.Core
         #region BO
 
         long IAccountInfo2.Id => 0;
-        public BO.AccountingTypes AccountingType => TickTraderToAlgo.Convert(Type);
+        public AccountInfo.Types.Type AccountingType => Type;
         //decimal IMarginAccountInfo2.Balance => Balance;
         IEnumerable<IOrderModel2> IAccountInfo2.Orders => (IEnumerable<OrderAccessor>)Orders.OrderListImpl;
         IEnumerable<IPositionModel2> IMarginAccountInfo2.Positions => NetPositions;

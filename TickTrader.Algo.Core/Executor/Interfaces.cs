@@ -67,7 +67,7 @@ namespace TickTrader.Algo.Core
 
     public interface IAccountInfoProvider
     {
-        AccountEntity AccountInfo { get; }
+        Domain.AccountInfo AccountInfo { get; }
 
         void SyncInvoke(Action action);
 

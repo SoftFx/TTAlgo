@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Common.Model
 
         public AccountModel Acc { get; }
 
-        public void Init(AccountEntity accInfo, IEnumerable<Domain.SymbolInfo> symbols, IEnumerable<CurrencyEntity> currencies)
+        public void Init(Domain.AccountInfo accInfo, IEnumerable<Domain.SymbolInfo> symbols, IEnumerable<CurrencyEntity> currencies)
         {
             _symbols.Clear();
             _currencies.Clear();
@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Common.Model
             foreach (var s in symbols)
                 _symbols.Add(s.Name, new SymbolModel(s, _currencies));
 
-            Acc.Init(accInfo, new OrderEntity[0], new PositionEntity[0], new AssetEntity[0]);
+            Acc.Init(accInfo, new OrderEntity[0], new PositionEntity[0], new Domain.AssetInfo[0]);
             Acc.StartCalculator(this);
         }
 

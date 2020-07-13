@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 using TickTrader.BusinessLogic;
 
 namespace TickTrader.Algo.Core
@@ -12,10 +13,10 @@ namespace TickTrader.Algo.Core
     {
         private decimal _margin;
 
-        internal AssetAccessor(AssetEntity entity, Func<string, Currency> currencyInfoProvider)
+        internal AssetAccessor(AssetInfo info, Func<string, Currency> currencyInfoProvider)
         {
-            Currency = entity.Currency;
-            Volume = (decimal)entity.Volume;
+            Currency = info.Currency;
+            Volume = (decimal)info.Balance;
             CurrencyInfo = currencyInfoProvider(Currency) ?? new NullCurrency(Currency);
         }
 

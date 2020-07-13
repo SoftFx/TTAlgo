@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -94,13 +95,13 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public static TransactionReport Create(AccountTypes accountType, TradeReportEntity tTransaction, int balanceDigits, SymbolModel symbol = null)
+        public static TransactionReport Create(AccountInfo.Types.Type accountType, TradeReportEntity tTransaction, int balanceDigits, SymbolModel symbol = null)
         {
             switch (accountType)
             {
-                case AccountTypes.Gross: return new GrossTransactionModel(tTransaction, symbol, balanceDigits);
-                case AccountTypes.Net: return new NetTransactionModel(tTransaction, symbol, balanceDigits);
-                case AccountTypes.Cash: return new CashTransactionModel(tTransaction, symbol, balanceDigits);
+                case AccountInfo.Types.Type.Gross: return new GrossTransactionModel(tTransaction, symbol, balanceDigits);
+                case AccountInfo.Types.Type.Net: return new NetTransactionModel(tTransaction, symbol, balanceDigits);
+                case AccountInfo.Types.Type.Cash: return new CashTransactionModel(tTransaction, symbol, balanceDigits);
                 default: throw new NotSupportedException(accountType.ToString());
             }
         }
