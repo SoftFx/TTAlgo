@@ -97,7 +97,7 @@ namespace TickTrader.BotTerminal
 
         #region Account & Balance
 
-        public IEnumerable<AccountTypes> AvailableAccountTypes { get; private set; }
+        public IEnumerable<AccountInfo.Types.Type> AvailableAccountTypes { get; private set; }
         public IObservableList<string> AvailableCurrencies { get; private set; }
         public Property<AccountInfo.Types.Type> SelectedAccType { get; private set; }
         public Validable<string> BalanceCurrency { get; private set; }
@@ -113,7 +113,7 @@ namespace TickTrader.BotTerminal
             SelectedAccType = _proprs.AddProperty(settings.AccType);
             BalanceCurrency = _proprs.AddValidable(settings.BalanceCurrency);
 
-            AvailableAccountTypes = new AccountTypes[] { AccountTypes.Gross, AccountTypes.Net };
+            AvailableAccountTypes = new AccountInfo.Types.Type[] { AccountInfo.Types.Type.Gross, AccountInfo.Types.Type.Net };
             AvailableCurrencies = currencies;
 
             BalanceCurrency.Value = settings.BalanceCurrency ?? GetDefaultCurrency(currencies);

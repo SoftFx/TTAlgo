@@ -31,7 +31,7 @@ message AccountInfoResponse {
     AccountInfo account = 1;
 }
 
-message Order {
+message OrderInfo {
 
     enum Type {
         MARKET = 0;
