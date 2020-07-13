@@ -125,7 +125,14 @@ namespace TickTrader.Algo.Core
         public bool IsCashType => Type == AccountInfo.Types.Type.Cash;
 
         double IMarginAccountInfo2.Balance => _dblBalance;
-        AccountTypes AccountDataProvider.Type => _apiType;
+        AccountTypes AccountDataProvider.Type
+        {
+            get
+            {
+                OnTradeInfoAccess();
+                return _apiType;
+            }
+        }
 
         public void Update(Domain.AccountInfo info, Dictionary<string, Currency> currencies)
         {

@@ -44,7 +44,9 @@ namespace TickTrader.Algo.Core
 
         public void ConfigureRuntime()
         {
+            var provider = new RuntimeInfoProvider(Handler, Core.AccInfoProvider);
             Core.Metadata = Handler;
+            Core.AccInfoProvider = provider;
         }
 
 

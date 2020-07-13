@@ -61,6 +61,8 @@ namespace TickTrader.Algo.Core
                 return CurrencyListRequestHandler();
             else if (payload.Is(SymbolListRequest.Descriptor))
                 return SymbolListRequestHandler();
+            else if (payload.Is(AccountInfoRequest.Descriptor))
+                return AccountInfoRequestHandler();
             return null;
         }
 
@@ -78,6 +80,13 @@ namespace TickTrader.Algo.Core
         {
             var response = new SymbolListResponse();
             response.Symbols.Add(_executor.Metadata.GetSymbolMetadata());
+            return Any.Pack(response);
+        }
+
+        private Any AccountInfoRequestHandler()
+        {
+            var response = new AccountInfoResponse();
+            response.Account = _executor.AccInfoProvider.AccountInfo;
             return Any.Pack(response);
         }
     }
