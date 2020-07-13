@@ -296,11 +296,8 @@ namespace TickTrader.Algo.Core.Calc
 
         private void InitRounding()
         {
-            ICurrencyInfo curr = _market.GetCurrencyOrThrow(Info.BalanceCurrency);
-            if (curr != null && curr.Precision >= 0)
-                RoundingDigits = curr.Precision;
-            else
-                RoundingDigits = 2;
+            var curr = _market.GetCurrencyOrThrow(Info.BalanceCurrency);
+            RoundingDigits = curr != null && curr.Digits >= 0 ? curr.Digits : 2;
         }
     }
 }

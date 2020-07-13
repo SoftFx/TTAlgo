@@ -9,12 +9,7 @@ namespace TickTrader.Algo.Core.Lib
 {
     public static class FormatExtentions
     {
-        public static NumberFormatInfo CreateTradeFormatInfo(int digits)
-        {
-            var format = new NumberFormatInfo();
-            format.NumberDecimalDigits = digits;
-            return format;
-        }
+        public static NumberFormatInfo CreateTradeFormatInfo(int digits) => new NumberFormatInfo { NumberDecimalDigits = digits };
 
         public static string FormatPlain(this decimal number, NumberFormatInfo format)
         {

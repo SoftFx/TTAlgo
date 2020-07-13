@@ -9,13 +9,13 @@ namespace TickTrader.Algo.Core.Calc.Conversion
 {
     public class SymbolMarketNode
     {
-        public SymbolMarketNode(SymbolAccessor smb)
+        public SymbolMarketNode(ISymbolInfo2 smb)
         {
             SymbolInfo = smb;
             Rate = new QuoteEntity(smb.Name, DateTime.MinValue, (double?)null, (double?)null); // empty rate
         }
 
-        public SymbolAccessor SymbolInfo { get; }
+        public ISymbolInfo2 SymbolInfo { get; }
         public RateUpdate Rate { get; private set; }
 
         public double Ask => Rate.Ask;

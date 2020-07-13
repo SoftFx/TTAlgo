@@ -5,7 +5,17 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    public class SymbolAccessor : Api.Symbol
+    public interface ISymbolInfo2
+    {
+        string Name { get; }
+
+        string MarginCurrency { get; }
+        string ProfitCurrency { get; }
+
+        void UpdateRate(Api.Quote quote); //Update Ask, Bid, LastQuote
+    }
+
+    public class SymbolAccessor : Api.Symbol, ISymbolInfo2
     {
         private Domain.SymbolInfo _info;
         private FeedProvider feed;

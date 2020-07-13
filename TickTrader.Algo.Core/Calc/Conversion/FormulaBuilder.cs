@@ -46,7 +46,7 @@ namespace TickTrader.Algo.Core.Calc.Conversion
                 return new DivByAsk() { SrcSymbol = tracker, SrcFromula = formula };
         }
 
-        public static IConversionFormula Error(SymbolAccessor symbol, string currency, string accountCurrency)
+        public static IConversionFormula Error(ISymbolInfo2 symbol, string currency, string accountCurrency)
         {
             return new ConversionError(CalcErrorCodes.NoCrossSymbol);
         }

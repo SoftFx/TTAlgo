@@ -12,19 +12,19 @@ namespace TickTrader.Algo.Core.Calc
     public abstract class MarketStateBase
     {
         private Dictionary<Tuple<string, string>, OrderCalculator> _orderCalculators = new Dictionary<Tuple<string, string>, OrderCalculator>();
-        private Dictionary<string, CurrencyEntity> _currenciesByName = new Dictionary<string, CurrencyEntity>();
+        private Dictionary<string, ICurrencyInfo> _currenciesByName = new Dictionary<string, ICurrencyInfo>();
 
         public MarketStateBase()
         {
             Conversion = new ConversionManager(this);
         }
 
-        public IEnumerable<SymbolAccessor> Symbols { get; private set; }
-        public IEnumerable<CurrencyEntity> Currencies { get; private set; }
+        public IEnumerable<ISymbolInfo2> Symbols { get; private set; }
+        public IEnumerable<ICurrencyInfo> Currencies { get; private set; }
 
         public ConversionManager Conversion { get; }
 
-        public void Init(IEnumerable<SymbolAccessor> symbolList, IEnumerable<CurrencyEntity> currencyList)
+        public void Init(IEnumerable<ISymbolInfo2> symbolList, IEnumerable<ICurrencyInfo> currencyList)
         {
             Currencies = currencyList.ToList();
             _currenciesByName = currencyList.ToDictionary(c => c.Name);
@@ -41,7 +41,7 @@ namespace TickTrader.Algo.Core.Calc
 
         internal abstract SymbolMarketNode GetSymbolNodeInternal(string smb);
 
-        public CurrencyEntity GetCurrencyOrThrow(string name)
+        public ICurrencyInfo GetCurrencyOrThrow(string name)
         {
             var result = _currenciesByName.GetOrDefault(name);
             if (result == null)

@@ -132,7 +132,7 @@ namespace TickTrader.Algo.Core
             taskSrc.TrySetResult(response);
         }
 
-        private static bool SingleReponseHandler<T>(TaskCompletionSource<T> taskSrc, Any payload) where T : IMessage, new()
+        private bool SingleReponseHandler<T>(TaskCompletionSource<T> taskSrc, Any payload) where T : IMessage, new()
         {
             if (!TryHandleError(taskSrc, payload))
                 TrySetResult(taskSrc, payload);

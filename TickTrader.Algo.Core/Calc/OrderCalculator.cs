@@ -20,7 +20,7 @@ namespace TickTrader.Algo.Core.Calc
             PositiveProfitConversionRate = conversion.GetPositiveProfitFormula(tracker, accountCurrency);
             NegativeProfitConversionRate = conversion.GetNegativeProfitFormula(tracker, accountCurrency);
             MarginConversionRate = conversion.GetMarginFormula(tracker, accountCurrency);
-            SymbolInfo = tracker.SymbolInfo;
+            SymbolInfo = (SymbolAccessor)tracker.SymbolInfo;
 
             //if (this.SymbolInfo == null)
             //    throw new SymbolConfigException("Cannot find configuration for symbol " + this.symbol + ".");
