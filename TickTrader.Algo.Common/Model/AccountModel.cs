@@ -629,7 +629,7 @@ namespace TickTrader.Algo.Common.Model
             public void Apply(EntityCache cache)
             {
                 var acc = cache.Account;
-                acc.UpdateBalance(_report.Balance, _report.CurrencyCode);
+                acc.UpdateBalance(_report.Balance, _report.Currency);
                 acc.BalanceUpdate?.Invoke(_report);
             }
         }

@@ -32,7 +32,6 @@ message AccountInfoResponse {
 }
 
 message OrderInfo {
-
     enum Type {
         MARKET = 0;
         POSITION = 1;
@@ -54,4 +53,135 @@ message OrderInfo {
         HIDDEN_ICEBERG = 4;
     }
 
+    string id = 1;
+    string symbol = 2;
+    Type initial_type = 3;
+    Type type = 4;
+    Side side = 5;
+    double requested_volume = 6;
+    double remaining_volume = 7;
+    google.protobuf.DoubleValue max_visible_volume = 8;
+    google.protobuf.DoubleValue price = 9;
+    google.protobuf.DoubleValue stop_price = 10;
+    google.protobuf.DoubleValue stop_loss = 11;
+    google.protobuf.DoubleValue take_profit = 12;
+    google.protobuf.Timestamp expiration = 13;
+    google.protobuf.Timestamp created = 14;
+    google.protobuf.Timestamp modified = 15;
+    string comment = 16;
+    string user_tag = 17;
+    string instance_id = 18;
+    google.protobuf.DoubleValue exec_price = 19;
+    google.protobuf.DoubleValue exec_volume = 20;
+    google.protobuf.DoubleValue last_fill_price = 21;
+    google.protobuf.DoubleValue last_fill_volume = 22;
+    double swap = 23;
+    double commission = 24;
+    int32 options_bitmask = 25;
+}
+
+message OrderListRequest { }
+
+message OrderListResponse {
+    repeated OrderInfo orders = 1;
+    bool is_final = 2;
+}
+
+message PositionInfo {
+    string id = 1;
+    string symbol = 2;
+    OrderInfo.Side side = 3;
+    double volume = 4;
+    double price = 5;
+    double commission = 6;
+    double swap = 7;
+    google.protobuf.Timestamp modified = 8;
+}
+
+message PositionListRequest { }
+
+message PositionListResponse {
+    repeated PositionInfo positions = 1;
+    bool is_final = 2;
+}
+
+message BalanceOperation {
+    enum Type {
+        DepositWithdrawal = 0;
+        Divident = 1;
+    }
+
+    double transactionAmount = 1;
+    string currency = 2;
+    double balance = 3;
+    Type type = 4;
+}
+
+message OrderExecReport {
+    enum ExecAction {
+        NONE = 0;
+        OPENED = 1;
+        MODIFIED = 2;
+        CANCELED = 3;
+        CLOSED = 4;
+        FILLED = 5;
+        EXPIRED = 6;
+        REJECTED = 7;
+        ACTIVATED = 8;
+        SPLITTED = 9;
+    }
+
+    enum EntityAction {
+        NO_ACTION = 0;
+        ADDED = 1;
+        UPDATED = 2;
+        REMOVED = 3;
+    }
+
+    enum CmdResultCode {
+        OK = 0;
+        UNKNOWN_ERROR = 1;
+        INTERNAL_ERROR = 5;
+        CONNECTION_ERROR = 6;
+        TIMEOUT = 7;
+        TRADE_SERVER_ERROR = 8;
+        DEALER_REJECT = 100;
+        UNSUPPORTED = 101;
+        SYMBOL_NOT_FOUND = 102;
+        ORDER_NOT_FOUND = 103;
+        INCORRECT_VOLUME = 104;
+        OFF_QUOTES = 105;
+        INCORRECT_ORDER_ID = 106;
+        INCORRECT_PRICE = 107;
+        INCORRECT_TP = 108;
+        INCORRECT_SL = 109;
+        NOT_ENOUGH_MONEY = 110;
+        TRADE_NOT_ALLOWED = 111;
+        INCORRECT_STOP_PRICE = 112;
+        INCORRECT_MAX_VISIBLE_VOLUME = 113;
+        INCORRECT_EXPIRATION = 114;
+        DEALING_TIMEOUT = 115;
+        MISCONFIGURATION = 116;
+        ORDER_LOCKED = 117;
+        INCORRECT_PRICE_PRECISION = 118;
+        CLOSE_ONLY_TRADING = 119;
+        MARKET_WITH_MAX_VISIBLE_VOLUME = 120;
+        INVALID_AMOUNT_CHANGE = 121;
+        CANNOT_BE_MODIFIED = 122;
+        MAX_VISIBLE_VOLUME_NOT_SUPPORTED = 123;
+        READ_ONLY_ACCOUNT = 124;
+        INCORRECT_SLIPPAGE = 125;
+    }
+
+    google.protobuf.StringValue operation_id = 1;
+    CmdResultCode result_code = 2;
+    OrderInfo order_copy = 3;
+    ExecAction exec_action = 4;
+    EntityAction entity_action = 5;
+    PositionInfo net_position_copy = 6;
+}
+
+message PositionExecReport {
+    PositionInfo position_copy = 1;
+    OrderExecReport.ExecAction exec_action = 2;
 }

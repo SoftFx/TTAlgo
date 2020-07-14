@@ -9,14 +9,14 @@ namespace TickTrader.Algo.Core
         public BalanceOperationReport(double balance, string currency, double amount, BalanceOperationType type)
         {
             Balance = balance;
-            CurrencyCode = currency;
-            Amount = amount;
+            Currency = currency;
+            TransactionAmount = amount;
             Type = type;
         }
 
         public double Balance { get; set; }
-        public string CurrencyCode { get; set; }
-        public double Amount { get; set; }
+        public string Currency { get; set; }
+        public double TransactionAmount { get; set; }
         public BalanceOperationType Type { get; set; }
     }
 
@@ -24,15 +24,15 @@ namespace TickTrader.Algo.Core
     {
         public double Balance { get; set; }
 
-        public string Symbol { get; set; }
+        public string Currency { get; set; }
 
-        public double Amount { get; set; }
+        public double TransactionAmount { get; set; }
 
         public BalanceDividendEventArgsImpl(BalanceOperationReport report)
         {
             Balance = report.Balance;
-            Symbol = report.CurrencyCode;
-            Amount = report.Amount;
+            Currency = report.Currency;
+            TransactionAmount = report.TransactionAmount;
         }
     }
 

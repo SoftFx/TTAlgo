@@ -143,30 +143,30 @@ namespace TickTrader.Algo.Core
                 if (accProxy.Type == AccountInfo.Types.Type.Gross || accProxy.Type == AccountInfo.Types.Type.Net)
                 {
                     accProxy.Balance = (decimal)report.Balance;
-                    var currencyInfo = currencies.GetOrStub(report.CurrencyCode);
+                    var currencyInfo = currencies.GetOrStub(report.Currency);
 
                     if (report.Type == BalanceOperationType.DepositWithdrawal)
                     {
-                        context.Logger.NotifyDespositWithdrawal(report.Amount, (CurrencyEntity)accProxy.BalanceCurrencyInfo);
+                        context.Logger.NotifyDespositWithdrawal(report.TransactionAmount, (CurrencyEntity)accProxy.BalanceCurrencyInfo);
                         context.EnqueueEvent(builder => accProxy.FireBalanceUpdateEvent());
                     }
 
                     if (report.Type == BalanceOperationType.Dividend)
                     {
-                        context.Logger.NotifyDividend(report.Amount, currencyInfo.Name, ((CurrencyEntity)currencyInfo).Format);
+                        context.Logger.NotifyDividend(report.TransactionAmount, currencyInfo.Name, ((CurrencyEntity)currencyInfo).Format);
                         context.EnqueueEvent(builder => accProxy.FireBalanceDividendEvent(new BalanceDividendEventArgsImpl(report)));
                     }
                 }
                 else if (accProxy.Type == AccountInfo.Types.Type.Cash)
                 {
                     AssetChangeType assetChange;
-                    var asset = accProxy.Assets.Update(new Domain.AssetInfo(report.Balance, report.CurrencyCode), currencies, out assetChange);
-                    var currencyInfo = currencies.GetOrStub(report.CurrencyCode);
+                    var asset = accProxy.Assets.Update(new Domain.AssetInfo(report.Balance, report.Currency), currencies, out assetChange);
+                    var currencyInfo = currencies.GetOrStub(report.Currency);
                     if (assetChange != AssetChangeType.NoChanges)
                     {
                         if (report.Type == BalanceOperationType.DepositWithdrawal)
                         {
-                            context.Logger.NotifyDespositWithdrawal(report.Amount, (CurrencyEntity)currencyInfo);
+                            context.Logger.NotifyDespositWithdrawal(report.TransactionAmount, (CurrencyEntity)currencyInfo);
                             context.EnqueueEvent(builder => accProxy.Assets.FireModified(new AssetUpdateEventArgsImpl(asset)));
                             context.EnqueueEvent(builder => accProxy.FireBalanceUpdateEvent());
                         }

@@ -1,5 +1,7 @@
-﻿using Google.Protobuf.WellKnownTypes;
+﻿using Google.Protobuf.Collections;
+using Google.Protobuf.WellKnownTypes;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Rpc
@@ -47,6 +49,41 @@ namespace TickTrader.Algo.Rpc
         public bool OnNext(Any payload)
         {
             return ResponseHandler(TaskSrc, payload);
+        }
+    }
+
+    public class RpcListResponseTaskContext<T> : IRpcResponseContext, IObserver<RepeatedField<T>>
+    {
+        private List<T> _list;
+
+        public TaskCompletionSource<List<T>> TaskSrc { get; }
+
+        Func<IObserver<RepeatedField<T>>, Any, bool> ResponseHandler { get; }
+
+        public RpcListResponseTaskContext(Func<IObserver<RepeatedField<T>>, Any, bool> responseHandler)
+        {
+            TaskSrc = new TaskCompletionSource<List<T>>();
+            ResponseHandler = responseHandler;
+        }
+
+        public bool OnNext(Any payload)
+        {
+            return ResponseHandler(this, payload);
+        }
+
+        public void OnCompleted()
+        {
+            TaskSrc.TrySetResult(_list);
+        }
+
+        public void OnError(Exception error)
+        {
+            TaskSrc.TrySetException(error);
+        }
+
+        public void OnNext(RepeatedField<T> items)
+        {
+            _list.AddRange(items);
         }
     }
 }

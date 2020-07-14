@@ -1,4 +1,5 @@
 ﻿using Google.Protobuf;
+using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
@@ -32,7 +33,7 @@ namespace TickTrader.Algo.Core
 
         IEnumerable<CurrencyEntity> IPluginMetadata.GetCurrencyMetadata()
         {
-            var context = new RpcResponseTaskContext<CurrencyListResponse>(CurrencyListResponseHandler);
+            var context = new RpcResponseTaskContext<CurrencyListResponse>(SingleReponseHandler);
             _session.Ask(RpcMessage.Request(new CurrencyListRequest()), context);
             var res = context.TaskSrc.Task.GetAwaiter().GetResult();
             return res.Currencies.Select(c => new CurrencyEntity(c));
@@ -40,7 +41,7 @@ namespace TickTrader.Algo.Core
 
         IEnumerable<SymbolInfo> IPluginMetadata.GetSymbolMetadata()
         {
-            var context = new RpcResponseTaskContext<SymbolListResponse>(SymbolListResponseHandler);
+            var context = new RpcResponseTaskContext<SymbolListResponse>(SingleReponseHandler);
             _session.Ask(RpcMessage.Request(new SymbolListRequest()), context);
             var res = context.TaskSrc.Task.GetAwaiter().GetResult();
             return res.Symbols;
@@ -84,58 +85,50 @@ namespace TickTrader.Algo.Core
             return true;
         }
 
-        private bool CurrencyListResponseHandler(TaskCompletionSource<CurrencyListResponse> taskSrc, Any payload)
-        {
-            if (TryHandleError(taskSrc, payload))
-                return true;
-
-            var response = payload.Unpack<CurrencyListResponse>();
-            taskSrc.TrySetResult(response);
-            return true;
-        }
-
-        private bool SymbolListResponseHandler(TaskCompletionSource<SymbolListResponse> taskSrc, Any payload)
-        {
-            if (TryHandleError(taskSrc, payload))
-                return true;
-
-            var response = payload.Unpack<SymbolListResponse>();
-            taskSrc.TrySetResult(response);
-            return true;
-        }
-
-        private bool AccountInfoResponseHandler(TaskCompletionSource<AccountInfoResponse> taskSrc, Any payload)
-        {
-            if (!TryHandleError(taskSrc, payload))
-                TrySetResult(taskSrc, payload);
-
-            return true;
-        }
-
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool TryHandleError<T>(TaskCompletionSource<T> taskSrc, Any payload)
+        private static bool TryGetError(Any payload, out Exception ex)
         {
+            ex = null;
             if (payload.Is(RpcError.Descriptor))
             {
                 var error = payload.Unpack<RpcError>();
-                taskSrc.TrySetException(new Exception(error.Message));
+                ex = new Exception(error.Message);
                 return true;
             }
             return false;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void TrySetResult<T>(TaskCompletionSource<T> taskSrc, Any payload) where T : IMessage, new()
-        {
-            var response = payload.Unpack<T>();
-            taskSrc.TrySetResult(response);
-        }
-
         private bool SingleReponseHandler<T>(TaskCompletionSource<T> taskSrc, Any payload) where T : IMessage, new()
         {
-            if (!TryHandleError(taskSrc, payload))
-                TrySetResult(taskSrc, payload);
+            if (TryGetError(payload, out var ex))
+            {
+                taskSrc.TrySetException(ex);
+            }
+            else
+            {
+                var response = payload.Unpack<T>();
+                taskSrc.TrySetResult(response);
+            }
+
+            return true;
+        }
+
+        private bool ListReponseHandler<T>(IObserver<RepeatedField<T>> observer, Any payload) where T : IMessage, new()
+        {
+            if (TryGetError(payload, out var ex))
+            {
+                observer.OnError(ex);
+            }
+            else
+            {
+                var response = payload.Unpack<T>();
+                //observer.OnNext(response.Items);
+                //if (!response.IsFinal)
+                //    return false;
+
+                observer.OnCompleted();
+            }
 
             return true;
         }

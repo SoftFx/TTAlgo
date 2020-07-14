@@ -10,8 +10,8 @@ namespace TickTrader.Algo.Api
     {
         double Balance { get; set; }
 
-        string Symbol { get; set; }
+        string Currency { get; set; }
 
-        double Amount { get; set; }
+        double TransactionAmount { get; set; }
     }
 }
