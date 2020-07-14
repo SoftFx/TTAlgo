@@ -41,7 +41,7 @@ namespace TickTrader.Algo.Core
             var coreRequest = new OpenOrderCoreRequest
             {
                 Symbol = apiRequest.Symbol,
-                Type = apiRequest.Type,
+                Type = apiRequest.Type.ToCoreEnum(),
                 Side = apiRequest.Side.ToCoreEnum(),
                 VolumeLots = apiRequest.Volume,
                 MaxVisibleVolumeLots = apiRequest.MaxVisibleVolume,
@@ -258,16 +258,16 @@ namespace TickTrader.Algo.Core
             request.StopLoss = RoundPrice(request.StopLoss, smbMetadata, side);
             request.TakeProfit = RoundPrice(request.TakeProfit, smbMetadata, side);
 
-            if (type == OrderType.Market && request.Price == null)
+            if (type == Domain.OrderInfo.Types.Type.Market && request.Price == null)
             {
                 if (!TryGetMarketPrice(smbMetadata, side, out var marketPrice, ref code))
                     return;
                 request.Price = marketPrice;
             }
 
-            if (!ValidatePrice(request.Price, type == OrderType.Limit || type == OrderType.StopLimit, ref code))
+            if (!ValidatePrice(request.Price, type == Domain.OrderInfo.Types.Type.Limit || type == Domain.OrderInfo.Types.Type.StopLimit, ref code))
                 return;
-            if (!ValidateStopPrice(request.StopPrice, type == OrderType.Stop || type == OrderType.StopLimit, ref code))
+            if (!ValidateStopPrice(request.StopPrice, type == Domain.OrderInfo.Types.Type.Stop || type == Domain.OrderInfo.Types.Type.StopLimit, ref code))
                 return;
             if (!ValidateVolume(request.Volume, ref code))
                 return;
@@ -354,7 +354,7 @@ namespace TickTrader.Algo.Core
                 return;
 
             var side = orderToModify.Side.ToCoreEnum();
-            var type = orderToModify.Type;
+            var type = orderToModify.Type.ToCoreEnum();
 
             request.Symbol = orderToModify.Symbol;
             request.Type = type;
@@ -553,7 +553,7 @@ namespace TickTrader.Algo.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool ValidateMaxVisibleVolume(double? volume, OrderType orderType, ref OrderCmdResultCodes code)
+        private bool ValidateMaxVisibleVolume(double? volume, Domain.OrderInfo.Types.Type orderType, ref OrderCmdResultCodes code)
         {
             if (!volume.HasValue)
                 return true;
@@ -564,7 +564,7 @@ namespace TickTrader.Algo.Core
                 return false;
             }
 
-            if (orderType == OrderType.Market)
+            if (orderType == Domain.OrderInfo.Types.Type.Market)
             {
                 code = OrderCmdResultCodes.MarketWithMaxVisibleVolume;
                 return false;
@@ -599,12 +599,12 @@ namespace TickTrader.Algo.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool ValidateMaxVisibleVolumeLots(double? maxVisibleVolumeLots, Symbol smbMetadata, OrderType orderType, double? volumeLots, ref OrderCmdResultCodes code)
+        private bool ValidateMaxVisibleVolumeLots(double? maxVisibleVolumeLots, Symbol smbMetadata, Domain.OrderInfo.Types.Type orderType, double? volumeLots, ref OrderCmdResultCodes code)
         {
             if (!maxVisibleVolumeLots.HasValue)
                 return true;
 
-            var isIncorrectMaxVisibleVolume = orderType == OrderType.Stop
+            var isIncorrectMaxVisibleVolume = orderType == Domain.OrderInfo.Types.Type.Stop
                 || (maxVisibleVolumeLots > 0 && maxVisibleVolumeLots < smbMetadata.MinTradeVolume)
                 || maxVisibleVolumeLots > smbMetadata.MaxTradeVolume;
 
@@ -725,12 +725,12 @@ namespace TickTrader.Algo.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool ValidateOptions(OrderExecOptions? options, OrderType orderType, ref OrderCmdResultCodes code)
+        private bool ValidateOptions(OrderExecOptions? options, Domain.OrderInfo.Types.Type orderType, ref OrderCmdResultCodes code)
         {
             if (options == null)
                 return true;
 
-            var isOrderTypeCompatibleToIoC = orderType == OrderType.Limit || orderType == OrderType.StopLimit;
+            var isOrderTypeCompatibleToIoC = orderType == Domain.OrderInfo.Types.Type.Limit || orderType == Domain.OrderInfo.Types.Type.StopLimit;
 
             if (options == OrderExecOptions.ImmediateOrCancel && !isOrderTypeCompatibleToIoC)
             {

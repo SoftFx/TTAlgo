@@ -7,7 +7,7 @@ namespace TickTrader.Algo.Core
     public class OpenOrderCoreRequest : OrderCoreRequest
     {
         public string Symbol { get; set; }
-        public OrderType Type { get; set; }
+        public Domain.OrderInfo.Types.Type Type { get; set; }
         public Domain.OrderInfo.Types.Side Side { get; set; }
         public double? Price { get; set; }
         public double? StopPrice { get; set; }

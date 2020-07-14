@@ -8,7 +8,7 @@ namespace TickTrader.Algo.Core
     {
         public string OrderId { get; set; }
         public string Symbol { get; set; }
-        public OrderType Type { get; set; }
+        public Domain.OrderInfo.Types.Type Type { get; set; }
         public Domain.OrderInfo.Types.Side Side { get; set; }
         public double CurrentVolume { get; set; }
         public double CurrentVolumeLots { get; set; }

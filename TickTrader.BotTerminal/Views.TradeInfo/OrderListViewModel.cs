@@ -23,7 +23,7 @@ namespace TickTrader.BotTerminal
             : base(model, connection)
         {
             Orders = model.Orders
-                .Where((id, order) => order.OrderType != OrderType.Position)
+                .Where((id, order) => order.OrderType != Algo.Domain.OrderInfo.Types.Type.Position)
                 .OrderBy((id, order) => id)
                 .Select(o => new OrderViewModel(o, symbols.GetOrDefault(o.Symbol), model))
                 .AsObservable();

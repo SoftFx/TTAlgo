@@ -371,7 +371,7 @@ namespace TickTrader.Algo.Common.Model
                     break;
 
                 case ExecutionType.Calculated:
-                    bool ignoreCalculate = (_accType == Domain.AccountInfo.Types.Type.Gross && report.OrderType == OrderType.Market);
+                    bool ignoreCalculate = (_accType == Domain.AccountInfo.Types.Type.Gross && report.OrderType == Domain.OrderInfo.Types.Type.Market);
                     if (!ignoreCalculate)
                     {
                         if (_orders.ContainsKey(report.OrderId))
@@ -403,11 +403,11 @@ namespace TickTrader.Algo.Common.Model
                     break;
 
                 case ExecutionType.Trade:
-                    if (report.OrderType == OrderType.StopLimit)
+                    if (report.OrderType == Domain.OrderInfo.Types.Type.StopLimit)
                     {
                         return OnOrderRemoved(report, OrderExecAction.Activated);
                     }
-                    else if (report.OrderType == OrderType.Limit || report.OrderType == OrderType.Stop)
+                    else if (report.OrderType == Domain.OrderInfo.Types.Type.Limit || report.OrderType == Domain.OrderInfo.Types.Type.Stop)
                     {
                         if (report.ImmediateOrCancel)
                             return OnIocFilled(report);
@@ -420,7 +420,7 @@ namespace TickTrader.Algo.Common.Model
                         else
                             return OnOrderRemoved(report, OrderExecAction.Filled);
                     }
-                    else if (report.OrderType == OrderType.Position)
+                    else if (report.OrderType == Domain.OrderInfo.Types.Type.Position)
                     {
                         if (report.OrderStatus == OrderStatus.PartiallyFilled)
                             return OnOrderUpdated(report, OrderExecAction.Closed);
@@ -428,7 +428,7 @@ namespace TickTrader.Algo.Common.Model
                         if (report.OrderStatus == OrderStatus.Filled)
                             return OnOrderRemoved(report, OrderExecAction.Closed);
                     }
-                    else if (report.OrderType == OrderType.Market)
+                    else if (report.OrderType == Domain.OrderInfo.Types.Type.Market)
                     {
                         return OnMarketFilled(report, OrderExecAction.Filled);
                     }
@@ -445,7 +445,7 @@ namespace TickTrader.Algo.Common.Model
 
         private OrderUpdateAction OnOrderAdded(ExecutionReport report, OrderExecAction algoAction)
         {
-            if (report.OrderType == OrderType.Limit && report.ImmediateOrCancel)
+            if (report.OrderType == Domain.OrderInfo.Types.Type.Limit && report.ImmediateOrCancel)
                 return new OrderUpdateAction(report, OrderExecAction.Opened, OrderEntityAction.None);
 
             var posUpdate = new OrderUpdateAction(report, algoAction, OrderEntityAction.Added);
@@ -462,7 +462,7 @@ namespace TickTrader.Algo.Common.Model
 
         private OrderUpdateAction MockMarkedFilled(ExecutionReport report)
         {
-            report.OrderType = OrderType.Position;
+            report.OrderType = Domain.OrderInfo.Types.Type.Position;
             report.LeavesVolume = report.InitialVolume.Value;
             return new OrderUpdateAction(report, OrderExecAction.Opened, OrderEntityAction.Added);
         }
@@ -487,7 +487,7 @@ namespace TickTrader.Algo.Common.Model
             var orderUpdate = new OrderUpdateAction(report, algoAction, OrderEntityAction.Updated);
 
             // For gross stop/limit full fills: position opening is performed by updating old order, not adding new order
-            if (report.OrderType == OrderType.Position && report.ExecutionType == ExecutionType.Calculated)
+            if (report.OrderType == Domain.OrderInfo.Types.Type.Position && report.ExecutionType == ExecutionType.Calculated)
             {
                 var waitingUpdate = DequeueWatingUpdate();
                 if (waitingUpdate != null)
@@ -508,7 +508,7 @@ namespace TickTrader.Algo.Common.Model
         private OrderUpdateAction OnOrderCanceled(ExecutionReport report, OrderExecAction algoAction)
         {
             // Limit Ioc don't get into order collection
-            return new OrderUpdateAction(report, algoAction, (report.OrderType == OrderType.Limit && report.ImmediateOrCancel) ? OrderEntityAction.None : OrderEntityAction.Removed);
+            return new OrderUpdateAction(report, algoAction, (report.OrderType == Domain.OrderInfo.Types.Type.Limit && report.ImmediateOrCancel) ? OrderEntityAction.None : OrderEntityAction.Removed);
         }
 
         /// bread ration: position updates should be joined with exec reports to be atomic

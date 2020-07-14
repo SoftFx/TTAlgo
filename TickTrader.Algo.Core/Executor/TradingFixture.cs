@@ -115,11 +115,11 @@ namespace TickTrader.Algo.Core
         {
             var accProxy = context.Builder.Account;
             var orderType = eReport.OrderCopy.Type;
-            var instantOrder = orderType == OrderType.Market;;
+            var instantOrder = orderType == Domain.OrderInfo.Types.Type.Market;;
 
             if (instantOrder && accProxy.Type == AccountInfo.Types.Type.Gross) // workaround for Gross accounts
             {
-                eReport.OrderCopy.Type = OrderType.Position;
+                eReport.OrderCopy.Type = Domain.OrderInfo.Types.Type.Position;
                 if (eReport.ExecAction != OrderExecAction.Canceled)
                     eReport.Action = OrderEntityAction.Added;
             }
@@ -299,7 +299,7 @@ namespace TickTrader.Algo.Core
             }
             else if (eReport.ExecAction == OrderExecAction.Filled)
             {
-                if (eReport.OrderCopy.Type == OrderType.Market)
+                if (eReport.OrderCopy.Type == Domain.OrderInfo.Types.Type.Market)
                 {
                     // market orders are never added to orders collection. Cash account has actually limit IoC
                     var clone = new OrderAccessor(eReport.OrderCopy, _symbols.GetOrDefault, _account.Leverage);

@@ -11,8 +11,8 @@ namespace TickTrader.Algo.Common.Model
     public class OrderModel : ObservableObject //,BL.IOrderModel
     {
         private string clientOrderId;
-        private OrderType orderType;
-        private OrderType initOrderType;
+        private Domain.OrderInfo.Types.Type orderType;
+        private Domain.OrderInfo.Types.Type initOrderType;
         private decimal amount;
         private decimal amountRemaining;
         public Domain.OrderInfo.Types.Side side;
@@ -104,7 +104,7 @@ namespace TickTrader.Algo.Common.Model
             }
         }
         public decimal? RemainingAmountLots { get; private set; } = 0;
-        public OrderType OrderType
+        public Domain.OrderInfo.Types.Type OrderType
         {
             get { return orderType; }
             set
@@ -452,7 +452,7 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        public OrderType InitOrderType
+        public Domain.OrderInfo.Types.Type InitOrderType
         {
             get { return initOrderType; }
             set
@@ -569,8 +569,8 @@ namespace TickTrader.Algo.Common.Model
             this.InitOrderType = record.InitialType;
             this.Side = record.Side;
             this.MaxVisibleVolume = record.MaxVisibleVolume;
-            this.Price = (decimal?)(record.Type == OrderType.Stop || record.Type == OrderType.StopLimit ? record.StopPrice : record.Price);
-            this.LimitPrice = (decimal?)(record.Type == OrderType.StopLimit || record.Type == OrderType.Limit ? record.Price : null);
+            this.Price = (decimal?)(record.Type == Domain.OrderInfo.Types.Type.Stop || record.Type == Domain.OrderInfo.Types.Type.StopLimit ? record.StopPrice : record.Price);
+            this.LimitPrice = (decimal?)(record.Type == Domain.OrderInfo.Types.Type.StopLimit || record.Type == Domain.OrderInfo.Types.Type.Limit ? record.Price : null);
             this.StopPrice = (decimal?)record.StopPrice;
             this.Created = record.Created;
             this.Modified = record.Modified;
@@ -606,8 +606,8 @@ namespace TickTrader.Algo.Common.Model
             this.InitOrderType = report.InitialOrderType;
             this.Side = report.OrderSide;
             this.MaxVisibleVolume = report.MaxVisibleVolume.ToDecimalSafe();
-            this.Price = (report.OrderType == OrderType.Stop || report.OrderType == OrderType.StopLimit ? report.StopPrice : report.Price).ToDecimalSafe();
-            this.LimitPrice = (report.OrderType == OrderType.StopLimit || report.OrderType == OrderType.Limit ? report.Price : null).ToDecimalSafe();
+            this.Price = (report.OrderType == Domain.OrderInfo.Types.Type.Stop || report.OrderType == Domain.OrderInfo.Types.Type.StopLimit ? report.StopPrice : report.Price).ToDecimalSafe();
+            this.LimitPrice = (report.OrderType == Domain.OrderInfo.Types.Type.StopLimit || report.OrderType == Domain.OrderInfo.Types.Type.Limit ? report.Price : null).ToDecimalSafe();
             this.StopPrice = report.StopPrice.ToDecimalSafe();
             this.Created = report.Created;
             this.Modified = report.Modified;

@@ -215,7 +215,7 @@ namespace TickTrader.Algo.Core
             var calc = Calculator;
             if (calc != null)
             {
-                var margin = calc.CalculateMargin(_volUnitsSlim, _leverage, BusinessObjects.OrderTypes.Position, Side, false, out var error);
+                var margin = calc.CalculateMargin(_volUnitsSlim, _leverage, Domain.OrderInfo.Types.Type.Position, Side, false, out var error);
                 if (error != CalcErrorCodes.None)
                     return double.NaN;
                 return margin;

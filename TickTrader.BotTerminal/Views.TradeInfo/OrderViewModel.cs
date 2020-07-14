@@ -42,7 +42,7 @@ namespace TickTrader.BotTerminal
         public int ProfitDigits { get; private set; }
         public decimal? Price => Order.Price;
 
-        public RateDirectionTracker CurrentPrice => Order.OrderType != OrderType.Position ?
+        public RateDirectionTracker CurrentPrice => Order.OrderType != Algo.Domain.OrderInfo.Types.Type.Position ?
                                                     Order.Side == Algo.Domain.OrderInfo.Types.Side.Buy ? symbol?.AskTracker : symbol?.BidTracker :
                                                     Order.Side == Algo.Domain.OrderInfo.Types.Side.Buy ? symbol?.BidTracker : symbol?.AskTracker;
 

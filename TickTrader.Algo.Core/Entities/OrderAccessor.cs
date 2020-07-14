@@ -44,7 +44,7 @@ namespace TickTrader.Algo.Core
             var oldPrice = _entity.Price;
             var oldStopPrice = _entity.StopPrice;
             var oldVol = _entity.RemainingVolume;
-            var oldType = _entity.GetBlOrderType();
+            var oldType = _entity.Type;
             var oldIsHidden = _entity.IsHidden;
             _entity = entity;
             EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldVol, oldPrice, oldStopPrice, oldType, oldIsHidden));
@@ -67,7 +67,8 @@ namespace TickTrader.Algo.Core
         public double RequestedVolume => (double)_entity.RequestedVolume / _lotSize;
         public double RemainingVolume => (double)_entity.RemainingVolume / _lotSize;
         public double MaxVisibleVolume => (double?)_entity.MaxVisibleVolume / _lotSize ?? double.NaN;
-        public OrderType Type => _entity.Type;
+        public Domain.OrderInfo.Types.Type Type => _entity.Type;
+        OrderType Order.Type => _entity.Type.ToApiEnum();
         OrderSide Order.Side => _entity.Side.ToApiEnum();
         public Domain.OrderInfo.Types.Side Side => _entity.Side;
         public double Price => _entity.Price ?? double.NaN;
@@ -91,7 +92,7 @@ namespace TickTrader.Algo.Core
         public OrderOptions Options => _entity.Options;
         public decimal CashMargin { get; set; }
 
-        public bool IsPending => Type == OrderType.Limit || Type == OrderType.StopLimit || Type == OrderType.Stop;
+        public bool IsPending => Type == Domain.OrderInfo.Types.Type.Limit || Type == Domain.OrderInfo.Types.Type.StopLimit || Type == Domain.OrderInfo.Types.Type.Stop;
 
         #endregion
 
@@ -103,7 +104,7 @@ namespace TickTrader.Algo.Core
         double? IOrderCalcInfo.StopPrice => Entity.StopPrice;
         SymbolAccessor IOrderModel2.SymbolInfo => _symbol;
         Domain.OrderInfo.Types.Side IOrderCalcInfo.Side => Entity.Side;
-        BO.OrderTypes IOrderCalcInfo.Type => Entity.GetBlOrderType();
+        //BO.OrderTypes IOrderCalcInfo.Type => Entity.GetBlOrderType();
 
         #endregion
 
@@ -142,7 +143,7 @@ namespace TickTrader.Algo.Core
 
         private decimal? GetDecPrice()
         {
-            double? price = (Type == OrderType.Stop) ? _entity.StopPrice : _entity.Price;
+            double? price = (Type == Domain.OrderInfo.Types.Type.Stop) ? _entity.StopPrice : _entity.Price;
             return (decimal?)price;
         }
 
@@ -154,7 +155,7 @@ namespace TickTrader.Algo.Core
         #region Emulation
 
         internal short ActionNo { get; set; }
-        internal OrderType InitialType { get => Entity.InitialType; set => Entity.InitialType = value; }
+        internal Domain.OrderInfo.Types.Type InitialType { get => Entity.InitialType; set => Entity.InitialType = value; }
         internal double? OpenConversionRate { get; set; }
         internal SymbolAccessor SymbolInfo => _symbol;
         public double? ClosePrice { get; set; }
@@ -178,13 +179,13 @@ namespace TickTrader.Algo.Core
         {
             var oldAmount = Entity.RemainingVolume;
             Entity.RemainingVolume = newAmount;
-            EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldAmount, Entity.Price, StopPrice, Entity.GetBlOrderType(), false));
+            EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldAmount, Entity.Price, StopPrice, Entity.Type, false));
         }
 
-        internal void ChangeEssentials(OrderType newType, decimal newAmount, double? newPrice, double? newStopPirce)
+        internal void ChangeEssentials(Domain.OrderInfo.Types.Type newType, decimal newAmount, double? newPrice, double? newStopPirce)
         {
             var oldPrice = Entity.Price;
-            var oldType = Entity.GetBlOrderType();
+            var oldType = Entity.Type;
             var oldAmount = Entity.RemainingVolume;
             var oldStopPrice = Entity.StopPrice;
 
@@ -294,7 +295,7 @@ namespace TickTrader.Algo.Core
 
         private double CalculateProfit()
         {
-            if (Type != OrderType.Position)
+            if (Type != Domain.OrderInfo.Types.Type.Position)
                 return double.NaN;
 
             var calc = Calculator;

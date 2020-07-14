@@ -33,39 +33,6 @@ namespace TickTrader.Algo.Core
             throw new NotImplementedException("Unsupported change type: " + cType);
         }
 
-        public static BO.OrderTypes ToBoType(this OrderType type)
-        {
-            return Convert(type);
-        }
-
-        public static BO.OrderTypes GetBlOrderType(this OrderEntity order)
-        {
-            return Convert(order.Type);
-        }
-
-        public static BO.OrderTypes Convert(OrderType apiType)
-        {
-            switch (apiType)
-            {
-                case OrderType.Limit: return BO.OrderTypes.Limit;
-                case OrderType.StopLimit: return BO.OrderTypes.StopLimit;
-                case OrderType.Market: return BO.OrderTypes.Market;
-                case OrderType.Position: return BO.OrderTypes.Position;
-                case OrderType.Stop: return BO.OrderTypes.Stop;
-                default: throw new NotImplementedException("Unknown order type: " + apiType);
-            }
-        }
-
-        public static BO.OrderSides Convert(OrderSide apiSide)
-        {
-            switch (apiSide)
-            {
-                case OrderSide.Buy: return BO.OrderSides.Buy;
-                case OrderSide.Sell: return BO.OrderSides.Sell;
-                default: throw new NotImplementedException("Unknown order side: " + apiSide);
-            }
-        }
-
         public static float CmsValue(this SymbolAccessor symbol)
         {
             return (float)symbol.Commission;

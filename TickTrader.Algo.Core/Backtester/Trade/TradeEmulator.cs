@@ -150,7 +150,7 @@ namespace TickTrader.Algo.Core
 
                             //Facade.ValidateExpirationTime(Request.Expiration, _acc);
 
-                            var order = OpenOrder(calc, request.Type, request.Side.ToCoreEnum(), volume, maxVisibleVolume, price, stopPrice, sl, tp, request.Comment, request.Options, request.Tag, request.Expiration, OpenOrderOptions.None);
+                            var order = OpenOrder(calc, request.Type.ToCoreEnum(), request.Side.ToCoreEnum(), volume, maxVisibleVolume, price, stopPrice, sl, tp, request.Comment, request.Options, request.Tag, request.Expiration, OpenOrderOptions.None);
 
                             _collector.OnOrderOpened();
 
@@ -424,7 +424,7 @@ namespace TickTrader.Algo.Core
             return (++_orderIdSeed).ToString();
         }
 
-        private OrderAccessor OpenOrder(OrderCalculator orderCalc, OrderType orderType, Domain.OrderInfo.Types.Side side, decimal volume, decimal? maxVisibleVolume, double? price, double? stopPrice,
+        private OrderAccessor OpenOrder(OrderCalculator orderCalc, Domain.OrderInfo.Types.Type orderType, Domain.OrderInfo.Types.Side side, decimal volume, decimal? maxVisibleVolume, double? price, double? stopPrice,
             double? sl, double? tp, string comment, OrderExecOptions execOptions, string tag, DateTime? expiration, OpenOrderOptions options)
         {
             var symbolInfo = orderCalc.SymbolInfo;
@@ -484,9 +484,9 @@ namespace TickTrader.Algo.Core
             //order.ReqOpenPrice = clientPrice;
             //order.ReqOpenAmount = clientAmount;
 
-            if (orderType != OrderType.Stop)
+            if (orderType != Domain.OrderInfo.Types.Type.Stop)
                 orderEntity.Price = price;
-            if (orderType == OrderType.Stop || orderType == OrderType.StopLimit)
+            if (orderType == Domain.OrderInfo.Types.Type.Stop || orderType == Domain.OrderInfo.Types.Type.StopLimit)
                 orderEntity.StopPrice = stopPrice;
 
             var order = new OrderAccessor(orderEntity, symbolInfo, _leverage);
@@ -531,16 +531,16 @@ namespace TickTrader.Algo.Core
             var fillInfo = new FillInfo();
 
             // fire API event
-            if (order.Type != OrderType.Position)
+            if (order.Type != Domain.OrderInfo.Types.Type.Position)
                 _scheduler.EnqueueEvent(b => b.Account.Orders.FireOrderOpened(new OrderOpenedEventArgsImpl(order)));
 
-            if (order.Type == OrderType.Market)
+            if (order.Type == Domain.OrderInfo.Types.Type.Market)
             {
                 // fill order
                 fillInfo = FillOrder(order, execPrice, execAmount, trReason);
                 isInstantOrder = _acc.Type != AccountInfo.Types.Type.Gross;
             }
-            else if (order.Type == OrderType.Limit && order.HasOption(OrderExecOptions.ImmediateOrCancel))
+            else if (order.Type == Domain.OrderInfo.Types.Type.Limit && order.HasOption(OrderExecOptions.ImmediateOrCancel))
             {
                 // fill order
                 fillInfo = FillOrder(order, execPrice, execAmount, trReason);
@@ -558,14 +558,14 @@ namespace TickTrader.Algo.Core
 
                 isInstantOrder = _acc.Type != AccountInfo.Types.Type.Gross;
             }
-            else if (order.Type == OrderType.Limit || order.Type == OrderType.Stop || order.Type == OrderType.StopLimit)
+            else if (order.Type == Domain.OrderInfo.Types.Type.Limit || order.Type == Domain.OrderInfo.Types.Type.Stop || order.Type == Domain.OrderInfo.Types.Type.StopLimit)
             {
                 _acc.Orders.Add(order);
                 RegisterOrder(order, currentRate);
 
                 //FinalizeOrderOperation(order, null, order.SymbolRef, acc, OrderStatuses.Calculated, OrderExecutionEvents.Allocated);
             }
-            else if (order.Type == OrderType.Position)
+            else if (order.Type == Domain.OrderInfo.Types.Type.Position)
                 throw new OrderValidationError("Invalid order type", OrderCmdResultCodes.InternalError);
             else
                 throw new OrderValidationError("Unknown order type", OrderCmdResultCodes.InternalError);
@@ -753,7 +753,7 @@ namespace TickTrader.Algo.Core
 
             var oldOrderCopy = order.Clone();
 
-            if (order.Type != OrderType.Market)
+            if (order.Type != Domain.OrderInfo.Types.Type.Market)
                 UnregisterOrder(order);
 
             var newVol = (decimal?)request.NewVolume;
@@ -786,7 +786,7 @@ namespace TickTrader.Algo.Core
 
             if (request.Price.HasValue)
             {
-                if (order.Type == OrderType.Limit || order.Type == OrderType.StopLimit)
+                if (order.Type == Domain.OrderInfo.Types.Type.Limit || order.Type == Domain.OrderInfo.Types.Type.StopLimit)
                 {
                     order.Entity.Price = request.Price.Value;
                     //order.ReqOpenPrice = request.Price.Value;
@@ -795,7 +795,7 @@ namespace TickTrader.Algo.Core
 
             if (request.StopPrice.HasValue)
             {
-                if (order.Type == OrderType.Stop || order.Type == OrderType.StopLimit)
+                if (order.Type == Domain.OrderInfo.Types.Type.Stop || order.Type == Domain.OrderInfo.Types.Type.StopLimit)
                 {
                     order.Entity.StopPrice = request.StopPrice ?? order.StopPrice;
                     //order.ReqOpenPrice = request.StopPrice.Value;
@@ -867,7 +867,7 @@ namespace TickTrader.Algo.Core
             //    }
             //}
 
-            if (order.Type != OrderType.Market)
+            if (order.Type != Domain.OrderInfo.Types.Type.Market)
                 RegisterOrder(order, currentRate);
 
             //_acc.CalculateOrder(order, infrustructure);
@@ -914,7 +914,7 @@ namespace TickTrader.Algo.Core
         // can lead to: 1) new gross position 2) net position settlement 3) asset movement
         private FillInfo FillOrder2(OrderAccessor order, double fillPrice, decimal fillAmount, BO.TradeTransReasons reason)
         {
-            if (order.Type == OrderType.Position)
+            if (order.Type == Domain.OrderInfo.Types.Type.Position)
                 throw new Exception("Order already filled #" + order.OrderId);
 
             var copy = order.Clone();
@@ -1026,7 +1026,7 @@ namespace TickTrader.Algo.Core
 
         private OrderAccessor CancelOrder(OrderAccessor order, BO.TradeTransReasons trReason)
         {
-            if (order.Type != OrderType.Limit && order.Type != OrderType.Stop && order.Type != OrderType.StopLimit)
+            if (order.Type != Domain.OrderInfo.Types.Type.Limit && order.Type != Domain.OrderInfo.Types.Type.Stop && order.Type != Domain.OrderInfo.Types.Type.StopLimit)
                 throw new OrderValidationError("Only Limit, Stop and StopLimit orders can be canceled. Please check the type of the order #" + order.OrderId, OrderCmdResultCodes.OrderNotFound);
 
             var dealerReq = new CancelOrderDealerRequest(order, order.SymbolInfo.LastQuote);
@@ -1048,7 +1048,7 @@ namespace TickTrader.Algo.Core
 
             UnregisterOrder(order);
 
-            if (order.Type != OrderType.Position)
+            if (order.Type != Domain.OrderInfo.Types.Type.Position)
             {
                 // increase reported action number
                 order.ActionNo++;
@@ -1112,8 +1112,8 @@ namespace TickTrader.Algo.Core
             OrderAccessor position;
             //TradeChargesInfo charges = new TradeChargesInfo();
             var currentRate = _calcFixture.GetCurrentRateOrNull(smb.Name);
-            var wasTmpOrder = parentOrder.Type == OrderType.Market
-                || (parentOrder.Type == OrderType.Limit && parentOrder.HasOption(OrderExecOptions.ImmediateOrCancel));
+            var wasTmpOrder = parentOrder.Type == Domain.OrderInfo.Types.Type.Market
+                || (parentOrder.Type == Domain.OrderInfo.Types.Type.Limit && parentOrder.HasOption(OrderExecOptions.ImmediateOrCancel));
 
             //if (parentOrder != null)
             //{
@@ -1163,13 +1163,13 @@ namespace TickTrader.Algo.Core
             }
 
             //position.ParentOrderId = (parentOrder != null) ? parentOrder.OrderId : position.OrderId;
-            position.InitialType = (parentOrder != null) ? parentOrder.InitialType : OrderType.Market;
+            position.InitialType = (parentOrder != null) ? parentOrder.InitialType : Domain.OrderInfo.Types.Type.Market;
 
             //position.Entity.Type = OrderType.Position;
             //position.Status = OrderStatuses.Calculated;
             //position.Entity.Price = (double)openPrice; // position open price
 
-            position.ChangeEssentials(OrderType.Position, posAmount, openPrice, null);
+            position.ChangeEssentials(Domain.OrderInfo.Types.Type.Position, posAmount, openPrice, null);
 
             // stop price for stops
             //if ((parentOrder != null) && (parentOrder.InitialType == OrderTypes.StopLimit || parentOrder.InitialType == OrderTypes.Stop))
@@ -1363,7 +1363,7 @@ namespace TickTrader.Algo.Core
             var balanceMovement = charges.Total;
             tradeReport.Entity.TransactionAmount = (double)balanceMovement;
 
-            if (fromOrder.Type == OrderType.Market || fromOrder.RemainingAmount == 0)
+            if (fromOrder.Type == Domain.OrderInfo.Types.Type.Market || fromOrder.RemainingAmount == 0)
                 _acc.Orders.Remove(fromOrder.Id);
 
             // journal;
@@ -1480,7 +1480,7 @@ namespace TickTrader.Algo.Core
                 return; // already activated
 
             //GroupSecurityCfg securityCfg = account.GetSecurityCfg(smbInfo);
-            if ((record.ActivationType == BO.ActivationTypes.Pending) && (record.Order.Type == OrderType.Stop))
+            if ((record.ActivationType == ActivationType.Pending) && (record.Order.Type == Domain.OrderInfo.Types.Type.Stop))
             {
                 //bool needCancelation = false;
 
@@ -1526,9 +1526,9 @@ namespace TickTrader.Algo.Core
 
             var fillInfo = new FillInfo();
 
-            if (record.ActivationType == BO.ActivationTypes.Pending)
+            if (record.ActivationType == ActivationType.Pending)
             {
-                if (record.Order.Type == OrderType.StopLimit)
+                if (record.Order.Type == Domain.OrderInfo.Types.Type.StopLimit)
                 {
                     ActivateStopLimitOrder(record.Order, BO.TradeTransReasons.PndOrdAct);
 
@@ -1556,12 +1556,12 @@ namespace TickTrader.Algo.Core
                     }
                 }
             }
-            else if ((_acc.Type == AccountInfo.Types.Type.Gross) && (record.ActivationType == BO.ActivationTypes.StopLoss || record.ActivationType == BO.ActivationTypes.TakeProfit))
+            else if ((_acc.Type == AccountInfo.Types.Type.Gross) && (record.ActivationType == ActivationType.StopLoss || record.ActivationType == ActivationType.TakeProfit))
             {
                 BO.TradeTransReasons trReason = BO.TradeTransReasons.DealerDecision;
-                if (record.ActivationType == BO.ActivationTypes.StopLoss)
+                if (record.ActivationType == ActivationType.StopLoss)
                     trReason = BO.TradeTransReasons.StopLossAct;
-                else if (record.ActivationType == BO.ActivationTypes.TakeProfit)
+                else if (record.ActivationType == ActivationType.TakeProfit)
                     trReason = BO.TradeTransReasons.TakeProfitAct;
 
                 var smb = _context.Builder.Symbols.GetOrDefault(record.Order.Symbol);
@@ -1597,7 +1597,7 @@ namespace TickTrader.Algo.Core
             //    report.FillAccountBalanceConversionRates(mAcc.BalanceCurrency, mAcc.Balance);
             //}
 
-            OpenOrder(order.Calculator, OrderType.Limit, order.Side, order.Entity.RemainingVolume, null, order.Price,
+            OpenOrder(order.Calculator, Domain.OrderInfo.Types.Type.Limit, order.Side, order.Entity.RemainingVolume, null, order.Price,
                 order.StopPrice, order.StopLoss, order.TakeProfit, order.Comment, order.Entity.Options.ToExec(), order.Entity.UserTag, order.Expiration, OpenOrderOptions.SkipDealing);
         }
 
@@ -1828,7 +1828,7 @@ namespace TickTrader.Algo.Core
 
         private void CloseAllPositions(BO.TradeTransReasons reason)
         {
-            var toClose = _acc.Orders.Where(o => o.Type == OrderType.Position).ToList();
+            var toClose = _acc.Orders.Where(o => o.Type == Domain.OrderInfo.Types.Type.Position).ToList();
 
             if (toClose.Count > 0)
             {
@@ -1851,7 +1851,7 @@ namespace TickTrader.Algo.Core
                 {
                     using (JournalScope())
                     {
-                        OpenOrder(pos.Calculator, OrderType.Market, pos.Side.Revert(), pos.VolumeUnits, null, null, null, null, null, "",
+                        OpenOrder(pos.Calculator, Domain.OrderInfo.Types.Type.Market, pos.Side.Revert(), pos.VolumeUnits, null, null, null, null, null, "",
                             OrderExecOptions.None, null, null, OpenOrderOptions.SkipDealing | OpenOrderOptions.FakeOrder);
                     }
                 }
@@ -1952,7 +1952,7 @@ namespace TickTrader.Algo.Core
 
             if (smbInfo.SwapEnabled)
             {
-                var positions = _acc.Orders.Where(o => o.Type == OrderType.Position && o.Symbol == smbInfo.Name).ToList(); // Perf. warning: .ToList()
+                var positions = _acc.Orders.Where(o => o.Type == Domain.OrderInfo.Types.Type.Position && o.Symbol == smbInfo.Name).ToList(); // Perf. warning: .ToList()
 
                 if (positions != null)
                 {
@@ -2336,7 +2336,7 @@ namespace TickTrader.Algo.Core
 
         private void EnsureOrderIsPosition(OrderAccessor order)
         {
-            if (order.Type != OrderType.Position)
+            if (order.Type != Domain.OrderInfo.Types.Type.Position)
                 throw new OrderValidationError("Position #" + order.OrderId + " was not found.", OrderCmdResultCodes.OrderNotFound);
         }
 

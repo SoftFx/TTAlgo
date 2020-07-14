@@ -131,11 +131,11 @@ namespace TickTrader.BotTerminal
                 case OrderExecAction.Opened:
                     switch (order.OrderType)
                     {
-                        case OrderType.Position:
+                        case Algo.Domain.OrderInfo.Types.Type.Position:
                             _journal.Trading($"Order #{order.Id} was opened: {order.Side} {order.Symbol} {order.RemainingAmountLots} lots at {order.Price}");
                             break;
-                        case OrderType.Limit:
-                        case OrderType.Stop:
+                        case Algo.Domain.OrderInfo.Types.Type.Limit:
+                        case Algo.Domain.OrderInfo.Types.Type.Stop:
                             _journal.Trading($"Order #{order.Id} was placed: {order.Side} {order.OrderType} {order.Symbol} {order.RemainingAmountLots} lots at {order.Price}");
                             break;
                     }
@@ -143,17 +143,17 @@ namespace TickTrader.BotTerminal
                 case OrderExecAction.Modified:
                     switch (order.OrderType)
                     {
-                        case OrderType.Position:
+                        case Algo.Domain.OrderInfo.Types.Type.Position:
                             _journal.Trading($"Order #{order.Id} was modified: {order.Side} {order.Symbol} {order.RemainingAmountLots} lots at {order.Price}");
                             break;
-                        case OrderType.Limit:
-                        case OrderType.Stop:
+                        case Algo.Domain.OrderInfo.Types.Type.Limit:
+                        case Algo.Domain.OrderInfo.Types.Type.Stop:
                             _journal.Trading($"Order #{order.Id} was modified: {order.Side} {order.OrderType} {order.Symbol} {order.RemainingAmountLots} lots at {order.Price}");
                             break;
                     }
                     break;
                 case OrderExecAction.Closed:
-                    if (order.OrderType == Algo.Api.OrderType.Position)
+                    if (order.OrderType == Algo.Domain.OrderInfo.Types.Type.Position)
                     {
                         _journal.Trading($"Order #{order.Id} was closed: {order.Side} {order.Symbol} {order.LastFillAmountLots} lots at {order.LastFillPrice}");
                     }

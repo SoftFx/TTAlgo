@@ -161,12 +161,12 @@ namespace TickTrader.BotTerminal
                 case OrderExecAction.Opened:
                     switch (order.Type)
                     {
-                        case OrderType.Position:
+                        case Algo.Domain.OrderInfo.Types.Type.Position:
                             header = $"Order {obj.OrderId} Filled at {obj.OrderCopy.Price}";
                             body = $"Your request to {order.Side} {order.LastFillVolume} lots of {order.Symbol} was filled at {order.LastFillPrice}. Order #{order.Id}";
                             break;
-                        case OrderType.Limit:
-                        case OrderType.Stop:
+                        case Algo.Domain.OrderInfo.Types.Type.Limit:
+                        case Algo.Domain.OrderInfo.Types.Type.Stop:
                             header = $"Order {obj.OrderId} Placed at {order.Price}";
                             body = $"Your order #{order.Id} {order.Side} {order.Type} order for {order.RemainingVolume} lots of {order.Symbol} at {order.Price} was placed.";
                             break;
@@ -175,19 +175,19 @@ namespace TickTrader.BotTerminal
                 case OrderExecAction.Modified:
                     switch (order.Type)
                     {
-                        case OrderType.Position:
+                        case Algo.Domain.OrderInfo.Types.Type.Position:
                             header = $"Order {obj.OrderId} Modified";
                             body = $"Order #{order.Id} {order.Side} {order.RemainingVolume} lots of {order.Symbol} at {order.Price} was modified.";
                             break;
-                        case OrderType.Limit:
-                        case OrderType.Stop:
+                        case Algo.Domain.OrderInfo.Types.Type.Limit:
+                        case Algo.Domain.OrderInfo.Types.Type.Stop:
                             header = $"Order {obj.OrderId} Modified";
                             body = $"Order #{order.Id} {order.Side} {order.Type} {order.RemainingVolume} lots of {order.Symbol} at {order.Price} was modified.";
                             break;
                     }
                     break;
                 case OrderExecAction.Closed:
-                    if (order.Type == Algo.Api.OrderType.Position)
+                    if (order.Type == Algo.Domain.OrderInfo.Types.Type.Position)
                     {
                         header = $"Order {obj.OrderId} Filled at {order.Price}";
                         body = $"Your request to close position #{order.Id} {order.Side} {order.RemainingVolume} lots of {order.Symbol} was filled at {order.LastFillPrice}.";

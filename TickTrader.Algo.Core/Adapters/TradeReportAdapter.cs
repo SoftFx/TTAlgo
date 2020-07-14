@@ -46,7 +46,8 @@ namespace TickTrader.Algo.Core
         public double NetProfitLoss => Entity.NetProfitLoss;
         public Domain.OrderInfo.Types.Side TradeRecordSide => Entity.TradeRecordSide;
         OrderSide TradeReport.TradeRecordSide => Entity.TradeRecordSide.ToApiEnum();
-        public OrderType TradeRecordType => Entity.TradeRecordType;
+        public Domain.OrderInfo.Types.Type TradeRecordType => Entity.TradeRecordType;
+        OrderType TradeReport.TradeRecordType => Entity.TradeRecordType.ToApiEnum();
         public double? MaxVisibleQuantity => Entity.MaxVisibleQuantity;
         public string Tag => Entity.Tag;
         public double? Slippage => Entity.Slippage;
@@ -94,7 +95,7 @@ namespace TickTrader.Algo.Core
             Entity.TakeProfit = order.TakeProfit;
             //TransferringCoefficient = order.TransferringCoefficient;
 
-            if (order.Type == OrderType.Position)
+            if (order.Type == Domain.OrderInfo.Types.Type.Position)
             {
                 Entity.PositionId = order.Id;
                 //Entity.OrderId = order.ParentOrderId ?? -1;

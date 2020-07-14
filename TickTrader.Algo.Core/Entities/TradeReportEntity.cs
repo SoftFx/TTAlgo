@@ -41,7 +41,7 @@ namespace TickTrader.Algo.Core
         public double? DstAssetMovement { get; set; }
         public double PositionLeavesQuantity { get; set; }
         public Domain.OrderInfo.Types.Side TradeRecordSide { get; set; }
-        public OrderType TradeRecordType { get; set; }
+        public Domain.OrderInfo.Types.Type TradeRecordType { get; set; }
         public double StopPrice { get; set; }
         public double Price { get; set; }
         public double LeavesQuantity { get; set; }
@@ -54,7 +54,7 @@ namespace TickTrader.Algo.Core
         public string Tag { get; set; }
         public double PositionQuantity { get; set; }
         public double PosOpenPrice { get; set; }
-        public OrderType ReqOrderType { get; set; }
+        public Domain.OrderInfo.Types.Type ReqOrderType { get; set; }
         public double? SplitRatio { get; set; }
         public double Tax { get; set; }
         public double? Slippage { get; set; }

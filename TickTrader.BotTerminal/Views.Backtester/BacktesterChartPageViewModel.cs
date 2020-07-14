@@ -190,7 +190,7 @@ namespace TickTrader.BotTerminal
             if (_acctype == AccountInfo.Types.Type.Gross)
             {
                 if (tt.OrderExecAction == OrderExecAction.Filled
-                    || (tt.OrderExecAction == OrderExecAction.Opened && tt.OrderUpdate.Type == OrderType.Position))
+                    || (tt.OrderExecAction == OrderExecAction.Opened && tt.OrderUpdate.Type == Algo.Domain.OrderInfo.Types.Type.Position))
                 {
                     if (tt.PositionEntityAction == OrderEntityAction.Added)
                     {

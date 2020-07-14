@@ -684,29 +684,29 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private static Api.OrderType Convert(SFX.OrderType fdkType)
+        private static Domain.OrderInfo.Types.Type Convert(SFX.OrderType fdkType)
         {
             switch (fdkType)
             {
-                case SFX.OrderType.Limit: return Algo.Api.OrderType.Limit;
-                case SFX.OrderType.Market: return Algo.Api.OrderType.Market;
-                case SFX.OrderType.Position: return Algo.Api.OrderType.Position;
-                case SFX.OrderType.Stop: return Algo.Api.OrderType.Stop;
-                case SFX.OrderType.StopLimit: return Algo.Api.OrderType.StopLimit;
+                case SFX.OrderType.Limit: return Domain.OrderInfo.Types.Type.Limit;
+                case SFX.OrderType.Market: return Domain.OrderInfo.Types.Type.Market;
+                case SFX.OrderType.Position: return Domain.OrderInfo.Types.Type.Position;
+                case SFX.OrderType.Stop: return Domain.OrderInfo.Types.Type.Stop;
+                case SFX.OrderType.StopLimit: return Domain.OrderInfo.Types.Type.StopLimit;
 
                 default: throw new ArgumentException("Unsupported order type: " + fdkType);
             }
         }
 
-        private static SFX.OrderType Convert(Api.OrderType type)
+        private static SFX.OrderType Convert(Domain.OrderInfo.Types.Type type)
         {
             switch (type)
             {
-                case API.OrderType.Limit: return SFX.OrderType.Limit;
-                case API.OrderType.Market: return SFX.OrderType.Market;
-                case API.OrderType.Position: return SFX.OrderType.Position;
-                case API.OrderType.Stop: return SFX.OrderType.Stop;
-                case API.OrderType.StopLimit: return SFX.OrderType.StopLimit;
+                case Domain.OrderInfo.Types.Type.Limit: return SFX.OrderType.Limit;
+                case Domain.OrderInfo.Types.Type.Market: return SFX.OrderType.Market;
+                case Domain.OrderInfo.Types.Type.Position: return SFX.OrderType.Position;
+                case Domain.OrderInfo.Types.Type.Stop: return SFX.OrderType.Stop;
+                case Domain.OrderInfo.Types.Type.StopLimit: return SFX.OrderType.StopLimit;
 
                 default: throw new ArgumentException("Unsupported order type: " + type);
             }

@@ -353,12 +353,12 @@ namespace TickTrader.Algo.Core
 
         private void AppendOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, Order order)
         {
-            AppendOrderParams(logEntry, smbInfo, suffix, order.Type, order.Side.ToCoreEnum(), order.RemainingVolume, order.Price, order.StopPrice, order.StopLoss, order.TakeProfit, order.Slippage);
+            AppendOrderParams(logEntry, smbInfo, suffix, order.Type.ToCoreEnum(), order.Side.ToCoreEnum(), order.RemainingVolume, order.Price, order.StopPrice, order.StopLoss, order.TakeProfit, order.Slippage);
         }
 
         private void AppendIocOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, Order order)
         {
-            AppendOrderParams(logEntry, smbInfo, suffix, order.Type, order.Side.ToCoreEnum(), order.LastFillVolume, order.LastFillPrice, double.NaN, order.StopLoss, order.TakeProfit, order.Slippage);
+            AppendOrderParams(logEntry, smbInfo, suffix, order.Type.ToCoreEnum(), order.Side.ToCoreEnum(), order.LastFillVolume, order.LastFillPrice, double.NaN, order.StopLoss, order.TakeProfit, order.Slippage);
         }
 
         private void AppendOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, OpenOrderCoreRequest request)
@@ -371,7 +371,7 @@ namespace TickTrader.Algo.Core
             AppendOrderParams(logEntry, smbInfo, suffix, request.Type, request.Side, request.NewVolume ?? request.CurrentVolume, request.Price ?? double.NaN, request.StopPrice ?? double.NaN, request.StopLoss, request.TakeProfit, request.Slippage);
         }
 
-        private void AppendOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, OrderType type, Domain.OrderInfo.Types.Side side, double volumeLots, double price, double stopPrice, double? sl, double? tp, double? slippage)
+        private void AppendOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, Domain.OrderInfo.Types.Type type, Domain.OrderInfo.Types.Side side, double volumeLots, double price, double stopPrice, double? sl, double? tp, double? slippage)
         {
             var priceFormat = smbInfo?.PriceFormat ?? DefaultPriceFormat;
 

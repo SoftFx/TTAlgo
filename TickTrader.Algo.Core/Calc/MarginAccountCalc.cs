@@ -96,7 +96,7 @@ namespace TickTrader.Algo.Core.Calc
             }
         }
 
-        public bool HasSufficientMarginToOpenOrder(double orderAmount, string symbol, OrderTypes type, Domain.OrderInfo.Types.Side side, bool isHidden,
+        public bool HasSufficientMarginToOpenOrder(double orderAmount, string symbol, Domain.OrderInfo.Types.Type type, Domain.OrderInfo.Types.Side side, bool isHidden,
             out double newAccountMargin, out CalcErrorCodes error)
         {
             var netting = GetSymbolStats(symbol);

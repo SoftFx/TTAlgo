@@ -6,26 +6,21 @@ namespace TickTrader.Algo.Common.Model
 
     public static class OrderCommonExtensions
     {
-        public static AggregatedOrderType Aggregate(this Domain.OrderInfo.Types.Side side, OrderType type)
+        public static AggregatedOrderType Aggregate(this Domain.OrderInfo.Types.Side side, Domain.OrderInfo.Types.Type type)
         {
             switch (type)
             {
-                case OrderType.Market:
-                case OrderType.Position:
+                case Domain.OrderInfo.Types.Type.Market:
+                case Domain.OrderInfo.Types.Type.Position:
                     return side == Domain.OrderInfo.Types.Side.Buy ? AggregatedOrderType.Buy : AggregatedOrderType.Sell;
-                case OrderType.Limit:
+                case Domain.OrderInfo.Types.Type.Limit:
                     return side == Domain.OrderInfo.Types.Side.Buy ? AggregatedOrderType.BuyLimit : AggregatedOrderType.SellLimit;
-                case OrderType.Stop:
+                case Domain.OrderInfo.Types.Type.Stop:
                     return side == Domain.OrderInfo.Types.Side.Buy ? AggregatedOrderType.BuyStop : AggregatedOrderType.SellStop;
-                case OrderType.StopLimit:
+                case Domain.OrderInfo.Types.Type.StopLimit:
                     return side == Domain.OrderInfo.Types.Side.Buy ? AggregatedOrderType.BuyStopLimit : AggregatedOrderType.SellStopLimit;
                 default: return AggregatedOrderType.Unknown;
             }
-        }
-
-        public static AggregatedOrderType Aggregate(this OrderSide type, OrderSide side)
-        {
-            return Aggregate(side, type);
         }
     }
 }

@@ -27,10 +27,10 @@ namespace TickTrader.Algo.Core.Calc
         public SideCalc(SymbolCalc parent, Domain.OrderInfo.Types.Side side)
         {
             _parent = parent;
-            _positions = new OrderNetting(parent.AccInfo, OrderTypes.Position, side, false);
-            _limitOrders = new OrderNetting(parent.AccInfo, OrderTypes.Limit, side, false);
-            _stopOrders = new OrderNetting(parent.AccInfo, OrderTypes.Stop, side, false);
-            _hiddendOrders = new OrderNetting(parent.AccInfo, OrderTypes.Limit, side, true);
+            _positions = new OrderNetting(parent.AccInfo, Domain.OrderInfo.Types.Type.Position, side, false);
+            _limitOrders = new OrderNetting(parent.AccInfo, Domain.OrderInfo.Types.Type.Limit, side, false);
+            _stopOrders = new OrderNetting(parent.AccInfo, Domain.OrderInfo.Types.Type.Stop, side, false);
+            _hiddendOrders = new OrderNetting(parent.AccInfo, Domain.OrderInfo.Types.Type.Limit, side, true);
 
             _positions.AmountChanged += OnAmountChanged;
             _limitOrders.AmountChanged += OnAmountChanged;
@@ -128,21 +128,21 @@ namespace TickTrader.Algo.Core.Calc
         //    _parent.OnStatsChange(c1 + c2);
         //}
 
-        private OrderNetting GetNetting(OrderTypes orderType, bool isHidden)
+        private OrderNetting GetNetting(Domain.OrderInfo.Types.Type orderType, bool isHidden)
         {
             switch (orderType)
             {
-                case OrderTypes.Limit:
+                case Domain.OrderInfo.Types.Type.Limit:
                     {
                         if (isHidden)
                             return _hiddendOrders;
                         else
                             return _limitOrders;
                     }
-                case OrderTypes.Stop: return _stopOrders;
-                case OrderTypes.StopLimit: return _stopOrders; // StopLimit orders have same calculation logic as Stop orders
-                case OrderTypes.Market: return _positions; // Market orders have same calculation logic as positions
-                case OrderTypes.Position: return _positions;
+                case Domain.OrderInfo.Types.Type.Stop: return _stopOrders;
+                case Domain.OrderInfo.Types.Type.StopLimit: return _stopOrders; // StopLimit orders have same calculation logic as Stop orders
+                case Domain.OrderInfo.Types.Type.Market: return _positions; // Market orders have same calculation logic as positions
+                case Domain.OrderInfo.Types.Type.Position: return _positions;
             }
 
             throw new Exception("Unsupported Order Type: " + orderType);

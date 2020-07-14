@@ -64,5 +64,19 @@ namespace TickTrader.Algo.Core
                 default: throw new ArgumentException($"Unsupported type {side}");
             }
         }
+
+        public static OrderType ToApiEnum(this Domain.OrderInfo.Types.Type type)
+        {
+            switch (type)
+            {
+                case Domain.OrderInfo.Types.Type.Limit: return OrderType.Limit;
+                case Domain.OrderInfo.Types.Type.Market: return OrderType.Market;
+                case Domain.OrderInfo.Types.Type.Stop: return OrderType.Stop;
+                case Domain.OrderInfo.Types.Type.StopLimit: return OrderType.StopLimit;
+                case Domain.OrderInfo.Types.Type.Position: return OrderType.Position;
+
+                default: throw new ArgumentException($"Unsupported type {type}");
+            }
+        }
     }
 }

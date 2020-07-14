@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Core.Calc
         private double _dblMarginAmount;
         private double _dblProfitAmount;
 
-        public OrderNetting(IMarginAccountInfo2 accInfo, OrderTypes type, Domain.OrderInfo.Types.Side side, bool isHidden)
+        public OrderNetting(IMarginAccountInfo2 accInfo, Domain.OrderInfo.Types.Type type, Domain.OrderInfo.Types.Side side, bool isHidden)
         {
             AccountData = accInfo;
             Type = type;
@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Core.Calc
 
         public IMarginAccountInfo2 AccountData { get; }
         public OrderCalculator Calculator { get; internal set; }
-        public OrderTypes Type { get; }
+        public Domain.OrderInfo.Types.Type Type { get; }
         public Domain.OrderInfo.Types.Side Side { get; }
         public bool IsHidden { get; }
 
@@ -86,7 +86,7 @@ namespace TickTrader.Algo.Core.Calc
         {
             ChangeMarginAmountBy(remAmount);
 
-            if (Type == OrderTypes.Position)
+            if (Type == Domain.OrderInfo.Types.Type.Position)
             {
                 ChangeProfitAmountBy(remAmount);
                 TotalWeight += remAmount * (decimal)price.Value;
@@ -115,7 +115,7 @@ namespace TickTrader.Algo.Core.Calc
             //Count--;
             ChangeMarginAmountBy(-remAmount);
 
-            if (Type == OrderTypes.Position)
+            if (Type == Domain.OrderInfo.Types.Type.Position)
             {
                 ChangeProfitAmountBy(-remAmount);
                 TotalWeight -= remAmount * (decimal)price.Value;

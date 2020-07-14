@@ -61,7 +61,7 @@ namespace TickTrader.Algo.Core.Calc
             return CalculateMargin((double)order.RemainingAmount, leverage, order.Type, order.Side, order.IsHidden, out error);
         }
 
-        public double CalculateMargin(double orderVolume, int leverage, OrderTypes ordType, Domain.OrderInfo.Types.Side side, bool isHidden, out CalcErrorCodes error)
+        public double CalculateMargin(double orderVolume, int leverage, Domain.OrderInfo.Types.Type ordType, Domain.OrderInfo.Types.Side side, bool isHidden, out CalcErrorCodes error)
         {
             error = MarginConversionRate.ErrorCode;
 
@@ -75,11 +75,11 @@ namespace TickTrader.Algo.Core.Calc
             return marginRaw * MarginConversionRate.Value;
         }
 
-        private double GetMarginFactor(OrderTypes ordType, bool isHidden)
+        private double GetMarginFactor(Domain.OrderInfo.Types.Type ordType, bool isHidden)
         {
-            if (ordType == OrderTypes.Stop || ordType == OrderTypes.StopLimit)
+            if (ordType == Domain.OrderInfo.Types.Type.Stop || ordType == Domain.OrderInfo.Types.Type.StopLimit)
                 return _stopMarginFactor;
-            if (ordType == OrderTypes.Limit && isHidden)
+            if (ordType == Domain.OrderInfo.Types.Type.Limit && isHidden)
                 return _hiddenMarginFactor;
             return _baseMarginFactor;
         }

@@ -47,7 +47,7 @@ namespace TickTrader.Algo.Core
             return false;
         }
 
-        public bool RemoveOrder(OrderAccessor order, ActivationTypes activationType)
+        public bool RemoveOrder(OrderAccessor order, ActivationType activationType)
         {
             double price = ActivationRecord.GetActivationPrice(order, activationType);
 
@@ -66,7 +66,7 @@ namespace TickTrader.Algo.Core
             return true;
         }
 
-        public void ResetOrderActivation(OrderAccessor order, ActivationTypes activationType)
+        public void ResetOrderActivation(OrderAccessor order, ActivationType activationType)
         {
             double price = ActivationRecord.GetActivationPrice(order, activationType);
 

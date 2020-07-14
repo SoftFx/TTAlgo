@@ -30,9 +30,9 @@ namespace TickTrader.BotTerminal
             ProfitDigits = profitDigits;
             LotSize = symbol?.LotSize ?? 1;
 
-            IsPosition = transaction.TradeRecordType == OrderType.Position;
-            IsMarket = transaction.TradeRecordType == OrderType.Market;
-            IsPending = transaction.TradeRecordType == OrderType.Limit || transaction.TradeRecordType == OrderType.Stop || transaction.TradeRecordType == OrderType.StopLimit;
+            IsPosition = transaction.TradeRecordType == Algo.Domain.OrderInfo.Types.Type.Position;
+            IsMarket = transaction.TradeRecordType == Algo.Domain.OrderInfo.Types.Type.Market;
+            IsPending = transaction.TradeRecordType == Algo.Domain.OrderInfo.Types.Type.Limit || transaction.TradeRecordType == Algo.Domain.OrderInfo.Types.Type.Stop || transaction.TradeRecordType == Algo.Domain.OrderInfo.Types.Type.StopLimit;
             IsBalanceTransaction = transaction.TradeTransactionReportType == TradeExecActions.BalanceTransaction;
 
             OrderId = GetId(transaction);
@@ -203,14 +203,14 @@ namespace TickTrader.BotTerminal
 
             switch (transaction.TradeRecordType)
             {
-                case OrderType.Market:
-                case OrderType.Position:
+                case Algo.Domain.OrderInfo.Types.Type.Market:
+                case Algo.Domain.OrderInfo.Types.Type.Position:
                     return transaction.TradeRecordSide == Algo.Domain.OrderInfo.Types.Side.Buy ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
-                case OrderType.Limit:
+                case Algo.Domain.OrderInfo.Types.Type.Limit:
                     return transaction.TradeRecordSide == Algo.Domain.OrderInfo.Types.Side.Buy ? AggregatedTransactionType.BuyLimit : AggregatedTransactionType.SellLimit;
-                case OrderType.StopLimit:
+                case Algo.Domain.OrderInfo.Types.Type.StopLimit:
                     return transaction.TradeRecordSide == Algo.Domain.OrderInfo.Types.Side.Buy ? AggregatedTransactionType.BuyStopLimit : AggregatedTransactionType.SellStopLimit;
-                case OrderType.Stop:
+                case Algo.Domain.OrderInfo.Types.Type.Stop:
                     return transaction.TradeRecordSide == Algo.Domain.OrderInfo.Types.Side.Buy ? AggregatedTransactionType.BuyStop : AggregatedTransactionType.SellStop;
                 default:
                     return AggregatedTransactionType.Unknown;
@@ -449,7 +449,7 @@ namespace TickTrader.BotTerminal
                 return Reasons.StopOut;
 
             if (transaction.TradeTransactionReportType == TradeExecActions.OrderActivated && transaction.TradeTransactionReason == TradeTransactionReason.DealerDecision &&
-                transaction.ReqOrderType == OrderType.StopLimit)
+                transaction.ReqOrderType == Algo.Domain.OrderInfo.Types.Type.StopLimit)
             {
                 Type = Type == AggregatedTransactionType.Sell ? AggregatedTransactionType.SellStopLimit : AggregatedTransactionType.BuyStopLimit;
                 return Reasons.Activated;
@@ -490,15 +490,15 @@ namespace TickTrader.BotTerminal
         {
             switch (transaction.TradeRecordType)
             {
-                case OrderType.Market:
-                case OrderType.Position:
+                case Algo.Domain.OrderInfo.Types.Type.Market:
+                case Algo.Domain.OrderInfo.Types.Type.Position:
                     return transaction.TradeRecordSide == Algo.Domain.OrderInfo.Types.Side.Buy ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
-                case OrderType.Limit:
+                case Algo.Domain.OrderInfo.Types.Type.Limit:
                     return transaction.TradeRecordSide == Algo.Domain.OrderInfo.Types.Side.Buy ? AggregatedTransactionType.BuyLimitCanceled : AggregatedTransactionType.SellLimitCanceled;
-                case OrderType.StopLimit:
+                case Algo.Domain.OrderInfo.Types.Type.StopLimit:
                     OpenPrice = transaction.StopPrice;
                     return transaction.TradeRecordSide == Algo.Domain.OrderInfo.Types.Side.Buy ? AggregatedTransactionType.BuyStopLimitCanceled : AggregatedTransactionType.SellStopLimitCanceled;
-                case OrderType.Stop:
+                case Algo.Domain.OrderInfo.Types.Type.Stop:
                     OpenPrice = transaction.StopPrice;
                     return transaction.TradeRecordSide == Algo.Domain.OrderInfo.Types.Side.Buy ? AggregatedTransactionType.BuyStopCanceled : AggregatedTransactionType.SellStopCanceled;
                 default: return AggregatedTransactionType.Unknown;
@@ -541,16 +541,16 @@ namespace TickTrader.BotTerminal
 
             if (IsSplitTransaction)
             {
-                if (transaction.TradeRecordType == OrderType.Stop || transaction.TradeRecordType == OrderType.StopLimit)
+                if (transaction.TradeRecordType == Algo.Domain.OrderInfo.Types.Type.Stop || transaction.TradeRecordType == Algo.Domain.OrderInfo.Types.Type.StopLimit)
                     return transaction.StopPrice;
                 else
                     return transaction.PosRemainingPrice ?? transaction.Price;
             }
 
-            if (transaction.TradeRecordType == OrderType.Stop)
+            if (transaction.TradeRecordType == Algo.Domain.OrderInfo.Types.Type.Stop)
                 return transaction.OrderFillPrice;
 
-            if (transaction.TradeRecordType == OrderType.StopLimit)
+            if (transaction.TradeRecordType == Algo.Domain.OrderInfo.Types.Type.StopLimit)
                 return transaction.StopPrice;
 
             return transaction.PosOpenPrice == 0 ? transaction.Price : transaction.PosOpenPrice;
@@ -619,7 +619,7 @@ namespace TickTrader.BotTerminal
             if (IsPosition)
                 return transaction.PosOpenPrice;
 
-            return transaction.TradeRecordType == OrderType.Stop || transaction.TradeRecordType == OrderType.StopLimit ? transaction.StopPrice : transaction.Price;
+            return transaction.TradeRecordType == Algo.Domain.OrderInfo.Types.Type.Stop || transaction.TradeRecordType == Algo.Domain.OrderInfo.Types.Type.StopLimit ? transaction.StopPrice : transaction.Price;
         }
 
         protected override double? GetRemainingQuantity(TradeReportEntity transaction)
@@ -696,7 +696,7 @@ namespace TickTrader.BotTerminal
 
             if (IsSplitTransaction)
             {
-                if (transaction.TradeRecordType == OrderType.Stop || transaction.TradeRecordType == OrderType.StopLimit)
+                if (transaction.TradeRecordType == Algo.Domain.OrderInfo.Types.Type.Stop || transaction.TradeRecordType == Algo.Domain.OrderInfo.Types.Type.StopLimit)
                     return transaction.StopPrice;
             }
 

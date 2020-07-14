@@ -29,7 +29,7 @@ namespace TickTrader.Algo.Core.Calc
         double? Price { get; }
         double? StopPrice { get; }
         Domain.OrderInfo.Types.Side Side { get; }
-        OrderTypes Type { get; }
+        Domain.OrderInfo.Types.Type Type { get; }
         //OrderTypes InitialType { get; }
         ////OrderStatuses Status { get; }
         //double Amount { get; }
@@ -109,7 +109,7 @@ namespace TickTrader.Algo.Core.Calc
 
     public struct OrderEssentialsChangeArgs
     {
-        public OrderEssentialsChangeArgs(IOrderModel2 order, decimal oldRemAmount, double? oldPrice, double? oldStopPrice, OrderTypes oldType, bool oldIsHidden)
+        public OrderEssentialsChangeArgs(IOrderModel2 order, decimal oldRemAmount, double? oldPrice, double? oldStopPrice, Domain.OrderInfo.Types.Type oldType, bool oldIsHidden)
         {
             Order = order;
             OldRemAmount = oldRemAmount;
@@ -123,7 +123,7 @@ namespace TickTrader.Algo.Core.Calc
         public decimal OldRemAmount { get; }
         public double? OldPrice { get; }
         public double? OldStopPrice { get; }
-        public OrderTypes OldType { get; }
+        public Domain.OrderInfo.Types.Type OldType { get; }
         public bool OldIsHidden { get; }
     }
 

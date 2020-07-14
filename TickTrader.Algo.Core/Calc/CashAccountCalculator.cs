@@ -58,7 +58,7 @@ namespace TickTrader.Algo.Core.Calc
         //    return HasSufficientMarginToOpenOrder(order.Type, order.Side, symbol, marginMovement);
         //}
 
-        public bool HasSufficientMarginToOpenOrder(OrderTypes type, Domain.OrderInfo.Types.Side side, SymbolAccessor symbol, decimal? marginMovement)
+        public bool HasSufficientMarginToOpenOrder(Domain.OrderInfo.Types.Type type, Domain.OrderInfo.Types.Side side, SymbolAccessor symbol, decimal? marginMovement)
         {
             //if (order == null)
             //    throw new ArgumentNullException("order");
@@ -94,12 +94,12 @@ namespace TickTrader.Algo.Core.Calc
             return true;
         }
 
-        public static decimal CalculateMarginFactor(OrderTypes type, SymbolAccessor symbol, bool isHidden)
+        public static decimal CalculateMarginFactor(Domain.OrderInfo.Types.Type type, SymbolAccessor symbol, bool isHidden)
         {
             decimal combinedMarginFactor = 1.0M;
-            if (type == OrderTypes.Stop || type == OrderTypes.StopLimit)
+            if (type == Domain.OrderInfo.Types.Type.Stop || type == Domain.OrderInfo.Types.Type.StopLimit)
                 combinedMarginFactor *= (decimal)symbol.StopOrderMarginReduction;
-            else if (type == OrderTypes.Limit && isHidden)
+            else if (type == Domain.OrderInfo.Types.Type.Limit && isHidden)
                 combinedMarginFactor *= (decimal)symbol.HiddenLimitOrderMarginReduction;
             return combinedMarginFactor;
         }
@@ -109,11 +109,11 @@ namespace TickTrader.Algo.Core.Calc
             return CalculateMargin(order.Type, order.RemainingAmount, order.Price, order.StopPrice, order.Side, symbol, order.IsHidden);
         }
 
-        public static decimal CalculateMargin(OrderTypes type, decimal amount, double? orderPrice, double? orderStopPrice, Domain.OrderInfo.Types.Side side, SymbolAccessor symbol, bool isHidden)
+        public static decimal CalculateMargin(Domain.OrderInfo.Types.Type type, decimal amount, double? orderPrice, double? orderStopPrice, Domain.OrderInfo.Types.Side side, SymbolAccessor symbol, bool isHidden)
         {
             decimal combinedMarginFactor = CalculateMarginFactor(type, symbol, isHidden);
 
-            double price = ((type == OrderTypes.Stop) || (type == OrderTypes.StopLimit)) ? orderStopPrice.Value : orderPrice.Value;
+            double price = ((type == Domain.OrderInfo.Types.Type.Stop) || (type == Domain.OrderInfo.Types.Type.StopLimit)) ? orderStopPrice.Value : orderPrice.Value;
 
             if (side == Domain.OrderInfo.Types.Side.Buy)
                 return combinedMarginFactor * amount * (decimal)price;
