@@ -197,7 +197,7 @@ namespace TickTrader.Algo.Core.Calc
 
         #region Commission
 
-        public double CalculateCommission(double amount, double cValue, CommissionValueType vType, CommissionChargeType chType, out CalcErrorCodes error)
+        public double CalculateCommission(double amount, double cValue, Domain.CommissonInfo.Types.ValueType vType, out CalcErrorCodes error)
         {
             error = CalcErrorCodes.None;
 
@@ -205,14 +205,14 @@ namespace TickTrader.Algo.Core.Calc
                 return 0;
 
             //UL: all calculation for CommissionChargeType.PerLot
-            if (vType == CommissionValueType.Money)
+            if (vType == Domain.CommissonInfo.Types.ValueType.Money)
             {
                 //if (chType == CommissionChargeType.PerDeal)
                 //    return -cValue;
                 //else if (chType == CommissionChargeType.PerLot)
                 return -(amount / SymbolInfo.ContractSizeFractional * cValue);
             }
-            else if (vType == CommissionValueType.Percentage)
+            else if (vType == Domain.CommissonInfo.Types.ValueType.Percentage)
             {
                 //if (chType == CommissionChargeType.PerDeal || chType == CommissionChargeType.PerLot)
                 error = MarginConversionRate.ErrorCode;
@@ -220,7 +220,7 @@ namespace TickTrader.Algo.Core.Calc
                     return 0;
                 return -(amount * cValue * MarginConversionRate.Value) / 100;
             }
-            else if (vType == CommissionValueType.Points)
+            else if (vType == Domain.CommissonInfo.Types.ValueType.Points)
             {
                 double ptValue = cValue / Math.Pow(10, SymbolInfo.Precision);
 
@@ -233,7 +233,7 @@ namespace TickTrader.Algo.Core.Calc
                 return ConvertProfitToAccountCurrency(-(amount * ptValue * MarginConversionRate.Value), out _, out error);
             }
 
-            throw new Exception("Invalid comission configuration: chType=" + chType + " vType= " + vType);
+            throw new Exception("Invalid comission configuration: " + " vType= " + vType);
         }
 
         #endregion Commission

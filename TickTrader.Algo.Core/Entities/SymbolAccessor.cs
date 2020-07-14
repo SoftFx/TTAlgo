@@ -59,14 +59,15 @@ namespace TickTrader.Algo.Core
         public bool IsTradeAllowed => _info.TradeAllowed;
         public double Commission => _info.Commission.Commission;
         public double LimitsCommission => _info.Commission.LimitsCommission;
-        public CommissionChargeMethod CommissionChargeMethod { get; private set; }
-        public CommissionChargeType CommissionChargeType { get; private set; }
+        public CommissionChargeMethod CommissionChargeMethod => CommissionChargeMethod.OneWay;
+        public CommissionChargeType CommissionChargeType => CommissionChargeType.PerLot;
         public CommissionType CommissionType { get; private set; }
         public double HedgingFactor => _info.Margin.Hedged;
         public NumberFormatInfo PriceFormat { get; private set; }
         public int AmountDigits { get; private set; }
         public double? Slippage => _info.Slippage.DefaultValue;
 
+        public Domain.CommissonInfo.Types.ValueType CommissionValueType => _info.Commission.ValueType;
         public double MarginFactorFractional => _info.Margin.Factor;
         public double StopOrderMarginReduction => _info.Margin.StopOrderReduction ?? 1;
         public double HiddenLimitOrderMarginReduction => _info.Margin.HiddenLimitOrderReduction ?? 1;
@@ -123,9 +124,7 @@ namespace TickTrader.Algo.Core
 
                 if (info.Commission != null)
                 {
-                    CommissionType = ApiEnumConverter.Convert(info.Commission.Type);
-                    CommissionChargeType = ApiEnumConverter.Convert(info.Commission.ChargeType);
-                    CommissionChargeMethod = ApiEnumConverter.Convert(info.Commission.ChargeMethod);
+                    CommissionType = ApiEnumConverter.Convert(info.Commission.ValueType);
                 }
 
                 Point = System.Math.Pow(10, -info.Digits);

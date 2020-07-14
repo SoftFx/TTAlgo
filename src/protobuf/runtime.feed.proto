@@ -19,32 +19,17 @@ message CurrencyListResponse {
 }
 
 message CommissonInfo {
-    enum ChargeMethod {
-        ONE_WAY = 0;
-        ROUND_TURN = 1;
-    }
-
-    enum ChargeType {
-        PER_TRADE = 0;
-        PER_LOT = 1;
-    }
-
-    enum Type {
-        PER_UNIT = 0;
-        PERCENT = 1;
-        ABSOLUTE = 2;
-        PERCENTAGE_WAIVED_CASH = 3;
-        PERCENTAGE_WAIVED_ENHANCED = 4;
-        PER_BOND = 5;
+    enum ValueType {
+        POINTS = 0;
+        PERCENTAGE = 1;
+        MONEY = 2;
     }
 
     double commission = 1;
     double limits_commission = 2;
-    Type type = 3;
-    ChargeMethod charge_method = 4;
-    ChargeType charge_type = 5;
-    double min_commission = 6;
-    string min_commission_currency = 7;
+    ValueType value_type = 3;
+    double min_commission = 5;
+    string min_commission_currency = 6;
 }
 
 message MarginInfo {

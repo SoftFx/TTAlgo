@@ -9,7 +9,16 @@ using TickTrader.BusinessLogic;
 
 namespace TickTrader.Algo.Core
 {
-    public class AssetAccessor : Api.Asset, BusinessLogic.IAssetModel
+    public interface IAssetModel2
+    {
+        string Currency { get; }
+        decimal Amount { get; }
+        decimal FreeAmount { get; }
+        decimal LockedAmount { get; }
+        decimal Margin { get; set; }
+    }
+
+    public class AssetAccessor : Api.Asset, IAssetModel2
     {
         private decimal _margin;
 
@@ -46,9 +55,9 @@ namespace TickTrader.Algo.Core
         double Api.Asset.Volume => (double) Volume;
         double Api.Asset.FreeVolume => (double)FreeVolume;
 
-        decimal IAssetModel.Amount => Volume;
-        decimal IAssetModel.FreeAmount => Volume - _margin;
-        decimal IAssetModel.LockedAmount => _margin;
-        decimal IAssetModel.Margin { get => _margin; set => _margin = value; }
+        decimal IAssetModel2.Amount => Volume;
+        decimal IAssetModel2.FreeAmount => Volume - _margin;
+        decimal IAssetModel2.LockedAmount => _margin;
+        decimal IAssetModel2.Margin { get => _margin; set => _margin = value; }
     }
 }

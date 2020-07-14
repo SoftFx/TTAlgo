@@ -36,12 +36,14 @@ namespace TickTrader.Algo.Api
         void Unsubscribe();
     }
 
+    // Obsolete: server always uses OneWay
     public enum CommissionChargeMethod
     {
         OneWay,
         RoundTurn
     };
 
+    // Obsolete: server always uses PerLot
     public enum CommissionChargeType
     {
         PerTrade,

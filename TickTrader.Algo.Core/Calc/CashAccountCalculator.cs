@@ -9,7 +9,7 @@ namespace TickTrader.Algo.Core.Calc
     public class CashAccountCalculator : IDisposable
     {
         private readonly ICashAccountInfo2 account;
-        private readonly Dictionary<string, IAssetModel> assets = new Dictionary<string, IAssetModel>();
+        private readonly Dictionary<string, IAssetModel2> assets = new Dictionary<string, IAssetModel2>();
         private MarketStateBase market;
 
         public MarketStateBase Market
@@ -39,7 +39,7 @@ namespace TickTrader.Algo.Core.Calc
             this.market = market;
 
             if (this.account.Assets != null)
-                this.account.Assets.Foreach2(a => AddRemoveAsset(a, AssetChangeTypes.Added));
+                this.account.Assets.Foreach2(a => AddRemoveAsset(a, AssetChangeType.Added));
             this.account.AssetsChanged += AddRemoveAsset;
             this.AddOrdersBunch(this.account.Orders);
             this.account.OrderAdded += AddOrder;
@@ -80,7 +80,7 @@ namespace TickTrader.Algo.Core.Calc
             if (marginMovement == null)
                 throw new MarginNotCalculatedException("Provided order must have calculated Margin.");
 
-            IAssetModel marginAsset = GetMarginAsset(symbol, side);
+            var marginAsset = GetMarginAsset(symbol, side);
             if (marginAsset == null || marginAsset.Amount == 0)
                 throw new NotEnoughMoneyException($"Asset {GetMarginAssetCurrency(symbol, side)} is empty.");
 
@@ -117,7 +117,7 @@ namespace TickTrader.Algo.Core.Calc
                 return combinedMarginFactor * amount;
         }
 
-        public IAssetModel GetMarginAsset(ISymbolInfo2 symbol, Domain.OrderInfo.Types.Side side)
+        public IAssetModel2 GetMarginAsset(ISymbolInfo2 symbol, Domain.OrderInfo.Types.Side side)
         {
             //if (order.MarginCurrency == null || order.ProfitCurrency == null)
             //    throw new MarketConfigurationException("Order must have both margin & profit currencies specified.");
@@ -132,13 +132,13 @@ namespace TickTrader.Algo.Core.Calc
             return (side == Domain.OrderInfo.Types.Side.Buy) ? smb.ProfitCurrency : smb.MarginCurrency;
         }
 
-        public void AddRemoveAsset(IAssetModel asset, AssetChangeTypes changeType)
+        public void AddRemoveAsset(IAssetModel2 asset, AssetChangeType changeType)
         {
-            if (changeType == AssetChangeTypes.Added)
+            if (changeType == AssetChangeType.Added)
                 this.assets.Add(asset.Currency, asset);
-            else if (changeType == AssetChangeTypes.Removed)
+            else if (changeType == AssetChangeType.Removed)
                 this.assets.Remove(asset.Currency);
-            else if (changeType == AssetChangeTypes.Replaced)
+            else if (changeType == AssetChangeType.Updated)
             {
                 var oldAsset = this.assets[asset.Currency];
                 this.assets[asset.Currency] = asset;
@@ -157,7 +157,7 @@ namespace TickTrader.Algo.Core.Calc
             //OrderLightClone clone = new OrderLightClone(order);
             //orders.Add(order.OrderId, clone);
 
-            IAssetModel marginAsset = GetMarginAsset(symbol, order.Side);
+            var marginAsset = GetMarginAsset(symbol, order.Side);
             if (marginAsset != null)
                 marginAsset.Margin += order.CashMargin;
 
@@ -177,7 +177,7 @@ namespace TickTrader.Algo.Core.Calc
             }
 
             //OrderLightClone clone = GetOrderOrThrow(order.OrderId);
-            IAssetModel marginAsset = GetMarginAsset(symbol, order.Side);
+            var marginAsset = GetMarginAsset(symbol, order.Side);
             marginAsset.Margin -= order.CashMargin;
             order.CashMargin = CalculateMargin(order, symbol);
             marginAsset.Margin += order.CashMargin;
@@ -206,7 +206,7 @@ namespace TickTrader.Algo.Core.Calc
             if (symbol == null) //can be caused by server misconfiguration
                 return;
 
-            IAssetModel marginAsset = GetMarginAsset(symbol, order.Side);
+            var marginAsset = GetMarginAsset(symbol, order.Side);
             if (marginAsset != null)
                 marginAsset.Margin -= order.CashMargin;
 

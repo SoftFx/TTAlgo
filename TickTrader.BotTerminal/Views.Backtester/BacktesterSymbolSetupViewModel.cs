@@ -115,7 +115,7 @@ namespace TickTrader.BotTerminal
             var swapShort = smb.Swap.Enabled ? smb.Swap.SizeShort : 0;
 
             return string.Format("{0} {1}, commission={2} {3}, swapLong={4} swapShort={5} ",
-                smb.Name, SelectedTimeframe.Value, smb.Commission, smb.Commission.Type, swapLong, swapShort);
+                smb.Name, SelectedTimeframe.Value, smb.Commission, smb.Commission.ValueType, swapLong, swapShort);
         }
 
         public void UpdateSelectedSymbol(SymbolSetupType type)

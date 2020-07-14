@@ -116,7 +116,7 @@ namespace TickTrader.Algo.Core
                ? cfg.CmsValueBookOrders()
                : cfg.CmsValue();
 
-            double commiss = orderCalc.CalculateCommission((double)amount, cmsValue, cfg.CmsValueType(), cfg.CmsChType(), out var error);
+            double commiss = orderCalc.CalculateCommission((double)amount, cmsValue, cfg.CommissionValueType, out var error);
             commiss = ApplyMinimalMarginCommission(commiss, accCalc, cfg);
             return RoundValue(commiss, accCalc.RoundingDigits);
         }
@@ -154,19 +154,19 @@ namespace TickTrader.Algo.Core
             double commiss = 0;
             if (isReduced)
                 // special commission for Book orders
-                commiss = CalculateCommission(amount, cfg.CmsValueBookOrders(), cfg.CmsValueType());
+                commiss = CalculateCommission(amount, cfg.CmsValueBookOrders(), cfg.CommissionValueType);
             else
                 // ordinary comission
-                commiss = CalculateCommission(amount, cfg.CmsValue(), cfg.CmsValueType());
+                commiss = CalculateCommission(amount, cfg.CmsValue(), cfg.CommissionValueType);
 
             commiss = ApplyMinimalCashCommission(commiss, commissCurrency, acc, cfg, charges);
 
             return commiss;
         }
 
-        private static double CalculateCommission(double amount, float cmsValue, BO.CommissionValueType cmsType)
+        private static double CalculateCommission(double amount, float cmsValue, Domain.CommissonInfo.Types.ValueType cmsType)
         {
-            if (cmsType == BO.CommissionValueType.Percentage)
+            if (cmsType == Domain.CommissonInfo.Types.ValueType.Percentage)
                 return -((amount * cmsValue) / 100);
 
             return 0;

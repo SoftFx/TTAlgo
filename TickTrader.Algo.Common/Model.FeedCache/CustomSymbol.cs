@@ -97,11 +97,7 @@ namespace TickTrader.Algo.Common.Model
                 {
                     Commission = Commission,
                     LimitsCommission = LimitsCommission,
-                    Type = Convert(CommissionType),
-                    ChargeMethod = Domain.CommissonInfo.Types.ChargeMethod.OneWay,
-                    ChargeType = CommissionType != CustomCommissionType.Money
-                        ? Domain.CommissonInfo.Types.ChargeType.PerTrade
-                        : Domain.CommissonInfo.Types.ChargeType.PerLot,
+                    ValueType = Convert(CommissionType),
                     MinCommission = MinCommission,
                     MinCommissionCurrency = MinCommissionCurr,
                 },
@@ -145,7 +141,7 @@ namespace TickTrader.Algo.Common.Model
 
                 Commission = symbol.Commission.Commission,
                 LimitsCommission = symbol.Commission.LimitsCommission,
-                CommissionType = Convert(symbol.Commission.Type),
+                CommissionType = Convert(symbol.Commission.ValueType),
                 MinCommission = symbol.Commission.MinCommission,
                 MinCommissionCurr = symbol.Commission.MinCommissionCurrency,
 
@@ -165,17 +161,17 @@ namespace TickTrader.Algo.Common.Model
             };
         }
 
-        private static CustomCommissionType Convert(Domain.CommissonInfo.Types.Type type)
+        private static CustomCommissionType Convert(Domain.CommissonInfo.Types.ValueType type)
         {
             switch (type)
             {
-                case Domain.CommissonInfo.Types.Type.Absolute:
+                case Domain.CommissonInfo.Types.ValueType.Money:
                     return CustomCommissionType.Money;
 
-                case Domain.CommissonInfo.Types.Type.Percent:
+                case Domain.CommissonInfo.Types.ValueType.Percentage:
                     return CustomCommissionType.Percentage;
 
-                case Domain.CommissonInfo.Types.Type.PerUnit:
+                case Domain.CommissonInfo.Types.ValueType.Points:
                     return CustomCommissionType.Points;
 
                 default:
@@ -183,18 +179,18 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private static Domain.CommissonInfo.Types.Type Convert(CustomCommissionType type)
+        private static Domain.CommissonInfo.Types.ValueType Convert(CustomCommissionType type)
         {
             switch (type)
             {
                 case CustomCommissionType.Money:
-                    return Domain.CommissonInfo.Types.Type.Absolute;
+                    return Domain.CommissonInfo.Types.ValueType.Money;
 
                 case CustomCommissionType.Percentage:
-                    return Domain.CommissonInfo.Types.Type.Percent;
+                    return Domain.CommissonInfo.Types.ValueType.Percentage;
 
                 case CustomCommissionType.Points:
-                    return Domain.CommissonInfo.Types.Type.PerUnit;
+                    return Domain.CommissonInfo.Types.ValueType.Points;
 
                 default:
                     throw new InvalidCastException($"Commission type not found: {type}");

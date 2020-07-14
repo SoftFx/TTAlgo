@@ -311,7 +311,7 @@ namespace TickTrader.Algo.Core
         //decimal IMarginAccountInfo2.Balance => Balance;
         IEnumerable<IOrderModel2> IAccountInfo2.Orders => (IEnumerable<OrderAccessor>)Orders.OrderListImpl;
         IEnumerable<IPositionModel2> IMarginAccountInfo2.Positions => NetPositions;
-        IEnumerable<BL.IAssetModel> ICashAccountInfo2.Assets => Assets;
+        IEnumerable<IAssetModel2> ICashAccountInfo2.Assets => Assets;
 
         //void BL.IAccountInfo.LogInfo(string message)
         //{
@@ -333,7 +333,7 @@ namespace TickTrader.Algo.Core
         public event Action<IBalanceDividendEventArgs> BalanceDividend = delegate { };
         public event Action Reset = delegate { };
         public event Action<IPositionModel2> PositionChanged;
-        public event Action<BL.IAssetModel, BL.AssetChangeTypes> AssetsChanged;
+        public event Action<IAssetModel2, AssetChangeType> AssetsChanged;
 
         internal void EnableBlEvents()
         {
@@ -391,9 +391,9 @@ namespace TickTrader.Algo.Core
         //    UpdateAccountInfo("Remove position", () => PositionChanged?.Invoke(position, PositionChageTypes.Removed));
         //}
 
-        private void OnAssetsChanged(BL.IAssetModel asset, AssetChangeType type)
+        private void OnAssetsChanged(IAssetModel2 asset, AssetChangeType type)
         {
-            UpdateAccountInfo($"Change asset({type})", () => AssetsChanged?.Invoke(asset, TickTraderToAlgo.Convert(type)));
+            UpdateAccountInfo($"Change asset({type})", () => AssetsChanged?.Invoke(asset, type));
         }
 
         private void UpdateAccountInfo(string actionName, Action action)
@@ -427,8 +427,7 @@ namespace TickTrader.Algo.Core
 
         internal void IncreaseAsset(string currency, decimal byAmount)
         {
-            AssetChangeType chType;
-            var asset = Assets.GetOrCreateAsset(currency, out chType);
+            var asset = Assets.GetOrCreateAsset(currency, out var chType);
             asset.IncreaseBy(byAmount);
             OnAssetsChanged(asset, chType);
         }
