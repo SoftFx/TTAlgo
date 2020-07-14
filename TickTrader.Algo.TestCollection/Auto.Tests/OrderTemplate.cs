@@ -72,7 +72,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             IsIoc = Type == OrderType.Limit && Options.HasFlag(OrderExecOptions.ImmediateOrCancel);
 
             InitType = Type;
-            SlippagePrecision = Math.Pow(10, Math.Min(Symbol.Digits, 4));
+            SlippagePrecision = Math.Pow(10, Math.Max(Symbol.Digits, 4));
         }
 
         public void UpdateTemplate(Order order, bool activate = false, bool position = false)

@@ -89,7 +89,7 @@
                                                 <TextBlock.Text>
                                                     <MultiBinding Converter="{StaticResource PriceConverter}" >
                                                         <Binding Path="PosRemainingPrice"/>
-                                                        <Binding Path="ProfitDigits"/>
+                                                        <Binding Path="PriceDigits"/>
                                                     </MultiBinding>
                                                 </TextBlock.Text>
                                             </TextBlock>
