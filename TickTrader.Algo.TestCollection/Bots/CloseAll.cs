@@ -17,6 +17,9 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter(DisplayName = "Close volume", DefaultValue = null)]
         public double? Volume { get; set; }
 
+        [Parameter(DisplayName = "Close slippage", DefaultValue = null)]
+        public double? Slippage { get; set; }
+
         protected override void Init()
         {
             var bal = Account.Balance;
@@ -34,7 +37,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                     positions = positions.Where(o => o.Id == PositionId).ToList();
 
                 foreach (var pos in positions)
-                    await CloseOrderAsync(CloseOrderRequest.Template.Create().WithOrderId(pos.Id).WithVolume(Volume).WithSlippage(pos.Slippage).MakeRequest());
+                    await CloseOrderAsync(CloseOrderRequest.Template.Create().WithOrderId(pos.Id).WithVolume(Volume).WithSlippage(Slippage ?? pos.Slippage).MakeRequest());
             }
             else if (Account.Type == AccountTypes.Net)
             {
