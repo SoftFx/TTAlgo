@@ -16,18 +16,18 @@ namespace TickTrader.Algo.Core
         //private decimal? _modelProf;
         //private decimal? _modelMargin;
 
-        internal OrderAccessor(OrderEntity entity, Func<string, SymbolAccessor> symbolProvider, int leverage)
+        internal OrderAccessor(OrderEntity entity, Func<string, ISymbolInfo2> symbolProvider, int leverage)
             : this(entity, symbolProvider(entity.Symbol), leverage)
         {
-            
+
         }
 
-        internal OrderAccessor(OrderEntity entity, SymbolAccessor symbol, int leverage)
+        internal OrderAccessor(OrderEntity entity, ISymbolInfo2 symbol, int leverage)
         {
             _entity = entity ?? throw new ArgumentNullException("entity");
 
-            _symbol = symbol;
-            _lotSize = symbol?.ContractSize ?? 1;
+            _symbol = (SymbolAccessor)symbol;
+            _lotSize = _symbol?.ContractSize ?? 1;
             _leverage = leverage;
         }
 
@@ -102,9 +102,11 @@ namespace TickTrader.Algo.Core
         bool IOrderCalcInfo.IsHidden => Entity.IsHidden;
         double? IOrderCalcInfo.Price => Entity.Price;
         double? IOrderCalcInfo.StopPrice => Entity.StopPrice;
-        SymbolAccessor IOrderModel2.SymbolInfo => _symbol;
+
+        ISymbolInfo2 IOrderModel2.SymbolInfo => _symbol;
         Domain.OrderInfo.Types.Side IOrderCalcInfo.Side => Entity.Side;
         //BO.OrderTypes IOrderCalcInfo.Type => Entity.GetBlOrderType();
+
 
         #endregion
 

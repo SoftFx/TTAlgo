@@ -4,10 +4,11 @@ using TickTrader.Algo.Core;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Api;
 using System.Globalization;
+using TickTrader.Algo.Core.Calc;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class PositionModel : ObservableObject, TickTrader.BusinessLogic.IPositionModel
+    public class PositionModel : ObservableObject, IPositionModel2/* TickTrader.BusinessLogic.IPositionModel*/
     {
         private static readonly string DefaultVolumeFormat = $"0.{new string('#', 15)}";
 
@@ -212,15 +213,22 @@ namespace TickTrader.Algo.Common.Model
         public decimal Profit { get { return Long.Profit + Short.Profit; } }
         public decimal? NetProfit => Profit + Commission + Swap;
         public decimal Margin { get { return Long.Margin + Short.Margin; } }
-        public OrderCalculator Calculator { get; set; }
+        public Core.Calc.OrderCalculator Calculator { get; set; }
+        //public PositionSide Long { get; private set; }
+        //public PositionSide Short { get; private set; }
+
+        //Core.Calc.OrderCalculator IPositionModel2.Calculator { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
         public PositionSide Long { get; private set; }
         public PositionSide Short { get; private set; }
-        IPositionSide IPositionModel.Long { get { return Long; } }
-        IPositionSide IPositionModel.Short { get { return Short; } }
+
+        IPositionSide2 IPositionModel2.Long => Long;
+
+        IPositionSide2 IPositionModel2.Short => Short;
 
         #endregion
 
-        public class PositionSide : IPositionSide
+        public class PositionSide : IPositionSide2/*IPositionSide*/
         {
             private decimal margin;
             private decimal profit;

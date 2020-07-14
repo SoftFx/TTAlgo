@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.BusinessLogic;
-using TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Core.Calc
 {
@@ -58,7 +54,7 @@ namespace TickTrader.Algo.Core.Calc
         //    return HasSufficientMarginToOpenOrder(order.Type, order.Side, symbol, marginMovement);
         //}
 
-        public bool HasSufficientMarginToOpenOrder(Domain.OrderInfo.Types.Type type, Domain.OrderInfo.Types.Side side, SymbolAccessor symbol, decimal? marginMovement)
+        public bool HasSufficientMarginToOpenOrder(Domain.OrderInfo.Types.Type type, Domain.OrderInfo.Types.Side side, ISymbolInfo2 symbol, decimal? marginMovement)
         {
             //if (order == null)
             //    throw new ArgumentNullException("order");
@@ -94,7 +90,7 @@ namespace TickTrader.Algo.Core.Calc
             return true;
         }
 
-        public static decimal CalculateMarginFactor(Domain.OrderInfo.Types.Type type, SymbolAccessor symbol, bool isHidden)
+        public static decimal CalculateMarginFactor(Domain.OrderInfo.Types.Type type, ISymbolInfo2 symbol, bool isHidden)
         {
             decimal combinedMarginFactor = 1.0M;
             if (type == Domain.OrderInfo.Types.Type.Stop || type == Domain.OrderInfo.Types.Type.StopLimit)
@@ -104,12 +100,12 @@ namespace TickTrader.Algo.Core.Calc
             return combinedMarginFactor;
         }
 
-        public static decimal CalculateMargin(IOrderModel2 order, SymbolAccessor symbol)
+        public static decimal CalculateMargin(IOrderModel2 order, ISymbolInfo2 symbol)
         {
             return CalculateMargin(order.Type, order.RemainingAmount, order.Price, order.StopPrice, order.Side, symbol, order.IsHidden);
         }
 
-        public static decimal CalculateMargin(Domain.OrderInfo.Types.Type type, decimal amount, double? orderPrice, double? orderStopPrice, Domain.OrderInfo.Types.Side side, SymbolAccessor symbol, bool isHidden)
+        public static decimal CalculateMargin(Domain.OrderInfo.Types.Type type, decimal amount, double? orderPrice, double? orderStopPrice, Domain.OrderInfo.Types.Side side, ISymbolInfo2 symbol, bool isHidden)
         {
             decimal combinedMarginFactor = CalculateMarginFactor(type, symbol, isHidden);
 
@@ -121,7 +117,7 @@ namespace TickTrader.Algo.Core.Calc
                 return combinedMarginFactor * amount;
         }
 
-        public IAssetModel GetMarginAsset(SymbolAccessor symbol, Domain.OrderInfo.Types.Side side)
+        public IAssetModel GetMarginAsset(ISymbolInfo2 symbol, Domain.OrderInfo.Types.Side side)
         {
             //if (order.MarginCurrency == null || order.ProfitCurrency == null)
             //    throw new MarketConfigurationException("Order must have both margin & profit currencies specified.");
@@ -129,7 +125,7 @@ namespace TickTrader.Algo.Core.Calc
             return assets.GetOrDefault(GetMarginAssetCurrency(symbol, side));
         }
 
-        public string GetMarginAssetCurrency(SymbolAccessor smb, Domain.OrderInfo.Types.Side side)
+        public string GetMarginAssetCurrency(ISymbolInfo2 smb, Domain.OrderInfo.Types.Side side)
         {
             //var symbol = smb ?? throw CreateNoSymbolException(smb.Name);
 

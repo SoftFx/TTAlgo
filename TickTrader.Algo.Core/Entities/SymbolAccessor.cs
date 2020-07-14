@@ -9,8 +9,17 @@ namespace TickTrader.Algo.Core
     {
         string Name { get; }
 
+        double DefaultSlippage { get; }
+        double Point { get; }
+        double Bid { get; set; }
+        double Ask { get; set; }
+
+
         string MarginCurrency { get; }
         string ProfitCurrency { get; }
+
+        double StopOrderMarginReduction { get; }
+        double HiddenLimitOrderMarginReduction { get; }
 
         void UpdateRate(Api.Quote quote); //Update Ask, Bid, LastQuote
     }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 using TickTrader.BusinessLogic;
 using TickTrader.BusinessObjects;
 
@@ -28,8 +29,10 @@ namespace TickTrader.Algo.Core.Calc
         //long? ParentOrderId { get; }
         double? Price { get; }
         double? StopPrice { get; }
+
         Domain.OrderInfo.Types.Side Side { get; }
         Domain.OrderInfo.Types.Type Type { get; }
+
         //OrderTypes InitialType { get; }
         ////OrderStatuses Status { get; }
         //double Amount { get; }
@@ -80,7 +83,7 @@ namespace TickTrader.Algo.Core.Calc
         OrderCalculator Calculator { get; set; }
 
         decimal CashMargin { get; set; }
-        SymbolAccessor SymbolInfo { get; }
+        ISymbolInfo2 SymbolInfo { get; }
 
         event Action<OrderEssentialsChangeArgs> EssentialsChanged;
         //event Action<OrderPropArgs<decimal>> PriceChanged;

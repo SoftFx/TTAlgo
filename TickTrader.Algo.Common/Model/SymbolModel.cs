@@ -2,10 +2,11 @@
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core;
 using Machinarium.Qnil;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class SymbolModel : Setup.ISymbolInfo
+    public class SymbolModel : Setup.ISymbolInfo, ISymbolInfo2
     {
         public SymbolModel(Domain.SymbolInfo info, IVarSet<string, CurrencyEntity> currencies)
         {
@@ -75,11 +76,31 @@ namespace TickTrader.Algo.Common.Model
                 && (amount / step) % 1 == 0;
         }
 
+        void ISymbolInfo2.UpdateRate(Quote quote)
+        {
+            throw new NotImplementedException();
+        }
+
         #region ISymbolInfo
 
         string Setup.ISymbolInfo.Id => Name;
 
         Info.SymbolOrigin Setup.ISymbolInfo.Origin => Info.SymbolOrigin.Online;
+
+        double ISymbolInfo2.DefaultSlippage => Descriptor.Slippage.DefaultValue ?? 0;
+
+        double ISymbolInfo2.Point => Math.Pow(10, -PriceDigits);
+
+        double ISymbolInfo2.Bid { get => BidTracker.Rate ?? 0; set => BidTracker.Rate = value; }
+        double ISymbolInfo2.Ask { get => AskTracker.Rate ?? 0; set => AskTracker.Rate = value; }
+
+        string ISymbolInfo2.MarginCurrency => BaseCurrency.Name;
+
+        string ISymbolInfo2.ProfitCurrency => QuoteCurrency.Name; //??? maybe, QuoteCurrency == CounterCurrency
+
+        double ISymbolInfo2.StopOrderMarginReduction => Descriptor.Margin.StopOrderReduction ?? 1;
+
+        double ISymbolInfo2.HiddenLimitOrderMarginReduction => Descriptor.Margin.HiddenLimitOrderReduction ?? 1;
 
         #endregion ISymbolInfo
     }
