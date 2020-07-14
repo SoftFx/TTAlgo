@@ -418,7 +418,7 @@ namespace TickTrader.Algo.Core
                 ?? throw new OrderValidationError("Order Not Found " + orderId, OrderCmdResultCodes.OrderNotFound);
         }
 
-        internal void IncreasePosition(string symbol, decimal amount, decimal price, OrderSide side, Func<string> idGenerator)
+        internal void IncreasePosition(string symbol, decimal amount, decimal price, Domain.OrderInfo.Types.Side side, Func<string> idGenerator)
         {
             var pos = NetPositions.GetOrCreatePosition(symbol, idGenerator);
             pos.Increase(amount, price, side);
@@ -437,7 +437,7 @@ namespace TickTrader.Algo.Core
 
         public double? GetSymbolMargin(string symbol, OrderSide side)
         {
-            return builder.Calculator?.GetSymbolMargin(symbol, side);
+            return builder.Calculator?.GetSymbolMargin(symbol, side.ToCoreEnum());
         }
 
         public double? CalculateOrderMargin(string symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl = null, double? tp = null, OrderExecOptions options = OrderExecOptions.None)
@@ -447,7 +447,7 @@ namespace TickTrader.Algo.Core
             {
                 var amount = volume * symbolAccessor.ContractSize;
 
-                return builder.Calculator.CalculateOrderMargin(symbolAccessor, amount, price, stopPrice, type, side, OrderEntity.IsHiddenOrder(maxVisibleVolume));
+                return builder.Calculator.CalculateOrderMargin(symbolAccessor, amount, price, stopPrice, type, side.ToCoreEnum(), OrderEntity.IsHiddenOrder(maxVisibleVolume));
             }
             return null;
         }
@@ -459,7 +459,7 @@ namespace TickTrader.Algo.Core
             {
                 var amount = volume * symbolAccessor.ContractSize;
 
-                return builder.Calculator.HasEnoughMarginToOpenOrder(symbolAccessor, amount, type, side, price, stopPrice, OrderEntity.IsHiddenOrder(maxVisibleVolume), out _);
+                return builder.Calculator.HasEnoughMarginToOpenOrder(symbolAccessor, amount, type, side.ToCoreEnum(), price, stopPrice, OrderEntity.IsHiddenOrder(maxVisibleVolume), out _);
             }
             return false;
         }

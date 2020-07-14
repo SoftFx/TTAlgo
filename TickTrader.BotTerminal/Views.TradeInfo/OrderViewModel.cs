@@ -43,10 +43,10 @@ namespace TickTrader.BotTerminal
         public decimal? Price => Order.Price;
 
         public RateDirectionTracker CurrentPrice => Order.OrderType != OrderType.Position ?
-                                                    Order.Side == OrderSide.Buy ? symbol?.AskTracker : symbol?.BidTracker :
-                                                    Order.Side == OrderSide.Buy ? symbol?.BidTracker : symbol?.AskTracker;
+                                                    Order.Side == Algo.Domain.OrderInfo.Types.Side.Buy ? symbol?.AskTracker : symbol?.BidTracker :
+                                                    Order.Side == Algo.Domain.OrderInfo.Types.Side.Buy ? symbol?.BidTracker : symbol?.AskTracker;
 
-        public decimal? DeviationPrice => Order.Side == OrderSide.Buy ? (decimal?)CurrentPrice?.Rate - Price : Price - (decimal?)CurrentPrice?.Rate;
+        public decimal? DeviationPrice => Order.Side == Algo.Domain.OrderInfo.Types.Side.Buy ? (decimal?)CurrentPrice?.Rate - Price : Price - (decimal?)CurrentPrice?.Rate;
 
 
         public string SortedNumber { get; }

@@ -51,7 +51,7 @@ namespace TickTrader.Algo.Core
         public double Commission { get; set; }
         public double Price { get; set; }
         public double SettlementPrice { get; set; }
-        public OrderSide Side { get; set; }
+        public Domain.OrderInfo.Types.Side Side { get; set; }
         public double Swap { get; set; }
         public string Symbol { get; private set; }
         public OrderExecAction Type { get; set; }

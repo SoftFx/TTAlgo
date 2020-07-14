@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Core.Calc
 
         //public OrderNetting Orders { get; };
 
-        public SideCalc(SymbolCalc parent, OrderSides side)
+        public SideCalc(SymbolCalc parent, Domain.OrderInfo.Types.Side side)
         {
             _parent = parent;
             _positions = new OrderNetting(parent.AccInfo, OrderTypes.Position, side, false);

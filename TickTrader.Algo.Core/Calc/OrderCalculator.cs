@@ -61,7 +61,7 @@ namespace TickTrader.Algo.Core.Calc
             return CalculateMargin((double)order.RemainingAmount, leverage, order.Type, order.Side, order.IsHidden, out error);
         }
 
-        public double CalculateMargin(double orderVolume, int leverage, OrderTypes ordType, OrderSides side, bool isHidden, out CalcErrorCodes error)
+        public double CalculateMargin(double orderVolume, int leverage, OrderTypes ordType, Domain.OrderInfo.Types.Side side, bool isHidden, out CalcErrorCodes error)
         {
             error = MarginConversionRate.ErrorCode;
 
@@ -110,15 +110,15 @@ namespace TickTrader.Algo.Core.Calc
             return CalculateProfit(order.Price.Value, (double)order.RemainingAmount, order.Side, out closePrice, out error);
         }
 
-        public double CalculateProfit(double openPrice, double volume, OrderSides side, out CalcErrorCodes error)
+        public double CalculateProfit(double openPrice, double volume, Domain.OrderInfo.Types.Side side, out CalcErrorCodes error)
         {
             double closePrice;
             return CalculateProfit(openPrice, volume, side, out closePrice, out error);
         }
 
-        public double CalculateProfit(double openPrice, double volume, OrderSides side, out double closePrice, out CalcErrorCodes error)
+        public double CalculateProfit(double openPrice, double volume, Domain.OrderInfo.Types.Side side, out double closePrice, out CalcErrorCodes error)
         {
-            if (side == OrderSides.Buy)
+            if (side == Domain.OrderInfo.Types.Side.Buy)
             {
                 if (!GetBid(out closePrice, out error))
                     return 0;
@@ -138,23 +138,23 @@ namespace TickTrader.Algo.Core.Calc
             return CalculateProfitInternal(order.Price.Value, closePrice, amount, order.Side, out _, out error);
         }
 
-        public double CalculateProfitFixedPrice(double openPrice, double volume, double closePrice, OrderSides side, out CalcErrorCodes error)
+        public double CalculateProfitFixedPrice(double openPrice, double volume, double closePrice, Domain.OrderInfo.Types.Side side, out CalcErrorCodes error)
         {
             return CalculateProfitFixedPrice(openPrice, closePrice, volume, side, out _, out error);
         }
 
-        public double CalculateProfitFixedPrice(double openPrice, double volume, double closePrice, OrderSides side, out double conversionRate, out CalcErrorCodes error)
+        public double CalculateProfitFixedPrice(double openPrice, double volume, double closePrice, Domain.OrderInfo.Types.Side side, out double conversionRate, out CalcErrorCodes error)
         {
             return CalculateProfitInternal(openPrice, closePrice, volume, side, out conversionRate, out error);
         }
 
-        private double CalculateProfitInternal(double openPrice, double closePrice, double volume, OrderSides side, out double conversionRate, out CalcErrorCodes error)
+        private double CalculateProfitInternal(double openPrice, double closePrice, double volume, Domain.OrderInfo.Types.Side side, out double conversionRate, out CalcErrorCodes error)
         {
             //this.VerifyInitialized();
 
             double nonConvProfit;
 
-            if (side == OrderSides.Buy)
+            if (side == Domain.OrderInfo.Types.Side.Buy)
                 nonConvProfit = (closePrice - openPrice) * volume;
             else
                 nonConvProfit = (openPrice - closePrice) * volume;
@@ -240,7 +240,7 @@ namespace TickTrader.Algo.Core.Calc
 
         #region Swap
 
-        public double CalculateSwap(double amount, OrderSides side, DateTime now, out CalcErrorCodes error)
+        public double CalculateSwap(double amount, Domain.OrderInfo.Types.Side side, DateTime now, out CalcErrorCodes error)
         {
             error = CalcErrorCodes.None;
 
@@ -265,24 +265,24 @@ namespace TickTrader.Algo.Core.Calc
             return swap;
         }
 
-        private double GetSwapModifier(OrderSides side)
+        private double GetSwapModifier(Domain.OrderInfo.Types.Side side)
         {
             if (SymbolInfo.SwapEnabled)
             {
                 if (SymbolInfo.SwapType == Domain.SwapInfo.Types.Type.Points)
                 {
-                    if (side == OrderSides.Buy)
+                    if (side == Domain.OrderInfo.Types.Side.Buy)
                         return SymbolInfo.SwapSizeLong / Math.Pow(10, SymbolInfo.Precision);
-                    if (side == OrderSides.Sell)
+                    if (side == Domain.OrderInfo.Types.Side.Sell)
                         return SymbolInfo.SwapSizeShort / Math.Pow(10, SymbolInfo.Precision);
                 }
                 else if (SymbolInfo.SwapType == Domain.SwapInfo.Types.Type.PercentPerYear)
                 {
                     const double power = 1.0 / 365.0;
                     double factor = 0.0;
-                    if (side == OrderSides.Buy)
+                    if (side == Domain.OrderInfo.Types.Side.Buy)
                         factor = Math.Sign(SymbolInfo.SwapSizeLong) * (Math.Pow(1 + Math.Abs(SymbolInfo.SwapSizeLong), power) - 1);
-                    if (side == OrderSides.Sell)
+                    if (side == Domain.OrderInfo.Types.Side.Sell)
                         factor = Math.Sign(SymbolInfo.SwapSizeShort) * (Math.Pow(1 + Math.Abs(SymbolInfo.SwapSizeShort), power) - 1);
 
                     //if (double.IsInfinity(factor) || double.IsNaN(factor))

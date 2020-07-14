@@ -134,10 +134,10 @@ namespace TickTrader.Algo.Core
                         //maxVisibleVolumeLots = RoundVolume(maxVisibleVolumeLots, smbMetadata);
                         decimal volume = ToUnits(roundedVolumeLots, smbMetadata);
                         decimal? maxVisibleVolume = null; //ConvertNullableVolume(maxVisibleVolumeLots, smbMetadata);
-                        var price = RoundPrice(request.Price, smbMetadata, request.Side);
-                        var stopPrice = RoundPrice(request.StopPrice, smbMetadata, request.Side);
-                        var sl = RoundPrice(request.StopLoss, smbMetadata, request.Side);
-                        var tp = RoundPrice(request.TakeProfit, smbMetadata, request.Side);
+                        var price = RoundPrice(request.Price, smbMetadata, request.Side.ToCoreEnum());
+                        var stopPrice = RoundPrice(request.StopPrice, smbMetadata, request.Side.ToCoreEnum());
+                        var sl = RoundPrice(request.StopLoss, smbMetadata, request.Side.ToCoreEnum());
+                        var tp = RoundPrice(request.TakeProfit, smbMetadata, request.Side.ToCoreEnum());
 
                         // emulate server ping
                         await _scheduler.EmulateAsyncDelay(VirtualServerPing, true);
@@ -150,7 +150,7 @@ namespace TickTrader.Algo.Core
 
                             //Facade.ValidateExpirationTime(Request.Expiration, _acc);
 
-                            var order = OpenOrder(calc, request.Type, request.Side, volume, maxVisibleVolume, price, stopPrice, sl, tp, request.Comment, request.Options, request.Tag, request.Expiration, OpenOrderOptions.None);
+                            var order = OpenOrder(calc, request.Type, request.Side.ToCoreEnum(), volume, maxVisibleVolume, price, stopPrice, sl, tp, request.Comment, request.Options, request.Tag, request.Expiration, OpenOrderOptions.None);
 
                             _collector.OnOrderOpened();
 
@@ -424,7 +424,7 @@ namespace TickTrader.Algo.Core
             return (++_orderIdSeed).ToString();
         }
 
-        private OrderAccessor OpenOrder(OrderCalculator orderCalc, OrderType orderType, OrderSide side, decimal volume, decimal? maxVisibleVolume, double? price, double? stopPrice,
+        private OrderAccessor OpenOrder(OrderCalculator orderCalc, OrderType orderType, Domain.OrderInfo.Types.Side side, decimal volume, decimal? maxVisibleVolume, double? price, double? stopPrice,
             double? sl, double? tp, string comment, OrderExecOptions execOptions, string tag, DateTime? expiration, OpenOrderOptions options)
         {
             var symbolInfo = orderCalc.SymbolInfo;
@@ -1107,7 +1107,7 @@ namespace TickTrader.Algo.Core
             return CreatePosition(trReason, parentOrder, parentOrder.Side, parentOrder.SymbolInfo, openPrice, posAmount, transformOrder);
         }
 
-        private OrderAccessor CreatePosition(BO.TradeTransReasons trReason, OrderAccessor parentOrder, OrderSide side, SymbolAccessor smb, double openPrice, decimal posAmount, bool transformOrder)
+        private OrderAccessor CreatePosition(BO.TradeTransReasons trReason, OrderAccessor parentOrder, Domain.OrderInfo.Types.Side side, SymbolAccessor smb, double openPrice, decimal posAmount, bool transformOrder)
         {
             OrderAccessor position;
             //TradeChargesInfo charges = new TradeChargesInfo();
@@ -1309,12 +1309,12 @@ namespace TickTrader.Algo.Core
             var mChange = 0M;
             var pChange = 0M;
 
-            if (order.Side == OrderSide.Buy)
+            if (order.Side == Domain.OrderInfo.Types.Side.Buy)
             {
                 mChange = fillAmount;
                 pChange = -(fillAmount * fillPrice).CeilBy(roundDigits);
             }
-            else if (order.Side == OrderSide.Sell)
+            else if (order.Side == Domain.OrderInfo.Types.Side.Sell)
             {
                 mChange = -fillAmount;
                 pChange = (fillAmount * fillPrice).FloorBy(roundDigits);
@@ -1394,7 +1394,7 @@ namespace TickTrader.Algo.Core
             return openInfo;
         }
 
-        public NetPositionCloseInfo DoNetSettlement(PositionAccessor position, TradeReportAdapter report, OrderSide fillSide = OrderSide.Buy)
+        public NetPositionCloseInfo DoNetSettlement(PositionAccessor position, TradeReportAdapter report, Domain.OrderInfo.Types.Side fillSide = Domain.OrderInfo.Types.Side.Buy)
         {
             var oneSideClosingAmount = Math.Min(position.Short.Amount, position.Long.Amount);
             var oneSideClosableAmount = Math.Max(position.Short.Amount, position.Long.Amount);
@@ -1406,11 +1406,11 @@ namespace TickTrader.Algo.Core
             {
                 var k = oneSideClosingAmount / oneSideClosableAmount;
                 var closeSwap = RoundMoney(k * position.Swap, _calcFixture.RoundingDigits);
-                var openPrice = fillSide == OrderSide.Buy ? position.Long.Price : position.Short.Price;
-                closePrice = fillSide == OrderSide.Buy ? position.Short.Price : position.Long.Price;
+                var openPrice = fillSide == Domain.OrderInfo.Types.Side.Buy ? position.Long.Price : position.Short.Price;
+                closePrice = fillSide == Domain.OrderInfo.Types.Side.Buy ? position.Short.Price : position.Long.Price;
                 double profitRate;
                 var profit = RoundMoney(position.Calculator.CalculateProfitFixedPrice((double)openPrice, (double)oneSideClosingAmount, (double)closePrice,
-                    fillSide.ToBoSide(), out profitRate, out var error), _calcFixture.RoundingDigits);
+                    fillSide, out profitRate, out var error), _calcFixture.RoundingDigits);
 
                 if (error != CalcErrorCodes.None)
                     throw new Exception();
@@ -1958,7 +1958,7 @@ namespace TickTrader.Algo.Core
                 {
                     foreach (OrderAccessor order in positions)
                     {
-                        double swap = order.Calculator.CalculateSwap((double)order.RemainingAmount, order.Side.ToBoSide(), ExecutionTime, out var error);
+                        double swap = order.Calculator.CalculateSwap((double)order.RemainingAmount, order.Side, ExecutionTime, out var error);
 
                         if (error != CalcErrorCodes.None)
                         {
@@ -2001,8 +2001,8 @@ namespace TickTrader.Algo.Core
                 if (pos != null)
                 {
                     var error = CalcErrorCodes.None;
-                    double swap = pos.Calculator.CalculateSwap((double)pos.Long.Amount, BO.OrderSides.Buy, ExecutionTime, out error)
-                                   + pos.Calculator.CalculateSwap((double)pos.Short.Amount, BO.OrderSides.Sell, ExecutionTime, out error);
+                    double swap = pos.Calculator.CalculateSwap((double)pos.Long.Amount, Domain.OrderInfo.Types.Side.Buy, ExecutionTime, out error)
+                                   + pos.Calculator.CalculateSwap((double)pos.Short.Amount, Domain.OrderInfo.Types.Side.Sell, ExecutionTime, out error);
 
                     //if (error != CalcErrorCodes.None)
                     //{
@@ -2046,13 +2046,13 @@ namespace TickTrader.Algo.Core
             return GetCurrentOpenPrice(order.Side, currentRate);
         }
 
-        private double? GetCurrentOpenPrice(OrderSide side, string smb)
+        private double? GetCurrentOpenPrice(Domain.OrderInfo.Types.Side side, string smb)
         {
             RateUpdate currentRate = _calcFixture.GetCurrentRateOrNull(smb);
             return GetCurrentOpenPrice(side, currentRate);
         }
 
-        private double? GetCurrentOpenPrice(OrderSide side, RateUpdate currentRate)
+        private double? GetCurrentOpenPrice(Domain.OrderInfo.Types.Side side, RateUpdate currentRate)
         {
             return GetOpenOrderPrice(currentRate, side);
         }
@@ -2065,27 +2065,27 @@ namespace TickTrader.Algo.Core
             return GetPositionClosePrice(currentRate, order.Side);
         }
 
-        private static double? GetPositionClosePrice(RateUpdate tick, BO.OrderSides positionSide)
+        private static double? GetPositionClosePrice(RateUpdate tick, Domain.OrderInfo.Types.Side positionSide)
         {
             if (tick == null)
                 return null;
 
-            if (positionSide == BO.OrderSides.Buy)
+            if (positionSide == Domain.OrderInfo.Types.Side.Buy)
                 return tick.NullableBid();
-            else if (positionSide == BO.OrderSides.Sell)
+            else if (positionSide == Domain.OrderInfo.Types.Side.Sell)
                 return tick.NullableAsk();
 
             throw new Exception("Unknown order side: " + positionSide);
         }
 
-        private static double? GetOpenOrderPrice(RateUpdate tick, OrderSide orderSide)
+        private static double? GetOpenOrderPrice(RateUpdate tick, Domain.OrderInfo.Types.Side orderSide)
         {
             if (tick == null)
                 return null;
 
-            if (orderSide == OrderSide.Buy)
+            if (orderSide == Domain.OrderInfo.Types.Side.Buy)
                 return tick.NullableAsk();
-            if (orderSide == OrderSide.Sell)
+            if (orderSide == Domain.OrderInfo.Types.Side.Sell)
                 return tick.NullableBid();
 
             //try
@@ -2360,14 +2360,14 @@ namespace TickTrader.Algo.Core
             return RoundVolume(volumeInLots.Value, smbMetadata);
         }
 
-        private double RoundPrice(double price, Symbol smbMetadata, OrderSide side)
+        private static double RoundPrice(double price, Symbol smbMetadata, Domain.OrderInfo.Types.Side side)
         {
-            return side == OrderSide.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
+            return side == Domain.OrderInfo.Types.Side.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
         }
 
-        private double? RoundPrice(double? price, Symbol smbMetadata, OrderSide side)
+        private static double? RoundPrice(double? price, Symbol smbMetadata, Domain.OrderInfo.Types.Side side)
         {
-            return side == OrderSide.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
+            return side == Domain.OrderInfo.Types.Side.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
         }
 
         private decimal? ToUnits(decimal? volumeInLots, Symbol smbMetadata)

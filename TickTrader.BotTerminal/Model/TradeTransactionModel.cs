@@ -198,20 +198,20 @@ namespace TickTrader.BotTerminal
             if (transaction.TradeTransactionReportType == TradeExecActions.TradeModified)
             {
                 if (transaction.TradeTransactionReason == TradeTransactionReason.Split)
-                    return transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.SplitBuy : AggregatedTransactionType.SplitSell;
+                    return transaction.TradeRecordSide == Algo.Domain.OrderInfo.Types.Side.Buy ? AggregatedTransactionType.SplitBuy : AggregatedTransactionType.SplitSell;
             }
 
             switch (transaction.TradeRecordType)
             {
                 case OrderType.Market:
                 case OrderType.Position:
-                    return transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
+                    return transaction.TradeRecordSide == Algo.Domain.OrderInfo.Types.Side.Buy ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
                 case OrderType.Limit:
-                    return transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.BuyLimit : AggregatedTransactionType.SellLimit;
+                    return transaction.TradeRecordSide == Algo.Domain.OrderInfo.Types.Side.Buy ? AggregatedTransactionType.BuyLimit : AggregatedTransactionType.SellLimit;
                 case OrderType.StopLimit:
-                    return transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.BuyStopLimit : AggregatedTransactionType.SellStopLimit;
+                    return transaction.TradeRecordSide == Algo.Domain.OrderInfo.Types.Side.Buy ? AggregatedTransactionType.BuyStopLimit : AggregatedTransactionType.SellStopLimit;
                 case OrderType.Stop:
-                    return transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.BuyStop : AggregatedTransactionType.SellStop;
+                    return transaction.TradeRecordSide == Algo.Domain.OrderInfo.Types.Side.Buy ? AggregatedTransactionType.BuyStop : AggregatedTransactionType.SellStop;
                 default:
                     return AggregatedTransactionType.Unknown;
             }
@@ -226,8 +226,8 @@ namespace TickTrader.BotTerminal
         {
             switch (transaction.TradeRecordSide)
             {
-                case OrderSide.Buy: return TransactionSide.Buy;
-                case OrderSide.Sell: return TransactionSide.Sell;
+                case Algo.Domain.OrderInfo.Types.Side.Buy: return TransactionSide.Buy;
+                case Algo.Domain.OrderInfo.Types.Side.Sell: return TransactionSide.Sell;
                 default: return TransactionSide.None;
             }
         }
@@ -483,7 +483,7 @@ namespace TickTrader.BotTerminal
 
         protected AggregatedTransactionType GetBuyOrSellType(TradeReportEntity transaction)
         {
-            return transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
+            return transaction.TradeRecordSide == Algo.Domain.OrderInfo.Types.Side.Buy ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
         }
 
         protected AggregatedTransactionType GetCanceledType(TradeReportEntity transaction)
@@ -492,15 +492,15 @@ namespace TickTrader.BotTerminal
             {
                 case OrderType.Market:
                 case OrderType.Position:
-                    return transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
+                    return transaction.TradeRecordSide == Algo.Domain.OrderInfo.Types.Side.Buy ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
                 case OrderType.Limit:
-                    return transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.BuyLimitCanceled : AggregatedTransactionType.SellLimitCanceled;
+                    return transaction.TradeRecordSide == Algo.Domain.OrderInfo.Types.Side.Buy ? AggregatedTransactionType.BuyLimitCanceled : AggregatedTransactionType.SellLimitCanceled;
                 case OrderType.StopLimit:
                     OpenPrice = transaction.StopPrice;
-                    return transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.BuyStopLimitCanceled : AggregatedTransactionType.SellStopLimitCanceled;
+                    return transaction.TradeRecordSide == Algo.Domain.OrderInfo.Types.Side.Buy ? AggregatedTransactionType.BuyStopLimitCanceled : AggregatedTransactionType.SellStopLimitCanceled;
                 case OrderType.Stop:
                     OpenPrice = transaction.StopPrice;
-                    return transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.BuyStopCanceled : AggregatedTransactionType.SellStopCanceled;
+                    return transaction.TradeRecordSide == Algo.Domain.OrderInfo.Types.Side.Buy ? AggregatedTransactionType.BuyStopCanceled : AggregatedTransactionType.SellStopCanceled;
                 default: return AggregatedTransactionType.Unknown;
             }
         }

@@ -42,7 +42,7 @@ namespace TickTrader.Algo.Core
             {
                 Symbol = apiRequest.Symbol,
                 Type = apiRequest.Type,
-                Side = apiRequest.Side,
+                Side = apiRequest.Side.ToCoreEnum(),
                 VolumeLots = apiRequest.Volume,
                 MaxVisibleVolumeLots = apiRequest.MaxVisibleVolume,
                 Price = apiRequest.Price,
@@ -296,7 +296,7 @@ namespace TickTrader.Algo.Core
                 return;
             if (!ValidateTradeEnabled(smbMetadata, ref code))
                 return;
-            if (!ValidateQuotes(smbMetadata, orderToCancel.Side, ref code))
+            if (!ValidateQuotes(smbMetadata, orderToCancel.Side.ToCoreEnum(), ref code))
                 return;
         }
 
@@ -313,7 +313,7 @@ namespace TickTrader.Algo.Core
                 return;
             if (!ValidateTradeEnabled(smbMetadata, ref code))
                 return;
-            if (!ValidateQuotes(smbMetadata, orderToClose.Side.Revert(), ref code))
+            if (!ValidateQuotes(smbMetadata, orderToClose.Side.ToCoreEnum().Revert(), ref code))
                 return;
 
             if (!ValidateVolumeLots(request.VolumeLots, smbMetadata, ref code))
@@ -339,7 +339,7 @@ namespace TickTrader.Algo.Core
                 return;
             if (!ValidateTradeEnabled(smbMetadata, ref code))
                 return;
-            if (!ValidateQuotes(smbMetadata, orderToClose.Side.Revert(), ref code))
+            if (!ValidateQuotes(smbMetadata, orderToClose.Side.ToCoreEnum().Revert(), ref code))
                 return;
         }
 
@@ -353,7 +353,7 @@ namespace TickTrader.Algo.Core
             if (!TryGetOrder(request.OrderId, out orderToModify, ref code))
                 return;
 
-            var side = orderToModify.Side;
+            var side = orderToModify.Side.ToCoreEnum();
             var type = orderToModify.Type;
 
             request.Symbol = orderToModify.Symbol;
@@ -442,15 +442,15 @@ namespace TickTrader.Algo.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double RoundPrice(double price, Symbol smbMetadata, OrderSide side)
+        private double RoundPrice(double price, Symbol smbMetadata, Domain.OrderInfo.Types.Side side)
         {
-            return side == OrderSide.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
+            return side == Domain.OrderInfo.Types.Side.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double? RoundPrice(double? price, Symbol smbMetadata, OrderSide side)
+        private double? RoundPrice(double? price, Symbol smbMetadata, Domain.OrderInfo.Types.Side side)
         {
-            return side == OrderSide.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
+            return side == Domain.OrderInfo.Types.Side.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
         }
 
         #region Validation
@@ -480,7 +480,7 @@ namespace TickTrader.Algo.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool TryGetMarketPrice(SymbolAccessor smb, OrderSide orderSide, out double price, ref OrderCmdResultCodes code)
+        private bool TryGetMarketPrice(SymbolAccessor smb, Domain.OrderInfo.Types.Side orderSide, out double price, ref OrderCmdResultCodes code)
         {
             price = double.NaN;
             var rate = smb.LastQuote;
@@ -491,7 +491,7 @@ namespace TickTrader.Algo.Core
                 return false;
             }
 
-            if (orderSide == OrderSide.Buy)
+            if (orderSide == Domain.OrderInfo.Types.Side.Buy)
             {
                 if (!rate.HasAsk)
                 {
@@ -501,7 +501,7 @@ namespace TickTrader.Algo.Core
                 price = rate.Ask;
                 return true;
             }
-            else if (orderSide == OrderSide.Sell)
+            else if (orderSide == Domain.OrderInfo.Types.Side.Sell)
             {
                 if (!rate.HasBid)
                 {
@@ -778,7 +778,7 @@ namespace TickTrader.Algo.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool ValidateQuotes(SymbolAccessor symbol, OrderSide side, ref OrderCmdResultCodes code)
+        private bool ValidateQuotes(SymbolAccessor symbol, Domain.OrderInfo.Types.Side side, ref OrderCmdResultCodes code)
         {
             var quote = symbol.LastQuote;
 
@@ -788,13 +788,13 @@ namespace TickTrader.Algo.Core
                 return false;
             }
 
-            if (side == OrderSide.Sell && quote.IsBidIndicative)
+            if (side == Domain.OrderInfo.Types.Side.Sell && quote.IsBidIndicative)
             {
                 code = OrderCmdResultCodes.OffQuotes;
                 return false;
             }
 
-            if (side == OrderSide.Buy && quote.IsAskIndicative)
+            if (side == Domain.OrderInfo.Types.Side.Buy && quote.IsAskIndicative)
             {
                 code = OrderCmdResultCodes.OffQuotes;
                 return false;

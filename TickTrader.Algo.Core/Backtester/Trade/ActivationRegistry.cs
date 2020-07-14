@@ -72,25 +72,25 @@ namespace TickTrader.Algo.Core
             return instantActivation;
         }
 
-        private ActivationIndex GetPendingIndex(OrderType ordType, OrderSide ordSide)
+        private ActivationIndex GetPendingIndex(OrderType ordType, Domain.OrderInfo.Types.Side ordSide)
         {
             if (ordType == OrderType.Limit)
             {
-                if (ordSide == OrderSide.Buy)
+                if (ordSide == Domain.OrderInfo.Types.Side.Buy)
                     return buyLimitIndex;
                 else
                     return sellLimitIndex;
             }
             else if (ordType == OrderType.Stop)
             {
-                if (ordSide == OrderSide.Buy)
+                if (ordSide == Domain.OrderInfo.Types.Side.Buy)
                     return buyStopIndex;
                 else
                     return sellStopIndex;
             }
             else if (ordType == OrderType.StopLimit)
             {
-                if (ordSide == OrderSide.Buy)
+                if (ordSide == Domain.OrderInfo.Types.Side.Buy)
                     return buyStopLimitIndex;
                 else
                     return sellStopLimitIndex;
@@ -99,18 +99,18 @@ namespace TickTrader.Algo.Core
                 throw new Exception("Unsupported Order Type");
         }
 
-        private ActivationIndex GetPositionIndex(OrderSide side, ActivationTypes type)
+        private ActivationIndex GetPositionIndex(Domain.OrderInfo.Types.Side side, ActivationTypes type)
         {
             if (type == ActivationTypes.TakeProfit)
             {
-                if (side == OrderSide.Sell)
+                if (side == Domain.OrderInfo.Types.Side.Sell)
                     return buyLimitIndex;
                 else
                     return sellLimitIndex;
             }
             else if (type == ActivationTypes.StopLoss)
             {
-                if (side == OrderSide.Sell)
+                if (side == Domain.OrderInfo.Types.Side.Sell)
                     return buyStopIndex;
                 else
                     return sellStopIndex;

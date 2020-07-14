@@ -68,7 +68,8 @@ namespace TickTrader.Algo.Core
         public double RemainingVolume => (double)_entity.RemainingVolume / _lotSize;
         public double MaxVisibleVolume => (double?)_entity.MaxVisibleVolume / _lotSize ?? double.NaN;
         public OrderType Type => _entity.Type;
-        public OrderSide Side => _entity.Side;
+        OrderSide Order.Side => _entity.Side.ToApiEnum();
+        public Domain.OrderInfo.Types.Side Side => _entity.Side;
         public double Price => _entity.Price ?? double.NaN;
         public double StopPrice => _entity.StopPrice ?? double.NaN;
         public double StopLoss => _entity.StopLoss ?? double.NaN;
@@ -101,7 +102,7 @@ namespace TickTrader.Algo.Core
         double? IOrderCalcInfo.Price => Entity.Price;
         double? IOrderCalcInfo.StopPrice => Entity.StopPrice;
         SymbolAccessor IOrderModel2.SymbolInfo => _symbol;
-        BO.OrderSides IOrderCalcInfo.Side => Entity.GetBlOrderSide();
+        Domain.OrderInfo.Types.Side IOrderCalcInfo.Side => Entity.Side;
         BO.OrderTypes IOrderCalcInfo.Type => Entity.GetBlOrderType();
 
         #endregion

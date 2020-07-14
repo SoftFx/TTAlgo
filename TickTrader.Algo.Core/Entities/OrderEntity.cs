@@ -51,7 +51,7 @@ namespace TickTrader.Algo.Core
         public string Symbol { get; set; }
         public OrderType InitialType { get; set; }
         public OrderType Type { get; set; }
-        public OrderSide Side { get; set; }
+        public Domain.OrderInfo.Types.Side Side { get; set; }
         public double? Price { get; set; }
         public double? ReqOpenPrice { get; set; }
         public double? StopLoss { get; set; }

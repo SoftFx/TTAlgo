@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Core.Calc
         private double _dblMarginAmount;
         private double _dblProfitAmount;
 
-        public OrderNetting(IMarginAccountInfo2 accInfo, OrderTypes type, OrderSides side, bool isHidden)
+        public OrderNetting(IMarginAccountInfo2 accInfo, OrderTypes type, Domain.OrderInfo.Types.Side side, bool isHidden)
         {
             AccountData = accInfo;
             Type = type;
@@ -34,7 +34,7 @@ namespace TickTrader.Algo.Core.Calc
         public IMarginAccountInfo2 AccountData { get; }
         public OrderCalculator Calculator { get; internal set; }
         public OrderTypes Type { get; }
-        public OrderSides Side { get; }
+        public Domain.OrderInfo.Types.Side Side { get; }
         public bool IsHidden { get; }
 
         public event Action<decimal> AmountChanged;

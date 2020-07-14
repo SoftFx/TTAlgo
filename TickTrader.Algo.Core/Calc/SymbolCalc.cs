@@ -22,8 +22,8 @@ namespace TickTrader.Algo.Core.Calc
             Symbol = symbol;
             _market = market;
             AccInfo = accInfo;
-            Buy = new SideCalc(this, OrderSides.Buy);
-            Sell = new SideCalc(this, OrderSides.Sell);
+            Buy = new SideCalc(this, Domain.OrderInfo.Types.Side.Buy);
+            Sell = new SideCalc(this, Domain.OrderInfo.Types.Side.Sell);
             CreateCalculator();
 
             if (autoUpdate)
@@ -111,7 +111,7 @@ namespace TickTrader.Algo.Core.Calc
 
         private SideCalc GetSideCalc(IOrderModel2 order)
         {
-            if (order.Side == OrderSides.Buy)
+            if (order.Side == Domain.OrderInfo.Types.Side.Buy)
                 return Buy;
             else
                 return Sell;

@@ -16,7 +16,7 @@ namespace TickTrader.Algo.Common.Model
         private string symbol;
         private decimal swap;
         private double settlementPrice;
-        private OrderSide side;
+        private Domain.OrderInfo.Types.Side side;
         private double price;
         private double amount;
         private DateTime? modified;
@@ -46,10 +46,10 @@ namespace TickTrader.Algo.Common.Model
             Long = new PositionSide();
             Short = new PositionSide();
 
-            Long.Amount = position.Side == OrderSide.Buy ? (decimal)Amount : 0;
-            Long.Price = position.Side == OrderSide.Buy ? (decimal)Price : 0;
-            Short.Amount = position.Side == OrderSide.Sell ? (decimal)Amount : 0;
-            Short.Price = position.Side == OrderSide.Sell ? (decimal)Price : 0;
+            Long.Amount = position.Side == Domain.OrderInfo.Types.Side.Buy ? (decimal)Amount : 0;
+            Long.Price = position.Side == Domain.OrderInfo.Types.Side.Buy ? (decimal)Price : 0;
+            Short.Amount = position.Side == Domain.OrderInfo.Types.Side.Sell ? (decimal)Amount : 0;
+            Short.Price = position.Side == Domain.OrderInfo.Types.Side.Sell ? (decimal)Price : 0;
 
             Long.ProfitUpdated = OnProfitUpdated;
             Short.ProfitUpdated = OnProfitUpdated;
@@ -148,7 +148,7 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        public OrderSide Side
+        public Domain.OrderInfo.Types.Side Side
         {
             get { return side; }
             private set
@@ -204,8 +204,8 @@ namespace TickTrader.Algo.Common.Model
         {
             get
             {
-                double sPrice = (Side == OrderSide.Buy ? SymbolModel.CurrentBid : SymbolModel.CurrentAsk) ?? 0;
-                return Side == OrderSide.Buy ? sPrice - Price : Price - sPrice;
+                double sPrice = (Side == Domain.OrderInfo.Types.Side.Buy ? SymbolModel.CurrentBid : SymbolModel.CurrentAsk) ?? 0;
+                return Side == Domain.OrderInfo.Types.Side.Buy ? sPrice - Price : Price - sPrice;
             }
         }
 

@@ -71,9 +71,9 @@ namespace TickTrader.Algo.Core
             return currencies.GetOrDefault(key) ?? new CurrencyEntity(null);
         }
 
-        public static OrderSide Revert(this OrderSide side)
+        public static Domain.OrderInfo.Types.Side Revert(this Domain.OrderInfo.Types.Side side)
         {
-            return side == OrderSide.Sell ? OrderSide.Buy : OrderSide.Sell;
+            return side == Domain.OrderInfo.Types.Side.Sell ? Domain.OrderInfo.Types.Side.Buy : Domain.OrderInfo.Types.Side.Sell;
         }
 
         public static DateTime StartOfWeek(this DateTime dt, DayOfWeek startOfWeek)

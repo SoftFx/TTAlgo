@@ -48,7 +48,7 @@ namespace TickTrader.Algo.Common.Model
         public double Swap { get; set; }
         public OrderType InitialOrderType { get; set; }
         public OrderType OrderType { get; set; }
-        public OrderSide OrderSide { get; set; }
+        public Domain.OrderInfo.Types.Side OrderSide { get; set; }
         public double? Price { get; set; }
         public double Balance { get; set; }
         public double? ReqOpenPrice { get; set; }

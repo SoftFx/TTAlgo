@@ -24,7 +24,7 @@ namespace TickTrader.BotTerminal
         public int PriceDigits { get; private set; }
         public int ProfitDigits { get; private set; }
         public PositionModel Position { get; private set; }
-        public RateDirectionTracker CurrentPrice => Position.Side == OrderSide.Buy ? Position?.SymbolModel?.BidTracker : Position?.SymbolModel?.AskTracker;
+        public RateDirectionTracker CurrentPrice => Position.Side == Algo.Domain.OrderInfo.Types.Side.Buy ? Position?.SymbolModel?.BidTracker : Position?.SymbolModel?.AskTracker;
         public string SortedNumber { get; }
 
         public void Dispose()

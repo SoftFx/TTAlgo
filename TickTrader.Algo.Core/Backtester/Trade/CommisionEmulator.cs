@@ -127,10 +127,10 @@ namespace TickTrader.Algo.Core
 
         public static void OnOrderFilled(OrderAccessor order, double fillAmount, double fillPrice, CalculatorFixture acc, SymbolAccessor cfg, TradeChargesInfo charges)
         {
-            var currency = (order.Side == OrderSide.Buy) ? cfg.MarginCurrencyInfo : cfg.ProfitCurrencyInfo;
+            var currency = (order.Side == Domain.OrderInfo.Types.Side.Buy) ? cfg.MarginCurrencyInfo : cfg.ProfitCurrencyInfo;
             var asset = acc.GetAsset(currency);
 
-            var amount = (order.Side == OrderSide.Buy) ? fillAmount : fillAmount * fillPrice;
+            var amount = (order.Side == Domain.OrderInfo.Types.Side.Buy) ? fillAmount : fillAmount * fillPrice;
             var commiss = CalculateCommission(amount, cfg, order.IsReducedOpenCommission(), acc, currency.Name, charges);
             var commission = RoundValue(commiss, currency.Digits);
 

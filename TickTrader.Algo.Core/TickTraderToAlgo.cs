@@ -56,16 +56,6 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public static BO.OrderSides ToBoSide(this OrderSide side)
-        {
-            return Convert(side);
-        }
-
-        public static BO.OrderSides GetBlOrderSide(this OrderEntity order)
-        {
-            return Convert(order.Side);
-        }
-
         public static BO.OrderSides Convert(OrderSide apiSide)
         {
             switch (apiSide)

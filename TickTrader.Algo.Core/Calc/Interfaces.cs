@@ -28,7 +28,7 @@ namespace TickTrader.Algo.Core.Calc
         //long? ParentOrderId { get; }
         double? Price { get; }
         double? StopPrice { get; }
-        OrderSides Side { get; }
+        Domain.OrderInfo.Types.Side Side { get; }
         OrderTypes Type { get; }
         //OrderTypes InitialType { get; }
         ////OrderStatuses Status { get; }

@@ -58,7 +58,7 @@ namespace TickTrader.Algo.Core.Calc
         //    return HasSufficientMarginToOpenOrder(order.Type, order.Side, symbol, marginMovement);
         //}
 
-        public bool HasSufficientMarginToOpenOrder(OrderTypes type, OrderSides side, SymbolAccessor symbol, decimal? marginMovement)
+        public bool HasSufficientMarginToOpenOrder(OrderTypes type, Domain.OrderInfo.Types.Side side, SymbolAccessor symbol, decimal? marginMovement)
         {
             //if (order == null)
             //    throw new ArgumentNullException("order");
@@ -109,19 +109,19 @@ namespace TickTrader.Algo.Core.Calc
             return CalculateMargin(order.Type, order.RemainingAmount, order.Price, order.StopPrice, order.Side, symbol, order.IsHidden);
         }
 
-        public static decimal CalculateMargin(OrderTypes type, decimal amount, double? orderPrice, double? orderStopPrice, OrderSides side, SymbolAccessor symbol, bool isHidden)
+        public static decimal CalculateMargin(OrderTypes type, decimal amount, double? orderPrice, double? orderStopPrice, Domain.OrderInfo.Types.Side side, SymbolAccessor symbol, bool isHidden)
         {
             decimal combinedMarginFactor = CalculateMarginFactor(type, symbol, isHidden);
 
             double price = ((type == OrderTypes.Stop) || (type == OrderTypes.StopLimit)) ? orderStopPrice.Value : orderPrice.Value;
 
-            if (side == OrderSides.Buy)
+            if (side == Domain.OrderInfo.Types.Side.Buy)
                 return combinedMarginFactor * amount * (decimal)price;
             else
                 return combinedMarginFactor * amount;
         }
 
-        public IAssetModel GetMarginAsset(SymbolAccessor symbol, OrderSides side)
+        public IAssetModel GetMarginAsset(SymbolAccessor symbol, Domain.OrderInfo.Types.Side side)
         {
             //if (order.MarginCurrency == null || order.ProfitCurrency == null)
             //    throw new MarketConfigurationException("Order must have both margin & profit currencies specified.");
@@ -129,11 +129,11 @@ namespace TickTrader.Algo.Core.Calc
             return assets.GetOrDefault(GetMarginAssetCurrency(symbol, side));
         }
 
-        public string GetMarginAssetCurrency(SymbolAccessor smb, OrderSides side)
+        public string GetMarginAssetCurrency(SymbolAccessor smb, Domain.OrderInfo.Types.Side side)
         {
             //var symbol = smb ?? throw CreateNoSymbolException(smb.Name);
 
-            return (side == OrderSides.Buy) ? smb.ProfitCurrency : smb.MarginCurrency;
+            return (side == Domain.OrderInfo.Types.Side.Buy) ? smb.ProfitCurrency : smb.MarginCurrency;
         }
 
         public void AddRemoveAsset(IAssetModel asset, AssetChangeTypes changeType)

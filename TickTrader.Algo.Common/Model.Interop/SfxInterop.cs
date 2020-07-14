@@ -712,23 +712,23 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private static Api.OrderSide Convert(SFX.OrderSide fdkSide)
+        private static Domain.OrderInfo.Types.Side Convert(SFX.OrderSide fdkSide)
         {
             switch (fdkSide)
             {
-                case SFX.OrderSide.Buy: return Api.OrderSide.Buy;
-                case SFX.OrderSide.Sell: return Api.OrderSide.Sell;
+                case SFX.OrderSide.Buy: return Domain.OrderInfo.Types.Side.Buy;
+                case SFX.OrderSide.Sell: return Domain.OrderInfo.Types.Side.Sell;
 
                 default: throw new ArgumentException("Unsupported order side: " + fdkSide);
             }
         }
 
-        private static SFX.OrderSide Convert(Api.OrderSide side)
+        private static SFX.OrderSide Convert(Domain.OrderInfo.Types.Side side)
         {
             switch (side)
             {
-                case Api.OrderSide.Buy: return SFX.OrderSide.Buy;
-                case Api.OrderSide.Sell: return SFX.OrderSide.Sell;
+                case Domain.OrderInfo.Types.Side.Buy: return SFX.OrderSide.Buy;
+                case Domain.OrderInfo.Types.Side.Sell: return SFX.OrderSide.Sell;
 
                 default: throw new ArgumentException("Unsupported order side: " + side);
             }
@@ -952,19 +952,19 @@ namespace TickTrader.Algo.Common.Model
 
         private static PositionEntity Convert(SFX.Position p)
         {
-            API.OrderSide side;
+            Domain.OrderInfo.Types.Side side;
             double price;
             double amount;
 
             if (p.BuyAmount > 0)
             {
-                side = API.OrderSide.Buy;
+                side = Domain.OrderInfo.Types.Side.Buy;
                 price = p.BuyPrice ?? 0;
                 amount = p.BuyAmount;
             }
             else
             {
-                side = API.OrderSide.Sell;
+                side = Domain.OrderInfo.Types.Side.Sell;
                 price = p.SellPrice ?? 0;
                 amount = p.SellAmount;
             }

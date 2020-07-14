@@ -40,7 +40,7 @@ namespace TickTrader.Algo.Core
         public double? SrcAssetMovement { get; set; }
         public double? DstAssetMovement { get; set; }
         public double PositionLeavesQuantity { get; set; }
-        public OrderSide TradeRecordSide { get; set; }
+        public Domain.OrderInfo.Types.Side TradeRecordSide { get; set; }
         public OrderType TradeRecordType { get; set; }
         public double StopPrice { get; set; }
         public double Price { get; set; }
@@ -84,7 +84,7 @@ namespace TickTrader.Algo.Core
         public string NextStreamPositionId { get; set; }
         public double? CloseConversionRate { get; set; }
         public double AgentCommission { get; set; }
-        public OrderSide? PosRemainingSide { get; set; }
+        public Domain.OrderInfo.Types.Side? PosRemainingSide { get; set; }
         public DateTime PositionModified { get; set; }
         public string CommCurrency { get; set; }
         public DateTime? Expiration { get; set; }

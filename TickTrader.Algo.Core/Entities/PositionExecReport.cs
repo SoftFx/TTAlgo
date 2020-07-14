@@ -10,7 +10,7 @@ namespace TickTrader.Algo.Core
 
         public OrderExecAction ExecAction => PositionInfo.Type;
         public double Volume => PositionInfo.Volume;
-        public OrderSide Side => PositionInfo.Side;
+        public Domain.OrderInfo.Types.Side Side => PositionInfo.Side;
         public string Symbol => PositionInfo.Symbol;
         public double Price => PositionInfo.Price;
     }

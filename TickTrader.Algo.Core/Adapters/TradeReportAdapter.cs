@@ -44,7 +44,8 @@ namespace TickTrader.Algo.Core
         public string Comment => Entity.Comment;
         public double GrossProfitLoss => Entity.GrossProfitLoss;
         public double NetProfitLoss => Entity.NetProfitLoss;
-        public OrderSide TradeRecordSide => Entity.TradeRecordSide;
+        public Domain.OrderInfo.Types.Side TradeRecordSide => Entity.TradeRecordSide;
+        OrderSide TradeReport.TradeRecordSide => Entity.TradeRecordSide.ToApiEnum();
         public OrderType TradeRecordType => Entity.TradeRecordType;
         public double? MaxVisibleQuantity => Entity.MaxVisibleQuantity;
         public string Tag => Entity.Tag;

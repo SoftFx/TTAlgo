@@ -96,7 +96,7 @@ namespace TickTrader.Algo.Core.Calc
             }
         }
 
-        public bool HasSufficientMarginToOpenOrder(double orderAmount, string symbol, OrderTypes type, OrderSides side, bool isHidden,
+        public bool HasSufficientMarginToOpenOrder(double orderAmount, string symbol, OrderTypes type, Domain.OrderInfo.Types.Side side, bool isHidden,
             out double newAccountMargin, out CalcErrorCodes error)
         {
             var netting = GetSymbolStats(symbol);
@@ -113,13 +113,13 @@ namespace TickTrader.Algo.Core.Calc
             }
         }
 
-        public bool HasSufficientMarginToOpenOrder(double orderMargin, string symbol, OrderSides orderSide)
+        public bool HasSufficientMarginToOpenOrder(double orderMargin, string symbol, Domain.OrderInfo.Types.Side orderSide)
         {
             var netting = GetSymbolStats(symbol);
             return HasSufficientMarginToOpenOrder(orderMargin, netting, orderSide, out _);
         }
 
-        public bool HasSufficientMarginToOpenOrder(double orderMargin, SymbolCalc netting, OrderSides orderSide, out double newAccountMargin)
+        public bool HasSufficientMarginToOpenOrder(double orderMargin, SymbolCalc netting, Domain.OrderInfo.Types.Side orderSide, out double newAccountMargin)
         {
             double smbMargin;
             double newSmbMargin;
@@ -137,7 +137,7 @@ namespace TickTrader.Algo.Core.Calc
                     var marginSell = netting.Sell.Margin;
                     smbMargin = Math.Max(marginBuy, marginSell);
 
-                    if (orderSide == OrderSides.Buy)
+                    if (orderSide == Domain.OrderInfo.Types.Side.Buy)
                         newSmbMargin = Math.Max(marginSell, marginBuy + orderMargin);
                     else
                         newSmbMargin = Math.Max(marginSell + orderMargin, marginBuy);
@@ -149,13 +149,13 @@ namespace TickTrader.Algo.Core.Calc
                     smbMargin = Math.Max(marginBuy, marginSell);
                     newSmbMargin = orderMargin;
 
-                    if ((orderSide == OrderSides.Buy) && (marginBuy > 0))
+                    if ((orderSide == Domain.OrderInfo.Types.Side.Buy) && (marginBuy > 0))
                         newSmbMargin = marginBuy + orderMargin;
-                    else if ((orderSide == OrderSides.Buy) && (marginSell > 0))
+                    else if ((orderSide == Domain.OrderInfo.Types.Side.Buy) && (marginSell > 0))
                         newSmbMargin = Math.Abs(marginSell - orderMargin);
-                    else if ((orderSide == OrderSides.Sell) && (marginSell > 0))
+                    else if ((orderSide == Domain.OrderInfo.Types.Side.Sell) && (marginSell > 0))
                         newSmbMargin = marginSell + orderMargin;
-                    else if ((orderSide == OrderSides.Sell) && (marginBuy > 0))
+                    else if ((orderSide == Domain.OrderInfo.Types.Side.Sell) && (marginBuy > 0))
                         newSmbMargin = Math.Abs(marginBuy - orderMargin);
                 }
                 else

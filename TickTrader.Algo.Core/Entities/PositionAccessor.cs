@@ -55,7 +55,7 @@ namespace TickTrader.Algo.Core
 
         internal void Update(PositionEntity entity)
         {
-            if (entity.Side == OrderSide.Buy)
+            if (entity.Side == Domain.OrderInfo.Types.Side.Buy)
             {
                 _buy.Update((decimal)entity.Volume, (decimal)entity.Price);
                 _sell.Update(0, 0);
@@ -90,7 +90,8 @@ namespace TickTrader.Algo.Core
         public decimal Commission { get; internal set; }
         public double Price => (double)(IsBuySided? _buy.Price : _sell.Price);
         public double SettlementPrice { get; internal set; }
-        public OrderSide Side => IsBuySided ? OrderSide.Buy : OrderSide.Sell;
+        public Domain.OrderInfo.Types.Side Side => IsBuySided ? Domain.OrderInfo.Types.Side.Buy : Domain.OrderInfo.Types.Side.Sell;
+        OrderSide NetPosition.Side => Side.ToApiEnum();
         public decimal Swap { get; internal set; }
         public string Symbol => _symbol.Name;
         public double Margin => CalculateMargin();
@@ -129,9 +130,9 @@ namespace TickTrader.Algo.Core
 
         #region Emulator
 
-        internal void Increase(decimal amount, decimal price, OrderSide side)
+        internal void Increase(decimal amount, decimal price, Domain.OrderInfo.Types.Side side)
         {
-            if (side == OrderSide.Buy)
+            if (side == Domain.OrderInfo.Types.Side.Buy)
                 Long.Increase(amount, price);
             else
                 Short.Increase(amount, price);
@@ -214,7 +215,7 @@ namespace TickTrader.Algo.Core
             var calc = Calculator;
             if (calc != null)
             {
-                var margin = calc.CalculateMargin(_volUnitsSlim, _leverage, BusinessObjects.OrderTypes.Position, Side.ToBoSide(), false, out var error);
+                var margin = calc.CalculateMargin(_volUnitsSlim, _leverage, BusinessObjects.OrderTypes.Position, Side, false, out var error);
                 if (error != CalcErrorCodes.None)
                     return double.NaN;
                 return margin;
@@ -227,7 +228,7 @@ namespace TickTrader.Algo.Core
             var calc = Calculator;
             if (calc != null)
             {
-                var prof = calc.CalculateProfit(Price, _volUnitsSlim, Side.ToBoSide(), out _, out var error);
+                var prof = calc.CalculateProfit(Price, _volUnitsSlim, Side, out _, out var error);
                 if (error != CalcErrorCodes.None)
                     return double.NaN;
                 return prof;

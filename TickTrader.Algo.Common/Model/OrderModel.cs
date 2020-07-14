@@ -8,14 +8,14 @@ using BO = TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class OrderModel : ObservableObject, BL.IOrderModel
+    public class OrderModel : ObservableObject //,BL.IOrderModel
     {
         private string clientOrderId;
         private OrderType orderType;
         private OrderType initOrderType;
         private decimal amount;
         private decimal amountRemaining;
-        public OrderSide side;
+        public Domain.OrderInfo.Types.Side side;
         private decimal? price;
         private decimal? stopPrice;
         private decimal? limitPrice;
@@ -65,7 +65,7 @@ namespace TickTrader.Algo.Common.Model
             Update(report);
         }
 
-        public event Action<BL.IOrderModel> EssentialParametersChanged;
+        public event Action<OrderModel> EssentialParametersChanged;
 
         private double LotSize => symbolModel.LotSize;
 
@@ -117,7 +117,7 @@ namespace TickTrader.Algo.Common.Model
                 }
             }
         }
-        public OrderSide Side
+        public Domain.OrderInfo.Types.Side Side
         {
             get { return side; }
             private set
@@ -499,29 +499,29 @@ namespace TickTrader.Algo.Common.Model
                 NotifyOfPropertyChange(nameof(HasError));
             }
         }
-        public BL.OrderCalculator Calculator { get; set; }
-        bool BL.IOrderModel.IsCalculated { get { return CalculationError == null; } }
-        decimal? BL.IOrderModel.MarginRateCurrent { get; set; }
+        //public BL.OrderCalculator Calculator { get; set; }
+        //bool BL.IOrderModel.IsCalculated { get { return CalculationError == null; } }
+        //decimal? BL.IOrderModel.MarginRateCurrent { get; set; }
 
 
-        BO.OrderTypes BL.ICommonOrder.Type
-        {
-            get => TickTraderToAlgo.Convert(orderType);
-            set => throw new NotImplementedException();
+        //BO.OrderTypes BL.ICommonOrder.Type
+        //{
+        //    get => TickTraderToAlgo.Convert(orderType);
+        //    set => throw new NotImplementedException();
 
-        }
+        //}
 
-        BO.OrderSides BL.ICommonOrder.Side
-        {
-            get => TickTraderToAlgo.Convert(side);
-            set => throw new NotImplementedException();
-        }
+        ////BO.OrderSides BL.ICommonOrder.Side
+        ////{
+        ////    get => TickTraderToAlgo.Convert(side);
+        ////    set => throw new NotImplementedException();
+        ////}
 
-        bool BL.ICommonOrder.IsHidden => MaxVisibleVolume.HasValue && MaxVisibleVolume.Value == 0;
-        bool BL.ICommonOrder.IsIceberg => MaxVisibleVolume.HasValue && MaxVisibleVolume.Value > 0;
-        string BL.ICommonOrder.MarginCurrency { get => MarginCurrency; set => throw new NotImplementedException(); }
-        string BL.ICommonOrder.ProfitCurrency { get => ProfitCurrency; set => throw new NotImplementedException(); }
-        decimal? BL.ICommonOrder.MaxVisibleAmount => MaxVisibleVolume;
+        //bool BL.ICommonOrder.IsHidden => MaxVisibleVolume.HasValue && MaxVisibleVolume.Value == 0;
+        //bool BL.ICommonOrder.IsIceberg => MaxVisibleVolume.HasValue && MaxVisibleVolume.Value > 0;
+        //string BL.ICommonOrder.MarginCurrency { get => MarginCurrency; set => throw new NotImplementedException(); }
+        //string BL.ICommonOrder.ProfitCurrency { get => ProfitCurrency; set => throw new NotImplementedException(); }
+        //decimal? BL.ICommonOrder.MaxVisibleAmount => MaxVisibleVolume;
         public AggregatedOrderType AggregatedType => side.Aggregate(orderType);
 
         #endregion

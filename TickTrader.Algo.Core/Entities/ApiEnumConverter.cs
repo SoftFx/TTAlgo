@@ -53,5 +53,16 @@ namespace TickTrader.Algo.Core
                 default: throw new ArgumentException($"Unsupported commission charge type: {type}");
             }
         }
+
+        public static OrderSide ToApiEnum(this Domain.OrderInfo.Types.Side side)
+        {
+            switch (side)
+            {
+                case Domain.OrderInfo.Types.Side.Buy: return OrderSide.Buy;
+                case Domain.OrderInfo.Types.Side.Sell: return OrderSide.Sell;
+
+                default: throw new ArgumentException($"Unsupported type {side}");
+            }
+        }
     }
 }

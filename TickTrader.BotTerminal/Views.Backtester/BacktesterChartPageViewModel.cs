@@ -202,7 +202,7 @@ namespace TickTrader.BotTerminal
                         var openPrice = NumberFormat.FormatPrice(order.Price, digits);
                         var openDescription = $"#{order.Id} {order.Side} (open) {order.RequestedVolume/lotSize} {order.Symbol} at price {openPrice}";
 
-                        AddMarker(new PosMarkerKey(order.OrderNum, "a" + _actionIdSeed), order.Created.Value, order.Side == OrderSide.Buy, openDescription);
+                        AddMarker(new PosMarkerKey(order.OrderNum, "a" + _actionIdSeed), order.Created.Value, order.Side == Algo.Domain.OrderInfo.Types.Side.Buy, openDescription);
                     }
                     else
                     {
@@ -214,7 +214,7 @@ namespace TickTrader.BotTerminal
                         var openPrice = NumberFormat.FormatPrice(order.Price, digits);
                         var openDescription = $"#{order.Id} {order.Side} (open) {order.RequestedVolume/lotSize} {order.Symbol} at price {openPrice}";
 
-                        AddMarker(new PosMarkerKey(order.OrderNum, "b" + _actionIdSeed), order.Created.Value, order.Side == OrderSide.Buy, openDescription);
+                        AddMarker(new PosMarkerKey(order.OrderNum, "b" + _actionIdSeed), order.Created.Value, order.Side == Algo.Domain.OrderInfo.Types.Side.Buy, openDescription);
                     }
                 }
 
@@ -227,7 +227,7 @@ namespace TickTrader.BotTerminal
                     var closePrice = NumberFormat.FormatPrice(order.LastFillPrice, digits);
                     var closeDescription = $"#{order.Id} {order.Side.Revert()} (close) {order.LastFillVolume/lotSize} {order.Symbol} at price {closePrice}";
 
-                    AddMarker(new PosMarkerKey(order.OrderNum, "c" + _actionIdSeed), order.Modified.Value, order.Side == OrderSide.Sell, closeDescription);
+                    AddMarker(new PosMarkerKey(order.OrderNum, "c" + _actionIdSeed), order.Modified.Value, order.Side == Algo.Domain.OrderInfo.Types.Side.Sell, closeDescription);
                 }
             }
             else if (_acctype == AccountInfo.Types.Type.Net)
@@ -241,7 +241,7 @@ namespace TickTrader.BotTerminal
                     var lotSize = symbol?.LotSize ?? 1;
                     var openPrice = NumberFormat.FormatPrice(order.LastFillPrice, digits);
                     var description = $"#{order.Id} {order.Side} {order.LastFillVolume/lotSize} at price {openPrice}";
-                    AddMarker(new PosMarkerKey(order.OrderNum, "f" + _actionIdSeed), order.Modified.Value, order.Side == OrderSide.Buy, description);
+                    AddMarker(new PosMarkerKey(order.OrderNum, "f" + _actionIdSeed), order.Modified.Value, order.Side == Algo.Domain.OrderInfo.Types.Side.Buy, description);
                 }
             }
         }
