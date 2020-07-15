@@ -123,7 +123,7 @@ namespace TickTrader.Algo.Core
                 OrderCmdResultCodes error = OrderCmdResultCodes.UnknownError;
 
                 var calc = _calcFixture.GetCalculator(request.Symbol, _calcFixture.Acc.BalanceCurrency);
-                var smbMetadata = calc.SymbolInfo;
+                var smbMetadata = calc.SymbolAccessor;
 
                 var roundedVolumeLots = RoundVolume(request.Volume, smbMetadata);
 
@@ -145,8 +145,8 @@ namespace TickTrader.Algo.Core
                         using (JournalScope())
                         {
                             VerifyAmout(volume, smbMetadata);
-                            ValidateOrderTypeForAccount(request.Type, calc.SymbolInfo);
-                            ValidateTypeAndPrice(request.Type, price, stopPrice, sl, tp, maxVisibleVolume, request.Options, calc.SymbolInfo);
+                            ValidateOrderTypeForAccount(request.Type, calc.SymbolAccessor);
+                            ValidateTypeAndPrice(request.Type, price, stopPrice, sl, tp, maxVisibleVolume, request.Options, calc.SymbolAccessor);
 
                             //Facade.ValidateExpirationTime(Request.Expiration, _acc);
 
@@ -427,7 +427,7 @@ namespace TickTrader.Algo.Core
         private OrderAccessor OpenOrder(OrderCalculator orderCalc, Domain.OrderInfo.Types.Type orderType, Domain.OrderInfo.Types.Side side, decimal volume, decimal? maxVisibleVolume, double? price, double? stopPrice,
             double? sl, double? tp, string comment, OrderExecOptions execOptions, string tag, DateTime? expiration, OpenOrderOptions options)
         {
-            var symbolInfo = orderCalc.SymbolInfo;
+            var symbolInfo = orderCalc.SymbolAccessor;
 
             var orderEntity = new OrderEntity(NewOrderId());
             //order.SymbolPrecision = symbolInfo.Digits;

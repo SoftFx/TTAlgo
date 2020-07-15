@@ -9,7 +9,7 @@ using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class AssetModel : ObservableObject, TickTrader.BusinessLogic.IAssetModel
+    public class AssetModel : ObservableObject, IAssetModel2
     {
         private string currency;
         private decimal amount;

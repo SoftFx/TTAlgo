@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Core.Calc;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
@@ -23,46 +24,50 @@ namespace TickTrader.BotTerminal
 
             cManager.Connected += () =>
             {
-                //if (account.Calc != null)
-                //    account.Calc.Updated += Calc_Updated;
                 currencyFormatStr = NumberFormat.GetCurrencyFormatString(account.BalanceDigits, account.BalanceCurrency);
                 IsStatsVisible = account.Type != AccountInfo.Types.Type.Cash;
+
+                if (account.MarginCalculator != null)
+                {
+                    account.MarginCalculator.Updated += Calc_Updated;
+                    Calc_Updated(account.MarginCalculator);
+                }
+
                 NotifyOfPropertyChange(nameof(IsStatsVisible));
-                //Calc_Updated(account.Calc);
             };
 
             cManager.Disconnected += () =>
             {
-                //if (account.Calc != null)
-                //    account.Calc.Updated -= Calc_Updated;
+                if (account.MarginCalculator != null)
+                    account.MarginCalculator.Updated -= Calc_Updated;
 
                 IsStatsVisible = false;
                 NotifyOfPropertyChange(nameof(IsStatsVisible));
             };
         }
 
-        //private void Calc_Updated(AccountCalculatorModel calc)
-        //{
-        //    Balance = FormatNumber(FloorNumber(account.Balance, account.BalanceDigits));
-        //    NotifyOfPropertyChange(nameof(Balance));
+        private void Calc_Updated(MarginAccountCalculator calc)
+        {
+            Balance = FormatNumber(FloorNumber(account.Balance, account.BalanceDigits));
+            NotifyOfPropertyChange(nameof(Balance));
 
-        //    if (calc != null)
-        //    {
-        //        Equity = FormatNumber(FloorNumber(calc.Equity, account.BalanceDigits));
-        //        Margin = FormatNumber(CeilNumber(calc.Margin, account.BalanceDigits));
-        //        Profit = FormatNumber(FloorNumber(calc.Profit, account.BalanceDigits));
-        //        Floating = FormatNumber(FloorNumber(calc.Floating, account.BalanceDigits));
+            if (calc != null)
+            {
+                Equity = FormatNumber(FloorNumber(calc.Equity, account.BalanceDigits));
+                Margin = FormatNumber(CeilNumber((decimal)calc.Margin, account.BalanceDigits));
+                Profit = FormatNumber(FloorNumber(calc.Profit, account.BalanceDigits));
+                Floating = FormatNumber(FloorNumber(calc.Floating, account.BalanceDigits));
 
-        //        var marginLevel = FloorNumber(calc.MarginLevel, 2);
-        //        MarginLevel = Math.Abs(marginLevel) >= 1e-3m ? FormatPrecent(marginLevel) : "-";
+                var marginLevel = FloorNumber(calc.MarginLevel, 2);
+                MarginLevel = Math.Abs(marginLevel) >= 1e-3 ? FormatPrecent((decimal)marginLevel) : "-";
 
-        //        FreeMargin = FormatNumber(FloorNumber(calc.Equity - calc.Margin, account.BalanceDigits));
-        //        Swap = FormatNumber(calc.Swap);
-        //        IsFloatingLoss = calc.Floating < 0;
+                FreeMargin = FormatNumber(FloorNumber(calc.Equity - calc.Margin, account.BalanceDigits));
+                Swap = FormatNumber(calc.Swap);
+                IsFloatingLoss = calc.Floating < 0;
 
-        //        UpdateProperies();
-        //    }
-        //}
+                UpdateProperies();
+            }
+        }
 
         private void UpdateProperies()
         {

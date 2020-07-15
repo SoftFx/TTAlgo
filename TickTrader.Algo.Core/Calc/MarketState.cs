@@ -110,7 +110,7 @@ namespace TickTrader.Algo.Core.Calc
         }
     }
 
-    internal class AlgoMarketState : MarketStateBase
+    public class AlgoMarketState : MarketStateBase
     {
         private readonly Dictionary<string, AlgoMarketNode> _smbMap = new Dictionary<string, AlgoMarketNode>();
 
@@ -136,6 +136,18 @@ namespace TickTrader.Algo.Core.Calc
         internal override SymbolMarketNode GetSymbolNodeInternal(string smb)
         {
             return GetSymbolNodeOrNull(smb);
+        }
+
+        public AlgoMarketNode UpdateRate(RateUpdate newRate)
+        {
+            var node = GetSymbolNodeOrNull(newRate.Symbol);
+            if (node != null)
+            {
+                node.SymbolInfo.UpdateRate(newRate.LastQuote);
+                node.Update(newRate);
+                //_subscriptions.OnUpdateEvent(node);
+            }
+            return node;
         }
     }
 }

@@ -21,7 +21,7 @@ namespace TickTrader.Algo.Core
     internal class CalculatorFixture : ICalculatorApi
     {
         private IFixtureContext _context;
-        private MarginAccountCalc _marginCalc;
+        private MarginAccountCalculator _marginCalc;
         private CashAccountCalculator cashCalc;
         private AccountAccessor acc;
         private bool _isRunning;
@@ -63,7 +63,7 @@ namespace TickTrader.Algo.Core
 
                 if (acc.IsMarginType)
                 {
-                    _marginCalc = new MarginAccountCalc(acc, Market, true);
+                    _marginCalc = new MarginAccountCalculator(acc, Market, true);
                     acc.MarginCalc = _marginCalc;
                 }
                 else

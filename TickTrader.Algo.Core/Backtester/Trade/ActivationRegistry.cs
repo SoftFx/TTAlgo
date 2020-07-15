@@ -9,7 +9,7 @@ using TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Core
 {
-    internal class ActivationRegistry
+    public class ActivationRegistry
     {
         private ActivationIndex buyLimitIndex;
         private ActivationIndex buyStopIndex;

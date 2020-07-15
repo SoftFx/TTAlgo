@@ -27,17 +27,5 @@ namespace TickTrader.Algo.Core
             var builder = _context.Builder;
             Market.Init(builder.Symbols, builder.Currencies);
         }
-
-        public AlgoMarketNode UpdateRate(RateUpdate newRate)
-        {
-            var node = Market.GetSymbolNodeOrNull(newRate.Symbol);
-            if (node != null)
-            {
-                node.SymbolInfo.UpdateRate(newRate.LastQuote);
-                node.Update(newRate);
-                //_subscriptions.OnUpdateEvent(node);
-            }
-            return node;
-        }
     }
 }

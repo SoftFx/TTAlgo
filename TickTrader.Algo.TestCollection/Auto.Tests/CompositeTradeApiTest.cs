@@ -273,8 +273,8 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         {
             await TryPerformTest(() => TestOpenOrder(template));
 
-            if (!IncludeADCases) //protection for AD
-                await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
+            //if (!IncludeADCases) //protection for AD
+            //    await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
 
             await WaitAndStoreEvent<OrderClosedEventArgs>(template, TPSLEventTimeout);
         }

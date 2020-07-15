@@ -13,10 +13,21 @@ namespace TickTrader.Algo.Core
         double Point { get; }
         double Bid { get; set; }
         double Ask { get; set; }
+        int Digits { get; }
 
 
+        Domain.MarginInfo.Types.CalculationMode MarginMode { get; }
+        double MarginFactorFractional { get; }
+        double MarginHedged { get; }
         string MarginCurrency { get; }
         string ProfitCurrency { get; }
+        double ContractSizeFractional { get; }
+
+        Domain.SwapInfo.Types.Type SwapType { get; }
+        int TripleSwapDay { get; }
+        bool SwapEnabled { get; }
+        double SwapSizeLong { get; }
+        double SwapSizeShort { get; }
 
         double StopOrderMarginReduction { get; }
         double HiddenLimitOrderMarginReduction { get; }

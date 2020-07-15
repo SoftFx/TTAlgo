@@ -3,6 +3,7 @@ using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core;
 using Machinarium.Qnil;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -76,10 +77,7 @@ namespace TickTrader.Algo.Common.Model
                 && (amount / step) % 1 == 0;
         }
 
-        void ISymbolInfo2.UpdateRate(Quote quote)
-        {
-            throw new NotImplementedException();
-        }
+        void ISymbolInfo2.UpdateRate(Quote quote) => OnNewTick((QuoteEntity)quote);
 
         #region ISymbolInfo
 
@@ -101,6 +99,26 @@ namespace TickTrader.Algo.Common.Model
         double ISymbolInfo2.StopOrderMarginReduction => Descriptor.Margin.StopOrderReduction ?? 1;
 
         double ISymbolInfo2.HiddenLimitOrderMarginReduction => Descriptor.Margin.HiddenLimitOrderReduction ?? 1;
+
+        double ISymbolInfo2.MarginHedged => Descriptor.Margin.Hedged;
+
+        int ISymbolInfo2.Digits => Descriptor.Digits;
+
+        MarginInfo.Types.CalculationMode ISymbolInfo2.MarginMode => Descriptor.Margin.Mode;
+
+        double ISymbolInfo2.MarginFactorFractional => Descriptor.Margin.Factor;
+
+        double ISymbolInfo2.ContractSizeFractional => Descriptor.LotSize;
+
+        SwapInfo.Types.Type ISymbolInfo2.SwapType => Descriptor.Swap.Type;
+
+        int ISymbolInfo2.TripleSwapDay => Descriptor.Swap.TripleSwapDay;
+
+        bool ISymbolInfo2.SwapEnabled => Descriptor.Swap.Enabled;
+
+        double ISymbolInfo2.SwapSizeLong => Descriptor.Swap.SizeLong ?? 0;
+
+        double ISymbolInfo2.SwapSizeShort => Descriptor.Swap.SizeShort ?? 0;
 
         #endregion ISymbolInfo
     }

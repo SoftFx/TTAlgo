@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Core.Calc.Conversion;
-using TickTrader.BusinessLogic;
-using TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Core.Calc
 {
-    internal class SymbolCalc : IDisposable
+    public class SymbolCalc : IDisposable
     {
         private MarketStateBase _market;
         private OrderCalculator _calc;

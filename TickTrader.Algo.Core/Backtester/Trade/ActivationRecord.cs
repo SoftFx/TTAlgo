@@ -8,7 +8,7 @@ using TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Core
 {
-    internal enum ActivationType
+    public enum ActivationType
     {
         StopoutRollback = -4,
         PendingRollback = -3,
@@ -21,7 +21,7 @@ namespace TickTrader.Algo.Core
         Stopout = 4
     }
 
-    internal class ActivationRecord
+    public class ActivationRecord
     {
         public ActivationRecord(OrderAccessor order, ActivationType type)
         {

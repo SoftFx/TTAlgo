@@ -11,7 +11,7 @@ namespace TickTrader.Algo.Core
     /// <summary>
     /// Aggregates different entities by symbol to minimize dicionary lookups.
     /// </summary>
-    internal class AlgoMarketNode : SymbolMarketNode
+    public class AlgoMarketNode : SymbolMarketNode
     {
         public AlgoMarketNode(ISymbolInfo2 smb) : base(smb)
         {

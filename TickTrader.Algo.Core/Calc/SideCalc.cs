@@ -1,15 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
-using TickTrader.BusinessLogic;
-using TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Core.Calc
 {
-    internal class SideCalc
+    public class SideCalc
     {
         //private readonly PositionContainer netPositions;
         private readonly SymbolCalc _parent;

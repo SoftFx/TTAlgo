@@ -8,7 +8,7 @@ using TickTrader.Algo.Api;
 namespace TickTrader.Algo.Core
 {
     [Serializable]
-    public class AssetEntity 
+    public class AssetEntity
     {
         public AssetEntity(double balance, string currency)
         {

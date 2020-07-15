@@ -1,14 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.BusinessLogic;
-using TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Core.Calc
 {
-    internal class MarginAccountCalc
+    public class MarginAccountCalculator
     {
         private readonly MarketStateBase _market;
         private readonly IDictionary<string, SymbolCalc> _bySymbolMap = new Dictionary<string, SymbolCalc>();
@@ -19,7 +14,9 @@ namespace TickTrader.Algo.Core.Calc
         private double _dblCms;
         private double _dblSwap;
 
-        public MarginAccountCalc(IMarginAccountInfo2 accInfo, MarketStateBase market, bool autoUpdate = false)
+        public event Action<MarginAccountCalculator> Updated;
+
+        public MarginAccountCalculator(IMarginAccountInfo2 accInfo, MarketStateBase market, bool autoUpdate = false)
         {
             Info = accInfo;
             _market = market;
@@ -42,6 +39,7 @@ namespace TickTrader.Algo.Core.Calc
         public int RoundingDigits { get; private set; }
         public double Profit { get; private set; }
         public double Equity => Info.Balance + Profit + _dblCms + _dblSwap;
+        public decimal Floating => (decimal)Profit + Commission + Swap;
         public double Margin { get; private set; }
         public double MarginLevel => CalculateMarginLevel();
 
@@ -52,6 +50,8 @@ namespace TickTrader.Algo.Core.Calc
             {
                 _cms = value;
                 _dblCms = (double)value;
+
+                Updated?.Invoke(this);
             }
         }
 
@@ -62,6 +62,8 @@ namespace TickTrader.Algo.Core.Calc
             {
                 _swap = value;
                 _dblSwap = (double)value;
+
+                Updated?.Invoke(this);
             }
         }
 
@@ -274,6 +276,8 @@ namespace TickTrader.Algo.Core.Calc
             Profit += args.ProfitDelta;
             Margin += args.MarginDelta;
             _errorCount += args.ErrorDelta;
+
+            Updated?.Invoke(this);
         }
 
         private void Order_SwapChanged(OrderPropArgs<decimal> args)

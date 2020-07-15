@@ -20,7 +20,9 @@ namespace TickTrader.Algo.Core.Calc
             PositiveProfitConversionRate = conversion.GetPositiveProfitFormula(tracker, accountCurrency);
             NegativeProfitConversionRate = conversion.GetNegativeProfitFormula(tracker, accountCurrency);
             MarginConversionRate = conversion.GetMarginFormula(tracker, accountCurrency);
-            SymbolInfo = (SymbolAccessor)tracker.SymbolInfo;
+
+            SymbolInfo = tracker.SymbolInfo;
+            SymbolAccessor = tracker.SymbolInfo as SymbolAccessor;
 
             //if (this.SymbolInfo == null)
             //    throw new SymbolConfigException("Cannot find configuration for symbol " + this.symbol + ".");
@@ -39,7 +41,8 @@ namespace TickTrader.Algo.Core.Calc
         }
 
         public Api.RateUpdate CurrentRate => RateTracker.Rate;
-        public SymbolAccessor SymbolInfo { get; }
+        public ISymbolInfo2 SymbolInfo { get; }
+        public SymbolAccessor SymbolAccessor { get; }
         internal IConversionFormula PositiveProfitConversionRate { get; private set; }
         internal IConversionFormula NegativeProfitConversionRate { get; private set; }
         internal IConversionFormula MarginConversionRate { get; private set; }
@@ -222,7 +225,7 @@ namespace TickTrader.Algo.Core.Calc
             }
             else if (vType == Domain.CommissonInfo.Types.ValueType.Points)
             {
-                double ptValue = cValue / Math.Pow(10, SymbolInfo.Precision);
+                double ptValue = cValue / Math.Pow(10, SymbolInfo.Digits);
 
                 //if (chType == CommissionChargeType.PerDeal)
                 //    return - (ptValue * MarginConversionRate.Value);
@@ -272,9 +275,9 @@ namespace TickTrader.Algo.Core.Calc
                 if (SymbolInfo.SwapType == Domain.SwapInfo.Types.Type.Points)
                 {
                     if (side == Domain.OrderInfo.Types.Side.Buy)
-                        return SymbolInfo.SwapSizeLong / Math.Pow(10, SymbolInfo.Precision);
+                        return SymbolInfo.SwapSizeLong / Math.Pow(10, SymbolInfo.Digits);
                     if (side == Domain.OrderInfo.Types.Side.Sell)
-                        return SymbolInfo.SwapSizeShort / Math.Pow(10, SymbolInfo.Precision);
+                        return SymbolInfo.SwapSizeShort / Math.Pow(10, SymbolInfo.Digits);
                 }
                 else if (SymbolInfo.SwapType == Domain.SwapInfo.Types.Type.PercentPerYear)
                 {

@@ -144,7 +144,7 @@ namespace TickTrader.Algo.Core.Calc
         public T NewVal { get; }
     }
 
-    internal struct StatsChange
+    public struct StatsChange
     {
         public StatsChange(double margin, double equity, int errorDelta)
         {

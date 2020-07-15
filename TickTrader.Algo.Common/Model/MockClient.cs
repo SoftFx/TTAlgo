@@ -53,6 +53,7 @@ namespace TickTrader.Algo.Common.Model
         {
             _symbols.GetOrDefault(quote.Symbol)?.OnNewTick(quote);
             Distributor.UpdateRate(quote);
+            Acc?.Market?.UpdateRate(quote);
         }
 
         #region IMarketDataProvider

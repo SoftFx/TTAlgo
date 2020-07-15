@@ -493,11 +493,11 @@ namespace TickTrader.Algo.Common.Model
 
         public OrderCalculator Calculator { get; set; }
         public decimal CashMargin { get; set; }
-        public ISymbolInfo2 SymbolInfo => throw new NotImplementedException();
+        public ISymbolInfo2 SymbolInfo => symbolModel;
 
-        double? IOrderCalcInfo.Price => (double)Price;
+        double? IOrderCalcInfo.Price => (double?)Price;
 
-        double? IOrderCalcInfo.StopPrice => (double)StopPrice;
+        double? IOrderCalcInfo.StopPrice => (double?)StopPrice;
 
         public bool IsHidden => MaxVisibleVolume.HasValue && MaxVisibleVolume.Value == 0;
 

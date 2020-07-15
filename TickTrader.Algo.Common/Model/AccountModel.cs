@@ -6,10 +6,12 @@ using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Api;
 using Machinarium.Qnil;
 using TickTrader.Algo.Common.Lib;
+using TickTrader.Algo.Core.Calc;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class AccountModel : CrossDomainObject, IOrderDependenciesResolver
+    public class AccountModel : CrossDomainObject, IOrderDependenciesResolver, IMarginAccountInfo2, ICashAccountInfo2
     {
         private readonly VarDictionary<string, PositionModel> _positions = new VarDictionary<string, PositionModel>();
         private readonly VarDictionary<string, AssetModel> _assets = new VarDictionary<string, AssetModel>();
@@ -20,10 +22,18 @@ namespace TickTrader.Algo.Common.Model
         private bool _isCalcStarted;
         private OrderUpdateAction _updateWatingForPosition = null;
 
+        public AlgoMarketState Market { get; }
+
+        public CashAccountCalculator CashCalculator { get; private set; }
+
+        public MarginAccountCalculator MarginCalculator { get; private set; }
+
         public AccountModel(IVarSet<string, CurrencyEntity> currecnies, IVarSet<string, SymbolModel> symbols)
         {
             _currencies = currecnies.Snapshot;
             _symbols = symbols.Snapshot;
+
+            Market = new AlgoMarketState();
         }
 
         public event System.Action AccountTypeChanged = delegate { };
@@ -49,11 +59,29 @@ namespace TickTrader.Algo.Common.Model
         public string BalanceCurrency { get; private set; }
         public int BalanceDigits { get; private set; }
         public int Leverage { get; private set; }
+
+        long IAccountInfo2.Id => 0;
+
+        public AccountInfo.Types.Type AccountingType => Type ?? AccountInfo.Types.Type.Gross;
+
+
+        IEnumerable<IPositionModel2> IMarginAccountInfo2.Positions => Positions.Snapshot.Values;
+
+        IEnumerable<IOrderModel2> IAccountInfo2.Orders => Orders.Snapshot.Values;
+
+        IEnumerable<IAssetModel2> ICashAccountInfo2.Assets => Assets.Snapshot.Values;
+
         //public AccountCalculatorModel Calc { get; private set; }
 
         public event Action<OrderUpdateInfo> OrderUpdate;
         public event Action<PositionModel, OrderExecAction> PositionUpdate;
         public event Action<BalanceOperationReport> BalanceUpdate;
+
+        public event Action<IPositionModel2> PositionChanged;
+        public event Action<IOrderModel2> OrderAdded;
+        public event Action<IEnumerable<IOrderModel2>> OrdersAdded;
+        public event Action<IOrderModel2> OrderRemoved;
+        public event Action<IAssetModel2, AssetChangeType> AssetsChanged;
 
         public EntityCacheUpdate CreateSnaphotUpdate(Domain.AccountInfo accInfo, List<OrderEntity> tradeRecords, List<PositionEntity> positions, List<Domain.AssetInfo> assets)
         {
@@ -69,12 +97,28 @@ namespace TickTrader.Algo.Common.Model
 
         internal void StartCalculator(IMarketDataProvider marketData)
         {
+            Market.Init(marketData.Symbols.Snapshot.Values, marketData.Currencies.Snapshot.Values);
+
             if (!_isCalcStarted)
             {
                 _isCalcStarted = true;
 
                 //Calc = AccountCalculatorModel.Create(this, marketData);
                 //Calc.Recalculate();
+
+                switch (Type)
+                {
+                    case AccountInfo.Types.Type.Cash:
+                        CashCalculator = new CashAccountCalculator(this, Market);
+                        break;
+                    case AccountInfo.Types.Type.Net:
+                    case AccountInfo.Types.Type.Gross:
+                        MarginCalculator = new MarginAccountCalculator(this, Market, true);
+                        break;
+
+                    default:
+                        throw new ArgumentException($"Unsupported account type: {Type}");
+                }
             }
         }
 
@@ -95,13 +139,24 @@ namespace TickTrader.Algo.Common.Model
             BalanceDigits = balanceCurrencyInfo?.Digits ?? 2;
 
             foreach (var fdkPosition in positions)
-                this._positions.Add(fdkPosition.Symbol, new PositionModel(fdkPosition, this));
+            {
+                var model = new PositionModel(fdkPosition, this);
+                this._positions.Add(fdkPosition.Symbol, model);
+                PositionChanged?.Invoke(model);
+            }
 
             foreach (var fdkOrder in orders)
                 this._orders.Add(fdkOrder.Id, new OrderModel(fdkOrder, this));
 
+            OrdersAdded?.Invoke(orders.Cast<IOrderModel2>());
+
             foreach (var fdkAsset in assets)
-                this._assets.Add(fdkAsset.Currency, new AssetModel(fdkAsset, _currencies));
+            {
+                var model = new AssetModel(fdkAsset, _currencies);
+                this._assets.Add(fdkAsset.Currency, model);
+
+                AssetsChanged?.Invoke(model, AssetChangeType.Added);
+            }
         }
 
         public void Deinit()
@@ -110,12 +165,15 @@ namespace TickTrader.Algo.Common.Model
             //_client.ExecutionReportReceived -= OnReport;
             //_client.PositionReportReceived -= OnReport;
 
-            //if (_isCalcStarted && Calc != null)
-            //{
-            //    Calc.Dispose();
-            //    Calc = null;
-            //    _isCalcStarted = false;
-            //}
+            if (_isCalcStarted)
+            {
+                CashCalculator?.Dispose();
+                MarginCalculator?.Dispose();
+
+                CashCalculator = null;
+                MarginCalculator = null;
+                _isCalcStarted = false;
+            }
         }
 
         public Domain.AccountInfo GetAccountInfo()
@@ -192,10 +250,14 @@ namespace TickTrader.Algo.Common.Model
 
         private void UpdateAsset(Domain.AssetInfo assetInfo)
         {
+            var model = new AssetModel(assetInfo, _currencies);
+
             if (assetInfo.Balance == 0)
                 _assets.Remove(assetInfo.Currency);
             else
-                _assets[assetInfo.Currency] = new AssetModel(assetInfo, _currencies);
+                _assets[assetInfo.Currency] = model;
+
+            AssetsChanged?.Invoke(model, assetInfo.Balance == 0 ? AssetChangeType.Removed : AssetChangeType.Updated);
         }
 
         public void UpdateBalance(double newBalance, string currency = null)
@@ -207,13 +269,17 @@ namespace TickTrader.Algo.Common.Model
             }
             else if (Type == Domain.AccountInfo.Types.Type.Cash)
             {
+                var model = new AssetModel(newBalance, currency, _currencies);
+
                 if (newBalance != 0)
-                    _assets[currency] = new AssetModel(newBalance, currency, _currencies);
+                    _assets[currency] = model;
                 else
                 {
                     if (_assets.ContainsKey(currency))
                         _assets.Remove(currency);
                 }
+
+                AssetsChanged?.Invoke(model, newBalance == 0 ? AssetChangeType.Removed : AssetChangeType.Updated);
             }
         }
 
@@ -257,26 +323,34 @@ namespace TickTrader.Algo.Common.Model
         {
             var model = UpsertPosition(position);
             if (notify)
+            {
                 PositionUpdate?.Invoke(model, position.Type);
+                PositionChanged?.Invoke(model);
+            }
         }
 
         public void OnPositionAdded(PositionEntity position, bool notify)
         {
             var model = UpsertPosition(position);
             if (notify)
+            {
                 PositionUpdate?.Invoke(model, OrderExecAction.Opened);
+                PositionChanged?.Invoke(model);
+            }
         }
 
         public void RemovePosition(PositionEntity position, bool notify)
         {
-            PositionModel model;
-
-            if (!_positions.TryGetValue(position.Symbol, out model))
+            if (!_positions.TryGetValue(position.Symbol, out PositionModel model))
                 return;
 
             _positions.Remove(model.Symbol);
+
             if (notify)
+            {
                 PositionUpdate?.Invoke(model, OrderExecAction.Closed);
+                PositionChanged?.Invoke(model);
+            }
         }
 
         private PositionModel UpsertPosition(PositionEntity position)
@@ -299,12 +373,16 @@ namespace TickTrader.Algo.Common.Model
             {
                 order = new OrderModel(report, this);
                 _orders[order.Id] = order;
+
+                OrderAdded?.Invoke(order);
             }
             else if (entityAction == OrderEntityAction.Removed)
             {
                 order = Orders.GetOrDefault(report.OrderId);
                 _orders.Remove(report.OrderId);
                 order?.Update(report);
+
+                OrderRemoved?.Invoke(order);
             }
             else if (entityAction == OrderEntityAction.Updated)
             {
@@ -335,12 +413,16 @@ namespace TickTrader.Algo.Common.Model
             {
                 order = new OrderModel(report, this);
                 _orders[order.Id] = order;
+
+                OrderAdded?.Invoke(order);
             }
             else if (entityAction == OrderEntityAction.Removed)
             {
                 order = Orders.GetOrDefault(report.Id);
                 _orders.Remove(report.Id);
                 order?.Update(report);
+
+                OrderRemoved?.Invoke(order);
             }
             else if (entityAction == OrderEntityAction.Updated)
             {

@@ -246,7 +246,7 @@ namespace TickTrader.Algo.Core
         NetPositionList AccountDataProvider.NetPositions { get { return NetPositions.PositionListImpl; } }
         TradeHistory AccountDataProvider.TradeHistory => _history;
 
-        internal MarginAccountCalc MarginCalc { get; set; }
+        internal MarginAccountCalculator MarginCalc { get; set; }
         public double Equity => GetCalc()?.Equity ?? double.NaN;
         public double Margin => GetCalc()?.Margin ?? double.NaN;
         public double MarginLevel => GetCalc()?.MarginLevel ?? double.NaN;
@@ -260,7 +260,7 @@ namespace TickTrader.Algo.Core
         internal event Action CalcRequested;
         internal event Action TradeInfoRequested;
 
-        private MarginAccountCalc GetCalc()
+        private MarginAccountCalculator GetCalc()
         {
             OnCalcAccess();
             return MarginCalc;
