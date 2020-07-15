@@ -92,6 +92,7 @@ namespace TickTrader.Algo.Common.Model
         {
             var smb = _symbols.GetOrDefault(quote.Symbol);
             smb?.OnNewTick(quote);
+            _acc?.Market?.UpdateRate(quote);
         }
 
         [Serializable]
