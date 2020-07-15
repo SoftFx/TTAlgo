@@ -1,8 +1,5 @@
 ﻿using System;
 using TickTrader.Algo.Api;
-using BO = TickTrader.BusinessObjects;
-using BL = TickTrader.BusinessLogic;
-using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.Core.Calc;
 
 namespace TickTrader.Algo.Core
@@ -105,16 +102,13 @@ namespace TickTrader.Algo.Core
 
         ISymbolInfo2 IOrderModel2.SymbolInfo => _symbol;
         Domain.OrderInfo.Types.Side IOrderCalcInfo.Side => Entity.Side;
-        //BO.OrderTypes IOrderCalcInfo.Type => Entity.GetBlOrderType();
-
-
+        
         #endregion
 
         #region BL IOrderModel
 
         public decimal? AgentCommision => 0;
 
-        //public BL.OrderError CalculationError { get; set; }
         public OrderCalculator Calculator { get; set; }
         //public bool IsCalculated => CalculationError == null;
         public double? MarginRateCurrent { get; set; }

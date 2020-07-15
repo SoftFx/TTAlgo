@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Calc;
-using TickTrader.Algo.Core.Infrastructure;
 using TickTrader.Algo.Domain;
-using BL = TickTrader.BusinessLogic;
-using BO = TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Core
 {
@@ -34,7 +29,7 @@ namespace TickTrader.Algo.Core
         public AccountAccessor Acc => acc;
         public AlgoMarketState Market => _context.MarketData;
         public bool IsCalculated => _marginCalc?.IsCalculated ?? true;
-        public int RoundingDigits => _marginCalc?.RoundingDigits ??  BL.AccountCalculator.DefaultRounding;
+        public int RoundingDigits => _marginCalc?.RoundingDigits ?? 2;
 
         public void Start()
         {
@@ -160,7 +155,7 @@ namespace TickTrader.Algo.Core
                     if (!hasMargin)
                         throw new OrderValidationError($"Not Enough Money. {this}, NewMargin={newMargin}", Api.OrderCmdResultCodes.NotEnoughMoney);
                 }
-                catch (BL.MarketConfigurationException e)
+                catch (MarketConfigurationException e)
                 {
                     throw new OrderValidationError(e.Message, Api.OrderCmdResultCodes.InternalError);
                 }
@@ -175,8 +170,8 @@ namespace TickTrader.Algo.Core
         {
             if (Acc.IsMarginType)
                 ValidateModifyOrder_MarginAccount(order, newAmount);
-            else if(Acc.IsCashType)
-                ValidateModifyOrder_CashAccount(order, newAmount, newPrice, newStopPrice );
+            else if (Acc.IsCashType)
+                ValidateModifyOrder_CashAccount(order, newAmount, newPrice, newStopPrice);
         }
 
         private void ValidateModifyOrder_MarginAccount(OrderAccessor order, decimal newAmount)
@@ -290,8 +285,8 @@ namespace TickTrader.Algo.Core
                     return cashCalc.HasSufficientMarginToOpenOrder(type, side, symbol, margin);
                 }
             }
-            catch (BL.NotEnoughMoneyException)
-            {}
+            catch (NotEnoughMoneyException)
+            { }
             catch (Exception ex)
             {
                 _context.Builder.Logger.OnError("Failed to calculate margin for new order", ex);

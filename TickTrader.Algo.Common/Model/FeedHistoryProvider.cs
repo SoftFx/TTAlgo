@@ -1,20 +1,13 @@
 ﻿using ActorSharp;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.SeriesStorage;
-using TickTrader.Server.QuoteHistory.Serialization;
-using TT = TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Common.Model
 {

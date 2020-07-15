@@ -69,14 +69,6 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="TickTrader.BusinessLogic, Version=1.36.4.0, Culture=neutral, PublicKeyToken=f93e83ea42ea164d, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\TickTrader.BusinessLogic.dll</HintPath>
-    </Reference>
-    <Reference Include="TickTrader.BusinessObjects, Version=1.37.3.0, Culture=neutral, PublicKeyToken=f93e83ea42ea164d, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\TickTrader.BusinessObjects.dll</HintPath>
-    </Reference>
     <Reference Include="TickTrader.Common">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\TickTrader.Common.dll</HintPath>
@@ -86,16 +78,6 @@
     <Compile Include="Entities\HistoryFilesPackage.cs" />
     <Compile Include="Entities\EntityUpdate.cs" />
     <Compile Include="Entities\Slice.cs" />
-    <Compile Include="Fdk.Serializers\BarFormatter.cs" />
-    <Compile Include="Fdk.Serializers\ByteArrayBuilder.cs" />
-    <Compile Include="Fdk.Serializers\Crc32HashExtension.cs" />
-    <Compile Include="Fdk.Serializers\FeedTickFormatter.cs" />
-    <Compile Include="Fdk.Serializers\FeedTickLevel2Formatter.cs" />
-    <Compile Include="Fdk.Serializers\IChunkSerializer.cs" />
-    <Compile Include="Fdk.Serializers\IFormatter.cs" />
-    <Compile Include="Fdk.Serializers\ISerializer.cs" />
-    <Compile Include="Fdk.Serializers\TextSerializer.cs" />
-    <Compile Include="Fdk.Serializers\ZipSerializer.cs" />
     <Compile Include="Info\AccountModelInfo.cs" />
     <Compile Include="Info\BotFileInfo.cs" />
     <Compile Include="Info\BotFolderInfo.cs" />

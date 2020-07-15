@@ -59,7 +59,7 @@ namespace TickTrader.Algo.Core
 
         #region Emulation
 
-        public static TradeReportAdapter Create(TimeKey key, SymbolAccessor symbol, TradeExecActions repType, Bo.TradeTransReasons reason)
+        public static TradeReportAdapter Create(TimeKey key, SymbolAccessor symbol, TradeExecActions repType, TradeTransactionReason reason)
         {
             var entity = new TradeReportEntity();
             entity.TransactionTime = key.Timestamp;

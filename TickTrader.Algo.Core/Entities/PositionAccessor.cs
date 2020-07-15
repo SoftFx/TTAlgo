@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.Core.Calc;
-using BL = TickTrader.BusinessLogic;
 
 namespace TickTrader.Algo.Core
 {
@@ -88,7 +82,7 @@ namespace TickTrader.Algo.Core
 
         public double Volume { get; private set; }
         public decimal Commission { get; internal set; }
-        public double Price => (double)(IsBuySided? _buy.Price : _sell.Price);
+        public double Price => (double)(IsBuySided ? _buy.Price : _sell.Price);
         public double SettlementPrice { get; internal set; }
         public Domain.OrderInfo.Types.Side Side => IsBuySided ? Domain.OrderInfo.Types.Side.Buy : Domain.OrderInfo.Types.Side.Sell;
         OrderSide NetPosition.Side => Side.ToApiEnum();

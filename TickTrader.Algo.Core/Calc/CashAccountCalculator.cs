@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.BusinessLogic;
 
 namespace TickTrader.Algo.Core.Calc
 {

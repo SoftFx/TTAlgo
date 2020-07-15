@@ -32,6 +32,30 @@ namespace TickTrader.Algo.Core
         {
         }
     }
+
+    public class MarginNotCalculatedException : AlgoException
+    {
+        public MarginNotCalculatedException(string message) : base(message)
+        {
+
+        }
+    }
+
+    public class NotEnoughMoneyException : AlgoException
+    {
+        public NotEnoughMoneyException(string message) : base(message)
+        {
+
+        }
+    }
+
+    public class MarketConfigurationException : AlgoException
+    {
+        public MarketConfigurationException(string message) : base(message)
+        {
+
+        }
+    }
 }
 
 namespace TickTrader.Algo.Core.Metadata

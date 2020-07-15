@@ -1,6 +1,5 @@
 ﻿using ProtoBuf;
 using System;
-using BO = TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -36,7 +35,7 @@ namespace TickTrader.Algo.Common.Model
         [ProtoMember(12)]
         public bool SwapEnabled { get; set; }
         [ProtoMember(13)]
-        public BO.SwapType SwapType { get; set; }
+        public Domain.SwapInfo.Types.Type SwapType { get; set; }
         [ProtoMember(14)]
         public double SwapSizeShort { get; set; }
         [ProtoMember(15)]
@@ -45,10 +44,10 @@ namespace TickTrader.Algo.Common.Model
         public bool TripleSwap { get; set; }
 
         [ProtoMember(17)]
-        public BO.ProfitCalculationModes ProfitMode { get; set; }
+        public Domain.MarginInfo.Types.CalculationMode ProfitMode { get; set; }
 
         [ProtoMember(18)]
-        public BO.MarginCalculationModes MarginMode { get; set; }
+        public Domain.MarginInfo.Types.CalculationMode MarginMode { get; set; }
         [ProtoMember(19)]
         public double MarginHedged { get; set; }
         [ProtoMember(20)]
@@ -105,7 +104,7 @@ namespace TickTrader.Algo.Common.Model
                 Swap = new Domain.SwapInfo
                 {
                     Enabled = SwapEnabled,
-                    Type = Convert(SwapType),
+                    Type = SwapType,
                     SizeLong = SwapSizeLong,
                     SizeShort = SwapSizeShort,
                     TripleSwapDay = TripleSwap ? (int)DayOfWeek.Wednesday : 0,
@@ -113,7 +112,7 @@ namespace TickTrader.Algo.Common.Model
 
                 Margin = new Domain.MarginInfo
                 {
-                    Mode = Convert(MarginMode),
+                    Mode = MarginMode,
                     Factor = MarginFactor,
                     Hedged = MarginHedged,
                     StopOrderReduction = StopOrderMarginReduction,
@@ -146,12 +145,12 @@ namespace TickTrader.Algo.Common.Model
                 MinCommissionCurr = symbol.Commission.MinCommissionCurrency,
 
                 SwapEnabled = symbol.Swap.Enabled,
-                SwapType = Convert(symbol.Swap.Type),
+                SwapType = symbol.Swap.Type,
                 SwapSizeLong = symbol.Swap.SizeLong ?? 0,
                 SwapSizeShort = symbol.Swap.SizeShort ?? 0,
                 TripleSwap = symbol.Swap.TripleSwapDay > 0,
 
-                MarginMode = Convert(symbol.Margin.Mode),
+                MarginMode = symbol.Margin.Mode,
                 MarginHedged = symbol.Margin.Hedged,
                 MarginFactor = symbol.Margin.Factor,
                 StopOrderMarginReduction = symbol.Margin.StopOrderReduction ?? 1,
@@ -197,68 +196,68 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private static Domain.SwapInfo.Types.Type Convert(BO.SwapType type)
-        {
-            switch (type)
-            {
-                case BO.SwapType.Points:
-                    return Domain.SwapInfo.Types.Type.Points;
-                case BO.SwapType.PercentPerYear:
-                    return Domain.SwapInfo.Types.Type.PercentPerYear;
-                default:
-                    throw new InvalidCastException($"Swap type not found: {type}");
-            }
-        }
+        //private static Domain.SwapInfo.Types.Type Convert(BO.SwapType type)
+        //{
+        //    switch (type)
+        //    {
+        //        case BO.SwapType.Points:
+        //            return Domain.SwapInfo.Types.Type.Points;
+        //        case BO.SwapType.PercentPerYear:
+        //            return Domain.SwapInfo.Types.Type.PercentPerYear;
+        //        default:
+        //            throw new InvalidCastException($"Swap type not found: {type}");
+        //    }
+        //}
 
-        private static BO.SwapType Convert(Domain.SwapInfo.Types.Type type)
-        {
-            switch (type)
-            {
-                case Domain.SwapInfo.Types.Type.Points:
-                    return BO.SwapType.Points;
-                case Domain.SwapInfo.Types.Type.PercentPerYear:
-                    return BO.SwapType.PercentPerYear;
-                default:
-                    throw new InvalidCastException($"Swap type not found: {type}");
-            }
-        }
+        //private static BO.SwapType Convert(Domain.SwapInfo.Types.Type type)
+        //{
+        //    switch (type)
+        //    {
+        //        case Domain.SwapInfo.Types.Type.Points:
+        //            return BO.SwapType.Points;
+        //        case Domain.SwapInfo.Types.Type.PercentPerYear:
+        //            return BO.SwapType.PercentPerYear;
+        //        default:
+        //            throw new InvalidCastException($"Swap type not found: {type}");
+        //    }
+        //}
 
-        private static Domain.MarginInfo.Types.CalculationMode Convert(BO.MarginCalculationModes mode)
-        {
-            switch (mode)
-            {
-                case BO.MarginCalculationModes.Forex:
-                    return Domain.MarginInfo.Types.CalculationMode.Forex;
-                case BO.MarginCalculationModes.CFD:
-                    return Domain.MarginInfo.Types.CalculationMode.Cfd;
-                case BO.MarginCalculationModes.Futures:
-                    return Domain.MarginInfo.Types.CalculationMode.Futures;
-                case BO.MarginCalculationModes.CFD_Index:
-                    return Domain.MarginInfo.Types.CalculationMode.CfdIndex;
-                case BO.MarginCalculationModes.CFD_Leverage:
-                    return Domain.MarginInfo.Types.CalculationMode.CfdLeverage;
-                default:
-                    throw new InvalidCastException($"Margin calculation mode not found: {mode}");
-            }
-        }
+        //private static Domain.MarginInfo.Types.CalculationMode Convert(BO.MarginCalculationModes mode)
+        //{
+        //    switch (mode)
+        //    {
+        //        case BO.MarginCalculationModes.Forex:
+        //            return Domain.MarginInfo.Types.CalculationMode.Forex;
+        //        case BO.MarginCalculationModes.CFD:
+        //            return Domain.MarginInfo.Types.CalculationMode.Cfd;
+        //        case BO.MarginCalculationModes.Futures:
+        //            return Domain.MarginInfo.Types.CalculationMode.Futures;
+        //        case BO.MarginCalculationModes.CFD_Index:
+        //            return Domain.MarginInfo.Types.CalculationMode.CfdIndex;
+        //        case BO.MarginCalculationModes.CFD_Leverage:
+        //            return Domain.MarginInfo.Types.CalculationMode.CfdLeverage;
+        //        default:
+        //            throw new InvalidCastException($"Margin calculation mode not found: {mode}");
+        //    }
+        //}
 
-        private static BO.MarginCalculationModes Convert(Domain.MarginInfo.Types.CalculationMode mode)
-        {
-            switch (mode)
-            {
-                case Domain.MarginInfo.Types.CalculationMode.Forex:
-                    return BO.MarginCalculationModes.Forex;
-                case Domain.MarginInfo.Types.CalculationMode.Cfd:
-                    return BO.MarginCalculationModes.CFD;
-                case Domain.MarginInfo.Types.CalculationMode.Futures:
-                    return BO.MarginCalculationModes.Futures;
-                case Domain.MarginInfo.Types.CalculationMode.CfdIndex:
-                    return BO.MarginCalculationModes.CFD_Index;
-                case Domain.MarginInfo.Types.CalculationMode.CfdLeverage:
-                    return BO.MarginCalculationModes.CFD_Leverage;
-                default:
-                    throw new InvalidCastException($"Margin calculation mode not found: {mode}");
-            }
-        }
+        //private static BO.MarginCalculationModes Convert(Domain.MarginInfo.Types.CalculationMode mode)
+        //{
+        //    switch (mode)
+        //    {
+        //        case Domain.MarginInfo.Types.CalculationMode.Forex:
+        //            return BO.MarginCalculationModes.Forex;
+        //        case Domain.MarginInfo.Types.CalculationMode.Cfd:
+        //            return BO.MarginCalculationModes.CFD;
+        //        case Domain.MarginInfo.Types.CalculationMode.Futures:
+        //            return BO.MarginCalculationModes.Futures;
+        //        case Domain.MarginInfo.Types.CalculationMode.CfdIndex:
+        //            return BO.MarginCalculationModes.CFD_Index;
+        //        case Domain.MarginInfo.Types.CalculationMode.CfdLeverage:
+        //            return BO.MarginCalculationModes.CFD_Leverage;
+        //        default:
+        //            throw new InvalidCastException($"Margin calculation mode not found: {mode}");
+        //    }
+        //}
     }
 }

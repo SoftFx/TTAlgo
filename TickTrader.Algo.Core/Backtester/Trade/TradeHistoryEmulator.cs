@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Core
         private List<TradeReportAdapter> _history = new List<TradeReportAdapter>();
         private TimeKeyGenerator _idGenerator = new TimeKeyGenerator();
 
-        public TradeReportAdapter Create(DateTime time, SymbolAccessor smb, TradeExecActions action, Bo.TradeTransReasons reason)
+        public TradeReportAdapter Create(DateTime time, SymbolAccessor smb, TradeExecActions action, TradeTransactionReason reason)
         {
             return TradeReportAdapter.Create(_idGenerator.NextKey(time), smb, action, reason);
         }

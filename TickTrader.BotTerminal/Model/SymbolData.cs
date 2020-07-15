@@ -16,7 +16,6 @@ using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 using TickTrader.BotTerminal.Lib;
 using TickTrader.SeriesStorage;
-using ISymbolInfo = TickTrader.BusinessObjects.ISymbolInfo;
 
 namespace TickTrader.BotTerminal
 {

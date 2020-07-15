@@ -1,16 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Core.Calc;
-using TickTrader.Common.Business;
 
 namespace TickTrader.Algo.Core
 {
     [Serializable]
-    public class QuoteEntity : Api.Quote, ISymbolRate, RateUpdate
+    public class QuoteEntity : Api.Quote, ISymbolRate2, RateUpdate
     {
         public static readonly BookEntry[] EmptyBook = new BookEntry[0];
 
@@ -103,11 +97,11 @@ namespace TickTrader.Algo.Core
         public BookEntry[] BidBook { get { return BidList; } }
         public BookEntry[] AskBook { get { return AskList; } }
 
-        decimal ISymbolRate.Ask => (decimal)Ask;
-        decimal ISymbolRate.Bid => (decimal)Bid;
+        decimal ISymbolRate2.Ask => (decimal)Ask;
+        decimal ISymbolRate2.Bid => (decimal)Bid;
         public decimal? NullableAsk => (decimal?)_ask;
         public decimal? NullableBid => (decimal?)_bid;
-        bool ISymbolRate.IndicativeTick => throw new NotImplementedException();
+        bool ISymbolRate2.IndicativeTick => throw new NotImplementedException();
 
         #region RateUpdate
 
@@ -139,6 +133,16 @@ namespace TickTrader.Algo.Core
             var bookDepth = System.Math.Max(BidList?.Length ?? 0, AskList?.Length ?? 0);
             return $"{{{Bid}{(IsBidIndicative ? "i" : "")}/{Ask}{(IsAskIndicative ? "i" : "")} {Time} d{bookDepth}}}";
         }
+    }
+
+    public interface ISymbolRate2
+    {
+        decimal Ask { get; }
+        decimal Bid { get; }
+        string Symbol { get; }
+        decimal? NullableAsk { get; }
+        decimal? NullableBid { get; }
+        bool IndicativeTick { get; }
     }
 
     //[Serializable]

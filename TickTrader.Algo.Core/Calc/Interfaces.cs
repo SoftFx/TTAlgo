@@ -1,17 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
-using TickTrader.BusinessLogic;
-using TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Core.Calc
 {
     public enum CalcErrorCodes
     {
-        None        = 0,
+        None = 0,
         OffQuote,
         OffCrossQuote,
         NoCrossSymbol,
@@ -241,7 +235,7 @@ namespace TickTrader.Algo.Core.Calc
     /// <summary>
     /// Defines methods and properties for cash account.
     /// </summary>
-    public interface ICashAccountInfo2: IAccountInfo2
+    public interface ICashAccountInfo2 : IAccountInfo2
     {
         /// <summary>
         /// Cash account assets.

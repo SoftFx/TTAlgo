@@ -1,16 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Ext;
 using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
-using BL = TickTrader.BusinessLogic;
-using BO = TickTrader.BusinessObjects;
-using TickTrader.BusinessObjects.Messaging;
 using TickTrader.Algo.Core.Calc;
 using TickTrader.Algo.Domain;
 
@@ -102,8 +97,8 @@ namespace TickTrader.Algo.Core
 
         public void Stop()
         {
-            CloseAllPositions(BO.TradeTransReasons.Rollover);
-            CancelAllPendings(BO.TradeTransReasons.Rollover);
+            CloseAllPositions(TradeTransactionReason.Rollover);
+            CancelAllPendings(TradeTransactionReason.Rollover);
         }
 
         public void Restart()
@@ -199,11 +194,11 @@ namespace TickTrader.Algo.Core
 
                     //node.CheckTradeTime(Request, symbol);
 
-                    BO.TradeTransReasons trReason = BO.TradeTransReasons.ClientRequest;
+                    TradeTransactionReason trReason = TradeTransactionReason.ClientRequest;
                     //if (Request.ExpirationFlag)
-                    //    trReason = BO.TradeTransReasons.Expired;
+                    //    trReason = TradeTransactionReason.Expired;
                     //if (Request.StopoutFlag)
-                    //    trReason = BO.TradeTransReasons.StopOut;
+                    //    trReason = TradeTransactionReason.StopOut;
 
                     using (JournalScope())
                         CancelOrder(order, trReason);
@@ -358,7 +353,7 @@ namespace TickTrader.Algo.Core
                                 if (!dealerRequest.Confirmed || dealerRequest.DealerPrice <= 0)
                                     throw new OrderValidationError("Order is rejected by dealer", OrderCmdResultCodes.DealerReject);
 
-                                ClosePosition(order, BO.TradeTransReasons.ClientRequest, closeVolume, null, closeVolume, dealerRequest.DealerPrice, smbMetadata,
+                                ClosePosition(order, TradeTransactionReason.ClientRequest, closeVolume, null, closeVolume, dealerRequest.DealerPrice, smbMetadata,
                                     ClosePositionOptions.None, request.ByOrderId);
                             }
                         }
@@ -374,7 +369,7 @@ namespace TickTrader.Algo.Core
                                 EnsureOrderIsPosition(order);
                                 EnsureOrderIsPosition(byOrder);
 
-                                ConfirmPositionCloseBy(order, byOrder, BO.TradeTransReasons.ClientRequest, true);
+                                ConfirmPositionCloseBy(order, byOrder, TradeTransactionReason.ClientRequest, true);
                             }
                         }
 
@@ -500,7 +495,7 @@ namespace TickTrader.Algo.Core
 
             var currentRate = _calcFixture.GetCurrentRateOrThrow(symbolInfo.Name);
 
-            BO.TradeTransReasons trReason = options.HasFlag(OpenOrderOptions.Stopout) ? BO.TradeTransReasons.StopOut : BO.TradeTransReasons.DealerDecision;
+            TradeTransactionReason trReason = options.HasFlag(OpenOrderOptions.Stopout) ? TradeTransactionReason.StopOut : TradeTransactionReason.DealerDecision;
 
             if (!options.HasFlag(OpenOrderOptions.SkipDealing))
             {
@@ -519,7 +514,7 @@ namespace TickTrader.Algo.Core
             return ConfirmOrderOpening(order, trReason, null, null, options);
         }
 
-        private OrderAccessor ConfirmOrderOpening(OrderAccessor order, BO.TradeTransReasons trReason, double? execPrice, decimal? execAmount, OpenOrderOptions options)
+        private OrderAccessor ConfirmOrderOpening(OrderAccessor order, TradeTransactionReason trReason, double? execPrice, decimal? execAmount, OpenOrderOptions options)
         {
             var currentRate = _calcFixture.GetCurrentRateOrNull(order.Symbol);
 
@@ -550,10 +545,10 @@ namespace TickTrader.Algo.Core
                 if (order.RemainingAmount > 0) // partial fill
                 {
                     //// cancel remaining part
-                    //LogTransactionDetails(() => "Cancelling IoC Order #" + order.OrderId + ", RemainingAmount=" + orderCopy.RemainingAmount + ", Reason=" + BO.TradeTransReasons.DealerDecision,
+                    //LogTransactionDetails(() => "Cancelling IoC Order #" + order.OrderId + ", RemainingAmount=" + orderCopy.RemainingAmount + ", Reason=" + TradeTransactionReason.DealerDecision,
                     //    JournalEntrySeverities.Info, order.Clone());
 
-                    //ConfirmOrderCancelation(acc, BO.TradeTransReasons.DealerDecision, order.OrderId, null, clientRequestId, false);
+                    //ConfirmOrderCancelation(acc, TradeTransactionReason.DealerDecision, order.OrderId, null, clientRequestId, false);
                 }
 
                 isInstantOrder = _acc.Type != AccountInfo.Types.Type.Gross;
@@ -690,7 +685,7 @@ namespace TickTrader.Algo.Core
             //    cancelRequest.OrderId = Request.OrderId;
             //    cancelRequest.ClientOrderId = Request.ClientOrderId;
 
-            //    BO.TradeTransReasons trReason = Request.IsClientRequest ? BO.TradeTransReasons.ClientRequest : BO.TradeTransReasons.DealerDecision;
+            //    TradeTransactionReason trReason = Request.IsClientRequest ? TradeTransactionReason.ClientRequest : TradeTransactionReason.DealerDecision;
 
             //    RefOrder = await Facade.CancelOrderAsync(cancelRequest, Acc, trReason);
 
@@ -890,7 +885,7 @@ namespace TickTrader.Algo.Core
             return order;
         }
 
-        private FillInfo FillOrder(OrderAccessor order, double? fillPrice, decimal? fillAmount, BO.TradeTransReasons reason)
+        private FillInfo FillOrder(OrderAccessor order, double? fillPrice, decimal? fillAmount, TradeTransactionReason reason)
         {
             double actualPrice;
             decimal actualAmount;
@@ -912,7 +907,7 @@ namespace TickTrader.Algo.Core
         }
 
         // can lead to: 1) new gross position 2) net position settlement 3) asset movement
-        private FillInfo FillOrder2(OrderAccessor order, double fillPrice, decimal fillAmount, BO.TradeTransReasons reason)
+        private FillInfo FillOrder2(OrderAccessor order, double fillPrice, decimal fillAmount, TradeTransactionReason reason)
         {
             if (order.Type == Domain.OrderInfo.Types.Type.Position)
                 throw new Exception("Order already filled #" + order.OrderId);
@@ -1003,7 +998,7 @@ namespace TickTrader.Algo.Core
             NetPositionOpenInfo netInfo = null;
 
             if (_acc.Type == AccountInfo.Types.Type.Gross)
-                newPos = CreatePositionFromOrder(BO.TradeTransReasons.PndOrdAct, order, fillPrice, fillAmount, !partialFill);
+                newPos = CreatePositionFromOrder(TradeTransactionReason.PendingOrderActivation, order, fillPrice, fillAmount, !partialFill);
             else if (_acc.Type == AccountInfo.Types.Type.Net)
             {
                 netInfo = OpenNetPositionFromOrder(order, fillAmount, fillPrice, tradeReport);
@@ -1024,7 +1019,7 @@ namespace TickTrader.Algo.Core
             return new FillInfo() { FillAmount = fillAmount, FillPrice = fillPrice, Position = newPos, NetPos = netInfo, SymbolInfo = order.SymbolInfo };
         }
 
-        private OrderAccessor CancelOrder(OrderAccessor order, BO.TradeTransReasons trReason)
+        private OrderAccessor CancelOrder(OrderAccessor order, TradeTransactionReason trReason)
         {
             if (order.Type != Domain.OrderInfo.Types.Type.Limit && order.Type != Domain.OrderInfo.Types.Type.Stop && order.Type != Domain.OrderInfo.Types.Type.StopLimit)
                 throw new OrderValidationError("Only Limit, Stop and StopLimit orders can be canceled. Please check the type of the order #" + order.OrderId, OrderCmdResultCodes.OrderNotFound);
@@ -1038,7 +1033,7 @@ namespace TickTrader.Algo.Core
             return ConfirmOrderCancelation(trReason, order);
         }
 
-        private OrderAccessor ConfirmOrderCancelation(BO.TradeTransReasons trReason, OrderAccessor order, OrderAccessor originalOrder = null)
+        private OrderAccessor ConfirmOrderCancelation(TradeTransactionReason trReason, OrderAccessor order, OrderAccessor originalOrder = null)
         {
             //var order = _acc.GetOrderOrThrow(orderId);
 
@@ -1061,11 +1056,11 @@ namespace TickTrader.Algo.Core
             //LogTransactionDetails(() => $"Confirmed Order Cancellation #{orderId}, reason={trReason}", JournalEntrySeverities.Info, order.Clone());
 
             //Order orderCopy = FinalizeOrderOperation(order, null, order.SymbolRef, acc,
-            //    trReason == BO.TradeTransReasons.Expired ? OrderStatuses.Expired : OrderStatuses.Canceled,
-            //    trReason == BO.TradeTransReasons.Expired ? OrderExecutionEvents.Expired : OrderExecutionEvents.Canceled,
+            //    trReason == TradeTransactionReason.Expired ? OrderStatuses.Expired : OrderStatuses.Canceled,
+            //    trReason == TradeTransactionReason.Expired ? OrderExecutionEvents.Expired : OrderExecutionEvents.Canceled,
             //    clientRequestId);
 
-            if (trReason == BO.TradeTransReasons.StopOut && _acc.IsMarginType)
+            if (trReason == TradeTransactionReason.StopOut && _acc.IsMarginType)
             {
                 //MarginAccountModel mAcc = (MarginAccountModel)acc;
                 //order.UserComment = "Stopout: MarginLevel = " + double.Round(mAcc.MarginLevel, 2) + ", Margin = " + double.Round(mAcc.Margin, mAcc.RoundingDigits) + ", Equity = " + double.Round(mAcc.Equity, mAcc.RoundingDigits);
@@ -1074,11 +1069,11 @@ namespace TickTrader.Algo.Core
             // fire API event
             _scheduler.EnqueueEvent(b => b.Account.Orders.FireOrderCanceled(new OrderCanceledEventArgsImpl(order)));
 
-            if (trReason == BO.TradeTransReasons.Expired)
+            if (trReason == TradeTransactionReason.Expired)
                 RecalculateAccount();
 
             // update trade history
-            var report = _history.Create(_scheduler.UnsafeVirtualTimePoint, order.SymbolInfo, trReason == BO.TradeTransReasons.Expired ? TradeExecActions.OrderExpired : TradeExecActions.OrderCanceled, trReason);
+            var report = _history.Create(_scheduler.UnsafeVirtualTimePoint, order.SymbolInfo, trReason == TradeTransactionReason.Expired ? TradeExecActions.OrderExpired : TradeExecActions.OrderCanceled, trReason);
             report.FillGenericOrderData(_calcFixture, order);
             report.FillAccountSpecificFields(_calcFixture);
             report.Entity.LeavesQuantity = 0;
@@ -1101,13 +1096,13 @@ namespace TickTrader.Algo.Core
             return order;
         }
 
-        private OrderAccessor CreatePositionFromOrder(BO.TradeTransReasons trReason, OrderAccessor parentOrder,
+        private OrderAccessor CreatePositionFromOrder(TradeTransactionReason trReason, OrderAccessor parentOrder,
            double openPrice, decimal posAmount, bool transformOrder)
         {
             return CreatePosition(trReason, parentOrder, parentOrder.Side, parentOrder.SymbolInfo, openPrice, posAmount, transformOrder);
         }
 
-        private OrderAccessor CreatePosition(BO.TradeTransReasons trReason, OrderAccessor parentOrder, Domain.OrderInfo.Types.Side side, SymbolAccessor smb, double openPrice, decimal posAmount, bool transformOrder)
+        private OrderAccessor CreatePosition(TradeTransactionReason trReason, OrderAccessor parentOrder, Domain.OrderInfo.Types.Side side, SymbolAccessor smb, double openPrice, decimal posAmount, bool transformOrder)
         {
             OrderAccessor position;
             //TradeChargesInfo charges = new TradeChargesInfo();
@@ -1480,49 +1475,49 @@ namespace TickTrader.Algo.Core
                 return; // already activated
 
             //GroupSecurityCfg securityCfg = account.GetSecurityCfg(smbInfo);
-            if ((record.ActivationType == ActivationType.Pending) && (record.Order.Type == Domain.OrderInfo.Types.Type.Stop))
-            {
-                //bool needCancelation = false;
+            //if ((record.ActivationType == ActivationType.Pending) && (record.Order.Type == Domain.OrderInfo.Types.Type.Stop))
+            //{
+            //    //bool needCancelation = false;
 
-                // Check margin of the activated pending order
-                try
-                {
-                    //    account.ValidateOrderActivation(record.Order, record.ActivationPrice, record.Order.RemainingAmount, ref lockedActivateMargin);
-                }
-                catch (ServerFaultException<NotEnoughMoneyFault>)
-                {
-                    //needCancelation = true;
-                }
-                catch (ServerFaultException<OffQuotesFault>)
-                {
-                    //needCancelation = true;
-                }
+            //    // Check margin of the activated pending order
+            //    try
+            //    {
+            //        //    account.ValidateOrderActivation(record.Order, record.ActivationPrice, record.Order.RemainingAmount, ref lockedActivateMargin);
+            //    }
+            //    catch (ServerFaultException<NotEnoughMoneyFault>)
+            //    {
+            //        //needCancelation = true;
+            //    }
+            //    catch (ServerFaultException<OffQuotesFault>)
+            //    {
+            //        //needCancelation = true;
+            //    }
 
-                // Insufficient margin. Cancel pending order
-                //if (needCancelation)
-                //{
-                //    var order = record.Order;
-                //    LocalAccountTransaction.Start(account.Id, "Pending order " + record.OrderId + " was canceled during activation because of insufficient margin to activate!", JournalTransactionTypes.CancelOrder,
-                //        tr =>
-                //        {
-                //            tr.TradeInfrastructure.LogTransactionDetails(() => $"Account state: {account}", JournalEntrySeverities.Info, tr.Token, TransactDetails.Create(order.OrderId, order.Symbol));
+            //    // Insufficient margin. Cancel pending order
+            //    //if (needCancelation)
+            //    //{
+            //    //    var order = record.Order;
+            //    //    LocalAccountTransaction.Start(account.Id, "Pending order " + record.OrderId + " was canceled during activation because of insufficient margin to activate!", JournalTransactionTypes.CancelOrder,
+            //    //        tr =>
+            //    //        {
+            //    //            tr.TradeInfrastructure.LogTransactionDetails(() => $"Account state: {account}", JournalEntrySeverities.Info, tr.Token, TransactDetails.Create(order.OrderId, order.Symbol));
 
-                //            CancelOrderRequest request = new CancelOrderRequest();
-                //            request.Level = TradeMessageLevels.Manager;
-                //            request.AccountId = order.Account.Id;
-                //            request.OrderId = order.OrderId;
-                //            request.StopoutFlag = false;
-                //            request.ExpirationFlag = false;
-                //            request.ManagerOptions = TradeRequestOptions.DealerRequest;
+            //    //            CancelOrderRequest request = new CancelOrderRequest();
+            //    //            request.Level = TradeMessageLevels.Manager;
+            //    //            request.AccountId = order.Account.Id;
+            //    //            request.OrderId = order.OrderId;
+            //    //            request.StopoutFlag = false;
+            //    //            request.ExpirationFlag = false;
+            //    //            request.ManagerOptions = TradeRequestOptions.DealerRequest;
 
-                //            return CancelOrderAsync(request, order.Account, BO.TradeTransReasons.DealerDecision);
-                //        });
+            //    //            return CancelOrderAsync(request, order.Account, TradeTransactionReason.DealerDecision);
+            //    //        });
 
-                //    Logger.Info(() => OperationContext.LogPrefix + "Pending order " + record.OrderId + " was canceled during activation because of insufficient margin to activate!");
+            //    //    Logger.Info(() => OperationContext.LogPrefix + "Pending order " + record.OrderId + " was canceled during activation because of insufficient margin to activate!");
 
-                //    return;
-                //}
-            }
+            //    //    return;
+            //    //}
+            //}
 
             var fillInfo = new FillInfo();
 
@@ -1530,7 +1525,7 @@ namespace TickTrader.Algo.Core
             {
                 if (record.Order.Type == Domain.OrderInfo.Types.Type.StopLimit)
                 {
-                    ActivateStopLimitOrder(record.Order, BO.TradeTransReasons.PndOrdAct);
+                    ActivateStopLimitOrder(record.Order, TradeTransactionReason.PendingOrderActivation);
 
                     // execution report
                     if (_sendReports)
@@ -1541,7 +1536,7 @@ namespace TickTrader.Algo.Core
                 }
                 else
                 {
-                    fillInfo = FillOrder(record.Order, record.ActivationPrice, (decimal)record.Order.RemainingAmount, BO.TradeTransReasons.PndOrdAct);
+                    fillInfo = FillOrder(record.Order, record.ActivationPrice, (decimal)record.Order.RemainingAmount, TradeTransactionReason.PendingOrderActivation);
 
                     // execution report
                     if (_sendReports)
@@ -1558,18 +1553,18 @@ namespace TickTrader.Algo.Core
             }
             else if ((_acc.Type == AccountInfo.Types.Type.Gross) && (record.ActivationType == ActivationType.StopLoss || record.ActivationType == ActivationType.TakeProfit))
             {
-                BO.TradeTransReasons trReason = BO.TradeTransReasons.DealerDecision;
+                TradeTransactionReason trReason = TradeTransactionReason.DealerDecision;
                 if (record.ActivationType == ActivationType.StopLoss)
-                    trReason = BO.TradeTransReasons.StopLossAct;
+                    trReason = TradeTransactionReason.StopLossActivation;
                 else if (record.ActivationType == ActivationType.TakeProfit)
-                    trReason = BO.TradeTransReasons.TakeProfitAct;
+                    trReason = TradeTransactionReason.TakeProfitActivation;
 
                 var smb = _context.Builder.Symbols.GetOrDefault(record.Order.Symbol);
                 ClosePosition(record.Order, trReason, null, null, record.Order.RemainingAmount, record.Price, smb, 0, null);
             }
         }
 
-        private void ActivateStopLimitOrder(OrderAccessor order, BO.TradeTransReasons reason)
+        private void ActivateStopLimitOrder(OrderAccessor order, TradeTransactionReason reason)
         {
             UnregisterOrder(order);
 
@@ -1585,7 +1580,7 @@ namespace TickTrader.Algo.Core
             //Order orderCopy = FinalizeOrderOperation(order, null, order.SymbolRef, acc, OrderStatuses.Activated, OrderExecutionEvents.Activated, null);
 
             // Update trade history
-            //TradeReportModel report = TradeReportModel.Create(acc, TradeTransTypes.OrderActivated, BO.TradeTransReasons.DealerDecision);
+            //TradeReportModel report = TradeReportModel.Create(acc, TradeTransTypes.OrderActivated, TradeTransactionReason.DealerDecision);
             //report.FillGenericOrderData(order);
             //report.FillAccountSpecificFields();
             //report.OrderRemainingAmount = order.RemainingAmount >= 0 ? order.RemainingAmount : default(double?);
@@ -1601,7 +1596,7 @@ namespace TickTrader.Algo.Core
                 order.StopPrice, order.StopLoss, order.TakeProfit, order.Comment, order.Entity.Options.ToExec(), order.Entity.UserTag, order.Expiration, OpenOrderOptions.SkipDealing);
         }
 
-        private void ClosePosition(OrderAccessor position, BO.TradeTransReasons trReason, decimal? reqAmount, double? reqPrice,
+        private void ClosePosition(OrderAccessor position, TradeTransactionReason trReason, decimal? reqAmount, double? reqPrice,
             decimal? amount, double? price, SymbolAccessor smb, ClosePositionOptions options, string posById = null)
         {
             OrderCalculator fCalc = position.Calculator;
@@ -1644,7 +1639,7 @@ namespace TickTrader.Algo.Core
 
             // Calculate commission & swap.
 
-            //position.IsReducedCloseCommission = position.IsReducedCloseCommission && trReason == BO.TradeTransReasons.TakeProfitAct;
+            //position.IsReducedCloseCommission = position.IsReducedCloseCommission && trReason == TradeTransactionReason.TakeProfitAct;
 
             var charges = new TradeChargesInfo();
 
@@ -1670,7 +1665,7 @@ namespace TickTrader.Algo.Core
                 position.ChangeRemAmount(0);
             }
 
-            //if (trReason == BO.TradeTransReasons.Rollover)
+            //if (trReason == TradeTransactionReason.Rollover)
             //    CommissionStrategy.OnRollover(position, actualCloseAmount, charges, acc);
             //else
             //    CommissionStrategy.OnPositionClosed(position, actualCloseAmount, charges, acc);)
@@ -1715,15 +1710,15 @@ namespace TickTrader.Algo.Core
             // Update comment for trade history entry.
             switch (trReason)
             {
-                //case BO.TradeTransReasons.StopOut:
+                //case TradeTransactionReason.StopOut:
                 //    position.UserComment = "[Stopout: MarginLevel = " + double.Round(acc.MarginLevel, 2) + ", Margin = " + double.Round(acc.Margin, acc.RoundingDigits) + ", Equity = " + double.Round(acc.Equity, acc.RoundingDigits) + "] " + position.UserComment;
                 //    break;
-                case BO.TradeTransReasons.TakeProfitAct:
+                case TradeTransactionReason.TakeProfitActivation:
                     reqAmount = actualCloseAmount;
                     reqPrice = (double)position.TakeProfit;
                     //position.UserComment = "[TP] " + position.UserComment;
                     break;
-                case BO.TradeTransReasons.StopLossAct:
+                case TradeTransactionReason.StopLossActivation:
                     reqAmount = actualCloseAmount;
                     reqPrice = (double)position.StopLoss;
                     //position.UserComment = "[SL] " + position.UserComment;
@@ -1792,7 +1787,7 @@ namespace TickTrader.Algo.Core
             //return profitInfo;
         }
 
-        public void ConfirmPositionCloseBy(OrderAccessor position1, OrderAccessor position2, BO.TradeTransReasons trReason, bool usePartialClosing)
+        public void ConfirmPositionCloseBy(OrderAccessor position1, OrderAccessor position2, TradeTransactionReason trReason, bool usePartialClosing)
         {
             var smb = position1.SymbolInfo;
             OrderCalculator fCalc = position1.Calculator;
@@ -1826,7 +1821,7 @@ namespace TickTrader.Algo.Core
             //}
         }
 
-        private void CloseAllPositions(BO.TradeTransReasons reason)
+        private void CloseAllPositions(TradeTransactionReason reason)
         {
             var toClose = _acc.Orders.Where(o => o.Type == Domain.OrderInfo.Types.Type.Position).ToList();
 
@@ -1858,7 +1853,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        private void CancelAllPendings(BO.TradeTransReasons reason)
+        private void CancelAllPendings(TradeTransactionReason reason)
         {
             var toCancel = _acc.Orders.Where(o => o.IsPending).ToList();
 
@@ -1883,7 +1878,7 @@ namespace TickTrader.Algo.Core
                 foreach (var order in expiredOrders)
                 {
                     //Logger.Debug(() => "Order id=" + order.OrderId + " has been expired.");
-                    ConfirmOrderCancelation(BO.TradeTransReasons.Expired, order);
+                    ConfirmOrderCancelation(TradeTransactionReason.Expired, order);
                     //MarkAsAffected(order.Account);
                 }
             }

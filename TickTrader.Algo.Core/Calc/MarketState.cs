@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Calc.Conversion;
 using TickTrader.Algo.Core.Lib;
@@ -45,7 +43,7 @@ namespace TickTrader.Algo.Core.Calc
         {
             var result = _currenciesByName.GetOrDefault(name);
             if (result == null)
-                throw new BusinessLogic.MarketConfigurationException("Currency Not Found: " + name);
+                throw new MarketConfigurationException("Currency Not Found: " + name);
             return result;
         }
 

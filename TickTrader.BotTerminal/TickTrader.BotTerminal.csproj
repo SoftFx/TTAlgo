@@ -167,14 +167,6 @@
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
-    <Reference Include="TickTrader.BusinessLogic, Version=1.36.4.0, Culture=neutral, PublicKeyToken=f93e83ea42ea164d, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\TickTrader.BusinessLogic.dll</HintPath>
-    </Reference>
-    <Reference Include="TickTrader.BusinessObjects, Version=1.37.3.0, Culture=neutral, PublicKeyToken=f93e83ea42ea164d, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\TickTrader.BusinessObjects.dll</HintPath>
-    </Reference>
     <Reference Include="TickTrader.Common">
       <HintPath>..\lib\TickTrader.Common.dll</HintPath>
     </Reference>

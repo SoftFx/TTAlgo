@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Common.Business;
 
 namespace TickTrader.Algo.Core.Calc.Conversion
 {
+    public enum PriceType
+    {
+        Bid = 0,
+        Ask = 1,
+    }
+
     public class ConversionManager
     {
         private MarketStateBase _market;
@@ -72,37 +74,37 @@ namespace TickTrader.Algo.Core.Calc.Conversion
             // N 2
 
             if (Y == Z)
-                return FormulaBuilder.Conversion(tracker, FxPriceType.Ask);
+                return FormulaBuilder.Conversion(tracker, PriceType.Ask);
 
             // N 3
 
             ISymbolInfo2 XZ = GetFromSet(X, Z);
 
             if (XZ != null)
-                return FormulaBuilder.Conversion(GetRate(XZ), FxPriceType.Ask);
+                return FormulaBuilder.Conversion(GetRate(XZ), PriceType.Ask);
 
             // N 4
 
             ISymbolInfo2 ZX = GetFromSet(Z, X);
 
             if (ZX != null)
-                return FormulaBuilder.InverseConversion(GetRate(ZX), FxPriceType.Bid);
+                return FormulaBuilder.InverseConversion(GetRate(ZX), PriceType.Bid);
 
             // N 5
 
             ISymbolInfo2 YZ = GetFromSet(Y, Z);
 
             if (YZ != null)
-                return FormulaBuilder.Conversion(GetRate(XY), FxPriceType.Ask)
-                                     .Then(GetRate(YZ), FxPriceType.Ask);
+                return FormulaBuilder.Conversion(GetRate(XY), PriceType.Ask)
+                                     .Then(GetRate(YZ), PriceType.Ask);
 
             // N 6
 
             ISymbolInfo2 ZY = GetFromSet(Z, Y);
 
             if (ZY != null)
-                return FormulaBuilder.Conversion(GetRate(XY), FxPriceType.Ask)
-                                     .ThenDivide(GetRate(ZY), FxPriceType.Bid);
+                return FormulaBuilder.Conversion(GetRate(XY), PriceType.Ask)
+                                     .ThenDivide(GetRate(ZY), PriceType.Bid);
 
             foreach (var curr in _market.Currencies)
             {
@@ -114,62 +116,62 @@ namespace TickTrader.Algo.Core.Calc.Conversion
                 ISymbolInfo2 ZC = GetFromSet(Z, C);
 
                 if (XC != null && ZC != null)
-                    return FormulaBuilder.Conversion(GetRate(XC), FxPriceType.Ask)
-                                         .ThenDivide(GetRate(ZC), FxPriceType.Bid);
+                    return FormulaBuilder.Conversion(GetRate(XC), PriceType.Ask)
+                                         .ThenDivide(GetRate(ZC), PriceType.Bid);
 
                 // N 8
 
                 ISymbolInfo2 CX = GetFromSet(C, X);
 
                 if (CX != null && ZC != null)
-                    return FormulaBuilder.InverseConversion(GetRate(CX), FxPriceType.Bid)
-                                         .ThenDivide(GetRate(ZC), FxPriceType.Bid);
+                    return FormulaBuilder.InverseConversion(GetRate(CX), PriceType.Bid)
+                                         .ThenDivide(GetRate(ZC), PriceType.Bid);
 
                 // N 9
 
                 ISymbolInfo2 CZ = GetFromSet(C, Z);
 
                 if (XC != null && CZ != null)
-                    return FormulaBuilder.Conversion(GetRate(XC), FxPriceType.Ask)
-                                         .Then(GetRate(CZ), FxPriceType.Ask);
+                    return FormulaBuilder.Conversion(GetRate(XC), PriceType.Ask)
+                                         .Then(GetRate(CZ), PriceType.Ask);
 
                 // N 10
 
                 if (CX != null && CZ != null)
-                    return FormulaBuilder.InverseConversion(GetRate(CX), FxPriceType.Bid)
-                                         .Then(GetRate(CZ), FxPriceType.Ask);
+                    return FormulaBuilder.InverseConversion(GetRate(CX), PriceType.Bid)
+                                         .Then(GetRate(CZ), PriceType.Ask);
 
                 // N 11
 
                 ISymbolInfo2 YC = GetFromSet(Y, C);
 
                 if (YC != null && ZC != null)
-                    return FormulaBuilder.Conversion(GetRate(YC), FxPriceType.Ask)
-                                         .ThenDivide(GetRate(ZC), FxPriceType.Bid)
-                                         .Then(GetRate(XY), FxPriceType.Ask);
+                    return FormulaBuilder.Conversion(GetRate(YC), PriceType.Ask)
+                                         .ThenDivide(GetRate(ZC), PriceType.Bid)
+                                         .Then(GetRate(XY), PriceType.Ask);
 
                 // N 12
 
                 ISymbolInfo2 CY = GetFromSet(C, Y);
 
                 if (CY != null && ZC != null)
-                    return FormulaBuilder.InverseConversion(GetRate(CY), FxPriceType.Bid)
-                                         .ThenDivide(GetRate(ZC), FxPriceType.Bid)
-                                         .Then(GetRate(XY), FxPriceType.Ask);
+                    return FormulaBuilder.InverseConversion(GetRate(CY), PriceType.Bid)
+                                         .ThenDivide(GetRate(ZC), PriceType.Bid)
+                                         .Then(GetRate(XY), PriceType.Ask);
 
                 // N 13
 
                 if (YC != null && CZ != null)
-                    return FormulaBuilder.Conversion(GetRate(YC), FxPriceType.Ask)
-                                         .Then(GetRate(CZ), FxPriceType.Ask)
-                                         .Then(GetRate(XY), FxPriceType.Ask);
+                    return FormulaBuilder.Conversion(GetRate(YC), PriceType.Ask)
+                                         .Then(GetRate(CZ), PriceType.Ask)
+                                         .Then(GetRate(XY), PriceType.Ask);
 
                 // N 14
 
                 if (CY != null && CZ != null)
-                    return FormulaBuilder.InverseConversion(GetRate(CY), FxPriceType.Bid)
-                                         .Then(GetRate(CZ), FxPriceType.Ask)
-                                         .Then(GetRate(XY), FxPriceType.Ask);
+                    return FormulaBuilder.InverseConversion(GetRate(CY), PriceType.Bid)
+                                         .Then(GetRate(CZ), PriceType.Ask)
+                                         .Then(GetRate(XY), PriceType.Ask);
             }
 
             return FormulaBuilder.Error(XY, X, Z);
@@ -177,15 +179,15 @@ namespace TickTrader.Algo.Core.Calc.Conversion
 
         private IConversionFormula BuildPositiveProfitFormula(SymbolMarketNode tracker, string toCurrency)
         {
-            return BuildProfitFormula(tracker, toCurrency, FxPriceType.Bid, FxPriceType.Ask);
+            return BuildProfitFormula(tracker, toCurrency, PriceType.Bid, PriceType.Ask);
         }
 
         private IConversionFormula BuildNegativeProfitFormula(SymbolMarketNode tracker, string toCurrency)
         {
-            return BuildProfitFormula(tracker, toCurrency, FxPriceType.Ask, FxPriceType.Bid);
+            return BuildProfitFormula(tracker, toCurrency, PriceType.Ask, PriceType.Bid);
         }
 
-        private IConversionFormula BuildProfitFormula(SymbolMarketNode tracker, string toCurrency, FxPriceType price1, FxPriceType price2)
+        private IConversionFormula BuildProfitFormula(SymbolMarketNode tracker, string toCurrency, PriceType price1, PriceType price2)
         {
             ISymbolInfo2 XY = tracker.SymbolInfo;
 

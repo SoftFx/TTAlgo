@@ -1,9 +1,7 @@
 ﻿using System;
-using TickTrader.BusinessLogic;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Common.Lib;
-using TickTrader.Algo.Api;
 using System.Globalization;
+using TickTrader.Algo.Common.Lib;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Calc;
 
 namespace TickTrader.Algo.Common.Model
