@@ -70,7 +70,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             foreach (OrderSide orderSide in Enum.GetValues(typeof(OrderSide)))
                 foreach (OrderType orderType in Enum.GetValues(typeof(OrderType)))
                     if (orderType != OrderType.Position)
-                    //if (orderType == OrderType.Limit)
+                    //if (orderType == OrderType.Market)
                     {
                         var testSet = new TestParamsSet(orderType, orderSide);
 

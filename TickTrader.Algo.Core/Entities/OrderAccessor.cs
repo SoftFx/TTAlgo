@@ -43,8 +43,12 @@ namespace TickTrader.Algo.Core
             var oldVol = _entity.RemainingVolume;
             var oldType = _entity.Type;
             var oldIsHidden = _entity.IsHidden;
+            var oldCommission = _entity.Commission;
+            var oldSwap = _entity.Swap;
             _entity = entity;
             EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldVol, oldPrice, oldStopPrice, oldType, oldIsHidden));
+            CommissionChanged?.Invoke(new OrderPropArgs<decimal>(this, oldCommission, _entity.Commission));
+            SwapChanged?.Invoke(new OrderPropArgs<decimal>(this, oldSwap, _entity.Swap));
         }
 
         public OrderEntity Entity => _entity;
