@@ -9,15 +9,15 @@ namespace TickTrader.Algo.Core
     [Serializable]
     public class TesterTradeTransaction
     {
-        public OrderEntity OrderUpdate { get; private set; }
+        public Domain.OrderInfo OrderUpdate { get; private set; }
         public OrderEntityAction OrderEntityAction { get; private set; }
         public OrderExecAction OrderExecAction { get; private set; }
 
-        public OrderEntity PositionUpdate { get; private set; }
+        public Domain.OrderInfo PositionUpdate { get; private set; }
         public OrderEntityAction PositionEntityAction { get; private set; }
         public OrderExecAction PositionExecAction { get; private set; }
 
-        public PositionEntity NetPositionUpdate { get; private set; }
+        public Domain.PositionExecReport NetPositionUpdate { get; private set; }
         public AssetEntity Asset1Update { get; }
         public AssetEntity Asset2Update { get; }
         public double? Balance { get; private set; }
@@ -31,7 +31,7 @@ namespace TickTrader.Algo.Core
             else if (order.RemainingAmount > 0)
                 update.OnOrderAdded(order);
             else
-                update.OrderUpdate = order.Entity;
+                update.OrderUpdate = order.Entity.GetInfo();
             if (fillInfo.NetPos != null)
             {
                 update.OnPositionChanged(fillInfo.NetPos.ResultingPosition);
@@ -63,7 +63,7 @@ namespace TickTrader.Algo.Core
         {
             var update = new TesterTradeTransaction();
 
-            if (fillInfo.Position != null && fillInfo.Position.OrderId == order.OrderId) // order was transformed into position
+            if (fillInfo.Position != null && fillInfo.Position.IsSameOrderId(order)) // order was transformed into position
             {
                 update.OnOrderReplaced(OrderExecAction.Filled, order);
             }
@@ -117,60 +117,64 @@ namespace TickTrader.Algo.Core
         private void OnInstantOrderOpened(OrderAccessor order)
         {
             OrderEntityAction = OrderEntityAction.None;
-            OrderUpdate = order.Entity;
+            OrderUpdate = order.Entity.GetInfo();
         }
 
         private void OnOrderAdded(OrderAccessor order)
         {
             OrderEntityAction = OrderEntityAction.Added;
-            OrderUpdate = order.Entity;
+            OrderUpdate = order.Entity.GetInfo();
         }
 
         private void OnOrderAdded(OrderExecAction execAction, OrderAccessor order)
         {
             OrderExecAction = execAction;
             OrderEntityAction = OrderEntityAction.Added;
-            OrderUpdate = order.Entity;
+            OrderUpdate = order.Entity.GetInfo();
         }
 
         private void OnOrderReplaced(OrderExecAction execAction, OrderAccessor order)
         {
             OrderExecAction = execAction;
             OrderEntityAction = OrderEntityAction.Updated;
-            OrderUpdate = order.Entity;
+            OrderUpdate = order.Entity.GetInfo();
         }
 
         private void OnOrderRemoved(OrderExecAction execAction, OrderAccessor order)
         {
             OrderExecAction = execAction;
             OrderEntityAction = OrderEntityAction.Removed;
-            OrderUpdate = order.Entity;
+            OrderUpdate = order.Entity.GetInfo();
         }
 
         private void OnPositionAdded(OrderExecAction execAction, OrderAccessor order)
         {
             PositionExecAction = execAction;
             PositionEntityAction = OrderEntityAction.Added;
-            PositionUpdate = order.Entity;
+            PositionUpdate = order.Entity.GetInfo();
         }
 
         private void OnPositionReplaced(OrderExecAction execAction, OrderAccessor order)
         {
             PositionExecAction = execAction;
             PositionEntityAction = OrderEntityAction.Updated;
-            PositionUpdate = order.Entity;
+            PositionUpdate = order.Entity.GetInfo();
         }
 
         private void OnPositionRemoved(OrderExecAction execAction, OrderAccessor order)
         {
             PositionExecAction = execAction;
             PositionEntityAction = OrderEntityAction.Removed;
-            PositionUpdate = order.Entity;
+            PositionUpdate = order.Entity.GetInfo();
         }
 
         private void OnPositionChanged(PositionAccessor pos)
         {
-            NetPositionUpdate = pos.GetEntityCopy();
+            NetPositionUpdate = new Domain.PositionExecReport
+            {
+                PositionCopy = pos.GetEntityCopy(),
+                ExecAction = Domain.OrderExecReport.Types.ExecAction.Modified,
+            };
         }
 
         private void OnBalanceChanged(double balance)

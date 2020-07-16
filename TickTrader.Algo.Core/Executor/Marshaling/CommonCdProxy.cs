@@ -69,18 +69,21 @@ namespace TickTrader.Algo.Core
 
         #region IAccountInfoProvider
 
-        public Domain.AccountInfo AccountInfo => _acc.AccountInfo;
+        public event Action<Domain.OrderExecReport> OrderUpdated;
+        public event Action<Domain.BalanceOperation> BalanceUpdated;
+        public event Action<Domain.PositionExecReport> PositionUpdated;
 
-        public event Action<OrderExecReport> OrderUpdated;
-        public event Action<BalanceOperationReport> BalanceUpdated;
-        public event Action<PositionExecReport> PositionUpdated;
+        public Domain.AccountInfo GetAccountInfo()
+        {
+            return _acc.GetAccountInfo();
+        }
 
-        public List<OrderEntity> GetOrders()
+        public List<Domain.OrderInfo> GetOrders()
         {
             return _acc.GetOrders();
         }
 
-        public IEnumerable<PositionExecReport> GetPositions()
+        public List<Domain.PositionInfo> GetPositions()
         {
             return _acc.GetPositions();
         }
@@ -90,17 +93,17 @@ namespace TickTrader.Algo.Core
             _acc.SyncInvoke(action);
         }
 
-        private void Acc_BalanceUpdated(BalanceOperationReport rep)
+        private void Acc_BalanceUpdated(Domain.BalanceOperation rep)
         {
             BalanceUpdated?.Invoke(rep);
         }
 
-        private void Acc_OrderUpdated(OrderExecReport rep)
+        private void Acc_OrderUpdated(Domain.OrderExecReport rep)
         {
             OrderUpdated?.Invoke(rep);
         }
 
-        private void Acc_PositionUpdated(PositionExecReport rep)
+        private void Acc_PositionUpdated(Domain.PositionExecReport rep)
         {
             PositionUpdated?.Invoke(rep);
         }

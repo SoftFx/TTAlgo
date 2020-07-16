@@ -70,29 +70,31 @@ namespace TickTrader.Algo.Core
             return new TradeReportAdapter(entity, symbol);
         }
 
-        public TradeReportAdapter FillGenericOrderData(CalculatorFixture acc, OrderAccessor order)
+        public TradeReportAdapter FillGenericOrderData(CalculatorFixture acc, OrderAccessor orderAccessor)
         {
-            Entity.OrderCreated = order.Created;
-            Entity.OrderModified = order.Modified;
+            var order = orderAccessor.Entity;
+
+            Entity.OrderCreated = order.Created ?? DateTime.MinValue;
+            Entity.OrderModified = order.Modified ?? DateTime.MinValue;
             Entity.OrderId = order.Id;
             Entity.ActionId = order.ActionNo;
             //Entity.ParentOrderId = order.ParentOrderId;
             //ClientOrderId = order.ClientOrderId;
             Entity.TradeRecordType = order.Type;
             Entity.ReqOrderType = order.InitialType;
-            Entity.OpenQuantity = (double)order.Amount;
+            Entity.OpenQuantity = (double)order.RequestedAmount;
             Entity.RemainingQuantity = (double)order.RemainingAmount;
             //Entity.OrderHiddenAmount = order.HiddenAmount;
             //Entity.OrderMaxVisibleAmount = order.MaxVisibleAmount;
-            Entity.Price = order.Price;
-            Entity.StopPrice = order.StopPrice;
+            Entity.Price = order.Price ?? double.NaN;
+            Entity.StopPrice = order.StopPrice ?? double.NaN;
             Entity.TradeRecordSide = order.Side;
             //Entity.SymbolRef = order.SymbolRef;
             //Entity.SymbolPrecision = order.SymbolPrecision;
             Entity.Expiration = order.Expiration;
             //Entity.Magic = order.Magic;
-            Entity.StopLoss = order.StopLoss;
-            Entity.TakeProfit = order.TakeProfit;
+            Entity.StopLoss = order.StopLoss ?? double.NaN;
+            Entity.TakeProfit = order.TakeProfit ?? double.NaN;
             //TransferringCoefficient = order.TransferringCoefficient;
 
             if (order.Type == Domain.OrderInfo.Types.Type.Position)
@@ -107,7 +109,7 @@ namespace TickTrader.Algo.Core
             // comments and tags
             Entity.Comment = order.Comment;
             //ManagerComment = order.ManagerComment;
-            Entity.Tag = order.Tag;
+            Entity.Tag = order.UserTag;
             //ManagerTag = order.ManagerTag;
 
             //rates
@@ -118,20 +120,20 @@ namespace TickTrader.Algo.Core
             //Entity.ReqOpenPrice = order.ReqOpenPrice;
             //Entity.ReqOpenQuantity = order.ReqOpenAmount;
 
-            Entity.ImmediateOrCancel = order.HasOption(OrderExecOptions.ImmediateOrCancel);
+            Entity.ImmediateOrCancel = orderAccessor.HasOption(OrderExecOptions.ImmediateOrCancel);
             //ClientApp = order.ClientApp;
 
-            FillSymbolConversionRates(acc, order.SymbolInfo);
+            FillSymbolConversionRates(acc, orderAccessor.SymbolInfo);
 
             return this;
         }
 
         public TradeReportAdapter FillClosePosData(OrderAccessor order, DateTime closeTime, decimal closeAmount, double closePrice, decimal? requestAmount, double? requestPrice, string posById)
         {
-            Entity.PositionQuantity = (double)order.Entity.RequestedVolume;
-            Entity.PositionLeavesQuantity = (double)order.Entity.RemainingVolume;
+            Entity.PositionQuantity = (double)order.Entity.RequestedAmount;
+            Entity.PositionLeavesQuantity = (double)order.Entity.RemainingAmount;
             Entity.CloseQuantity = (double)closeAmount;
-            Entity.PositionOpened = order.PositionCreated;
+            Entity.PositionOpened = order.Entity.PositionCreated;
             Entity.PosOpenPrice = order.Price;
             Entity.PositionClosed = closeTime;
             Entity.ClosePrice = (double)closePrice;

@@ -11,7 +11,7 @@ namespace TickTrader.Algo.Core
     {
         public OpenOrderDealerRequest(OrderAccessor order, RateUpdate currentRate)
         {
-            Order = order;
+            Order = order.ApiOrder;
             CurrentRate = currentRate;
             Confirmed = true;
         }

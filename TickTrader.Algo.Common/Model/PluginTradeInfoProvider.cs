@@ -11,9 +11,9 @@ namespace TickTrader.Algo.Common.Model
     public class PluginTradeInfoProvider : CrossDomainObject, IAccountInfoProvider
     {
         private EntityCache _cache;
-        private event Action<OrderExecReport> AlgoEvent_OrderUpdated = delegate { };
-        private event Action<PositionExecReport> AlgoEvent_PositionUpdated = delegate { };
-        private event Action<BalanceOperationReport> AlgoEvent_BalanceUpdated = delegate { };
+        private event Action<Domain.OrderExecReport> AlgoEvent_OrderUpdated = delegate { };
+        private event Action<Domain.PositionExecReport> AlgoEvent_PositionUpdated = delegate { };
+        private event Action<Domain.BalanceOperation> AlgoEvent_BalanceUpdated = delegate { };
         private ISyncContext _sync;
 
         public PluginTradeInfoProvider(EntityCache cache, ISyncContext sync)
@@ -31,33 +31,31 @@ namespace TickTrader.Algo.Common.Model
             ExecReportToAlgo(update.ExecAction, update.EntityAction, update.Report, update.Order, update.Position);
         }
 
-        private void Account_BalanceUpdate(BalanceOperationReport rep)
+        private void Account_BalanceUpdate(Domain.BalanceOperation rep)
         {
             AlgoEvent_BalanceUpdated?.Invoke(rep);
         }
 
-        private void Account_PositionUpdate(PositionModel position, OrderExecAction action)
+        private void Account_PositionUpdate(PositionModel position, Domain.OrderExecReport.Types.ExecAction action)
         {
             AlgoEvent_PositionUpdated(position.ToReport(action));
         }
 
-        private void ExecReportToAlgo(OrderExecAction action, OrderEntityAction entityAction, ExecutionReport report, OrderModel newOrder, PositionEntity position)
+        private void ExecReportToAlgo(Domain.OrderExecReport.Types.ExecAction action, Domain.OrderExecReport.Types.EntityAction entityAction, ExecutionReport report, OrderModel newOrder, Domain.PositionInfo position)
         {
-            OrderExecReport algoReport = new OrderExecReport();
+            var algoReport = new Domain.OrderExecReport();
             if (newOrder != null)
-                algoReport.OrderCopy = newOrder.GetEntity();
+                algoReport.OrderCopy = newOrder.GetInfo();
             algoReport.OperationId = GetOperationId(report);
-            algoReport.OrderId = report.OrderId;
             algoReport.ExecAction = action;
-            algoReport.Action = entityAction;
-            if (algoReport.ExecAction == OrderExecAction.Rejected)
+            algoReport.EntityAction = entityAction;
+            if (algoReport.ExecAction == Domain.OrderExecReport.Types.ExecAction.Rejected)
                 algoReport.ResultCode = report.RejectReason;
             if (!double.IsNaN(report.Balance))
                 algoReport.NewBalance = report.Balance;
             if (report.Assets != null)
-                algoReport.Assets = report.Assets.Select(assetInfo => new AssetModel(assetInfo, _cache.Currencies.Snapshot).GetEntity()).ToList();
-            algoReport.NetPosition = position;
-            //algoReport.TransactionTime = report.ExecTime;
+                algoReport.Assets.AddRange(report.Assets);
+            algoReport.NetPositionCopy = position;
             AlgoEvent_OrderUpdated(algoReport);
         }
 
@@ -86,31 +84,34 @@ namespace TickTrader.Algo.Common.Model
             _sync.Invoke(syncAction);
         }
 
-        Domain.AccountInfo IAccountInfoProvider.AccountInfo => _cache.Account.GetAccountInfo();
-
-        List<OrderEntity> IAccountInfoProvider.GetOrders()
+        Domain.AccountInfo IAccountInfoProvider.GetAccountInfo()
         {
-            return _cache.Account.Orders.Snapshot.Select(pair => pair.Value.GetEntity()).ToList();
+            return _cache.Account.GetAccountInfo();
         }
 
-        IEnumerable<PositionExecReport> IAccountInfoProvider.GetPositions()
+        List<Domain.OrderInfo> IAccountInfoProvider.GetOrders()
         {
-            return _cache.Account.Positions.Snapshot.Select(pair => pair.Value.ToReport(OrderExecAction.Opened)).ToList();
+            return _cache.Account.Orders.Snapshot.Select(pair => pair.Value.GetInfo()).ToList();
         }
 
-        event Action<OrderExecReport> IAccountInfoProvider.OrderUpdated
+        List<Domain.PositionInfo> IAccountInfoProvider.GetPositions()
+        {
+            return _cache.Account.Positions.Snapshot.Select(pair => pair.Value.GetInfo()).ToList();
+        }
+
+        event Action<Domain.OrderExecReport> IAccountInfoProvider.OrderUpdated
         {
             add { AlgoEvent_OrderUpdated += value; }
             remove { AlgoEvent_OrderUpdated -= value; }
         }
 
-        event Action<PositionExecReport> IAccountInfoProvider.PositionUpdated
+        event Action<Domain.PositionExecReport> IAccountInfoProvider.PositionUpdated
         {
             add { AlgoEvent_PositionUpdated += value; }
             remove { AlgoEvent_PositionUpdated -= value; }
         }
 
-        event Action<BalanceOperationReport> IAccountInfoProvider.BalanceUpdated
+        event Action<Domain.BalanceOperation> IAccountInfoProvider.BalanceUpdated
         {
             add { AlgoEvent_BalanceUpdated += value; }
             remove { AlgoEvent_BalanceUpdated -= value; }

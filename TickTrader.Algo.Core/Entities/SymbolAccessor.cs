@@ -135,7 +135,7 @@ namespace TickTrader.Algo.Core
 
                 if (info.Commission != null)
                 {
-                    CommissionType = ApiEnumConverter.Convert(info.Commission.ValueType);
+                    CommissionType = info.Commission.ValueType.ToApiEnum();
                 }
 
                 Point = System.Math.Pow(10, -info.Digits);

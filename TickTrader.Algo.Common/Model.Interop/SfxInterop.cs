@@ -85,7 +85,7 @@ namespace TickTrader.Algo.Common.Model
             _tradeProxy.LogoutEvent += (c, m) => OnLogout(m);
             _tradeProxy.DisconnectEvent += (c, m) => OnDisconnect(m);
             _tradeProxy.OrderUpdateEvent += (c, rep) => ExecutionReport?.Invoke(ConvertToEr(rep));
-            _tradeProxy.PositionUpdateEvent += (c, rep) => PositionReport?.Invoke(Convert(rep));
+            _tradeProxy.PositionUpdateEvent += (c, rep) => PositionReport?.Invoke(ConvertToReport(rep));
             _tradeProxy.BalanceUpdateEvent += (c, rep) => BalanceOperation?.Invoke(Convert(rep));
             _tradeHistoryProxy.LogoutEvent += (c, m) => OnLogout(m);
             _tradeHistoryProxy.DisconnectEvent += (c, m) => OnDisconnect(m);
@@ -401,10 +401,10 @@ namespace TickTrader.Algo.Common.Model
 
         #region ITradeServerApi
 
-        public event Action<PositionEntity> PositionReport;
+        public event Action<Domain.PositionExecReport> PositionReport;
         public event Action<ExecutionReport> ExecutionReport;
         public event Action<TradeReportEntity> TradeTransactionReport;
-        public event Action<BalanceOperationReport> BalanceOperation;
+        public event Action<Domain.BalanceOperation> BalanceOperation;
         public event Action<Domain.SymbolInfo[]> SymbolInfo { add { } remove { } }
         public event Action<CurrencyEntity[]> CurrencyInfo { add { } remove { } }
 
@@ -414,12 +414,12 @@ namespace TickTrader.Algo.Common.Model
                 .ContinueWith(t => Convert(t.Result));
         }
 
-        public void GetTradeRecords(BlockingChannel<OrderEntity> rxStream)
+        public void GetTradeRecords(BlockingChannel<Domain.OrderInfo> rxStream)
         {
             _tradeProxy.GetOrdersAsync(rxStream);
         }
 
-        public Task<PositionEntity[]> GetPositions()
+        public Task<Domain.PositionInfo[]> GetPositions()
         {
             return _tradeProxyAdapter.GetPositionsAsync()
                 .ContinueWith(t => t.Result.Select(Convert).ToArray());
@@ -483,7 +483,7 @@ namespace TickTrader.Algo.Common.Model
             try
             {
                 var result = await operationDef(request);
-                return new OrderInteropResult(OrderCmdResultCodes.Ok, ConvertToEr(result, operationId));
+                return new OrderInteropResult(Domain.OrderExecReport.Types.CmdResultCode.Ok, ConvertToEr(result, operationId));
             }
             catch (ExecutionException ex)
             {
@@ -492,7 +492,7 @@ namespace TickTrader.Algo.Common.Model
             }
             catch (DisconnectException)
             {
-                return new OrderInteropResult(OrderCmdResultCodes.ConnectionError);
+                return new OrderInteropResult(Domain.OrderExecReport.Types.CmdResultCode.ConnectionError);
             }
             catch (InteropException ex) when (ex.ErrorCode == ConnectionErrorCodes.RejectedByServer)
             {
@@ -501,15 +501,15 @@ namespace TickTrader.Algo.Common.Model
             }
             catch (NotSupportedException)
             {
-                return new OrderInteropResult(OrderCmdResultCodes.Unsupported);
+                return new OrderInteropResult(Domain.OrderExecReport.Types.CmdResultCode.Unsupported);
             }
             catch (Exception ex)
             {
                 if (ex.Message.StartsWith("Session is not active"))
-                    return new OrderInteropResult(OrderCmdResultCodes.ConnectionError);
+                    return new OrderInteropResult(Domain.OrderExecReport.Types.CmdResultCode.ConnectionError);
 
                 logger.Error(ex);
-                return new OrderInteropResult(OrderCmdResultCodes.UnknownError);
+                return new OrderInteropResult(Domain.OrderExecReport.Types.CmdResultCode.UnknownError);
             }
         }
 
@@ -752,53 +752,53 @@ namespace TickTrader.Algo.Common.Model
             };
         }
 
-        public static OrderEntity Convert(SFX.ExecutionReport record)
+        public static Domain.OrderInfo Convert(SFX.ExecutionReport record)
         {
-            return new OrderEntity(record.OrderId)
+            return new Domain.OrderInfo
             {
+                Id = record.OrderId,
                 Symbol = record.Symbol,
                 Comment = record.Comment,
                 InitialType = Convert(record.InitialOrderType),
                 Type = Convert(record.OrderType),
-                ClientOrderId = record.ClientOrderId,
                 Price = record.Price,
                 StopPrice = record.StopPrice,
                 Side = Convert(record.OrderSide),
-                Created = record.Created,
-                Swap = (decimal)record.Swap,
-                Modified = record.Modified,
+                Created = record.Created?.ToTimestamp(),
+                Swap = record.Swap,
+                Modified = record.Modified?.ToTimestamp(),
                 StopLoss = record.StopLoss,
                 TakeProfit = record.TakeProfit,
                 Slippage = record.Slippage,
-                Commission = (decimal)record.Commission,
-                ExecVolume = record.ExecutedVolume,
+                Commission = record.Commission,
+                ExecAmount = record.ExecutedVolume,
                 UserTag = record.Tag,
-                RemainingVolume = (decimal)record.LeavesVolume,
-                RequestedVolume = (decimal?)record.InitialVolume ?? 0,
-                Expiration = record.Expiration?.ToLocalTime(),
-                MaxVisibleVolume = (decimal?)record.MaxVisibleVolume,
+                RemainingAmount = record.LeavesVolume,
+                RequestedAmount = record.InitialVolume ?? 0,
+                Expiration = record.Expiration?.ToTimestamp(),
+                MaxVisibleAmount = record.MaxVisibleVolume,
                 ExecPrice = record.AveragePrice,
-                ReqOpenPrice = record.InitialPrice,
+                RequestedOpenPrice = record.InitialPrice,
                 Options = GetOptions(record),
                 LastFillPrice = record.TradePrice,
-                LastFillVolume = record.TradeAmount,
+                LastFillAmount = record.TradeAmount,
                 ParentOrderId = record.ParentOrderId,
             };
         }
 
-        private static OrderOptions GetOptions(SFX.ExecutionReport record)
+        private static Domain.OrderOptions GetOptions(SFX.ExecutionReport record)
         {
-            var result = OrderOptions.None;
+            var result = Domain.OrderOptions.None;
             var isLimit = record.OrderType == SFX.OrderType.Limit || record.OrderType == SFX.OrderType.StopLimit;
 
             if (isLimit && record.ImmediateOrCancelFlag)
-                result |= OrderOptions.ImmediateOrCancel;
+                result |= Domain.OrderOptions.ImmediateOrCancel;
 
             if (record.MarketWithSlippage)
-                result |= OrderOptions.MarketWithSlippage;
+                result |= Domain.OrderOptions.MarketWithSlippage;
 
             if (record.MaxVisibleVolume >= 0)
-                result |= OrderOptions.HiddenIceberg;
+                result |= Domain.OrderOptions.HiddenIceberg;
 
             return result;
         }
@@ -872,64 +872,64 @@ namespace TickTrader.Algo.Common.Model
             return (OrderStatus)status;
         }
 
-        private static Api.OrderCmdResultCodes Convert(RejectReason reason, string message)
+        private static Domain.OrderExecReport.Types.CmdResultCode Convert(RejectReason reason, string message)
         {
             switch (reason)
             {
-                case RejectReason.InternalServerError: return Api.OrderCmdResultCodes.TradeServerError;
-                case RejectReason.DealerReject: return Api.OrderCmdResultCodes.DealerReject;
-                case RejectReason.UnknownSymbol: return Api.OrderCmdResultCodes.SymbolNotFound;
-                case RejectReason.UnknownOrder: return Api.OrderCmdResultCodes.OrderNotFound;
-                case RejectReason.IncorrectQuantity: return Api.OrderCmdResultCodes.IncorrectVolume;
-                case RejectReason.OffQuotes: return Api.OrderCmdResultCodes.OffQuotes;
-                case RejectReason.OrderExceedsLImit: return Api.OrderCmdResultCodes.NotEnoughMoney;
-                case RejectReason.CloseOnly: return Api.OrderCmdResultCodes.CloseOnlyTrading;
+                case RejectReason.InternalServerError: return Domain.OrderExecReport.Types.CmdResultCode.TradeServerError;
+                case RejectReason.DealerReject: return Domain.OrderExecReport.Types.CmdResultCode.DealerReject;
+                case RejectReason.UnknownSymbol: return Domain.OrderExecReport.Types.CmdResultCode.SymbolNotFound;
+                case RejectReason.UnknownOrder: return Domain.OrderExecReport.Types.CmdResultCode.OrderNotFound;
+                case RejectReason.IncorrectQuantity: return Domain.OrderExecReport.Types.CmdResultCode.IncorrectVolume;
+                case RejectReason.OffQuotes: return Domain.OrderExecReport.Types.CmdResultCode.OffQuotes;
+                case RejectReason.OrderExceedsLImit: return Domain.OrderExecReport.Types.CmdResultCode.NotEnoughMoney;
+                case RejectReason.CloseOnly: return Domain.OrderExecReport.Types.CmdResultCode.CloseOnlyTrading;
                 case RejectReason.Other:
                     {
                         if (message != null)
                         {
                             if (message == "Trade Not Allowed" || message == "Trade is not allowed!")
-                                return Api.OrderCmdResultCodes.TradeNotAllowed;
+                                return Domain.OrderExecReport.Types.CmdResultCode.TradeNotAllowed;
                             else if (message.StartsWith("Not Enough Money"))
-                                return Api.OrderCmdResultCodes.NotEnoughMoney;
+                                return Domain.OrderExecReport.Types.CmdResultCode.NotEnoughMoney;
                             else if (message.StartsWith("Rejected By Dealer"))
-                                return Api.OrderCmdResultCodes.DealerReject;
+                                return Domain.OrderExecReport.Types.CmdResultCode.DealerReject;
                             else if (message.StartsWith("Dealer") && message.EndsWith("did not respond."))
-                                return Api.OrderCmdResultCodes.DealingTimeout;
+                                return Domain.OrderExecReport.Types.CmdResultCode.DealingTimeout;
                             else if (message.Contains("locked by another operation"))
-                                return Api.OrderCmdResultCodes.OrderLocked;
+                                return Domain.OrderExecReport.Types.CmdResultCode.OrderLocked;
                             else if (message.Contains("Invalid expiration"))
-                                return Api.OrderCmdResultCodes.IncorrectExpiration;
+                                return Domain.OrderExecReport.Types.CmdResultCode.IncorrectExpiration;
                             else if (message.StartsWith("Price precision"))
-                                return Api.OrderCmdResultCodes.IncorrectPricePrecision;
+                                return Domain.OrderExecReport.Types.CmdResultCode.IncorrectPricePrecision;
                             else if (message.EndsWith("because close-only mode on"))
-                                return Api.OrderCmdResultCodes.CloseOnlyTrading;
+                                return Domain.OrderExecReport.Types.CmdResultCode.CloseOnlyTrading;
                             else if (message == "Max visible amount is not valid for market orders" || message.StartsWith("Max visible amount is valid only for"))
-                                return Api.OrderCmdResultCodes.MaxVisibleVolumeNotSupported;
+                                return Domain.OrderExecReport.Types.CmdResultCode.MaxVisibleVolumeNotSupported;
                             else if (message.StartsWith("Order Not Found") || message.EndsWith("was not found."))
-                                return Api.OrderCmdResultCodes.OrderNotFound;
+                                return Domain.OrderExecReport.Types.CmdResultCode.OrderNotFound;
                             else if (message.StartsWith("Invalid order type") || message.Contains("is not supported"))
-                                return Api.OrderCmdResultCodes.Unsupported;
+                                return Domain.OrderExecReport.Types.CmdResultCode.Unsupported;
                             else if (message.StartsWith("Invalid AmountChange") || message == "Cannot modify amount.")
-                                return Api.OrderCmdResultCodes.InvalidAmountChange;
+                                return Domain.OrderExecReport.Types.CmdResultCode.InvalidAmountChange;
                             else if (message == "Account Is Readonly")
-                                return Api.OrderCmdResultCodes.ReadOnlyAccount;
+                                return Domain.OrderExecReport.Types.CmdResultCode.ReadOnlyAccount;
                             else if (message == "Internal server error")
-                                return Api.OrderCmdResultCodes.TradeServerError;
+                                return Domain.OrderExecReport.Types.CmdResultCode.TradeServerError;
                         }
                         break;
                     }
                 case RejectReason.None:
                     {
                         if (message != null && (message.StartsWith("Order Not Found") || message.EndsWith("not found.")))
-                            return Api.OrderCmdResultCodes.OrderNotFound;
-                        return Api.OrderCmdResultCodes.Ok;
+                            return Domain.OrderExecReport.Types.CmdResultCode.OrderNotFound;
+                        return Domain.OrderExecReport.Types.CmdResultCode.Ok;
                     }
             }
-            return Api.OrderCmdResultCodes.UnknownError;
+            return Domain.OrderExecReport.Types.CmdResultCode.UnknownError;
         }
 
-        private static PositionEntity Convert(SFX.Position p)
+        private static Domain.PositionInfo Convert(SFX.Position p)
         {
             Domain.OrderInfo.Types.Side side;
             double price;
@@ -948,38 +948,46 @@ namespace TickTrader.Algo.Common.Model
                 amount = p.SellAmount;
             }
 
-            return new PositionEntity(p.Symbol)
+            return new Domain.PositionInfo
             {
                 Id = p.PosId,
+                Symbol = p.Symbol,
                 Side = side,
                 Volume = amount,
                 Price = price,
                 Commission = p.Commission,
-                AgentCommission = p.AgentCommission,
                 Swap = p.Swap,
-                Modified = p.Modified,
-                Type = Convert(p.PosReportType),
+                Modified = p.Modified?.ToTimestamp(),
             };
         }
 
-        private static OrderExecAction Convert(SFX.PosReportType type)
+        private static Domain.PositionExecReport ConvertToReport(SFX.Position p)
+        {
+            return new Domain.PositionExecReport
+            {
+                PositionCopy = Convert(p),
+                ExecAction = Convert(p.PosReportType),
+            };
+        }
+
+        private static Domain.OrderExecReport.Types.ExecAction Convert(SFX.PosReportType type)
         {
             switch (type)
             {
                 case SFX.PosReportType.CancelPosition:
-                    return OrderExecAction.Canceled;
+                    return Domain.OrderExecReport.Types.ExecAction.Canceled;
 
                 case SFX.PosReportType.ModifyPosition:
-                    return OrderExecAction.Modified;
+                    return Domain.OrderExecReport.Types.ExecAction.Modified;
 
                 case SFX.PosReportType.ClosePosition:
-                    return OrderExecAction.Closed;
+                    return Domain.OrderExecReport.Types.ExecAction.Closed;
 
                 case SFX.PosReportType.Split:
-                    return OrderExecAction.Splitted;
+                    return Domain.OrderExecReport.Types.ExecAction.Splitted;
 
                 default:
-                    return OrderExecAction.None;
+                    return Domain.OrderExecReport.Types.ExecAction.None;
             }
         }
 
@@ -1227,19 +1235,25 @@ namespace TickTrader.Algo.Common.Model
             return new BookEntry(fdkEntry.Price, fdkEntry.Volume);
         }
 
-        public static BalanceOperationReport Convert(SFX.BalanceOperation op)
+        public static Domain.BalanceOperation Convert(SFX.BalanceOperation op)
         {
-            return new BalanceOperationReport(op.Balance, op.TransactionCurrency, op.TransactionAmount, Convert(op.TransactionType));
+            return new Domain.BalanceOperation
+            {
+                Balance = op.Balance,
+                Currency = op.TransactionCurrency,
+                TransactionAmount = op.TransactionAmount,
+                Type = Convert(op.TransactionType),
+            };
         }
 
-        public static BalanceOperationType Convert(SFX.BalanceTransactionType type)
+        public static Domain.BalanceOperation.Types.Type Convert(SFX.BalanceTransactionType type)
         {
             switch (type)
             {
                 case BalanceTransactionType.DepositWithdrawal:
-                    return BalanceOperationType.DepositWithdrawal;
+                    return Domain.BalanceOperation.Types.Type.DepositWithdrawal;
                 case BalanceTransactionType.Dividend:
-                    return BalanceOperationType.Dividend;
+                    return Domain.BalanceOperation.Types.Type.Dividend;
             }
 
             throw new NotImplementedException("Unsupported balance transaction type: " + type);

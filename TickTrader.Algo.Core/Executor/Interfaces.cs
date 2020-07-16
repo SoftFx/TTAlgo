@@ -67,15 +67,15 @@ namespace TickTrader.Algo.Core
 
     public interface IAccountInfoProvider
     {
-        Domain.AccountInfo AccountInfo { get; }
-
         void SyncInvoke(Action action);
 
-        List<OrderEntity> GetOrders();
-        IEnumerable<PositionExecReport> GetPositions();
-        event Action<OrderExecReport> OrderUpdated;
-        event Action<PositionExecReport> PositionUpdated;
-        event Action<BalanceOperationReport> BalanceUpdated;
+        Domain.AccountInfo GetAccountInfo();
+        List<Domain.OrderInfo> GetOrders();
+        List<Domain.PositionInfo> GetPositions();
+
+        event Action<Domain.OrderExecReport> OrderUpdated;
+        event Action<Domain.PositionExecReport> PositionUpdated;
+        event Action<Domain.BalanceOperation> BalanceUpdated;
     }
 
     internal interface IFixtureContext

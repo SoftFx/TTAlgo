@@ -185,7 +185,7 @@ namespace TickTrader.Algo.Core
 
                 //decimal filledAmount = order.Amount - order.RemainingAmount;
                 //decimal newRemainingAmount = newAmount - filledAmount;
-                var volumeDelta = newAmount - order.Amount;
+                var volumeDelta = newAmount - order.Entity.RequestedAmount;
 
                 if (volumeDelta < 0)
                     return;
@@ -298,8 +298,8 @@ namespace TickTrader.Algo.Core
         {
             LazyInit();
 
-            var side = oldOrder.Entity.Side;
-            var type = oldOrder.Entity.Type;
+            var side = oldOrder.Side;
+            var type = oldOrder.Type;
 
             // OrderReplaceRequest with InFlightMitigation == false asks server to set RemainingVolume to specified value
             var newRemVolume = (decimal)newVolume;
@@ -309,7 +309,7 @@ namespace TickTrader.Algo.Core
                 var calc = Market.GetCalculator(oldOrder.Symbol, acc.BalanceCurrency);
                 using (calc.UsageScope())
                 {
-                    var oldMargin = calc.CalculateMargin(oldOrder.RemainingVolume, acc.Leverage, type, side, oldOrder.Entity.IsHidden, out var error);
+                    var oldMargin = calc.CalculateMargin(oldOrder.RemainingVolume, acc.Leverage, type, side, oldOrder.IsHidden, out var error);
 
                     if (error != CalcErrorCodes.None)
                         return false;
@@ -398,42 +398,6 @@ namespace TickTrader.Algo.Core
                 _context.Builder.Logger.OnError("Failed to calculate margin for new order", ex);
             }
             return null;
-        }
-
-        private OrderAccessor GetOrderAccessor(OrderEntity orderEntity, ISymbolInfo2 symbol)
-        {
-            ApplyHiddenServerLogic(orderEntity, symbol);
-
-            return new OrderAccessor(orderEntity, symbol, acc.Leverage);
-        }
-
-        private void ApplyHiddenServerLogic(OrderEntity order, ISymbolInfo2 symbol)
-        {
-            //add prices for market orders
-            if (order.Type == Domain.OrderInfo.Types.Type.Market && order.Price == null)
-            {
-                order.Price = order.Side == Domain.OrderInfo.Types.Side.Buy ? symbol.Ask : symbol.Bid;
-                if (acc.Type == AccountInfo.Types.Type.Cash)
-                {
-                    order.Price += symbol.Point * symbol.DefaultSlippage * (order.Side == Domain.OrderInfo.Types.Side.Buy ? 1 : -1);
-                }
-            }
-
-            //convert order types for cash accounts
-            if (acc.Type == AccountInfo.Types.Type.Cash)
-            {
-                switch (order.Type)
-                {
-                    case Domain.OrderInfo.Types.Type.Market:
-                        order.Type = Domain.OrderInfo.Types.Type.Limit;
-                        order.Options |= OrderOptions.ImmediateOrCancel;
-                        break;
-                    case Domain.OrderInfo.Types.Type.Stop:
-                        order.Type = Domain.OrderInfo.Types.Type.StopLimit;
-                        order.Price = order.StopPrice + symbol.Point * symbol.DefaultSlippage * (order.Side == Domain.OrderInfo.Types.Side.Buy ? -1 : 1);
-                        break;
-                }
-            }
         }
 
         private void HandleMarginCalcError(CalcErrorCodes code, string symbol)

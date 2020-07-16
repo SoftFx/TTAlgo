@@ -5,7 +5,7 @@ namespace TickTrader.Algo.Core
 {
     public static class ApiEnumConverter
     {
-        public static CommissionType Convert(Domain.CommissonInfo.Types.ValueType type)
+        public static CommissionType ToApiEnum(this Domain.CommissonInfo.Types.ValueType type)
         {
             switch (type)
             {
@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public static AccountTypes Convert(Domain.AccountInfo.Types.Type type)
+        public static AccountTypes ToApiEnum(this Domain.AccountInfo.Types.Type type)
         {
             switch (type)
             {
@@ -52,6 +52,58 @@ namespace TickTrader.Algo.Core
 
                 default: throw new ArgumentException($"Unsupported type {type}");
             }
+        }
+
+        public static OrderOptions ToApiEnum(this Domain.OrderOptions options)
+        {
+            return (OrderOptions)options;
+        }
+
+        public static Domain.OrderOptions ToDomainOptions(this OrderExecOptions options)
+        {
+            return (Domain.OrderOptions)options;
+        }
+
+        public static OrderCmdResultCodes ToApiEnum(this Domain.OrderExecReport.Types.CmdResultCode code)
+        {
+            switch (code)
+            {
+                case Domain.OrderExecReport.Types.CmdResultCode.Ok: return OrderCmdResultCodes.Ok;
+                case Domain.OrderExecReport.Types.CmdResultCode.UnknownError: return OrderCmdResultCodes.UnknownError;
+                case Domain.OrderExecReport.Types.CmdResultCode.InternalError: return OrderCmdResultCodes.InternalError;
+                case Domain.OrderExecReport.Types.CmdResultCode.ConnectionError: return OrderCmdResultCodes.ConnectionError;
+                case Domain.OrderExecReport.Types.CmdResultCode.Timeout: return OrderCmdResultCodes.Timeout;
+                case Domain.OrderExecReport.Types.CmdResultCode.TradeServerError: return OrderCmdResultCodes.TradeServerError;
+                case Domain.OrderExecReport.Types.CmdResultCode.DealerReject: return OrderCmdResultCodes.DealerReject;
+                case Domain.OrderExecReport.Types.CmdResultCode.Unsupported: return OrderCmdResultCodes.Unsupported;
+                case Domain.OrderExecReport.Types.CmdResultCode.SymbolNotFound: return OrderCmdResultCodes.SymbolNotFound;
+                case Domain.OrderExecReport.Types.CmdResultCode.OrderNotFound: return OrderCmdResultCodes.OrderNotFound;
+                case Domain.OrderExecReport.Types.CmdResultCode.IncorrectVolume: return OrderCmdResultCodes.IncorrectVolume;
+                case Domain.OrderExecReport.Types.CmdResultCode.OffQuotes: return OrderCmdResultCodes.OffQuotes;
+                case Domain.OrderExecReport.Types.CmdResultCode.IncorrectOrderId: return OrderCmdResultCodes.IncorrectOrderId;
+                case Domain.OrderExecReport.Types.CmdResultCode.IncorrectPrice: return OrderCmdResultCodes.IncorrectPrice;
+                case Domain.OrderExecReport.Types.CmdResultCode.IncorrectTp: return OrderCmdResultCodes.IncorrectTp;
+                case Domain.OrderExecReport.Types.CmdResultCode.IncorrectSl: return OrderCmdResultCodes.IncorrectSl;
+                case Domain.OrderExecReport.Types.CmdResultCode.NotEnoughMoney: return OrderCmdResultCodes.NotEnoughMoney;
+                case Domain.OrderExecReport.Types.CmdResultCode.TradeNotAllowed: return OrderCmdResultCodes.TradeNotAllowed;
+                case Domain.OrderExecReport.Types.CmdResultCode.IncorrectStopPrice: return OrderCmdResultCodes.IncorrectStopPrice;
+                case Domain.OrderExecReport.Types.CmdResultCode.IncorrectMaxVisibleVolume: return OrderCmdResultCodes.IncorrectMaxVisibleVolume;
+                case Domain.OrderExecReport.Types.CmdResultCode.IncorrectExpiration: return OrderCmdResultCodes.IncorrectExpiration;
+                case Domain.OrderExecReport.Types.CmdResultCode.DealingTimeout: return OrderCmdResultCodes.DealingTimeout;
+                case Domain.OrderExecReport.Types.CmdResultCode.Misconfiguration: return OrderCmdResultCodes.Misconfiguration;
+                case Domain.OrderExecReport.Types.CmdResultCode.OrderLocked: return OrderCmdResultCodes.OrderLocked;
+                case Domain.OrderExecReport.Types.CmdResultCode.IncorrectPricePrecision: return OrderCmdResultCodes.IncorrectPricePrecision;
+                case Domain.OrderExecReport.Types.CmdResultCode.CloseOnlyTrading: return OrderCmdResultCodes.CloseOnlyTrading;
+                case Domain.OrderExecReport.Types.CmdResultCode.MarketWithMaxVisibleVolume: return OrderCmdResultCodes.MarketWithMaxVisibleVolume;
+                case Domain.OrderExecReport.Types.CmdResultCode.InvalidAmountChange: return OrderCmdResultCodes.InvalidAmountChange;
+                case Domain.OrderExecReport.Types.CmdResultCode.CannotBeModified: return OrderCmdResultCodes.CannotBeModified;
+                case Domain.OrderExecReport.Types.CmdResultCode.MaxVisibleVolumeNotSupported: return OrderCmdResultCodes.MaxVisibleVolumeNotSupported;
+                case Domain.OrderExecReport.Types.CmdResultCode.ReadOnlyAccount: return OrderCmdResultCodes.ReadOnlyAccount;
+                case Domain.OrderExecReport.Types.CmdResultCode.IncorrectSlippage: return OrderCmdResultCodes.IncorrectSlippage;
+
+                default: throw new ArgumentException($"Unsupported code {code}");
+            }
+
         }
     }
 }

@@ -11,7 +11,7 @@ namespace TickTrader.Algo.Core
     {
         public CancelOrderDealerRequest(OrderAccessor order, Quote currentRate)
         {
-            Order = order;
+            Order = order.ApiOrder;
             CurrentRate = currentRate;
             Confirmed = true;
         }

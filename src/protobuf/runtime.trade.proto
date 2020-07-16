@@ -58,9 +58,9 @@ message OrderInfo {
     Type initial_type = 3;
     Type type = 4;
     Side side = 5;
-    double requested_volume = 6;
-    double remaining_volume = 7;
-    google.protobuf.DoubleValue max_visible_volume = 8;
+    double requested_amount = 6;
+    double remaining_amount = 7;
+    google.protobuf.DoubleValue max_visible_amount = 8;
     google.protobuf.DoubleValue price = 9;
     google.protobuf.DoubleValue stop_price = 10;
     google.protobuf.DoubleValue stop_loss = 11;
@@ -72,12 +72,15 @@ message OrderInfo {
     string user_tag = 17;
     string instance_id = 18;
     google.protobuf.DoubleValue exec_price = 19;
-    google.protobuf.DoubleValue exec_volume = 20;
+    google.protobuf.DoubleValue exec_amount = 20;
     google.protobuf.DoubleValue last_fill_price = 21;
-    google.protobuf.DoubleValue last_fill_volume = 22;
+    google.protobuf.DoubleValue last_fill_amount = 22;
     double swap = 23;
     double commission = 24;
     int32 options_bitmask = 25;
+    google.protobuf.DoubleValue slippage = 26;
+    google.protobuf.DoubleValue requested_open_price = 27;
+    string parent_order_id = 28;
 }
 
 message OrderListRequest { }
@@ -108,7 +111,7 @@ message PositionListResponse {
 message BalanceOperation {
     enum Type {
         DepositWithdrawal = 0;
-        Divident = 1;
+        Dividend = 1;
     }
 
     double transactionAmount = 1;
@@ -175,10 +178,12 @@ message OrderExecReport {
 
     google.protobuf.StringValue operation_id = 1;
     CmdResultCode result_code = 2;
-    OrderInfo order_copy = 3;
-    ExecAction exec_action = 4;
-    EntityAction entity_action = 5;
-    PositionInfo net_position_copy = 6;
+    ExecAction exec_action = 3;
+    EntityAction entity_action = 4;
+    google.protobuf.DoubleValue new_balance = 5;
+    repeated AssetInfo assets = 6;
+    OrderInfo order_copy = 7;
+    PositionInfo net_position_copy = 8;
 }
 
 message PositionExecReport {

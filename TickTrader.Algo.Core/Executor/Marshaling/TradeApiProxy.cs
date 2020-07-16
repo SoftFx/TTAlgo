@@ -19,22 +19,22 @@ namespace TickTrader.Algo.Core
 
         #region ITradeExecutor
 
-        public void SendOpenOrder(ICallback<OrderCmdResultCodes> callback, OpenOrderCoreRequest request)
+        public void SendOpenOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, OpenOrderCoreRequest request)
         {
             _exec.SendOpenOrder(callback, request);
         }
 
-        public void SendCancelOrder(ICallback<OrderCmdResultCodes> callback, CancelOrderRequest request)
+        public void SendCancelOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, CancelOrderRequest request)
         {
             _exec.SendCancelOrder(callback, request);
         }
 
-        public void SendModifyOrder(ICallback<OrderCmdResultCodes> callback, ReplaceOrderCoreRequest request)
+        public void SendModifyOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, ReplaceOrderCoreRequest request)
         {
             _exec.SendModifyOrder(callback, request);
         }
 
-        public void SendCloseOrder(ICallback<OrderCmdResultCodes> callback, CloseOrderCoreRequest request)
+        public void SendCloseOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, CloseOrderCoreRequest request)
         {
             _exec.SendCloseOrder(callback, request);
         }

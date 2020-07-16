@@ -108,7 +108,7 @@ namespace TickTrader.Algo.Core
             internal set
             {
                 _type = value;
-                _apiType = ApiEnumConverter.Convert(value);
+                _apiType = value.ToApiEnum();
             }
         }
         public bool Isolated { get; set; }
@@ -282,7 +282,7 @@ namespace TickTrader.Algo.Core
 
         internal void Init(IAccountInfoProvider dataProvider, Dictionary<string, Currency> currencies)
         {
-            var accInfo = dataProvider.AccountInfo;
+            var accInfo = dataProvider.GetAccountInfo();
 
             _orders.Clear();
             _positions.Clear();
@@ -293,7 +293,7 @@ namespace TickTrader.Algo.Core
             foreach (var order in dataProvider.GetOrders())
                 _orders.Add(order, this);
             foreach (var position in dataProvider.GetPositions())
-                _positions.UpdatePosition(position.PositionInfo);
+                _positions.UpdatePosition(position);
         }
 
         #endregion

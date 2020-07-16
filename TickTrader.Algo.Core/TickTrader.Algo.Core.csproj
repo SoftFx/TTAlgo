@@ -327,6 +327,7 @@
     <Compile Include="TickTraderToAlgo.cs" />
     <Compile Include="Backtester\Trade\TradeOperationSummary.cs" />
     <Compile Include="Math\TimeVectorBase.cs" />
+    <Compile Include="ToAlgo.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Machinarium\Machinarium.csproj">

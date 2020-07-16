@@ -11,7 +11,7 @@ namespace TickTrader.Algo.Core
     {
         public ClosePositionDealerRequest(OrderAccessor pos, Quote currentRate)
         {
-            Position = pos;
+            Position = pos.ApiOrder;
             CurrentRate = currentRate;
             Confirmed = true;
         }

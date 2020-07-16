@@ -62,10 +62,11 @@ namespace TickTrader.Algo.Core
             {
                 _logger.LogOrderOpening(coreRequest, smbMetadata);
                 var orderResp = await _api.OpenOrder(isAsync, coreRequest);
-                if (orderResp.ResultCode != OrderCmdResultCodes.Ok)
-                    resultEntity = new OrderResultEntity(orderResp.ResultCode, null, orderResp.TransactionTime);
+                var resCode = orderResp.ResultCode.ToApiEnum();
+                if (resCode != OrderCmdResultCodes.Ok)
+                    resultEntity = new OrderResultEntity(resCode, null, orderResp.TransactionTime);
                 else
-                    resultEntity = new OrderResultEntity(orderResp.ResultCode, new OrderAccessor(orderResp.ResultingOrder, smbMetadata, _account.Leverage), orderResp.TransactionTime);
+                    resultEntity = new OrderResultEntity(resCode, new OrderAccessor(orderResp.ResultingOrder, smbMetadata, _account.Leverage).ApiOrder, orderResp.TransactionTime);
             }
             else
             {
@@ -92,7 +93,7 @@ namespace TickTrader.Algo.Core
 
                 var orderResp = await _api.CancelOrder(isAsync, request);
 
-                resultEntity = new OrderResultEntity(orderResp.ResultCode, orderToCancel, orderResp.TransactionTime);
+                resultEntity = new OrderResultEntity(orderResp.ResultCode.ToApiEnum(), orderToCancel, orderResp.TransactionTime);
             }
             else
             {
@@ -123,11 +124,12 @@ namespace TickTrader.Algo.Core
                 _logger.LogOrderClosing(coreRequest);
 
                 var orderResp = await _api.CloseOrder(isAsync, coreRequest);
+                var resCode = orderResp.ResultCode.ToApiEnum();
 
-                if (orderResp.ResultCode == OrderCmdResultCodes.Ok)
-                    resultEntity = new OrderResultEntity(orderResp.ResultCode, new OrderAccessor(orderResp.ResultingOrder, smbMetadata, _account.Leverage), orderResp.TransactionTime);
+                if (resCode == OrderCmdResultCodes.Ok)
+                    resultEntity = new OrderResultEntity(resCode, new OrderAccessor(orderResp.ResultingOrder, smbMetadata, _account.Leverage).ApiOrder, orderResp.TransactionTime);
                 else
-                    resultEntity = new OrderResultEntity(orderResp.ResultCode, orderToClose, orderResp.TransactionTime);
+                    resultEntity = new OrderResultEntity(resCode, orderToClose, orderResp.TransactionTime);
             }
             else
             {
@@ -154,7 +156,7 @@ namespace TickTrader.Algo.Core
 
                 var orderResp = await _api.CloseOrder(isAsync, request);
 
-                resultEntity = new OrderResultEntity(orderResp.ResultCode, orderToClose, orderResp.TransactionTime);
+                resultEntity = new OrderResultEntity(orderResp.ResultCode.ToApiEnum(), orderToClose, orderResp.TransactionTime);
             }
             else
             {
@@ -197,14 +199,15 @@ namespace TickTrader.Algo.Core
                 _logger.LogOrderModifying(coreRequest, smbMetadata);
 
                 var result = await _api.ModifyOrder(isAsync, coreRequest);
+                var resCode = result.ResultCode.ToApiEnum();
 
-                if (result.ResultCode == OrderCmdResultCodes.Ok)
+                if (resCode == OrderCmdResultCodes.Ok)
                 {
-                    resultEntity = new OrderResultEntity(result.ResultCode, new OrderAccessor(result.ResultingOrder, smbMetadata, _account.Leverage), result.TransactionTime);
+                    resultEntity = new OrderResultEntity(resCode, new OrderAccessor(result.ResultingOrder, smbMetadata, _account.Leverage).ApiOrder, result.TransactionTime);
                 }
                 else
                 {
-                    resultEntity = new OrderResultEntity(result.ResultCode, orderToModify, result.TransactionTime);
+                    resultEntity = new OrderResultEntity(resCode, orderToModify, result.TransactionTime);
                 }
             }
             else
@@ -470,7 +473,7 @@ namespace TickTrader.Algo.Core
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool TryGetOrder(string orderId, out Order order, ref OrderCmdResultCodes code)
         {
-            order = _account.Orders.GetOrderOrNull(orderId);
+            order = _account.Orders.GetOrderOrNull(orderId)?.ApiOrder;
             if (order == null)
             {
                 code = OrderCmdResultCodes.OrderNotFound;

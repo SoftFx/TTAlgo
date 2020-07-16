@@ -63,6 +63,10 @@ namespace TickTrader.Algo.Core
                 return SymbolListRequestHandler();
             else if (payload.Is(AccountInfoRequest.Descriptor))
                 return AccountInfoRequestHandler();
+            else if (payload.Is(OrderListRequest.Descriptor))
+                return OrderListRequestHandler(callId);
+            else if (payload.Is(PositionListRequest.Descriptor))
+                return PositionListRequestHandler(callId);
             return null;
         }
 
@@ -86,7 +90,53 @@ namespace TickTrader.Algo.Core
         private Any AccountInfoRequestHandler()
         {
             var response = new AccountInfoResponse();
-            response.Account = _executor.AccInfoProvider.AccountInfo;
+            response.Account = _executor.AccInfoProvider.GetAccountInfo();
+            return Any.Pack(response);
+        }
+
+        private Any OrderListRequestHandler(string callId)
+        {
+            const int chunkSize = 10;
+
+            var response = new OrderListResponse { IsFinal = false };
+            var orders = _executor.AccInfoProvider.GetOrders();
+            var cnt = orders.Count;
+
+            var nextFlush = chunkSize;
+            for (var i = 0; i < cnt; i++)
+            {
+                if (i == nextFlush)
+                {
+                    nextFlush += chunkSize;
+                    _session.Tell(RpcMessage.Response(callId, Any.Pack(response)));
+                    response.Orders.Clear();
+                }
+                response.Orders.Add(orders[i]);
+            }
+            response.IsFinal = true;
+            return Any.Pack(response);
+        }
+
+        private Any PositionListRequestHandler(string callId)
+        {
+            const int chunkSize = 10;
+
+            var response = new PositionListResponse { IsFinal = false };
+            var positions = _executor.AccInfoProvider.GetPositions();
+            var cnt = positions.Count;
+
+            var nextFlush = chunkSize;
+            for (var i = 0; i < cnt; i++)
+            {
+                if (i == nextFlush)
+                {
+                    nextFlush += chunkSize;
+                    _session.Tell(RpcMessage.Response(callId, Any.Pack(response)));
+                    response.Positions.Clear();
+                }
+                response.Positions.Add(positions[i]);
+            }
+            response.IsFinal = true;
             return Any.Pack(response);
         }
     }

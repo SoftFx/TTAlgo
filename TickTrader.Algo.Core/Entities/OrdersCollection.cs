@@ -2,7 +2,9 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -26,14 +28,14 @@ namespace TickTrader.Algo.Core
             Added?.Invoke(order);
         }
 
-        public OrderAccessor Add(OrderEntity entity, AccountAccessor acc)
+        public OrderAccessor Add(OrderInfo entity, AccountAccessor acc)
         {
             var result = fixture.Add(entity, acc);
             Added?.Invoke(result);
             return result;
         }
 
-        public OrderAccessor Replace(OrderEntity entity)
+        public OrderAccessor Replace(OrderInfo entity)
         {
             return fixture.Update(entity, IsEnabled);
         }
@@ -59,10 +61,10 @@ namespace TickTrader.Algo.Core
             return order;
         }
 
-        public OrderAccessor UpdateAndRemove(OrderEntity entity)
+        public OrderAccessor UpdateAndRemove(OrderInfo info)
         {
-            var order = fixture.Remove(entity.Id);
-            order?.Update(entity);
+            var order = fixture.Remove(info.Id);
+            order?.Update(info);
             if (order != null)
                 Removed?.Invoke(order);
             return order;
@@ -146,7 +148,7 @@ namespace TickTrader.Algo.Core
                     OrderAccessor entity;
                     if (!orders.TryGetValue(id, out entity))
                         return Null.Order;
-                    return entity;
+                    return entity.ApiOrder;
                 }
             }
 
@@ -155,30 +157,30 @@ namespace TickTrader.Algo.Core
                 if (!orders.TryAdd(order.Id, order))
                     throw new ArgumentException("Order #" + order.Id + " already exist!");
 
-                Added?.Invoke(order);
+                Added?.Invoke(order.ApiOrder);
             }
 
-            public OrderAccessor Add(OrderEntity entity, AccountAccessor acc)
+            public OrderAccessor Add(OrderInfo info, AccountAccessor acc)
             {
-                var accessor = new OrderAccessor(entity, _symbols.GetOrDefault, acc.Leverage);
-                if (!orders.TryAdd(entity.Id, accessor))
-                    throw new ArgumentException("Order #" + entity.Id + " already exist!");
+                var accessor = new OrderAccessor(info, _symbols.GetOrDefault, acc.Leverage);
+                if (!orders.TryAdd(info.Id, accessor))
+                    throw new ArgumentException("Order #" + info.Id + " already exist!");
 
-                Added?.Invoke(accessor);
+                Added?.Invoke(accessor.ApiOrder);
 
                 return accessor;
             }
 
-            public OrderAccessor Update(OrderEntity entity, bool fireEvent)
+            public OrderAccessor Update(OrderInfo info, bool fireEvent)
             {
                 OrderAccessor order;
 
-                if (this.orders.TryGetValue(entity.Id, out order))
+                if (this.orders.TryGetValue(info.Id, out order))
                 {
-                    if (order.Modified <= entity.Modified)
+                    if (order.Modified <= info.Modified.ToDateTime())
                     {
-                        order.Update(entity);
-                        Replaced?.Invoke(order);
+                        order.Update(info);
+                        Replaced?.Invoke(order.ApiOrder);
                     }
                 }
 
@@ -190,7 +192,7 @@ namespace TickTrader.Algo.Core
                 OrderAccessor removed;
 
                 if (orders.TryRemove(orderId, out removed))
-                    Removed?.Invoke(removed);
+                    Removed?.Invoke(removed.ApiOrder);
 
                 return removed;
             }
@@ -268,7 +270,7 @@ namespace TickTrader.Algo.Core
 
             public IEnumerator<Order> GetEnumerator()
             {
-                return orders.Values.GetEnumerator();
+                return orders.Values.Select(o => o.ApiOrder).GetEnumerator();
             }
 
             IEnumerator IEnumerable.GetEnumerator()

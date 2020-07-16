@@ -16,28 +16,31 @@ namespace TickTrader.Algo.Core
             _handler = handler;
             _remotingAccInfo = remotingAccInfo;
 
-            _remotingAccInfo.OrderUpdated += o => OrderUpdated?.Invoke(o);
-            _remotingAccInfo.PositionUpdated += p => PositionUpdated?.Invoke(p);
-            _remotingAccInfo.BalanceUpdated += b => BalanceUpdated?.Invoke(b);
+            _handler.OrderUpdated += o => OrderUpdated?.Invoke(o);
+            _handler.PositionUpdated += p => PositionUpdated?.Invoke(p);
+            _handler.BalanceUpdated += b => BalanceUpdated?.Invoke(b);
         }
 
 
         #region IAccountInfoProvider
 
-        public AccountInfo AccountInfo => _handler.GetAccountInfo();
+        public event Action<Domain.OrderExecReport> OrderUpdated;
+        public event Action<Domain.PositionExecReport> PositionUpdated;
+        public event Action<BalanceOperation> BalanceUpdated;
 
-        public event Action<OrderExecReport> OrderUpdated;
-        public event Action<PositionExecReport> PositionUpdated;
-        public event Action<BalanceOperationReport> BalanceUpdated;
-
-        public List<OrderEntity> GetOrders()
+        public AccountInfo GetAccountInfo()
         {
-            return _remotingAccInfo.GetOrders();
+            return _handler.GetAccountInfo();
         }
 
-        public IEnumerable<PositionExecReport> GetPositions()
+        public List<OrderInfo> GetOrders()
         {
-            return _remotingAccInfo.GetPositions();
+            return _handler.GetOrderList();
+        }
+
+        public List<PositionInfo> GetPositions()
+        {
+            return _handler.GetPositionList();
         }
 
         public void SyncInvoke(Action action)

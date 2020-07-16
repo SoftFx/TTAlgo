@@ -20,27 +20,25 @@ namespace TickTrader.Algo.Common.Model
         private double amount;
         private DateTime? modified;
 
-        public PositionModel(PositionEntity position, IOrderDependenciesResolver resolver)
+        public PositionModel(Domain.PositionInfo position, IOrderDependenciesResolver resolver)
         {
             Symbol = position.Symbol;
             SymbolModel = resolver.GetSymbolOrNull(position.Symbol);
             Update(position);
         }
 
-        private void Update(PositionEntity position)
+        private void Update(Domain.PositionInfo position)
         {
             if (position.Symbol != Symbol)
                 return;
 
             Id = position.Id;
-            AgentCommission = (decimal)position.AgentCommission;
             Commission = (decimal)position.Commission;
-            SettlementPrice = position.SettlementPrice;
             Side = position.Side;
             Amount = position.Volume;// Math.Max(position.BuyAmount, position.SellAmount);
             Swap = (decimal)position.Swap;
             Price = position.Price; //  Math.Max(position.BuyPrice ?? 0, position.SellPrice ?? 0);
-            Modified = position.Modified;
+            Modified = position.Modified?.ToDateTime();
 
             Long = new PositionSide();
             Short = new PositionSide();
@@ -160,32 +158,6 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        public decimal AgentCommission
-        {
-            get { return agentCommission; }
-            private set
-            {
-                if (agentCommission != value)
-                {
-                    agentCommission = value;
-                    NotifyOfPropertyChange(nameof(AgentCommission));
-                }
-            }
-        }
-
-        public double SettlementPrice
-        {
-            get { return settlementPrice; }
-            private set
-            {
-                if (settlementPrice != value)
-                {
-                    settlementPrice = value;
-                    NotifyOfPropertyChange(nameof(SettlementPrice));
-                }
-            }
-        }
-
         public DateTime? Modified
         {
             get { return modified; }
@@ -264,29 +236,29 @@ namespace TickTrader.Algo.Common.Model
             public System.Action MarginUpdated;
         }
 
-        internal PositionExecReport ToReport(OrderExecAction action)
+        internal Domain.PositionExecReport ToReport(Domain.OrderExecReport.Types.ExecAction action)
         {
-            var entity = GetEntity();
-            entity.Type = action;
+            var info = GetInfo();
 
-            return new PositionExecReport()
+            return new Domain.PositionExecReport()
             {
-                PositionInfo = entity,
+                PositionCopy = info,
+                ExecAction = action,
             };
         }
 
-        internal PositionEntity GetEntity()
+        internal Domain.PositionInfo GetInfo()
         {
-            return new PositionEntity(Symbol)
+            return new Domain.PositionInfo
             {
-                AgentCommission = (double)AgentCommission,
+                Symbol = Symbol,
                 Commission = (double)Commission,
-                SettlementPrice = SettlementPrice,
                 Side = Side,
                 Volume = Amount,
                 Swap = (double)Swap,
                 Price = (double)Price,
                 Id = Id,
+                Modified = Modified?.ToTimestamp(),
             };
         }
     }

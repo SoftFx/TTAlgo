@@ -10,7 +10,6 @@ namespace TickTrader.Algo.Common.Model
 {
     public class OrderModel : ObservableObject, IOrderModel2
     {
-        private string clientOrderId;
         private Domain.OrderInfo.Types.Type orderType;
         private Domain.OrderInfo.Types.Type initOrderType;
         private decimal amount;
@@ -44,10 +43,9 @@ namespace TickTrader.Algo.Common.Model
         private string orderExecutionOptionsStr;
         private string parentOrderId;
 
-        public OrderModel(OrderEntity record, IOrderDependenciesResolver resolver)
+        public OrderModel(Domain.OrderInfo record, IOrderDependenciesResolver resolver)
         {
             this.Id = record.Id;
-            this.clientOrderId = record.ClientOrderId;
             this.OrderId = long.Parse(Id);
             this.Symbol = record.Symbol;
             this.symbolModel = resolver.GetSymbolOrNull(record.Symbol);
@@ -57,7 +55,6 @@ namespace TickTrader.Algo.Common.Model
         public OrderModel(ExecutionReport report, IOrderDependenciesResolver resolver)
         {
             this.Id = report.OrderId ?? "0";
-            this.clientOrderId = report.ClientOrderId;
             this.OrderId = long.Parse(Id);
             this.Symbol = report.Symbol;
             this.symbolModel = resolver.GetSymbolOrNull(report.Symbol);
@@ -484,7 +481,7 @@ namespace TickTrader.Algo.Common.Model
         public string MarginCurrency => symbolModel?.BaseCurrency?.Name;
         public string ProfitCurrency => symbolModel?.QuoteCurrency?.Name;
 
-        public OrderOptions ExecOptions { get; private set; }
+        public Domain.OrderOptions ExecOptions { get; private set; }
 
         #endregion
 
@@ -506,14 +503,14 @@ namespace TickTrader.Algo.Common.Model
 
         #endregion
 
-        public OrderEntity GetEntity()
+        public Domain.OrderInfo GetInfo()
         {
-            return new OrderEntity(Id)
+            return new Domain.OrderInfo
             {
-                ClientOrderId = this.clientOrderId,
-                RemainingVolume = RemainingAmount,
-                RequestedVolume = Amount,
-                MaxVisibleVolume = MaxVisibleVolume,
+                Id = Id,
+                RemainingAmount = (double)RemainingAmount,
+                RequestedAmount = (double)Amount,
+                MaxVisibleAmount = (double)MaxVisibleVolume,
                 Symbol = Symbol,
                 InitialType = initOrderType,
                 Type = orderType,
@@ -526,35 +523,35 @@ namespace TickTrader.Algo.Common.Model
                 Comment = Comment,
                 UserTag = Tag,
                 InstanceId = InstanceId,
-                Created = Created,
-                Modified = Modified,
+                Created = Created?.ToTimestamp(),
+                Modified = Modified?.ToTimestamp(),
                 ExecPrice = ExecPrice,
-                ExecVolume = ExecAmount,
+                ExecAmount = (double)ExecAmount,
                 LastFillPrice = LastFillPrice,
-                LastFillVolume = LastFillAmount,
-                Swap = Swap ?? 0,
-                Commission = Commission ?? 0,
-                Expiration = Expiration,
+                LastFillAmount = (double)LastFillAmount,
+                Swap = (double)(Swap ?? 0),
+                Commission = (double)(Commission ?? 0),
+                Expiration = Expiration?.ToTimestamp(),
                 Options = ExecOptions,
-                ReqOpenPrice = ReqOpenPrice,
+                RequestedOpenPrice = ReqOpenPrice,
                 ParentOrderId = ParentOrderId,
             };
         }
 
-        internal void Update(OrderEntity record)
+        internal void Update(Domain.OrderInfo record)
         {
-            this.Amount = record.RequestedVolume;
-            this.RemainingAmount = record.RemainingVolume;
+            this.Amount = (decimal)record.RequestedAmount;
+            this.RemainingAmount = (decimal)record.RemainingAmount;
             this.OrderType = record.Type;
             this.InitOrderType = record.InitialType;
             this.Side = record.Side;
-            this.MaxVisibleVolume = record.MaxVisibleVolume;
+            this.MaxVisibleVolume = (decimal?)record.MaxVisibleAmount;
             this.Price = (decimal?)(record.Type == Domain.OrderInfo.Types.Type.Stop || record.Type == Domain.OrderInfo.Types.Type.StopLimit ? record.StopPrice : record.Price);
             this.LimitPrice = (decimal?)(record.Type == Domain.OrderInfo.Types.Type.StopLimit || record.Type == Domain.OrderInfo.Types.Type.Limit ? record.Price : null);
             this.StopPrice = (decimal?)record.StopPrice;
-            this.Created = record.Created;
-            this.Modified = record.Modified;
-            this.Expiration = record.Expiration;
+            this.Created = record.Created?.ToDateTime();
+            this.Modified = record.Modified?.ToDateTime();
+            this.Expiration = record.Expiration?.ToDateTime();
             this.Comment = record.Comment;
             this.Tag = record.UserTag;
             this.StopLoss = record.StopLoss;
@@ -563,8 +560,8 @@ namespace TickTrader.Algo.Common.Model
             this.Swap = (decimal?)record.Swap;
             this.Commission = (decimal?)record.Commission;
             this.ExecOptions = record.Options;
-            this.OrderExecutionOptionsStr = record.Options.ToFullString();
-            this.ReqOpenPrice = record.ReqOpenPrice;
+            this.OrderExecutionOptionsStr = record.Options.ToString();
+            this.ReqOpenPrice = record.RequestedOpenPrice;
             this.ParentOrderId = record.ParentOrderId;
             //if (record.ImmediateOrCancel)
             //{
@@ -608,7 +605,7 @@ namespace TickTrader.Algo.Common.Model
             this.ParentOrderId = report.ParentOrderId;
 
             if (report.ImmediateOrCancel)
-                ExecOptions = OrderOptions.ImmediateOrCancel;
+                ExecOptions = Domain.OrderOptions.ImmediateOrCancel;
 
             EssentialParametersChanged?.Invoke(this);
         }
@@ -641,16 +638,16 @@ namespace TickTrader.Algo.Common.Model
 
         private string GetOrderExecOptions(ExecutionReport report)
         {
-            var op = new List<OrderOptions>();
+            var op = new List<Domain.OrderOptions>();
 
             if (report.ImmediateOrCancel)
-                op.Add(OrderOptions.ImmediateOrCancel);
+                op.Add(Domain.OrderOptions.ImmediateOrCancel);
 
             if (report.MarketWithSlippage)
-                op.Add(OrderOptions.MarketWithSlippage);
+                op.Add(Domain.OrderOptions.MarketWithSlippage);
 
             if (report.MaxVisibleVolume >= 0)
-                op.Add(OrderOptions.HiddenIceberg);
+                op.Add(Domain.OrderOptions.HiddenIceberg);
 
             return string.Join(",", op);
         }

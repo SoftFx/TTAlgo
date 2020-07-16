@@ -1,279 +1,191 @@
 ﻿using System;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Calc;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    public class OrderAccessor : Order, IOrderModel2 // BO.IOrder
+    public class OrderAccessor : IOrderModel2
     {
-        private OrderEntity _entity;
         private SymbolAccessor _symbol;
         private double _lotSize;
         private int _leverage;
-        //private decimal? _modelProf;
-        //private decimal? _modelMargin;
+        private ReadEntity _readEntity;
+        private WriteEntity _writeEntity;
+        private Order _apiOrder;
+        private IOrderCalcInfo _calcInfo;
 
-        internal OrderAccessor(OrderEntity entity, Func<string, ISymbolInfo2> symbolProvider, int leverage)
-            : this(entity, symbolProvider(entity.Symbol), leverage)
+        internal OrderAccessor(OrderInfo info, Func<string, SymbolAccessor> symbolProvider, int leverage)
+            : this(info, symbolProvider(info.Symbol), leverage)
         {
 
         }
 
-        internal OrderAccessor(OrderEntity entity, ISymbolInfo2 symbol, int leverage)
+        internal OrderAccessor(OrderInfo info, SymbolAccessor symbol, int leverage)
         {
-            _entity = entity ?? throw new ArgumentNullException("entity");
+            _readEntity = new ReadEntity(this, info);
+            _apiOrder = _readEntity;
+            _calcInfo = _readEntity;
 
-            _symbol = (SymbolAccessor)symbol;
+            Init(symbol, leverage);
+        }
+
+        internal OrderAccessor(SymbolAccessor symbol, int leverage)
+        {
+            _writeEntity = new WriteEntity(this);
+            _apiOrder = _writeEntity;
+            _calcInfo = _writeEntity;
+
+            Init(symbol, leverage);
+
+        }
+
+        private OrderAccessor() { }
+
+        private void Init(SymbolAccessor symbol, int leverage)
+        {
+            _symbol = symbol;
             _lotSize = _symbol?.ContractSize ?? 1;
             _leverage = leverage;
         }
 
-        internal static Order GetAccessor(OrderEntity entity, SymbolAccessor symbol, int leverage)
-        {
-            if (entity == null)
-                return Null.Order;
-
-            return new OrderAccessor(entity, symbol, leverage);
-        }
-
-        internal void Update(OrderEntity entity)
-        {
-            var oldPrice = _entity.Price;
-            var oldStopPrice = _entity.StopPrice;
-            var oldVol = _entity.RemainingVolume;
-            var oldType = _entity.Type;
-            var oldIsHidden = _entity.IsHidden;
-            _entity = entity;
-            EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldVol, oldPrice, oldStopPrice, oldType, oldIsHidden));
-        }
-
-        public OrderEntity Entity => _entity;
-
         public OrderAccessor Clone()
         {
-            var clone = new OrderAccessor(new OrderEntity(_entity), _symbol, _leverage);
+            var clone = new OrderAccessor();
+            if (_readEntity != null)
+            {
+                clone._readEntity = _readEntity.Clone(clone);
+                clone._apiOrder = clone._readEntity;
+                clone._calcInfo = clone._readEntity;
+            }
+            else
+            {
+                clone._writeEntity = _writeEntity.Clone(clone);
+                clone._apiOrder = clone._writeEntity;
+                clone._calcInfo = clone._writeEntity;
+            }
             clone.Calculator = Calculator;
-            //clone.CalculationError = CalculationError;
             return clone;
         }
 
-        #region API Order
+        internal void Update(OrderInfo info)
+        {
+            var oldPrice = _calcInfo.Price;
+            var oldStopPrice = _calcInfo.StopPrice;
+            var oldAmount = _calcInfo.RemainingAmount;
+            var oldType = _calcInfo.Type;
+            var oldIsHidden = _calcInfo.IsHidden;
+            _readEntity.Update(info);
+            EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldAmount, oldPrice, oldStopPrice, oldType, oldIsHidden));
+        }
 
-        public string Id => _entity.Id;
-        public string Symbol => _entity.Symbol;
-        public double RequestedVolume => (double)_entity.RequestedVolume / _lotSize;
-        public double RemainingVolume => (double)_entity.RemainingVolume / _lotSize;
-        public double MaxVisibleVolume => (double?)_entity.MaxVisibleVolume / _lotSize ?? double.NaN;
-        public Domain.OrderInfo.Types.Type Type => _entity.Type;
-        OrderType Order.Type => _entity.Type.ToApiEnum();
-        OrderSide Order.Side => _entity.Side.ToApiEnum();
-        public Domain.OrderInfo.Types.Side Side => _entity.Side;
-        public double Price => _entity.Price ?? double.NaN;
-        public double StopPrice => _entity.StopPrice ?? double.NaN;
-        public double StopLoss => _entity.StopLoss ?? double.NaN;
-        public double Slippage => _entity.Slippage ?? double.NaN;
-        public double TakeProfit => _entity.TakeProfit ?? double.NaN;
+        public Order ApiOrder => _apiOrder;
+
+        internal WriteEntity Entity => _writeEntity;
+
+        public string Id => _apiOrder.Id;
+        public string Symbol => _apiOrder.Symbol;
+        public double RequestedVolume => _apiOrder.RequestedVolume;
+        public double RemainingVolume => _apiOrder.RemainingVolume;
+        public OrderInfo.Types.Type Type => _calcInfo.Type;
+        public OrderInfo.Types.Side Side => _calcInfo.Side;
+        public double Price => _apiOrder.Price;
+        public double StopPrice => _apiOrder.StopPrice;
+        public double StopLoss => _apiOrder.StopLoss;
+        public double TakeProfit => _apiOrder.TakeProfit;
+        public double Slippage => _apiOrder.Slippage;
         public bool IsNull => false;
-        public string Comment => _entity.Comment;
-        public string Tag => _entity.UserTag;
-        public string InstanceId => _entity.InstanceId;
-        public DateTime Expiration => _entity.Expiration ?? DateTime.MinValue;
-        public DateTime Modified => _entity.Modified ?? DateTime.MinValue;
-        public DateTime Created => _entity.Created ?? DateTime.MinValue;
-        public double ExecPrice => _entity.ExecPrice ?? double.NaN;
-        public double ExecVolume => _entity.ExecVolume / _lotSize ?? double.NaN;
-        public double LastFillPrice => _entity.LastFillPrice ?? double.NaN;
-        public double LastFillVolume => _entity.LastFillVolume / _lotSize ?? double.NaN;
-        public double Margin => CalculateMargin();
-        public double Profit => CalculateProfit();
-        public OrderOptions Options => _entity.Options;
-        public decimal CashMargin { get; set; }
-
-        public bool IsPending => Type == Domain.OrderInfo.Types.Type.Limit || Type == Domain.OrderInfo.Types.Type.StopLimit || Type == Domain.OrderInfo.Types.Type.Stop;
-
-        #endregion
+        public string Comment => _apiOrder.Comment;
+        public string InstanceId => _apiOrder.InstanceId;
+        public DateTime Expiration => _apiOrder.Expiration;
+        public DateTime Modified => _apiOrder.Modified;
+        public bool IsHidden => _calcInfo.IsHidden;
 
         #region IOrderModel2
 
-        public decimal RemainingAmount => _entity.RemainingVolume;
-        bool IOrderCalcInfo.IsHidden => Entity.IsHidden;
-        double? IOrderCalcInfo.Price => Entity.Price;
-        double? IOrderCalcInfo.StopPrice => Entity.StopPrice;
+        public decimal RemainingAmount => _calcInfo.RemainingAmount;
+        double? IOrderCalcInfo.Price => _calcInfo.Price;
+        double? IOrderCalcInfo.StopPrice => _calcInfo.StopPrice;
+        decimal? IOrderCalcInfo.Swap => _calcInfo.Swap;
+        decimal? IOrderCalcInfo.Commission => _calcInfo.Commission;
 
         ISymbolInfo2 IOrderModel2.SymbolInfo => _symbol;
-        Domain.OrderInfo.Types.Side IOrderCalcInfo.Side => Entity.Side;
-        
+        public decimal CashMargin { get; set; }
         #endregion
 
         #region BL IOrderModel
 
-        public decimal? AgentCommision => 0;
-
         public OrderCalculator Calculator { get; set; }
         //public bool IsCalculated => CalculationError == null;
         public double? MarginRateCurrent { get; set; }
-        public decimal? Swap => _entity.Swap;
-        public decimal? Commission => _entity.Commission;
-        public double? CurrentPrice { get; set; }
-        public long OrderId => long.Parse(Id);
-        public decimal Amount { get => _entity.RequestedVolume; set => _entity.RequestedVolume = value; }
-        //decimal BO.IOrder.RemainingAmount { get => (decimal)_entity.RemainingVolume; }
-        //decimal? BL.IOrderModel.Profit { get => _modelProf; set => _modelProf = value; }
-        //decimal? BL.IOrderModel.Margin { get => _modelMargin; set => _modelMargin = value; }
-        //BO.OrderTypes BL.ICommonOrder.Type { get => _entity.GetBlOrderType(); set => throw new NotImplementedException(); }
-        //BO.OrderSides BL.ICommonOrder.Side { get => _entity.GetBlOrderSide(); set => throw new NotImplementedException(); }
-        //decimal? BL.ICommonOrder.Price { get => (decimal?)_entity.Price; set => throw new NotImplementedException(); }
-        //decimal? BL.ICommonOrder.StopPrice { get => (decimal?)_entity.StopPrice; set => throw new NotImplementedException(); }
-        //bool BL.ICommonOrder.IsHidden => !double.IsNaN(MaxVisibleVolume) && MaxVisibleVolume.E(0);
-        //bool BL.ICommonOrder.IsIceberg => !double.IsNaN(MaxVisibleVolume) && MaxVisibleVolume.Gt(0);
-        //string BL.ICommonOrder.MarginCurrency { get => _symbol?.BaseCurrency; set => throw new NotImplementedException(); }
-        //string BL.ICommonOrder.ProfitCurrency { get => _symbol?.CounterCurrency; set => throw new NotImplementedException(); }
-        //decimal? BL.ICommonOrder.MaxVisibleAmount => (decimal?)_entity.MaxVisibleVolume;
 
-        //public event Action<BL.IOrderModel> EssentialParametersChanged;
         public event Action<OrderEssentialsChangeArgs> EssentialsChanged;
         public event Action<OrderPropArgs<decimal>> SwapChanged;
         public event Action<OrderPropArgs<decimal>> CommissionChanged;
 
         #endregion
 
-        private decimal? GetDecPrice()
-        {
-            double? price = (Type == Domain.OrderInfo.Types.Type.Stop) ? _entity.StopPrice : _entity.Price;
-            return (decimal?)price;
-        }
-
         internal bool HasOption(OrderExecOptions option)
         {
-            return Entity.Options.HasFlag(option.ToExec());
+            return _apiOrder.Options.HasFlag(option.ToExec());
         }
 
         #region Emulation
 
-        internal short ActionNo { get; set; }
-        internal Domain.OrderInfo.Types.Type InitialType { get => Entity.InitialType; set => Entity.InitialType = value; }
-        internal double? OpenConversionRate { get; set; }
         internal SymbolAccessor SymbolInfo => _symbol;
-        public double? ClosePrice { get; set; }
-        internal DateTime PositionCreated { get; set; }
 
         internal void SetSwap(decimal swap)
         {
-            var oldSwap = Entity.Swap;
-            Entity.Swap = swap;
+            var oldSwap = _writeEntity.Swap ?? 0;
+            _writeEntity.Swap = swap;
             SwapChanged?.Invoke(new OrderPropArgs<decimal>(this, oldSwap, swap));
         }
 
         internal void ChangeCommission(decimal newCommision)
         {
-            var oldCom = Entity.Commission;
-            Entity.Commission = newCommision;
+            var oldCom = _writeEntity.Commission ?? 0;
+            _writeEntity.Commission = newCommision;
             CommissionChanged?.Invoke(new OrderPropArgs<decimal>(this, oldCom, newCommision));
         }
 
         internal void ChangeRemAmount(decimal newAmount)
         {
-            var oldAmount = Entity.RemainingVolume;
-            Entity.RemainingVolume = newAmount;
-            EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldAmount, Entity.Price, StopPrice, Entity.Type, false));
+            var oldAmount = _writeEntity.RemainingAmount;
+            _writeEntity.RemainingAmount = newAmount;
+            EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldAmount, _writeEntity.Price, _writeEntity.StopPrice, Type, false));
         }
 
         internal void ChangeEssentials(Domain.OrderInfo.Types.Type newType, decimal newAmount, double? newPrice, double? newStopPirce)
         {
-            var oldPrice = Entity.Price;
-            var oldType = Entity.Type;
-            var oldAmount = Entity.RemainingVolume;
-            var oldStopPrice = Entity.StopPrice;
+            var oldPrice = _writeEntity.Price;
+            var oldType = _writeEntity.Type;
+            var oldAmount = _writeEntity.RemainingAmount;
+            var oldStopPrice = _writeEntity.StopPrice;
 
-            Entity.Type = newType;
-            Entity.RemainingVolume = newAmount;
-            Entity.Price = newPrice;
-            Entity.StopPrice = newStopPirce;
+            _writeEntity.Type = newType;
+            _writeEntity.RemainingAmount = newAmount;
+            _writeEntity.Price = newPrice;
+            _writeEntity.StopPrice = newStopPirce;
 
             EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldAmount, oldPrice, oldStopPrice, oldType, false));
         }
-
-        //internal void FireChanged()
-        //{
-        //    EssentialParametersChanged?.Invoke(this);
-        //}
-
-        //internal decimal? GetBoMargin()
-        //{
-        //    return _modelMargin;
-        //}
-
         #endregion
 
-        #region TickTrader.BusinessObjects.IOrder
 
-        //int BO.IOrder.RangeId => throw new NotImplementedException();
-        //long BO.IOrder.AccountId => throw new NotImplementedException();
-        ////string BO.IOrder.Symbol => throw new NotImplementedException();
-        //string BO.IOrder.SymbolAlias => Symbol;
-        ////long BO.IOrder.OrderId => throw new NotImplementedException();
-        //string BO.IOrder.ClientOrderId => null;
-        //long? BO.IOrder.ParentOrderId => throw new NotImplementedException();
-        //decimal? BO.IOrder.Price => (decimal?)Entity.Price;
-        //decimal? BO.IOrder.StopPrice => (decimal?)Entity.StopPrice;
-        //BO.OrderSides BO.IOrder.Side => _entity.GetBlOrderSide();
-        //BO.OrderTypes BO.IOrder.Type => _entity.GetBlOrderType();
-        //BO.OrderTypes BO.IOrder.InitialType => throw new NotImplementedException();
-        //BO.OrderStatuses BO.IOrder.Status => throw new NotImplementedException();
-        ////decimal BO.IOrder.Amount => throw new NotImplementedException();
-        ////decimal BO.IOrder.RemainingAmount => throw new NotImplementedException();
-        //decimal BO.IOrder.HiddenAmount => throw new NotImplementedException();
-        //decimal? BO.IOrder.MaxVisibleAmount => throw new NotImplementedException();
-        //DateTime BO.IOrder.Created => Entity.Created ?? DateTime.MinValue;
-        //DateTime? BO.IOrder.Modified => Entity.Modified;
-        //DateTime? BO.IOrder.Filled => throw new NotImplementedException();
-        //DateTime? BO.IOrder.PositionCreated => throw new NotImplementedException();
-        //decimal? BO.IOrder.StopLoss => (decimal?)Entity.StopLoss;
-        //decimal? BO.IOrder.TakeProfit => (decimal?)Entity.TakeProfit;
-        //decimal? BO.IOrder.Profit => (decimal)Profit;
-        //decimal? BO.IOrder.Margin => (decimal)Margin;
-        //decimal BO.IOrder.AggrFillPrice => throw new NotImplementedException();
-        //decimal BO.IOrder.AverageFillPrice => throw new NotImplementedException();
-        //decimal? BO.IOrder.TransferringCoefficient => throw new NotImplementedException();
-        //string BO.IOrder.UserComment => Comment;
-        //string BO.IOrder.ManagerComment => throw new NotImplementedException();
-        //string BO.IOrder.UserTag => Entity.UserTag;
-        //string BO.IOrder.ManagerTag => throw new NotImplementedException();
-        //int BO.IOrder.Magic => throw new NotImplementedException();
-        //decimal? BO.IOrder.Commission => (decimal)Entity.Commission;
-        //decimal? BO.IOrder.AgentCommision => throw new NotImplementedException();
-        //decimal? BO.IOrder.Swap => (decimal)Entity.Swap;
-        //DateTime? BO.IOrder.Expired => Entity.Expiration;
-        ////decimal? BO.IOrder.ClosePrice => throw new NotImplementedException();
-        ////decimal? BO.IOrder.CurrentPrice => throw new NotImplementedException();
-        //decimal? BO.IOrder.MarginRateInitial => throw new NotImplementedException();
-        //decimal? BO.IOrder.MarginRateCurrent => throw new NotImplementedException();
-        //BO.ActivationTypes BO.IOrder.Activation => throw new NotImplementedException();
-        //decimal? BO.IOrder.OpenConversionRate => throw new NotImplementedException();
-        //decimal? BO.IOrder.CloseConversionRate => throw new NotImplementedException();
-        //bool BO.IOrder.IsReducedOpenCommission => throw new NotImplementedException();
-        //bool BO.IOrder.IsReducedCloseCommission => throw new NotImplementedException();
-        //int BO.IOrder.Version => throw new NotImplementedException();
-        //BO.OrderExecutionOptions BO.IOrder.Options => throw new NotImplementedException();
-        //BO.CustomProperties BO.IOrder.Properties => throw new NotImplementedException();
-        //decimal? BO.IOrder.Taxes => throw new NotImplementedException();
-        //decimal? BO.IOrder.ReqOpenPrice => throw new NotImplementedException();
-        //decimal? BO.IOrder.ReqOpenAmount => throw new NotImplementedException();
-        //string BO.IOrder.ClientApp => throw new NotImplementedException();
-        //int? BO.IOrder.SymbolPrecision => _symbol?.Digits;
-
-        //decimal? BO.IOrder.Slippage => throw new NotImplementedException();
-
-        internal bool IsSameOrder(OrderAccessor order)
+        internal bool IsSameOrderId(OrderAccessor other)
         {
-            return (order != null && OrderId == order.OrderId && Type == order.Type);
+            return other != null && string.CompareOrdinal(Id, other.Id) == 0;
+
         }
 
-        #endregion
+        internal bool IsSameOrder(OrderAccessor other)
+        {
+            return IsSameOrderId(other) && Type == other.Type;
+        }
 
         public override string ToString()
         {
-            return $"#{Id} {Symbol} {Side} {_entity.RemainingVolume}";
+            return $"#{Id} {Symbol} {Side} {_apiOrder.RemainingVolume}";
         }
 
         private double CalculateMargin()
@@ -303,6 +215,244 @@ namespace TickTrader.Algo.Core
                 return prof;
             }
             return double.NaN;
+        }
+
+        private static bool IsHiddenOrder(decimal? maxVisibleVolume)
+        {
+            return maxVisibleVolume.HasValue && maxVisibleVolume.Value == 0;
+        }
+
+        private class ReadEntity : Order, IOrderCalcInfo
+        {
+            private readonly OrderAccessor _accessor;
+            private readonly double _lotSize;
+            private OrderInfo _info;
+
+            public ReadEntity(OrderAccessor accessor, OrderInfo info)
+            {
+                _accessor = accessor;
+                _lotSize = _accessor._lotSize;
+                _info = info;
+            }
+
+            internal void Update(OrderInfo info)
+            {
+                _info = info;
+            }
+
+            internal ReadEntity Clone(OrderAccessor newAccessor)
+            {
+                return new ReadEntity(newAccessor, _info);
+            }
+
+            #region API Order
+
+            public string Id => _info.Id;
+            public string Symbol => _info.Symbol;
+            public double RequestedVolume => (double)_info.RequestedAmount / _lotSize;
+            public double RemainingVolume => (double)_info.RemainingAmount / _lotSize;
+            public double MaxVisibleVolume => _info.MaxVisibleAmount / _lotSize ?? double.NaN;
+            public Domain.OrderInfo.Types.Type Type => _info.Type;
+            OrderType Order.Type => _info.Type.ToApiEnum();
+            OrderSide Order.Side => _info.Side.ToApiEnum();
+            public Domain.OrderInfo.Types.Side Side => _info.Side;
+            public double Price => _info.Price ?? double.NaN;
+            public double StopPrice => _info.StopPrice ?? double.NaN;
+            public double StopLoss => _info.StopLoss ?? double.NaN;
+            public double Slippage => _info.Slippage ?? double.NaN;
+            public double TakeProfit => _info.TakeProfit ?? double.NaN;
+            public bool IsNull => false;
+            public string Comment => _info.Comment;
+            public string Tag => _info.UserTag;
+            public string InstanceId => _info.InstanceId;
+            public DateTime Expiration => _info.Expiration?.ToDateTime() ?? DateTime.MinValue;
+            public DateTime Modified => _info.Modified?.ToDateTime() ?? DateTime.MinValue;
+            public DateTime Created => _info.Created?.ToDateTime() ?? DateTime.MinValue;
+            public double ExecPrice => _info.ExecPrice ?? double.NaN;
+            public double ExecVolume => _info.ExecAmount / _lotSize ?? double.NaN;
+            public double LastFillPrice => _info.LastFillPrice ?? double.NaN;
+            public double LastFillVolume => _info.LastFillAmount / _lotSize ?? double.NaN;
+            public double Margin => _accessor.CalculateMargin();
+            public double Profit => _accessor.CalculateProfit();
+            public Api.OrderOptions Options => _info.Options.ToApiEnum();
+
+            #endregion
+
+            #region IOrderCalcInfo
+
+            decimal IOrderCalcInfo.RemainingAmount => (decimal)_info.RemainingAmount;
+            double? IOrderCalcInfo.Price => _info.Price;
+            double? IOrderCalcInfo.StopPrice => _info.StopPrice;
+            decimal? IOrderCalcInfo.Commission => (decimal)_info.Commission;
+            decimal? IOrderCalcInfo.Swap => (decimal)_info.Swap;
+            bool IOrderCalcInfo.IsHidden => _info.IsHidden();
+
+            #endregion
+        }
+
+        internal class WriteEntity : Order, IOrderCalcInfo
+        {
+            private readonly OrderAccessor _accessor;
+            private readonly double _lotSize;
+
+            public WriteEntity(OrderAccessor accessor)
+            {
+                _accessor = accessor;
+                _lotSize = _accessor._lotSize;
+            }
+
+            internal WriteEntity Clone(OrderAccessor newAccessor)
+            {
+                var clone = new WriteEntity(newAccessor)
+                {
+                    Id = Id,
+                    Symbol = Symbol,
+                    RequestedAmount = RequestedAmount,
+                    RemainingAmount = RemainingAmount,
+                    MaxVisibleAmount = MaxVisibleAmount,
+                    Type = Type,
+                    Side = Side,
+                    Price = Price,
+                    StopPrice = StopPrice,
+                    StopLoss = StopLoss,
+                    TakeProfit = TakeProfit,
+                    Slippage = Slippage,
+                    Comment = Comment,
+                    UserTag = UserTag,
+                    InstanceId = InstanceId,
+                    Expiration = Expiration,
+                    Created = Created,
+                    Modified = Modified,
+                    ExecPrice = ExecPrice,
+                    ExecAmount = ExecAmount,
+                    LastFillPrice = LastFillPrice,
+                    LastFillAmount = LastFillAmount,
+                    Options = Options,
+                    Swap = Swap,
+                    Commission = Commission,
+                    ActionNo = ActionNo,
+                    InitialType = InitialType,
+                    ClosePrice = ClosePrice,
+                    PositionCreated = PositionCreated,
+                    OpenConversionRate = OpenConversionRate,
+                };
+                return clone;
+            }
+
+            internal OrderInfo GetInfo()
+            {
+                return new OrderInfo
+                {
+                    Id = Id,
+                    Symbol = Symbol,
+                    RequestedAmount = (double)RequestedAmount,
+                    RemainingAmount = (double)RemainingAmount,
+                    MaxVisibleAmount = (double?)MaxVisibleAmount,
+                    Type = Type,
+                    Side = Side,
+                    Price = Price,
+                    StopPrice = StopPrice,
+                    StopLoss = StopLoss,
+                    TakeProfit = TakeProfit,
+                    Slippage = Slippage,
+                    Comment = Comment,
+                    UserTag = UserTag,
+                    InstanceId = InstanceId,
+                    Expiration = Expiration?.ToTimestamp(),
+                    Created = Created?.ToTimestamp(),
+                    Modified = Modified?.ToTimestamp(),
+                    ExecPrice = ExecPrice,
+                    ExecAmount = (double)ExecAmount,
+                    LastFillPrice = LastFillPrice,
+                    LastFillAmount = (double)LastFillAmount,
+                    Options = Options,
+                    Swap = (double)(Swap ?? 0),
+                    Commission = (double)(Commission ?? 0),
+                    InitialType = InitialType,
+                };
+            }
+
+            public string Id { get; internal set; }
+            public string Symbol { get; internal set; }
+
+            public decimal RequestedAmount { get; internal set; }
+            public decimal RemainingAmount { get; internal set; }
+            public decimal? MaxVisibleAmount { get; internal set; }
+
+            public OrderInfo.Types.Type Type { get; internal set; }
+            public OrderInfo.Types.Side Side { get; internal set; }
+
+            public double? Price { get; internal set; }
+            public double? StopPrice { get; internal set; }
+
+            public double? StopLoss { get; internal set; }
+            public double? TakeProfit { get; internal set; }
+
+            public double? Slippage { get; internal set; }
+
+            public string Comment { get; internal set; }
+            public string UserTag { get; internal set; }
+            public string InstanceId { get; internal set; }
+
+            public DateTime? Expiration { get; internal set; }
+            public DateTime? Modified { get; internal set; }
+            public DateTime? Created { get; internal set; }
+
+            public double? ExecPrice { get; internal set; }
+            public decimal ExecAmount { get; internal set; }
+            public double? LastFillPrice { get; internal set; }
+            public decimal LastFillAmount { get; internal set; }
+
+            public Domain.OrderOptions Options { get; internal set; }
+
+            public double Margin => _accessor.CalculateMargin();
+            public double Profit => _accessor.CalculateProfit();
+
+            public decimal? Swap { get; internal set; }
+            public decimal? Commission { get; internal set; }
+
+            public bool IsPending => Type == OrderInfo.Types.Type.Limit || Type == OrderInfo.Types.Type.StopLimit || Type == OrderInfo.Types.Type.Stop;
+
+            public bool IsHidden => IsHiddenOrder(MaxVisibleAmount);
+
+            public OrderInfo.Types.Type InitialType { get; internal set; }
+            public short ActionNo { get; internal set; }
+            public double? OpenConversionRate { get; internal set; }
+            public double? ClosePrice { get; set; }
+            internal DateTime PositionCreated { get; set; }
+
+            #region API Order
+
+            public bool IsNull => false;
+
+            OrderType Order.Type => Type.ToApiEnum();
+            OrderSide Order.Side => Side.ToApiEnum();
+
+            double Order.Price => Price ?? double.NaN;
+            double Order.StopPrice => Price ?? double.NaN;
+
+            double Order.StopLoss => StopLoss ?? double.NaN;
+            double Order.TakeProfit => TakeProfit ?? double.NaN;
+            double Order.Slippage => Slippage ?? double.NaN;
+
+            double Order.RequestedVolume => (double)RequestedAmount / _lotSize;
+            double Order.RemainingVolume => (double)RemainingAmount / _lotSize;
+            double Order.MaxVisibleVolume => (double?)MaxVisibleAmount / _lotSize ?? double.NaN;
+
+            DateTime Order.Created => Created ?? DateTime.MinValue;
+            DateTime Order.Modified => Modified ?? DateTime.MinValue;
+            DateTime Order.Expiration => Expiration ?? DateTime.MinValue;
+
+            string Order.Tag => UserTag;
+
+            double Order.ExecPrice => ExecPrice ?? double.NaN;
+            double Order.ExecVolume => (double)ExecAmount / _lotSize;
+            double Order.LastFillPrice => LastFillPrice ?? double.NaN;
+            double Order.LastFillVolume => (double)LastFillAmount / _lotSize;
+
+            Api.OrderOptions Order.Options => Options.ToApiEnum();
+
+            #endregion
         }
     }
 }

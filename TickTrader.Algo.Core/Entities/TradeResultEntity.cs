@@ -10,16 +10,16 @@ namespace TickTrader.Algo.Core
     [Serializable]
     public class TradeResultEntity
     {
-        public TradeResultEntity(OrderCmdResultCodes code, OrderEntity entity)
+        public TradeResultEntity(Domain.OrderExecReport.Types.CmdResultCode code, Domain.OrderInfo entity)
         {
             ResultCode = code;
             ResultingOrder = entity;
             if (entity != null)
-                TransactionTime = entity.Modified ?? entity.Created;
+                TransactionTime = (entity.Modified ?? entity.Created)?.ToDateTime();
         }
 
-        public OrderCmdResultCodes ResultCode { get; private set; }
-        public OrderEntity ResultingOrder { get; private set; }
+        public Domain.OrderExecReport.Types.CmdResultCode ResultCode { get; private set; }
+        public Domain.OrderInfo ResultingOrder { get; private set; }
         public DateTime? TransactionTime { get; private set; }
     }
 

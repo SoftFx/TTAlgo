@@ -16,7 +16,7 @@ namespace TickTrader.Algo.Common.Model
         public DateTime? Expiration { get; set; }
         public DateTime? Created { get; set; }
         public DateTime? Modified { get; set; }
-        public OrderCmdResultCodes RejectReason { get; set; }
+        public Domain.OrderExecReport.Types.CmdResultCode RejectReason { get; set; }
         public double? TakeProfit { get; set; }
         public double? StopLoss { get; set; }
         public double? Slippage { get; set; }

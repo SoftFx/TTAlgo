@@ -24,40 +24,40 @@ namespace TickTrader.Algo.Common.Model
             _connection = connection;
         }
 
-        private async Task<OrderCmdResultCodes> SendCancelOrder(CancelOrderRequest request)
+        private async Task<Domain.OrderExecReport.Types.CmdResultCode> SendCancelOrder(CancelOrderRequest request)
         {
             if (!IsConnected)
-                return OrderCmdResultCodes.ConnectionError;
+                return Domain.OrderExecReport.Types.CmdResultCode.ConnectionError;
 
             var result = await _connection.TradeProxy.SendCancelOrder(request);
             SendReports(result);
             return result.ResultCode;
         }
 
-        private async Task<OrderCmdResultCodes> SendCloseOrder(CloseOrderCoreRequest request)
+        private async Task<Domain.OrderExecReport.Types.CmdResultCode> SendCloseOrder(CloseOrderCoreRequest request)
         {
             if (!IsConnected)
-                return OrderCmdResultCodes.ConnectionError;
+                return Domain.OrderExecReport.Types.CmdResultCode.ConnectionError;
 
             var result = await _connection.TradeProxy.SendCloseOrder(request);
             SendReports(result);
             return result.ResultCode;
         }
 
-        private async Task<OrderCmdResultCodes> SendModifyOrder(ReplaceOrderCoreRequest request)
+        private async Task<Domain.OrderExecReport.Types.CmdResultCode> SendModifyOrder(ReplaceOrderCoreRequest request)
         {
             if (!IsConnected)
-                return OrderCmdResultCodes.ConnectionError;
+                return Domain.OrderExecReport.Types.CmdResultCode.ConnectionError;
 
             var result = await _connection.TradeProxy.SendModifyOrder(request);
             SendReports(result);
             return result.ResultCode;
         }
 
-        private async Task<OrderCmdResultCodes> SendOpenOrder(OpenOrderCoreRequest request)
+        private async Task<Domain.OrderExecReport.Types.CmdResultCode> SendOpenOrder(OpenOrderCoreRequest request)
         {
             if (!IsConnected)
-                return OrderCmdResultCodes.ConnectionError;
+                return Domain.OrderExecReport.Types.CmdResultCode.ConnectionError;
 
             var result = await _connection.TradeProxy.SendOpenOrder(request);
             SendReports(result);
@@ -82,25 +82,25 @@ namespace TickTrader.Algo.Common.Model
                 _ref = aRef;
             }
 
-            public async void SendCancelOrder(ICallback<OrderCmdResultCodes> callback, CancelOrderRequest request)
+            public async void SendCancelOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, CancelOrderRequest request)
             {
                 var result = await _ref.Call(a => a.SendCancelOrder(request));
                 callback.Invoke(result);
             }
 
-            public async void SendCloseOrder(ICallback<OrderCmdResultCodes> callback, CloseOrderCoreRequest request)
+            public async void SendCloseOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, CloseOrderCoreRequest request)
             {
                 var result = await _ref.Call(a => a.SendCloseOrder(request));
                 callback.Invoke(result);
             }
 
-            public async void SendModifyOrder(ICallback<OrderCmdResultCodes> callback, ReplaceOrderCoreRequest request)
+            public async void SendModifyOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, ReplaceOrderCoreRequest request)
             {
                 var result = await _ref.Call(a => a.SendModifyOrder(request));
                 callback.Invoke(result);
             }
 
-            public async void SendOpenOrder(ICallback<OrderCmdResultCodes> callback, OpenOrderCoreRequest request)
+            public async void SendOpenOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, OpenOrderCoreRequest request)
             {
                 var result = await _ref.Call(a => a.SendOpenOrder(request));
                 callback.Invoke(result);

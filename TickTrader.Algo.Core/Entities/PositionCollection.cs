@@ -22,14 +22,14 @@ namespace TickTrader.Algo.Core
             _fixture = new PositionsFixture(builder);
         }
 
-        public PositionAccessor UpdatePosition(PositionEntity eReport)
+        public PositionAccessor UpdatePosition(Domain.PositionInfo posInfo)
         {
             PositionAccessor pos;
 
-            pos = GetOrCreatePosition(eReport.Symbol, () => eReport.Id);
-            pos.Update(eReport);
-            if (eReport.Volume <= 0)
-                RemovePosition(eReport.Symbol);
+            pos = GetOrCreatePosition(posInfo.Symbol, () => posInfo.Id);
+            pos.Update(posInfo);
+            if (posInfo.Volume <= 0)
+                RemovePosition(posInfo.Symbol);
 
             return pos;
         }

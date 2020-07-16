@@ -28,16 +28,16 @@ namespace TickTrader.Algo.Common.Model
         bool AutoAccountInfo { get; }
 
         Task<Domain.AccountInfo> GetAccountInfo();
-        Task<PositionEntity[]> GetPositions();
+        Task<Domain.PositionInfo[]> GetPositions();
 
-        void GetTradeRecords(BlockingChannel<OrderEntity> rxStream);
+        void GetTradeRecords(BlockingChannel<Domain.OrderInfo> rxStream);
         void GetTradeHistory(BlockingChannel<TradeReportEntity> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders, bool backwards);
 
-        event Action<PositionEntity> PositionReport;
+        event Action<Domain.PositionExecReport> PositionReport;
         event Action<ExecutionReport> ExecutionReport;
         //event Action<AccountInfoEventArgs> AccountInfoReceived;
         event Action<TradeReportEntity> TradeTransactionReport;
-        event Action<BalanceOperationReport> BalanceOperation;
+        event Action<Domain.BalanceOperation> BalanceOperation;
 
         Task<OrderInteropResult> SendModifyOrder(ReplaceOrderCoreRequest request);
         Task<OrderInteropResult> SendCloseOrder(CloseOrderCoreRequest request);

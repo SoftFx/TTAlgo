@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Common.Model
             foreach (var s in symbols)
                 _symbols.Add(s.Name, new SymbolModel(s, _currencies));
 
-            Acc.Init(accInfo, new OrderEntity[0], new PositionEntity[0], new Domain.AssetInfo[0]);
+            Acc.Init(accInfo, new Domain.OrderInfo[0], new Domain.PositionInfo[0], new Domain.AssetInfo[0]);
             Acc.StartCalculator(this);
         }
 

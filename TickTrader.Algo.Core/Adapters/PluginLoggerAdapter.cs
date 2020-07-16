@@ -234,7 +234,7 @@ namespace TickTrader.Algo.Core
         {
             var logEntry = new StringBuilder();
             logEntry.Append("Opened #").Append(order.Id).Append(' ');
-            AppendOrderParams(logEntry, order.SymbolInfo, " order ", order);
+            AppendOrderParams(logEntry, order.SymbolInfo, " order ", order.ApiOrder);
 
             PrintTrade(logEntry.ToString());
         }
@@ -244,7 +244,7 @@ namespace TickTrader.Algo.Core
             var logEntry = new StringBuilder();
 
             logEntry.Append("Order #").Append(order.Id).Append(" ");
-            AppendOrderParams(logEntry, order.SymbolInfo, " was modified to ", order);
+            AppendOrderParams(logEntry, order.SymbolInfo, " was modified to ", order.ApiOrder);
 
             Logger.OnPrintTrade(logEntry.ToString());
         }
@@ -254,7 +254,7 @@ namespace TickTrader.Algo.Core
             var logEntry = new StringBuilder();
 
             logEntry.Append("Order #").Append(order.Id).Append(" ");
-            AppendOrderParams(logEntry, order.SymbolInfo, " was splitted to ", order);
+            AppendOrderParams(logEntry, order.SymbolInfo, " was splitted to ", order.ApiOrder);
 
             Logger.OnPrintTrade(logEntry.ToString());
         }
@@ -286,8 +286,8 @@ namespace TickTrader.Algo.Core
 
             var builder = new StringBuilder();
             builder.Append("Order #").Append(order.Id);
-            builder.Append(" filled by ").AppendNumber(order.LastFillVolume);
-            builder.Append(" at price ").AppendNumber(order.LastFillPrice, priceFomat);
+            builder.Append(" filled by ").AppendNumber(order.ApiOrder.LastFillVolume);
+            builder.Append(" at price ").AppendNumber(order.ApiOrder.LastFillPrice, priceFomat);
             PrintCurrentRate(builder, smbInfo);
 
             Logger.OnPrintTrade(builder.ToString());
@@ -300,8 +300,8 @@ namespace TickTrader.Algo.Core
 
             var builder = new StringBuilder();
             builder.Append("Order #").Append(order.Id);
-            builder.Append(" closed by ").AppendNumber(order.LastFillVolume);
-            builder.Append(" at price ").AppendNumber(order.LastFillPrice, priceFomat);
+            builder.Append(" closed by ").AppendNumber(order.ApiOrder.LastFillVolume);
+            builder.Append(" at price ").AppendNumber(order.ApiOrder.LastFillPrice, priceFomat);
             PrintCurrentRate(builder, smbInfo);
 
             Logger.OnPrintTrade(builder.ToString());

@@ -357,7 +357,7 @@ namespace TickTrader.BotTerminal
 
         protected virtual string GetOrderExecutionOption(TradeReportEntity transaction)
         {
-            var options = new List<OrderOptions>();
+            var options = new List<Algo.Domain.OrderOptions>();
 
             if (transaction.ImmediateOrCancel && !IsSplitTransaction)
             {
@@ -373,14 +373,14 @@ namespace TickTrader.BotTerminal
                         break;
                 }
 
-                options.Add(OrderOptions.ImmediateOrCancel);
+                options.Add(Algo.Domain.OrderOptions.ImmediateOrCancel);
             }
 
             if (transaction.MarketWithSlippage)
-                options.Add(OrderOptions.MarketWithSlippage);
+                options.Add(Algo.Domain.OrderOptions.MarketWithSlippage);
 
             if (transaction.MaxVisibleQuantity >= 0)
-                options.Add(OrderOptions.HiddenIceberg);
+                options.Add(Algo.Domain.OrderOptions.HiddenIceberg);
 
             return string.Join(",", options);
         }

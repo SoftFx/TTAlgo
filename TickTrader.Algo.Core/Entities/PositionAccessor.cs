@@ -13,8 +13,8 @@ namespace TickTrader.Algo.Core
         private readonly int _leverage;
         private double _volUnitsSlim;
 
-        internal PositionAccessor(PositionEntity entity, int leverage, Func<string, Symbol> symbolProvider)
-            : this(entity, symbolProvider(entity.Symbol), leverage)
+        internal PositionAccessor(Domain.PositionInfo info, int leverage, Func<string, Symbol> symbolProvider)
+            : this(info, symbolProvider(info.Symbol), leverage)
         {
         }
 
@@ -25,10 +25,10 @@ namespace TickTrader.Algo.Core
             _leverage = leverage;
         }
 
-        internal PositionAccessor(PositionEntity entity, Symbol symbol, int leverage)
+        internal PositionAccessor(Domain.PositionInfo info, Symbol symbol, int leverage)
             : this(symbol, leverage)
         {
-            Update(entity ?? throw new ArgumentNullException("entity"));
+            Update(info ?? throw new ArgumentNullException("entity"));
         }
 
         internal PositionAccessor(PositionAccessor src)
@@ -38,7 +38,6 @@ namespace TickTrader.Algo.Core
             _sell.Update(src._sell.Amount, src._sell.Price);
 
             Volume = src.Volume;
-            SettlementPrice = src.SettlementPrice;
             Swap = src.Swap;
             Modified = src.Modified;
             Commission = src.Commission;
@@ -47,30 +46,29 @@ namespace TickTrader.Algo.Core
             Calculator = src.Calculator;
         }
 
-        internal void Update(PositionEntity entity)
+        internal void Update(Domain.PositionInfo info)
         {
-            if (entity.Side == Domain.OrderInfo.Types.Side.Buy)
+            if (info.Side == Domain.OrderInfo.Types.Side.Buy)
             {
-                _buy.Update((decimal)entity.Volume, (decimal)entity.Price);
+                _buy.Update((decimal)info.Volume, (decimal)info.Price);
                 _sell.Update(0, 0);
             }
             else
             {
                 _buy.Update(0, 0);
-                _sell.Update((decimal)entity.Volume, (decimal)entity.Price);
+                _sell.Update((decimal)info.Volume, (decimal)info.Price);
             }
 
-            SettlementPrice = entity.SettlementPrice;
-            Swap = (decimal)entity.Swap;
-            Commission = (decimal)entity.Commission;
-            Modified = entity.Modified;
-            Id = entity.Id;
+            Swap = (decimal)info.Swap;
+            Commission = (decimal)info.Commission;
+            Modified = info.Modified?.ToDateTime();
+            Id = info.Id;
             OnChanged();
         }
 
         internal static PositionAccessor CreateEmpty(string symbol, Func<string, Symbol> symbolInfoProvider, int leverage)
         {
-            return new PositionAccessor(new PositionEntity(symbol), leverage, symbolInfoProvider);
+            return new PositionAccessor(new Domain.PositionInfo { Symbol = symbol }, leverage, symbolInfoProvider);
         }
 
         public PositionAccessor Clone()
@@ -157,16 +155,17 @@ namespace TickTrader.Algo.Core
             return (price1 * amount1 + price2 * amount2) / (amount1 + amount2);
         }
 
-        internal PositionEntity GetEntityCopy()
+        internal Domain.PositionInfo GetEntityCopy()
         {
-            return new PositionEntity(Symbol)
+            return new Domain.PositionInfo
             {
+                Symbol = Symbol,
                 Volume = _volUnitsSlim,
                 Price = Price,
                 Side = Side,
                 Swap = (double)Swap,
                 Commission = (double)Commission,
-                Modified = Modified,
+                Modified = Modified?.ToTimestamp(),
                 Id = Id,
             };
         }

@@ -116,9 +116,9 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void Account_BalanceUpdated(BalanceOperationReport report)
+        private void Account_BalanceUpdated(Algo.Domain.BalanceOperation report)
         {
-            string action = report.Type == BalanceOperationType.Dividend ? "Devidend" : report.TransactionAmount > 0 ? "Deposit" : "Withdrawal";
+            string action = report.Type == Algo.Domain.BalanceOperation.Types.Type.Dividend ? "Devidend" : report.TransactionAmount > 0 ? "Deposit" : "Withdrawal";
             _journal.Trading($"{action} {report.TransactionAmount} {report.Currency}. Balance: {report.Balance} {report.Currency}");
         }
 
@@ -128,7 +128,7 @@ namespace TickTrader.BotTerminal
 
             switch(updateInfo.ExecAction)
             {
-                case OrderExecAction.Opened:
+                case Algo.Domain.OrderExecReport.Types.ExecAction.Opened:
                     switch (order.OrderType)
                     {
                         case Algo.Domain.OrderInfo.Types.Type.Position:
@@ -140,7 +140,7 @@ namespace TickTrader.BotTerminal
                             break;
                     }
                     break;
-                case OrderExecAction.Modified:
+                case Algo.Domain.OrderExecReport.Types.ExecAction.Modified:
                     switch (order.OrderType)
                     {
                         case Algo.Domain.OrderInfo.Types.Type.Position:
@@ -152,19 +152,19 @@ namespace TickTrader.BotTerminal
                             break;
                     }
                     break;
-                case OrderExecAction.Closed:
+                case Algo.Domain.OrderExecReport.Types.ExecAction.Closed:
                     if (order.OrderType == Algo.Domain.OrderInfo.Types.Type.Position)
                     {
                         _journal.Trading($"Order #{order.Id} was closed: {order.Side} {order.Symbol} {order.LastFillAmountLots} lots at {order.LastFillPrice}");
                     }
                     break;
-                case OrderExecAction.Canceled:
+                case Algo.Domain.OrderExecReport.Types.ExecAction.Canceled:
                     _journal.Trading($"Order #{order.Id} was canceled: {order.Side} {order.OrderType} {order.Symbol} {order.RemainingAmountLots} lots at {order.Price}");
                     break;
-                case OrderExecAction.Expired:
+                case Algo.Domain.OrderExecReport.Types.ExecAction.Expired:
                     _journal.Trading($"Order #{order.Id} has expired: {order.Side} {order.OrderType} {order.Symbol} {order.RemainingAmountLots} lots at {order.Price}");
                     break;
-                case OrderExecAction.Filled:
+                case Algo.Domain.OrderExecReport.Types.ExecAction.Filled:
                     _journal.Trading($"Order #{order.Id} was filled: {order.Side} {order.OrderType} {order.Symbol} {order.LastFillAmountLots} lots at {order.LastFillPrice}");
                     break;
             }

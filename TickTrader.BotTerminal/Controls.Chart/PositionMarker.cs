@@ -225,9 +225,9 @@ namespace TickTrader.BotTerminal
 
     internal class PosMarkerKey : IComparable<PosMarkerKey>
     {
-        public PosMarkerKey(long orderId, string actionId = null)
+        public PosMarkerKey(string orderId, string actionId = null)
         {
-            OrderId = orderId;
+            OrderId = long.Parse(orderId);
             ActionId = actionId;
         }
 

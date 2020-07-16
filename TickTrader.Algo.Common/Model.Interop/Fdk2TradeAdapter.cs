@@ -34,9 +34,9 @@ namespace TickTrader.Algo.Common.Model.Interop
             _tradeProxy.AccountInfoErrorEvent += (c, d, ex) => SfxTaskAdapter.SetFailed<AccountInfo>(d, ex);
 
             //client.OrdersBeginResultEvent += (c, d, c) =>
-            _tradeProxy.OrdersResultEvent += (c, d, r) => ((BlockingChannel<OrderEntity>)d).Write(SfxInterop.Convert(r));
-            _tradeProxy.OrdersEndResultEvent += (c, d) => ((BlockingChannel<OrderEntity>)d).Close();
-            _tradeProxy.OrdersErrorEvent += (c, d, ex) => ((BlockingChannel<OrderEntity>)d).Close(ex);
+            _tradeProxy.OrdersResultEvent += (c, d, r) => ((BlockingChannel<Domain.OrderInfo>)d).Write(SfxInterop.Convert(r));
+            _tradeProxy.OrdersEndResultEvent += (c, d) => ((BlockingChannel<Domain.OrderInfo>)d).Close();
+            _tradeProxy.OrdersErrorEvent += (c, d, ex) => ((BlockingChannel<Domain.OrderInfo>)d).Close(ex);
 
             _tradeProxy.PositionsResultEvent += (c, d, r) => SfxTaskAdapter.SetCompleted(d, r);
             _tradeProxy.PositionsErrorEvent += (c, d, ex) => SfxTaskAdapter.SetFailed<Position[]>(d, ex);

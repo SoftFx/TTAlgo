@@ -90,12 +90,12 @@ namespace TickTrader.Algo.Common.Model
             ContextSend(() => _updateQueue.Enqueue(er));
         }
 
-        private void TradeProxy_PositionReport(PositionEntity pr)
+        private void TradeProxy_PositionReport(Domain.PositionExecReport pr)
         {
             ContextSend(() => _updateQueue.Enqueue(pr));
         }
 
-        private void TradeProxy_BalanceOperation(BalanceOperationReport rep)
+        private void TradeProxy_BalanceOperation(Domain.BalanceOperation rep)
         {
             ContextSend(() => _updateQueue.Enqueue(rep));
         }
@@ -312,7 +312,7 @@ namespace TickTrader.Algo.Common.Model
 
             logger.Debug("Loaded account info.");
 
-            PositionEntity[] positions = null;
+            Domain.PositionInfo[] positions = null;
 
             if (accInfo.Type == Domain.AccountInfo.Types.Type.Net)
             {
@@ -328,7 +328,7 @@ namespace TickTrader.Algo.Common.Model
 
             logger.Debug("Loaded quotes snaphsot.");
 
-            var orderStream = Channel.NewInput<OrderEntity>();
+            var orderStream = Channel.NewInput<Domain.OrderInfo>();
             tradeApi.GetTradeRecords(CreateBlockingChannel(orderStream));
 
             while (await orderStream.ReadNext())
@@ -456,10 +456,10 @@ namespace TickTrader.Algo.Common.Model
         {
             if (item is ExecutionReport)
                 return _cache.Account.GetOrderUpdate((ExecutionReport)item);
-            else if (item is PositionEntity)
-                return _cache.Account.GetPositionUpdate((PositionEntity)item);
-            else if (item is BalanceOperationReport)
-                return _cache.Account.GetBalanceUpdate((BalanceOperationReport)item);
+            else if (item is Domain.PositionExecReport)
+                return _cache.Account.GetPositionUpdate((Domain.PositionExecReport)item);
+            else if (item is Domain.BalanceOperation)
+                return _cache.Account.GetBalanceUpdate((Domain.BalanceOperation)item);
 
             return null;
         }

@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Core
 
         public bool AddOrder(OrderAccessor order)
         {
-            if (order.IsPending && order.Entity.Expiration != null)
+            if (order.Entity.IsPending && order.Entity.Expiration != null)
             {
                 GetOrAddDateList(order.Entity.Expiration.Value).AddLast(order);
                 Count++;
@@ -30,7 +30,7 @@ namespace TickTrader.Algo.Core
 
         public void RemoveOrder(OrderAccessor order)
         {
-            if (order.IsPending && order.Entity.Expiration != null)
+            if (order.Entity.IsPending && order.Entity.Expiration != null)
             {
                 LinkedList<OrderAccessor> list;
                 if (innerMap.TryGetValue(order.Entity.Expiration.Value, out list))
