@@ -81,7 +81,7 @@ namespace TickTrader.Algo.Core.Calc
             //RemoveOrder(order, GetSideCalc(order));
         }
 
-        public void UpdatePosition(IPositionModel2 pos, out decimal swapDelta, out decimal commDelta)
+        public void UpdatePosition(IPositionModel2 pos, PositionChangeTypes type, out decimal swapDelta, out decimal commDelta)
         {
             pos.Calculator = Calc;
 
@@ -91,14 +91,15 @@ namespace TickTrader.Algo.Core.Calc
             _netPosSwap = pos.Swap;
             _netPosComm = pos.Commission;
 
-            Buy.UpdatePosition(pos.Long);
-            Sell.UpdatePosition(pos.Short);
+            Buy.UpdatePosition(pos.Long, type);
+            Sell.UpdatePosition(pos.Short, type);
         }
 
         public void Dispose()
         {
             _calc?.RemoveUsage();
             _calc = null;
+
             if (Tracker != null)
                 Tracker.Changed -= Recalculate;
         }
@@ -136,6 +137,9 @@ namespace TickTrader.Algo.Core.Calc
             //}
 
             Margin = Math.Max(sellMargin, buyMargin) + _hedgeFormulPart * Math.Min(sellMargin, buyMargin);
+
+            if (Buy.IsEmpty && Sell.IsEmpty)
+                Margin = 0;
         }
 
         internal void OnStatsChange(StatsChange args)
@@ -143,7 +147,7 @@ namespace TickTrader.Algo.Core.Calc
             var oldMargin = Margin;
             UpdateMargin();
             var delta = Margin - oldMargin;
-            StatsChanged.Invoke(new StatsChange(delta, args.ProfitDelta, args.ErrorDelta));
+            StatsChanged?.Invoke(new StatsChange(delta, args.ProfitDelta, args.ErrorDelta));
         }
 
         //private void AddOrder(IOrderModel2 order, SideCalc side)

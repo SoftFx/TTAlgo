@@ -191,8 +191,11 @@ namespace TickTrader.Algo.Common.Model
             {
                 if (swap != value)
                 {
+                    var old = swap;
                     swap = value;
+
                     NotifyOfPropertyChange(nameof(Swap));
+                    SwapChanged?.Invoke(new OrderPropArgs<decimal>(this, old ?? 0, swap ?? 0));
                 }
             }
         }
@@ -203,8 +206,11 @@ namespace TickTrader.Algo.Common.Model
             {
                 if (commission != value)
                 {
+                    var old = commission;
                     commission = value;
+
                     NotifyOfPropertyChange(nameof(Commission));
+                    CommissionChanged?.Invoke(new OrderPropArgs<decimal>(this, old ?? 0, commission ?? 0));
                 }
             }
         }
@@ -503,6 +509,8 @@ namespace TickTrader.Algo.Common.Model
 
         public OrderInfo.Types.Type Type => OrderType;
 
+        //double IOrderCalcInfo.Amount => (double)Amount;
+
 
         #endregion
 
@@ -543,6 +551,11 @@ namespace TickTrader.Algo.Common.Model
 
         internal void Update(OrderEntity record)
         {
+            var oldAmount = Amount;
+            var oldPrice = OrderType == Domain.OrderInfo.Types.Type.Stop || OrderType == Domain.OrderInfo.Types.Type.StopLimit ? StopPrice : Price;
+            var oldStopPrice = StopPrice;
+            var oldType = Type;
+
             this.Amount = record.RequestedVolume;
             this.RemainingAmount = record.RemainingVolume;
             this.OrderType = record.Type;
@@ -576,10 +589,16 @@ namespace TickTrader.Algo.Common.Model
             //}
 
             EssentialParametersChanged?.Invoke(this);
+            EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, (decimal)oldAmount, (double?)oldPrice, (double?)oldStopPrice, oldType, false));
         }
 
         internal void Update(ExecutionReport report)
         {
+            var oldAmount = Amount;
+            var oldPrice = OrderType == Domain.OrderInfo.Types.Type.Stop || OrderType == Domain.OrderInfo.Types.Type.StopLimit ? StopPrice : Price;
+            var oldStopPrice = StopPrice;
+            var oldType = Type;
+
             this.Amount = report.InitialVolume.ToDecimalSafe() ?? 0M;
             this.RemainingAmount = report.LeavesVolume.ToDecimalSafe() ?? 0M;
             this.OrderType = report.OrderType;
@@ -611,6 +630,7 @@ namespace TickTrader.Algo.Common.Model
                 ExecOptions = OrderOptions.ImmediateOrCancel;
 
             EssentialParametersChanged?.Invoke(this);
+            EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, (decimal)oldAmount, (double?)oldPrice, (double?)oldStopPrice, oldType, false));
         }
 
         private decimal? AmountToLots(decimal? volume)

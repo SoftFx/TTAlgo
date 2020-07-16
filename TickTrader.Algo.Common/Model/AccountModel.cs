@@ -1,12 +1,11 @@
+using Machinarium.Qnil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Api;
-using Machinarium.Qnil;
 using TickTrader.Algo.Common.Lib;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Calc;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model
@@ -75,13 +74,15 @@ namespace TickTrader.Algo.Common.Model
 
         public event Action<OrderUpdateInfo> OrderUpdate;
         public event Action<PositionModel, OrderExecAction> PositionUpdate;
-        public event Action<BalanceOperationReport> BalanceUpdate;
+        public event Action<BalanceOperationReport> BalanceOperationUpdate;
+        public event Action BalanceUpdate;
 
         public event Action<IPositionModel2> PositionChanged;
         public event Action<IOrderModel2> OrderAdded;
         public event Action<IEnumerable<IOrderModel2>> OrdersAdded;
         public event Action<IOrderModel2> OrderRemoved;
         public event Action<IAssetModel2, AssetChangeType> AssetsChanged;
+        public event Action<IPositionModel2> PositionRemoved;
 
         public EntityCacheUpdate CreateSnaphotUpdate(Domain.AccountInfo accInfo, List<OrderEntity> tradeRecords, List<PositionEntity> positions, List<Domain.AssetInfo> assets)
         {
@@ -98,6 +99,8 @@ namespace TickTrader.Algo.Common.Model
         internal void StartCalculator(IMarketDataProvider marketData)
         {
             Market.Init(marketData.Symbols.Snapshot.Values, marketData.Currencies.Snapshot.Values);
+            Market.Subscriptions = marketData.Distributor.AddSubscription(MarketRateUpdate, marketData.Symbols.Snapshot.Keys);
+
 
             if (!_isCalcStarted)
             {
@@ -120,6 +123,11 @@ namespace TickTrader.Algo.Common.Model
                         throw new ArgumentException($"Unsupported account type: {Type}");
                 }
             }
+        }
+
+        private void MarketRateUpdate(QuoteEntity rate)
+        {
+            Market.UpdateRate(rate);
         }
 
         internal void Init(Domain.AccountInfo accInfo, IEnumerable<OrderEntity> orders,
@@ -174,6 +182,8 @@ namespace TickTrader.Algo.Common.Model
                 MarginCalculator = null;
                 _isCalcStarted = false;
             }
+
+            Market?.Subscriptions?.CancelAll();
         }
 
         public Domain.AccountInfo GetAccountInfo()
@@ -205,8 +215,7 @@ namespace TickTrader.Algo.Common.Model
 
         private void OnBalanceChanged()
         {
-            //if (_isCalcStarted)
-            //    Calc.Recalculate();
+            BalanceUpdate?.Invoke();
         }
 
         internal EntityCacheUpdate GetBalanceUpdate(BalanceOperationReport report)
@@ -322,21 +331,21 @@ namespace TickTrader.Algo.Common.Model
         public void UpdatePosition(PositionEntity position, bool notify)
         {
             var model = UpsertPosition(position);
+
+            PositionChanged?.Invoke(model);
+
             if (notify)
-            {
                 PositionUpdate?.Invoke(model, position.Type);
-                PositionChanged?.Invoke(model);
-            }
         }
 
         public void OnPositionAdded(PositionEntity position, bool notify)
         {
             var model = UpsertPosition(position);
+
+            PositionChanged?.Invoke(model);
+
             if (notify)
-            {
                 PositionUpdate?.Invoke(model, OrderExecAction.Opened);
-                PositionChanged?.Invoke(model);
-            }
         }
 
         public void RemovePosition(PositionEntity position, bool notify)
@@ -346,11 +355,10 @@ namespace TickTrader.Algo.Common.Model
 
             _positions.Remove(model.Symbol);
 
+            PositionRemoved?.Invoke(model);
+
             if (notify)
-            {
                 PositionUpdate?.Invoke(model, OrderExecAction.Closed);
-                PositionChanged?.Invoke(model);
-            }
         }
 
         private PositionModel UpsertPosition(PositionEntity position)
@@ -392,11 +400,14 @@ namespace TickTrader.Algo.Common.Model
                 {
                     bool replaceOrder = order.OrderType != report.OrderType; //crutch should be call before order Update
 
+                    OrderRemoved?.Invoke(order);
                     order.Update(report);
 
                     // workaround: dynamic collection filter can't react on field change
                     if (replaceOrder)
                         _orders[order.Id] = order;
+
+                    OrderAdded?.Invoke(order);
                 }
             }
             else
@@ -430,11 +441,14 @@ namespace TickTrader.Algo.Common.Model
 
                 bool typeChanged = order.OrderType != report.Type;
 
+                OrderRemoved?.Invoke(order);
                 order.Update(report);
 
                 // workaround: dynamic collection filter can't react on field change
                 if (typeChanged)
                     _orders[order.Id] = order;
+
+                OrderAdded?.Invoke(order);
             }
             else
                 order = new OrderModel(report, this);
@@ -712,7 +726,8 @@ namespace TickTrader.Algo.Common.Model
             {
                 var acc = cache.Account;
                 acc.UpdateBalance(_report.Balance, _report.Currency);
-                acc.BalanceUpdate?.Invoke(_report);
+                acc.BalanceOperationUpdate?.Invoke(_report);
+                acc.BalanceUpdate?.Invoke();
             }
         }
 

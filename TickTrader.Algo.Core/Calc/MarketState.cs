@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Calc.Conversion;
+using TickTrader.Algo.Core.Infrastructure;
 using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core.Calc
@@ -11,6 +12,8 @@ namespace TickTrader.Algo.Core.Calc
     {
         private Dictionary<Tuple<string, string>, OrderCalculator> _orderCalculators = new Dictionary<Tuple<string, string>, OrderCalculator>();
         private Dictionary<string, ICurrencyInfo> _currenciesByName = new Dictionary<string, ICurrencyInfo>();
+
+        public IFeedSubscription Subscriptions { get; set; }
 
         public MarketStateBase()
         {

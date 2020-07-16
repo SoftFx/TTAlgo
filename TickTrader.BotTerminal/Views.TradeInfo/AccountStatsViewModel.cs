@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Calc;
 using TickTrader.Algo.Domain;
 
@@ -27,6 +28,8 @@ namespace TickTrader.BotTerminal
                 currencyFormatStr = NumberFormat.GetCurrencyFormatString(account.BalanceDigits, account.BalanceCurrency);
                 IsStatsVisible = account.Type != AccountInfo.Types.Type.Cash;
 
+                acc.BalanceUpdate += BalanceUpdate;
+
                 if (account.MarginCalculator != null)
                 {
                     account.MarginCalculator.Updated += Calc_Updated;
@@ -38,12 +41,20 @@ namespace TickTrader.BotTerminal
 
             cManager.Disconnected += () =>
             {
+                account.BalanceUpdate -= BalanceUpdate;
+
                 if (account.MarginCalculator != null)
                     account.MarginCalculator.Updated -= Calc_Updated;
 
                 IsStatsVisible = false;
                 NotifyOfPropertyChange(nameof(IsStatsVisible));
             };
+        }
+
+        private void BalanceUpdate()
+        {
+            if (account.MarginCalculator != null)
+                Calc_Updated(account.MarginCalculator);
         }
 
         private void Calc_Updated(MarginAccountCalculator calc)
@@ -54,7 +65,8 @@ namespace TickTrader.BotTerminal
             if (calc != null)
             {
                 Equity = FormatNumber(FloorNumber(calc.Equity, account.BalanceDigits));
-                Margin = FormatNumber(CeilNumber((decimal)calc.Margin, account.BalanceDigits));
+                if (!double.IsInfinity(calc.Margin))
+                    Margin = FormatNumber(CeilNumber((decimal)calc.Margin, account.BalanceDigits));
                 Profit = FormatNumber(FloorNumber(calc.Profit, account.BalanceDigits));
                 Floating = FormatNumber(FloorNumber(calc.Floating, account.BalanceDigits));
 

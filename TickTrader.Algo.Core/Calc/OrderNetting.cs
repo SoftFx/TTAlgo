@@ -35,6 +35,8 @@ namespace TickTrader.Algo.Core.Calc
 
         public StatsChange Recalculate()
         {
+            UpdateAveragePrice();
+
             var oldMargin = Margin;
             var oldProfit = Profit;
             var oldErros = ErrorCount;
