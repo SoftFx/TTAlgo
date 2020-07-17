@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Common.Model
             _sync = sync;
 
             _cache.Account.OrderUpdate += Account_OrderUpdate;
-            _cache.Account.BalanceUpdate += Account_BalanceUpdate;
+            _cache.Account.BalanceOperationUpdate += Account_BalanceUpdate;
             _cache.Account.PositionUpdate += Account_PositionUpdate;
         }
 
@@ -73,7 +73,7 @@ namespace TickTrader.Algo.Common.Model
             base.Dispose();
 
             _cache.Account.OrderUpdate -= Account_OrderUpdate;
-            _cache.Account.BalanceUpdate -= Account_BalanceUpdate;
+            _cache.Account.BalanceOperationUpdate -= Account_BalanceUpdate;
             _cache.Account.PositionUpdate -= Account_PositionUpdate;
         }
 

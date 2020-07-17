@@ -31,7 +31,8 @@ namespace TickTrader.Algo.Core.Calc
             Info.OrderAdded += AddOrder;
             Info.OrderRemoved += RemoveOrder;
             Info.OrdersAdded += AddOrdersBunch;
-            Info.PositionChanged += UpdateNetPos;
+            Info.PositionChanged += AddModifyNetPos;
+            Info.PositionRemoved += RemoveNetPos;
         }
 
         public IMarginAccountInfo2 Info { get; }
@@ -74,7 +75,8 @@ namespace TickTrader.Algo.Core.Calc
             Info.OrderAdded -= AddOrder;
             Info.OrderRemoved -= RemoveOrder;
             Info.OrdersAdded -= AddOrdersBunch;
-            Info.PositionChanged -= UpdateNetPos;
+            Info.PositionChanged -= AddModifyNetPos;
+            Info.PositionRemoved -= RemoveNetPos;
 
             foreach (var smbCalc in _bySymbolMap.Values)
                 DisposeCalc(smbCalc);
@@ -232,14 +234,18 @@ namespace TickTrader.Algo.Core.Calc
             if (positions != null)
             {
                 foreach (var pos in positions)
-                    UpdateNetPos(pos);
+                    AddModifyNetPos(pos);
             }
         }
 
-        private void UpdateNetPos(IPositionModel2 position)
+        private void AddModifyNetPos(IPositionModel2 position) => UpdateNetPos(position, PositionChangeTypes.AddedModified);
+
+        private void RemoveNetPos(IPositionModel2 position) => UpdateNetPos(position, PositionChangeTypes.Removed);
+
+        private void UpdateNetPos(IPositionModel2 position, PositionChangeTypes type)
         {
             var smbCalc = GetOrAddSymbolCalculator(position.Symbol);
-            smbCalc.UpdatePosition(position, out var dSwap, out var dComm);
+            smbCalc.UpdatePosition(position, type, out var dSwap, out var dComm);
             Swap += dSwap;
             Commission += dComm;
         }

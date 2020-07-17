@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
@@ -71,6 +70,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             foreach (OrderSide orderSide in Enum.GetValues(typeof(OrderSide)))
                 foreach (OrderType orderType in Enum.GetValues(typeof(OrderType)))
                     if (orderType != OrderType.Position)
+                    //if (orderType == OrderType.Market)
                     {
                         var testSet = new TestParamsSet(orderType, orderSide);
 

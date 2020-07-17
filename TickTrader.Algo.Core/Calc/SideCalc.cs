@@ -85,14 +85,15 @@ namespace TickTrader.Algo.Core.Calc
             UpdateStats(change);
         }
 
-        public void UpdatePosition(IPositionSide2 pos)
+        public void UpdatePosition(IPositionSide2 pos, PositionChangeTypes type)
         {
             _positions.RemovePositionWithoutCalculation(_netPosAmount, _netPosPrice);
 
             _netPosAmount = pos.Amount;
             _netPosPrice = pos.Price;
 
-            _positions.AddPositionWithoutCalculation(_netPosAmount, _netPosPrice);
+            if (type == PositionChangeTypes.AddedModified)
+                _positions.AddPositionWithoutCalculation(_netPosAmount, _netPosPrice);
 
             var change = _positions.Recalculate();
             UpdateStats(change);
@@ -145,7 +146,7 @@ namespace TickTrader.Algo.Core.Calc
         private void UpdateStats(StatsChange change)
         {
             Margin += change.MarginDelta;
-            _parent.OnStatsChange(change);            
+            _parent.OnStatsChange(change);
         }
 
         private void OnAmountChanged(decimal delta)

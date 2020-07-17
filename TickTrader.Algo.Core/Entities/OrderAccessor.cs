@@ -75,8 +75,12 @@ namespace TickTrader.Algo.Core
             var oldAmount = _calcInfo.RemainingAmount;
             var oldType = _calcInfo.Type;
             var oldIsHidden = _calcInfo.IsHidden;
+            var oldCommission = _calcInfo.Commission ?? 0;
+            var oldSwap = _calcInfo.Swap ?? 0;
             _readEntity.Update(info);
             EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldAmount, oldPrice, oldStopPrice, oldType, oldIsHidden));
+            CommissionChanged?.Invoke(new OrderPropArgs<decimal>(this, oldCommission, _calcInfo.Commission ?? 0));
+            SwapChanged?.Invoke(new OrderPropArgs<decimal>(this, oldSwap, _calcInfo.Swap ?? 0));
         }
 
         public Order ApiOrder => _apiOrder;

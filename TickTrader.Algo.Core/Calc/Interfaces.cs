@@ -29,7 +29,7 @@ namespace TickTrader.Algo.Core.Calc
 
         //OrderTypes InitialType { get; }
         ////OrderStatuses Status { get; }
-        //double Amount { get; }
+        //decimal Amount { get; }
         decimal RemainingAmount { get; }
         //double? MaxVisibleAmount { get; }
         //DateTime Created { get; }
@@ -224,13 +224,14 @@ namespace TickTrader.Algo.Core.Calc
         /// Fired when position changed.
         /// </summary>
         event Action<IPositionModel2> PositionChanged;
+        event Action<IPositionModel2> PositionRemoved;
     }
 
-    //public enum PositionChageTypes
-    //{
-    //    AddedModified,
-    //    Removed
-    //}
+    public enum PositionChangeTypes
+    {
+        AddedModified,
+        Removed
+    }
 
     /// <summary>
     /// Defines methods and properties for cash account.

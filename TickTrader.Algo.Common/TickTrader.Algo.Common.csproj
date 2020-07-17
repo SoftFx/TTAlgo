@@ -150,7 +150,6 @@
     <Compile Include="Model.Setup\Parameters\GenericParameterSetupModel.cs" />
     <Compile Include="Model.Setup\SetupMetadata.cs" />
     <Compile Include="Model.Setup\SpecialSymbols.cs" />
-    <Compile Include="Model\AccountCalculatorModel.cs" />
     <Compile Include="Model\AccountModel.cs" />
     <Compile Include="Model\AssetModel.cs" />
     <Compile Include="Model\BotListenerProxy.cs" />

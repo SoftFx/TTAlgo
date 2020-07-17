@@ -328,6 +328,7 @@ namespace TickTrader.Algo.Core
         public event Action Reset = delegate { };
         public event Action<IPositionModel2> PositionChanged;
         public event Action<IAssetModel2, AssetChangeType> AssetsChanged;
+        public event Action<IPositionModel2> PositionRemoved;
 
         internal void EnableBlEvents()
         {
