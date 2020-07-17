@@ -42,6 +42,9 @@ namespace TickTrader.Algo.Core
                 if (_server.TryGetExecutor(request.Id, out var executor))
                 {
                     _executor = executor;
+                    _executor.AccInfoProvider.OrderUpdated += r => _session.Tell(RpcMessage.Notification(r));
+                    _executor.AccInfoProvider.PositionUpdated += r => _session.Tell(RpcMessage.Notification(r));
+                    _executor.AccInfoProvider.BalanceUpdated += r => _session.Tell(RpcMessage.Notification(r));
                     ThreadPool.QueueUserWorkItem(_ =>
                     {
                         try

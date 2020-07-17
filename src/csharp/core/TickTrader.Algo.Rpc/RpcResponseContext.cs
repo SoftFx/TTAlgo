@@ -64,6 +64,8 @@ namespace TickTrader.Algo.Rpc
         {
             TaskSrc = new TaskCompletionSource<List<T>>();
             ResponseHandler = responseHandler;
+
+            _list = new List<T>();
         }
 
         public bool OnNext(Any payload)

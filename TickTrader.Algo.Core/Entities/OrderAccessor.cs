@@ -23,21 +23,20 @@ namespace TickTrader.Algo.Core
 
         internal OrderAccessor(OrderInfo info, SymbolAccessor symbol, int leverage)
         {
+            Init(symbol, leverage);
+
             _readEntity = new ReadEntity(this, info);
             _apiOrder = _readEntity;
             _calcInfo = _readEntity;
-
-            Init(symbol, leverage);
         }
 
         internal OrderAccessor(SymbolAccessor symbol, int leverage)
         {
+            Init(symbol, leverage);
+
             _writeEntity = new WriteEntity(this);
             _apiOrder = _writeEntity;
             _calcInfo = _writeEntity;
-
-            Init(symbol, leverage);
-
         }
 
         private OrderAccessor() { }
@@ -52,6 +51,7 @@ namespace TickTrader.Algo.Core
         public OrderAccessor Clone()
         {
             var clone = new OrderAccessor();
+            clone.Init(_symbol, _leverage);
             if (_readEntity != null)
             {
                 clone._readEntity = _readEntity.Clone(clone);
@@ -98,7 +98,7 @@ namespace TickTrader.Algo.Core
         public string Comment => _apiOrder.Comment;
         public string InstanceId => _apiOrder.InstanceId;
         public DateTime Expiration => _apiOrder.Expiration;
-        public DateTime Modified => _apiOrder.Modified;
+        public DateTime Modified => _apiOrder.Modified.ToUniversalTime();
         public bool IsHidden => _calcInfo.IsHidden;
 
         #region IOrderModel2
@@ -265,9 +265,9 @@ namespace TickTrader.Algo.Core
             public string Comment => _info.Comment;
             public string Tag => _info.UserTag;
             public string InstanceId => _info.InstanceId;
-            public DateTime Expiration => _info.Expiration?.ToDateTime() ?? DateTime.MinValue;
-            public DateTime Modified => _info.Modified?.ToDateTime() ?? DateTime.MinValue;
-            public DateTime Created => _info.Created?.ToDateTime() ?? DateTime.MinValue;
+            public DateTime Expiration => _info.Expiration?.ToDateTime().ToLocalTime() ?? DateTime.MinValue;
+            public DateTime Modified => _info.Modified?.ToDateTime().ToLocalTime() ?? DateTime.MinValue;
+            public DateTime Created => _info.Created?.ToDateTime().ToLocalTime() ?? DateTime.MinValue;
             public double ExecPrice => _info.ExecPrice ?? double.NaN;
             public double ExecVolume => _info.ExecAmount / _lotSize ?? double.NaN;
             public double LastFillPrice => _info.LastFillPrice ?? double.NaN;
@@ -439,9 +439,9 @@ namespace TickTrader.Algo.Core
             double Order.RemainingVolume => (double)RemainingAmount / _lotSize;
             double Order.MaxVisibleVolume => (double?)MaxVisibleAmount / _lotSize ?? double.NaN;
 
-            DateTime Order.Created => Created ?? DateTime.MinValue;
-            DateTime Order.Modified => Modified ?? DateTime.MinValue;
-            DateTime Order.Expiration => Expiration ?? DateTime.MinValue;
+            DateTime Order.Created => Created?.ToLocalTime() ?? DateTime.MinValue;
+            DateTime Order.Modified => Modified?.ToLocalTime() ?? DateTime.MinValue;
+            DateTime Order.Expiration => Expiration?.ToLocalTime() ?? DateTime.MinValue;
 
             string Order.Tag => UserTag;
 

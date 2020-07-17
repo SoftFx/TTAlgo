@@ -68,9 +68,9 @@ message OrderInfo {
     google.protobuf.Timestamp expiration = 13;
     google.protobuf.Timestamp created = 14;
     google.protobuf.Timestamp modified = 15;
-    string comment = 16;
-    string user_tag = 17;
-    string instance_id = 18;
+    google.protobuf.StringValue comment = 16;
+    google.protobuf.StringValue user_tag = 17;
+    google.protobuf.StringValue instance_id = 18;
     google.protobuf.DoubleValue exec_price = 19;
     google.protobuf.DoubleValue exec_amount = 20;
     google.protobuf.DoubleValue last_fill_price = 21;
@@ -80,7 +80,7 @@ message OrderInfo {
     int32 options_bitmask = 25;
     google.protobuf.DoubleValue slippage = 26;
     google.protobuf.DoubleValue requested_open_price = 27;
-    string parent_order_id = 28;
+    google.protobuf.StringValue parent_order_id = 28;
 }
 
 message OrderListRequest { }
