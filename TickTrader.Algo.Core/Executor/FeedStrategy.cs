@@ -141,13 +141,13 @@ namespace TickTrader.Algo.Core
             if (snaphsot != null)
             {
                 foreach (var rate in snaphsot)
-                    _marketFixture.Market.UpdateRate(rate);
+                    _marketFixture.Market.UpdateRate(rate, out _);
             }
         }
 
         internal BufferUpdateResult ApplyUpdate(RateUpdate update, out AlgoMarketNode node)
         {
-            node = _marketFixture.Market.UpdateRate(update);
+            _marketFixture.Market.UpdateRate(update, out node);
 
             var result = UpdateBuffers(update);
 

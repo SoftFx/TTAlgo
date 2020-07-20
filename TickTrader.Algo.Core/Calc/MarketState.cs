@@ -139,16 +139,15 @@ namespace TickTrader.Algo.Core.Calc
             return GetSymbolNodeOrNull(smb);
         }
 
-        public AlgoMarketNode UpdateRate(RateUpdate newRate)
+        public void UpdateRate(RateUpdate newRate, out AlgoMarketNode node)
         {
-            var node = GetSymbolNodeOrNull(newRate.Symbol);
+            node = GetSymbolNodeOrNull(newRate.Symbol);
             if (node != null)
             {
                 node.SymbolInfo.UpdateRate(newRate.LastQuote);
                 node.Update(newRate);
                 //_subscriptions.OnUpdateEvent(node);
             }
-            return node;
         }
     }
 }

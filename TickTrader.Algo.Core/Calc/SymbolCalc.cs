@@ -169,8 +169,10 @@ namespace TickTrader.Algo.Core.Calc
             var hedge = _calc.SymbolInfo != null ? _calc.SymbolInfo.MarginHedged : 0.5;
             _hedgeFormulPart = (2 * hedge - 1);
 
-            Buy.SetCalculator(_calc);
-            Sell.SetCalculator(_calc);
+            Buy.SetCalculators(_calc);
+            Sell.SetCalculators(_calc);
+
+            _calc.Recalculate += Recalculate;
         }
 
         private void Tracker_Changed()

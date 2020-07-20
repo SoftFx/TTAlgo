@@ -99,12 +99,17 @@ namespace TickTrader.Algo.Core.Calc
             UpdateStats(change);
         }
 
-        public void SetCalculator(OrderCalculator calc)
+        public void SetCalculators(OrderCalculator calc)
         {
-            _positions.Calculator = calc;
-            _limitOrders.Calculator = calc;
-            _stopOrders.Calculator = calc;
-            _hiddendOrders.Calculator = calc;
+            SetCalculator(_positions, calc);
+            SetCalculator(_limitOrders, calc);
+            SetCalculator(_stopOrders, calc);
+            SetCalculator(_hiddendOrders, calc);
+        }
+
+        private static void SetCalculator(OrderNetting nett, OrderCalculator calc)
+        {
+            nett.Calculator = calc;
         }
 
         private void Order_EssentialsChanged(OrderEssentialsChangeArgs args)

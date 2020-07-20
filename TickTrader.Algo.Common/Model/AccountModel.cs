@@ -99,7 +99,7 @@ namespace TickTrader.Algo.Common.Model
         internal void StartCalculator(IMarketDataProvider marketData)
         {
             Market.Init(marketData.Symbols.Snapshot.Values, marketData.Currencies.Snapshot.Values);
-            Market.Subscriptions = marketData.Distributor.AddSubscription(MarketRateUpdate, marketData.Symbols.Snapshot.Keys);
+            Market.Subscriptions = marketData.Distributor.AddSubscription((rate) => Market.UpdateRate(rate, out _), marketData.Symbols.Snapshot.Keys);
 
 
             if (!_isCalcStarted)
@@ -123,11 +123,6 @@ namespace TickTrader.Algo.Common.Model
                         throw new ArgumentException($"Unsupported account type: {Type}");
                 }
             }
-        }
-
-        private void MarketRateUpdate(QuoteEntity rate)
-        {
-            Market.UpdateRate(rate);
         }
 
         internal void Init(Domain.AccountInfo accInfo, IEnumerable<Domain.OrderInfo> orders,

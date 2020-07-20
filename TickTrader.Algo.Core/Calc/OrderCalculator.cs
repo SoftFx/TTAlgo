@@ -8,7 +8,7 @@ using TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Core.Calc
 {
-    public sealed class OrderCalculator
+    public sealed class OrderCalculator : IDisposable
     {
         //private readonly ConversionManager conversionMap;
         private readonly Converter<int, int> _leverageProvider;
@@ -30,15 +30,23 @@ namespace TickTrader.Algo.Core.Calc
             //if (this.SymbolInfo.ProfitCurrency == null && this.SymbolInfo.MarginCurrency == null)
             //    throw new SymbolConfigException("Currency configuration is missing for symbol " + this.SymbolInfo.Symbol + ".");
 
-            if (this.SymbolInfo != null 
-                && SymbolInfo.MarginMode != Domain.MarginInfo.Types.CalculationMode.Forex 
+            if (this.SymbolInfo != null
+                && SymbolInfo.MarginMode != Domain.MarginInfo.Types.CalculationMode.Forex
                 && SymbolInfo.MarginMode != Domain.MarginInfo.Types.CalculationMode.CfdLeverage)
                 _leverageProvider = _ => 1;
             else
                 _leverageProvider = n => n;
 
             InitMarginFactorCache();
+
+            PositiveProfitConversionRate.ValChanged += RecalculateStats;
+            NegativeProfitConversionRate.ValChanged += RecalculateStats;
+            MarginConversionRate.ValChanged += RecalculateStats;
         }
+
+        public Action Recalculate;
+
+        private void RecalculateStats() => Recalculate?.Invoke();
 
         public Api.RateUpdate CurrentRate => RateTracker.Rate;
         public ISymbolInfo2 SymbolInfo { get; }
@@ -49,9 +57,12 @@ namespace TickTrader.Algo.Core.Calc
 
         internal SymbolMarketNode RateTracker { get; }
 
-        //public void Dispose()
-        //{
-        //}
+        public void Dispose()
+        {
+            PositiveProfitConversionRate.ValChanged -= RecalculateStats;
+            NegativeProfitConversionRate.ValChanged -= RecalculateStats;
+            MarginConversionRate.ValChanged -= RecalculateStats;
+        }
 
         #region Margin
 
