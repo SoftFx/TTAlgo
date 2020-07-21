@@ -96,3 +96,29 @@ message SymbolListRequest { }
 message SymbolListResponse {
     repeated SymbolInfo symbols = 1;
 }
+
+/*message QuoteEntity {
+    string symbol = 1;
+    QuoteDataEntity data = 2;
+}
+
+message QuoteDataEntity {
+    bool is_bid_indicative = 1;
+    bool is_ask_indicative = 2;
+    repeated QuoteBand bids = 3;
+    repeated QuoteBand asks = 4;
+}
+
+message QuoteBand {
+    double price = 1;
+    double amount = 2;
+}
+
+message QuotePage {
+    repeated QuoteEntity quotes = 1;
+}
+
+message QuoteChunk {
+    string symbol = 1;
+    repeated QuoteDataEntity quotes = 2;
+}*/
