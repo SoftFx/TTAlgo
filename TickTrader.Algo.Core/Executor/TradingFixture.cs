@@ -391,35 +391,34 @@ namespace TickTrader.Algo.Core
 
         public Task<Domain.TradeResultInfo> OpenOrder(bool isAysnc, Domain.OpenOrderRequest request)
         {
-            return ExecTradeRequest(isAysnc, request, (r, e, c) => e.SendOpenOrder(c, r));
+            return ExecTradeRequest(isAysnc, request, (r, e) => e.SendOpenOrder(r));
         }
 
         public Task<Domain.TradeResultInfo> CancelOrder(bool isAysnc, Domain.CancelOrderRequest request)
         {
-            return ExecTradeRequest(isAysnc, request, (r, e, c) => e.SendCancelOrder(c, r));
+            return ExecTradeRequest(isAysnc, request, (r, e) => e.SendCancelOrder(r));
         }
 
         public Task<Domain.TradeResultInfo> ModifyOrder(bool isAysnc, Domain.ModifyOrderRequest request)
         {
-            return ExecTradeRequest(isAysnc, request, (r, e, c) => e.SendModifyOrder(c, r));
+            return ExecTradeRequest(isAysnc, request, (r, e) => e.SendModifyOrder(r));
         }
 
         public Task<Domain.TradeResultInfo> CloseOrder(bool isAysnc, Domain.CloseOrderRequest request)
         {
             if (request.ByOrderId != null)
-                return ExecDoubleOrderTradeRequest(isAysnc, request, (r, e, c) => e.SendCloseOrder(c, r));
+                return ExecDoubleOrderTradeRequest(isAysnc, request, (r, e) => e.SendCloseOrder(r));
             else
-                return ExecTradeRequest(isAysnc, request, (r, e, c) => e.SendCloseOrder(c, r));
+                return ExecTradeRequest(isAysnc, request, (r, e) => e.SendCloseOrder(r));
         }
 
         #endregion
 
         private Task<Domain.TradeResultInfo> ExecTradeRequest<TRequest>(bool isAsync, TRequest orderRequest,
-            Action<TRequest, ITradeExecutor, CrossDomainCallback<Domain.OrderExecReport.Types.CmdResultCode>> executorInvoke)
+            Action<TRequest, ITradeExecutor> executorInvoke)
             where TRequest : ITradeRequest
         {
             var resultTask = new TaskCompletionSource<Domain.TradeResultInfo>();
-            var callbackTask = new TaskCompletionSource<Domain.TradeResultInfo>();
 
             string operationId = Guid.NewGuid().ToString();
 
@@ -431,17 +430,7 @@ namespace TickTrader.Algo.Core
 
             orderRequest.OperationId = operationId;
 
-            var callback = new CrossDomainCallback<Domain.OrderExecReport.Types.CmdResultCode>();
-
-            callback.Action = code =>
-            {
-                //if (code != Domain.OrderExecReport.Types.CmdResultCode.Ok)
-                //    context.EnqueueTradeUpdate(b => InvokeListener(operationId, new Domain.OrderExecReport() { ResultCode = code }));
-
-                callback.Dispose();
-            };
-
-            executorInvoke(orderRequest, _executor, callback);
+            executorInvoke(orderRequest, _executor);
 
             if (!isAsync)
             {
@@ -453,7 +442,7 @@ namespace TickTrader.Algo.Core
         }
 
         private async Task<Domain.TradeResultInfo> ExecDoubleOrderTradeRequest<TRequest>(bool isAsync, TRequest orderRequest,
-            Action<TRequest, ITradeExecutor, CrossDomainCallback<Domain.OrderExecReport.Types.CmdResultCode>> executorInvoke)
+            Action<TRequest, ITradeExecutor> executorInvoke)
             where TRequest : ITradeRequest
         {
             var resultTask = new TaskCompletionSource<Domain.TradeResultInfo>();
@@ -472,26 +461,17 @@ namespace TickTrader.Algo.Core
                 }
             });
 
-            Action<Domain.OrderExecReport.Types.CmdResultCode> callbackAction = code =>
-            {
-                //if (code != Domain.OrderExecReport.Types.CmdResultCode.Ok)
-                //    context.EnqueueTradeUpdate(b => InvokeListener(operationId, new Domain.OrderExecReport() { ResultCode = code }));
-            };
-
             orderRequest.OperationId = operationId;
 
-            using (var callback = new CrossDomainCallback<Domain.OrderExecReport.Types.CmdResultCode>(callbackAction))
+            executorInvoke(orderRequest, _executor);
+
+            if (!isAsync)
             {
-                executorInvoke(orderRequest, _executor, callback);
-
-                if (!isAsync)
-                {
-                    while (!resultTask.Task.IsCompleted)
-                        context.ProcessNextOrderUpdate();
-                }
-
-                return await resultTask.Task;
+                while (!resultTask.Task.IsCompleted)
+                    context.ProcessNextOrderUpdate();
             }
+
+            return await resultTask.Task;
         }
 
         private double ConvertVolume(double volumeInLots, Symbol smbMetadata)

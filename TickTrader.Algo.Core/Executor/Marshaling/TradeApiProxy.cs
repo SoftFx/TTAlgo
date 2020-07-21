@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Core.Lib;
+﻿using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
@@ -19,24 +13,24 @@ namespace TickTrader.Algo.Core
 
         #region ITradeExecutor
 
-        public void SendOpenOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, Domain.OpenOrderRequest request)
+        public void SendOpenOrder(Domain.OpenOrderRequest request)
         {
-            _exec.SendOpenOrder(callback, request);
+            _exec.SendOpenOrder(request);
         }
 
-        public void SendCancelOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, Domain.CancelOrderRequest request)
+        public void SendCancelOrder(Domain.CancelOrderRequest request)
         {
-            _exec.SendCancelOrder(callback, request);
+            _exec.SendCancelOrder(request);
         }
 
-        public void SendModifyOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, Domain.ModifyOrderRequest request)
+        public void SendModifyOrder(Domain.ModifyOrderRequest request)
         {
-            _exec.SendModifyOrder(callback, request);
+            _exec.SendModifyOrder(request);
         }
 
-        public void SendCloseOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, Domain.CloseOrderRequest request)
+        public void SendCloseOrder(Domain.CloseOrderRequest request)
         {
-            _exec.SendCloseOrder(callback, request);
+            _exec.SendCloseOrder(request);
         }
 
         #endregion

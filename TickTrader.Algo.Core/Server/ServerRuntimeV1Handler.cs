@@ -154,29 +154,25 @@ namespace TickTrader.Algo.Core
         private void OpenOrderRequestHandler(Any payload)
         {
             var request = payload.Unpack<OpenOrderRequest>();
-            var callback = new CrossDomainCallback<Domain.OrderExecReport.Types.CmdResultCode> { Action = _ => { } };
-            _executor.TradeExecutor.SendOpenOrder(callback, request);
+            _executor.TradeExecutor.SendOpenOrder(request);
         }
 
         private void ModifyOrderRequestHandler(Any payload)
         {
             var request = payload.Unpack<ModifyOrderRequest>();
-            var callback = new CrossDomainCallback<Domain.OrderExecReport.Types.CmdResultCode> { Action = _ => { } };
-            _executor.TradeExecutor.SendModifyOrder(callback, request);
+            _executor.TradeExecutor.SendModifyOrder(request);
         }
 
         private void CloseOrderRequestHandler(Any payload)
         {
             var request = payload.Unpack<CloseOrderRequest>();
-            var callback = new CrossDomainCallback<Domain.OrderExecReport.Types.CmdResultCode> { Action = _ => { } };
-            _executor.TradeExecutor.SendCloseOrder(callback, request);
+            _executor.TradeExecutor.SendCloseOrder(request);
         }
 
         private void CancelOrderRequestHandler(Any payload)
         {
             var request = payload.Unpack<CancelOrderRequest>();
-            var callback = new CrossDomainCallback<Domain.OrderExecReport.Types.CmdResultCode> { Action = _ => { } };
-            _executor.TradeExecutor.SendCancelOrder(callback, request);
+            _executor.TradeExecutor.SendCancelOrder(request);
         }
     }
 }

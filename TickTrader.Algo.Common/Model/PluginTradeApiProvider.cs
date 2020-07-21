@@ -21,56 +21,40 @@ namespace TickTrader.Algo.Common.Model
             _connection = connection;
         }
 
-        private async Task<Domain.OrderExecReport.Types.CmdResultCode> SendCancelOrder(Domain.CancelOrderRequest request)
+        private async Task SendCancelOrder(Domain.CancelOrderRequest request)
         {
             if (!IsConnected)
-            {
                 SendRejectReport(request.OperationId, Domain.OrderExecReport.Types.CmdResultCode.ConnectionError);
-                return Domain.OrderExecReport.Types.CmdResultCode.ConnectionError;
-            }
 
             var result = await _connection.TradeProxy.SendCancelOrder(request);
             SendReports(request, result);
-            return result.ResultCode;
         }
 
-        private async Task<Domain.OrderExecReport.Types.CmdResultCode> SendCloseOrder(Domain.CloseOrderRequest request)
+        private async Task SendCloseOrder(Domain.CloseOrderRequest request)
         {
             if (!IsConnected)
-            {
                 SendRejectReport(request.OperationId, Domain.OrderExecReport.Types.CmdResultCode.ConnectionError);
-                return Domain.OrderExecReport.Types.CmdResultCode.ConnectionError;
-            }
 
             var result = await _connection.TradeProxy.SendCloseOrder(request);
             SendReports(request, result);
-            return result.ResultCode;
         }
 
-        private async Task<Domain.OrderExecReport.Types.CmdResultCode> SendModifyOrder(Domain.ModifyOrderRequest request)
+        private async Task SendModifyOrder(Domain.ModifyOrderRequest request)
         {
             if (!IsConnected)
-            {
                 SendRejectReport(request.OperationId, Domain.OrderExecReport.Types.CmdResultCode.ConnectionError);
-                return Domain.OrderExecReport.Types.CmdResultCode.ConnectionError;
-            }
 
             var result = await _connection.TradeProxy.SendModifyOrder(request);
             SendReports(request, result);
-            return result.ResultCode;
         }
 
-        private async Task<Domain.OrderExecReport.Types.CmdResultCode> SendOpenOrder(Domain.OpenOrderRequest request)
+        private async Task SendOpenOrder(Domain.OpenOrderRequest request)
         {
             if (!IsConnected)
-            {
                 SendRejectReport(request.OperationId, Domain.OrderExecReport.Types.CmdResultCode.ConnectionError);
-                return Domain.OrderExecReport.Types.CmdResultCode.ConnectionError;
-            }
 
             var result = await _connection.TradeProxy.SendOpenOrder(request);
             SendReports(request, result);
-            return result.ResultCode;
         }
 
         private void SendReports(ITradeRequest request, OrderInteropResult result)
@@ -106,28 +90,24 @@ namespace TickTrader.Algo.Common.Model
                 _ref = aRef;
             }
 
-            public async void SendCancelOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, Domain.CancelOrderRequest request)
+            public async void SendCancelOrder(Domain.CancelOrderRequest request)
             {
-                var result = await _ref.Call(a => a.SendCancelOrder(request));
-                callback.Invoke(result);
+                await _ref.Call(a => a.SendCancelOrder(request));
             }
 
-            public async void SendCloseOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, Domain.CloseOrderRequest request)
+            public async void SendCloseOrder(Domain.CloseOrderRequest request)
             {
-                var result = await _ref.Call(a => a.SendCloseOrder(request));
-                callback.Invoke(result);
+                await _ref.Call(a => a.SendCloseOrder(request));
             }
 
-            public async void SendModifyOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, Domain.ModifyOrderRequest request)
+            public async void SendModifyOrder(Domain.ModifyOrderRequest request)
             {
-                var result = await _ref.Call(a => a.SendModifyOrder(request));
-                callback.Invoke(result);
+                await _ref.Call(a => a.SendModifyOrder(request));
             }
 
-            public async void SendOpenOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, Domain.OpenOrderRequest request)
+            public async void SendOpenOrder(Domain.OpenOrderRequest request)
             {
-                var result = await _ref.Call(a => a.SendOpenOrder(request));
-                callback.Invoke(result);
+                await _ref.Call(a => a.SendOpenOrder(request));
             }
         }
     }

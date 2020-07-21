@@ -36,10 +36,10 @@ namespace TickTrader.Algo.Core
 
     public interface ITradeExecutor
     {
-        void SendOpenOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, Domain.OpenOrderRequest request);
-        void SendCancelOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, Domain.CancelOrderRequest request);
-        void SendModifyOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, Domain.ModifyOrderRequest request);
-        void SendCloseOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, Domain.CloseOrderRequest request);
+        void SendOpenOrder(Domain.OpenOrderRequest request);
+        void SendCancelOrder(Domain.CancelOrderRequest request);
+        void SendModifyOrder(Domain.ModifyOrderRequest request);
+        void SendCloseOrder(Domain.CloseOrderRequest request);
     }
 
 
