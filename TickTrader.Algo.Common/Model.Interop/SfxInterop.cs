@@ -16,6 +16,7 @@ using ActorSharp;
 using System.Security.Cryptography.X509Certificates;
 using System.Net.Security;
 using TickTrader.Algo.Common.Info;
+using Google.Protobuf.WellKnownTypes;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -432,51 +433,51 @@ namespace TickTrader.Algo.Common.Model
             _tradeHistoryProxy.DownloadTradesAsync(direction, from?.ToUniversalTime(), to?.ToUniversalTime(), skipCancelOrders, rxStream);
         }
 
-        public Task<OrderInteropResult> SendOpenOrder(OpenOrderCoreRequest request)
+        public Task<OrderInteropResult> SendOpenOrder(Domain.OpenOrderRequest request)
         {
             return ExecuteOrderOperation(request, r =>
             {
                 var timeInForce = GetTimeInForce(r.Expiration);
-                var ioc = GetIoC(r.Options);
+                var ioc = GetIoC(r.ExecOptions);
 
-                return _tradeProxyAdapter.NewOrderAsync(r.OperationId, r.Symbol, Convert(r.Type), Convert(r.Side), r.Volume, r.MaxVisibleVolume,
-                    r.Price, r.StopPrice, timeInForce, r.Expiration, r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, ioc, r.Slippage);
+                return _tradeProxyAdapter.NewOrderAsync(r.OperationId, r.Symbol, Convert(r.Type), Convert(r.Side), r.Amount, r.MaxVisibleAmount,
+                    r.Price, r.StopPrice, timeInForce, r.Expiration?.ToDateTime(), r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, ioc, r.Slippage);
             });
         }
 
-        public Task<OrderInteropResult> SendCancelOrder(CancelOrderRequest request)
+        public Task<OrderInteropResult> SendCancelOrder(Domain.CancelOrderRequest request)
         {
             return ExecuteOrderOperation(request, r => _tradeProxyAdapter.CancelOrderAsync(r.OperationId, "", r.OrderId));
         }
 
-        public Task<OrderInteropResult> SendModifyOrder(ReplaceOrderCoreRequest request)
+        public Task<OrderInteropResult> SendModifyOrder(Domain.ModifyOrderRequest request)
         {
             if (_tradeProxy.ProtocolSpec.SupportsOrderReplaceQtyChange)
             {
                 return ExecuteOrderOperation(request, r => _tradeProxyAdapter.ReplaceOrderAsync(r.OperationId, "",
-                    r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.VolumeChange,
-                    r.MaxVisibleVolume, r.Price, r.StopPrice, GetTimeInForceReplace(r.Options, r.Expiration), r.Expiration,
-                    r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, GetIoCReplace(r.Options), r.Slippage));
+                    r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.AmountChange,
+                    r.MaxVisibleAmount, r.Price, r.StopPrice, GetTimeInForceReplace(r.ExecOptions, r.Expiration), r.Expiration?.ToDateTime(),
+                    r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, GetIoCReplace(r.ExecOptions), r.Slippage));
             }
             return ExecuteOrderOperation(request, r => _tradeProxyAdapter.ReplaceOrderAsync(r.OperationId, "",
-                r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.NewVolume ?? r.CurrentVolume, r.CurrentVolume,
-                r.MaxVisibleVolume, r.Price, r.StopPrice, GetTimeInForceReplace(r.Options, r.Expiration), r.Expiration,
-                r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, GetIoCReplace(r.Options), r.Slippage));
+                r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.NewAmount ?? r.CurrentAmount, r.CurrentAmount,
+                r.MaxVisibleAmount, r.Price, r.StopPrice, GetTimeInForceReplace(r.ExecOptions, r.Expiration), r.Expiration?.ToDateTime(),
+                r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, GetIoCReplace(r.ExecOptions), r.Slippage));
         }
 
-        public Task<OrderInteropResult> SendCloseOrder(CloseOrderCoreRequest request)
+        public Task<OrderInteropResult> SendCloseOrder(Domain.CloseOrderRequest request)
         {
             return ExecuteOrderOperation(request, r =>
             {
                 if (request.ByOrderId != null)
                     return _tradeProxyAdapter.ClosePositionByAsync(r.OperationId, r.OrderId, r.ByOrderId);
                 else
-                    return _tradeProxyAdapter.ClosePositionAsync(r.OperationId, r.OrderId, r.Volume, r.Slippage == null || !double.IsNaN(r.Slippage.Value) ? r.Slippage : null);
+                    return _tradeProxyAdapter.ClosePositionAsync(r.OperationId, r.OrderId, r.Amount, r.Slippage == null || !double.IsNaN(r.Slippage.Value) ? r.Slippage : null);
             });
         }
 
         private async Task<OrderInteropResult> ExecuteOrderOperation<TReq>(TReq request, Func<TReq, Task<List<SFX.ExecutionReport>>> operationDef)
-            where TReq : OrderCoreRequest
+            where TReq : Domain.ITradeRequest
         {
             var operationId = request.OperationId;
 
@@ -513,25 +514,25 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private OrderTimeInForce? GetTimeInForceReplace(OrderExecOptions? options, DateTime? expiration)
+        private OrderTimeInForce? GetTimeInForceReplace(Domain.OrderExecOptions? options, Timestamp expiration)
         {
             return expiration != null ? OrderTimeInForce.GoodTillDate
                 : (options != null ? OrderTimeInForce.GoodTillCancel : (OrderTimeInForce?)null);
         }
 
-        private bool? GetIoCReplace(OrderExecOptions? options)
+        private bool? GetIoCReplace(Domain.OrderExecOptions? options)
         {
-            return options.HasValue && options.Value.IsFlagSet(OrderExecOptions.ImmediateOrCancel);
+            return options.HasValue && options.Value.IsFlagSet(Domain.OrderExecOptions.ImmediateOrCancel);
         }
 
-        private OrderTimeInForce GetTimeInForce(DateTime? expiration)
+        private OrderTimeInForce GetTimeInForce(Timestamp expiration)
         {
             return expiration != null ? OrderTimeInForce.GoodTillDate : OrderTimeInForce.GoodTillCancel;
         }
 
-        private bool GetIoC(OrderExecOptions options)
+        private bool GetIoC(Domain.OrderExecOptions options)
         {
-            return options.IsFlagSet(OrderExecOptions.ImmediateOrCancel);
+            return options.IsFlagSet(Domain.OrderExecOptions.ImmediateOrCancel);
         }
 
         #endregion

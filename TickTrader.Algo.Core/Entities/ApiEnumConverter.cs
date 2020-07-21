@@ -59,9 +59,9 @@ namespace TickTrader.Algo.Core
             return (OrderOptions)options;
         }
 
-        public static Domain.OrderOptions ToDomainOptions(this OrderExecOptions options)
+        public static Domain.OrderExecOptions ToDomainEnum(this OrderExecOptions options)
         {
-            return (Domain.OrderOptions)options;
+            return (Domain.OrderExecOptions)options;
         }
 
         public static OrderCmdResultCodes ToApiEnum(this Domain.OrderExecReport.Types.CmdResultCode code)

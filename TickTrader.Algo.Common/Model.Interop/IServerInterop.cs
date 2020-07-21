@@ -39,10 +39,10 @@ namespace TickTrader.Algo.Common.Model
         event Action<TradeReportEntity> TradeTransactionReport;
         event Action<Domain.BalanceOperation> BalanceOperation;
 
-        Task<OrderInteropResult> SendModifyOrder(ReplaceOrderCoreRequest request);
-        Task<OrderInteropResult> SendCloseOrder(CloseOrderCoreRequest request);
-        Task<OrderInteropResult> SendCancelOrder(CancelOrderRequest request);
-        Task<OrderInteropResult> SendOpenOrder(OpenOrderCoreRequest request);
+        Task<OrderInteropResult> SendModifyOrder(Domain.ModifyOrderRequest request);
+        Task<OrderInteropResult> SendCloseOrder(Domain.CloseOrderRequest request);
+        Task<OrderInteropResult> SendCancelOrder(Domain.CancelOrderRequest request);
+        Task<OrderInteropResult> SendOpenOrder(Domain.OpenOrderRequest request);
     }
 
     internal interface IFeedServerApi

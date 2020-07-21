@@ -88,16 +88,16 @@ namespace TickTrader.Algo.Core
 
         #region Trade Log Builder methods
 
-        public void LogOrderOpening(OpenOrderCoreRequest request, SymbolAccessor smbInfo)
+        public void LogOrderOpening(OpenOrderRequestContext context, SymbolAccessor smbInfo)
         {
             var logEntry = new StringBuilder();
             logEntry.Append("[Out] Opening ");
-            AppendOrderParams(logEntry, smbInfo, " Order to ", request);
+            AppendOrderParams(logEntry, smbInfo, " Order to ", context);
 
             PrintTrade(logEntry.ToString());
         }
 
-        public void LogOrderOpenResults(OrderResultEntity result, OpenOrderCoreRequest request, SymbolAccessor smbInfo)
+        public void LogOrderOpenResults(OrderResultEntity result, OpenOrderRequestContext context, SymbolAccessor smbInfo)
         {
             var logEntry = new StringBuilder();
 
@@ -127,30 +127,30 @@ namespace TickTrader.Algo.Core
             else
             {
                 logEntry.Append("FAILED Opening ");
-                AppendOrderParams(logEntry, smbInfo, " Order to ", request);
+                AppendOrderParams(logEntry, smbInfo, " Order to ", context);
                 logEntry.Append(" error=").Append(result.ResultCode);
 
                 PrintTradeFail(logEntry.ToString());
             }
         }
 
-        public void LogOrderModifying(ReplaceOrderCoreRequest request, SymbolAccessor smbInfo)
+        public void LogOrderModifying(ModifyOrderRequestContext context, SymbolAccessor smbInfo)
         {
             var logEntry = new StringBuilder();
-            logEntry.Append("[Out] Modifying order #").Append(request.OrderId).Append(" to ");
-            AppendOrderParams(logEntry, smbInfo, " ", request);
+            logEntry.Append("[Out] Modifying order #").Append(context.OrderId).Append(" to ");
+            AppendOrderParams(logEntry, smbInfo, " ", context);
 
             PrintTrade(logEntry.ToString());
         }
 
-        public void LogOrderModifyResults(ReplaceOrderCoreRequest request, SymbolAccessor smbInfo, OrderResultEntity result)
+        public void LogOrderModifyResults(ModifyOrderRequestContext context, SymbolAccessor smbInfo, OrderResultEntity result)
         {
             var logEntry = new StringBuilder();
 
             (result.IsServerResponse ? logEntry.Append("[In]") : logEntry.Append("[Self]")).Append(" ");
             if (result.IsCompleted)
             {
-                logEntry.Append("SUCCESS: Modified order #").Append(request.OrderId).Append(" to ");
+                logEntry.Append("SUCCESS: Modified order #").Append(context.OrderId).Append(" to ");
                 if (result.ResultingOrder != null)
                 {
                     AppendOrderParams(logEntry, smbInfo, " ", result.ResultingOrder);
@@ -162,67 +162,67 @@ namespace TickTrader.Algo.Core
             }
             else
             {
-                logEntry.Append("FAILED Modifying order #").Append(request.OrderId).Append(" to ");
-                AppendOrderParams(logEntry, smbInfo, " ", request);
+                logEntry.Append("FAILED Modifying order #").Append(context.OrderId).Append(" to ");
+                AppendOrderParams(logEntry, smbInfo, " ", context);
                 logEntry.Append(" error=").Append(result.ResultCode);
 
                 PrintTradeFail(logEntry.ToString());
             }
         }
 
-        public void LogOrderCanceling(CancelOrderRequest request)
+        public void LogOrderCanceling(CancelOrderRequestContext context)
         {
-            PrintTrade($"[Out] Canceling order #{request.OrderId}");
+            PrintTrade($"[Out] Canceling order #{context.OrderId}");
         }
 
-        public void LogOrderCancelResults(CancelOrderRequest request, OrderResultEntity result)
+        public void LogOrderCancelResults(CancelOrderRequestContext context, OrderResultEntity result)
         {
             var suffix = result.IsServerResponse ? "[In]" : "[Self]";
             if (result.IsCompleted)
             {
-                PrintTradeSuccess($"{suffix} SUCCESS: Order #{request.OrderId} canceled");
+                PrintTradeSuccess($"{suffix} SUCCESS: Order #{context.OrderId} canceled");
             }
             else
             {
-                PrintTradeFail($"{suffix} FAILED Canceling order #{request.OrderId} error={result.ResultCode}");
+                PrintTradeFail($"{suffix} FAILED Canceling order #{context.OrderId} error={result.ResultCode}");
             }
         }
 
-        public void LogOrderClosing(CloseOrderCoreRequest request)
+        public void LogOrderClosing(CloseOrderRequestContext context)
         {
-            var postfix = (request.Volume.HasValue && request.Volume != 0) ? $", volume={request.Volume}" : "";
-            PrintTrade($"[Out] Closing order #{request.OrderId}{postfix}");
+            var postfix = (context.VolumeLots.HasValue && context.VolumeLots != 0) ? $", volume={context.VolumeLots}" : "";
+            PrintTrade($"[Out] Closing order #{context.OrderId}{postfix}");
         }
 
-        public void LogOrderCloseResults(CloseOrderCoreRequest request, OrderResultEntity result)
+        public void LogOrderCloseResults(CloseOrderRequestContext context, OrderResultEntity result)
         {
             var suffix = result.IsServerResponse ? "[In]" : "[Self]";
             var postfix = result.ResultingOrder.RemainingVolume != 0 ? $", remaining volume={result.ResultingOrder.RemainingVolume}" : "";
             if (result.IsCompleted)
             {
-                PrintTradeSuccess($"{suffix} SUCCESS: Order #{request.OrderId} closed{postfix}");
+                PrintTradeSuccess($"{suffix} SUCCESS: Order #{context.OrderId} closed{postfix}");
             }
             else
             {
-                PrintTradeFail($"{suffix} FAILED Closing order #{request.OrderId} error={result.ResultCode}");
+                PrintTradeFail($"{suffix} FAILED Closing order #{context.OrderId} error={result.ResultCode}");
             }
         }
 
-        public void LogOrderClosingBy(CloseOrderCoreRequest request)
+        public void LogOrderClosingBy(CloseOrderRequestContext context)
         {
-            PrintTrade($"[Out] Closing order #{request.OrderId} by order #{request.ByOrderId}");
+            PrintTrade($"[Out] Closing order #{context.OrderId} by order #{context.ByOrderId}");
         }
 
-        public void LogOrderCloseByResults(CloseOrderCoreRequest request, OrderResultEntity result)
+        public void LogOrderCloseByResults(CloseOrderRequestContext context, OrderResultEntity result)
         {
             var suffix = result.IsServerResponse ? "[In]" : "[Self]";
             if (result.IsCompleted)
             {
-                PrintTradeSuccess($"{suffix} SUCCESS: Order #{request.OrderId} closed by order #{request.ByOrderId}");
+                PrintTradeSuccess($"{suffix} SUCCESS: Order #{context.OrderId} closed by order #{context.ByOrderId}");
             }
             else
             {
-                PrintTradeFail($"{suffix} FAILED Closing order #{request.OrderId} by order #{request.ByOrderId} error={result.ResultCode}");
+                PrintTradeFail($"{suffix} FAILED Closing order #{context.OrderId} by order #{context.ByOrderId} error={result.ResultCode}");
             }
         }
 
@@ -361,12 +361,12 @@ namespace TickTrader.Algo.Core
             AppendOrderParams(logEntry, smbInfo, suffix, order.Type.ToCoreEnum(), order.Side.ToCoreEnum(), order.LastFillVolume, order.LastFillPrice, double.NaN, order.StopLoss, order.TakeProfit, order.Slippage);
         }
 
-        private void AppendOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, OpenOrderCoreRequest request)
+        private void AppendOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, OpenOrderRequestContext request)
         {
-            AppendOrderParams(logEntry, smbInfo, suffix, request.Type, request.Side, request.VolumeLots, request.Price ?? double.NaN, request.StopPrice ?? double.NaN, request.StopLoss, request.TakeProfit, request.Slippage);
+            AppendOrderParams(logEntry, smbInfo, suffix, request.Type, request.Side, request.Volume, request.Price ?? double.NaN, request.StopPrice ?? double.NaN, request.StopLoss, request.TakeProfit, request.Slippage);
         }
 
-        private void AppendOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, ReplaceOrderCoreRequest request)
+        private void AppendOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, ModifyOrderRequestContext request)
         {
             AppendOrderParams(logEntry, smbInfo, suffix, request.Type, request.Side, request.NewVolume ?? request.CurrentVolume, request.Price ?? double.NaN, request.StopPrice ?? double.NaN, request.StopLoss, request.TakeProfit, request.Slippage);
         }

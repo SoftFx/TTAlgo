@@ -115,7 +115,7 @@ namespace TickTrader.Algo.Core
         {
             var accProxy = context.Builder.Account;
             var orderType = eReport.OrderCopy.Type;
-            var instantOrder = orderType == Domain.OrderInfo.Types.Type.Market;;
+            var instantOrder = orderType == Domain.OrderInfo.Types.Type.Market;
 
             if (instantOrder && accProxy.Type == AccountInfo.Types.Type.Gross) // workaround for Gross accounts
             {
@@ -389,22 +389,22 @@ namespace TickTrader.Algo.Core
 
         #region TradeCommands impl
 
-        public Task<TradeResultEntity> OpenOrder(bool isAysnc, OpenOrderCoreRequest request)
+        public Task<Domain.TradeResultInfo> OpenOrder(bool isAysnc, Domain.OpenOrderRequest request)
         {
             return ExecTradeRequest(isAysnc, request, (r, e, c) => e.SendOpenOrder(c, r));
         }
 
-        public Task<TradeResultEntity> CancelOrder(bool isAysnc, CancelOrderRequest request)
+        public Task<Domain.TradeResultInfo> CancelOrder(bool isAysnc, Domain.CancelOrderRequest request)
         {
             return ExecTradeRequest(isAysnc, request, (r, e, c) => e.SendCancelOrder(c, r));
         }
 
-        public Task<TradeResultEntity> ModifyOrder(bool isAysnc, ReplaceOrderCoreRequest request)
+        public Task<Domain.TradeResultInfo> ModifyOrder(bool isAysnc, Domain.ModifyOrderRequest request)
         {
             return ExecTradeRequest(isAysnc, request, (r, e, c) => e.SendModifyOrder(c, r));
         }
 
-        public Task<TradeResultEntity> CloseOrder(bool isAysnc, CloseOrderCoreRequest request)
+        public Task<Domain.TradeResultInfo> CloseOrder(bool isAysnc, Domain.CloseOrderRequest request)
         {
             if (request.ByOrderId != null)
                 return ExecDoubleOrderTradeRequest(isAysnc, request, (r, e, c) => e.SendCloseOrder(c, r));
@@ -414,19 +414,19 @@ namespace TickTrader.Algo.Core
 
         #endregion
 
-        private Task<TradeResultEntity> ExecTradeRequest<TRequest>(bool isAsync, TRequest orderRequest,
+        private Task<Domain.TradeResultInfo> ExecTradeRequest<TRequest>(bool isAsync, TRequest orderRequest,
             Action<TRequest, ITradeExecutor, CrossDomainCallback<Domain.OrderExecReport.Types.CmdResultCode>> executorInvoke)
-            where TRequest : OrderCoreRequest
+            where TRequest : ITradeRequest
         {
-            var resultTask = new TaskCompletionSource<TradeResultEntity>();
-            var callbackTask = new TaskCompletionSource<TradeResultEntity>();
+            var resultTask = new TaskCompletionSource<Domain.TradeResultInfo>();
+            var callbackTask = new TaskCompletionSource<Domain.TradeResultInfo>();
 
             string operationId = Guid.NewGuid().ToString();
 
             reportListeners.Add(operationId, rep =>
             {
                 reportListeners.Remove(operationId);
-                resultTask.TrySetResult(new TradeResultEntity(rep.ResultCode, rep.OrderCopy));
+                resultTask.TrySetResult(new Domain.TradeResultInfo(rep.ResultCode, rep.OrderCopy));
             });
 
             orderRequest.OperationId = operationId;
@@ -435,8 +435,8 @@ namespace TickTrader.Algo.Core
 
             callback.Action = code =>
             {
-                if (code != Domain.OrderExecReport.Types.CmdResultCode.Ok)
-                    context.EnqueueTradeUpdate(b => InvokeListener(operationId, new Domain.OrderExecReport() { ResultCode = code }));
+                //if (code != Domain.OrderExecReport.Types.CmdResultCode.Ok)
+                //    context.EnqueueTradeUpdate(b => InvokeListener(operationId, new Domain.OrderExecReport() { ResultCode = code }));
 
                 callback.Dispose();
             };
@@ -452,11 +452,11 @@ namespace TickTrader.Algo.Core
             return resultTask.Task;
         }
 
-        private async Task<TradeResultEntity> ExecDoubleOrderTradeRequest<TRequest>(bool isAsync, TRequest orderRequest,
+        private async Task<Domain.TradeResultInfo> ExecDoubleOrderTradeRequest<TRequest>(bool isAsync, TRequest orderRequest,
             Action<TRequest, ITradeExecutor, CrossDomainCallback<Domain.OrderExecReport.Types.CmdResultCode>> executorInvoke)
-            where TRequest : OrderCoreRequest
+            where TRequest : ITradeRequest
         {
-            var resultTask = new TaskCompletionSource<TradeResultEntity>();
+            var resultTask = new TaskCompletionSource<Domain.TradeResultInfo>();
 
             var resultContainer = new List<OrderInfo>(2);
 
@@ -468,14 +468,14 @@ namespace TickTrader.Algo.Core
                 if (resultContainer.Count == 2)
                 {
                     reportListeners.Remove(operationId);
-                    resultTask.TrySetResult(new TradeResultEntity(rep.ResultCode, rep.OrderCopy));
+                    resultTask.TrySetResult(new Domain.TradeResultInfo(rep.ResultCode, rep.OrderCopy));
                 }
             });
 
             Action<Domain.OrderExecReport.Types.CmdResultCode> callbackAction = code =>
             {
-                if (code != Domain.OrderExecReport.Types.CmdResultCode.Ok)
-                    context.EnqueueTradeUpdate(b => InvokeListener(operationId, new Domain.OrderExecReport() { ResultCode = code }));
+                //if (code != Domain.OrderExecReport.Types.CmdResultCode.Ok)
+                //    context.EnqueueTradeUpdate(b => InvokeListener(operationId, new Domain.OrderExecReport() { ResultCode = code }));
             };
 
             orderRequest.OperationId = operationId;

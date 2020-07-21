@@ -145,7 +145,7 @@ namespace TickTrader.Algo.Core
 
                             //Facade.ValidateExpirationTime(Request.Expiration, _acc);
 
-                            var order = OpenOrder(calc, request.Type.ToCoreEnum(), request.Side.ToCoreEnum(), volume, maxVisibleVolume, price, stopPrice, sl, tp, request.Comment, request.Options, request.Tag, request.Expiration, OpenOrderOptions.None);
+                            var order = OpenOrder(calc, request.Type.ToCoreEnum(), request.Side.ToCoreEnum(), volume, maxVisibleVolume, price, stopPrice, sl, tp, request.Comment, request.Options.ToDomainEnum(), request.Tag, request.Expiration, OpenOrderOptions.None);
 
                             _collector.OnOrderOpened();
 
@@ -244,22 +244,22 @@ namespace TickTrader.Algo.Core
                     var sl = RoundPrice(request.StopLoss, smbMetadata, orderToModify.Side);
                     var tp = RoundPrice(request.TakeProfit, smbMetadata, orderToModify.Side);
 
-                    var coreRequest = new ReplaceOrderCoreRequest
+                    var coreRequest = new ModifyOrderRequestContext
                     {
                         OrderId = request.OrderId,
                         Symbol = orderToModify.Symbol,
                         Type = orderToModify.Type,
                         Side = orderToModify.Side,
-                        CurrentVolume = (double)orderVolume,
-                        NewVolume = (double?)newOrderVolume,
+                        CurrentAmount = (double)orderVolume,
+                        NewAmount = (double?)newOrderVolume,
                         Price = price,
                         StopPrice = stopPrice,
                         StopLoss = sl,
                         TakeProfit = tp,
                         Comment = request.Comment,
                         Expiration = request.Expiration,
-                        MaxVisibleVolume = (double?)orderMaxVisibleVolume,
-                        Options = request.Options
+                        MaxVisibleAmount = (double?)orderMaxVisibleVolume,
+                        ExecOptions = request.Options?.ToDomainEnum(),
                     };
 
                     // emulate server ping
@@ -294,12 +294,12 @@ namespace TickTrader.Algo.Core
             });
         }
 
-        Task<OrderCmdResult> TradeCommands.CloseOrder(bool isAysnc, CloseOrderRequest request)
+        Task<OrderCmdResult> TradeCommands.CloseOrder(bool isAysnc, Api.CloseOrderRequest request)
         {
-            var req = new CloseOrderCoreRequest
+            var req = new CloseOrderRequestContext
             {
                 OrderId = request.OrderId,
-                Volume = request.Volume,
+                VolumeLots = request.Volume,
                 Slippage = request.Slippage,
             };
 
@@ -308,13 +308,13 @@ namespace TickTrader.Algo.Core
 
         Task<OrderCmdResult> TradeCommands.CloseOrderBy(bool isAysnc, string orderId, string byOrderId)
         {
-            var req = new CloseOrderCoreRequest();
+            var req = new CloseOrderRequestContext();
             req.OrderId = orderId;
             req.ByOrderId = byOrderId;
             return CloseOrder(isAysnc, req);
         }
 
-        private Task<OrderCmdResult> CloseOrder(bool isAysnc, CloseOrderCoreRequest request)
+        private Task<OrderCmdResult> CloseOrder(bool isAysnc, CloseOrderRequestContext request)
         {
             return ExecTradeRequest(isAysnc, async () =>
             {
@@ -328,11 +328,12 @@ namespace TickTrader.Algo.Core
                         var smbMetadata = order.SymbolInfo;
                         var closeVolume = (decimal?)null;
 
-                        if (request.Volume != null)
+                        if (request.VolumeLots != null)
                         {
-                            var closeVolumeLots = RoundVolume(request.Volume, smbMetadata);
+                            var closeVolumeLots = RoundVolume(request.VolumeLots, smbMetadata);
                             closeVolume = ToUnits(closeVolumeLots.Value, smbMetadata);
                             VerifyCloseAmout(closeVolume, smbMetadata);
+                            request.Amount = (double?)closeVolume;
                         }
 
                         if (request.ByOrderId == null)
@@ -346,7 +347,7 @@ namespace TickTrader.Algo.Core
 
                                 var currentRate = smbMetadata.LastQuote;
                                 var dealerRequest = new ClosePositionDealerRequest(order, currentRate);
-                                dealerRequest.CloseAmount = request.Volume;
+                                dealerRequest.CloseAmount = request.Amount;
 
                                 _dealer.ConfirmPositionClose(dealerRequest);
 
@@ -420,7 +421,7 @@ namespace TickTrader.Algo.Core
         }
 
         private OrderAccessor OpenOrder(OrderCalculator orderCalc, Domain.OrderInfo.Types.Type orderType, Domain.OrderInfo.Types.Side side, decimal volume, decimal? maxVisibleVolume, double? price, double? stopPrice,
-            double? sl, double? tp, string comment, OrderExecOptions execOptions, string tag, DateTime? expiration, OpenOrderOptions options)
+            double? sl, double? tp, string comment, Domain.OrderExecOptions execOptions, string tag, DateTime? expiration, OpenOrderOptions options)
         {
             var symbolInfo = orderCalc.SymbolAccessor;
 
@@ -477,7 +478,7 @@ namespace TickTrader.Algo.Core
             order.Entity.UserTag = tag;
             order.Entity.InstanceId = _acc.InstanceId;
             order.Entity.Expiration = expiration;
-            order.Entity.Options = execOptions.ToDomainOptions();
+            order.Entity.Options = execOptions.ToOrderOptions();
             //order.ReqOpenPrice = clientPrice;
             //order.ReqOpenAmount = clientAmount;
 
@@ -535,7 +536,7 @@ namespace TickTrader.Algo.Core
                 fillInfo = FillOrder(order, execPrice, execAmount, trReason);
                 isInstantOrder = _acc.Type != AccountInfo.Types.Type.Gross;
             }
-            else if (order.Type == Domain.OrderInfo.Types.Type.Limit && order.HasOption(OrderExecOptions.ImmediateOrCancel))
+            else if (order.Type == Domain.OrderInfo.Types.Type.Limit && order.HasOption(Domain.OrderOptions.ImmediateOrCancel))
             {
                 // fill order
                 fillInfo = FillOrder(order, execPrice, execAmount, trReason);
@@ -586,7 +587,7 @@ namespace TickTrader.Algo.Core
             return order;
         }
 
-        private OrderAccessor ReplaceOrder(ReplaceOrderCoreRequest request)
+        private OrderAccessor ReplaceOrder(ModifyOrderRequestContext request)
         {
             // Check schedule for the symbol
             var order = _acc.Orders.GetOrderOrThrow(request.OrderId);
@@ -610,7 +611,7 @@ namespace TickTrader.Algo.Core
             if (!order.Entity.IsPending) // forbid to change price and volume for positions (server style!)
             {
                 request.Price = null;
-                request.NewVolume = null;
+                request.NewAmount = null;
             }
 
             //SymbolEntity symbolInfo = node.ServerConfig.GetSymbolByNameOrThrow(Request.Symbol);
@@ -651,7 +652,7 @@ namespace TickTrader.Algo.Core
             //if (Request.MaxVisibleAmount.HasValue && (Request.MaxVisibleAmount.Value >= 0))
             //Facade.VerifyMaxVisibleAmout(Request.MaxVisibleAmount, securityCfg, symbolInfo, Request.IsClientRequest);
 
-            var newVolume = (decimal?)request.NewVolume ?? order.Entity.RequestedAmount;
+            var newVolume = (decimal?)request.NewAmount ?? order.Entity.RequestedAmount;
             var newPrice = request.Price ?? order.Price;
             var newStopPrice = request.StopPrice ?? order.StopPrice;
 
@@ -665,7 +666,7 @@ namespace TickTrader.Algo.Core
             var dealerRequest = new ModifyOrderDealerRequest(order, symbol.LastQuote);
             dealerRequest.NewComment = request.Comment;
             dealerRequest.NewPrice = request.Price;
-            dealerRequest.NewVolume = request.NewVolume;
+            dealerRequest.NewVolume = request.NewAmount;
             dealerRequest.NewStopPrice = request.StopPrice;
             _dealer.ConfirmOrderReplace(dealerRequest);
 
@@ -738,7 +739,7 @@ namespace TickTrader.Algo.Core
             //}
         }
 
-        private OrderAccessor ConfirmOrderReplace(OrderAccessor order, ReplaceOrderCoreRequest request)
+        private OrderAccessor ConfirmOrderReplace(OrderAccessor order, ModifyOrderRequestContext request)
         {
             //OrderModel order = (!request.IsClientRequest && request.UpdateNewOrdersInDealing)
             //    ? acc.GetNewOrder(orderId)
@@ -751,7 +752,7 @@ namespace TickTrader.Algo.Core
             if (order.Type != Domain.OrderInfo.Types.Type.Market)
                 UnregisterOrder(order);
 
-            var newVol = (decimal?)request.NewVolume;
+            var newVol = (decimal?)request.NewAmount;
 
             if (order.Entity.IsPending && newVol.HasValue && newVol != order.Entity.RequestedAmount)
             {
@@ -766,15 +767,15 @@ namespace TickTrader.Algo.Core
             }
 
             // Update or reset max visible amount value
-            if (order.Entity.IsPending && request.MaxVisibleVolume.HasValue)
+            if (order.Entity.IsPending && request.MaxVisibleAmount.HasValue)
             {
-                if (request.MaxVisibleVolume.Value < 0)
+                if (request.MaxVisibleAmount.Value < 0)
                 {
                     order.Entity.MaxVisibleAmount = null;
                 }
                 else
                 {
-                    order.Entity.MaxVisibleAmount = (decimal?)request.MaxVisibleVolume;
+                    order.Entity.MaxVisibleAmount = (decimal?)request.MaxVisibleAmount;
                     //order.Options = order.Options.SetFlag(OrderExecutionOptions.HiddenIceberg);
                 }
             }
@@ -1108,7 +1109,7 @@ namespace TickTrader.Algo.Core
             //TradeChargesInfo charges = new TradeChargesInfo();
             var currentRate = _calcFixture.GetCurrentRateOrNull(smb.Name);
             var wasTmpOrder = parentOrder.Type == Domain.OrderInfo.Types.Type.Market
-                || (parentOrder.Type == Domain.OrderInfo.Types.Type.Limit && parentOrder.HasOption(OrderExecOptions.ImmediateOrCancel));
+                || (parentOrder.Type == Domain.OrderInfo.Types.Type.Limit && parentOrder.HasOption(Domain.OrderOptions.ImmediateOrCancel));
 
             //if (parentOrder != null)
             //{
@@ -1594,7 +1595,7 @@ namespace TickTrader.Algo.Core
             //}
 
             OpenOrder(order.Calculator, Domain.OrderInfo.Types.Type.Limit, order.Side, order.Entity.RemainingAmount, null, order.Price,
-                order.StopPrice, order.StopLoss, order.TakeProfit, order.Comment, order.ApiOrder.Options.ToExec(), order.Entity.UserTag, order.Expiration, OpenOrderOptions.SkipDealing);
+                order.StopPrice, order.StopLoss, order.TakeProfit, order.Comment, order.ApiOrder.Options.ToExec().ToDomainEnum(), order.Entity.UserTag, order.Expiration, OpenOrderOptions.SkipDealing);
         }
 
         private void ClosePosition(OrderAccessor position, TradeTransactionReason trReason, decimal? reqAmount, double? reqPrice,
@@ -1848,7 +1849,7 @@ namespace TickTrader.Algo.Core
                     using (JournalScope())
                     {
                         OpenOrder(pos.Calculator, Domain.OrderInfo.Types.Type.Market, pos.Side.Revert(), pos.VolumeUnits, null, null, null, null, null, "",
-                            OrderExecOptions.None, null, null, OpenOrderOptions.SkipDealing | OpenOrderOptions.FakeOrder);
+                            Domain.OrderExecOptions.None, null, null, OpenOrderOptions.SkipDealing | OpenOrderOptions.FakeOrder);
                     }
                 }
             }
@@ -2224,7 +2225,7 @@ namespace TickTrader.Algo.Core
             //}
         }
 
-        private void ValidateTypeAndPrice(OrderType orderType, double? price, double? stopPrice, double? sl, double? tp, decimal? maxVisibleVolume, OrderExecOptions options, SymbolAccessor symbol)
+        private void ValidateTypeAndPrice(OrderType orderType, double? price, double? stopPrice, double? sl, double? tp, decimal? maxVisibleVolume, Api.OrderExecOptions options, SymbolAccessor symbol)
         {
             if ((orderType != OrderType.Limit) && (orderType != OrderType.Market) && (orderType != OrderType.Stop) && (orderType != OrderType.StopLimit))
                 throw new OrderValidationError("Invalid order type.", OrderCmdResultCodes.Unsupported);
@@ -2238,7 +2239,7 @@ namespace TickTrader.Algo.Core
             {
                 //if (Request.IsOptionSet(OrderExecutionOptions.MarketWithSlippage))
                 //    throw new OrderValidationError("'MarketWithSlippage' flag is not supported for market orders", FaultCodes.InvalidOption);
-                if (options.HasFlag(OrderExecOptions.ImmediateOrCancel))
+                if (options.HasFlag(Api.OrderExecOptions.ImmediateOrCancel))
                     throw new OrderValidationError("'ImmediateOrCancel' flag is not supported for market orders", OrderCmdResultCodes.Unsupported);
                 //if (Request.IsOptionSet(OrderExecutionOptions.HiddenIceberg))
                 //    throw new OrderValidationError("'HiddenIceberg' flag is not supported for market orders", FaultCodes.InvalidOption);
@@ -2268,7 +2269,7 @@ namespace TickTrader.Algo.Core
             {
                 //if (Request.IsOptionSet(OrderExecOptions.MarketWithSlippage))
                 //    throw new OrderValidationError("'MarketWithSlippage' flag is not supported for stop orders", FaultCodes.InvalidOption);
-                if (options.HasFlag(OrderExecOptions.ImmediateOrCancel))
+                if (options.HasFlag(Api.OrderExecOptions.ImmediateOrCancel))
                     throw new OrderValidationError("'ImmediateOrCancel' flag is not supported for stop orders", OrderCmdResultCodes.Unsupported);
                 //if (Request.IsOptionSet(OrderExecOptions.HiddenIceberg))
                 //    throw new OrderValidationError("'HiddenIceberg' flag is not supported for stop orders", FaultCodes.InvalidOption);

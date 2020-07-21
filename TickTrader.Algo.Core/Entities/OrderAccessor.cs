@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Calc;
 using TickTrader.Algo.Domain;
@@ -129,9 +130,9 @@ namespace TickTrader.Algo.Core
 
         #endregion
 
-        internal bool HasOption(OrderExecOptions option)
+        internal bool HasOption(Domain.OrderOptions option)
         {
-            return _apiOrder.Options.HasFlag(option.ToExec());
+            return _apiOrder.Options.HasFlag(option);
         }
 
         #region Emulation

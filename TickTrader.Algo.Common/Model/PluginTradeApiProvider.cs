@@ -1,13 +1,10 @@
 ﻿using ActorSharp;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model.Interop;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -24,53 +21,80 @@ namespace TickTrader.Algo.Common.Model
             _connection = connection;
         }
 
-        private async Task<Domain.OrderExecReport.Types.CmdResultCode> SendCancelOrder(CancelOrderRequest request)
+        private async Task<Domain.OrderExecReport.Types.CmdResultCode> SendCancelOrder(Domain.CancelOrderRequest request)
         {
             if (!IsConnected)
+            {
+                SendRejectReport(request.OperationId, Domain.OrderExecReport.Types.CmdResultCode.ConnectionError);
                 return Domain.OrderExecReport.Types.CmdResultCode.ConnectionError;
+            }
 
             var result = await _connection.TradeProxy.SendCancelOrder(request);
-            SendReports(result);
+            SendReports(request, result);
             return result.ResultCode;
         }
 
-        private async Task<Domain.OrderExecReport.Types.CmdResultCode> SendCloseOrder(CloseOrderCoreRequest request)
+        private async Task<Domain.OrderExecReport.Types.CmdResultCode> SendCloseOrder(Domain.CloseOrderRequest request)
         {
             if (!IsConnected)
+            {
+                SendRejectReport(request.OperationId, Domain.OrderExecReport.Types.CmdResultCode.ConnectionError);
                 return Domain.OrderExecReport.Types.CmdResultCode.ConnectionError;
+            }
 
             var result = await _connection.TradeProxy.SendCloseOrder(request);
-            SendReports(result);
+            SendReports(request, result);
             return result.ResultCode;
         }
 
-        private async Task<Domain.OrderExecReport.Types.CmdResultCode> SendModifyOrder(ReplaceOrderCoreRequest request)
+        private async Task<Domain.OrderExecReport.Types.CmdResultCode> SendModifyOrder(Domain.ModifyOrderRequest request)
         {
             if (!IsConnected)
+            {
+                SendRejectReport(request.OperationId, Domain.OrderExecReport.Types.CmdResultCode.ConnectionError);
                 return Domain.OrderExecReport.Types.CmdResultCode.ConnectionError;
+            }
 
             var result = await _connection.TradeProxy.SendModifyOrder(request);
-            SendReports(result);
+            SendReports(request, result);
             return result.ResultCode;
         }
 
-        private async Task<Domain.OrderExecReport.Types.CmdResultCode> SendOpenOrder(OpenOrderCoreRequest request)
+        private async Task<Domain.OrderExecReport.Types.CmdResultCode> SendOpenOrder(Domain.OpenOrderRequest request)
         {
             if (!IsConnected)
+            {
+                SendRejectReport(request.OperationId, Domain.OrderExecReport.Types.CmdResultCode.ConnectionError);
                 return Domain.OrderExecReport.Types.CmdResultCode.ConnectionError;
+            }
 
             var result = await _connection.TradeProxy.SendOpenOrder(request);
-            SendReports(result);
+            SendReports(request, result);
             return result.ResultCode;
         }
 
-        private void SendReports(OrderInteropResult result)
+        private void SendReports(ITradeRequest request, OrderInteropResult result)
         {
             if (result.Reports != null)
             {
                 foreach(var rep in result.Reports)
                     OnExclusiveReport?.Invoke(rep);
             }
+            if (result.ResultCode != Domain.OrderExecReport.Types.CmdResultCode.Ok)
+            {
+                SendRejectReport(request.OperationId, result.ResultCode);
+            }
+        }
+
+        private void SendRejectReport(string operationId, Domain.OrderExecReport.Types.CmdResultCode rejectCode)
+        {
+            var rep = new ExecutionReport
+            {
+                ClientOrderId = operationId,
+                OrderStatus = OrderStatus.Rejected,
+                RejectReason = rejectCode,
+            };
+            OnExclusiveReport?.Invoke(rep);
         }
 
         public class Handler : CrossDomainObject, ITradeExecutor
@@ -82,25 +106,25 @@ namespace TickTrader.Algo.Common.Model
                 _ref = aRef;
             }
 
-            public async void SendCancelOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, CancelOrderRequest request)
+            public async void SendCancelOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, Domain.CancelOrderRequest request)
             {
                 var result = await _ref.Call(a => a.SendCancelOrder(request));
                 callback.Invoke(result);
             }
 
-            public async void SendCloseOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, CloseOrderCoreRequest request)
+            public async void SendCloseOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, Domain.CloseOrderRequest request)
             {
                 var result = await _ref.Call(a => a.SendCloseOrder(request));
                 callback.Invoke(result);
             }
 
-            public async void SendModifyOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, ReplaceOrderCoreRequest request)
+            public async void SendModifyOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, Domain.ModifyOrderRequest request)
             {
                 var result = await _ref.Call(a => a.SendModifyOrder(request));
                 callback.Invoke(result);
             }
 
-            public async void SendOpenOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, OpenOrderCoreRequest request)
+            public async void SendOpenOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, Domain.OpenOrderRequest request)
             {
                 var result = await _ref.Call(a => a.SendOpenOrder(request));
                 callback.Invoke(result);

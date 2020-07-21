@@ -158,11 +158,10 @@
     <Compile Include="Container\PluginContainer.cs" />
     <Compile Include="Container\PluginLoader.cs" />
     <Compile Include="CoreExtentions.cs" />
-    <Compile Include="Entities.Requests\CancelOrderRequest.cs" />
-    <Compile Include="Entities.Requests\CloseOrderRequest.cs" />
-    <Compile Include="Entities.Requests\OpenOrderCoreRequest.cs" />
-    <Compile Include="Entities.Requests\OrderCoreRequest.cs" />
-    <Compile Include="Entities.Requests\ReplaceOrderCoreRequest.cs" />
+    <Compile Include="Entities.Requests\CancelOrderRequestContext.cs" />
+    <Compile Include="Entities.Requests\CloseOrderRequestContext.cs" />
+    <Compile Include="Entities.Requests\OpenOrderRequestContext.cs" />
+    <Compile Include="Entities.Requests\ModifyOrderRequestContext.cs" />
     <Compile Include="Entities\AccountAccessor.cs" />
     <Compile Include="Entities\AccountEntity.cs" />
     <Compile Include="Entities\AlgoMarketNode.cs" />
@@ -327,7 +326,6 @@
     <Compile Include="TickTraderToAlgo.cs" />
     <Compile Include="Backtester\Trade\TradeOperationSummary.cs" />
     <Compile Include="Math\TimeVectorBase.cs" />
-    <Compile Include="ToAlgo.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Machinarium\Machinarium.csproj">

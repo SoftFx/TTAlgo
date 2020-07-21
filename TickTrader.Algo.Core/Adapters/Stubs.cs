@@ -148,25 +148,25 @@ namespace TickTrader.Algo.Core
 
     internal class NullTradeApi : ITradeApi
     {
-        private static Task<TradeResultEntity> rejectResult
-            = Task.FromResult<TradeResultEntity>(new TradeResultEntity(Domain.OrderExecReport.Types.CmdResultCode.Unsupported, null));
+        private static Task<Domain.TradeResultInfo> rejectResult
+            = Task.FromResult(new Domain.TradeResultInfo(Domain.OrderExecReport.Types.CmdResultCode.Unsupported, null));
 
-        public Task<TradeResultEntity> CancelOrder(bool isAysnc, CancelOrderRequest request)
+        public Task<Domain.TradeResultInfo> CancelOrder(bool isAysnc, Domain.CancelOrderRequest request)
         {
             return rejectResult;
         }
 
-        public Task<TradeResultEntity> CloseOrder(bool isAysnc, CloseOrderCoreRequest request)
+        public Task<Domain.TradeResultInfo> CloseOrder(bool isAysnc, Domain.CloseOrderRequest request)
         {
             return rejectResult;
         }
 
-        public Task<TradeResultEntity> ModifyOrder(bool isAysnc, ReplaceOrderCoreRequest request)
+        public Task<Domain.TradeResultInfo> ModifyOrder(bool isAysnc, Domain.ModifyOrderRequest request)
         {
             return rejectResult;
         }
 
-        public Task<TradeResultEntity> OpenOrder(bool isAysnc, OpenOrderCoreRequest request)
+        public Task<Domain.TradeResultInfo> OpenOrder(bool isAysnc, Domain.OpenOrderRequest request)
         {
             return rejectResult;
         }

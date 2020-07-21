@@ -216,7 +216,7 @@ namespace TickTrader.Algo.Core
         {
             _builder.Append(" #").Append(order.Id)
                 .Append(' ').Append(order.Type);
-            if (order.HasOption(OrderExecOptions.ImmediateOrCancel))
+            if (order.HasOption(Domain.OrderOptions.ImmediateOrCancel))
                 _builder.Append(" IoC");
             _builder.Append(' ').Append(order.Symbol)
                 .Append(' ').Append(order.Side);

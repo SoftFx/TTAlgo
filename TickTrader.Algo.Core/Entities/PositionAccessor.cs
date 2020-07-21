@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Calc;
 

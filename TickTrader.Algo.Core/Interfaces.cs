@@ -28,18 +28,18 @@ namespace TickTrader.Algo.Core
 
     public interface ITradeApi
     {
-        Task<TradeResultEntity> OpenOrder(bool isAysnc, OpenOrderCoreRequest request);
-        Task<TradeResultEntity> CancelOrder(bool isAysnc, CancelOrderRequest request);
-        Task<TradeResultEntity> ModifyOrder(bool isAysnc, ReplaceOrderCoreRequest request);
-        Task<TradeResultEntity> CloseOrder(bool isAysnc, CloseOrderCoreRequest request);
+        Task<Domain.TradeResultInfo> OpenOrder(bool isAysnc, Domain.OpenOrderRequest request);
+        Task<Domain.TradeResultInfo> CancelOrder(bool isAysnc, Domain.CancelOrderRequest request);
+        Task<Domain.TradeResultInfo> ModifyOrder(bool isAysnc, Domain.ModifyOrderRequest request);
+        Task<Domain.TradeResultInfo> CloseOrder(bool isAysnc, Domain.CloseOrderRequest request);
     }
 
     public interface ITradeExecutor
     {
-        void SendOpenOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, OpenOrderCoreRequest request);
-        void SendCancelOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, CancelOrderRequest request);
-        void SendModifyOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, ReplaceOrderCoreRequest request);
-        void SendCloseOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, CloseOrderCoreRequest request);
+        void SendOpenOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, Domain.OpenOrderRequest request);
+        void SendCancelOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, Domain.CancelOrderRequest request);
+        void SendModifyOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, Domain.ModifyOrderRequest request);
+        void SendCloseOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, Domain.CloseOrderRequest request);
     }
 
 

@@ -120,7 +120,7 @@ namespace TickTrader.Algo.Core
             //Entity.ReqOpenPrice = order.ReqOpenPrice;
             //Entity.ReqOpenQuantity = order.ReqOpenAmount;
 
-            Entity.ImmediateOrCancel = orderAccessor.HasOption(OrderExecOptions.ImmediateOrCancel);
+            Entity.ImmediateOrCancel = orderAccessor.HasOption(Domain.OrderOptions.ImmediateOrCancel);
             //ClientApp = order.ClientApp;
 
             FillSymbolConversionRates(acc, orderAccessor.SymbolInfo);

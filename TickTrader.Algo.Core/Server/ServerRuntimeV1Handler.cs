@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using System.Threading;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
 
@@ -27,7 +28,14 @@ namespace TickTrader.Algo.Core
 
         public void HandleNotification(string callId, Any payload)
         {
-            throw new NotImplementedException();
+            if (payload.Is(OpenOrderRequest.Descriptor))
+                OpenOrderRequestHandler(payload);
+            else if (payload.Is(ModifyOrderRequest.Descriptor))
+                ModifyOrderRequestHandler(payload);
+            else if (payload.Is(CloseOrderRequest.Descriptor))
+                CloseOrderRequestHandler(payload);
+            else if (payload.Is(CancelOrderRequest.Descriptor))
+                CancelOrderRequestHandler(payload);
         }
 
         public Any HandleRequest(string callId, Any payload)
@@ -141,6 +149,34 @@ namespace TickTrader.Algo.Core
             }
             response.IsFinal = true;
             return Any.Pack(response);
+        }
+
+        private void OpenOrderRequestHandler(Any payload)
+        {
+            var request = payload.Unpack<OpenOrderRequest>();
+            var callback = new CrossDomainCallback<Domain.OrderExecReport.Types.CmdResultCode> { Action = _ => { } };
+            _executor.TradeExecutor.SendOpenOrder(callback, request);
+        }
+
+        private void ModifyOrderRequestHandler(Any payload)
+        {
+            var request = payload.Unpack<ModifyOrderRequest>();
+            var callback = new CrossDomainCallback<Domain.OrderExecReport.Types.CmdResultCode> { Action = _ => { } };
+            _executor.TradeExecutor.SendModifyOrder(callback, request);
+        }
+
+        private void CloseOrderRequestHandler(Any payload)
+        {
+            var request = payload.Unpack<CloseOrderRequest>();
+            var callback = new CrossDomainCallback<Domain.OrderExecReport.Types.CmdResultCode> { Action = _ => { } };
+            _executor.TradeExecutor.SendCloseOrder(callback, request);
+        }
+
+        private void CancelOrderRequestHandler(Any payload)
+        {
+            var request = payload.Unpack<CancelOrderRequest>();
+            var callback = new CrossDomainCallback<Domain.OrderExecReport.Types.CmdResultCode> { Action = _ => { } };
+            _executor.TradeExecutor.SendCancelOrder(callback, request);
         }
     }
 }

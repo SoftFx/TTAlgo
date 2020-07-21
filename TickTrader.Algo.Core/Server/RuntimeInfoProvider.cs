@@ -5,7 +5,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    internal class RuntimeInfoProvider : CrossDomainObject, IAccountInfoProvider
+    internal class RuntimeInfoProvider : CrossDomainObject, IAccountInfoProvider, ITradeExecutor
     {
         private readonly UnitRuntimeV1Handler _handler;
         private readonly IAccountInfoProvider _remotingAccInfo;
@@ -49,5 +49,29 @@ namespace TickTrader.Algo.Core
         }
 
         #endregion IAccountInfoProvider
+
+        #region ITradeExecutor
+
+        public void SendOpenOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, Domain.OpenOrderRequest request)
+        {
+            _handler.SendOpenOrder(request);
+        }
+
+        public void SendModifyOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, Domain.ModifyOrderRequest request)
+        {
+            _handler.SendModifyOrder(request);
+        }
+
+        public void SendCloseOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, Domain.CloseOrderRequest request)
+        {
+            _handler.SendCloseOrder(request);
+        }
+
+        public void SendCancelOrder(ICallback<Domain.OrderExecReport.Types.CmdResultCode> callback, Domain.CancelOrderRequest request)
+        {
+            _handler.SendCancelOrder(request);
+        }
+
+        #endregion ITradeExecutor
     }
 }

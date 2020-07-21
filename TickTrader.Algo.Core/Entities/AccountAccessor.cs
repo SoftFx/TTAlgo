@@ -434,7 +434,7 @@ namespace TickTrader.Algo.Core
             return builder.Calculator?.GetSymbolMargin(symbol, side.ToCoreEnum());
         }
 
-        public double? CalculateOrderMargin(string symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl = null, double? tp = null, OrderExecOptions options = OrderExecOptions.None)
+        public double? CalculateOrderMargin(string symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl = null, double? tp = null, Api.OrderExecOptions options = Api.OrderExecOptions.None)
         {
             var symbolAccessor = builder?.Symbols?.GetOrDefault(symbol);
             if (symbolAccessor != null && builder.Calculator != null)
@@ -446,7 +446,7 @@ namespace TickTrader.Algo.Core
             return null;
         }
 
-        public bool HasEnoughMarginToOpenOrder(string symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl = null, double? tp = null, OrderExecOptions options = OrderExecOptions.None)
+        public bool HasEnoughMarginToOpenOrder(string symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl = null, double? tp = null, Api.OrderExecOptions options = Api.OrderExecOptions.None)
         {
             var symbolAccessor = builder?.Symbols?.GetOrDefault(symbol);
             if (symbolAccessor != null && builder.Calculator != null)

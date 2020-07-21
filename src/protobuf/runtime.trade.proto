@@ -114,7 +114,7 @@ message BalanceOperation {
         Dividend = 1;
     }
 
-    double transactionAmount = 1;
+    double transaction_amount = 1;
     string currency = 2;
     double balance = 3;
     Type type = 4;
@@ -189,4 +189,69 @@ message OrderExecReport {
 message PositionExecReport {
     PositionInfo position_copy = 1;
     OrderExecReport.ExecAction exec_action = 2;
+}
+
+message OrderRequest {
+    // flags
+    enum ExecOptions {
+        NONE = 0;
+        IMMEDIATE_OR_CANCEL = 1;
+    }
+}
+
+message OpenOrderRequest {
+    string operation_id = 1;
+    string symbol = 2;
+    OrderInfo.Type type = 3;
+    OrderInfo.Side side = 4;
+    double amount = 5;
+    google.protobuf.DoubleValue max_visible_amount = 6;
+    google.protobuf.DoubleValue price = 7;
+    google.protobuf.DoubleValue stop_price = 8;
+    google.protobuf.DoubleValue stop_loss = 9;
+    google.protobuf.DoubleValue take_profit = 10;
+    google.protobuf.DoubleValue slippage = 11;
+    google.protobuf.Timestamp expiration = 12;
+    google.protobuf.StringValue comment = 13;
+    google.protobuf.StringValue tag = 14;
+    int32 exec_options_bitmask = 15;
+}
+
+message ModifyOrderRequest {
+    string operation_id = 1;
+    string order_id = 2;
+    string symbol = 3;
+    OrderInfo.Type type = 4;
+    OrderInfo.Side side = 5;
+    double current_amount = 6;
+    google.protobuf.DoubleValue new_amount = 7;
+    double amount_change = 8;
+    google.protobuf.DoubleValue max_visible_amount = 9;
+    google.protobuf.DoubleValue price = 10;
+    google.protobuf.DoubleValue stop_price = 11;
+    google.protobuf.DoubleValue stop_loss = 12;
+    google.protobuf.DoubleValue take_profit = 13;
+    google.protobuf.DoubleValue slippage = 14;
+    google.protobuf.Timestamp expiration = 15;
+    google.protobuf.StringValue comment = 16;
+    google.protobuf.StringValue tag = 17;
+    google.protobuf.Int32Value exec_options_bitmask = 18;
+}
+
+message CancelOrderRequest {
+    string operation_id = 1;
+    string order_id = 2;
+}
+
+message CloseOrderRequest {
+    string operation_id = 1;
+    string order_id = 2;
+    google.protobuf.DoubleValue amount = 3;
+    google.protobuf.DoubleValue slippage = 4;
+    google.protobuf.StringValue by_order_id = 5;
+}
+
+message TradeResultInfo {
+    OrderExecReport.CmdResultCode result_code = 1;
+    OrderInfo resulting_order = 2;
 }
