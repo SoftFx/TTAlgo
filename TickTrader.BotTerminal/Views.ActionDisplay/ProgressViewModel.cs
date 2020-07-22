@@ -17,9 +17,9 @@ namespace TickTrader.BotTerminal
             Message = AddProperty("");
             IsIndeterminate = AddBoolProperty();
             IsError = AddBoolProperty();
-            ProgressMin = AddProperty(0D, "ProgressMin");
-            ProgressMax = AddProperty(100D, "ProgressMax");
-            Progress = AddProperty(0D, "Progress");
+            ProgressMin = AddProperty(0D, notifyName: "ProgressMin");
+            ProgressMax = AddProperty(100D, notifyName: "ProgressMax");
+            Progress = AddProperty(0D, notifyName: "Progress");
 
             //TriggerOnChange(ProgressMin.Var, a => System.Diagnostics.Debug.WriteLine("Min = " + a.New));
             //TriggerOnChange(ProgressMax.Var, a => System.Diagnostics.Debug.WriteLine("Max = " + a.New));

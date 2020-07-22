@@ -45,7 +45,7 @@ namespace TickTrader.Algo.Common.Model
         public double LotSize => Descriptor.LotSize;
 
         public event Action<SymbolModel> InfoUpdated = delegate { };
-        public event Action<SymbolModel> RateUpdated = delegate { };
+        public event Action<ISymbolInfo2> RateUpdated = delegate { };
 
         public virtual void Close()
         {

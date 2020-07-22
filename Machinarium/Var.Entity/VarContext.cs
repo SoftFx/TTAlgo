@@ -15,9 +15,9 @@ namespace Machinarium.Var
             return converter;
         }
 
-        public new Property<T> AddProperty<T>(T initialValue = default(T), string notifyName = null)
+        public new Property<T> AddProperty<T>(T initialValue = default, IDisplayValueConverter<T> displayConverter = null,  string notifyName = null)
         {
-            return base.AddProperty<T>(initialValue, notifyName);
+            return base.AddProperty(initialValue, displayConverter, notifyName);
         }
 
         public new IntProperty AddIntProperty(int initialValue = 0, string notifyName = null)

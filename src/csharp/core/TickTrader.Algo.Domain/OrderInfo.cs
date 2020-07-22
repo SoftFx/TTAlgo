@@ -35,4 +35,9 @@ namespace TickTrader.Algo.Domain
             return maxVisibleVolume.HasValue && Math.Abs(maxVisibleVolume.Value) < 1e-9;
         }
     }
+
+    public static class OrderOptionsExtensions
+    {
+        public static string GetString(this OrderOptions options) => options != OrderOptions.None ? (options ^ OrderOptions.None).ToString() : string.Empty;
+    }
 }

@@ -1,6 +1,4 @@
-﻿using TickTrader.Algo.Api;
-
-namespace TickTrader.Algo.Common.Model
+﻿namespace TickTrader.Algo.Common.Model
 {
     public enum AggregatedOrderType { Unknown, Buy, BuyLimit, BuyStop, BuyStopLimit, Sell, SellLimit, SellStop, SellStopLimit }
 

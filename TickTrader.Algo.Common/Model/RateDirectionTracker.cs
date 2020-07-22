@@ -1,9 +1,5 @@
 ﻿using Machinarium.EntityModel;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Common
 {
@@ -36,6 +32,8 @@ namespace TickTrader.Algo.Common
 
                 OnPropertyChanged(nameof(Rate));
                 OnPropertyChanged(nameof(Direction));
+
+                RateUpdate?.Invoke();
             }
         }
 
@@ -50,5 +48,7 @@ namespace TickTrader.Algo.Common
         }
 
         public RateChangeDirections Direction { get; private set; }
+
+        public Action RateUpdate;
     }
 }

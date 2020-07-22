@@ -95,6 +95,11 @@ namespace Machinarium.Var
         T ConvertFrom(TProp val);
     }
 
+    public interface IDisplayValueConverter<T>
+    {
+        string Convert(T val);
+    }
+
     public class StringToInt : IValueConverter<int, string>
     {
         public string ConvertFrom(int val)

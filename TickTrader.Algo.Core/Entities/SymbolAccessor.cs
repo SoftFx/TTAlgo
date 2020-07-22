@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.Core.Lib;
@@ -33,12 +34,16 @@ namespace TickTrader.Algo.Core
         double HiddenLimitOrderMarginReduction { get; }
 
         void UpdateRate(Api.Quote quote); //Update Ask, Bid, LastQuote
+
+        event Action<ISymbolInfo2> RateUpdated;
     }
 
     public class SymbolAccessor : Api.Symbol, ISymbolInfo2
     {
         private Domain.SymbolInfo _info;
         private FeedProvider feed;
+
+        public event Action<ISymbolInfo2> RateUpdated;
 
         internal SymbolAccessor(Domain.SymbolInfo entity, FeedProvider feed, CurrenciesCollection currencies)
         {
@@ -120,6 +125,8 @@ namespace TickTrader.Algo.Core
             Ask = quote.Ask;
             Bid = quote.Bid;
             LastQuote = quote;
+
+            RateUpdated?.Invoke(this);
         }
 
         public void Update(Domain.SymbolInfo info, CurrenciesCollection currencies)

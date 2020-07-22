@@ -54,7 +54,7 @@ namespace TickTrader.Algo.Common.Model
             Long.MarginUpdated = OnMarginUpdated;
             Short.MarginUpdated = OnMarginUpdated;
 
-            SymbolModel.RateUpdated += OnDeviationPriceUpdate;
+            //SymbolModel.RateUpdated += OnDeviationPriceUpdate;
         }
 
         private void OnProfitUpdated()

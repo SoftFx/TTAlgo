@@ -1,543 +1,148 @@
-﻿using Google.Protobuf.WellKnownTypes;
+using Google.Protobuf.WellKnownTypes;
 using System;
-using System.Collections.Generic;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Calc;
-using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class OrderModel : ObservableObject, IOrderModel2
+    public class OrderModel : IOrderModel2
     {
-        private Domain.OrderInfo.Types.Type orderType;
-        private Domain.OrderInfo.Types.Type initOrderType;
-        private decimal amount;
-        private decimal amountRemaining;
-        private Domain.OrderInfo.Types.Side side;
-        private decimal? price;
-        private decimal? stopPrice;
-        private decimal? limitPrice;
-        private decimal? maxVisibleVolume;
-        private decimal? swap;
-        private decimal? commission;
-        private DateTime? created;
-        private DateTime? expiration;
-        private string comment;
-        private string tag;
-        private string userTag;
-        private string instanceId;
-        private double? stopLoss;
-        private double? takeProfit;
-        private double? slippage;
-        private decimal? profit;
-        private decimal? margin;
-        private decimal? currentPrice;
-        private SymbolModel symbolModel;
-        private double? execPrice;
-        private double? reqOpenPrice;
-        private double? execAmount;
-        private double? lastFillPrice;
-        private double? lastFillAmount;
-        private DateTime? modified;
-        private string orderExecutionOptionsStr;
-        private string parentOrderId;
+        private string fullTag, userTag;
+
+        public string Id { get; }
+
+        public string Symbol { get; }
+
+        public OrderCalculator Calculator { get; set; }
+
+        public decimal CashMargin { get; set; }
+
+        public ISymbolInfo2 SymbolInfo { get; }
+
+        decimal IOrderCalcInfo.RemainingAmount => (decimal)RemainingAmount;
+
+        public bool IsHidden => MaxVisibleAmount.HasValue && MaxVisibleAmount.Value < 1e-9;
 
         public OrderModel(Domain.OrderInfo record, IOrderDependenciesResolver resolver)
         {
-            this.Id = record.Id;
-            this.OrderId = long.Parse(Id);
-            this.Symbol = record.Symbol;
-            this.symbolModel = resolver.GetSymbolOrNull(record.Symbol);
+            Id = record.Id;
+            Symbol = record.Symbol;
+            SymbolInfo = resolver.GetSymbolOrNull(record.Symbol);
             Update(record);
         }
 
         public OrderModel(ExecutionReport report, IOrderDependenciesResolver resolver)
         {
-            this.Id = report.OrderId ?? "0";
-            this.OrderId = long.Parse(Id);
-            this.Symbol = report.Symbol;
-            this.symbolModel = resolver.GetSymbolOrNull(report.Symbol);
+            Id = report.OrderId ?? "0";
+            Symbol = report.Symbol;
+            SymbolInfo = resolver.GetSymbolOrNull(report.Symbol);
             Update(report);
         }
 
-        //public event Action<BL.IOrderModel> EssentialParametersChanged;
-        public event Action<IOrderModel2> EssentialParametersChanged;
         public event Action<OrderEssentialsChangeArgs> EssentialsChanged;
         public event Action<OrderPropArgs<decimal>> SwapChanged;
         public event Action<OrderPropArgs<decimal>> CommissionChanged;
 
-        private double LotSize => symbolModel.LotSize;
 
-        #region Order Properties
+        public double Amount { get; private set; }
 
-        public string Id { get; private set; }
-        public long OrderId { get; private set; }
-        public string Symbol { get; private set; }
-        public decimal Amount
+        public double RemainingAmount { get; private set; }
+
+        public Domain.OrderInfo.Types.Type Type { get; private set; }
+
+        public Domain.OrderInfo.Types.Side Side { get; private set; }
+
+        public double? Price { get; private set; }
+
+        public double? LimitPrice { get; private set; }
+
+        public double? MaxVisibleAmount { get; private set; }
+
+        public double? StopPrice { get; private set; }
+
+        public decimal? Swap { get; private set; }
+
+        public decimal? Commission { get; private set; }
+
+        public DateTime? Created { get; private set; }
+
+        public DateTime? Expiration { get; private set; }
+
+        public string Comment { get; set; }
+
+        public string UserTag
         {
-            get { return amount; }
-            set
-            {
-                if (this.amount != value)
-                {
-                    this.amount = value;
-                    this.AmountLots = AmountToLots(value);
-                    NotifyOfPropertyChange(nameof(Amount));
-                    NotifyOfPropertyChange(nameof(AmountLots));
-                }
-            }
-        }
-        public decimal? AmountLots { get; private set; } = 0;
-        public decimal RemainingAmount
-        {
-            get { return amountRemaining; }
-            set
-            {
-                if (this.amountRemaining != value)
-                {
-                    this.amountRemaining = value;
-                    this.RemainingAmountLots = AmountToLots(value);
-                    NotifyOfPropertyChange(nameof(RemainingAmount));
-                    NotifyOfPropertyChange(nameof(RemainingAmountLots));
-                }
-            }
-        }
-        public decimal? RemainingAmountLots { get; private set; } = 0;
-        public Domain.OrderInfo.Types.Type OrderType
-        {
-            get { return orderType; }
-            set
-            {
-                if (orderType != value)
-                {
-                    this.orderType = value;
-                    NotifyOfPropertyChange(nameof(OrderType));
-                    NotifyOfPropertyChange(nameof(AggregatedType));
-                }
-            }
-        }
-        public Domain.OrderInfo.Types.Side Side
-        {
-            get { return side; }
+            get => userTag;
             private set
             {
-                if (side != value)
+                if (fullTag != value)
                 {
-                    side = value;
-                    NotifyOfPropertyChange(nameof(Side));
-                    NotifyOfPropertyChange(nameof(AggregatedType));
-                }
-            }
-        }
-        public decimal? Price
-        {
-            get { return price; }
-            set
-            {
-                if (price != value)
-                {
-                    price = value;
-                    NotifyOfPropertyChange(nameof(Price));
-                }
-            }
-        }
-        public decimal? LimitPrice
-        {
-            get { return limitPrice; }
-            set
-            {
-                if (limitPrice != value)
-                {
-                    limitPrice = value;
-                    NotifyOfPropertyChange(nameof(LimitPrice));
-                }
-            }
-        }
-        public decimal? MaxVisibleVolume
-        {
-            get { return maxVisibleVolume; }
-            set
-            {
-                if (maxVisibleVolume != value)
-                {
-                    maxVisibleVolume = value;
-                    NotifyOfPropertyChange(nameof(MaxVisibleVolume));
-                }
-            }
-        }
+                    fullTag = value;
 
-        public decimal? MaxVisibleVolumeToLots => maxVisibleVolume.HasValue ? maxVisibleVolume / (decimal)LotSize : null;
-
-        public decimal? StopPrice
-        {
-            get { return stopPrice; }
-            set
-            {
-                if (stopPrice != value)
-                {
-                    stopPrice = value;
-                    NotifyOfPropertyChange(nameof(StopPrice));
-                }
-            }
-        }
-        public decimal? Swap
-        {
-            get { return swap; }
-            private set
-            {
-                if (swap != value)
-                {
-                    var old = swap;
-                    swap = value;
-
-                    NotifyOfPropertyChange(nameof(Swap));
-                    SwapChanged?.Invoke(new OrderPropArgs<decimal>(this, old ?? 0, swap ?? 0));
-                }
-            }
-        }
-        public decimal? Commission
-        {
-            get { return commission; }
-            private set
-            {
-                if (commission != value)
-                {
-                    var old = commission;
-                    commission = value;
-
-                    NotifyOfPropertyChange(nameof(Commission));
-                    CommissionChanged?.Invoke(new OrderPropArgs<decimal>(this, old ?? 0, commission ?? 0));
-                }
-            }
-        }
-        public DateTime? Created
-        {
-            get { return created; }
-            private set
-            {
-                if (created != value)
-                {
-                    created = value;
-                    NotifyOfPropertyChange(nameof(Created));
-                }
-            }
-        }
-        public DateTime? Expiration
-        {
-            get { return expiration; }
-            private set
-            {
-                if (expiration != value)
-                {
-                    expiration = value;
-                    NotifyOfPropertyChange(nameof(Expiration));
-                }
-            }
-        }
-        public string Comment
-        {
-            get { return comment; }
-            private set
-            {
-                if (comment != value)
-                {
-                    comment = value;
-                    NotifyOfPropertyChange(nameof(Comment));
-                }
-            }
-        }
-        public string Tag
-        {
-            get { return userTag; }
-            private set
-            {
-                if (tag != value)
-                {
-                    tag = value;
-
-                    if (CompositeTag.TryParse(tag, out CompositeTag compositeTag))
+                    if (CompositeTag.TryParse(fullTag, out CompositeTag compositeTag))
                     {
                         userTag = compositeTag.Tag;
-                        instanceId = compositeTag.Key;
+                        InstanceId = compositeTag.Key;
                     }
                     else
                     {
-                        userTag = tag;
-                        instanceId = "";
+                        userTag = fullTag;
+                        InstanceId = "";
                     }
-
-                    NotifyOfPropertyChange(nameof(Tag));
-                    NotifyOfPropertyChange(nameof(InstanceId));
-                }
-            }
-        }
-        public string InstanceId
-        {
-            get { return instanceId; }
-            private set
-            {
-                if (instanceId != value)
-                {
-                    instanceId = value;
-                    NotifyOfPropertyChange(nameof(InstanceId));
-                }
-            }
-        }
-        public string ParentOrderId
-        {
-            get { return parentOrderId; }
-            private set
-            {
-                if (parentOrderId != value)
-                {
-                    parentOrderId = value;
-                    NotifyOfPropertyChange(nameof(ParentOrderId));
-                }
-            }
-        }
-        public double? TakeProfit
-        {
-            get { return takeProfit; }
-            private set
-            {
-                if (takeProfit != value)
-                {
-                    takeProfit = value;
-                    NotifyOfPropertyChange(nameof(TakeProfit));
-                }
-            }
-        }
-        public double? StopLoss
-        {
-            get { return stopLoss; }
-            private set
-            {
-                if (stopLoss != value)
-                {
-                    stopLoss = value;
-                    NotifyOfPropertyChange(nameof(StopLoss));
-                }
-            }
-        }
-        public double? Slippage
-        {
-            get { return slippage; }
-            private set
-            {
-                if (slippage != value)
-                {
-                    slippage = value;
-                    NotifyOfPropertyChange(nameof(Slippage));
-                }
-            }
-        }
-        public decimal? Profit
-        {
-            get { return profit; }
-            set
-            {
-                if (profit != value)
-                {
-                    profit = value;
-                    NotifyOfPropertyChange(nameof(Profit));
-                    NetProfit = profit + commission + swap;
-                    NotifyOfPropertyChange(nameof(NetProfit));
-                }
-            }
-        }
-        public decimal? Margin
-        {
-            get { return margin; }
-            set
-            {
-                if (margin != value)
-                {
-                    margin = value;
-                    NotifyOfPropertyChange(nameof(Margin));
-                }
-            }
-        }
-        public decimal? NetProfit { get; private set; }
-        public decimal? CurrentPrice
-        {
-            get { return currentPrice; }
-            set
-            {
-                if (currentPrice != value)
-                {
-                    currentPrice = value;
-                    NotifyOfPropertyChange(nameof(CurrentPrice));
                 }
             }
         }
 
-        public DateTime? Modified
-        {
-            get { return modified; }
-            private set
-            {
-                if (modified != value)
-                {
-                    modified = value;
-                    NotifyOfPropertyChange(nameof(Modified));
-                }
-            }
-        }
+        public string InstanceId { get; private set; }
 
-        public double? ExecPrice
-        {
-            get { return execPrice; }
-            set
-            {
-                if (execPrice != value)
-                {
-                    execPrice = value;
-                    NotifyOfPropertyChange(nameof(ExecPrice));
-                }
-            }
-        }
+        public string ParentOrderId { get; private set; }
 
-        public double? ExecAmount
-        {
-            get { return execAmount; }
-            set
-            {
-                if (execAmount != value)
-                {
-                    execAmount = value;
-                    ExecAmountLots = AmountToLots(value);
-                    NotifyOfPropertyChange(nameof(ExecAmount));
-                    NotifyOfPropertyChange(nameof(ExecAmountLots));
-                }
-            }
-        }
-        public double? ExecAmountLots { get; private set; }
+        public double? TakeProfit { get; private set; }
 
-        public double? LastFillPrice
-        {
-            get { return lastFillPrice; }
-            set
-            {
-                if (lastFillPrice != value)
-                {
-                    lastFillPrice = value;
-                    NotifyOfPropertyChange(nameof(LastFillPrice));
-                }
-            }
-        }
+        public double? StopLoss { get; private set; }
 
-        public double? LastFillAmount
-        {
-            get { return lastFillAmount; }
-            set
-            {
-                if (lastFillAmount != value)
-                {
-                    lastFillAmount = value;
-                    LastFillAmountLots = AmountToLots(value);
-                    NotifyOfPropertyChange(nameof(LastFillAmount));
-                    NotifyOfPropertyChange(nameof(LastFillAmountLots));
-                }
-            }
-        }
+        public double? Slippage { get; private set; }
 
-        public double? LastFillAmountLots { get; private set; }
+        public DateTime? Modified { get; private set; }
 
-        public string OrderExecutionOptionsStr
-        {
-            get => orderExecutionOptionsStr;
-            set
-            {
-                if (orderExecutionOptionsStr == value)
-                    return;
+        public double? ExecPrice { get; private set; }
+        public double? ExecAmount { get; private set; }
+        public double? LastFillPrice { get; private set; }
+        public double? LastFillAmount { get; private set; }
 
-                orderExecutionOptionsStr = value;
+        public Domain.OrderInfo.Types.Type InitialType { get; private set; }
 
-                NotifyOfPropertyChange(nameof(OrderExecutionOptionsStr));
-            }
-        }
-
-        public Domain.OrderInfo.Types.Type InitOrderType
-        {
-            get { return initOrderType; }
-            set
-            {
-                if (initOrderType != value)
-                {
-                    this.initOrderType = value;
-                    NotifyOfPropertyChange(nameof(InitOrderType));
-                }
-            }
-        }
-
-        public double? ReqOpenPrice
-        {
-            get => reqOpenPrice;
-            set
-            {
-                if (reqOpenPrice != value)
-                {
-                    this.reqOpenPrice = value;
-                    NotifyOfPropertyChange(nameof(ReqOpenPrice));
-                }
-            }
-        }
-
-        public string MarginCurrency => symbolModel?.BaseCurrency?.Name;
-        public string ProfitCurrency => symbolModel?.QuoteCurrency?.Name;
+        public double? ReqOpenPrice { get; private set; }
 
         public Domain.OrderOptions ExecOptions { get; private set; }
-
-        #endregion
-
-        #region IOrderModel
-        public AggregatedOrderType AggregatedType => side.Aggregate(orderType);
-
-        public OrderCalculator Calculator { get; set; }
-        public decimal CashMargin { get; set; }
-        public ISymbolInfo2 SymbolInfo => symbolModel;
-
-        double? IOrderCalcInfo.Price => (double?)Price;
-
-        double? IOrderCalcInfo.StopPrice => (double?)StopPrice;
-
-        public bool IsHidden => MaxVisibleVolume.HasValue && MaxVisibleVolume.Value == 0;
-
-        public OrderInfo.Types.Type Type => OrderType;
-
-        //double IOrderCalcInfo.Amount => (double)Amount;
-
-
-        #endregion
 
         public Domain.OrderInfo GetInfo()
         {
             return new Domain.OrderInfo
             {
                 Id = Id,
-                RemainingAmount = (double)RemainingAmount,
-                RequestedAmount = (double)Amount,
-                MaxVisibleAmount = (double?)MaxVisibleVolume,
+                RemainingAmount = RemainingAmount,
+                RequestedAmount = Amount,
+                MaxVisibleAmount = MaxVisibleAmount,
                 Symbol = Symbol,
-                InitialType = initOrderType,
-                Type = orderType,
+                InitialType = InitialType,
+                Type = Type,
                 Side = Side,
-                Price = (double?)LimitPrice ?? (double?)Price,
-                StopPrice = (double?)StopPrice,
-                StopLoss = stopLoss,
-                TakeProfit = takeProfit,
-                Slippage = slippage,
+                Price = LimitPrice ?? Price,
+                StopPrice = StopPrice,
+                StopLoss = StopLoss,
+                TakeProfit = TakeProfit,
+                Slippage = Slippage,
                 Comment = Comment,
-                UserTag = Tag,
+                UserTag = UserTag,
                 InstanceId = InstanceId,
                 Created = Created?.ToTimestamp(),
                 Modified = Modified?.ToTimestamp(),
-                ExecPrice = ExecPrice,
-                ExecAmount = ExecAmount,
-                LastFillPrice = LastFillPrice,
-                LastFillAmount = LastFillAmount,
+                ExecPrice = ExecPrice, //?? 
+                ExecAmount = ExecAmount, //??
+                LastFillPrice = LastFillPrice, //??
+                LastFillAmount = LastFillAmount, //??
                 Swap = (double)(Swap ?? 0),
                 Commission = (double)(Commission ?? 0),
                 Expiration = Expiration?.ToTimestamp(),
@@ -549,128 +154,101 @@ namespace TickTrader.Algo.Common.Model
 
         internal void Update(Domain.OrderInfo record)
         {
+            var isStopOrder = record.Type == Domain.OrderInfo.Types.Type.Stop || record.Type == Domain.OrderInfo.Types.Type.StopLimit;
+            var isLimitOrder = record.Type == Domain.OrderInfo.Types.Type.Limit || record.Type == Domain.OrderInfo.Types.Type.StopLimit;
+
             var oldAmount = Amount;
-            var oldPrice = OrderType == Domain.OrderInfo.Types.Type.Stop || OrderType == Domain.OrderInfo.Types.Type.StopLimit ? StopPrice : Price;
+            var oldPrice = Type == Domain.OrderInfo.Types.Type.Stop || Type == Domain.OrderInfo.Types.Type.StopLimit ? StopPrice : Price;
             var oldStopPrice = StopPrice;
             var oldType = Type;
+            var oldSwap = Swap;
+            var oldCommission = Commission;
+            var oldIsHidden = IsHidden;
 
-            this.Amount = (decimal)record.RequestedAmount;
-            this.RemainingAmount = (decimal)record.RemainingAmount;
-            this.OrderType = record.Type;
-            this.InitOrderType = record.InitialType;
-            this.Side = record.Side;
-            this.MaxVisibleVolume = (decimal?)record.MaxVisibleAmount;
-            this.Price = (decimal?)(record.Type == Domain.OrderInfo.Types.Type.Stop || record.Type == Domain.OrderInfo.Types.Type.StopLimit ? record.StopPrice : record.Price);
-            this.LimitPrice = (decimal?)(record.Type == Domain.OrderInfo.Types.Type.StopLimit || record.Type == Domain.OrderInfo.Types.Type.Limit ? record.Price : null);
-            this.StopPrice = (decimal?)record.StopPrice;
-            this.Created = record.Created?.ToDateTime();
-            this.Modified = record.Modified?.ToDateTime();
-            this.Expiration = record.Expiration?.ToDateTime();
-            this.Comment = record.Comment;
-            this.Tag = record.UserTag;
-            this.StopLoss = record.StopLoss;
-            this.TakeProfit = record.TakeProfit;
-            this.Slippage = record.Slippage;
-            this.Swap = (decimal?)record.Swap;
-            this.Commission = (decimal?)record.Commission;
-            this.ExecOptions = record.Options;
-            this.OrderExecutionOptionsStr = record.Options.ToString();
-            this.ReqOpenPrice = record.RequestedOpenPrice;
-            this.ParentOrderId = record.ParentOrderId;
-            //if (record.ImmediateOrCancel)
-            //{
-            //    this.RemainingAmount = (decimal)(record.InitialVolume - record.Volume);
-            //    this.ExecPrice = record.Price;
-            //    this.ExecAmount = record.Volume;
-            //    this.LastFillPrice = record.Price;
-            //    this.LastFillAmount = record.Volume;
-            //}
+            Amount = record.RequestedAmount;
+            RemainingAmount = record.RemainingAmount;
+            Type = record.Type;
+            InitialType = record.InitialType;
+            Side = record.Side;
+            MaxVisibleAmount = record.MaxVisibleAmount;
+            Price = isStopOrder ? record.StopPrice : record.Price;
+            LimitPrice = isLimitOrder ? record.Price : null;
+            StopPrice = record.StopPrice;
+            Created = record.Created?.ToDateTime();
+            Modified = record.Modified?.ToDateTime();
+            Expiration = record.Expiration?.ToDateTime();
+            Comment = record.Comment;
+            UserTag = record.UserTag;
+            StopLoss = record.StopLoss;
+            TakeProfit = record.TakeProfit;
+            Slippage = record.Slippage;
+            Swap = (decimal?)record.Swap;
+            Commission = (decimal?)record.Commission;
+            ExecOptions = record.Options;
+            ReqOpenPrice = record.RequestedOpenPrice;
+            ParentOrderId = record.ParentOrderId;
 
-            EssentialParametersChanged?.Invoke(this);
-            EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, (decimal)oldAmount, (double?)oldPrice, (double?)oldStopPrice, oldType, false));
+            EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, (decimal)oldAmount, oldPrice, oldStopPrice, oldType, oldIsHidden));
+
+            if (oldSwap != Swap)
+                SwapChanged?.Invoke(new OrderPropArgs<decimal>(this, oldSwap ?? 0, Swap ?? 0));
+
+            if (oldCommission != Commission)
+                CommissionChanged?.Invoke(new OrderPropArgs<decimal>(this, oldCommission ?? 0, Commission ?? 0));
         }
 
         internal void Update(ExecutionReport report)
         {
+            var isStopOrder = report.OrderType == Domain.OrderInfo.Types.Type.Stop || report.OrderType == Domain.OrderInfo.Types.Type.StopLimit;
+            var isLimitOrder = report.OrderType == Domain.OrderInfo.Types.Type.Limit || report.OrderType == Domain.OrderInfo.Types.Type.StopLimit;
+
             var oldAmount = Amount;
-            var oldPrice = OrderType == Domain.OrderInfo.Types.Type.Stop || OrderType == Domain.OrderInfo.Types.Type.StopLimit ? StopPrice : Price;
+            var oldPrice = Type == Domain.OrderInfo.Types.Type.Stop || Type == Domain.OrderInfo.Types.Type.StopLimit ? StopPrice : Price;
             var oldStopPrice = StopPrice;
             var oldType = Type;
+            var oldSwap = Swap;
+            var oldCommission = Commission;
+            var oldIsHidden = IsHidden;
 
-            this.Amount = report.InitialVolume.ToDecimalSafe() ?? 0M;
-            this.RemainingAmount = report.LeavesVolume.ToDecimalSafe() ?? 0M;
-            this.OrderType = report.OrderType;
-            this.InitOrderType = report.InitialOrderType;
-            this.Side = report.OrderSide;
-            this.MaxVisibleVolume = report.MaxVisibleVolume.ToDecimalSafe();
-            this.Price = (report.OrderType == Domain.OrderInfo.Types.Type.Stop || report.OrderType == Domain.OrderInfo.Types.Type.StopLimit ? report.StopPrice : report.Price).ToDecimalSafe();
-            this.LimitPrice = (report.OrderType == Domain.OrderInfo.Types.Type.StopLimit || report.OrderType == Domain.OrderInfo.Types.Type.Limit ? report.Price : null).ToDecimalSafe();
-            this.StopPrice = report.StopPrice.ToDecimalSafe();
-            this.Created = report.Created;
-            this.Modified = report.Modified;
-            this.Expiration = report.Expiration;
-            this.Comment = report.Comment;
-            this.Tag = report.Tag;
-            this.StopLoss = report.StopLoss;
-            this.TakeProfit = report.TakeProfit;
-            this.Slippage = report.Slippage;
-            this.Swap = report.Swap.ToDecimalSafe();
-            this.Commission = report.Commission.ToDecimalSafe();
-            this.ExecPrice = report.AveragePrice;
-            this.ExecAmount = report.ExecutedVolume.AsNullable();
-            this.LastFillPrice = report.TradePrice;
-            this.LastFillAmount = report.TradeAmount;
-            this.OrderExecutionOptionsStr = GetOrderExecOptions(report);
-            this.ReqOpenPrice = report.ReqOpenPrice;
-            this.ParentOrderId = report.ParentOrderId;
+            Amount = report.InitialVolume ?? 0;
+            RemainingAmount = report.LeavesVolume;
+            Type = report.OrderType;
+            InitialType = report.InitialOrderType;
+            Side = report.OrderSide;
+            MaxVisibleAmount = report.MaxVisibleVolume;
+            Price = isStopOrder ? report.StopPrice : report.Price;
+            LimitPrice = isLimitOrder ? report.Price : null;
+            StopPrice = report.StopPrice;
+            Created = report.Created;
+            Modified = report.Modified;
+            Expiration = report.Expiration;
+            Comment = report.Comment;
+            UserTag = report.Tag;
+            StopLoss = report.StopLoss;
+            TakeProfit = report.TakeProfit;
+            Slippage = report.Slippage;
+            Swap = report.Swap.ToDecimalSafe();
+            Commission = report.Commission.ToDecimalSafe();
+            ExecPrice = report.AveragePrice; //??
+            ExecAmount = report.ExecutedVolume.AsNullable(); //??
+            LastFillPrice = report.TradePrice; //??
+            LastFillAmount = report.TradeAmount; //??
+            ReqOpenPrice = report.ReqOpenPrice;
+            ParentOrderId = report.ParentOrderId;
 
             if (report.ImmediateOrCancel)
                 ExecOptions = Domain.OrderOptions.ImmediateOrCancel;
 
-            EssentialParametersChanged?.Invoke(this);
-            EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, (decimal)oldAmount, (double?)oldPrice, (double?)oldStopPrice, oldType, false));
-        }
+            if (IsHidden)
+                ExecOptions |= Domain.OrderOptions.HiddenIceberg;
 
-        private decimal? AmountToLots(decimal? volume)
-        {
-            if (volume == null || symbolModel == null)
-                return null;
+            EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, (decimal)oldAmount, oldPrice, oldStopPrice, oldType, oldIsHidden));
 
-            return volume / (decimal)symbolModel.LotSize;
-        }
+            if (oldSwap != Swap)
+                SwapChanged?.Invoke(new OrderPropArgs<decimal>(this, oldSwap ?? 0, Swap ?? 0));
 
-        private double? AmountToLots(double? volume)
-        {
-            if (volume == null || symbolModel == null)
-                return null;
-
-            return volume / symbolModel.LotSize;
-        }
-
-        private TradeVolume ToVolume(decimal? volume, decimal? volumeLots)
-        {
-            return new TradeVolume((double?)volume ?? double.NaN, (double?)volumeLots ?? double.NaN);
-        }
-
-        private TradeVolume ToVolume(double? volume, double? volumeLots)
-        {
-            return new TradeVolume(volume ?? double.NaN, volumeLots ?? double.NaN);
-        }
-
-        private string GetOrderExecOptions(ExecutionReport report)
-        {
-            var op = new List<Domain.OrderOptions>();
-
-            if (report.ImmediateOrCancel)
-                op.Add(Domain.OrderOptions.ImmediateOrCancel);
-
-            if (report.MarketWithSlippage)
-                op.Add(Domain.OrderOptions.MarketWithSlippage);
-
-            if (report.MaxVisibleVolume >= 0)
-                op.Add(Domain.OrderOptions.HiddenIceberg);
-
-            return string.Join(",", op);
+            if (oldCommission != Commission)
+                CommissionChanged?.Invoke(new OrderPropArgs<decimal>(this, oldCommission ?? 0, Commission ?? 0));
         }
     }
 

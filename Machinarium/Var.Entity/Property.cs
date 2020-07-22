@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Machinarium.Var
 {
@@ -16,24 +12,22 @@ namespace Machinarium.Var
     public class PropertyBase<TVar, T> : IProperty<T>, INotifyPropertyChanged, IDisposable
         where TVar : Var<T>, new()
     {
-        private TVar _var;
+        private readonly TVar _var;
 
         internal PropertyBase()
         {
             _var = new TVar();
             _var.SetContext(this);
-            _var.Changed += () => NotifyPropertyChange(nameof(Value));
+            _var.Changed += NotificationCall;
         }
 
         internal string Name { get; set; }
 
-        protected void NotifyPropertyChange(string name)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-        }
+        internal IDisplayValueConverter<T> DisplayConverter { get; set; }
 
         public virtual void Dispose()
         {
+            _var.Changed -= NotificationCall;
             _var.Dispose();
         }
 
@@ -49,16 +43,35 @@ namespace Machinarium.Var
             set => _var.Value = value;
         }
 
+        public string DisplayValue => ConvertValueTo(Value);
+
         Var<T> IProperty<T>.Var => Var;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public override string ToString()
+        public override string ToString() => $"{Name ?? nameof(TVar)}: {Value}";
+
+        protected void NotifyPropertyChange(string name)
         {
-            if (Name == null)
-                return nameof(TVar) + ": " + Value;
-            else
-                return Name + ": " + Value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
+        private string ConvertValueTo(T value)
+        {
+            try
+            {
+                return DisplayConverter != null ? DisplayConverter.Convert(value) : value.ToString();
+            }
+            catch
+            {
+                return value.ToString();
+            }
+        }
+
+        private void NotificationCall()
+        {
+            NotifyPropertyChange(nameof(Value));
+            NotifyPropertyChange(nameof(DisplayValue));
         }
     }
 

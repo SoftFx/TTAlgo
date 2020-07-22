@@ -24,9 +24,9 @@ namespace TickTrader.BotTerminal
             _isBacktester = isBacktester;
 
             Positions = model.Orders
-                .Where((id, order) => order.OrderType == Algo.Domain.OrderInfo.Types.Type.Position)
+                .Where((id, order) => order.Type == Algo.Domain.OrderInfo.Types.Type.Position)
                 .OrderBy((id, order) => id)
-                .Select(o => new OrderViewModel(o, symbols.GetOrDefault(o.Symbol), model))
+                .Select(o => new OrderViewModel(o, symbols.GetOrDefault(o.Symbol), model.BalanceDigits))
                 .AsObservable();
 
             Positions.CollectionChanged += PositionsCollectionChanged;

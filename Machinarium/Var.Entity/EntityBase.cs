@@ -56,11 +56,14 @@ namespace Machinarium.Var
             }
         }
 
-        protected Property<T> AddProperty<T>(T initialValue = default(T), string notifyName = null)
+        protected Property<T> AddProperty<T>(T initialValue = default, IDisplayValueConverter<T> displayConverter = null, string notifyName = null)
         {
-            var property = new Property<T>();
-            property.Value = initialValue;
-            property.Name = notifyName;
+            var property = new Property<T>
+            {
+                Value = initialValue,
+                Name = notifyName,
+                DisplayConverter = displayConverter,
+            };
             AddChild(property);
             return property;
         }

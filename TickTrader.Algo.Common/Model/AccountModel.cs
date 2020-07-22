@@ -394,7 +394,7 @@ namespace TickTrader.Algo.Common.Model
 
                 if (order != null)
                 {
-                    bool replaceOrder = order.OrderType != report.OrderType; //crutch should be call before order Update
+                    bool replaceOrder = order.Type != report.OrderType; //crutch should be call before order Update
 
                     OrderRemoved?.Invoke(order);
                     order.Update(report);
@@ -435,7 +435,7 @@ namespace TickTrader.Algo.Common.Model
             {
                 order = Orders.GetOrDefault(report.Id);
 
-                bool typeChanged = order.OrderType != report.Type;
+                bool typeChanged = order.Type != report.Type;
 
                 OrderRemoved?.Invoke(order);
                 order.Update(report);
