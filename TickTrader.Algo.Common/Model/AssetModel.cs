@@ -1,33 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Common.Lib;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class AssetModel : ObservableObject, IAssetModel2
+    public class AssetModel : IAssetModel2
     {
-        private string currency;
-        private decimal amount;
-        private double tradeAmount;
-        private decimal margin;
-        private Currency currencyInfo;
+        private decimal _margin;
 
-        public AssetModel(double balance, string currency, IReadOnlyDictionary<string, CurrencyEntity> currencies)
+        public AssetModel(double balance, string currency)
         {
-            this.currency = currency;
-            this.amount = (decimal)balance;
-            currencyInfo = currencies.GetOrDefault(currency) ?? Null.Currency;
+            Currency = currency;
+            Amount = (decimal)balance;
         }
 
-        public AssetModel(Domain.AssetInfo asset, IReadOnlyDictionary<string, CurrencyEntity> currencies)
+        public AssetModel(Domain.AssetInfo asset)
         {
             Currency = asset.Currency;
-            currencyInfo = currencies.GetOrDefault(currency) ?? Null.Currency;
             Update(asset);
         }
 
@@ -36,58 +24,34 @@ namespace TickTrader.Algo.Common.Model
             Amount = (decimal)asset.Balance;
         }
 
-        public string Currency
-        {
-            get { return currency; }
-            private set
-            {
-                if (currency != value)
-                {
-                    currency = value;
-                    NotifyOfPropertyChange(nameof(Currency));
-                }
-            }
-        }
+        public string Currency { get; private set; }
 
-        public decimal Amount
-        {
-            get { return amount; }
-            private set
-            {
-                if (amount != value)
-                {
-                    amount = value;
-                    NotifyOfPropertyChange(nameof(Amount));
-                }
-            }
-        }
+        public decimal Amount { get; private set; }
 
         public decimal Margin
         {
-            get { return margin; }
+            get => _margin;
+
             set
             {
-                if (margin != value)
-                {
-                    margin = value;
-                    NotifyOfPropertyChange(nameof(Margin));
-                    NotifyOfPropertyChange(nameof(FreeAmount));
-                    NotifyOfPropertyChange(nameof(LockedAmount));
-                }
+                if (_margin == value)
+                    return;
+
+                _margin = value;
+
+                MarginUpdate?.Invoke();
             }
         }
 
         public decimal FreeAmount => Amount - Margin;
+
         public decimal LockedAmount => Margin;
+
+        public Action MarginUpdate;
 
         public Domain.AssetInfo GetInfo()
         {
-            return new Domain.AssetInfo((double)amount, currency);
-        }
-
-        public AssetEntity GetEntity()
-        {
-            return new AssetEntity((double)amount, currency);
+            return new Domain.AssetInfo((double)Amount, Currency);
         }
     }
 }

@@ -166,7 +166,6 @@
     <Compile Include="Model.Setup\Inputs\BarToDoubleInputSetupModel.cs" />
     <Compile Include="Model.Setup\Inputs\QuoteToBarInputSetupModel.cs" />
     <Compile Include="Model.Setup\Interfaces.cs" />
-    <Compile Include="Lib\ObservableObject.cs" />
     <Compile Include="Model.Setup\Outputs\OutputSetupModel.cs" />
     <Compile Include="Model.Setup\Parameters\ParameterSetupModel.cs" />
     <Compile Include="Model.Setup\PluginSetupModel.cs" />

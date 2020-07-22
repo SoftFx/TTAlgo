@@ -155,7 +155,7 @@ namespace TickTrader.Algo.Common.Model
 
             foreach (var fdkAsset in assets)
             {
-                var model = new AssetModel(fdkAsset, _currencies);
+                var model = new AssetModel(fdkAsset);
                 this._assets.Add(fdkAsset.Currency, model);
 
                 AssetsChanged?.Invoke(model, AssetChangeType.Added);
@@ -254,7 +254,7 @@ namespace TickTrader.Algo.Common.Model
 
         private void UpdateAsset(Domain.AssetInfo assetInfo)
         {
-            var model = new AssetModel(assetInfo, _currencies);
+            var model = new AssetModel(assetInfo);
 
             if (assetInfo.Balance == 0)
                 _assets.Remove(assetInfo.Currency);
@@ -273,7 +273,7 @@ namespace TickTrader.Algo.Common.Model
             }
             else if (Type == Domain.AccountInfo.Types.Type.Cash)
             {
-                var model = new AssetModel(newBalance, currency, _currencies);
+                var model = new AssetModel(newBalance, currency);
 
                 if (newBalance != 0)
                     _assets[currency] = model;

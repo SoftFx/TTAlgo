@@ -14,7 +14,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
-    class AssetsViewModel : AccountBasedViewModel
+    sealed class AssetsViewModel : AccountBasedViewModel
     {
         public AssetsViewModel(AccountModel model, IReadOnlyDictionary<string, CurrencyEntity> currencies, IConnectionStatusInfo connection)
             : base(model, connection)
