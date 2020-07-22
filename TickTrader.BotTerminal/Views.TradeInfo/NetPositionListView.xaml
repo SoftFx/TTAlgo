@@ -9,10 +9,12 @@
     <Grid>
         <DataGrid Name="Positions" Style="{DynamicResource DataGridWithBusyIndicatorStyle}" ClipboardCopyMode="IncludeHeader" SelectionMode="Extended"
                   l:DataGridExt.AutoSize="{Binding AutoSizeColumns}">
+
             <DataGrid.Resources>
                 <l:DataGridColumnHide x:Key="CurrectPriceShow" Provider="{Binding StateProvider}" ColumnKey="CurrentPrice"/>
                 <l:DataGridColumnHide x:Key="SwapShow" Provider="{Binding StateProvider}" ColumnKey="Swap"/>
             </DataGrid.Resources>
+
             <DataGrid.ContextMenu>
                 <ContextMenu>
                     <MenuItem Header="{l:Resx Copy}" Command="ApplicationCommands.Copy"></MenuItem>
@@ -21,51 +23,27 @@
                     <MenuItem Header="{l:Resx ShowSwap}" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource SwapShow}}"/>
                 </ContextMenu>
             </DataGrid.ContextMenu>
+
             <DataGrid.Columns>
-                <DataGridTextColumn Header="{l:Resx Position_Id}" Width="100" Binding="{Binding Position.Id}"/>
-                <DataGridTextColumn Header="{l:Resx Position_Symbol}" Width="100" Binding="{Binding Position.Symbol}"/>
-                <DataGridTextColumn Header="{l:Resx Position_ModifiedTime}" Width="100" Binding="{Binding Position.Modified, Converter={StaticResource FullDateTimeFormat}}" SortMemberPath="{Binding SortedNumber}"/>
-                <DataGridTextColumn Header="{l:Resx Position_Side}" Width="100" Binding="{Binding Position.Side}"/>
-                <DataGridTextColumn Header="{l:Resx Position_Volume}" Width="100" Binding="{Binding Position.AmountLots}"/>
-                <DataGridTextColumn Header="{l:Resx Position_OpenPrice}" Width="100">
-                    <DataGridTextColumn.Binding>
-                        <MultiBinding Converter="{StaticResource PriceConverter}">
-                            <Binding Path="Position.Price"/>
-                            <Binding Path="PriceDigits"/>
-                        </MultiBinding>
-                    </DataGridTextColumn.Binding>
-                </DataGridTextColumn>
-                <DataGridTextColumn Header="{l:Resx Position_CurrentPrice}" Width="100" SortMemberPath="CurrentPrice.Rate" Visibility="{Binding Visibility, Source={StaticResource CurrectPriceShow}}">
-                    <DataGridTextColumn.Binding>
-                        <MultiBinding Converter="{StaticResource PriceConverter}" >
-                            <Binding Path="CurrentPrice.Rate"/>
-                            <Binding Path="CurrentPrice.Precision"/>
-                        </MultiBinding>
-                    </DataGridTextColumn.Binding>
-                </DataGridTextColumn>
-                <DataGridTextColumn Header="{l:Resx Position_PriceDeviation}" Width="100">
-                    <DataGridTextColumn.Binding>
-                        <MultiBinding Converter="{StaticResource PriceConverter}">
-                            <Binding Path="Position.DeviationPrice"/>
-                            <Binding Path="PriceDigits"/>
-                        </MultiBinding>
-                    </DataGridTextColumn.Binding>
-                </DataGridTextColumn>
-                <DataGridTextColumn Header="{l:Resx Position_Swap}" Width="100" Binding="{Binding Position.Swap}" Visibility="{Binding Visibility, Source={StaticResource SwapShow}}"/>
-                <DataGridTextColumn Header="{l:Resx Position_Net_P_L}" Width="100">
-                    <DataGridTextColumn.Binding>
-                        <MultiBinding Converter="{StaticResource AmountConverter}">
-                            <Binding Path="Position.NetProfit"/>
-                            <Binding Path="ProfitDigits"/>
-                        </MultiBinding>
-                    </DataGridTextColumn.Binding>
-                    <DataGridTextColumn.ClipboardContentBinding>
-                        <MultiBinding Converter="{StaticResource ClipboardNumberConverter}">
-                            <Binding Path="Position.NetProfit"/>
-                            <Binding Path="ProfitDigits"/>
-                        </MultiBinding>
-                    </DataGridTextColumn.ClipboardContentBinding>
-                </DataGridTextColumn>
+                <DataGridTextColumn Header="{l:Resx Position_Id}" Width="100" Binding="{Binding Id}"/>
+
+                <DataGridTextColumn Header="{l:Resx Position_Symbol}" Width="100" Binding="{Binding Symbol}"/>
+
+                <DataGridTextColumn Header="{l:Resx Position_ModifiedTime}" Width="100" Binding="{Binding Modified.Value, Converter={StaticResource FullDateTimeFormat}}" SortMemberPath="{Binding SortedNumber}"/>
+
+                <DataGridTextColumn Header="{l:Resx Position_Side}" Width="100" Binding="{Binding Side.Value}"/>
+
+                <DataGridTextColumn Header="{l:Resx Position_Volume}" Width="100" Binding="{Binding Volume.DisplayValue}"/>
+
+                <DataGridTextColumn Header="{l:Resx Position_OpenPrice}" Width="100" Binding="{Binding Price.DisplayValue}"/>
+
+                <DataGridTextColumn Header="{l:Resx Position_CurrentPrice}" Width="100" Binding="{Binding CurrentPrice.Rate}" Visibility="{Binding Visibility, Source={StaticResource CurrectPriceShow}}"/>
+
+                <DataGridTextColumn Header="{l:Resx Position_PriceDeviation}" Width="100" Binding="{Binding DeviationPrice.DisplayValue}"/>
+
+                <DataGridTextColumn Header="{l:Resx Position_Swap}" Width="100" Binding="{Binding Swap.Value}" Visibility="{Binding Visibility, Source={StaticResource SwapShow}}"/>
+
+                <DataGridTextColumn Header="{l:Resx Position_Net_P_L}" Width="100" Binding="{Binding NetProfit.DisplayValue}" ClipboardContentBinding="{Binding NetProfit.DisplayValue}"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>
