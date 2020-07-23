@@ -11,6 +11,8 @@ namespace TickTrader.Algo.Core
 {
     internal class ServerRuntimeV1Handler : IRpcHandler
     {
+        private static readonly Any VoidResponse = Any.Pack(new VoidResponse());
+
         private readonly AlgoServer _server;
         private PluginExecutor _executor;
         private RpcSession _session;
@@ -29,15 +31,7 @@ namespace TickTrader.Algo.Core
 
         public void HandleNotification(string callId, Any payload)
         {
-            if (payload.Is(OpenOrderRequest.Descriptor))
-                OpenOrderRequestHandler(payload);
-            else if (payload.Is(ModifyOrderRequest.Descriptor))
-                ModifyOrderRequestHandler(payload);
-            else if (payload.Is(CloseOrderRequest.Descriptor))
-                CloseOrderRequestHandler(payload);
-            else if (payload.Is(CancelOrderRequest.Descriptor))
-                CancelOrderRequestHandler(payload);
-            else if (payload.Is(UnitLogRecord.Descriptor))
+             if (payload.Is(UnitLogRecord.Descriptor))
                 UnitLogRecordHandler(payload);
         }
 
@@ -81,6 +75,14 @@ namespace TickTrader.Algo.Core
                 return OrderListRequestHandler(callId);
             else if (payload.Is(PositionListRequest.Descriptor))
                 return PositionListRequestHandler(callId);
+            else if (payload.Is(OpenOrderRequest.Descriptor))
+                return OpenOrderRequestHandler(payload);
+            else if (payload.Is(ModifyOrderRequest.Descriptor))
+                return ModifyOrderRequestHandler(payload);
+            else if (payload.Is(CloseOrderRequest.Descriptor))
+                return CloseOrderRequestHandler(payload);
+            else if (payload.Is(CancelOrderRequest.Descriptor))
+                return CancelOrderRequestHandler(payload);
             return null;
         }
 
@@ -154,28 +156,32 @@ namespace TickTrader.Algo.Core
             return Any.Pack(response);
         }
 
-        private void OpenOrderRequestHandler(Any payload)
+        private Any OpenOrderRequestHandler(Any payload)
         {
             var request = payload.Unpack<OpenOrderRequest>();
             _executor.TradeExecutor.SendOpenOrder(request);
+            return VoidResponse;
         }
 
-        private void ModifyOrderRequestHandler(Any payload)
+        private Any ModifyOrderRequestHandler(Any payload)
         {
             var request = payload.Unpack<ModifyOrderRequest>();
             _executor.TradeExecutor.SendModifyOrder(request);
+            return VoidResponse;
         }
 
-        private void CloseOrderRequestHandler(Any payload)
+        private Any CloseOrderRequestHandler(Any payload)
         {
             var request = payload.Unpack<CloseOrderRequest>();
             _executor.TradeExecutor.SendCloseOrder(request);
+            return VoidResponse;
         }
 
-        private void CancelOrderRequestHandler(Any payload)
+        private Any CancelOrderRequestHandler(Any payload)
         {
             var request = payload.Unpack<CancelOrderRequest>();
             _executor.TradeExecutor.SendCancelOrder(request);
+            return VoidResponse;
         }
 
         private void UnitLogRecordHandler(Any payload)

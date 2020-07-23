@@ -78,22 +78,30 @@ namespace TickTrader.Algo.Core
 
         internal void SendOpenOrder(OpenOrderRequest request)
         {
-            _session.Tell(RpcMessage.Notification(request));
+            var context = new RpcResponseTaskContext<VoidResponse>(SingleReponseHandler);
+            _session.Ask(RpcMessage.Request(request), context);
+            context.TaskSrc.Task.GetAwaiter().GetResult();
         }
 
         internal void SendModifyOrder(ModifyOrderRequest request)
         {
-            _session.Tell(RpcMessage.Notification(request));
+            var context = new RpcResponseTaskContext<VoidResponse>(SingleReponseHandler);
+            _session.Ask(RpcMessage.Request(request), context);
+            context.TaskSrc.Task.GetAwaiter().GetResult();
         }
 
         internal void SendCloseOrder(CloseOrderRequest request)
         {
-            _session.Tell(RpcMessage.Notification(request));
+            var context = new RpcResponseTaskContext<VoidResponse>(SingleReponseHandler);
+            _session.Ask(RpcMessage.Request(request), context);
+            context.TaskSrc.Task.GetAwaiter().GetResult();
         }
 
         internal void SendCancelOrder(CancelOrderRequest request)
         {
-            _session.Tell(RpcMessage.Notification(request));
+            var context = new RpcResponseTaskContext<VoidResponse>(SingleReponseHandler);
+            _session.Ask(RpcMessage.Request(request), context);
+            context.TaskSrc.Task.GetAwaiter().GetResult();
         }
 
 

@@ -23,6 +23,8 @@ message RpcError {
     string details = 2;
 }
 
+message VoidResponse { }
+
 message Heartbeat { }
 
 message ProtocolSpec {
