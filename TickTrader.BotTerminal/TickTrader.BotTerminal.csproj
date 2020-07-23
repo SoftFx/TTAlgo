@@ -358,7 +358,6 @@
     <Compile Include="Lib\HsvColor.cs" />
     <Compile Include="Lib\ObservableCircularList.cs" />
     <Compile Include="Lib\ObservableComposer.cs" />
-    <Compile Include="Lib\ListIndexer.cs" />
     <Compile Include="Lib\ComputerInfo.cs" />
     <Compile Include="Lib\ChartBarVector.cs" />
     <Compile Include="Lib\ObservableSetWithCount.cs" />
@@ -412,7 +411,6 @@
     <Compile Include="Model.Protocol\RemoteTradeBot.cs" />
     <Compile Include="Model\BacktesterAdapter.cs" />
     <Compile Include="Model\BacktesterSettings.cs" />
-    <Compile Include="Model\BotNameAggregator.cs" />
     <Compile Include="Model\BotsWarden.cs" />
     <Compile Include="Model\DispatcherSync.cs" />
     <Compile Include="Model\FileHistory.cs" />
@@ -433,7 +431,6 @@
     <Compile Include="Model\TradeTransactionModel.cs" />
     <Compile Include="Model\Journal.cs" />
     <Compile Include="Model\ObservableTask.cs" />
-    <Compile Include="Model\OrderAmountModel.cs" />
     <Compile Include="Model\ConnectionManager.cs" />
     <Compile Include="Model.Auth\AuthEntry.cs" />
     <Compile Include="Model.Auth\AuthStorageModel.cs" />
@@ -459,12 +456,9 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="Lib\Activity.cs" />
-    <Compile Include="Lib\DataflowHelper.cs" />
     <Compile Include="Lib\DispatcherStateMachineSync.cs" />
     <Compile Include="Lib\ObservableDictionary.cs" />
     <Compile Include="Lib\ObservableSortedList.cs" />
-    <Compile Include="Lib\UiTaskScheduler.cs" />
     <Compile Include="Model.Charts\BarChatModel.cs" />
     <Compile Include="Model.Charts\ChartNavigator.cs" />
     <Compile Include="Model.Algo\IndicatorModel.cs" />
@@ -472,7 +466,6 @@
     <Compile Include="Model.Charts\TimelineModel.cs" />
     <Compile Include="Model.Algo\Interfaces.cs" />
     <Compile Include="Model\LocMsg.cs" />
-    <Compile Include="Model\RateSplitModel.cs" />
     <Compile Include="Model\TraderClientModel.cs" />
     <Compile Include="Resx\Sounds\Sounds.Designer.cs">
       <AutoGen>True</AutoGen>
