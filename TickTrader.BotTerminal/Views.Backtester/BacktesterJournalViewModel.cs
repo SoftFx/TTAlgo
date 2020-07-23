@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -22,14 +23,14 @@ namespace TickTrader.BotTerminal
             DisplayName = "Journal";
         }
 
-        public ObservableCollection<PluginLogRecord> JournalRecords { get; } = new ObservableCollection<PluginLogRecord>();
+        public ObservableCollection<UnitLogRecord> JournalRecords { get; } = new ObservableCollection<UnitLogRecord>();
 
         //public void SetData(List<BotLogRecord> records)
         //{
         //    _journalContent.Value = records;
         //}
 
-        public void Append(PluginLogRecord record)
+        public void Append(UnitLogRecord record)
         {
             JournalRecords.Add(record);
         }
@@ -59,7 +60,7 @@ namespace TickTrader.BotTerminal
                             var record = records[i];
                             var sevString = TxtFormat(record.Severity);
 
-                            writer.Write(record.Time.Timestamp.ToString(InvariantFormat.DateFormat));
+                            writer.Write(record.TimeUtc.ToDateTime().ToString(InvariantFormat.DateFormat));
                             writer.Write(" [{0}] ", sevString);
 
                             var nextLineSpaceSize = InvariantFormat.DateFormatFixedLength + 4 + sevString.Length;
@@ -81,11 +82,11 @@ namespace TickTrader.BotTerminal
             observer.StartProgress(0, records.Count);
         }
 
-        private string TxtFormat(LogSeverities severity)
+        private string TxtFormat(UnitLogRecord.Types.LogSeverity severity)
         {
             switch (severity)
             {
-                case LogSeverities.TradeSuccess: return "Trade";
+                case UnitLogRecord.Types.LogSeverity.TradeSuccess: return "Trade";
                 default: return severity.ToString();
             }
         }

@@ -1,10 +1,12 @@
-﻿using NLog;
+﻿using Google.Protobuf.WellKnownTypes;
+using NLog;
 using System;
 using System.Linq;
 using System.Threading;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -21,7 +23,7 @@ namespace TickTrader.BotTerminal
         private int _logsSubscriptionCnt;
         private Timer _statusTimer;
         private Timer _logsTimer;
-        private DateTime _lastLogTimeUtc;
+        private Timestamp _lastLogTimeUtc;
 
 
         public BotModelInfo Info { get; private set; }
@@ -141,7 +143,7 @@ namespace TickTrader.BotTerminal
 
         private void ResetJournal()
         {
-            _lastLogTimeUtc = new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            _lastLogTimeUtc = new Timestamp(); // 1970-01-01
             Journal.Clear();
         }
 
@@ -172,7 +174,7 @@ namespace TickTrader.BotTerminal
                 var logs = await _agent.GetBotLogs(InstanceId, _lastLogTimeUtc);
                 if (logs.Length > 0)
                 {
-                    _lastLogTimeUtc = logs.Max(l => l.TimeUtc).Timestamp;
+                    _lastLogTimeUtc = logs.Max(l => l.TimeUtc);
 
                     Journal.Add(logs.Select(Convert).ToList());
                 }
@@ -187,20 +189,20 @@ namespace TickTrader.BotTerminal
 
         private BotMessage Convert(LogRecordInfo record)
         {
-            return new BotMessage(record.TimeUtc.ToLocalTime(), InstanceId, record.Message, Convert(record.Severity));
+            return new BotMessage(record.TimeUtc, InstanceId, record.Message, Convert(record.Severity));
         }
 
-        private JournalMessageType Convert(LogSeverity severity)
+        private JournalMessageType Convert(UnitLogRecord.Types.LogSeverity severity)
         {
             switch (severity)
             {
-                case LogSeverity.Info: return JournalMessageType.Info;
-                case LogSeverity.Error: return JournalMessageType.Error;
-                case LogSeverity.Custom: return JournalMessageType.Custom;
-                case LogSeverity.Trade: return JournalMessageType.Trading;
-                case LogSeverity.TradeSuccess: return JournalMessageType.TradingSuccess;
-                case LogSeverity.TradeFail: return JournalMessageType.TradingFail;
-                case LogSeverity.Alert: return JournalMessageType.Alert;
+                case UnitLogRecord.Types.LogSeverity.Info: return JournalMessageType.Info;
+                case UnitLogRecord.Types.LogSeverity.Error: return JournalMessageType.Error;
+                case UnitLogRecord.Types.LogSeverity.Custom: return JournalMessageType.Custom;
+                case UnitLogRecord.Types.LogSeverity.Trade: return JournalMessageType.Trading;
+                case UnitLogRecord.Types.LogSeverity.TradeSuccess: return JournalMessageType.TradingSuccess;
+                case UnitLogRecord.Types.LogSeverity.TradeFail: return JournalMessageType.TradingFail;
+                case UnitLogRecord.Types.LogSeverity.Alert: return JournalMessageType.Alert;
                 default: return JournalMessageType.Info;
             }
         }

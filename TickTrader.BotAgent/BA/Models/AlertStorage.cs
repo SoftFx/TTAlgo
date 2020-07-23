@@ -11,6 +11,7 @@ using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using ActorSharp;
 using System.Text;
+using Google.Protobuf.WellKnownTypes;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -57,15 +58,15 @@ namespace TickTrader.BotAgent.BA.Models
             config.AddRule(LogLevel.Warn, LogLevel.Warn, alertTarget);
         }
 
-        public Task<List<IAlertEntry>> QueryAlertsAsync(DateTime from, int maxCount)
+        public Task<List<IAlertEntry>> QueryAlertsAsync(Timestamp from, int maxCount)
         {
-            return Task.FromResult(_alertStorage.Where(u => u.TimeUtc.Timestamp > from).Take(maxCount).ToList());
+            return Task.FromResult(_alertStorage.Where(u => u.TimeUtc > from).Take(maxCount).ToList());
         }
     }
 
     public class AlertRecord : IAlertEntry
     {
-        public TimeKey TimeUtc { get; }
+        public Timestamp TimeUtc { get; }
 
         public string Message { get; }
 
@@ -75,7 +76,7 @@ namespace TickTrader.BotAgent.BA.Models
         {
         }
 
-        public AlertRecord(TimeKey time, string message, string id)
+        public AlertRecord(Timestamp time, string message, string id)
         {
             TimeUtc = time;
             Message = message;

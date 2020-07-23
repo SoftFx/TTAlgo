@@ -397,11 +397,6 @@ namespace TickTrader.BotTerminal
             OptimizationResultsPage.Stop(tester);
         }
 
-        private PluginLogRecord CreateInfoRecord(uint no, string message)
-        {
-            return new PluginLogRecord(new TimeKey(_emulteFrom, no), LogSeverities.Info, message, null);
-        }
-
         private void Executor_TradeHistoryUpdated(TradeReportEntity record)
         {
             var currencies = _client.Currencies;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 using TickTrader.BotAgent.BA.Models;
 
 namespace TickTrader.BotAgent.BA
@@ -87,12 +89,10 @@ namespace TickTrader.BotAgent.BA
         string GetFileWritePath(string name);
     }
 
-    public enum LogEntryType { Info, Trading, Error, Custom, TradingSuccess, TradingFail, Alert }
-
     public interface ILogEntry
     {
-        TimeKey TimeUtc { get; }
-        LogEntryType Type { get; }
+        Timestamp TimeUtc { get; }
+        UnitLogRecord.Types.LogSeverity Severity { get; }
         string Message { get; }
     }
 
@@ -101,19 +101,19 @@ namespace TickTrader.BotAgent.BA
         IEnumerable<ILogEntry> Messages { get; }
         string Status { get; }
         Task<string> GetStatusAsync();
-        Task<List<ILogEntry>> QueryMessagesAsync(DateTime from, int maxCount);
+        Task<List<ILogEntry>> QueryMessagesAsync(Timestamp from, int maxCount);
     }
 
     public interface IAlertEntry
     {
-        TimeKey TimeUtc { get; }
+        Timestamp TimeUtc { get; }
         string Message { get; }
         string BotId { get; }
     }
 
     public interface IAlertStorage
     {
-        Task<List<IAlertEntry>> QueryAlertsAsync(DateTime from, int maxCount);
+        Task<List<IAlertEntry>> QueryAlertsAsync(Timestamp from, int maxCount);
     }
 
     public interface IFdkOptionsProvider

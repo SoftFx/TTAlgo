@@ -1,4 +1,5 @@
-﻿using Machinarium.Qnil;
+﻿using Google.Protobuf.WellKnownTypes;
+using Machinarium.Qnil;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -110,14 +111,14 @@ namespace TickTrader.BotTerminal
             return Task.FromResult("Disconnected!");
         }
 
-        internal Task<LogRecordInfo[]> GetBotLogs(string botId, DateTime lastLogTimeUtc, int maxCount = 1000)
+        internal Task<LogRecordInfo[]> GetBotLogs(string botId, Timestamp lastLogTimeUtc, int maxCount = 1000)
         {
             if (_protocolClient.State == ClientStates.Online)
                 return _protocolClient.GetBotLogs(botId, lastLogTimeUtc, maxCount);
             return Task.FromResult(new LogRecordInfo[0]);
         }
 
-        internal Task<AlertRecordInfo[]> GetAlerts(DateTime lastLogTimeUtc, int maxCount = 1000)
+        internal Task<AlertRecordInfo[]> GetAlerts(Timestamp lastLogTimeUtc, int maxCount = 1000)
         {
             if (_protocolClient.State == ClientStates.Online)
                 return _protocolClient.GetAlerts(lastLogTimeUtc, maxCount);

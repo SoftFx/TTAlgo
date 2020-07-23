@@ -3,6 +3,8 @@ using NLog;
 using System.Collections.Generic;
 using System;
 using TickTrader.Algo.Core;
+using Google.Protobuf.WellKnownTypes;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -90,7 +92,7 @@ namespace TickTrader.BotTerminal
 
     internal class BotMessage : BaseJournalMessage
     {
-        public BotMessage(TimeKey time, string botName, string message, JournalMessageType type) : base(time)
+        public BotMessage(Timestamp time, string botName, string message, JournalMessageType type) : base(time)
         {
             Type = type;
             Message = message;
@@ -105,9 +107,9 @@ namespace TickTrader.BotTerminal
             return $"{Type} | {Message}";
         }
 
-        public static BotMessage Create(PluginLogRecord record, string instanceId)
+        public static BotMessage Create(UnitLogRecord record, string instanceId)
         {
-            return new BotMessage(record.Time, instanceId, record.Message, Convert(record.Severity)) { Details = record.Details };
+            return new BotMessage(record.TimeUtc, instanceId, record.Message, Convert(record.Severity)) { Details = record.Details };
         }
     }
 
@@ -120,7 +122,7 @@ namespace TickTrader.BotTerminal
         public BotMessageTypeCounter()
         {
             _messagesCnt = new Dictionary<JournalMessageType, int>();
-            foreach (JournalMessageType type in Enum.GetValues(typeof(JournalMessageType)))
+            foreach (JournalMessageType type in System.Enum.GetValues(typeof(JournalMessageType)))
             {
                 _messagesCnt.Add(type, 0);
             }
@@ -138,7 +140,7 @@ namespace TickTrader.BotTerminal
 
         public void Reset()
         {
-            foreach (JournalMessageType type in Enum.GetValues(typeof(JournalMessageType)))
+            foreach (JournalMessageType type in System.Enum.GetValues(typeof(JournalMessageType)))
             {
                 _messagesCnt[type] = 0;
             }

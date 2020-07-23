@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,6 +8,7 @@ using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 using TickTrader.Algo.Protocol;
 using TickTrader.BotAgent.BA;
 using TickTrader.BotAgent.BA.Models;
@@ -169,29 +171,13 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return _botAgent.GetPackageWritePath(package);
         }
 
-        public string GetBotStatus(string botId)
-        {
-            return _botAgent.GetBotLog(botId).Status;
-        }
-
         public async Task<string> GetBotStatusAsync(string botId)
         {
             var log = await _botAgent.GetBotLogAsync(botId);
             return await log.GetStatusAsync();
         }
 
-        public LogRecordInfo[] GetBotLogs(string botId, DateTime lastLogTimeUtc, int maxCount)
-        {
-            return _botAgent.GetBotLog(botId).Messages.Where(e => e.TimeUtc.Timestamp > lastLogTimeUtc).Take(maxCount)
-                .Select(e => new LogRecordInfo
-                {
-                    TimeUtc = e.TimeUtc,
-                    Severity = Convert(e.Type),
-                    Message = e.Message,
-                }).ToArray();
-        }
-
-        public async Task<LogRecordInfo[]> GetBotLogsAsync(string botId, DateTime lastLogTimeUtc, int maxCount)
+        public async Task<LogRecordInfo[]> GetBotLogsAsync(string botId, Timestamp lastLogTimeUtc, int maxCount)
         {
             var log = await _botAgent.GetBotLogAsync(botId);
             var msgs = await log.QueryMessagesAsync(lastLogTimeUtc, maxCount);
@@ -199,12 +185,12 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return msgs.Select(e => new LogRecordInfo
             {
                 TimeUtc = e.TimeUtc,
-                Severity = Convert(e.Type),
+                Severity = e.Severity,
                 Message = e.Message,
             }).ToArray();
         }
 
-        public async Task<AlertRecordInfo[]> GetAlertsAsync(DateTime lastLogTimeUtc, int maxCount)
+        public async Task<AlertRecordInfo[]> GetAlertsAsync(Timestamp lastLogTimeUtc, int maxCount)
         {
             var storage = _botAgent.GetAlertStorage();
             var alerts = await storage.QueryAlertsAsync(lastLogTimeUtc, maxCount);
@@ -269,29 +255,6 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                     return UpdateType.Replaced;
                 case ChangeAction.Removed:
                     return UpdateType.Removed;
-                default:
-                    throw new ArgumentException();
-            }
-        }
-
-        private LogSeverity Convert(LogEntryType entryType)
-        {
-            switch (entryType)
-            {
-                case LogEntryType.Info:
-                    return LogSeverity.Info;
-                case LogEntryType.Error:
-                    return LogSeverity.Error;
-                case LogEntryType.Trading:
-                    return LogSeverity.Trade;
-                case LogEntryType.TradingSuccess:
-                    return LogSeverity.TradeSuccess;
-                case LogEntryType.TradingFail:
-                    return LogSeverity.TradeFail;
-                case LogEntryType.Custom:
-                    return LogSeverity.Custom;
-                case LogEntryType.Alert:
-                    return LogSeverity.Alert;
                 default:
                     throw new ArgumentException();
             }

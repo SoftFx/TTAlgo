@@ -25,6 +25,8 @@ namespace TickTrader.Algo.Core
         public UnitRuntimeV1Handler(PluginExecutorCore executorCore)
         {
             _executorCore = executorCore;
+
+            executorCore.OnNotification = msg => _session.Tell(RpcMessage.Notification(msg));
         }
 
 

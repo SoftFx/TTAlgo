@@ -1,4 +1,5 @@
-﻿using System;
+﻿using C5;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -60,7 +61,7 @@ namespace TickTrader.Algo.Core
         public ITradeExecutor TradeExecutor { get; set; }
         public PluginExecutorConfig Config { get; } = new PluginExecutorConfig();
 
-        public event Action<PluginLogRecord> LogUpdated;
+        public event Action<Domain.UnitLogRecord> LogUpdated;
         public event Action<TesterTradeTransaction> TradesUpdated;
         public event Action<TradeReportEntity> TradeHistoryUpdated;
         public event Action<RateUpdate> SymbolRateUpdated;
@@ -71,6 +72,11 @@ namespace TickTrader.Algo.Core
         public event Action<Exception> ErrorOccurred;
 
         public event Action<PluginExecutor> Stopped;
+
+        internal void OnLogUpdated(Domain.UnitLogRecord record)
+        {
+            LogUpdated?.Invoke(record);
+        }
 
         #region Excec control
 
@@ -201,9 +207,9 @@ namespace TickTrader.Algo.Core
 
         private void MarshalUpdate(object update)
         {
-            if (update is PluginLogRecord)
-                LogUpdated?.Invoke((PluginLogRecord)update);
-            else if (update is TradeReportEntity)
+            //if (update is PluginLogRecord)
+            //    LogUpdated?.Invoke((PluginLogRecord)update);
+            if (update is TradeReportEntity)
                 TradeHistoryUpdated?.Invoke((TradeReportEntity)update);
             else if (update is TesterTradeTransaction)
                 TradesUpdated?.Invoke((TesterTradeTransaction)update);

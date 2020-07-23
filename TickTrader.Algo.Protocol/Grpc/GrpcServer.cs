@@ -1230,7 +1230,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
             try
             {
-                var entries = await _botAgent.GetBotLogsAsync(request.BotId, request.LastLogTimeUtc.ToDateTime(), request.MaxCount);
+                var entries = await _botAgent.GetBotLogsAsync(request.BotId, request.LastLogTimeUtc, request.MaxCount);
                 res.Logs.AddRange(entries.Select(ToGrpc.Convert));
             }
             catch (Exception ex)
@@ -1254,7 +1254,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
             try
             {
-                var entries = await _botAgent.GetAlertsAsync(request.LastLogTimeUtc.ToDateTime(), request.MaxCount);
+                var entries = await _botAgent.GetAlertsAsync(request.LastLogTimeUtc, request.MaxCount);
                 res.Logs.AddRange(entries.Select(ToGrpc.Convert));
             }
             catch (Exception ex)

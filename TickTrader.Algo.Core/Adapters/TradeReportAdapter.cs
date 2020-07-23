@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -59,13 +60,13 @@ namespace TickTrader.Algo.Core
 
         #region Emulation
 
-        public static TradeReportAdapter Create(TimeKey key, SymbolAccessor symbol, TradeExecActions repType, TradeTransactionReason reason)
+        public static TradeReportAdapter Create(Timestamp key, SymbolAccessor symbol, TradeExecActions repType, TradeTransactionReason reason)
         {
             var entity = new TradeReportEntity();
-            entity.TransactionTime = key.Timestamp;
+            entity.TransactionTime = key.ToDateTime();
             entity.Symbol = symbol.Name;
             entity.ActionType = repType;
-            entity.Id = key.ToString();
+            entity.Id = $"{key.Seconds}.{key.Nanos}";
             entity.IsEmulatedEntity = true;
             return new TradeReportAdapter(entity, symbol);
         }

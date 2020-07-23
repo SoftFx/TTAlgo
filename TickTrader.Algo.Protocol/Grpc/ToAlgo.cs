@@ -925,24 +925,24 @@ namespace TickTrader.Algo.Protocol.Grpc
             return res;
         }
 
-        public static LogSeverity Convert(this Lib.LogRecordInfo.Types.LogSeverity type)
+        public static Domain.UnitLogRecord.Types.LogSeverity Convert(this Lib.LogRecordInfo.Types.LogSeverity type)
         {
             switch (type)
             {
                 case Lib.LogRecordInfo.Types.LogSeverity.Info:
-                    return LogSeverity.Info;
+                    return Domain.UnitLogRecord.Types.LogSeverity.Info;
                 case Lib.LogRecordInfo.Types.LogSeverity.Error:
-                    return LogSeverity.Error;
+                    return Domain.UnitLogRecord.Types.LogSeverity.Error;
                 case Lib.LogRecordInfo.Types.LogSeverity.Trade:
-                    return LogSeverity.Trade;
+                    return Domain.UnitLogRecord.Types.LogSeverity.Trade;
                 case Lib.LogRecordInfo.Types.LogSeverity.TradeSuccess:
-                    return LogSeverity.TradeSuccess;
+                    return Domain.UnitLogRecord.Types.LogSeverity.TradeSuccess;
                 case Lib.LogRecordInfo.Types.LogSeverity.TradeFail:
-                    return LogSeverity.TradeFail;
+                    return Domain.UnitLogRecord.Types.LogSeverity.TradeFail;
                 case Lib.LogRecordInfo.Types.LogSeverity.Custom:
-                    return LogSeverity.Custom;
+                    return Domain.UnitLogRecord.Types.LogSeverity.Custom;
                 case Lib.LogRecordInfo.Types.LogSeverity.Alert:
-                    return LogSeverity.Alert;
+                    return Domain.UnitLogRecord.Types.LogSeverity.Alert;
                 default:
                     throw new ArgumentException();
             }
@@ -952,7 +952,7 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             return new LogRecordInfo
             {
-                TimeUtc = logRecord.GetTimeKey(),
+                TimeUtc = logRecord.TimeUtc,
                 Severity = logRecord.Severity.Convert(),
                 Message = logRecord.Message,
             };
@@ -962,20 +962,10 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             return new AlertRecordInfo
             {
-                TimeUtc = alertRecord.GetTimeKey(),
+                TimeUtc = alertRecord.TimeUtc,
                 Message = alertRecord.Message,
                 BotId = alertRecord.BotId,
             };
-        }
-
-        public static TimeKey GetTimeKey(this Lib.LogRecordInfo record)
-        {
-            return new TimeKey(record.TimeUtc.ToDateTime(), record.TimeShit);
-        }
-
-        public static TimeKey GetTimeKey(this Lib.AlertRecordInfo record)
-        {
-            return new TimeKey(record.TimeUtc.ToDateTime(), record.TimeShit);
         }
 
         public static BotFileInfo Convert(this Lib.BotFileInfo botFile)

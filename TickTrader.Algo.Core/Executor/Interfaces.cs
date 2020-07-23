@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Google.Protobuf;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -97,6 +98,7 @@ namespace TickTrader.Algo.Core
         void OnInternalException(Exception ex);
 
         void SendExtUpdate(object update);
+        void SendNotification(IMessage message);
 
         IFeedProvider FeedProvider { get; }
         IFeedHistoryProvider FeedHistory { get; }

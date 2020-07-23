@@ -155,6 +155,10 @@
       <Project>{df05b4cc-200a-436b-91cc-bebe7d89b8ad}</Project>
       <Name>Machinarium</Name>
     </ProjectReference>
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Domain\TickTrader.Algo.Domain.csproj">
+      <Project>{6c7fc318-5848-4206-8431-3695c70143fa}</Project>
+      <Name>TickTrader.Algo.Domain</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
       <Project>{8901C84D-FB62-433C-A25F-4D24255B9453}</Project>
       <Name>TickTrader.Algo.Api</Name>

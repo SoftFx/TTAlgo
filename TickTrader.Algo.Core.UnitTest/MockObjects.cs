@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Google.Protobuf;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -113,6 +114,10 @@ namespace TickTrader.Algo.Core.UnitTest
         }
 
         public void SendExtUpdate(object update)
+        {
+        }
+
+        public void SendNotification(IMessage msg)
         {
         }
     }

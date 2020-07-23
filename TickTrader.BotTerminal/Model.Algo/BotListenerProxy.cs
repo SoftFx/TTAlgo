@@ -4,12 +4,13 @@ using System.Threading;
 using System.Windows.Threading;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
     public interface IBotWriter
     {
-        void LogMesssage(PluginLogRecord records);
+        void LogMesssage(UnitLogRecord records);
 
         void UpdateStatus(string status);
 
@@ -68,9 +69,9 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void Executor_LogUpdated(PluginLogRecord record)
+        private void Executor_LogUpdated(UnitLogRecord record)
         {
-            if (record.Severity != LogSeverities.CustomStatus)
+            if (record.Severity != UnitLogRecord.Types.LogSeverity.CustomStatus)
                 _writer.LogMesssage(record);
             else
             {

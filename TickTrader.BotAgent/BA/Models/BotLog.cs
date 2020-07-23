@@ -13,6 +13,8 @@ using TickTrader.Algo.Common.Model;
 using ActorSharp;
 using System.Threading.Tasks;
 using System.Text;
+using Google.Protobuf.WellKnownTypes;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -68,7 +70,7 @@ namespace TickTrader.BotAgent.BA.Models
             public string GetFileWritePath(string file) => throw new NotSupportedException("Writing files in bot logs folder is not allowed");
 
             public Task<string> GetStatusAsync() => CallActorAsync(a => a._status);
-            public Task<List<ILogEntry>> QueryMessagesAsync(DateTime from, int maxCount) => CallActorAsync(a => a.QueryMessages(from, maxCount));
+            public Task<List<ILogEntry>> QueryMessagesAsync(Timestamp from, int maxCount) => CallActorAsync(a => a.QueryMessages(from, maxCount));
         }
 
         //public string Status { get; private set; }
@@ -82,9 +84,9 @@ namespace TickTrader.BotAgent.BA.Models
         //    }
         //}
 
-        private List<ILogEntry> QueryMessages(DateTime from, int maxCount)
+        private List<ILogEntry> QueryMessages(Timestamp from, int maxCount)
         {
-            return _logMessages.Where(e => e.TimeUtc.Timestamp > from).Take(maxCount).ToList();
+            return _logMessages.Where(e => e.TimeUtc > from).Take(maxCount).ToList();
         }
 
         private IFile[] GetFiles()
@@ -101,26 +103,26 @@ namespace TickTrader.BotAgent.BA.Models
 
         //public event Action<string> StatusUpdated;
 
-        private void WriteLog(LogEntryType type, string message, string details)
+        private void WriteLog(UnitLogRecord record)
         {
-            var msg = new LogEntry(type, message);
+            var msg = new LogEntry(record);
 
-            switch (type)
+            switch (record.Severity)
             {
-                case LogEntryType.Custom:
-                case LogEntryType.Info:
-                case LogEntryType.Trading:
-                case LogEntryType.TradingSuccess:
-                case LogEntryType.TradingFail:
+                case UnitLogRecord.Types.LogSeverity.Custom:
+                case UnitLogRecord.Types.LogSeverity.Info:
+                case UnitLogRecord.Types.LogSeverity.Trade:
+                case UnitLogRecord.Types.LogSeverity.TradeSuccess:
+                case UnitLogRecord.Types.LogSeverity.TradeFail:
                     _logger.Info(msg.ToString());
                     break;
-                case LogEntryType.Alert:
+                case UnitLogRecord.Types.LogSeverity.Alert:
                     _logger.Warn(msg.ToString());
                     break;
-                case LogEntryType.Error:
+                case UnitLogRecord.Types.LogSeverity.Error:
                     _logger.Error(msg.ToString());
-                    if (!string.IsNullOrEmpty(details))
-                        _logger.Error(details);
+                    if (!string.IsNullOrEmpty(record.Details))
+                        _logger.Error(record.Details);
                     break;
             }
 
@@ -129,7 +131,7 @@ namespace TickTrader.BotAgent.BA.Models
 
             _logMessages.Add(msg);
 
-            if (type == LogEntryType.Alert)
+            if (record.Severity == UnitLogRecord.Types.LogSeverity.Alert)
                 _alertStorage.AddAlert(msg, _name);
         }
 
@@ -239,28 +241,13 @@ namespace TickTrader.BotAgent.BA.Models
             File.Delete(Path.Combine(_logDirectory, file));
         }
 
-        private static LogEntryType Convert(LogSeverities severity)
-        {
-            switch (severity)
-            {
-                case LogSeverities.Custom: return LogEntryType.Custom;
-                case LogSeverities.Error: return LogEntryType.Error;
-                case LogSeverities.Info: return LogEntryType.Info;
-                case LogSeverities.Trade: return LogEntryType.Trading;
-                case LogSeverities.TradeSuccess: return LogEntryType.TradingSuccess;
-                case LogSeverities.TradeFail: return LogEntryType.TradingFail;
-                case LogSeverities.Alert: return LogEntryType.Alert;
-                default: return LogEntryType.Info;
-            }
-        }
-
         private class LogWriter : BlockingHandler<BotLog>, IBotWriter
         {
             public LogWriter(Ref<BotLog> logRef) : base(logRef) { }
 
-            public void LogMesssage(PluginLogRecord record)
+            public void LogMesssage(UnitLogRecord record)
             {
-                CallActor(a => a.WriteLog(Convert(record.Severity), record.Message, record.Details));
+                CallActor(a => a.WriteLog(record));
             }
 
             public void Trace(string status) => CallActor(a => a._logger.Trace(status));

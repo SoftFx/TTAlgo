@@ -1,26 +1,28 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotAgent.BA.Models
 {
     public class LogEntry : ILogEntry
     {
-        public LogEntry(LogEntryType type, string message)
+        private readonly UnitLogRecord _record;
+
+        public LogEntry(UnitLogRecord record)
         {
-            TimeUtc = new TimeKey(DateTime.UtcNow, 0);
-            Type = type;
-            Message = message;
+            _record = record;
         }
 
-        public LogEntryType Type { get; private set; }
+        public UnitLogRecord.Types.LogSeverity Severity => _record.Severity;
 
-        public string Message { get; private set; }
+        public string Message => _record.Message;
 
-        public TimeKey TimeUtc { get; private set; }
+        public Timestamp TimeUtc => _record.TimeUtc;
 
         public override string ToString()
         {
-            return $"{Type.ToString().ToUpper().PadLeft(7)} | {Message}";
+            return $"{Severity.ToString().ToUpper().PadLeft(7)} | {Message}";
         }
     }
 }

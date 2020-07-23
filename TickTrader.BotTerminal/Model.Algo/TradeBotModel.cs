@@ -12,6 +12,7 @@ using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -178,7 +179,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private BotMessage Convert(PluginLogRecord record)
+        private BotMessage Convert(UnitLogRecord record)
         {
             return BotMessage.Create(record, InstanceId);
         }
@@ -213,11 +214,11 @@ namespace TickTrader.BotTerminal
 
         #region IBotWriter implementation
 
-        void IBotWriter.LogMesssage(PluginLogRecord rec)
+        void IBotWriter.LogMesssage(UnitLogRecord rec)
         {
             Journal.Add(Convert(rec));
 
-            if (rec.Severity == LogSeverities.Alert)
+            if (rec.Severity == UnitLogRecord.Types.LogSeverity.Alert)
                 AlertModel.AddAlert(InstanceId, rec);
         }
 

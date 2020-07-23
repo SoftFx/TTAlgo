@@ -12,11 +12,11 @@ namespace TickTrader.Algo.Core
 {
     public class LogFixture : CrossDomainObject, IPluginLogger
     {
-        private BufferBlock<PluginLogRecord> _logBuffer;
-        private ActionBlock<PluginLogRecord[]> _logSender;
+        //private BufferBlock<PluginLogRecord> _logBuffer;
+        //private ActionBlock<PluginLogRecord[]> _logSender;
         private IFixtureContext _context;
         private TimeKeyGenerator _keyGen = new TimeKeyGenerator();
-        private Task _batchLinkTask;
+        //private Task _batchLinkTask;
         private AlgoTypes _type;
         private string _indicatorPrefix;
 
@@ -32,52 +32,52 @@ namespace TickTrader.Algo.Core
         {
             _context.Builder.Logger = this;
 
-            if (!_context.IsGlobalUpdateMarshalingEnabled)
-            {
-                var bufferOptions = new DataflowBlockOptions() { BoundedCapacity = 30 };
-                var senderOptions = new ExecutionDataflowBlockOptions() { BoundedCapacity = 30 };
+            //if (!_context.IsGlobalUpdateMarshalingEnabled)
+            //{
+            //    var bufferOptions = new DataflowBlockOptions() { BoundedCapacity = 30 };
+            //    var senderOptions = new ExecutionDataflowBlockOptions() { BoundedCapacity = 30 };
 
-                _logBuffer = new BufferBlock<PluginLogRecord>(bufferOptions);
-                _logSender = new ActionBlock<PluginLogRecord[]>(msgList =>
-                {
-                    try
-                    {
-                        NewRecords?.Invoke(msgList);
-                    }
-                    catch (Exception ex)
-                    {
-                        _context.OnInternalException(ex);
-                    }
-                }, senderOptions);
+            //    _logBuffer = new BufferBlock<PluginLogRecord>(bufferOptions);
+            //    _logSender = new ActionBlock<PluginLogRecord[]>(msgList =>
+            //    {
+            //        try
+            //        {
+            //            NewRecords?.Invoke(msgList);
+            //        }
+            //        catch (Exception ex)
+            //        {
+            //            _context.OnInternalException(ex);
+            //        }
+            //    }, senderOptions);
 
-                _batchLinkTask = _logBuffer.BatchLinkTo(_logSender, 30);
-            }
+            //    _batchLinkTask = _logBuffer.BatchLinkTo(_logSender, 30);
+            //}
         }
 
         public async Task Stop()
         {
-            if (!_context.IsGlobalUpdateMarshalingEnabled)
-            {
-                try
-                {
-                    _logBuffer.Complete();
-                    await _logBuffer.Completion;
-                    await _batchLinkTask;
-                    _logSender.Complete();
-                    await _logSender.Completion;
-                }
-                catch (Exception ex)
-                {
-                    _context.OnInternalException(ex);
-                }
-            }
+            //if (!_context.IsGlobalUpdateMarshalingEnabled)
+            //{
+            //    try
+            //    {
+            //        _logBuffer.Complete();
+            //        await _logBuffer.Completion;
+            //        await _batchLinkTask;
+            //        _logSender.Complete();
+            //        await _logSender.Completion;
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        _context.OnInternalException(ex);
+            //    }
+            //}
         }
 
-        public event Action<PluginLogRecord[]> NewRecords;
+        //public event Action<PluginLogRecord[]> NewRecords;
 
         public void OnPrint(string entry)
         {
-            AddLogRecord(LogSeverities.Custom, entry);
+            AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Custom, entry);
         }
 
         public void OnPrint(string entry, params object[] parameters)
@@ -89,27 +89,27 @@ namespace TickTrader.Algo.Core
             }
             catch { }
 
-            AddLogRecord(LogSeverities.Custom, msg);
+            AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Custom, msg);
         }
 
         public void OnError(Exception ex)
         {
-            AddLogRecord(LogSeverities.Error, ex.Message, ex.ToString());
+            AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Error, ex.Message, ex.ToString());
         }
 
         public void OnError(string message, Exception ex)
         {
-            AddLogRecord(LogSeverities.Error, message, ex.ToString());
+            AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Error, message, ex.ToString());
         }
 
         public void OnError(string message)
         {
-            AddLogRecord(LogSeverities.Error, message);
+            AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Error, message);
         }
 
         public void OnPrintError(string entry)
         {
-            AddLogRecord(LogSeverities.Error, entry);
+            AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Error, entry);
         }
 
         public void OnPrintError(string entry, params object[] parameters)
@@ -121,143 +121,114 @@ namespace TickTrader.Algo.Core
             }
             catch { }
 
-            AddLogRecord(LogSeverities.Error, msg);
+            AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Error, msg);
         }
 
         public void OnPrintInfo(string info)
         {
-            AddLogRecord(LogSeverities.Info, info);
+            AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Info, info);
         }
 
         public void OnPrintTrade(string entry)
         {
-            AddLogRecord(LogSeverities.Trade, entry);
+            AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Trade, entry);
         }
 
         public void OnPrintTradeSuccess(string entry)
         {
-            AddLogRecord(LogSeverities.TradeSuccess, entry);
+            AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.TradeSuccess, entry);
         }
 
         public void OnPrintTradeFail(string entry)
         {
-            AddLogRecord(LogSeverities.TradeFail, entry);
+            AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.TradeFail, entry);
         }
 
         public void OnPrintAlert(string entry)
         {
-            AddLogRecord(LogSeverities.Alert, entry);
+            AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Alert, entry);
         }
 
         public void OnInitialized()
         {
             if (_type == AlgoTypes.Robot)
             {
-                AddLogRecord(LogSeverities.Info, $"Bot initialized");
-                AddLogRecord(LogSeverities.Info, $"Plugin version = {_context.Builder.Metadata.Descriptor.Version}");
+                AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Info, $"Bot initialized");
+                AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Info, $"Plugin version = {_context.Builder.Metadata.Descriptor.Version}");
             }
         }
 
         public void OnStart()
         {
             if (_type == AlgoTypes.Robot)
-                AddLogRecord(LogSeverities.Info, $"Bot started");
-            else AddLogRecord(LogSeverities.Info, $"{_indicatorPrefix}: Indicator started");
+                AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Info, $"Bot started");
+            else AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Info, $"{_indicatorPrefix}: Indicator started");
         }
 
         public void OnStop()
         {
             if (_type == AlgoTypes.Robot)
             {
-                AddLogRecord(LogSeverities.Info, $"Bot stopped");
-                AddLogRecord(LogSeverities.Info, $"Plugin version = {_context.Builder.Metadata.Descriptor.Version}");
+                AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Info, $"Bot stopped");
+                AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Info, $"Plugin version = {_context.Builder.Metadata.Descriptor.Version}");
             }
-            else AddLogRecord(LogSeverities.Info, $"{_indicatorPrefix}: Indicator stopped");
+            else AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Info, $"{_indicatorPrefix}: Indicator stopped");
         }
 
         public void OnExit()
         {
             if (_type == AlgoTypes.Robot)
-                AddLogRecord(LogSeverities.Info, $"Bot exited");
+                AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Info, $"Bot exited");
         }
 
         public void OnAbort()
         {
             if (_type == AlgoTypes.Robot)
             {
-                AddLogRecord(LogSeverities.Info, $"Bot aborted");
-                AddLogRecord(LogSeverities.Info, $"Plugin version = {_context.Builder.Metadata.Descriptor.Version}");
+                AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Info, $"Bot aborted");
+                AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Info, $"Plugin version = {_context.Builder.Metadata.Descriptor.Version}");
             }
         }
 
         public void OnConnected()
         {
             if (_type == AlgoTypes.Robot)
-                AddLogRecord(LogSeverities.Info, "Connection restored.");
+                AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Info, "Connection restored.");
         }
 
         public void OnDisconnected()
         {
             if (_type == AlgoTypes.Robot)
-                AddLogRecord(LogSeverities.Error, "Connection lost!");
+                AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Error, "Connection lost!");
         }
 
         public void OnConnectionInfo(string connectionInfo)
         {
             if (_type == AlgoTypes.Robot)
-                AddLogRecord(LogSeverities.Info, $"Connected to {connectionInfo}");
+                AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Info, $"Connected to {connectionInfo}");
         }
 
         public void UpdateStatus(string status)
         {
             if (_type == AlgoTypes.Robot)
-                AddLogRecord(LogSeverities.CustomStatus, status);
+                AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.CustomStatus, status);
         }
 
-        private void AddLogRecord(LogSeverities logSeverity, string message, string errorDetails = null)
+        private void AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity logSeverity, string message, string errorDetails = null)
         {
             try
             {
                 var timeKey = _keyGen.NextKey(DateTime.Now);
-                var record = new PluginLogRecord(timeKey, logSeverity, message, errorDetails);
-                if (_logBuffer != null)
-                    _logBuffer.SendAsync(record).Wait();
-                else
-                    _context.SendExtUpdate(record);
+                var record = new Domain.UnitLogRecord(timeKey, logSeverity, message, errorDetails);
+                //if (_logBuffer != null)
+                //    _logBuffer.SendAsync(record).Wait();
+                //else
+                _context.SendNotification(record);
             }
             catch (Exception ex)
             {
                 _context.OnInternalException(ex);
             }
         }
-    }
-
-    [Serializable]
-    public class PluginLogRecord
-    {
-        public PluginLogRecord(TimeKey time, LogSeverities logSeverity, string message, string errorDetails)
-        {
-            Time = time;
-            Severity = logSeverity;
-            Message = message;
-            Details = errorDetails;
-        }
-
-        public TimeKey Time { get; set; }
-        public LogSeverities Severity { get; set; }
-        public string Message { get; set; }
-        public string Details { get; set; }
-    }
-
-    public enum LogSeverities
-    {
-        Info,
-        Error,
-        Trade,
-        TradeSuccess,
-        TradeFail,
-        Custom,
-        CustomStatus,
-        Alert,
     }
 }

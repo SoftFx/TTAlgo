@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Info;
@@ -86,15 +87,11 @@ namespace TickTrader.Algo.Protocol
 
         string GetPackageWritePath(PackageKey package);
 
-        string GetBotStatus(string botId);
-
         Task<string> GetBotStatusAsync(string botId);
 
-        LogRecordInfo[] GetBotLogs(string botId, DateTime lastLogTimeUtc, int maxCount);
+        Task<AlertRecordInfo[]> GetAlertsAsync(Timestamp lastLogTimeUtc, int maxCount);
 
-        Task<AlertRecordInfo[]> GetAlertsAsync(DateTime lastLogTimeUtc, int maxCount);
-
-        Task<LogRecordInfo[]> GetBotLogsAsync(string botId, DateTime lastLogTimeUtc, int maxCount);
+        Task<LogRecordInfo[]> GetBotLogsAsync(string botId, Timestamp lastLogTimeUtc, int maxCount);
 
         BotFolderInfo GetBotFolderInfo(string botId, BotFolderId folderId);
 

@@ -1,22 +1,28 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TickTrader.Algo.Core
+namespace TickTrader.BotTerminal
 {
-    [Serializable]
     public struct TimeKey : IComparable, IComparable<TimeKey>
     {
-        public TimeKey(DateTime timestamp, uint shift)
+        public TimeKey(DateTime time, int shift)
         {
-            Timestamp = timestamp;
+            Timestamp = time;
             Shift = shift;
         }
 
+        public TimeKey(Timestamp time)
+        {
+            Timestamp = time.ToDateTime();
+            Shift = time.Nanos % 100; // DateTime tick is 100 ns
+        }
+
         public DateTime Timestamp { get; }
-        public uint Shift { get; }
+        public int Shift { get; }
 
         public TimeKey ToLocalTime()
         {
@@ -59,34 +65,7 @@ namespace TickTrader.Algo.Core
 
         public override string ToString()
         {
-            return Timestamp.ToShortDateString() + " [" + Shift + "]";
-        }
-    }
-
-    public class TimeKeyGenerator
-    {
-        private DateTime _time;
-        private uint _shift;
-
-        public void Reset()
-        {
-            _time = DateTime.MinValue;
-            _shift = 0;
-        }
-
-        public TimeKey NextKey(DateTime timestamp)
-        {
-            var cmp = timestamp.CompareTo(_time);
-
-            if (cmp > 0)
-            {
-                _time = timestamp;
-                _shift = 0;
-            }
-            else if (cmp < 0)
-                throw new ArgumentException("Invalid time sequence: Provided datetime is less than last recorded.");
-
-            return new TimeKey(_time, _shift++);
+            return $"{Timestamp.Ticks}.{Shift}";
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Google.Protobuf;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -809,6 +810,7 @@ namespace TickTrader.Algo.Core
         internal Action<IReadOnlyList<object>> MarshalUpdates { get; set; }
         internal Action<object> MarshalUpdate { get; set; }
         internal Action<object> OnUpdate { get; set; }
+        internal Action<IMessage> OnNotification { get; set; }
 
         internal void StartUpdateMarshalling()
         {
@@ -881,6 +883,8 @@ namespace TickTrader.Algo.Core
         }
 
         void IFixtureContext.SendExtUpdate(object update) => OnUpdate(update);
+
+        void IFixtureContext.SendNotification(IMessage message) => OnNotification(message);
 
         #endregion
 

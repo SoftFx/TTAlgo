@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -21,7 +22,7 @@ namespace TickTrader.BotTerminal
             executor.LogUpdated += Executor_LogUpdated;
         }
 
-        private void Executor_LogUpdated(PluginLogRecord record)
+        private void Executor_LogUpdated(UnitLogRecord record)
         {
             _writer.LogMessage(record);
         }

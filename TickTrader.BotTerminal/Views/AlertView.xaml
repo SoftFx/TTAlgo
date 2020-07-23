@@ -62,7 +62,7 @@
                   SelectionMode="Single">
                 <DataGrid.Columns>
                     <DataGridTextColumn x:Name="TimeColumn" SortMemberPath="Time" 
-                                    Binding="{Binding Time, Converter={StaticResource ExtDateTimeFormat}}"
+                                    Binding="{Binding Time.Timestamp, Converter={StaticResource ExtDateTimeFormat}}"
                                     SortDirection="Descending" Header="Time" Width="auto" MinWidth="130"/>
                     <DataGridTextColumn x:Name="AgentColumn" SortMemberPath="AgentName" 
                                     Binding="{Binding AgentName}"

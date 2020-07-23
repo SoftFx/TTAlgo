@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -22,7 +24,7 @@ namespace TickTrader.BotTerminal
         private bool _newAlerts = false;
 
         private RemoteAlgoAgent _remoteAgent;
-        private DateTime _lastAlertTimeUtc;
+        private Timestamp _lastAlertTimeUtc;
         private Timer _alertTimer;
 
         public AlgoAlertModel(string name, RemoteAlgoAgent remoteAgent = null)
@@ -39,11 +41,11 @@ namespace TickTrader.BotTerminal
 
         public event Action<IEnumerable<IAlertUpdateEventArgs>> AlertUpdateEvent;
 
-        public void AddAlert(string instanceId, PluginLogRecord record)
+        public void AddAlert(string instanceId, UnitLogRecord record)
         {
             lock (_locker)
             {
-                _buffer.Add(new AlertUpdateEventArgsImpl(instanceId, Name, record.Time.Timestamp, record.Message, _remoteAgent != null));
+                _buffer.Add(new AlertUpdateEventArgsImpl(instanceId, Name, record.TimeUtc, record.Message, _remoteAgent != null));
                 _newAlerts = true;
             }
         }
@@ -79,7 +81,7 @@ namespace TickTrader.BotTerminal
 
             if (_alertTimer == null)
             {
-                _lastAlertTimeUtc = new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                _lastAlertTimeUtc = new Timestamp(); // 1970-01-01
                 _alertTimer = new Timer(UpdateRemoteAlert, null, AlertsUpdateTimeout, -1);
             }
         }
@@ -93,7 +95,7 @@ namespace TickTrader.BotTerminal
                 var alerts = await _remoteAgent.GetAlerts(_lastAlertTimeUtc);
                 if (alerts.Length > 0)
                 {
-                    _lastAlertTimeUtc = alerts.Max(l => l.TimeUtc).Timestamp;
+                    _lastAlertTimeUtc = alerts.Max(l => l.TimeUtc);
                     AddAlerts(alerts.Select(Convert).ToList<IAlertUpdateEventArgs>());
                 }
             }
@@ -105,7 +107,7 @@ namespace TickTrader.BotTerminal
             _alertTimer?.Change(AlertsUpdateTimeout, -1);
         }
 
-        private AlertUpdateEventArgsImpl Convert(AlertRecordInfo rec) => new AlertUpdateEventArgsImpl(rec.BotId, Name,rec.TimeUtc.Timestamp, rec.Message, _remoteAgent != null);
+        private AlertUpdateEventArgsImpl Convert(AlertRecordInfo rec) => new AlertUpdateEventArgsImpl(rec.BotId, Name, rec.TimeUtc, rec.Message, _remoteAgent != null);
 
         public void Dispose() //add dispose storage to remote agent
         {
@@ -123,14 +125,14 @@ namespace TickTrader.BotTerminal
 
         event Action<IEnumerable<IAlertUpdateEventArgs>> AlertUpdateEvent;
 
-        void AddAlert(string instanceId, PluginLogRecord record);
+        void AddAlert(string instanceId, UnitLogRecord record);
 
         void AddAlerts(List<IAlertUpdateEventArgs> records);
     }
 
     public class AlertUpdateEventArgsImpl : IAlertUpdateEventArgs
     {
-        public DateTime Time { get; }
+        public TimeKey Time { get; }
 
         public string InstanceId { get; }
 
@@ -140,14 +142,14 @@ namespace TickTrader.BotTerminal
 
         public bool IsRemoteAgent { get; }
 
-        public AlertUpdateEventArgsImpl(string id, string agent, DateTime time, string message, bool isRemote = false) : this(id, agent, message, isRemote)
+        public AlertUpdateEventArgsImpl(string id, string agent, Timestamp time, string message, bool isRemote = false) : this(id, agent, message, isRemote)
         {
-            Time = time.ToUniversalTime();
+            Time = new TimeKey(time);
         }
 
         public AlertUpdateEventArgsImpl(string id, string agent, string message, bool isRemote)
         {
-            Time = DateTime.MinValue;
+            Time = new TimeKey(DateTime.MinValue, 0);
             InstanceId = id;
             AgentName = agent;
             Message = message;
@@ -159,7 +161,7 @@ namespace TickTrader.BotTerminal
 
     public interface IAlertUpdateEventArgs
     {
-        DateTime Time { get; }
+        TimeKey Time { get; }
 
         string InstanceId { get; }
 

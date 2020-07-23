@@ -1,4 +1,5 @@
-﻿using Google.Protobuf.WellKnownTypes;
+﻿using C5;
+using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Linq;
 using System.Threading;
@@ -36,6 +37,8 @@ namespace TickTrader.Algo.Core
                 CloseOrderRequestHandler(payload);
             else if (payload.Is(CancelOrderRequest.Descriptor))
                 CancelOrderRequestHandler(payload);
+            else if (payload.Is(UnitLogRecord.Descriptor))
+                UnitLogRecordHandler(payload);
         }
 
         public Any HandleRequest(string callId, Any payload)
@@ -173,6 +176,12 @@ namespace TickTrader.Algo.Core
         {
             var request = payload.Unpack<CancelOrderRequest>();
             _executor.TradeExecutor.SendCancelOrder(request);
+        }
+
+        private void UnitLogRecordHandler(Any payload)
+        {
+            var record = payload.Unpack<UnitLogRecord>();
+            _executor.OnLogUpdated(record);
         }
     }
 }

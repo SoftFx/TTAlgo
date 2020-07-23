@@ -8,6 +8,7 @@ using TickTrader.Algo.Api;
 using System.Linq;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -87,16 +88,16 @@ namespace TickTrader.BotTerminal
             return StopIndicator();
         }
 
-        void IIndicatorWriter.LogMessage(PluginLogRecord record)
+        void IIndicatorWriter.LogMessage(UnitLogRecord record)
         {
             switch (record.Severity)
             {
-                case LogSeverities.Info:
-                case LogSeverities.Error:
-                case LogSeverities.Custom:
+                case UnitLogRecord.Types.LogSeverity.Info:
+                case UnitLogRecord.Types.LogSeverity.Error:
+                case UnitLogRecord.Types.LogSeverity.Custom:
                     _journal.Add(EventMessage.Create(record));
                     break;
-                case LogSeverities.Alert:
+                case UnitLogRecord.Types.LogSeverity.Alert:
                     AlertModel.AddAlert(InstanceId, record);
                     break;
                 default:
@@ -107,6 +108,6 @@ namespace TickTrader.BotTerminal
 
     public interface IIndicatorWriter
     {
-        void LogMessage(PluginLogRecord record);
+        void LogMessage(UnitLogRecord record);
     }
 }

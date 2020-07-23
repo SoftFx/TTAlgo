@@ -174,27 +174,27 @@ namespace TickTrader.Algo.Core
             WriteAlert = WriteJournal && flags.HasFlag(JournalOptions.WriteAlert);
         }
 
-        private bool CheckFilter(LogSeverities severity)
+        private bool CheckFilter(Domain.UnitLogRecord.Types.LogSeverity severity)
         {
             switch (severity)
             {
-                case LogSeverities.Info: return WriteInfo;
-                case LogSeverities.Custom: return WriteCustom;
-                case LogSeverities.CustomStatus: return false;
-                case LogSeverities.Error: return WriteJournal;
-                case LogSeverities.Trade: return WriteTrade;
-                case LogSeverities.TradeFail: return WriteTrade;
-                case LogSeverities.TradeSuccess: return WriteTrade;
-                case LogSeverities.Alert: return WriteAlert;
+                case Domain.UnitLogRecord.Types.LogSeverity.Info: return WriteInfo;
+                case Domain.UnitLogRecord.Types.LogSeverity.Custom: return WriteCustom;
+                case Domain.UnitLogRecord.Types.LogSeverity.CustomStatus: return false;
+                case Domain.UnitLogRecord.Types.LogSeverity.Error: return WriteJournal;
+                case Domain.UnitLogRecord.Types.LogSeverity.Trade: return WriteTrade;
+                case Domain.UnitLogRecord.Types.LogSeverity.TradeFail: return WriteTrade;
+                case Domain.UnitLogRecord.Types.LogSeverity.TradeSuccess: return WriteTrade;
+                case Domain.UnitLogRecord.Types.LogSeverity.Alert: return WriteAlert;
             }
             return false;
         }
 
-        public void AddEvent(LogSeverities severity, string message, string description = null)
+        public void AddEvent(Domain.UnitLogRecord.Types.LogSeverity severity, string message, string description = null)
         {
             if (CheckFilter(severity))
             {
-                var record = new PluginLogRecord(_logKeyGen.NextKey(VirtualTimepoint), severity, message, description);
+                var record = new Domain.UnitLogRecord(_logKeyGen.NextKey(VirtualTimepoint), severity, message, description);
                 _executor.OnUpdate(record);
 
                 //_events.Add();
@@ -203,12 +203,12 @@ namespace TickTrader.Algo.Core
 
         public void LogTrade(string message)
         {
-            AddEvent(LogSeverities.TradeSuccess, message);
+            AddEvent(Domain.UnitLogRecord.Types.LogSeverity.TradeSuccess, message);
         }
 
         public void LogTradeFail(string message)
         {
-            AddEvent(LogSeverities.TradeFail, message);
+            AddEvent(Domain.UnitLogRecord.Types.LogSeverity.TradeFail, message);
         }
 
         #endregion
@@ -336,47 +336,47 @@ namespace TickTrader.Algo.Core
 
         void IPluginLogger.OnError(Exception ex)
         {
-            AddEvent(LogSeverities.Error, ex.Message);
+            AddEvent(Domain.UnitLogRecord.Types.LogSeverity.Error, ex.Message);
         }
 
         void IPluginLogger.OnError(string message, Exception ex)
         {
-            AddEvent(LogSeverities.Error, message);
+            AddEvent(Domain.UnitLogRecord.Types.LogSeverity.Error, message);
         }
 
         void IPluginLogger.OnError(string message)
         {
-            AddEvent(LogSeverities.Error, message);
+            AddEvent(Domain.UnitLogRecord.Types.LogSeverity.Error, message);
         }
 
         void IPluginLogger.OnExit()
         {
-            AddEvent(LogSeverities.Info, "Bot called Exit()");
+            AddEvent(Domain.UnitLogRecord.Types.LogSeverity.Info, "Bot called Exit()");
         }
 
         void IPluginLogger.OnInitialized()
         {
-            AddEvent(LogSeverities.Info, "Initialized");
+            AddEvent(Domain.UnitLogRecord.Types.LogSeverity.Info, "Initialized");
         }
 
         void IPluginLogger.OnPrint(string entry)
         {
-            AddEvent(LogSeverities.Custom, entry);
+            AddEvent(Domain.UnitLogRecord.Types.LogSeverity.Custom, entry);
         }
 
         void IPluginLogger.OnPrint(string entry, params object[] parameters)
         {
-            AddEvent(LogSeverities.Custom, string.Format(entry, parameters));
+            AddEvent(Domain.UnitLogRecord.Types.LogSeverity.Custom, string.Format(entry, parameters));
         }
 
         void IPluginLogger.OnPrintError(string entry)
         {
-            AddEvent(LogSeverities.Error, entry);
+            AddEvent(Domain.UnitLogRecord.Types.LogSeverity.Error, entry);
         }
 
         void IPluginLogger.OnPrintError(string entry, params object[] parameters)
         {
-            AddEvent(LogSeverities.Error, string.Format(entry, parameters));
+            AddEvent(Domain.UnitLogRecord.Types.LogSeverity.Error, string.Format(entry, parameters));
         }
 
         void IPluginLogger.OnPrintInfo(string info)
@@ -386,27 +386,27 @@ namespace TickTrader.Algo.Core
         void IPluginLogger.OnPrintTrade(string entry)
         {
 
-            AddEvent(LogSeverities.Trade, entry);
+            AddEvent(Domain.UnitLogRecord.Types.LogSeverity.Trade, entry);
         }
 
         void IPluginLogger.OnPrintTradeFail(string entry)
         {
-            AddEvent(LogSeverities.TradeFail, entry);
+            AddEvent(Domain.UnitLogRecord.Types.LogSeverity.TradeFail, entry);
         }
 
         void IPluginLogger.OnPrintTradeSuccess(string entry)
         {
-            AddEvent(LogSeverities.TradeSuccess, entry);
+            AddEvent(Domain.UnitLogRecord.Types.LogSeverity.TradeSuccess, entry);
         }
 
         void IPluginLogger.OnStart()
         {
-            AddEvent(LogSeverities.Info, "Start");
+            AddEvent(Domain.UnitLogRecord.Types.LogSeverity.Info, "Start");
         }
 
         void IPluginLogger.OnStop()
         {
-            AddEvent(LogSeverities.Info, "Stop");
+            AddEvent(Domain.UnitLogRecord.Types.LogSeverity.Info, "Stop");
         }
 
         void IPluginLogger.UpdateStatus(string status)
@@ -428,7 +428,7 @@ namespace TickTrader.Algo.Core
 
         void IPluginLogger.OnPrintAlert(string entry)
         {
-            AddEvent(LogSeverities.Alert, entry);
+            AddEvent(Domain.UnitLogRecord.Types.LogSeverity.Alert, entry);
         }
 
         #endregion

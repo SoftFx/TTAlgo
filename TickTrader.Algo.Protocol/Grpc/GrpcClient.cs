@@ -1,4 +1,5 @@
 ﻿using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using System;
 using System.Collections.Generic;
@@ -825,18 +826,18 @@ namespace TickTrader.Algo.Protocol.Grpc
             return response.Status;
         }
 
-        public override async Task<LogRecordInfo[]> GetBotLogs(string botId, DateTime lastLogTimeUtc, int maxCount)
+        public override async Task<LogRecordInfo[]> GetBotLogs(string botId, Timestamp lastLogTimeUtc, int maxCount)
         {
-            var response = await ExecuteUnaryRequestAuthorized(GetBotLogsInternal, new Lib.BotLogsRequest { BotId = ToGrpc.Convert(botId), LastLogTimeUtc = lastLogTimeUtc.Convert(), MaxCount = maxCount });
+            var response = await ExecuteUnaryRequestAuthorized(GetBotLogsInternal, new Lib.BotLogsRequest { BotId = ToGrpc.Convert(botId), LastLogTimeUtc = lastLogTimeUtc, MaxCount = maxCount });
             FailForNonSuccess(response.ExecResult);
             return response.Logs.Select(ToAlgo.Convert).ToArray();
         }
 
-        public override async Task<AlertRecordInfo[]> GetAlerts(DateTime lastLogTimeUtc, int maxCount)
+        public override async Task<AlertRecordInfo[]> GetAlerts(Timestamp lastLogTimeUtc, int maxCount)
         {
             if (!VersionSpec.SupportAlerts)
                 return new AlertRecordInfo[0];
-            var response = await ExecuteUnaryRequestAuthorized(GetAlertsInternal, new Lib.AlertBotsRequest { LastLogTimeUtc = lastLogTimeUtc.Convert(), MaxCount = maxCount });
+            var response = await ExecuteUnaryRequestAuthorized(GetAlertsInternal, new Lib.AlertBotsRequest { LastLogTimeUtc = lastLogTimeUtc, MaxCount = maxCount });
             FailForNonSuccess(response.ExecResult);
             return response.Logs.Select(ToAlgo.Convert).ToArray();
         }
