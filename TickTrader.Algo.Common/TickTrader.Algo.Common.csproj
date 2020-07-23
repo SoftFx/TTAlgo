@@ -109,9 +109,7 @@
     <Compile Include="Lib\HashCode.cs" />
     <Compile Include="Lib\InvariantFormat.cs" />
     <Compile Include="Lib\PathEscaper.cs" />
-    <Compile Include="Lib\SetSynchronizer.cs" />
     <Compile Include="Lib\TaskExt.cs" />
-    <Compile Include="Lib\TaskMahcine.cs" />
     <Compile Include="Lib\TextParser.cs" />
     <Compile Include="Model.Config\Inputs.cs" />
     <Compile Include="Model.Config\Outputs.cs" />

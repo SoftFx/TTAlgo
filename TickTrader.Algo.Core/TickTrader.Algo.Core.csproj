@@ -243,7 +243,6 @@
     <Compile Include="Infrastructure\Subscription.cs" />
     <Compile Include="Infrastructure\SubscriptionExtentions.cs" />
     <Compile Include="Infrastructure\SubscriptionGroup.cs" />
-    <Compile Include="Lib\AsyncBuffer.cs" />
     <Compile Include="Lib\AsyncEnumerator.cs" />
     <Compile Include="Lib\BunchingBlock.cs" />
     <Compile Include="Lib\CollectionExtentions.cs" />
@@ -258,7 +257,6 @@
     <Compile Include="Lib\QueueGate.cs" />
     <Compile Include="Lib\Ref.cs" />
     <Compile Include="Lib\TaskExtensions.cs" />
-    <Compile Include="Lib\UpdateChannel.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Math\BarExtentions.cs" />
     <Compile Include="Math\BarSequenceBuilder.cs" />
