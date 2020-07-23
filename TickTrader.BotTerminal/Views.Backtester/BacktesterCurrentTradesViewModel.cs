@@ -68,10 +68,10 @@ namespace TickTrader.BotTerminal
 
         private void Executor_TradesUpdated(TesterTradeTransaction tt)
         {
-            if (tt.OrderEntityAction != OrderEntityAction.None)
+            if (tt.OrderEntityAction != Algo.Domain.OrderExecReport.Types.EntityAction.NoAction)
                 _client.Acc.UpdateOrder(tt.OrderExecAction, tt.OrderEntityAction, tt.OrderUpdate);
 
-            if (tt.PositionEntityAction != OrderEntityAction.None)
+            if (tt.PositionEntityAction != Algo.Domain.OrderExecReport.Types.EntityAction.NoAction)
                 _client.Acc.UpdateOrder(tt.PositionExecAction, tt.PositionEntityAction, tt.PositionUpdate);
 
             if (tt.NetPositionUpdate != null)

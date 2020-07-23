@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Core
 {
@@ -10,12 +6,12 @@ namespace TickTrader.Algo.Core
     public class TesterTradeTransaction
     {
         public Domain.OrderInfo OrderUpdate { get; private set; }
-        public OrderEntityAction OrderEntityAction { get; private set; }
-        public OrderExecAction OrderExecAction { get; private set; }
+        public Domain.OrderExecReport.Types.EntityAction OrderEntityAction { get; private set; }
+        public Domain.OrderExecReport.Types.ExecAction OrderExecAction { get; private set; }
 
         public Domain.OrderInfo PositionUpdate { get; private set; }
-        public OrderEntityAction PositionEntityAction { get; private set; }
-        public OrderExecAction PositionExecAction { get; private set; }
+        public Domain.OrderExecReport.Types.EntityAction PositionEntityAction { get; private set; }
+        public Domain.OrderExecReport.Types.ExecAction PositionExecAction { get; private set; }
 
         public Domain.PositionExecReport NetPositionUpdate { get; private set; }
         public AssetEntity Asset1Update { get; }
@@ -25,7 +21,7 @@ namespace TickTrader.Algo.Core
         internal static TesterTradeTransaction OnOpenOrder(OrderAccessor order, bool isInstantOrder, FillInfo fillInfo, double balance)
         {
             var update = new TesterTradeTransaction();
-            update.OrderExecAction = OrderExecAction.Opened;
+            update.OrderExecAction = Domain.OrderExecReport.Types.ExecAction.Opened;
             if (isInstantOrder)
                 update.OnInstantOrderOpened(order);
             else if (order.RemainingAmount > 0)
@@ -44,7 +40,7 @@ namespace TickTrader.Algo.Core
         internal static TesterTradeTransaction OnCancelOrder(OrderAccessor order)
         {
             var update = new TesterTradeTransaction();
-            update.OnOrderRemoved(OrderExecAction.Canceled, order);
+            update.OnOrderRemoved(Domain.OrderExecReport.Types.ExecAction.Canceled, order);
             return update;
         }
 
@@ -52,9 +48,9 @@ namespace TickTrader.Algo.Core
         {
             var update = new TesterTradeTransaction();
             if (remove)
-                update.OnPositionRemoved(OrderExecAction.Closed, position);
+                update.OnPositionRemoved(Domain.OrderExecReport.Types.ExecAction.Closed, position);
             else
-                update.OnPositionReplaced(OrderExecAction.Closed, position);
+                update.OnPositionReplaced(Domain.OrderExecReport.Types.ExecAction.Closed, position);
             update.OnBalanceChanged(balance);
             return update;
         }
@@ -65,17 +61,17 @@ namespace TickTrader.Algo.Core
 
             if (fillInfo.Position != null && fillInfo.Position.IsSameOrderId(order)) // order was transformed into position
             {
-                update.OnOrderReplaced(OrderExecAction.Filled, order);
+                update.OnOrderReplaced(Domain.OrderExecReport.Types.ExecAction.Filled, order);
             }
             else
             {
                 if (order.RemainingAmount == 0)
-                    update.OnOrderRemoved(OrderExecAction.Filled, order);
+                    update.OnOrderRemoved(Domain.OrderExecReport.Types.ExecAction.Filled, order);
                 else
-                    update.OnOrderAdded(OrderExecAction.Filled, order);
+                    update.OnOrderAdded(Domain.OrderExecReport.Types.ExecAction.Filled, order);
 
                 if (fillInfo.Position != null)
-                    update.OnPositionAdded(OrderExecAction.Filled, fillInfo.Position);
+                    update.OnPositionAdded(Domain.OrderExecReport.Types.ExecAction.Filled, fillInfo.Position);
             }
 
             if (fillInfo.WasNetPositionClosed)
@@ -91,14 +87,14 @@ namespace TickTrader.Algo.Core
         internal static TesterTradeTransaction OnReplaceOrder(OrderAccessor order)
         {
             var update = new TesterTradeTransaction();
-            update.OnOrderReplaced(OrderExecAction.Modified, order);
+            update.OnOrderReplaced(Domain.OrderExecReport.Types.ExecAction.Modified, order);
             return update;
         }
 
         internal static TesterTradeTransaction OnActivateStopLimit(OrderAccessor order)
         {
             var update = new TesterTradeTransaction();
-            update.OnOrderRemoved(OrderExecAction.Activated, order);
+            update.OnOrderRemoved(Domain.OrderExecReport.Types.ExecAction.Activated, order);
             return update;
         }
 
@@ -116,55 +112,55 @@ namespace TickTrader.Algo.Core
 
         private void OnInstantOrderOpened(OrderAccessor order)
         {
-            OrderEntityAction = OrderEntityAction.None;
+            OrderEntityAction = Domain.OrderExecReport.Types.EntityAction.NoAction;
             OrderUpdate = order.Entity.GetInfo();
         }
 
         private void OnOrderAdded(OrderAccessor order)
         {
-            OrderEntityAction = OrderEntityAction.Added;
+            OrderEntityAction = Domain.OrderExecReport.Types.EntityAction.Added;
             OrderUpdate = order.Entity.GetInfo();
         }
 
-        private void OnOrderAdded(OrderExecAction execAction, OrderAccessor order)
+        private void OnOrderAdded(Domain.OrderExecReport.Types.ExecAction execAction, OrderAccessor order)
         {
             OrderExecAction = execAction;
-            OrderEntityAction = OrderEntityAction.Added;
+            OrderEntityAction = Domain.OrderExecReport.Types.EntityAction.Added;
             OrderUpdate = order.Entity.GetInfo();
         }
 
-        private void OnOrderReplaced(OrderExecAction execAction, OrderAccessor order)
+        private void OnOrderReplaced(Domain.OrderExecReport.Types.ExecAction execAction, OrderAccessor order)
         {
             OrderExecAction = execAction;
-            OrderEntityAction = OrderEntityAction.Updated;
+            OrderEntityAction = Domain.OrderExecReport.Types.EntityAction.Updated;
             OrderUpdate = order.Entity.GetInfo();
         }
 
-        private void OnOrderRemoved(OrderExecAction execAction, OrderAccessor order)
+        private void OnOrderRemoved(Domain.OrderExecReport.Types.ExecAction execAction, OrderAccessor order)
         {
             OrderExecAction = execAction;
-            OrderEntityAction = OrderEntityAction.Removed;
+            OrderEntityAction = Domain.OrderExecReport.Types.EntityAction.Removed;
             OrderUpdate = order.Entity.GetInfo();
         }
 
-        private void OnPositionAdded(OrderExecAction execAction, OrderAccessor order)
+        private void OnPositionAdded(Domain.OrderExecReport.Types.ExecAction execAction, OrderAccessor order)
         {
             PositionExecAction = execAction;
-            PositionEntityAction = OrderEntityAction.Added;
+            PositionEntityAction = Domain.OrderExecReport.Types.EntityAction.Added;
             PositionUpdate = order.Entity.GetInfo();
         }
 
-        private void OnPositionReplaced(OrderExecAction execAction, OrderAccessor order)
+        private void OnPositionReplaced(Domain.OrderExecReport.Types.ExecAction execAction, OrderAccessor order)
         {
             PositionExecAction = execAction;
-            PositionEntityAction = OrderEntityAction.Updated;
+            PositionEntityAction = Domain.OrderExecReport.Types.EntityAction.Updated;
             PositionUpdate = order.Entity.GetInfo();
         }
 
-        private void OnPositionRemoved(OrderExecAction execAction, OrderAccessor order)
+        private void OnPositionRemoved(Domain.OrderExecReport.Types.ExecAction execAction, OrderAccessor order)
         {
             PositionExecAction = execAction;
-            PositionEntityAction = OrderEntityAction.Removed;
+            PositionEntityAction = Domain.OrderExecReport.Types.EntityAction.Removed;
             PositionUpdate = order.Entity.GetInfo();
         }
 

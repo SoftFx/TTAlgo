@@ -412,18 +412,18 @@ namespace TickTrader.Algo.Common.Model
             OrderUpdate?.Invoke(new OrderUpdateInfo(report, execAction, entityAction, order, netPosUpdate));
         }
 
-        public void UpdateOrder(OrderExecAction execAction, OrderEntityAction entityAction, Domain.OrderInfo report)
+        public void UpdateOrder(Domain.OrderExecReport.Types.ExecAction execAction, Domain.OrderExecReport.Types.EntityAction entityAction, Domain.OrderInfo report)
         {
             OrderModel order = null;
 
-            if (entityAction == OrderEntityAction.Added)
+            if (entityAction == Domain.OrderExecReport.Types.EntityAction.Added)
             {
                 order = new OrderModel(report, this);
                 _orders[order.Id] = order;
 
                 OrderAdded?.Invoke(order);
             }
-            else if (entityAction == OrderEntityAction.Removed)
+            else if (entityAction == Domain.OrderExecReport.Types.EntityAction.Removed)
             {
                 order = Orders.GetOrDefault(report.Id);
                 _orders.Remove(report.Id);
@@ -431,7 +431,7 @@ namespace TickTrader.Algo.Common.Model
 
                 OrderRemoved?.Invoke(order);
             }
-            else if (entityAction == OrderEntityAction.Updated)
+            else if (entityAction == Domain.OrderExecReport.Types.EntityAction.Updated)
             {
                 order = Orders.GetOrDefault(report.Id);
 

@@ -189,10 +189,10 @@ namespace TickTrader.BotTerminal
 
             if (_acctype == AccountInfo.Types.Type.Gross)
             {
-                if (tt.OrderExecAction == OrderExecAction.Filled
-                    || (tt.OrderExecAction == OrderExecAction.Opened && tt.OrderUpdate.Type == Algo.Domain.OrderInfo.Types.Type.Position))
+                if (tt.OrderExecAction == Algo.Domain.OrderExecReport.Types.ExecAction.Filled
+                    || (tt.OrderExecAction == Algo.Domain.OrderExecReport.Types.ExecAction.Opened && tt.OrderUpdate.Type == Algo.Domain.OrderInfo.Types.Type.Position))
                 {
-                    if (tt.PositionEntityAction == OrderEntityAction.Added)
+                    if (tt.PositionEntityAction == Algo.Domain.OrderExecReport.Types.EntityAction.Added)
                     {
                         // partial fill
                         var order = tt.PositionUpdate;
@@ -218,7 +218,7 @@ namespace TickTrader.BotTerminal
                     }
                 }
 
-                if (tt.PositionExecAction == OrderExecAction.Closed)
+                if (tt.PositionExecAction == Algo.Domain.OrderExecReport.Types.ExecAction.Closed)
                 {
                     var order = tt.PositionUpdate;
                     var symbol = _symbolMap.GetOrDefault(order.Symbol);
@@ -232,8 +232,8 @@ namespace TickTrader.BotTerminal
             }
             else if (_acctype == AccountInfo.Types.Type.Net)
             {
-                if (tt.OrderExecAction == OrderExecAction.Filled
-                    || (tt.OrderExecAction == OrderExecAction.Opened && tt.NetPositionUpdate != null))
+                if (tt.OrderExecAction == Algo.Domain.OrderExecReport.Types.ExecAction.Filled
+                    || (tt.OrderExecAction == Algo.Domain.OrderExecReport.Types.ExecAction.Opened && tt.NetPositionUpdate != null))
                 {
                     var order = tt.OrderUpdate;
                     var symbol = _symbolMap.GetOrDefault(order.Symbol);
