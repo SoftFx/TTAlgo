@@ -22,7 +22,7 @@ namespace TickTrader.BotTerminal
         {
             Positions = model.Positions
                 .OrderBy((id, p) => id)
-                .Select(p => new PositionViewModel(p, model.BalanceDigits))
+                .Select(p => new PositionViewModel(p, model))
                 .AsObservable();
 
             _profileManager = profile;

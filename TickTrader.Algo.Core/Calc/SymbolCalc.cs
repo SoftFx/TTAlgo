@@ -1,5 +1,6 @@
 ﻿using System;
 using TickTrader.Algo.Core.Calc.Conversion;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Calc
 {
@@ -81,7 +82,7 @@ namespace TickTrader.Algo.Core.Calc
             //RemoveOrder(order, GetSideCalc(order));
         }
 
-        public void UpdatePosition(IPositionModel2 pos, PositionChangeTypes type, out decimal swapDelta, out decimal commDelta)
+        public void UpdatePosition(IPositionInfo pos, PositionChangeTypes type, out decimal swapDelta, out decimal commDelta)
         {
             pos.Calculator = Calc;
 

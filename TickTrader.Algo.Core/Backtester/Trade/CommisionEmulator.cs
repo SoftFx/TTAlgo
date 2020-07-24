@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Calc;
+using TickTrader.Algo.Domain;
 using BO = TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Core
@@ -110,7 +111,7 @@ namespace TickTrader.Algo.Core
             return commiss;
         }
 
-        private static decimal CalculateMarginCommission(OrderCalculator orderCalc, decimal amount, SymbolAccessor cfg, CalculatorFixture accCalc, bool isReduced)
+        private static decimal CalculateMarginCommission(IOrderCalculator orderCalc, decimal amount, SymbolAccessor cfg, CalculatorFixture accCalc, bool isReduced)
         {
             double cmsValue = isReduced
                ? cfg.CmsValueBookOrders()

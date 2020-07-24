@@ -17,6 +17,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Net.Security;
 using TickTrader.Algo.Common.Info;
 using Google.Protobuf.WellKnownTypes;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -734,7 +735,7 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private static Domain.AccountInfo Convert(AccountInfo info)
+        private static Domain.AccountInfo Convert(SFX.AccountInfo info)
         {
             return new Domain.AccountInfo(info.Type != AccountType.Cash ? info.Balance : null, info.Currency, info.Assets.Select(Convert))
             {
@@ -744,7 +745,7 @@ namespace TickTrader.Algo.Common.Model
             };
         }
 
-        private static Domain.AssetInfo Convert(AssetInfo info)
+        private static Domain.AssetInfo Convert(SFX.AssetInfo info)
         {
             return new Domain.AssetInfo
             {
@@ -935,18 +936,23 @@ namespace TickTrader.Algo.Common.Model
             Domain.OrderInfo.Types.Side side;
             double price;
             double amount;
+            PositionSide buy, sell;
 
             if (p.BuyAmount > 0)
             {
                 side = Domain.OrderInfo.Types.Side.Buy;
                 price = p.BuyPrice ?? 0;
                 amount = p.BuyAmount;
+                buy = new PositionSide(amount, price);
+                sell = new PositionSide(0, 0);
             }
             else
             {
                 side = Domain.OrderInfo.Types.Side.Sell;
                 price = p.SellPrice ?? 0;
                 amount = p.SellAmount;
+                buy = new PositionSide(0, 0);
+                sell = new PositionSide(amount, price);
             }
 
             return new Domain.PositionInfo
@@ -959,6 +965,8 @@ namespace TickTrader.Algo.Common.Model
                 Commission = p.Commission,
                 Swap = p.Swap,
                 Modified = p.Modified?.ToTimestamp(),
+                Long = buy,
+                Short = sell,
             };
         }
 

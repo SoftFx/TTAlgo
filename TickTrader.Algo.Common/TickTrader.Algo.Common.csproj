@@ -179,7 +179,7 @@
     <Compile Include="Model\PluginFeedProvider.cs" />
     <Compile Include="Model\PluginTradeApiProvider.cs" />
     <Compile Include="Model\PluginTradeInfoProvider.cs" />
-    <Compile Include="Model\PositionModel.cs" />
+    <Compile Include="Model\PositionSide.cs" />
     <Compile Include="Model\ClientModel.cs" />
     <Compile Include="Model\TimeFrameModel.cs" />
     <Compile Include="Model\TradeHistoryProvider.cs" />

@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Core.Calc.Conversion;
 using TickTrader.Algo.Domain;
-using TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Core.Calc
 {
-    public sealed class OrderCalculator : IDisposable
+    public sealed class OrderCalculator : IOrderCalculator, IDisposable
     {
         //private readonly ConversionManager conversionMap;
         private readonly Converter<int, int> _leverageProvider;

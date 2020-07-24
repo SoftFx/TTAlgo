@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Calc
 {
@@ -229,7 +230,7 @@ namespace TickTrader.Algo.Core.Calc
             RemoveIfEmpty(smbCalc);
         }
 
-        private void AddPositions(IEnumerable<IPositionModel2> positions)
+        private void AddPositions(IEnumerable<IPositionInfo> positions)
         {
             if (positions != null)
             {
@@ -238,11 +239,11 @@ namespace TickTrader.Algo.Core.Calc
             }
         }
 
-        private void AddModifyNetPos(IPositionModel2 position) => UpdateNetPos(position, PositionChangeTypes.AddedModified);
+        private void AddModifyNetPos(IPositionInfo position) => UpdateNetPos(position, PositionChangeTypes.AddedModified);
 
-        private void RemoveNetPos(IPositionModel2 position) => UpdateNetPos(position, PositionChangeTypes.Removed);
+        private void RemoveNetPos(IPositionInfo position) => UpdateNetPos(position, PositionChangeTypes.Removed);
 
-        private void UpdateNetPos(IPositionModel2 position, PositionChangeTypes type)
+        private void UpdateNetPos(IPositionInfo position, PositionChangeTypes type)
         {
             var smbCalc = GetOrAddSymbolCalculator(position.Symbol);
             smbCalc.UpdatePosition(position, type, out var dSwap, out var dComm);

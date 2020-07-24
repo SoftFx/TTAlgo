@@ -39,7 +39,6 @@ namespace TickTrader.Algo.Domain
 
         double ISymbolInfo.MarginHedged => Margin.Hedged;
 
-        //public int Digits => Digits;
         public int ProfitDigits => 2; //redone
 
         MarginInfo.Types.CalculationMode ISymbolInfo.MarginMode => Margin.Mode;
@@ -90,7 +89,6 @@ namespace TickTrader.Algo.Domain
 
         event Action<ISymbolInfo> RateUpdated;
 
-        //Domain.SymbolInfo Descriptor { get; }
         void Update(ISymbolInfo newInfo);
         IQuoteInfo LastQuote { get; }
         int ProfitDigits { get; }

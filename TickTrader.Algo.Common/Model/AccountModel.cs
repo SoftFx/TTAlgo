@@ -12,7 +12,7 @@ namespace TickTrader.Algo.Common.Model
 {
     public class AccountModel : CrossDomainObject, IOrderDependenciesResolver, IMarginAccountInfo2, ICashAccountInfo2
     {
-        private readonly VarDictionary<string, PositionModel> _positions = new VarDictionary<string, PositionModel>();
+        private readonly VarDictionary<string, PositionInfo> _positions = new VarDictionary<string, PositionInfo>();
         private readonly VarDictionary<string, AssetModel> _assets = new VarDictionary<string, AssetModel>();
         private readonly VarDictionary<string, OrderModel> _orders = new VarDictionary<string, OrderModel>();
         private Domain.AccountInfo.Types.Type? _accType;
@@ -36,7 +36,7 @@ namespace TickTrader.Algo.Common.Model
         }
 
         public event System.Action AccountTypeChanged = delegate { };
-        public IVarSet<string, PositionModel> Positions => _positions;
+        public IVarSet<string, PositionInfo> Positions => _positions;
         public IVarSet<string, OrderModel> Orders => _orders;
         public IVarSet<string, AssetModel> Assets => _assets;
 
@@ -64,7 +64,7 @@ namespace TickTrader.Algo.Common.Model
         public AccountInfo.Types.Type AccountingType => Type ?? AccountInfo.Types.Type.Gross;
 
 
-        IEnumerable<IPositionModel2> IMarginAccountInfo2.Positions => Positions.Snapshot.Values;
+        IEnumerable<IPositionInfo> IMarginAccountInfo2.Positions => Positions.Snapshot.Values;
 
         IEnumerable<IOrderModel2> IAccountInfo2.Orders => Orders.Snapshot.Values;
 
@@ -73,16 +73,16 @@ namespace TickTrader.Algo.Common.Model
         //public AccountCalculatorModel Calc { get; private set; }
 
         public event Action<OrderUpdateInfo> OrderUpdate;
-        public event Action<PositionModel, Domain.OrderExecReport.Types.ExecAction> PositionUpdate;
+        public event Action<PositionInfo, Domain.OrderExecReport.Types.ExecAction> PositionUpdate;
         public event Action<Domain.BalanceOperation> BalanceOperationUpdate;
         public event Action BalanceUpdate;
 
-        public event Action<IPositionModel2> PositionChanged;
+        public event Action<IPositionInfo> PositionChanged;
         public event Action<IOrderModel2> OrderAdded;
         public event Action<IEnumerable<IOrderModel2>> OrdersAdded;
         public event Action<IOrderModel2> OrderRemoved;
         public event Action<IAssetModel2, AssetChangeType> AssetsChanged;
-        public event Action<IPositionModel2> PositionRemoved;
+        public event Action<IPositionInfo> PositionRemoved;
 
         public EntityCacheUpdate CreateSnaphotUpdate(Domain.AccountInfo accInfo, List<Domain.OrderInfo> tradeRecords, List<Domain.PositionInfo> positions, List<Domain.AssetInfo> assets)
         {
@@ -143,7 +143,7 @@ namespace TickTrader.Algo.Common.Model
 
             foreach (var fdkPosition in positions)
             {
-                var model = new PositionModel(fdkPosition, this);
+                var model = fdkPosition;
                 this._positions.Add(fdkPosition.Symbol, model);
                 PositionChanged?.Invoke(model);
             }
@@ -346,7 +346,7 @@ namespace TickTrader.Algo.Common.Model
 
         public void RemovePosition(Domain.PositionExecReport position, bool notify)
         {
-            if (!_positions.TryGetValue(position.PositionCopy.Symbol, out PositionModel model))
+            if (!_positions.TryGetValue(position.PositionCopy.Symbol, out PositionInfo model))
                 return;
 
             _positions.Remove(model.Symbol);
@@ -357,9 +357,9 @@ namespace TickTrader.Algo.Common.Model
                 PositionUpdate?.Invoke(model, Domain.OrderExecReport.Types.ExecAction.Closed);
         }
 
-        private PositionModel UpsertPosition(Domain.PositionInfo position)
+        private PositionInfo UpsertPosition(Domain.PositionInfo position)
         {
-            var positionModel = new PositionModel(position, this);
+            var positionModel = position;
             _positions[position.Symbol] = positionModel;
 
             return positionModel;
@@ -626,7 +626,7 @@ namespace TickTrader.Algo.Common.Model
         {
             var info = GetAccountInfo();
             var orders = Orders.Snapshot.Values.Select(o => o.GetInfo()).ToList();
-            var positions = Positions.Snapshot.Values.Select(p => p.GetInfo()).ToList();
+            var positions = Positions.Snapshot.Values.ToList();
             var assets = Assets.Snapshot.Values.Select(a => a.GetInfo()).ToList();
 
             return new Snapshot(info, orders, positions, assets);

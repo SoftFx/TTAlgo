@@ -129,7 +129,7 @@ namespace TickTrader.Algo.Core
 
         public InvokeEmulator Emulator { get; set; }
 
-        public void ValidateNewOrder(OrderAccessor newOrder, OrderCalculator fCalc)
+        public void ValidateNewOrder(OrderAccessor newOrder, IOrderCalculator fCalc)
         {
             if (acc.IsMarginType)
             {

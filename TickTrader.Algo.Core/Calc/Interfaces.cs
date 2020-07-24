@@ -4,13 +4,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Calc
 {
-    public enum CalcErrorCodes
-    {
-        None = 0,
-        OffQuote,
-        OffCrossQuote,
-        NoCrossSymbol,
-    }
+
 
     public interface IOrderCalcInfo
     {
@@ -86,24 +80,24 @@ namespace TickTrader.Algo.Core.Calc
         event Action<OrderPropArgs<decimal>> CommissionChanged;
     }
 
-    public interface IPositionModel2
-    {
-        string Symbol { get; }
-        decimal Commission { get; }
-        decimal Swap { get; }
-        IPositionSide2 Long { get; } // buy
-        IPositionSide2 Short { get; } //sell
-        DateTime? Modified { get; }
-        OrderCalculator Calculator { get; set; }
-    }
+    //public interface IPositionInfo
+    //{
+    //    string Symbol { get; }
+    //    decimal Commission { get; }
+    //    decimal Swap { get; }
+    //    IPositionSide Long { get; } // buy
+    //    IPositionSide Short { get; } //sell
+    //    DateTime? Modified { get; }
+    //    OrderCalculator Calculator { get; set; }
+    //}
 
-    public interface IPositionSide2
-    {
-        decimal Amount { get; }
-        decimal Price { get; }
-        decimal Margin { get; set; }
-        decimal Profit { get; set; }
-    }
+    //public interface IPositionSide
+    //{
+    //    decimal Amount { get; }
+    //    decimal Price { get; }
+    //    decimal Margin { get; set; }
+    //    decimal Profit { get; set; }
+    //}
 
     public struct OrderEssentialsChangeArgs
     {
@@ -219,13 +213,13 @@ namespace TickTrader.Algo.Core.Calc
         /// <summary>
         /// Account positions.
         /// </summary>
-        IEnumerable<IPositionModel2> Positions { get; }
+        IEnumerable<IPositionInfo> Positions { get; }
 
         /// <summary>
         /// Fired when position changed.
         /// </summary>
-        event Action<IPositionModel2> PositionChanged;
-        event Action<IPositionModel2> PositionRemoved;
+        event Action<IPositionInfo> PositionChanged;
+        event Action<IPositionInfo> PositionRemoved;
     }
 
     public enum PositionChangeTypes

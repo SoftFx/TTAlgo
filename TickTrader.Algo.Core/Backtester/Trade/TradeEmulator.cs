@@ -420,10 +420,10 @@ namespace TickTrader.Algo.Core
             return (++_orderIdSeed).ToString();
         }
 
-        private OrderAccessor OpenOrder(OrderCalculator orderCalc, Domain.OrderInfo.Types.Type orderType, Domain.OrderInfo.Types.Side side, decimal volume, decimal? maxVisibleVolume, double? price, double? stopPrice,
+        private OrderAccessor OpenOrder(IOrderCalculator orderCalc, Domain.OrderInfo.Types.Type orderType, Domain.OrderInfo.Types.Side side, decimal volume, decimal? maxVisibleVolume, double? price, double? stopPrice,
             double? sl, double? tp, string comment, Domain.OrderExecOptions execOptions, string tag, DateTime? expiration, OpenOrderOptions options)
         {
-            var symbolInfo = orderCalc.SymbolAccessor;
+            var symbolInfo = (SymbolAccessor)orderCalc.SymbolInfo;
 
             var order = new OrderAccessor(symbolInfo, _leverage);
 

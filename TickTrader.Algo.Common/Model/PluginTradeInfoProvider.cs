@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -36,9 +37,9 @@ namespace TickTrader.Algo.Common.Model
             AlgoEvent_BalanceUpdated?.Invoke(rep);
         }
 
-        private void Account_PositionUpdate(PositionModel position, Domain.OrderExecReport.Types.ExecAction action)
+        private void Account_PositionUpdate(PositionInfo position, Domain.OrderExecReport.Types.ExecAction action)
         {
-            AlgoEvent_PositionUpdated(position.ToReport(action));
+            AlgoEvent_PositionUpdated(new Domain.PositionExecReport() { PositionCopy = position, ExecAction = action });
         }
 
         private void ExecReportToAlgo(Domain.OrderExecReport.Types.ExecAction action, Domain.OrderExecReport.Types.EntityAction entityAction, ExecutionReport report, OrderModel newOrder, Domain.PositionInfo position)
@@ -96,7 +97,7 @@ namespace TickTrader.Algo.Common.Model
 
         List<Domain.PositionInfo> IAccountInfoProvider.GetPositions()
         {
-            return _cache.Account.Positions.Snapshot.Select(pair => pair.Value.GetInfo()).ToList();
+            return _cache.Account.Positions.Snapshot.Values.ToList();
         }
 
         event Action<Domain.OrderExecReport> IAccountInfoProvider.OrderUpdated

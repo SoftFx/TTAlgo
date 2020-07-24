@@ -1,4 +1,5 @@
 ﻿using System;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Calc
 {
@@ -85,7 +86,7 @@ namespace TickTrader.Algo.Core.Calc
             UpdateStats(change);
         }
 
-        public void UpdatePosition(IPositionSide2 pos, PositionChangeTypes type)
+        public void UpdatePosition(IPositionSide pos, PositionChangeTypes type)
         {
             _positions.RemovePositionWithoutCalculation(_netPosAmount, _netPosPrice);
 

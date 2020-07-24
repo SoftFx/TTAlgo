@@ -2,10 +2,11 @@
 using System;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Calc;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    public class PositionAccessor : NetPosition, IPositionModel2
+    public class PositionAccessor : NetPosition, IPositionInfo
     {
         private readonly SideProxy _buy = new SideProxy();
         private readonly SideProxy _sell = new SideProxy();
@@ -92,7 +93,7 @@ namespace TickTrader.Algo.Core
         public DateTime? Modified { get; set; }
         public string Id { get; set; }
         public bool IsEmpty => VolumeUnits == 0;
-        public OrderCalculator Calculator { get; set; }
+        public IOrderCalculator Calculator { get; set; }
 
         public decimal VolumeUnits => Math.Max(_buy.Amount, _sell.Amount);
         public SideProxy Long => _buy;
@@ -104,8 +105,8 @@ namespace TickTrader.Algo.Core
         //decimal IPositionModel.Commission => (decimal)Commission;
         //decimal IPositionModel.AgentCommission => 0;
         //decimal IPositionModel.Swap => Swap;
-        IPositionSide2 IPositionModel2.Long => _buy;
-        IPositionSide2 IPositionModel2.Short => _sell;
+        IPositionSide IPositionInfo.Long => _buy;
+        IPositionSide IPositionInfo.Short => _sell;
 
         internal event Action<PositionAccessor> Changed;
 
@@ -140,7 +141,7 @@ namespace TickTrader.Algo.Core
             OnChanged();
         }
 
-        private static decimal CalculatePositionAvgPrice(IPositionSide2 position, decimal price2, decimal amount2)
+        private static decimal CalculatePositionAvgPrice(IPositionSide position, decimal price2, decimal amount2)
         {
             return CalculatePositionAvgPrice(position.Price, position.Amount, price2, amount2);
         }
@@ -173,7 +174,7 @@ namespace TickTrader.Algo.Core
 
         #endregion
 
-        public class SideProxy : IPositionSide2
+        public class SideProxy : IPositionSide
         {
             public SideProxy()
             {

@@ -304,7 +304,7 @@ namespace TickTrader.Algo.Core
         public AccountInfo.Types.Type AccountingType => Type;
         //decimal IMarginAccountInfo2.Balance => Balance;
         IEnumerable<IOrderModel2> IAccountInfo2.Orders => (IEnumerable<OrderAccessor>)Orders.OrderListImpl;
-        IEnumerable<IPositionModel2> IMarginAccountInfo2.Positions => NetPositions;
+        IEnumerable<IPositionInfo> IMarginAccountInfo2.Positions => NetPositions;
         IEnumerable<IAssetModel2> ICashAccountInfo2.Assets => Assets;
 
         //void BL.IAccountInfo.LogInfo(string message)
@@ -326,9 +326,9 @@ namespace TickTrader.Algo.Core
         public event Action BalanceUpdated = delegate { };
         public event Action<IBalanceDividendEventArgs> BalanceDividend = delegate { };
         public event Action Reset = delegate { };
-        public event Action<IPositionModel2> PositionChanged;
+        public event Action<IPositionInfo> PositionChanged;
         public event Action<IAssetModel2, AssetChangeType> AssetsChanged;
-        public event Action<IPositionModel2> PositionRemoved;
+        public event Action<IPositionInfo> PositionRemoved;
 
         internal void EnableBlEvents()
         {
@@ -376,7 +376,7 @@ namespace TickTrader.Algo.Core
             UpdateAccountInfo("Remove order", () => OrderRemoved?.Invoke(order));
         }
 
-        private void OnPositionUpdated(IPositionModel2 position)
+        private void OnPositionUpdated(IPositionInfo position)
         {
             UpdateAccountInfo("Update position", () => PositionChanged?.Invoke(position));
         }

@@ -1,12 +1,13 @@
 ﻿using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
     internal sealed class PositionViewModel : BaseTransactionViewModel
     {
-        private readonly PositionModel _position;
+        private readonly PositionInfo _position;
 
-        public PositionViewModel(PositionModel position, int accountDigits) : base(position?.SymbolModel, accountDigits)
+        public PositionViewModel(PositionInfo position, AccountModel account) : base((account as IOrderDependenciesResolver).GetSymbolOrNull(position.Symbol), account.BalanceDigits)
         {
             _position = position;
 
@@ -18,16 +19,16 @@ namespace TickTrader.BotTerminal
 
         protected override void Update()
         {
-            Modified.Value = _position.Modified;
+            Modified.Value = _position.Modified?.ToDateTime();
 
             Price.Value = _position.Price;
-            Volume.Value = _position.Amount;
+            Volume.Value = _position.Volume;
 
             Side.Value = _position.Side;
             Type.Value = Algo.Domain.OrderInfo.Types.Type.Position;
 
-            Swap.Value = _position.Swap;
-            Commission.Value = _position.Commission;
+            Swap.Value = (decimal)_position.Swap;
+            Commission.Value = (decimal)_position.Commission;
         }
     }
 }
