@@ -4,8 +4,6 @@ namespace TickTrader.Algo.Domain
 {
     public partial class PositionInfo : IPositionInfo
     {
-        public bool IsBuy => Side == Domain.OrderInfo.Types.Side.Buy;
-
         public bool IsEmpty => Math.Abs(Volume) < 1e-9;
 
         public IPositionSide Long { get; set; }

@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Common.Model
     public class AccountModel : CrossDomainObject, IOrderDependenciesResolver, IMarginAccountInfo2, ICashAccountInfo2
     {
         private readonly VarDictionary<string, PositionInfo> _positions = new VarDictionary<string, PositionInfo>();
-        private readonly VarDictionary<string, AssetModel> _assets = new VarDictionary<string, AssetModel>();
+        private readonly VarDictionary<string, AssetInfo> _assets = new VarDictionary<string, AssetInfo>();
         private readonly VarDictionary<string, OrderModel> _orders = new VarDictionary<string, OrderModel>();
         private Domain.AccountInfo.Types.Type? _accType;
         private readonly IReadOnlyDictionary<string, CurrencyEntity> _currencies;
@@ -38,7 +38,7 @@ namespace TickTrader.Algo.Common.Model
         public event System.Action AccountTypeChanged = delegate { };
         public IVarSet<string, PositionInfo> Positions => _positions;
         public IVarSet<string, OrderModel> Orders => _orders;
-        public IVarSet<string, AssetModel> Assets => _assets;
+        public IVarSet<string, AssetInfo> Assets => _assets;
 
         public Domain.AccountInfo.Types.Type? Type
         {
@@ -68,7 +68,7 @@ namespace TickTrader.Algo.Common.Model
 
         IEnumerable<IOrderModel2> IAccountInfo2.Orders => Orders.Snapshot.Values;
 
-        IEnumerable<IAssetModel2> ICashAccountInfo2.Assets => Assets.Snapshot.Values;
+        IEnumerable<IAssetInfo> ICashAccountInfo2.Assets => Assets.Snapshot.Values;
 
         //public AccountCalculatorModel Calc { get; private set; }
 
@@ -81,7 +81,7 @@ namespace TickTrader.Algo.Common.Model
         public event Action<IOrderModel2> OrderAdded;
         public event Action<IEnumerable<IOrderModel2>> OrdersAdded;
         public event Action<IOrderModel2> OrderRemoved;
-        public event Action<IAssetModel2, AssetChangeType> AssetsChanged;
+        public event Action<IAssetInfo, AssetChangeType> AssetsChanged;
         public event Action<IPositionInfo> PositionRemoved;
 
         public EntityCacheUpdate CreateSnaphotUpdate(Domain.AccountInfo accInfo, List<Domain.OrderInfo> tradeRecords, List<Domain.PositionInfo> positions, List<Domain.AssetInfo> assets)
@@ -155,7 +155,7 @@ namespace TickTrader.Algo.Common.Model
 
             foreach (var fdkAsset in assets)
             {
-                var model = new AssetModel(fdkAsset);
+                var model = fdkAsset;
                 this._assets.Add(fdkAsset.Currency, model);
 
                 AssetsChanged?.Invoke(model, AssetChangeType.Added);
@@ -184,7 +184,7 @@ namespace TickTrader.Algo.Common.Model
         public Domain.AccountInfo GetAccountInfo()
         {
             return new Domain.AccountInfo(_accType != Domain.AccountInfo.Types.Type.Cash ? Balance : (double?)null, BalanceCurrency,
-                Assets.Snapshot.Values.Select(a => a.GetInfo()).ToArray())
+                Assets.Snapshot.Values.ToArray())
             {
                 Id = Id,
                 Leverage = Leverage,
@@ -254,7 +254,7 @@ namespace TickTrader.Algo.Common.Model
 
         private void UpdateAsset(Domain.AssetInfo assetInfo)
         {
-            var model = new AssetModel(assetInfo);
+            var model = assetInfo;
 
             if (assetInfo.Balance == 0)
                 _assets.Remove(assetInfo.Currency);
@@ -273,7 +273,7 @@ namespace TickTrader.Algo.Common.Model
             }
             else if (Type == Domain.AccountInfo.Types.Type.Cash)
             {
-                var model = new AssetModel(newBalance, currency);
+                var model = new AssetInfo(newBalance, currency);
 
                 if (newBalance != 0)
                     _assets[currency] = model;
@@ -627,7 +627,7 @@ namespace TickTrader.Algo.Common.Model
             var info = GetAccountInfo();
             var orders = Orders.Snapshot.Values.Select(o => o.GetInfo()).ToList();
             var positions = Positions.Snapshot.Values.ToList();
-            var assets = Assets.Snapshot.Values.Select(a => a.GetInfo()).ToList();
+            var assets = Assets.Snapshot.Values.ToList();
 
             return new Snapshot(info, orders, positions, assets);
         }

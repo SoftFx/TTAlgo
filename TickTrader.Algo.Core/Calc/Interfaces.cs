@@ -236,11 +236,11 @@ namespace TickTrader.Algo.Core.Calc
         /// <summary>
         /// Cash account assets.
         /// </summary>
-        IEnumerable<IAssetModel2> Assets { get; }
+        IEnumerable<IAssetInfo> Assets { get; }
 
         /// <summary>
         /// Fired when underlying assests list was changed.
         /// </summary>
-        event Action<IAssetModel2, AssetChangeType> AssetsChanged;
+        event Action<IAssetInfo, AssetChangeType> AssetsChanged;
     }
 }

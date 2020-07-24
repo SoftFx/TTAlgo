@@ -2,6 +2,7 @@
 using System;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 using TickTrader.BotTerminal.Converters;
 
 namespace TickTrader.BotTerminal
@@ -11,9 +12,9 @@ namespace TickTrader.BotTerminal
         private readonly VarContext _varContext = new VarContext();
 
         private readonly PricePrecisionConverter<decimal> _currencyConverter;
-        private readonly AssetModel _asset;
+        private readonly IAssetInfo _asset;
 
-        public AssetViewModel(AssetModel asset, CurrencyEntity info)
+        public AssetViewModel(AssetInfo asset, CurrencyEntity info)
         {
             _asset = asset;
 

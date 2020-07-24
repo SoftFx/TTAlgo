@@ -9,7 +9,7 @@ namespace TickTrader.Algo.Core.Calc
     public class CashAccountCalculator : IDisposable
     {
         private readonly ICashAccountInfo2 account;
-        private readonly Dictionary<string, IAssetModel2> assets = new Dictionary<string, IAssetModel2>();
+        private readonly Dictionary<string, IAssetInfo> assets = new Dictionary<string, IAssetInfo>();
         private MarketStateBase market;
 
         public MarketStateBase Market
@@ -117,7 +117,7 @@ namespace TickTrader.Algo.Core.Calc
                 return combinedMarginFactor * amount;
         }
 
-        public IAssetModel2 GetMarginAsset(ISymbolInfo symbol, Domain.OrderInfo.Types.Side side)
+        public IAssetInfo GetMarginAsset(ISymbolInfo symbol, Domain.OrderInfo.Types.Side side)
         {
             //if (order.MarginCurrency == null || order.ProfitCurrency == null)
             //    throw new MarketConfigurationException("Order must have both margin & profit currencies specified.");
@@ -132,7 +132,7 @@ namespace TickTrader.Algo.Core.Calc
             return (side == Domain.OrderInfo.Types.Side.Buy) ? smb.ProfitCurrency : smb.MarginCurrency;
         }
 
-        public void AddRemoveAsset(IAssetModel2 asset, AssetChangeType changeType)
+        public void AddRemoveAsset(IAssetInfo asset, AssetChangeType changeType)
         {
             if (changeType == AssetChangeType.Added)
                 this.assets.Add(asset.Currency, asset);
