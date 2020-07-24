@@ -18,7 +18,7 @@ using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.BotTerminal
 {
-    internal class ShellViewModel : Screen, iOrderUi, IShell, IProfileLoader
+    internal class ShellViewModel : Screen, IShell, IProfileLoader
     {
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -61,7 +61,7 @@ namespace TickTrader.BotTerminal
             algoEnv = new AlgoEnvironment(this, Agent, _botAgentManager);
 
             AlgoList = new AlgoListViewModel(algoEnv);
-            SymbolList = new SymbolListViewModel(clientModel.Symbols, commonClient.Distributor, this, false);
+            SymbolList = new SymbolListViewModel(clientModel.Symbols, commonClient.Distributor, this);
 
             ProfileManager = new ProfileManagerViewModel(this, storage);
 
@@ -284,7 +284,6 @@ namespace TickTrader.BotTerminal
         public AccountPaneViewModel AccountPane { get; private set; }
         public JournalViewModel Journal { get; set; }
         //public BotJournalViewModel BotJournal { get; set; }
-        public iOrderUi OrderCommands { get { return this; } }
         public UiLock ConnectionLock { get; private set; }
         public IProfileLoader ProfileLoader => this;
         public ProfileManagerViewModel ProfileManager { get; private set; }
@@ -445,28 +444,6 @@ namespace TickTrader.BotTerminal
                 logger.Error(ex, "Failed to save profile snapshot");
             }
         }
-
-        #region OrderUi implementation
-
-        public void OpenMarkerOrder(string symbol)
-        {
-            try
-            {
-                using (var openOrderModel = new OpenOrderDialogViewModel(clientModel, symbol))
-                    wndManager.OpenMdiWindow(openOrderModel);
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex);
-            }
-        }
-
-        public void OpenMarkerOrder(string symbol, decimal volume, OrderSide side)
-        {
-
-        }
-
-        #endregion
 
         #region IProfileLoader implementation
 

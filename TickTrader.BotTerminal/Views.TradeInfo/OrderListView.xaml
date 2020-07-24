@@ -103,7 +103,7 @@
                     </DataGridTextColumn>
                     <DataGridTextColumn Header="{l:Resx Order_OpenPrice}" Width="100" Binding="{Binding Price.DisplayValue}"/>
 
-                    <DataGridTextColumn Header="Current price" Width="100" Binding="{Binding CurrentPrice.Rate}" Visibility="{Binding Visibility, Source={StaticResource CurrentPriceShow}}"/>
+                    <DataGridTextColumn Header="Current price" Width="100" Binding="{Binding CurrentPrice.DisplayValue}" Visibility="{Binding Visibility, Source={StaticResource CurrentPriceShow}}"/>
 
                     <DataGridTextColumn Header="Price Deviation" Width="100" Binding="{Binding DeviationPrice.DisplayValue}"/>
 

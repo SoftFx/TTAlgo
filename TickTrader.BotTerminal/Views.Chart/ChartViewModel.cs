@@ -170,11 +170,6 @@ namespace TickTrader.BotTerminal
             tickChart.Dispose();
         }
 
-        public void OpenOrder()
-        {
-            _shell.OrderCommands.OpenMarkerOrder(Symbol);
-        }
-
         public ChartStorageEntry GetSnapshot()
         {
             return new ChartStorageEntry

@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Core
     {
         private IFixtureContext _context;
         private MarginAccountCalculator _marginCalc;
-        private CashAccountCalculator cashCalc;
+        private CashAccountCalculator _cashCalc;
         private AccountAccessor acc;
         private bool _isRunning;
 
@@ -62,13 +62,13 @@ namespace TickTrader.Algo.Core
                     acc.MarginCalc = _marginCalc;
                 }
                 else
-                    cashCalc = new CashAccountCalculator(acc, Market);
+                    _cashCalc = new CashAccountCalculator(acc, Market);
                 acc.EnableBlEvents();
             }
             catch (Exception ex)
             {
                 _marginCalc = null;
-                cashCalc = null;
+                _cashCalc = null;
                 acc = null;
                 _context.Builder.Logger.OnError("Failed to start account calculator", ex);
             }
@@ -113,10 +113,10 @@ namespace TickTrader.Algo.Core
                 acc.DisableBlEvents();
                 acc = null;
             }
-            if (cashCalc != null)
+            if (_cashCalc != null)
             {
-                cashCalc.Dispose();
-                cashCalc = null;
+                _cashCalc.Dispose();
+                _cashCalc = null;
             }
             if (_marginCalc != null)
             {
@@ -279,10 +279,10 @@ namespace TickTrader.Algo.Core
                     return result;
                 }
 
-                if (cashCalc != null)
+                if (_cashCalc != null)
                 {
                     var margin = CashAccountCalculator.CalculateMargin(type, (decimal)orderVol, price, stopPrice, side, symbol, isHidden);
-                    return cashCalc.HasSufficientMarginToOpenOrder(type, side, symbol, margin);
+                    return _cashCalc.HasSufficientMarginToOpenOrder(type, side, symbol, margin);
                 }
             }
             catch (NotEnoughMoneyException)
@@ -330,13 +330,13 @@ namespace TickTrader.Algo.Core
                 }
             }
 
-            if (cashCalc != null)
+            if (_cashCalc != null)
             {
                 //var ordType = oldOrder.Entity.GetBlOrderType();
 
                 var oldMargin = CashAccountCalculator.CalculateMargin(oldOrder, symbol);
                 var newMargin = CashAccountCalculator.CalculateMargin(type, (decimal)newRemVolume, newPrice, newStopPrice, side, symbol, newIsHidden);
-                return cashCalc.HasSufficientMarginToOpenOrder(type, side, symbol, newMargin - oldMargin);
+                return _cashCalc.HasSufficientMarginToOpenOrder(type, side, symbol, newMargin - oldMargin);
             }
 
             return false;
@@ -377,7 +377,7 @@ namespace TickTrader.Algo.Core
                     }
                 }
 
-                if (cashCalc != null)
+                if (_cashCalc != null)
                 {
                     if (type == Domain.OrderInfo.Types.Type.Stop || type == Domain.OrderInfo.Types.Type.StopLimit)
                     {

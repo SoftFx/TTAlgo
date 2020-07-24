@@ -9,12 +9,6 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.BotTerminal
 {
-    internal interface iOrderUi
-    {
-        void OpenMarkerOrder(string symbol);
-        void OpenMarkerOrder(string symbol, decimal volume, OrderSide side);
-    }
-
     internal interface IProfileLoader
     {
         void ReloadProfile(CancellationToken token);
@@ -26,7 +20,6 @@ namespace TickTrader.BotTerminal
         void ShowChart(string smb, ChartPeriods period);
         DialogResult ShowDialog(DialogButton buttons, DialogMode mode, string title = null, string message = null, string error = null);
         void Connect(AccountAuthEntry creds);
-        iOrderUi OrderCommands { get; }
         UiLock ConnectionLock { get; }
         WindowManager ToolWndManager { get; }
         IProfileLoader ProfileLoader { get; }

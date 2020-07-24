@@ -35,4 +35,5 @@
     <l:TextLengthComparisonConverter x:Key="TextLengthComparison"/>
     <l:BackTrimStringConverter x:Key="TrimValue"/>
     <l:GetFileNameFromPath x:Key="GetFileName"/>
+    <l:CheckValueConverter x:Key="CheckValue"/>
 </ResourceDictionary>

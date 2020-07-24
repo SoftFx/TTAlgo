@@ -1,45 +1,28 @@
-﻿using Caliburn.Micro;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Machinarium.Qnil;
+﻿using Machinarium.Qnil;
 using Machinarium.Var;
+using System;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core.Infrastructure;
 
 namespace TickTrader.BotTerminal
 {
-    internal class SymbolListViewModel : EntityBase
+    internal sealed class SymbolListViewModel : EntityBase
     {
-        private IVarList<SymbolViewModel> viewModelCollection;
+        private readonly IShell _shell;
 
-        public SymbolListViewModel(IVarSet<string, SymbolModel> symbolCollection, QuoteDistributor distributor, IShell shell, bool showLocalTime)
+        public SymbolListViewModel(IVarSet<string, SymbolModel> symbolCollection, QuoteDistributor distributor, IShell shell)
         {
-            viewModelCollection = symbolCollection.Select((k, v) => new SymbolViewModel(v, distributor, shell, showLocalTime)).OrderBy((k, v) => k);
+            _shell = shell;
 
-            Symbols = viewModelCollection.AsObservable();
-            SelectedSymbol = AddProperty<SymbolViewModel>();
-
-            CanOpenChart = shell != null;
-
-            TriggerOnChange(SelectedSymbol.Var, a =>
-            {
-                if (a.Old != null) a.Old.IsSelected = false;
-                if (a.New != null) a.New.IsSelected = true;
-            });
+            Symbols = symbolCollection.Select((k, v) => new SymbolViewModel(v, distributor)).OrderBy((k, v) => k).AsObservable();
         }
 
         public IObservableList<SymbolViewModel> Symbols { get; }
-        public Property<SymbolViewModel> SelectedSymbol { get; }
-        public bool CanOpenChart { get; }
 
         public void OpenChart(object o)
         {
-            var symbolVM = o as SymbolViewModel;
-            symbolVM?.OpenChart();
+            if (o is SymbolViewModel model)
+                _shell?.OpenChart(model?.SymbolName);
         }
     }
 }

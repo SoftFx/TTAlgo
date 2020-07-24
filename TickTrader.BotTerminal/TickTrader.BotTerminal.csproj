@@ -296,6 +296,7 @@
     <Compile Include="Controls\WaitLiveIcon.cs" />
     <Compile Include="Converters\BackTrimStringConverter.cs" />
     <Compile Include="Converters\BoolConverters.cs" />
+    <Compile Include="Converters\CheckValueConverter.cs" />
     <Compile Include="Converters\DateTimeConverters.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\DoubleRoundConverter.cs" />
@@ -532,18 +533,6 @@
     <Compile Include="Views.Chart\OutputPaneViewModel.cs" />
     <Compile Include="Views.Chart\IndicatorViewModel.cs" />
     <Compile Include="Views.Chart\SeriesViewModel.cs" />
-    <Compile Include="Views.Order\PendingOrderPageView.xaml.cs">
-      <DependentUpon>PendingOrderPageView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views.Order\MarketOrderPageView.xaml.cs">
-      <DependentUpon>MarketOrderPageView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views.Order\PendingOrderPageViewModel.cs" />
-    <Compile Include="Views.Order\MarketOrderPageViewModel.cs" />
-    <Compile Include="Views.Order\OpenOrderDialogView.xaml.cs">
-      <DependentUpon>OpenOrderDialogView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views.Order\OpenOrderDialogViewModel.cs" />
     <Compile Include="Views.Profiles\ProfileLoadingDialogView.xaml.cs">
       <DependentUpon>ProfileLoadingDialogView.xaml</DependentUpon>
     </Compile>
@@ -640,18 +629,7 @@
       <DependentUpon>ShutdownDialogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\ShutdownDialogViewModel.cs" />
-    <Compile Include="Views\SymbolDetailsView.xaml.cs">
-      <DependentUpon>SymbolDetailsView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\SymbolDetailsViewModel.cs" />
-    <Compile Include="Views\SymbolLevel2View.xaml.cs">
-      <DependentUpon>SymbolLevel2View.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\SymbolLevel2ViewModel.cs" />
     <Compile Include="Views\SymbolListViewModel.cs" />
-    <Compile Include="Views\SymbolView.xaml.cs">
-      <DependentUpon>SymbolView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\ConfirmationDialogViewModel.cs" />
     <Compile Include="Views\SymbolViewModel.cs" />
     <Compile Include="Views.TradeInfo\TradeInfoViewModel.cs" />
@@ -1139,18 +1117,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views.Order\PendingOrderPageView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views.Order\MarketOrderPageView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views.Order\OpenOrderDialogView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Views.Profiles\ProfileLoadingDialogView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1267,19 +1233,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\SymbolDetailsView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\SymbolLevel2View.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Views\SymbolListView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\SymbolView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

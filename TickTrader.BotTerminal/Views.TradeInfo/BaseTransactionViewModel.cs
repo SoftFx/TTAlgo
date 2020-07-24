@@ -29,6 +29,7 @@ namespace TickTrader.BotTerminal
 
             Price = _varContext.AddProperty(displayConverter: _symbolPrecision);
             DeviationPrice = _varContext.AddProperty(displayConverter: _symbolPrecision);
+            CurrentPrice = _varContext.AddProperty(displayConverter: _symbolPrecision);
             Volume = _varContext.AddProperty(displayConverter: _amountToLots);
 
             Side = _varContext.AddProperty(default(Algo.Domain.OrderInfo.Types.Side));
@@ -49,19 +50,17 @@ namespace TickTrader.BotTerminal
 
         public string Symbol => _symbol.Name;
 
-        public bool IsPosition => Type.Value != Algo.Domain.OrderInfo.Types.Type.Position;
+        public bool IsPosition => Type?.Value != Algo.Domain.OrderInfo.Types.Type.Position;
 
         public bool IsBuy => Side.Value == Algo.Domain.OrderInfo.Types.Side.Buy;
 
         public string SortedNumber => $"{Modified.Value?.ToString("dd.MM.yyyyHH:mm:ss.fff")}-{Id}"; //use on UI for correct sorting
 
-        public RateDirectionTracker CurrentPrice => IsPosition ? IsBuy ? _symbol?.AskTracker : _symbol?.BidTracker :
-                                                                 IsBuy ? _symbol?.BidTracker : _symbol?.AskTracker;
-
         public Property<DateTime?> Modified { get; }
 
         public Property<double?> Price { get; }
         public Property<double?> DeviationPrice { get; }
+        public Property<double?> CurrentPrice { get; }
         public Property<double?> Volume { get; }
 
         public Property<Algo.Domain.OrderInfo.Types.Side> Side { get; }
@@ -73,7 +72,8 @@ namespace TickTrader.BotTerminal
 
         private void RateUpdate(ISymbolInfo2 symbols)
         {
-            DeviationPrice.Value = IsBuy ? CurrentPrice?.Rate - Price.Value : Price.Value - CurrentPrice?.Rate;
+            CurrentPrice.Value = IsPosition ? IsBuy ? _symbol?.Ask : _symbol?.Bid : IsBuy ? _symbol?.Bid : _symbol?.Ask;
+            DeviationPrice.Value = IsBuy ? CurrentPrice.Value - Price.Value : Price.Value - CurrentPrice.Value;
             NetProfit.Value = Swap.Value + Commission.Value + Profit;
         }
 

@@ -73,44 +73,4 @@ namespace TickTrader.Algo.Api
         ReadOnlyAccount = 124,
         IncorrectSlippage = 125,
     }
-
-    public static class OrderOptionExtension
-    {
-        public static OrderExecOptions ToExec(this OrderOptions options)
-        {
-            switch (options)
-            {
-                case OrderOptions.ImmediateOrCancel:
-                    return OrderExecOptions.ImmediateOrCancel;
-
-                default:
-                    return OrderExecOptions.None;
-            }
-        }
-
-        public static OrderOptions ToExec(this OrderExecOptions options)
-        {
-            switch (options)
-            {
-                case OrderExecOptions.ImmediateOrCancel:
-                    return OrderOptions.ImmediateOrCancel;
-
-                default:
-                    return OrderOptions.None;
-            }
-        }
-
-        public static string ToFullString(this OrderOptions options)
-        {
-            var op = new System.Collections.Generic.List<OrderOptions>();
-
-            foreach (var e in Enum.GetValues(typeof(OrderOptions)).Cast<OrderOptions>())
-            {
-                if (e != OrderOptions.None && options.HasFlag(e))
-                    op.Add(e);
-            }
-
-            return string.Join(",", op);
-        }
-    }
 }

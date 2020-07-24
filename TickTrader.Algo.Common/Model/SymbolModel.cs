@@ -18,20 +18,12 @@ namespace TickTrader.Algo.Common.Model
 
             BaseCurrencyDigits = BaseCurrency?.Digits ?? 2;
             QuoteCurrencyDigits = QuoteCurrency?.Digits ?? 2;
-
-            BidTracker = new RateDirectionTracker();
-            AskTracker = new RateDirectionTracker();
-
-            BidTracker.Precision = info.Digits;
-            AskTracker.Precision = info.Digits;
         }
 
         public string Name => Descriptor.Name;
         public string Description => Descriptor.Description;
         public bool IsUserCreated => false;
         public Domain.SymbolInfo Descriptor { get; private set; }
-        public RateDirectionTracker BidTracker { get; private set; }
-        public RateDirectionTracker AskTracker { get; private set; }
         public int PriceDigits => Descriptor.Digits;
         public int BaseCurrencyDigits { get; private set; }
         public int QuoteCurrencyDigits { get; private set; }
@@ -40,17 +32,10 @@ namespace TickTrader.Algo.Common.Model
         public int Depth { get; private set; }
         public int RequestedDepth { get; private set; }
         public QuoteEntity LastQuote { get; private set; }
-        public double? CurrentAsk { get; private set; }
-        public double? CurrentBid { get; private set; }
         public double LotSize => Descriptor.LotSize;
 
         public event Action<SymbolModel> InfoUpdated = delegate { };
         public event Action<ISymbolInfo2> RateUpdated = delegate { };
-
-        public virtual void Close()
-        {
-            //subscription.Dispose();
-        }
 
         public virtual void Update(Domain.SymbolInfo newInfo)
         {
@@ -62,11 +47,8 @@ namespace TickTrader.Algo.Common.Model
         {
             LastQuote = tick;
 
-            CurrentBid = tick.GetNullableBid();
-            CurrentAsk = tick.GetNullableAsk();
-
-            BidTracker.Rate = CurrentBid;
-            AskTracker.Rate = CurrentAsk;
+            Bid = tick.Bid;
+            Ask = tick.Ask;
 
             RateUpdated(this);
         }
@@ -89,8 +71,8 @@ namespace TickTrader.Algo.Common.Model
 
         double ISymbolInfo2.Point => Math.Pow(10, -PriceDigits);
 
-        double ISymbolInfo2.Bid { get => BidTracker.Rate ?? 0; set => BidTracker.Rate = value; }
-        double ISymbolInfo2.Ask { get => AskTracker.Rate ?? 0; set => AskTracker.Rate = value; }
+        public double Bid { get; set; }
+        public double Ask { get; set; }
 
         string ISymbolInfo2.MarginCurrency => BaseCurrency.Name;
 

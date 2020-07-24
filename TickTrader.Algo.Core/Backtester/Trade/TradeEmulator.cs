@@ -1595,7 +1595,7 @@ namespace TickTrader.Algo.Core
             //}
 
             OpenOrder(order.Calculator, Domain.OrderInfo.Types.Type.Limit, order.Side, order.Entity.RemainingAmount, null, order.Price,
-                order.StopPrice, order.StopLoss, order.TakeProfit, order.Comment, order.ApiOrder.Options.ToExec().ToDomainEnum(), order.Entity.UserTag, order.Expiration, OpenOrderOptions.SkipDealing);
+                order.StopPrice, order.StopLoss, order.TakeProfit, order.Comment, order.ApiOrder.Options.ToDomainEnum(), order.Entity.UserTag, order.Expiration, OpenOrderOptions.SkipDealing);
         }
 
         private void ClosePosition(OrderAccessor position, TradeTransactionReason trReason, decimal? reqAmount, double? reqPrice,

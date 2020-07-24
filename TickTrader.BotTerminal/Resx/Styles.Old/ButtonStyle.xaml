@@ -224,34 +224,6 @@
         </ControlTemplate.Triggers>
     </ControlTemplate>
 
-    <Style x:Key="SellButtonStyle" TargetType="l:FlatButton" BasedOn="{StaticResource TrickyButton}">
-        <Setter Property="Template" Value="{StaticResource SellButtonTemplate}"/>
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding SellTracker.Direction}" Value="{x:Static c:RateChangeDirections.Up}">
-                <Setter Property="Background" Value="{DynamicResource RateUpColor}"/>
-                <Setter Property="HighlightBackground" Value="{DynamicResource RateUpHighlightColor}"/>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding SellTracker.Direction}" Value="{x:Static c:RateChangeDirections.Down}">
-                <Setter Property="Background" Value="{DynamicResource RateDownColor}"/>
-                <Setter Property="HighlightBackground" Value="{DynamicResource RateDownHighlightColor}"/>
-            </DataTrigger>
-        </Style.Triggers>
-    </Style>
-
-    <Style x:Key="BuyButtonStyle" TargetType="l:FlatButton" BasedOn="{StaticResource TrickyButton}">
-        <Setter Property="Template" Value="{StaticResource BuyButtonTemplate}"/>
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding BuyTracker.Direction}" Value="{x:Static c:RateChangeDirections.Up}">
-                <Setter Property="Background" Value="{DynamicResource RateUpColor}"/>
-                <Setter Property="HighlightBackground" Value="{DynamicResource RateUpHighlightColor}"/>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding BuyTracker.Direction}" Value="{x:Static c:RateChangeDirections.Down}">
-                <Setter Property="Background" Value="{DynamicResource RateDownColor}"/>
-                <Setter Property="HighlightBackground" Value="{DynamicResource RateDownHighlightColor}"/>
-            </DataTrigger>
-        </Style.Triggers>
-    </Style>
-
     <Style x:Key="BotControlCloseButtonStyle" TargetType="l:FlatButton" BasedOn="{StaticResource FlatButtonMainStyle}">
         <Setter Property="Width" Value="15"/>
         <Setter Property="Height" Value="15"/>
