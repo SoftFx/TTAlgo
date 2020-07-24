@@ -11,6 +11,7 @@ using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Infrastructure;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -186,7 +187,7 @@ namespace TickTrader.Algo.Common.Model
             public TradeHistoryProvider.Handler TradeHistory { get; private set; }
             public PluginTradeApiProvider.Handler TradeApi { get; private set; }
             public QuoteDistributor Distributor { get; }
-            public IVarSet<string, SymbolModel> Symbols => Cache.Symbols;
+            public IVarSet<string, SymbolInfo> Symbols => Cache.Symbols;
             public IVarSet<string, CurrencyEntity> Currencies => Cache.Currencies;
 
             protected override void ActorInit()

@@ -1,6 +1,7 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System;
 using TickTrader.Algo.Core.Calc;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -35,7 +36,7 @@ namespace TickTrader.Algo.Common.Model
 
         public bool IsBuy => Side == Domain.OrderInfo.Types.Side.Buy;
 
-        public SymbolModel SymbolModel { get; private set; }
+        public SymbolInfo SymbolModel { get; private set; }
 
         public decimal Commission { get; private set; }
 

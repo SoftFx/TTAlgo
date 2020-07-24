@@ -3,6 +3,7 @@ using Machinarium.Var;
 using System;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core.Infrastructure;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -10,7 +11,7 @@ namespace TickTrader.BotTerminal
     {
         private readonly IShell _shell;
 
-        public SymbolListViewModel(IVarSet<string, SymbolModel> symbolCollection, QuoteDistributor distributor, IShell shell)
+        public SymbolListViewModel(IVarSet<string, SymbolInfo> symbolCollection, QuoteDistributor distributor, IShell shell)
         {
             _shell = shell;
 

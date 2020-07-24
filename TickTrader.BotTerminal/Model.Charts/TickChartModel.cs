@@ -16,6 +16,7 @@ using TickTrader.Algo.Core;
 using SciChart.Charting.Model.ChartSeries;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -25,7 +26,7 @@ namespace TickTrader.BotTerminal
         private XyDataSeries<DateTime, double> bidData = new XyDataSeries<DateTime, double>();
         private QuoteEntity lastSeriesQuote;
 
-        public TickChartModel(SymbolModel symbol, AlgoEnvironment algoEnv)
+        public TickChartModel(SymbolInfo symbol, AlgoEnvironment algoEnv)
             : base(symbol, algoEnv)
         {
             Support(SelectableChartTypes.Line);
@@ -58,7 +59,7 @@ namespace TickTrader.BotTerminal
 
             if (Model.LastQuote != null)
             {
-                DateTime timeMargin = Model.LastQuote.CreatingTime;
+                DateTime timeMargin = Model.LastQuote.Time;
 
                 QuoteEntity[] tickArray = new QuoteEntity[0];
 

@@ -14,6 +14,7 @@ using TickTrader.Algo.Api;
 using Machinarium.Var;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core.Infrastructure;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -39,7 +40,7 @@ namespace TickTrader.BotTerminal
 
             Account = _core.Cache.Account;
             Symbols = _core.Symbols;
-            SortedSymbols = Symbols.Select((k, v)=> (SymbolModel)v).OrderBy((k, v) => k).AsObservable();
+            SortedSymbols = Symbols.Select((k, v)=> v).OrderBy((k, v) => k).AsObservable();
 
             var orderedCurrencies = Currencies.OrderBy((k, v) => k);
             SortedCurrencies = orderedCurrencies.AsObservable();
@@ -183,9 +184,9 @@ namespace TickTrader.BotTerminal
         public ITradeExecutor TradeApi => _core.TradeApi;
         public AccountModel Account { get; private set; }
         public TradeHistoryProvider.Handler TradeHistory => _core.TradeHistory;
-        public IVarSet<string, SymbolModel> Symbols { get; private set; }
+        public IVarSet<string, SymbolInfo> Symbols { get; private set; }
         public EntityCache Cache => _core.Cache;
-        public IObservableList<SymbolModel> SortedSymbols { get; }
+        public IObservableList<SymbolInfo> SortedSymbols { get; }
         public QuoteDistributor Distributor => _core.Distributor;
         public FeedHistoryProviderModel.Handler FeedHistory => _core.FeedHistory;
         public IVarSet<string, CurrencyEntity> Currencies => _core.Currencies;

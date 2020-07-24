@@ -32,8 +32,8 @@ namespace TickTrader.BotTerminal
         private readonly BoolProperty _allSymbolsValid;
         private readonly BoolVar _isPluginValid;
         private readonly SymbolToken _mainSymbolToken;
-        private readonly IReadOnlyList<ISymbolInfo> _observableSymbolTokens;
-        private readonly IVarSet<SymbolKey, ISymbolInfo> _symbolTokens;
+        private readonly IReadOnlyList<ISetupSymbolInfo> _observableSymbolTokens;
+        private readonly IVarSet<SymbolKey, ISetupSymbolInfo> _symbolTokens;
         private BacktesterPluginSetupViewModel _openedPluginSetup;
         private readonly OptionalItem<TesterModes> _optModeItem;
 
@@ -94,10 +94,10 @@ namespace TickTrader.BotTerminal
 
             _mainSymbolToken = SpecialSymbols.MainSymbolPlaceholder;
             //var predefinedSymbolTokens = new VarList<ISymbolInfo>(new ISymbolInfo[] { _mainSymbolToken });
-            var predefinedSymbolTokens = new VarDictionary<SymbolKey, ISymbolInfo>();
+            var predefinedSymbolTokens = new VarDictionary<SymbolKey, ISetupSymbolInfo>();
             predefinedSymbolTokens.Add(_mainSymbolToken.GetKey(), _mainSymbolToken);
 
-            var existingSymbolTokens = _catalog.AllSymbols.Select((k, s) => (ISymbolInfo)s.ToSymbolToken());
+            var existingSymbolTokens = _catalog.AllSymbols.Select((k, s) => (ISetupSymbolInfo)s.ToSymbolToken());
             _symbolTokens = VarCollection.Combine(predefinedSymbolTokens, existingSymbolTokens);
 
             var sortedSymbolTokens = _symbolTokens.OrderBy((k, v) => k, new SymbolKeyComparer());
@@ -493,7 +493,7 @@ namespace TickTrader.BotTerminal
 
         #region IAlgoSetupMetadata
 
-        IReadOnlyList<ISymbolInfo> IAlgoSetupMetadata.Symbols => _observableSymbolTokens;
+        IReadOnlyList<ISetupSymbolInfo> IAlgoSetupMetadata.Symbols => _observableSymbolTokens;
 
         MappingCollection IAlgoSetupMetadata.Mappings => _env.LocalAgent.Mappings;
 
@@ -524,7 +524,7 @@ namespace TickTrader.BotTerminal
 
         TimeFrames IAlgoSetupContext.DefaultTimeFrame => MainTimeFrame.Value;
 
-        ISymbolInfo IAlgoSetupContext.DefaultSymbol => _mainSymbolToken;
+        ISetupSymbolInfo IAlgoSetupContext.DefaultSymbol => _mainSymbolToken;
 
         MappingKey IAlgoSetupContext.DefaultMapping => new MappingKey(MappingCollection.DefaultFullBarToBarReduction);
 

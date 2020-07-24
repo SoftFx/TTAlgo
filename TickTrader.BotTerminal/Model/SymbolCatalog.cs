@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -60,7 +61,7 @@ namespace TickTrader.BotTerminal
             return _customStorage.Update(customSymbol);
         }
 
-        public SymbolData GetSymbol(ISymbolInfo info)
+        public SymbolData GetSymbol(ISetupSymbolInfo info)
         {
             var key = new SymbolKey(info.Name, info.Origin);
 
@@ -72,7 +73,7 @@ namespace TickTrader.BotTerminal
             throw new Exception("Unsupported symbol origin: " + info.Origin);
         }
 
-        private KeyValuePair<SymbolKey, SymbolData> CreateSymbolData(SymbolModel smb, TraderClientModel client)
+        private KeyValuePair<SymbolKey, SymbolData> CreateSymbolData(SymbolInfo smb, TraderClientModel client)
         {
             var key = new SymbolKey(smb.Name, SymbolOrigin.Online);
             var data = new OnlineSymbolData(smb, client);

@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Common.Model
         private readonly VarDictionary<string, OrderModel> _orders = new VarDictionary<string, OrderModel>();
         private Domain.AccountInfo.Types.Type? _accType;
         private readonly IReadOnlyDictionary<string, CurrencyEntity> _currencies;
-        private readonly IReadOnlyDictionary<string, SymbolModel> _symbols;
+        private readonly IReadOnlyDictionary<string, SymbolInfo> _symbols;
         private bool _isCalcStarted;
         private OrderUpdateAction _updateWatingForPosition = null;
 
@@ -27,7 +27,7 @@ namespace TickTrader.Algo.Common.Model
 
         public MarginAccountCalculator MarginCalculator { get; private set; }
 
-        public AccountModel(IVarSet<string, CurrencyEntity> currecnies, IVarSet<string, SymbolModel> symbols)
+        public AccountModel(IVarSet<string, CurrencyEntity> currecnies, IVarSet<string, SymbolInfo> symbols)
         {
             _currencies = currecnies.Snapshot;
             _symbols = symbols.Snapshot;
@@ -617,7 +617,7 @@ namespace TickTrader.Algo.Common.Model
 
         #endregion
 
-        SymbolModel IOrderDependenciesResolver.GetSymbolOrNull(string name)
+        SymbolInfo IOrderDependenciesResolver.GetSymbolOrNull(string name)
         {
             return _symbols.GetOrDefault(name);
         }

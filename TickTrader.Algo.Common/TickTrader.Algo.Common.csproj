@@ -77,6 +77,7 @@
     <Compile Include="Entities\HistoryFilesPackage.cs" />
     <Compile Include="Entities\EntityUpdate.cs" />
     <Compile Include="Entities\Slice.cs" />
+    <Compile Include="Extencions.cs" />
     <Compile Include="Info\AccountModelInfo.cs" />
     <Compile Include="Info\BotFileInfo.cs" />
     <Compile Include="Info\BotFolderInfo.cs" />
@@ -179,7 +180,6 @@
     <Compile Include="Model\PluginTradeApiProvider.cs" />
     <Compile Include="Model\PluginTradeInfoProvider.cs" />
     <Compile Include="Model\PositionModel.cs" />
-    <Compile Include="Model\SymbolModel.cs" />
     <Compile Include="Model\ClientModel.cs" />
     <Compile Include="Model\TimeFrameModel.cs" />
     <Compile Include="Model\TradeHistoryProvider.cs" />

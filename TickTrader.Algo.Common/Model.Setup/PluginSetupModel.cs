@@ -20,7 +20,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public TimeFrames SelectedTimeFrame { get; private set; }
 
-        public ISymbolInfo MainSymbol { get; private set; }
+        public ISetupSymbolInfo MainSymbol { get; private set; }
 
         public Mapping SelectedMapping { get; private set; }
 

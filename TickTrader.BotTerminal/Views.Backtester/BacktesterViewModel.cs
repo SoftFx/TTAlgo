@@ -400,7 +400,7 @@ namespace TickTrader.BotTerminal
         private void Executor_TradeHistoryUpdated(TradeReportEntity record)
         {
             var currencies = _client.Currencies;
-            var symbols = _testingSymbols.Select(kv => new SymbolModel(kv.Value, currencies)).ToDictionary(m => m.Name);
+            var symbols = _testingSymbols.Select(kv => kv.Value).ToDictionary(m => m.Name);
 
             var accType = SetupPage.Settings.AccType;
             var trRep = TransactionReport.Create(accType, record, 5, symbols.GetOrDefault(record.Symbol));

@@ -4,6 +4,7 @@ using TickTrader.Algo.Core;
 using TickTrader.Algo.Common.Lib;
 using Machinarium.Var;
 using TickTrader.Algo.Core.Infrastructure;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -21,7 +22,7 @@ namespace TickTrader.Algo.Common.Model
         void Send(object data);
     }
 
-    public interface ISymbolManager : IVarSet<string, SymbolModel>
+    public interface ISymbolManager : IVarSet<string, ISymbolInfo>
     {
         IFeedSubscription SubscribeAll();
     }
@@ -48,7 +49,7 @@ namespace TickTrader.Algo.Common.Model
 
     public interface IMarketDataProvider
     {
-        IVarSet<string, SymbolModel> Symbols { get; }
+        IVarSet<string, SymbolInfo> Symbols { get; }
         IVarSet<string, CurrencyEntity> Currencies { get; }
         QuoteDistributor Distributor { get; }
     }

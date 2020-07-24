@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Calc.Conversion;
 using TickTrader.Algo.Core.Infrastructure;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -13,7 +14,7 @@ namespace TickTrader.Algo.Core
     /// </summary>
     public class AlgoMarketNode : SymbolMarketNode
     {
-        public AlgoMarketNode(ISymbolInfo2 smb) : base(smb)
+        public AlgoMarketNode(ISymbolInfo smb) : base(smb)
         {
         }
 

@@ -305,9 +305,9 @@ namespace TickTrader.BotTerminal
             return TransactionReport.Create(_tradeClient.Account.Type.Value, tTransaction, _tradeClient.Account.BalanceDigits, GetSymbolFor(tTransaction));
         }
 
-        private SymbolModel GetSymbolFor(TradeReportEntity transaction)
+        private SymbolInfo GetSymbolFor(TradeReportEntity transaction)
         {
-            SymbolModel symbolModel = null;
+            SymbolInfo symbolModel = null;
             if (!IsBalanceOperation(transaction))
             {
                 symbolModel = _tradeClient.Symbols.GetOrDefault(transaction.Symbol);

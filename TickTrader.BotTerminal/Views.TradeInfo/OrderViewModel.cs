@@ -9,7 +9,7 @@ namespace TickTrader.BotTerminal
     {
         private readonly OrderModel _order;
 
-        public OrderViewModel(OrderModel order, SymbolModel symbol, int accountDigits) : base(symbol, accountDigits)
+        public OrderViewModel(OrderModel order, SymbolInfo symbol, int accountDigits) : base(symbol, accountDigits)
         {
             _order = order;
 

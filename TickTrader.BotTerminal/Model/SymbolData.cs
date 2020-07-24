@@ -92,10 +92,10 @@ namespace TickTrader.BotTerminal
 
     internal class OnlineSymbolData : SymbolData
     {
-        private readonly SymbolModel _symbolInfo;
+        private readonly SymbolInfo _symbolInfo;
         private readonly TraderClientModel _client;
 
-        public OnlineSymbolData(SymbolModel symbol, TraderClientModel client)
+        public OnlineSymbolData(SymbolInfo symbol, TraderClientModel client)
             : base(symbol.Name, client.FeedHistory.Cache)
         {
             _symbolInfo = symbol ?? throw new ArgumentNullException("symbol");
@@ -105,8 +105,8 @@ namespace TickTrader.BotTerminal
         public override bool IsCustom => false;
         public override string Key => "online->" + Name;
         public override string Description => _symbolInfo.Description;
-        public override string Security => _symbolInfo.Descriptor.Security;
-        public override SymbolInfo InfoEntity => _symbolInfo.Descriptor;
+        public override string Security => _symbolInfo.Security;
+        public override SymbolInfo InfoEntity => _symbolInfo;
         public override bool IsDataAvailable => _client.IsConnected.Value;
 
         public override Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(TimeFrames timeFrame, BarPriceType? priceType = null)

@@ -5,6 +5,7 @@ using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Calc.Conversion;
 using TickTrader.Algo.Core.Infrastructure;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Calc
 {
@@ -20,12 +21,12 @@ namespace TickTrader.Algo.Core.Calc
             Conversion = new ConversionManager(this);
         }
 
-        public IEnumerable<ISymbolInfo2> Symbols { get; private set; }
+        public IEnumerable<ISymbolInfo> Symbols { get; private set; }
         public IEnumerable<ICurrencyInfo> Currencies { get; private set; }
 
         public ConversionManager Conversion { get; }
 
-        public void Init(IEnumerable<ISymbolInfo2> symbolList, IEnumerable<ICurrencyInfo> currencyList)
+        public void Init(IEnumerable<ISymbolInfo> symbolList, IEnumerable<ICurrencyInfo> currencyList)
         {
             Currencies = currencyList.ToList();
             _currenciesByName = currencyList.ToDictionary(c => c.Name);
@@ -144,7 +145,7 @@ namespace TickTrader.Algo.Core.Calc
             node = GetSymbolNodeOrNull(newRate.Symbol);
             if (node != null)
             {
-                node.SymbolInfo.UpdateRate(newRate.LastQuote);
+                node.SymbolInfo.UpdateRate((IQuoteInfo)newRate.LastQuote);
                 node.Update(newRate);
                 //_subscriptions.OnUpdateEvent(node);
             }

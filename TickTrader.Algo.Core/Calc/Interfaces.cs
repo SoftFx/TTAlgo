@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Calc
 {
@@ -77,7 +78,7 @@ namespace TickTrader.Algo.Core.Calc
         OrderCalculator Calculator { get; set; }
 
         decimal CashMargin { get; set; }
-        ISymbolInfo2 SymbolInfo { get; }
+        ISymbolInfo SymbolInfo { get; }
 
         event Action<OrderEssentialsChangeArgs> EssentialsChanged;
         //event Action<OrderPropArgs<decimal>> PriceChanged;

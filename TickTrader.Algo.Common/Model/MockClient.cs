@@ -1,17 +1,15 @@
 ﻿using Machinarium.Qnil;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Infrastructure;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model
 {
     public class MockClient : IMarketDataProvider
     {
-        private VarDictionary<string, SymbolModel> _symbols = new VarDictionary<string, SymbolModel>();
+        private VarDictionary<string, SymbolInfo> _symbols = new VarDictionary<string, SymbolInfo>();
         private VarDictionary<string, CurrencyEntity> _currencies = new VarDictionary<string, CurrencyEntity>();
 
         public MockClient()
@@ -31,7 +29,7 @@ namespace TickTrader.Algo.Common.Model
                 _currencies.Add(c.Name, c);
 
             foreach (var s in symbols)
-                _symbols.Add(s.Name, new SymbolModel(s, _currencies));
+                _symbols.Add(s.Name, s);
 
             Acc.Init(accInfo, new Domain.OrderInfo[0], new Domain.PositionInfo[0], new Domain.AssetInfo[0]);
             Acc.StartCalculator(this);
@@ -51,13 +49,13 @@ namespace TickTrader.Algo.Common.Model
 
         public void OnRateUpdate(QuoteEntity quote)
         {
-            _symbols.GetOrDefault(quote.Symbol)?.OnNewTick(quote);
+            _symbols.GetOrDefault(quote.Symbol)?.UpdateRate(quote);
             Distributor.UpdateRate(quote);
             //Acc?.Market?.UpdateRate(quote);
         }
 
         #region IMarketDataProvider
-        public IVarSet<string, SymbolModel> Symbols => _symbols;
+        public IVarSet<string, SymbolInfo> Symbols => _symbols;
         public IVarSet<string, CurrencyEntity> Currencies => _currencies;
         public QuoteDistributor Distributor { get; }
         #endregion

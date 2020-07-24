@@ -12,7 +12,7 @@ namespace TickTrader.Algo.Common.Info
         Token = 2,
     }
 
-    public class SymbolKey : ISymbolInfo, IComparable
+    public class SymbolKey : ISetupSymbolInfo, IComparable
     {
         public string Name { get; set; }
 

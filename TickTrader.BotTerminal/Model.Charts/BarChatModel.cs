@@ -16,6 +16,7 @@ using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.BotTerminal.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -23,7 +24,7 @@ namespace TickTrader.BotTerminal
     {
         private readonly ChartBarVector _barVector = new ChartBarVector(Api.TimeFrames.M1);
 
-        public BarChartModel(SymbolModel symbol, AlgoEnvironment algoEnv)
+        public BarChartModel(SymbolInfo symbol, AlgoEnvironment algoEnv)
             : base(symbol, algoEnv)
         {
             Support(SelectableChartTypes.OHLC);

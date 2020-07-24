@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -145,7 +146,7 @@ namespace TickTrader.BotTerminal
         }
 
 
-        private void Symbols_Updated(DictionaryUpdateArgs<string, Algo.Common.Model.SymbolModel> args)
+        private void Symbols_Updated(DictionaryUpdateArgs<string, SymbolInfo> args)
         {
             if (args.Action == DLinqAction.Remove)
             {

@@ -3,6 +3,7 @@ using System;
 using TickTrader.Algo.Common;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 using TickTrader.BotTerminal.Converters;
 
 namespace TickTrader.BotTerminal
@@ -15,13 +16,13 @@ namespace TickTrader.BotTerminal
         protected readonly PricePrecisionConverter<double?> _symbolPrecision;
         protected readonly PricePrecisionConverter<decimal?> _profitPrecision;
 
-        protected readonly SymbolModel _symbol;
+        protected readonly SymbolInfo _symbol;
 
-        protected BaseTransactionViewModel(SymbolModel symbol, int accountDigits)
+        protected BaseTransactionViewModel(SymbolInfo symbol, int accountDigits)
         {
             _symbol = symbol;
 
-            _symbolPrecision = new PricePrecisionConverter<double?>(symbol?.PriceDigits ?? 5);
+            _symbolPrecision = new PricePrecisionConverter<double?>(symbol?.Digits ?? 5);
             _profitPrecision = new PricePrecisionConverter<decimal?>(accountDigits);
             _amountToLots = new AmountToLotsConverter<double?>(_symbol.LotSize);
 
@@ -70,7 +71,7 @@ namespace TickTrader.BotTerminal
         public Property<decimal?> Commission { get; }
         public Property<decimal?> NetProfit { get; }
 
-        private void RateUpdate(ISymbolInfo2 symbols)
+        private void RateUpdate(ISymbolInfo symbols)
         {
             CurrentPrice.Value = IsPosition ? IsBuy ? _symbol?.Ask : _symbol?.Bid : IsBuy ? _symbol?.Bid : _symbol?.Ask;
             DeviationPrice.Value = IsBuy ? CurrentPrice.Value - Price.Value : Price.Value - CurrentPrice.Value;

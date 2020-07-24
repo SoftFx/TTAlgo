@@ -13,6 +13,7 @@ using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -24,7 +25,7 @@ namespace TickTrader.BotTerminal
         private WindowManager _wndManager;
         private SymbolCatalog _catalog;
         private VarContext _varContext = new VarContext();
-        private VarDictionary<string, SymbolModel> _onlineSymbols = new VarDictionary<string, SymbolModel>();
+        private VarDictionary<string, SymbolInfo> _onlineSymbols = new VarDictionary<string, SymbolInfo>();
         private IVarSet<SymbolKey, ManagedSymbolViewModel> _customManagedSymbols;
         private IVarSet<SymbolKey, ManagedSymbolViewModel> _onlineManagedSymbols;
 
@@ -66,7 +67,7 @@ namespace TickTrader.BotTerminal
             {
                 _onlineSymbols.Clear();
                 foreach (var i in clientModel.Symbols.Snapshot)
-                    _onlineSymbols.Add(i.Key, (SymbolModel)i.Value);
+                    _onlineSymbols.Add(i.Key, i.Value);
             });
 
             _onlineManagedSymbols.EnableAutodispose();

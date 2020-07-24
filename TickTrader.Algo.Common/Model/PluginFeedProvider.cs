@@ -1,14 +1,11 @@
-﻿using System;
+﻿using Machinarium.Qnil;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Lib;
-using Api = TickTrader.Algo.Api;
-using System.Threading.Tasks.Dataflow;
-using Machinarium.Qnil;
 using TickTrader.Algo.Core.Infrastructure;
+using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -16,7 +13,7 @@ namespace TickTrader.Algo.Common.Model
     {
         private ISyncContext _sync;
         private IFeedSubscription subscription;
-        private IVarSet<string, SymbolModel> symbols;
+        private IVarSet<string, SymbolInfo> symbols;
         private QuoteDistributor _distributor;
         private FeedHistoryProviderModel.Handler history;
         private Dictionary<string, int> _subscriptionCache;
@@ -83,8 +80,7 @@ namespace TickTrader.Algo.Common.Model
         {
             return symbols.Snapshot
                 .Where(s => s.Value.LastQuote != null)
-                .Select(s => s.Value.LastQuote)
-                .ToList();
+                .Select(s => s.Value.LastQuote).Cast<QuoteEntity>().ToList();
         }
 
         #endregion
@@ -93,7 +89,7 @@ namespace TickTrader.Algo.Common.Model
 
         public IEnumerable<Domain.SymbolInfo> GetSymbolMetadata()
         {
-            return symbols.Snapshot.Select(m => m.Value.Descriptor).ToList();
+            return symbols.Snapshot.Select(m => m.Value).ToList();
         }
 
         public IEnumerable<CurrencyEntity> GetCurrencyMetadata()

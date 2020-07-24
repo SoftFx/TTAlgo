@@ -30,6 +30,7 @@ using Machinarium.Var;
 using SM = Machinarium.State;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core.Infrastructure;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -61,7 +62,7 @@ namespace TickTrader.BotTerminal
         private Property<Api.RateUpdate> _currentRateProp = new Property<Api.RateUpdate>();
         private Api.TimeFrames _timeframe;
 
-        public ChartModelBase(SymbolModel symbol, AlgoEnvironment algoEnv)
+        public ChartModelBase(SymbolInfo symbol, AlgoEnvironment algoEnv)
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
             AlgoEnv = algoEnv;
@@ -81,7 +82,7 @@ namespace TickTrader.BotTerminal
             subscription = ClientModel.Distributor.AddSubscription(OnRateUpdate, symbol.Name);
             //subscription.NewQuote += ;
 
-            _currentRateProp.Value = symbol.LastQuote;
+            _currentRateProp.Value = (Api.RateUpdate)symbol.LastQuote;
 
             Func<bool> isReadyToStart = () => isConnected && !_isDisposed;
             Func<bool> isNotReadyToStart = () => !isReadyToStart();
@@ -103,7 +104,7 @@ namespace TickTrader.BotTerminal
         }
 
         protected LocalAlgoAgent Agent => AlgoEnv.LocalAgent;
-        protected SymbolModel Model { get; private set; }
+        protected SymbolInfo Model { get; private set; }
         protected TraderClientModel ClientModel => Agent.ClientModel;
         protected AlgoEnvironment AlgoEnv { get; }
         protected ConnectionModel.Handler Connection { get { return ClientModel.Connection; } }
@@ -430,7 +431,7 @@ namespace TickTrader.BotTerminal
 
         Api.TimeFrames IAlgoSetupContext.DefaultTimeFrame => TimeFrame;
 
-        ISymbolInfo IAlgoSetupContext.DefaultSymbol => new SymbolToken(SymbolCode);
+        ISetupSymbolInfo IAlgoSetupContext.DefaultSymbol => new SymbolToken(SymbolCode);
 
         MappingKey IAlgoSetupContext.DefaultMapping => new MappingKey(MappingCollection.DefaultFullBarToBarReduction);
 

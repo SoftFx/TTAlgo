@@ -32,7 +32,7 @@ namespace TickTrader.BotTerminal
         private List<InputSetupViewModel> _tickBasedInputs;
         private List<OutputSetupViewModel> _outputs;
         private TimeFrames _selectedTimeFrame;
-        private ISymbolInfo _mainSymbol;
+        private ISetupSymbolInfo _mainSymbol;
         private MappingInfo _selectedMapping;
         private string _instanceId;
         private IPluginIdProvider _idProvider;
@@ -83,7 +83,7 @@ namespace TickTrader.BotTerminal
 
         public IReadOnlyList<SymbolKey> AvailableSymbols { get; private set; }
 
-        public ISymbolInfo MainSymbol
+        public ISetupSymbolInfo MainSymbol
         {
             get { return _mainSymbol; }
             set

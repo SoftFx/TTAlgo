@@ -5,6 +5,7 @@ using System;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Infrastructure;
+using TickTrader.Algo.Domain;
 using TickTrader.BotTerminal.Converters;
 
 namespace TickTrader.BotTerminal
@@ -21,12 +22,12 @@ namespace TickTrader.BotTerminal
         private readonly VarContext _varContext = new VarContext();
         private readonly PricePrecisionConverter<double?> _symbolPrecision;
 
-        private readonly SymbolModel _model;
+        private readonly SymbolInfo _model;
 
-        public SymbolViewModel(SymbolModel model, QuoteDistributor distributor)
+        public SymbolViewModel(SymbolInfo model, QuoteDistributor distributor)
         {
             _model = model;
-            _symbolPrecision = new PricePrecisionConverter<double?>(model?.PriceDigits ?? 2);
+            _symbolPrecision = new PricePrecisionConverter<double?>(model?.Digits ?? 2);
 
             distributor.AddSubscription(OnRateUpdate, model.Name);
 

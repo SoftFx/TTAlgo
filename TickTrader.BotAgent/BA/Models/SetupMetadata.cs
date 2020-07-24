@@ -28,7 +28,7 @@ namespace TickTrader.BotAgent.BA.Models
     }
 
 
-    public class StubSymbolInfo : ISymbolInfo
+    public class StubSymbolInfo : ISetupSymbolInfo
     {
         public string Name { get; set; }
 
@@ -48,7 +48,7 @@ namespace TickTrader.BotAgent.BA.Models
     // stub
     public class SetupMetadata : IAlgoSetupMetadata
     {
-        public IReadOnlyList<ISymbolInfo> Symbols { get; }
+        public IReadOnlyList<ISetupSymbolInfo> Symbols { get; }
 
         public MappingCollection Mappings { get; }
 
@@ -73,7 +73,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         public TimeFrames DefaultTimeFrame => TimeFrames.M1;
 
-        public ISymbolInfo DefaultSymbol => _defaultSymbol;
+        public ISetupSymbolInfo DefaultSymbol => _defaultSymbol;
 
         public MappingKey DefaultMapping => _defaultMapping;
     }

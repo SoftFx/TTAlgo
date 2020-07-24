@@ -114,7 +114,7 @@ namespace TickTrader.Algo.Core
         decimal? IOrderCalcInfo.Swap => _calcInfo.Swap;
         decimal? IOrderCalcInfo.Commission => _calcInfo.Commission;
 
-        ISymbolInfo2 IOrderModel2.SymbolInfo => _symbol;
+        ISymbolInfo IOrderModel2.SymbolInfo => _symbol;
         public decimal CashMargin { get; set; }
         #endregion
 

@@ -17,7 +17,7 @@ namespace TickTrader.BotTerminal
         private readonly bool _isBacktester;
         private ProfileManager _profileManager;
 
-        public GrossPositionListViewModel(AccountModel model, IVarSet<string, SymbolModel> symbols, IConnectionStatusInfo connection, ProfileManager profileManager, bool isBacktester)
+        public GrossPositionListViewModel(AccountModel model, IVarSet<string, SymbolInfo> symbols, IConnectionStatusInfo connection, ProfileManager profileManager, bool isBacktester)
             : base(model, connection)
         {
             _profileManager = profileManager;

@@ -1,10 +1,11 @@
 ﻿using System;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
     [Serializable]
-    public class QuoteEntity : Api.Quote, ISymbolRate2, RateUpdate
+    public class QuoteEntity : Api.Quote, IQuoteInfo, ISymbolRate2, RateUpdate
     {
         public static readonly BookEntry[] EmptyBook = new BookEntry[0];
 

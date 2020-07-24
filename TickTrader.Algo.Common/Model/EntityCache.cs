@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Common.Model
     public class EntityCache : EntityBase
     {
         private readonly AccountModel _acc;
-        private readonly VarDictionary<string, SymbolModel> _symbols = new VarDictionary<string, SymbolModel>();
+        private readonly VarDictionary<string, SymbolInfo> _symbols = new VarDictionary<string, SymbolInfo>();
         private readonly VarDictionary<string, CurrencyEntity> _currencies = new VarDictionary<string, CurrencyEntity>();
 
         public EntityCache()
@@ -21,7 +21,7 @@ namespace TickTrader.Algo.Common.Model
             _acc = new AccountModel(_currencies, _symbols);
         }
 
-        public IVarSet<string, SymbolModel> Symbols => _symbols;
+        public IVarSet<string, SymbolInfo> Symbols => _symbols;
         public IVarSet<string, CurrencyEntity> Currencies => _currencies;
         public AccountModel Account => _acc;
 
@@ -44,7 +44,7 @@ namespace TickTrader.Algo.Common.Model
             foreach (var existingSmb in _symbols.Values)
             {
                 if (!symbolsByName.ContainsKey(existingSmb.Name))
-                    updates.Add(new SymbolUpdate(existingSmb.Descriptor, EntityCacheActions.Remove));
+                    updates.Add(new SymbolUpdate(existingSmb, EntityCacheActions.Remove));
             }
 
             return updates;
@@ -70,7 +70,7 @@ namespace TickTrader.Algo.Common.Model
 
         internal List<Domain.SymbolInfo> GetSymbolsCopy()
         {
-            return _symbols.Values.Select(s => s.Descriptor).ToList();
+            return _symbols.Values.ToList();
         }
 
         internal List<CurrencyEntity> GetCurrenciesCopy()
@@ -80,7 +80,7 @@ namespace TickTrader.Algo.Common.Model
 
         public Domain.SymbolInfo GetDefaultSymbol()
         {
-            return _symbols.Values.OrderBy(s => s.Descriptor.GroupSortOrder).ThenBy(s => s.Descriptor.SortOrder).ThenBy(s => s.Descriptor.Name).Select(s => s.Descriptor).Where(d => !d.Name.EndsWith("_L")).FirstOrDefault();
+            return _symbols.Values.OrderBy(s => s.GroupSortOrder).ThenBy(s => s.SortOrder).ThenBy(s => s.Name).Where(d => !d.Name.EndsWith("_L")).FirstOrDefault();
         }
 
         internal EntityCacheUpdate GetAccSnapshot()
@@ -91,20 +91,20 @@ namespace TickTrader.Algo.Common.Model
         internal void ApplyQuote(QuoteEntity quote)
         {
             var smb = _symbols.GetOrDefault(quote.Symbol);
-            smb?.OnNewTick(quote);
+            smb?.UpdateRate(quote);
             //_acc?.Market?.UpdateRate(quote);
         }
 
         [Serializable]
         public class SymbolUpdate : EntityCacheUpdate
         {
-            public SymbolUpdate(Domain.SymbolInfo symbol, EntityCacheActions action)
+            public SymbolUpdate(SymbolInfo symbol, EntityCacheActions action)
             {
                 Symbol = symbol ?? throw new ArgumentNullException("symbol");
                 Action = action;
             }
 
-            private Domain.SymbolInfo Symbol { get; }
+            private SymbolInfo Symbol { get; }
             public EntityCacheActions Action { get; }
 
             public void Apply(EntityCache cache)
@@ -114,7 +114,7 @@ namespace TickTrader.Algo.Common.Model
                     if (cache._symbols.ContainsKey(Symbol.Name))
                         cache._symbols[Symbol.Name].Update(Symbol);
                     else
-                        cache._symbols.Add(Symbol.Name, new SymbolModel(Symbol, cache._currencies));
+                        cache._symbols.Add(Symbol.Name, Symbol);
                 }
                 else
                     cache._symbols.Remove(Symbol.Name);

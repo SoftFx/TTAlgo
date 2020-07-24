@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Calc.Conversion;
+using TickTrader.Algo.Domain;
 using TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Core.Calc
@@ -49,7 +50,7 @@ namespace TickTrader.Algo.Core.Calc
         private void RecalculateStats() => Recalculate?.Invoke();
 
         public Api.RateUpdate CurrentRate => RateTracker.Rate;
-        public ISymbolInfo2 SymbolInfo { get; }
+        public ISymbolInfo SymbolInfo { get; }
         public SymbolAccessor SymbolAccessor { get; }
         internal IConversionFormula PositiveProfitConversionRate { get; private set; }
         internal IConversionFormula NegativeProfitConversionRate { get; private set; }

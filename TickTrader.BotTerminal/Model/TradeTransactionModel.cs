@@ -24,9 +24,9 @@ namespace TickTrader.BotTerminal
 
         public TransactionReport() { }
 
-        public TransactionReport(TradeReportEntity transaction, SymbolModel symbol, int profitDigits)
+        public TransactionReport(TradeReportEntity transaction, SymbolInfo symbol, int profitDigits)
         {
-            PriceDigits = symbol?.PriceDigits ?? -1;
+            PriceDigits = symbol?.Digits ?? -1;
             ProfitDigits = profitDigits;
             LotSize = symbol?.LotSize ?? 1;
 
@@ -95,7 +95,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public static TransactionReport Create(AccountInfo.Types.Type accountType, TradeReportEntity tTransaction, int balanceDigits, SymbolModel symbol = null)
+        public static TransactionReport Create(AccountInfo.Types.Type accountType, TradeReportEntity tTransaction, int balanceDigits, SymbolInfo symbol = null)
         {
             switch (accountType)
             {
@@ -532,7 +532,7 @@ namespace TickTrader.BotTerminal
 
     class NetTransactionModel : TransactionReport
     {
-        public NetTransactionModel(TradeReportEntity transaction, SymbolModel model, int profitDigits) : base(transaction, model, profitDigits) { }
+        public NetTransactionModel(TradeReportEntity transaction, SymbolInfo model, int profitDigits) : base(transaction, model, profitDigits) { }
 
         protected override double? GetOpenPrice(TradeReportEntity transaction)
         {
@@ -581,7 +581,7 @@ namespace TickTrader.BotTerminal
 
     class GrossTransactionModel : TransactionReport
     {
-        public GrossTransactionModel(TradeReportEntity transaction, SymbolModel symbol, int profitDigits) : base(transaction, symbol, profitDigits)
+        public GrossTransactionModel(TradeReportEntity transaction, SymbolInfo symbol, int profitDigits) : base(transaction, symbol, profitDigits)
         {
             if (transaction.PositionId != null)
             {
@@ -640,9 +640,9 @@ namespace TickTrader.BotTerminal
 
     class CashTransactionModel : TransactionReport
     {
-        public CashTransactionModel(TradeReportEntity transaction, SymbolModel symbol, int profitDigits) : base(transaction, symbol, profitDigits)
+        public CashTransactionModel(TradeReportEntity transaction, SymbolInfo symbol, int profitDigits) : base(transaction, symbol, profitDigits)
         {
-            ProfitDigits = symbol?.QuoteCurrencyDigits ?? -1;
+            ProfitDigits = symbol?.ProfitDigits ?? -1;
 
             if (GetTransactionSide(transaction) == TransactionSide.Buy)
             {

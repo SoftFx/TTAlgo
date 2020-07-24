@@ -3,47 +3,16 @@ using System.Globalization;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    public interface ISymbolInfo2
-    {
-        string Name { get; }
-
-        double DefaultSlippage { get; }
-        double Point { get; }
-        double Bid { get; set; }
-        double Ask { get; set; }
-        int Digits { get; }
-
-
-        Domain.MarginInfo.Types.CalculationMode MarginMode { get; }
-        double MarginFactorFractional { get; }
-        double MarginHedged { get; }
-        string MarginCurrency { get; }
-        string ProfitCurrency { get; }
-        double ContractSizeFractional { get; }
-
-        Domain.SwapInfo.Types.Type SwapType { get; }
-        int TripleSwapDay { get; }
-        bool SwapEnabled { get; }
-        double SwapSizeLong { get; }
-        double SwapSizeShort { get; }
-
-        double StopOrderMarginReduction { get; }
-        double HiddenLimitOrderMarginReduction { get; }
-
-        void UpdateRate(Api.Quote quote); //Update Ask, Bid, LastQuote
-
-        event Action<ISymbolInfo2> RateUpdated;
-    }
-
-    public class SymbolAccessor : Api.Symbol, ISymbolInfo2
+    public class SymbolAccessor : Api.Symbol, ISymbolInfo
     {
         private Domain.SymbolInfo _info;
         private FeedProvider feed;
 
-        public event Action<ISymbolInfo2> RateUpdated;
+        public event Action<ISymbolInfo> RateUpdated;
 
         internal SymbolAccessor(Domain.SymbolInfo entity, FeedProvider feed, CurrenciesCollection currencies)
         {
@@ -108,6 +77,10 @@ namespace TickTrader.Algo.Core
         public int Precision => Digits;
         public double ContractSizeFractional => _info.LotSize;
 
+        IQuoteInfo ISymbolInfo.LastQuote => (IQuoteInfo)LastQuote;
+
+        public int ProfitDigits => CounterCurrencyInfo.Digits;
+
         #endregion Aliases
 
         public void Subscribe(int depth = 1)
@@ -153,6 +126,33 @@ namespace TickTrader.Algo.Core
                 AmountDigits = (info.TradeVolumeStep * info.LotSize).Digits();
             }
         }
+
+        public void Update(ISymbolInfo info)
+        {
+            if (info == null)
+            {
+                IsNull = true;
+            }
+            else
+            {
+                //IsNull = false;
+                //_info = info;
+
+                //if (info.Commission != null)
+                //{
+                //    CommissionType = info.Commission.ValueType.ToApiEnum();
+                //}
+
+                //Point = System.Math.Pow(10, -info.Digits);
+                ////BaseCurrencyInfo = currencies.GetOrDefault(info.BaseCurrency) ?? Null.Currency;
+                ////CounterCurrencyInfo = currencies.GetOrDefault(info.CounterCurrency) ?? Null.Currency;
+
+                //PriceFormat = FormatExtentions.CreateTradeFormatInfo(info.Digits);
+                //AmountDigits = (info.TradeVolumeStep * info.LotSize).Digits();
+            }
+        }
+
+        public void UpdateRate(IQuoteInfo quote) => UpdateRate((Quote)quote);
     }
 
     public class NullSymbol : Api.Symbol

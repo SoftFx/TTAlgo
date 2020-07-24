@@ -6,7 +6,7 @@ using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
-    public interface ISymbolInfo
+    public interface ISetupSymbolInfo
     {
         string Name { get; }
 
@@ -18,7 +18,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
     public interface IAlgoSetupMetadata
     {
-        IReadOnlyList<ISymbolInfo> Symbols { get; }
+        IReadOnlyList<ISetupSymbolInfo> Symbols { get; }
 
         MappingCollection Mappings { get; }
 
@@ -30,7 +30,7 @@ namespace TickTrader.Algo.Common.Model.Setup
     {
         TimeFrames DefaultTimeFrame { get; }
 
-        ISymbolInfo DefaultSymbol { get; }
+        ISetupSymbolInfo DefaultSymbol { get; }
 
         MappingKey DefaultMapping { get; }
     }

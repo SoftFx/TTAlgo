@@ -7,10 +7,10 @@ namespace TickTrader.Algo.Core
 {
     public interface ICalculatorApi
     {
-        bool HasEnoughMarginToOpenOrder(ISymbolInfo2 symbol, double orderVol, Domain.OrderInfo.Types.Type type, Domain.OrderInfo.Types.Side side, double? price, double? stopPrice, bool isHidden, out CalcErrorCodes error);
-        bool HasEnoughMarginToModifyOrder(OrderAccessor oldOrder, ISymbolInfo2 smb, double newVolume, double? newPrice, double? newStopPrice, bool newIsHidden);
+        bool HasEnoughMarginToOpenOrder(ISymbolInfo symbol, double orderVol, Domain.OrderInfo.Types.Type type, Domain.OrderInfo.Types.Side side, double? price, double? stopPrice, bool isHidden, out CalcErrorCodes error);
+        bool HasEnoughMarginToModifyOrder(OrderAccessor oldOrder, ISymbolInfo smb, double newVolume, double? newPrice, double? newStopPrice, bool newIsHidden);
         double? GetSymbolMargin(string symbol, Domain.OrderInfo.Types.Side side);
-        double? CalculateOrderMargin(ISymbolInfo2 symbol, double orderVol, double? price, double? stopPrice, Domain.OrderInfo.Types.Type type, Domain.OrderInfo.Types.Side side, bool isHidden);
+        double? CalculateOrderMargin(ISymbolInfo symbol, double orderVol, double? price, double? stopPrice, Domain.OrderInfo.Types.Type type, Domain.OrderInfo.Types.Side side, bool isHidden);
     }
 
     internal class CalculatorFixture : ICalculatorApi
@@ -262,7 +262,7 @@ namespace TickTrader.Algo.Core
 
         #region CalculatorApi implementation
 
-        public bool HasEnoughMarginToOpenOrder(ISymbolInfo2 symbol, double orderVol, Domain.OrderInfo.Types.Type type, Domain.OrderInfo.Types.Side side, double? price, double? stopPrice, bool isHidden, out CalcErrorCodes error)
+        public bool HasEnoughMarginToOpenOrder(ISymbolInfo symbol, double orderVol, Domain.OrderInfo.Types.Type type, Domain.OrderInfo.Types.Side side, double? price, double? stopPrice, bool isHidden, out CalcErrorCodes error)
         {
             LazyInit();
 
@@ -294,7 +294,7 @@ namespace TickTrader.Algo.Core
             return false;
         }
 
-        public bool HasEnoughMarginToModifyOrder(OrderAccessor oldOrder, ISymbolInfo2 symbol, double newVolume, double? newPrice, double? newStopPrice, bool newIsHidden)
+        public bool HasEnoughMarginToModifyOrder(OrderAccessor oldOrder, ISymbolInfo symbol, double newVolume, double? newPrice, double? newStopPrice, bool newIsHidden)
         {
             LazyInit();
 
@@ -357,7 +357,7 @@ namespace TickTrader.Algo.Core
             return null;
         }
 
-        public double? CalculateOrderMargin(ISymbolInfo2 symbol, double orderVol, double? price, double? stopPrice, Domain.OrderInfo.Types.Type type, Domain.OrderInfo.Types.Side side, bool isHidden)
+        public double? CalculateOrderMargin(ISymbolInfo symbol, double orderVol, double? price, double? stopPrice, Domain.OrderInfo.Types.Type type, Domain.OrderInfo.Types.Side side, bool isHidden)
         {
             LazyInit();
 

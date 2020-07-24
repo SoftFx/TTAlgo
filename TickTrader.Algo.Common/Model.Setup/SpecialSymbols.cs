@@ -10,13 +10,13 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public static SymbolToken MainSymbolPlaceholder => new SymbolToken(MainSymbol, SymbolOrigin.Token, null);
 
-        public static SymbolKey GetKey(this ISymbolInfo info)
+        public static SymbolKey GetKey(this ISetupSymbolInfo info)
         {
             return new SymbolKey(info.Name, info.Origin);
         }
     }
 
-    public class SymbolToken : ISymbolInfo
+    public class SymbolToken : ISetupSymbolInfo
     {
         public string Name { get; set; }
 
@@ -45,7 +45,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public override bool Equals(object obj)
         {
-            var otherInfo = obj as ISymbolInfo;
+            var otherInfo = obj as ISetupSymbolInfo;
             return otherInfo != null && otherInfo.Origin == Origin
                 && otherInfo.Name == Name && otherInfo.Id == Id;
         }

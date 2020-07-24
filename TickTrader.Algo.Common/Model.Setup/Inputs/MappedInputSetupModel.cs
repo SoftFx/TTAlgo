@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public override string ValueAsText => SelectedSymbol.Name + "." + EntityPrefix + "." + SelectedMapping.DisplayName;
 
-        public MappedInputSetupModel(InputMetadata metadata, ISymbolInfo mainSymbol, IAlgoSetupMetadata setupMetadata, IAlgoSetupContext setupContext)
+        public MappedInputSetupModel(InputMetadata metadata, ISetupSymbolInfo mainSymbol, IAlgoSetupMetadata setupMetadata, IAlgoSetupContext setupContext)
             : base(metadata, mainSymbol, setupMetadata, setupContext)
         {
         }

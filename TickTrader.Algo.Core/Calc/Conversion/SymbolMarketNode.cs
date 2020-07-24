@@ -4,18 +4,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Calc.Conversion
 {
     public class SymbolMarketNode
     {
-        public SymbolMarketNode(ISymbolInfo2 smb)
+        public SymbolMarketNode(ISymbolInfo smb)
         {
             SymbolInfo = smb;
             Rate = new QuoteEntity(smb.Name, DateTime.MinValue, (double?)null, (double?)null); // empty rate
         }
 
-        public ISymbolInfo2 SymbolInfo { get; }
+        public ISymbolInfo SymbolInfo { get; }
         public RateUpdate Rate { get; private set; }
 
         public double Ask => Rate.Ask;

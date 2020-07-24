@@ -29,6 +29,7 @@ using Xceed.Wpf.AvalonDock.Layout;
 using System.Windows.Controls;
 using TickTrader.Algo.Common.Info;
 using Machinarium.Var;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -43,7 +44,7 @@ namespace TickTrader.BotTerminal
         private readonly IShell _shell;
         private readonly AlgoEnvironment _algoEnv;
         private readonly VarList<ChartModelBase> charts = new VarList<ChartModelBase>();
-        private readonly SymbolModel smb;
+        private readonly SymbolInfo smb;
         private VarDictionary<string, AlgoBotViewModel> _chartBots = new VarDictionary<string, AlgoBotViewModel>();
 
         public ChartViewModel(string chartId, string symbol, ChartPeriods period, AlgoEnvironment algoEnv)
@@ -70,7 +71,7 @@ namespace TickTrader.BotTerminal
             var dataSeries = charts.SelectMany(c => c.DataSeriesCollection);
 
             ChartControl = new AlgoChartViewModel(dataSeries);
-            ChartControl.SymbolInfo.Value = smb.Descriptor;
+            ChartControl.SymbolInfo.Value = smb;
             ChartControl.ChartWindowId.Value = ChartWindowId;
 
             // index from VarCollection.CombineChained doesn't work properly when first collection changes size
@@ -327,13 +328,13 @@ namespace TickTrader.BotTerminal
 
             if (args.Action == DLinqAction.Insert)
             {
-                allOutputs.Add(new OutputGroupViewModel(args.NewItem, ChartWindowId, Chart, smb.Descriptor, IsCrosshairEnabled));
+                allOutputs.Add(new OutputGroupViewModel(args.NewItem, ChartWindowId, Chart, smb, IsCrosshairEnabled));
             }
             else if (args.Action == DLinqAction.Replace)
             {
                 var index = allOutputs.IndexOf(allOutputs.Values.First(o => o.Model == args.OldItem));
                 allOutputs[index].Dispose();
-                allOutputs[index] = new OutputGroupViewModel(args.NewItem, ChartWindowId, Chart, smb.Descriptor, IsCrosshairEnabled);
+                allOutputs[index] = new OutputGroupViewModel(args.NewItem, ChartWindowId, Chart, smb, IsCrosshairEnabled);
             }
             else if (args.Action == DLinqAction.Remove)
             {
@@ -350,13 +351,13 @@ namespace TickTrader.BotTerminal
 
             if (args.Action == DLinqAction.Insert)
             {
-                allOutputs.Add(new OutputGroupViewModel((TradeBotModel)args.NewItem.Model, ChartWindowId, Chart, smb.Descriptor, IsCrosshairEnabled));
+                allOutputs.Add(new OutputGroupViewModel((TradeBotModel)args.NewItem.Model, ChartWindowId, Chart, smb, IsCrosshairEnabled));
             }
             else if (args.Action == DLinqAction.Replace)
             {
                 var index = allOutputs.IndexOf(allOutputs.Values.First(o => o.Model == args.OldItem.Model));
                 allOutputs[index].Dispose();
-                allOutputs[index] = new OutputGroupViewModel((TradeBotModel)args.NewItem.Model, ChartWindowId, Chart, smb.Descriptor, IsCrosshairEnabled);
+                allOutputs[index] = new OutputGroupViewModel((TradeBotModel)args.NewItem.Model, ChartWindowId, Chart, smb, IsCrosshairEnabled);
             }
             else if (args.Action == DLinqAction.Remove)
             {

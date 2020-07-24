@@ -13,7 +13,7 @@ namespace TickTrader.BotTerminal
 
         public TimeFrames DefaultTimeFrame => _info.DefaultTimeFrame;
 
-        public ISymbolInfo DefaultSymbol => _token;
+        public ISetupSymbolInfo DefaultSymbol => _token;
 
         public MappingKey DefaultMapping => _info.DefaultMapping;
 

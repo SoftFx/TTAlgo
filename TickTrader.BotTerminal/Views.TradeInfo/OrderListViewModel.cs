@@ -19,7 +19,7 @@ namespace TickTrader.BotTerminal
         private ProfileManager _profileManager;
         private bool _isBacktester;
 
-        public OrderListViewModel(AccountModel model, IVarSet<string, SymbolModel> symbols, IConnectionStatusInfo connection, ProfileManager profile = null, bool isBacktester = false)
+        public OrderListViewModel(AccountModel model, IVarSet<string, SymbolInfo> symbols, IConnectionStatusInfo connection, ProfileManager profile = null, bool isBacktester = false)
             : base(model, connection)
         {
             Orders = model.Orders

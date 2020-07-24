@@ -8,7 +8,7 @@ namespace TickTrader.Algo.Common.Model.Setup
     {
         public override string EntityPrefix => "Quote";
 
-        public QuoteToDoubleInputSetupModel(InputMetadata metadata, ISymbolInfo mainSymbol, IAlgoSetupMetadata setupMetadata, IAlgoSetupContext setupContext)
+        public QuoteToDoubleInputSetupModel(InputMetadata metadata, ISetupSymbolInfo mainSymbol, IAlgoSetupMetadata setupMetadata, IAlgoSetupContext setupContext)
             : base(metadata, mainSymbol, setupMetadata, setupContext)
         {
         }

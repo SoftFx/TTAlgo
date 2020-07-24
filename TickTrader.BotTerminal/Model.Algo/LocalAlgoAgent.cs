@@ -9,6 +9,7 @@ using Machinarium.Qnil;
 using NLog;
 using SciChart.Charting.Visuals.Axes;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Common;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model;
@@ -29,7 +30,7 @@ namespace TickTrader.BotTerminal
 
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private static readonly ApiMetadataInfo _apiMetadata = ApiMetadataInfo.CreateCurrentMetadata();
-        private static readonly ISymbolInfo _defaultSymbol = new SymbolToken("none");
+        private static readonly ISetupSymbolInfo _defaultSymbol = new SymbolToken("none");
 
         private readonly ReductionCollection _reductions;
         private readonly MappingCollectionInfo _mappingsInfo;
@@ -517,7 +518,7 @@ namespace TickTrader.BotTerminal
 
         #region IAlgoSetupMetadata
 
-        public IReadOnlyList<ISymbolInfo> Symbols => ClientModel.SortedSymbols;
+        public IReadOnlyList<ISetupSymbolInfo> Symbols => ClientModel.SortedSymbols.Select(u => (ISetupSymbolInfo)u.ToKey()).ToList();
 
         IPluginIdProvider IAlgoSetupMetadata.IdProvider => IdProvider;
 
@@ -528,7 +529,7 @@ namespace TickTrader.BotTerminal
 
         TimeFrames IAlgoSetupContext.DefaultTimeFrame => TimeFrames.M1;
 
-        ISymbolInfo IAlgoSetupContext.DefaultSymbol => _defaultSymbol;
+        ISetupSymbolInfo IAlgoSetupContext.DefaultSymbol => _defaultSymbol;
 
         MappingKey IAlgoSetupContext.DefaultMapping => new MappingKey(MappingCollection.DefaultFullBarToBarReduction);
 
@@ -610,4 +611,5 @@ namespace TickTrader.BotTerminal
 
         #endregion
     }
+
 }

@@ -7,7 +7,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 {
     public abstract class InputSetupModel : PropertySetupModel
     {
-        private ISymbolInfo _mainSymbol;
+        private ISetupSymbolInfo _mainSymbol;
 
         protected IAlgoSetupMetadata SetupMetadata { get; }
 
@@ -17,9 +17,9 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public InputMetadata Metadata { get; }
 
-        public ISymbolInfo SelectedSymbol { get; protected set; }
+        public ISetupSymbolInfo SelectedSymbol { get; protected set; }
 
-        private InputSetupModel(InputMetadata metadata, ISymbolInfo mainSymbol)
+        private InputSetupModel(InputMetadata metadata, ISetupSymbolInfo mainSymbol)
         {
             Metadata = metadata;
             _mainSymbol = mainSymbol;
@@ -27,7 +27,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             SetMetadata(metadata);
         }
 
-        public InputSetupModel(InputMetadata metadata, ISymbolInfo mainSymbol, IAlgoSetupMetadata setupMetadata, IAlgoSetupContext setupContext)
+        public InputSetupModel(InputMetadata metadata, ISetupSymbolInfo mainSymbol, IAlgoSetupMetadata setupMetadata, IAlgoSetupContext setupContext)
             : this(metadata, mainSymbol)
         {
             SetupMetadata = setupMetadata;

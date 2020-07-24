@@ -3,6 +3,7 @@ using System;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Calc;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -18,7 +19,7 @@ namespace TickTrader.Algo.Common.Model
 
         public decimal CashMargin { get; set; }
 
-        public ISymbolInfo2 SymbolInfo { get; }
+        public ISymbolInfo SymbolInfo { get; }
 
         decimal IOrderCalcInfo.RemainingAmount => (decimal)RemainingAmount;
 
@@ -254,6 +255,6 @@ namespace TickTrader.Algo.Common.Model
 
     public interface IOrderDependenciesResolver
     {
-        SymbolModel GetSymbolOrNull(string name);
+        SymbolInfo GetSymbolOrNull(string name);
     }
 }

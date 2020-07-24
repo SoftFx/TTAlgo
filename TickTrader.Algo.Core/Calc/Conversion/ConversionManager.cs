@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Calc.Conversion
 {
@@ -13,7 +14,7 @@ namespace TickTrader.Algo.Core.Calc.Conversion
     public class ConversionManager
     {
         private MarketStateBase _market;
-        private Dictionary<Tuple<string, string>, ISymbolInfo2> _convertionSet = new Dictionary<Tuple<string, string>, ISymbolInfo2>();
+        private Dictionary<Tuple<string, string>, ISymbolInfo> _convertionSet = new Dictionary<Tuple<string, string>, ISymbolInfo>();
         private Dictionary<Tuple<string, string>, IConversionFormula> _marginConversions = new Dictionary<Tuple<string, string>, IConversionFormula>();
         private Dictionary<Tuple<string, string>, IConversionFormula> _posProfitConversions = new Dictionary<Tuple<string, string>, IConversionFormula>();
         private Dictionary<Tuple<string, string>, IConversionFormula> _negProfitConversions = new Dictionary<Tuple<string, string>, IConversionFormula>();
@@ -60,7 +61,7 @@ namespace TickTrader.Algo.Core.Calc.Conversion
 
         private IConversionFormula BuildMarginFormula(SymbolMarketNode tracker, string toCurrency)
         {
-            ISymbolInfo2 XY = tracker.SymbolInfo;
+            ISymbolInfo XY = tracker.SymbolInfo;
 
             string X = XY.MarginCurrency;
             string Y = XY.ProfitCurrency;
@@ -78,21 +79,21 @@ namespace TickTrader.Algo.Core.Calc.Conversion
 
             // N 3
 
-            ISymbolInfo2 XZ = GetFromSet(X, Z);
+            ISymbolInfo XZ = GetFromSet(X, Z);
 
             if (XZ != null)
                 return FormulaBuilder.Conversion(GetRate(XZ), PriceType.Ask);
 
             // N 4
 
-            ISymbolInfo2 ZX = GetFromSet(Z, X);
+            ISymbolInfo ZX = GetFromSet(Z, X);
 
             if (ZX != null)
                 return FormulaBuilder.InverseConversion(GetRate(ZX), PriceType.Bid);
 
             // N 5
 
-            ISymbolInfo2 YZ = GetFromSet(Y, Z);
+            ISymbolInfo YZ = GetFromSet(Y, Z);
 
             if (YZ != null)
                 return FormulaBuilder.Conversion(GetRate(XY), PriceType.Ask)
@@ -100,7 +101,7 @@ namespace TickTrader.Algo.Core.Calc.Conversion
 
             // N 6
 
-            ISymbolInfo2 ZY = GetFromSet(Z, Y);
+            ISymbolInfo ZY = GetFromSet(Z, Y);
 
             if (ZY != null)
                 return FormulaBuilder.Conversion(GetRate(XY), PriceType.Ask)
@@ -112,8 +113,8 @@ namespace TickTrader.Algo.Core.Calc.Conversion
 
                 // N 7
 
-                ISymbolInfo2 XC = GetFromSet(X, C);
-                ISymbolInfo2 ZC = GetFromSet(Z, C);
+                ISymbolInfo XC = GetFromSet(X, C);
+                ISymbolInfo ZC = GetFromSet(Z, C);
 
                 if (XC != null && ZC != null)
                     return FormulaBuilder.Conversion(GetRate(XC), PriceType.Ask)
@@ -121,7 +122,7 @@ namespace TickTrader.Algo.Core.Calc.Conversion
 
                 // N 8
 
-                ISymbolInfo2 CX = GetFromSet(C, X);
+                ISymbolInfo CX = GetFromSet(C, X);
 
                 if (CX != null && ZC != null)
                     return FormulaBuilder.InverseConversion(GetRate(CX), PriceType.Bid)
@@ -129,7 +130,7 @@ namespace TickTrader.Algo.Core.Calc.Conversion
 
                 // N 9
 
-                ISymbolInfo2 CZ = GetFromSet(C, Z);
+                ISymbolInfo CZ = GetFromSet(C, Z);
 
                 if (XC != null && CZ != null)
                     return FormulaBuilder.Conversion(GetRate(XC), PriceType.Ask)
@@ -143,7 +144,7 @@ namespace TickTrader.Algo.Core.Calc.Conversion
 
                 // N 11
 
-                ISymbolInfo2 YC = GetFromSet(Y, C);
+                ISymbolInfo YC = GetFromSet(Y, C);
 
                 if (YC != null && ZC != null)
                     return FormulaBuilder.Conversion(GetRate(YC), PriceType.Ask)
@@ -152,7 +153,7 @@ namespace TickTrader.Algo.Core.Calc.Conversion
 
                 // N 12
 
-                ISymbolInfo2 CY = GetFromSet(C, Y);
+                ISymbolInfo CY = GetFromSet(C, Y);
 
                 if (CY != null && ZC != null)
                     return FormulaBuilder.InverseConversion(GetRate(CY), PriceType.Bid)
@@ -189,7 +190,7 @@ namespace TickTrader.Algo.Core.Calc.Conversion
 
         private IConversionFormula BuildProfitFormula(SymbolMarketNode tracker, string toCurrency, PriceType price1, PriceType price2)
         {
-            ISymbolInfo2 XY = tracker.SymbolInfo;
+            ISymbolInfo XY = tracker.SymbolInfo;
 
             string X = XY.MarginCurrency;
             string Y = XY.ProfitCurrency;
@@ -207,21 +208,21 @@ namespace TickTrader.Algo.Core.Calc.Conversion
 
             // N 3
 
-            ISymbolInfo2 YZ = GetFromSet(Y, Z);
+            ISymbolInfo YZ = GetFromSet(Y, Z);
 
             if (YZ != null)
                 return FormulaBuilder.Conversion(GetRate(YZ), price1);
 
             // N 4
 
-            ISymbolInfo2 ZY = GetFromSet(Z, Y);
+            ISymbolInfo ZY = GetFromSet(Z, Y);
 
             if (ZY != null)
                 return FormulaBuilder.InverseConversion(GetRate(ZY), price2);
 
             // N 5
 
-            ISymbolInfo2 ZX = GetFromSet(Z, X);
+            ISymbolInfo ZX = GetFromSet(Z, X);
 
             if (ZX != null)
                 return FormulaBuilder.InverseConversion(GetRate(XY), price2)
@@ -229,7 +230,7 @@ namespace TickTrader.Algo.Core.Calc.Conversion
 
             // N 6
 
-            ISymbolInfo2 XZ = GetFromSet(X, Z);
+            ISymbolInfo XZ = GetFromSet(X, Z);
 
             if (XZ != null)
                 return FormulaBuilder.InverseConversion(GetRate(XY), price2)
@@ -241,8 +242,8 @@ namespace TickTrader.Algo.Core.Calc.Conversion
 
                 // N 7
 
-                ISymbolInfo2 YC = GetFromSet(Y, C);
-                ISymbolInfo2 ZC = GetFromSet(Z, C);
+                ISymbolInfo YC = GetFromSet(Y, C);
+                ISymbolInfo ZC = GetFromSet(Z, C);
 
                 if (YC != null && ZC != null)
                     return FormulaBuilder.Conversion(GetRate(YC), price1)
@@ -250,7 +251,7 @@ namespace TickTrader.Algo.Core.Calc.Conversion
 
                 // N 8
 
-                ISymbolInfo2 CY = GetFromSet(C, Y);
+                ISymbolInfo CY = GetFromSet(C, Y);
 
                 if (CY != null && ZC != null)
                     return FormulaBuilder.InverseConversion(GetRate(CY), price2)
@@ -258,7 +259,7 @@ namespace TickTrader.Algo.Core.Calc.Conversion
 
                 // N 9
 
-                ISymbolInfo2 CZ = GetFromSet(C, Z);
+                ISymbolInfo CZ = GetFromSet(C, Z);
 
                 if (YC != null && CZ != null)
                     return FormulaBuilder.Conversion(GetRate(YC), price1)
@@ -274,12 +275,12 @@ namespace TickTrader.Algo.Core.Calc.Conversion
             return FormulaBuilder.Error(XY, Y, Z);
         }
 
-        private ISymbolInfo2 GetFromSet(string currency1, string currency2)
+        private ISymbolInfo GetFromSet(string currency1, string currency2)
         {
             return _convertionSet.GetOrDefault(Tuple.Create(currency1, currency2));
         }
 
-        private SymbolMarketNode GetRate(ISymbolInfo2 symbol)
+        private SymbolMarketNode GetRate(ISymbolInfo symbol)
         {
             return _market.GetSymbolNodeInternal(symbol.Name) ?? throw new Exception("Unknown symbol: " + symbol.Name);
         }
