@@ -57,7 +57,7 @@ namespace TickTrader.Algo.Core.Calc
             return result;
         }
 
-        public void AddOrder(IOrderModel2 order)
+        public void AddOrder(IOrderInfo order)
         {
             //Count++;
             order.EssentialsChanged += Order_EssentialsChanged;
@@ -67,7 +67,7 @@ namespace TickTrader.Algo.Core.Calc
             UpdateStats(change);
         }
 
-        public void AddOrderWithoutCalculation(IOrderModel2 order)
+        public void AddOrderWithoutCalculation(IOrderInfo order)
         {
             //Count++;
             order.EssentialsChanged += Order_EssentialsChanged;
@@ -76,7 +76,7 @@ namespace TickTrader.Algo.Core.Calc
             netting.AddOrderWithoutCalculation(order.RemainingAmount, order.Price);
         }
 
-        public void RemoveOrder(IOrderModel2 order)
+        public void RemoveOrder(IOrderInfo order)
         {
             //Count--;
             order.EssentialsChanged -= Order_EssentialsChanged;

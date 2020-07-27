@@ -2,6 +2,7 @@ using Machinarium.Qnil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Calc;
@@ -14,7 +15,7 @@ namespace TickTrader.Algo.Common.Model
     {
         private readonly VarDictionary<string, PositionInfo> _positions = new VarDictionary<string, PositionInfo>();
         private readonly VarDictionary<string, AssetInfo> _assets = new VarDictionary<string, AssetInfo>();
-        private readonly VarDictionary<string, OrderModel> _orders = new VarDictionary<string, OrderModel>();
+        private readonly VarDictionary<string, OrderInfo> _orders = new VarDictionary<string, OrderInfo>();
         private Domain.AccountInfo.Types.Type? _accType;
         private readonly IReadOnlyDictionary<string, CurrencyEntity> _currencies;
         private readonly IReadOnlyDictionary<string, SymbolInfo> _symbols;
@@ -37,7 +38,7 @@ namespace TickTrader.Algo.Common.Model
 
         public event System.Action AccountTypeChanged = delegate { };
         public IVarSet<string, PositionInfo> Positions => _positions;
-        public IVarSet<string, OrderModel> Orders => _orders;
+        public IVarSet<string, OrderInfo> Orders => _orders;
         public IVarSet<string, AssetInfo> Assets => _assets;
 
         public Domain.AccountInfo.Types.Type? Type
@@ -66,7 +67,7 @@ namespace TickTrader.Algo.Common.Model
 
         IEnumerable<IPositionInfo> IMarginAccountInfo2.Positions => Positions.Snapshot.Values;
 
-        IEnumerable<IOrderModel2> IAccountInfo2.Orders => Orders.Snapshot.Values;
+        IEnumerable<IOrderInfo> IAccountInfo2.Orders => Orders.Snapshot.Values;
 
         IEnumerable<IAssetInfo> ICashAccountInfo2.Assets => Assets.Snapshot.Values;
 
@@ -78,9 +79,9 @@ namespace TickTrader.Algo.Common.Model
         public event Action BalanceUpdate;
 
         public event Action<IPositionInfo> PositionChanged;
-        public event Action<IOrderModel2> OrderAdded;
-        public event Action<IEnumerable<IOrderModel2>> OrdersAdded;
-        public event Action<IOrderModel2> OrderRemoved;
+        public event Action<IOrderInfo> OrderAdded;
+        public event Action<IEnumerable<IOrderInfo>> OrdersAdded;
+        public event Action<IOrderInfo> OrderRemoved;
         public event Action<IAssetInfo, AssetChangeType> AssetsChanged;
         public event Action<IPositionInfo> PositionRemoved;
 
@@ -149,9 +150,12 @@ namespace TickTrader.Algo.Common.Model
             }
 
             foreach (var fdkOrder in orders)
-                this._orders.Add(fdkOrder.Id, new OrderModel(fdkOrder, this));
+            {
+                fdkOrder.SetSymbol(_symbols.GetOrDefault(fdkOrder.Symbol));
+                this._orders.Add(fdkOrder.Id, fdkOrder);
+            }
 
-            OrdersAdded?.Invoke(orders.Cast<IOrderModel2>());
+            OrdersAdded?.Invoke(orders);
 
             foreach (var fdkAsset in assets)
             {
@@ -371,30 +375,32 @@ namespace TickTrader.Algo.Common.Model
 
         public void UpdateOrder(Domain.OrderExecReport.Types.ExecAction execAction, Domain.OrderExecReport.Types.EntityAction entityAction, ExecutionReport report, Domain.PositionInfo netPosUpdate)
         {
-            OrderModel order = null;
+            OrderInfo order = new OrderInfo(_symbols.GetOrDefault(report.Symbol), report);
 
             if (entityAction == Domain.OrderExecReport.Types.EntityAction.Added)
             {
-                order = new OrderModel(report, this);
+                //order = new OrderInfo(_symbols.GetOrDefault(report.Symbol), report);
+                //order.SetSymbol(_symbols.GetOrDefault(fdkOrder.Symbol));
+                //order = new OrderModel(report, this);
                 _orders[order.Id] = order;
 
                 OrderAdded?.Invoke(order);
             }
             else if (entityAction == Domain.OrderExecReport.Types.EntityAction.Removed)
             {
-                order = Orders.GetOrDefault(report.OrderId);
-                _orders.Remove(report.OrderId);
+                order = Orders.GetOrDefault(report.Id);
+                _orders.Remove(report.Id);
                 order?.Update(report);
 
                 OrderRemoved?.Invoke(order);
             }
             else if (entityAction == Domain.OrderExecReport.Types.EntityAction.Updated)
             {
-                order = Orders.GetOrDefault(report.OrderId);
+                order = Orders.GetOrDefault(report.Id);
 
                 if (order != null)
                 {
-                    bool replaceOrder = order.Type != report.OrderType; //crutch should be call before order Update
+                    bool replaceOrder = order.Type != report.Type; //crutch should be call before order Update
 
                     OrderRemoved?.Invoke(order);
                     order.Update(report);
@@ -406,19 +412,19 @@ namespace TickTrader.Algo.Common.Model
                     OrderAdded?.Invoke(order);
                 }
             }
-            else
-                order = new OrderModel(report, this);
 
             OrderUpdate?.Invoke(new OrderUpdateInfo(report, execAction, entityAction, order, netPosUpdate));
         }
 
         public void UpdateOrder(Domain.OrderExecReport.Types.ExecAction execAction, Domain.OrderExecReport.Types.EntityAction entityAction, Domain.OrderInfo report)
         {
-            OrderModel order = null;
+            report.SetSymbol(_symbols.GetOrDefault(report.Symbol));
+            report.Update(report);
+            OrderInfo order = report;
 
             if (entityAction == Domain.OrderExecReport.Types.EntityAction.Added)
             {
-                order = new OrderModel(report, this);
+                //order = new OrderModel(report, this);
                 _orders[order.Id] = order;
 
                 OrderAdded?.Invoke(order);
@@ -446,13 +452,11 @@ namespace TickTrader.Algo.Common.Model
 
                 OrderAdded?.Invoke(order);
             }
-            else
-                order = new OrderModel(report, this);
         }
 
         internal EntityCacheUpdate GetOrderUpdate(ExecutionReport report)
         {
-            System.Diagnostics.Debug.WriteLine("ER  #" + report.OrderId + " " + report.OrderType + " " + report.ExecutionType + " opId=" + report.TradeRequestId);
+            System.Diagnostics.Debug.WriteLine("ER  #" + report.Id + " " + report.Type + " " + report.ExecutionType + " opId=" + report.TradeRequestId);
 
             switch (report.ExecutionType)
             {
@@ -463,10 +467,10 @@ namespace TickTrader.Algo.Common.Model
                     break;
 
                 case ExecutionType.Calculated:
-                    bool ignoreCalculate = (_accType == Domain.AccountInfo.Types.Type.Gross && report.OrderType == Domain.OrderInfo.Types.Type.Market);
+                    bool ignoreCalculate = (_accType == Domain.AccountInfo.Types.Type.Gross && report.Type == Domain.OrderInfo.Types.Type.Market);
                     if (!ignoreCalculate)
                     {
-                        if (_orders.ContainsKey(report.OrderId))
+                        if (_orders.ContainsKey(report.Id))
                             return OnOrderUpdated(report, Domain.OrderExecReport.Types.ExecAction.Opened);
                         else
                             return OnOrderAdded(report, Domain.OrderExecReport.Types.ExecAction.Opened);
@@ -495,11 +499,11 @@ namespace TickTrader.Algo.Common.Model
                     break;
 
                 case ExecutionType.Trade:
-                    if (report.OrderType == Domain.OrderInfo.Types.Type.StopLimit)
+                    if (report.Type == Domain.OrderInfo.Types.Type.StopLimit)
                     {
                         return OnOrderRemoved(report, Domain.OrderExecReport.Types.ExecAction.Activated);
                     }
-                    else if (report.OrderType == Domain.OrderInfo.Types.Type.Limit || report.OrderType == Domain.OrderInfo.Types.Type.Stop)
+                    else if (report.Type == Domain.OrderInfo.Types.Type.Limit || report.Type == Domain.OrderInfo.Types.Type.Stop)
                     {
                         if (report.ImmediateOrCancel)
                             return OnIocFilled(report);
@@ -512,7 +516,7 @@ namespace TickTrader.Algo.Common.Model
                         else
                             return OnOrderRemoved(report, Domain.OrderExecReport.Types.ExecAction.Filled);
                     }
-                    else if (report.OrderType == Domain.OrderInfo.Types.Type.Position)
+                    else if (report.Type == Domain.OrderInfo.Types.Type.Position)
                     {
                         if (report.OrderStatus == OrderStatus.PartiallyFilled)
                             return OnOrderUpdated(report, Domain.OrderExecReport.Types.ExecAction.Closed);
@@ -520,7 +524,7 @@ namespace TickTrader.Algo.Common.Model
                         if (report.OrderStatus == OrderStatus.Filled)
                             return OnOrderRemoved(report, Domain.OrderExecReport.Types.ExecAction.Closed);
                     }
-                    else if (report.OrderType == Domain.OrderInfo.Types.Type.Market)
+                    else if (report.Type == Domain.OrderInfo.Types.Type.Market)
                     {
                         return OnMarketFilled(report, Domain.OrderExecReport.Types.ExecAction.Filled);
                     }
@@ -537,7 +541,7 @@ namespace TickTrader.Algo.Common.Model
 
         private OrderUpdateAction OnOrderAdded(ExecutionReport report, Domain.OrderExecReport.Types.ExecAction algoAction)
         {
-            if (report.OrderType == Domain.OrderInfo.Types.Type.Limit && report.ImmediateOrCancel)
+            if (report.Type == Domain.OrderInfo.Types.Type.Limit && report.ImmediateOrCancel)
                 return new OrderUpdateAction(report, Domain.OrderExecReport.Types.ExecAction.Opened, Domain.OrderExecReport.Types.EntityAction.NoAction);
 
             var posUpdate = new OrderUpdateAction(report, algoAction, Domain.OrderExecReport.Types.EntityAction.Added);
@@ -554,7 +558,7 @@ namespace TickTrader.Algo.Common.Model
 
         private OrderUpdateAction MockMarkedFilled(ExecutionReport report)
         {
-            report.OrderType = Domain.OrderInfo.Types.Type.Position;
+            report.Type = Domain.OrderInfo.Types.Type.Position;
             report.LeavesVolume = report.InitialVolume.Value;
             return new OrderUpdateAction(report, Domain.OrderExecReport.Types.ExecAction.Opened, Domain.OrderExecReport.Types.EntityAction.Added);
         }
@@ -579,7 +583,7 @@ namespace TickTrader.Algo.Common.Model
             var orderUpdate = new OrderUpdateAction(report, algoAction, Domain.OrderExecReport.Types.EntityAction.Updated);
 
             // For gross stop/limit full fills: position opening is performed by updating old order, not adding new order
-            if (report.OrderType == Domain.OrderInfo.Types.Type.Position && report.ExecutionType == ExecutionType.Calculated)
+            if (report.Type == Domain.OrderInfo.Types.Type.Position && report.ExecutionType == ExecutionType.Calculated)
             {
                 var waitingUpdate = DequeueWatingUpdate();
                 if (waitingUpdate != null)
@@ -600,7 +604,7 @@ namespace TickTrader.Algo.Common.Model
         private OrderUpdateAction OnOrderCanceled(ExecutionReport report, Domain.OrderExecReport.Types.ExecAction algoAction)
         {
             // Limit Ioc don't get into order collection
-            return new OrderUpdateAction(report, algoAction, (report.OrderType == Domain.OrderInfo.Types.Type.Limit && report.ImmediateOrCancel) 
+            return new OrderUpdateAction(report, algoAction, (report.Type == Domain.OrderInfo.Types.Type.Limit && report.ImmediateOrCancel) 
                 ? Domain.OrderExecReport.Types.EntityAction.NoAction : Domain.OrderExecReport.Types.EntityAction.Removed);
         }
 
@@ -625,7 +629,7 @@ namespace TickTrader.Algo.Common.Model
         public EntityCacheUpdate GetSnapshotUpdate()
         {
             var info = GetAccountInfo();
-            var orders = Orders.Snapshot.Values.Select(o => o.GetInfo()).ToList();
+            var orders = Orders.Snapshot.Values.ToList();
             var positions = Positions.Snapshot.Values.ToList();
             var assets = Assets.Snapshot.Values.ToList();
 
@@ -668,7 +672,8 @@ namespace TickTrader.Algo.Common.Model
             public void Apply(EntityCache cache)
             {
                 var acc = cache.Account;
-                acc._orders.Add(Order.Id, new OrderModel(Order, acc));
+                Order.SetSymbol(cache.Symbols.GetOrDefault(Order.Symbol));
+                acc._orders.Add(Order.Id, Order);
             }
         }
 
@@ -758,7 +763,7 @@ namespace TickTrader.Algo.Common.Model
 
     public class OrderUpdateInfo
     {
-        public OrderUpdateInfo(ExecutionReport report, Domain.OrderExecReport.Types.ExecAction execAction, Domain.OrderExecReport.Types.EntityAction entityAction, OrderModel order, Domain.PositionInfo position)
+        public OrderUpdateInfo(ExecutionReport report, Domain.OrderExecReport.Types.ExecAction execAction, Domain.OrderExecReport.Types.EntityAction entityAction, OrderInfo order, Domain.PositionInfo position)
         {
             Report = report;
             ExecAction = execAction;
@@ -770,7 +775,12 @@ namespace TickTrader.Algo.Common.Model
         public ExecutionReport Report { get; }
         public Domain.OrderExecReport.Types.ExecAction ExecAction { get; }
         public Domain.OrderExecReport.Types.EntityAction EntityAction { get; }
-        public OrderModel Order { get; }
+        public OrderInfo Order { get; }
         public Domain.PositionInfo Position { get; }
+    }
+
+    public interface IOrderDependenciesResolver
+    {
+        SymbolInfo GetSymbolOrNull(string name);
     }
 }

@@ -85,12 +85,12 @@ namespace TickTrader.Algo.Core.Calc
             _bySymbolMap.Clear();
         }
 
-        public bool HasSufficientMarginToOpenOrder(IOrderModel2 order, out CalcErrorCodes error)
+        public bool HasSufficientMarginToOpenOrder(IOrderInfo order, out CalcErrorCodes error)
         {
             return HasSufficientMarginToOpenOrder(order, out _, out error);
         }
 
-        public bool HasSufficientMarginToOpenOrder(IOrderModel2 order, out double newAccountMargin, out CalcErrorCodes error)
+        public bool HasSufficientMarginToOpenOrder(IOrderInfo order, out double newAccountMargin, out CalcErrorCodes error)
         {
             var netting = GetSymbolStats(order.Symbol);
             var calc = netting?.Calc ?? _market.GetCalculator(order.Symbol, Info.BalanceCurrency);
@@ -190,19 +190,19 @@ namespace TickTrader.Algo.Core.Calc
         //    };
         //}
 
-        private void AddOrder(IOrderModel2 order)
+        private void AddOrder(IOrderInfo order)
         {
             AddInternal(order);
             GetOrAddSymbolCalculator(order.Symbol).AddOrder(order);
         }
 
-        private void AddOrderWithoutCalculation(IOrderModel2 order)
+        private void AddOrderWithoutCalculation(IOrderInfo order)
         {
             AddInternal(order);
             GetOrAddSymbolCalculator(order.Symbol).AddOrderWithoutCalculation(order);
         }
 
-        private void AddInternal(IOrderModel2 order)
+        private void AddInternal(IOrderInfo order)
         {
             Swap += order.Swap ?? 0;
             Commission += order.Commission ?? 0;
@@ -210,7 +210,7 @@ namespace TickTrader.Algo.Core.Calc
             order.CommissionChanged += Order_CommissionChanged;
         }
 
-        private void AddOrdersBunch(IEnumerable<IOrderModel2> bunch)
+        private void AddOrdersBunch(IEnumerable<IOrderInfo> bunch)
         {
             foreach (var order in bunch)
                 AddOrderWithoutCalculation(order);
@@ -219,7 +219,7 @@ namespace TickTrader.Algo.Core.Calc
                 smb.Recalculate();
         }
 
-        private void RemoveOrder(IOrderModel2 order)
+        private void RemoveOrder(IOrderInfo order)
         {
             Swap -= order.Swap ?? 0;
             Commission -= order.Commission ?? 0;

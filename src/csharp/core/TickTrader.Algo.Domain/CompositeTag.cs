@@ -1,7 +1,9 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
+using System.Text;
 
-namespace TickTrader.Algo.Core
+namespace TickTrader.Algo.Domain
 {
     public class CompositeTag
     {

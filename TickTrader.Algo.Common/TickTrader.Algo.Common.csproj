@@ -173,7 +173,6 @@
     <Compile Include="Model.Interop\IServerInterop.cs" />
     <Compile Include="Model\MockClient.cs" />
     <Compile Include="Model\MockConnection.cs" />
-    <Compile Include="Model\OrderModel.cs" />
     <Compile Include="Model\AggregatedOrderType.cs" />
     <Compile Include="Model\PluginFeedProvider.cs" />
     <Compile Include="Model\PluginTradeApiProvider.cs" />

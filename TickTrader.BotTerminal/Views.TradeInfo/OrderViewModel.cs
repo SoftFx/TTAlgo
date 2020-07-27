@@ -1,15 +1,16 @@
 ﻿using Machinarium.Var;
 using System;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
     internal sealed class OrderViewModel : BaseTransactionViewModel
     {
-        private readonly OrderModel _order;
+        private readonly OrderInfo _order;
 
-        public OrderViewModel(OrderModel order, SymbolInfo symbol, int accountDigits) : base(symbol, accountDigits)
+        public OrderViewModel(OrderInfo order, SymbolInfo symbol, int accountDigits) : base(symbol, accountDigits)
         {
             _order = order;
 
@@ -24,14 +25,14 @@ namespace TickTrader.BotTerminal
 
             AggregatedType = _varContext.AddProperty(order.Side.Aggregate(Type.Value));
 
-            Created = _varContext.AddProperty(order.Created);
-            Expiration = _varContext.AddProperty(order.Expiration);
+            Created = _varContext.AddProperty(order.Created?.ToDateTime());
+            Expiration = _varContext.AddProperty(order.Expiration?.ToDateTime());
 
             Comment = _varContext.AddProperty(order.Comment);
             Tag = _varContext.AddProperty(order.UserTag);
             ParentOrderId = _varContext.AddProperty(order.ParentOrderId);
             InstanceId = _varContext.AddProperty(order.InstanceId);
-            OrderExecutionOptions = _varContext.AddProperty(order.ExecOptions.GetString());
+            OrderExecutionOptions = _varContext.AddProperty(order.Options.GetString());
 
             TakeProfit = _varContext.AddProperty(order.TakeProfit);
             StopLoss = _varContext.AddProperty(order.StopLoss);
@@ -43,7 +44,7 @@ namespace TickTrader.BotTerminal
         }
 
         public override string Id => _order.Id;
-        public override decimal Profit => _order?.Calculator != null ? (decimal)_order?.Calculator?.CalculateProfit(_order, out _) : 0M;
+        public override double Profit => _order?.Calculator != null ? (double)_order?.Calculator?.CalculateProfit(_order.IsStopOrder ? _order.StopPrice.Value : _order.Price.Value, (double)_order.RemainingAmount, _order.Side, out _, out _) : 0;
 
         public Property<double?> StopPrice { get; }
         public Property<double?> LimitPrice { get; }
@@ -70,12 +71,12 @@ namespace TickTrader.BotTerminal
 
         protected override void Update()
         {
-            Price.Value = _order.Price;
+            Price.Value = _order.Type == OrderInfo.Types.Type.Stop || _order.Type == OrderInfo.Types.Type.StopLimit ? _order.StopPrice : _order.Price;
             StopPrice.Value = _order.StopPrice;
-            LimitPrice.Value = _order.LimitPrice;
-            ReqOpenPrice.Value = _order.ReqOpenPrice;
+            LimitPrice.Value = _order.Type == OrderInfo.Types.Type.Limit || _order.Type == OrderInfo.Types.Type.StopLimit ? _order.Price : 0;
+            ReqOpenPrice.Value = _order.RequestedOpenPrice;
 
-            Volume.Value = _order.Amount;
+            Volume.Value = _order.RequestedAmount;
             RemainingVolume.Value = _order.RemainingAmount;
             MaxVisibleVolume.Value = _order.MaxVisibleAmount;
 
@@ -87,15 +88,24 @@ namespace TickTrader.BotTerminal
             Swap.Value = _order.Swap;
             Commission.Value = _order.Commission;
 
-            Created.Value = _order.Created;
-            Expiration.Value = _order.Expiration;
-            Modified.Value = _order.Modified;
+            Created.Value = _order.Created?.ToDateTime();
+            Expiration.Value = _order.Expiration?.ToDateTime();
+            Modified.Value = _order.Modified?.ToDateTime();
 
             Comment.Value = _order.Comment;
-            Tag.Value = _order.UserTag;
-            OrderExecutionOptions.Value = _order.ExecOptions.ToString();
+            OrderExecutionOptions.Value = _order.Options.ToString();
             ParentOrderId.Value = _order.ParentOrderId;
-            InstanceId.Value = _order.InstanceId;
+
+            if (CompositeTag.TryParse(_order.UserTag, out CompositeTag compositeTag))
+            {
+                Tag.Value = compositeTag.Tag;
+                InstanceId.Value = compositeTag.Key;
+            }
+            else
+            {
+                Tag.Value = _order.UserTag;
+                InstanceId.Value = "";
+            }
 
             TakeProfit.Value = _order.TakeProfit;
             StopLoss.Value = _order.StopLoss;

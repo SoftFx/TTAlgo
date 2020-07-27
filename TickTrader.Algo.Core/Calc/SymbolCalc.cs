@@ -60,7 +60,7 @@ namespace TickTrader.Algo.Core.Calc
             OnStatsChange(change);
         }
 
-        public void AddOrder(IOrderModel2 order)
+        public void AddOrder(IOrderInfo order)
         {
             //Count++;
             order.Calculator = _calc;
@@ -68,14 +68,14 @@ namespace TickTrader.Algo.Core.Calc
             //AddOrder(order, GetSideCalc(order));
         }
 
-        public void AddOrderWithoutCalculation(IOrderModel2 order)
+        public void AddOrderWithoutCalculation(IOrderInfo order)
         {
             //Count++;
             order.Calculator = _calc;
             GetSideCalc(order).AddOrderWithoutCalculation(order);
         }
 
-        public void RemoveOrder(IOrderModel2 order)
+        public void RemoveOrder(IOrderInfo order)
         {
             //Count--;
             GetSideCalc(order).RemoveOrder(order);
@@ -105,7 +105,7 @@ namespace TickTrader.Algo.Core.Calc
                 Tracker.Changed -= Recalculate;
         }
 
-        private SideCalc GetSideCalc(IOrderModel2 order)
+        private SideCalc GetSideCalc(IOrderInfo order)
         {
             if (order.Side == Domain.OrderInfo.Types.Side.Buy)
                 return Buy;

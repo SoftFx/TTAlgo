@@ -820,7 +820,7 @@ namespace TickTrader.Algo.Common.Model
 
             return new ExecutionReport()
             {
-                OrderId = report.OrderId,
+                Id = report.OrderId,
                 ParentOrderId = report.ParentOrderId,
                 // ExecTime = report.???
                 TradeRequestId = operationId,
@@ -833,7 +833,7 @@ namespace TickTrader.Algo.Common.Model
                 Slippage = report.Slippage,
                 Text = report.Text,
                 Comment = report.Comment,
-                Tag = report.Tag,
+                UserTag = report.Tag,
                 Magic = report.Magic,
                 IsReducedOpenCommission = report.ReducedOpenCommission,
                 IsReducedCloseCommission = report.ReducedCloseCommission,
@@ -850,17 +850,17 @@ namespace TickTrader.Algo.Common.Model
                 ExecutedVolume = report.ExecutedVolume,
                 InitialVolume = report.InitialVolume,
                 LeavesVolume = report.LeavesVolume,
-                MaxVisibleVolume = report.MaxVisibleVolume,
+                MaxVisibleAmount = report.MaxVisibleVolume,
                 TradeAmount = report.TradeAmount,
                 Commission = report.Commission,
                 AgentCommission = report.AgentCommission,
                 Swap = report.Swap,
-                InitialOrderType = Convert(report.InitialOrderType),
-                OrderType = Convert(report.OrderType),
-                OrderSide = Convert(report.OrderSide),
+                InitialType = Convert(report.InitialOrderType),
+                Type = Convert(report.OrderType),
+                Side = Convert(report.OrderSide),
                 Price = report.Price,
                 Balance = report.Balance ?? double.NaN,
-                ReqOpenPrice = report.InitialPrice,
+                RequestedOpenPrice = report.InitialPrice,
             };
         }
 

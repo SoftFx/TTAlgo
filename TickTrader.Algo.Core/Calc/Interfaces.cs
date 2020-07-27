@@ -4,135 +4,6 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Calc
 {
-
-
-    public interface IOrderCalcInfo
-    {
-        //int RangeId { get; }
-        //long AccountId { get; }
-        string Symbol { get; }
-        //string SymbolAlias { get; }
-        //int? SymbolPrecision { get; }
-        //long OrderId { get; }
-        //string ClientOrderId { get; }
-        //long? ParentOrderId { get; }
-        double? Price { get; }
-        double? StopPrice { get; }
-
-        Domain.OrderInfo.Types.Side Side { get; }
-        Domain.OrderInfo.Types.Type Type { get; }
-
-        //OrderTypes InitialType { get; }
-        ////OrderStatuses Status { get; }
-        //decimal Amount { get; }
-        decimal RemainingAmount { get; }
-        //double? MaxVisibleAmount { get; }
-        //DateTime Created { get; }
-        //DateTime? Modified { get; }
-        //DateTime? Filled { get; }
-        //DateTime? PositionCreated { get; }
-        //double? StopLoss { get; }
-        //double? TakeProfit { get; }
-        //double? Profit { get; }
-        //double? Margin { get; }
-        //double AggrFillPrice { get; }
-        //double AverageFillPrice { get; }
-        //double? TransferringCoefficient { get; }
-        //string UserComment { get; }
-        //string ManagerComment { get; }
-        //string UserTag { get; }
-        //string ManagerTag { get; }
-        //int Magic { get; }
-        decimal? Commission { get; }
-        //double? AgentCommision { get; }
-        decimal? Swap { get; }
-        //DateTime? Expired { get; }
-        //double? ClosePrice { get; }
-        //double? CurrentPrice { get; }
-        //double? MarginRateInitial { get; }
-        //double? MarginRateCurrent { get; }
-        //ActivationTypes Activation { get; }
-        //double? OpenConversionRate { get; }
-        //double? CloseConversionRate { get; }
-        //bool IsReducedOpenCommission { get; }
-        //bool IsReducedCloseCommission { get; }
-        //int Version { get; }
-        //OrderExecutionOptions Options { get; }
-        //CustomProperties Properties { get; }
-        //double? Taxes { get; }
-        //double? ReqOpenPrice { get; }
-        //double? ReqOpenAmount { get; }
-        //string ClientApp { get; }
-        //double? Slippage { get; }
-        bool IsHidden { get; }
-    }
-
-    public interface IOrderModel2 : IOrderCalcInfo
-    {
-        OrderCalculator Calculator { get; set; }
-
-        decimal CashMargin { get; set; }
-        ISymbolInfo SymbolInfo { get; }
-
-        event Action<OrderEssentialsChangeArgs> EssentialsChanged;
-        //event Action<OrderPropArgs<decimal>> PriceChanged;
-        event Action<OrderPropArgs<decimal>> SwapChanged;
-        event Action<OrderPropArgs<decimal>> CommissionChanged;
-    }
-
-    //public interface IPositionInfo
-    //{
-    //    string Symbol { get; }
-    //    decimal Commission { get; }
-    //    decimal Swap { get; }
-    //    IPositionSide Long { get; } // buy
-    //    IPositionSide Short { get; } //sell
-    //    DateTime? Modified { get; }
-    //    OrderCalculator Calculator { get; set; }
-    //}
-
-    //public interface IPositionSide
-    //{
-    //    decimal Amount { get; }
-    //    decimal Price { get; }
-    //    decimal Margin { get; set; }
-    //    decimal Profit { get; set; }
-    //}
-
-    public struct OrderEssentialsChangeArgs
-    {
-        public OrderEssentialsChangeArgs(IOrderModel2 order, decimal oldRemAmount, double? oldPrice, double? oldStopPrice, Domain.OrderInfo.Types.Type oldType, bool oldIsHidden)
-        {
-            Order = order;
-            OldRemAmount = oldRemAmount;
-            OldPrice = oldPrice;
-            OldStopPrice = oldStopPrice;
-            OldType = oldType;
-            OldIsHidden = oldIsHidden;
-        }
-
-        public IOrderModel2 Order { get; }
-        public decimal OldRemAmount { get; }
-        public double? OldPrice { get; }
-        public double? OldStopPrice { get; }
-        public Domain.OrderInfo.Types.Type OldType { get; }
-        public bool OldIsHidden { get; }
-    }
-
-    public struct OrderPropArgs<T>
-    {
-        public OrderPropArgs(IOrderModel2 order, T oldVal, T newVal)
-        {
-            Order = order;
-            OldVal = oldVal;
-            NewVal = newVal;
-        }
-
-        public IOrderModel2 Order { get; }
-        public T OldVal { get; }
-        public T NewVal { get; }
-    }
-
     public struct StatsChange
     {
         public StatsChange(double margin, double equity, int errorDelta)
@@ -167,22 +38,22 @@ namespace TickTrader.Algo.Core.Calc
         /// <summary>
         /// Account orders.
         /// </summary>
-        IEnumerable<IOrderModel2> Orders { get; }
+        IEnumerable<IOrderInfo> Orders { get; }
 
         /// <summary>
         /// Fired when single order was added.
         /// </summary>
-        event Action<IOrderModel2> OrderAdded;
+        event Action<IOrderInfo> OrderAdded;
 
         /// <summary>
         /// Fired when multiple orders were added.
         /// </summary>
-        event Action<IEnumerable<IOrderModel2>> OrdersAdded;
+        event Action<IEnumerable<IOrderInfo>> OrdersAdded;
 
         /// <summary>
         /// Fired when order was removed.
         /// </summary>
-        event Action<IOrderModel2> OrderRemoved;
+        event Action<IOrderInfo> OrderRemoved;
 
         /// <summary>
         /// Fired when order was replaced.

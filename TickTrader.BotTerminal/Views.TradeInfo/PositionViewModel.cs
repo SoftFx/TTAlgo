@@ -15,7 +15,7 @@ namespace TickTrader.BotTerminal
         }
 
         public override string Id => _position.Id;
-        public override decimal Profit => (decimal)(_position?.Calculator?.CalculateProfit(Price.Value.Value, Volume.Value.Value, Side.Value, out _, out _) ?? 0);
+        public override double Profit => _position?.Calculator?.CalculateProfit(Price.Value.Value, Volume.Value.Value, Side.Value, out _, out _) ?? 0;
 
         protected override void Update()
         {
@@ -27,8 +27,8 @@ namespace TickTrader.BotTerminal
             Side.Value = _position.Side;
             Type.Value = Algo.Domain.OrderInfo.Types.Type.Position;
 
-            Swap.Value = (decimal)_position.Swap;
-            Commission.Value = (decimal)_position.Commission;
+            Swap.Value = _position.Swap;
+            Commission.Value = _position.Commission;
         }
     }
 }

@@ -14,7 +14,7 @@ namespace TickTrader.BotTerminal
 
         protected readonly AmountToLotsConverter<double?> _amountToLots;
         protected readonly PricePrecisionConverter<double?> _symbolPrecision;
-        protected readonly PricePrecisionConverter<decimal?> _profitPrecision;
+        protected readonly PricePrecisionConverter<double> _profitPrecision;
 
         protected readonly SymbolInfo _symbol;
 
@@ -23,7 +23,7 @@ namespace TickTrader.BotTerminal
             _symbol = symbol;
 
             _symbolPrecision = new PricePrecisionConverter<double?>(symbol?.Digits ?? 5);
-            _profitPrecision = new PricePrecisionConverter<decimal?>(accountDigits);
+            _profitPrecision = new PricePrecisionConverter<double>(accountDigits);
             _amountToLots = new AmountToLotsConverter<double?>(_symbol.LotSize);
 
             Modified = _varContext.AddProperty(default(DateTime?));
@@ -36,7 +36,7 @@ namespace TickTrader.BotTerminal
             Side = _varContext.AddProperty(default(Algo.Domain.OrderInfo.Types.Side));
             Type = _varContext.AddProperty(default(Algo.Domain.OrderInfo.Types.Type));
 
-            Swap = _varContext.AddProperty(default(decimal?));
+            Swap = _varContext.AddProperty(default(double));
             Commission = _varContext.AddProperty(displayConverter: _profitPrecision);
             NetProfit = _varContext.AddProperty(displayConverter: _profitPrecision);
 
@@ -45,7 +45,7 @@ namespace TickTrader.BotTerminal
         }
 
         public abstract string Id { get; }
-        public abstract decimal Profit { get; }
+        public abstract double Profit { get; }
 
         protected abstract void Update();
 
@@ -67,9 +67,9 @@ namespace TickTrader.BotTerminal
         public Property<Algo.Domain.OrderInfo.Types.Side> Side { get; }
         public Property<Algo.Domain.OrderInfo.Types.Type> Type { get; }
 
-        public Property<decimal?> Swap { get; }
-        public Property<decimal?> Commission { get; }
-        public Property<decimal?> NetProfit { get; }
+        public Property<double> Swap { get; }
+        public Property<double> Commission { get; }
+        public Property<double> NetProfit { get; }
 
         private void RateUpdate(ISymbolInfo symbols)
         {

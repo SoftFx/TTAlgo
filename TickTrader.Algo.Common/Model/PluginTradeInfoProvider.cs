@@ -42,11 +42,11 @@ namespace TickTrader.Algo.Common.Model
             AlgoEvent_PositionUpdated(new Domain.PositionExecReport() { PositionCopy = position, ExecAction = action });
         }
 
-        private void ExecReportToAlgo(Domain.OrderExecReport.Types.ExecAction action, Domain.OrderExecReport.Types.EntityAction entityAction, ExecutionReport report, OrderModel newOrder, Domain.PositionInfo position)
+        private void ExecReportToAlgo(Domain.OrderExecReport.Types.ExecAction action, Domain.OrderExecReport.Types.EntityAction entityAction, ExecutionReport report, OrderInfo newOrder, Domain.PositionInfo position)
         {
             var algoReport = new Domain.OrderExecReport();
             if (newOrder != null)
-                algoReport.OrderCopy = newOrder.GetInfo();
+                algoReport.OrderCopy = newOrder;
             algoReport.OperationId = GetOperationId(report);
             algoReport.ExecAction = action;
             algoReport.EntityAction = entityAction;
@@ -92,7 +92,7 @@ namespace TickTrader.Algo.Common.Model
 
         List<Domain.OrderInfo> IAccountInfoProvider.GetOrders()
         {
-            return _cache.Account.Orders.Snapshot.Select(pair => pair.Value.GetInfo()).ToList();
+            return _cache.Account.Orders.Snapshot.Select(pair => pair.Value).ToList();
         }
 
         List<Domain.PositionInfo> IAccountInfoProvider.GetPositions()

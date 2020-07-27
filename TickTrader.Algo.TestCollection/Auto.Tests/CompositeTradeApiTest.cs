@@ -767,7 +767,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
                 }
                 catch (Exception ex)
                 {
-                    if (ex is VerificationException || ++attemptsFailed >= attemptsBorder)
+                    if (++attemptsFailed >= attemptsBorder || ex is VerificationException)
                         WriteError(ex);
                     else
                     {

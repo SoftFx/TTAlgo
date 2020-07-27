@@ -100,7 +100,7 @@ namespace TickTrader.Algo.Core.Calc
             return combinedMarginFactor;
         }
 
-        public static decimal CalculateMargin(IOrderModel2 order, ISymbolInfo symbol)
+        public static decimal CalculateMargin(IOrderInfo order, ISymbolInfo symbol)
         {
             return CalculateMargin(order.Type, order.RemainingAmount, order.Price, order.StopPrice, order.Side, symbol, order.IsHidden);
         }
@@ -146,7 +146,7 @@ namespace TickTrader.Algo.Core.Calc
             }
         }
 
-        public void AddOrder(IOrderModel2 order)
+        public void AddOrder(IOrderInfo order)
         {
             var symbol = order.SymbolInfo;
             if (symbol == null) //can be caused by server misconfiguration
@@ -192,12 +192,12 @@ namespace TickTrader.Algo.Core.Calc
             //}
         }
 
-        public void AddOrdersBunch(IEnumerable<IOrderModel2> bunch)
+        public void AddOrdersBunch(IEnumerable<IOrderInfo> bunch)
         {
             bunch.Foreach2(AddOrder);
         }
 
-        public void RemoveOrder(IOrderModel2 order)
+        public void RemoveOrder(IOrderInfo order)
         {
             //OrderLightClone clone = GetOrderOrThrow(order.OrderId);
             //orders.Remove(order.OrderId);

@@ -1213,7 +1213,8 @@ namespace TickTrader.Algo.Core
             //    Logger.Info(() => OperationContext.LogPrefix + "Create new position: " + position);
 
             // register order
-            RegisterOrder(position, (RateUpdate)position.Calculator.CurrentRate);
+            //DO TOT DELETE, WE WILL DECIDE WHAT TO DO LATER
+            //RegisterOrder(position, (RateUpdate)position.Calculator.CurrentRate);
 
             //position.FireChanged();
 
@@ -1601,7 +1602,7 @@ namespace TickTrader.Algo.Core
         private void ClosePosition(OrderAccessor position, TradeTransactionReason trReason, decimal? reqAmount, double? reqPrice,
             decimal? amount, double? price, SymbolAccessor smb, ClosePositionOptions options, string posById = null)
         {
-            OrderCalculator fCalc = position.Calculator;
+            IOrderCalculator fCalc = position.Calculator;
 
             // normalize amount
             var actualCloseAmount = NormalizeAmount(amount, position.RemainingAmount);
@@ -1623,11 +1624,11 @@ namespace TickTrader.Algo.Core
             else if ((price != null) && (price.Value > 0))
             {
                 closePrice = price.Value;
-                profit = RoundMoney(fCalc.CalculateProfitFixedPrice(position, (double)actualCloseAmount, closePrice, out var error), _calcFixture.RoundingDigits);
+                profit = RoundMoney(fCalc.CalculateProfitFixedPrice(position.Price, (double)actualCloseAmount, closePrice, position.Side, out _, out var error), _calcFixture.RoundingDigits);
             }
             else
             {
-                profit = RoundMoney(fCalc.CalculateProfit(position, (double)actualCloseAmount, out closePrice, out var error), _calcFixture.RoundingDigits);
+                profit = RoundMoney(fCalc.CalculateProfit(position.Price, (double)actualCloseAmount, position.Side, out closePrice, out var error), _calcFixture.RoundingDigits);
             }
 
             //position.CloseConversionRate = profit >= 0 ? fCalc.PositiveProfitConversionRate.Value : fCalc.NegativeProfitConversionRate.Value;
@@ -1792,7 +1793,7 @@ namespace TickTrader.Algo.Core
         public void ConfirmPositionCloseBy(OrderAccessor position1, OrderAccessor position2, TradeTransactionReason trReason, bool usePartialClosing)
         {
             var smb = position1.SymbolInfo;
-            OrderCalculator fCalc = position1.Calculator;
+            IOrderCalculator fCalc = position1.Calculator;
 
             var closeAmount = Math.Min(position1.RemainingAmount, position2.RemainingAmount);
 
@@ -2054,7 +2055,7 @@ namespace TickTrader.Algo.Core
             return GetOpenOrderPrice(currentRate, side);
         }
 
-        private double? GetCurrentClosePrice(IOrderModel2 order, RateUpdate currentRate = null)
+        private double? GetCurrentClosePrice(IOrderInfo order, RateUpdate currentRate = null)
         {
             if (currentRate == null)
                 currentRate = _calcFixture.GetCurrentRateOrNull(order.Symbol);

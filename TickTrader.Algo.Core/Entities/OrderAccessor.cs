@@ -6,7 +6,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    public class OrderAccessor : IOrderModel2
+    public class OrderAccessor : IOrderInfo
     {
         private SymbolAccessor _symbol;
         private double _lotSize;
@@ -114,13 +114,13 @@ namespace TickTrader.Algo.Core
         decimal? IOrderCalcInfo.Swap => _calcInfo.Swap;
         decimal? IOrderCalcInfo.Commission => _calcInfo.Commission;
 
-        ISymbolInfo IOrderModel2.SymbolInfo => _symbol;
+        ISymbolInfo IOrderInfo.SymbolInfo => _symbol;
         public decimal CashMargin { get; set; }
         #endregion
 
         #region BL IOrderModel
 
-        public OrderCalculator Calculator { get; set; }
+        public IOrderCalculator Calculator { get; set; }
         //public bool IsCalculated => CalculationError == null;
         public double? MarginRateCurrent { get; set; }
 
@@ -198,7 +198,7 @@ namespace TickTrader.Algo.Core
             var calc = Calculator;
             if (calc != null)
             {
-                var margin = calc.CalculateMargin(this, _leverage, out var error);
+                var margin = calc.CalculateMargin((double)RemainingAmount, _leverage, Type, Side, IsHidden, out var error);
                 if (error != CalcErrorCodes.None)
                     return double.NaN;
                 return margin;
@@ -214,7 +214,7 @@ namespace TickTrader.Algo.Core
             var calc = Calculator;
             if (calc != null)
             {
-                var prof = calc.CalculateProfit(this, out var error);
+                var prof = calc.CalculateProfit(Price, (double)RemainingAmount, Side, out _, out var error);
                 if (error != CalcErrorCodes.None)
                     return double.NaN;
                 return prof;

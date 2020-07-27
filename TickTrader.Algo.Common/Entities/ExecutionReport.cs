@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Core;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class ExecutionReport
+    public class ExecutionReport : IOrderUpdateInfo
     {
-        public string OrderId { get; set; }
+        public string Id { get; set; }
         public string ParentOrderId { get; set; }
         //public DateTime ExecTime { get; set; }
         public DateTime? Expiration { get; set; }
@@ -22,7 +18,7 @@ namespace TickTrader.Algo.Common.Model
         public double? Slippage { get; set; }
         public string Text { get; set; }
         public string Comment { get; set; }
-        public string Tag { get; set; }
+        public string UserTag { get; set; }
         public int? Magic { get; set; }
         public bool IsReducedOpenCommission { get; set; }
         public bool IsReducedCloseCommission { get; set; }
@@ -41,17 +37,48 @@ namespace TickTrader.Algo.Common.Model
         public double ExecutedVolume { get; set; }
         public double? InitialVolume { get; set; }
         public double LeavesVolume { get; set; }
-        public double? MaxVisibleVolume { get; set; }
+        public double? MaxVisibleAmount { get; set; }
         public double? TradeAmount { get; set; }
         public double Commission { get; set; }
         public double AgentCommission { get; set; }
         public double Swap { get; set; }
-        public Domain.OrderInfo.Types.Type InitialOrderType { get; set; }
-        public Domain.OrderInfo.Types.Type OrderType { get; set; }
-        public Domain.OrderInfo.Types.Side OrderSide { get; set; }
+        public Domain.OrderInfo.Types.Type InitialType { get; set; }
+        public Domain.OrderInfo.Types.Type Type { get; set; }
+        public Domain.OrderInfo.Types.Side Side { get; set; }
         public double? Price { get; set; }
         public double Balance { get; set; }
-        public double? ReqOpenPrice { get; set; }
+        public double? RequestedOpenPrice { get; set; }
+
+        public Domain.OrderOptions Options => GetOptions();
+
+        public double RequestedAmount => InitialVolume ?? 0;
+
+        public bool IsHidden => MaxVisibleAmount.HasValue && MaxVisibleAmount.Value < 1e-9;
+
+        decimal IOrderCalcInfo.RemainingAmount => (decimal)LeavesVolume;
+
+        decimal? IOrderCalcInfo.Commission => (decimal?)Commission;
+
+        decimal? IOrderCalcInfo.Swap => (decimal?)Swap;
+
+        Timestamp IOrderUpdateInfo.Created => Created?.ToTimestamp();
+
+        Timestamp IOrderUpdateInfo.Expiration => Expiration?.ToTimestamp();
+
+        Timestamp IOrderUpdateInfo.Modified => Modified?.ToTimestamp();
+
+        private Domain.OrderOptions GetOptions()
+        {
+            Domain.OrderOptions options = Domain.OrderOptions.None;
+
+            if (ImmediateOrCancel)
+                options |= Domain.OrderOptions.ImmediateOrCancel;
+
+            if (IsHidden)
+                options |= Domain.OrderOptions.HiddenIceberg;
+
+            return options;
+        }
     }
 
     public enum ExecutionType

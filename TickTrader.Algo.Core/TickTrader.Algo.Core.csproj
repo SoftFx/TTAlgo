@@ -178,7 +178,6 @@
     <Compile Include="Buffers\OutputBuffer.cs" />
     <Compile Include="Buffers\ProxyBuffer.cs" />
     <Compile Include="Entities\BarRateUpdate.cs" />
-    <Compile Include="Entities\CompositeTag.cs" />
     <Compile Include="Entities\CoreEnumConverterExtentions.cs" />
     <Compile Include="Entities\CurrenciesCollection.cs" />
     <Compile Include="Entities\CurrencyEntity.cs" />
