@@ -129,9 +129,9 @@ namespace TickTrader.Algo.Core
 
         private bool AttachPluginResponseHandler(TaskCompletionSource<bool> taskSrc, Any payload)
         {
-            if (payload.Is(RpcError.Descriptor))
+            if (payload.Is(ErrorResponse.Descriptor))
             {
-                var error = payload.Unpack<RpcError>();
+                var error = payload.Unpack<ErrorResponse>();
                 taskSrc.TrySetException(new Exception(error.Message));
                 return true;
             }
@@ -183,9 +183,9 @@ namespace TickTrader.Algo.Core
         private static bool TryGetError(Any payload, out Exception ex)
         {
             ex = null;
-            if (payload.Is(RpcError.Descriptor))
+            if (payload.Is(ErrorResponse.Descriptor))
             {
-                var error = payload.Unpack<RpcError>();
+                var error = payload.Unpack<ErrorResponse>();
                 ex = new Exception(error.Message);
                 return true;
             }

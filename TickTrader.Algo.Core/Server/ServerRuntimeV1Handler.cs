@@ -1,5 +1,4 @@
-﻿using C5;
-using Google.Protobuf.WellKnownTypes;
+﻿using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Linq;
 using System.Threading;
@@ -31,8 +30,13 @@ namespace TickTrader.Algo.Core
 
         public void HandleNotification(string callId, Any payload)
         {
-             if (payload.Is(UnitLogRecord.Descriptor))
+            if (payload.Is(UnitLogRecord.Descriptor))
                 UnitLogRecordHandler(payload);
+            else if (payload.Is(UnitError.Descriptor))
+                UnitErrorHandler(payload);
+            else if (payload.Is(UnitStopped.Descriptor))
+                UnitStoppedHandler();
+
         }
 
         public Any HandleRequest(string callId, Any payload)
@@ -42,7 +46,7 @@ namespace TickTrader.Algo.Core
                 var request = payload.Unpack<AttachPluginRequest>();
                 if (_executor != null)
                 {
-                    return Any.Pack(new RpcError { Message = "Executor already attached!" });
+                    return Any.Pack(new ErrorResponse { Message = "Executor already attached!" });
                 }
                 if (_server.TryGetExecutor(request.Id, out var executor))
                 {
@@ -188,6 +192,17 @@ namespace TickTrader.Algo.Core
         {
             var record = payload.Unpack<UnitLogRecord>();
             _executor.OnLogUpdated(record);
+        }
+
+        private void UnitErrorHandler(Any payload)
+        {
+            var error = payload.Unpack<UnitError>();
+            _executor.OnErrorOccured(new AlgoUnitException(error));
+        }
+
+        private void UnitStoppedHandler()
+        {
+            _executor.OnStopped();
         }
     }
 }

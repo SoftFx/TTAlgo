@@ -212,7 +212,7 @@ namespace TickTrader.Algo.Rpc
             }
             catch (Exception ex)
             {
-                SendMessage(RpcMessage.Response(msg.CallId, new RpcError
+                SendMessage(RpcMessage.Response(msg.CallId, new ErrorResponse
                 {
                     Message = "Internal error: Failed to process ConnectRequest",
                     Details = ex.ToString(),
@@ -230,7 +230,7 @@ namespace TickTrader.Algo.Rpc
             protocol = _rpcHost.Resolve(protocol, out var resolveError);
             if (!string.IsNullOrEmpty(resolveError))
             {
-                return new RpcError
+                return new ErrorResponse
                 {
                     Message = $"Failed to resolve protocol. Url={protocol.Url}, Version={protocol.MajorVerion}.{protocol.MinorVerion}",
                     Details = resolveError,
@@ -260,7 +260,7 @@ namespace TickTrader.Algo.Rpc
             _connectTaskSrc.TrySetResult(true);
         }
 
-        private RpcError InitRpcHandler(ProtocolSpec protocol)
+        private ErrorResponse InitRpcHandler(ProtocolSpec protocol)
         {
             try
             {
@@ -269,7 +269,7 @@ namespace TickTrader.Algo.Rpc
             }
             catch (Exception ex)
             {
-                return new RpcError
+                return new ErrorResponse
                 {
                     Message = $"Failed to get handler for protocol. Url={protocol.Url}, Version={protocol.MajorVerion}.{protocol.MinorVerion}",
                     Details = ex.ToString(),
@@ -278,7 +278,7 @@ namespace TickTrader.Algo.Rpc
 
             if (_rpcHandler == null)
             {
-                return new RpcError
+                return new ErrorResponse
                 {
                     Message = $"Internal error: Protocol handler not found. Url={protocol.Url}, Version={protocol.MajorVerion}.{protocol.MinorVerion}",
                 };
@@ -311,7 +311,7 @@ namespace TickTrader.Algo.Rpc
                     SendMessage(HeartbeatMessage);
                     if (Math.Abs(_inHeartbeatCnt - _outHeartbeatCnt) > RpcConstants.HeartbeatCntThreshold)
                     {
-                        var error = new RpcError { Message = "Heartbeat count mismatch. Connection is out of sync", Details = $"In: {_inHeartbeatCnt} / Out: {_outHeartbeatCnt}" };
+                        var error = new ErrorResponse { Message = "Heartbeat count mismatch. Connection is out of sync", Details = $"In: {_inHeartbeatCnt} / Out: {_outHeartbeatCnt}" };
                         SendMessage(RpcMessage.Notification(error));
                         await _transport.Close();
                         return;
@@ -371,7 +371,7 @@ namespace TickTrader.Algo.Rpc
                     }
                     catch (Exception ex)
                     {
-                        SendMessage(RpcMessage.Response(msg.CallId, new RpcError
+                        SendMessage(RpcMessage.Response(msg.CallId, new ErrorResponse
                         {
                             Message = "Internal error: Failed to process request",
                             Details = ex.ToString(),
@@ -381,7 +381,7 @@ namespace TickTrader.Algo.Rpc
 
                 if (msg.Flags == RpcFlags.Notification)
                 {
-                    if (msg.Payload.Is(RpcError.Descriptor))
+                    if (msg.Payload.Is(ErrorResponse.Descriptor))
                     {
                         // TODO: Log fatal protocol error
                     }

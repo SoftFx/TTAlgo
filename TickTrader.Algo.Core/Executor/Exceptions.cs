@@ -71,4 +71,23 @@ namespace TickTrader.Algo.Core
         {
         }
     }
+
+    public class AlgoUnitException : Exception
+    {
+        private readonly Domain.UnitError _error;
+
+        public AlgoUnitException(Domain.UnitError error) : base()
+        {
+            _error = error;
+        }
+
+        public override string Message => _error.Message;
+
+        public override string StackTrace => _error.Stacktrace;
+
+        public override string ToString()
+        {
+            return $"{_error.ExceptionType}: {_error.Message}{Environment.NewLine}{_error.Stacktrace}";
+        }
+    }
 }

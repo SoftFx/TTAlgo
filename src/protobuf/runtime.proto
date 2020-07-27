@@ -32,3 +32,12 @@ message UnitLogRecord {
     google.protobuf.StringValue message = 3;
     google.protobuf.StringValue details = 4;
 }
+
+message UnitError {
+    string message = 1;
+    string exception_type = 2;
+    string stacktrace = 3;
+}
+
+message UnitStopped { }
+

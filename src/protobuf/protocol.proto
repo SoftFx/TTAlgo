@@ -18,7 +18,7 @@ message RpcMessage {
     google.protobuf.Any payload = 3;
 }
 
-message RpcError {
+message ErrorResponse {
     string message = 1;
     string details = 2;
 }

@@ -259,8 +259,6 @@ namespace TickTrader.Algo.Core
         public event Action<PluginExecutorCore> IsRunningChanged = delegate { };
         public event Action<Exception> OnRuntimeError = delegate { };
 
-        internal event Action Stopped;
-
         #endregion
 
         public void Start()
@@ -432,13 +430,13 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        private async Task DoStop(bool qucik)
+        private async Task DoStop(bool quick)
         {
             try
             {
                 _builder.SetStopped();
 
-                await iStrategy.Stop(qucik).ConfigureAwait(false);
+                await iStrategy.Stop(quick).ConfigureAwait(false);
                 if (_pluginLoggerFixture != null)
                     await _pluginLoggerFixture.Stop();
 
@@ -457,16 +455,18 @@ namespace TickTrader.Algo.Core
             }
             catch (Exception ex)
             {
-                OnException(ex);
+                OnInternalException(ex);
+                if (!quick)
+                    OnExit();
             }
 
             try
             {
-                Stopped?.Invoke();
+                OnNotification(new Domain.UnitStopped());
             }
             catch (Exception ex)
             {
-                OnException(ex);
+                OnInternalException(ex);
             }
 
             try
@@ -719,29 +719,15 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        private void OnException(Exception pluginError)
-        {
-            OnExit();
-        }
-
         private void OnInternalException(Exception ex)
         {
-            var serialazibleException = ConvertException(ex);
-
-            if (IsGlobalMarshalingEnabled)
-                OnUpdate(serialazibleException);
-            else
-                OnRuntimeError?.Invoke(serialazibleException);
+            var error = new Domain.UnitError(ex);
+            OnNotification(error);
         }
 
         private void OnRuntimeException(Exception ex)
         {
             OnInternalException(ex);
-        }
-
-        private Exception ConvertException(Exception ex)
-        {
-            return new ExecutorCoreException("Unexpected exception occurred in Executor: " + ex.Message);
         }
 
         private void OnInputResize(int newSize)

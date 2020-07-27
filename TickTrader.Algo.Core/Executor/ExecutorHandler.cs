@@ -39,13 +39,6 @@ namespace TickTrader.Algo.Core
 
             Core.MarshalUpdate = MarshalUpdate;
             Core.MarshalUpdates = MarshalUpdatesToContext;
-            Core.Stopped += () =>
-            {
-                if (_syncContext != null)
-                    _syncContext.Invoke(() => Stopped?.Invoke(this));
-                else
-                    Stopped?.Invoke(this);
-            };
         }
 
         internal PluginExecutorCore Core { get; private set; }
@@ -76,6 +69,19 @@ namespace TickTrader.Algo.Core
         internal void OnLogUpdated(Domain.UnitLogRecord record)
         {
             LogUpdated?.Invoke(record);
+        }
+
+        internal void OnErrorOccured(Exception ex)
+        {
+            ErrorOccurred?.Invoke(ex);
+        }
+
+        internal void OnStopped()
+        {
+            if (_syncContext != null)
+                _syncContext.Invoke(() => Stopped?.Invoke(this));
+            else
+                Stopped?.Invoke(this);
         }
 
         #region Excec control
@@ -234,8 +240,8 @@ namespace TickTrader.Algo.Core
                 else if (seriesUpdate.SeriesType == DataSeriesTypes.Output)
                     OutputUpdate?.Invoke(seriesUpdate);
             }
-            else if (update is Exception)
-                ErrorOccurred?.Invoke((Exception)update);
+            //else if (update is Exception)
+            //    ErrorOccurred?.Invoke((Exception)update);
 
             #endregion
         }
