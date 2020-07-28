@@ -71,8 +71,6 @@ namespace TickTrader.Algo.Common.Model
 
         IEnumerable<IAssetInfo> ICashAccountInfo2.Assets => Assets.Snapshot.Values;
 
-        //public AccountCalculatorModel Calc { get; private set; }
-
         public event Action<OrderUpdateInfo> OrderUpdate;
         public event Action<PositionInfo, Domain.OrderExecReport.Types.ExecAction> PositionUpdate;
         public event Action<Domain.BalanceOperation> BalanceOperationUpdate;
@@ -106,9 +104,6 @@ namespace TickTrader.Algo.Common.Model
             if (!_isCalcStarted)
             {
                 _isCalcStarted = true;
-
-                //Calc = AccountCalculatorModel.Create(this, marketData);
-                //Calc.Recalculate();
 
                 switch (Type)
                 {
@@ -168,10 +163,6 @@ namespace TickTrader.Algo.Common.Model
 
         public void Deinit()
         {
-            //_client.BalanceReceived -= OnBalanceOperation;
-            //_client.ExecutionReportReceived -= OnReport;
-            //_client.PositionReportReceived -= OnReport;
-
             if (_isCalcStarted)
             {
                 CashCalculator?.Dispose();
