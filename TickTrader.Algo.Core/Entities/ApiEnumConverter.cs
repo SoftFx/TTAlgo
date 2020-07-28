@@ -54,6 +54,17 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        public static SlippageType ToApiEnum(this Domain.SlippageInfo.Types.Type type)
+        {
+            switch (type)
+            {
+                case Domain.SlippageInfo.Types.Type.Percent: return SlippageType.Percent;
+                case Domain.SlippageInfo.Types.Type.Pips: return SlippageType.Pips;
+
+                default: throw new ArgumentException($"Unsupported type {type}");
+            }
+        }
+
         public static OrderOptions ToApiEnum(this Domain.OrderOptions options)
         {
             return (OrderOptions)options;

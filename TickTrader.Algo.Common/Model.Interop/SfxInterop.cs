@@ -1,23 +1,20 @@
-﻿using System;
+﻿using ActorSharp;
+using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model.Interop;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.FDK.Common;
 using SFX = TickTrader.FDK.Common;
-using API = TickTrader.Algo.Api;
-using BO = TickTrader.BusinessObjects;
-using ActorSharp;
-using System.Security.Cryptography.X509Certificates;
-using System.Net.Security;
-using TickTrader.Algo.Common.Info;
-using Google.Protobuf.WellKnownTypes;
-using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -592,12 +589,12 @@ namespace TickTrader.Algo.Common.Model
             };
         }
 
-        private static Domain.SlippageInfo.Types.Type Convert(SlippageType type)
+        private static Domain.SlippageInfo.Types.Type Convert(SFX.SlippageType type)
         {
             switch (type)
             {
-                case SlippageType.Pips: return Domain.SlippageInfo.Types.Type.Pips;
-                case SlippageType.Percent: return Domain.SlippageInfo.Types.Type.Percent;
+                case SFX.SlippageType.Pips: return Domain.SlippageInfo.Types.Type.Pips;
+                case SFX.SlippageType.Percent: return Domain.SlippageInfo.Types.Type.Percent;
                 default: throw new NotImplementedException();
             }
         }
@@ -620,7 +617,7 @@ namespace TickTrader.Algo.Common.Model
                 case SFX.CommissionType.PerUnit: return Domain.CommissonInfo.Types.ValueType.Points;
                 case SFX.CommissionType.Percent: return Domain.CommissonInfo.Types.ValueType.Percentage;
 
-                    // Server is not using those anymore. Providing fallback value just in case
+                // Server is not using those anymore. Providing fallback value just in case
                 case SFX.CommissionType.PerBond:
                 case SFX.CommissionType.PercentageWaivedCash:
                 case SFX.CommissionType.PercentageWaivedEnhanced:
@@ -918,6 +915,8 @@ namespace TickTrader.Algo.Common.Model
                                 return Domain.OrderExecReport.Types.CmdResultCode.ReadOnlyAccount;
                             else if (message == "Internal server error")
                                 return Domain.OrderExecReport.Types.CmdResultCode.TradeServerError;
+                            else if (message.StartsWith("Only Limit, Stop and StopLimit orders can be canceled."))
+                                return Domain.OrderExecReport.Types.CmdResultCode.IncorrectType;
                         }
                         break;
                     }
@@ -1278,7 +1277,7 @@ namespace TickTrader.Algo.Common.Model
             throw new NotImplementedException("Unsupported price type: " + priceType);
         }
 
-        private ConnectionErrorCodes Convert(LogoutReason fdkCode)
+        private static ConnectionErrorCodes Convert(LogoutReason fdkCode)
         {
             switch (fdkCode)
             {

@@ -7,10 +7,13 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Auto.Tests
 {
-    public enum OrderExecutionMode { Execution, Waiting}
+    public enum OrderExecutionMode { Execution, Waiting }
 
-    public enum TestAcion { Fill, FillByModify, RejectIoC, ExecutionTP, ExecutionSL, Cancel, Expiration, ADReject, ADPartialActivate,
-                            CloseByBigSmall, CloseBySmallBig, CloseByEven, OpenSlippage}
+    public enum TestAcion
+    {
+        Fill, FillByModify, RejectIoC, ExecutionTP, ExecutionSL, Cancel, Expiration, ADReject, ADPartialActivate,
+        CloseByBigSmall, CloseBySmallBig, CloseByEven, OpenSlippage, PartialActiveWithSlippage
+    }
 
     public enum TestOrderAction { Open, Modify, Close, Cancel, CloseBy };
 
@@ -20,7 +23,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
     {
         public const string Tag = "TAG";
 
-        public static double? MaxSlippage { get; set; }
+        public static Symbol Symbol { get; set; }
 
         public static AccountTypes AccountType { get; set; }
 
@@ -35,10 +38,15 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         public OrderExecOptions Options { get; set; }
 
-        
-        public bool IsInstantOrder => (Type == OrderType.Market && AccountType != AccountTypes.Gross)
-                                    || (Type == OrderType.Limit && Options.HasFlag(OrderExecOptions.ImmediateOrCancel));
 
+        public bool IsInstantOrder => (Type == OrderType.Market && AccountType != AccountTypes.Gross)
+                                   || (Type == OrderType.Limit && Options.HasFlag(OrderExecOptions.ImmediateOrCancel));
+
+        public bool IsLimitIoC => Type == OrderType.Limit && Options.HasFlag(OrderExecOptions.ImmediateOrCancel);
+
+        public bool IsSlippageSupported => Type == OrderType.Stop || Type == OrderType.Market;
+
+        public bool IsLimit => Type == OrderType.StopLimit || Type == OrderType.Limit;
 
         public TestParamsSet() { }
 
@@ -58,6 +66,6 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         public string Info(TestAcion action) => $"{(Async ? "Async " : "")}{action} {Side} {Type} order (Tag: {Tag}, options: {Options})";
 
         protected virtual string GetInfo() => $"{(Async ? "Async " : "")}{TestOrderAction.Open} {Side} {Type} order (Tag: {Tag}, options: {Options})";
-        
+
     }
 }

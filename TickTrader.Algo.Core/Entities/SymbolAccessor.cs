@@ -50,7 +50,12 @@ namespace TickTrader.Algo.Core
         public double HedgingFactor => _info.Margin.Hedged;
         public NumberFormatInfo PriceFormat { get; private set; }
         public int AmountDigits { get; private set; }
+
         public double? Slippage => _info.Slippage.DefaultValue;
+        double Symbol.Slippage => _info.Slippage.DefaultValue ?? 0;
+
+        public Domain.SlippageInfo.Types.Type SlippageType => _info.Slippage.Type;
+        SlippageType Symbol.SlippageType => SlippageType.ToApiEnum();
 
         public Domain.CommissonInfo.Types.ValueType CommissionValueType => _info.Commission.ValueType;
         public double MarginFactorFractional => _info.Margin.Factor;
@@ -184,7 +189,8 @@ namespace TickTrader.Algo.Core
         public CommissionChargeType CommissionChargeType { get { return CommissionChargeType.PerTrade; } }
         public CommissionType CommissionType { get { return CommissionType.Percent; } }
         public double HedgingFactor => double.NaN;
-        public double? Slippage => null;
+        public double Slippage => double.NaN;
+        public SlippageType SlippageType => SlippageType.Percent;
 
         public void Subscribe(int depth = 1)
         {

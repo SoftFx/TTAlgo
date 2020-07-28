@@ -72,5 +72,6 @@ namespace TickTrader.Algo.Api
         MaxVisibleVolumeNotSupported = 123,
         ReadOnlyAccount = 124,
         IncorrectSlippage = 125,
+        IncorrectType = 126,
     }
 }

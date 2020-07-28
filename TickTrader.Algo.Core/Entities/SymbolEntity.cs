@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
-using BO = TickTrader.BusinessObjects;
-using BL = TickTrader.BusinessObjects;
-
-namespace TickTrader.Algo.Core
+﻿namespace TickTrader.Algo.Core
 {
     //[Serializable]
     //public class SymbolEntity
@@ -73,7 +64,6 @@ namespace TickTrader.Algo.Core
     //    public double MarginHedge { get; }
     //    public double ContractMultiplier { get; }
     //    public int Color { get; }
-
     //    #endregion
     //}
 }

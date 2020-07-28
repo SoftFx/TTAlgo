@@ -174,6 +174,7 @@ message OrderExecReport {
         MAX_VISIBLE_VOLUME_NOT_SUPPORTED = 123;
         READ_ONLY_ACCOUNT = 124;
         INCORRECT_SLIPPAGE = 125;
+        INCORRECT_TYPE = 126;
     }
 
     google.protobuf.StringValue operation_id = 1;
