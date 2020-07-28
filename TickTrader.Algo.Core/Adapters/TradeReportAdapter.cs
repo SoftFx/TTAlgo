@@ -184,7 +184,7 @@ namespace TickTrader.Algo.Core
                 Entity.PositionLeavesQuantity = (double)position.Amount;
                 Entity.PositionRemainingPrice = position.Price;
                 Entity.PositionRemainingSide = position.Side;
-                Entity.PositionModified = position.Modified ?? DateTime.MinValue;
+                Entity.PositionModified = position.Info.Modified?.ToDateTime() ?? DateTime.MinValue;
             }
             else
             {

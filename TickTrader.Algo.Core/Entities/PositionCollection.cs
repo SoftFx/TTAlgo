@@ -91,7 +91,7 @@ namespace TickTrader.Algo.Core
             if (pos == null)
             {
                 pos = _fixture.CreatePosition(smbInfo);
-                pos.Id = idGenerator();
+                pos.Info.Id = idGenerator();
                 pos.Changed += Pos_Changed;
             }
 
@@ -132,7 +132,7 @@ namespace TickTrader.Algo.Core
                 get
                 {
                     if (!_positions.TryGetValue(symbol, out PositionAccessor entity))
-                        return PositionAccessor.CreateEmpty(symbol, _builder.Symbols.GetOrDefault);
+                        return new PositionAccessor(_builder.Symbols.GetOrDefault(symbol));
                     return entity;
                 }
             }

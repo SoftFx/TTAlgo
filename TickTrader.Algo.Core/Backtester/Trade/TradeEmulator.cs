@@ -8,6 +8,7 @@ using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Calc;
 using TickTrader.Algo.Domain;
+using Google.Protobuf.WellKnownTypes;
 
 namespace TickTrader.Algo.Core
 {
@@ -1346,7 +1347,7 @@ namespace TickTrader.Algo.Core
             var smb = fromOrder.SymbolInfo;
             var position = _acc.NetPositions.GetOrCreatePosition(smb.Name, NewOrderId);
             position.Increase(fillAmount, (decimal)fillPrice, fromOrder.Side);
-            position.Modified = _scheduler.UnsafeVirtualTimePoint;
+            position.Info.Modified = _scheduler.UnsafeVirtualTimePoint.ToTimestamp();
 
             var charges = new TradeChargesInfo();
 
@@ -1403,7 +1404,7 @@ namespace TickTrader.Algo.Core
             if (oneSideClosingAmount > 0)
             {
                 var k = oneSideClosingAmount / oneSideClosableAmount;
-                var closeSwap = RoundMoney(k * position.Swap, _calcFixture.RoundingDigits);
+                var closeSwap = RoundMoney(k * (decimal)position.Info.Swap, _calcFixture.RoundingDigits);
                 var openPrice = fillSide == Domain.OrderInfo.Types.Side.Buy ? position.Long.Price : position.Short.Price;
                 closePrice = fillSide == Domain.OrderInfo.Types.Side.Buy ? position.Short.Price : position.Long.Price;
                 double profitRate;
@@ -1417,7 +1418,7 @@ namespace TickTrader.Algo.Core
 
                 position.DecreaseBothSides(oneSideClosingAmount);
 
-                position.Swap -= closeSwap;
+                position.Info.Swap -= (double)closeSwap;
                 balanceMovement = profit + closeSwap;
 
                 var isClosed = position.IsEmpty;
@@ -2016,7 +2017,7 @@ namespace TickTrader.Algo.Core
 
                     if (roundedSwap != 0)
                     {
-                        pos.Swap += roundedSwap;
+                        pos.Info.Swap += (double)roundedSwap;
 
                         totalSwap += roundedSwap;
 

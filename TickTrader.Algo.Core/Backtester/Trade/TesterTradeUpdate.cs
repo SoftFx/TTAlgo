@@ -168,7 +168,7 @@ namespace TickTrader.Algo.Core
         {
             NetPositionUpdate = new Domain.PositionExecReport
             {
-                PositionCopy = pos.GetEntityCopy(),
+                PositionCopy = pos.Info.Clone(),
                 ExecAction = Domain.OrderExecReport.Types.ExecAction.Modified,
             };
         }

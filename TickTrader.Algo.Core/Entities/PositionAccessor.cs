@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Domain;
 
@@ -8,11 +7,6 @@ namespace TickTrader.Algo.Core
     public sealed class PositionAccessor : NetPosition
     {
         private readonly Symbol _symbol;
-
-        public PositionInfo Info { get; }
-
-        internal PositionAccessor(Domain.PositionInfo info, Func<string, Symbol> symbolProvider)
-            : this(symbolProvider(info.Symbol), info) { }
 
         internal PositionAccessor(Symbol symbol, Domain.PositionInfo info = null)
         {
@@ -24,21 +18,6 @@ namespace TickTrader.Algo.Core
 
             if (info != null)
                 Update(Info);
-        }
-
-        internal PositionAccessor(PositionAccessor src) : this(src._symbol)
-        {
-            Long.Update(src.Long.Amount, src.Long.Price);
-            Short.Update(src.Short.Amount, src.Short.Price);
-
-            Info = src.Info;
-            Volume = src.Volume;
-            Swap = src.Swap;
-            Modified = src.Modified;
-            Commission = src.Commission;
-            Id = src.Id;
-
-            Calculator = src.Calculator;
         }
 
         internal void Update(Domain.PositionInfo info)
@@ -54,56 +33,36 @@ namespace TickTrader.Algo.Core
                 Short.Update((decimal)info.Volume, (decimal)info.Price);
             }
 
-            Swap = (decimal)info.Swap;
-            Commission = (decimal)info.Commission;
-            Modified = info.Modified?.ToDateTime();
-            Id = info.Id;
-            OnChanged();
-        }
-
-        internal static PositionAccessor CreateEmpty(string symbol, Func<string, Symbol> symbolInfoProvider)
-        {
-            return new PositionAccessor(new Domain.PositionInfo { Symbol = symbol }, symbolInfoProvider);
-        }
-
-        public PositionAccessor Clone() => new PositionAccessor(this);
-
-        internal bool IsBuySided => Long.Amount > Short.Amount;
-
-        public double Volume { get; private set; }
-        public decimal Commission { get; internal set; }
-        public double Price => (double)(IsBuySided ? Long.Price : Short.Price);
-        public Domain.OrderInfo.Types.Side Side => IsBuySided ? Domain.OrderInfo.Types.Side.Buy : Domain.OrderInfo.Types.Side.Sell;
-        public decimal Swap { get; internal set; }
-        public string Symbol => _symbol.Name;
-
-        public DateTime? Modified { get; set; }
-        public string Id { get; set; }
-        public bool IsEmpty => Amount == 0;
-        public IOrderCalculator Calculator { get; set; }
-
-        public decimal Amount => Math.Max(Long.Amount, Short.Amount);
-        public SideProxy Long { get; } = new SideProxy();
-        public SideProxy Short { get; } = new SideProxy();
-
-        OrderSide NetPosition.Side => Side.ToApiEnum();
-        double NetPosition.Margin => Calculator?.CalculateMargin(Info) ?? double.NaN;
-        double NetPosition.Profit => Calculator?.CalculateProfit(Info) ?? double.NaN;
-        double NetPosition.Swap => (double)Swap;
-        double NetPosition.Commission => (double)Commission;
-
-        internal event Action<PositionAccessor> Changed;
-
-        private void OnChanged()
-        {
-            UpdateCache();
             Changed?.Invoke(this);
         }
 
-        private void UpdateCache()
-        {
-            Volume = (double)Amount / (_symbol?.ContractSize ?? 1);
-        }
+        public PositionAccessor Clone() => new PositionAccessor(_symbol, Info);
+
+        public double Price => (double)(Side == OrderInfo.Types.Side.Buy ? Long.Price : Short.Price);
+
+        public OrderInfo.Types.Side Side => Long.Amount > Short.Amount ? OrderInfo.Types.Side.Buy : OrderInfo.Types.Side.Sell;
+
+        public string Id => Info.Id;
+        public bool IsEmpty => Amount == 0;
+        public string Symbol => _symbol.Name;
+        public decimal Amount => Math.Max(Long.Amount, Short.Amount);
+
+        public PositionInfo Info { get; }
+
+        public SideProxy Long { get; } = new SideProxy();
+        public SideProxy Short { get; } = new SideProxy();
+
+        double NetPosition.Volume => (double)Amount / (_symbol?.ContractSize ?? 1);
+        double NetPosition.Margin => Calculator?.CalculateMargin(Info) ?? double.NaN;
+        double NetPosition.Profit => Calculator?.CalculateProfit(Info) ?? double.NaN;
+        double NetPosition.Swap => (double)Info.Swap;
+        double NetPosition.Commission => (double)Info.Commission;
+        OrderSide NetPosition.Side => Side.ToApiEnum();
+        DateTime? NetPosition.Modified => Info.Modified?.ToDateTime();
+
+        public IOrderCalculator Calculator { get; set; }
+
+        internal event Action<PositionAccessor> Changed;
 
         #region Emulator
 
@@ -114,14 +73,15 @@ namespace TickTrader.Algo.Core
             else
                 Short.Increase(amount, price);
 
-            OnChanged();
+            Changed?.Invoke(this);
         }
 
         internal void DecreaseBothSides(decimal byAmount)
         {
             Long.Decrease(byAmount);
             Short.Decrease(byAmount);
-            OnChanged();
+
+            Changed?.Invoke(this);
         }
 
         private static decimal CalculatePositionAvgPrice(IPositionSide position, decimal price2, decimal amount2)
@@ -138,23 +98,6 @@ namespace TickTrader.Algo.Core
                 return price1;
 
             return (price1 * amount1 + price2 * amount2) / (amount1 + amount2);
-        }
-
-        internal Domain.PositionInfo GetEntityCopy()
-        {
-            return new Domain.PositionInfo
-            {
-                Symbol = Symbol,
-                Volume = (double)Amount,
-                Price = Price,
-                Side = Side,
-                Swap = (double)Swap,
-                Commission = (double)Commission,
-                Modified = Modified?.ToTimestamp(),
-                Id = Id,
-                Long = Long,
-                Short = Short,
-            };
         }
 
         #endregion

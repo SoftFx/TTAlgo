@@ -170,7 +170,7 @@ namespace TickTrader.Algo.Core
                 PrintCharges(charges);
         }
 
-        public void AddNetPositionNotification(PositionAccessor pos, SymbolAccessor smbInfo)
+        public void AddNetPositionNotification(NetPosition pos, SymbolAccessor smbInfo)
         {
             if (pos.Volume.E(0))
                 return;

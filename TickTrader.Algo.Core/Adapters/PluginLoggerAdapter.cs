@@ -259,7 +259,7 @@ namespace TickTrader.Algo.Core
             Logger.OnPrintTrade(logEntry.ToString());
         }
 
-        public void NotifyPositionSplitting(PositionAccessor position)
+        public void NotifyPositionSplitting(NetPosition position)
         {
             var logEntry = new StringBuilder();
             logEntry.Append($"Position #{position.Id} was splitted to {position.Side} {position.Volume:F3} {position.Symbol} at price {position.Price}");
