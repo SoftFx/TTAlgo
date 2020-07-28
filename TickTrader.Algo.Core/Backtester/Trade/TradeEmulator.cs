@@ -1077,7 +1077,7 @@ namespace TickTrader.Algo.Core
             var report = _history.Create(_scheduler.UnsafeVirtualTimePoint, order.SymbolInfo, trReason == TradeTransactionReason.Expired ? TradeExecActions.OrderExpired : TradeExecActions.OrderCanceled, trReason);
             report.FillGenericOrderData(_calcFixture, order);
             report.FillAccountSpecificFields(_calcFixture);
-            report.Entity.LeavesQuantity = 0;
+            report.Entity.RemainingQuantity = 0;
             report.Entity.MaxVisibleQuantity = (double?)order.Entity.MaxVisibleAmount;
 
             if (_acc.IsMarginType)
@@ -1376,7 +1376,7 @@ namespace TickTrader.Algo.Core
             tradeReport.FillAccountSpecificFields(_calcFixture);
             tradeReport.FillPosData(position, fillPrice, fromOrder.MarginRateCurrent);
             tradeReport.Entity.PositionOpened = _scheduler.UnsafeVirtualTimePoint;
-            tradeReport.Entity.OpenConversionRate = (double?)fromOrder.MarginRateCurrent;
+            //tradeReport.Entity.OpenConversionRate = (double?)fromOrder.MarginRateCurrent;
 
             //LogTransactionDetails(() => "Final position: " + position.GetBriefInfo(), JournalEntrySeverities.Info, TransactDetails.Create(position.Id, position.Symbol));
 
@@ -1427,11 +1427,11 @@ namespace TickTrader.Algo.Core
 
                 report.Entity.TransactionAmount += (double)balanceMovement;
                 report.Entity.PositionClosed = ExecutionTime;
-                report.Entity.PosOpenPrice = (double)openPrice;
-                report.Entity.ClosePrice = (double)closePrice;
-                report.Entity.CloseQuantity = (double)oneSideClosingAmount;
+                report.Entity.PositionOpenPrice = (double)openPrice;
+                report.Entity.PositionClosePrice = (double)closePrice;
+                report.Entity.PositionCloseQuantity = (double)oneSideClosingAmount;
                 report.Entity.Swap += (double)closeSwap;
-                report.Entity.CloseConversionRate = (double)profitRate;
+                //report.Entity.CloseConversionRate = (double)profitRate;
 
                 //LogTransactionDetails(() => "Position closed: symbol=" + position.Symbol + " amount=" + oneSideClosingAmount + " open=" + openPrice + " close=" + closePrice
                 //                            + " profit=" + profit + " swap=" + closeSwap,

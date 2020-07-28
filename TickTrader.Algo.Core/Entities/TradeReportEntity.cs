@@ -9,37 +9,32 @@ namespace TickTrader.Algo.Core
         public string OrderId { get; set; }
         public string PositionId { get; set; }
         public string PositionById { get; set; }
-        public DateTime OpenTime { get; set; }
         public TradeRecordTypes Type { get; set; }
         public TradeExecActions ActionType { get; set; }
         public string Symbol { get; set; }
         public double OpenQuantity { get; set; }
-        public double OpenPrice { get; set; }
         public double StopLoss { get; set; }
         public double TakeProfit { get; set; }
-        public DateTime CloseTime { get; set; }
-        public double CloseQuantity { get; set; }
-        public double ClosePrice { get; set; }
+        public double PositionCloseQuantity { get; set; }
+        public double PositionClosePrice { get; set; }
         public double RemainingQuantity { get; set; }
         public double Commission { get; set; }
         public string CommissionCurrency { get; set; }
         public double Swap { get; set; }
         public string Comment { get; set; }
-        public double? OpenConversionRate { get; set; }
         public double? OrderLastFillAmount { get; set; }
         public double? OrderFillPrice { get; set; }
         public DateTime TransactionTime { get; set; }
-        public double? PosRemainingPrice { get; set; }
+        public double? PositionRemainingPrice { get; set; }
         public string SrcAssetCurrency { get; set; }
         public string DstAssetCurrency { get; set; }
         public double? SrcAssetMovement { get; set; }
         public double? DstAssetMovement { get; set; }
         public double PositionLeavesQuantity { get; set; }
-        public Domain.OrderInfo.Types.Side TradeRecordSide { get; set; }
-        public Domain.OrderInfo.Types.Type TradeRecordType { get; set; }
+        public Domain.OrderInfo.Types.Side OrderSide { get; set; }
+        public Domain.OrderInfo.Types.Type OrderType { get; set; }
         public double StopPrice { get; set; }
         public double Price { get; set; }
-        public double LeavesQuantity { get; set; }
         public double? MaxVisibleQuantity { get; set; }
         public string Id { get; set; }
         public string TransactionCurrency { get; set; }
@@ -48,66 +43,47 @@ namespace TickTrader.Algo.Core
         public TradeTransactionReason TradeTransactionReason { get; set; }
         public string Tag { get; set; }
         public double PositionQuantity { get; set; }
-        public double PosOpenPrice { get; set; }
-        public Domain.OrderInfo.Types.Type ReqOrderType { get; set; }
+        public double PositionOpenPrice { get; set; }
+        public Domain.OrderInfo.Types.Type RequestedOrderType { get; set; }
         public double? SplitRatio { get; set; }
         public double Tax { get; set; }
         public double? Slippage { get; set; }
         public bool IsEmulatedEntity { get; set; }
         public bool MarketWithSlippage { get; set; }
         public bool ImmediateOrCancel { get; set; }
-        public double? ReqCloseQuantity { get; set; }
-        public double? ReqClosePrice { get; set; }
-        public double? ReqOpenQuantity { get; set; }
-        public double? ReqOpenPrice { get; set; }
+        public double? RequestedCloseQuantity { get; set; }
+        public double? RequestedClosePrice { get; set; }
+        public double? RequestedOpenQuantity { get; set; }
+        public double? RequestedOpenPrice { get; set; }
 
         public int ActionId { get; set; }
 
         #region Aliases
 
+        public double OpenPrice => Price;
+        public DateTime OpenTime => OrderOpened;
+        public DateTime CloseTime => TransactionTime;
         public DateTime ReportTime => TransactionTime;
         public double GrossProfitLoss => TransactionAmount - Swap - Commission;
         public double Balance => AccountBalance;
         public double NetProfitLoss => TransactionAmount;
         public TradeExecActions TradeTransactionReportType => ActionType;
         public double Quantity => OpenQuantity;
-        public double PositionClosePrice => ClosePrice;
         #endregion
 
         #region Unused fields
 
-        public string NextStreamPositionId { get; set; }
-        public double? CloseConversionRate { get; set; }
-        public double AgentCommission { get; set; }
-        public Domain.OrderInfo.Types.Side? PosRemainingSide { get; set; }
+        public Domain.OrderInfo.Types.Side PositionRemainingSide { get; set; }
         public DateTime PositionModified { get; set; }
-        public string CommCurrency { get; set; }
         public DateTime? Expiration { get; set; }
-        public double? UsdToDstAssetConversionRate { get; set; }
-        public double? DstAssetToUsdConversionRate { get; set; }
-        public double? UsdToSrcAssetConversionRate { get; set; }
-        public double? SrcAssetToUsdConversionRate { get; set; }
         public string ProfitCurrency { get; set; }
-        public double? UsdToProfitCurrencyConversionRate { get; set; }
-        public double? ProfitCurrencyToUsdConversionRate { get; set; }
         public string MarginCurrency { get; set; }
-        public double? UsdToMarginCurrencyConversionRate { get; set; }
-        public double? MarginCurrencyToUsdConversionRate { get; set; }
         public double? DstAssetAmount { get; set; }
         public double? SrcAssetAmount { get; set; }
         public DateTime PositionClosed { get; set; }
-        public double PositionCloseRequestedPrice { get; set; }
-        public string ClientId { get; set; }
-        public string MinCommissionCurrency { get; set; }
-        public int? Magic { get; set; }
-        public bool IsReducedCloseCommission { get; set; }
-        public double PositionLastQuantity => CloseQuantity;
-        public double PosOpenReqPrice { get; set; }
         public DateTime PositionOpened { get; set; }
         public DateTime OrderModified { get; set; }
-        public DateTime OrderCreated { get; set; }
-        public bool IsReducedOpenCommission { get; set; }
-        public double? MinCommissionConversionRate { get; set; }
+        public DateTime OrderOpened { get; set; }
 
         #endregion
     }

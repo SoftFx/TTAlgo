@@ -397,7 +397,7 @@ namespace TickTrader.BotTerminal
             OptimizationResultsPage.Stop(tester);
         }
 
-        private void Executor_TradeHistoryUpdated(TradeReportEntity record)
+        private void Executor_TradeHistoryUpdated(TradeReportInfo record)
         {
             var currencies = _client.Currencies;
             var symbols = _testingSymbols.Select(kv => kv.Value).ToDictionary(m => m.Name);

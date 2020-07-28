@@ -214,9 +214,9 @@ namespace TickTrader.Algo.Common.Model
             client.SubscribeTradesResultEndEvent += (c, d) => SetCompleted(d);
             client.SubscribeTradesErrorEvent += (c, d, ex) => SetFailed(d, ex);
 
-            client.DownloadTradesResultEvent += (c, d, r) => ((BlockingChannel<TradeReportEntity>)d).Write(SfxInterop.Convert(r));
-            client.DownloadTradesResultEndEvent += (c, d) => ((BlockingChannel<TradeReportEntity>)d).Close();
-            client.DownloadTradesErrorEvent += (c, d, ex) => ((BlockingChannel<TradeReportEntity>)d).Close(ex);
+            client.DownloadTradesResultEvent += (c, d, r) => ((BlockingChannel<Domain.TradeReportInfo>)d).Write(SfxInterop.Convert(r));
+            client.DownloadTradesResultEndEvent += (c, d) => ((BlockingChannel<Domain.TradeReportInfo>)d).Close();
+            client.DownloadTradesErrorEvent += (c, d, ex) => ((BlockingChannel<Domain.TradeReportInfo>)d).Close(ex);
         }
 
         public static Task ConnectAsync(this FDK.Client.TradeCapture client, string address)
@@ -255,7 +255,7 @@ namespace TickTrader.Algo.Common.Model
         }
 
         public static void DownloadTradesAsync(this FDK.Client.TradeCapture client, TimeDirection timeDirection, DateTime? from, DateTime? to, bool skipCancel,
-            BlockingChannel<TradeReportEntity> stream)
+            BlockingChannel<Domain.TradeReportInfo> stream)
         {
             client.DownloadTradesAsync(stream, timeDirection, from, to, skipCancel);
         }

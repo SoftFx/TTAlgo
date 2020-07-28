@@ -1,5 +1,6 @@
 ﻿using ActorSharp.Lib;
 using Caliburn.Micro;
+using Google.Protobuf.WellKnownTypes;
 using Machinarium.Qnil;
 using NLog;
 using System;
@@ -300,12 +301,12 @@ namespace TickTrader.BotTerminal
             return 0;
         }
 
-        private TransactionReport CreateReportModel(TradeReportEntity tTransaction)
+        private TransactionReport CreateReportModel(TradeReportInfo tTransaction)
         {
             return TransactionReport.Create(_tradeClient.Account.Type.Value, tTransaction, _tradeClient.Account.BalanceDigits, GetSymbolFor(tTransaction));
         }
 
-        private SymbolInfo GetSymbolFor(TradeReportEntity transaction)
+        private SymbolInfo GetSymbolFor(TradeReportInfo transaction)
         {
             SymbolInfo symbolModel = null;
             if (!IsBalanceOperation(transaction))
@@ -319,9 +320,9 @@ namespace TickTrader.BotTerminal
             return symbolModel;
         }
 
-        private bool IsBalanceOperation(TradeReportEntity item)
+        private bool IsBalanceOperation(TradeReportInfo item)
         {
-            return item.TradeTransactionReportType == TradeExecActions.BalanceTransaction;
+            return item.ReportType == TradeReportInfo.Types.ReportType.BalanceTransaction;
         }
 
         public void Close()
@@ -343,18 +344,18 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private bool MatchesCurrentFilter(TradeReportEntity tradeTransaction)
+        private bool MatchesCurrentFilter(TradeReportInfo tradeTransaction)
         {
-            if (_skipCancel && (tradeTransaction.TradeTransactionReportType == TradeExecActions.OrderCanceled
-                || tradeTransaction.TradeTransactionReportType == TradeExecActions.OrderExpired
-                || tradeTransaction.TradeTransactionReportType == TradeExecActions.OrderActivated))
+            if (_skipCancel && (tradeTransaction.ReportType == TradeReportInfo.Types.ReportType.OrderCanceled
+                || tradeTransaction.ReportType == TradeReportInfo.Types.ReportType.OrderExpired
+                || tradeTransaction.ReportType == TradeReportInfo.Types.ReportType.OrderActivated))
                 return false;
             return MatchesCurrentBoundaries(tradeTransaction.CloseTime);
         }
 
-        private bool MatchesCurrentBoundaries(DateTime reportTime)
+        private bool MatchesCurrentBoundaries(Timestamp reportTime)
         {
-            var localTime = reportTime.ToLocalTime();
+            var localTime = reportTime.ToDateTime().ToLocalTime();
 
             return (_currenFrom == null || localTime >= _currenFrom)
                 && (_currenTo == null || localTime < _currenTo);
@@ -435,7 +436,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void OnReport(TradeReportEntity tradeTransaction)
+        private void OnReport(TradeReportInfo tradeTransaction)
         {
             if (_tradeClient.Account.Type.HasValue && MatchesCurrentFilter(tradeTransaction))
                 AddToList(CreateReportModel(tradeTransaction));
@@ -484,7 +485,7 @@ namespace TickTrader.BotTerminal
                 _skipCancel = true;
 
             var periodProp = _viewPropertyStorage.GetProperty(nameof(Period));
-            if (!Enum.TryParse(periodProp?.State, out _period))
+            if (!System.Enum.TryParse(periodProp?.State, out _period))
                 _period = TimePeriod.LastHour;
 
             var fromProp = _viewPropertyStorage.GetProperty(nameof(From));

@@ -402,7 +402,7 @@ namespace TickTrader.Algo.Common.Model
 
         public event Action<Domain.PositionExecReport> PositionReport;
         public event Action<ExecutionReport> ExecutionReport;
-        public event Action<TradeReportEntity> TradeTransactionReport;
+        public event Action<Domain.TradeReportInfo> TradeTransactionReport;
         public event Action<Domain.BalanceOperation> BalanceOperation;
         public event Action<Domain.SymbolInfo[]> SymbolInfo { add { } remove { } }
         public event Action<CurrencyEntity[]> CurrencyInfo { add { } remove { } }
@@ -424,7 +424,7 @@ namespace TickTrader.Algo.Common.Model
                 .ContinueWith(t => t.Result.Select(Convert).ToArray());
         }
 
-        public void GetTradeHistory(BlockingChannel<TradeReportEntity> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders, bool backwards)
+        public void GetTradeHistory(BlockingChannel<Domain.TradeReportInfo> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders, bool backwards)
         {
             var direction = backwards ? TimeDirection.Backward : TimeDirection.Forward;
 
@@ -796,7 +796,7 @@ namespace TickTrader.Algo.Common.Model
             if (record.MarketWithSlippage)
                 result |= Domain.OrderOptions.MarketWithSlippage;
 
-            if (record.MaxVisibleVolume >= 0)
+            if (record.MaxVisibleVolume.HasValue)
                 result |= Domain.OrderOptions.HiddenIceberg;
 
             return result;
@@ -1046,128 +1046,69 @@ namespace TickTrader.Algo.Common.Model
                 fdkTick.TickType == SFX.TickTypes.IndicativeAsk || fdkTick.TickType == SFX.TickTypes.IndicativeBidAsk);
         }
 
-        public static Core.TradeTransactionReason Convert(SFX.TradeTransactionReason reason)
-        {
-            switch (reason)
-            {
-                case SFX.TradeTransactionReason.ClientRequest:
-                    return Core.TradeTransactionReason.ClientRequest;
-                case SFX.TradeTransactionReason.DealerDecision:
-                    return Core.TradeTransactionReason.DealerDecision;
-                case SFX.TradeTransactionReason.DeleteAccount:
-                    return Core.TradeTransactionReason.DeleteAccount;
-                case SFX.TradeTransactionReason.Expired:
-                    return Core.TradeTransactionReason.Expired;
-                case SFX.TradeTransactionReason.PendingOrderActivation:
-                    return Core.TradeTransactionReason.PendingOrderActivation;
-                case SFX.TradeTransactionReason.Rollover:
-                    return Core.TradeTransactionReason.Rollover;
-                case SFX.TradeTransactionReason.StopLossActivation:
-                    return Core.TradeTransactionReason.StopLossActivation;
-                case SFX.TradeTransactionReason.StopOut:
-                    return Core.TradeTransactionReason.StopOut;
-                case SFX.TradeTransactionReason.TakeProfitActivation:
-                    return Core.TradeTransactionReason.TakeProfitActivation;
-                case SFX.TradeTransactionReason.TransferMoney:
-                    return Core.TradeTransactionReason.TransferMoney;
-                case SFX.TradeTransactionReason.Split:
-                    return Core.TradeTransactionReason.Split;
-                case SFX.TradeTransactionReason.Dividend:
-                    return Core.TradeTransactionReason.Dividend;
-                default:
-                    return Core.TradeTransactionReason.None;
-            }
-        }
-
-        public static TradeReportEntity Convert(TradeTransactionReport report)
+        public static Domain.TradeReportInfo Convert(TradeTransactionReport report)
         {
             bool isBalanceTransaction = report.TradeTransactionReportType == TradeTransactionReportType.Credit
                 || report.TradeTransactionReportType == TradeTransactionReportType.BalanceTransaction;
 
-            return new TradeReportEntity()
+            return new Domain.TradeReportInfo()
             {
+                IsEmulated = false,
                 Id = report.Id,
                 OrderId = report.Id,
-                OpenTime = report.OrderCreated,
-                CloseTime = report.TransactionTime,
-                Type = GetRecordType(report),
-                ActionType = Convert(report.TradeTransactionReportType),
+                TransactionReason = Convert(report.TradeTransactionReason),
+                ReportType = Convert(report.TradeTransactionReportType),
                 Symbol = isBalanceTransaction ? report.TransactionCurrency : report.Symbol,
                 TakeProfit = report.TakeProfit,
                 StopLoss = report.StopLoss,
-                OpenPrice = report.Price,
                 Comment = report.Comment,
                 Commission = report.Commission,
-                CommissionCurrency = report.DstAssetCurrency ?? report.TransactionCurrency,
+                CommissionCurrency = report.CommCurrency ?? report.DstAssetCurrency ?? report.TransactionCurrency,
                 OpenQuantity = report.Quantity,
-                CloseQuantity = report.PositionLastQuantity,
-                ClosePrice = report.PositionClosePrice,
+                PositionCloseQuantity = report.PositionLastQuantity,
+                PositionClosePrice = report.PositionClosePrice,
                 Swap = report.Swap,
                 RemainingQuantity = report.LeavesQuantity,
                 AccountBalance = report.AccountBalance,
                 ActionId = report.ActionId,
-                AgentCommission = report.AgentCommission,
-                ClientId = report.ClientId,
-                CloseConversionRate = report.CloseConversionRate,
-                CommCurrency = report.CommCurrency,
                 DstAssetAmount = report.DstAssetAmount,
                 DstAssetCurrency = report.DstAssetCurrency,
                 DstAssetMovement = report.DstAssetMovement,
-                DstAssetToUsdConversionRate = report.DstAssetToUsdConversionRate,
-                Expiration = report.Expiration,
-                ImmediateOrCancel = report.ImmediateOrCancel,
-                IsReducedCloseCommission = report.ReducedCloseCommission,
-                IsReducedOpenCommission = report.ReducedOpenCommission,
-                LeavesQuantity = report.LeavesQuantity,
-                Magic = report.Magic,
+                Expiration = report.Expiration?.ToUniversalTime().ToTimestamp(),
+                OrderOptions = GetOptions(report),
                 MarginCurrency = report.MarginCurrency,
-                MarginCurrencyToUsdConversionRate = report.MarginCurrencyToUsdConversionRate,
-                MarketWithSlippage = report.MarketWithSlippage,
                 MaxVisibleQuantity = report.MaxVisibleQuantity,
-                MinCommissionConversionRate = report.MinCommissionConversionRate,
-                MinCommissionCurrency = report.MinCommissionCurrency,
-                NextStreamPositionId = report.NextStreamPositionId,
-                OpenConversionRate = report.OpenConversionRate,
-                OrderCreated = report.OrderCreated,
+                OrderOpened = report.OrderCreated.ToUniversalTime().ToTimestamp(),
                 OrderFillPrice = report.OrderFillPrice,
                 OrderLastFillAmount = report.OrderLastFillAmount,
-                OrderModified = report.OrderModified,
+                OrderModified = report.OrderModified.ToUniversalTime().ToTimestamp(),
                 PositionById = report.PositionById,
-                PositionClosed = report.PositionClosed,
-                PositionCloseRequestedPrice = report.PositionCloseRequestedPrice,
+                PositionClosed = report.PositionClosed.ToUniversalTime().ToTimestamp(),
                 PositionId = report.PositionId,
                 PositionLeavesQuantity = report.PositionLeavesQuantity,
-                PositionModified = report.PositionModified,
-                PositionOpened = report.PositionOpened,
+                PositionModified = report.PositionModified.ToUniversalTime().ToTimestamp(),
+                PositionOpened = report.PositionOpened.ToUniversalTime().ToTimestamp(),
                 PositionQuantity = report.PositionQuantity,
-                PosOpenPrice = report.PosOpenPrice,
-                PosOpenReqPrice = report.PosOpenReqPrice,
-                PosRemainingPrice = report.PosRemainingPrice,
-                PosRemainingSide = Convert(report.PosRemainingSide),
+                PositionOpenPrice = report.PosOpenPrice,
+                PositionRemainingPrice = report.PosRemainingPrice,
+                PositionRemainingSide = Convert(report.PosRemainingSide),
                 Price = report.Price,
                 ProfitCurrency = report.ProfitCurrency,
-                ProfitCurrencyToUsdConversionRate = report.ProfitCurrencyToUsdConversionRate,
-                ReqClosePrice = report.ReqClosePrice,
-                ReqCloseQuantity = report.ReqCloseQuantity,
-                ReqOpenPrice = report.ReqOpenPrice,
+                RequestedClosePrice = report.ReqClosePrice,
+                RequestedCloseQuantity = report.ReqCloseQuantity,
+                RequestedOpenPrice = report.ReqOpenPrice,
                 SrcAssetAmount = report.SrcAssetAmount,
                 SrcAssetCurrency = report.SrcAssetCurrency,
                 SrcAssetMovement = report.SrcAssetMovement,
-                SrcAssetToUsdConversionRate = report.SrcAssetToUsdConversionRate,
-                TradeRecordSide = Convert(report.OrderSide),
-                TradeRecordType = Convert(report.OrderType),
-                ReqOpenQuantity = report.ReqOpenQuantity,
+                OrderSide = Convert(report.OrderSide),
+                OrderType = Convert(report.OrderType),
+                RequestedOpenQuantity = report.ReqOpenQuantity,
                 StopPrice = report.StopPrice,
                 Tag = report.Tag,
                 TransactionAmount = report.TransactionAmount,
                 TransactionCurrency = report.TransactionCurrency,
-                TransactionTime = report.TransactionTime,
-                UsdToDstAssetConversionRate = report.UsdToDstAssetConversionRate,
-                UsdToMarginCurrencyConversionRate = report.UsdToMarginCurrencyConversionRate,
-                UsdToProfitCurrencyConversionRate = report.UsdToProfitCurrencyConversionRate,
-                UsdToSrcAssetConversionRate = report.UsdToSrcAssetConversionRate,
-                ReqOrderType = Convert(report.ReqOrderType != null ? report.ReqOrderType.Value : report.OrderType),
-                TradeTransactionReason = Convert(report.TradeTransactionReason),
+                TransactionTime = report.TransactionTime.ToUniversalTime().ToTimestamp(),
+                RequestedOrderType = Convert(report.ReqOrderType != null ? report.ReqOrderType.Value : report.OrderType),
                 SplitRatio = report.SplitRatio,
                 Tax = report.Tax,
                 Slippage = report.Slippage,
@@ -1212,22 +1153,56 @@ namespace TickTrader.Algo.Common.Model
             return Api.TradeRecordTypes.Unknown;
         }
 
-        private static Api.TradeExecActions Convert(TradeTransactionReportType type)
+        private static Domain.TradeReportInfo.Types.ReportType Convert(TradeTransactionReportType type)
         {
             switch (type)
             {
-                case TradeTransactionReportType.BalanceTransaction: return Api.TradeExecActions.BalanceTransaction;
-                case TradeTransactionReportType.Credit: return Api.TradeExecActions.Credit;
-                case TradeTransactionReportType.OrderActivated: return Api.TradeExecActions.OrderActivated;
-                case TradeTransactionReportType.OrderCanceled: return Api.TradeExecActions.OrderCanceled;
-                case TradeTransactionReportType.OrderExpired: return Api.TradeExecActions.OrderExpired;
-                case TradeTransactionReportType.OrderFilled: return Api.TradeExecActions.OrderFilled;
-                case TradeTransactionReportType.OrderOpened: return Api.TradeExecActions.OrderOpened;
-                case TradeTransactionReportType.PositionClosed: return Api.TradeExecActions.PositionClosed;
-                case TradeTransactionReportType.PositionOpened: return Api.TradeExecActions.PositionOpened;
-                case TradeTransactionReportType.TradeModified: return Api.TradeExecActions.TradeModified;
-                default: return Api.TradeExecActions.None;
+                case TradeTransactionReportType.BalanceTransaction: return Domain.TradeReportInfo.Types.ReportType.BalanceTransaction;
+                case TradeTransactionReportType.Credit: return Domain.TradeReportInfo.Types.ReportType.Credit;
+                case TradeTransactionReportType.OrderActivated: return Domain.TradeReportInfo.Types.ReportType.OrderActivated;
+                case TradeTransactionReportType.OrderCanceled: return Domain.TradeReportInfo.Types.ReportType.OrderCanceled;
+                case TradeTransactionReportType.OrderExpired: return Domain.TradeReportInfo.Types.ReportType.OrderExpired;
+                case TradeTransactionReportType.OrderFilled: return Domain.TradeReportInfo.Types.ReportType.OrderFilled;
+                case TradeTransactionReportType.OrderOpened: return Domain.TradeReportInfo.Types.ReportType.OrderOpened;
+                case TradeTransactionReportType.PositionClosed: return Domain.TradeReportInfo.Types.ReportType.PositionClosed;
+                case TradeTransactionReportType.PositionOpened: return Domain.TradeReportInfo.Types.ReportType.PositionOpened;
+                case TradeTransactionReportType.TradeModified: return Domain.TradeReportInfo.Types.ReportType.TradeModified;
+                default: return Domain.TradeReportInfo.Types.ReportType.NoType;
             }
+        }
+
+        private static Domain.TradeReportInfo.Types.Reason Convert(SFX.TradeTransactionReason reason)
+        {
+            switch (reason)
+            {
+                case SFX.TradeTransactionReason.ClientRequest: return Domain.TradeReportInfo.Types.Reason.ClientRequest;
+                case SFX.TradeTransactionReason.PendingOrderActivation: return Domain.TradeReportInfo.Types.Reason.PendingOrderActivation;
+                case SFX.TradeTransactionReason.StopOut: return Domain.TradeReportInfo.Types.Reason.StopOut;
+                case SFX.TradeTransactionReason.StopLossActivation: return Domain.TradeReportInfo.Types.Reason.StopLossActivation;
+                case SFX.TradeTransactionReason.TakeProfitActivation: return Domain.TradeReportInfo.Types.Reason.TakeProfitActivation;
+                case SFX.TradeTransactionReason.DealerDecision: return Domain.TradeReportInfo.Types.Reason.DealerDecision;
+                case SFX.TradeTransactionReason.Rollover: return Domain.TradeReportInfo.Types.Reason.Rollover;
+                case SFX.TradeTransactionReason.DeleteAccount: return Domain.TradeReportInfo.Types.Reason.DeleteAccount;
+                case SFX.TradeTransactionReason.Expired: return Domain.TradeReportInfo.Types.Reason.Expired;
+                case SFX.TradeTransactionReason.TransferMoney: return Domain.TradeReportInfo.Types.Reason.TransferMoney;
+                case SFX.TradeTransactionReason.Split: return Domain.TradeReportInfo.Types.Reason.Split;
+                case SFX.TradeTransactionReason.Dividend: return Domain.TradeReportInfo.Types.Reason.Dividend;
+                default: return Domain.TradeReportInfo.Types.Reason.NoReason;
+            }
+        }
+
+        private static Domain.OrderOptions GetOptions(TradeTransactionReport report)
+        {
+            var res = Domain.OrderOptions.None;
+
+            if (report.ImmediateOrCancel)
+                res |= Domain.OrderOptions.ImmediateOrCancel;
+            if (report.MarketWithSlippage)
+                res |= Domain.OrderOptions.MarketWithSlippage;
+            if (report.MaxVisibleQuantity.HasValue)
+                res |= Domain.OrderOptions.HiddenIceberg;
+
+            return res;
         }
 
         private static Api.BookEntry[] ConvertLevel2(List<QuoteEntry> book)

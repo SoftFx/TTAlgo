@@ -35,8 +35,8 @@ namespace TickTrader.Algo.Core
         public double StopLoss => Entity.StopLoss;
         public double TakeProfit => Entity.TakeProfit;
         public DateTime CloseTime => Entity.CloseTime;
-        public double CloseQuantity => Entity.CloseQuantity / _lotSize;
-        public double ClosePrice => Entity.ClosePrice;
+        public double CloseQuantity => Entity.PositionCloseQuantity / _lotSize;
+        public double ClosePrice => Entity.PositionClosePrice;
         public double RemainingQuantity => Entity.RemainingQuantity / _lotSize;
         public double Commission => Entity.Commission;
         public string CommissionCurrency => Entity.CommissionCurrency;
@@ -45,17 +45,17 @@ namespace TickTrader.Algo.Core
         public string Comment => Entity.Comment;
         public double GrossProfitLoss => Entity.GrossProfitLoss;
         public double NetProfitLoss => Entity.NetProfitLoss;
-        public Domain.OrderInfo.Types.Side TradeRecordSide => Entity.TradeRecordSide;
-        OrderSide TradeReport.TradeRecordSide => Entity.TradeRecordSide.ToApiEnum();
-        public Domain.OrderInfo.Types.Type TradeRecordType => Entity.TradeRecordType;
-        OrderType TradeReport.TradeRecordType => Entity.TradeRecordType.ToApiEnum();
+        public Domain.OrderInfo.Types.Side TradeRecordSide => Entity.OrderSide;
+        OrderSide TradeReport.TradeRecordSide => Entity.OrderSide.ToApiEnum();
+        public Domain.OrderInfo.Types.Type TradeRecordType => Entity.OrderType;
+        OrderType TradeReport.TradeRecordType => Entity.OrderType.ToApiEnum();
         public double? MaxVisibleQuantity => Entity.MaxVisibleQuantity;
         public string Tag => Entity.Tag;
         public double? Slippage => Entity.Slippage;
-        public double? ReqCloseQuantity => Entity.ReqCloseQuantity;
-        public double? ReqClosePrice => Entity.ReqClosePrice;
-        public double? ReqOpenQuantity => Entity.ReqOpenQuantity;
-        public double? ReqOpenPrice => Entity.ReqOpenPrice;
+        public double? ReqCloseQuantity => Entity.RequestedCloseQuantity;
+        public double? ReqClosePrice => Entity.RequestedClosePrice;
+        public double? ReqOpenQuantity => Entity.RequestedOpenQuantity;
+        public double? ReqOpenPrice => Entity.RequestedOpenPrice;
         public bool ImmediateOrCancel => Entity.ImmediateOrCancel;
 
         #region Emulation
@@ -75,21 +75,21 @@ namespace TickTrader.Algo.Core
         {
             var order = orderAccessor.Entity;
 
-            Entity.OrderCreated = order.Created ?? DateTime.MinValue;
+            Entity.OrderOpened = order.Created ?? DateTime.MinValue;
             Entity.OrderModified = order.Modified ?? DateTime.MinValue;
             Entity.OrderId = order.Id;
             Entity.ActionId = order.ActionNo;
             //Entity.ParentOrderId = order.ParentOrderId;
             //ClientOrderId = order.ClientOrderId;
-            Entity.TradeRecordType = order.Type;
-            Entity.ReqOrderType = order.InitialType;
+            Entity.OrderType = order.Type;
+            Entity.RequestedOrderType = order.InitialType;
             Entity.OpenQuantity = (double)order.RequestedAmount;
             Entity.RemainingQuantity = (double)order.RemainingAmount;
             //Entity.OrderHiddenAmount = order.HiddenAmount;
             //Entity.OrderMaxVisibleAmount = order.MaxVisibleAmount;
             Entity.Price = order.Price ?? double.NaN;
             Entity.StopPrice = order.StopPrice ?? double.NaN;
-            Entity.TradeRecordSide = order.Side;
+            Entity.OrderSide = order.Side;
             //Entity.SymbolRef = order.SymbolRef;
             //Entity.SymbolPrecision = order.SymbolPrecision;
             Entity.Expiration = order.Expiration;
@@ -115,7 +115,7 @@ namespace TickTrader.Algo.Core
 
             //rates
             //MarginRateInitial = order.MarginRateInitial;
-            Entity.OpenConversionRate = (double?)order.OpenConversionRate;
+            //Entity.OpenConversionRate = (double?)order.OpenConversionRate;
             //Entity.CloseConversionRate =  (double?)order.CloseConversionRate;
 
             //Entity.ReqOpenPrice = order.ReqOpenPrice;
@@ -133,15 +133,15 @@ namespace TickTrader.Algo.Core
         {
             Entity.PositionQuantity = (double)order.Entity.RequestedAmount;
             Entity.PositionLeavesQuantity = (double)order.Entity.RemainingAmount;
-            Entity.CloseQuantity = (double)closeAmount;
+            Entity.PositionCloseQuantity = (double)closeAmount;
             Entity.PositionOpened = order.Entity.PositionCreated;
-            Entity.PosOpenPrice = order.Price;
+            Entity.PositionOpenPrice = order.Price;
             Entity.PositionClosed = closeTime;
-            Entity.ClosePrice = (double)closePrice;
+            Entity.PositionClosePrice = (double)closePrice;
             Entity.PositionModified = order.Modified;
             Entity.PositionById = posById;
-            Entity.ReqClosePrice = (double?)requestPrice;
-            Entity.ReqCloseQuantity = (double?)requestAmount;
+            Entity.RequestedClosePrice = (double?)requestPrice;
+            Entity.RequestedCloseQuantity = (double?)requestAmount;
             return this;
         }
 
@@ -182,8 +182,8 @@ namespace TickTrader.Algo.Core
             {
                 //Entity.PositionQuantity = position.VolumeUnits;
                 Entity.PositionLeavesQuantity = (double)position.Amount;
-                Entity.PosRemainingPrice = position.Price;
-                Entity.PosRemainingSide = position.Side;
+                Entity.PositionRemainingPrice = position.Price;
+                Entity.PositionRemainingSide = position.Side;
                 Entity.PositionModified = position.Modified ?? DateTime.MinValue;
             }
             else
@@ -192,8 +192,8 @@ namespace TickTrader.Algo.Core
                 Entity.PositionLeavesQuantity = 0;
             }
 
-            Entity.PosOpenPrice = openPrice;
-            Entity.OpenConversionRate = openConversionRate;
+            Entity.PositionOpenPrice = openPrice;
+            //Entity.OpenConversionRate = openConversionRate;
 
             return this;
         }
@@ -297,8 +297,8 @@ namespace TickTrader.Algo.Core
                 }
                 else
                 {
-                    Entity.MarginCurrencyToUsdConversionRate = null;
-                    Entity.UsdToMarginCurrencyConversionRate = null;
+                    //Entity.MarginCurrencyToUsdConversionRate = null;
+                    //Entity.UsdToMarginCurrencyConversionRate = null;
                 }
 
                 Entity.MarginCurrency = symbol.MarginCurrency;
@@ -321,8 +321,8 @@ namespace TickTrader.Algo.Core
                 }
                 else
                 {
-                    Entity.ProfitCurrencyToUsdConversionRate = null;
-                    Entity.UsdToProfitCurrencyConversionRate = null;
+                    //Entity.ProfitCurrencyToUsdConversionRate = null;
+                    //Entity.UsdToProfitCurrencyConversionRate = null;
                 }
 
                 Entity.ProfitCurrency = symbol.ProfitCurrency;

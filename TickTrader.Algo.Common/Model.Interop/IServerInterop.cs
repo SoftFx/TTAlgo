@@ -31,12 +31,12 @@ namespace TickTrader.Algo.Common.Model
         Task<Domain.PositionInfo[]> GetPositions();
 
         void GetTradeRecords(BlockingChannel<Domain.OrderInfo> rxStream);
-        void GetTradeHistory(BlockingChannel<TradeReportEntity> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders, bool backwards);
+        void GetTradeHistory(BlockingChannel<Domain.TradeReportInfo> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders, bool backwards);
 
         event Action<Domain.PositionExecReport> PositionReport;
         event Action<ExecutionReport> ExecutionReport;
         //event Action<AccountInfoEventArgs> AccountInfoReceived;
-        event Action<TradeReportEntity> TradeTransactionReport;
+        event Action<Domain.TradeReportInfo> TradeTransactionReport;
         event Action<Domain.BalanceOperation> BalanceOperation;
 
         Task<OrderInteropResult> SendModifyOrder(Domain.ModifyOrderRequest request);

@@ -63,7 +63,6 @@ namespace TickTrader.Algo.Common.Model
                 _connection.FeedProxy.Tick += FeedProxy_Tick;
                 _connection.TradeProxy.ExecutionReport += TradeProxy_ExecutionReport;
                 _connection.TradeProxy.PositionReport += TradeProxy_PositionReport;
-                _connection.TradeProxy.TradeTransactionReport += TradeProxy_TradeTransactionReport;
                 _connection.TradeProxy.BalanceOperation += TradeProxy_BalanceOperation;
             };
 
@@ -74,7 +73,6 @@ namespace TickTrader.Algo.Common.Model
                 _connection.FeedProxy.Tick -= FeedProxy_Tick;
                 _connection.TradeProxy.ExecutionReport -= TradeProxy_ExecutionReport;
                 _connection.TradeProxy.PositionReport -= TradeProxy_PositionReport;
-                _connection.TradeProxy.TradeTransactionReport -= TradeProxy_TradeTransactionReport;
                 _connection.TradeProxy.BalanceOperation -= TradeProxy_BalanceOperation;
 
                 return Stop();
@@ -99,10 +97,6 @@ namespace TickTrader.Algo.Common.Model
         private void TradeProxy_BalanceOperation(Domain.BalanceOperation rep)
         {
             ContextSend(() => _updateQueue.Enqueue(rep));
-        }
-
-        private void TradeProxy_TradeTransactionReport(TradeReportEntity obj)
-        {
         }
 
         public class ControlHandler : BlockingHandler<ClientModel>

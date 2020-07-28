@@ -157,7 +157,7 @@ namespace TickTrader.BotTerminal
 
             if (acctype == AccountInfo.Types.Type.Gross)
             {
-                if (trRep.ActionType == TradeExecActions.PositionClosed)
+                if (trRep.ActionType == TradeReportInfo.Types.ReportType.PositionClosed)
                 {
                     var digits = trRep.PriceDigits;
                     var openPrice = NumberFormat.FormatPrice(trRep.OpenPrice, digits);
@@ -171,7 +171,7 @@ namespace TickTrader.BotTerminal
             }
             else if (acctype == AccountInfo.Types.Type.Net)
             {
-                if (trRep.ActionType == TradeExecActions.OrderFilled)
+                if (trRep.ActionType == TradeReportInfo.Types.ReportType.OrderFilled)
                 {
                     var digits = trRep.PriceDigits;
                     var openPrice = NumberFormat.FormatPrice(trRep.OpenPrice, digits);

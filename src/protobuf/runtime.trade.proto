@@ -256,3 +256,101 @@ message TradeResultInfo {
     OrderExecReport.CmdResultCode result_code = 1;
     OrderInfo resulting_order = 2;
 }
+
+message TradeReportInfo {
+    enum ReportType {
+        NO_TYPE = 0;
+        ORDER_OPENED = 1;
+        ORDER_CANCELED = 2;
+        ORDER_EXPIRED = 3;
+        ORDER_FILLED = 4;
+        POSITION_CLOSED = 5;
+        BALANCE_TRANSACTION = 6;
+        CREDIT = 7;
+        POSITION_OPENED = 8;
+        ORDER_ACTIVATED = 9;
+        TRADE_MODIFIED = 10;
+    }
+
+    enum Reason {
+        NO_REASON = 0;
+        CLIENT_REQUEST = 1;
+        PENDING_ORDER_ACTIVATION = 2;
+        STOP_OUT = 3;
+        STOP_LOSS_ACTIVATION = 4;
+        TAKE_PROFIT_ACTIVATION = 5;
+        DEALER_DECISION = 6;
+        ROLLOVER = 7;
+        DELETE_ACCOUNT = 8;
+        EXPIRED = 9;
+        TRANSFER_MONEY = 10;
+        SPLIT = 11;
+        DIVIDEND = 12;
+    }
+
+    string id = 1;
+    bool is_emulated = 2;
+
+    ReportType report_type = 3;
+    Reason transaction_reason = 4;
+    int32 action_id = 5;
+
+    google.protobuf.StringValue order_id = 6;
+    string symbol = 7;
+    OrderInfo.Side order_side = 8;
+    OrderInfo.Type order_type = 9;
+    double open_quantity = 10;
+    google.protobuf.DoubleValue max_visible_quantity = 11;
+    double remaining_quantity = 12;
+    double price = 13;
+    double stop_price = 14;
+    double stop_loss = 15;
+    double take_profit = 16;
+    double swap = 17;
+    double commission = 18;
+    google.protobuf.StringValue commission_currency = 19;
+    google.protobuf.StringValue comment = 20;
+    google.protobuf.StringValue tag = 21;
+    google.protobuf.Timestamp order_opened = 22;
+    google.protobuf.Timestamp order_modified = 23;
+    google.protobuf.Timestamp expiration = 24;
+    google.protobuf.DoubleValue slippage = 25;
+    int32 order_options_bitmask = 26;
+    google.protobuf.DoubleValue order_last_fill_amount = 27;
+    google.protobuf.DoubleValue order_fill_price = 28;
+    google.protobuf.DoubleValue split_ratio = 29;
+    double tax = 30;
+
+    google.protobuf.StringValue position_id = 31;
+    google.protobuf.StringValue position_by_id = 32;
+    double position_quantity = 33;
+    double position_open_price = 34;
+    double position_close_price = 35;
+    double position_close_quantity = 36;
+    OrderInfo.Side position_remaining_side = 37;
+    double position_leaves_quantity = 38;
+    google.protobuf.DoubleValue position_remaining_price = 39;
+    google.protobuf.Timestamp position_opened = 40;
+    google.protobuf.Timestamp position_modified = 41;
+    google.protobuf.Timestamp position_closed = 42;
+
+    OrderInfo.Type requested_order_type = 43;
+    google.protobuf.DoubleValue requested_open_price = 44;
+    google.protobuf.DoubleValue requested_open_quantity = 45;
+    google.protobuf.DoubleValue requested_close_price = 46;
+    google.protobuf.DoubleValue requested_close_quantity = 47;
+
+    google.protobuf.Timestamp transaction_time = 48;
+    double account_balance = 49;
+    double transaction_amount = 50;
+    google.protobuf.StringValue transaction_currency = 51;
+    google.protobuf.StringValue profit_currency = 52;
+    google.protobuf.StringValue margin_currency = 53;
+
+    google.protobuf.StringValue src_asset_currency = 54;
+    google.protobuf.StringValue dst_asset_currency = 55;
+    google.protobuf.DoubleValue src_asset_movement = 56;
+    google.protobuf.DoubleValue dst_asset_movement = 57;
+    google.protobuf.DoubleValue dst_asset_amount = 58;
+    google.protobuf.DoubleValue src_asset_amount = 59;
+}

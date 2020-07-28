@@ -56,7 +56,7 @@ namespace TickTrader.Algo.Core
 
         public event Action<Domain.UnitLogRecord> LogUpdated;
         public event Action<TesterTradeTransaction> TradesUpdated;
-        public event Action<TradeReportEntity> TradeHistoryUpdated;
+        public event Action<Domain.TradeReportInfo> TradeHistoryUpdated;
         public event Action<RateUpdate> SymbolRateUpdated;
         public event Action<BarEntity, string, SeriesUpdateActions> ChartBarUpdated;
         public event Action<BarEntity, SeriesUpdateActions> EquityUpdated;
@@ -215,9 +215,9 @@ namespace TickTrader.Algo.Core
         {
             //if (update is PluginLogRecord)
             //    LogUpdated?.Invoke((PluginLogRecord)update);
-            if (update is TradeReportEntity)
-                TradeHistoryUpdated?.Invoke((TradeReportEntity)update);
-            else if (update is TesterTradeTransaction)
+            //if (update is TradeReportEntity)
+            //    TradeHistoryUpdated?.Invoke((TradeReportEntity)update);
+            if (update is TesterTradeTransaction)
                 TradesUpdated?.Invoke((TesterTradeTransaction)update);
             else if (update is RateUpdate)
                 SymbolRateUpdated?.Invoke((RateUpdate)update);
