@@ -53,7 +53,7 @@ namespace TickTrader.Algo.Core.Calc
             {
                 if (_dblMarginAmount > 0)
                 {
-                    Margin = Calculator.CalculateMargin(_dblMarginAmount, AccountData.Leverage, Type, Side, IsHidden, out var error);
+                    Margin = Calculator.CalculateMargin(_dblMarginAmount, Type, Side, IsHidden, out var error);
                     if (error != CalcErrorCodes.None)
                         ErrorCount++;
                 }

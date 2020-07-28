@@ -1,19 +1,16 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Core.Calc;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
     public class PositionAccessor : NetPosition, IPositionInfo
     {
-        private readonly SideProxy _buy = new SideProxy();
-        private readonly SideProxy _sell = new SideProxy();
         private readonly Symbol _symbol;
-        private readonly double _lotSize;
+        //private readonly double _lotSize;
         private readonly int _leverage;
-        private double _volUnitsSlim;
+        //private double _volUnitsSlim;
 
         internal PositionAccessor(Domain.PositionInfo info, int leverage, Func<string, Symbol> symbolProvider)
             : this(info, symbolProvider(info.Symbol), leverage)
@@ -23,7 +20,7 @@ namespace TickTrader.Algo.Core
         internal PositionAccessor(Symbol symbol, int leverage)
         {
             _symbol = symbol;
-            _lotSize = symbol?.ContractSize ?? 1;
+            //_lotSize = symbol?.ContractSize ?? 1;
             _leverage = leverage;
         }
 
@@ -36,8 +33,8 @@ namespace TickTrader.Algo.Core
         internal PositionAccessor(PositionAccessor src)
             : this(src._symbol, src._leverage)
         {
-            _buy.Update(src._buy.Amount, src._buy.Price);
-            _sell.Update(src._sell.Amount, src._sell.Price);
+            Long.Update(src.Long.Amount, src.Long.Price);
+            Short.Update(src.Short.Amount, src.Short.Price);
 
             Volume = src.Volume;
             Swap = src.Swap;
@@ -52,13 +49,13 @@ namespace TickTrader.Algo.Core
         {
             if (info.Side == Domain.OrderInfo.Types.Side.Buy)
             {
-                _buy.Update((decimal)info.Volume, (decimal)info.Price);
-                _sell.Update(0, 0);
+                Long.Update((decimal)info.Volume, (decimal)info.Price);
+                Short.Update(0, 0);
             }
             else
             {
-                _buy.Update(0, 0);
-                _sell.Update((decimal)info.Volume, (decimal)info.Price);
+                Long.Update(0, 0);
+                Short.Update((decimal)info.Volume, (decimal)info.Price);
             }
 
             Swap = (decimal)info.Swap;
@@ -78,35 +75,38 @@ namespace TickTrader.Algo.Core
             return new PositionAccessor(this);
         }
 
-        internal bool IsBuySided => _buy.Amount > _sell.Amount;
+        internal bool IsBuySided => Long.Amount > Short.Amount;
 
         public double Volume { get; private set; }
         public decimal Commission { get; internal set; }
-        public double Price => (double)(IsBuySided ? _buy.Price : _sell.Price);
+        public double Price => (double)(IsBuySided ? Long.Price : Short.Price);
         public double SettlementPrice { get; internal set; }
         public Domain.OrderInfo.Types.Side Side => IsBuySided ? Domain.OrderInfo.Types.Side.Buy : Domain.OrderInfo.Types.Side.Sell;
         OrderSide NetPosition.Side => Side.ToApiEnum();
         public decimal Swap { get; internal set; }
         public string Symbol => _symbol.Name;
-        public double Margin => CalculateMargin();
-        public double Profit => CalculateProfit();
+        public double Margin => Calculator?.CalculateMargin(this) ?? double.NaN;
+        public double Profit => Calculator?.CalculateProfit(this) ?? double.NaN;
         public DateTime? Modified { get; set; }
         public string Id { get; set; }
-        public bool IsEmpty => VolumeUnits == 0;
+        public bool IsEmpty => Amount == 0;
         public IOrderCalculator Calculator { get; set; }
 
-        public decimal VolumeUnits => Math.Max(_buy.Amount, _sell.Amount);
-        public SideProxy Long => _buy;
-        public SideProxy Short => _sell;
+        public decimal Amount => Math.Max(Long.Amount, Short.Amount);
+        public SideProxy Long { get; } = new SideProxy();
+        public SideProxy Short { get; } = new SideProxy();
 
         double NetPosition.Swap => (double)Swap;
         double NetPosition.Commission => (double)Commission;
 
-        //decimal IPositionModel.Commission => (decimal)Commission;
-        //decimal IPositionModel.AgentCommission => 0;
-        //decimal IPositionModel.Swap => Swap;
-        IPositionSide IPositionInfo.Long => _buy;
-        IPositionSide IPositionInfo.Short => _sell;
+        IPositionSide IPositionInfo.Long => Long;
+        IPositionSide IPositionInfo.Short => Short;
+
+        decimal IMarginProfitCalc.RemainingAmount => Amount;
+
+        public OrderInfo.Types.Type Type => OrderInfo.Types.Type.Position;
+
+        bool IMarginProfitCalc.IsHidden => false;
 
         internal event Action<PositionAccessor> Changed;
 
@@ -118,8 +118,7 @@ namespace TickTrader.Algo.Core
 
         private void UpdateCache()
         {
-            _volUnitsSlim = (double)VolumeUnits;
-            Volume = _volUnitsSlim / _lotSize;
+            Volume = (double)Amount / (_symbol?.ContractSize ?? 1);
         }
 
         #region Emulator
@@ -162,7 +161,7 @@ namespace TickTrader.Algo.Core
             return new Domain.PositionInfo
             {
                 Symbol = Symbol,
-                Volume = _volUnitsSlim,
+                Volume = (double)Amount,
                 Price = Price,
                 Side = Side,
                 Swap = (double)Swap,
@@ -203,32 +202,6 @@ namespace TickTrader.Algo.Core
             public decimal Price { get; private set; }
             public decimal Margin { get; set; }
             public decimal Profit { get; set; }
-        }
-
-        private double CalculateMargin()
-        {
-            var calc = Calculator;
-            if (calc != null)
-            {
-                var margin = calc.CalculateMargin(_volUnitsSlim, _leverage, Domain.OrderInfo.Types.Type.Position, Side, false, out var error);
-                if (error != CalcErrorCodes.None)
-                    return double.NaN;
-                return margin;
-            }
-            return double.NaN;
-        }
-
-        private double CalculateProfit()
-        {
-            var calc = Calculator;
-            if (calc != null)
-            {
-                var prof = calc.CalculateProfit(Price, _volUnitsSlim, Side, out _, out var error);
-                if (error != CalcErrorCodes.None)
-                    return double.NaN;
-                return prof;
-            }
-            return double.NaN;
         }
     }
 }

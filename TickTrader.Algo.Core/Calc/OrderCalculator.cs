@@ -8,14 +8,17 @@ namespace TickTrader.Algo.Core.Calc
     {
         //private readonly ConversionManager conversionMap;
         private readonly Converter<int, int> _leverageProvider;
+        private readonly int _leverage = 0;
 
-        internal OrderCalculator(SymbolMarketNode tracker, ConversionManager conversion, string accountCurrency)
+        internal OrderCalculator(SymbolMarketNode tracker, ConversionManager conversion, IMarginAccountInfo2 account)
         {
+            _leverage = account.Leverage;
+
             RateTracker = tracker;
 
-            PositiveProfitConversionRate = conversion.GetPositiveProfitFormula(tracker, accountCurrency);
-            NegativeProfitConversionRate = conversion.GetNegativeProfitFormula(tracker, accountCurrency);
-            MarginConversionRate = conversion.GetMarginFormula(tracker, accountCurrency);
+            PositiveProfitConversionRate = conversion.GetPositiveProfitFormula(tracker, account.BalanceCurrency);
+            NegativeProfitConversionRate = conversion.GetNegativeProfitFormula(tracker, account.BalanceCurrency);
+            MarginConversionRate = conversion.GetMarginFormula(tracker, account.BalanceCurrency);
 
             SymbolInfo = tracker.SymbolInfo;
             SymbolAccessor = tracker.SymbolInfo as SymbolAccessor;
@@ -66,19 +69,26 @@ namespace TickTrader.Algo.Core.Calc
         private double _stopMarginFactor;
         private double _hiddenMarginFactor;
 
-        public double CalculateMargin(IOrderCalcInfo order, int leverage, out CalcErrorCodes error)
+        public double CalculateMargin(IMarginProfitCalc info)
         {
-            return CalculateMargin((double)order.RemainingAmount, leverage, order.Type, order.Side, order.IsHidden, out error);
+            var profit = CalculateMargin((double)info.RemainingAmount, info.Type, info.Side, info.IsHidden, out var error);
+
+            return error == CalcErrorCodes.None ? profit : double.NaN;
         }
 
-        public double CalculateMargin(double orderVolume, int leverage, Domain.OrderInfo.Types.Type ordType, Domain.OrderInfo.Types.Side side, bool isHidden, out CalcErrorCodes error)
+        public double CalculateMargin(IOrderCalcInfo order, out CalcErrorCodes error)
+        {
+            return CalculateMargin((double)order.RemainingAmount, order.Type, order.Side, order.IsHidden, out error);
+        }
+
+        public double CalculateMargin(double orderVolume, Domain.OrderInfo.Types.Type ordType, Domain.OrderInfo.Types.Side side, bool isHidden, out CalcErrorCodes error)
         {
             error = MarginConversionRate.ErrorCode;
 
             if (error != CalcErrorCodes.None)
                 return 0;
 
-            double lFactor = _leverageProvider(leverage);
+            double lFactor = _leverageProvider(_leverage);
             double marginFactor = GetMarginFactor(ordType, isHidden);
             double marginRaw = orderVolume * marginFactor / lFactor;
 
@@ -105,25 +115,16 @@ namespace TickTrader.Algo.Core.Calc
 
         #region Profit
 
-        public double CalculateProfit(IOrderCalcInfo order, double amount, out double closePrice, out CalcErrorCodes error)
+        public double CalculateProfit(IMarginProfitCalc info)
         {
-            return CalculateProfit(order.Price.Value, amount, order.Side, out closePrice, out error);
-        }
+            var profit = CalculateProfit(info.Price, (double)info.RemainingAmount, info.Side, out var error);
 
-        public double CalculateProfit(IOrderCalcInfo order, out CalcErrorCodes error)
-        {
-            return CalculateProfit(order.Price.Value, (double)order.RemainingAmount, order.Side, out error);
-        }
-
-        public double CalculateProfit(IOrderCalcInfo order, out double closePrice, out CalcErrorCodes error)
-        {
-            return CalculateProfit(order.Price.Value, (double)order.RemainingAmount, order.Side, out closePrice, out error);
+            return error == CalcErrorCodes.None ? profit : double.NaN;
         }
 
         public double CalculateProfit(double openPrice, double volume, Domain.OrderInfo.Types.Side side, out CalcErrorCodes error)
         {
-            double closePrice;
-            return CalculateProfit(openPrice, volume, side, out closePrice, out error);
+            return CalculateProfit(openPrice, volume, side, out _, out error);
         }
 
         public double CalculateProfit(double openPrice, double volume, Domain.OrderInfo.Types.Side side, out double closePrice, out CalcErrorCodes error)
@@ -139,18 +140,7 @@ namespace TickTrader.Algo.Core.Calc
                     return 0;
             }
 
-            double conversionRate;
-            return CalculateProfitInternal(openPrice, closePrice, volume, side, out conversionRate, out error);
-        }
-
-        public double CalculateProfitFixedPrice(IOrderCalcInfo order, double amount, double closePrice, out CalcErrorCodes error)
-        {
-            return CalculateProfitInternal(order.Price.Value, closePrice, amount, order.Side, out _, out error);
-        }
-
-        public double CalculateProfitFixedPrice(double openPrice, double volume, double closePrice, Domain.OrderInfo.Types.Side side, out CalcErrorCodes error)
-        {
-            return CalculateProfitFixedPrice(openPrice, closePrice, volume, side, out _, out error);
+            return CalculateProfitInternal(openPrice, closePrice, volume, side, out _, out error);
         }
 
         public double CalculateProfitFixedPrice(double openPrice, double volume, double closePrice, Domain.OrderInfo.Types.Side side, out double conversionRate, out CalcErrorCodes error)

@@ -15,7 +15,7 @@ namespace TickTrader.BotTerminal
         }
 
         public override string Id => _position.Id;
-        public override double Profit => _position?.Calculator?.CalculateProfit(Price.Value.Value, Volume.Value.Value, Side.Value, out _, out _) ?? 0;
+        public override double Profit => _position?.Calculator?.CalculateProfit(_position) ?? 0;
 
         protected override void Update()
         {

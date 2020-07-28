@@ -41,7 +41,10 @@ namespace TickTrader.BotTerminal
             NetProfit = _varContext.AddProperty(displayConverter: _profitPrecision);
 
             if (symbol != null) // server misconfiguration can cause unexisting symbols
+            {
                 symbol.RateUpdated += RateUpdate;
+                RateUpdate(_symbol);
+            }
         }
 
         public abstract string Id { get; }

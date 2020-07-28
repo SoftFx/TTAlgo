@@ -117,7 +117,7 @@ namespace TickTrader.Algo.Core
             {
                 OrderCmdResultCodes error = OrderCmdResultCodes.UnknownError;
 
-                var calc = _calcFixture.GetCalculator(request.Symbol, _calcFixture.Acc.BalanceCurrency);
+                var calc = _calcFixture.GetCalculator(request.Symbol, _calcFixture.Acc);
                 var smbMetadata = calc.SymbolAccessor;
 
                 var roundedVolumeLots = RoundVolume(request.Volume, smbMetadata);
@@ -1628,7 +1628,10 @@ namespace TickTrader.Algo.Core
             }
             else
             {
-                profit = RoundMoney(fCalc.CalculateProfit(position.Price, (double)actualCloseAmount, position.Side, out closePrice, out var error), _calcFixture.RoundingDigits);
+                // calculator must be another
+                // profit = RoundMoney(fCalc.CalculateProfit(position.Price, (double)actualCloseAmount, position.Side, out var error), _calcFixture.RoundingDigits);
+                profit = 0;
+                closePrice = 0; // can't calculate close price
             }
 
             //position.CloseConversionRate = profit >= 0 ? fCalc.PositiveProfitConversionRate.Value : fCalc.NegativeProfitConversionRate.Value;
@@ -1849,7 +1852,7 @@ namespace TickTrader.Algo.Core
                 {
                     using (JournalScope())
                     {
-                        OpenOrder(pos.Calculator, Domain.OrderInfo.Types.Type.Market, pos.Side.Revert(), pos.VolumeUnits, null, null, null, null, null, "",
+                        OpenOrder(pos.Calculator, Domain.OrderInfo.Types.Type.Market, pos.Side.Revert(), pos.Amount, null, null, null, null, null, "",
                             Domain.OrderExecOptions.None, null, null, OpenOrderOptions.SkipDealing | OpenOrderOptions.FakeOrder);
                     }
                 }

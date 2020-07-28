@@ -109,7 +109,7 @@ namespace TickTrader.Algo.Core
         #region IOrderModel2
 
         public decimal RemainingAmount => _calcInfo.RemainingAmount;
-        double? IOrderCalcInfo.Price => _calcInfo.Price;
+        //double? IOrderCalcInfo.Price => _calcInfo.Price;
         double? IOrderCalcInfo.StopPrice => _calcInfo.StopPrice;
         decimal? IOrderCalcInfo.Swap => _calcInfo.Swap;
         decimal? IOrderCalcInfo.Commission => _calcInfo.Commission;
@@ -193,34 +193,9 @@ namespace TickTrader.Algo.Core
             return $"#{Id} {Symbol} {Side} {_apiOrder.RemainingVolume}";
         }
 
-        private double CalculateMargin()
-        {
-            var calc = Calculator;
-            if (calc != null)
-            {
-                var margin = calc.CalculateMargin((double)RemainingAmount, _leverage, Type, Side, IsHidden, out var error);
-                if (error != CalcErrorCodes.None)
-                    return double.NaN;
-                return margin;
-            }
-            return double.NaN;
-        }
+        private double CalculateMargin() => Calculator?.CalculateMargin(this) ?? double.NaN;
 
-        private double CalculateProfit()
-        {
-            if (Type != Domain.OrderInfo.Types.Type.Position)
-                return double.NaN;
-
-            var calc = Calculator;
-            if (calc != null)
-            {
-                var prof = calc.CalculateProfit(Price, (double)RemainingAmount, Side, out _, out var error);
-                if (error != CalcErrorCodes.None)
-                    return double.NaN;
-                return prof;
-            }
-            return double.NaN;
-        }
+        private double CalculateProfit() => Type == OrderInfo.Types.Type.Position ? Calculator.CalculateProfit(this) : double.NaN;
 
         private static bool IsHiddenOrder(decimal? maxVisibleVolume)
         {
@@ -284,13 +259,12 @@ namespace TickTrader.Algo.Core
             #endregion
 
             #region IOrderCalcInfo
-
-            decimal IOrderCalcInfo.RemainingAmount => (decimal)_info.RemainingAmount;
-            double? IOrderCalcInfo.Price => _info.Price;
             double? IOrderCalcInfo.StopPrice => _info.StopPrice;
             decimal? IOrderCalcInfo.Commission => (decimal)_info.Commission;
             decimal? IOrderCalcInfo.Swap => (decimal)_info.Swap;
-            bool IOrderCalcInfo.IsHidden => _info.IsHidden();
+            bool IMarginProfitCalc.IsHidden => _info.IsHidden();
+
+            decimal IMarginProfitCalc.RemainingAmount => (decimal)_info.RemainingAmount;
 
             #endregion
         }
@@ -388,6 +362,8 @@ namespace TickTrader.Algo.Core
             public OrderInfo.Types.Side Side { get; internal set; }
 
             public double? Price { get; internal set; }
+            double IMarginProfitCalc.Price => Price.Value;
+
             public double? StopPrice { get; internal set; }
 
             public double? StopLoss { get; internal set; }
@@ -456,7 +432,6 @@ namespace TickTrader.Algo.Core
             double Order.LastFillVolume => (double)LastFillAmount / _lotSize;
 
             Api.OrderOptions Order.Options => Options.ToApiEnum();
-
             #endregion
         }
     }

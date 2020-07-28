@@ -164,7 +164,7 @@ namespace TickTrader.Algo.Core.Calc
         private void CreateCalculator()
         {
             _calc?.RemoveUsage();
-            _calc = _market.GetCalculator(Symbol, AccInfo.BalanceCurrency);
+            _calc = _market.GetCalculator(Symbol, AccInfo);
             _calc.AddUsage();
 
             var hedge = _calc.SymbolInfo != null ? _calc.SymbolInfo.MarginHedged : 0.5;

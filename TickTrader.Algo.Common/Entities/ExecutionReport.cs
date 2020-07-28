@@ -46,6 +46,7 @@ namespace TickTrader.Algo.Common.Model
         public Domain.OrderInfo.Types.Type Type { get; set; }
         public Domain.OrderInfo.Types.Side Side { get; set; }
         public double? Price { get; set; }
+        double IMarginProfitCalc.Price => Price ?? 0;
         public double Balance { get; set; }
         public double? RequestedOpenPrice { get; set; }
 
@@ -55,7 +56,7 @@ namespace TickTrader.Algo.Common.Model
 
         public bool IsHidden => MaxVisibleAmount.HasValue && MaxVisibleAmount.Value < 1e-9;
 
-        decimal IOrderCalcInfo.RemainingAmount => (decimal)LeavesVolume;
+        decimal IMarginProfitCalc.RemainingAmount => (decimal)LeavesVolume;
 
         decimal? IOrderCalcInfo.Commission => (decimal?)Commission;
 

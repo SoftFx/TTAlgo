@@ -93,10 +93,10 @@ namespace TickTrader.Algo.Core.Calc
         public bool HasSufficientMarginToOpenOrder(IOrderInfo order, out double newAccountMargin, out CalcErrorCodes error)
         {
             var netting = GetSymbolStats(order.Symbol);
-            var calc = netting?.Calc ?? _market.GetCalculator(order.Symbol, Info.BalanceCurrency);
+            var calc = netting?.Calc ?? _market.GetCalculator(order.Symbol, Info);
             using (calc.UsageScope())
             {
-                var orderMargin = calc.CalculateMargin((double)order.RemainingAmount, Info.Leverage, order.Type, order.Side, order.IsHidden, out error);
+                var orderMargin = calc.CalculateMargin((double)order.RemainingAmount, order.Type, order.Side, order.IsHidden, out error);
                 return HasSufficientMarginToOpenOrder(orderMargin, netting, order.Side, out newAccountMargin);
             }
         }
@@ -105,10 +105,10 @@ namespace TickTrader.Algo.Core.Calc
             out double newAccountMargin, out CalcErrorCodes error)
         {
             var netting = GetSymbolStats(symbol);
-            var calc = netting?.Calc ?? _market.GetCalculator(symbol, Info.BalanceCurrency);
+            var calc = netting?.Calc ?? _market.GetCalculator(symbol, Info);
             using (calc.UsageScope())
             {
-                var orderMargin = calc.CalculateMargin(orderAmount, Info.Leverage, type, side, isHidden, out error);
+                var orderMargin = calc.CalculateMargin(orderAmount, type, side, isHidden, out error);
                 if (error != CalcErrorCodes.None)
                 {
                     newAccountMargin = 0;

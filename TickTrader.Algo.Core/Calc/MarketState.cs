@@ -54,9 +54,9 @@ namespace TickTrader.Algo.Core.Calc
         public event Action SymbolsChanged;
         public event Action CurrenciesChanged;
 
-        internal OrderCalculator GetCalculator(string symbol, string balanceCurrency)
+        internal OrderCalculator GetCalculator(string symbol, IMarginAccountInfo2 account)
         {
-            var key = Tuple.Create(symbol, balanceCurrency);
+            var key = Tuple.Create(symbol, account.BalanceCurrency);
 
             OrderCalculator calculator;
             if (!_orderCalculators.TryGetValue(key, out calculator))
@@ -64,7 +64,7 @@ namespace TickTrader.Algo.Core.Calc
                 var tracker = GetSymbolNodeInternal(symbol);
                 if (tracker != null)
                 {
-                    calculator = new OrderCalculator(tracker, Conversion, balanceCurrency);
+                    calculator = new OrderCalculator(tracker, Conversion, account);
                     _orderCalculators.Add(key, calculator);
                 }
             }

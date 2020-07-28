@@ -181,7 +181,7 @@ namespace TickTrader.Algo.Core
             if (!position.IsEmpty)
             {
                 //Entity.PositionQuantity = position.VolumeUnits;
-                Entity.PositionLeavesQuantity = (double)position.VolumeUnits;
+                Entity.PositionLeavesQuantity = (double)position.Amount;
                 Entity.PosRemainingPrice = position.Price;
                 Entity.PosRemainingSide = position.Side;
                 Entity.PositionModified = position.Modified ?? DateTime.MinValue;

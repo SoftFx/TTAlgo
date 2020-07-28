@@ -39,11 +39,13 @@ namespace TickTrader.Algo.Domain
 
         public ISymbolInfo SymbolInfo { get; private set; }
 
-        decimal IOrderCalcInfo.RemainingAmount => (decimal)RemainingAmount;
+        decimal IMarginProfitCalc.RemainingAmount => (decimal)RemainingAmount;
 
         decimal? IOrderCalcInfo.Commission => (decimal)Commission;
 
         decimal? IOrderCalcInfo.Swap => (decimal)Swap;
+
+        double IMarginProfitCalc.Price => Price ?? 0;
 
         public event Action<OrderEssentialsChangeArgs> EssentialsChanged;
         public event Action<OrderPropArgs<decimal>> SwapChanged;
@@ -176,16 +178,20 @@ namespace TickTrader.Algo.Domain
         string UserTag { get; }
     }
 
-    public interface IOrderCalcInfo
+    public interface IOrderCalcInfo : IMarginProfitCalc
     {
         string Symbol { get; }
-        double? Price { get; }
         double? StopPrice { get; }
+        decimal? Commission { get; }
+        decimal? Swap { get; }
+    }
+
+    public interface IMarginProfitCalc
+    {
+        double Price { get; }
         Domain.OrderInfo.Types.Side Side { get; }
         Domain.OrderInfo.Types.Type Type { get; }
         decimal RemainingAmount { get; }
-        decimal? Commission { get; }
-        decimal? Swap { get; }
         bool IsHidden { get; }
     }
 
