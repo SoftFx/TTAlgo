@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Calc;
 using TickTrader.Algo.Domain;
@@ -304,7 +305,7 @@ namespace TickTrader.Algo.Core
         public AccountInfo.Types.Type AccountingType => Type;
         //decimal IMarginAccountInfo2.Balance => Balance;
         IEnumerable<IOrderInfo> IAccountInfo2.Orders => (IEnumerable<OrderAccessor>)Orders.OrderListImpl;
-        IEnumerable<IPositionInfo> IMarginAccountInfo2.Positions => NetPositions;
+        IEnumerable<IPositionInfo> IMarginAccountInfo2.Positions => NetPositions.Select(u => (IPositionInfo)u.Info);
         IEnumerable<IAssetInfo> ICashAccountInfo2.Assets => Assets;
 
         //void BL.IAccountInfo.LogInfo(string message)
@@ -417,7 +418,7 @@ namespace TickTrader.Algo.Core
         {
             var pos = NetPositions.GetOrCreatePosition(symbol, idGenerator);
             pos.Increase(amount, price, side);
-            OnPositionUpdated(pos);
+            OnPositionUpdated(pos.Info);
         }
 
         internal void IncreaseAsset(string currency, decimal byAmount)

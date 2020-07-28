@@ -5,37 +5,33 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    public class PositionAccessor : NetPosition, IPositionInfo
+    public sealed class PositionAccessor : NetPosition
     {
         private readonly Symbol _symbol;
-        //private readonly double _lotSize;
-        private readonly int _leverage;
-        //private double _volUnitsSlim;
 
-        internal PositionAccessor(Domain.PositionInfo info, int leverage, Func<string, Symbol> symbolProvider)
-            : this(info, symbolProvider(info.Symbol), leverage)
-        {
-        }
+        public PositionInfo Info { get; }
 
-        internal PositionAccessor(Symbol symbol, int leverage)
+        internal PositionAccessor(Domain.PositionInfo info, Func<string, Symbol> symbolProvider)
+            : this(symbolProvider(info.Symbol), info) { }
+
+        internal PositionAccessor(Symbol symbol, Domain.PositionInfo info = null)
         {
             _symbol = symbol;
-            //_lotSize = symbol?.ContractSize ?? 1;
-            _leverage = leverage;
+
+            Info = info ?? new PositionInfo() { Symbol = symbol.Name };
+            Info.Short = Short;
+            Info.Long = Long;
+
+            if (info != null)
+                Update(Info);
         }
 
-        internal PositionAccessor(Domain.PositionInfo info, Symbol symbol, int leverage)
-            : this(symbol, leverage)
-        {
-            Update(info ?? throw new ArgumentNullException("entity"));
-        }
-
-        internal PositionAccessor(PositionAccessor src)
-            : this(src._symbol, src._leverage)
+        internal PositionAccessor(PositionAccessor src) : this(src._symbol)
         {
             Long.Update(src.Long.Amount, src.Long.Price);
             Short.Update(src.Short.Amount, src.Short.Price);
 
+            Info = src.Info;
             Volume = src.Volume;
             Swap = src.Swap;
             Modified = src.Modified;
@@ -65,28 +61,22 @@ namespace TickTrader.Algo.Core
             OnChanged();
         }
 
-        internal static PositionAccessor CreateEmpty(string symbol, Func<string, Symbol> symbolInfoProvider, int leverage)
+        internal static PositionAccessor CreateEmpty(string symbol, Func<string, Symbol> symbolInfoProvider)
         {
-            return new PositionAccessor(new Domain.PositionInfo { Symbol = symbol }, leverage, symbolInfoProvider);
+            return new PositionAccessor(new Domain.PositionInfo { Symbol = symbol }, symbolInfoProvider);
         }
 
-        public PositionAccessor Clone()
-        {
-            return new PositionAccessor(this);
-        }
+        public PositionAccessor Clone() => new PositionAccessor(this);
 
         internal bool IsBuySided => Long.Amount > Short.Amount;
 
         public double Volume { get; private set; }
         public decimal Commission { get; internal set; }
         public double Price => (double)(IsBuySided ? Long.Price : Short.Price);
-        public double SettlementPrice { get; internal set; }
         public Domain.OrderInfo.Types.Side Side => IsBuySided ? Domain.OrderInfo.Types.Side.Buy : Domain.OrderInfo.Types.Side.Sell;
-        OrderSide NetPosition.Side => Side.ToApiEnum();
         public decimal Swap { get; internal set; }
         public string Symbol => _symbol.Name;
-        public double Margin => Calculator?.CalculateMargin(this) ?? double.NaN;
-        public double Profit => Calculator?.CalculateProfit(this) ?? double.NaN;
+
         public DateTime? Modified { get; set; }
         public string Id { get; set; }
         public bool IsEmpty => Amount == 0;
@@ -96,17 +86,11 @@ namespace TickTrader.Algo.Core
         public SideProxy Long { get; } = new SideProxy();
         public SideProxy Short { get; } = new SideProxy();
 
+        OrderSide NetPosition.Side => Side.ToApiEnum();
+        double NetPosition.Margin => Calculator?.CalculateMargin(Info) ?? double.NaN;
+        double NetPosition.Profit => Calculator?.CalculateProfit(Info) ?? double.NaN;
         double NetPosition.Swap => (double)Swap;
         double NetPosition.Commission => (double)Commission;
-
-        IPositionSide IPositionInfo.Long => Long;
-        IPositionSide IPositionInfo.Short => Short;
-
-        decimal IMarginProfitCalc.RemainingAmount => Amount;
-
-        public OrderInfo.Types.Type Type => OrderInfo.Types.Type.Position;
-
-        bool IMarginProfitCalc.IsHidden => false;
 
         internal event Action<PositionAccessor> Changed;
 
@@ -168,6 +152,8 @@ namespace TickTrader.Algo.Core
                 Commission = (double)Commission,
                 Modified = Modified?.ToTimestamp(),
                 Id = Id,
+                Long = Long,
+                Short = Short,
             };
         }
 

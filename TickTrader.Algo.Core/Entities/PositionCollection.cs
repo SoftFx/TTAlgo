@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -39,7 +40,7 @@ namespace TickTrader.Algo.Core
             return _fixture.GetOrDefault(symbol);
         }
 
-        public event Action<PositionAccessor> PositionUpdated;
+        public event Action<IPositionInfo> PositionUpdated;
         //public event Action<PositionAccessor> PositionRemoved;
 
         public void FirePositionUpdated(NetPositionModifiedEventArgs args)
@@ -111,7 +112,7 @@ namespace TickTrader.Algo.Core
 
         private void Pos_Changed(PositionAccessor pos)
         {
-            PositionUpdated?.Invoke(pos);
+            PositionUpdated?.Invoke(pos.Info);
         }
 
         #endregion
@@ -130,9 +131,8 @@ namespace TickTrader.Algo.Core
             {
                 get
                 {
-                    PositionAccessor entity;
-                    if (!_positions.TryGetValue(symbol, out entity))
-                        return PositionAccessor.CreateEmpty(symbol, _builder.Symbols.GetOrDefault, _builder.Account.Leverage);
+                    if (!_positions.TryGetValue(symbol, out PositionAccessor entity))
+                        return PositionAccessor.CreateEmpty(symbol, _builder.Symbols.GetOrDefault);
                     return entity;
                 }
             }
@@ -156,7 +156,7 @@ namespace TickTrader.Algo.Core
 
             public PositionAccessor CreatePosition(SymbolAccessor symbol)
             {
-                return _positions.GetOrAdd(symbol.Name, n => new PositionAccessor(symbol, _builder.Account.Leverage));
+                return _positions.GetOrAdd(symbol.Name, n => new PositionAccessor(symbol));
             }
 
             public bool RemovePosition(string symbol)
