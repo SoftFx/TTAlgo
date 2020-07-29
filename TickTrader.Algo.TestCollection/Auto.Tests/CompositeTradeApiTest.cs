@@ -77,11 +77,11 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
                         while (testSet.SwitchAsyncMode());
                     }
 
-            Print("Waiting for trade reports to load...");
-            await Delay(PauseBeforeAndAfterTests);
+            //Print("Waiting for trade reports to load...");
+            //await Delay(PauseBeforeAndAfterTests);
 
-            //History test
-            await TryPerformTest(() => FullHistoryTestRun(), 1);
+            ////History test
+            //await TryPerformTest(() => FullHistoryTestRun(), 1);
 
             UnsubscribeEventListening();
 

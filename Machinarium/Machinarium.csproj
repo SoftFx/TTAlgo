@@ -59,7 +59,6 @@
     <Compile Include="Var.Collections\DictionarySortOperator.cs" />
     <Compile Include="Var.Collections\DictionaryToListOperator.cs" />
     <Compile Include="Var.Collections\DynamicDictionary.cs" />
-    <Compile Include="Var.Collections\DynamicDictionary.Keys.cs" />
     <Compile Include="Var.Collections\DynamicList.cs" />
     <Compile Include="Var.Collections\ListChainToken.cs" />
     <Compile Include="Var.Collections\VarCollection.cs" />

@@ -1,24 +1,25 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace Machinarium.Qnil
 {
-    public partial class VarDictionary<TKey, TValue> : IVarSet<TKey, TValue>
+    public class VarDictionary<TKey, TValue> : IVarSet<TKey, TValue>
     {
         private readonly Dictionary<TKey, TValue> _snapshot = new Dictionary<TKey, TValue>();
         private readonly KeyCollection _keySetProxy;
 
         public VarDictionary()
         {
-            Snapshot = new SnapshpotAccessor(this);
             _keySetProxy = new KeyCollection(_snapshot.Keys);
         }
 
-        public IReadOnlyDictionary<TKey, TValue> Snapshot { get; }
-        public int Count =>_snapshot.Count;
+        public IReadOnlyDictionary<TKey, TValue> Snapshot => _snapshot;
+
+        public int Count => _snapshot.Count;
+
         public IVarSet<TKey> Keys => _keySetProxy;
-        public IEnumerable<TValue> Values =>_snapshot.Values;
+
+        public IEnumerable<TValue> Values => _snapshot.Values;
 
         public event DictionaryUpdateHandler<TKey, TValue> Updated;
 
@@ -53,7 +54,7 @@ namespace Machinarium.Qnil
 
             _snapshot.Remove(key);
 
-            OnUpdate(new DictionaryUpdateArgs<TKey, TValue>(this, DLinqAction.Remove, key, default(TValue), oldItem));
+            OnUpdate(new DictionaryUpdateArgs<TKey, TValue>(this, DLinqAction.Remove, key, default, oldItem));
             _keySetProxy.FireKeyRemoved(key);
             return true;
         }
@@ -70,30 +71,24 @@ namespace Machinarium.Qnil
 
         private void OnUpdate(DictionaryUpdateArgs<TKey, TValue> args) => Updated?.Invoke(args);
 
-        private sealed class SnapshpotAccessor : IReadOnlyDictionary<TKey, TValue>
+        private sealed class KeyCollection : IVarSet<TKey>
         {
-            private readonly VarDictionary<TKey, TValue> _parent;
-
-            public SnapshpotAccessor(VarDictionary<TKey, TValue> parent)
+            public KeyCollection(IEnumerable<TKey> snapshot)
             {
-                _parent = parent;
+                Snapshot = snapshot;
             }
 
-            public TValue this[TKey key] => _parent[key];
+            public IEnumerable<TKey> Snapshot { get; }
 
-            public int Count => _parent.Count;
+            public event SetUpdateHandler<TKey> Updated;
 
-            public IEnumerable<TKey> Keys => _parent._snapshot.Keys;
+            internal void FireKeyAdded(TKey key) => Updated?.Invoke(new SetUpdateArgs<TKey>(this, DLinqAction.Insert, key));
 
-            public IEnumerable<TValue> Values => _parent._snapshot.Values;
+            internal void FireKeyRemoved(TKey key) => Updated?.Invoke(new SetUpdateArgs<TKey>(this, DLinqAction.Remove, default(TKey), key));
 
-            public bool ContainsKey(TKey key) => _parent.ContainsKey(key);
-
-            public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() => _parent._snapshot.GetEnumerator();
-
-            public bool TryGetValue(TKey key, out TValue value) => _parent.TryGetValue(key, out value);
-
-            IEnumerator IEnumerable.GetEnumerator() => _parent._snapshot.GetEnumerator();
+            public void Dispose()
+            {
+            }
         }
     }
 }

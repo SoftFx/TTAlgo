@@ -68,6 +68,14 @@ namespace TickTrader.Algo.Common.Model
 
         Timestamp IOrderUpdateInfo.Modified => Modified?.ToTimestamp();
 
+        public double? ExecPrice => AveragePrice;
+
+        public double? ExecAmount => ExecutedVolume;
+
+        public double? LastFillPrice => TradePrice;
+
+        public double? LastFillAmount => TradeAmount;
+
         private Domain.OrderOptions GetOptions()
         {
             Domain.OrderOptions options = Domain.OrderOptions.None;

@@ -82,23 +82,23 @@ namespace Machinarium.Qnil
         public T OldItem { get; private set; }
     }
 
-    public struct DictionaryUpdateArgs<TKey, TValue>
+    public readonly struct DictionaryUpdateArgs<TKey, TValue>
     {
         public DictionaryUpdateArgs(IVarSet<TKey, TValue> sender, DLinqAction action,
-            TKey key = default(TKey), TValue newItem = default(TValue), TValue oldItem = default(TValue)) : this()
+            TKey key = default, TValue newItem = default, TValue oldItem = default) : this()
         {
-            this.Sender = sender;
-            this.Action = action;
-            this.Key = key;
-            this.NewItem = newItem;
-            this.OldItem = oldItem;
+            Sender = sender;
+            Action = action;
+            Key = key;
+            NewItem = newItem;
+            OldItem = oldItem;
         }
 
-        public IVarSet<TKey, TValue> Sender { get; private set; }
-        public DLinqAction Action { get; private set; }
-        public TKey Key { get; private set; }
-        public TValue NewItem { get; private set; }
-        public TValue OldItem { get; private set; }
+        public IVarSet<TKey, TValue> Sender { get; }
+        public DLinqAction Action { get; }
+        public TKey Key { get; }
+        public TValue NewItem { get; }
+        public TValue OldItem { get; }
     }
 
     public enum DLinqAction { Insert, Remove, Replace, Dispose };

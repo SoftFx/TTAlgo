@@ -2,7 +2,6 @@ using Machinarium.Qnil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Calc;
@@ -60,16 +59,13 @@ namespace TickTrader.Algo.Common.Model
         public int BalanceDigits { get; private set; }
         public int Leverage { get; private set; }
 
-        //long IAccountInfo2.Id => 0;
-
         AccountInfo.Types.Type IAccountInfo2.Type => Type ?? AccountInfo.Types.Type.Gross;
-
-
-        IEnumerable<IPositionInfo> IMarginAccountInfo2.Positions => Positions.Snapshot.Values;
 
         IEnumerable<IOrderInfo> IAccountInfo2.Orders => Orders.Snapshot.Values;
 
         IEnumerable<IAssetInfo> ICashAccountInfo2.Assets => Assets.Snapshot.Values;
+
+        IEnumerable<IPositionInfo> IMarginAccountInfo2.Positions => Positions.Snapshot.Values;
 
         public event Action<OrderUpdateInfo> OrderUpdate;
         public event Action<PositionInfo, Domain.OrderExecReport.Types.ExecAction> PositionUpdate;
@@ -159,6 +155,27 @@ namespace TickTrader.Algo.Common.Model
 
                 AssetsChanged?.Invoke(model, AssetChangeType.Added);
             }
+
+            _orders.Updated += OrdersUpdated;
+        }
+
+        private void OrdersUpdated(DictionaryUpdateArgs<string, OrderInfo> args)
+        {
+            switch (args.Action)
+            {
+                case DLinqAction.Insert:
+                    OrderAdded?.Invoke(args.NewItem);
+                    break;
+                case DLinqAction.Remove:
+                    OrderRemoved?.Invoke(args.OldItem);
+                    break;
+                case DLinqAction.Replace:
+                    OrderRemoved?.Invoke(args.OldItem);
+                    OrderAdded?.Invoke(args.NewItem);
+                    break;
+                default:
+                    break;
+            }
         }
 
         public void Deinit()
@@ -174,6 +191,7 @@ namespace TickTrader.Algo.Common.Model
             }
 
             Market?.Subscriptions?.CancelAll();
+            _orders.Updated -= OrdersUpdated;
         }
 
         public Domain.AccountInfo GetAccountInfo()
@@ -366,83 +384,33 @@ namespace TickTrader.Algo.Common.Model
 
         public void UpdateOrder(Domain.OrderExecReport.Types.ExecAction execAction, Domain.OrderExecReport.Types.EntityAction entityAction, ExecutionReport report, Domain.PositionInfo netPosUpdate)
         {
-            OrderInfo order = new OrderInfo(_symbols.GetOrDefault(report.Symbol), report);
-
-            if (entityAction == Domain.OrderExecReport.Types.EntityAction.Added)
-            {
-                //order = new OrderInfo(_symbols.GetOrDefault(report.Symbol), report);
-                //order.SetSymbol(_symbols.GetOrDefault(fdkOrder.Symbol));
-                //order = new OrderModel(report, this);
-                _orders[order.Id] = order;
-
-                OrderAdded?.Invoke(order);
-            }
-            else if (entityAction == Domain.OrderExecReport.Types.EntityAction.Removed)
-            {
-                order = Orders.GetOrDefault(report.Id);
-                _orders.Remove(report.Id);
-                order?.Update(report);
-
-                OrderRemoved?.Invoke(order);
-            }
-            else if (entityAction == Domain.OrderExecReport.Types.EntityAction.Updated)
-            {
-                order = Orders.GetOrDefault(report.Id);
-
-                if (order != null)
-                {
-                    bool replaceOrder = order.Type != report.Type; //crutch should be call before order Update
-
-                    OrderRemoved?.Invoke(order);
-                    order.Update(report);
-
-                    // workaround: dynamic collection filter can't react on field change
-                    if (replaceOrder)
-                        _orders[order.Id] = order;
-
-                    OrderAdded?.Invoke(order);
-                }
-            }
+            var order = UpdateOrderCollection(entityAction, report);
 
             OrderUpdate?.Invoke(new OrderUpdateInfo(report, execAction, entityAction, order, netPosUpdate));
         }
 
-        public void UpdateOrder(Domain.OrderExecReport.Types.ExecAction execAction, Domain.OrderExecReport.Types.EntityAction entityAction, Domain.OrderInfo report)
+        public OrderInfo UpdateOrderCollection(Domain.OrderExecReport.Types.EntityAction entityAction, IOrderUpdateInfo report)
         {
-            report.SetSymbol(_symbols.GetOrDefault(report.Symbol));
-            report.Update(report);
-            OrderInfo order = report;
+            var order = Orders.GetOrDefault(report.Id) ?? new OrderInfo(_symbols.GetOrDefault(report.Symbol), report);
 
-            if (entityAction == Domain.OrderExecReport.Types.EntityAction.Added)
+            switch (entityAction)
             {
-                //order = new OrderModel(report, this);
-                _orders[order.Id] = order;
-
-                OrderAdded?.Invoke(order);
-            }
-            else if (entityAction == Domain.OrderExecReport.Types.EntityAction.Removed)
-            {
-                order = Orders.GetOrDefault(report.Id);
-                _orders.Remove(report.Id);
-                order?.Update(report);
-
-                OrderRemoved?.Invoke(order);
-            }
-            else if (entityAction == Domain.OrderExecReport.Types.EntityAction.Updated)
-            {
-                order = Orders.GetOrDefault(report.Id);
-
-                bool typeChanged = order.Type != report.Type;
-
-                OrderRemoved?.Invoke(order);
-                order.Update(report);
-
-                // workaround: dynamic collection filter can't react on field change
-                if (typeChanged)
+                case Domain.OrderExecReport.Types.EntityAction.Added:
                     _orders[order.Id] = order;
-
-                OrderAdded?.Invoke(order);
+                    break;
+                case Domain.OrderExecReport.Types.EntityAction.Removed:
+                    _orders.Remove(report.Id);
+                    order?.Update(report);
+                    break;
+                case Domain.OrderExecReport.Types.EntityAction.Updated:
+                    order.Update(report);
+                    _orders[order.Id] = order;
+                    break;
+                default:
+                    break;
             }
+
+            return order;
         }
 
         internal EntityCacheUpdate GetOrderUpdate(ExecutionReport report)
@@ -595,7 +563,7 @@ namespace TickTrader.Algo.Common.Model
         private OrderUpdateAction OnOrderCanceled(ExecutionReport report, Domain.OrderExecReport.Types.ExecAction algoAction)
         {
             // Limit Ioc don't get into order collection
-            return new OrderUpdateAction(report, algoAction, (report.Type == Domain.OrderInfo.Types.Type.Limit && report.ImmediateOrCancel) 
+            return new OrderUpdateAction(report, algoAction, (report.Type == Domain.OrderInfo.Types.Type.Limit && report.ImmediateOrCancel)
                 ? Domain.OrderExecReport.Types.EntityAction.NoAction : Domain.OrderExecReport.Types.EntityAction.Removed);
         }
 

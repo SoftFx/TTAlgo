@@ -76,6 +76,7 @@ namespace TickTrader.Algo.Domain
             var oldIsHidden = IsHidden;
 
             Id = info.Id;
+            //InstanceId = info.InstanceId;
             Symbol = info.Symbol;
             RequestedAmount = info.RequestedAmount;
             RemainingAmount = (double)info.RemainingAmount;
@@ -98,6 +99,10 @@ namespace TickTrader.Algo.Domain
             Options = info.Options;
             RequestedOpenPrice = info.RequestedOpenPrice;
             ParentOrderId = info.ParentOrderId;
+            ExecPrice = info.ExecPrice;
+            ExecAmount = info.ExecAmount;
+            LastFillPrice = info.LastFillPrice;
+            LastFillAmount = info.LastFillAmount;
 
             if (CompositeTag.TryParse(info.UserTag, out CompositeTag compositeTag))
             {
@@ -176,6 +181,11 @@ namespace TickTrader.Algo.Domain
         Domain.OrderOptions Options { get; }
 
         string UserTag { get; }
+
+        double? ExecPrice { get; }
+        double? ExecAmount { get; }
+        double? LastFillPrice { get; }
+        double? LastFillAmount { get; }
     }
 
     public interface IOrderCalcInfo : IMarginProfitCalc
