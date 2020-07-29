@@ -20,8 +20,8 @@ namespace TickTrader.Algo.Domain
 
         DateTime? IPositionInfo.Modified => Modified?.ToDateTime();
 
-        decimal IMarginProfitCalc.RemainingAmount => (decimal)Volume;
-
+        double IMarginProfitCalc.Price => (double)(Long.Amount > Short.Amount ? Long.Price : Short.Price);
+        decimal IMarginProfitCalc.RemainingAmount => Math.Max(Long.Amount, Short.Amount);
         OrderInfo.Types.Type IMarginProfitCalc.Type => OrderInfo.Types.Type.Position;
 
         bool IMarginProfitCalc.IsHidden => false;
@@ -50,12 +50,8 @@ namespace TickTrader.Algo.Domain
 
     public interface IOrderCalculator
     {
-        ISymbolInfo SymbolInfo { get; }
-        double CalculateProfitFixedPrice(double openPrice, double volume, double closePrice, Domain.OrderInfo.Types.Side side, out double conversionRate, out CalcErrorCodes error);
-        double CalculateSwap(double amount, Domain.OrderInfo.Types.Side side, DateTime now, out CalcErrorCodes error);
         double CalculateProfit(IMarginProfitCalc info);
         double CalculateMargin(IMarginProfitCalc info);
-        double CalculateCommission(double amount, double cValue, Domain.CommissonInfo.Types.ValueType vType, out CalcErrorCodes error);
     }
 
     public enum CalcErrorCodes

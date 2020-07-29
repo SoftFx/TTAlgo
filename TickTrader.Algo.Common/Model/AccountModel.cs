@@ -60,9 +60,9 @@ namespace TickTrader.Algo.Common.Model
         public int BalanceDigits { get; private set; }
         public int Leverage { get; private set; }
 
-        long IAccountInfo2.Id => 0;
+        //long IAccountInfo2.Id => 0;
 
-        public AccountInfo.Types.Type AccountingType => Type ?? AccountInfo.Types.Type.Gross;
+        AccountInfo.Types.Type IAccountInfo2.Type => Type ?? AccountInfo.Types.Type.Gross;
 
 
         IEnumerable<IPositionInfo> IMarginAccountInfo2.Positions => Positions.Snapshot.Values;

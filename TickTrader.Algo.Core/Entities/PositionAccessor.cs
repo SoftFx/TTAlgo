@@ -53,14 +53,12 @@ namespace TickTrader.Algo.Core
         public SideProxy Short { get; } = new SideProxy();
 
         double NetPosition.Volume => (double)Amount / (_symbol?.ContractSize ?? 1);
-        double NetPosition.Margin => Calculator?.CalculateMargin(Info) ?? double.NaN;
-        double NetPosition.Profit => Calculator?.CalculateProfit(Info) ?? double.NaN;
+        double NetPosition.Margin => Info?.Calculator?.CalculateMargin(Info) ?? double.NaN;
+        double NetPosition.Profit => Info?.Calculator?.CalculateProfit(Info) ?? double.NaN;
         double NetPosition.Swap => (double)Info.Swap;
         double NetPosition.Commission => (double)Info.Commission;
         OrderSide NetPosition.Side => Side.ToApiEnum();
         DateTime? NetPosition.Modified => Info.Modified?.ToDateTime();
-
-        public IOrderCalculator Calculator { get; set; }
 
         internal event Action<PositionAccessor> Changed;
 
@@ -82,22 +80,6 @@ namespace TickTrader.Algo.Core
             Short.Decrease(byAmount);
 
             Changed?.Invoke(this);
-        }
-
-        private static decimal CalculatePositionAvgPrice(IPositionSide position, decimal price2, decimal amount2)
-        {
-            return CalculatePositionAvgPrice(position.Price, position.Amount, price2, amount2);
-        }
-
-        private static decimal CalculatePositionAvgPrice(decimal price1, decimal amount1, decimal price2, decimal amount2)
-        {
-            // some optimization
-            if (amount1 == 0)
-                return price2;
-            else if (amount2 == 0)
-                return price1;
-
-            return (price1 * amount1 + price2 * amount2) / (amount1 + amount2);
         }
 
         #endregion
@@ -131,6 +113,17 @@ namespace TickTrader.Algo.Core
             public decimal Price { get; private set; }
             public decimal Margin { get; set; }
             public decimal Profit { get; set; }
+
+            private static decimal CalculatePositionAvgPrice(IPositionSide side, decimal price2, decimal amount2)
+            {
+                // some optimization
+                if (side.Amount == 0)
+                    return price2;
+                else if (amount2 == 0)
+                    return side.Price;
+
+                return (side.Price * side.Amount + price2 * amount2) / (side.Amount + amount2);
+            }
         }
     }
 }

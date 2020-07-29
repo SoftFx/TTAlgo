@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Core
 
         public static void OnGrossPositionOpened(OrderAccessor position, SymbolAccessor cfg, CalculatorFixture calc)
         {
-            var commis = CalculateMarginCommission(position.Calculator, position.Entity.RequestedAmount, cfg, calc, position.IsReducedOpenCommission());
+            var commis = CalculateMarginCommission((OrderCalculator)position.Calculator, position.Entity.RequestedAmount, cfg, calc, position.IsReducedOpenCommission());
             position.ChangeCommission(commis);
         }
 
@@ -46,7 +46,7 @@ namespace TickTrader.Algo.Core
 
             charges.CurrencyInfo = (CurrencyEntity)calc.Acc.BalanceCurrencyInfo;
 
-            var commiss = CalculateMarginCommission(position.Calculator, closeAmount, cfg, calc, position.IsReducedCloseCommission());
+            var commiss = CalculateMarginCommission((OrderCalculator)position.Calculator, closeAmount, cfg, calc, position.IsReducedCloseCommission());
             charges.Commission += RoundValue(commiss, calc.RoundingDigits);
 
             //if (k == 1)
@@ -55,7 +55,7 @@ namespace TickTrader.Algo.Core
 
         public static void OnNetPositionOpened(OrderAccessor fromOrder, PositionAccessor position, decimal fillAmount, SymbolAccessor cfg, TradeChargesInfo charges, CalculatorFixture calc)
         {
-            charges.Commission = CalculateMarginCommission(position.Calculator, fillAmount, cfg, calc, fromOrder.IsReducedOpenCommission());
+            charges.Commission = CalculateMarginCommission((OrderCalculator)position.Info.Calculator, fillAmount, cfg, calc, fromOrder.IsReducedOpenCommission());
             charges.CurrencyInfo = (CurrencyEntity)calc.Acc.BalanceCurrencyInfo;
         }
 
@@ -111,7 +111,7 @@ namespace TickTrader.Algo.Core
             return commiss;
         }
 
-        private static decimal CalculateMarginCommission(IOrderCalculator orderCalc, decimal amount, SymbolAccessor cfg, CalculatorFixture accCalc, bool isReduced)
+        private static decimal CalculateMarginCommission(OrderCalculator orderCalc, decimal amount, SymbolAccessor cfg, CalculatorFixture accCalc, bool isReduced)
         {
             double cmsValue = isReduced
                ? cfg.CmsValueBookOrders()

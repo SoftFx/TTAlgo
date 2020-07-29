@@ -424,7 +424,7 @@ namespace TickTrader.Algo.Core
         private OrderAccessor OpenOrder(IOrderCalculator orderCalc, Domain.OrderInfo.Types.Type orderType, Domain.OrderInfo.Types.Side side, decimal volume, decimal? maxVisibleVolume, double? price, double? stopPrice,
             double? sl, double? tp, string comment, Domain.OrderExecOptions execOptions, string tag, DateTime? expiration, OpenOrderOptions options)
         {
-            var symbolInfo = (SymbolAccessor)orderCalc.SymbolInfo;
+            var symbolInfo = (SymbolAccessor)((OrderCalculator)orderCalc).SymbolInfo;
 
             var order = new OrderAccessor(symbolInfo, _leverage);
 
@@ -1408,7 +1408,7 @@ namespace TickTrader.Algo.Core
                 var openPrice = fillSide == Domain.OrderInfo.Types.Side.Buy ? position.Long.Price : position.Short.Price;
                 closePrice = fillSide == Domain.OrderInfo.Types.Side.Buy ? position.Short.Price : position.Long.Price;
                 double profitRate;
-                var profit = RoundMoney(position.Calculator.CalculateProfitFixedPrice((double)openPrice, (double)oneSideClosingAmount, (double)closePrice,
+                var profit = RoundMoney(((OrderCalculator)position.Info.Calculator).CalculateProfitFixedPrice((double)openPrice, (double)oneSideClosingAmount, (double)closePrice,
                     fillSide, out profitRate, out var error), _calcFixture.RoundingDigits);
 
                 if (error != CalcErrorCodes.None)
@@ -1625,7 +1625,7 @@ namespace TickTrader.Algo.Core
             else if ((price != null) && (price.Value > 0))
             {
                 closePrice = price.Value;
-                profit = RoundMoney(fCalc.CalculateProfitFixedPrice(position.Price, (double)actualCloseAmount, closePrice, position.Side, out _, out var error), _calcFixture.RoundingDigits);
+                profit = RoundMoney(((OrderCalculator)fCalc).CalculateProfitFixedPrice(position.Price, (double)actualCloseAmount, closePrice, position.Side, out _, out var error), _calcFixture.RoundingDigits);
             }
             else
             {
@@ -1853,7 +1853,7 @@ namespace TickTrader.Algo.Core
                 {
                     using (JournalScope())
                     {
-                        OpenOrder(pos.Calculator, Domain.OrderInfo.Types.Type.Market, pos.Side.Revert(), pos.Amount, null, null, null, null, null, "",
+                        OpenOrder(pos.Info.Calculator, Domain.OrderInfo.Types.Type.Market, pos.Side.Revert(), pos.Amount, null, null, null, null, null, "",
                             Domain.OrderExecOptions.None, null, null, OpenOrderOptions.SkipDealing | OpenOrderOptions.FakeOrder);
                     }
                 }
@@ -1960,7 +1960,7 @@ namespace TickTrader.Algo.Core
                 {
                     foreach (OrderAccessor order in positions)
                     {
-                        double swap = order.Calculator.CalculateSwap((double)order.RemainingAmount, order.Side, ExecutionTime, out var error);
+                        double swap = ((OrderCalculator)order.Calculator).CalculateSwap((double)order.RemainingAmount, order.Side, ExecutionTime, out var error);
 
                         if (error != CalcErrorCodes.None)
                         {
@@ -2003,8 +2003,8 @@ namespace TickTrader.Algo.Core
                 if (pos != null)
                 {
                     var error = CalcErrorCodes.None;
-                    double swap = pos.Calculator.CalculateSwap((double)pos.Long.Amount, Domain.OrderInfo.Types.Side.Buy, ExecutionTime, out error)
-                                   + pos.Calculator.CalculateSwap((double)pos.Short.Amount, Domain.OrderInfo.Types.Side.Sell, ExecutionTime, out error);
+                    double swap = ((OrderCalculator)pos.Info.Calculator).CalculateSwap((double)pos.Long.Amount, Domain.OrderInfo.Types.Side.Buy, ExecutionTime, out error)
+                                   + ((OrderCalculator)pos.Info.Calculator).CalculateSwap((double)pos.Short.Amount, Domain.OrderInfo.Types.Side.Sell, ExecutionTime, out error);
 
                     //if (error != CalcErrorCodes.None)
                     //{

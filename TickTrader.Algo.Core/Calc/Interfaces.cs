@@ -28,12 +28,12 @@ namespace TickTrader.Algo.Core.Calc
         /// <summary>
         /// Account Id.
         /// </summary>
-        long Id { get; }
+        string Id { get; }
 
         /// <summary>
         /// Account type.
         /// </summary>
-        Domain.AccountInfo.Types.Type AccountingType { get; }
+        Domain.AccountInfo.Types.Type Type { get; }
 
         /// <summary>
         /// Account orders.

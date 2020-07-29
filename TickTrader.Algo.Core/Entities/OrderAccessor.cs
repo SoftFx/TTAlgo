@@ -1,7 +1,6 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Core.Calc;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
@@ -180,7 +179,6 @@ namespace TickTrader.Algo.Core
         internal bool IsSameOrderId(OrderAccessor other)
         {
             return other != null && string.CompareOrdinal(Id, other.Id) == 0;
-
         }
 
         internal bool IsSameOrder(OrderAccessor other)
@@ -195,7 +193,7 @@ namespace TickTrader.Algo.Core
 
         private double CalculateMargin() => Calculator?.CalculateMargin(this) ?? double.NaN;
 
-        private double CalculateProfit() => Type == OrderInfo.Types.Type.Position ? Calculator.CalculateProfit(this) : double.NaN;
+        private double CalculateProfit() => Type == OrderInfo.Types.Type.Position ? Calculator?.CalculateProfit(this) ?? double.NaN : double.NaN;
 
         private static bool IsHiddenOrder(decimal? maxVisibleVolume)
         {

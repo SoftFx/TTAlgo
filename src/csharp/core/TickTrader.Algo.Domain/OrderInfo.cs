@@ -68,7 +68,7 @@ namespace TickTrader.Algo.Domain
         {
 
             var oldAmount = RequestedAmount;
-            var oldPrice = Type == Domain.OrderInfo.Types.Type.Stop || Type == Domain.OrderInfo.Types.Type.StopLimit ? StopPrice : Price;
+            var oldPrice = IsStopOrder ? StopPrice : Price;
             var oldStopPrice = StopPrice;
             var oldType = Type;
             var oldSwap = Swap;

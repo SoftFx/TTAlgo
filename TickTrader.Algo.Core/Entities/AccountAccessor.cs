@@ -10,17 +10,15 @@ namespace TickTrader.Algo.Core
 {
     public class AccountAccessor : AccountDataProvider, IMarginAccountInfo2, ICashAccountInfo2
     {
-        private PluginBuilder builder;
+        private readonly PluginBuilder _builder;
         private Dictionary<string, OrderFilteredCollection> bySymbolFilterCache;
         private Dictionary<string, OrderFilteredCollection> byTagFilterCache;
         private Dictionary<Predicate<Order>, OrderFilteredCollection> customFilterCache;
-        private TradeHistory _history;
         private OrdersCollection _orders;
         private PositionCollection _positions;
         private AssetsCollection _assets;
         private bool _blEventsEnabled;
         private decimal _balance;
-        private double _dblBalance;
         private string _balanceCurrency;
         private string _id;
         private AccountInfo.Types.Type _type;
@@ -28,7 +26,7 @@ namespace TickTrader.Algo.Core
 
         public AccountAccessor(PluginBuilder builder)
         {
-            this.builder = builder;
+            _builder = builder;
         }
 
         public OrdersCollection Orders
@@ -58,7 +56,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public TradeHistory HistoryProvider { get { return _history; } set { _history = value; } }
+        public TradeHistory HistoryProvider { get; set; }
 
         public string Id
         {
@@ -82,7 +80,6 @@ namespace TickTrader.Algo.Core
             set
             {
                 _balance = value;
-                _dblBalance = (double)value;
             }
         }
         public string BalanceCurrency
@@ -119,7 +116,8 @@ namespace TickTrader.Algo.Core
         public bool IsMarginType => Type == AccountInfo.Types.Type.Net || Type == AccountInfo.Types.Type.Gross;
         public bool IsCashType => Type == AccountInfo.Types.Type.Cash;
 
-        double IMarginAccountInfo2.Balance => _dblBalance;
+        double IMarginAccountInfo2.Balance => (double)Balance;
+
         AccountTypes AccountDataProvider.Type
         {
             get
@@ -138,7 +136,7 @@ namespace TickTrader.Algo.Core
             UpdateCurrency(currencies.GetOrStub(info.BalanceCurrency));
             Assets.Clear();
             foreach (var asset in info.Assets)
-                builder.Account.Assets.Update(asset, currencies);
+                _builder.Account.Assets.Update(asset, currencies);
         }
 
         internal void UpdateCurrency(Currency currency)
@@ -157,17 +155,17 @@ namespace TickTrader.Algo.Core
 
         internal void FireBalanceUpdateEvent()
         {
-            builder.InvokePluginMethod((b, p) => p.BalanceUpdated(), this);
+            _builder.InvokePluginMethod((b, p) => p.BalanceUpdated(), this);
         }
 
         internal void FireBalanceDividendEvent(BalanceDividendEventArgsImpl args)
         {
-            builder.InvokePluginMethod((b, p) => p.BalanceDividend(args), this);
+            _builder.InvokePluginMethod((b, p) => p.BalanceDividend(args), this);
         }
 
         internal void FireResetEvent()
         {
-            builder.InvokePluginMethod((b, p) => p.Reset(), this);
+            _builder.InvokePluginMethod((b, p) => p.Reset(), this);
         }
 
         public OrderList OrdersByTag(string orderTag)
@@ -239,7 +237,7 @@ namespace TickTrader.Algo.Core
 
         AssetList AccountDataProvider.Assets { get { return Assets.AssetListImpl; } }
         NetPositionList AccountDataProvider.NetPositions { get { return NetPositions.PositionListImpl; } }
-        TradeHistory AccountDataProvider.TradeHistory => _history;
+        TradeHistory AccountDataProvider.TradeHistory => HistoryProvider;
 
         internal MarginAccountCalculator MarginCalc { get; set; }
         public double Equity => GetCalc()?.Equity ?? double.NaN;
@@ -274,9 +272,9 @@ namespace TickTrader.Algo.Core
         {
             if (_orders == null)
             {
-                _orders = new OrdersCollection(builder);
-                _positions = new PositionCollection(builder);
-                _assets = new AssetsCollection(builder);
+                _orders = new OrdersCollection(_builder);
+                _positions = new PositionCollection(_builder);
+                _assets = new AssetsCollection(_builder);
                 TradeInfoRequested?.Invoke();
             }
         }
@@ -299,26 +297,9 @@ namespace TickTrader.Algo.Core
 
         #endregion
 
-        #region BO
-
-        long IAccountInfo2.Id => 0;
-        public AccountInfo.Types.Type AccountingType => Type;
-        //decimal IMarginAccountInfo2.Balance => Balance;
         IEnumerable<IOrderInfo> IAccountInfo2.Orders => (IEnumerable<OrderAccessor>)Orders.OrderListImpl;
         IEnumerable<IPositionInfo> IMarginAccountInfo2.Positions => NetPositions.Select(u => (IPositionInfo)u.Info);
         IEnumerable<IAssetInfo> ICashAccountInfo2.Assets => Assets;
-
-        //void BL.IAccountInfo.LogInfo(string message)
-        //{
-        //}
-
-        //void BL.IAccountInfo.LogWarn(string message)
-        //{
-        //}
-
-        //void BL.IAccountInfo.LogError(string message)
-        //{
-        //}
 
         public event Action<IOrderInfo> OrderAdded = delegate { };
         public event Action<IEnumerable<IOrderInfo>> OrdersAdded { add { } remove { } }
@@ -400,11 +381,9 @@ namespace TickTrader.Algo.Core
             }
             catch (Exception ex)
             {
-                builder.Logger.OnError($"Account calculator: {actionName} failed", ex);
+                _builder.Logger.OnError($"Account calculator: {actionName} failed", ex);
             }
         }
-
-        #endregion
 
         #region Emulation
 
@@ -414,12 +393,12 @@ namespace TickTrader.Algo.Core
                 ?? throw new OrderValidationError("Order Not Found " + orderId, OrderCmdResultCodes.OrderNotFound);
         }
 
-        internal void IncreasePosition(string symbol, decimal amount, decimal price, Domain.OrderInfo.Types.Side side, Func<string> idGenerator)
-        {
-            var pos = NetPositions.GetOrCreatePosition(symbol, idGenerator);
-            pos.Increase(amount, price, side);
-            OnPositionUpdated(pos.Info);
-        }
+        //internal void IncreasePosition(string symbol, decimal amount, decimal price, Domain.OrderInfo.Types.Side side, Func<string> idGenerator)
+        //{
+        //    var pos = NetPositions.GetOrCreatePosition(symbol, idGenerator);
+        //    pos.Increase(amount, price, side);
+        //    OnPositionUpdated(pos.Info);
+        //}
 
         internal void IncreaseAsset(string currency, decimal byAmount)
         {
@@ -432,29 +411,29 @@ namespace TickTrader.Algo.Core
 
         public double? GetSymbolMargin(string symbol, OrderSide side)
         {
-            return builder.Calculator?.GetSymbolMargin(symbol, side.ToCoreEnum());
+            return _builder.Calculator?.GetSymbolMargin(symbol, side.ToCoreEnum());
         }
 
         public double? CalculateOrderMargin(string symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl = null, double? tp = null, Api.OrderExecOptions options = Api.OrderExecOptions.None)
         {
-            var symbolAccessor = builder?.Symbols?.GetOrDefault(symbol);
-            if (symbolAccessor != null && builder.Calculator != null)
+            var symbolAccessor = _builder?.Symbols?.GetOrDefault(symbol);
+            if (symbolAccessor != null && _builder.Calculator != null)
             {
                 var amount = volume * symbolAccessor.ContractSize;
 
-                return builder.Calculator.CalculateOrderMargin(symbolAccessor, amount, price, stopPrice, type.ToCoreEnum(), side.ToCoreEnum(), OrderEntity.IsHiddenOrder(maxVisibleVolume));
+                return _builder.Calculator.CalculateOrderMargin(symbolAccessor, amount, price, stopPrice, type.ToCoreEnum(), side.ToCoreEnum(), OrderEntity.IsHiddenOrder(maxVisibleVolume));
             }
             return null;
         }
 
         public bool HasEnoughMarginToOpenOrder(string symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl = null, double? tp = null, Api.OrderExecOptions options = Api.OrderExecOptions.None)
         {
-            var symbolAccessor = builder?.Symbols?.GetOrDefault(symbol);
-            if (symbolAccessor != null && builder.Calculator != null)
+            var symbolAccessor = _builder?.Symbols?.GetOrDefault(symbol);
+            if (symbolAccessor != null && _builder.Calculator != null)
             {
                 var amount = volume * symbolAccessor.ContractSize;
 
-                return builder.Calculator.HasEnoughMarginToOpenOrder(symbolAccessor, amount, type.ToCoreEnum(), side.ToCoreEnum(), price, stopPrice, OrderEntity.IsHiddenOrder(maxVisibleVolume), out _);
+                return _builder.Calculator.HasEnoughMarginToOpenOrder(symbolAccessor, amount, type.ToCoreEnum(), side.ToCoreEnum(), price, stopPrice, OrderEntity.IsHiddenOrder(maxVisibleVolume), out _);
             }
             return false;
         }

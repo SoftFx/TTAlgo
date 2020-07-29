@@ -136,7 +136,7 @@ namespace TickTrader.Algo.Core
 
         private void DataProvider_BalanceUpdated(Domain.BalanceOperation report)
         {
-            context.EnqueueTradeUpdate(b =>
+            context.EnqueueTradeUpdate((Action<PluginBuilder>)(b =>
             {
                 var accProxy = context.Builder.Account;
 
@@ -172,7 +172,7 @@ namespace TickTrader.Algo.Core
                         }
                     }
                 }
-            });
+            }));
         }
 
         private void DataProvider_PositionUpdated(Domain.PositionExecReport report)
