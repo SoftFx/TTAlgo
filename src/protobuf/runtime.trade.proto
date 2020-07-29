@@ -354,3 +354,21 @@ message TradeReportInfo {
     google.protobuf.DoubleValue dst_asset_amount = 58;
     google.protobuf.DoubleValue src_asset_amount = 59;
 }
+
+message TradeHistoryRequest {
+    enum Options {
+        NO_OPTIONS = 0;
+        SKIP_CANCELED = 1;
+        BACKWARD = 2;
+    }
+
+    google.protobuf.Timestamp from = 1;
+    google.protobuf.Timestamp to = 2;
+    int32 options_bitmask = 3;
+}
+
+message TradeHistoryRequestNextPage { }
+
+message TradeHistoryPageResponse {
+    repeated TradeReportInfo reports = 1;
+}

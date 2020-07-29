@@ -104,6 +104,15 @@ namespace TickTrader.Algo.Core
             context.TaskSrc.Task.GetAwaiter().GetResult();
         }
 
+        internal IAsyncPagedEnumerator<Domain.TradeReportInfo> GetTradeHistory(TradeHistoryRequest request)
+        {
+            var callId = RpcMessage.GenerateCallId();
+            var context = new PagedEnumeratorAdapter<Domain.TradeReportInfo>(TradeHistoryPageResponseHandler,
+                () => _session.Tell(RpcMessage.Request(new TradeHistoryRequestNextPage(), callId)));
+            _session.Ask(RpcMessage.Request(request, callId), context);
+            return context;
+        }
+
 
         public void SetSession(RpcSession session)
         {
@@ -178,6 +187,25 @@ namespace TickTrader.Algo.Core
             return true;
         }
 
+        private bool TradeHistoryPageResponseHandler(TaskCompletionSource<Domain.TradeReportInfo[]> taskSrc, Any payload)
+        {
+            if (TryGetError(payload, out var ex))
+            {
+                taskSrc.TrySetException(ex);
+            }
+            else
+            {
+                var response = payload.Unpack<TradeHistoryPageResponse>();
+                var res = new Domain.TradeReportInfo[response.Reports.Count];
+                response.Reports.CopyTo(res, 0);
+                taskSrc.TrySetResult(res);
+                if (res.Length != 0)
+                    return false;
+            }
+
+            return true;
+        }
+
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool TryGetError(Any payload, out Exception ex)
@@ -242,6 +270,46 @@ namespace TickTrader.Algo.Core
         {
             var report = payload.Unpack<BalanceOperation>();
             BalanceUpdated?.Invoke(report);
+        }
+
+
+        private class PagedEnumeratorAdapter<T> : IAsyncPagedEnumerator<T>, IRpcResponseContext
+        {
+            private TaskCompletionSource<T[]> _pageTaskSrc;
+
+            Func<TaskCompletionSource<T[]>, Any, bool> ResponseHandler { get; }
+
+            Action GetNextPageHandler { get; }
+
+
+            public PagedEnumeratorAdapter(Func<TaskCompletionSource<T[]>, Any, bool> responseHandler, Action getNextPageHandler)
+            {
+                ResponseHandler = responseHandler;
+                GetNextPageHandler = getNextPageHandler;
+            }
+
+
+            public void Dispose()
+            {
+                _pageTaskSrc?.TrySetCanceled();
+            }
+
+            public Task<T[]> GetNextPage()
+            {
+                if (_pageTaskSrc != null)
+                    throw new Exception("Can't get more than one page at a time");
+
+                _pageTaskSrc = new TaskCompletionSource<T[]>();
+                GetNextPageHandler();
+                return _pageTaskSrc.Task;
+            }
+
+            public bool OnNext(Any payload)
+            {
+                var taskSrc = _pageTaskSrc;
+                _pageTaskSrc = null;
+                return ResponseHandler(taskSrc, payload);
+            }
         }
     }
 }

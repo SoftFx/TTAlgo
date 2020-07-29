@@ -171,7 +171,7 @@ namespace TickTrader.Algo.Core
             return _control.Collector.GetMarginHistory(timeFrame);
         }
 
-        public IPagedEnumerator<TradeReportEntity> GetTradeHistory()
+        public IPagedEnumerator<Domain.TradeReportInfo> GetTradeHistory()
         {
             return _control.TradeHistory.Marshal();
         }

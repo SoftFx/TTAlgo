@@ -23,45 +23,45 @@ namespace TickTrader.Algo.Core
 
         public IEnumerator<TradeReport> GetEnumerator()
         {
-            return Adapt(AsyncEnumerator.GetAdapter(() => Provider?.GetTradeHistory(ThQueryOptions.Backwards))).GetEnumerator();
+            return Adapt(AsyncEnumerator.GetAdapter(() => Provider?.GetTradeHistory(null, null, Domain.TradeHistoryRequestOptions.Backwards))).GetEnumerator();
         }
 
         public IEnumerable<TradeReport> Get(ThQueryOptions options = ThQueryOptions.None)
         {
-            return Adapt(AsyncEnumerator.GetAdapter(() => Provider?.GetTradeHistory(options)));
+            return Adapt(AsyncEnumerator.GetAdapter(() => Provider?.GetTradeHistory(null, null, options.ToDomainEnum())));
         }
 
         public IEnumerable<TradeReport> GetRange(DateTime from, DateTime to, ThQueryOptions options = ThQueryOptions.None)
         {
-            return Adapt(AsyncEnumerator.GetAdapter(() => Provider?.GetTradeHistory(from, to, options)));
+            return Adapt(AsyncEnumerator.GetAdapter(() => Provider?.GetTradeHistory(from, to, options.ToDomainEnum())));
         }
 
         public IEnumerable<TradeReport> GetRange(DateTime to, ThQueryOptions options = ThQueryOptions.None)
         {
-            return Adapt(AsyncEnumerator.GetAdapter(() => Provider?.GetTradeHistory(to, options)));
+            return Adapt(AsyncEnumerator.GetAdapter(() => Provider?.GetTradeHistory(null, to, options.ToDomainEnum())));
         }
 
         public IAsyncEnumerator<TradeReport> GetAsync(ThQueryOptions options = ThQueryOptions.None)
         {
-            return AdaptAsync(Provider?.GetTradeHistory(options));
+            return AdaptAsync(Provider?.GetTradeHistory(null, null, options.ToDomainEnum()));
         }
 
         public IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime from, DateTime to, ThQueryOptions options = ThQueryOptions.None)
         {
-            return AdaptAsync(Provider?.GetTradeHistory(from, to, options));
+            return AdaptAsync(Provider?.GetTradeHistory(from, to, options.ToDomainEnum()));
         }
 
         public IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime to, ThQueryOptions options = ThQueryOptions.None)
         {
-            return AdaptAsync(Provider?.GetTradeHistory(to, options));
+            return AdaptAsync(Provider?.GetTradeHistory(null, to, options.ToDomainEnum()));
         }
 
-        private IEnumerable<TradeReport> Adapt(IEnumerable<TradeReportEntity> src)
+        private IEnumerable<TradeReport> Adapt(IEnumerable<Domain.TradeReportInfo> src)
         {
             return src.Select(e => new TradeReportAdapter(e, _symbols.GetOrDefault(e.Symbol)));
         }
 
-        private IAsyncEnumerator<TradeReport> AdaptAsync(IAsyncCrossDomainEnumerator<TradeReportEntity> src)
+        private IAsyncEnumerator<TradeReport> AdaptAsync(IAsyncPagedEnumerator<Domain.TradeReportInfo> src)
         {
             return src.AsAsync().Select(e => (TradeReport)new TradeReportAdapter(e, _symbols.GetOrDefault(e.Symbol)));
         }

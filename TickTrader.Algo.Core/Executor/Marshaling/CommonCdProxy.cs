@@ -36,19 +36,9 @@ namespace TickTrader.Algo.Core
 
         #region ITradeHistoryProvider
 
-        public IAsyncCrossDomainEnumerator<TradeReportEntity> GetTradeHistory(ThQueryOptions options)
-        {
-            return _tHistory.GetTradeHistory(options);
-        }
-
-        public IAsyncCrossDomainEnumerator<TradeReportEntity> GetTradeHistory(DateTime from, DateTime to, ThQueryOptions options)
+        public IAsyncPagedEnumerator<Domain.TradeReportInfo> GetTradeHistory(DateTime? from, DateTime? to, Domain.TradeHistoryRequestOptions options)
         {
             return _tHistory.GetTradeHistory(from, to, options);
-        }
-
-        public IAsyncCrossDomainEnumerator<TradeReportEntity> GetTradeHistory(DateTime to, ThQueryOptions options)
-        {
-            return _tHistory.GetTradeHistory(to, options);
         }
 
         #endregion

@@ -1115,44 +1115,6 @@ namespace TickTrader.Algo.Common.Model
             };
         }
 
-        private static Api.TradeRecordTypes GetRecordType(TradeTransactionReport rep)
-        {
-            if (rep.TradeTransactionReportType == TradeTransactionReportType.BalanceTransaction)
-            {
-                if (rep.TransactionAmount >= 0)
-                    return Api.TradeRecordTypes.Deposit;
-                else
-                    return Api.TradeRecordTypes.Withdrawal;
-            }
-            else if (rep.TradeTransactionReportType == TradeTransactionReportType.Credit)
-            {
-                return Api.TradeRecordTypes.Unknown;
-            }
-            else if (rep.OrderType == SFX.OrderType.Limit)
-            {
-                if (rep.OrderSide == SFX.OrderSide.Buy)
-                    return Api.TradeRecordTypes.BuyLimit;
-                else if (rep.OrderSide == SFX.OrderSide.Sell)
-                    return Api.TradeRecordTypes.SellLimit;
-            }
-            else if (rep.OrderType == SFX.OrderType.Position || rep.OrderType == SFX.OrderType.Market)
-            {
-                if (rep.OrderSide == SFX.OrderSide.Buy)
-                    return Api.TradeRecordTypes.Buy;
-                else if (rep.OrderSide == SFX.OrderSide.Sell)
-                    return Api.TradeRecordTypes.Sell;
-            }
-            else if (rep.OrderType == SFX.OrderType.Stop)
-            {
-                if (rep.OrderSide == SFX.OrderSide.Buy)
-                    return Api.TradeRecordTypes.BuyStop;
-                else if (rep.OrderSide == SFX.OrderSide.Sell)
-                    return Api.TradeRecordTypes.SellStop;
-            }
-
-            return Api.TradeRecordTypes.Unknown;
-        }
-
         private static Domain.TradeReportInfo.Types.ReportType Convert(TradeTransactionReportType type)
         {
             switch (type)

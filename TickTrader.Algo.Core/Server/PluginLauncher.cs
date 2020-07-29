@@ -48,6 +48,7 @@ namespace TickTrader.Algo.Core
             Core.Metadata = Handler;
             Core.AccInfoProvider = provider;
             Core.TradeExecutor = provider;
+            Core.TradeHistoryProvider = provider;
         }
 
 

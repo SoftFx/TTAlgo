@@ -45,13 +45,11 @@ namespace TickTrader.Algo.Core
 
     public interface ITradeHistoryProvider
     {
-        IAsyncCrossDomainEnumerator<TradeReportEntity> GetTradeHistory(ThQueryOptions options);
-        IAsyncCrossDomainEnumerator<TradeReportEntity> GetTradeHistory(DateTime from, DateTime to, ThQueryOptions options);
-        IAsyncCrossDomainEnumerator<TradeReportEntity> GetTradeHistory(DateTime to, ThQueryOptions options);
+        IAsyncPagedEnumerator<Domain.TradeReportInfo> GetTradeHistory(DateTime? from, DateTime? to, Domain.TradeHistoryRequestOptions options);
     }
 
-    public interface IAsyncCrossDomainEnumerator<T> : IDisposable
+    public interface IAsyncPagedEnumerator<T> : IDisposable
     {
-        void GetNextPage(CrossDomainTaskProxy<T[]> pageCallback);
+        Task<T[]> GetNextPage();
     }
 }

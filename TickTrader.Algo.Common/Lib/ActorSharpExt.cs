@@ -12,16 +12,16 @@ namespace TickTrader.Algo.Common.Lib
 {
     public static class ActorSharpExt
     {
-        public static IAsyncCrossDomainEnumerator<T> AsCrossDomain<T>(this BlockingChannel<T> channel)
+        public static IAsyncPagedEnumerator<T> AsPagedEnumerator<T>(this BlockingChannel<T> channel)
             where T : class
         {
-            return new CrossDomainAdapter<T>(channel);
+            return new PagedAdapter<T>(channel);
         }
 
-        public static IAsyncCrossDomainEnumerator<TOut> AsCrossDomain<TIn, TOut>(this BlockingChannel<TIn> channel, Func<TIn, TOut> selector)
+        public static IAsyncPagedEnumerator<TOut> AsPagedEnumerator<TIn, TOut>(this BlockingChannel<TIn> channel, Func<TIn, TOut> selector)
             where TOut : class
         {
-            return new CrossDomainSelectAdapter<TIn, TOut>(channel, selector);
+            return new PagedSelectAdapter<TIn, TOut>(channel, selector);
         }
 
         public static ISyncContext GetSyncContext<TActor>(this Ref<TActor> target)
@@ -75,58 +75,43 @@ namespace TickTrader.Algo.Common.Lib
             public void Send(Action asyncAction) => ActorSend(a => asyncAction());
         }
 
-        private class CrossDomainAdapter<T> : CrossDomainObject, IAsyncCrossDomainEnumerator<T>
+        private class PagedAdapter<T> : IAsyncPagedEnumerator<T>
             where T : class
         {
             private BlockingChannel<T> _channel;
 
-            public CrossDomainAdapter(BlockingChannel<T> channel)
+            public PagedAdapter(BlockingChannel<T> channel)
             {
                 _channel = channel;
             }
 
-            public void GetNextPage(CrossDomainTaskProxy<T[]> pageCallback)
+            public Task<T[]> GetNextPage()
             {
-                try
-                {
-                    pageCallback.SetResult(_channel.ReadPage());
-                }
-                catch (Exception ex)
-                {
-                    pageCallback.SetException(ex);
-                }
+                return Task.FromResult(_channel.ReadPage());
             }
 
-            public override void Dispose()
+            public void Dispose()
             {
                 _channel.Close();
-                base.Dispose();
             }
         }
 
-        private class CrossDomainSelectAdapter<TIn, TOut> : CrossDomainObject, IAsyncCrossDomainEnumerator<TOut>
+        private class PagedSelectAdapter<TIn, TOut> : IAsyncPagedEnumerator<TOut>
             where TOut : class
         {
             private BlockingChannel<TIn> _channel;
             private Func<TIn, TOut> _selector;
 
-            public CrossDomainSelectAdapter(BlockingChannel<TIn> channel, Func<TIn, TOut> selector)
+            public PagedSelectAdapter(BlockingChannel<TIn> channel, Func<TIn, TOut> selector)
             {
                 _channel = channel;
                 _selector = selector;
             }
 
-            public void GetNextPage(CrossDomainTaskProxy<TOut[]> pageCallback)
+            public Task<TOut[]> GetNextPage()
             {
-                try
-                {
-                    var page = _channel.ReadPage();
-                    pageCallback.SetResult(Select(page));
-                }
-                catch (Exception ex)
-                {
-                    pageCallback.SetException(ex);
-                }
+                var page = _channel.ReadPage();
+                return Task.FromResult(Select(page));
             }
 
             private TOut[] Select(TIn[] page)
@@ -142,10 +127,9 @@ namespace TickTrader.Algo.Common.Lib
                 return result;
             }
 
-            public override void Dispose()
+            public void Dispose()
             {
                 _channel.Close();
-                base.Dispose();
             }
         }
     }

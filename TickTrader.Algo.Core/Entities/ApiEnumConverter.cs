@@ -121,5 +121,37 @@ namespace TickTrader.Algo.Core
             }
 
         }
+
+        public static Domain.TradeHistoryRequestOptions ToDomainEnum(this ThQueryOptions options)
+        {
+            var res = Domain.TradeHistoryRequestOptions.NoOptions;
+
+            if (options.HasFlag(ThQueryOptions.SkipCanceled))
+                res |= Domain.TradeHistoryRequestOptions.SkipCanceled;
+            if (options.HasFlag(ThQueryOptions.Backwards))
+                res |= Domain.TradeHistoryRequestOptions.Backwards;
+
+            return res;
+        }
+
+        public static TradeExecActions ToApiEnum(this Domain.TradeReportInfo.Types.ReportType reportType)
+        {
+            switch(reportType)
+            {
+                case Domain.TradeReportInfo.Types.ReportType.NoType: return TradeExecActions.None;
+                case Domain.TradeReportInfo.Types.ReportType.OrderOpened: return TradeExecActions.OrderOpened;
+                case Domain.TradeReportInfo.Types.ReportType.OrderCanceled: return TradeExecActions.OrderCanceled;
+                case Domain.TradeReportInfo.Types.ReportType.OrderExpired: return TradeExecActions.OrderExpired;
+                case Domain.TradeReportInfo.Types.ReportType.OrderFilled: return TradeExecActions.OrderFilled;
+                case Domain.TradeReportInfo.Types.ReportType.PositionClosed: return TradeExecActions.PositionClosed;
+                case Domain.TradeReportInfo.Types.ReportType.PositionOpened: return TradeExecActions.PositionOpened;
+                case Domain.TradeReportInfo.Types.ReportType.BalanceTransaction: return TradeExecActions.BalanceTransaction;
+                case Domain.TradeReportInfo.Types.ReportType.Credit: return TradeExecActions.Credit;
+                case Domain.TradeReportInfo.Types.ReportType.OrderActivated: return TradeExecActions.OrderActivated;
+                case Domain.TradeReportInfo.Types.ReportType.TradeModified: return TradeExecActions.TradeModified;
+
+                default: throw new ArgumentException($"Unsupported report type {reportType}");
+            }
+        }
     }
 }

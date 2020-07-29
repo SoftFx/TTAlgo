@@ -178,7 +178,7 @@ namespace TickTrader.Algo.Core
 
         internal bool IsSameOrderId(OrderAccessor other)
         {
-            return other != null && string.CompareOrdinal(Id, other.Id) == 0;
+            return other != null && string.Equals(Id, other.Id);
         }
 
         internal bool IsSameOrder(OrderAccessor other)

@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using TickTrader.Algo.Core.Lib;
@@ -16,10 +17,14 @@ namespace TickTrader.Algo.Core
         private PluginExecutor _executor;
         private RpcSession _session;
 
+        private ConcurrentDictionary<string, object> _pendingRequestHandlers;
+
 
         public ServerRuntimeV1Handler(AlgoServer server)
         {
             _server = server;
+
+            _pendingRequestHandlers = new ConcurrentDictionary<string, object>();
         }
 
 
@@ -87,6 +92,10 @@ namespace TickTrader.Algo.Core
                 return CloseOrderRequestHandler(payload);
             else if (payload.Is(CancelOrderRequest.Descriptor))
                 return CancelOrderRequestHandler(payload);
+            else if (payload.Is(TradeHistoryRequest.Descriptor))
+                return TradeHistoryRequestHandler(callId, payload);
+            else if (payload.Is(TradeHistoryRequestNextPage.Descriptor))
+                return TradeHistoryRequestNextPageHandler(callId);
             return null;
         }
 
@@ -203,6 +212,35 @@ namespace TickTrader.Algo.Core
         private void UnitStoppedHandler()
         {
             _executor.OnStopped();
+        }
+
+        private Any TradeHistoryRequestHandler(string callId, Any payload)
+        {
+            var request = payload.Unpack<TradeHistoryRequest>();
+            var enumerator = _executor.TradeHistoryProvider.GetTradeHistory(request.From?.ToDateTime(), request.To?.ToDateTime(), request.Options);
+            if (enumerator != null)
+            {
+                _pendingRequestHandlers.TryAdd(callId, enumerator);
+            }
+            return null;
+        }
+
+        private Any TradeHistoryRequestNextPageHandler(string callId)
+        {
+            _pendingRequestHandlers.TryGetValue(callId, out var state);
+            var enumerator = (IAsyncPagedEnumerator<TradeReportInfo>)state;
+            var page = enumerator.GetNextPage().GetAwaiter().GetResult();
+            var response = new TradeHistoryPageResponse();
+            if (page == null || page.Length == 0)
+            {
+                _pendingRequestHandlers.TryRemove(callId, out state);
+                enumerator.Dispose();
+            }
+            else
+            {
+                response.Reports.AddRange(page);
+            }
+            return Any.Pack(response);
         }
     }
 }

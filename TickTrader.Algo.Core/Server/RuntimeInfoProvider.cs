@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections.Generic;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    internal class RuntimeInfoProvider : CrossDomainObject, IAccountInfoProvider, ITradeExecutor
+    internal class RuntimeInfoProvider : CrossDomainObject, IAccountInfoProvider, ITradeExecutor, ITradeHistoryProvider
     {
         private readonly UnitRuntimeV1Handler _handler;
         private readonly IAccountInfoProvider _remotingAccInfo;
@@ -73,5 +74,14 @@ namespace TickTrader.Algo.Core
         }
 
         #endregion ITradeExecutor
+
+        #region ITradeHistoryProvider
+
+        public IAsyncPagedEnumerator<Domain.TradeReportInfo> GetTradeHistory(DateTime? from, DateTime? to, TradeHistoryRequestOptions options)
+        {
+            return _handler.GetTradeHistory(new TradeHistoryRequest { From = from?.ToUniversalTime().ToTimestamp(), To = to?.ToUniversalTime().ToTimestamp(), Options = options });
+        }
+
+        #endregion ITradeHistoryProvider
     }
 }

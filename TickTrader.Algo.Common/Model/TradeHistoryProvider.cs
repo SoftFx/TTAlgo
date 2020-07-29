@@ -145,7 +145,7 @@ namespace TickTrader.Algo.Common.Model
 
             internal async Task Init()
             {
-                AlgoAdapter = new CrossDomainAapter(Actor);
+                AlgoAdapter = new PagedEnumeratorAdapter(Actor);
                 var reportStream = Channel.NewOutput<Domain.TradeReportInfo>(1000);
                 await Actor.OpenChannel(reportStream, (a, c) => a._listeners.Add(_ref, c));
                 ReadUpdatesLoop(reportStream);
@@ -182,40 +182,22 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private class CrossDomainAapter : CrossDomainObject, ITradeHistoryProvider
+        private class PagedEnumeratorAdapter : ITradeHistoryProvider
         {
             private Ref<TradeHistoryProvider> _ref;
 
-            public CrossDomainAapter(Ref<TradeHistoryProvider> historyRef)
+            public PagedEnumeratorAdapter(Ref<TradeHistoryProvider> historyRef)
             {
                 _ref = historyRef;
             }
 
-            IAsyncCrossDomainEnumerator<TradeReportEntity> ITradeHistoryProvider.GetTradeHistory(ThQueryOptions options)
+            public IAsyncPagedEnumerator<Domain.TradeReportInfo> GetTradeHistory(DateTime? from, DateTime? to, Domain.TradeHistoryRequestOptions options)
             {
-                return null;
-                //return GetTradeHistoryInternal(null, null, options).AsCrossDomain();
-            }
-
-            IAsyncCrossDomainEnumerator<TradeReportEntity> ITradeHistoryProvider.GetTradeHistory(DateTime from, DateTime to, ThQueryOptions options)
-            {
-                return null;
-                //return GetTradeHistoryInternal(from, to, options).AsCrossDomain();
-            }
-
-            IAsyncCrossDomainEnumerator<TradeReportEntity> ITradeHistoryProvider.GetTradeHistory(DateTime to, ThQueryOptions options)
-            {
-                return null;
-                //return GetTradeHistoryInternal(null, to, options).AsCrossDomain();
-            }
-
-            private BlockingChannel<Domain.TradeReportInfo> GetTradeHistoryInternal(DateTime? from, DateTime? to, ThQueryOptions options)
-            {
-                bool skipCancels = options.HasFlag(ThQueryOptions.SkipCanceled);
-                bool backwards = options.HasFlag(ThQueryOptions.Backwards);
+                bool skipCancels = options.HasFlag(Domain.TradeHistoryRequestOptions.SkipCanceled);
+                bool backwards = options.HasFlag(Domain.TradeHistoryRequestOptions.Backwards);
 
                 return _ref.OpenBlockingChannel<TradeHistoryProvider, Domain.TradeReportInfo>(ChannelDirections.Out, 1000,
-                    (a, c) => a.GetTradeHistory(c, from, to, skipCancels, backwards));
+                    (a, c) => a.GetTradeHistory(c, from, to, skipCancels, backwards)).AsPagedEnumerator();
             }
         }
     }

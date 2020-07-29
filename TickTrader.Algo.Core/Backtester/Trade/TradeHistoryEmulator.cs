@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Core
         private List<TradeReportAdapter> _history = new List<TradeReportAdapter>();
         private TimeKeyGenerator _idGenerator = new TimeKeyGenerator();
 
-        public TradeReportAdapter Create(DateTime time, SymbolAccessor smb, TradeExecActions action, TradeTransactionReason reason)
+        public TradeReportAdapter Create(DateTime time, SymbolAccessor smb, Domain.TradeReportInfo.Types.ReportType action, Domain.TradeReportInfo.Types.Reason reason)
         {
             return TradeReportAdapter.Create(_idGenerator.NextKey(time), smb, action, reason);
         }
@@ -34,7 +34,7 @@ namespace TickTrader.Algo.Core
             _history = new List<TradeReportAdapter>();
         }
 
-        public IPagedEnumerator<TradeReportEntity> Marshal()
+        public IPagedEnumerator<Domain.TradeReportInfo> Marshal()
         {
             const int pageSize = 4000;
 
@@ -138,7 +138,7 @@ namespace TickTrader.Algo.Core
         private static IEnumerable<TradeReport> SkipCancelReports(IEnumerable<TradeReportAdapter> src, ThQueryOptions options)
         {
             if (options.HasFlag(ThQueryOptions.SkipCanceled))
-                return src.Where(r => r.Entity.TradeTransactionReportType != TradeExecActions.OrderCanceled && r.Entity.TradeTransactionReportType != TradeExecActions.OrderExpired);
+                return src.Where(r => r.Entity.ReportType != Domain.TradeReportInfo.Types.ReportType.OrderCanceled && r.Entity.ReportType != Domain.TradeReportInfo.Types.ReportType.OrderExpired);
             return src;
         }
     }

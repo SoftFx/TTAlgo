@@ -19,13 +19,7 @@ namespace TickTrader.Algo.Core.Lib
             return new EmptyAsyncEnumerator<T>();
         }
 
-        public static IAsyncCrossDomainEnumerator<T> AsCrossDomain<T>(this IAsyncEnumerator<T[]> enumerator)
-           where T : class
-        {
-            return new CrossDomainAdapter<T>(enumerator);
-        }
-
-        public static IAsyncEnumerator<T> AsAsync<T>(this IAsyncCrossDomainEnumerator<T> enumerator)
+        public static IAsyncEnumerator<T> AsAsync<T>(this IAsyncPagedEnumerator<T> enumerator)
         {
             if (enumerator == null)
                 return Empty<T>();
@@ -44,42 +38,11 @@ namespace TickTrader.Algo.Core.Lib
             return new AsyncSelect<TSrc, TDst>(src, selector);
         }
 
-        public static AsyncEnumerableChannelAdapter<T> GetAdapter<T>(Func<IAsyncCrossDomainEnumerator<T>> factory) where T : class => new AsyncEnumerableChannelAdapter<T>(factory);
+        public static AsyncEnumerableChannelAdapter<T> GetAdapter<T>(Func<IAsyncPagedEnumerator<T>> factory) where T : class => new AsyncEnumerableChannelAdapter<T>(factory);
 
         public static IAsyncEnumerator<T> SimulateAsync<T>(this IEnumerable<T> src)
         {
             return new FakeAsyncEnumerator<T>(src);
-        }
-
-        internal class CrossDomainAdapter<T> : CrossDomainObject, IAsyncCrossDomainEnumerator<T>
-            where T : class
-        {
-            private IAsyncEnumerator<T[]> _enumerator;
-
-            public CrossDomainAdapter(IAsyncEnumerator<T[]> enumerator)
-            {
-                _enumerator = enumerator;
-            }
-
-            public override void Dispose()
-            {
-                _enumerator.Dispose();
-
-                base.Dispose();
-            }
-
-            public void GetNextPage(CrossDomainTaskProxy<T[]> pageCallback)
-            {
-                _enumerator.Next().ContinueWith(t =>
-                {
-                    if (t.IsFaulted)
-                        pageCallback.SetException(t.Exception);
-                    else if (t.Result)
-                        pageCallback.SetResult(_enumerator.Current);
-                    else
-                        pageCallback.SetResult(null);
-                });
-            }
         }
 
         internal class AsyncEnumeratorAdapter<T> : IAsyncEnumerator<T>
@@ -87,34 +50,30 @@ namespace TickTrader.Algo.Core.Lib
             private static readonly Task<bool> TrueResult = Task.FromResult(true);
             private static readonly Task<bool> FalseResult = Task.FromResult(false);
 
-            private IAsyncCrossDomainEnumerator<T> _proxy;
+            private IAsyncPagedEnumerator<T> _proxy;
             private T[] _page;
             private int _index;
 
             public T Current { get; private set; }
 
-            public AsyncEnumeratorAdapter(IAsyncCrossDomainEnumerator<T> proxy)
+            public AsyncEnumeratorAdapter(IAsyncPagedEnumerator<T> proxy)
             {
                 _proxy = proxy;
             }
 
             private async Task<bool> GetNextPage()
             {
-                using (var taskProxy = new CrossDomainTaskProxy<T[]>())
+                _page = await _proxy.GetNextPage();
+                if (_page != null && _page.Length > 0)
                 {
-                    _proxy.GetNextPage(taskProxy);
-                    _page = await taskProxy.Task;
-                    if (_page != null && _page.Length > 0)
-                    {
-                        _index = 1;
-                        Current = _page[0];
-                        return true;
-                    }
-                    else
-                    {
-                        _index = -1;
-                        return false;
-                    }
+                    _index = 1;
+                    Current = _page[0];
+                    return true;
+                }
+                else
+                {
+                    _index = -1;
+                    return false;
                 }
             }
 
@@ -200,9 +159,9 @@ namespace TickTrader.Algo.Core.Lib
 
         public class AsyncEnumerableChannelAdapter<T> : IEnumerable<T> where T : class
         {
-            private readonly Func<IAsyncCrossDomainEnumerator<T>> _factory;
+            private readonly Func<IAsyncPagedEnumerator<T>> _factory;
 
-            public AsyncEnumerableChannelAdapter(Func<IAsyncCrossDomainEnumerator<T>> factory)
+            public AsyncEnumerableChannelAdapter(Func<IAsyncPagedEnumerator<T>> factory)
             {
                 _factory = factory;
             }
@@ -214,7 +173,7 @@ namespace TickTrader.Algo.Core.Lib
 
         public class AsyncEnumeratorChannelAdapter<T> : IEnumerator<T>, IDisposable where T : class
         {
-            private IAsyncCrossDomainEnumerator<T> _enumerator;
+            private IAsyncPagedEnumerator<T> _enumerator;
 
             private List<T> _page;
             private int _position = -1;
@@ -223,7 +182,7 @@ namespace TickTrader.Algo.Core.Lib
 
             object IEnumerator.Current => _page?[_position];
 
-            public AsyncEnumeratorChannelAdapter(Func<IAsyncCrossDomainEnumerator<T>> factory)
+            public AsyncEnumeratorChannelAdapter(Func<IAsyncPagedEnumerator<T>> factory)
             {
                 _enumerator = factory();
             }
@@ -240,9 +199,7 @@ namespace TickTrader.Algo.Core.Lib
 
                 if (_page == null || _position == _page.Count - 1)
                 {
-                    var callback = new CrossDomainTaskProxy<T[]>();
-                    _enumerator.GetNextPage(callback);
-                    _page = callback.Result?.ToList();
+                    _page = _enumerator.GetNextPage().GetAwaiter().GetResult()?.ToList();
                     _position = -1;
 
                     if (_page == null)
