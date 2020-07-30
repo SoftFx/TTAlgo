@@ -369,6 +369,8 @@ message TradeHistoryRequest {
 
 message TradeHistoryRequestNextPage { }
 
+message TradeHistoryRequestDispose { }
+
 message TradeHistoryPageResponse {
     repeated TradeReportInfo reports = 1;
 }

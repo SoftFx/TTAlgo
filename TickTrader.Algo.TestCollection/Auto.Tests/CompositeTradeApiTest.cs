@@ -81,7 +81,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             //await Delay(PauseBeforeAndAfterTests);
 
             ////History test
-            //await TryPerformTest(() => FullHistoryTestRun(), 1);
+            await TryPerformTest(() => FullHistoryTestRun(), 1);
 
             UnsubscribeEventListening();
 

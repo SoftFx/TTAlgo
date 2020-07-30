@@ -108,7 +108,8 @@ namespace TickTrader.Algo.Core
         {
             var callId = RpcMessage.GenerateCallId();
             var context = new PagedEnumeratorAdapter<Domain.TradeReportInfo>(TradeHistoryPageResponseHandler,
-                () => _session.Tell(RpcMessage.Request(new TradeHistoryRequestNextPage(), callId)));
+                () => _session.Tell(RpcMessage.Request(new TradeHistoryRequestNextPage(), callId)),
+                () => _session.Tell(RpcMessage.Request(new TradeHistoryRequestDispose(), callId)));
             _session.Ask(RpcMessage.Request(request, callId), context);
             return context;
         }
@@ -281,17 +282,21 @@ namespace TickTrader.Algo.Core
 
             Action GetNextPageHandler { get; }
 
+            Action DisposeHandler { get; }
 
-            public PagedEnumeratorAdapter(Func<TaskCompletionSource<T[]>, Any, bool> responseHandler, Action getNextPageHandler)
+
+            public PagedEnumeratorAdapter(Func<TaskCompletionSource<T[]>, Any, bool> responseHandler, Action getNextPageHandler, Action disposeHandler)
             {
                 ResponseHandler = responseHandler;
                 GetNextPageHandler = getNextPageHandler;
+                DisposeHandler = disposeHandler;
             }
 
 
             public void Dispose()
             {
                 _pageTaskSrc?.TrySetCanceled();
+                DisposeHandler();
             }
 
             public Task<T[]> GetNextPage()
@@ -300,8 +305,9 @@ namespace TickTrader.Algo.Core
                     throw new Exception("Can't get more than one page at a time");
 
                 _pageTaskSrc = new TaskCompletionSource<T[]>();
+                var res = _pageTaskSrc.Task;
                 GetNextPageHandler();
-                return _pageTaskSrc.Task;
+                return res;
             }
 
             public bool OnNext(Any payload)

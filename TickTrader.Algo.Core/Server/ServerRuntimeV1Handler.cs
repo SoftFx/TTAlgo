@@ -96,6 +96,8 @@ namespace TickTrader.Algo.Core
                 return TradeHistoryRequestHandler(callId, payload);
             else if (payload.Is(TradeHistoryRequestNextPage.Descriptor))
                 return TradeHistoryRequestNextPageHandler(callId);
+            else if (payload.Is(TradeHistoryRequestDispose.Descriptor))
+                return TradeHistoryRequestDisposeHandler(callId);
             return null;
         }
 
@@ -241,6 +243,16 @@ namespace TickTrader.Algo.Core
                 response.Reports.AddRange(page);
             }
             return Any.Pack(response);
+        }
+
+        private Any TradeHistoryRequestDisposeHandler(string callId)
+        {
+            if (_pendingRequestHandlers.TryRemove(callId, out var state))
+            {
+                var enumerator = (IAsyncPagedEnumerator<TradeReportInfo>)state;
+                enumerator.Dispose();
+            }
+            return null;
         }
     }
 }
