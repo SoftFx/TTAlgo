@@ -9,30 +9,29 @@ namespace TickTrader.Algo.Core
     {
         private SymbolAccessor _symbol;
         private double _lotSize;
-        private int _leverage;
         private ReadEntity _readEntity;
         private WriteEntity _writeEntity;
         private Order _apiOrder;
         private IOrderCalcInfo _calcInfo;
 
-        internal OrderAccessor(OrderInfo info, Func<string, SymbolAccessor> symbolProvider, int leverage)
-            : this(info, symbolProvider(info.Symbol), leverage)
+        internal OrderAccessor(OrderInfo info, Func<string, SymbolAccessor> symbolProvider)
+            : this(info, symbolProvider(info.Symbol))
         {
 
         }
 
-        internal OrderAccessor(OrderInfo info, SymbolAccessor symbol, int leverage)
+        internal OrderAccessor(OrderInfo info, SymbolAccessor symbol)
         {
-            Init(symbol, leverage);
+            Init(symbol);
 
             _readEntity = new ReadEntity(this, info);
             _apiOrder = _readEntity;
             _calcInfo = _readEntity;
         }
 
-        internal OrderAccessor(SymbolAccessor symbol, int leverage)
+        internal OrderAccessor(SymbolAccessor symbol)
         {
-            Init(symbol, leverage);
+            Init(symbol);
 
             _writeEntity = new WriteEntity(this);
             _apiOrder = _writeEntity;
@@ -41,17 +40,16 @@ namespace TickTrader.Algo.Core
 
         private OrderAccessor() { }
 
-        private void Init(SymbolAccessor symbol, int leverage)
+        private void Init(SymbolAccessor symbol)
         {
             _symbol = symbol;
             _lotSize = _symbol?.ContractSize ?? 1;
-            _leverage = leverage;
         }
 
         public OrderAccessor Clone()
         {
             var clone = new OrderAccessor();
-            clone.Init(_symbol, _leverage);
+            clone.Init(_symbol);
             if (_readEntity != null)
             {
                 clone._readEntity = _readEntity.Clone(clone);
@@ -260,7 +258,7 @@ namespace TickTrader.Algo.Core
             double? IOrderCalcInfo.StopPrice => _info.StopPrice;
             decimal? IOrderCalcInfo.Commission => (decimal)_info.Commission;
             decimal? IOrderCalcInfo.Swap => (decimal)_info.Swap;
-            bool IMarginProfitCalc.IsHidden => _info.IsHidden();
+            bool IMarginProfitCalc.IsHidden => _info.IsHidden;
 
             decimal IMarginProfitCalc.RemainingAmount => (decimal)_info.RemainingAmount;
 

@@ -125,13 +125,13 @@ namespace TickTrader.Algo.Core
             }
 
             if (eReport.EntityAction == Domain.OrderExecReport.Types.EntityAction.Added)
-                return collection.Add(eReport.OrderCopy, _account);
+                return collection.Add(eReport.OrderCopy);
             if (eReport.EntityAction == Domain.OrderExecReport.Types.EntityAction.Removed)
-                return collection.UpdateAndRemove(eReport.OrderCopy);
+                return collection.Remove(eReport.OrderCopy, true);
             if (eReport.EntityAction == Domain.OrderExecReport.Types.EntityAction.Updated)
-                return collection.Replace(eReport.OrderCopy);
+                return collection.Update(eReport.OrderCopy);
 
-            return new OrderAccessor(eReport.OrderCopy, _symbols.GetOrDefault, accProxy.Leverage);
+            return new OrderAccessor(eReport.OrderCopy, _symbols.GetOrDefault);
         }
 
         private void DataProvider_BalanceUpdated(Domain.BalanceOperation report)
@@ -302,7 +302,7 @@ namespace TickTrader.Algo.Core
                 if (eReport.OrderCopy.Type == Domain.OrderInfo.Types.Type.Market)
                 {
                     // market orders are never added to orders collection. Cash account has actually limit IoC
-                    var clone = new OrderAccessor(eReport.OrderCopy, _symbols.GetOrDefault, _account.Leverage);
+                    var clone = new OrderAccessor(eReport.OrderCopy, _symbols.GetOrDefault);
                     if (clone != null)
                     {
                         var isOwnOrder = CallListener(eReport);
@@ -326,7 +326,7 @@ namespace TickTrader.Algo.Core
                     }
                     else
                     {
-                        var clone = new OrderAccessor(eReport.OrderCopy, _symbols.GetOrDefault, _account.Leverage);
+                        var clone = new OrderAccessor(eReport.OrderCopy, _symbols.GetOrDefault);
                         if (clone != null)
                         {
                             if (!IsInvisible(clone))

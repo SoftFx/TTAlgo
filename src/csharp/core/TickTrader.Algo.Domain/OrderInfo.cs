@@ -66,7 +66,6 @@ namespace TickTrader.Algo.Domain
 
         public void Update(IOrderUpdateInfo info)
         {
-
             var oldAmount = RequestedAmount;
             var oldPrice = IsStopOrder ? StopPrice : Price;
             var oldStopPrice = StopPrice;
@@ -76,7 +75,6 @@ namespace TickTrader.Algo.Domain
             var oldIsHidden = IsHidden;
 
             Id = info.Id;
-            //InstanceId = info.InstanceId;
             Symbol = info.Symbol;
             RequestedAmount = info.RequestedAmount;
             RemainingAmount = (double)info.RemainingAmount;
@@ -125,15 +123,6 @@ namespace TickTrader.Algo.Domain
         }
     }
 
-    public static class OrderInfoExtensions
-    {
-        public static bool IsHidden(this OrderInfo order)
-        {
-            var maxVisibleVolume = order.MaxVisibleAmount;
-            return maxVisibleVolume.HasValue && Math.Abs(maxVisibleVolume.Value) < 1e-9;
-        }
-    }
-
     public static class OrderOptionsExtensions
     {
         public static string GetString(this OrderOptions options) => options != OrderOptions.None ? (options ^ OrderOptions.None).ToString() : string.Empty;
@@ -141,6 +130,8 @@ namespace TickTrader.Algo.Domain
 
     public interface IOrderInfo : IOrderCalcInfo
     {
+        string Id { get; }
+
         IOrderCalculator Calculator { get; set; }
 
         decimal CashMargin { get; set; }

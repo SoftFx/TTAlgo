@@ -66,7 +66,7 @@ namespace TickTrader.Algo.Core
                 if (resCode != OrderCmdResultCodes.Ok)
                     resultEntity = new OrderResultEntity(resCode, null, orderResp.TransactionTime);
                 else
-                    resultEntity = new OrderResultEntity(resCode, new OrderAccessor(orderResp.ResultingOrder, smbMetadata, _account.Leverage).ApiOrder, orderResp.TransactionTime);
+                    resultEntity = new OrderResultEntity(resCode, new OrderAccessor(orderResp.ResultingOrder, smbMetadata).ApiOrder, orderResp.TransactionTime);
             }
             else
             {
@@ -127,7 +127,7 @@ namespace TickTrader.Algo.Core
                 var resCode = orderResp.ResultCode.ToApiEnum();
 
                 if (resCode == OrderCmdResultCodes.Ok)
-                    resultEntity = new OrderResultEntity(resCode, new OrderAccessor(orderResp.ResultingOrder, smbMetadata, _account.Leverage).ApiOrder, orderResp.TransactionTime);
+                    resultEntity = new OrderResultEntity(resCode, new OrderAccessor(orderResp.ResultingOrder, smbMetadata).ApiOrder, orderResp.TransactionTime);
                 else
                     resultEntity = new OrderResultEntity(resCode, orderToClose, orderResp.TransactionTime);
             }
@@ -203,7 +203,7 @@ namespace TickTrader.Algo.Core
 
                 if (resCode == OrderCmdResultCodes.Ok)
                 {
-                    resultEntity = new OrderResultEntity(resCode, new OrderAccessor(result.ResultingOrder, smbMetadata, _account.Leverage).ApiOrder, result.TransactionTime);
+                    resultEntity = new OrderResultEntity(resCode, new OrderAccessor(result.ResultingOrder, smbMetadata).ApiOrder, result.TransactionTime);
                 }
                 else
                 {

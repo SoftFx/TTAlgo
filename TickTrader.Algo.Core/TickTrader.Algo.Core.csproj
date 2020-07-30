@@ -208,6 +208,7 @@
     <Compile Include="Entities\SymbolsCollection.cs" />
     <Compile Include="Builder\IndicatorBuilder.cs" />
     <Compile Include="Entities\TimeKeyGenerator.cs" />
+    <Compile Include="Entities\TradeEntityCollection.cs" />
     <Compile Include="Entities\TradeReportEntity.cs" />
     <Compile Include="Entities\TradeResultEntity.cs" />
     <Compile Include="Executor\Marshaling\CommonCdProxy.cs" />

@@ -5,18 +5,17 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    internal class OrderFilteredCollection : OrderList
+    internal sealed class OrderFilteredCollection : OrderList
     {
         private Dictionary<string, Order> _filteredOrders = new Dictionary<string, Order>();
-        private OrdersCollection.OrdersAdapter _originalList;
+        private OrdersCollection _originalList;
         private Predicate<Order> _predicate;
 
         public Order this[string id]
         {
             get
             {
-                Order entity;
-                if (!_filteredOrders.TryGetValue(id, out entity))
+                if (!_filteredOrders.TryGetValue(id, out Order entity))
                     return Null.Order;
                 return entity;
             }
@@ -36,15 +35,15 @@ namespace TickTrader.Algo.Core
         public event Action<Order> Replaced { add { } remove { } }
         public event Action<OrderActivatedEventArgs> Activated;
 
-        public OrderFilteredCollection(OrdersCollection.OrdersAdapter originalList, Predicate<Order> predicate)
+        public OrderFilteredCollection(OrdersCollection originalList, Predicate<Order> predicate)
         {
             _originalList = originalList;
             _predicate = predicate;
 
             foreach (var order in originalList)
             {
-                if (predicate(order))
-                    _filteredOrders.Add(order.Id, order);
+                if (predicate(order.ApiOrder))
+                    _filteredOrders.Add(order.Id, order.ApiOrder);
             }
 
             _originalList.Added += OriginalList_Added;
@@ -56,7 +55,7 @@ namespace TickTrader.Algo.Core
             _originalList.Modified += OriginalList_Modified;
             _originalList.Opened += OriginalList_Opened;
             _originalList.Activated += OriginalList_Activated;
-            _originalList.Cleared += OriginalList_Cleared;
+            //_originalList.Cleared += OriginalList_Cleared;
             _originalList.Splitted += OriginalList_Splitted;
         }
 

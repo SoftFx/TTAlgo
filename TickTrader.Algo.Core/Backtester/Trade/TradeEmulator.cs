@@ -188,7 +188,7 @@ namespace TickTrader.Algo.Core
                     //Logger.Info(() => LogPrefix + "Processing cancel order request " + Request);
 
                     // Check schedule for the symbol
-                    var order = _acc.Orders.GetOrderOrThrow(orderId);
+                    var order = _acc.Orders.GetOrderOrNull(orderId) ?? throw new OrderValidationError($"Order Not Found {orderId}", OrderCmdResultCodes.OrderNotFound);
                     //var symbol = node.GetSymbolEntity(order.Symbol);
 
                     //Facade.Infrustructure.LogTransactionDetails(() => "Processing cancel order request " + Request, JournalEntrySeverities.Info, Token, TransactDetails.Create(order.OrderId, symbol.Name));
@@ -426,7 +426,7 @@ namespace TickTrader.Algo.Core
         {
             var symbolInfo = (SymbolAccessor)((OrderCalculator)orderCalc).SymbolInfo;
 
-            var order = new OrderAccessor(symbolInfo, _leverage);
+            var order = new OrderAccessor(symbolInfo);
 
             order.Entity.Id = NewOrderId();
             //order.SymbolPrecision = symbolInfo.Digits;
@@ -591,7 +591,7 @@ namespace TickTrader.Algo.Core
         private OrderAccessor ReplaceOrder(ModifyOrderRequestContext request)
         {
             // Check schedule for the symbol
-            var order = _acc.Orders.GetOrderOrThrow(request.OrderId);
+            var order = _acc.Orders.GetOrderOrNull(request.OrderId) ?? throw new OrderValidationError($"Order Not Found {request.OrderId}", OrderCmdResultCodes.OrderNotFound);
             var symbol = _context.Builder.Symbols.GetOrDefault(order.Symbol);
 
             //Facade.Infrustructure.LogTransactionDetails(() => "Processing modify order request " + Request, JournalEntrySeverities.Info, Token, TransactDetails.Create(order.OrderId, symbol.Name));
@@ -1052,7 +1052,7 @@ namespace TickTrader.Algo.Core
             }
 
             // remove order
-            _acc.Orders.Remove(order.Id);
+            _acc.Orders.Remove(order);
 
             // journal
             //LogTransactionDetails(() => $"Confirmed Order Cancellation #{orderId}, reason={trReason}", JournalEntrySeverities.Info, order.Clone());
@@ -1128,7 +1128,7 @@ namespace TickTrader.Algo.Core
             }
             else
             {
-                position = new OrderAccessor(smb, _leverage);
+                position = new OrderAccessor(smb);
                 position.Entity.Id = NewOrderId();
                 position.Entity.Symbol = smb.Name;
                 //position.ClientOrderId = Guid.NewGuid().ToString("D");
@@ -1345,7 +1345,7 @@ namespace TickTrader.Algo.Core
         internal NetPositionOpenInfo OpenNetPositionFromOrder(OrderAccessor fromOrder, decimal fillAmount, double fillPrice, TradeReportAdapter tradeReport)
         {
             var smb = fromOrder.SymbolInfo;
-            var position = _acc.NetPositions.GetOrCreatePosition(smb.Name, NewOrderId);
+            var position = _acc.NetPositions.GetOrCreatePosition(smb.Name, NewOrderId());
             position.Increase(fillAmount, (decimal)fillPrice, fromOrder.Side);
             position.Info.Modified = _scheduler.UnsafeVirtualTimePoint.ToTimestamp();
 
@@ -1363,7 +1363,7 @@ namespace TickTrader.Algo.Core
             tradeReport.Entity.TransactionAmount = (double)balanceMovement;
 
             if (fromOrder.Type == Domain.OrderInfo.Types.Type.Market || fromOrder.RemainingAmount == 0)
-                _acc.Orders.Remove(fromOrder.Id);
+                _acc.Orders.Remove(fromOrder);
 
             // journal;
             //LogTransactionDetails(() => "Position opened: symbol=" + smb.Name + " price=" + fillPrice + " amount=" + fillAmount + " commision=" + charges.Commission + " reason=" + tradeReport.TrReason,
@@ -1576,7 +1576,7 @@ namespace TickTrader.Algo.Core
             order.Entity.ActionNo++;
 
             // remove order
-            _acc.Orders.Remove(order.Id);
+            _acc.Orders.Remove(order);
 
             // journal
             //LogTransactionDetails(() => $"Activate StopLimit Order #{order.OrderId}, reason={reason}", JournalEntrySeverities.Info, order.Clone());
@@ -1695,7 +1695,7 @@ namespace TickTrader.Algo.Core
             if (remove)
             {
                 //position.Status = OrderStatuses.Filled;
-                _acc.Orders.Remove(position.Id);
+                _acc.Orders.Remove(position);
                 UnregisterOrder(position);
             }
             //else
@@ -1830,7 +1830,7 @@ namespace TickTrader.Algo.Core
 
         private void CloseAllPositions(Domain.TradeReportInfo.Types.Reason reason)
         {
-            var toClose = _acc.Orders.Where(o => o.Type == Domain.OrderInfo.Types.Type.Position).ToList();
+            var toClose = _acc.Orders.Values.Where(o => o.Type == Domain.OrderInfo.Types.Type.Position).ToList();
 
             if (toClose.Count > 0)
             {
@@ -1843,7 +1843,7 @@ namespace TickTrader.Algo.Core
                 }
             }
 
-            var netPosToClose = _acc.NetPositions.ToList();
+            var netPosToClose = _acc.NetPositions.Values.ToList();
 
             if (netPosToClose.Count > 0)
             {
@@ -1862,7 +1862,7 @@ namespace TickTrader.Algo.Core
 
         private void CancelAllPendings(Domain.TradeReportInfo.Types.Reason reason)
         {
-            var toCancel = _acc.Orders.Where(o => o.Entity.IsPending).ToList();
+            var toCancel = _acc.Orders.Values.Where(o => o.Entity.IsPending).ToList();
 
             if (toCancel.Count > 0)
             {
@@ -1954,7 +1954,7 @@ namespace TickTrader.Algo.Core
 
             if (smbInfo.SwapEnabled)
             {
-                var positions = _acc.Orders.Where(o => o.Type == Domain.OrderInfo.Types.Type.Position && o.Symbol == smbInfo.Name).ToList(); // Perf. warning: .ToList()
+                var positions = _acc.Orders.Values.Where(o => o.Type == Domain.OrderInfo.Types.Type.Position && o.Symbol == smbInfo.Name).ToList(); // Perf. warning: .ToList()
 
                 if (positions != null)
                 {

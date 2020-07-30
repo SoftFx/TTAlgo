@@ -8,280 +8,103 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    public class OrdersCollection : IEnumerable<OrderAccessor>
+    public sealed class OrdersCollection : OrderList, IEnumerable<OrderAccessor>
     {
-        private PluginBuilder builder;
-        private OrdersAdapter fixture;
+        private readonly ConcurrentDictionary<string, OrderAccessor> _orders = new ConcurrentDictionary<string, OrderAccessor>();
+        private readonly PluginBuilder _builder;
 
-        internal OrdersAdapter OrderListImpl => fixture;
-        internal bool IsEnabled { get { return true; } }
+        public int Count => _orders.Count;
+
+        public Order this[string id] => !_orders.TryGetValue(id, out OrderAccessor entity) ? entity.ApiOrder : Null.Order;
+
+        public IEnumerable<OrderAccessor> Values => _orders.Values;
 
         internal OrdersCollection(PluginBuilder builder)
         {
-            this.builder = builder;
-            fixture = new OrdersAdapter(builder.Symbols);
+            _builder = builder;
         }
 
-        internal void Add(OrderAccessor order)
+        internal OrderAccessor Add(OrderAccessor order)
         {
-            fixture.Add(order);
-            Added?.Invoke(order);
-        }
+            if (!_orders.TryAdd(order.Id, order))
+                throw new ArgumentException("Order #" + order.Id + " already exist!");
 
-        public OrderAccessor Add(OrderInfo entity, AccountAccessor acc)
-        {
-            var result = fixture.Add(entity, acc);
-            Added?.Invoke(result);
-            return result;
-        }
+            Added?.Invoke(order.ApiOrder);
+            AddedInfo?.Invoke(order);
 
-        public OrderAccessor Replace(OrderInfo entity)
-        {
-            return fixture.Update(entity, IsEnabled);
-        }
-
-        public OrderAccessor GetOrderOrThrow(string id)
-        {
-            var order = fixture.GetOrNull(id);
-            if (order == null)
-                throw new OrderValidationError("Order Not Found " + id, OrderCmdResultCodes.OrderNotFound);
             return order;
         }
 
-        public OrderAccessor GetOrderOrNull(string id)
+        public OrderAccessor Add(OrderInfo info) => Add(new OrderAccessor(info, _builder.Symbols.GetOrDefault(info.Symbol)));
+
+        public OrderAccessor Update(OrderInfo info)
         {
-            return fixture.GetOrNull(id);
-        }
-
-        public OrderAccessor Remove(string orderId)
-        {
-            var order = fixture.Remove(orderId);
-            if (order != null)
-                Removed?.Invoke(order);
-            return order;
-        }
-
-        public OrderAccessor UpdateAndRemove(OrderInfo info)
-        {
-            var order = fixture.Remove(info.Id);
-            order?.Update(info);
-            if (order != null)
-                Removed?.Invoke(order);
-            return order;
-        }
-
-        public void Clear()
-        {
-            fixture.Clear();
-        }
-
-        public void FireOrderOpened(OrderOpenedEventArgs args)
-        {
-            builder.InvokePluginMethod((b, p) => b.Account.Orders.OrderListImpl.FireOrderOpened(p), args);
-        }
-
-        public void FireOrderModified(OrderModifiedEventArgs args)
-        {
-            builder.InvokePluginMethod((b, p) => b.Account.Orders.OrderListImpl.FireOrderModified(p), args);
-        }
-
-        public void FireOrderSplitted(OrderSplittedEventArgs args)
-        {
-            builder.InvokePluginMethod((b, p) => b.Account.Orders.OrderListImpl.FireOrderSplitted(p), args);
-        }
-
-        public void FireOrderClosed(OrderClosedEventArgs args)
-        {
-            builder.InvokePluginMethod((b, p) => b.Account.Orders.OrderListImpl.FireOrderClosed(p), args);
-        }
-
-        public void FireOrderCanceled(OrderCanceledEventArgs args)
-        {
-            builder.InvokePluginMethod((b, p) => b.Account.Orders.OrderListImpl.FireOrderCanceled(p), args);
-        }
-
-        public void FireOrderExpired(OrderExpiredEventArgs args)
-        {
-            builder.InvokePluginMethod((b, p) => b.Account.Orders.OrderListImpl.FireOrderExpired(p), args);
-        }
-
-        public void FireOrderFilled(OrderFilledEventArgs args)
-        {
-            builder.InvokePluginMethod((b, p) => b.Account.Orders.OrderListImpl.FireOrderFilled(p), args);
-        }
-
-        public void FireOrderActivated(OrderActivatedEventArgs args)
-        {
-            builder.InvokePluginMethod((b, p) => b.Account.Orders.OrderListImpl.FireOrderActivated(args));
-        }
-
-        public IEnumerator<OrderAccessor> GetEnumerator()
-        {
-            return ((IEnumerable<OrderAccessor>)OrderListImpl).GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        public event Action<OrderAccessor> Added;
-        public event Action<OrderAccessor> Removed;
-        //public event Action<OrderAccessor> Replaced;
-
-        internal class OrdersAdapter : OrderList, IEnumerable<OrderAccessor>
-        {
-            private ConcurrentDictionary<string, OrderAccessor> orders = new ConcurrentDictionary<string, OrderAccessor>();
-            private SymbolsCollection _symbols;
-
-            internal OrdersAdapter(SymbolsCollection symbols)
+            if (_orders.TryGetValue(info.Id, out OrderAccessor order))
             {
-                _symbols = symbols;
-            }
-
-            public int Count { get { return orders.Count; } }
-
-            public Order this[string id]
-            {
-                get
+                if (order.Modified <= info.Modified.ToDateTime())
                 {
-                    OrderAccessor entity;
-                    if (!orders.TryGetValue(id, out entity))
-                        return Null.Order;
-                    return entity.ApiOrder;
+                    order.Update(info);
+                    Replaced?.Invoke(order.ApiOrder);
                 }
             }
 
-            public void Add(OrderAccessor order)
-            {
-                if (!orders.TryAdd(order.Id, order))
-                    throw new ArgumentException("Order #" + order.Id + " already exist!");
+            return order;
+        }
 
-                Added?.Invoke(order.ApiOrder);
+        public OrderAccessor GetOrderOrNull(string id) => _orders.GetOrDefault(id);
+
+        public OrderAccessor Remove(IOrderInfo info, bool update = false)
+        {
+            _orders.TryRemove(info.Id, out var order);
+
+            if (!update)
+                order?.Update((OrderInfo)info); //temporary convert
+
+            if (order != null)
+            {
+                Removed?.Invoke(order.ApiOrder);
+                RemovedInfo?.Invoke(order);
             }
 
-            public OrderAccessor Add(OrderInfo info, AccountAccessor acc)
-            {
-                var accessor = new OrderAccessor(info, _symbols.GetOrDefault, acc.Leverage);
-                if (!orders.TryAdd(info.Id, accessor))
-                    throw new ArgumentException("Order #" + info.Id + " already exist!");
+            return order;
+        }
 
-                Added?.Invoke(accessor.ApiOrder);
+        public void Clear() => _orders.Clear();
 
-                return accessor;
-            }
+        public void FireOrderOpened(OrderOpenedEventArgs args) => _builder.InvokePluginMethod((b, p) => Opened?.Invoke(p), args);
 
-            public OrderAccessor Update(OrderInfo info, bool fireEvent)
-            {
-                OrderAccessor order;
+        public void FireOrderModified(OrderModifiedEventArgs args) => _builder.InvokePluginMethod((b, p) => Modified?.Invoke(p), args);
 
-                if (this.orders.TryGetValue(info.Id, out order))
-                {
-                    if (order.Modified <= info.Modified.ToDateTime())
-                    {
-                        order.Update(info);
-                        Replaced?.Invoke(order.ApiOrder);
-                    }
-                }
+        public void FireOrderSplitted(OrderSplittedEventArgs args) => _builder.InvokePluginMethod((b, p) => Splitted?.Invoke(p), args);
 
-                return order;
-            }
+        public void FireOrderClosed(OrderClosedEventArgs args) => _builder.InvokePluginMethod((b, p) => Closed?.Invoke(p), args);
 
-            public OrderAccessor Remove(string orderId)
-            {
-                OrderAccessor removed;
+        public void FireOrderCanceled(OrderCanceledEventArgs args) => _builder.InvokePluginMethod((b, p) => Canceled?.Invoke(p), args);
 
-                if (orders.TryRemove(orderId, out removed))
-                    Removed?.Invoke(removed.ApiOrder);
+        public void FireOrderExpired(OrderExpiredEventArgs args) => _builder.InvokePluginMethod((b, p) => Expired?.Invoke(p), args);
 
-                return removed;
-            }
+        public void FireOrderFilled(OrderFilledEventArgs args) => _builder.InvokePluginMethod((b, p) => Filled?.Invoke(p), args);
 
-            public OrderAccessor GetOrNull(string orderId)
-            {
-                OrderAccessor entity;
-                orders.TryGetValue(orderId, out entity);
-                return entity;
-            }
+        public void FireOrderActivated(OrderActivatedEventArgs args) => _builder.InvokePluginMethod((b, p) => Activated?.Invoke(p), args);
 
-            public void Clear()
-            {
-                orders.Clear();
-                Cleared?.Invoke();
-            }
+        public IEnumerator<OrderAccessor> GetEnumerator() => _orders.Values.GetEnumerator();
 
-            public void FireOrderOpened(OrderOpenedEventArgs args)
-            {
-                Opened(args);
-            }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-            public void FireOrderModified(OrderModifiedEventArgs args)
-            {
-                Modified(args);
-            }
+        IEnumerator<Order> IEnumerable<Order>.GetEnumerator() => _orders.Values.Select(u => u.ApiOrder).GetEnumerator();
 
-            public void FireOrderClosed(OrderClosedEventArgs args)
-            {
-                Closed(args);
-            }
-
-            public void FireOrderCanceled(OrderCanceledEventArgs args)
-            {
-                Canceled(args);
-            }
-
-            public void FireOrderExpired(OrderExpiredEventArgs args)
-            {
-                Expired(args);
-            }
-
-            public void FireOrderFilled(OrderFilledEventArgs args)
-            {
-                Filled(args);
-            }
-
-            public void FireOrderActivated(OrderActivatedEventArgs args)
-            {
-                Activated(args);
-            }
-
-            public void FireOrderSplitted(OrderSplittedEventArgs args)
-            {
-                Splitted(args);
-            }
-
-            public event Action<OrderClosedEventArgs> Closed = delegate { };
-            public event Action<OrderModifiedEventArgs> Modified = delegate { };
-            public event Action<OrderOpenedEventArgs> Opened = delegate { };
-            public event Action<OrderCanceledEventArgs> Canceled = delegate { };
-            public event Action<OrderExpiredEventArgs> Expired = delegate { };
-            public event Action<OrderFilledEventArgs> Filled = delegate { };
-            public event Action<OrderActivatedEventArgs> Activated = delegate { };
-            public event Action<OrderSplittedEventArgs> Splitted = delegate { };
-            public event Action<Order> Added;
-            public event Action<Order> Removed;
-            public event Action<Order> Replaced;
-            public event Action Cleared;
-
-            public IEnumerator<OrderAccessor> GetTypedEnumerator()
-            {
-                return orders.Values.GetEnumerator();
-            }
-
-            public IEnumerator<Order> GetEnumerator()
-            {
-                return orders.Values.Select(o => o.ApiOrder).GetEnumerator();
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return orders.Values.GetEnumerator();
-            }
-
-            IEnumerator<OrderAccessor> IEnumerable<OrderAccessor>.GetEnumerator()
-            {
-                return orders.Values.GetEnumerator();
-            }
-        }      
+        public event Action<Order> Added;
+        public event Action<Order> Removed;
+        public event Action<IOrderInfo> AddedInfo;
+        public event Action<IOrderInfo> RemovedInfo;
+        public event Action<Order> Replaced;
+        public event Action<OrderOpenedEventArgs> Opened;
+        public event Action<OrderCanceledEventArgs> Canceled;
+        public event Action<OrderClosedEventArgs> Closed;
+        public event Action<OrderModifiedEventArgs> Modified;
+        public event Action<OrderFilledEventArgs> Filled;
+        public event Action<OrderExpiredEventArgs> Expired;
+        public event Action<OrderActivatedEventArgs> Activated;
+        public event Action<OrderSplittedEventArgs> Splitted;
     }
 }

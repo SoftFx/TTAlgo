@@ -180,7 +180,7 @@ namespace TickTrader.Algo.Core
             if (byTagFilterCache.TryGetValue(orderTag, out collection))
                 return collection;
 
-            collection = new OrderFilteredCollection(Orders.OrderListImpl, o => o.Comment == orderTag);
+            collection = new OrderFilteredCollection(Orders, o => o.Comment == orderTag);
             byTagFilterCache.Add(orderTag, collection);
             return collection;
         }
@@ -197,7 +197,7 @@ namespace TickTrader.Algo.Core
             if (bySymbolFilterCache.TryGetValue(symbol, out collection))
                 return collection;
 
-            collection = new OrderFilteredCollection(Orders.OrderListImpl, o => o.Symbol == symbol);
+            collection = new OrderFilteredCollection(Orders, o => o.Symbol == symbol);
             bySymbolFilterCache.Add(symbol, collection);
             return collection;
         }
@@ -214,7 +214,7 @@ namespace TickTrader.Algo.Core
             if (customFilterCache.TryGetValue(customCondition, out collection))
                 return collection;
 
-            collection = new OrderFilteredCollection(Orders.OrderListImpl, customCondition);
+            collection = new OrderFilteredCollection(Orders, customCondition);
             customFilterCache.Add(customCondition, collection);
             return collection;
         }
@@ -224,7 +224,7 @@ namespace TickTrader.Algo.Core
             get
             {
                 if (!Isolated)
-                    return Orders.OrderListImpl;
+                    return Orders;
                 else
                     return OrdersBy(TagFilter);
             }
@@ -236,7 +236,7 @@ namespace TickTrader.Algo.Core
         }
 
         AssetList AccountDataProvider.Assets { get { return Assets.AssetListImpl; } }
-        NetPositionList AccountDataProvider.NetPositions { get { return NetPositions.PositionListImpl; } }
+        NetPositionList AccountDataProvider.NetPositions => NetPositions;
         TradeHistory AccountDataProvider.TradeHistory => HistoryProvider;
 
         internal MarginAccountCalculator MarginCalc { get; set; }
@@ -290,15 +290,15 @@ namespace TickTrader.Algo.Core
             Update(accInfo, currencies);
 
             foreach (var order in dataProvider.GetOrders())
-                _orders.Add(order, this);
+                _orders.Add(order);
             foreach (var position in dataProvider.GetPositions())
                 _positions.UpdatePosition(position);
         }
 
         #endregion
 
-        IEnumerable<IOrderInfo> IAccountInfo2.Orders => (IEnumerable<OrderAccessor>)Orders.OrderListImpl;
-        IEnumerable<IPositionInfo> IMarginAccountInfo2.Positions => NetPositions.Select(u => (IPositionInfo)u.Info);
+        IEnumerable<IOrderInfo> IAccountInfo2.Orders => Orders;
+        IEnumerable<IPositionInfo> IMarginAccountInfo2.Positions => NetPositions.Values.Select(u => (IPositionInfo)u.Info);
         IEnumerable<IAssetInfo> ICashAccountInfo2.Assets => Assets;
 
         public event Action<IOrderInfo> OrderAdded = delegate { };
@@ -314,9 +314,9 @@ namespace TickTrader.Algo.Core
 
         internal void EnableBlEvents()
         {
-            Orders.Added += OnOrderAdded;
-            //Orders.Replaced += OnOrderReplaced;
-            Orders.Removed += OnOrderRemoved;
+            Orders.AddedInfo += OnOrderAdded; //restore events
+            ////Orders.Replaced += OnOrderReplaced;
+            Orders.RemovedInfo += OnOrderRemoved;
 
             NetPositions.PositionUpdated += OnPositionUpdated;
             //NetPositions.PositionRemoved += OnPositionRemoved;
@@ -330,9 +330,9 @@ namespace TickTrader.Algo.Core
         {
             if (_blEventsEnabled)
             {
-                Orders.Added -= OnOrderAdded;
-                //Orders.Replaced -= OnOrderReplaced;
-                Orders.Removed -= OnOrderRemoved;
+                Orders.AddedInfo -= OnOrderAdded; //restore events
+                ////Orders.Replaced -= OnOrderReplaced;
+                Orders.RemovedInfo -= OnOrderRemoved;
 
                 NetPositions.PositionUpdated -= OnPositionUpdated;
                 //NetPositions.PositionRemoved -= OnPositionRemoved;

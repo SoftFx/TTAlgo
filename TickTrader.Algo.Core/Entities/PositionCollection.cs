@@ -2,189 +2,82 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    public class PositionCollection : IEnumerable<PositionAccessor>
+    public sealed class PositionCollection : NetPositionList, IEnumerable<PositionAccessor>
     {
+        private readonly ConcurrentDictionary<string, PositionAccessor> _positions = new ConcurrentDictionary<string, PositionAccessor>();
         private readonly PluginBuilder _builder;
-        private readonly PositionsFixture _fixture;
-
-        internal NetPositionList PositionListImpl { get { return _fixture; } }
 
         public PositionCollection(PluginBuilder builder)
         {
             _builder = builder;
-            _fixture = new PositionsFixture(builder);
         }
+
+        public int Count => _positions.Count;
+
+        public void Clear() => _positions.Clear();
+
+        public IEnumerable<PositionAccessor> Values => _positions.Values;
+
+        public PositionAccessor GetPositionOrNull(string symbol) => _positions.GetOrDefault(symbol);
+
+        public NetPosition this[string symbol] => !_positions.TryGetValue(symbol, out PositionAccessor entity) ? entity : new PositionAccessor(_builder.Symbols.GetOrDefault(symbol));
 
         public PositionAccessor UpdatePosition(Domain.PositionInfo posInfo)
         {
-            PositionAccessor pos;
-
-            pos = GetOrCreatePosition(posInfo.Symbol, () => posInfo.Id);
+            PositionAccessor pos = GetOrCreatePosition(posInfo.Symbol, posInfo.Id);
             pos.Update(posInfo);
+
             if (posInfo.Volume <= 0)
                 RemovePosition(posInfo.Symbol);
 
             return pos;
         }
 
-        public PositionAccessor GetPositionOrNull(string symbol)
+        internal PositionAccessor GetOrCreatePosition(string symbol, string posId)
         {
-            return _fixture.GetOrDefault(symbol);
-        }
-
-        public event Action<IPositionInfo> PositionUpdated;
-        //public event Action<PositionAccessor> PositionRemoved;
-
-        public void FirePositionUpdated(NetPositionModifiedEventArgs args)
-        {
-            _builder.InvokePluginMethod(InvokePositionUpdated, args, false);
-        }
-
-        public void FirePositionSplitted(NetPositionSplittedEventArgs args)
-        {
-            _builder.InvokePluginMethod(InvokePositionSplitted, args, false);
-        }
-
-        private void InvokePositionUpdated(PluginBuilder builder, NetPositionModifiedEventArgs args)
-        {
-            builder.Account.NetPositions._fixture.FirePositionModified(args);
-        }
-
-        private void InvokePositionSplitted(PluginBuilder builder, NetPositionSplittedEventArgs args)
-        {
-            builder.Account.NetPositions._fixture.FirePositionSplitted(args);
-        }
-
-        public IEnumerator<PositionAccessor> GetEnumerator()
-        {
-            return _fixture.Values.GetEnumerator();
-        }
-
-        public void Clear()
-        {
-            _fixture.Clear();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return _fixture.Values.GetEnumerator();
-        }
-
-        #region Emulation
-
-        internal PositionAccessor GetOrCreatePosition(string symbol, Func<string> idGenerator)
-        {
-            var smbInfo = _builder.Symbols.GetOrDefault(symbol);
-            if (smbInfo == null)
-                throw new OrderValidationError("Symbol Not Found:  " + symbol, OrderCmdResultCodes.SymbolNotFound);
-
-            var pos = _fixture.GetOrDefault(symbol);
+            var pos = GetPositionOrNull(symbol);
 
             if (pos == null)
             {
-                pos = _fixture.CreatePosition(smbInfo);
-                pos.Info.Id = idGenerator();
+                var smbInfo = _builder.Symbols.GetOrDefault(symbol) ?? throw new OrderValidationError("Symbol Not Found:  " + symbol, OrderCmdResultCodes.SymbolNotFound);
+
+                pos = _positions.GetOrAdd(symbol, _ => new PositionAccessor(smbInfo));
+                pos.Info.Id = posId;
                 pos.Changed += Pos_Changed;
             }
 
             return pos;
         }
 
-        internal PositionAccessor RemovePosition(string smb)
+        internal PositionAccessor RemovePosition(string symbol)
         {
-            var toRemove = _fixture.GetOrDefault(smb);
+            _positions.TryRemove(symbol, out var toRemove);
+
             if (toRemove != null)
-            {
-                _fixture.RemovePosition(smb);
-                //PositionRemoved?.Invoke(toRemove);
                 toRemove.Changed -= Pos_Changed;
-            }
+
             return toRemove;
         }
 
-        private void Pos_Changed(PositionAccessor pos)
-        {
-            PositionUpdated?.Invoke(pos.Info);
-        }
+        public event Action<IPositionInfo> PositionUpdated;
+        public event Action<NetPositionModifiedEventArgs> Modified;
+        public event Action<NetPositionSplittedEventArgs> Splitted;
 
-        #endregion
+        public void FirePositionUpdated(NetPositionModifiedEventArgs args) => _builder.InvokePluginMethod((b, p) => Modified?.Invoke(p), args, false);
 
-        internal class PositionsFixture : NetPositionList
-        {
-            private ConcurrentDictionary<string, PositionAccessor> _positions = new ConcurrentDictionary<string, PositionAccessor>();
-            private PluginBuilder _builder;
+        public void FirePositionSplitted(NetPositionSplittedEventArgs args) => _builder.InvokePluginMethod((b, p) => Splitted?.Invoke(p), args, false);
 
-            public PositionsFixture(PluginBuilder builder)
-            {
-                _builder = builder;
-            }
+        private void Pos_Changed(PositionAccessor pos) => PositionUpdated?.Invoke(pos.Info);
 
-            public NetPosition this[string symbol]
-            {
-                get
-                {
-                    if (!_positions.TryGetValue(symbol, out PositionAccessor entity))
-                        return new PositionAccessor(_builder.Symbols.GetOrDefault(symbol));
-                    return entity;
-                }
-            }
+        public IEnumerator<PositionAccessor> GetEnumerator() => _positions.Values.GetEnumerator();
 
-            public int Count => _positions.Count;
+        IEnumerator<NetPosition> IEnumerable<NetPosition>.GetEnumerator() => GetEnumerator();
 
-            internal IEnumerable<PositionAccessor> Values => _positions.Values;
-
-            public event Action<NetPositionModifiedEventArgs> Modified;
-            public event Action<NetPositionSplittedEventArgs> Splitted;
-
-            public void FirePositionModified(NetPositionModifiedEventArgs args)
-            {
-                Modified?.Invoke(args);
-            }
-
-            public void FirePositionSplitted(NetPositionSplittedEventArgs args)
-            {
-                Splitted?.Invoke(args);
-            }
-
-            public PositionAccessor CreatePosition(SymbolAccessor symbol)
-            {
-                return _positions.GetOrAdd(symbol.Name, n => new PositionAccessor(symbol));
-            }
-
-            public bool RemovePosition(string symbol)
-            {
-                return _positions.TryRemove(symbol, out _);
-            }
-
-            public PositionAccessor GetOrDefault(string symbol)
-            {
-                PositionAccessor entity;
-                _positions.TryGetValue(symbol, out entity);
-                return entity;
-            }
-
-            public IEnumerator<NetPosition> GetEnumerator()
-            {
-                return _positions.Values.GetEnumerator();
-            }
-
-            public void Clear()
-            {
-                _positions.Clear();
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return _positions.Values.GetEnumerator();
-            }
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }
