@@ -58,46 +58,30 @@ namespace TickTrader.Algo.Api
         event Action<Order> Replaced;
     }
 
-    public interface OrderActivatedEventArgs
+    public interface SingleOrderEventArgs
     {
         Order Order { get; }
     }
 
-    public interface OrderOpenedEventArgs
-    {
-        Order Order { get; }
-    }
-
-    public interface OrderClosedEventArgs
-    {
-        Order Order { get; }
-    }
-
-    public interface OrderExpiredEventArgs
-    {
-        Order Order { get; }
-    }
-
-    public interface OrderCanceledEventArgs
-    {
-        Order Order { get; }
-    }
-
-    public interface OrderModifiedEventArgs
+    public interface DoubleOrderEventArgs
     {
         Order OldOrder { get; }
         Order NewOrder { get; }
     }
 
-    public interface OrderFilledEventArgs
-    {
-        Order OldOrder { get; }
-        Order NewOrder { get; }
-    }
+    public interface OrderActivatedEventArgs : SingleOrderEventArgs { }
 
-    public interface OrderSplittedEventArgs
-    {
-        Order OldOrder { get; }
-        Order NewOrder { get; }
-    }
+    public interface OrderOpenedEventArgs : SingleOrderEventArgs { }
+
+    public interface OrderClosedEventArgs : SingleOrderEventArgs { }
+
+    public interface OrderExpiredEventArgs : SingleOrderEventArgs { }
+
+    public interface OrderCanceledEventArgs : SingleOrderEventArgs { }
+
+    public interface OrderModifiedEventArgs : DoubleOrderEventArgs { }
+
+    public interface OrderFilledEventArgs : DoubleOrderEventArgs { }
+
+    public interface OrderSplittedEventArgs : DoubleOrderEventArgs { }
 }

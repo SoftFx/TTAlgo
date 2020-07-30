@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
+﻿using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
@@ -40,7 +35,7 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         private void DividendView(IBalanceDividendEventArgs args)
         {
-            Print($"Dividend {args.Symbol} {args.Amount} balance: {args.Balance}");
+            Print($"Dividend {args.Currency} {args.TransactionAmount} balance: {args.Balance}");
         }
 
         public enum Mode

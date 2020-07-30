@@ -7,7 +7,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    public sealed class PositionCollection : NetPositionList, IEnumerable<PositionAccessor>
+    public sealed class PositionCollection : NetPositionList
     {
         private readonly ConcurrentDictionary<string, PositionAccessor> _positions = new ConcurrentDictionary<string, PositionAccessor>();
         private readonly PluginBuilder _builder;
@@ -74,10 +74,8 @@ namespace TickTrader.Algo.Core
 
         private void Pos_Changed(PositionAccessor pos) => PositionUpdated?.Invoke(pos.Info);
 
-        public IEnumerator<PositionAccessor> GetEnumerator() => _positions.Values.GetEnumerator();
+        IEnumerator<NetPosition> IEnumerable<NetPosition>.GetEnumerator() => _positions.Values.GetEnumerator();
 
-        IEnumerator<NetPosition> IEnumerable<NetPosition>.GetEnumerator() => GetEnumerator();
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => _positions.Values.GetEnumerator();
     }
 }

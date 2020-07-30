@@ -297,7 +297,7 @@ namespace TickTrader.Algo.Core
 
         #endregion
 
-        IEnumerable<IOrderInfo> IAccountInfo2.Orders => Orders;
+        IEnumerable<IOrderInfo> IAccountInfo2.Orders => Orders.Values;
         IEnumerable<IPositionInfo> IMarginAccountInfo2.Positions => NetPositions.Values.Select(u => (IPositionInfo)u.Info);
         IEnumerable<IAssetInfo> ICashAccountInfo2.Assets => Assets;
 

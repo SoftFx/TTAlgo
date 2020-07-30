@@ -8,7 +8,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    public sealed class OrdersCollection : OrderList, IEnumerable<OrderAccessor>
+    public sealed class OrdersCollection : OrderList
     {
         private readonly ConcurrentDictionary<string, OrderAccessor> _orders = new ConcurrentDictionary<string, OrderAccessor>();
         private readonly PluginBuilder _builder;
@@ -87,9 +87,7 @@ namespace TickTrader.Algo.Core
 
         public void FireOrderActivated(OrderActivatedEventArgs args) => _builder.InvokePluginMethod((b, p) => Activated?.Invoke(p), args);
 
-        public IEnumerator<OrderAccessor> GetEnumerator() => _orders.Values.GetEnumerator();
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => _orders.Values.GetEnumerator();
 
         IEnumerator<Order> IEnumerable<Order>.GetEnumerator() => _orders.Values.Select(u => u.ApiOrder).GetEnumerator();
 

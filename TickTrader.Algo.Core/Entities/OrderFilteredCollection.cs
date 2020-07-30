@@ -7,19 +7,11 @@ namespace TickTrader.Algo.Core
 {
     internal sealed class OrderFilteredCollection : OrderList
     {
-        private Dictionary<string, Order> _filteredOrders = new Dictionary<string, Order>();
-        private OrdersCollection _originalList;
-        private Predicate<Order> _predicate;
+        private readonly Dictionary<string, Order> _filteredOrders = new Dictionary<string, Order>();
+        private readonly OrdersCollection _originalList;
+        private readonly Predicate<Order> _filter;
 
-        public Order this[string id]
-        {
-            get
-            {
-                if (!_filteredOrders.TryGetValue(id, out Order entity))
-                    return Null.Order;
-                return entity;
-            }
-        }
+        public Order this[string id] => _filteredOrders.TryGetValue(id, out Order entity) && ApplyFilter(entity) ? entity : Null.Order;
 
         public int Count => _filteredOrders.Count;
 
@@ -38,105 +30,58 @@ namespace TickTrader.Algo.Core
         public OrderFilteredCollection(OrdersCollection originalList, Predicate<Order> predicate)
         {
             _originalList = originalList;
-            _predicate = predicate;
+            _filter = predicate;
 
             foreach (var order in originalList)
             {
-                if (predicate(order.ApiOrder))
-                    _filteredOrders.Add(order.Id, order.ApiOrder);
-            }
-
-            _originalList.Added += OriginalList_Added;
-            _originalList.Removed += OriginalList_Removed;
-            _originalList.Canceled += OriginalList_Canceled;
-            _originalList.Closed += OriginalList_Closed;
-            _originalList.Expired += OriginalList_Expired;
-            _originalList.Filled += OriginalList_Filled;
-            _originalList.Modified += OriginalList_Modified;
-            _originalList.Opened += OriginalList_Opened;
-            _originalList.Activated += OriginalList_Activated;
-            //_originalList.Cleared += OriginalList_Cleared;
-            _originalList.Splitted += OriginalList_Splitted;
-        }
-
-        public IEnumerator<Order> GetEnumerator()
-        {
-            return _filteredOrders.Values.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        private void OriginalList_Added(Order order)
-        {
-            if (_predicate(order))
-            {
-                if (!_filteredOrders.ContainsKey(order.Id))
+                if (predicate(order))
                     _filteredOrders.Add(order.Id, order);
             }
+
+            _originalList.Added += (args) => FilterOrderEvent(args, AddOrder);
+            _originalList.Removed += (args) => FilterOrderEvent(args, RemoveOrder);
+
+            _originalList.Opened += (args) => FilterSingleOrderEvent(args, Opened);
+            _originalList.Closed += (args) => FilterSingleOrderEvent(args, Closed);
+            _originalList.Expired += (args) => FilterSingleOrderEvent(args, Expired);
+            _originalList.Activated += (args) => FilterSingleOrderEvent(args, Activated);
+            _originalList.Canceled += (args) => FilterSingleOrderEvent(args, Canceled);
+
+            _originalList.Filled += (args) => FilterDoubleOrderEvent(args, Filled);
+            _originalList.Modified += (args) => FilterDoubleOrderEvent(args, Modified);
+            _originalList.Splitted += (args) => FilterDoubleOrderEvent(args, Splitted);
         }
 
-        private void OriginalList_Removed(Order order)
+        public IEnumerator<Order> GetEnumerator() =>_filteredOrders.Values.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        private bool ApplyFilter(Order order) => _filter == null || _filter(order);
+
+        private void FilterOrderEvent<T>(T order, Action<T> action) where T : Order
         {
-            if (_predicate(order))
-            {
-                _filteredOrders.Remove(order.Id);
-            }
+            if (ApplyFilter(order))
+                action?.Invoke(order);
         }
 
-        private void OriginalList_Cleared()
+        private void FilterSingleOrderEvent<T>(T args, Action<T> action) where T : SingleOrderEventArgs
         {
-            _filteredOrders.Clear();
+            if (ApplyFilter(args.Order))
+                action?.Invoke(args);
         }
 
-        private void OriginalList_Canceled(OrderCanceledEventArgs args)
+        private void FilterDoubleOrderEvent<T>(T args, Action<T> action) where T : DoubleOrderEventArgs
         {
-            if (_predicate(args.Order))
-                Canceled?.Invoke(args);
+            if (ApplyFilter(args.OldOrder))
+                action?.Invoke(args);
         }
 
-        private void OriginalList_Opened(OrderOpenedEventArgs args)
+        private void AddOrder(Order order)
         {
-            if (_predicate(args.Order))
-                Opened?.Invoke(args);
+            if (!_filteredOrders.ContainsKey(order.Id))
+                _filteredOrders.Add(order.Id, order);
         }
 
-        private void OriginalList_Modified(OrderModifiedEventArgs args)
-        {
-            if (_predicate(args.OldOrder))
-                Modified?.Invoke(args);
-        }
-
-        private void OriginalList_Closed(OrderClosedEventArgs args)
-        {
-            if (_predicate(args.Order))
-                Closed?.Invoke(args);
-        }
-
-        private void OriginalList_Expired(OrderExpiredEventArgs args)
-        {
-            if (_predicate(args.Order))
-                Expired?.Invoke(args);
-        }
-
-        private void OriginalList_Filled(OrderFilledEventArgs args)
-        {
-            if (_predicate(args.OldOrder))
-                Filled?.Invoke(args);
-        }
-
-        private void OriginalList_Activated(OrderActivatedEventArgs args)
-        {
-            if (_predicate(args.Order))
-                Activated?.Invoke(args);
-        }
-
-        private void OriginalList_Splitted(OrderSplittedEventArgs args)
-        {
-            if (_predicate(args.OldOrder))
-                Splitted?.Invoke(args);
-        }
+        private void RemoveOrder(Order order) => _filteredOrders.Remove(order.Id);
     }
 }
