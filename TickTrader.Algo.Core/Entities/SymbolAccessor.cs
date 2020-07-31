@@ -86,6 +86,8 @@ namespace TickTrader.Algo.Core
 
         public int ProfitDigits => CounterCurrencyInfo.Digits;
 
+        public double LotSize => _info.LotSize;
+
         #endregion Aliases
 
         public void Subscribe(int depth = 1)

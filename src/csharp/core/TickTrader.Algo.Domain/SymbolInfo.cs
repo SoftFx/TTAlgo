@@ -67,7 +67,7 @@ namespace TickTrader.Algo.Domain
         double Bid { get; set; }
         double Ask { get; set; }
         int Digits { get; }
-
+        double LotSize { get; }
 
         Domain.MarginInfo.Types.CalculationMode MarginMode { get; }
         double MarginFactorFractional { get; }

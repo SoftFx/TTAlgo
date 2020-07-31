@@ -136,10 +136,10 @@ namespace TickTrader.Algo.Core
             Entity.PositionLeavesQuantity = (double)order.Entity.RemainingAmount;
             Entity.PositionCloseQuantity = (double)closeAmount;
             Entity.PositionOpened = order.Entity.PositionCreated.ToTimestamp();
-            Entity.PositionOpenPrice = order.Price;
+            Entity.PositionOpenPrice = order.Info.Price ?? 0;
             Entity.PositionClosed = closeTime.ToTimestamp();
             Entity.PositionClosePrice = (double)closePrice;
-            Entity.PositionModified = order.Modified.ToTimestamp();
+            Entity.PositionModified = order.Info.Modified;
             Entity.PositionById = posById;
             Entity.RequestedClosePrice = (double?)requestPrice;
             Entity.RequestedCloseQuantity = (double?)requestAmount;

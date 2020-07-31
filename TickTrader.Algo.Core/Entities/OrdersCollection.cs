@@ -15,7 +15,7 @@ namespace TickTrader.Algo.Core
 
         public int Count => _orders.Count;
 
-        public Order this[string id] => !_orders.TryGetValue(id, out OrderAccessor entity) ? entity.ApiOrder : Null.Order;
+        public Order this[string id] => !_orders.TryGetValue(id, out OrderAccessor entity) ? entity : Null.Order;
 
         public IEnumerable<OrderAccessor> Values => _orders.Values;
 
@@ -26,25 +26,25 @@ namespace TickTrader.Algo.Core
 
         internal OrderAccessor Add(OrderAccessor order)
         {
-            if (!_orders.TryAdd(order.Id, order))
-                throw new ArgumentException("Order #" + order.Id + " already exist!");
+            if (!_orders.TryAdd(order.Info.Id, order))
+                throw new ArgumentException("Order #" + order.Info.Id + " already exist!");
 
-            Added?.Invoke(order.ApiOrder);
-            AddedInfo?.Invoke(order);
+            Added?.Invoke(order);
+            AddedInfo?.Invoke(order.Info);
 
             return order;
         }
 
-        public OrderAccessor Add(OrderInfo info) => Add(new OrderAccessor(info, _builder.Symbols.GetOrDefault(info.Symbol)));
+        public OrderAccessor Add(OrderInfo info) => Add(new OrderAccessor(_builder.Symbols.GetOrDefault(info.Symbol), info));
 
         public OrderAccessor Update(OrderInfo info)
         {
             if (_orders.TryGetValue(info.Id, out OrderAccessor order))
             {
-                if (order.Modified <= info.Modified.ToDateTime())
+                if (order.Info.Modified <= info.Modified)
                 {
-                    order.Update(info);
-                    Replaced?.Invoke(order.ApiOrder);
+                    order.Info.Update(info);
+                    Replaced?.Invoke(order);
                 }
             }
 
@@ -53,17 +53,17 @@ namespace TickTrader.Algo.Core
 
         public OrderAccessor GetOrderOrNull(string id) => _orders.GetOrDefault(id);
 
-        public OrderAccessor Remove(IOrderInfo info, bool update = false)
+        public OrderAccessor Remove(OrderInfo info, bool update = false)
         {
             _orders.TryRemove(info.Id, out var order);
 
             if (!update)
-                order?.Update((OrderInfo)info); //temporary convert
+                order?.Info.Update(info); //temporary convert
 
             if (order != null)
             {
-                Removed?.Invoke(order.ApiOrder);
-                RemovedInfo?.Invoke(order);
+                Removed?.Invoke(order);
+                RemovedInfo?.Invoke(info);
             }
 
             return order;
@@ -89,12 +89,12 @@ namespace TickTrader.Algo.Core
 
         IEnumerator IEnumerable.GetEnumerator() => _orders.Values.GetEnumerator();
 
-        IEnumerator<Order> IEnumerable<Order>.GetEnumerator() => _orders.Values.Select(u => u.ApiOrder).GetEnumerator();
+        IEnumerator<Order> IEnumerable<Order>.GetEnumerator() => _orders.Values.GetEnumerator();
 
         public event Action<Order> Added;
         public event Action<Order> Removed;
-        public event Action<IOrderInfo> AddedInfo;
-        public event Action<IOrderInfo> RemovedInfo;
+        public event Action<IOrderCalcInfo> AddedInfo;
+        public event Action<IOrderCalcInfo> RemovedInfo;
         public event Action<Order> Replaced;
         public event Action<OrderOpenedEventArgs> Opened;
         public event Action<OrderCanceledEventArgs> Canceled;

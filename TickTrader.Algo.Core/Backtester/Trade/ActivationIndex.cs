@@ -55,7 +55,7 @@ namespace TickTrader.Algo.Core
             if (!TryGetValue(price, out list))
                 return false;
 
-            ActivationRecord record = list.FirstOrDefault(r => r.OrderId == order.Id);
+            ActivationRecord record = list.FirstOrDefault(r => r.OrderId == order.Info.Id);
             if (record == null)
                 return false;
             list.Remove(record);
@@ -74,7 +74,7 @@ namespace TickTrader.Algo.Core
             if (!TryGetValue(price, out list))
                 return;
 
-            ActivationRecord record = list.FirstOrDefault(r => r.OrderId == order.Id);
+            ActivationRecord record = list.FirstOrDefault(r => r.OrderId == order.Info.Id);
             if (record == null)
                 return;
 

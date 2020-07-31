@@ -66,7 +66,7 @@ namespace TickTrader.Algo.Core
                 if (resCode != OrderCmdResultCodes.Ok)
                     resultEntity = new OrderResultEntity(resCode, null, orderResp.TransactionTime);
                 else
-                    resultEntity = new OrderResultEntity(resCode, new OrderAccessor(orderResp.ResultingOrder, smbMetadata).ApiOrder, orderResp.TransactionTime);
+                    resultEntity = new OrderResultEntity(resCode, new OrderAccessor(smbMetadata, orderResp.ResultingOrder), orderResp.TransactionTime);
             }
             else
             {
@@ -127,7 +127,7 @@ namespace TickTrader.Algo.Core
                 var resCode = orderResp.ResultCode.ToApiEnum();
 
                 if (resCode == OrderCmdResultCodes.Ok)
-                    resultEntity = new OrderResultEntity(resCode, new OrderAccessor(orderResp.ResultingOrder, smbMetadata).ApiOrder, orderResp.TransactionTime);
+                    resultEntity = new OrderResultEntity(resCode, new OrderAccessor(smbMetadata, orderResp.ResultingOrder), orderResp.TransactionTime);
                 else
                     resultEntity = new OrderResultEntity(resCode, orderToClose, orderResp.TransactionTime);
             }
@@ -203,7 +203,7 @@ namespace TickTrader.Algo.Core
 
                 if (resCode == OrderCmdResultCodes.Ok)
                 {
-                    resultEntity = new OrderResultEntity(resCode, new OrderAccessor(result.ResultingOrder, smbMetadata).ApiOrder, result.TransactionTime);
+                    resultEntity = new OrderResultEntity(resCode, new OrderAccessor(smbMetadata, result.ResultingOrder), result.TransactionTime);
                 }
                 else
                 {
@@ -473,7 +473,7 @@ namespace TickTrader.Algo.Core
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool TryGetOrder(string orderId, out Order order, ref OrderCmdResultCodes code)
         {
-            order = _account.Orders.GetOrderOrNull(orderId)?.ApiOrder;
+            order = _account.Orders.GetOrderOrNull(orderId);
             if (order == null)
             {
                 code = OrderCmdResultCodes.OrderNotFound;
@@ -767,9 +767,9 @@ namespace TickTrader.Algo.Core
 
             var newIsHidden = OrderEntity.IsHiddenOrder((decimal?)request.MaxVisibleAmount);
 
-            var newVol = request.NewAmount ?? (double)oldOrder.RemainingAmount;
-            var newPrice = request.Price ?? oldOrder.Price;
-            var newStopPrice = request.StopPrice ?? oldOrder.StopPrice;
+            var newVol = request.NewAmount ?? (double)oldOrder.Info.RemainingAmount;
+            var newPrice = request.Price ?? oldOrder.Info.Price;
+            var newStopPrice = request.StopPrice ?? oldOrder.Info.StopPrice;
 
             if (Calc != null && !Calc.HasEnoughMarginToModifyOrder(oldOrder, symbol, newVol, newPrice, newStopPrice, newIsHidden))
             {

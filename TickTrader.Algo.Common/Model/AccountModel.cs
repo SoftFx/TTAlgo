@@ -61,7 +61,7 @@ namespace TickTrader.Algo.Common.Model
 
         AccountInfo.Types.Type IAccountInfo2.Type => Type ?? AccountInfo.Types.Type.Gross;
 
-        IEnumerable<IOrderInfo> IAccountInfo2.Orders => Orders.Snapshot.Values;
+        IEnumerable<IOrderCalcInfo> IAccountInfo2.Orders => Orders.Snapshot.Values;
 
         IEnumerable<IAssetInfo> ICashAccountInfo2.Assets => Assets.Snapshot.Values;
 
@@ -73,9 +73,9 @@ namespace TickTrader.Algo.Common.Model
         public event Action BalanceUpdate;
 
         public event Action<IPositionInfo> PositionChanged;
-        public event Action<IOrderInfo> OrderAdded;
-        public event Action<IEnumerable<IOrderInfo>> OrdersAdded;
-        public event Action<IOrderInfo> OrderRemoved;
+        public event Action<IOrderCalcInfo> OrderAdded;
+        public event Action<IEnumerable<IOrderCalcInfo>> OrdersAdded;
+        public event Action<IOrderCalcInfo> OrderRemoved;
         public event Action<IAssetInfo, AssetChangeType> AssetsChanged;
         public event Action<IPositionInfo> PositionRemoved;
 

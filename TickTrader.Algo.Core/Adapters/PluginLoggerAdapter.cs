@@ -233,8 +233,8 @@ namespace TickTrader.Algo.Core
         public void NotifyOrderOpened(OrderAccessor order)
         {
             var logEntry = new StringBuilder();
-            logEntry.Append("Opened #").Append(order.Id).Append(' ');
-            AppendOrderParams(logEntry, order.SymbolInfo, " order ", order.ApiOrder);
+            logEntry.Append("Opened #").Append(order.Info.Id).Append(' ');
+            AppendOrderParams(logEntry, order.SymbolInfo, " order ", order);
 
             PrintTrade(logEntry.ToString());
         }
@@ -243,8 +243,8 @@ namespace TickTrader.Algo.Core
         {
             var logEntry = new StringBuilder();
 
-            logEntry.Append("Order #").Append(order.Id).Append(" ");
-            AppendOrderParams(logEntry, order.SymbolInfo, " was modified to ", order.ApiOrder);
+            logEntry.Append("Order #").Append(order.Info.Id).Append(" ");
+            AppendOrderParams(logEntry, order.SymbolInfo, " was modified to ", order);
 
             Logger.OnPrintTrade(logEntry.ToString());
         }
@@ -253,8 +253,8 @@ namespace TickTrader.Algo.Core
         {
             var logEntry = new StringBuilder();
 
-            logEntry.Append("Order #").Append(order.Id).Append(" ");
-            AppendOrderParams(logEntry, order.SymbolInfo, " was splitted to ", order.ApiOrder);
+            logEntry.Append("Order #").Append(order.Info.Id).Append(" ");
+            AppendOrderParams(logEntry, order.SymbolInfo, " was splitted to ", order);
 
             Logger.OnPrintTrade(logEntry.ToString());
         }
@@ -285,9 +285,9 @@ namespace TickTrader.Algo.Core
             var priceFomat = smbInfo.PriceFormat;
 
             var builder = new StringBuilder();
-            builder.Append("Order #").Append(order.Id);
-            builder.Append(" filled by ").AppendNumber(order.ApiOrder.LastFillVolume);
-            builder.Append(" at price ").AppendNumber(order.ApiOrder.LastFillPrice, priceFomat);
+            builder.Append("Order #").Append(order.Info.Id);
+            builder.Append(" filled by ").AppendNumber(((Order)order).LastFillVolume);
+            builder.Append(" at price ").AppendNumber(((Order)order).LastFillPrice, priceFomat);
             PrintCurrentRate(builder, smbInfo);
 
             Logger.OnPrintTrade(builder.ToString());
@@ -299,9 +299,9 @@ namespace TickTrader.Algo.Core
             var priceFomat = smbInfo.PriceFormat;
 
             var builder = new StringBuilder();
-            builder.Append("Order #").Append(order.Id);
-            builder.Append(" closed by ").AppendNumber(order.ApiOrder.LastFillVolume);
-            builder.Append(" at price ").AppendNumber(order.ApiOrder.LastFillPrice, priceFomat);
+            builder.Append("Order #").Append(order.Info.Id);
+            builder.Append(" closed by ").AppendNumber(((Order)order).LastFillVolume);
+            builder.Append(" at price ").AppendNumber(((Order)order).LastFillPrice, priceFomat);
             PrintCurrentRate(builder, smbInfo);
 
             Logger.OnPrintTrade(builder.ToString());
@@ -310,7 +310,7 @@ namespace TickTrader.Algo.Core
         public void NotifyOrderExpiration(OrderAccessor order)
         {
             var builder = new StringBuilder();
-            builder.Append("Order #").Append(order.Id);
+            builder.Append("Order #").Append(order.Info.Id);
             builder.Append(" expired");
 
             Logger.OnPrintTrade(builder.ToString());
@@ -322,7 +322,7 @@ namespace TickTrader.Algo.Core
             var priceFomat = smbInfo.PriceFormat;
 
             var builder = new StringBuilder();
-            builder.Append("Order #").Append(order.Id);
+            builder.Append("Order #").Append(order.Info.Id);
             builder.Append(" activated");
             //builder.AppendNumber(order.ExecPrice, priceFomat);
             PrintCurrentRate(builder, smbInfo);
@@ -333,7 +333,7 @@ namespace TickTrader.Algo.Core
         public void NotifyOrderCancelation(OrderAccessor order)
         {
             var builder = new StringBuilder();
-            builder.Append("Order #").Append(order.Id);
+            builder.Append("Order #").Append(order.Info.Id);
             builder.Append(" canceled");
 
             Logger.OnPrintTrade(builder.ToString());

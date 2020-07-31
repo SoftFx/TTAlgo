@@ -38,7 +38,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public PositionCollection NetPositions
+        internal PositionCollection NetPositions
         {
             get
             {
@@ -297,13 +297,13 @@ namespace TickTrader.Algo.Core
 
         #endregion
 
-        IEnumerable<IOrderInfo> IAccountInfo2.Orders => Orders.Values;
+        IEnumerable<IOrderCalcInfo> IAccountInfo2.Orders => Orders.Values.Select(u => u.Info);
         IEnumerable<IPositionInfo> IMarginAccountInfo2.Positions => NetPositions.Values.Select(u => (IPositionInfo)u.Info);
         IEnumerable<IAssetInfo> ICashAccountInfo2.Assets => Assets;
 
-        public event Action<IOrderInfo> OrderAdded = delegate { };
-        public event Action<IEnumerable<IOrderInfo>> OrdersAdded { add { } remove { } }
-        public event Action<IOrderInfo> OrderRemoved = delegate { };
+        public event Action<IOrderCalcInfo> OrderAdded = delegate { };
+        public event Action<IEnumerable<IOrderCalcInfo>> OrdersAdded { add { } remove { } }
+        public event Action<IOrderCalcInfo> OrderRemoved = delegate { };
         //public event Action<IOrderModel2> OrderReplaced = delegate { };
         public event Action BalanceUpdated = delegate { };
         public event Action<IBalanceDividendEventArgs> BalanceDividend = delegate { };
@@ -343,7 +343,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        private void OnOrderAdded(IOrderInfo order)
+        private void OnOrderAdded(IOrderCalcInfo order)
         {
             UpdateAccountInfo("Add order", () => OrderAdded?.Invoke(order));
         }
@@ -353,7 +353,7 @@ namespace TickTrader.Algo.Core
         //    UpdateAccountInfo("Replace order", () => OrderReplaced?.Invoke(order));
         //}
 
-        private void OnOrderRemoved(IOrderInfo order)
+        private void OnOrderRemoved(IOrderCalcInfo order)
         {
             UpdateAccountInfo("Remove order", () => OrderRemoved?.Invoke(order));
         }

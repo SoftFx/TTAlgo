@@ -24,13 +24,13 @@ namespace TickTrader.Algo.Core
 
         public static void OnGrossPositionOpened(OrderAccessor position, SymbolAccessor cfg, CalculatorFixture calc)
         {
-            var commis = CalculateMarginCommission((OrderCalculator)position.Calculator, position.Entity.RequestedAmount, cfg, calc, position.IsReducedOpenCommission());
-            position.ChangeCommission(commis);
+            var commis = CalculateMarginCommission((OrderCalculator)position.Info.Calculator, position.Entity.RequestedAmount, cfg, calc, position.IsReducedOpenCommission());
+            position.Entity.ChangeCommission(commis);
         }
 
         public static void OnGrossPositionClosed(OrderAccessor position, decimal closeAmount, SymbolAccessor cfg, TradeChargesInfo charges, CalculatorFixture calc)
         {
-            decimal k = closeAmount / (closeAmount + position.RemainingAmount);
+            decimal k = closeAmount / (closeAmount + (decimal)position.Info.RemainingAmount);
 
             if (position.Entity.Commission != null)
             {
@@ -46,7 +46,7 @@ namespace TickTrader.Algo.Core
 
             charges.CurrencyInfo = (CurrencyEntity)calc.Acc.BalanceCurrencyInfo;
 
-            var commiss = CalculateMarginCommission((OrderCalculator)position.Calculator, closeAmount, cfg, calc, position.IsReducedCloseCommission());
+            var commiss = CalculateMarginCommission((OrderCalculator)position.Info.Calculator, closeAmount, cfg, calc, position.IsReducedCloseCommission());
             charges.Commission += RoundValue(commiss, calc.RoundingDigits);
 
             //if (k == 1)
@@ -128,10 +128,10 @@ namespace TickTrader.Algo.Core
 
         public static void OnOrderFilled(OrderAccessor order, double fillAmount, double fillPrice, CalculatorFixture acc, SymbolAccessor cfg, TradeChargesInfo charges)
         {
-            var currency = (order.Side == Domain.OrderInfo.Types.Side.Buy) ? cfg.MarginCurrencyInfo : cfg.ProfitCurrencyInfo;
+            var currency = (order.Info.Side == Domain.OrderInfo.Types.Side.Buy) ? cfg.MarginCurrencyInfo : cfg.ProfitCurrencyInfo;
             var asset = acc.GetAsset(currency);
 
-            var amount = (order.Side == Domain.OrderInfo.Types.Side.Buy) ? fillAmount : fillAmount * fillPrice;
+            var amount = (order.Info.Side == Domain.OrderInfo.Types.Side.Buy) ? fillAmount : fillAmount * fillPrice;
             var commiss = CalculateCommission(amount, cfg, order.IsReducedOpenCommission(), acc, currency.Name, charges);
             var commission = RoundValue(commiss, currency.Digits);
 

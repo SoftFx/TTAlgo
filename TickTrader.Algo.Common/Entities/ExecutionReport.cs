@@ -58,9 +58,9 @@ namespace TickTrader.Algo.Common.Model
 
         decimal IMarginProfitCalc.RemainingAmount => (decimal)LeavesVolume;
 
-        decimal? IOrderCalcInfo.Commission => (decimal?)Commission;
+        decimal? IOrderCommonInfo.Commission => (decimal?)Commission;
 
-        decimal? IOrderCalcInfo.Swap => (decimal?)Swap;
+        decimal? IOrderCommonInfo.Swap => (decimal?)Swap;
 
         Timestamp IOrderUpdateInfo.Created => Created?.ToTimestamp();
 
@@ -75,6 +75,8 @@ namespace TickTrader.Algo.Common.Model
         public double? LastFillPrice => TradePrice;
 
         public double? LastFillAmount => TradeAmount;
+
+        public string InstanceId => null;
 
         private Domain.OrderOptions GetOptions()
         {

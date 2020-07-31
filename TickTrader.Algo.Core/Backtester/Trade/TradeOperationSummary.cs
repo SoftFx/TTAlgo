@@ -214,18 +214,18 @@ namespace TickTrader.Algo.Core
 
         private void PrintOrderDescription(OrderAccessor order)
         {
-            _builder.Append(" #").Append(order.Id)
-                .Append(' ').Append(order.Type);
-            if (order.HasOption(Domain.OrderOptions.ImmediateOrCancel))
+            _builder.Append(" #").Append(order.Info.Id)
+                .Append(' ').Append(order.Info.Type);
+            if (order.Info.ImmediateOrCancel)
                 _builder.Append(" IoC");
-            _builder.Append(' ').Append(order.Symbol)
-                .Append(' ').Append(order.Side);
+            _builder.Append(' ').Append(order.Info.Symbol)
+                .Append(' ').Append(order.Info.Side);
         }
 
         private void PrintComment(OrderAccessor order)
         {
-            if (!string.IsNullOrEmpty(order.Comment))
-                _builder.Append("  \"").Append(order.Comment).Append('"');
+            if (!string.IsNullOrEmpty(order.Info.Comment))
+                _builder.Append("  \"").Append(order.Info.Comment).Append('"');
         }
 
         private void PrintAmountAndPrice(OrderAccessor order)
@@ -233,14 +233,14 @@ namespace TickTrader.Algo.Core
             var priceFormat = order.SymbolInfo.PriceFormat;
 
             _builder.Append($", amount=");
-            if (order.RequestedVolume == order.RemainingVolume || order.RemainingVolume == 0)
-                _builder.Append(order.RequestedVolume);
+            if (order.Info.RequestedAmount == order.Info.RequestedAmount || order.Info.RequestedAmount == 0)
+                _builder.Append(order.Info.RequestedAmount);
             else
-                _builder.Append(order.RemainingVolume).Append('/').Append(order.RequestedVolume);
+                _builder.Append(order.Info.RequestedAmount).Append('/').Append(order.Info.RequestedAmount);
             if (order.Entity.Price != null)
-                _builder.Append(" price=").AppendNumber(order.Price, priceFormat);
+                _builder.Append(" price=").AppendNumber(order.Info.Price ?? 0, priceFormat);
             if (order.Entity.StopPrice != null)
-                _builder.Append(" stopPrice=").AppendNumber(order.StopPrice, priceFormat);
+                _builder.Append(" stopPrice=").AppendNumber(order.Info.StopPrice ?? 0, priceFormat);
         }
 
         private void PrintAuxFields(OrderAccessor order)

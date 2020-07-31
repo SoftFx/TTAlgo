@@ -35,20 +35,20 @@ namespace TickTrader.Algo.Core
             bool added = false;
             ActivationRecord instantActivation = null;
 
-            if (order.Type == Domain.OrderInfo.Types.Type.Limit || order.Type == Domain.OrderInfo.Types.Type.Stop || order.Type == Domain.OrderInfo.Types.Type.StopLimit)
+            if (order.Info.Type == Domain.OrderInfo.Types.Type.Limit || order.Info.Type == Domain.OrderInfo.Types.Type.Stop || order.Info.Type == Domain.OrderInfo.Types.Type.StopLimit)
             {
                 ActivationRecord record = new ActivationRecord(order, ActivationType.Pending);
-                ActivationIndex index = GetPendingIndex(order.Type, order.Side);
+                ActivationIndex index = GetPendingIndex(order.Info.Type, order.Info.Side);
                 if (index.AddRecord(record, currentRate))
                     instantActivation = record;
                 added = true;
             }
-            else if (order.Type == Domain.OrderInfo.Types.Type.Position)
+            else if (order.Info.Type == Domain.OrderInfo.Types.Type.Position)
             {
                 if (order.Entity.TakeProfit != null)
                 {
                     ActivationRecord record = new ActivationRecord(order, ActivationType.TakeProfit);
-                    ActivationIndex index = GetPositionIndex(order.Side, ActivationType.TakeProfit);
+                    ActivationIndex index = GetPositionIndex(order.Info.Side, ActivationType.TakeProfit);
                     if (index.AddRecord(record, currentRate))
                         instantActivation = record;
                     added = true;
@@ -57,14 +57,14 @@ namespace TickTrader.Algo.Core
                 if (order.Entity.StopLoss != null)
                 {
                     ActivationRecord record = new ActivationRecord(order, ActivationType.StopLoss);
-                    ActivationIndex index = GetPositionIndex(order.Side, ActivationType.StopLoss);
+                    ActivationIndex index = GetPositionIndex(order.Info.Side, ActivationType.StopLoss);
                     if (index.AddRecord(record, currentRate))
                         instantActivation = record;
                     added = true;
                 }
             }
             else
-                throw new Exception("Invalid order type:" + order.Type);
+                throw new Exception("Invalid order type:" + order.Info.Type);
 
             if (added)
                 Count++;
@@ -123,26 +123,26 @@ namespace TickTrader.Algo.Core
         {
             bool result = false;
 
-            if (order.Type == Domain.OrderInfo.Types.Type.Limit || order.Type == Domain.OrderInfo.Types.Type.Stop || order.Type == Domain.OrderInfo.Types.Type.StopLimit)
+            if (order.Info.Type == Domain.OrderInfo.Types.Type.Limit || order.Info.Type == Domain.OrderInfo.Types.Type.Stop || order.Info.Type == Domain.OrderInfo.Types.Type.StopLimit)
             {
-                ActivationIndex index = GetPendingIndex(order.Type, order.Side);
+                ActivationIndex index = GetPendingIndex(order.Info.Type, order.Info.Side);
                 result |= index.RemoveOrder(order, ActivationType.Pending);
             }
-            else if (order.Type == Domain.OrderInfo.Types.Type.Position)
+            else if (order.Info.Type == Domain.OrderInfo.Types.Type.Position)
             {
                 if (order.Entity.TakeProfit != null)
                 {
-                    ActivationIndex index = GetPositionIndex(order.Side, ActivationType.TakeProfit);
+                    ActivationIndex index = GetPositionIndex(order.Info.Side, ActivationType.TakeProfit);
                     result |= index.RemoveOrder(order, ActivationType.TakeProfit);
                 }
                 if (order.Entity.StopLoss != null)
                 {
-                    ActivationIndex index = GetPositionIndex(order.Side, ActivationType.StopLoss);
+                    ActivationIndex index = GetPositionIndex(order.Info.Side, ActivationType.StopLoss);
                     result |= index.RemoveOrder(order, ActivationType.StopLoss);
                 }
             }
-            else if (order.Type != Domain.OrderInfo.Types.Type.Market)
-                throw new Exception("Invalid order type:" + order.Type);
+            else if (order.Info.Type != Domain.OrderInfo.Types.Type.Market)
+                throw new Exception("Invalid order type:" + order.Info.Type);
 
             if (result)
                 Count--;
@@ -152,21 +152,21 @@ namespace TickTrader.Algo.Core
 
         public void ResetOrderActivation(OrderAccessor order)
         {
-            if (order.Type == Domain.OrderInfo.Types.Type.Limit || order.Type == Domain.OrderInfo.Types.Type.Stop || order.Type == Domain.OrderInfo.Types.Type.StopLimit)
+            if (order.Info.Type == Domain.OrderInfo.Types.Type.Limit || order.Info.Type == Domain.OrderInfo.Types.Type.Stop || order.Info.Type == Domain.OrderInfo.Types.Type.StopLimit)
             {
-                ActivationIndex index = GetPendingIndex(order.Type, order.Side);
+                ActivationIndex index = GetPendingIndex(order.Info.Type, order.Info.Side);
                 index.ResetOrderActivation(order, ActivationType.Pending);
             }
-            else if (order.Type == Domain.OrderInfo.Types.Type.Position)
+            else if (order.Info.Type == Domain.OrderInfo.Types.Type.Position)
             {
-                if (order.TakeProfit.AsNullable() != null)
+                if (order.Info.TakeProfit != null)
                 {
-                    ActivationIndex index = GetPositionIndex(order.Side, ActivationType.TakeProfit);
+                    ActivationIndex index = GetPositionIndex(order.Info.Side, ActivationType.TakeProfit);
                     index.ResetOrderActivation(order, ActivationType.TakeProfit);
                 }
-                if (order.StopLoss.AsNullable() != null)
+                if (order.Info.StopLoss != null)
                 {
-                    ActivationIndex index = GetPositionIndex(order.Side, ActivationType.StopLoss);
+                    ActivationIndex index = GetPositionIndex(order.Info.Side, ActivationType.StopLoss);
                     index.ResetOrderActivation(order, ActivationType.StopLoss);
                 }
             }

@@ -76,10 +76,10 @@ namespace TickTrader.Algo.Core.Calc
             return error == CalcErrorCodes.None ? profit : double.NaN;
         }
 
-        public double CalculateMargin(IOrderCalcInfo order, out CalcErrorCodes error)
-        {
-            return CalculateMargin((double)order.RemainingAmount, order.Type, order.Side, order.IsHidden, out error);
-        }
+        //public double CalculateMargin(IOrderCalcInfo order, out CalcErrorCodes error)
+        //{
+        //    return CalculateMargin((double)order.RemainingAmount, order.Type, order.Side, order.IsHidden, out error);
+        //}
 
         public double CalculateMargin(double orderVolume, Domain.OrderInfo.Types.Type ordType, Domain.OrderInfo.Types.Side side, bool isHidden, out CalcErrorCodes error)
         {

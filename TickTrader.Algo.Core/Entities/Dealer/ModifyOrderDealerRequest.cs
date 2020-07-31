@@ -12,7 +12,7 @@ namespace TickTrader.Algo.Core
     {
         public ModifyOrderDealerRequest(OrderAccessor order, Quote currentRate)
         {
-            Order = order.ApiOrder;
+            Order = order;
             CurrentRate = currentRate;
             Confirmed = true;
         }
