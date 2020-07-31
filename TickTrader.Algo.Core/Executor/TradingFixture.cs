@@ -131,7 +131,7 @@ namespace TickTrader.Algo.Core
             if (eReport.EntityAction == Domain.OrderExecReport.Types.EntityAction.Updated)
                 return collection.Update(eReport.OrderCopy);
 
-            return new OrderAccessor(_symbols.GetOrDefault(eReport.OrderCopy.Id), eReport.OrderCopy);
+            return new OrderAccessor(_symbols.GetOrDefault(eReport.OrderCopy.Symbol).Info, eReport.OrderCopy);
         }
 
         private void DataProvider_BalanceUpdated(Domain.BalanceOperation report)
@@ -302,7 +302,7 @@ namespace TickTrader.Algo.Core
                 if (eReport.OrderCopy.Type == Domain.OrderInfo.Types.Type.Market)
                 {
                     // market orders are never added to orders collection. Cash account has actually limit IoC
-                    var clone = new OrderAccessor(_symbols.GetOrDefault(eReport.OrderCopy.Id), eReport.OrderCopy);
+                    var clone = new OrderAccessor(_symbols.GetOrDefault(eReport.OrderCopy.Symbol).Info, eReport.OrderCopy);
                     if (clone != null)
                     {
                         var isOwnOrder = CallListener(eReport);
@@ -326,7 +326,7 @@ namespace TickTrader.Algo.Core
                     }
                     else
                     {
-                        var clone = new OrderAccessor(_symbols.GetOrDefault(eReport.OrderCopy.Symbol), eReport.OrderCopy);
+                        var clone = new OrderAccessor(_symbols.GetOrDefault(eReport.OrderCopy.Symbol).Info, eReport.OrderCopy);
                         if (clone != null)
                         {
                             if (!IsInvisible(clone))

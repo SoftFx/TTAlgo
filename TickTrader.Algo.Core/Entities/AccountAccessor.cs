@@ -416,10 +416,10 @@ namespace TickTrader.Algo.Core
 
         public double? CalculateOrderMargin(string symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl = null, double? tp = null, Api.OrderExecOptions options = Api.OrderExecOptions.None)
         {
-            var symbolAccessor = _builder?.Symbols?.GetOrDefault(symbol);
+            var symbolAccessor = _builder?.Symbols?.GetOrDefault(symbol).Info;
             if (symbolAccessor != null && _builder.Calculator != null)
             {
-                var amount = volume * symbolAccessor.ContractSize;
+                var amount = volume * symbolAccessor.LotSize;
 
                 return _builder.Calculator.CalculateOrderMargin(symbolAccessor, amount, price, stopPrice, type.ToCoreEnum(), side.ToCoreEnum(), OrderEntity.IsHiddenOrder(maxVisibleVolume));
             }
@@ -428,10 +428,10 @@ namespace TickTrader.Algo.Core
 
         public bool HasEnoughMarginToOpenOrder(string symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl = null, double? tp = null, Api.OrderExecOptions options = Api.OrderExecOptions.None)
         {
-            var symbolAccessor = _builder?.Symbols?.GetOrDefault(symbol);
+            var symbolAccessor = _builder?.Symbols?.GetOrDefault(symbol).Info;
             if (symbolAccessor != null && _builder.Calculator != null)
             {
-                var amount = volume * symbolAccessor.ContractSize;
+                var amount = volume * symbolAccessor.LotSize;
 
                 return _builder.Calculator.HasEnoughMarginToOpenOrder(symbolAccessor, amount, type.ToCoreEnum(), side.ToCoreEnum(), price, stopPrice, OrderEntity.IsHiddenOrder(maxVisibleVolume), out _);
             }

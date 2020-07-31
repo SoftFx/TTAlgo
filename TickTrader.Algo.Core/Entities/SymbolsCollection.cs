@@ -72,7 +72,7 @@ namespace TickTrader.Algo.Core
                     }
                     else
                     {
-                        smbAccessor.Update(smb, currencies);
+                        smbAccessor.Update(smb);
                     }
 
                 }
@@ -128,7 +128,7 @@ namespace TickTrader.Algo.Core
                 get
                 {
                     if (sortedSymbols == null)
-                        sortedSymbols = symbols.Values.Where(s => !s.IsNull).OrderBy(s => s.GroupSortOrder).ThenBy(s => s.SortOrder).ThenBy(s => s.Name).ToList();
+                        sortedSymbols = symbols.Values.Where(s => !s.IsNull).OrderBy(s => s.Info.GroupSortOrder).ThenBy(s => s.Info.SortOrder).ThenBy(s => s.Info.Name).ToList();
 
                     return sortedSymbols;
                 }
@@ -156,7 +156,7 @@ namespace TickTrader.Algo.Core
 
             public void Add(SymbolAccessor symbol)
             {
-                symbols.Add(symbol.Name, symbol);
+                symbols.Add(symbol.Info.Name, symbol);
                 sortedSymbols = null;
             }
 
@@ -166,7 +166,7 @@ namespace TickTrader.Algo.Core
                 // deleted symbols will have IsNull set to true
                 foreach(var smb in sortedSymbols)
                 {
-                    smb.Update(null, null);
+                    smb.Update(null);
                 }
                 sortedSymbols = null;
             }

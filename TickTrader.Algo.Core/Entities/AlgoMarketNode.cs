@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Core
     /// </summary>
     public class AlgoMarketNode : SymbolMarketNode
     {
-        public AlgoMarketNode(ISymbolInfo smb) : base(smb)
+        public AlgoMarketNode(SymbolInfo smb) : base(smb)
         {
         }
 

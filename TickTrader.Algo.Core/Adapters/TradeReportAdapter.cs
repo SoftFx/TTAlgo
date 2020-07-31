@@ -1,11 +1,7 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
-using Bo = TickTrader.BusinessObjects;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -13,10 +9,10 @@ namespace TickTrader.Algo.Core
     {
         private double _lotSize;
 
-        public TradeReportAdapter(Domain.TradeReportInfo entity, SymbolAccessor smbInfo)
+        public TradeReportAdapter(Domain.TradeReportInfo entity, ISymbolInfo smbInfo)
         {
             Entity = entity;
-            _lotSize = smbInfo?.ContractSize ?? 1;
+            _lotSize = smbInfo?.LotSize ?? 1;
         }
 
         public Domain.TradeReportInfo Entity { get; }
@@ -60,7 +56,7 @@ namespace TickTrader.Algo.Core
 
         #region Emulation
 
-        public static TradeReportAdapter Create(Timestamp key, SymbolAccessor symbol, Domain.TradeReportInfo.Types.ReportType repType, Domain.TradeReportInfo.Types.Reason reason)
+        public static TradeReportAdapter Create(Timestamp key, ISymbolInfo symbol, Domain.TradeReportInfo.Types.ReportType repType, Domain.TradeReportInfo.Types.Reason reason)
         {
             var entity = new Domain.TradeReportInfo();
             entity.TransactionTime = key;
@@ -276,12 +272,12 @@ namespace TickTrader.Algo.Core
             return this;
         }
 
-        public TradeReportAdapter FillSymbolConversionRates(CalculatorFixture acc, SymbolAccessor symbol)
+        public TradeReportAdapter FillSymbolConversionRates(CalculatorFixture acc, SymbolInfo symbol)
         {
             if (symbol == null)
                 return this;
 
-            if (symbol.MarginCurrency != null)
+            if (symbol.BaseCurrency != null)
             {
                 if (acc.Acc.Type != Domain.AccountInfo.Types.Type.Cash)
                 {
@@ -302,10 +298,10 @@ namespace TickTrader.Algo.Core
                     //Entity.UsdToMarginCurrencyConversionRate = null;
                 }
 
-                Entity.MarginCurrency = symbol.MarginCurrency;
+                Entity.MarginCurrency = symbol.BaseCurrency;
             }
 
-            if (symbol.ProfitCurrency != null)
+            if (symbol.CounterCurrency != null)
             {
                 if (acc.Acc.Type != Domain.AccountInfo.Types.Type.Cash)
                 {
@@ -326,7 +322,7 @@ namespace TickTrader.Algo.Core
                     //Entity.UsdToProfitCurrencyConversionRate = null;
                 }
 
-                Entity.ProfitCurrency = symbol.ProfitCurrency;
+                Entity.ProfitCurrency = symbol.CounterCurrency;
             }
 
             return this;

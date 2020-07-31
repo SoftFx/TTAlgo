@@ -38,7 +38,7 @@ namespace TickTrader.Algo.Core.Calc.Conversion
         {
             foreach (var symbol in _market.Symbols)
             {
-                var key = Tuple.Create(symbol.MarginCurrency, symbol.ProfitCurrency);
+                var key = Tuple.Create(symbol.BaseCurrency, symbol.CounterCurrency);
                 if (!_convertionSet.ContainsKey(key))
                     _convertionSet.Add(key, symbol);
             }

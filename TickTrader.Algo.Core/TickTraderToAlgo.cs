@@ -1,4 +1,6 @@
-﻿namespace TickTrader.Algo.Core
+﻿using TickTrader.Algo.Domain;
+
+namespace TickTrader.Algo.Core
 {
     public static class TickTraderToAlgo
     {
@@ -24,14 +26,14 @@
         //    throw new NotImplementedException("Unsupported change type: " + cType);
         //}
 
-        public static float CmsValue(this SymbolAccessor symbol)
+        public static float CmsValue(this SymbolInfo symbol)
         {
-            return (float)symbol.Commission;
+            return (float)symbol.Commission.Commission;
         }
 
-        public static float CmsValueBookOrders(this SymbolAccessor symbol)
+        public static float CmsValueBookOrders(this SymbolInfo symbol)
         {
-            return (float)symbol.LimitsCommission;
+            return (float)symbol.Commission.LimitsCommission;
         }
 
         //public static BO.CommissionValueType CmsValueType(this SymbolAccessor symbol)

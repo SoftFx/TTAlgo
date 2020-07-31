@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -88,7 +89,7 @@ namespace TickTrader.Algo.Core
 
         #region Trade Log Builder methods
 
-        public void LogOrderOpening(OpenOrderRequestContext context, SymbolAccessor smbInfo)
+        public void LogOrderOpening(OpenOrderRequestContext context, SymbolInfo smbInfo)
         {
             var logEntry = new StringBuilder();
             logEntry.Append("[Out] Opening ");
@@ -97,7 +98,7 @@ namespace TickTrader.Algo.Core
             PrintTrade(logEntry.ToString());
         }
 
-        public void LogOrderOpenResults(OrderResultEntity result, OpenOrderRequestContext context, SymbolAccessor smbInfo)
+        public void LogOrderOpenResults(OrderResultEntity result, OpenOrderRequestContext context, SymbolInfo smbInfo)
         {
             var logEntry = new StringBuilder();
 
@@ -134,7 +135,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public void LogOrderModifying(ModifyOrderRequestContext context, SymbolAccessor smbInfo)
+        public void LogOrderModifying(ModifyOrderRequestContext context, SymbolInfo smbInfo)
         {
             var logEntry = new StringBuilder();
             logEntry.Append("[Out] Modifying order #").Append(context.OrderId).Append(" to ");
@@ -143,7 +144,7 @@ namespace TickTrader.Algo.Core
             PrintTrade(logEntry.ToString());
         }
 
-        public void LogOrderModifyResults(ModifyOrderRequestContext context, SymbolAccessor smbInfo, OrderResultEntity result)
+        public void LogOrderModifyResults(ModifyOrderRequestContext context, SymbolInfo smbInfo, OrderResultEntity result)
         {
             var logEntry = new StringBuilder();
 
@@ -282,7 +283,7 @@ namespace TickTrader.Algo.Core
         public void NotifyOrderFill(OrderAccessor order)
         {
             var smbInfo = order.SymbolInfo;
-            var priceFomat = smbInfo.PriceFormat;
+            var priceFomat = FormatExtentions.CreateTradeFormatInfo(5);
 
             var builder = new StringBuilder();
             builder.Append("Order #").Append(order.Info.Id);
@@ -296,7 +297,7 @@ namespace TickTrader.Algo.Core
         public void NotifyOrderClosed(OrderAccessor order)
         {
             var smbInfo = order.SymbolInfo;
-            var priceFomat = smbInfo.PriceFormat;
+            var priceFomat = FormatExtentions.CreateTradeFormatInfo(5);
 
             var builder = new StringBuilder();
             builder.Append("Order #").Append(order.Info.Id);
@@ -319,7 +320,7 @@ namespace TickTrader.Algo.Core
         public void NotifyOrderActivation(OrderAccessor order)
         {
             var smbInfo = order.SymbolInfo;
-            var priceFomat = smbInfo.PriceFormat;
+            var priceFomat = FormatExtentions.CreateTradeFormatInfo(5);
 
             var builder = new StringBuilder();
             builder.Append("Order #").Append(order.Info.Id);
@@ -339,41 +340,41 @@ namespace TickTrader.Algo.Core
             Logger.OnPrintTrade(builder.ToString());
         }
 
-        private void PrintCurrentRate(StringBuilder builder, SymbolAccessor smbInfo)
+        private void PrintCurrentRate(StringBuilder builder, SymbolInfo smbInfo)
         {
             if (smbInfo == null)
                 return;
 
-            var priceFomat = smbInfo.PriceFormat;
+            var priceFomat = FormatExtentions.CreateTradeFormatInfo(5);
             var rate = smbInfo.LastQuote;
 
             builder.Append(", currentRate={").AppendNumber(rate.Bid, priceFomat);
             builder.Append('/').AppendNumber(rate.Ask, priceFomat).Append('}');
         }
 
-        private void AppendOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, Order order)
+        private void AppendOrderParams(StringBuilder logEntry, SymbolInfo smbInfo, string suffix, Order order)
         {
             AppendOrderParams(logEntry, smbInfo, suffix, order.Type.ToCoreEnum(), order.Side.ToCoreEnum(), order.RemainingVolume, order.Price, order.StopPrice, order.StopLoss, order.TakeProfit, order.Slippage);
         }
 
-        private void AppendIocOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, Order order)
+        private void AppendIocOrderParams(StringBuilder logEntry, SymbolInfo smbInfo, string suffix, Order order)
         {
             AppendOrderParams(logEntry, smbInfo, suffix, order.Type.ToCoreEnum(), order.Side.ToCoreEnum(), order.LastFillVolume, order.LastFillPrice, double.NaN, order.StopLoss, order.TakeProfit, order.Slippage);
         }
 
-        private void AppendOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, OpenOrderRequestContext request)
+        private void AppendOrderParams(StringBuilder logEntry, SymbolInfo smbInfo, string suffix, OpenOrderRequestContext request)
         {
             AppendOrderParams(logEntry, smbInfo, suffix, request.Type, request.Side, request.Volume, request.Price ?? double.NaN, request.StopPrice ?? double.NaN, request.StopLoss, request.TakeProfit, request.Slippage);
         }
 
-        private void AppendOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, ModifyOrderRequestContext request)
+        private void AppendOrderParams(StringBuilder logEntry, SymbolInfo smbInfo, string suffix, ModifyOrderRequestContext request)
         {
             AppendOrderParams(logEntry, smbInfo, suffix, request.Type, request.Side, request.NewVolume ?? request.CurrentVolume, request.Price ?? double.NaN, request.StopPrice ?? double.NaN, request.StopLoss, request.TakeProfit, request.Slippage);
         }
 
-        private void AppendOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, Domain.OrderInfo.Types.Type type, Domain.OrderInfo.Types.Side side, double volumeLots, double price, double stopPrice, double? sl, double? tp, double? slippage)
+        private void AppendOrderParams(StringBuilder logEntry, SymbolInfo smbInfo, string suffix, Domain.OrderInfo.Types.Type type, Domain.OrderInfo.Types.Side side, double volumeLots, double price, double stopPrice, double? sl, double? tp, double? slippage)
         {
-            var priceFormat = smbInfo?.PriceFormat ?? DefaultPriceFormat;
+            var priceFormat = /*smbInfo?.PriceFormat ??*/ DefaultPriceFormat;
 
             logEntry.Append(type)
                 .Append(suffix).Append(side)

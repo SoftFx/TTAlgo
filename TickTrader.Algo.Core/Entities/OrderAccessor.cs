@@ -11,11 +11,11 @@ namespace TickTrader.Algo.Core
 
         internal WriteEntity Entity { get; }
 
-        internal SymbolAccessor SymbolInfo { get; set; }
+        internal SymbolInfo SymbolInfo { get; set; }
 
-        internal double LotSize => SymbolInfo?.ContractSize ?? 1;
+        internal double LotSize => SymbolInfo?.LotSize ?? 1;
 
-        internal OrderAccessor(SymbolAccessor symbol, OrderInfo info = null)
+        internal OrderAccessor(SymbolInfo symbol, OrderInfo info = null)
         {
             SymbolInfo = symbol;
             Info = info ?? new OrderInfo() { Symbol = symbol.Name };

@@ -229,7 +229,7 @@ namespace TickTrader.Algo.Core
             else await Task.Yield(); //free plugin thread to enable queue processing
         }
 
-        private void PreprocessAndValidateOpenOrderRequest(OpenOrderRequestContext request, out SymbolAccessor smbMetadata, ref OrderCmdResultCodes code)
+        private void PreprocessAndValidateOpenOrderRequest(OpenOrderRequestContext request, out SymbolInfo smbMetadata, ref OrderCmdResultCodes code)
         {
             smbMetadata = null;
 
@@ -303,7 +303,7 @@ namespace TickTrader.Algo.Core
                 return;
         }
 
-        private void PreprocessAndValidateCloseOrderRequest(CloseOrderRequestContext request, out Order orderToClose, out SymbolAccessor smbMetadata, ref OrderCmdResultCodes code)
+        private void PreprocessAndValidateCloseOrderRequest(CloseOrderRequestContext request, out Order orderToClose, out SymbolInfo smbMetadata, ref OrderCmdResultCodes code)
         {
             orderToClose = null;
             smbMetadata = null;
@@ -346,7 +346,7 @@ namespace TickTrader.Algo.Core
                 return;
         }
 
-        private void PreprocessAndValidateModifyOrderRequest(ModifyOrderRequestContext request, out Order orderToModify, out SymbolAccessor smbMetadata, ref OrderCmdResultCodes code)
+        private void PreprocessAndValidateModifyOrderRequest(ModifyOrderRequestContext request, out Order orderToModify, out SymbolInfo smbMetadata, ref OrderCmdResultCodes code)
         {
             orderToModify = null;
             smbMetadata = null;
@@ -409,7 +409,7 @@ namespace TickTrader.Algo.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double? ConvertNullableVolume(double? volumeInLots, SymbolAccessor smbMetadata)
+        private double? ConvertNullableVolume(double? volumeInLots, SymbolInfo smbMetadata)
         {
             if (volumeInLots == null)
                 return null;
@@ -417,10 +417,10 @@ namespace TickTrader.Algo.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double ConvertVolume(double volumeInLots, SymbolAccessor smbMetadata)
+        private double ConvertVolume(double volumeInLots, SymbolInfo smbMetadata)
         {
-            var res = smbMetadata.ContractSize * volumeInLots;
-            var amountDigits = smbMetadata.AmountDigits;
+            var res = smbMetadata.LotSize * volumeInLots;
+            var amountDigits = 6; //smbMetadata.AmountDigits;
             if (amountDigits == 0)
             {
                 res = Math.Round(res);
@@ -433,25 +433,25 @@ namespace TickTrader.Algo.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double RoundVolume(double volumeInLots, Symbol smbMetadata)
+        private double RoundVolume(double volumeInLots, SymbolInfo smbMetadata)
         {
             return volumeInLots.Floor(smbMetadata.TradeVolumeStep);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double? RoundVolume(double? volumeInLots, Symbol smbMetadata)
+        private double? RoundVolume(double? volumeInLots, SymbolInfo smbMetadata)
         {
             return volumeInLots.Floor(smbMetadata.TradeVolumeStep);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double RoundPrice(double price, Symbol smbMetadata, Domain.OrderInfo.Types.Side side)
+        private double RoundPrice(double price, SymbolInfo smbMetadata, Domain.OrderInfo.Types.Side side)
         {
             return side == Domain.OrderInfo.Types.Side.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double? RoundPrice(double? price, Symbol smbMetadata, Domain.OrderInfo.Types.Side side)
+        private double? RoundPrice(double? price, SymbolInfo smbMetadata, Domain.OrderInfo.Types.Side side)
         {
             return side == Domain.OrderInfo.Types.Side.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
         }
@@ -459,9 +459,9 @@ namespace TickTrader.Algo.Core
         #region Validation
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool TryGetSymbol(string symbolName, out SymbolAccessor smbMetadata, ref OrderCmdResultCodes code)
+        private bool TryGetSymbol(string symbolName, out SymbolInfo smbMetadata, ref OrderCmdResultCodes code)
         {
-            smbMetadata = _symbols.GetOrDefault(symbolName);
+            smbMetadata = _symbols.GetOrDefault(symbolName).Info;
             if (smbMetadata == null)
             {
                 code = OrderCmdResultCodes.SymbolNotFound;
@@ -483,7 +483,7 @@ namespace TickTrader.Algo.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool TryGetMarketPrice(SymbolAccessor smb, Domain.OrderInfo.Types.Side orderSide, out double price, ref OrderCmdResultCodes code)
+        private bool TryGetMarketPrice(SymbolInfo smb, Domain.OrderInfo.Types.Side orderSide, out double price, ref OrderCmdResultCodes code)
         {
             price = double.NaN;
             var rate = smb.LastQuote;
@@ -577,7 +577,7 @@ namespace TickTrader.Algo.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool ValidateVolumeLots(double volumeLots, Symbol smbMetadata, ref OrderCmdResultCodes code)
+        private bool ValidateVolumeLots(double volumeLots, SymbolInfo smbMetadata, ref OrderCmdResultCodes code)
         {
             if (volumeLots <= 0 || volumeLots < smbMetadata.MinTradeVolume || volumeLots > smbMetadata.MaxTradeVolume)
             {
@@ -588,7 +588,7 @@ namespace TickTrader.Algo.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool ValidateVolumeLots(double? volumeLots, Symbol smbMetadata, ref OrderCmdResultCodes code)
+        private bool ValidateVolumeLots(double? volumeLots, SymbolInfo smbMetadata, ref OrderCmdResultCodes code)
         {
             if (!volumeLots.HasValue)
                 return true;
@@ -602,7 +602,7 @@ namespace TickTrader.Algo.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool ValidateMaxVisibleVolumeLots(double? maxVisibleVolumeLots, Symbol smbMetadata, Domain.OrderInfo.Types.Type orderType, double? volumeLots, ref OrderCmdResultCodes code)
+        private bool ValidateMaxVisibleVolumeLots(double? maxVisibleVolumeLots, SymbolInfo smbMetadata, Domain.OrderInfo.Types.Type orderType, double? volumeLots, ref OrderCmdResultCodes code)
         {
             if (!maxVisibleVolumeLots.HasValue)
                 return true;
@@ -704,9 +704,9 @@ namespace TickTrader.Algo.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool ValidateTradeEnabled(Symbol smbMetadata, ref OrderCmdResultCodes code)
+        private bool ValidateTradeEnabled(SymbolInfo smbMetadata, ref OrderCmdResultCodes code)
         {
-            if (!smbMetadata.IsTradeAllowed)
+            if (!smbMetadata.TradeAllowed)
             {
                 code = OrderCmdResultCodes.TradeNotAllowed;
                 return false;
@@ -744,7 +744,7 @@ namespace TickTrader.Algo.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool ValidateMargin(OpenOrderRequestContext request, SymbolAccessor symbol, ref OrderCmdResultCodes code)
+        private bool ValidateMargin(OpenOrderRequestContext request, SymbolInfo symbol, ref OrderCmdResultCodes code)
         {
             var isHidden = OrderEntity.IsHiddenOrder((decimal?)request.MaxVisibleAmount);
 
@@ -761,7 +761,7 @@ namespace TickTrader.Algo.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool ValidateMargin(ModifyOrderRequestContext request, SymbolAccessor symbol, ref OrderCmdResultCodes code)
+        private bool ValidateMargin(ModifyOrderRequestContext request, SymbolInfo symbol, ref OrderCmdResultCodes code)
         {
             var oldOrder = _account.Orders.GetOrderOrNull(request.OrderId);
 
@@ -781,7 +781,7 @@ namespace TickTrader.Algo.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool ValidateQuotes(SymbolAccessor symbol, Domain.OrderInfo.Types.Side side, ref OrderCmdResultCodes code)
+        private bool ValidateQuotes(SymbolInfo symbol, Domain.OrderInfo.Types.Side side, ref OrderCmdResultCodes code)
         {
             var quote = symbol.LastQuote;
 

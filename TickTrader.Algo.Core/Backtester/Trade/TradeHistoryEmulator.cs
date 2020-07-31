@@ -4,16 +4,16 @@ using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
-using Bo = TickTrader.BusinessObjects;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    internal class TradeHistoryEmulator : CrossDomainObject,  TradeHistory
+    internal class TradeHistoryEmulator : CrossDomainObject, TradeHistory
     {
         private List<TradeReportAdapter> _history = new List<TradeReportAdapter>();
         private TimeKeyGenerator _idGenerator = new TimeKeyGenerator();
 
-        public TradeReportAdapter Create(DateTime time, SymbolAccessor smb, Domain.TradeReportInfo.Types.ReportType action, Domain.TradeReportInfo.Types.Reason reason)
+        public TradeReportAdapter Create(DateTime time, SymbolInfo smb, Domain.TradeReportInfo.Types.ReportType action, Domain.TradeReportInfo.Types.Reason reason)
         {
             return TradeReportAdapter.Create(_idGenerator.NextKey(time), smb, action, reason);
         }

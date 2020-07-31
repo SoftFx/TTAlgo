@@ -21,12 +21,12 @@ namespace TickTrader.Algo.Core.Calc
             Conversion = new ConversionManager(this);
         }
 
-        public IEnumerable<ISymbolInfo> Symbols { get; private set; }
+        public IEnumerable<SymbolInfo> Symbols { get; private set; }
         public IEnumerable<ICurrencyInfo> Currencies { get; private set; }
 
         public ConversionManager Conversion { get; }
 
-        public void Init(IEnumerable<ISymbolInfo> symbolList, IEnumerable<ICurrencyInfo> currencyList)
+        public void Init(IEnumerable<SymbolInfo> symbolList, IEnumerable<ICurrencyInfo> currencyList)
         {
             Currencies = currencyList.ToList();
             _currenciesByName = currencyList.ToDictionary(c => c.Name);

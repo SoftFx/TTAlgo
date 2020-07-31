@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -35,7 +36,7 @@ namespace TickTrader.Algo.Core
         public double FillPrice { get; set; }
         public OrderAccessor Position { get; set; }
         public NetPositionOpenInfo NetPos { get; set; }
-        public SymbolAccessor SymbolInfo { get; set; }
+        public SymbolInfo SymbolInfo { get; set; }
 
         public bool WasNetPositionClosed => NetPos?.CloseInfo?.CloseAmount > 0;
     }
@@ -101,8 +102,8 @@ namespace TickTrader.Algo.Core
         public void AddFillAction(OrderAccessor order, FillInfo info)
         {
             var smbInfo = order.SymbolInfo;
-            var priceFormat = smbInfo.PriceFormat;
-            var fillAmountLots = info.FillAmount / (decimal)smbInfo.ContractSize;
+            var priceFormat = FormatExtentions.CreateTradeFormatInfo(5);
+            var fillAmountLots = info.FillAmount / (decimal)smbInfo.LotSize;
 
             StartNewAction();
 
@@ -139,7 +140,7 @@ namespace TickTrader.Algo.Core
 
         public void AddGrossCloseAction(OrderAccessor pos, decimal profit, double price, TradeChargesInfo charges, CurrencyEntity balanceCurrInf)
         {
-            var priceFormat = pos.SymbolInfo.PriceFormat;
+            var priceFormat = FormatExtentions.CreateTradeFormatInfo(5);
             var profitFormat = balanceCurrInf.Format;
 
             StartNewAction();
@@ -152,13 +153,13 @@ namespace TickTrader.Algo.Core
             PrintCharges(charges);
         }
 
-        public void AddNetCloseAction(NetPositionCloseInfo closeInfo, SymbolAccessor symbol, CurrencyEntity balanceCurrInfo, TradeChargesInfo charges = null)
+        public void AddNetCloseAction(NetPositionCloseInfo closeInfo, SymbolInfo symbol, CurrencyEntity balanceCurrInfo, TradeChargesInfo charges = null)
         {
             if (closeInfo.CloseAmount == 0)
                 return;
 
-            var priceFormat = symbol.PriceFormat;
-            var closeAmountLost = closeInfo.CloseAmount / (decimal)symbol.ContractSize;
+            var priceFormat = FormatExtentions.CreateTradeFormatInfo(5);
+            var closeAmountLost = closeInfo.CloseAmount / (decimal)symbol.LotSize;
             var profitFormat = balanceCurrInfo.Format;
 
             StartNewAction();
@@ -170,14 +171,14 @@ namespace TickTrader.Algo.Core
                 PrintCharges(charges);
         }
 
-        public void AddNetPositionNotification(NetPosition pos, SymbolAccessor smbInfo)
+        public void AddNetPositionNotification(NetPosition pos, SymbolInfo smbInfo)
         {
             if (pos.Volume.E(0))
                 return;
 
             StartNewAction();
 
-            var priceFormat = smbInfo.PriceFormat;
+            var priceFormat = FormatExtentions.CreateTradeFormatInfo(5);
 
             _builder.Append("Final position ");
             _builder.Append(pos.Symbol).Append(' ');
@@ -230,7 +231,7 @@ namespace TickTrader.Algo.Core
 
         private void PrintAmountAndPrice(OrderAccessor order)
         {
-            var priceFormat = order.SymbolInfo.PriceFormat;
+            var priceFormat = FormatExtentions.CreateTradeFormatInfo(5);
 
             _builder.Append($", amount=");
             if (order.Info.RequestedAmount == order.Info.RequestedAmount || order.Info.RequestedAmount == 0)
@@ -245,7 +246,7 @@ namespace TickTrader.Algo.Core
 
         private void PrintAuxFields(OrderAccessor order)
         {
-            var priceFormat = order.SymbolInfo.PriceFormat;
+            var priceFormat = FormatExtentions.CreateTradeFormatInfo(5);
 
             var tp = order.Entity.TakeProfit;
             var sl = order.Entity.StopLoss;
@@ -270,7 +271,7 @@ namespace TickTrader.Algo.Core
 
         private void PrintQuote(RateUpdate update, SymbolAccessor smbInfo)
         {
-            var priceFormat = smbInfo.PriceFormat;
+            var priceFormat = FormatExtentions.CreateTradeFormatInfo(5);
 
             if (update != null)
             {
