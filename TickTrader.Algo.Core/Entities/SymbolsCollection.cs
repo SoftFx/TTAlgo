@@ -8,52 +8,62 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    public class SymbolsCollection : IEnumerable<SymbolAccessor>
+    public class SymbolsCollection : Api.SymbolProvider, Api.SymbolList
     {
-        private SymbolFixture fixture = new SymbolFixture();
-        private string mainSymbolCode;
-        private FeedProvider subscriptionHandler;
+        private readonly FeedProvider _feedProvider;
 
-        internal SymbolProvider SymbolProviderImpl { get { return fixture; } }
+        private Dictionary<string, SymbolAccessor> _symbols = new Dictionary<string, SymbolAccessor>();
+        private List<SymbolAccessor> sortedSymbols;
 
-        public SymbolsCollection(FeedProvider subscriptionHandler)
+        private string _mainSymbolCode;
+
+        public SymbolsCollection(FeedProvider feedProvider)
         {
-            this.subscriptionHandler = subscriptionHandler;
+            _feedProvider = feedProvider;
         }
 
         public string MainSymbolCode
         {
-            get { return mainSymbolCode; }
+            get => _mainSymbolCode;
             set
             {
-                mainSymbolCode = value;
-                InitCurrentSymbol();
+                _mainSymbolCode = value;
             }
         }
 
-        private void InitCurrentSymbol()
+        public SymbolList List => this;
+
+        public Symbol MainSymbol => _symbols[MainSymbolCode];
+
+        public IEnumerable<SymbolAccessor> Values => _symbols.Values;
+
+        public Symbol this[string symbolCode]
         {
-            fixture.MainSymbol = fixture[mainSymbolCode];
+            get
+            {
+                if (string.IsNullOrEmpty(symbolCode))
+                    return new NullSymbol("");
+
+                SymbolAccessor smb;
+                if (!_symbols.TryGetValue(symbolCode, out smb))
+                    return new NullSymbol(symbolCode);
+                return smb;
+            }
         }
 
-        public void Add(Domain.SymbolInfo symbol, CurrenciesCollection currencies)
+        public void Add(Domain.SymbolInfo info, CurrenciesCollection currencies)
         {
-            fixture.Add(new SymbolAccessor(symbol, subscriptionHandler, currencies));
-
-            if (symbol.Name == mainSymbolCode)
-                InitCurrentSymbol();
+            _symbols.Add(info.Name, new SymbolAccessor(info, _feedProvider, currencies));
         }
 
         public void Init(IEnumerable<Domain.SymbolInfo> symbols, CurrenciesCollection currencies)
         {
-            fixture.Clear();
+            _symbols.Clear();
 
             if (symbols != null)
             {
                 foreach (var smb in symbols)
-                    fixture.Add(new SymbolAccessor(smb, subscriptionHandler, currencies));
-
-                InitCurrentSymbol();
+                    _symbols.Add(smb.Name, new SymbolAccessor(smb, _feedProvider, currencies));
             }
         }
 
@@ -61,14 +71,14 @@ namespace TickTrader.Algo.Core
         {
             if (symbols != null)
             {
-                fixture.InvalidateAll();
+                InvalidateAll();
 
                 foreach (var smb in symbols)
                 {
-                    var smbAccessor = fixture.GetOrDefault(smb.Name);
+                    var smbAccessor = _symbols.GetOrDefault(smb.Name);
                     if (smbAccessor == null)
                     {
-                        fixture.Add(new SymbolAccessor(smb, subscriptionHandler, currencies));
+                        _symbols.Add(smb.Name, new SymbolAccessor(smb, _feedProvider, currencies));
                     }
                     else
                     {
@@ -76,115 +86,127 @@ namespace TickTrader.Algo.Core
                     }
 
                 }
-
-                InitCurrentSymbol();
             }
-        }
-
-        //public void SetRate(Quote quote)
-        //{
-        //    (fixture.GetOrDefault(quote.Symbol) as SymbolAccessor)?.UpdateRate(quote);
-        //}
-
-        public IEnumerator<SymbolAccessor> GetEnumerator()
-        {
-            return fixture.GetInnerCollection().GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            throw new NotImplementedException();
         }
 
         internal SymbolAccessor GetOrDefault(string symbol)
         {
-            var entity = fixture.GetOrDefault(symbol);
+            var entity = _symbols.GetOrDefault(symbol);
             if (entity?.IsNull ?? true) // deleted symbols will be present after reconnect, but IsNull will be true
                 return null;
             return entity;
         }
 
-        private class SymbolFixture : Api.SymbolProvider, Api.SymbolList
+        public void InvalidateAll()
         {
-            private Dictionary<string, SymbolAccessor> symbols = new Dictionary<string, SymbolAccessor>();
-            private List<SymbolAccessor> sortedSymbols;
-
-            public Symbol this[string symbolCode]
+            // symbols are not deleted from collection
+            // deleted symbols will have IsNull set to true
+            foreach (var smb in sortedSymbols)
             {
-                get
-                {
-                    if (string.IsNullOrEmpty(symbolCode))
-                        return new NullSymbol("");
-
-                    SymbolAccessor smb;
-                    if (!symbols.TryGetValue(symbolCode, out smb))
-                        return new NullSymbol(symbolCode);
-                    return smb;
-                }
+                smb.Update(null);
             }
+            sortedSymbols = null;
+        }
 
-            private List<SymbolAccessor> SortedSymbols
+        public IEnumerator<Symbol> GetEnumerator()
+        {
+            return SortedSymbols.GetEnumerator();
+        }
+
+        private List<SymbolAccessor> SortedSymbols
+        {
+            get
             {
-                get
-                {
-                    if (sortedSymbols == null)
-                        sortedSymbols = symbols.Values.Where(s => !s.IsNull).OrderBy(s => s.Info.GroupSortOrder).ThenBy(s => s.Info.SortOrder).ThenBy(s => s.Info.Name).ToList();
+                if (sortedSymbols == null)
+                    sortedSymbols = _symbols.Values.Where(s => !s.IsNull).OrderBy(s => s.Info.GroupSortOrder).ThenBy(s => s.Info.SortOrder).ThenBy(s => s.Info.Name).ToList();
 
-                    return sortedSymbols;
-                }
-            }
-
-            public Symbol MainSymbol { get; set; }
-
-            public SymbolList List { get { return this; } }
-
-            public SymbolAccessor GetOrDefault(string symbol)
-            {
-                if (string.IsNullOrEmpty(symbol))
-                    return null;
-
-                SymbolAccessor entity;
-                symbols.TryGetValue(symbol, out entity);
-                return entity;
-            }
-
-            public void Clear()
-            {
-                symbols.Clear();
-                sortedSymbols = null;
-            }
-
-            public void Add(SymbolAccessor symbol)
-            {
-                symbols.Add(symbol.Info.Name, symbol);
-                sortedSymbols = null;
-            }
-
-            public void InvalidateAll()
-            {
-                // symbols are not deleted from collection
-                // deleted symbols will have IsNull set to true
-                foreach(var smb in sortedSymbols)
-                {
-                    smb.Update(null);
-                }
-                sortedSymbols = null;
-            }
-
-            public IEnumerable<SymbolAccessor> GetInnerCollection()
-            {
-                return SortedSymbols;
-            }
-
-            public IEnumerator<Symbol> GetEnumerator()
-            {
-                return SortedSymbols.GetEnumerator();
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return SortedSymbols.GetEnumerator();
+                return sortedSymbols;
             }
         }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        //private class SymbolFixture : Api.SymbolProvider, Api.SymbolList
+        //{
+        //    private Dictionary<string, SymbolAccessor> symbols = new Dictionary<string, SymbolAccessor>();
+        //    private List<SymbolAccessor> sortedSymbols;
+
+        //    public Symbol this[string symbolCode]
+        //    {
+        //        get
+        //        {
+        //            if (string.IsNullOrEmpty(symbolCode))
+        //                return new NullSymbol("");
+
+        //            SymbolAccessor smb;
+        //            if (!symbols.TryGetValue(symbolCode, out smb))
+        //                return new NullSymbol(symbolCode);
+        //            return smb;
+        //        }
+        //    }
+
+        //    private List<SymbolAccessor> SortedSymbols
+        //    {
+        //        get
+        //        {
+        //            if (sortedSymbols == null)
+        //                sortedSymbols = symbols.Values.Where(s => !s.IsNull).OrderBy(s => s.Info.GroupSortOrder).ThenBy(s => s.Info.SortOrder).ThenBy(s => s.Info.Name).ToList();
+
+        //            return sortedSymbols;
+        //        }
+        //    }
+
+        //    public Symbol MainSymbol { get; set; }
+
+        //    public SymbolList List { get { return this; } }
+
+        //    public SymbolAccessor GetOrDefault(string symbol)
+        //    {
+        //        if (string.IsNullOrEmpty(symbol))
+        //            return null;
+
+        //        SymbolAccessor entity;
+        //        symbols.TryGetValue(symbol, out entity);
+        //        return entity;
+        //    }
+
+        //    public void Clear()
+        //    {
+        //        symbols.Clear();
+        //        sortedSymbols = null;
+        //    }
+
+        //    public void Add(SymbolAccessor symbol)
+        //    {
+        //        symbols.Add(symbol.Info.Name, symbol);
+        //        sortedSymbols = null;
+        //    }
+
+        //    public void InvalidateAll()
+        //    {
+        //        // symbols are not deleted from collection
+        //        // deleted symbols will have IsNull set to true
+        //        foreach(var smb in sortedSymbols)
+        //        {
+        //            smb.Update(null);
+        //        }
+        //        sortedSymbols = null;
+        //    }
+
+        //    public IEnumerable<SymbolAccessor> GetInnerCollection()
+        //    {
+        //        return SortedSymbols;
+        //    }
+
+        //    public IEnumerator<Symbol> GetEnumerator()
+        //    {
+        //        return SortedSymbols.GetEnumerator();
+        //    }
+
+        //    IEnumerator IEnumerable.GetEnumerator()
+        //    {
+        //        return SortedSymbols.GetEnumerator();
+        //    }
+        //}
     }
 }

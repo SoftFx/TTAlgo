@@ -16,7 +16,7 @@ namespace TickTrader.BotTerminal
 {
     sealed class AssetsViewModel : AccountBasedViewModel
     {
-        public AssetsViewModel(AccountModel model, IReadOnlyDictionary<string, CurrencyEntity> currencies, IConnectionStatusInfo connection)
+        public AssetsViewModel(AccountModel model, IReadOnlyDictionary<string, CurrencyInfo> currencies, IConnectionStatusInfo connection)
             : base(model, connection)
         {
             Assets = model.Assets

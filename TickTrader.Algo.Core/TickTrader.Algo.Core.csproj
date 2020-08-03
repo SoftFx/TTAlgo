@@ -180,7 +180,7 @@
     <Compile Include="Entities\BarRateUpdate.cs" />
     <Compile Include="Entities\CoreEnumConverterExtentions.cs" />
     <Compile Include="Entities\CurrenciesCollection.cs" />
-    <Compile Include="Entities\CurrencyEntity.cs" />
+    <Compile Include="Entities\CurrencyAccessor.cs" />
     <Compile Include="Entities\DataSeriesUpdate.cs" />
     <Compile Include="Entities\Dealer\CancelOrderDealerRequest.cs" />
     <Compile Include="Entities\Dealer\ClosePositionDealerRequest.cs" />

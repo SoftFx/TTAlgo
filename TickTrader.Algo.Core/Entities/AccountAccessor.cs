@@ -29,7 +29,7 @@ namespace TickTrader.Algo.Core
             _builder = builder;
         }
 
-        public OrdersCollection Orders
+        internal OrdersCollection Orders
         {
             get
             {
@@ -94,7 +94,7 @@ namespace TickTrader.Algo.Core
                 _balanceCurrency = value;
             }
         }
-        public Currency BalanceCurrencyInfo { get; private set; }
+        public CurrencyInfo BalanceCurrencyInfo { get; private set; }
         public int Leverage { get; internal set; }
         public AccountInfo.Types.Type Type
         {
@@ -127,23 +127,23 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public void Update(Domain.AccountInfo info, Dictionary<string, Currency> currencies)
+        public void Update(Domain.AccountInfo info, Dictionary<string, CurrencyInfo> currencies)
         {
             Id = info.Id;
             Type = info.Type;
             Leverage = info.Leverage;
             Balance = (decimal)info.Balance;
-            UpdateCurrency(currencies.GetOrStub(info.BalanceCurrency));
+            UpdateCurrency(currencies.GetOrDefault(info.BalanceCurrency));
             Assets.Clear();
             foreach (var asset in info.Assets)
                 _builder.Account.Assets.Update(asset, out _);
         }
 
-        internal void UpdateCurrency(Currency currency)
+        internal void UpdateCurrency(CurrencyInfo currency)
         {
-            BalanceCurrency = currency.Name;
+            BalanceCurrency = currency?.Name ?? string.Empty;
             BalanceCurrencyInfo = currency;
-            BalanceCurrencyFormat = ((CurrencyEntity)currency).Format;
+            BalanceCurrencyFormat = new NumberFormatInfo { NumberDecimalDigits = currency?.Digits ?? 2 };
         }
 
         internal void ResetCurrency()
@@ -279,7 +279,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        internal void Init(IAccountInfoProvider dataProvider, Dictionary<string, Currency> currencies)
+        internal void Init(IAccountInfoProvider dataProvider, Dictionary<string, CurrencyInfo> currencies)
         {
             var accInfo = dataProvider.GetAccountInfo();
 
@@ -389,7 +389,7 @@ namespace TickTrader.Algo.Core
 
         internal OrderAccessor GetOrderOrThrow(string orderId)
         {
-            return Orders.GetOrderOrNull(orderId)
+            return Orders.GetOrNull(orderId)
                 ?? throw new OrderValidationError("Order Not Found " + orderId, OrderCmdResultCodes.OrderNotFound);
         }
 

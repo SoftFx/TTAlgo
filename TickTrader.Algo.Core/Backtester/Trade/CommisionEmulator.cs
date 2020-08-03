@@ -44,7 +44,7 @@ namespace TickTrader.Algo.Core
                 }
             }
 
-            charges.CurrencyInfo = (CurrencyEntity)calc.Acc.BalanceCurrencyInfo;
+            charges.CurrencyInfo = calc.Acc.BalanceCurrencyInfo;
 
             var commiss = CalculateMarginCommission((OrderCalculator)position.Info.Calculator, closeAmount, cfg, calc, position.IsReducedCloseCommission());
             charges.Commission += RoundValue(commiss, calc.RoundingDigits);
@@ -56,7 +56,7 @@ namespace TickTrader.Algo.Core
         public static void OnNetPositionOpened(OrderAccessor fromOrder, PositionAccessor position, decimal fillAmount, SymbolInfo cfg, TradeChargesInfo charges, CalculatorFixture calc)
         {
             charges.Commission = CalculateMarginCommission((OrderCalculator)position.Info.Calculator, fillAmount, cfg, calc, fromOrder.IsReducedOpenCommission());
-            charges.CurrencyInfo = (CurrencyEntity)calc.Acc.BalanceCurrencyInfo;
+            charges.CurrencyInfo = calc.Acc.BalanceCurrencyInfo;
         }
 
         //public static void OnNetRollover(OrderAccessor position, decimal closeAmount, SymbolAccessor cfg, TradeChargesInfo charges, CalculatorFixture account)

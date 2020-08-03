@@ -285,7 +285,7 @@ namespace TickTrader.Algo.Core
                     SymbolDataRequested?.Invoke();
                     Symbols.MainSymbolCode = MainSymbol;
                 }
-                return Symbols.SymbolProviderImpl;
+                return Symbols;
             }
         }
 
@@ -298,7 +298,7 @@ namespace TickTrader.Algo.Core
                     isCurrenciesInitialized = true;
                     CurrencyDataRequested?.Invoke();
                 }
-                return Currencies.CurrencyListImp;
+                return Currencies;
             }
         }
 

@@ -132,7 +132,7 @@ namespace TickTrader.Algo.Common.Model
             }
 
             public Task<List<Domain.SymbolInfo>> GetSymbols() => Actor.Call(a => a.ExecDataRequest(c => c.GetSymbolsCopy()));
-            public Task<List<CurrencyEntity>> GetCurrecnies() => Actor.Call(a => a.ExecDataRequest(c => c.GetCurrenciesCopy()));
+            public Task<List<CurrencyInfo>> GetCurrecnies() => Actor.Call(a => a.ExecDataRequest(c => c.GetCurrenciesCopy()));
             public Task<Domain.AccountInfo.Types.Type> GetAccountType() => Actor.Call((Func<ClientModel, AccountInfo.Types.Type>)(a => a.ExecDataRequest((Func<EntityCache, AccountInfo.Types.Type>)(c => (AccountInfo.Types.Type)c.Account.Type.Value))));
             public Task<Domain.SymbolInfo> GetDefaultSymbol() => Actor.Call(a => a.ExecDataRequest(c => c.GetDefaultSymbol()));
 
@@ -182,7 +182,7 @@ namespace TickTrader.Algo.Common.Model
             public PluginTradeApiProvider.Handler TradeApi { get; private set; }
             public QuoteDistributor Distributor { get; }
             public IVarSet<string, SymbolInfo> Symbols => Cache.Symbols;
-            public IVarSet<string, CurrencyEntity> Currencies => Cache.Currencies;
+            public IVarSet<string, CurrencyInfo> Currencies => Cache.Currencies;
 
             protected override void ActorInit()
             {

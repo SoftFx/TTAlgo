@@ -268,11 +268,11 @@ namespace TickTrader.Algo.Core
             Logger.OnPrintTrade(logEntry.ToString());
         }
 
-        public void NotifyDespositWithdrawal(double amount, CurrencyEntity currency)
+        public void NotifyDespositWithdrawal(double amount, CurrencyInfo currency)
         {
             string action = amount > 0 ? "Deposit" : "Withdrawal";
-
-            Logger.OnPrintTrade(action + " " + amount.ToString("N", currency.Format) + " " + currency.Name);
+            var format = new NumberFormatInfo { NumberDecimalDigits = currency.Digits };
+            Logger.OnPrintTrade(action + " " + amount.ToString("N", format) + " " + currency.Name);
         }
 
         public void NotifyDividend(double amount, string currency, NumberFormatInfo format)

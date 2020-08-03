@@ -19,7 +19,7 @@ namespace TickTrader.BotTerminal
         }
 
         public TradeInfoViewModel(AccountModel accModel, IVarSet<string, SymbolInfo> symbols,
-            IVarSet<string, CurrencyEntity> currencies, IConnectionStatusInfo connectionInfo, bool autoSizeColumns, ProfileManager profile = null, bool isBacktester = false)
+            IVarSet<string, CurrencyInfo> currencies, IConnectionStatusInfo connectionInfo, bool autoSizeColumns, ProfileManager profile = null, bool isBacktester = false)
         {
             var netPositions = new NetPositionListViewModel(accModel, connectionInfo, profile, isBacktester);
             var grossPositions = new GrossPositionListViewModel(accModel, symbols, connectionInfo, profile, isBacktester);

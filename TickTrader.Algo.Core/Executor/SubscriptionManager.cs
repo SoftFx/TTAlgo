@@ -25,7 +25,7 @@ namespace TickTrader.Algo.Core
 
         public void Start()
         {
-            Start(_context.FeedProvider, _context.Builder.Symbols.Select(s => s.Info.Name));
+            Start(_context.FeedProvider, _context.Builder.Symbols.Select(s => s.Name));
         }
 
         public void Stop()

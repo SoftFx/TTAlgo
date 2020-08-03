@@ -80,7 +80,7 @@ namespace TickTrader.Algo.Core
             return Market.GetCalculator(symbol, account);
         }
 
-        public CurrencyEntity GetCurrencyInfo(string currency)
+        public CurrencyAccessor GetCurrencyInfo(string currency)
         {
             return _context.Builder.Currencies.GetOrDefault(currency);
         }

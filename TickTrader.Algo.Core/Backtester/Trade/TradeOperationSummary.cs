@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Core
         public decimal Commission { get; set; }
 
         public decimal Total => Swap + Commission;
-        public CurrencyEntity CurrencyInfo { get; set; }
+        public CurrencyInfo CurrencyInfo { get; set; }
 
         public void Clear()
         {
@@ -138,10 +138,10 @@ namespace TickTrader.Algo.Core
             //return _builder.ToString();
         }
 
-        public void AddGrossCloseAction(OrderAccessor pos, decimal profit, double price, TradeChargesInfo charges, CurrencyEntity balanceCurrInf)
+        public void AddGrossCloseAction(OrderAccessor pos, decimal profit, double price, TradeChargesInfo charges, CurrencyInfo balanceCurrInf)
         {
             var priceFormat = FormatExtentions.CreateTradeFormatInfo(5);
-            var profitFormat = balanceCurrInf.Format;
+            var profitFormat = new NumberFormatInfo { NumberDecimalDigits = balanceCurrInf.Digits };
 
             StartNewAction();
             _builder.Append($"Closed position ");
@@ -153,14 +153,14 @@ namespace TickTrader.Algo.Core
             PrintCharges(charges);
         }
 
-        public void AddNetCloseAction(NetPositionCloseInfo closeInfo, SymbolInfo symbol, CurrencyEntity balanceCurrInfo, TradeChargesInfo charges = null)
+        public void AddNetCloseAction(NetPositionCloseInfo closeInfo, SymbolInfo symbol, CurrencyInfo balanceCurrInfo, TradeChargesInfo charges = null)
         {
             if (closeInfo.CloseAmount == 0)
                 return;
 
             var priceFormat = FormatExtentions.CreateTradeFormatInfo(5);
             var closeAmountLost = closeInfo.CloseAmount / (decimal)symbol.LotSize;
-            var profitFormat = balanceCurrInfo.Format;
+            var profitFormat = new NumberFormatInfo { NumberDecimalDigits = balanceCurrInfo.Digits };
 
             StartNewAction();
             _builder.Append("Closed net position for ").AppendNumber(closeAmountLost);
@@ -265,8 +265,10 @@ namespace TickTrader.Algo.Core
 
         private void PrintCharges(TradeChargesInfo charges)
         {
+            var profitFormat = new NumberFormatInfo { NumberDecimalDigits = charges.CurrencyInfo.Digits };
+
             if (charges != null && charges.Commission != 0)
-                _builder.Append(" commission=").AppendNumber(charges.Commission, charges.CurrencyInfo.Format);
+                _builder.Append(" commission=").AppendNumber(charges.Commission, profitFormat);
         }
 
         private void PrintQuote(RateUpdate update, SymbolAccessor smbInfo)

@@ -10,7 +10,7 @@ namespace TickTrader.Algo.Common.Model
     public class MockClient : IMarketDataProvider
     {
         private VarDictionary<string, SymbolInfo> _symbols = new VarDictionary<string, SymbolInfo>();
-        private VarDictionary<string, CurrencyEntity> _currencies = new VarDictionary<string, CurrencyEntity>();
+        private VarDictionary<string, CurrencyInfo> _currencies = new VarDictionary<string, CurrencyInfo>();
 
         public MockClient()
         {
@@ -20,7 +20,7 @@ namespace TickTrader.Algo.Common.Model
 
         public AccountModel Acc { get; }
 
-        public void Init(Domain.AccountInfo accInfo, IEnumerable<Domain.SymbolInfo> symbols, IEnumerable<CurrencyEntity> currencies)
+        public void Init(Domain.AccountInfo accInfo, IEnumerable<Domain.SymbolInfo> symbols, IEnumerable<CurrencyInfo> currencies)
         {
             _symbols.Clear();
             _currencies.Clear();
@@ -56,7 +56,7 @@ namespace TickTrader.Algo.Common.Model
 
         #region IMarketDataProvider
         public IVarSet<string, SymbolInfo> Symbols => _symbols;
-        public IVarSet<string, CurrencyEntity> Currencies => _currencies;
+        public IVarSet<string, CurrencyInfo> Currencies => _currencies;
         public QuoteDistributor Distributor { get; }
         #endregion
     }

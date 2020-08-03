@@ -125,7 +125,7 @@ namespace TickTrader.Algo.Core
 
         internal void SubscribeAll()
         {
-            var symbols = ExecContext.Builder.Symbols.Select(s => s.Info.Name);
+            var symbols = ExecContext.Builder.Symbols.Select(s => s.Name);
             var snaphsot = _defaultSubscription.AddOrModify(symbols, 1);
             ApplySnaphost(snaphsot);
         }

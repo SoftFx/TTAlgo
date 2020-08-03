@@ -3,147 +3,197 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    public class CurrenciesCollection : IEnumerable<CurrencyEntity>
+    public class CurrenciesCollection : Api.CurrencyList /*IEnumerable<CurrencyEntity>*/
     {
-        private CurrencyFixture _enities = new CurrencyFixture();
+        private Dictionary<string, CurrencyAccessor> _currencies = new Dictionary<string, CurrencyAccessor>();
 
-        internal CurrencyList CurrencyListImp => _enities;
+        //private CurrencyFixture _enities = new CurrencyFixture();
 
-        public void Add(CurrencyEntity currency)
+        public Currency this[string currencyCode]
         {
-            _enities.Add(currency);
-        }
-
-        public void Init(IEnumerable<CurrencyEntity> currencies)
-        {
-            _enities.Clear();
-
-            if (currencies != null)
+            get
             {
-                foreach (var currency in currencies)
-                    _enities.Add(currency);
+                if (string.IsNullOrEmpty(currencyCode))
+                    return Null.Currency;
+
+                CurrencyAccessor currency;
+                if (!_currencies.TryGetValue(currencyCode, out currency))
+                    return new NullCurrency(currencyCode);
+                return currency;
             }
         }
 
-        public void Merge(IEnumerable<CurrencyEntity> currencies)
+        //internal CurrencyList CurrencyListImp => _enities;
+
+        public IEnumerable<CurrencyAccessor> Values => _currencies.Values;
+
+        //public void Add(CurrencyEntity currency)
+        //{
+        //    _enities.Add(currency);
+        //}
+
+        public void Init(IEnumerable<CurrencyInfo> currencies)
+        {
+            _currencies.Clear();
+
+            if (currencies != null)
+            {
+                foreach (var currency in currencies)
+                    _currencies.Add(currency.Name, new CurrencyAccessor(currency));
+            }
+        }
+
+        public void Merge(IEnumerable<CurrencyInfo> currencies)
         {
             if (currencies != null)
             {
-                _enities.InvalidateAll();
+                InvalidateAll();
 
                 foreach (var currency in currencies)
                 {
-                    var curr = _enities.GetOrDefault(currency.Name);
+                    var curr = _currencies.GetOrDefault(currency.Name);
                     if (curr == null)
                     {
-                        _enities.Add(currency);
+                        _currencies.Add(currency.Name, new CurrencyAccessor(currency));
                     }
                     else
                     {
-                        curr.Update(currency.Info);
+                        curr.Update(currency);
                     }
                 }
             }
         }
 
-        internal CurrencyEntity GetOrDefault(string currency)
+        public void InvalidateAll()
         {
-            var currInfo = _enities.GetOrDefault(currency);
+            // currencies are not deleted from collection
+            // deleted currencies will have IsNull set to true
+            foreach (var curr in sortedCurrencies)
+            {
+                curr.Update(null);
+            }
+            sortedCurrencies = null;
+        }
+
+        private List<CurrencyAccessor> sortedCurrencies;
+
+        private List<CurrencyAccessor> SortedCurrencies
+        {
+            get
+            {
+                if (sortedCurrencies == null)
+                    sortedCurrencies = _currencies.Values.Where(c => !c.IsNull).OrderBy(c => c.Info.SortOrder).ToList();
+
+                return sortedCurrencies;
+            }
+        }
+
+        internal CurrencyAccessor GetOrDefault(string currency)
+        {
+            var currInfo = _currencies.GetOrDefault(currency);
             if (currInfo?.IsNull ?? true) // deleted currencies will be present after reconnect, but IsNull will be true
                 return null;
             return currInfo;
         }
 
-        public IEnumerator<CurrencyEntity> GetEnumerator()
+        public IEnumerator<Currency> GetEnumerator()
         {
-            return _enities.GetValues().GetEnumerator();
+            return SortedCurrencies.GetEnumerator();
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return _enities.GetValues().GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        private class CurrencyFixture : CurrencyList
-        {
-            private Dictionary<string, CurrencyEntity> currencies = new Dictionary<string, CurrencyEntity>();
-            private List<CurrencyEntity> sortedCurrencies;
+        //public IEnumerator<CurrencyEntity> GetEnumerator()
+        //{
+        //    return _enities.GetValues().GetEnumerator();
+        //}
 
-            public Currency this[string currencyCode]
-            {
-                get
-                {
-                    if (string.IsNullOrEmpty(currencyCode))
-                        return Null.Currency;
+        //IEnumerator IEnumerable.GetEnumerator()
+        //{
+        //    return _enities.GetValues().GetEnumerator();
+        //}
 
-                    CurrencyEntity currency;
-                    if (!currencies.TryGetValue(currencyCode, out currency))
-                        return new NullCurrency(currencyCode);
-                    return currency;
-                }
-            }
+        //private class CurrencyFixture : CurrencyList
+        //{
+        //    private Dictionary<string, CurrencyEntity> currencies = new Dictionary<string, CurrencyEntity>();
+        //    private List<CurrencyEntity> sortedCurrencies;
 
-            private List<CurrencyEntity> SortedCurrencies
-            {
-                get
-                {
-                    if (sortedCurrencies == null)
-                        sortedCurrencies = currencies.Values.Where(c => !c.IsNull).OrderBy(c => c.SortOrder).ToList();
+        //    public Currency this[string currencyCode]
+        //    {
+        //        get
+        //        {
+        //            if (string.IsNullOrEmpty(currencyCode))
+        //                return Null.Currency;
 
-                    return sortedCurrencies;
-                }
-            }
+        //            CurrencyEntity currency;
+        //            if (!currencies.TryGetValue(currencyCode, out currency))
+        //                return new NullCurrency(currencyCode);
+        //            return currency;
+        //        }
+        //    }
 
-            public CurrencyEntity GetOrDefault(string name)
-            {
-                if (string.IsNullOrEmpty(name))
-                    return null;
+        //    private List<CurrencyEntity> SortedCurrencies
+        //    {
+        //        get
+        //        {
+        //            if (sortedCurrencies == null)
+        //                sortedCurrencies = currencies.Values.Where(c => !c.IsNull).OrderBy(c => c.SortOrder).ToList();
 
-                CurrencyEntity currInfo;
-                currencies.TryGetValue(name, out currInfo);
-                return currInfo;
-            }
+        //            return sortedCurrencies;
+        //        }
+        //    }
 
-            public void Add(CurrencyEntity currency)
-            {
-                currencies.Add(currency.Name, currency);
-                sortedCurrencies = null;
-            }
+        //    public CurrencyEntity GetOrDefault(string name)
+        //    {
+        //        if (string.IsNullOrEmpty(name))
+        //            return null;
 
-            public void Clear()
-            {
-                currencies.Clear();
-                sortedCurrencies = null;
-            }
+        //        CurrencyEntity currInfo;
+        //        currencies.TryGetValue(name, out currInfo);
+        //        return currInfo;
+        //    }
 
-            public void InvalidateAll()
-            {
-                // currencies are not deleted from collection
-                // deleted currencies will have IsNull set to true
-                foreach (var curr in sortedCurrencies)
-                {
-                    curr.Update(null);
-                }
-                sortedCurrencies = null;
-            }
+        //    public void Add(CurrencyEntity currency)
+        //    {
+        //        currencies.Add(currency.Name, currency);
+        //        sortedCurrencies = null;
+        //    }
 
-            public IEnumerable<CurrencyEntity> GetValues()
-            {
-                return SortedCurrencies;
-            }
+        //    public void Clear()
+        //    {
+        //        currencies.Clear();
+        //        sortedCurrencies = null;
+        //    }
 
-            public IEnumerator<Currency> GetEnumerator()
-            {
-                return SortedCurrencies.GetEnumerator();
-            }
+        //    public void InvalidateAll()
+        //    {
+        //        // currencies are not deleted from collection
+        //        // deleted currencies will have IsNull set to true
+        //        foreach (var curr in sortedCurrencies)
+        //        {
+        //            curr.Update(null);
+        //        }
+        //        sortedCurrencies = null;
+        //    }
 
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return SortedCurrencies.GetEnumerator();
-            }
-        }
+        //    public IEnumerable<CurrencyEntity> GetValues()
+        //    {
+        //        return SortedCurrencies;
+        //    }
+
+        //    public IEnumerator<Currency> GetEnumerator()
+        //    {
+        //        return SortedCurrencies.GetEnumerator();
+        //    }
+
+        //    IEnumerator IEnumerable.GetEnumerator()
+        //    {
+        //        return SortedCurrencies.GetEnumerator();
+        //    }
+        //}
     }
 }

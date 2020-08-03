@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -14,7 +15,7 @@ namespace TickTrader.Algo.Core
     internal class TradingFixture : CrossDomainObject, ITradeApi, IExecutorFixture
     {
         private IFixtureContext context;
-        private Dictionary<string, Currency> currencies;
+        private Dictionary<string, CurrencyInfo> currencies;
         private AccountAccessor _account;
         private SymbolsCollection _symbols;
         private ITradeExecutor _executor;
@@ -77,7 +78,7 @@ namespace TickTrader.Algo.Core
             _dataProvider.BalanceUpdated += DataProvider_BalanceUpdated;
             _dataProvider.PositionUpdated += DataProvider_PositionUpdated;
 
-            currencies = builder.Currencies.CurrencyListImp.ToDictionary(c => c.Name);
+            currencies = builder.Currencies.Values.Select(u => u.Info).ToDictionary(c => c.Name);
 
             builder.Account.Init(_dataProvider, currencies);
         }
@@ -143,17 +144,19 @@ namespace TickTrader.Algo.Core
                 if (accProxy.Type == AccountInfo.Types.Type.Gross || accProxy.Type == AccountInfo.Types.Type.Net)
                 {
                     accProxy.Balance = (decimal)report.Balance;
-                    var currencyInfo = currencies.GetOrStub(report.Currency);
+                    var currencyInfo = currencies.GetOrDefault(report.Currency);
 
                     if (report.Type == BalanceOperation.Types.Type.DepositWithdrawal)
                     {
-                        context.Logger.NotifyDespositWithdrawal(report.TransactionAmount, (CurrencyEntity)accProxy.BalanceCurrencyInfo);
+                        context.Logger.NotifyDespositWithdrawal(report.TransactionAmount, accProxy.BalanceCurrencyInfo);
                         context.EnqueueEvent(builder => accProxy.FireBalanceUpdateEvent());
                     }
 
                     if (report.Type == BalanceOperation.Types.Type.Dividend)
                     {
-                        context.Logger.NotifyDividend(report.TransactionAmount, currencyInfo.Name, ((CurrencyEntity)currencyInfo).Format);
+                        var format = new NumberFormatInfo { NumberDecimalDigits = currencyInfo.Digits };
+
+                        context.Logger.NotifyDividend(report.TransactionAmount, currencyInfo.Name, format);
                         context.EnqueueEvent(builder => accProxy.FireBalanceDividendEvent(new BalanceDividendEventArgsImpl(report)));
                     }
                 }
@@ -161,12 +164,12 @@ namespace TickTrader.Algo.Core
                 {
                     AssetChangeType assetChange;
                     var asset = accProxy.Assets.Update(new Domain.AssetInfo(report.Balance, report.Currency), out assetChange);
-                    var currencyInfo = currencies.GetOrStub(report.Currency);
+                    var currencyInfo = currencies.GetOrDefault(report.Currency);
                     if (assetChange != AssetChangeType.NoChanges)
                     {
                         if (report.Type == BalanceOperation.Types.Type.DepositWithdrawal)
                         {
-                            context.Logger.NotifyDespositWithdrawal(report.TransactionAmount, (CurrencyEntity)currencyInfo);
+                            context.Logger.NotifyDespositWithdrawal(report.TransactionAmount, currencyInfo);
                             context.EnqueueEvent(builder => accProxy.Assets.FireModified(new AssetUpdateEventArgsImpl(asset)));
                             context.EnqueueEvent(builder => accProxy.FireBalanceUpdateEvent());
                         }
@@ -236,7 +239,7 @@ namespace TickTrader.Algo.Core
             }
             else if (eReport.ExecAction == Domain.OrderExecReport.Types.ExecAction.Closed)
             {
-                var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderCopy.Id);
+                var oldOrder = orderCollection.GetOrNull(eReport.OrderCopy.Id);
                 if (oldOrder != null)
                 {
                     var order = ApplyOrderEntity(eReport, orderCollection);
@@ -259,7 +262,7 @@ namespace TickTrader.Algo.Core
             }
             else if (eReport.ExecAction == Domain.OrderExecReport.Types.ExecAction.Expired)
             {
-                var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderCopy.Id);
+                var oldOrder = orderCollection.GetOrNull(eReport.OrderCopy.Id);
                 if (oldOrder != null)
                 {
                     var order = ApplyOrderEntity(eReport, orderCollection);
@@ -271,7 +274,7 @@ namespace TickTrader.Algo.Core
             }
             else if (eReport.ExecAction == Domain.OrderExecReport.Types.ExecAction.Modified)
             {
-                var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderCopy.Id)?.Clone();
+                var oldOrder = orderCollection.GetOrNull(eReport.OrderCopy.Id)?.Clone();
                 if (oldOrder != null && eReport.OrderCopy != null)
                 {
                     var order = ApplyOrderEntity(eReport, orderCollection);
@@ -285,7 +288,7 @@ namespace TickTrader.Algo.Core
             }
             else if (eReport.ExecAction == Domain.OrderExecReport.Types.ExecAction.Splitted)
             {
-                var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderCopy.Id)?.Clone();
+                var oldOrder = orderCollection.GetOrNull(eReport.OrderCopy.Id)?.Clone();
                 if (oldOrder != null && eReport.OrderCopy != null)
                 {
                     var order = ApplyOrderEntity(eReport, orderCollection);
@@ -315,7 +318,7 @@ namespace TickTrader.Algo.Core
                 else
                 {
                     // pending orders
-                    var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderCopy.Id)?.Clone();
+                    var oldOrder = orderCollection.GetOrNull(eReport.OrderCopy.Id)?.Clone();
                     if (oldOrder != null && eReport.OrderCopy != null)
                     {
                         var order = ApplyOrderEntity(eReport, orderCollection);

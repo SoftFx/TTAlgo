@@ -14,7 +14,7 @@ namespace TickTrader.BotTerminal
         private readonly PricePrecisionConverter<decimal> _currencyConverter;
         private readonly IAssetInfo _asset;
 
-        public AssetViewModel(AssetInfo asset, CurrencyEntity info)
+        public AssetViewModel(AssetInfo asset, CurrencyInfo info)
         {
             _asset = asset;
 

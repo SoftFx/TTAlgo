@@ -1,32 +1,18 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    public sealed class OrdersCollection : OrderList
+    internal sealed class OrdersCollection : TradeEntityCollection<OrderAccessor, Api.Order>, Api.OrderList
     {
-        private readonly ConcurrentDictionary<string, OrderAccessor> _orders = new ConcurrentDictionary<string, OrderAccessor>();
-        private readonly PluginBuilder _builder;
+        internal OrdersCollection(PluginBuilder builder) : base(builder) { }
 
-        public int Count => _orders.Count;
-
-        public Order this[string id] => !_orders.TryGetValue(id, out OrderAccessor entity) ? entity : Null.Order;
-
-        public IEnumerable<OrderAccessor> Values => _orders.Values;
-
-        internal OrdersCollection(PluginBuilder builder)
-        {
-            _builder = builder;
-        }
+        public Order this[string id] => !_entities.TryGetValue(id, out OrderAccessor entity) ? entity : Null.Order;
 
         internal OrderAccessor Add(OrderAccessor order)
         {
-            if (!_orders.TryAdd(order.Info.Id, order))
+            if (!_entities.TryAdd(order.Info.Id, order))
                 throw new ArgumentException("Order #" + order.Info.Id + " already exist!");
 
             Added?.Invoke(order);
@@ -39,7 +25,7 @@ namespace TickTrader.Algo.Core
 
         public OrderAccessor Update(OrderInfo info)
         {
-            if (_orders.TryGetValue(info.Id, out OrderAccessor order))
+            if (_entities.TryGetValue(info.Id, out OrderAccessor order))
             {
                 if (order.Info.Modified <= info.Modified)
                 {
@@ -51,14 +37,12 @@ namespace TickTrader.Algo.Core
             return order;
         }
 
-        public OrderAccessor GetOrderOrNull(string id) => _orders.GetOrDefault(id);
-
         public OrderAccessor Remove(OrderInfo info, bool update = false)
         {
-            _orders.TryRemove(info.Id, out var order);
+            _entities.TryRemove(info.Id, out var order);
 
             if (!update)
-                order?.Info.Update(info); //temporary convert
+                order?.Info.Update(info);
 
             if (order != null)
             {
@@ -68,8 +52,6 @@ namespace TickTrader.Algo.Core
 
             return order;
         }
-
-        public void Clear() => _orders.Clear();
 
         public void FireOrderOpened(OrderOpenedEventArgs args) => _builder.InvokePluginMethod((b, p) => Opened?.Invoke(p), args);
 
@@ -86,10 +68,6 @@ namespace TickTrader.Algo.Core
         public void FireOrderFilled(OrderFilledEventArgs args) => _builder.InvokePluginMethod((b, p) => Filled?.Invoke(p), args);
 
         public void FireOrderActivated(OrderActivatedEventArgs args) => _builder.InvokePluginMethod((b, p) => Activated?.Invoke(p), args);
-
-        IEnumerator IEnumerable.GetEnumerator() => _orders.Values.GetEnumerator();
-
-        IEnumerator<Order> IEnumerable<Order>.GetEnumerator() => _orders.Values.GetEnumerator();
 
         public event Action<Order> Added;
         public event Action<Order> Removed;

@@ -84,12 +84,12 @@ namespace TickTrader.Algo.Core
             {
                 _acc.Balance = (decimal)_settings.CommonSettings.InitialBalance;
                 _acc.Leverage = _settings.CommonSettings.Leverage;
-                _acc.UpdateCurrency(_settings.CommonSettings.Currencies.GetOrStub(_settings.CommonSettings.BalanceCurrency));
+                _acc.UpdateCurrency(_settings.CommonSettings.Currencies.GetOrDefault(_settings.CommonSettings.BalanceCurrency));
                 _opSummary.AccountCurrencyFormat = _acc.BalanceCurrencyFormat;
             }
             else if (_acc.IsCashType)
             {
-                var currencies = _context.Builder.Currencies.CurrencyListImp.ToDictionary(c => c.Name);
+                //var currencies = _context.Builder.Currencies.ToDictionary(c => c.Name);
 
                 foreach (var asset in _settings.CommonSettings.InitialAssets)
                     _acc.Assets.Update(new AssetInfo(asset.Value, asset.Key), out _);
@@ -188,7 +188,7 @@ namespace TickTrader.Algo.Core
                     //Logger.Info(() => LogPrefix + "Processing cancel order request " + Request);
 
                     // Check schedule for the symbol
-                    var order = _acc.Orders.GetOrderOrNull(orderId) ?? throw new OrderValidationError($"Order Not Found {orderId}", OrderCmdResultCodes.OrderNotFound);
+                    var order = _acc.Orders.GetOrNull(orderId) ?? throw new OrderValidationError($"Order Not Found {orderId}", OrderCmdResultCodes.OrderNotFound);
                     //var symbol = node.GetSymbolEntity(order.Symbol);
 
                     //Facade.Infrustructure.LogTransactionDetails(() => "Processing cancel order request " + Request, JournalEntrySeverities.Info, Token, TransactDetails.Create(order.OrderId, symbol.Name));
@@ -581,7 +581,7 @@ namespace TickTrader.Algo.Core
             if (fillInfo.NetPos != null)
             {
                 var closeActionCharges = isFakeOrder ? fillInfo.NetPos.Charges : null;
-                _opSummary.AddNetCloseAction(fillInfo.NetPos.CloseInfo, order.SymbolInfo, (CurrencyEntity)_acc.BalanceCurrencyInfo, closeActionCharges);
+                _opSummary.AddNetCloseAction(fillInfo.NetPos.CloseInfo, order.SymbolInfo, _acc.BalanceCurrencyInfo, closeActionCharges);
                 _opSummary.AddNetPositionNotification(fillInfo.NetPos.ResultingPosition, order.SymbolInfo);
             }
 
@@ -591,7 +591,7 @@ namespace TickTrader.Algo.Core
         private OrderAccessor ReplaceOrder(ModifyOrderRequestContext request)
         {
             // Check schedule for the symbol
-            var order = _acc.Orders.GetOrderOrNull(request.OrderId) ?? throw new OrderValidationError($"Order Not Found {request.OrderId}", OrderCmdResultCodes.OrderNotFound);
+            var order = _acc.Orders.GetOrNull(request.OrderId) ?? throw new OrderValidationError($"Order Not Found {request.OrderId}", OrderCmdResultCodes.OrderNotFound);
             var symbol = _context.Builder.Symbols.GetOrDefault(order.Info.Symbol);
 
             //Facade.Infrustructure.LogTransactionDetails(() => "Processing modify order request " + Request, JournalEntrySeverities.Info, Token, TransactDetails.Create(order.OrderId, symbol.Name));
@@ -1297,7 +1297,7 @@ namespace TickTrader.Algo.Core
         internal void UpdateAssetsOnFill(OrderAccessor order, decimal fillPrice, decimal fillAmount)
         {
             var smb = order.SymbolInfo;
-            var roundDigits = _context.Builder.Currencies.GetOrDefault(smb.CounterCurrency)?.Digits ?? 2;
+            var roundDigits = _context.Builder.Currencies.GetOrDefault(smb.CounterCurrency)?.Info?.Digits ?? 2;
 
             //var mrgAsset = _acc.Assets.GetOrCreateAsset(smb.MarginCurrency);
             //var prfAsset = _acc.Assets.GetOrCreateAsset(smb.ProfitCurrency);
@@ -1550,7 +1550,7 @@ namespace TickTrader.Algo.Core
                     _opSummary.AddFillAction(record.Order, fillInfo);
                     if (fillInfo.NetPos != null)
                     {
-                        _opSummary.AddNetCloseAction(fillInfo.NetPos.CloseInfo, record.Order.SymbolInfo, (CurrencyEntity)_acc.BalanceCurrencyInfo);
+                        _opSummary.AddNetCloseAction(fillInfo.NetPos.CloseInfo, record.Order.SymbolInfo, _acc.BalanceCurrencyInfo);
                         _opSummary.AddNetPositionNotification(fillInfo.NetPos.ResultingPosition, fillInfo.SymbolInfo);
                     }
                 }
@@ -1788,7 +1788,7 @@ namespace TickTrader.Algo.Core
                 _context.SendExtUpdate(TesterTradeTransaction.OnClosePosition(remove, position, (double)_acc.Balance));
 
             // summary
-            _opSummary.AddGrossCloseAction(position, profit, closePrice, charges, (CurrencyEntity)_acc.BalanceCurrencyInfo);
+            _opSummary.AddGrossCloseAction(position, profit, closePrice, charges, _acc.BalanceCurrencyInfo);
             _collector.OnPositionClosed(_scheduler.UnsafeVirtualTimePoint, (double)profit, (double)charges.Commission, (double)charges.Swap);
 
             //return profitInfo;

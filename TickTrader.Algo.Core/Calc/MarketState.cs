@@ -12,7 +12,7 @@ namespace TickTrader.Algo.Core.Calc
     public abstract class MarketStateBase
     {
         private Dictionary<Tuple<string, string>, OrderCalculator> _orderCalculators = new Dictionary<Tuple<string, string>, OrderCalculator>();
-        private Dictionary<string, ICurrencyInfo> _currenciesByName = new Dictionary<string, ICurrencyInfo>();
+        private Dictionary<string, CurrencyInfo> _currenciesByName = new Dictionary<string, CurrencyInfo>();
 
         public IFeedSubscription Subscriptions { get; set; }
 
@@ -26,7 +26,7 @@ namespace TickTrader.Algo.Core.Calc
 
         public ConversionManager Conversion { get; }
 
-        public void Init(IEnumerable<SymbolInfo> symbolList, IEnumerable<ICurrencyInfo> currencyList)
+        public void Init(IEnumerable<SymbolInfo> symbolList, IEnumerable<CurrencyInfo> currencyList)
         {
             Currencies = currencyList.ToList();
             _currenciesByName = currencyList.ToDictionary(c => c.Name);

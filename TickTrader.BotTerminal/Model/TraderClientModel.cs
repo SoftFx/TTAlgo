@@ -189,8 +189,8 @@ namespace TickTrader.BotTerminal
         public IObservableList<SymbolInfo> SortedSymbols { get; }
         public QuoteDistributor Distributor => _core.Distributor;
         public FeedHistoryProviderModel.Handler FeedHistory => _core.FeedHistory;
-        public IVarSet<string, CurrencyEntity> Currencies => _core.Currencies;
-        public IObservableList<CurrencyEntity> SortedCurrencies { get; }
+        public IVarSet<string, CurrencyInfo> Currencies => _core.Currencies;
+        public IObservableList<CurrencyInfo> SortedCurrencies { get; }
         public IObservableList<string> SortedCurrenciesNames { get; }
     }
 }

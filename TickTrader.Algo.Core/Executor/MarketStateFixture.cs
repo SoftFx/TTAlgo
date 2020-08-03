@@ -25,7 +25,7 @@ namespace TickTrader.Algo.Core
         public void Start()
         {
             var builder = _context.Builder;
-            Market.Init(builder.Symbols.Select(u => u.Info), builder.Currencies);
+            Market.Init(builder.Symbols.Values.Select(u => u.Info), builder.Currencies.Values.Select(u => u.Info));
         }
     }
 }

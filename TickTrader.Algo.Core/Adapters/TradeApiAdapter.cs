@@ -473,7 +473,7 @@ namespace TickTrader.Algo.Core
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool TryGetOrder(string orderId, out Order order, ref OrderCmdResultCodes code)
         {
-            order = _account.Orders.GetOrderOrNull(orderId);
+            order = _account.Orders.GetOrNull(orderId);
             if (order == null)
             {
                 code = OrderCmdResultCodes.OrderNotFound;
@@ -763,7 +763,7 @@ namespace TickTrader.Algo.Core
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool ValidateMargin(ModifyOrderRequestContext request, SymbolInfo symbol, ref OrderCmdResultCodes code)
         {
-            var oldOrder = _account.Orders.GetOrderOrNull(request.OrderId);
+            var oldOrder = _account.Orders.GetOrNull(request.OrderId);
 
             var newIsHidden = OrderEntity.IsHiddenOrder((decimal?)request.MaxVisibleAmount);
 
