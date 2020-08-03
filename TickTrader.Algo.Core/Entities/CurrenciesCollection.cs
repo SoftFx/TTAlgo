@@ -8,23 +8,23 @@ namespace TickTrader.Algo.Core
 {
     public class CurrenciesCollection : IEnumerable<CurrencyEntity>
     {
-        private CurrencyFixture fixture = new CurrencyFixture();
+        private CurrencyFixture _enities = new CurrencyFixture();
 
-        internal CurrencyList CurrencyListImp => fixture;
+        internal CurrencyList CurrencyListImp => _enities;
 
         public void Add(CurrencyEntity currency)
         {
-            fixture.Add(currency);
+            _enities.Add(currency);
         }
 
         public void Init(IEnumerable<CurrencyEntity> currencies)
         {
-            fixture.Clear();
+            _enities.Clear();
 
             if (currencies != null)
             {
                 foreach (var currency in currencies)
-                    fixture.Add(currency);
+                    _enities.Add(currency);
             }
         }
 
@@ -32,14 +32,14 @@ namespace TickTrader.Algo.Core
         {
             if (currencies != null)
             {
-                fixture.InvalidateAll();
+                _enities.InvalidateAll();
 
                 foreach (var currency in currencies)
                 {
-                    var curr = fixture.GetOrDefault(currency.Name);
+                    var curr = _enities.GetOrDefault(currency.Name);
                     if (curr == null)
                     {
-                        fixture.Add(currency);
+                        _enities.Add(currency);
                     }
                     else
                     {
@@ -51,7 +51,7 @@ namespace TickTrader.Algo.Core
 
         internal CurrencyEntity GetOrDefault(string currency)
         {
-            var currInfo = fixture.GetOrDefault(currency);
+            var currInfo = _enities.GetOrDefault(currency);
             if (currInfo?.IsNull ?? true) // deleted currencies will be present after reconnect, but IsNull will be true
                 return null;
             return currInfo;
@@ -59,12 +59,12 @@ namespace TickTrader.Algo.Core
 
         public IEnumerator<CurrencyEntity> GetEnumerator()
         {
-            return fixture.GetValues().GetEnumerator();
+            return _enities.GetValues().GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return fixture.GetValues().GetEnumerator();
+            return _enities.GetValues().GetEnumerator();
         }
 
         private class CurrencyFixture : CurrencyList

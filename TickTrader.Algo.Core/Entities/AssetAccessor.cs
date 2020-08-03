@@ -1,27 +1,27 @@
-﻿using System;
-using TickTrader.Algo.Api;
+﻿using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    public sealed class AssetAccessor : Api.Asset, IAssetInfo
+    public sealed class AssetAccessor : Api.Asset
     {
-        private decimal _margin;
+        private readonly CurrenciesCollection _currencies;
 
-        public event Action MarginUpdate;
+        public AssetInfo Info { get; private set; }
 
-        internal AssetAccessor(AssetInfo info, Func<string, Currency> currencyInfoProvider)
+        internal AssetAccessor(AssetInfo info, CurrenciesCollection currencies)
         {
-            Currency = info.Currency;
-            Volume = (decimal)info.Balance;
-            CurrencyInfo = currencyInfoProvider(Currency) ?? new NullCurrency(Currency);
+            _currencies = currencies;
+
+            Info = info;
         }
 
-        internal bool Update(decimal newVol)
+        internal bool Update(AssetInfo info)
         {
-            if (Volume != newVol)
+            if (!Info.Balance.E(info.Balance))
             {
-                Volume = newVol;
+                Info = info;
                 return true;
             }
             return false;
@@ -29,35 +29,19 @@ namespace TickTrader.Algo.Core
 
         internal void IncreaseBy(decimal amount)
         {
-            Volume += amount;
+            Info.Balance += (double)amount;
         }
 
-        public Currency CurrencyInfo { get; }
-        public string Currency { get; private set; }
-        public decimal Volume { get; private set; }
-        public double LockedVolume => (double)_margin;
-        public decimal FreeVolume => Volume - _margin;
-        public bool IsNull => false;
-        public bool IsEmpty => Volume == 0;
+        double Asset.Volume => Info.Balance;
 
-        double Api.Asset.Volume => (double)Volume;
-        double Api.Asset.FreeVolume => (double)FreeVolume;
+        double Asset.FreeVolume => Info.Balance - (double)Info.Margin;
 
-        decimal IAssetInfo.Amount => Volume;
-        decimal IAssetInfo.FreeAmount => Volume - _margin;
-        decimal IAssetInfo.LockedAmount => _margin;
-        decimal IAssetInfo.Margin
-        {
-            get => _margin;
-            set
-            {
-                if (_margin == value)
-                    return;
+        string Asset.Currency => Info.Currency;
 
-                _margin = value;
+        Currency Asset.CurrencyInfo => _currencies.GetOrDefault(Info.Currency) as Currency ?? new NullCurrency(Info.Currency);
 
-                MarginUpdate?.Invoke();
-            }
-        }
+        double Asset.LockedVolume => (double)Info.Margin;
+
+        bool Asset.IsNull => false;
     }
 }

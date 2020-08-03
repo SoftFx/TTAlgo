@@ -47,7 +47,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public AssetsCollection Assets
+        internal AssetsCollection Assets
         {
             get
             {
@@ -136,7 +136,7 @@ namespace TickTrader.Algo.Core
             UpdateCurrency(currencies.GetOrStub(info.BalanceCurrency));
             Assets.Clear();
             foreach (var asset in info.Assets)
-                _builder.Account.Assets.Update(asset, currencies);
+                _builder.Account.Assets.Update(asset, out _);
         }
 
         internal void UpdateCurrency(Currency currency)
@@ -235,7 +235,7 @@ namespace TickTrader.Algo.Core
             return InstanceId == order.InstanceId;
         }
 
-        AssetList AccountDataProvider.Assets { get { return Assets.AssetListImpl; } }
+        AssetList AccountDataProvider.Assets => Assets;
         NetPositionList AccountDataProvider.NetPositions => NetPositions;
         TradeHistory AccountDataProvider.TradeHistory => HistoryProvider;
 
@@ -298,8 +298,8 @@ namespace TickTrader.Algo.Core
         #endregion
 
         IEnumerable<IOrderCalcInfo> IAccountInfo2.Orders => Orders.Values.Select(u => u.Info);
-        IEnumerable<IPositionInfo> IMarginAccountInfo2.Positions => NetPositions.Values.Select(u => (IPositionInfo)u.Info);
-        IEnumerable<IAssetInfo> ICashAccountInfo2.Assets => Assets;
+        IEnumerable<IPositionInfo> IMarginAccountInfo2.Positions => NetPositions.Values.Select(u => u.Info);
+        IEnumerable<IAssetInfo> ICashAccountInfo2.Assets => Assets.Values.Select(u => u.Info);
 
         public event Action<IOrderCalcInfo> OrderAdded = delegate { };
         public event Action<IEnumerable<IOrderCalcInfo>> OrdersAdded { add { } remove { } }
@@ -368,7 +368,7 @@ namespace TickTrader.Algo.Core
         //    UpdateAccountInfo("Remove position", () => PositionChanged?.Invoke(position, PositionChageTypes.Removed));
         //}
 
-        private void OnAssetsChanged(IAssetInfo asset, AssetChangeType type)
+        private void OnAssetsChanged(AssetInfo asset, AssetChangeType type)
         {
             UpdateAccountInfo($"Change asset({type})", () => AssetsChanged?.Invoke(asset, type));
         }
@@ -402,9 +402,9 @@ namespace TickTrader.Algo.Core
 
         internal void IncreaseAsset(string currency, decimal byAmount)
         {
-            var asset = Assets.GetOrCreateAsset(currency, out var chType);
+            var asset = Assets.GetOrAdd(currency, out var chType);
             asset.IncreaseBy(byAmount);
-            OnAssetsChanged(asset, chType);
+            OnAssetsChanged(asset.Info, chType);
         }
 
         #endregion

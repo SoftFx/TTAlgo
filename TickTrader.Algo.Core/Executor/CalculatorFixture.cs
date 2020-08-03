@@ -234,10 +234,10 @@ namespace TickTrader.Algo.Core
             //}
         }
 
-        public AssetAccessor GetAsset(Currency currency)
-        {
-            return Acc.Assets.GetOrCreateAsset(currency.Name, out _);
-        }
+        //public AssetAccessor GetAsset(Currency currency)
+        //{
+        //    return Acc.Assets.GetOrAdd(currency.Name, out _);
+        //}
 
         //private void ValidateOrderState(OrderAccessor order)
         //{

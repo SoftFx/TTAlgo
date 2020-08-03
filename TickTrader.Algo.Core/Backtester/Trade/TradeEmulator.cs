@@ -92,7 +92,7 @@ namespace TickTrader.Algo.Core
                 var currencies = _context.Builder.Currencies.CurrencyListImp.ToDictionary(c => c.Name);
 
                 foreach (var asset in _settings.CommonSettings.InitialAssets)
-                    _acc.Assets.Update(new AssetInfo(asset.Value, asset.Key), currencies);
+                    _acc.Assets.Update(new AssetInfo(asset.Value, asset.Key), out _);
             }
         }
 

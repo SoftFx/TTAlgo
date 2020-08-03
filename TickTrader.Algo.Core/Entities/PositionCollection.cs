@@ -4,7 +4,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    internal sealed class PositionCollection : TradeEntityCollection<PositionAccessor, NetPosition>, NetPositionList
+    internal sealed class PositionCollection : TradeEntityCollection<PositionAccessor, Api.NetPosition>, Api.NetPositionList
     {
         public PositionCollection(PluginBuilder builder) : base(builder) { }
 

@@ -144,8 +144,8 @@ namespace TickTrader.Algo.Core
 
         private static void ChargeCommission(decimal commisionAmount, AssetAccessor asset, CalculatorFixture acc)
         {
-            if (asset != null && asset.FreeVolume > Math.Abs(commisionAmount))
-                acc.Acc.IncreaseAsset(asset.Currency, commisionAmount);
+            if (asset != null && (asset.Info as IAssetInfo).FreeAmount > Math.Abs(commisionAmount))
+                acc.Acc.IncreaseAsset(asset.Info.Currency, commisionAmount);
             //else
             //    infrustructure.Logger.Warn(() => "Cannot charge commission for account " + acc.Id + " because it lacks free amount of " + asset.Currency);
         }

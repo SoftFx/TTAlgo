@@ -160,7 +160,7 @@ namespace TickTrader.Algo.Core
                 else if (accProxy.Type == AccountInfo.Types.Type.Cash)
                 {
                     AssetChangeType assetChange;
-                    var asset = accProxy.Assets.Update(new Domain.AssetInfo(report.Balance, report.Currency), currencies, out assetChange);
+                    var asset = accProxy.Assets.Update(new Domain.AssetInfo(report.Balance, report.Currency), out assetChange);
                     var currencyInfo = currencies.GetOrStub(report.Currency);
                     if (assetChange != AssetChangeType.NoChanges)
                     {
@@ -368,7 +368,7 @@ namespace TickTrader.Algo.Core
                     foreach (var asset in eReport.Assets)
                     {
                         AssetChangeType assetChange;
-                        var assetModel = acc.Assets.Update(asset, currencies, out assetChange);
+                        var assetModel = acc.Assets.Update(asset, out assetChange);
                         if (assetChange != AssetChangeType.NoChanges)
                         {
                             hasChanges = true;
