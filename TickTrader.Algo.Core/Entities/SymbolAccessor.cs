@@ -4,29 +4,16 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    public sealed class SymbolAccessor : Api.Symbol
+    public sealed class SymbolAccessor : BaseSymbolAccessor<SymbolInfo>,  Api.Symbol
     {
         private readonly CurrenciesCollection _currencies;
         private readonly FeedProvider _feed;
 
-        internal SymbolAccessor(Domain.SymbolInfo info, FeedProvider feed, CurrenciesCollection currencies)
+        internal SymbolAccessor(Domain.SymbolInfo info, FeedProvider feed, CurrenciesCollection currencies) : base(info)
         {
             _feed = feed;
             _currencies = currencies;
-
-            Update(info);
         }
-
-        public SymbolInfo Info { get; private set; }
-
-        public bool IsNull { get; private set; }
-
-        public void Update(SymbolInfo info)
-        {
-            IsNull = info == null;
-            Info = info ?? Info;
-        }
-
 
         string Symbol.Name => Info.Name;
 
@@ -48,11 +35,11 @@ namespace TickTrader.Algo.Core
 
         string Symbol.BaseCurrency => Info.BaseCurrency;
 
-        Currency Symbol.BaseCurrencyInfo => _currencies.GetOrDefault(Info.BaseCurrency) ?? Null.Currency;
+        Currency Symbol.BaseCurrencyInfo => _currencies.GetOrNull(Info.BaseCurrency) ?? Null.Currency;
 
         string Symbol.CounterCurrency => Info.CounterCurrency;
 
-        Currency Symbol.CounterCurrencyInfo => _currencies.GetOrDefault(Info.CounterCurrency) ?? Null.Currency;
+        Currency Symbol.CounterCurrencyInfo => _currencies.GetOrNull(Info.CounterCurrency) ?? Null.Currency;
 
         double Symbol.Bid => Info.Bid;
 
@@ -89,6 +76,8 @@ namespace TickTrader.Algo.Core
 
     public class NullSymbol : Api.Symbol
     {
+        public NullSymbol() : this("") { }
+
         public NullSymbol(string code)
         {
             Name = code;

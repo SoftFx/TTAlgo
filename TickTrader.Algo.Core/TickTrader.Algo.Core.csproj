@@ -204,7 +204,6 @@
     <Compile Include="Entities\PositionExecReport.cs" />
     <Compile Include="Entities\QuoteEntity.cs" />
     <Compile Include="Entities\SymbolAccessor.cs" />
-    <Compile Include="Entities\SymbolEntity.cs" />
     <Compile Include="Entities\SymbolsCollection.cs" />
     <Compile Include="Builder\IndicatorBuilder.cs" />
     <Compile Include="Entities\TimeKeyGenerator.cs" />

@@ -461,7 +461,7 @@ namespace TickTrader.Algo.Core
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool TryGetSymbol(string symbolName, out SymbolInfo smbMetadata, ref OrderCmdResultCodes code)
         {
-            smbMetadata = _symbols.GetOrDefault(symbolName).Info;
+            smbMetadata = _symbols.GetOrNull(symbolName).Info;
             if (smbMetadata == null)
             {
                 code = OrderCmdResultCodes.SymbolNotFound;

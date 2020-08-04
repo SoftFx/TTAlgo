@@ -21,7 +21,7 @@ namespace TickTrader.Algo.Core
             return order;
         }
 
-        public OrderAccessor Add(OrderInfo info) => Add(new OrderAccessor(_builder.Symbols.GetOrDefault(info.Symbol).Info, info));
+        public OrderAccessor Add(OrderInfo info) => Add(new OrderAccessor(_builder.Symbols.GetOrNull(info.Symbol).Info, info));
 
         public OrderAccessor Update(OrderInfo info)
         {

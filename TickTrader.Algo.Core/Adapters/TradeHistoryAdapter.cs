@@ -58,12 +58,12 @@ namespace TickTrader.Algo.Core
 
         private IEnumerable<TradeReport> Adapt(IEnumerable<Domain.TradeReportInfo> src)
         {
-            return src.Select(e => new TradeReportAdapter(e, _symbols.GetOrDefault(e.Symbol).Info));
+            return src.Select(e => new TradeReportAdapter(e, _symbols.GetOrNull(e.Symbol).Info));
         }
 
         private IAsyncEnumerator<TradeReport> AdaptAsync(IAsyncPagedEnumerator<Domain.TradeReportInfo> src)
         {
-            return src.AsAsync().Select(e => (TradeReport)new TradeReportAdapter(e, _symbols.GetOrDefault(e.Symbol).Info));
+            return src.AsAsync().Select(e => (TradeReport)new TradeReportAdapter(e, _symbols.GetOrNull(e.Symbol).Info));
         }
 
         IEnumerator IEnumerable.GetEnumerator()

@@ -592,7 +592,7 @@ namespace TickTrader.Algo.Core
         {
             // Check schedule for the symbol
             var order = _acc.Orders.GetOrNull(request.OrderId) ?? throw new OrderValidationError($"Order Not Found {request.OrderId}", OrderCmdResultCodes.OrderNotFound);
-            var symbol = _context.Builder.Symbols.GetOrDefault(order.Info.Symbol);
+            var symbol = _context.Builder.Symbols.GetOrNull(order.Info.Symbol);
 
             //Facade.Infrustructure.LogTransactionDetails(() => "Processing modify order request " + Request, JournalEntrySeverities.Info, Token, TransactDetails.Create(order.OrderId, symbol.Name));
 
@@ -1286,7 +1286,7 @@ namespace TickTrader.Algo.Core
                 return;
 
             var lastRate = _calcFixture.GetCurrentRateOrNull(_settings.CommonSettings.MainSymbol);
-            var mainSymbol = _context.Builder.Symbols.GetOrDefault(_settings.CommonSettings.MainSymbol);
+            var mainSymbol = _context.Builder.Symbols.GetOrNull(_settings.CommonSettings.MainSymbol);
 
             using (JournalScope())
                 _opSummary.AddStopOutAction(_acc, lastRate, mainSymbol);
@@ -1297,7 +1297,7 @@ namespace TickTrader.Algo.Core
         internal void UpdateAssetsOnFill(OrderAccessor order, decimal fillPrice, decimal fillAmount)
         {
             var smb = order.SymbolInfo;
-            var roundDigits = _context.Builder.Currencies.GetOrDefault(smb.CounterCurrency)?.Info?.Digits ?? 2;
+            var roundDigits = _context.Builder.Currencies.GetOrNull(smb.CounterCurrency)?.Info?.Digits ?? 2;
 
             //var mrgAsset = _acc.Assets.GetOrCreateAsset(smb.MarginCurrency);
             //var prfAsset = _acc.Assets.GetOrCreateAsset(smb.ProfitCurrency);
@@ -1563,7 +1563,7 @@ namespace TickTrader.Algo.Core
                 else if (record.ActivationType == ActivationType.TakeProfit)
                     trReason = Domain.TradeReportInfo.Types.Reason.TakeProfitActivation;
 
-                var smb = _context.Builder.Symbols.GetOrDefault(record.Order.Info.Symbol).Info;
+                var smb = _context.Builder.Symbols.GetOrNull(record.Order.Info.Symbol).Info;
                 ClosePosition(record.Order, trReason, null, null, (decimal)record.Order.Info.RemainingAmount, record.Price, smb, 0, null);
             }
         }

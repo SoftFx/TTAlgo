@@ -1,12 +1,8 @@
 ﻿namespace TickTrader.Algo.Domain
 {
-    public interface ICurrencyInfo
+    public interface ICurrencyInfo : IBaseSymbolInfo
     {
-        string Name { get; }
-
         int Digits { get; }
-
-        int SortOrder { get; }
     }
 
     public partial class CurrencyInfo : ICurrencyInfo

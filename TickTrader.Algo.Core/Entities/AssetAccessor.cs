@@ -38,7 +38,7 @@ namespace TickTrader.Algo.Core
 
         string Asset.Currency => Info.Currency;
 
-        Currency Asset.CurrencyInfo => _currencies.GetOrDefault(Info.Currency) as Currency ?? new NullCurrency(Info.Currency);
+        Currency Asset.CurrencyInfo => _currencies.GetOrNull(Info.Currency) as Currency ?? new NullCurrency(Info.Currency);
 
         double Asset.LockedVolume => (double)Info.Margin;
 

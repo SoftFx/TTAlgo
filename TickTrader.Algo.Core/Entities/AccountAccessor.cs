@@ -416,7 +416,7 @@ namespace TickTrader.Algo.Core
 
         public double? CalculateOrderMargin(string symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl = null, double? tp = null, Api.OrderExecOptions options = Api.OrderExecOptions.None)
         {
-            var symbolAccessor = _builder?.Symbols?.GetOrDefault(symbol).Info;
+            var symbolAccessor = _builder?.Symbols?.GetOrNull(symbol).Info;
             if (symbolAccessor != null && _builder.Calculator != null)
             {
                 var amount = volume * symbolAccessor.LotSize;
@@ -428,7 +428,7 @@ namespace TickTrader.Algo.Core
 
         public bool HasEnoughMarginToOpenOrder(string symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl = null, double? tp = null, Api.OrderExecOptions options = Api.OrderExecOptions.None)
         {
-            var symbolAccessor = _builder?.Symbols?.GetOrDefault(symbol).Info;
+            var symbolAccessor = _builder?.Symbols?.GetOrNull(symbol).Info;
             if (symbolAccessor != null && _builder.Calculator != null)
             {
                 var amount = volume * symbolAccessor.LotSize;

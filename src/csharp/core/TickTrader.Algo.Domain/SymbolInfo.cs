@@ -58,10 +58,8 @@ namespace TickTrader.Algo.Domain
         double ISymbolInfo.SwapSizeShort => Swap.SizeShort ?? 0;
     }
 
-    public interface ISymbolInfo
+    public interface ISymbolInfo : IBaseSymbolInfo
     {
-        string Name { get; }
-
         double DefaultSlippage { get; }
         double Point { get; }
         double Bid { get; set; }
@@ -92,6 +90,13 @@ namespace TickTrader.Algo.Domain
         void Update(ISymbolInfo newInfo);
         IQuoteInfo LastQuote { get; }
         int ProfitDigits { get; }
+    }
+
+    public interface IBaseSymbolInfo
+    {
+        string Name { get; }
+
+        int SortOrder { get; }
     }
 
     public interface IQuoteInfo
