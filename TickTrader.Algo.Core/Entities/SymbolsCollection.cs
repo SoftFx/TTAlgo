@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Core
 
         public SymbolList List => this;
 
-        public Symbol MainSymbol => _entities[MainSymbolCode];
+        public Symbol MainSymbol => (Symbol)GetOrNull(MainSymbolCode) ?? new NullSymbol();
 
         public override void Add(SymbolInfo info)
         {

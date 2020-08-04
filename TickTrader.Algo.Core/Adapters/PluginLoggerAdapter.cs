@@ -325,7 +325,7 @@ namespace TickTrader.Algo.Core
             var builder = new StringBuilder();
             builder.Append("Order #").Append(order.Info.Id);
             builder.Append(" activated");
-            //builder.AppendNumber(order.ExecPrice, priceFomat);
+            builder.AppendNumber(((Order)order).ExecPrice, priceFomat);
             PrintCurrentRate(builder, smbInfo);
 
             Logger.OnPrintTrade(builder.ToString());
