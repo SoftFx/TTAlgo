@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
+﻿using System.Globalization;
 using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -186,7 +183,7 @@ namespace TickTrader.Algo.Core
             _builder.Append(" price=").AppendNumber(pos.Price, priceFormat);
         }
 
-        public void AddStopOutAction(AccountAccessor acc, RateUpdate lastRate, SymbolAccessor rateSymbol)
+        public void AddStopOutAction(AccountAccessor acc, IRateInfo lastRate, SymbolAccessor rateSymbol)
         {
             SetErrorSeverity();
 
@@ -268,7 +265,7 @@ namespace TickTrader.Algo.Core
                 _builder.Append(" commission=").AppendNumber(charges.Commission, charges.CurrencyInfo.Format);
         }
 
-        private void PrintQuote(RateUpdate update, SymbolAccessor smbInfo)
+        private void PrintQuote(IRateInfo update, SymbolAccessor smbInfo)
         {
             var priceFormat = smbInfo.PriceFormat;
 

@@ -500,24 +500,6 @@ namespace TickTrader.Algo.Core
             return price.ToString("F" + symbolInfo.Digits);
         }
 
-        Quote IHelperApi.CreateQuote(string symbol, DateTime time, IEnumerable<BookEntry> bids, IEnumerable<BookEntry> asks)
-        {
-            return new QuoteEntity(symbol, time, bids?.ToArray(), asks?.ToArray());
-        }
-
-        BookEntry IHelperApi.CreateBookEntry(double price, double volume)
-        {
-            return new BookEntry(price, volume);
-        }
-
-        IEnumerable<BookEntry> IHelperApi.CreateBook(IEnumerable<double> prices, IEnumerable<double> volumes)
-        {
-            if (prices == null || volumes == null)
-                return new BookEntry[0];
-
-            return prices.Zip(volumes, (p, v) => new BookEntry(p,v));
-        }
-
         double IHelperApi.RoundVolumeDown(double volume, Symbol symbolInfo)
         {
             double step = symbolInfo.TradeVolumeStep;

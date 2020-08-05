@@ -118,7 +118,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void Executor_SymbolRateUpdated(Algo.Api.RateUpdate update)
+        private void Executor_SymbolRateUpdated(IRateInfo update)
         {
             if (update.Symbol == _mainSymbol)
             {

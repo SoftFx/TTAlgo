@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -48,17 +46,17 @@ namespace TickTrader.Algo.Core
 
         protected BarEntity LastBar { get; private set; }
 
-        public BufferUpdateResult Update(RateUpdate update)
+        public BufferUpdateResult Update(IRateInfo update)
         {
-            if (update is QuoteEntity)
-                return Update((Quote)update);
+            if (update is QuoteInfo)
+                return Update((QuoteInfo)update);
             else if (update is BarRateUpdate)
                 return Update((BarRateUpdate)update);
             else
                 throw new Exception("Unsupported RateUpdate implementation!");
         }
 
-        public BufferUpdateResult Update(Quote quote)
+        public BufferUpdateResult Update(QuoteInfo quote)
         {
             var barBoundaries = sampler.GetBar(quote.Time);
             var barOpenTime = barBoundaries.Open;

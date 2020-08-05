@@ -47,7 +47,7 @@ namespace TickTrader.Algo.Core.Calc
 
         private void RecalculateStats() => Recalculate?.Invoke();
 
-        public Api.RateUpdate CurrentRate => RateTracker.Rate;
+        public IRateInfo CurrentRate => RateTracker.Rate;
         public ISymbolInfo SymbolInfo { get; }
         public SymbolAccessor SymbolAccessor { get; }
         internal IConversionFormula PositiveProfitConversionRate { get; private set; }

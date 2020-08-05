@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -55,7 +56,7 @@ namespace TickTrader.Algo.Core
             //    throw new AggregateException(exceptions);
         }
 
-        internal IEnumerable<RateUpdate> GetFeedStream()
+        internal IEnumerable<IRateInfo> GetFeedStream()
         {
             var reader = new FeedReader(_feedReaders.Values);
 
@@ -71,7 +72,7 @@ namespace TickTrader.Algo.Core
                 throw new Exception("Failed to read feed stream! " + reader.Fault.Message, reader.Fault);
         }
 
-        internal void UpdateHistory(RateUpdate rate)
+        internal void UpdateHistory(IRateInfo rate)
         {
             FeedSeriesEmulator series;
             if (_feedSeries.TryGetValue(rate.Symbol, out series))
@@ -104,7 +105,7 @@ namespace TickTrader.Algo.Core
             return GetFeedSrcOrThrow(symbol).GetSeriesData(timeframe, price);
         }
 
-        public void AddSource(string symbol, IEnumerable<QuoteEntity> stream)
+        public void AddSource(string symbol, IEnumerable<Domain.QuoteInfo> stream)
         {
             _feedReaders.Add(symbol, new TickSeriesReader(symbol, stream));
             _feedSeries.Add(symbol, new FeedSeriesEmulator());
@@ -159,15 +160,10 @@ namespace TickTrader.Algo.Core
 
         #region IPluginFeedProvider
 
-        IEnumerable<QuoteEntity> IFeedProvider.GetSnapshot()
+        IEnumerable<QuoteInfo> IFeedProvider.GetSnapshot()
         {
-            return _feedSeries.Values.Where(s => s.Current != null).Select(s => (QuoteEntity)s.Current.LastQuote).ToList();
+            return _feedSeries.Values.Where(s => s.Current != null).Select(s => (QuoteInfo)s.Current.LastQuote).ToList();
         }
-
-        //QuoteEntity IFeedProvider.GetRate(string symbol)
-        //{
-        //    return (QuoteEntity)_feedSeries.GetOrDefault(symbol)?.Current?.LastQuote;
-        //}
 
         List<BarEntity> IFeedHistoryProvider.QueryBars(string symbolCode, BarPriceType priceType, DateTime from, DateTime to, TimeFrames timeFrame)
         {
@@ -179,26 +175,26 @@ namespace TickTrader.Algo.Core
             return GetFeedSrcOrThrow(symbolCode).QueryBars(timeFrame, priceType, from, size).ToList() ?? new List<BarEntity>();
         }
 
-        List<QuoteEntity> IFeedHistoryProvider.QueryTicks(string symbolCode, DateTime from, DateTime to, bool level2)
+        List<QuoteInfo> IFeedHistoryProvider.QueryTicks(string symbolCode, DateTime from, DateTime to, bool level2)
         {
-            return GetFeedSrcOrThrow(symbolCode).QueryTicks(from, to, level2) ?? new List<QuoteEntity>();
+            return GetFeedSrcOrThrow(symbolCode).QueryTicks(from, to, level2) ?? new List<QuoteInfo>();
         }
 
-        List<QuoteEntity> IFeedHistoryProvider.QueryTicks(string symbolCode, DateTime from, int count, bool level2)
+        List<QuoteInfo> IFeedHistoryProvider.QueryTicks(string symbolCode, DateTime from, int count, bool level2)
         {
-            return GetFeedSrcOrThrow(symbolCode).QueryTicks(from, count, level2) ?? new List<QuoteEntity>();
+            return GetFeedSrcOrThrow(symbolCode).QueryTicks(from, count, level2) ?? new List<QuoteInfo>();
         }
 
-        List<QuoteEntity> Infrastructure.IFeedSubscription.Modify(List<Infrastructure.FeedSubscriptionUpdate> updates)
+        List<QuoteInfo> Infrastructure.IFeedSubscription.Modify(List<Infrastructure.FeedSubscriptionUpdate> updates)
         {
-            List<QuoteEntity> snapshot = new List<QuoteEntity>();
+            List<QuoteInfo> snapshot = new List<QuoteInfo>();
 
             foreach (var upd in updates)
             {
                 if (upd.IsUpsertAction)
                 {
                     if (_feedSeries.TryGetValue(upd.Symbol, out var series) && series.Current != null)
-                        snapshot.Add((QuoteEntity)series.Current.LastQuote);
+                        snapshot.Add((QuoteInfo)series.Current.LastQuote as QuoteInfo);
                 }
             }
 
@@ -209,8 +205,8 @@ namespace TickTrader.Algo.Core
         {
         }
 
-        public event Action<QuoteEntity> RateUpdated { add { } remove { } }
-        public event Action<List<QuoteEntity>> RatesUpdated { add { } remove { } }
+        public event Action<QuoteInfo> RateUpdated { add { } remove { } }
+        public event Action<List<QuoteInfo>> RatesUpdated { add { } remove { } }
 
         #endregion
 

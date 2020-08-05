@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -46,7 +44,7 @@ namespace TickTrader.Algo.Core
                 _barVector.BarClosed -= _barVector_BarClosed;
         }
 
-        private void Fixture_RateUpdated(RateUpdate rate)
+        private void Fixture_RateUpdated(IRateInfo rate)
         {
             _sendUpdateAction(rate);
         }

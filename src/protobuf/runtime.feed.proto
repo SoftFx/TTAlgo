@@ -5,6 +5,7 @@ package ticktrader.algo.domain;
 option csharp_namespace = "TickTrader.Algo.Domain";
 
 import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
 
 message CurrencyInfo {
     string name = 1;
@@ -97,28 +98,49 @@ message SymbolListResponse {
     repeated SymbolInfo symbols = 1;
 }
 
-/*message QuoteEntity {
+message FullQuoteInfo {
     string symbol = 1;
-    QuoteDataEntity data = 2;
+    QuoteData data = 2;
 }
 
-message QuoteDataEntity {
-    bool is_bid_indicative = 1;
-    bool is_ask_indicative = 2;
-    repeated QuoteBand bids = 3;
-    repeated QuoteBand asks = 4;
-}
-
-message QuoteBand {
-    double price = 1;
-    double amount = 2;
+message QuoteData {
+    google.protobuf.Timestamp time = 1;
+    bool is_bid_indicative = 2;
+    bool is_ask_indicative = 3;
+    bytes bid_bytes = 4;
+    bytes ask_bytes = 5;
 }
 
 message QuotePage {
-    repeated QuoteEntity quotes = 1;
+    repeated FullQuoteInfo quotes = 1;
 }
 
 message QuoteChunk {
     string symbol = 1;
-    repeated QuoteDataEntity quotes = 2;
-}*/
+    repeated QuoteData quotes = 2;
+}
+
+message BarInfo {
+    string symbol = 1;
+    BarData data = 2;
+}
+
+message BarData {
+    google.protobuf.Timestamp from = 1;
+    google.protobuf.Timestamp to = 2;
+    double open = 3;
+    double close = 4;
+    double high = 5;
+    double low = 6;
+    double tick_volume = 7;
+    double real_volume = 8;
+}
+
+message BarPage {
+    repeated BarInfo bars = 1;
+}
+
+message BarChunk {
+    string symbol = 1;
+    repeated BarData bars = 2;
+}

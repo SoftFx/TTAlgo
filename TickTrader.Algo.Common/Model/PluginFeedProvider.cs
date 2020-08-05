@@ -19,8 +19,8 @@ namespace TickTrader.Algo.Common.Model
         private Dictionary<string, int> _subscriptionCache;
         private IReadOnlyDictionary<string, CurrencyEntity> currencies;
 
-        public event Action<QuoteEntity> RateUpdated;
-        public event Action<List<QuoteEntity>> RatesUpdated { add { } remove { } }
+        public event Action<QuoteInfo> RateUpdated;
+        public event Action<List<QuoteInfo>> RatesUpdated { add { } remove { } }
 
         public ISynchronizationContext Sync { get { return this; } }
 
@@ -47,12 +47,12 @@ namespace TickTrader.Algo.Common.Model
             return history.GetBarPage(symbolCode, priceType, timeFrame, from, size).Result.ToList();
         }
 
-        public List<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, bool level2)
+        public List<QuoteInfo> QueryTicks(string symbolCode, DateTime from, DateTime to, bool level2)
         {
             return history.GetQuoteList(symbolCode, from, to, level2).Result;
         }
 
-        public List<QuoteEntity> QueryTicks(string symbolCode, DateTime from, int count, bool level2)
+        public List<QuoteInfo> QueryTicks(string symbolCode, DateTime from, int count, bool level2)
         {
             return history.GetQuotePage(symbolCode, from, count, level2).Result.ToList();
         }
@@ -61,12 +61,12 @@ namespace TickTrader.Algo.Common.Model
 
         #region IFeedProvider
 
-        public QuoteEntity GetRate(string symbol)
+        public QuoteInfo GetRate(string symbol)
         {
             throw new NotImplementedException();
         }
 
-        public List<QuoteEntity> Modify(List<FeedSubscriptionUpdate> updates)
+        public List<QuoteInfo> Modify(List<FeedSubscriptionUpdate> updates)
         {
             return subscription.Modify(updates);
         }
@@ -76,11 +76,11 @@ namespace TickTrader.Algo.Common.Model
             subscription.CancelAll();
         }
 
-        public IEnumerable<QuoteEntity> GetSnapshot()
+        public IEnumerable<QuoteInfo> GetSnapshot()
         {
             return symbols.Snapshot
                 .Where(s => s.Value.LastQuote != null)
-                .Select(s => s.Value.LastQuote).Cast<QuoteEntity>().ToList();
+                .Select(s => s.Value.LastQuote).Cast<QuoteInfo>().ToList();
         }
 
         #endregion

@@ -495,14 +495,12 @@ namespace TickTrader.Algo.Core
             // add new order
             //acc.AddTemporaryNewOrder(order);
 
-            var currentRate = _calcFixture.GetCurrentRateOrThrow(symbolInfo.Name);
-
             var trReason = options.HasFlag(OpenOrderOptions.Stopout) ? Domain.TradeReportInfo.Types.Reason.StopOut : Domain.TradeReportInfo.Types.Reason.DealerDecision;
 
             if (!options.HasFlag(OpenOrderOptions.SkipDealing))
             {
                 // Dealer request
-                var dealerRequest = new OpenOrderDealerRequest(order, currentRate);
+                var dealerRequest = new OpenOrderDealerRequest(order, symbolInfo.LastQuote);
                 _dealer.ConfirmOrderOpen(dealerRequest);
 
                 if (!dealerRequest.Confirmed || dealerRequest.DealerAmount < 0 || dealerRequest.DealerPrice <= 0)
@@ -1243,7 +1241,7 @@ namespace TickTrader.Algo.Core
         //    return orderClone;
         //}
 
-        private void RegisterOrder(OrderAccessor order, RateUpdate currentRate)
+        private void RegisterOrder(OrderAccessor order, IRateInfo currentRate)
         {
             ActivationRecord activationInfo = _activator.AddOrder(order, currentRate);
             // Check if order must be activated immediately
@@ -2040,7 +2038,7 @@ namespace TickTrader.Algo.Core
 
         #region Price Logic
 
-        private double? GetCurrentOpenPrice(OrderAccessor order, RateUpdate currentRate = null)
+        private double? GetCurrentOpenPrice(OrderAccessor order, IRateInfo currentRate = null)
         {
             if (currentRate == null)
                 currentRate = _calcFixture.GetCurrentRateOrNull(order.Symbol);
@@ -2050,16 +2048,16 @@ namespace TickTrader.Algo.Core
 
         private double? GetCurrentOpenPrice(Domain.OrderInfo.Types.Side side, string smb)
         {
-            RateUpdate currentRate = _calcFixture.GetCurrentRateOrNull(smb);
+            IRateInfo currentRate = _calcFixture.GetCurrentRateOrNull(smb);
             return GetCurrentOpenPrice(side, currentRate);
         }
 
-        private double? GetCurrentOpenPrice(Domain.OrderInfo.Types.Side side, RateUpdate currentRate)
+        private double? GetCurrentOpenPrice(Domain.OrderInfo.Types.Side side, IRateInfo currentRate)
         {
             return GetOpenOrderPrice(currentRate, side);
         }
 
-        private double? GetCurrentClosePrice(IOrderInfo order, RateUpdate currentRate = null)
+        private double? GetCurrentClosePrice(IOrderInfo order, IRateInfo currentRate = null)
         {
             if (currentRate == null)
                 currentRate = _calcFixture.GetCurrentRateOrNull(order.Symbol);
@@ -2067,7 +2065,7 @@ namespace TickTrader.Algo.Core
             return GetPositionClosePrice(currentRate, order.Side);
         }
 
-        private static double? GetPositionClosePrice(RateUpdate tick, Domain.OrderInfo.Types.Side positionSide)
+        private static double? GetPositionClosePrice(IRateInfo tick, Domain.OrderInfo.Types.Side positionSide)
         {
             if (tick == null)
                 return null;
@@ -2080,7 +2078,7 @@ namespace TickTrader.Algo.Core
             throw new Exception("Unknown order side: " + positionSide);
         }
 
-        private static double? GetOpenOrderPrice(RateUpdate tick, Domain.OrderInfo.Types.Side orderSide)
+        private static double? GetOpenOrderPrice(IRateInfo tick, Domain.OrderInfo.Types.Side orderSide)
         {
             if (tick == null)
                 return null;

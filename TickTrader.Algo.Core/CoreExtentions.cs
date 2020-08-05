@@ -1,32 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Core.Calc;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
     public static class CoreExtentions
     {
-        public static double? NullableAsk(this RateUpdate rate)
+        public static double? NullableAsk(this IRateInfo rate)
         {
             return rate.HasAsk ? rate.Ask : (double?)null;
         }
 
-        public static double? NullableBid(this RateUpdate rate)
+        public static double? NullableBid(this IRateInfo rate)
         {
             return rate.HasBid ? rate.Bid : (double?)null;
         }
 
-        public static double? DoubleNullableAsk(this RateUpdate rate)
+        public static double? DoubleNullableAsk(this IRateInfo rate)
         {
             return rate.Ask.GetNanAware();
         }
 
-        public static double? DoubleNullableBid(this RateUpdate rate)
+        public static double? DoubleNullableBid(this IRateInfo rate)
         {
             return rate.Bid.GetNanAware();
         }

@@ -95,6 +95,13 @@ namespace TickTrader.SeriesStorage.LightSerializer
             Write(ToUtc(value).Ticks);
         }
 
+        public void Write(ReadOnlySpan<byte> src)
+        {
+            var offset = EnlargeBy(src.Length);
+            var dst = stream.AsSpan(offset, src.Length);
+            src.CopyTo(dst);
+        }
+
         private static DateTime ToUtc(DateTime dateTime)
         {
             if (dateTime.Kind == DateTimeKind.Utc)

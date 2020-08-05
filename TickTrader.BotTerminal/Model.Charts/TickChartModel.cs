@@ -24,7 +24,7 @@ namespace TickTrader.BotTerminal
     {
         private XyDataSeries<DateTime, double> askData = new XyDataSeries<DateTime, double>();
         private XyDataSeries<DateTime, double> bidData = new XyDataSeries<DateTime, double>();
-        private QuoteEntity lastSeriesQuote;
+        private QuoteInfo lastSeriesQuote;
 
         public TickChartModel(SymbolInfo symbol, AlgoEnvironment algoEnv)
             : base(symbol, algoEnv)
@@ -61,7 +61,7 @@ namespace TickTrader.BotTerminal
             {
                 DateTime timeMargin = Model.LastQuote.Time;
 
-                QuoteEntity[] tickArray = new QuoteEntity[0];
+                QuoteInfo[] tickArray = new QuoteInfo[0];
 
                 try
                 {
@@ -70,7 +70,7 @@ namespace TickTrader.BotTerminal
                 catch (Exception)
                 {
                     // TO DO: dysplay error on chart
-                    tickArray = new QuoteEntity[0];
+                    tickArray = new QuoteInfo[0];
                 }
 
                 //foreach (var tick in tickArray)
@@ -80,18 +80,18 @@ namespace TickTrader.BotTerminal
                 //}
 
                 askData.Append(
-                    tickArray.Select(t => t.CreatingTime),
+                    tickArray.Select(t => t.Time),
                     tickArray.Select(t => t.Ask));
                 bidData.Append(
-                    tickArray.Select(t => t.CreatingTime),
+                    tickArray.Select(t => t.Time),
                     tickArray.Select(t => t.Bid));
 
                 if (tickArray.Length > 0)
                 {
                     lastSeriesQuote = tickArray.Last();
 
-                    var start = tickArray.First().CreatingTime;
-                    var end = tickArray.Last().CreatingTime;
+                    var start = tickArray.First().Time;
+                    var end = tickArray.Last().Time;
                     InitBoundaries(tickArray.Length, start, end);
                 }
             }
@@ -99,13 +99,13 @@ namespace TickTrader.BotTerminal
             return Task.FromResult(this);
         }
 
-        protected override void ApplyUpdate(QuoteEntity update)
+        protected override void ApplyUpdate(QuoteInfo update)
         {
-            if (lastSeriesQuote == null || update.CreatingTime > lastSeriesQuote.CreatingTime)
+            if (lastSeriesQuote == null || update.Time > lastSeriesQuote.Time)
             {
-                askData.Append(update.CreatingTime, update.Ask);
-                bidData.Append(update.CreatingTime, update.Bid);
-                ExtendBoundaries(askData.Count, update.CreatingTime);
+                askData.Append(update.Time, update.Ask);
+                bidData.Append(update.Time, update.Bid);
+                ExtendBoundaries(askData.Count, update.Time);
             }
         }
 

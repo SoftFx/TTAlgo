@@ -1,4 +1,5 @@
 ﻿using ActorSharp;
+using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,6 +9,7 @@ using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -60,7 +62,7 @@ namespace TickTrader.Algo.Common.Model
             }
 
             /// Warning: This method downloads all bars into a collection of unlimmited size! Use wisely!
-            public Task<List<QuoteEntity>> GetQuoteList(string symbol, DateTime from, DateTime to, bool includeLevel2)
+            public Task<List<QuoteInfo>> GetQuoteList(string symbol, DateTime from, DateTime to, bool includeLevel2)
             {
                 return Actor.Call(a => a.GetQuoteList(symbol, Prepare(from), Prepare(to), includeLevel2));
             }
@@ -70,7 +72,7 @@ namespace TickTrader.Algo.Common.Model
                 return Actor.Call(a => a.GetBarPage(symbol, priceType, timeFrame, Prepare(startTime), count));
             }
 
-            public Task<QuoteEntity[]> GetQuotePage(string symbol, DateTime startTime, int count, bool includeLevel2)
+            public Task<QuoteInfo[]> GetQuotePage(string symbol, DateTime startTime, int count, bool includeLevel2)
             {
                 return Actor.Call(a => a.GetQuotePage(symbol, Prepare(startTime), count, includeLevel2));
             }
@@ -168,9 +170,9 @@ namespace TickTrader.Algo.Common.Model
             return pages.ConcatAll();
         }
 
-        private async Task<QuoteEntity[]> GetQuotePage(string symbol, DateTime startTime, int count, bool includeLevel2)
+        private async Task<QuoteInfo[]> GetQuotePage(string symbol, DateTime startTime, int count, bool includeLevel2)
         {
-            var pages = new List<QuoteEntity[]>();
+            var pages = new List<QuoteInfo[]>();
 
             var from = startTime.ToUniversalTime();
             var isBackward = count < 0;
@@ -181,7 +183,7 @@ namespace TickTrader.Algo.Common.Model
                 if (!isBackward && from > DateTime.UtcNow)
                     break; // we get last bar somehow even it is out of our requested frame
 
-                var page = await _feedProxy.DownloadQuotePage(symbol, startTime, isBackward ? -count : count, includeLevel2);
+                var page = await _feedProxy.DownloadQuotePage(symbol, from, isBackward ? -count : count, includeLevel2);
 
                 if (page.Length == 0)
                     break;
@@ -189,7 +191,9 @@ namespace TickTrader.Algo.Common.Model
                 pages.Add(page);
                 count -= page.Length;
 
-                from = isBackward ? page.First().Time.AddMilliseconds(-1) : page.Last().Time.AddMilliseconds(1);
+                from = isBackward 
+                    ? page.First().Data.Time.ToDateTime().AddMilliseconds(-1)
+                    : page.Last().Data.Time.ToDateTime().AddMilliseconds(1);
             }
 
             return pages.ConcatAll();
@@ -224,12 +228,15 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private async Task<List<QuoteEntity>> GetQuoteList(string symbol, DateTime from, DateTime to, bool includeLevel2)
+        private async Task<List<QuoteInfo>> GetQuoteList(string symbol, DateTime from, DateTime to, bool includeLevel2)
         {
-            var result = new List<QuoteEntity>();
+            var result = new List<QuoteInfo>();
+            var pageFrom = from.ToTimestamp();
+            var toTime = to.ToTimestamp();
 
             while (true)
             {
+                from = pageFrom.ToDateTime();
                 var page = await _feedProxy.DownloadQuotePage(symbol, from, 4000, includeLevel2);
 
                 if (page == null || page.Length == 0)
@@ -239,10 +246,10 @@ namespace TickTrader.Algo.Common.Model
 
                 foreach (var quote in page)
                 {
-                    if (quote.Time <= to)
+                    if (quote.Data.Time <= toTime)
                     {
                         result.Add(quote);
-                        from = quote.Time;
+                        pageFrom = quote.Data.Time;
                     }
                     else
                         return result;
@@ -345,7 +352,7 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private Task<DateTime> DownloadTicksInternal(Channel<Slice<QuoteEntity>> buffer, FeedCacheKey key, DateTime from, DateTime to)
+        private Task<DateTime> DownloadTicksInternal(Channel<Slice<QuoteInfo>> buffer, FeedCacheKey key, DateTime from, DateTime to)
         {
             return DownloadTicksInternal(s => buffer.Write(s), key, from, to);
         }
@@ -355,10 +362,10 @@ namespace TickTrader.Algo.Common.Model
             return DownloadTicksInternal(s => buffer.Write(s), key, from, to);
         }
 
-        private async Task<DateTime> DownloadTicksInternal(Func<Slice<QuoteEntity>, IAwaitable<bool>> outputAction, FeedCacheKey key, DateTime from, DateTime to)
+        private async Task<DateTime> DownloadTicksInternal(Func<Slice<QuoteInfo>, IAwaitable<bool>> outputAction, FeedCacheKey key, DateTime from, DateTime to)
         {
             var level2 = key.Frame == TimeFrames.TicksLevel2;
-            var inputStream = Channel.NewInput<QuoteEntity>();
+            var inputStream = Channel.NewInput<QuoteInfo>();
             var quoteSlicer = TimeSlicer.GetQuoteSlicer(SliceMaxSize, from, to);
             var hasData = false;
 
@@ -471,7 +478,7 @@ namespace TickTrader.Algo.Common.Model
 
         private Task WriteEmptyQuoteSegment(FeedCacheKey key, DateTime from, DateTime to)
         {
-            return Cache.Put(key, from, to, new QuoteEntity[0]);
+            return Cache.Put(key, from, to, new QuoteInfo[0]);
         }
     }
 

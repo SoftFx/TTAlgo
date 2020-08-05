@@ -65,7 +65,7 @@ namespace TickTrader.BotTerminal
             _storage.Put(Name, frame, priceType, from, to, values).Wait();
         }
 
-        public void WriteSlice(TimeFrames timeFrame, DateTime from, DateTime to, QuoteEntity[] values)
+        public void WriteSlice(TimeFrames timeFrame, DateTime from, DateTime to, QuoteInfo[] values)
         {
             _storage.Put(Name, timeFrame, from, to, values).Wait();
         }
@@ -274,7 +274,7 @@ namespace TickTrader.BotTerminal
             return _storage.IterateBarCacheAsync(Key, from, to);
         }
 
-        internal Channel<Slice<DateTime, QuoteEntity>> IterateTickCache(DateTime from, DateTime to)
+        internal Channel<Slice<DateTime, QuoteInfo>> IterateTickCache(DateTime from, DateTime to)
         {
             return _storage.IterateTickCacheAsync(Key, from, to);
         }

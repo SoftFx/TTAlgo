@@ -1,40 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Infrastructure
 {
-    public partial class QuoteDistributor
+    public class QuoteDistributor
     {
-        private readonly Dictionary<string, QuoteEntity> _lastQuotes = new Dictionary<string, QuoteEntity>();
+        private readonly Dictionary<string, QuoteInfo> _lastQuotes = new Dictionary<string, QuoteInfo>();
         private readonly Dictionary<string, SubscriptionGroup> groups = new Dictionary<string, SubscriptionGroup>();
         private IFeedSubscription _src;
         //private bool _isSubscribedForAll;
         private HashSet<string> _availableSymbols;
 
-        public IFeedSubscription AddSubscription(Action<QuoteEntity> handler)
+        public IFeedSubscription AddSubscription(Action<QuoteInfo> handler)
         {
             return new Subscription(handler, this);
         }
 
-        public IFeedSubscription AddSubscription(Action<QuoteEntity> handler, IEnumerable<string> symbols, int depth = 1)
+        public IFeedSubscription AddSubscription(Action<QuoteInfo> handler, IEnumerable<string> symbols, int depth = 1)
         {
             var sub = new Subscription(handler, this);
             sub.AddOrModify(symbols, depth);
             return sub;
         }
 
-        public IFeedSubscription AddSubscription(Action<QuoteEntity> handler, string symbol, int depth = 1)
+        public IFeedSubscription AddSubscription(Action<QuoteInfo> handler, string symbol, int depth = 1)
         {
             var subscription = new Subscription(handler, this);
             subscription.AddOrModify(symbol, depth);
             return subscription;
         }
 
-        public virtual void UpdateRate(QuoteEntity tick)
+        public virtual void UpdateRate(QuoteInfo tick)
         {
             GetGroupOrDefault(tick.Symbol)?.UpdateRate(tick);
         }
@@ -112,7 +110,7 @@ namespace TickTrader.Algo.Core.Infrastructure
         //        group.Depth = -1;
         //}
 
-        internal List<QuoteEntity> AdjustGroupSubscription(IEnumerable<string> symbols)
+        internal List<QuoteInfo> AdjustGroupSubscription(IEnumerable<string> symbols)
         {
             if (!IsStarted)
                 return null;
@@ -131,7 +129,7 @@ namespace TickTrader.Algo.Core.Infrastructure
             return null;
         }
 
-        protected virtual List<QuoteEntity> ModifySourceSubscription(List<FeedSubscriptionUpdate> updates)
+        protected virtual List<QuoteInfo> ModifySourceSubscription(List<FeedSubscriptionUpdate> updates)
         {
             return _src.Modify(updates);
         }

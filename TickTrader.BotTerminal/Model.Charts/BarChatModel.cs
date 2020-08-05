@@ -86,12 +86,12 @@ namespace TickTrader.BotTerminal
             plugin.Config.GetFeedStrategy<BarStrategy>().SetMainSeries(_barVector.ToList());
         }
 
-        protected override void ApplyUpdate(QuoteEntity quote)
+        protected override void ApplyUpdate(QuoteInfo quote)
         {
             if (quote.HasBid)
             {
-                _barVector.TryAppendQuote(quote.CreatingTime, quote.Bid, 1);
-                ExtendBoundaries(_barVector.Count, quote.CreatingTime);
+                _barVector.TryAppendQuote(quote.Time, quote.Bid, 1);
+                ExtendBoundaries(_barVector.Count, quote.Time);
             }
         }
 

@@ -93,18 +93,4 @@ namespace TickTrader.Algo.Domain
         IQuoteInfo LastQuote { get; }
         int ProfitDigits { get; }
     }
-
-    public interface IQuoteInfo
-    {
-        string Symbol { get; }
-        DateTime Time { get; }
-        double Ask { get; }
-        double Bid { get; }
-
-        bool HasAsk { get; }
-        bool HasBid { get; }
-
-        bool IsAskIndicative { get; }
-        bool IsBidIndicative { get; }
-    }
 }

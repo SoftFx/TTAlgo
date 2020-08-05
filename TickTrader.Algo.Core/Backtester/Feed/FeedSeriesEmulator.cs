@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -13,9 +11,9 @@ namespace TickTrader.Algo.Core
         protected readonly Dictionary<TimeFrames, BarVector> _bidBars = new Dictionary<TimeFrames, BarVector>();
         protected readonly Dictionary<TimeFrames, BarVector> _askBars = new Dictionary<TimeFrames, BarVector>();
 
-        public RateUpdate Current { get; private set; }
+        public IRateInfo Current { get; private set; }
 
-        public event Action<RateUpdate> RateUpdated;
+        public event Action<IRateInfo> RateUpdated;
 
         public IEnumerable<BarEntity> QueryBars(TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
         {
@@ -70,14 +68,14 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public List<QuoteEntity> QueryTicks(DateTime from, DateTime to, bool level2)
+        public List<Domain.QuoteInfo> QueryTicks(DateTime from, DateTime to, bool level2)
         {
-            return new List<QuoteEntity>();
+            return new List<Domain.QuoteInfo>();
         }
 
-        public List<QuoteEntity> QueryTicks(DateTime from, int count, bool level2)
+        public List<Domain.QuoteInfo> QueryTicks(DateTime from, int count, bool level2)
         {
-            return new List<QuoteEntity>();
+            return new List<Domain.QuoteInfo>();
         }
 
         public BarVector InitSeries(TimeFrames timeframe, BarPriceType price)
@@ -90,7 +88,7 @@ namespace TickTrader.Algo.Core
             return GetOrAddBuilder(price, timeframe);
         }
 
-        public void Update(RateUpdate rate)
+        public void Update(IRateInfo rate)
         {
             if (rate is BarRateUpdate)
                 UpdateBars((BarRateUpdate)rate);
@@ -142,7 +140,7 @@ namespace TickTrader.Algo.Core
                 rec.AppendBarPart(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume);
         }
 
-        private void UpdateBars(RateUpdate quote)
+        private void UpdateBars(IRateInfo quote)
         {
             if (quote.HasBid)
             {

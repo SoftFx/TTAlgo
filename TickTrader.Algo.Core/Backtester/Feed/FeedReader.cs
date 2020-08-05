@@ -2,17 +2,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    internal class FeedReader : IEnumerable<RateUpdate>, IDisposable
+    internal class FeedReader : IEnumerable<IRateInfo>, IDisposable
     {
         private Task _worker;
-        private FlipGate<RateUpdate> _gate = new FlipGate<RateUpdate>(1000);
+        private FlipGate<IRateInfo> _gate = new FlipGate<IRateInfo>(1000);
 
         public FeedReader(IEnumerable<SeriesReader> sources)
         {
@@ -22,7 +21,7 @@ namespace TickTrader.Algo.Core
         public Exception Fault { get; private set; }
         public bool HasFailed => Fault != null;
 
-        public IEnumerator<RateUpdate> GetEnumerator()
+        public IEnumerator<IRateInfo> GetEnumerator()
         {
             return _gate.GetEnumerator();
         }

@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 using TickTrader.SeriesStorage;
 
 namespace TickTrader.Algo.Common.Model
@@ -92,13 +93,13 @@ namespace TickTrader.Algo.Common.Model
 
             public Task Stop() => _ref.Call(a => a.Stop());
 
-            public Task Put(FeedCacheKey key, DateTime from, DateTime to, QuoteEntity[] values)
+            public Task Put(FeedCacheKey key, DateTime from, DateTime to, QuoteInfo[] values)
                 => Put(key.Symbol, key.Frame, from, to, values);
 
-            public Task Put(string symbol, Api.TimeFrames timeFrame, DateTime from, DateTime to, QuoteEntity[] values)
+            public Task Put(string symbol, Api.TimeFrames timeFrame, DateTime from, DateTime to, QuoteInfo[] values)
                 => _ref.Call(a => a.Put(symbol, timeFrame, from, to, values));
 
-            public Task Put(string symbol, Api.TimeFrames timeFrame, Slice<DateTime, QuoteEntity> slice)
+            public Task Put(string symbol, Api.TimeFrames timeFrame, Slice<DateTime, QuoteInfo> slice)
                 => _ref.Call(a => a.Put(symbol, timeFrame, slice));
 
             public Task Put(FeedCacheKey key, DateTime from, DateTime to, BarEntity[] values)
@@ -114,9 +115,9 @@ namespace TickTrader.Algo.Common.Model
                 return channel;
             }
 
-            public Channel<Slice<DateTime, QuoteEntity>> IterateTickCacheAsync(FeedCacheKey key, DateTime from, DateTime to)
+            public Channel<Slice<DateTime, QuoteInfo>> IterateTickCacheAsync(FeedCacheKey key, DateTime from, DateTime to)
             {
-                var channel = new Channel<Slice<DateTime, QuoteEntity>>(ChannelDirections.Out, 1);
+                var channel = new Channel<Slice<DateTime, QuoteInfo>>(ChannelDirections.Out, 1);
                 _ref.SendChannel(channel, (a, c) => a.IterateTickCache(c, key, from, to));
                 return channel;
             }
@@ -126,9 +127,9 @@ namespace TickTrader.Algo.Common.Model
                 return _ref.OpenBlockingChannel<FeedCache, Slice<DateTime, BarEntity>>(ChannelDirections.Out, 2, (a, c) => a.IterateBarCache(c, key, from, to));
             }
 
-            public BlockingChannel<Slice<DateTime, QuoteEntity>> IterateTickCache(FeedCacheKey key, DateTime from, DateTime to)
+            public BlockingChannel<Slice<DateTime, QuoteInfo>> IterateTickCache(FeedCacheKey key, DateTime from, DateTime to)
             {
-                return _ref.OpenBlockingChannel<FeedCache, Slice<DateTime, QuoteEntity>>(ChannelDirections.Out, 2, (a, c) => a.IterateTickCache(c, key, from, to));
+                return _ref.OpenBlockingChannel<FeedCache, Slice<DateTime, QuoteInfo>>(ChannelDirections.Out, 2, (a, c) => a.IterateTickCache(c, key, from, to));
             }
 
             public Channel<KeyRange<DateTime>> IterateCacheKeys(FeedCacheKey key, DateTime from, DateTime to)
@@ -342,36 +343,36 @@ namespace TickTrader.Algo.Common.Model
 
         #region Tick History
 
-        private void IterateTickCache(Channel<Slice<DateTime, QuoteEntity>> channel, FeedCacheKey key, DateTime from, DateTime to)
+        private void IterateTickCache(Channel<Slice<DateTime, QuoteInfo>> channel, FeedCacheKey key, DateTime from, DateTime to)
         {
             channel.WriteAll(() => IterateTickCacheInternal(key, from, to));
         }
 
-        protected IEnumerable<Slice<DateTime, QuoteEntity>> IterateTickCacheInternal(FeedCacheKey key, DateTime from, DateTime to)
+        protected IEnumerable<Slice<DateTime, QuoteInfo>> IterateTickCacheInternal(FeedCacheKey key, DateTime from, DateTime to)
         {
             CheckState();
-            foreach (var entry in GetSeries<QuoteEntity>(key)?.IterateSlices(from, to))
+            foreach (var entry in GetSeries<QuoteInfo>(key)?.IterateSlices(from, to))
             {
                 CheckState();
                 yield return entry;
             }
         }
 
-        protected void Put(string symbol, Api.TimeFrames timeFrame, DateTime from, DateTime to, QuoteEntity[] values)
+        protected void Put(string symbol, Api.TimeFrames timeFrame, DateTime from, DateTime to, QuoteInfo[] values)
         {
             CheckState();
 
             var key = new FeedCacheKey(symbol, timeFrame);
-            var collection = GetSeries<QuoteEntity>(key, true);
+            var collection = GetSeries<QuoteInfo>(key, true);
             collection.Write(from, to, values);
         }
 
-        protected void Put(string symbol, Api.TimeFrames timeFrame, Slice<DateTime, QuoteEntity> slice)
+        protected void Put(string symbol, Api.TimeFrames timeFrame, Slice<DateTime, QuoteInfo> slice)
         {
             CheckState();
 
             var key = new FeedCacheKey(symbol, timeFrame);
-            var collection = GetSeries<QuoteEntity>(key, true);
+            var collection = GetSeries<QuoteInfo>(key, true);
             collection.Write(slice);
         }
 

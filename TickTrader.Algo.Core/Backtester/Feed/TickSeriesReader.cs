@@ -1,20 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
+﻿using System.Collections.Generic;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
     internal class TickSeriesReader : SeriesReader
     {
         private string _symbol;
-        private IEnumerable<QuoteEntity> _src;
-        private IEnumerator<QuoteEntity> _e;
+        private IEnumerable<QuoteInfo> _src;
+        private IEnumerator<QuoteInfo> _e;
         //private QuoteEntity _current;
 
-        public TickSeriesReader(string symbol, IEnumerable<QuoteEntity> src)
+        public TickSeriesReader(string symbol, IEnumerable<QuoteInfo> src)
         {
             _symbol = symbol;
             _src = src;
@@ -35,8 +31,7 @@ namespace TickTrader.Algo.Core
         {
             if (_e.MoveNext())
             {
-                var quote = _e.Current;
-                Current = quote;
+                Current = _e.Current;
                 //UpdateBars(quote);
                 return true;
             }

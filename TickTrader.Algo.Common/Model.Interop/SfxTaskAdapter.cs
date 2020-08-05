@@ -29,7 +29,7 @@ namespace TickTrader.Algo.Common.Model
             client.DisconnectResultEvent += (c, d, t) => SetCompleted(d, t);
 
             client.QuotesResultEvent += (c, d, r) => SetCompleted(d, SfxInterop.Convert(r));
-            client.QuotesErrorEvent += (c, d, ex) => SetFailed<QuoteEntity[]>(d, ex);
+            client.QuotesErrorEvent += (c, d, ex) => SetFailed<Domain.QuoteInfo[]>(d, ex);
 
             client.CurrencyListResultEvent += (c, d, r) => SetCompleted(d, r);
             client.CurrencyListErrorEvent += (c, d, ex) => SetFailed<FDK2.CurrencyInfo[]>(d, ex);
@@ -38,10 +38,10 @@ namespace TickTrader.Algo.Common.Model
             client.SymbolListErrorEvent += (c, d, ex) => SetFailed<FDK2.SymbolInfo[]>(d, ex);
 
             client.SubscribeQuotesResultEvent += (c, d, r) => SetCompleted(d, SfxInterop.Convert(r));
-            client.SubscribeQuotesErrorEvent += (c, d, ex) => SetFailed<QuoteEntity[]>(d, ex);
+            client.SubscribeQuotesErrorEvent += (c, d, ex) => SetFailed<Domain.QuoteInfo[]>(d, ex);
 
             client.QuotesResultEvent += (c, d, r) => SetCompleted(d, SfxInterop.Convert(r));
-            client.QuotesErrorEvent += (c, d, ex) => SetFailed<QuoteEntity[]>(d, ex);
+            client.QuotesErrorEvent += (c, d, ex) => SetFailed<Domain.QuoteInfo[]>(d, ex);
         }
 
         public static Task ConnectAsync(this FDK.Client.QuoteFeed client, string address)
@@ -86,9 +86,9 @@ namespace TickTrader.Algo.Common.Model
             return taskSrc.Task;
         }
 
-        public static Task<QuoteEntity[]> SubscribeQuotesAsync(this FDK.Client.QuoteFeed client, string[] symbolIds, int marketDepth)
+        public static Task<Domain.QuoteInfo[]> SubscribeQuotesAsync(this FDK.Client.QuoteFeed client, string[] symbolIds, int marketDepth)
         {
-            var taskSrc = new TaskCompletionSource<QuoteEntity[]>();
+            var taskSrc = new TaskCompletionSource<Domain.QuoteInfo[]>();
             client.SubscribeQuotesAsync(taskSrc, GetSymbolEntries(symbolIds, marketDepth));
             return taskSrc.Task;
         }

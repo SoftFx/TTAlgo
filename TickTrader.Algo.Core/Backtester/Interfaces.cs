@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
@@ -15,7 +12,7 @@ namespace TickTrader.Algo.Core
 
     public interface ITickStorage : IFeedStorage
     {
-        IEnumerable<QuoteEntity> GetQuoteStream();
+        IEnumerable<Domain.QuoteInfo> GetQuoteStream();
     }
 
     public interface IBarStorage : IFeedStorage

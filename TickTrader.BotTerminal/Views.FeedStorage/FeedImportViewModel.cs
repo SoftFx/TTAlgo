@@ -1,16 +1,20 @@
 ﻿using Caliburn.Micro;
+using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 using Machinarium.Qnil;
 using Machinarium.Var;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 using CoreMath = TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
@@ -108,17 +112,17 @@ namespace TickTrader.BotTerminal
             }
             else
             {
-                var page = new List<QuoteEntity>();
-                QuoteEntity lastTick = null;
+                var page = new List<QuoteInfo>();
+                QuoteInfo lastTick = null;
 
                 foreach (var tick in importer.ImportQuotes())
                 {
                     if (page.Count >= pageSize)
                     {
                         // we cannot put ticks with same time into different chunks
-                        if (lastTick.Time != tick.Time)
+                        if (lastTick.Data.Time != tick.Data.Time)
                         {
-                            symbol.WriteSlice(timeFrame, page.First().Time, tick.Time, page.ToArray());
+                            symbol.WriteSlice(timeFrame, page[0].Data.Time.ToDateTime(), tick.Data.Time.ToDateTime(), page.ToArray());
                             observer.SetMessage(string.Format("Importing...  {0} ticks are imported.", count));
                             page.Clear();
                         }
@@ -131,8 +135,8 @@ namespace TickTrader.BotTerminal
 
                 if (page.Count > 0)
                 {
-                    var toCorrected = page.Last().Time + TimeSpan.FromTicks(1);
-                    symbol.WriteSlice(timeFrame, page.First().Time, toCorrected, page.ToArray());
+                    var toCorrected = page.Last().Data.Time.ToDateTime() + TimeSpan.FromTicks(1);
+                    symbol.WriteSlice(timeFrame, page[0].Data.Time.ToDateTime(), toCorrected, page.ToArray());
                 }
 
                 observer.SetMessage(string.Format("Done importing. {0} ticks were imported.", count));
@@ -164,7 +168,7 @@ namespace TickTrader.BotTerminal
         public string Name { get; }
         public BoolProperty CanImport { get; }
         public abstract IEnumerable<BarEntity> ImportBars();
-        public abstract IEnumerable<QuoteEntity> ImportQuotes();
+        public abstract IEnumerable<QuoteInfo> ImportQuotes();
     }
 
     internal class CsvFeedImporter : FeedImporter
@@ -210,12 +214,9 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public override IEnumerable<QuoteEntity> ImportQuotes()
+        public override IEnumerable<QuoteInfo> ImportQuotes()
         {
             int lineNo = 1;
-
-            var asks = new List<BookEntry>();
-            var bids = new List<BookEntry>();
 
             using (var reader = new StreamReader(FilePath.Value))
             {
@@ -225,26 +226,45 @@ namespace TickTrader.BotTerminal
                     if (line == null)
                         break;
                     var parts = line.Split(',');
-                    if (parts.Length < 5 || (parts.Length - 1) % 4 != 0)
+                    var maxDepth = (parts.Length - 1) % 4;
+                    if (parts.Length < 5 || maxDepth != 0)
                         throw new Exception("Invalid record at line " + lineNo);
 
                     lineNo++;
 
+                    var asks = maxDepth > 256
+                        ? new QuoteBand[maxDepth]
+                        : stackalloc QuoteBand[maxDepth];
+
+                    var bids = maxDepth > 256
+                        ? new QuoteBand[maxDepth]
+                        : stackalloc QuoteBand[maxDepth];
+
                     var time = DateTime.Parse(parts[0]);
 
-                    for (int i = 1; i < parts.Length; i += 4)
+                    var bidDepth = 0;
+                    var askDepth = 0;
+                    var partsSpan = parts.AsSpan(1);
+                    for (var i = 0; i < maxDepth; i++)
                     {
-                        if (!string.IsNullOrEmpty(parts[i + 0]))
-                            bids.Add(new BookEntry(double.Parse(parts[i + 0]), double.Parse(parts[i + 1])));
-
-                        if (!string.IsNullOrEmpty(parts[i + 2]))
-                            asks.Add(new BookEntry(double.Parse(parts[i + 2]), double.Parse(parts[i + 3])));
+                        // partsSpan[2] and partsSpan[3] should both have empty strings if band is not present
+                        // checking partsSpan[3] should eliminate further bound checks
+                        if (!string.IsNullOrEmpty(partsSpan[3]))
+                            asks[askDepth++] = new QuoteBand(double.Parse(partsSpan[2]), double.Parse(partsSpan[3]));
+                        if (!string.IsNullOrEmpty(partsSpan[1]))
+                            bids[bidDepth++] = new QuoteBand(double.Parse(partsSpan[0]), double.Parse(partsSpan[1]));
                     }
 
-                    yield return new QuoteEntity("", time, bids.ToArray(), asks.ToArray());
+                    var data = new QuoteData
+                    {
+                        Time = time.ToTimestamp(),
+                        IsBidIndicative = false,
+                        IsAskIndicative = false,
+                        AskBytes = ByteString.CopyFrom(MemoryMarshal.Cast<QuoteBand, byte>(asks.Slice(askDepth))),
+                        BidBytes = ByteString.CopyFrom(MemoryMarshal.Cast<QuoteBand, byte>(bids.Slice(bidDepth))),
+                    };
 
-                    asks.Clear();
-                    bids.Clear();
+                    yield return new QuoteInfo("", data);
                 }
             }
         }

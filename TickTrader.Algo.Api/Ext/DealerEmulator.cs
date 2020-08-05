@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Api.Ext
     public interface OpenOrderRequest
     {
         Order Order { get; }
-        RateUpdate CurrentRate { get; }
+        Quote CurrentRate { get; }
 
         void Confirm();
         void Confirm(decimal amount, double price);

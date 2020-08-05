@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Infrastructure
 {
@@ -11,7 +8,7 @@ namespace TickTrader.Algo.Core.Infrastructure
         public int Depth { get; internal set; } = -1;
         public Dictionary<Subscription, int> Subscriptions { get; } = new Dictionary<Subscription, int>();
         public string Symbol { get; private set; }
-        public QuoteEntity LastQuote { get; private set; }
+        public QuoteInfo LastQuote { get; private set; }
         
         public SubscriptionGroup(string symbol)
         {
@@ -19,7 +16,7 @@ namespace TickTrader.Algo.Core.Infrastructure
             Subscriptions = new Dictionary<Subscription, int>();
         }
 
-        public void UpdateRate(QuoteEntity tick)
+        public void UpdateRate(QuoteInfo tick)
         {
             LastQuote = tick;
 

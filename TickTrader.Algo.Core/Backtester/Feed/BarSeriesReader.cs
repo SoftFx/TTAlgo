@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -167,7 +165,7 @@ namespace TickTrader.Algo.Core
             return new BarSeriesReader(_symbol, _baseTimeFrame, _bidSrc, _askSrc);
         }
 
-        protected virtual RateUpdate GetCurrentRate()
+        protected virtual IRateInfo GetCurrentRate()
         {
             return new BarRateUpdate(_lastBid, _lastAsk, _symbol);
         }

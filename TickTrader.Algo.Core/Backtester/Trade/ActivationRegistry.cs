@@ -1,11 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Core.Calc;
-using TickTrader.BusinessObjects;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -30,7 +25,7 @@ namespace TickTrader.Algo.Core
 
         public int Count { get; private set; }
 
-        public ActivationRecord AddOrder(OrderAccessor order, RateUpdate currentRate)
+        public ActivationRecord AddOrder(OrderAccessor order, IRateInfo currentRate)
         {
             bool added = false;
             ActivationRecord instantActivation = null;
@@ -172,7 +167,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public void CheckPendingOrders(RateUpdate rate, List<ActivationRecord> result)
+        public void CheckPendingOrders(IRateInfo rate, List<ActivationRecord> result)
         {
             if (Count > 0)
             {

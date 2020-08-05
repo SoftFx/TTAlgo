@@ -47,7 +47,7 @@ namespace TickTrader.Algo.Common.Model
             Acc.Clear();
         }
 
-        public void OnRateUpdate(QuoteEntity quote)
+        public void OnRateUpdate(QuoteInfo quote)
         {
             _symbols.GetOrDefault(quote.Symbol)?.UpdateRate(quote);
             Distributor.UpdateRate(quote);

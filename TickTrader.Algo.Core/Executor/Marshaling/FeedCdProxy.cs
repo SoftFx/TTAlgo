@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Infrastructure;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
     public class FeedCdProxy : CrossDomainObject, IFeedProvider, IFeedHistoryProvider
     {
-        private BunchingBlock<QuoteEntity> _bBlock;
+        private BunchingBlock<QuoteInfo> _bBlock;
         private readonly IFeedProvider _feed;
         private readonly IFeedHistoryProvider _history;
 
@@ -30,10 +28,10 @@ namespace TickTrader.Algo.Core
 
         public ISynchronizationContext Sync => _feed.Sync;
 
-        public event Action<QuoteEntity> RateUpdated { add { } remove { } }
-        public event Action<List<QuoteEntity>> RatesUpdated;
+        public event Action<QuoteInfo> RateUpdated { add { } remove { } }
+        public event Action<List<QuoteInfo>> RatesUpdated;
 
-        public IEnumerable<QuoteEntity> GetSnapshot()
+        public IEnumerable<QuoteInfo> GetSnapshot()
         {
             return _feed.GetSnapshot();
         }
@@ -53,17 +51,17 @@ namespace TickTrader.Algo.Core
             return _history.QueryBars(symbolCode, priceType, from, size, timeFrame);
         }
 
-        public List<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, bool level2)
+        public List<QuoteInfo> QueryTicks(string symbolCode, DateTime from, DateTime to, bool level2)
         {
             return _history.QueryTicks(symbolCode, from, to, level2);
         }
 
-        public List<QuoteEntity> QueryTicks(string symbolCode, DateTime from, int count, bool level2)
+        public List<QuoteInfo> QueryTicks(string symbolCode, DateTime from, int count, bool level2)
         {
             return _history.QueryTicks(symbolCode, from, count, level2);
         }
 
-        public List<QuoteEntity> Modify(List<FeedSubscriptionUpdate> updates)
+        public List<QuoteInfo> Modify(List<FeedSubscriptionUpdate> updates)
         {
             LazyInit();
 
@@ -79,24 +77,24 @@ namespace TickTrader.Algo.Core
         {
             if (_bBlock == null)
             {
-                _bBlock = new BunchingBlock<QuoteEntity>(TransferToCore, 30);
+                _bBlock = new BunchingBlock<QuoteInfo>(TransferToCore, 30);
                 _feed.RateUpdated += _feed_RateUpdated;
                 _feed.RatesUpdated += _feed_RatesUpdated;
             }
         }
 
-        private void TransferToCore(List<QuoteEntity> page)
+        private void TransferToCore(List<QuoteInfo> page)
         {
             RatesUpdated?.Invoke(page);
         }
 
-        private void _feed_RatesUpdated(List<QuoteEntity> quotes)
+        private void _feed_RatesUpdated(List<QuoteInfo> quotes)
         {
             foreach (var q in quotes)
                 _feed_RateUpdated(q);
         }
 
-        private void _feed_RateUpdated(QuoteEntity quote)
+        private void _feed_RateUpdated(QuoteInfo quote)
         {
             _bBlock?.Enqueue(quote);
         }

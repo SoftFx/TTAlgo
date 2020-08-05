@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
     internal class FeedQueue
     {
-        private Queue<RateUpdate> queue = new Queue<RateUpdate>();
-        private Dictionary<string, RateUpdate> lasts = new Dictionary<string, RateUpdate>();
+        private Queue<IRateInfo> _queue = new Queue<IRateInfo>();
+        private Dictionary<string, IRateInfo> _lasts = new Dictionary<string, IRateInfo>();
         private FeedStrategy _fStrategy;
 
         public FeedQueue(FeedStrategy fStrategy)
@@ -18,12 +15,12 @@ namespace TickTrader.Algo.Core
             _fStrategy = fStrategy;
         }
 
-        public int Count { get { return queue.Count; } }
+        public int Count { get { return _queue.Count; } }
 
-        public void Enqueue(RateUpdate rate)
+        public void Enqueue(IRateInfo rate)
         {
-            if (rate is QuoteEntity)
-                Enqueue((QuoteEntity)rate);
+            if (rate is QuoteInfo)
+                Enqueue((QuoteInfo)rate);
             else if (rate is BarRateUpdate)
                 Enqueue((BarRateUpdate)rate);
             else
@@ -32,34 +29,33 @@ namespace TickTrader.Algo.Core
 
         public void Enqueue(BarRateUpdate bars)
         {
-            queue.Enqueue(bars);
-            lasts[bars.Symbol] = bars;
+            _queue.Enqueue(bars);
+            _lasts[bars.Symbol] = bars;
         }
 
-        public void Enqueue(QuoteEntity quote)
+        public void Enqueue(QuoteInfo quote)
         {
-            RateUpdate last;
-            lasts.TryGetValue(quote.Symbol, out last);
-            RateUpdate newUpdate = _fStrategy.InvokeAggregate(last, quote);
+            _lasts.TryGetValue(quote.Symbol, out var last);
+            var newUpdate = _fStrategy.InvokeAggregate(last, quote);
             if (newUpdate != null)
             {
-                lasts[quote.Symbol] = newUpdate;
-                queue.Enqueue(newUpdate);
+                _lasts[quote.Symbol] = newUpdate;
+                _queue.Enqueue(newUpdate);
             }
         }
 
-        public RateUpdate Dequeue()
+        public IRateInfo Dequeue()
         {
-            var update = queue.Dequeue();
-            var last = lasts[update.Symbol];
+            var update = _queue.Dequeue();
+            var last = _lasts[update.Symbol];
             if (update == last)
-                lasts.Remove(update.Symbol);
+                _lasts.Remove(update.Symbol);
             return update;
         }
 
         public void Clear()
         {
-            queue.Clear();
+            _queue.Clear();
         }
     }
 }

@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Infrastructure;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -33,7 +31,7 @@ namespace TickTrader.Algo.Core
             base.Stop(true);
         }
 
-        protected override List<QuoteEntity> ModifySourceSubscription(List<FeedSubscriptionUpdate> updates)
+        protected override List<QuoteInfo> ModifySourceSubscription(List<FeedSubscriptionUpdate> updates)
         {
             using (var request = new CrossdomainRequest { Feed = _context.FeedProvider, Updates = updates })
             {
@@ -51,7 +49,7 @@ namespace TickTrader.Algo.Core
             if (sub != null)
             {
                 var quote = node.Rate.LastQuote;
-                _context.Builder.InvokeOnQuote(quote);
+                _context.Builder.InvokeOnQuote(new QuoteEntity(quote));
                 //if (quote.Time >= sub.LastQuoteTime) // old quotes from snapshot should not be sent as new quotes
                 //  collection.OnUpdate(quote);
             }
@@ -112,7 +110,7 @@ namespace TickTrader.Algo.Core
         {
             public List<FeedSubscriptionUpdate> Updates { get; set; }
             public IFeedProvider Feed { get; set; }
-            public List<QuoteEntity> Result { get; set; }
+            public List<QuoteInfo> Result { get; set; }
 
             public void Modify()
             {

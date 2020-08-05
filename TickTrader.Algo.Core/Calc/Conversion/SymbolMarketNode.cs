@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Calc.Conversion
@@ -13,11 +8,11 @@ namespace TickTrader.Algo.Core.Calc.Conversion
         public SymbolMarketNode(ISymbolInfo smb)
         {
             SymbolInfo = smb;
-            Rate = new QuoteEntity(smb.Name, DateTime.MinValue, (double?)null, (double?)null); // empty rate
+            Rate = new QuoteInfo(smb.Name);
         }
 
         public ISymbolInfo SymbolInfo { get; }
-        public RateUpdate Rate { get; private set; }
+        public IRateInfo Rate { get; private set; }
 
         public double Ask => Rate.Ask;
         public double Bid => Rate.Bid;
@@ -25,7 +20,7 @@ namespace TickTrader.Algo.Core.Calc.Conversion
         public bool HasBid => Rate.HasBid;
         public bool HasAsk => Rate.HasAsk;
 
-        public void Update(RateUpdate rate)
+        public void Update(IRateInfo rate)
         {
             Rate = rate;
             Changed?.Invoke();

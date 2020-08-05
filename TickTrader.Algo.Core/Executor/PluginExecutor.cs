@@ -843,7 +843,7 @@ namespace TickTrader.Algo.Core
             iStrategy.EnqueueCustomInvoke(action);
         }
 
-        void IFixtureContext.EnqueueQuote(QuoteEntity update)
+        void IFixtureContext.EnqueueQuote(Domain.QuoteInfo update)
         {
             iStrategy.EnqueueQuote(update);
         }

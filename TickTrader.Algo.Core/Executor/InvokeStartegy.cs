@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -36,7 +37,7 @@ namespace TickTrader.Algo.Core
         public abstract void Start();
         public abstract Task Stop(bool quick);
         public abstract void Abort();
-        public abstract void EnqueueQuote(QuoteEntity update);
+        public abstract void EnqueueQuote(Domain.QuoteInfo update);
         public abstract void EnqueueCustomInvoke(Action<PluginBuilder> a);
         public abstract void EnqueueTradeUpdate(Action<PluginBuilder> a);
         public abstract void EnqueueEvent(Action<PluginBuilder> a);
@@ -44,7 +45,7 @@ namespace TickTrader.Algo.Core
 
         protected virtual void OnInit() { }
 
-        internal BufferUpdateResult OnFeedUpdate(RateUpdate update, out AlgoMarketNode node)
+        internal BufferUpdateResult OnFeedUpdate(IRateInfo update, out AlgoMarketNode node)
         {
             return FStartegy.ApplyUpdate(update, out node);
         }
@@ -85,7 +86,7 @@ namespace TickTrader.Algo.Core
 
         public override int FeedQueueSize { get { return 0; } }
 
-        public override void EnqueueQuote(QuoteEntity update)
+        public override void EnqueueQuote(Domain.QuoteInfo update)
         {
             lock (syncObj)
             {
@@ -217,8 +218,8 @@ namespace TickTrader.Algo.Core
         {
             try
             {
-                if (item is RateUpdate)
-                    OnFeedUpdate((RateUpdate)item, out _);
+                if (item is IRateInfo)
+                    OnFeedUpdate((IRateInfo)item, out _);
                 else if (item is Action<PluginBuilder>)
                     ((Action<PluginBuilder>)item)(Builder);
             }

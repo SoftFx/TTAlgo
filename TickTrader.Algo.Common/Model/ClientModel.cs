@@ -27,9 +27,9 @@ namespace TickTrader.Algo.Common.Model
         private PluginTradeApiProvider _tradeApi;
         private EntityCache _cache = new EntityCache();
         private Dictionary<ActorRef, Channel<EntityCacheUpdate>> _tradeListeners = new Dictionary<ActorRef, Channel<EntityCacheUpdate>>();
-        private Dictionary<ActorRef, Channel<QuoteEntity>> _feedListeners = new Dictionary<ActorRef, Channel<QuoteEntity>>();
+        private Dictionary<ActorRef, Channel<QuoteInfo>> _feedListeners = new Dictionary<ActorRef, Channel<QuoteInfo>>();
         private AsyncQueue<object> _updateQueue;
-        private AsyncQueue<QuoteEntity> _feedQueue;
+        private AsyncQueue<QuoteInfo> _feedQueue;
         private Ref<ClientModel> _ref;
         private QuoteDistributor _rootDistributor;
         private ActorSharp.Lib.AsyncLock _updateLock;
@@ -58,7 +58,7 @@ namespace TickTrader.Algo.Common.Model
             _connection.InitProxies += () =>
             {
                 _updateQueue = new AsyncQueue<object>();
-                _feedQueue = new AsyncQueue<QuoteEntity>();
+                _feedQueue = new AsyncQueue<QuoteInfo>();
 
                 _connection.FeedProxy.Tick += FeedProxy_Tick;
                 _connection.TradeProxy.ExecutionReport += TradeProxy_ExecutionReport;
@@ -79,7 +79,7 @@ namespace TickTrader.Algo.Common.Model
             };
         }
 
-        private void FeedProxy_Tick(QuoteEntity q)
+        private void FeedProxy_Tick(QuoteInfo q)
         {
             ContextSend(() => _feedQueue.Enqueue(q));
         }
@@ -133,7 +133,7 @@ namespace TickTrader.Algo.Common.Model
 
             public Task<List<Domain.SymbolInfo>> GetSymbols() => Actor.Call(a => a.ExecDataRequest(c => c.GetSymbolsCopy()));
             public Task<List<CurrencyEntity>> GetCurrecnies() => Actor.Call(a => a.ExecDataRequest(c => c.GetCurrenciesCopy()));
-            public Task<Domain.AccountInfo.Types.Type> GetAccountType() => Actor.Call((Func<ClientModel, AccountInfo.Types.Type>)(a => a.ExecDataRequest((Func<EntityCache, AccountInfo.Types.Type>)(c => (AccountInfo.Types.Type)c.Account.Type.Value))));
+            public Task<Domain.AccountInfo.Types.Type> GetAccountType() => Actor.Call(a => a.ExecDataRequest(c => c.Account.Type.Value));
             public Task<Domain.SymbolInfo> GetDefaultSymbol() => Actor.Call(a => a.ExecDataRequest(c => c.GetDefaultSymbol()));
 
             public Task<PluginFeedProvider> CreateFeedProvider()
@@ -218,7 +218,7 @@ namespace TickTrader.Algo.Common.Model
                 var snapshot = await Actor.OpenChannel(updateStream, (a, c) => a.AddListener(Ref, c));
                 ApplyUpdates(updateStream);
 
-                var quoteStream = Channel.NewOutput<QuoteEntity>(1000);
+                var quoteStream = Channel.NewOutput<QuoteInfo>(1000);
                 await Actor.OpenChannel(quoteStream, (a, c) => a._feedListeners.Add(Ref, c));
                 ApplyQuotes(quoteStream);
             }
@@ -237,7 +237,7 @@ namespace TickTrader.Algo.Common.Model
                     updateStream.Current.Apply(Cache);
             }
 
-            private async void ApplyQuotes(Channel<QuoteEntity> updateStream)
+            private async void ApplyQuotes(Channel<QuoteInfo> updateStream)
             {
                 while (await updateStream.ReadNext())
                 {
@@ -247,7 +247,7 @@ namespace TickTrader.Algo.Common.Model
                 }
             }
 
-            List<QuoteEntity> IFeedSubscription.Modify(List<FeedSubscriptionUpdate> updates)
+            List<QuoteInfo> IFeedSubscription.Modify(List<FeedSubscriptionUpdate> updates)
             {
                 Actor.Send(a => a.UpsertSubscription(Ref, updates));
                 return null;
@@ -496,7 +496,7 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private async Task ApplyQuote(QuoteEntity quote)
+        private async Task ApplyQuote(QuoteInfo quote)
         {
             _cache.ApplyQuote(quote);
             _rootDistributor.UpdateRate(quote);
@@ -532,7 +532,7 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        List<QuoteEntity> IFeedSubscription.Modify(List<FeedSubscriptionUpdate> updates)
+        List<QuoteInfo> IFeedSubscription.Modify(List<FeedSubscriptionUpdate> updates)
         {
             var removes = updates.Where(u => u.IsRemoveAction);
             var upserts = updates.Where(u => u.IsUpsertAction).GroupBy(u => u.Depth);

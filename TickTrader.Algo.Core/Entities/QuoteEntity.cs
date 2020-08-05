@@ -5,12 +5,13 @@ using TickTrader.Algo.Domain;
 namespace TickTrader.Algo.Core
 {
     [Serializable]
-    public class QuoteEntity : Api.Quote, IQuoteInfo, ISymbolRate2, RateUpdate
+    public class QuoteEntity : Api.Quote, IQuoteInfo, RateUpdate
     {
         public static readonly BookEntry[] EmptyBook = new BookEntry[0];
 
         private double? _ask;
         private double? _bid;
+        private QuoteData _data;
 
         public QuoteEntity(string symbol, DateTime time, double bid, double ask)
             : this(symbol, time, new BookEntry(bid, 0), new BookEntry(ask, 0))
@@ -37,8 +38,6 @@ namespace TickTrader.Algo.Core
         {
             Symbol = symbol;
             Time = time;
-            IsBidIndicative = isBidIndicative;
-            IsAskIndicative = isAskIndicative;
 
             bids = bids ?? new BookEntry[0];
             asks = asks ?? new BookEntry[0];
@@ -60,30 +59,29 @@ namespace TickTrader.Algo.Core
                 _ask = null;
         }
 
-        private QuoteEntity()
+        public QuoteEntity(QuoteInfo quote)
+            :this(quote.Symbol, quote.Data)
         {
         }
 
-        public static QuoteEntity CreatePrepared(string symbol, DateTime time, BookEntry[] bids, BookEntry[] asks)
+
+        public QuoteEntity(string symbol, QuoteData data)
         {
-            var entity = new QuoteEntity();
+            Symbol = symbol;
+            _data = data;
 
-            entity.BidList = bids;
-            entity.AskList = asks;
-            entity.Time = time;
-            entity.Symbol = symbol;
+            AskList = Convert(data.Asks);
+            BidList = Convert(data.Bids);
+        }
 
-            if (bids.Length > 0)
-                entity._bid = bids[0].Price;
-            else
-                entity._bid = null;
-
-            if (asks.Length > 0)
-                entity._ask = asks[0].Price;
-            else
-                entity._ask = null;
-
-            return entity;
+        private static BookEntry[] Convert(ReadOnlySpan<QuoteBand> bands)
+        {
+            var bandList = new BookEntry[bands.Length];
+            for (var i = 0; i < bands.Length; i++)
+            {
+                bandList[i] = new BookEntry(bands[i].Price, bands[i].Amount);
+            }
+            return bandList;
         }
 
         public string Symbol { get; set; }
@@ -92,17 +90,11 @@ namespace TickTrader.Algo.Core
         public double Bid => _bid ?? double.NaN;
         public BookEntry[] BidList { get; private set; }
         public BookEntry[] AskList { get; private set; }
-        public bool IsAskIndicative { get; private set; }
-        public bool IsBidIndicative { get; private set; }
+        public bool IsAskIndicative => _data.IsAskIndicative;
+        public bool IsBidIndicative => _data.IsBidIndicative;
 
         public BookEntry[] BidBook { get { return BidList; } }
         public BookEntry[] AskBook { get { return AskList; } }
-
-        decimal ISymbolRate2.Ask => (decimal)Ask;
-        decimal ISymbolRate2.Bid => (decimal)Bid;
-        public decimal? NullableAsk => (decimal?)_ask;
-        public decimal? NullableBid => (decimal?)_bid;
-        bool ISymbolRate2.IndicativeTick => throw new NotImplementedException();
 
         #region RateUpdate
 
@@ -135,31 +127,4 @@ namespace TickTrader.Algo.Core
             return $"{{{Bid}{(IsBidIndicative ? "i" : "")}/{Ask}{(IsAskIndicative ? "i" : "")} {Time} d{bookDepth}}}";
         }
     }
-
-    public interface ISymbolRate2
-    {
-        decimal Ask { get; }
-        decimal Bid { get; }
-        string Symbol { get; }
-        decimal? NullableAsk { get; }
-        decimal? NullableBid { get; }
-        bool IndicativeTick { get; }
-    }
-
-    //[Serializable]
-    //public class BookEntryEntity : Api.BookEntry
-    //{
-    //    public BookEntryEntity()
-    //    {
-    //    }
-
-    //    public BookEntryEntity(double price, double volume = 0)
-    //    {
-    //        Price = price;
-    //        Volume = volume;
-    //    }
-
-    //    public double Price { get; set; }
-    //    public double Volume { get; set; }
-    //}
 }

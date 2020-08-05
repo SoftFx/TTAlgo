@@ -1,42 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Infrastructure
 {
     public class Subscription : IFeedSubscription
     {
         private readonly QuoteDistributor _parent;
-        private readonly Action<QuoteEntity> _handler;
+        private readonly Action<QuoteInfo> _handler;
         private Dictionary<string, int> bySymbol = new Dictionary<string, int>();
 
-        public Subscription(Action<QuoteEntity> handler, QuoteDistributor parent)
+        public Subscription(Action<QuoteInfo> handler, QuoteDistributor parent)
         {
             _parent = parent;
             _handler = handler ?? throw new ArgumentNullException("handler");
         }
 
-        public void OnNewQuote(QuoteEntity newQuote)
+        public void OnNewQuote(QuoteInfo newQuote)
         {
             _handler.Invoke(TruncateQuote(newQuote));
         }
 
-        protected QuoteEntity TruncateQuote(QuoteEntity quote)
+        protected QuoteInfo TruncateQuote(QuoteInfo quote)
         {
             if (bySymbol.TryGetValue(quote.Symbol, out var depth) && depth == 0)
             {
                 return quote;
             }
             depth = depth < 1 ? 1 : depth;
-            return new QuoteEntity(quote.Symbol, quote.CreatingTime, quote.BidList.Take(depth).ToArray(),
-                    quote.AskList.Take(depth).ToArray(), quote.IsBidIndicative, quote.IsAskIndicative);
+            return quote.Truncate(depth);
         }
 
-        public List<QuoteEntity> Modify(List<FeedSubscriptionUpdate> updates)
+        public List<QuoteInfo> Modify(List<FeedSubscriptionUpdate> updates)
         {
-            var instantSnaphsot = new List<QuoteEntity>();
+            var instantSnaphsot = new List<QuoteInfo>();
             var changedSymbols = new List<string>();
 
             foreach (var update in updates)
@@ -55,7 +53,7 @@ namespace TickTrader.Algo.Core.Infrastructure
             return instantSnaphsot;
         }
 
-        private bool Modify(FeedSubscriptionUpdate update, List<QuoteEntity> snapshot)
+        private bool Modify(FeedSubscriptionUpdate update, List<QuoteInfo> snapshot)
         {
             if (update.IsUpsertAction)
             {

@@ -86,7 +86,7 @@ namespace TickTrader.Algo.Common.Model
             return _acc.GetSnapshotUpdate();
         }
 
-        internal void ApplyQuote(QuoteEntity quote)
+        internal void ApplyQuote(QuoteInfo quote)
         {
             var smb = _symbols.GetOrDefault(quote.Symbol);
             smb?.UpdateRate(quote);

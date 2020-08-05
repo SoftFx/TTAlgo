@@ -61,9 +61,9 @@ namespace TickTrader.BotTerminal
             _client.Deinit();
         }
 
-        private void Executor_SymbolRateUpdated(Algo.Api.RateUpdate update)
+        private void Executor_SymbolRateUpdated(IRateInfo update)
         {
-            _client.OnRateUpdate((QuoteEntity)update.LastQuote);
+            _client.OnRateUpdate(update.LastQuote);
         }
 
         private void Executor_TradesUpdated(TesterTradeTransaction tt)

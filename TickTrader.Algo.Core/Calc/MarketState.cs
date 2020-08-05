@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Calc.Conversion;
 using TickTrader.Algo.Core.Infrastructure;
 using TickTrader.Algo.Core.Lib;
@@ -76,20 +75,18 @@ namespace TickTrader.Algo.Core.Calc
     {
         private readonly Dictionary<string, SymbolMarketNode> _smbMap = new Dictionary<string, SymbolMarketNode>();
 
-        public void Update(RateUpdate rate)
+        public void Update(IRateInfo rate)
         {
             var tracker = GetSymbolNodeOrNull(rate.Symbol);
             tracker.Update(rate);
-            //RateChanged?.Invoke(rate);
-            //return RateUpdater.Update(rate.Symbol);
         }
 
-        public void Update(IEnumerable<RateUpdate> rates)
+        public void Update(IEnumerable<IRateInfo> rates)
         {
             if (rates == null)
                 return;
 
-            foreach (RateUpdate rate in rates)
+            foreach (IRateInfo rate in rates)
                 Update(rate);
         }
 
@@ -140,14 +137,13 @@ namespace TickTrader.Algo.Core.Calc
             return GetSymbolNodeOrNull(smb);
         }
 
-        public void UpdateRate(RateUpdate newRate, out AlgoMarketNode node)
+        public void UpdateRate(IRateInfo newRate, out AlgoMarketNode node)
         {
             node = GetSymbolNodeOrNull(newRate.Symbol);
             if (node != null)
             {
-                node.SymbolInfo.UpdateRate((IQuoteInfo)newRate.LastQuote);
+                node.SymbolInfo.UpdateRate(newRate.LastQuote);
                 node.Update(newRate);
-                //_subscriptions.OnUpdateEvent(node);
             }
         }
     }

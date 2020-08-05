@@ -38,10 +38,6 @@ namespace TickTrader.Algo.Api
 
         double RoundVolumeDown(double volume, Symbol symbolInfo);
         double RoundVolumeUp(double volume, Symbol symbolInfo);
-
-        Quote CreateQuote(string symbol, DateTime time, IEnumerable<BookEntry> bids, IEnumerable<BookEntry> asks);
-        BookEntry CreateBookEntry(double price, double volume);
-        IEnumerable<BookEntry> CreateBook(IEnumerable<double> prices, IEnumerable<double> volumes);
     }
 
     internal interface IPluginMonitor

@@ -57,9 +57,9 @@ namespace TickTrader.BotTerminal
         private long indicatorNextId = 1;
         private Property<AxisBase> _timeAxis = new Property<AxisBase>();
         private string dateAxisLabelFormat;
-        private List<QuoteEntity> updateQueue;
+        private List<QuoteInfo> updateQueue;
         private IFeedSubscription subscription;
-        private Property<Api.RateUpdate> _currentRateProp = new Property<Api.RateUpdate>();
+        private Property<IRateInfo> _currentRateProp = new Property<IRateInfo>();
         private Api.TimeFrames _timeframe;
 
         public ChartModelBase(SymbolInfo symbol, AlgoEnvironment algoEnv)
@@ -82,7 +82,7 @@ namespace TickTrader.BotTerminal
             subscription = ClientModel.Distributor.AddSubscription(OnRateUpdate, symbol.Name);
             //subscription.NewQuote += ;
 
-            _currentRateProp.Value = (Api.RateUpdate)symbol.LastQuote;
+            _currentRateProp.Value = (IRateInfo)symbol.LastQuote;
 
             Func<bool> isReadyToStart = () => isConnected && !_isDisposed;
             Func<bool> isNotReadyToStart = () => !isReadyToStart();
@@ -132,7 +132,7 @@ namespace TickTrader.BotTerminal
         public IVarList<IndicatorModel> Indicators { get { return indicators; } }
         public IEnumerable<SelectableChartTypes> ChartTypes { get { return supportedChartTypes; } }
         public string SymbolCode { get { return Model.Name; } }
-        public Var<Api.RateUpdate> CurrentRate => _currentRateProp.Var;
+        public Var<IRateInfo> CurrentRate => _currentRateProp.Var;
         public bool IsIndicatorsOnline => isIndicatorsOnline;
 
         public event System.Action TimeframeChanged;
@@ -244,7 +244,7 @@ namespace TickTrader.BotTerminal
         protected abstract void UpdateSeries();
         protected abstract Task LoadData(CancellationToken cToken);
         protected abstract IndicatorModel CreateIndicator(PluginConfig config);
-        protected abstract void ApplyUpdate(QuoteEntity update);
+        protected abstract void ApplyUpdate(QuoteInfo update);
 
         protected void Support(SelectableChartTypes chartType)
         {
@@ -259,7 +259,7 @@ namespace TickTrader.BotTerminal
             {
                 isUpdateRequired = false;
                 ClearData();
-                updateQueue = new List<QuoteEntity>();
+                updateQueue = new List<QuoteInfo>();
                 await LoadData(cToken);
                 ApplyQueue();
                 stateController.PushEvent(Events.Loaded);
@@ -341,7 +341,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        protected virtual void OnRateUpdate(QuoteEntity tick)
+        protected virtual void OnRateUpdate(QuoteInfo tick)
         {
             if (stateController.Current == States.LoadingData)
                 updateQueue.Add(tick);

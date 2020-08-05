@@ -53,25 +53,6 @@ namespace TickTrader.Algo.Api
         }
 
         #endregion
-
-        #region Entities Constructors
-
-        public static Quote CreateQuote(string symbol, DateTime time, IEnumerable<BookEntry> bids, IEnumerable<BookEntry> asks)
-        {
-            return AlgoPlugin.staticContext.Helper.CreateQuote(symbol, time, bids, asks);
-        }
-
-        public static BookEntry CreateBookEntry(double price, double volume)
-        {
-            return AlgoPlugin.staticContext.Helper.CreateBookEntry(price, volume);
-        }
-
-        public static IEnumerable<BookEntry> CreateBook(IEnumerable<double> prices, IEnumerable<double> volumes)
-        {
-            return AlgoPlugin.staticContext.Helper.CreateBook(prices, volumes);
-        }
-
-        #endregion
     }
 
     public static class HelperExtensions

@@ -1,12 +1,11 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Infrastructure;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -35,8 +34,8 @@ namespace TickTrader.Algo.Core
 
         internal abstract void OnInit();
         public FeedBufferStrategy BufferingStrategy { get; private set; }
-        protected abstract BufferUpdateResult UpdateBuffers(RateUpdate update);
-        protected abstract RateUpdate Aggregate(RateUpdate last, QuoteEntity quote);
+        protected abstract BufferUpdateResult UpdateBuffers(IRateInfo update);
+        protected abstract IRateInfo Aggregate(IRateInfo last, QuoteInfo quote);
         protected abstract BarSeries GetBarSeries(string symbol);
         protected abstract BarSeries GetBarSeries(string symbol, BarPriceType side);
         protected abstract FeedStrategy CreateClone();
@@ -105,13 +104,13 @@ namespace TickTrader.Algo.Core
             builder.StopBatch();
         }
 
-        private void Feed_RatesUpdated(List<QuoteEntity> updates)
+        private void Feed_RatesUpdated(List<QuoteInfo> updates)
         {
             foreach (var update in updates)
                 ExecContext.EnqueueQuote(update);
         }
 
-        private void Feed_RateUpdated(QuoteEntity upd)
+        private void Feed_RateUpdated(QuoteInfo upd)
         {
             ExecContext.EnqueueQuote(upd);
         }
@@ -136,7 +135,7 @@ namespace TickTrader.Algo.Core
             _defaultSubscription = null;
         }
 
-        private void ApplySnaphost(List<QuoteEntity> snaphsot)
+        private void ApplySnaphost(List<QuoteInfo> snaphsot)
         {
             if (snaphsot != null)
             {
@@ -145,7 +144,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        internal BufferUpdateResult ApplyUpdate(RateUpdate update, out AlgoMarketNode node)
+        internal BufferUpdateResult ApplyUpdate(IRateInfo update, out AlgoMarketNode node)
         {
             _marketFixture.Market.UpdateRate(update, out node);
 
@@ -165,7 +164,7 @@ namespace TickTrader.Algo.Core
             return result;
         }
 
-        internal RateUpdate InvokeAggregate(RateUpdate last, QuoteEntity quote)
+        internal IRateInfo InvokeAggregate(IRateInfo last, QuoteInfo quote)
         {
             return Aggregate(last, quote);
         }
@@ -301,11 +300,11 @@ namespace TickTrader.Algo.Core
         IEnumerable<Quote> CustomFeedProvider.GetQuotes(string symbol, DateTime from, DateTime to, bool level2, bool backwardOrder)
         {
             const int pageSize = 500;
-            List<QuoteEntity> page;
+            List<Domain.QuoteInfo> page;
             int pageIndex;
 
-            from = from.ToUniversalTime();
-            to = to.ToUniversalTime();
+            var fromTime = from.ToUniversalTime().ToTimestamp();
+            var toTime = to.ToUniversalTime().ToTimestamp();
 
             if (backwardOrder)
             {
@@ -318,7 +317,7 @@ namespace TickTrader.Algo.Core
                     {
                         if (page.Count < pageSize)
                             break; //last page
-                        var timeRef = page.First().Time.AddMilliseconds(-1);
+                        var timeRef = page.First().Data.Time.ToDateTime().AddMilliseconds(-1);
                         page = FeedHistory.QueryTicks(symbol, timeRef, -pageSize, level2);
                         if (page.Count == 0)
                             break;
@@ -326,10 +325,10 @@ namespace TickTrader.Algo.Core
                     }
 
                     var item = page[pageIndex];
-                    if (item.Time < from)
+                    if (item.Data.Time < fromTime)
                         break;
                     pageIndex--;
-                    yield return item;
+                    yield return new QuoteEntity(item);
                 }
             }
             else
@@ -343,7 +342,7 @@ namespace TickTrader.Algo.Core
                     {
                         if (page.Count < pageSize)
                             break; //last page
-                        var timeRef = page.Last().Time.AddMilliseconds(1);
+                        var timeRef = page.Last().Data.Time.ToDateTime().AddMilliseconds(1);
                         page = FeedHistory.QueryTicks(symbol, timeRef, pageSize, level2);
                         if (page.Count == 0)
                             break;
@@ -351,10 +350,10 @@ namespace TickTrader.Algo.Core
                     }
 
                     var item = page[pageIndex];
-                    if (item.Time > to)
+                    if (item.Data.Time > toTime)
                         break;
                     pageIndex++;
-                    yield return item;
+                    yield return new QuoteEntity(item);
                 }
             }
         }
@@ -362,7 +361,7 @@ namespace TickTrader.Algo.Core
         IEnumerable<Quote> CustomFeedProvider.GetQuotes(string symbol, DateTime from, int count, bool level2)
         {
             const int pageSize = 500;
-            List<QuoteEntity> page;
+            List<Domain.QuoteInfo> page;
             int pageIndex;
 
             from = from.ToUniversalTime();
@@ -380,7 +379,7 @@ namespace TickTrader.Algo.Core
                     {
                         var item = page[pageIndex];
                         pageIndex--;
-                        yield return item;
+                        yield return new QuoteEntity(item);
                         count--;
                         if (count <= 0)
                             break;
@@ -388,7 +387,7 @@ namespace TickTrader.Algo.Core
 
                     if (page.Count < pageSize)
                         break; //last page
-                    from = page.First().Time.AddMilliseconds(-1);
+                    from = page.First().Data.Time.ToDateTime().AddMilliseconds(-1);
                 }
                 else
                 {
@@ -399,7 +398,7 @@ namespace TickTrader.Algo.Core
                     {
                         var item = page[pageIndex];
                         pageIndex++;
-                        yield return item;
+                        yield return new QuoteEntity(item);
                         count--;
                         if (count <= 0)
                             break;
@@ -407,7 +406,7 @@ namespace TickTrader.Algo.Core
 
                     if (page.Count < pageSize)
                         break; //last page
-                    from = page.Last().Time.AddMilliseconds(1);
+                    from = page.Last().Data.Time.ToDateTime().AddMilliseconds(1);
                 }
             }
         }
@@ -449,8 +448,8 @@ namespace TickTrader.Algo.Core
                 }
             }
 
-            private void Feed_RatesUpdated(List<QuoteEntity> updates) => _strategy.Feed_RatesUpdated(updates);
-            private void Feed_RateUpdated(QuoteEntity upd) => _strategy.Feed_RateUpdated(upd);
+            private void Feed_RatesUpdated(List<QuoteInfo> updates) => _strategy.Feed_RatesUpdated(updates);
+            private void Feed_RateUpdated(QuoteInfo upd) => _strategy.Feed_RateUpdated(upd);
 
             public void StopStrategy()
             {

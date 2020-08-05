@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
+﻿using System.Collections.Generic;
 using TickTrader.Algo.Core.Calc;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -26,7 +22,7 @@ namespace TickTrader.Algo.Core
         /// </summary>
         /// <param name="order"></param>
         /// <param name="acc"></param>
-        public ActivationRecord AddOrder(OrderAccessor order, RateUpdate currentRate)
+        public ActivationRecord AddOrder(OrderAccessor order, IRateInfo currentRate)
         {
             var node = _state.GetSymbolNodeOrNull(order.Symbol);
             if (node.ActivationIndex == null)

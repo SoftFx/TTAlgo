@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Calc;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -40,18 +41,17 @@ namespace TickTrader.Algo.Core
     {
         List<BarEntity> QueryBars(string symbolCode, BarPriceType priceType, DateTime from, DateTime to, Api.TimeFrames timeFrame);
         List<BarEntity> QueryBars(string symbolCode, BarPriceType priceType, DateTime from, int size, Api.TimeFrames timeFrame);
-        List<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, bool level2);
-        List<QuoteEntity> QueryTicks(string symbolCode, DateTime from, int count, bool level2);
+        List<QuoteInfo> QueryTicks(string symbolCode, DateTime from, DateTime to, bool level2);
+        List<QuoteInfo> QueryTicks(string symbolCode, DateTime from, int count, bool level2);
     }
 
     public interface IFeedProvider : Infrastructure.IFeedSubscription
     {
         ISynchronizationContext Sync { get; }
-        IEnumerable<QuoteEntity> GetSnapshot();
-        //QuoteEntity GetRate(string symbol);
+        IEnumerable<QuoteInfo> GetSnapshot();
         
-        event Action<QuoteEntity> RateUpdated;
-        event Action<List<QuoteEntity>> RatesUpdated;
+        event Action<QuoteInfo> RateUpdated;
+        event Action<List<QuoteInfo>> RatesUpdated;
     }
 
     public interface ISynchronizationContext
@@ -90,7 +90,7 @@ namespace TickTrader.Algo.Core
         PluginLoggerAdapter Logger { get; }
         bool IsGlobalUpdateMarshalingEnabled { get; }
 
-        void EnqueueQuote(QuoteEntity update);
+        void EnqueueQuote(QuoteInfo update);
         void EnqueueTradeUpdate(Action<PluginBuilder> action);
         void EnqueueEvent(Action<PluginBuilder> action);
         void EnqueueCustomInvoke(Action<PluginBuilder> action);

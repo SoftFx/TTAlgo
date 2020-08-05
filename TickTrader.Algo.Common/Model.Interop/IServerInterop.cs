@@ -49,18 +49,18 @@ namespace TickTrader.Algo.Common.Model
     {
         bool AutoSymbols { get; }
 
-        event Action<QuoteEntity> Tick;
+        event Action<Domain.QuoteInfo> Tick;
         event Action<Domain.SymbolInfo[]> SymbolInfo;
         event Action<CurrencyEntity[]> CurrencyInfo;
 
         Task<Domain.CurrencyInfo[]> GetCurrencies();
         Task<Domain.SymbolInfo[]> GetSymbols();
-        Task<QuoteEntity[]> SubscribeToQuotes(string[] symbols, int depth);
-        Task<QuoteEntity[]> GetQuoteSnapshot(string[] symbols, int depth);
+        Task<Domain.QuoteInfo[]> SubscribeToQuotes(string[] symbols, int depth);
+        Task<Domain.QuoteInfo[]> GetQuoteSnapshot(string[] symbols, int depth);
         void DownloadBars(BlockingChannel<BarEntity> stream, string symbol, DateTime from, DateTime to, BarPriceType priceType, TimeFrames barPeriod);
         Task<BarEntity[]> DownloadBarPage(string symbol, DateTime from, int count, BarPriceType priceType, TimeFrames barPeriod);
-        void DownloadQuotes(BlockingChannel<QuoteEntity> stream, string symbol, DateTime from, DateTime to, bool includeLevel2);
-        Task<QuoteEntity[]> DownloadQuotePage(string symbol, DateTime from, int count, bool includeLevel2);
+        void DownloadQuotes(BlockingChannel<Domain.QuoteInfo> stream, string symbol, DateTime from, DateTime to, bool includeLevel2);
+        Task<Domain.QuoteInfo[]> DownloadQuotePage(string symbol, DateTime from, int count, bool includeLevel2);
         Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame);
     }
 }

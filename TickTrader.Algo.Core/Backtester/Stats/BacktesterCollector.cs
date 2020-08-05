@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -315,7 +313,7 @@ namespace TickTrader.Algo.Core
             Stats.OrderModificationRejected++;
         }
 
-        public void OnRateUpdate(RateUpdate update)
+        public void OnRateUpdate(IRateInfo update)
         {
             Stats.TicksCount += update.NumberOfQuotes;
         }

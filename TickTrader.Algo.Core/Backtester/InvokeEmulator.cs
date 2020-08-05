@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -77,7 +78,7 @@ namespace TickTrader.Algo.Core
             _eventQueue.Enqueue(a);
         }
 
-        public override void EnqueueQuote(QuoteEntity update)
+        public override void EnqueueQuote(Domain.QuoteInfo update)
         {
             throw new InvalidOperationException("InvokeEmulator does not accept quote updates!");
         }
@@ -341,9 +342,8 @@ namespace TickTrader.Algo.Core
 
             while (true)
             {
-                RateUpdate nextTick;
 
-                if (!ReadNextFeed(out nextTick))
+                if (!ReadNextFeed(out var nextTick))
                 {
                     LogWarmupFail(tickCount, buider.Count);
                     return false;
@@ -391,7 +391,7 @@ namespace TickTrader.Algo.Core
 
         private void ExecItem(object item)
         {
-            var rate = item as RateUpdate;
+            var rate = item as IRateInfo;
             if (rate != null)
                 EmulateRateUpdate(rate);
             else
@@ -434,11 +434,11 @@ namespace TickTrader.Algo.Core
             return true;
         }
 
-        private bool ReadNextFeed(out RateUpdate update)
+        private bool ReadNextFeed(out IRateInfo update)
         {
             if (_feedReader.IsCompeted)
             {
-                update = default(RateUpdate);
+                update = default;
                 return false;
             }
 
@@ -471,7 +471,7 @@ namespace TickTrader.Algo.Core
                 Interlocked.Exchange(ref _safeTimePoint, newVal.Ticks);
         }
 
-        private void EmulateRateUpdate(RateUpdate rate)
+        private void EmulateRateUpdate(IRateInfo rate)
         {
             _feed.UpdateHistory(rate);
 
@@ -521,7 +521,7 @@ namespace TickTrader.Algo.Core
                 if (next is Action<PluginBuilder>)
                     _eventQueue.Enqueue((Action<PluginBuilder>)next);
                 else
-                    _feedQueue.Enqueue((RateUpdate)next);
+                    _feedQueue.Enqueue((IRateInfo)next);
             }
         }
 

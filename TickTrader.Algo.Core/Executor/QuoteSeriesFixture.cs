@@ -1,28 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
     internal class QuoteSeriesFixture : FeedFixture, IFeedBuffer
     {
-        private InputBuffer<Quote> buffer;
+        private InputBuffer<Quote> _buffer;
 
-        public QuoteSeriesFixture(string symbolCode, IFixtureContext context, List<QuoteEntity> data = null) : base(symbolCode, context)
+        public QuoteSeriesFixture(string symbolCode, IFixtureContext context) : base(symbolCode, context)
         {
-            buffer = context.Builder.GetBuffer<Quote>(SymbolCode);
-            if (data != null)
-                AppendData(data);
+            _buffer = context.Builder.GetBuffer<Quote>(SymbolCode);
         }
 
-        public DateTime this[int index] => buffer[index].Time;
-        public int Count { get { return buffer.Count; } }
+        public DateTime this[int index] => _buffer[index].Time;
+        public int Count { get { return _buffer.Count; } }
         public bool IsLoaded { get; private set; }
-        public int LastIndex => buffer.Count - 1;
-        public DateTime OpenTime => buffer[0].Time;
+        public int LastIndex => _buffer.Count - 1;
+        public DateTime OpenTime => _buffer[0].Time;
 
         public event Action Appended { add { } remove { } }
 
@@ -30,7 +27,7 @@ namespace TickTrader.Algo.Core
         {
             if (index < 0 || index >= Count)
                 return null;
-            return buffer[index].Time;
+            return _buffer[index].Time;
         }
 
         public void LoadFeed(DateTime from, DateTime to)
@@ -62,16 +59,16 @@ namespace TickTrader.Algo.Core
             throw new NotSupportedException("Synchronization by time is not supported for quote series!");
         }
 
-        public BufferUpdateResult Update(Api.Quote quote)
+        public BufferUpdateResult Update(QuoteInfo quote)
         {
-            buffer.Append(quote);
+            _buffer.Append(new QuoteEntity(quote));
             return new BufferUpdateResult() { IsLastUpdated = true };
         }
 
-        private void AppendData(List<QuoteEntity> data)
+        private void AppendData(List<QuoteInfo> data)
         {
             IsLoaded = true;
-            buffer.AppendRange(data);
+            _buffer.AppendRange(data.Select(q => new QuoteEntity(q)));
         }
     }
 

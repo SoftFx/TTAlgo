@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -15,9 +12,9 @@ namespace TickTrader.Algo.Common.Model
             return new TimeSlicer<BarEntity>(pageSize, from, to, b => b.OpenTime, b => ToUtc(b.CloseTime));
         }
 
-        public static TimeSlicer<QuoteEntity> GetQuoteSlicer(int pageSize, DateTime? from = null, DateTime? to = null)
+        public static TimeSlicer<Domain.QuoteInfo> GetQuoteSlicer(int pageSize, DateTime? from = null, DateTime? to = null)
         {
-            return new TimeSlicer<QuoteEntity>(pageSize, from, to, b => ToUtc(b.Time));
+            return new TimeSlicer<Domain.QuoteInfo>(pageSize, from, to, b => ToUtc(b.Data.Time.ToDateTime()));
         }
 
         public static DateTime ToUtc(DateTime dateTime)

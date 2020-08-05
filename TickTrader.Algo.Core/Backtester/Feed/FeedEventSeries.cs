@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
     internal class FeedEventSeries : ITimeEventSeries, IDisposable
     {
-        private IEnumerator<RateUpdate> _e;
-        private RateUpdate _nextRate;
+        private IEnumerator<IRateInfo> _e;
+        private IRateInfo _nextRate;
 
         public FeedEventSeries(FeedEmulator emulator)
         {
@@ -22,7 +18,7 @@ namespace TickTrader.Algo.Core
         public DateTime NextOccurrance { get; private set; }
         public bool IsCompeted { get; private set; }
 
-        public RateUpdate Take()
+        public IRateInfo Take()
         {
             var item = _nextRate;
             MoveNext();

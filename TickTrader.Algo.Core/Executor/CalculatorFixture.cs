@@ -85,13 +85,13 @@ namespace TickTrader.Algo.Core
             return _context.Builder.Currencies.GetOrDefault(currency);
         }
 
-        internal RateUpdate GetCurrentRateOrNull(string symbol)
+        internal IRateInfo GetCurrentRateOrNull(string symbol)
         {
             var tracker = Market.GetSymbolNodeOrNull(symbol);
             return tracker?.Rate;
         }
 
-        internal RateUpdate GetCurrentRateOrThrow(string symbol)
+        internal IRateInfo GetCurrentRateOrThrow(string symbol)
         {
             var tracker = Market.GetSymbolNodeOrNull(symbol);
             if (tracker == null)

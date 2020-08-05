@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Infrastructure
 {
     public interface IFeedSubscription
     {
-        List<QuoteEntity> Modify(List<FeedSubscriptionUpdate> updates);
+        List<QuoteInfo> Modify(List<FeedSubscriptionUpdate> updates);
         //void SubscribeForAll();
         void CancelAll();
     }

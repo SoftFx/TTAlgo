@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -248,7 +249,7 @@ namespace TickTrader.BotTerminal
 
         public virtual void StartExport() { }
         public abstract void ExportSlice(DateTime from, DateTime to, ArraySegment<BarEntity> values);
-        public abstract void ExportSlice(DateTime from, DateTime to, ArraySegment<QuoteEntity> values);
+        public abstract void ExportSlice(DateTime from, DateTime to, ArraySegment<QuoteInfo> values);
         public virtual void EndExport() { }
 
         public virtual void Init(FeedCacheKey key)
@@ -306,14 +307,14 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public override void ExportSlice(DateTime from, DateTime to, ArraySegment<QuoteEntity> values)
+        public override void ExportSlice(DateTime from, DateTime to, ArraySegment<QuoteInfo> values)
         {
             foreach (var val in values)
             {
                 _writer.Write(val.Time.ToString("yyyy-MM-dd HH:mm:ss.fff"));
 
-                var bids = val.BidBook;
-                var asks = val.AskBook;
+                var bids = val.Bids;
+                var asks = val.Asks;
 
                 for (int i = 0; i < Math.Max(bids.Length, asks.Length); i++)
                 {
@@ -322,7 +323,7 @@ namespace TickTrader.BotTerminal
                         _writer.Write(",");
                         _writer.Write(bids[i].Price);
                         _writer.Write(",");
-                        _writer.Write(bids[i].Volume);
+                        _writer.Write(bids[i].Amount);
                     }
                     else
                         _writer.Write(",,");
@@ -332,7 +333,7 @@ namespace TickTrader.BotTerminal
                         _writer.Write(",");
                         _writer.Write(asks[i].Price);
                         _writer.Write(",");
-                        _writer.Write(asks[i].Volume);
+                        _writer.Write(asks[i].Amount);
                     }
                     else
                         _writer.Write(",,");

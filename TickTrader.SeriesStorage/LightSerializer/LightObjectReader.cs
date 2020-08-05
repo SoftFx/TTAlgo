@@ -90,5 +90,14 @@ namespace TickTrader.SeriesStorage.LightSerializer
             CheckPossibleRead(8);
             return ByteConverter.ReadDoubleLe(_buffer, ref _offset);
         }
+
+        public void ReadBytes(Span<byte> dst)
+        {
+            CheckPossibleRead(dst.Length);
+
+            var src = _buffer.AsSpan(_offset, dst.Length);
+            src.CopyTo(dst);
+            _offset += dst.Length;
+        }
     }
 }

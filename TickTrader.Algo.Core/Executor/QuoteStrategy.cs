@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
     public class QuoteStrategy : FeedStrategy
     {
         private QuoteSeriesFixture mainSeries;
-        private List<QuoteEntity> mainSerieData;
 
         public override IFeedBuffer MainBuffer { get { return null; } }
         public override int BufferSize { get { return mainSeries.Count; } }
@@ -21,12 +18,12 @@ namespace TickTrader.Algo.Core
         {
         }
 
-        protected override BufferUpdateResult UpdateBuffers(RateUpdate update)
+        protected override BufferUpdateResult UpdateBuffers(IRateInfo update)
         {
             return mainSeries.Update(update.LastQuote);
         }
 
-        protected override RateUpdate Aggregate(RateUpdate last, QuoteEntity quote)
+        protected override IRateInfo Aggregate(IRateInfo last, QuoteInfo quote)
         {
             return quote;
         }
@@ -41,17 +38,12 @@ namespace TickTrader.Algo.Core
             AddSetupAction(new MapAction<TVal>(inputName, symbolCode, selector));
         }
 
-        public void SetMainSeries(List<QuoteEntity> data)
-        {
-            this.mainSerieData = data;
-        }
-
         internal override void OnInit()
         {
             //if (mainSeries != null)
             //    mainSeries.Dispose();
 
-            mainSeries = new QuoteSeriesFixture(ExecContext.MainSymbolCode, ExecContext, mainSerieData);
+            mainSeries = new QuoteSeriesFixture(ExecContext.MainSymbolCode, ExecContext);
         }
 
         internal override void Stop()

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 using TickTrader.SeriesStorage;
 
 namespace TickTrader.Algo.Common.Model
@@ -40,9 +38,9 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        public IEnumerable<QuoteEntity> GetQuoteStream()
+        public IEnumerable<QuoteInfo> GetQuoteStream()
         {
-            SeriesStorage<DateTime, QuoteEntity> series = null;
+            SeriesStorage<DateTime, QuoteInfo> series = null;
 
             try
             {

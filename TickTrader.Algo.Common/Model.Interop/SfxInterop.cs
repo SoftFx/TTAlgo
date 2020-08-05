@@ -1,9 +1,11 @@
 ﻿using ActorSharp;
+using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Security;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -259,7 +261,7 @@ namespace TickTrader.Algo.Common.Model
 
         #region IFeedServerApi
 
-        public event Action<QuoteEntity> Tick;
+        public event Action<Domain.QuoteInfo> Tick;
 
         public async Task<Domain.CurrencyInfo[]> GetCurrencies()
         {
@@ -273,12 +275,12 @@ namespace TickTrader.Algo.Common.Model
             return symbols.Select(Convert).ToArray();
         }
 
-        public Task<QuoteEntity[]> SubscribeToQuotes(string[] symbols, int depth)
+        public Task<Domain.QuoteInfo[]> SubscribeToQuotes(string[] symbols, int depth)
         {
             return _feedProxy.SubscribeQuotesAsync(symbols, depth);
         }
 
-        public async Task<QuoteEntity[]> GetQuoteSnapshot(string[] symbols, int depth)
+        public async Task<Domain.QuoteInfo[]> GetQuoteSnapshot(string[] symbols, int depth)
         {
             var array = await _feedProxy.GetQuotesAsync(symbols, depth);
             return array.Select(Convert).ToArray();
@@ -340,7 +342,7 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        public void DownloadQuotes(BlockingChannel<QuoteEntity> stream, string symbol, DateTime from, DateTime to, bool includeLevel2)
+        public void DownloadQuotes(BlockingChannel<Domain.QuoteInfo> stream, string symbol, DateTime from, DateTime to, bool includeLevel2)
         {
             Task.Factory.StartNew(() =>
             {
@@ -366,9 +368,9 @@ namespace TickTrader.Algo.Common.Model
             });
         }
 
-        public async Task<QuoteEntity[]> DownloadQuotePage(string symbol, DateTime from, int count, bool includeLevel2)
+        public async Task<Domain.QuoteInfo[]> DownloadQuotePage(string symbol, DateTime from, int count, bool includeLevel2)
         {
-            var result = new List<QuoteEntity>();
+            var result = new List<Domain.QuoteInfo>();
 
             try
             {
@@ -1014,36 +1016,42 @@ namespace TickTrader.Algo.Common.Model
             };
         }
 
-        public static QuoteEntity[] ConvertAndFilter(IEnumerable<SFX.Quote> src, ref DateTime timeEdge)
+        internal static Domain.QuoteInfo[] Convert(SFX.Quote[] fdkQuoteSnapshot)
         {
-            var list = new List<QuoteEntity>();
+            var result = new Domain.QuoteInfo[fdkQuoteSnapshot.Length];
 
-            foreach (var item in src)
-            {
-                if (item.CreatingTime > timeEdge)
-                {
-                    list.Add(Convert(item));
-                    timeEdge = item.CreatingTime;
-                }
-            }
-
-            return list.ToArray();
-        }
-
-        internal static QuoteEntity[] Convert(SFX.Quote[] fdkQuoteSnapshot)
-        {
-            var result = new QuoteEntity[fdkQuoteSnapshot.Length];
-
-            for (int i = 0; i < result.Length; i++)
+            for (var i = 0; i < result.Length; i++)
                 result[i] = Convert(fdkQuoteSnapshot[i]);
             return result;
         }
 
-        private static QuoteEntity Convert(SFX.Quote fdkTick)
+        private static Domain.QuoteInfo Convert(SFX.Quote fdkTick)
         {
-            return new QuoteEntity(fdkTick.Symbol, fdkTick.CreatingTime, ConvertLevel2(fdkTick.Bids), ConvertLevel2(fdkTick.Asks),
-                fdkTick.TickType == SFX.TickTypes.IndicativeBid || fdkTick.TickType == SFX.TickTypes.IndicativeBidAsk,
-                fdkTick.TickType == SFX.TickTypes.IndicativeAsk || fdkTick.TickType == SFX.TickTypes.IndicativeBidAsk);
+            var data = new Domain.QuoteData()
+            {
+                Time = fdkTick.CreatingTime.ToTimestamp(),
+                IsBidIndicative = fdkTick.TickType == SFX.TickTypes.IndicativeBid || fdkTick.TickType == SFX.TickTypes.IndicativeBidAsk,
+                IsAskIndicative = fdkTick.TickType == SFX.TickTypes.IndicativeAsk || fdkTick.TickType == SFX.TickTypes.IndicativeBidAsk,
+                BidBytes = ConvertLevel2(fdkTick.Bids),
+                AskBytes = ConvertLevel2(fdkTick.Asks),
+            };
+
+            return new Domain.QuoteInfo(fdkTick.Symbol, data);
+        }
+
+        private static ByteString ConvertLevel2(List<QuoteEntry> book)
+        {
+            var cnt = book.Count;
+            var bands = cnt > 256
+                ? new Domain.QuoteBand[cnt].AsSpan()
+                : stackalloc Domain.QuoteBand[cnt];
+
+            for (var i = 0; i < cnt; i++)
+            {
+                bands[i] = new Domain.QuoteBand(book[i].Price, book[i].Volume);
+            }
+
+            return ByteString.CopyFrom(MemoryMarshal.Cast<Domain.QuoteBand, byte>(bands));
         }
 
         public static Domain.TradeReportInfo Convert(TradeTransactionReport report)
@@ -1165,19 +1173,6 @@ namespace TickTrader.Algo.Common.Model
                 res |= Domain.OrderOptions.HiddenIceberg;
 
             return res;
-        }
-
-        private static Api.BookEntry[] ConvertLevel2(List<QuoteEntry> book)
-        {
-            if (book == null || book.Count == 0)
-                return QuoteEntity.EmptyBook;
-            else
-                return book.Select(b => Convert(b)).ToArray();
-        }
-
-        public static BookEntry Convert(QuoteEntry fdkEntry)
-        {
-            return new BookEntry(fdkEntry.Price, fdkEntry.Volume);
         }
 
         public static Domain.BalanceOperation Convert(SFX.BalanceOperation op)

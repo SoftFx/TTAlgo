@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -102,7 +103,7 @@ namespace TickTrader.Algo.Core
                 fixturePair[1] = fixture;
         }
 
-        protected override BufferUpdateResult UpdateBuffers(RateUpdate update)
+        protected override BufferUpdateResult UpdateBuffers(IRateInfo update)
         {
             var overallResult = new BufferUpdateResult();
 
@@ -130,7 +131,7 @@ namespace TickTrader.Algo.Core
             return overallResult;
         }
 
-        protected override RateUpdate Aggregate(RateUpdate last, QuoteEntity quote)
+        protected override IRateInfo Aggregate(IRateInfo last, QuoteInfo quote)
         {
             var bounds = sampler.GetBar(quote.Time);
 

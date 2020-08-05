@@ -1,21 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
     [Serializable]
-    public class BarRateUpdate : RateUpdate
+    public class BarRateUpdate : IRateInfo
     {
-        private QuoteEntity _lastQuote;
+        private QuoteInfo _lastQuote;
         private int _quoteCount;
         private DateTime _openTime;
         private DateTime _closeTime;
 
-        public BarRateUpdate(DateTime barStartTime, DateTime barEndTime, QuoteEntity quote)
+        public BarRateUpdate(DateTime barStartTime, DateTime barEndTime, QuoteInfo quote)
         {
             _openTime = barStartTime;
             _closeTime = barEndTime;
@@ -38,10 +35,10 @@ namespace TickTrader.Algo.Core
             AskBar = askBar;
             _quoteCount = 1;
             Symbol = symbol;
-            _lastQuote = new QuoteEntity(symbol, _closeTime, bidBar.Close, askBar.Close);
+            _lastQuote = new QuoteInfo(symbol, _closeTime, bidBar.Close, askBar.Close);
         }
 
-        public void Append(QuoteEntity quote)
+        public void Append(QuoteInfo quote)
         {
             if (quote.HasBid)
             {
@@ -69,16 +66,16 @@ namespace TickTrader.Algo.Core
         public BarEntity BidBar { get; private set; }
         public BarEntity AskBar { get; private set; }
 
-        DateTime RateUpdate.Time => _openTime;
-        double RateUpdate.Ask => AskBar.Close;
-        double RateUpdate.AskHigh => AskBar.High;
-        double RateUpdate.AskLow => AskBar.Low;
-        double RateUpdate.AskOpen => AskBar.Open;
-        double RateUpdate.Bid => BidBar.Close;
-        double RateUpdate.BidHigh => BidBar.High;
-        double RateUpdate.BidLow => BidBar.Low;
-        double RateUpdate.BidOpen => BidBar.Open;
-        int RateUpdate.NumberOfQuotes => _quoteCount;
-        Quote RateUpdate.LastQuote => _lastQuote;
+        DateTime IRateInfo.Time => _openTime;
+        double IRateInfo.Ask => AskBar.Close;
+        double IRateInfo.AskHigh => AskBar.High;
+        double IRateInfo.AskLow => AskBar.Low;
+        double IRateInfo.AskOpen => AskBar.Open;
+        double IRateInfo.Bid => BidBar.Close;
+        double IRateInfo.BidHigh => BidBar.High;
+        double IRateInfo.BidLow => BidBar.Low;
+        double IRateInfo.BidOpen => BidBar.Open;
+        int IRateInfo.NumberOfQuotes => _quoteCount;
+        QuoteInfo IRateInfo.LastQuote => _lastQuote;
     }
 }
