@@ -97,7 +97,7 @@ namespace TickTrader.Algo.Core
             public event Action<OrderPropArgs<decimal>> SwapChanged;
             public event Action<OrderPropArgs<decimal>> CommissionChanged;
 
-            public WriteEntity(ISymbolInfo info)
+            public WriteEntity(SymbolInfo info)
             {
                 SymbolInfo = info;
             }
@@ -224,7 +224,7 @@ namespace TickTrader.Algo.Core
 
             public decimal CashMargin { get; set; }
 
-            public ISymbolInfo SymbolInfo { get; }
+            public SymbolInfo SymbolInfo { get; }
             #endregion
 
             internal void SetSwap(decimal swap)

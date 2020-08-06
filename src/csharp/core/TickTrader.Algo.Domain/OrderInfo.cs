@@ -37,7 +37,7 @@ namespace TickTrader.Algo.Domain
 
         public decimal CashMargin { get; set; }
 
-        public ISymbolInfo SymbolInfo { get; private set; }
+        public SymbolInfo SymbolInfo { get; private set; }
 
         decimal IMarginProfitCalc.RemainingAmount => (decimal)RemainingAmount;
 
@@ -51,12 +51,12 @@ namespace TickTrader.Algo.Domain
         public event Action<OrderPropArgs<decimal>> SwapChanged;
         public event Action<OrderPropArgs<decimal>> CommissionChanged;
 
-        public void SetSymbol(ISymbolInfo symbol)
+        public void SetSymbol(SymbolInfo symbol)
         {
             SymbolInfo = symbol;
         }
 
-        public OrderInfo(ISymbolInfo symbol, IOrderUpdateInfo info)
+        public OrderInfo(SymbolInfo symbol, IOrderUpdateInfo info)
         {
             SymbolInfo = symbol;
 
@@ -135,7 +135,7 @@ namespace TickTrader.Algo.Domain
 
         decimal CashMargin { get; set; }
 
-        ISymbolInfo SymbolInfo { get; }
+        SymbolInfo SymbolInfo { get; }
 
         event Action<OrderEssentialsChangeArgs> EssentialsChanged;
         event Action<OrderPropArgs<decimal>> SwapChanged;

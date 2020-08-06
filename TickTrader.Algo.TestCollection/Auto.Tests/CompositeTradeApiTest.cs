@@ -489,8 +489,8 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         private async Task DoQueryTests(bool async)
         {
-            var from = _historyStorage.First().TradeReportTimestamp;
-            var to = _historyStorage.Last().TradeReportTimestamp;
+            var from = _historyStorage.First().TradeReportTimestamp.AddSeconds(-1);
+            var to = _historyStorage.Last().TradeReportTimestamp.AddSeconds(1);
 
             await QuerySegmentTest(from, to, async, ThQueryOptions.None);
             await QuerySegmentTest(from, to, async, ThQueryOptions.Backwards);

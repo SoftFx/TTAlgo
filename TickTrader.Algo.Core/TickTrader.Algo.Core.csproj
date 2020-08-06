@@ -157,10 +157,6 @@
     <Compile Include="Container\PluginContainer.cs" />
     <Compile Include="Container\PluginLoader.cs" />
     <Compile Include="CoreExtentions.cs" />
-    <Compile Include="Entities.Requests\CancelOrderRequestContext.cs" />
-    <Compile Include="Entities.Requests\CloseOrderRequestContext.cs" />
-    <Compile Include="Entities.Requests\OpenOrderRequestContext.cs" />
-    <Compile Include="Entities.Requests\ModifyOrderRequestContext.cs" />
     <Compile Include="Entities\AccountAccessor.cs" />
     <Compile Include="Entities\AccountEntity.cs" />
     <Compile Include="Entities\AlgoMarketNode.cs" />

@@ -245,7 +245,7 @@ namespace TickTrader.Algo.Core
                     var sl = RoundPrice(request.StopLoss, smbMetadata, orderToModify.Info.Side);
                     var tp = RoundPrice(request.TakeProfit, smbMetadata, orderToModify.Info.Side);
 
-                    var coreRequest = new ModifyOrderRequestContext
+                    var coreRequest = new Domain.ModifyOrderRequest
                     {
                         OrderId = request.OrderId,
                         Symbol = orderToModify.Info.Symbol,
@@ -258,7 +258,7 @@ namespace TickTrader.Algo.Core
                         StopLoss = sl,
                         TakeProfit = tp,
                         Comment = request.Comment,
-                        Expiration = request.Expiration,
+                        Expiration = request.Expiration.Value.ToTimestamp(),
                         MaxVisibleAmount = (double?)orderMaxVisibleVolume,
                         ExecOptions = request.Options?.ToDomainEnum(),
                     };
@@ -297,10 +297,10 @@ namespace TickTrader.Algo.Core
 
         Task<OrderCmdResult> TradeCommands.CloseOrder(bool isAysnc, Api.CloseOrderRequest request)
         {
-            var req = new CloseOrderRequestContext
+            var req = new Domain.CloseOrderRequest
             {
                 OrderId = request.OrderId,
-                VolumeLots = request.Volume,
+                Amount = request.Volume,
                 Slippage = request.Slippage,
             };
 
@@ -309,13 +309,15 @@ namespace TickTrader.Algo.Core
 
         Task<OrderCmdResult> TradeCommands.CloseOrderBy(bool isAysnc, string orderId, string byOrderId)
         {
-            var req = new CloseOrderRequestContext();
-            req.OrderId = orderId;
-            req.ByOrderId = byOrderId;
+            var req = new Domain.CloseOrderRequest
+            {
+                OrderId = orderId,
+                ByOrderId = byOrderId
+            };
             return CloseOrder(isAysnc, req);
         }
 
-        private Task<OrderCmdResult> CloseOrder(bool isAysnc, CloseOrderRequestContext request)
+        private Task<OrderCmdResult> CloseOrder(bool isAysnc, Domain.CloseOrderRequest request)
         {
             return ExecTradeRequest(isAysnc, async () =>
             {
@@ -329,9 +331,9 @@ namespace TickTrader.Algo.Core
                         var smbMetadata = order.SymbolInfo;
                         var closeVolume = (decimal?)null;
 
-                        if (request.VolumeLots != null)
+                        if (request.Amount != null)
                         {
-                            var closeVolumeLots = RoundVolume(request.VolumeLots, smbMetadata);
+                            var closeVolumeLots = RoundVolume(request.Amount, smbMetadata);
                             closeVolume = ToUnits(closeVolumeLots.Value, smbMetadata);
                             VerifyCloseAmout(closeVolume, smbMetadata);
                             request.Amount = (double?)closeVolume;
@@ -588,7 +590,7 @@ namespace TickTrader.Algo.Core
             return order;
         }
 
-        private OrderAccessor ReplaceOrder(ModifyOrderRequestContext request)
+        private OrderAccessor ReplaceOrder(Domain.ModifyOrderRequest request)
         {
             // Check schedule for the symbol
             var order = _acc.Orders.GetOrNull(request.OrderId) ?? throw new OrderValidationError($"Order Not Found {request.OrderId}", OrderCmdResultCodes.OrderNotFound);
@@ -740,7 +742,7 @@ namespace TickTrader.Algo.Core
             //}
         }
 
-        private OrderAccessor ConfirmOrderReplace(OrderAccessor order, ModifyOrderRequestContext request)
+        private OrderAccessor ConfirmOrderReplace(OrderAccessor order, Domain.ModifyOrderRequest request)
         {
             //OrderModel order = (!request.IsClientRequest && request.UpdateNewOrdersInDealing)
             //    ? acc.GetNewOrder(orderId)
@@ -805,11 +807,11 @@ namespace TickTrader.Algo.Core
             //    order.Options = request.ImmediateOrCancelFlag.Value ? order.Options.SetFlag(OrderExecutionOptions.ImmediateOrCancel) : order.Options.ClearFlag(OrderExecutionOptions.ImmediateOrCancel);
             //}
 
-            if (order.Entity.IsPending && request.Expiration.HasValue)
+            if (order.Entity.IsPending)
             {
                 var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-                if (request.Expiration.Value > epoch)
-                    order.Entity.Expiration = request.Expiration.Value;
+                if (request.Expiration.ToDateTime() > epoch)
+                    order.Entity.Expiration = request.Expiration.ToDateTime();
                 else
                     order.Entity.Expiration = null;
             }

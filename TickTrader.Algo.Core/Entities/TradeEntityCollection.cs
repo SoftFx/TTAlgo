@@ -25,7 +25,7 @@ namespace TickTrader.Algo.Core
 
         public virtual CoreType GetOrNull(string key) => _entities.GetOrDefault(key);
 
-        public IEnumerable<CoreType> Values => _entities.Values;
+        public virtual IEnumerable<CoreType> Values => _entities.Values;
 
         IEnumerator<ApiType> IEnumerable<ApiType>.GetEnumerator() => _entities.Values.Select(u => (ApiType)u).GetEnumerator();
 
@@ -64,7 +64,7 @@ namespace TickTrader.Algo.Core
                 oldEntity.Update(newInfo);
         }
 
-        public void InvalidateAll() => SortedEntities.Foreach(u => u.Update(null));
+        public void InvalidateAll() => Values.Foreach(u => u.Update(null));
 
         public void Merge(IEnumerable<InfoType> newInformation)
         {
@@ -75,11 +75,13 @@ namespace TickTrader.Algo.Core
             newInformation.Foreach(AddOrUpdate);
         }
 
-        protected IEnumerable<CoreType> SortedEntities => _entities.Values.Where(e => !e.IsNull).OrderBy(e => e.Info.SortOrder).ThenBy(e => e.Info.Name);
+        //protected virtual IEnumerable<CoreType> SortedEntities => _entities.Values.Where(e => !e.IsNull).OrderBy(e => e.Info.SortOrder).ThenBy(e => e.Info.Name);
+
+        public override IEnumerable<CoreType> Values => _entities.Values.Where(e => !e.IsNull).OrderBy(e => e.Info.SortOrder).ThenBy(e => e.Info.Name);
 
         public abstract void Add(InfoType info);
 
-        public IEnumerator<ApiType> GetEnumerator() => SortedEntities.GetEnumerator();
+        public IEnumerator<ApiType> GetEnumerator() => Values.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
