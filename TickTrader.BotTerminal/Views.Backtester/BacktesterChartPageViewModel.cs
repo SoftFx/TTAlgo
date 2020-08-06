@@ -127,7 +127,7 @@ namespace TickTrader.BotTerminal
                 if (update is QuoteEntity)
                 {
                     var q = (QuoteEntity)update;
-                    _barVector.AppendQuote(q.CreatingTime, q.Bid, 1);
+                    _barVector.AppendQuote(q.Time, q.Bid, 1);
                 }
                 else if (update is BarRateUpdate)
                 {

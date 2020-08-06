@@ -1,5 +1,4 @@
-﻿using Google.Protobuf;
-using Google.Protobuf.WellKnownTypes;
+﻿using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Runtime.InteropServices;
 
@@ -42,13 +41,13 @@ namespace TickTrader.Algo.Domain
         public void SetAsks(QuoteBand[] bands)
         {
             var byteSpan = MemoryMarshal.Cast<QuoteBand, byte>(bands.AsSpan());
-            AskBytes = ByteString.CopyFrom(byteSpan);
+            AskBytes = ByteStringHelper.CopyFromUglyHack(byteSpan);
         }
 
         public void SetBids(QuoteBand[] bands)
         {
             var byteSpan = MemoryMarshal.Cast<QuoteBand, byte>(bands.AsSpan());
-            BidBytes = ByteString.CopyFrom(byteSpan);
+            BidBytes = ByteStringHelper.CopyFromUglyHack(byteSpan);
         }
     }
 
@@ -87,43 +86,59 @@ namespace TickTrader.Algo.Domain
 
     public class QuoteInfo : IQuoteInfo, IRateInfo
     {
-        public string Symbol { get; }
+        // hack to bypass net45 code security
+        // TODO: Remove after swiching to .NET Core
+        private byte[] _askBytes;
+        private byte[] _bidBytes;
 
-        public QuoteData Data { get; }
+        private string _symbol;
+        private QuoteData _data;
+        private int? _depth;
 
-        public int? Depth { get; }
+
+        public string Symbol => _symbol;
 
         public ReadOnlySpan<QuoteBand> Asks
         {
             get
             {
-                var asks = Data.Asks;
-                return Depth.HasValue ? asks.Slice(0, Math.Min(asks.Length, Depth.Value)) : asks;
+                //var asks = _data.Asks;
+                var asks = MemoryMarshal.Cast<byte, QuoteBand>(_askBytes);
+                return _depth.HasValue ? asks.Slice(0, Math.Min(asks.Length, _depth.Value)) : asks;
             }
         }
+
+        public ReadOnlySpan<byte> AskBytes => _askBytes;
 
         public ReadOnlySpan<QuoteBand> Bids
         {
             get
             {
-                var bids = Data.Bids;
-                return Depth.HasValue ? bids.Slice(0, Math.Min(bids.Length, Depth.Value)) : bids;
+                //var bids = _data.Bids;
+                var bids = MemoryMarshal.Cast<byte, QuoteBand>(_bidBytes);
+                return _depth.HasValue ? bids.Slice(0, Math.Min(bids.Length, _depth.Value)) : bids;
             }
         }
 
-        public bool HasAsk => Data.HasAsk;
+        public ReadOnlySpan<byte> BidBytes => _bidBytes;
 
-        public bool HasBid => Data.HasBid;
+        public bool HasAsk => _data.HasAsk;
 
-        public bool IsAskIndicative => Data.IsAskIndicative;
+        public bool HasBid => _data.HasBid;
 
-        public bool IsBidIndicative => Data.IsBidIndicative;
+        public bool IsAskIndicative => _data.IsAskIndicative;
 
-        public double Ask => HasAsk ? Data.Asks[0].Price : double.NaN;
+        public bool IsBidIndicative => _data.IsBidIndicative;
 
-        public double Bid => HasBid ? Data.Bids[0].Price : double.NaN;
+        //public double Ask => HasAsk ? _data.Asks[0].Price : double.NaN;
+        public double Ask => HasAsk ? Asks[0].Price : double.NaN;
 
-        public DateTime Time => Data.Time.ToDateTime();
+        public double Bid => HasBid ? Bids[0].Price : double.NaN;
+        //public double Bid => HasBid ? _data.Bids[0].Price : double.NaN;
+
+        public DateTime Time => _data.Time.ToDateTime();
+
+        public Timestamp Timestamp => _data.Time;
 
 
         public QuoteInfo(string symbol) // empty rate
@@ -143,15 +158,27 @@ namespace TickTrader.Algo.Domain
 
         public QuoteInfo(string symbol, QuoteData data, int? depth = null)
         {
-            Symbol = symbol;
-            Data = data;
-            Depth = depth;
+            _symbol = symbol;
+            _data = data;
+            _depth = depth;
+
+            _bidBytes = _data.BidBytes.ToByteArray();
+            _askBytes = _data.AskBytes.ToByteArray();
         }
+
+        private QuoteInfo() { }
 
 
         public QuoteInfo Truncate(int depth)
         {
-            return new QuoteInfo(Symbol, Data, depth < 1 ? (int?)null : depth);
+            return new QuoteInfo
+            {
+                _symbol = Symbol,
+                _data = _data,
+                _depth = depth < 1 ? (int?)null : depth,
+                _askBytes = _askBytes,
+                _bidBytes = _bidBytes,
+            };
         }
 
 

@@ -65,7 +65,7 @@ namespace TickTrader.Algo.Common.Model
             private static ByteString ReadBook(LightObjectReader reader)
             {
                 Span<QuoteBand> bands = stackalloc QuoteBand[] { new QuoteBand(reader.ReadDouble(), 0) };
-                return ByteString.CopyFrom(MemoryMarshal.Cast<QuoteBand, byte>(bands));
+                return ByteStringHelper.CopyFromUglyHack(MemoryMarshal.Cast<QuoteBand, byte>(bands));
             }
 
             public ArraySegment<byte> Serialize(QuoteInfo[] val)
@@ -77,20 +77,19 @@ namespace TickTrader.Algo.Common.Model
 
             private static void WriteQuote(QuoteInfo quote, LightObjectWriter writer)
             {
-                var data = quote.Data;
 
-                writer.Write(data.Time.ToDateTime());
+                writer.Write(quote.Time);
 
-                var flags = data.HasBid ? FieldFlags.HasBid : FieldFlags.Empty;
-                flags |= data.HasAsk ? FieldFlags.HasAsk : FieldFlags.Empty;
+                var flags = quote.HasBid ? FieldFlags.HasBid : FieldFlags.Empty;
+                flags |= quote.HasAsk ? FieldFlags.HasAsk : FieldFlags.Empty;
 
                 writer.Write((byte)flags);
 
-                if (data.HasBid)
-                    WriteBook(data.Bids, writer);
+                if (quote.HasBid)
+                    WriteBook(quote.Bids, writer);
 
-                if (data.HasAsk)
-                    WriteBook(data.Asks, writer);
+                if (quote.HasAsk)
+                    WriteBook(quote.Asks, writer);
 
             }
 
@@ -146,7 +145,7 @@ namespace TickTrader.Algo.Common.Model
                 var bytes = MemoryMarshal.Cast<QuoteBand, byte>(bands);
                 reader.ReadBytes(bytes);
 
-                return ByteString.CopyFrom(bytes);
+                return ByteStringHelper.CopyFromUglyHack(bytes);
             }
 
             public ArraySegment<byte> Serialize(QuoteInfo[] val)
@@ -154,15 +153,13 @@ namespace TickTrader.Algo.Common.Model
                 var writer = new LightObjectWriter();
                 writer.WriteFixedSizeArray(val, (e, w) =>
                 {
-                    var data = e.Data;
+                    writer.Write(e.Time);
 
-                    writer.Write(data.Time.ToDateTime());
+                    writer.Write(e.Bids.Length);
+                    writer.Write(e.BidBytes);
 
-                    writer.Write(data.Bids.Length);
-                    writer.Write(data.BidBytes.Span);
-
-                    writer.Write(data.Asks.Length);
-                    writer.Write(data.AskBytes.Span);
+                    writer.Write(e.Asks.Length);
+                    writer.Write(e.AskBytes);
                 });
                 return writer.GetBuffer();
             }

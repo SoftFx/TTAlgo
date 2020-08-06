@@ -1051,7 +1051,7 @@ namespace TickTrader.Algo.Common.Model
                 bands[i] = new Domain.QuoteBand(book[i].Price, book[i].Volume);
             }
 
-            return ByteString.CopyFrom(MemoryMarshal.Cast<Domain.QuoteBand, byte>(bands));
+            return Domain.ByteStringHelper.CopyFromUglyHack(MemoryMarshal.Cast<Domain.QuoteBand, byte>(bands));
         }
 
         public static Domain.TradeReportInfo Convert(TradeTransactionReport report)

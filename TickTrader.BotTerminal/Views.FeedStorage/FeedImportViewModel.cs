@@ -41,7 +41,7 @@ namespace TickTrader.BotTerminal
 
             var importerValid = SelectedImporter.Var.Ref(i => i.CanImport.Var);
             var isNotRunning = !ActionRunner.IsRunning;
-            CanImport = isNotRunning  & SelectedSymbol.Var.IsNotNull() & importerValid;
+            CanImport = isNotRunning & SelectedSymbol.Var.IsNotNull() & importerValid;
             CanCancel = isNotRunning | ActionRunner.CanCancel;
             IsInputEnabled = isNotRunning;
             IsPriceActual = !SelectedTimeFrame.Var.IsTicks();
@@ -120,9 +120,9 @@ namespace TickTrader.BotTerminal
                     if (page.Count >= pageSize)
                     {
                         // we cannot put ticks with same time into different chunks
-                        if (lastTick.Data.Time != tick.Data.Time)
+                        if (lastTick.Time != tick.Time)
                         {
-                            symbol.WriteSlice(timeFrame, page[0].Data.Time.ToDateTime(), tick.Data.Time.ToDateTime(), page.ToArray());
+                            symbol.WriteSlice(timeFrame, page[0].Time, tick.Time, page.ToArray());
                             observer.SetMessage(string.Format("Importing...  {0} ticks are imported.", count));
                             page.Clear();
                         }
@@ -135,8 +135,8 @@ namespace TickTrader.BotTerminal
 
                 if (page.Count > 0)
                 {
-                    var toCorrected = page.Last().Data.Time.ToDateTime() + TimeSpan.FromTicks(1);
-                    symbol.WriteSlice(timeFrame, page[0].Data.Time.ToDateTime(), toCorrected, page.ToArray());
+                    var toCorrected = page.Last().Time + TimeSpan.FromTicks(1);
+                    symbol.WriteSlice(timeFrame, page[0].Time, toCorrected, page.ToArray());
                 }
 
                 observer.SetMessage(string.Format("Done importing. {0} ticks were imported.", count));
@@ -260,8 +260,8 @@ namespace TickTrader.BotTerminal
                         Time = time.ToTimestamp(),
                         IsBidIndicative = false,
                         IsAskIndicative = false,
-                        AskBytes = ByteString.CopyFrom(MemoryMarshal.Cast<QuoteBand, byte>(asks.Slice(askDepth))),
-                        BidBytes = ByteString.CopyFrom(MemoryMarshal.Cast<QuoteBand, byte>(bids.Slice(bidDepth))),
+                        AskBytes = ByteStringHelper.CopyFromUglyHack(MemoryMarshal.Cast<QuoteBand, byte>(asks.Slice(askDepth))),
+                        BidBytes = ByteStringHelper.CopyFromUglyHack(MemoryMarshal.Cast<QuoteBand, byte>(bids.Slice(bidDepth))),
                     };
 
                     yield return new QuoteInfo("", data);

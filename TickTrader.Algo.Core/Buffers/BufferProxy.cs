@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -37,7 +33,7 @@ namespace TickTrader.Algo.Core
 
         protected override QuoteEntity Convert(BarEntity bar)
         {
-            return new QuoteEntity("", bar.OpenTime, bar.Open, bar.Open);
+            return new QuoteEntity(new QuoteInfo("", bar.OpenTime, bar.Open, bar.Open));
         }
     }
 

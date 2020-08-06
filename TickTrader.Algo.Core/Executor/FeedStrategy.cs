@@ -317,7 +317,7 @@ namespace TickTrader.Algo.Core
                     {
                         if (page.Count < pageSize)
                             break; //last page
-                        var timeRef = page.First().Data.Time.ToDateTime().AddMilliseconds(-1);
+                        var timeRef = page.First().Time.AddMilliseconds(-1);
                         page = FeedHistory.QueryTicks(symbol, timeRef, -pageSize, level2);
                         if (page.Count == 0)
                             break;
@@ -325,7 +325,7 @@ namespace TickTrader.Algo.Core
                     }
 
                     var item = page[pageIndex];
-                    if (item.Data.Time < fromTime)
+                    if (item.Timestamp < fromTime)
                         break;
                     pageIndex--;
                     yield return new QuoteEntity(item);
@@ -342,7 +342,7 @@ namespace TickTrader.Algo.Core
                     {
                         if (page.Count < pageSize)
                             break; //last page
-                        var timeRef = page.Last().Data.Time.ToDateTime().AddMilliseconds(1);
+                        var timeRef = page.Last().Time.AddMilliseconds(1);
                         page = FeedHistory.QueryTicks(symbol, timeRef, pageSize, level2);
                         if (page.Count == 0)
                             break;
@@ -350,7 +350,7 @@ namespace TickTrader.Algo.Core
                     }
 
                     var item = page[pageIndex];
-                    if (item.Data.Time > toTime)
+                    if (item.Timestamp > toTime)
                         break;
                     pageIndex++;
                     yield return new QuoteEntity(item);
@@ -387,7 +387,7 @@ namespace TickTrader.Algo.Core
 
                     if (page.Count < pageSize)
                         break; //last page
-                    from = page.First().Data.Time.ToDateTime().AddMilliseconds(-1);
+                    from = page.First().Time.AddMilliseconds(-1);
                 }
                 else
                 {
@@ -406,7 +406,7 @@ namespace TickTrader.Algo.Core
 
                     if (page.Count < pageSize)
                         break; //last page
-                    from = page.Last().Data.Time.ToDateTime().AddMilliseconds(1);
+                    from = page.Last().Time.AddMilliseconds(1);
                 }
             }
         }

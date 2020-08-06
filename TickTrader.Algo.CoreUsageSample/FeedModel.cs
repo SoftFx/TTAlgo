@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Infrastructure;
@@ -12,11 +10,11 @@ namespace TickTrader.Algo.CoreUsageSample
 {
     internal class FeedModel : IFeedProvider, IFeedHistoryProvider, ISynchronizationContext
     {
-        private Action<QuoteEntity[]> FeedUpdated;
+        private Action<QuoteInfo[]> FeedUpdated;
         private Dictionary<string, SymbolDataModel> dataBySymbol = new Dictionary<string, SymbolDataModel>();
 
-        public event Action<QuoteEntity> RateUpdated;
-        public event Action<List<QuoteEntity>> RatesUpdated;
+        public event Action<QuoteInfo> RateUpdated;
+        public event Action<List<QuoteInfo>> RatesUpdated;
 
         public TimeFrames TimeFrame { get; private set; }
 
@@ -32,10 +30,10 @@ namespace TickTrader.Algo.CoreUsageSample
             GetSymbolData(symbol).Fill(data);
         }
 
-        public void Update(QuoteEntity update)
+        public void Update(QuoteInfo update)
         {
             GetSymbolData(update.Symbol).Update(update);
-            FeedUpdated?.Invoke(new QuoteEntity[] { update });
+            FeedUpdated?.Invoke(new QuoteInfo[] { update });
         }
 
         private SymbolDataModel GetSymbolData(string smbCode)
@@ -54,7 +52,7 @@ namespace TickTrader.Algo.CoreUsageSample
             return GetSymbolData(symbolCode).QueryBars(from, to, timeFrame).ToList();
         }
 
-        List<QuoteEntity> IFeedHistoryProvider.QueryTicks(string symbolCode, DateTime from, DateTime to, bool level2)
+        List<QuoteInfo> IFeedHistoryProvider.QueryTicks(string symbolCode, DateTime from, DateTime to, bool level2)
         {
             return null;
         }
@@ -64,18 +62,18 @@ namespace TickTrader.Algo.CoreUsageSample
             throw new NotImplementedException();
         }
 
-        List<QuoteEntity> IFeedHistoryProvider.QueryTicks(string symbolCode, DateTime from, int count, bool level2)
+        List<QuoteInfo> IFeedHistoryProvider.QueryTicks(string symbolCode, DateTime from, int count, bool level2)
         {
             throw new NotImplementedException();
         }
 
-        IEnumerable<QuoteEntity> IFeedProvider.GetSnapshot()
+        IEnumerable<QuoteInfo> IFeedProvider.GetSnapshot()
         {
             return dataBySymbol.Values.Where(d => d.LastQuote != null).Select(d => d.LastQuote).ToList();
         }
 
 
-        List<QuoteEntity> IFeedSubscription.Modify(List<FeedSubscriptionUpdate> updates)
+        List<QuoteInfo> IFeedSubscription.Modify(List<FeedSubscriptionUpdate> updates)
         {
             return null;
         }
@@ -116,7 +114,7 @@ namespace TickTrader.Algo.CoreUsageSample
                 sampler = BarSampler.Get(timeFrame);
             }
 
-            public QuoteEntity LastQuote { get; private set; }
+            public QuoteInfo LastQuote { get; private set; }
 
             public void Fill(IEnumerable<BarEntity> data)
             {
@@ -126,7 +124,7 @@ namespace TickTrader.Algo.CoreUsageSample
                 this.data.AddRange(data);
             }
 
-            public void Update(QuoteEntity quote)
+            public void Update(QuoteInfo quote)
             {
                 var barBoundaries = sampler.GetBar(quote.Time);
                 var barOpenTime = barBoundaries.Open;

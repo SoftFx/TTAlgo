@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreUsageSample
 {
@@ -68,9 +65,9 @@ namespace TickTrader.Algo.CoreUsageSample
 
             executor.Start();
 
-            dataModel.Update(new QuoteEntity("EURUSD", DateTime.Parse("2015.11.03 00:00:24"), 1.10145, 1.10145));
-            dataModel.Update(new QuoteEntity("EURUSD", DateTime.Parse("2015.11.03 00:00:28"), 1.10148, 1.10151));
-            dataModel.Update(new QuoteEntity("EURUSD", DateTime.Parse("2015.11.03 00:00:31"), 1.10149, 1.10149));
+            dataModel.Update(new QuoteInfo("EURUSD", DateTime.Parse("2015.11.03 00:00:24"), 1.10145, 1.10145));
+            dataModel.Update(new QuoteInfo("EURUSD", DateTime.Parse("2015.11.03 00:00:28"), 1.10148, 1.10151));
+            dataModel.Update(new QuoteInfo("EURUSD", DateTime.Parse("2015.11.03 00:00:31"), 1.10149, 1.10149));
 
             executor.Stop();
 

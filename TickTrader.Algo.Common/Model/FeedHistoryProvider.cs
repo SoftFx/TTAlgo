@@ -192,8 +192,8 @@ namespace TickTrader.Algo.Common.Model
                 count -= page.Length;
 
                 from = isBackward 
-                    ? page.First().Data.Time.ToDateTime().AddMilliseconds(-1)
-                    : page.Last().Data.Time.ToDateTime().AddMilliseconds(1);
+                    ? page.First().Time.AddMilliseconds(-1)
+                    : page.Last().Time.AddMilliseconds(1);
             }
 
             return pages.ConcatAll();
@@ -246,10 +246,10 @@ namespace TickTrader.Algo.Common.Model
 
                 foreach (var quote in page)
                 {
-                    if (quote.Data.Time <= toTime)
+                    if (quote.Timestamp <= toTime)
                     {
                         result.Add(quote);
-                        pageFrom = quote.Data.Time;
+                        pageFrom = quote.Timestamp;
                     }
                     else
                         return result;

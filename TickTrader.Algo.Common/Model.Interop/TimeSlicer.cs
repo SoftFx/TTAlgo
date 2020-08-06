@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Common.Model
 
         public static TimeSlicer<Domain.QuoteInfo> GetQuoteSlicer(int pageSize, DateTime? from = null, DateTime? to = null)
         {
-            return new TimeSlicer<Domain.QuoteInfo>(pageSize, from, to, b => ToUtc(b.Data.Time.ToDateTime()));
+            return new TimeSlicer<Domain.QuoteInfo>(pageSize, from, to, b => ToUtc(b.Time));
         }
 
         public static DateTime ToUtc(DateTime dateTime)

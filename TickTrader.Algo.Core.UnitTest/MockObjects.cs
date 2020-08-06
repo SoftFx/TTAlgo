@@ -1,11 +1,9 @@
 ﻿using Google.Protobuf;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Calc;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.UnitTest
 {
@@ -32,14 +30,14 @@ namespace TickTrader.Algo.Core.UnitTest
             return Add(list, DateTime.Parse(openTime), open, close, high, low);
         }
 
-        internal static Api.Quote CreateQuote(string timestamp, double bid, double? ask)
+        internal static QuoteInfo CreateQuote(string timestamp, double bid, double? ask)
         {
-            return CreateQuote(null, DateTime.Parse(timestamp), bid, ask);
+            return CreateQuote("", DateTime.Parse(timestamp), bid, ask);
         }
 
-        internal static Api.Quote CreateQuote(string symbol, DateTime timestamp, double bid, double? ask = null)
+        internal static QuoteInfo CreateQuote(string symbol, DateTime timestamp, double bid, double? ask = null)
         {
-            return new QuoteEntity(symbol, timestamp, bid, ask ?? bid);
+            return new QuoteInfo(symbol, timestamp, bid, ask ?? bid);
         }
 
         internal static void UpdateRate(this BarSeriesFixture fixture, string timestamp, double bid, double? ask = null)
@@ -88,7 +86,7 @@ namespace TickTrader.Algo.Core.UnitTest
         {
         }
 
-        public void EnqueueQuote(QuoteEntity update)
+        public void EnqueueQuote(QuoteInfo update)
         {
         }
 
