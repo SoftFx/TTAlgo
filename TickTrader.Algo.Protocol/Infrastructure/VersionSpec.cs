@@ -2,9 +2,9 @@
 {
     public class VersionSpec
     {
-        public static int MajorVersion => 1;
+        public static int MajorVersion => 2;
 
-        public static int MinorVersion => 1;
+        public static int MinorVersion => 0;
 
         public static string LatestVersion => $"{MajorVersion}.{MinorVersion}";
 
