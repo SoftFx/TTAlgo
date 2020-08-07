@@ -136,7 +136,7 @@ namespace TickTrader.Algo.Domain
         public double Bid => HasBid ? Bids[0].Price : double.NaN;
         //public double Bid => HasBid ? _data.Bids[0].Price : double.NaN;
 
-        public DateTime Time => _data.Time.ToDateTime();
+        public DateTime Time => _data.Time.ToDateTime().ToLocalTime();
 
         public Timestamp Timestamp => _data.Time;
 
