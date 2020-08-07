@@ -34,15 +34,15 @@ namespace TickTrader.Algo.Core
         {
             if (type == ActivationType.Pending)
             {
-                if ((order.Type == Domain.OrderInfo.Types.Type.Stop) || (order.Type == Domain.OrderInfo.Types.Type.StopLimit))
-                    return order.StopPrice;
+                if ((order.Info.Type == Domain.OrderInfo.Types.Type.Stop) || (order.Info.Type == Domain.OrderInfo.Types.Type.StopLimit))
+                    return order.Info.StopPrice ?? 0;
                 else
-                    return order.Price;
+                    return order.Info.Price ?? 0;
             }
             else if (type == ActivationType.TakeProfit)
-                return order.TakeProfit;
+                return order.Info.TakeProfit ?? 0;
             else if (type == ActivationType.StopLoss)
-                return order.StopLoss;
+                return order.Info.StopLoss ?? 0;
             else
                 throw new ArgumentException("Invalid activation type:" + type);
         }
@@ -51,7 +51,7 @@ namespace TickTrader.Algo.Core
         public ActivationType ActivationType { get; private set; }
         public double ActivationPrice { get; set; }
         public double Price { get; private set; }
-        public string OrderId { get { return Order.Id; } }
+        public string OrderId { get { return Order.Info.Id; } }
 
         public DateTime? LastNotifyTime { get; set; }
     }

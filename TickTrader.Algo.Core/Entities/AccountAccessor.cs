@@ -29,7 +29,7 @@ namespace TickTrader.Algo.Core
             _builder = builder;
         }
 
-        public OrdersCollection Orders
+        internal OrdersCollection Orders
         {
             get
             {
@@ -38,7 +38,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public PositionCollection NetPositions
+        internal PositionCollection NetPositions
         {
             get
             {
@@ -47,7 +47,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public AssetsCollection Assets
+        internal AssetsCollection Assets
         {
             get
             {
@@ -94,7 +94,7 @@ namespace TickTrader.Algo.Core
                 _balanceCurrency = value;
             }
         }
-        public Currency BalanceCurrencyInfo { get; private set; }
+        public CurrencyInfo BalanceCurrencyInfo { get; private set; }
         public int Leverage { get; internal set; }
         public AccountInfo.Types.Type Type
         {
@@ -127,23 +127,23 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public void Update(Domain.AccountInfo info, Dictionary<string, Currency> currencies)
+        public void Update(Domain.AccountInfo info, Dictionary<string, CurrencyInfo> currencies)
         {
             Id = info.Id;
             Type = info.Type;
             Leverage = info.Leverage;
             Balance = (decimal)info.Balance;
-            UpdateCurrency(currencies.GetOrStub(info.BalanceCurrency));
+            UpdateCurrency(currencies.GetOrDefault(info.BalanceCurrency));
             Assets.Clear();
             foreach (var asset in info.Assets)
-                _builder.Account.Assets.Update(asset, currencies);
+                _builder.Account.Assets.Update(asset, out _);
         }
 
-        internal void UpdateCurrency(Currency currency)
+        internal void UpdateCurrency(CurrencyInfo currency)
         {
-            BalanceCurrency = currency.Name;
+            BalanceCurrency = currency?.Name ?? string.Empty;
             BalanceCurrencyInfo = currency;
-            BalanceCurrencyFormat = ((CurrencyEntity)currency).Format;
+            BalanceCurrencyFormat = new NumberFormatInfo { NumberDecimalDigits = currency?.Digits ?? 2 };
         }
 
         internal void ResetCurrency()
@@ -235,7 +235,7 @@ namespace TickTrader.Algo.Core
             return InstanceId == order.InstanceId;
         }
 
-        AssetList AccountDataProvider.Assets { get { return Assets.AssetListImpl; } }
+        AssetList AccountDataProvider.Assets => Assets;
         NetPositionList AccountDataProvider.NetPositions => NetPositions;
         TradeHistory AccountDataProvider.TradeHistory => HistoryProvider;
 
@@ -279,7 +279,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        internal void Init(IAccountInfoProvider dataProvider, Dictionary<string, Currency> currencies)
+        internal void Init(IAccountInfoProvider dataProvider, Dictionary<string, CurrencyInfo> currencies)
         {
             var accInfo = dataProvider.GetAccountInfo();
 
@@ -297,13 +297,13 @@ namespace TickTrader.Algo.Core
 
         #endregion
 
-        IEnumerable<IOrderInfo> IAccountInfo2.Orders => Orders.Values;
-        IEnumerable<IPositionInfo> IMarginAccountInfo2.Positions => NetPositions.Values.Select(u => (IPositionInfo)u.Info);
-        IEnumerable<IAssetInfo> ICashAccountInfo2.Assets => Assets;
+        IEnumerable<IOrderCalcInfo> IAccountInfo2.Orders => Orders.Values.Select(u => u.Info);
+        IEnumerable<IPositionInfo> IMarginAccountInfo2.Positions => NetPositions.Values.Select(u => u.Info);
+        IEnumerable<IAssetInfo> ICashAccountInfo2.Assets => Assets.Values.Select(u => u.Info);
 
-        public event Action<IOrderInfo> OrderAdded = delegate { };
-        public event Action<IEnumerable<IOrderInfo>> OrdersAdded { add { } remove { } }
-        public event Action<IOrderInfo> OrderRemoved = delegate { };
+        public event Action<IOrderCalcInfo> OrderAdded = delegate { };
+        public event Action<IEnumerable<IOrderCalcInfo>> OrdersAdded { add { } remove { } }
+        public event Action<IOrderCalcInfo> OrderRemoved = delegate { };
         //public event Action<IOrderModel2> OrderReplaced = delegate { };
         public event Action BalanceUpdated = delegate { };
         public event Action<IBalanceDividendEventArgs> BalanceDividend = delegate { };
@@ -343,7 +343,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        private void OnOrderAdded(IOrderInfo order)
+        private void OnOrderAdded(IOrderCalcInfo order)
         {
             UpdateAccountInfo("Add order", () => OrderAdded?.Invoke(order));
         }
@@ -353,7 +353,7 @@ namespace TickTrader.Algo.Core
         //    UpdateAccountInfo("Replace order", () => OrderReplaced?.Invoke(order));
         //}
 
-        private void OnOrderRemoved(IOrderInfo order)
+        private void OnOrderRemoved(IOrderCalcInfo order)
         {
             UpdateAccountInfo("Remove order", () => OrderRemoved?.Invoke(order));
         }
@@ -368,7 +368,7 @@ namespace TickTrader.Algo.Core
         //    UpdateAccountInfo("Remove position", () => PositionChanged?.Invoke(position, PositionChageTypes.Removed));
         //}
 
-        private void OnAssetsChanged(IAssetInfo asset, AssetChangeType type)
+        private void OnAssetsChanged(AssetInfo asset, AssetChangeType type)
         {
             UpdateAccountInfo($"Change asset({type})", () => AssetsChanged?.Invoke(asset, type));
         }
@@ -389,7 +389,7 @@ namespace TickTrader.Algo.Core
 
         internal OrderAccessor GetOrderOrThrow(string orderId)
         {
-            return Orders.GetOrderOrNull(orderId)
+            return Orders.GetOrNull(orderId)
                 ?? throw new OrderValidationError("Order Not Found " + orderId, OrderCmdResultCodes.OrderNotFound);
         }
 
@@ -402,9 +402,9 @@ namespace TickTrader.Algo.Core
 
         internal void IncreaseAsset(string currency, decimal byAmount)
         {
-            var asset = Assets.GetOrCreateAsset(currency, out var chType);
+            var asset = Assets.GetOrAdd(currency, out var chType);
             asset.IncreaseBy(byAmount);
-            OnAssetsChanged(asset, chType);
+            OnAssetsChanged(asset.Info, chType);
         }
 
         #endregion
@@ -416,10 +416,10 @@ namespace TickTrader.Algo.Core
 
         public double? CalculateOrderMargin(string symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl = null, double? tp = null, Api.OrderExecOptions options = Api.OrderExecOptions.None)
         {
-            var symbolAccessor = _builder?.Symbols?.GetOrDefault(symbol);
+            var symbolAccessor = _builder?.Symbols?.GetOrNull(symbol).Info;
             if (symbolAccessor != null && _builder.Calculator != null)
             {
-                var amount = volume * symbolAccessor.ContractSize;
+                var amount = volume * symbolAccessor.LotSize;
 
                 return _builder.Calculator.CalculateOrderMargin(symbolAccessor, amount, price, stopPrice, type.ToCoreEnum(), side.ToCoreEnum(), OrderEntity.IsHiddenOrder(maxVisibleVolume));
             }
@@ -428,10 +428,10 @@ namespace TickTrader.Algo.Core
 
         public bool HasEnoughMarginToOpenOrder(string symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl = null, double? tp = null, Api.OrderExecOptions options = Api.OrderExecOptions.None)
         {
-            var symbolAccessor = _builder?.Symbols?.GetOrDefault(symbol);
+            var symbolAccessor = _builder?.Symbols?.GetOrNull(symbol).Info;
             if (symbolAccessor != null && _builder.Calculator != null)
             {
-                var amount = volume * symbolAccessor.ContractSize;
+                var amount = volume * symbolAccessor.LotSize;
 
                 return _builder.Calculator.HasEnoughMarginToOpenOrder(symbolAccessor, amount, type.ToCoreEnum(), side.ToCoreEnum(), price, stopPrice, OrderEntity.IsHiddenOrder(maxVisibleVolume), out _);
             }

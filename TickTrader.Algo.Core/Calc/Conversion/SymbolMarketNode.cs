@@ -5,13 +5,14 @@ namespace TickTrader.Algo.Core.Calc.Conversion
 {
     public class SymbolMarketNode
     {
-        public SymbolMarketNode(ISymbolInfo smb)
+        public SymbolMarketNode(SymbolInfo smb)
         {
             SymbolInfo = smb;
             Rate = new QuoteInfo(smb.Name);
         }
 
-        public ISymbolInfo SymbolInfo { get; }
+
+        public SymbolInfo SymbolInfo { get; }
         public IRateInfo Rate { get; private set; }
 
         public double Ask => Rate.Ask;

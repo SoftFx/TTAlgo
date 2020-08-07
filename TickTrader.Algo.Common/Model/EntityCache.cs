@@ -12,7 +12,7 @@ namespace TickTrader.Algo.Common.Model
     {
         private readonly AccountModel _acc;
         private readonly VarDictionary<string, SymbolInfo> _symbols = new VarDictionary<string, SymbolInfo>();
-        private readonly VarDictionary<string, CurrencyEntity> _currencies = new VarDictionary<string, CurrencyEntity>();
+        private readonly VarDictionary<string, CurrencyInfo> _currencies = new VarDictionary<string, CurrencyInfo>();
 
         public EntityCache()
         {
@@ -20,7 +20,7 @@ namespace TickTrader.Algo.Common.Model
         }
 
         public IVarSet<string, SymbolInfo> Symbols => _symbols;
-        public IVarSet<string, CurrencyEntity> Currencies => _currencies;
+        public IVarSet<string, CurrencyInfo> Currencies => _currencies;
         public AccountModel Account => _acc;
 
         internal void Clear()
@@ -60,7 +60,7 @@ namespace TickTrader.Algo.Common.Model
             foreach (var existingCurr in _currencies.Values)
             {
                 if (!currenciesByNAme.ContainsKey(existingCurr.Name))
-                    updates.Add(new CurrencyUpdate(existingCurr.Info, EntityCacheActions.Remove));
+                    updates.Add(new CurrencyUpdate(existingCurr, EntityCacheActions.Remove));
             }
 
             return updates;
@@ -71,7 +71,7 @@ namespace TickTrader.Algo.Common.Model
             return _symbols.Values.ToList();
         }
 
-        internal List<CurrencyEntity> GetCurrenciesCopy()
+        internal List<CurrencyInfo> GetCurrenciesCopy()
         {
             return _currencies.Values.ToList();
         }
@@ -134,7 +134,7 @@ namespace TickTrader.Algo.Common.Model
             public void Apply(EntityCache cache)
             {
                 if (Action == EntityCacheActions.Upsert)
-                    cache._currencies[Currency.Name] = new CurrencyEntity(Currency);
+                    cache._currencies[Currency.Name] = Currency;
                 else
                     cache._currencies.Remove(Currency.Name);
             }

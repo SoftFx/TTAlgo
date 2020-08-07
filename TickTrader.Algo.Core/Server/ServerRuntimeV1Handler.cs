@@ -116,9 +116,7 @@ namespace TickTrader.Algo.Core
         private Any CurrencyListRequestHandler()
         {
             var response = new CurrencyListResponse();
-            response.Currencies.Add(
-                _executor.Metadata.GetCurrencyMetadata()
-                .Select(c => c.Info));
+            response.Currencies.Add(_executor.Metadata.GetCurrencyMetadata());
             return Any.Pack(response);
         }
 

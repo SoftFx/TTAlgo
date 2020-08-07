@@ -16,7 +16,7 @@ namespace TickTrader.Algo.Common.Model
         private QuoteDistributor _distributor;
         private FeedHistoryProviderModel.Handler history;
         private Dictionary<string, int> _subscriptionCache;
-        private IReadOnlyDictionary<string, CurrencyEntity> currencies;
+        private IReadOnlyDictionary<string, CurrencyInfo> currencies;
 
         public event Action<QuoteInfo> RateUpdated;
         public event Action<List<QuoteInfo>> RatesUpdated { add { } remove { } }
@@ -91,7 +91,7 @@ namespace TickTrader.Algo.Common.Model
             return symbols.Snapshot.Select(m => m.Value).ToList();
         }
 
-        public IEnumerable<CurrencyEntity> GetCurrencyMetadata()
+        public IEnumerable<CurrencyInfo> GetCurrencyMetadata()
         {
             return currencies.Values.ToList();
         }

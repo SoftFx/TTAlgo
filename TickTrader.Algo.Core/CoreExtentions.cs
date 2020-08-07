@@ -58,15 +58,15 @@ namespace TickTrader.Algo.Core
             return timeFrame == TimeFrames.Ticks || timeFrame == TimeFrames.TicksLevel2;
         }
 
-        internal static Currency GetOrStub(this Dictionary<string, Currency> currencies, string key)
-        {
-            return currencies.GetOrDefault(key) ?? new CurrencyEntity(null);
-        }
+        //internal static Currency GetOrStub(this Dictionary<string, Currency> currencies, string key)
+        //{
+        //    return currencies.GetOrDefault(key) ?? new CurrencyAccessor(null);
+        //}
 
-        internal static Currency GetOrStub(this Dictionary<string, CurrencyEntity> currencies, string key)
-        {
-            return currencies.GetOrDefault(key) ?? new CurrencyEntity(null);
-        }
+        //internal static Currency GetOrStub(this Dictionary<string, CurrencyInfo> currencies, string key)
+        //{
+        //    return currencies.GetOrDefault(key) ?? new CurrencyAccessor(null);
+        //}
 
         public static Domain.OrderInfo.Types.Side Revert(this Domain.OrderInfo.Types.Side side)
         {

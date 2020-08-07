@@ -21,7 +21,7 @@ namespace TickTrader.Algo.Core.Calc
             MarginConversionRate = conversion.GetMarginFormula(tracker, account.BalanceCurrency);
 
             SymbolInfo = tracker.SymbolInfo;
-            SymbolAccessor = tracker.SymbolInfo as SymbolAccessor;
+            //SymbolAccessor = tracker.SymbolInfo as SymbolAccessor;
 
             //if (this.SymbolInfo == null)
             //    throw new SymbolConfigException("Cannot find configuration for symbol " + this.symbol + ".");
@@ -30,8 +30,8 @@ namespace TickTrader.Algo.Core.Calc
             //    throw new SymbolConfigException("Currency configuration is missing for symbol " + this.SymbolInfo.Symbol + ".");
 
             if (this.SymbolInfo != null
-                && SymbolInfo.MarginMode != Domain.MarginInfo.Types.CalculationMode.Forex
-                && SymbolInfo.MarginMode != Domain.MarginInfo.Types.CalculationMode.CfdLeverage)
+                && SymbolInfo.Margin.Mode != Domain.MarginInfo.Types.CalculationMode.Forex
+                && SymbolInfo.Margin.Mode != Domain.MarginInfo.Types.CalculationMode.CfdLeverage)
                 _leverageProvider = _ => 1;
             else
                 _leverageProvider = n => n;
@@ -48,8 +48,7 @@ namespace TickTrader.Algo.Core.Calc
         private void RecalculateStats() => Recalculate?.Invoke();
 
         public IRateInfo CurrentRate => RateTracker.Rate;
-        public ISymbolInfo SymbolInfo { get; }
-        public SymbolAccessor SymbolAccessor { get; }
+        public SymbolInfo SymbolInfo { get; }
         internal IConversionFormula PositiveProfitConversionRate { get; private set; }
         internal IConversionFormula NegativeProfitConversionRate { get; private set; }
         internal IConversionFormula MarginConversionRate { get; private set; }
@@ -76,10 +75,10 @@ namespace TickTrader.Algo.Core.Calc
             return error == CalcErrorCodes.None ? profit : double.NaN;
         }
 
-        public double CalculateMargin(IOrderCalcInfo order, out CalcErrorCodes error)
-        {
-            return CalculateMargin((double)order.RemainingAmount, order.Type, order.Side, order.IsHidden, out error);
-        }
+        //public double CalculateMargin(IOrderCalcInfo order, out CalcErrorCodes error)
+        //{
+        //    return CalculateMargin((double)order.RemainingAmount, order.Type, order.Side, order.IsHidden, out error);
+        //}
 
         public double CalculateMargin(double orderVolume, Domain.OrderInfo.Types.Type ordType, Domain.OrderInfo.Types.Side side, bool isHidden, out CalcErrorCodes error)
         {
@@ -106,9 +105,9 @@ namespace TickTrader.Algo.Core.Calc
 
         private void InitMarginFactorCache()
         {
-            _baseMarginFactor = SymbolInfo.MarginFactorFractional;
-            _stopMarginFactor = _baseMarginFactor * SymbolInfo.StopOrderMarginReduction;
-            _hiddenMarginFactor = _baseMarginFactor * SymbolInfo.HiddenLimitOrderMarginReduction;
+            _baseMarginFactor = SymbolInfo.Margin.Factor;
+            _stopMarginFactor = _baseMarginFactor * SymbolInfo.Margin.StopOrderReduction ?? 1;
+            _hiddenMarginFactor = _baseMarginFactor * SymbolInfo.Margin.HiddenLimitOrderReduction ?? 1;
         }
 
         #endregion
@@ -210,7 +209,7 @@ namespace TickTrader.Algo.Core.Calc
                 //if (chType == CommissionChargeType.PerDeal)
                 //    return -cValue;
                 //else if (chType == CommissionChargeType.PerLot)
-                return -(amount / SymbolInfo.ContractSizeFractional * cValue);
+                return -(amount / SymbolInfo.LotSize * cValue);
             }
             else if (vType == Domain.CommissonInfo.Types.ValueType.Percentage)
             {
@@ -247,16 +246,16 @@ namespace TickTrader.Algo.Core.Calc
             double swapAmount = GetSwapModifier(side) * amount;
             double swap = 0;
 
-            if (SymbolInfo.SwapType == Domain.SwapInfo.Types.Type.Points)
+            if (SymbolInfo.Swap.Type == Domain.SwapInfo.Types.Type.Points)
                 swap = ConvertProfitToAccountCurrency(swapAmount, out error);
-            else if (SymbolInfo.SwapType == Domain.SwapInfo.Types.Type.PercentPerYear)
+            else if (SymbolInfo.Swap.Type == Domain.SwapInfo.Types.Type.PercentPerYear)
                 swap = ConvertMarginToAccountCurrency(swapAmount, out error);
 
-            if (SymbolInfo.TripleSwapDay > 0)
+            if (SymbolInfo.Swap.TripleSwapDay > 0)
             {
                 //var now = DateTime.UtcNow;
                 DayOfWeek swapDayOfWeek = now.DayOfWeek == DayOfWeek.Sunday ? DayOfWeek.Saturday : (int)now.DayOfWeek - DayOfWeek.Monday;
-                if (SymbolInfo.TripleSwapDay == (int)swapDayOfWeek)
+                if (SymbolInfo.Swap.TripleSwapDay == (int)swapDayOfWeek)
                     swap *= 3;
                 else if (swapDayOfWeek == DayOfWeek.Saturday || swapDayOfWeek == DayOfWeek.Sunday)
                     swap = 0;
@@ -267,23 +266,23 @@ namespace TickTrader.Algo.Core.Calc
 
         private double GetSwapModifier(Domain.OrderInfo.Types.Side side)
         {
-            if (SymbolInfo.SwapEnabled)
+            if (SymbolInfo.Swap.Enabled)
             {
-                if (SymbolInfo.SwapType == Domain.SwapInfo.Types.Type.Points)
+                if (SymbolInfo.Swap.Type == Domain.SwapInfo.Types.Type.Points)
                 {
                     if (side == Domain.OrderInfo.Types.Side.Buy)
-                        return SymbolInfo.SwapSizeLong / Math.Pow(10, SymbolInfo.Digits);
+                        return SymbolInfo.Swap.SizeLong / Math.Pow(10, SymbolInfo.Digits) ?? 0;
                     if (side == Domain.OrderInfo.Types.Side.Sell)
-                        return SymbolInfo.SwapSizeShort / Math.Pow(10, SymbolInfo.Digits);
+                        return SymbolInfo.Swap.SizeShort / Math.Pow(10, SymbolInfo.Digits) ?? 0;
                 }
-                else if (SymbolInfo.SwapType == Domain.SwapInfo.Types.Type.PercentPerYear)
+                else if (SymbolInfo.Swap.Type == Domain.SwapInfo.Types.Type.PercentPerYear)
                 {
                     const double power = 1.0 / 365.0;
                     double factor = 0.0;
                     if (side == Domain.OrderInfo.Types.Side.Buy)
-                        factor = Math.Sign(SymbolInfo.SwapSizeLong) * (Math.Pow(1 + Math.Abs(SymbolInfo.SwapSizeLong), power) - 1);
+                        factor = Math.Sign(SymbolInfo.Swap.SizeLong ?? 0) * (Math.Pow(1 + Math.Abs(SymbolInfo.Swap.SizeLong ?? 0), power) - 1);
                     if (side == Domain.OrderInfo.Types.Side.Sell)
-                        factor = Math.Sign(SymbolInfo.SwapSizeShort) * (Math.Pow(1 + Math.Abs(SymbolInfo.SwapSizeShort), power) - 1);
+                        factor = Math.Sign(SymbolInfo.Swap.SizeShort ?? 0) * (Math.Pow(1 + Math.Abs(SymbolInfo.Swap.SizeShort ?? 0), power) - 1);
 
                     //if (double.IsInfinity(factor) || double.IsNaN(factor))
                     //    throw new MarketConfigurationException($"Can not calculate swap: side={side} symbol={SymbolInfo.Symbol} swaptype={SymbolInfo.SwapType} sizelong={SymbolInfo.SwapSizeLong} sizeshort={SymbolInfo.SwapSizeShort}");

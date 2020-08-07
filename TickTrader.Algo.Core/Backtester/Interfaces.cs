@@ -31,7 +31,7 @@ namespace TickTrader.Algo.Core
         public TimeSpan ServerPing { get; set; }
         public Dictionary<string, double> InitialAssets { get; } = new Dictionary<string, double>();
         public Dictionary<string, Domain.SymbolInfo> Symbols { get; } = new Dictionary<string, Domain.SymbolInfo>();
-        public Dictionary<string, CurrencyEntity> Currencies { get; } = new Dictionary<string, CurrencyEntity>();
+        public Dictionary<string, Domain.CurrencyInfo> Currencies { get; } = new Dictionary<string, Domain.CurrencyInfo>();
         public TimeFrames MainTimeframe { get; set; }
         public DateTime? EmulationPeriodStart { get; set; }
         public DateTime? EmulationPeriodEnd { get; set; }

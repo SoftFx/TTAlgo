@@ -41,12 +41,12 @@ namespace TickTrader.Algo.Core
         }
 
 
-        IEnumerable<CurrencyEntity> IPluginMetadata.GetCurrencyMetadata()
+        IEnumerable<CurrencyInfo> IPluginMetadata.GetCurrencyMetadata()
         {
             var context = new RpcResponseTaskContext<CurrencyListResponse>(SingleReponseHandler);
             _session.Ask(RpcMessage.Request(new CurrencyListRequest()), context);
             var res = context.TaskSrc.Task.GetAwaiter().GetResult();
-            return res.Currencies.Select(c => new CurrencyEntity(c));
+            return res.Currencies;
         }
 
         IEnumerable<SymbolInfo> IPluginMetadata.GetSymbolMetadata()

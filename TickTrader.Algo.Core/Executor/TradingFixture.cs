@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
@@ -14,7 +13,7 @@ namespace TickTrader.Algo.Core
     internal class TradingFixture : CrossDomainObject, ITradeApi, IExecutorFixture
     {
         private IFixtureContext context;
-        private Dictionary<string, Currency> currencies;
+        private Dictionary<string, CurrencyInfo> currencies;
         private AccountAccessor _account;
         private SymbolsCollection _symbols;
         private ITradeExecutor _executor;
@@ -77,7 +76,7 @@ namespace TickTrader.Algo.Core
             _dataProvider.BalanceUpdated += DataProvider_BalanceUpdated;
             _dataProvider.PositionUpdated += DataProvider_PositionUpdated;
 
-            currencies = builder.Currencies.CurrencyListImp.ToDictionary(c => c.Name);
+            currencies = builder.Currencies.Values.Select(u => u.Info).ToDictionary(c => c.Name);
 
             builder.Account.Init(_dataProvider, currencies);
         }
@@ -131,7 +130,7 @@ namespace TickTrader.Algo.Core
             if (eReport.EntityAction == Domain.OrderExecReport.Types.EntityAction.Updated)
                 return collection.Update(eReport.OrderCopy);
 
-            return new OrderAccessor(eReport.OrderCopy, _symbols.GetOrDefault);
+            return new OrderAccessor(_symbols.GetOrNull(eReport.OrderCopy.Symbol).Info, eReport.OrderCopy);
         }
 
         private void DataProvider_BalanceUpdated(Domain.BalanceOperation report)
@@ -143,30 +142,32 @@ namespace TickTrader.Algo.Core
                 if (accProxy.Type == AccountInfo.Types.Type.Gross || accProxy.Type == AccountInfo.Types.Type.Net)
                 {
                     accProxy.Balance = (decimal)report.Balance;
-                    var currencyInfo = currencies.GetOrStub(report.Currency);
+                    var currencyInfo = currencies.GetOrDefault(report.Currency);
 
                     if (report.Type == BalanceOperation.Types.Type.DepositWithdrawal)
                     {
-                        context.Logger.NotifyDespositWithdrawal(report.TransactionAmount, (CurrencyEntity)accProxy.BalanceCurrencyInfo);
+                        context.Logger.NotifyDespositWithdrawal(report.TransactionAmount, accProxy.BalanceCurrencyInfo);
                         context.EnqueueEvent(builder => accProxy.FireBalanceUpdateEvent());
                     }
 
                     if (report.Type == BalanceOperation.Types.Type.Dividend)
                     {
-                        context.Logger.NotifyDividend(report.TransactionAmount, currencyInfo.Name, ((CurrencyEntity)currencyInfo).Format);
+                        var format = new NumberFormatInfo { NumberDecimalDigits = currencyInfo.Digits };
+
+                        context.Logger.NotifyDividend(report.TransactionAmount, currencyInfo.Name, format);
                         context.EnqueueEvent(builder => accProxy.FireBalanceDividendEvent(new BalanceDividendEventArgsImpl(report)));
                     }
                 }
                 else if (accProxy.Type == AccountInfo.Types.Type.Cash)
                 {
                     AssetChangeType assetChange;
-                    var asset = accProxy.Assets.Update(new Domain.AssetInfo(report.Balance, report.Currency), currencies, out assetChange);
-                    var currencyInfo = currencies.GetOrStub(report.Currency);
+                    var asset = accProxy.Assets.Update(new Domain.AssetInfo(report.Balance, report.Currency), out assetChange);
+                    var currencyInfo = currencies.GetOrDefault(report.Currency);
                     if (assetChange != AssetChangeType.NoChanges)
                     {
                         if (report.Type == BalanceOperation.Types.Type.DepositWithdrawal)
                         {
-                            context.Logger.NotifyDespositWithdrawal(report.TransactionAmount, (CurrencyEntity)currencyInfo);
+                            context.Logger.NotifyDespositWithdrawal(report.TransactionAmount, currencyInfo);
                             context.EnqueueEvent(builder => accProxy.Assets.FireModified(new AssetUpdateEventArgsImpl(asset)));
                             context.EnqueueEvent(builder => accProxy.FireBalanceUpdateEvent());
                         }
@@ -194,8 +195,8 @@ namespace TickTrader.Algo.Core
             var accProxy = context.Builder.Account;
             var positions = accProxy.NetPositions;
 
-            var oldPos = positions.GetPositionOrNull(position.Symbol);
-            var clone = oldPos?.Clone() ?? new PositionAccessor(_symbols.GetOrDefault(position.Symbol));
+            var oldPos = positions.GetOrNull(position.Symbol);
+            var clone = oldPos?.Clone() ?? new PositionAccessor(_symbols.GetOrNull(position.Symbol));
             var pos = positions.UpdatePosition(position);
             var isClosed = action == Domain.OrderExecReport.Types.ExecAction.Closed || pos.IsEmpty;
 
@@ -222,8 +223,8 @@ namespace TickTrader.Algo.Core
                 var clone = order.Clone();
                 var isOwnOrder = CallListener(eReport);
                 if (!isOwnOrder && !IsInvisible(clone))
-                    context.Logger.NotifyOrderActivation(clone);
-                context.EnqueueEvent(b => orderCollection.FireOrderActivated(new OrderActivatedEventArgsImpl(clone.ApiOrder)));
+                    context.Logger.NotifyOrderEvent(clone.Info, eReport.ExecAction);
+                context.EnqueueEvent(b => orderCollection.FireOrderActivated(new OrderActivatedEventArgsImpl(clone)));
             }
             else if (eReport.ExecAction == Domain.OrderExecReport.Types.ExecAction.Opened)
             {
@@ -231,20 +232,20 @@ namespace TickTrader.Algo.Core
                 var clone = order.Clone();
                 var isOwnOrder = CallListener(eReport);
                 if (!isOwnOrder && !IsInvisible(clone))
-                    context.Logger.NotifyOrderOpened(clone);
-                context.EnqueueEvent(b => b.Account.Orders.FireOrderOpened(new OrderOpenedEventArgsImpl(clone.ApiOrder)));
+                    context.Logger.NotifyOrderEvent(clone.Info, eReport.ExecAction);
+                context.EnqueueEvent(b => b.Account.Orders.FireOrderOpened(new OrderOpenedEventArgsImpl(clone)));
             }
             else if (eReport.ExecAction == Domain.OrderExecReport.Types.ExecAction.Closed)
             {
-                var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderCopy.Id);
+                var oldOrder = orderCollection.GetOrNull(eReport.OrderCopy.Id);
                 if (oldOrder != null)
                 {
                     var order = ApplyOrderEntity(eReport, orderCollection);
                     var clone = order.Clone();
                     var isOwnOrder = CallListener(eReport);
                     if (!isOwnOrder && !IsInvisible(clone))
-                        context.Logger.NotifyOrderClosed(clone);
-                    context.EnqueueEvent(b => b.Account.Orders.FireOrderClosed(new OrderClosedEventArgsImpl(clone.ApiOrder)));
+                        context.Logger.NotifyOrderEvent(clone.Info, eReport.ExecAction);
+                    context.EnqueueEvent(b => b.Account.Orders.FireOrderClosed(new OrderClosedEventArgsImpl(clone)));
                 }
             }
             else if (eReport.ExecAction == Domain.OrderExecReport.Types.ExecAction.Canceled)
@@ -254,47 +255,47 @@ namespace TickTrader.Algo.Core
                 var clone = order.Clone();
                 var isOwnOrder = CallListener(eReport);
                 if (!isOwnOrder && !IsInvisible(clone))
-                    context.Logger.NotifyOrderCancelation(clone);
-                context.EnqueueEvent(b => orderCollection.FireOrderCanceled(new OrderCanceledEventArgsImpl(clone.ApiOrder)));
+                    context.Logger.NotifyOrderEvent(clone.Info, eReport.ExecAction);
+                context.EnqueueEvent(b => orderCollection.FireOrderCanceled(new OrderCanceledEventArgsImpl(clone)));
             }
             else if (eReport.ExecAction == Domain.OrderExecReport.Types.ExecAction.Expired)
             {
-                var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderCopy.Id);
+                var oldOrder = orderCollection.GetOrNull(eReport.OrderCopy.Id);
                 if (oldOrder != null)
                 {
                     var order = ApplyOrderEntity(eReport, orderCollection);
                     var clone = order.Clone();
                     if (!IsInvisible(clone))
-                        context.Logger.NotifyOrderExpiration(clone);
-                    context.EnqueueEvent(b => orderCollection.FireOrderExpired(new OrderExpiredEventArgsImpl(clone.ApiOrder)));
+                        context.Logger.NotifyOrderEvent(clone.Info, eReport.ExecAction);
+                    context.EnqueueEvent(b => orderCollection.FireOrderExpired(new OrderExpiredEventArgsImpl(clone)));
                 }
             }
             else if (eReport.ExecAction == Domain.OrderExecReport.Types.ExecAction.Modified)
             {
-                var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderCopy.Id)?.Clone();
+                var oldOrder = orderCollection.GetOrNull(eReport.OrderCopy.Id)?.Clone();
                 if (oldOrder != null && eReport.OrderCopy != null)
                 {
                     var order = ApplyOrderEntity(eReport, orderCollection);
                     var newOrder = order.Clone();
                     var isOwnOrder = CallListener(eReport);
                     if (!isOwnOrder && !IsInvisible(newOrder))
-                        context.Logger.NotifyOrderModification(newOrder);
+                        context.Logger.NotifyOrderEvent(newOrder.Info, eReport.ExecAction);
 
-                    context.EnqueueEvent(b => orderCollection.FireOrderModified(new OrderModifiedEventArgsImpl(oldOrder.ApiOrder, newOrder.ApiOrder)));
+                    context.EnqueueEvent(b => orderCollection.FireOrderModified(new OrderModifiedEventArgsImpl(oldOrder, newOrder)));
                 }
             }
             else if (eReport.ExecAction == Domain.OrderExecReport.Types.ExecAction.Splitted)
             {
-                var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderCopy.Id)?.Clone();
+                var oldOrder = orderCollection.GetOrNull(eReport.OrderCopy.Id)?.Clone();
                 if (oldOrder != null && eReport.OrderCopy != null)
                 {
                     var order = ApplyOrderEntity(eReport, orderCollection);
                     var newOrder = order.Clone();
                     var isOwnOrder = CallListener(eReport);
                     if (!isOwnOrder && !IsInvisible(newOrder))
-                        context.Logger.NotifyOrderSplitting(newOrder);
+                        context.Logger.NotifyOrderEvent(newOrder.Info, eReport.ExecAction);
 
-                    context.EnqueueEvent(b => orderCollection.FireOrderSplitted(new OrderSplittedEventArgsImpl(oldOrder.ApiOrder, newOrder.ApiOrder)));
+                    context.EnqueueEvent(b => orderCollection.FireOrderSplitted(new OrderSplittedEventArgsImpl(oldOrder, newOrder)));
                 }
             }
             else if (eReport.ExecAction == Domain.OrderExecReport.Types.ExecAction.Filled)
@@ -302,36 +303,36 @@ namespace TickTrader.Algo.Core
                 if (eReport.OrderCopy.Type == Domain.OrderInfo.Types.Type.Market)
                 {
                     // market orders are never added to orders collection. Cash account has actually limit IoC
-                    var clone = new OrderAccessor(eReport.OrderCopy, _symbols.GetOrDefault);
+                    var clone = new OrderAccessor(_symbols.GetOrNull(eReport.OrderCopy.Symbol).Info, eReport.OrderCopy);
                     if (clone != null)
                     {
                         var isOwnOrder = CallListener(eReport);
                         if (!isOwnOrder && !IsInvisible(clone))
-                            context.Logger.NotifyOrderFill(clone);
-                        context.EnqueueEvent(b => b.Account.Orders.FireOrderOpened(new OrderOpenedEventArgsImpl(clone.ApiOrder)));
-                        context.EnqueueEvent(b => orderCollection.FireOrderFilled(new OrderFilledEventArgsImpl(clone.ApiOrder, clone.ApiOrder)));
+                            context.Logger.NotifyOrderEvent(clone.Info, eReport.ExecAction);
+                        context.EnqueueEvent(b => b.Account.Orders.FireOrderOpened(new OrderOpenedEventArgsImpl(clone)));
+                        context.EnqueueEvent(b => orderCollection.FireOrderFilled(new OrderFilledEventArgsImpl(clone, clone)));
                     }
                 }
                 else
                 {
                     // pending orders
-                    var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderCopy.Id)?.Clone();
+                    var oldOrder = orderCollection.GetOrNull(eReport.OrderCopy.Id)?.Clone();
                     if (oldOrder != null && eReport.OrderCopy != null)
                     {
                         var order = ApplyOrderEntity(eReport, orderCollection);
                         var clone = order.Clone();
                         if (!IsInvisible(clone))
-                            context.Logger.NotifyOrderFill(clone);
-                        context.EnqueueEvent(b => orderCollection.FireOrderFilled(new OrderFilledEventArgsImpl(oldOrder.ApiOrder, clone.ApiOrder)));
+                            context.Logger.NotifyOrderEvent(clone.Info, eReport.ExecAction);
+                        context.EnqueueEvent(b => orderCollection.FireOrderFilled(new OrderFilledEventArgsImpl(oldOrder, clone)));
                     }
                     else
                     {
-                        var clone = new OrderAccessor(eReport.OrderCopy, _symbols.GetOrDefault);
+                        var clone = new OrderAccessor(_symbols.GetOrNull(eReport.OrderCopy.Symbol).Info, eReport.OrderCopy);
                         if (clone != null)
                         {
                             if (!IsInvisible(clone))
-                                context.Logger.NotifyOrderFill(clone);
-                            context.EnqueueEvent(b => orderCollection.FireOrderFilled(new OrderFilledEventArgsImpl(clone.ApiOrder, clone.ApiOrder)));
+                                context.Logger.NotifyOrderEvent(clone.Info, eReport.ExecAction);
+                            context.EnqueueEvent(b => orderCollection.FireOrderFilled(new OrderFilledEventArgsImpl(clone, clone)));
                         }
                         CallListener(eReport);
                     }
@@ -368,7 +369,7 @@ namespace TickTrader.Algo.Core
                     foreach (var asset in eReport.Assets)
                     {
                         AssetChangeType assetChange;
-                        var assetModel = acc.Assets.Update(asset, currencies, out assetChange);
+                        var assetModel = acc.Assets.Update(asset, out assetChange);
                         if (assetChange != AssetChangeType.NoChanges)
                         {
                             hasChanges = true;
@@ -384,7 +385,7 @@ namespace TickTrader.Algo.Core
 
         private bool IsInvisible(OrderAccessor order)
         {
-            return context.Builder.Isolated && order.InstanceId != context.Builder.InstanceId;
+            return context.Builder.Isolated && order.Info.InstanceId != context.Builder.InstanceId;
         }
 
         #region TradeCommands impl

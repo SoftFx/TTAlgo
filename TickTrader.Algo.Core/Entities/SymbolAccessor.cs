@@ -1,203 +1,115 @@
 ﻿using System;
-using System.Globalization;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Api.Math;
-using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    public class SymbolAccessor : Api.Symbol, ISymbolInfo
+    public sealed class SymbolAccessor : BaseSymbolAccessor<SymbolInfo>,  Api.Symbol
     {
-        private Domain.SymbolInfo _info;
-        private FeedProvider feed;
+        private readonly CurrenciesCollection _currencies;
+        private readonly FeedProvider _feed;
 
-        public event Action<ISymbolInfo> RateUpdated;
-
-        internal SymbolAccessor(Domain.SymbolInfo entity, FeedProvider feed, CurrenciesCollection currencies)
+        internal SymbolAccessor(Domain.SymbolInfo info, FeedProvider feed, CurrenciesCollection currencies) : base(info)
         {
-            this._info = entity;
-            this.feed = feed;
-
-            Ask = double.NaN;
-            Bid = double.NaN;
-            LastQuote = Null.Quote;
-
-            Update(entity, currencies);
+            _feed = feed;
+            _currencies = currencies;
         }
 
-        public string Name => _info.Name;
-        public int Digits => _info.Digits;
-        public double ContractSize => _info.LotSize;
-        public double MaxTradeVolume => _info.MaxTradeVolume;
-        public double MinTradeVolume => _info.MinTradeVolume;
-        public double TradeVolumeStep => _info.TradeVolumeStep;
-        public string BaseCurrency => _info.BaseCurrency;
-        public Currency BaseCurrencyInfo { get; private set; }
-        public string CounterCurrency => _info.CounterCurrency;
-        public Currency CounterCurrencyInfo { get; private set; }
-        public bool IsNull { get; private set; }
-        public double Point { get; private set; }
-        public double Bid { get; set; }
-        public double Ask { get; set; }
-        public Api.Quote LastQuote { get; set; }
-        public bool IsTradeAllowed => _info.TradeAllowed;
-        public double Commission => _info.Commission.Commission;
-        public double LimitsCommission => _info.Commission.LimitsCommission;
-        public CommissionChargeMethod CommissionChargeMethod => CommissionChargeMethod.OneWay;
-        public CommissionChargeType CommissionChargeType => CommissionChargeType.PerLot;
-        public CommissionType CommissionType { get; private set; }
-        public double HedgingFactor => _info.Margin.Hedged;
-        public NumberFormatInfo PriceFormat { get; private set; }
-        public int AmountDigits { get; private set; }
+        string Symbol.Name => Info.Name;
 
-        public double? Slippage => _info.Slippage.DefaultValue;
-        double Symbol.Slippage => _info.Slippage.DefaultValue ?? 0;
+        int Symbol.Digits => Info.Digits;
 
-        public Domain.SlippageInfo.Types.Type SlippageType => _info.Slippage.Type;
-        SlippageType Symbol.SlippageType => SlippageType.ToApiEnum();
+        double Symbol.Point => Math.Pow(10, -Info.Digits);
 
-        public Domain.CommissonInfo.Types.ValueType CommissionValueType => _info.Commission.ValueType;
-        public double MarginFactorFractional => _info.Margin.Factor;
-        public double StopOrderMarginReduction => _info.Margin.StopOrderReduction ?? 1;
-        public double HiddenLimitOrderMarginReduction => _info.Margin.HiddenLimitOrderReduction ?? 1;
-        public double MarginHedged => _info.Margin.Hedged;
-        public Domain.MarginInfo.Types.CalculationMode MarginMode => _info.Margin.Mode;
-        public bool SwapEnabled => _info.Swap.Enabled;
-        public double SwapSizeLong => _info.Swap.SizeLong ?? 0;
-        public double SwapSizeShort => _info.Swap.SizeShort ?? 0;
-        public string Security => _info.Security;
-        public int SortOrder => _info.SortOrder;
-        public int GroupSortOrder => _info.GroupSortOrder;
-        public Domain.SwapInfo.Types.Type SwapType => _info.Swap.Type;
-        public int TripleSwapDay => _info.Swap.TripleSwapDay;
-        public double DefaultSlippage => _info.Slippage.DefaultValue ?? 0;
+        double Symbol.ContractSize => Info.LotSize;
 
-        #region Aliases
+        double Symbol.MaxTradeVolume => Info.MaxTradeVolume;
 
-        public string MarginCurrency => BaseCurrency;
-        public string ProfitCurrency => CounterCurrency;
-        public Currency MarginCurrencyInfo => BaseCurrencyInfo;
-        public Currency ProfitCurrencyInfo => CounterCurrencyInfo;
-        public int Precision => Digits;
-        public double ContractSizeFractional => _info.LotSize;
+        double Symbol.MinTradeVolume => Info.MinTradeVolume;
 
-        IQuoteInfo ISymbolInfo.LastQuote => (IQuoteInfo)LastQuote;
+        double Symbol.TradeVolumeStep => Info.TradeVolumeStep;
 
-        public int ProfitDigits => CounterCurrencyInfo.Digits;
+        bool Symbol.IsTradeAllowed => Info.TradeAllowed;
 
-        #endregion Aliases
+        bool Symbol.IsNull => IsNull;
 
-        public void Subscribe(int depth = 1)
+        string Symbol.BaseCurrency => Info.BaseCurrency;
+
+        Currency Symbol.BaseCurrencyInfo => _currencies.GetOrNull(Info.BaseCurrency) ?? Null.Currency;
+
+        string Symbol.CounterCurrency => Info.CounterCurrency;
+
+        Currency Symbol.CounterCurrencyInfo => _currencies.GetOrNull(Info.CounterCurrency) ?? Null.Currency;
+
+        double Symbol.Bid => Info.Bid;
+
+        double Symbol.Ask => Info.Ask;
+
+        Quote Symbol.LastQuote => Info.LastQuote == null ? Null.Quote : new QuoteEntity((QuoteInfo)Info.LastQuote);
+
+        double Symbol.Commission => Info.Commission.Commission;
+
+        double Symbol.LimitsCommission => Info.Commission.LimitsCommission;
+
+        CommissionChargeMethod Symbol.CommissionChargeMethod => CommissionChargeMethod.OneWay;
+
+        CommissionChargeType Symbol.CommissionChargeType => CommissionChargeType.PerLot;
+
+        CommissionType Symbol.CommissionType => Info.Commission.ValueType.ToApiEnum();
+
+        double Symbol.HedgingFactor => Info.Margin.Hedged;
+
+        double Symbol.Slippage => Info.Slippage.DefaultValue ?? 0;
+
+        SlippageType Symbol.SlippageType => Info.Slippage.Type.ToApiEnum();
+
+        void Symbol.Subscribe(int depth)
         {
-            feed.CustomCommds.Subscribe(Name, depth);
+            _feed.CustomCommds.Subscribe(Info.Name, depth);
         }
 
-        public void Unsubscribe()
+        void Symbol.Unsubscribe()
         {
-            feed.CustomCommds.Unsubscribe(Name);
+            _feed.CustomCommds.Unsubscribe(Info.Name);
         }
-
-        public void UpdateRate(QuoteInfo quote)
-        {
-            Ask = quote.Ask;
-            Bid = quote.Bid;
-            LastQuote = new QuoteEntity(quote);
-
-            RateUpdated?.Invoke(this);
-        }
-
-        public void Update(Domain.SymbolInfo info, CurrenciesCollection currencies)
-        {
-            if (info == null)
-            {
-                IsNull = true;
-            }
-            else
-            {
-                IsNull = false;
-                _info = info;
-
-                if (info.Commission != null)
-                {
-                    CommissionType = info.Commission.ValueType.ToApiEnum();
-                }
-
-                Point = System.Math.Pow(10, -info.Digits);
-                BaseCurrencyInfo = currencies.GetOrDefault(info.BaseCurrency) ?? Null.Currency;
-                CounterCurrencyInfo = currencies.GetOrDefault(info.CounterCurrency) ?? Null.Currency;
-
-                PriceFormat = FormatExtentions.CreateTradeFormatInfo(info.Digits);
-                AmountDigits = (info.TradeVolumeStep * info.LotSize).Digits();
-            }
-        }
-
-        public void Update(ISymbolInfo info)
-        {
-            if (info == null)
-            {
-                IsNull = true;
-            }
-            else
-            {
-                //IsNull = false;
-                //_info = info;
-
-                //if (info.Commission != null)
-                //{
-                //    CommissionType = info.Commission.ValueType.ToApiEnum();
-                //}
-
-                //Point = System.Math.Pow(10, -info.Digits);
-                ////BaseCurrencyInfo = currencies.GetOrDefault(info.BaseCurrency) ?? Null.Currency;
-                ////CounterCurrencyInfo = currencies.GetOrDefault(info.CounterCurrency) ?? Null.Currency;
-
-                //PriceFormat = FormatExtentions.CreateTradeFormatInfo(info.Digits);
-                //AmountDigits = (info.TradeVolumeStep * info.LotSize).Digits();
-            }
-        }
-
-        public void UpdateRate(IQuoteInfo quote) => UpdateRate((QuoteInfo)quote);
     }
 
     public class NullSymbol : Api.Symbol
     {
+        public NullSymbol() : this("") { }
+
         public NullSymbol(string code)
         {
-            this.Name = code;
+            Name = code;
         }
 
-        public string Name { get; private set; }
-        public int Digits { get { return 3; } }
-        public double ContractSize { get { return double.NaN; } }
-        public double MaxTradeVolume { get { return double.NaN; } }
-        public double MinTradeVolume { get { return double.NaN; } }
-        public double TradeVolumeStep { get { return double.NaN; } }
-        public string BaseCurrency { get { return ""; } }
+        public string Name { get; }
+        public int Digits => 3;
+        public double ContractSize => double.NaN;
+        public double MaxTradeVolume => double.NaN;
+        public double MinTradeVolume => double.NaN;
+        public double TradeVolumeStep => double.NaN;
+        public string BaseCurrency => string.Empty;
         public Currency BaseCurrencyInfo => Null.Currency;
-        public string CounterCurrency { get { return ""; } }
+        public string CounterCurrency => string.Empty;
         public Currency CounterCurrencyInfo => Null.Currency;
-        public bool IsNull { get { return true; } }
-        public double Point { get { return double.NaN; } }
-        public double Bid { get { return double.NaN; } }
-        public double Ask { get { return double.NaN; } }
-        public bool IsTradeAllowed { get { return false; } }
-        public Api.Quote LastQuote { get { return Null.Quote; } }
-        public double Commission { get { return double.NaN; } }
-        public double LimitsCommission { get { return double.NaN; } }
-        public CommissionChargeMethod CommissionChargeMethod { get { return CommissionChargeMethod.OneWay; } }
-        public CommissionChargeType CommissionChargeType { get { return CommissionChargeType.PerTrade; } }
-        public CommissionType CommissionType { get { return CommissionType.Percent; } }
+        public bool IsNull => true;
+        public double Point => double.NaN;
+        public double Bid => double.NaN;
+        public double Ask => double.NaN;
+        public bool IsTradeAllowed => false;
+        public Api.Quote LastQuote => Null.Quote;
+        public double Commission => double.NaN;
+        public double LimitsCommission => double.NaN;
+        public CommissionChargeMethod CommissionChargeMethod => CommissionChargeMethod.OneWay;
+        public CommissionChargeType CommissionChargeType => CommissionChargeType.PerTrade;
+        public CommissionType CommissionType => CommissionType.Percent;
         public double HedgingFactor => double.NaN;
         public double Slippage => double.NaN;
         public SlippageType SlippageType => SlippageType.Percent;
 
-        public void Subscribe(int depth = 1)
-        {
-        }
+        public void Subscribe(int depth = 1) { }
 
-        public void Unsubscribe()
-        {
-        }
+        public void Unsubscribe() { }
     }
 }

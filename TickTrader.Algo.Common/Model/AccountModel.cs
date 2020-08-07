@@ -16,7 +16,7 @@ namespace TickTrader.Algo.Common.Model
         private readonly VarDictionary<string, AssetInfo> _assets = new VarDictionary<string, AssetInfo>();
         private readonly VarDictionary<string, OrderInfo> _orders = new VarDictionary<string, OrderInfo>();
         private Domain.AccountInfo.Types.Type? _accType;
-        private readonly IReadOnlyDictionary<string, CurrencyEntity> _currencies;
+        private readonly IReadOnlyDictionary<string, CurrencyInfo> _currencies;
         private readonly IReadOnlyDictionary<string, SymbolInfo> _symbols;
         private bool _isCalcStarted;
         private OrderUpdateAction _updateWatingForPosition = null;
@@ -27,7 +27,7 @@ namespace TickTrader.Algo.Common.Model
 
         public MarginAccountCalculator MarginCalculator { get; private set; }
 
-        public AccountModel(IVarSet<string, CurrencyEntity> currecnies, IVarSet<string, SymbolInfo> symbols)
+        public AccountModel(IVarSet<string, CurrencyInfo> currecnies, IVarSet<string, SymbolInfo> symbols)
         {
             _currencies = currecnies.Snapshot;
             _symbols = symbols.Snapshot;
@@ -61,7 +61,7 @@ namespace TickTrader.Algo.Common.Model
 
         AccountInfo.Types.Type IAccountInfo2.Type => Type ?? AccountInfo.Types.Type.Gross;
 
-        IEnumerable<IOrderInfo> IAccountInfo2.Orders => Orders.Snapshot.Values;
+        IEnumerable<IOrderCalcInfo> IAccountInfo2.Orders => Orders.Snapshot.Values;
 
         IEnumerable<IAssetInfo> ICashAccountInfo2.Assets => Assets.Snapshot.Values;
 
@@ -73,9 +73,9 @@ namespace TickTrader.Algo.Common.Model
         public event Action BalanceUpdate;
 
         public event Action<IPositionInfo> PositionChanged;
-        public event Action<IOrderInfo> OrderAdded;
-        public event Action<IEnumerable<IOrderInfo>> OrdersAdded;
-        public event Action<IOrderInfo> OrderRemoved;
+        public event Action<IOrderCalcInfo> OrderAdded;
+        public event Action<IEnumerable<IOrderCalcInfo>> OrdersAdded;
+        public event Action<IOrderCalcInfo> OrderRemoved;
         public event Action<IAssetInfo, AssetChangeType> AssetsChanged;
         public event Action<IPositionInfo> PositionRemoved;
 

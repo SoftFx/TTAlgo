@@ -45,7 +45,7 @@ namespace TickTrader.Algo.Core
 
         #region IPluginMetadata
 
-        public IEnumerable<CurrencyEntity> GetCurrencyMetadata()
+        public IEnumerable<Domain.CurrencyInfo> GetCurrencyMetadata()
         {
             return _meta.GetCurrencyMetadata();
         }

@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Core
         public decimal Commission { get; set; }
 
         public decimal Total => Swap + Commission;
-        public CurrencyEntity CurrencyInfo { get; set; }
+        public CurrencyInfo CurrencyInfo { get; set; }
 
         public void Clear()
         {
@@ -32,7 +32,7 @@ namespace TickTrader.Algo.Core
         public double FillPrice { get; set; }
         public OrderAccessor Position { get; set; }
         public NetPositionOpenInfo NetPos { get; set; }
-        public SymbolAccessor SymbolInfo { get; set; }
+        public SymbolInfo SymbolInfo { get; set; }
 
         public bool WasNetPositionClosed => NetPos?.CloseInfo?.CloseAmount > 0;
     }
@@ -98,8 +98,8 @@ namespace TickTrader.Algo.Core
         public void AddFillAction(OrderAccessor order, FillInfo info)
         {
             var smbInfo = order.SymbolInfo;
-            var priceFormat = smbInfo.PriceFormat;
-            var fillAmountLots = info.FillAmount / (decimal)smbInfo.ContractSize;
+            var priceFormat = FormatExtentions.CreateTradeFormatInfo(5);
+            var fillAmountLots = info.FillAmount / (decimal)smbInfo.LotSize;
 
             StartNewAction();
 
@@ -134,10 +134,10 @@ namespace TickTrader.Algo.Core
             //return _builder.ToString();
         }
 
-        public void AddGrossCloseAction(OrderAccessor pos, decimal profit, double price, TradeChargesInfo charges, CurrencyEntity balanceCurrInf)
+        public void AddGrossCloseAction(OrderAccessor pos, decimal profit, double price, TradeChargesInfo charges, CurrencyInfo balanceCurrInf)
         {
-            var priceFormat = pos.SymbolInfo.PriceFormat;
-            var profitFormat = balanceCurrInf.Format;
+            var priceFormat = FormatExtentions.CreateTradeFormatInfo(5);
+            var profitFormat = new NumberFormatInfo { NumberDecimalDigits = balanceCurrInf.Digits };
 
             StartNewAction();
             _builder.Append($"Closed position ");
@@ -149,14 +149,14 @@ namespace TickTrader.Algo.Core
             PrintCharges(charges);
         }
 
-        public void AddNetCloseAction(NetPositionCloseInfo closeInfo, SymbolAccessor symbol, CurrencyEntity balanceCurrInfo, TradeChargesInfo charges = null)
+        public void AddNetCloseAction(NetPositionCloseInfo closeInfo, SymbolInfo symbol, CurrencyInfo balanceCurrInfo, TradeChargesInfo charges = null)
         {
             if (closeInfo.CloseAmount == 0)
                 return;
 
-            var priceFormat = symbol.PriceFormat;
-            var closeAmountLost = closeInfo.CloseAmount / (decimal)symbol.ContractSize;
-            var profitFormat = balanceCurrInfo.Format;
+            var priceFormat = FormatExtentions.CreateTradeFormatInfo(5);
+            var closeAmountLost = closeInfo.CloseAmount / (decimal)symbol.LotSize;
+            var profitFormat = new NumberFormatInfo { NumberDecimalDigits = balanceCurrInfo.Digits };
 
             StartNewAction();
             _builder.Append("Closed net position for ").AppendNumber(closeAmountLost);
@@ -167,14 +167,14 @@ namespace TickTrader.Algo.Core
                 PrintCharges(charges);
         }
 
-        public void AddNetPositionNotification(NetPosition pos, SymbolAccessor smbInfo)
+        public void AddNetPositionNotification(NetPosition pos, SymbolInfo smbInfo)
         {
             if (pos.Volume.E(0))
                 return;
 
             StartNewAction();
 
-            var priceFormat = smbInfo.PriceFormat;
+            var priceFormat = FormatExtentions.CreateTradeFormatInfo(5);
 
             _builder.Append("Final position ");
             _builder.Append(pos.Symbol).Append(' ');
@@ -211,38 +211,38 @@ namespace TickTrader.Algo.Core
 
         private void PrintOrderDescription(OrderAccessor order)
         {
-            _builder.Append(" #").Append(order.Id)
-                .Append(' ').Append(order.Type);
-            if (order.HasOption(Domain.OrderOptions.ImmediateOrCancel))
+            _builder.Append(" #").Append(order.Info.Id)
+                .Append(' ').Append(order.Info.Type);
+            if (order.Info.ImmediateOrCancel)
                 _builder.Append(" IoC");
-            _builder.Append(' ').Append(order.Symbol)
-                .Append(' ').Append(order.Side);
+            _builder.Append(' ').Append(order.Info.Symbol)
+                .Append(' ').Append(order.Info.Side);
         }
 
         private void PrintComment(OrderAccessor order)
         {
-            if (!string.IsNullOrEmpty(order.Comment))
-                _builder.Append("  \"").Append(order.Comment).Append('"');
+            if (!string.IsNullOrEmpty(order.Info.Comment))
+                _builder.Append("  \"").Append(order.Info.Comment).Append('"');
         }
 
         private void PrintAmountAndPrice(OrderAccessor order)
         {
-            var priceFormat = order.SymbolInfo.PriceFormat;
+            var priceFormat = FormatExtentions.CreateTradeFormatInfo(5);
 
             _builder.Append($", amount=");
-            if (order.RequestedVolume == order.RemainingVolume || order.RemainingVolume == 0)
-                _builder.Append(order.RequestedVolume);
+            if (order.Info.RequestedAmount == order.Info.RequestedAmount || order.Info.RequestedAmount == 0)
+                _builder.Append(order.Info.RequestedAmount);
             else
-                _builder.Append(order.RemainingVolume).Append('/').Append(order.RequestedVolume);
+                _builder.Append(order.Info.RequestedAmount).Append('/').Append(order.Info.RequestedAmount);
             if (order.Entity.Price != null)
-                _builder.Append(" price=").AppendNumber(order.Price, priceFormat);
+                _builder.Append(" price=").AppendNumber(order.Info.Price ?? 0, priceFormat);
             if (order.Entity.StopPrice != null)
-                _builder.Append(" stopPrice=").AppendNumber(order.StopPrice, priceFormat);
+                _builder.Append(" stopPrice=").AppendNumber(order.Info.StopPrice ?? 0, priceFormat);
         }
 
         private void PrintAuxFields(OrderAccessor order)
         {
-            var priceFormat = order.SymbolInfo.PriceFormat;
+            var priceFormat = FormatExtentions.CreateTradeFormatInfo(5);
 
             var tp = order.Entity.TakeProfit;
             var sl = order.Entity.StopLoss;
@@ -261,13 +261,15 @@ namespace TickTrader.Algo.Core
 
         private void PrintCharges(TradeChargesInfo charges)
         {
+            var profitFormat = new NumberFormatInfo { NumberDecimalDigits = charges.CurrencyInfo.Digits };
+
             if (charges != null && charges.Commission != 0)
-                _builder.Append(" commission=").AppendNumber(charges.Commission, charges.CurrencyInfo.Format);
+                _builder.Append(" commission=").AppendNumber(charges.Commission, profitFormat);
         }
 
         private void PrintQuote(IRateInfo update, SymbolAccessor smbInfo)
         {
-            var priceFormat = smbInfo.PriceFormat;
+            var priceFormat = FormatExtentions.CreateTradeFormatInfo(5);
 
             if (update != null)
             {

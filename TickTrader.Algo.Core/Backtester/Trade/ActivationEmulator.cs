@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Core
         /// <param name="acc"></param>
         public ActivationRecord AddOrder(OrderAccessor order, IRateInfo currentRate)
         {
-            var node = _state.GetSymbolNodeOrNull(order.Symbol);
+            var node = _state.GetSymbolNodeOrNull(order.Info.Symbol);
             if (node.ActivationIndex == null)
                 node.ActivationIndex = new ActivationRegistry();
             return node.ActivationIndex.AddOrder(order, currentRate);
@@ -32,7 +32,7 @@ namespace TickTrader.Algo.Core
 
         public bool RemoveOrder(OrderAccessor order)
         {
-            var node = _state.GetSymbolNodeOrNull(order.Symbol);
+            var node = _state.GetSymbolNodeOrNull(order.Info.Symbol);
             if (node.ActivationIndex == null)
                 return false;
 

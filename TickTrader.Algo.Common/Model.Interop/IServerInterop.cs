@@ -51,7 +51,7 @@ namespace TickTrader.Algo.Common.Model
 
         event Action<Domain.QuoteInfo> Tick;
         event Action<Domain.SymbolInfo[]> SymbolInfo;
-        event Action<CurrencyEntity[]> CurrencyInfo;
+        event Action<CurrencyAccessor[]> CurrencyInfo;
 
         Task<Domain.CurrencyInfo[]> GetCurrencies();
         Task<Domain.SymbolInfo[]> GetSymbols();

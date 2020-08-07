@@ -765,7 +765,7 @@ namespace TickTrader.Algo.Core
                 var currencies = metadata.GetCurrencyMetadata();
 
                 _builder.Currencies.Init(currencies);
-                _builder.Symbols.Init(symbolInfoList, _builder.Currencies);
+                _builder.Symbols.Init(symbolInfoList);
             }
         }
 
@@ -777,7 +777,7 @@ namespace TickTrader.Algo.Core
                 var currencies = metadata.GetCurrencyMetadata();
 
                 _builder.Currencies.Merge(currencies);
-                _builder.Symbols.Merge(symbolInfoList, _builder.Currencies);
+                _builder.Symbols.Merge(symbolInfoList);
             }
         }
 

@@ -407,7 +407,7 @@ namespace TickTrader.Algo.Common.Model
         public event Action<Domain.TradeReportInfo> TradeTransactionReport;
         public event Action<Domain.BalanceOperation> BalanceOperation;
         public event Action<Domain.SymbolInfo[]> SymbolInfo { add { } remove { } }
-        public event Action<CurrencyEntity[]> CurrencyInfo { add { } remove { } }
+        public event Action<CurrencyAccessor[]> CurrencyInfo { add { } remove { } }
 
         public Task<Domain.AccountInfo> GetAccountInfo()
         {

@@ -38,22 +38,22 @@ namespace TickTrader.Algo.Core.Calc
         /// <summary>
         /// Account orders.
         /// </summary>
-        IEnumerable<IOrderInfo> Orders { get; }
+        IEnumerable<IOrderCalcInfo> Orders { get; }
 
         /// <summary>
         /// Fired when single order was added.
         /// </summary>
-        event Action<IOrderInfo> OrderAdded;
+        event Action<IOrderCalcInfo> OrderAdded;
 
         /// <summary>
         /// Fired when multiple orders were added.
         /// </summary>
-        event Action<IEnumerable<IOrderInfo>> OrdersAdded;
+        event Action<IEnumerable<IOrderCalcInfo>> OrdersAdded;
 
         /// <summary>
         /// Fired when order was removed.
         /// </summary>
-        event Action<IOrderInfo> OrderRemoved;
+        event Action<IOrderCalcInfo> OrderRemoved;
 
         /// <summary>
         /// Fired when order was replaced.

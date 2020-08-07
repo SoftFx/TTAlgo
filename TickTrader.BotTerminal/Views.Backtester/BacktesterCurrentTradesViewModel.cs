@@ -36,7 +36,7 @@ namespace TickTrader.BotTerminal
             _client.Clear();
         }
 
-        public void Start(Backtester backtester, IEnumerable<CurrencyEntity> currencies, IEnumerable<SymbolInfo> symbols)
+        public void Start(Backtester backtester, IEnumerable<CurrencyInfo> currencies, IEnumerable<SymbolInfo> symbols)
         {
             var settings = backtester.CommonSettings;
             var accInfo = new AccountInfo(settings.InitialBalance, settings.BalanceCurrency, null);

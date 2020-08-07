@@ -157,10 +157,6 @@
     <Compile Include="Container\PluginContainer.cs" />
     <Compile Include="Container\PluginLoader.cs" />
     <Compile Include="CoreExtentions.cs" />
-    <Compile Include="Entities.Requests\CancelOrderRequestContext.cs" />
-    <Compile Include="Entities.Requests\CloseOrderRequestContext.cs" />
-    <Compile Include="Entities.Requests\OpenOrderRequestContext.cs" />
-    <Compile Include="Entities.Requests\ModifyOrderRequestContext.cs" />
     <Compile Include="Entities\AccountAccessor.cs" />
     <Compile Include="Entities\AccountEntity.cs" />
     <Compile Include="Entities\AlgoMarketNode.cs" />
@@ -180,7 +176,7 @@
     <Compile Include="Entities\BarRateUpdate.cs" />
     <Compile Include="Entities\CoreEnumConverterExtentions.cs" />
     <Compile Include="Entities\CurrenciesCollection.cs" />
-    <Compile Include="Entities\CurrencyEntity.cs" />
+    <Compile Include="Entities\CurrencyAccessor.cs" />
     <Compile Include="Entities\DataSeriesUpdate.cs" />
     <Compile Include="Entities\Dealer\CancelOrderDealerRequest.cs" />
     <Compile Include="Entities\Dealer\ClosePositionDealerRequest.cs" />
@@ -204,7 +200,6 @@
     <Compile Include="Entities\PositionExecReport.cs" />
     <Compile Include="Entities\QuoteEntity.cs" />
     <Compile Include="Entities\SymbolAccessor.cs" />
-    <Compile Include="Entities\SymbolEntity.cs" />
     <Compile Include="Entities\SymbolsCollection.cs" />
     <Compile Include="Builder\IndicatorBuilder.cs" />
     <Compile Include="Entities\TimeKeyGenerator.cs" />

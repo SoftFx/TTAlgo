@@ -60,7 +60,7 @@ namespace TickTrader.Algo.Core.Calc
             OnStatsChange(change);
         }
 
-        public void AddOrder(IOrderInfo order)
+        public void AddOrder(IOrderCalcInfo order)
         {
             //Count++;
             order.Calculator = _calc;
@@ -68,14 +68,14 @@ namespace TickTrader.Algo.Core.Calc
             //AddOrder(order, GetSideCalc(order));
         }
 
-        public void AddOrderWithoutCalculation(IOrderInfo order)
+        public void AddOrderWithoutCalculation(IOrderCalcInfo order)
         {
             //Count++;
             order.Calculator = _calc;
             GetSideCalc(order).AddOrderWithoutCalculation(order);
         }
 
-        public void RemoveOrder(IOrderInfo order)
+        public void RemoveOrder(IOrderCalcInfo order)
         {
             //Count--;
             GetSideCalc(order).RemoveOrder(order);
@@ -105,7 +105,7 @@ namespace TickTrader.Algo.Core.Calc
                 Tracker.Changed -= Recalculate;
         }
 
-        private SideCalc GetSideCalc(IOrderInfo order)
+        private SideCalc GetSideCalc(IOrderCalcInfo order)
         {
             if (order.Side == Domain.OrderInfo.Types.Side.Buy)
                 return Buy;
@@ -167,7 +167,7 @@ namespace TickTrader.Algo.Core.Calc
             _calc = _market.GetCalculator(Symbol, AccInfo);
             _calc.AddUsage();
 
-            var hedge = _calc.SymbolInfo != null ? _calc.SymbolInfo.MarginHedged : 0.5;
+            var hedge = _calc.SymbolInfo != null ? _calc.SymbolInfo.Margin.Hedged : 0.5;
             _hedgeFormulPart = (2 * hedge - 1);
 
             Buy.SetCalculators(_calc);

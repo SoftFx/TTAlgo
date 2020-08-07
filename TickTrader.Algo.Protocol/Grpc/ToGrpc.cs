@@ -764,23 +764,6 @@ namespace TickTrader.Algo.Protocol.Grpc
             return res;
         }
 
-        public static Lib.ReductionInfo Convert(this ReductionInfo reduction)
-        {
-            return new Lib.ReductionInfo
-            {
-                Key = reduction.Key.Convert(),
-                Descriptor_ = reduction.Descriptor.Convert(),
-            };
-        }
-
-        public static Lib.CurrencyInfo Convert(this Common.Info.CurrencyInfo currency)
-        {
-            return new Lib.CurrencyInfo
-            {
-                Name = Convert(currency.Name),
-            };
-        }
-
         public static Lib.SymbolInfo Convert(this SymbolKey symbol)
         {
             return new Lib.SymbolInfo

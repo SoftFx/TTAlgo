@@ -24,7 +24,7 @@ namespace TickTrader.BotTerminal
 
             _symbolPrecision = new PricePrecisionConverter<double?>(symbol?.Digits ?? 5);
             _profitPrecision = new PricePrecisionConverter<double>(accountDigits);
-            _amountToLots = new AmountToLotsConverter<double?>(_symbol.LotSize);
+            _amountToLots = new AmountToLotsConverter<double?>(_symbol?.LotSize ?? 1);
 
             Modified = _varContext.AddProperty(default(DateTime?));
 
@@ -52,7 +52,7 @@ namespace TickTrader.BotTerminal
 
         protected abstract void Update();
 
-        public string Symbol => _symbol.Name;
+        public string Symbol => _symbol?.Name;
 
         public bool IsPosition => Type?.Value != Algo.Domain.OrderInfo.Types.Type.Position;
 

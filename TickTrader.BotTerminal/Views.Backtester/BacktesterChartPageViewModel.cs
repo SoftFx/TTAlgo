@@ -124,9 +124,9 @@ namespace TickTrader.BotTerminal
             {
                 ChartControlModel.SetCurrentRate(update);
 
-                if (update is QuoteEntity)
+                if (update is QuoteInfo)
                 {
-                    var q = (QuoteEntity)update;
+                    var q = (QuoteInfo)update;
                     _barVector.AppendQuote(q.Time, q.Bid, 1);
                 }
                 else if (update is BarRateUpdate)

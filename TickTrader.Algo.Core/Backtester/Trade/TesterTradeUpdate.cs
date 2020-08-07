@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Core
             update.OrderExecAction = Domain.OrderExecReport.Types.ExecAction.Opened;
             if (isInstantOrder)
                 update.OnInstantOrderOpened(order);
-            else if (order.RemainingAmount > 0)
+            else if (order.Info.RemainingAmount > 0)
                 update.OnOrderAdded(order);
             else
                 update.OrderUpdate = order.Entity.GetInfo();
@@ -65,7 +65,7 @@ namespace TickTrader.Algo.Core
             }
             else
             {
-                if (order.RemainingAmount == 0)
+                if (order.Info.RemainingAmount == 0)
                     update.OnOrderRemoved(Domain.OrderExecReport.Types.ExecAction.Filled, order);
                 else
                     update.OnOrderAdded(Domain.OrderExecReport.Types.ExecAction.Filled, order);

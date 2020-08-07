@@ -5,6 +5,10 @@ namespace TickTrader.Algo.Domain
     public interface ITradeRequest
     {
         string OperationId { get; set; }
+
+        string OrderId { get; }
+
+        string LogDetails { get; }
     }
 
     [Flags]
@@ -22,6 +26,10 @@ namespace TickTrader.Algo.Domain
             get { return (OrderExecOptions)ExecOptionsBitmask; }
             set { ExecOptionsBitmask = (int)value; }
         }
+
+        public string OrderId => string.Empty;
+
+        public string LogDetails => string.Empty;
     }
 
 
@@ -32,13 +40,17 @@ namespace TickTrader.Algo.Domain
             get { return (OrderExecOptions?)ExecOptionsBitmask; }
             set { ExecOptionsBitmask = (int?)value; }
         }
+
+        public string LogDetails => string.Empty;
     }
 
     public partial class CloseOrderRequest : ITradeRequest
     {
+        public string LogDetails => ByOrderId != null ? $"{(Amount.HasValue && Amount != 0 ? Amount.ToString() : "")}" : $"{ByOrderId}";
     }
 
     public partial class CancelOrderRequest : ITradeRequest
     {
+        public string LogDetails => string.Empty;
     }
 }

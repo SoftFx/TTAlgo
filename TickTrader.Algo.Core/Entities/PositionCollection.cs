@@ -1,33 +1,16 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    public sealed class PositionCollection : NetPositionList
+    internal sealed class PositionCollection : TradeEntityCollection<PositionAccessor, Api.NetPosition>, Api.NetPositionList
     {
-        private readonly ConcurrentDictionary<string, PositionAccessor> _positions = new ConcurrentDictionary<string, PositionAccessor>();
-        private readonly PluginBuilder _builder;
+        public PositionCollection(PluginBuilder builder) : base(builder) { }
 
-        public PositionCollection(PluginBuilder builder)
-        {
-            _builder = builder;
-        }
+        public NetPosition this[string symbol] => !_entities.TryGetValue(symbol, out PositionAccessor entity) ? entity : new PositionAccessor(_builder.Symbols.GetOrNull(symbol));
 
-        public int Count => _positions.Count;
-
-        public void Clear() => _positions.Clear();
-
-        public IEnumerable<PositionAccessor> Values => _positions.Values;
-
-        public PositionAccessor GetPositionOrNull(string symbol) => _positions.GetOrDefault(symbol);
-
-        public NetPosition this[string symbol] => !_positions.TryGetValue(symbol, out PositionAccessor entity) ? entity : new PositionAccessor(_builder.Symbols.GetOrDefault(symbol));
-
-        public PositionAccessor UpdatePosition(Domain.PositionInfo posInfo)
+        public PositionAccessor UpdatePosition(PositionInfo posInfo)
         {
             PositionAccessor pos = GetOrCreatePosition(posInfo.Symbol, posInfo.Id);
             pos.Update(posInfo);
@@ -40,13 +23,13 @@ namespace TickTrader.Algo.Core
 
         internal PositionAccessor GetOrCreatePosition(string symbol, string posId)
         {
-            var pos = GetPositionOrNull(symbol);
+            var pos = GetOrNull(symbol);
 
             if (pos == null)
             {
-                var smbInfo = _builder.Symbols.GetOrDefault(symbol) ?? throw new OrderValidationError("Symbol Not Found:  " + symbol, OrderCmdResultCodes.SymbolNotFound);
+                var smbInfo = _builder.Symbols.GetOrNull(symbol) ?? throw new OrderValidationError("Symbol Not Found:  " + symbol, OrderCmdResultCodes.SymbolNotFound);
 
-                pos = _positions.GetOrAdd(symbol, _ => new PositionAccessor(smbInfo));
+                pos = _entities.GetOrAdd(symbol, _ => new PositionAccessor(smbInfo));
                 pos.Info.Id = posId;
                 pos.Changed += Pos_Changed;
             }
@@ -56,7 +39,7 @@ namespace TickTrader.Algo.Core
 
         internal PositionAccessor RemovePosition(string symbol)
         {
-            _positions.TryRemove(symbol, out var toRemove);
+            _entities.TryRemove(symbol, out var toRemove);
 
             if (toRemove != null)
                 toRemove.Changed -= Pos_Changed;
@@ -73,9 +56,5 @@ namespace TickTrader.Algo.Core
         public void FirePositionSplitted(NetPositionSplittedEventArgs args) => _builder.InvokePluginMethod((b, p) => Splitted?.Invoke(p), args, false);
 
         private void Pos_Changed(PositionAccessor pos) => PositionUpdated?.Invoke(pos.Info);
-
-        IEnumerator<NetPosition> IEnumerable<NetPosition>.GetEnumerator() => _positions.Values.GetEnumerator();
-
-        IEnumerator IEnumerable.GetEnumerator() => _positions.Values.GetEnumerator();
     }
 }

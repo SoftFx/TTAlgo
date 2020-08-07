@@ -36,7 +36,7 @@ namespace TickTrader.Algo.Common.Model
     public interface IMarketDataProvider
     {
         IVarSet<string, SymbolInfo> Symbols { get; }
-        IVarSet<string, CurrencyEntity> Currencies { get; }
+        IVarSet<string, CurrencyInfo> Currencies { get; }
         QuoteDistributor Distributor { get; }
     }
 }

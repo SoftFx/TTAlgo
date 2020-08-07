@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
@@ -8,6 +9,14 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
+    public enum OrderAction
+    {
+        Open,
+        Close,
+        Modify,
+        Cancel,
+    }
+
     internal class TradeApiAdapter : TradeCommands
     {
         private ITradeApi _api;
@@ -38,13 +47,13 @@ namespace TickTrader.Algo.Core
             OrderResultEntity resultEntity;
             var code = OrderCmdResultCodes.Ok;
 
-            var requestContext = new OpenOrderRequestContext
+            var domainRequest = new Domain.OpenOrderRequest
             {
                 Symbol = apiRequest.Symbol,
                 Type = apiRequest.Type.ToCoreEnum(),
                 Side = apiRequest.Side.ToCoreEnum(),
-                Volume = apiRequest.Volume,
-                MaxVisibleVolume = apiRequest.MaxVisibleVolume,
+                Amount = apiRequest.Volume,
+                MaxVisibleAmount = apiRequest.MaxVisibleVolume,
                 Price = apiRequest.Price,
                 StopPrice = apiRequest.StopPrice,
                 StopLoss = apiRequest.StopLoss,
@@ -53,20 +62,20 @@ namespace TickTrader.Algo.Core
                 Slippage = apiRequest.Slippage,
                 ExecOptions = apiRequest.Options.ToDomainEnum(),
                 Tag = CompositeTag.NewTag(IsolationTag, apiRequest.Tag),
-                Expiration = apiRequest.Expiration,
+                Expiration = apiRequest.Expiration?.ToUniversalTime().ToTimestamp(),
             };
 
-            PreprocessAndValidateOpenOrderRequest(requestContext, out var smbMetadata, ref code);
+            PreprocessAndValidateOpenOrderRequest(domainRequest, out var smbMetadata, ref code);
 
             if (code == OrderCmdResultCodes.Ok)
             {
-                _logger.LogOrderOpening(requestContext, smbMetadata);
-                var orderResp = await _api.OpenOrder(isAsync, requestContext.Request);
+                _logger.LogOrderValidationSuccess(domainRequest, OrderAction.Open);
+                var orderResp = await _api.OpenOrder(isAsync, domainRequest);
                 var resCode = orderResp.ResultCode.ToApiEnum();
                 if (resCode != OrderCmdResultCodes.Ok)
                     resultEntity = new OrderResultEntity(resCode, null, orderResp.TransactionTime);
                 else
-                    resultEntity = new OrderResultEntity(resCode, new OrderAccessor(orderResp.ResultingOrder, smbMetadata).ApiOrder, orderResp.TransactionTime);
+                    resultEntity = new OrderResultEntity(resCode, new OrderAccessor(smbMetadata, orderResp.ResultingOrder), orderResp.TransactionTime);
             }
             else
             {
@@ -75,7 +84,7 @@ namespace TickTrader.Algo.Core
                 resultEntity = new OrderResultEntity(code, null, null) { IsServerResponse = false };
             }
 
-            _logger.LogOrderOpenResults(resultEntity, requestContext, smbMetadata);
+            _logger.LogOrderOpenResults(resultEntity, domainRequest);
             return resultEntity;
         }
 
@@ -83,15 +92,15 @@ namespace TickTrader.Algo.Core
         {
             OrderResultEntity resultEntity;
             var code = OrderCmdResultCodes.Ok;
-            var requestContext = new CancelOrderRequestContext { OrderId = orderId };
+            var request = new Domain.CancelOrderRequest { OrderId = orderId };
 
-            PreprocessAndValidateCancelOrderRequest(requestContext, out var orderToCancel, ref code);
+            PreprocessAndValidateCancelOrderRequest(request, out var orderToCancel, ref code);
 
             if (code == OrderCmdResultCodes.Ok)
             {
-                _logger.LogOrderCanceling(requestContext);
+                _logger.LogOrderValidationSuccess(request, OrderAction.Cancel);
 
-                var orderResp = await _api.CancelOrder(isAsync, requestContext.Request);
+                var orderResp = await _api.CancelOrder(isAsync, request);
 
                 resultEntity = new OrderResultEntity(orderResp.ResultCode.ToApiEnum(), orderToCancel, orderResp.TransactionTime);
             }
@@ -102,7 +111,7 @@ namespace TickTrader.Algo.Core
                 resultEntity = new OrderResultEntity(code, orderToCancel, null) { IsServerResponse = false };
             }
 
-            _logger.LogOrderCancelResults(requestContext, resultEntity);
+            _logger.LogOrderCancelResults(request, resultEntity);
             return resultEntity;
         }
 
@@ -110,10 +119,10 @@ namespace TickTrader.Algo.Core
         {
             OrderResultEntity resultEntity;
             var code = OrderCmdResultCodes.Ok;
-            var requestContext = new CloseOrderRequestContext
+            var requestContext = new Domain.CloseOrderRequest
             {
                 OrderId = request.OrderId,
-                VolumeLots = request.Volume,
+                Amount = request.Volume,
                 Slippage = request.Slippage
             };
 
@@ -121,13 +130,13 @@ namespace TickTrader.Algo.Core
 
             if (code == OrderCmdResultCodes.Ok)
             {
-                _logger.LogOrderClosing(requestContext);
+                _logger.LogOrderValidationSuccess(requestContext, OrderAction.Close);
 
-                var orderResp = await _api.CloseOrder(isAsync, requestContext.Request);
+                var orderResp = await _api.CloseOrder(isAsync, requestContext);
                 var resCode = orderResp.ResultCode.ToApiEnum();
 
                 if (resCode == OrderCmdResultCodes.Ok)
-                    resultEntity = new OrderResultEntity(resCode, new OrderAccessor(orderResp.ResultingOrder, smbMetadata).ApiOrder, orderResp.TransactionTime);
+                    resultEntity = new OrderResultEntity(resCode, new OrderAccessor(smbMetadata, orderResp.ResultingOrder), orderResp.TransactionTime);
                 else
                     resultEntity = new OrderResultEntity(resCode, orderToClose, orderResp.TransactionTime);
             }
@@ -146,15 +155,15 @@ namespace TickTrader.Algo.Core
         {
             OrderResultEntity resultEntity;
             var code = OrderCmdResultCodes.Ok;
-            var requestContext = new CloseOrderRequestContext { OrderId = orderId, ByOrderId = byOrderId };
+            var request = new Domain.CloseOrderRequest { OrderId = orderId, ByOrderId = byOrderId };
 
-            PreprocessAndValidateCloseOrderByRequest(requestContext, out var orderToClose, ref code);
+            PreprocessAndValidateCloseOrderByRequest(request, out var orderToClose, ref code);
 
             if (code == OrderCmdResultCodes.Ok)
             {
-                _logger.LogOrderClosingBy(requestContext);
+                _logger.LogOrderValidationSuccess(request, OrderAction.Close);
 
-                var orderResp = await _api.CloseOrder(isAsync, requestContext.Request);
+                var orderResp = await _api.CloseOrder(isAsync, request);
 
                 resultEntity = new OrderResultEntity(orderResp.ResultCode.ToApiEnum(), orderToClose, orderResp.TransactionTime);
             }
@@ -165,7 +174,7 @@ namespace TickTrader.Algo.Core
                 resultEntity = new OrderResultEntity(code, orderToClose, null) { IsServerResponse = false };
             }
 
-            _logger.LogOrderCloseByResults(requestContext, resultEntity);
+            _logger.LogOrderCloseByResults(request, resultEntity);
             return resultEntity;
         }
 
@@ -173,12 +182,12 @@ namespace TickTrader.Algo.Core
         {
             OrderResultEntity resultEntity;
 
-            var requestContext = new ModifyOrderRequestContext
+            var domainRequest = new Domain.ModifyOrderRequest
             {
                 OrderId = request.OrderId,
-                CurrentVolume = double.NaN,
-                NewVolume = request.Volume,
-                MaxVisibleVolume = request.MaxVisibleVolume,
+                CurrentAmount = double.NaN,
+                NewAmount = request.Volume,
+                MaxVisibleAmount = request.MaxVisibleVolume,
                 AmountChange = double.NaN,
                 Price = request.Price,
                 StopPrice = request.StopPrice,
@@ -186,24 +195,24 @@ namespace TickTrader.Algo.Core
                 TakeProfit = request.TakeProfit,
                 Slippage = request.Slippage,
                 Comment = request.Comment,
-                Expiration = request.Expiration,
+                Expiration = request.Expiration?.ToUniversalTime().ToTimestamp(),
                 ExecOptions = request.Options?.ToDomainEnum(),
             };
 
             var code = OrderCmdResultCodes.Ok;
 
-            PreprocessAndValidateModifyOrderRequest(requestContext, out var orderToModify, out var smbMetadata, ref code);
+            PreprocessAndValidateModifyOrderRequest(domainRequest, out var orderToModify, out var smbMetadata, ref code);
 
             if (code == OrderCmdResultCodes.Ok)
             {
-                _logger.LogOrderModifying(requestContext, smbMetadata);
+                _logger.LogOrderValidationSuccess(domainRequest, OrderAction.Modify);
 
-                var result = await _api.ModifyOrder(isAsync, requestContext.Request);
+                var result = await _api.ModifyOrder(isAsync, domainRequest);
                 var resCode = result.ResultCode.ToApiEnum();
 
                 if (resCode == OrderCmdResultCodes.Ok)
                 {
-                    resultEntity = new OrderResultEntity(resCode, new OrderAccessor(result.ResultingOrder, smbMetadata).ApiOrder, result.TransactionTime);
+                    resultEntity = new OrderResultEntity(resCode, new OrderAccessor(smbMetadata, result.ResultingOrder), result.TransactionTime);
                 }
                 else
                 {
@@ -217,7 +226,7 @@ namespace TickTrader.Algo.Core
                 resultEntity = new OrderResultEntity(code, orderToModify, null) { IsServerResponse = false };
             }
 
-            _logger.LogOrderModifyResults(requestContext, smbMetadata, resultEntity);
+            _logger.LogOrderModifyResults(domainRequest, resultEntity);
             return resultEntity;
         }
 
@@ -229,7 +238,7 @@ namespace TickTrader.Algo.Core
             else await Task.Yield(); //free plugin thread to enable queue processing
         }
 
-        private void PreprocessAndValidateOpenOrderRequest(OpenOrderRequestContext request, out SymbolAccessor smbMetadata, ref OrderCmdResultCodes code)
+        private void PreprocessAndValidateOpenOrderRequest(Domain.OpenOrderRequest request, out SymbolInfo smbMetadata, ref OrderCmdResultCodes code)
         {
             smbMetadata = null;
 
@@ -247,15 +256,15 @@ namespace TickTrader.Algo.Core
 
             if (!ValidateOptions(request.ExecOptions, type, ref code))
                 return;
-            if (!ValidateVolumeLots(request.Volume, smbMetadata, ref code))
+            if (!ValidateVolumeLots(request.Amount, smbMetadata, ref code))
                 return;
-            if (!ValidateMaxVisibleVolumeLots(request.MaxVisibleVolume, smbMetadata, type, request.Volume, ref code))
+            if (!ValidateMaxVisibleVolumeLots(request.MaxVisibleAmount, smbMetadata, type, request.Amount, ref code))
                 return;
 
-            request.Volume = RoundVolume(request.Volume, smbMetadata);
-            request.MaxVisibleVolume = RoundVolume(request.MaxVisibleVolume, smbMetadata);
-            request.Amount = ConvertVolume(request.Volume, smbMetadata);
-            request.MaxVisibleAmount = ConvertNullableVolume(request.MaxVisibleVolume, smbMetadata);
+            request.Amount = RoundVolume(request.Amount, smbMetadata);
+            request.MaxVisibleAmount = RoundVolume(request.MaxVisibleAmount, smbMetadata);
+            request.Amount = ConvertVolume(request.Amount, smbMetadata);
+            request.MaxVisibleAmount = ConvertNullableVolume(request.MaxVisibleAmount, smbMetadata);
             request.Price = RoundPrice(request.Price, smbMetadata, side);
             request.StopPrice = RoundPrice(request.StopPrice, smbMetadata, side);
             request.StopLoss = RoundPrice(request.StopLoss, smbMetadata, side);
@@ -287,7 +296,7 @@ namespace TickTrader.Algo.Core
             //    return;
         }
 
-        private void PreprocessAndValidateCancelOrderRequest(CancelOrderRequestContext request, out Order orderToCancel, ref OrderCmdResultCodes code)
+        private void PreprocessAndValidateCancelOrderRequest(Domain.CancelOrderRequest request, out Order orderToCancel, ref OrderCmdResultCodes code)
         {
             orderToCancel = null;
 
@@ -303,7 +312,7 @@ namespace TickTrader.Algo.Core
                 return;
         }
 
-        private void PreprocessAndValidateCloseOrderRequest(CloseOrderRequestContext request, out Order orderToClose, out SymbolAccessor smbMetadata, ref OrderCmdResultCodes code)
+        private void PreprocessAndValidateCloseOrderRequest(Domain.CloseOrderRequest request, out Order orderToClose, out SymbolInfo smbMetadata, ref OrderCmdResultCodes code)
         {
             orderToClose = null;
             smbMetadata = null;
@@ -319,16 +328,16 @@ namespace TickTrader.Algo.Core
             if (!ValidateQuotes(smbMetadata, orderToClose.Side.ToCoreEnum().Revert(), ref code))
                 return;
 
-            if (!ValidateVolumeLots(request.VolumeLots, smbMetadata, ref code))
+            if (!ValidateVolumeLots(request.Amount, smbMetadata, ref code))
                 return;
-            request.VolumeLots = RoundVolume(request.VolumeLots, smbMetadata);
-            request.Amount = ConvertNullableVolume(request.VolumeLots, smbMetadata);
+            request.Amount = RoundVolume(request.Amount, smbMetadata);
+            request.Amount = ConvertNullableVolume(request.Amount, smbMetadata);
 
             if (!ValidateVolume(request.Amount, ref code))
                 return;
         }
 
-        private void PreprocessAndValidateCloseOrderByRequest(CloseOrderRequestContext request, out Order orderToClose, ref OrderCmdResultCodes code)
+        private void PreprocessAndValidateCloseOrderByRequest(Domain.CloseOrderRequest request, out Order orderToClose, ref OrderCmdResultCodes code)
         {
             orderToClose = null;
 
@@ -346,7 +355,7 @@ namespace TickTrader.Algo.Core
                 return;
         }
 
-        private void PreprocessAndValidateModifyOrderRequest(ModifyOrderRequestContext request, out Order orderToModify, out SymbolAccessor smbMetadata, ref OrderCmdResultCodes code)
+        private void PreprocessAndValidateModifyOrderRequest(Domain.ModifyOrderRequest request, out Order orderToModify, out SymbolInfo smbMetadata, ref OrderCmdResultCodes code)
         {
             orderToModify = null;
             smbMetadata = null;
@@ -362,7 +371,7 @@ namespace TickTrader.Algo.Core
             request.Symbol = orderToModify.Symbol;
             request.Type = type;
             request.Side = side;
-            request.CurrentVolume = orderToModify.RemainingVolume;
+            request.CurrentAmount = orderToModify.RemainingVolume;
 
             if (!TryGetSymbol(orderToModify.Symbol, out smbMetadata, ref code))
                 return;
@@ -373,17 +382,17 @@ namespace TickTrader.Algo.Core
 
             if (!ValidateOptions(request.ExecOptions, type, ref code))
                 return;
-            if (!ValidateVolumeLots(request.NewVolume, smbMetadata, ref code))
+            if (!ValidateVolumeLots(request.NewAmount, smbMetadata, ref code))
                 return;
-            if (!ValidateMaxVisibleVolumeLots(request.MaxVisibleVolume, smbMetadata, type, request.NewVolume ?? request.CurrentVolume, ref code))
+            if (!ValidateMaxVisibleVolumeLots(request.MaxVisibleAmount, smbMetadata, type, request.NewAmount ?? request.CurrentAmount, ref code))
                 return;
 
-            request.NewVolume = RoundVolume(request.NewVolume, smbMetadata);
-            request.MaxVisibleVolume = RoundVolume(request.MaxVisibleVolume, smbMetadata);
-            request.CurrentAmount = ConvertVolume(request.CurrentVolume, smbMetadata);
-            request.NewAmount = ConvertNullableVolume(request.NewVolume, smbMetadata);
-            request.MaxVisibleAmount = ConvertNullableVolume(request.MaxVisibleVolume, smbMetadata);
-            request.AmountChange = request.NewVolume.HasValue ? ConvertVolume(request.NewVolume.Value - request.CurrentVolume, smbMetadata) : 0;
+            request.NewAmount = RoundVolume(request.NewAmount, smbMetadata);
+            request.MaxVisibleAmount = RoundVolume(request.MaxVisibleAmount, smbMetadata);
+            request.CurrentAmount = ConvertVolume(request.CurrentAmount, smbMetadata);
+            request.NewAmount = ConvertNullableVolume(request.NewAmount, smbMetadata);
+            request.MaxVisibleAmount = ConvertNullableVolume(request.MaxVisibleAmount, smbMetadata);
+            request.AmountChange = request.NewAmount.HasValue ? request.NewAmount.Value - request.CurrentAmount : 0;
             request.Price = RoundPrice(request.Price, smbMetadata, side);
             request.StopPrice = RoundPrice(request.StopPrice, smbMetadata, side);
             request.StopLoss = RoundPrice(request.StopLoss, smbMetadata, side);
@@ -409,7 +418,7 @@ namespace TickTrader.Algo.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double? ConvertNullableVolume(double? volumeInLots, SymbolAccessor smbMetadata)
+        private double? ConvertNullableVolume(double? volumeInLots, SymbolInfo smbMetadata)
         {
             if (volumeInLots == null)
                 return null;
@@ -417,10 +426,10 @@ namespace TickTrader.Algo.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double ConvertVolume(double volumeInLots, SymbolAccessor smbMetadata)
+        private double ConvertVolume(double volumeInLots, SymbolInfo smbMetadata)
         {
-            var res = smbMetadata.ContractSize * volumeInLots;
-            var amountDigits = smbMetadata.AmountDigits;
+            var res = smbMetadata.LotSize * volumeInLots;
+            var amountDigits = 6; //smbMetadata.AmountDigits;
             if (amountDigits == 0)
             {
                 res = Math.Round(res);
@@ -433,25 +442,25 @@ namespace TickTrader.Algo.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double RoundVolume(double volumeInLots, Symbol smbMetadata)
+        private double RoundVolume(double volumeInLots, SymbolInfo smbMetadata)
         {
             return volumeInLots.Floor(smbMetadata.TradeVolumeStep);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double? RoundVolume(double? volumeInLots, Symbol smbMetadata)
+        private double? RoundVolume(double? volumeInLots, SymbolInfo smbMetadata)
         {
             return volumeInLots.Floor(smbMetadata.TradeVolumeStep);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double RoundPrice(double price, Symbol smbMetadata, Domain.OrderInfo.Types.Side side)
+        private double RoundPrice(double price, SymbolInfo smbMetadata, Domain.OrderInfo.Types.Side side)
         {
             return side == Domain.OrderInfo.Types.Side.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double? RoundPrice(double? price, Symbol smbMetadata, Domain.OrderInfo.Types.Side side)
+        private double? RoundPrice(double? price, SymbolInfo smbMetadata, Domain.OrderInfo.Types.Side side)
         {
             return side == Domain.OrderInfo.Types.Side.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
         }
@@ -459,9 +468,9 @@ namespace TickTrader.Algo.Core
         #region Validation
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool TryGetSymbol(string symbolName, out SymbolAccessor smbMetadata, ref OrderCmdResultCodes code)
+        private bool TryGetSymbol(string symbolName, out SymbolInfo smbMetadata, ref OrderCmdResultCodes code)
         {
-            smbMetadata = _symbols.GetOrDefault(symbolName);
+            smbMetadata = _symbols.GetOrNull(symbolName).Info;
             if (smbMetadata == null)
             {
                 code = OrderCmdResultCodes.SymbolNotFound;
@@ -473,7 +482,7 @@ namespace TickTrader.Algo.Core
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool TryGetOrder(string orderId, out Order order, ref OrderCmdResultCodes code)
         {
-            order = _account.Orders.GetOrderOrNull(orderId)?.ApiOrder;
+            order = _account.Orders.GetOrNull(orderId);
             if (order == null)
             {
                 code = OrderCmdResultCodes.OrderNotFound;
@@ -483,7 +492,7 @@ namespace TickTrader.Algo.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool TryGetMarketPrice(SymbolAccessor smb, Domain.OrderInfo.Types.Side orderSide, out double price, ref OrderCmdResultCodes code)
+        private bool TryGetMarketPrice(SymbolInfo smb, Domain.OrderInfo.Types.Side orderSide, out double price, ref OrderCmdResultCodes code)
         {
             price = double.NaN;
             var rate = smb.LastQuote;
@@ -577,7 +586,7 @@ namespace TickTrader.Algo.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool ValidateVolumeLots(double volumeLots, Symbol smbMetadata, ref OrderCmdResultCodes code)
+        private bool ValidateVolumeLots(double volumeLots, SymbolInfo smbMetadata, ref OrderCmdResultCodes code)
         {
             if (volumeLots <= 0 || volumeLots < smbMetadata.MinTradeVolume || volumeLots > smbMetadata.MaxTradeVolume)
             {
@@ -588,7 +597,7 @@ namespace TickTrader.Algo.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool ValidateVolumeLots(double? volumeLots, Symbol smbMetadata, ref OrderCmdResultCodes code)
+        private bool ValidateVolumeLots(double? volumeLots, SymbolInfo smbMetadata, ref OrderCmdResultCodes code)
         {
             if (!volumeLots.HasValue)
                 return true;
@@ -602,7 +611,7 @@ namespace TickTrader.Algo.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool ValidateMaxVisibleVolumeLots(double? maxVisibleVolumeLots, Symbol smbMetadata, Domain.OrderInfo.Types.Type orderType, double? volumeLots, ref OrderCmdResultCodes code)
+        private bool ValidateMaxVisibleVolumeLots(double? maxVisibleVolumeLots, SymbolInfo smbMetadata, Domain.OrderInfo.Types.Type orderType, double? volumeLots, ref OrderCmdResultCodes code)
         {
             if (!maxVisibleVolumeLots.HasValue)
                 return true;
@@ -704,9 +713,9 @@ namespace TickTrader.Algo.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool ValidateTradeEnabled(Symbol smbMetadata, ref OrderCmdResultCodes code)
+        private bool ValidateTradeEnabled(SymbolInfo smbMetadata, ref OrderCmdResultCodes code)
         {
-            if (!smbMetadata.IsTradeAllowed)
+            if (!smbMetadata.TradeAllowed)
             {
                 code = OrderCmdResultCodes.TradeNotAllowed;
                 return false;
@@ -744,7 +753,7 @@ namespace TickTrader.Algo.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool ValidateMargin(OpenOrderRequestContext request, SymbolAccessor symbol, ref OrderCmdResultCodes code)
+        private bool ValidateMargin(Domain.OpenOrderRequest request, SymbolInfo symbol, ref OrderCmdResultCodes code)
         {
             var isHidden = OrderEntity.IsHiddenOrder((decimal?)request.MaxVisibleAmount);
 
@@ -761,15 +770,15 @@ namespace TickTrader.Algo.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool ValidateMargin(ModifyOrderRequestContext request, SymbolAccessor symbol, ref OrderCmdResultCodes code)
+        private bool ValidateMargin(Domain.ModifyOrderRequest request, SymbolInfo symbol, ref OrderCmdResultCodes code)
         {
-            var oldOrder = _account.Orders.GetOrderOrNull(request.OrderId);
+            var oldOrder = _account.Orders.GetOrNull(request.OrderId);
 
             var newIsHidden = OrderEntity.IsHiddenOrder((decimal?)request.MaxVisibleAmount);
 
-            var newVol = request.NewAmount ?? (double)oldOrder.RemainingAmount;
-            var newPrice = request.Price ?? oldOrder.Price;
-            var newStopPrice = request.StopPrice ?? oldOrder.StopPrice;
+            var newVol = request.NewAmount ?? (double)oldOrder.Info.RemainingAmount;
+            var newPrice = request.Price ?? oldOrder.Info.Price;
+            var newStopPrice = request.StopPrice ?? oldOrder.Info.StopPrice;
 
             if (Calc != null && !Calc.HasEnoughMarginToModifyOrder(oldOrder, symbol, newVol, newPrice, newStopPrice, newIsHidden))
             {
@@ -781,7 +790,7 @@ namespace TickTrader.Algo.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool ValidateQuotes(SymbolAccessor symbol, Domain.OrderInfo.Types.Side side, ref OrderCmdResultCodes code)
+        private bool ValidateQuotes(SymbolInfo symbol, Domain.OrderInfo.Types.Side side, ref OrderCmdResultCodes code)
         {
             var quote = symbol.LastQuote;
 
