@@ -16,13 +16,13 @@ namespace TickTrader.Algo.Core
         private readonly PluginContainer _container;
         private readonly AlgoPluginRef _ref;
         private readonly OptimizerCore _core;
-        private readonly ISynchronizationContext _sync;
+        private readonly ISyncContext _sync;
         private readonly Dictionary<string, ParamSeekSet> _params = new Dictionary<string, ParamSeekSet>();
         private ParamSeekStrategy _seekStrategy;
         private EmulatorStates _innerState = EmulatorStates.Stopped;
         private MetricProvider _mSelector = MetricProvider.Default;
 
-        public Optimizer(AlgoPluginRef pluginRef, ISynchronizationContext updatesSync)
+        public Optimizer(AlgoPluginRef pluginRef, ISyncContext updatesSync)
         {
             _container = PluginContainer.Load(pluginRef.PackagePath, pluginRef.IsIsolated);
             _ref = pluginRef;

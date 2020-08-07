@@ -1,21 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    public class FeedEmulator : CrossDomainObject, IFeedProvider, IFeedHistoryProvider, ISynchronizationContext
+    public class FeedEmulator : CrossDomainObject, IFeedProvider, IFeedHistoryProvider, ISyncContext
     {
         private List<IFeedStorage> _storages = new List<IFeedStorage>();
         private Dictionary<string, SeriesReader> _feedReaders = new Dictionary<string, SeriesReader>();
         private Dictionary<string, FeedSeriesEmulator> _feedSeries = new Dictionary<string, FeedSeriesEmulator>();
 
-        ISynchronizationContext IFeedProvider.Sync => this;
+        ISyncContext IFeedProvider.Sync => this;
 
         public FeedEmulator()
         {
@@ -160,9 +158,9 @@ namespace TickTrader.Algo.Core
 
         #region IPluginFeedProvider
 
-        IEnumerable<QuoteInfo> IFeedProvider.GetSnapshot()
+        List<QuoteInfo> IFeedProvider.GetSnapshot()
         {
-            return _feedSeries.Values.Where(s => s.Current != null).Select(s => (QuoteInfo)s.Current.LastQuote).ToList();
+            return _feedSeries.Values.Where(s => s.Current != null).Select(s => s.Current.LastQuote).ToList();
         }
 
         List<BarEntity> IFeedHistoryProvider.QueryBars(string symbolCode, BarPriceType priceType, DateTime from, DateTime to, TimeFrames timeFrame)
@@ -185,23 +183,23 @@ namespace TickTrader.Algo.Core
             return GetFeedSrcOrThrow(symbolCode).QueryTicks(from, count, level2) ?? new List<QuoteInfo>();
         }
 
-        List<QuoteInfo> Infrastructure.IFeedSubscription.Modify(List<Infrastructure.FeedSubscriptionUpdate> updates)
+        List<QuoteInfo> IFeedSubscription.Modify(List<FeedSubscriptionUpdate> updates)
         {
-            List<QuoteInfo> snapshot = new List<QuoteInfo>();
+            var snapshot = new List<QuoteInfo>();
 
             foreach (var upd in updates)
             {
                 if (upd.IsUpsertAction)
                 {
                     if (_feedSeries.TryGetValue(upd.Symbol, out var series) && series.Current != null)
-                        snapshot.Add((QuoteInfo)series.Current.LastQuote as QuoteInfo);
+                        snapshot.Add(series.Current.LastQuote);
                 }
             }
 
             return snapshot;
         }
 
-        void Infrastructure.IFeedSubscription.CancelAll()
+        void IFeedSubscription.CancelAll()
         {
         }
 
@@ -210,7 +208,7 @@ namespace TickTrader.Algo.Core
 
         #endregion
 
-        #region ISynchronizationContext
+        #region ISyncContext
 
         public void Invoke(Action action)
         {
@@ -227,6 +225,16 @@ namespace TickTrader.Algo.Core
             action(arg);
         }
 
-        #endregion ISynchronizationContext
+        public T Invoke<T>(Func<T> syncFunc)
+        {
+            return syncFunc();
+        }
+
+        public TOut Invoke<TIn, TOut>(Func<TIn, TOut> syncFunc, TIn args)
+        {
+            return syncFunc(args);
+        }
+
+        #endregion ISyncContext
     }
 }

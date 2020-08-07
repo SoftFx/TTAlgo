@@ -1,9 +1,9 @@
 ﻿using System;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.RpcTest
 {
-    class NullSyncContext : ISynchronizationContext
+    class NullSyncContext : ISyncContext
     {
         public void Invoke(Action action)
         {
@@ -18,6 +18,16 @@ namespace TickTrader.Algo.RpcTest
         public void Send(Action action)
         {
             action();
+        }
+
+        public T Invoke<T>(Func<T> syncFunc)
+        {
+            return syncFunc();
+        }
+
+        public TOut Invoke<TIn, TOut>(Func<TIn, TOut> syncFunc, TIn args)
+        {
+            return syncFunc(args);
         }
     }
 }

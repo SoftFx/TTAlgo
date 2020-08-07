@@ -97,7 +97,6 @@
     <Compile Include="Info\ReductionInfo.cs" />
     <Compile Include="Info\Setup\SetupContextInfo.cs" />
     <Compile Include="Info\Metadata\SymbolKey.cs" />
-    <Compile Include="Lib\ActorSharpExt.cs" />
     <Compile Include="Lib\AsyncEvent.cs" />
     <Compile Include="Lib\BotIdHelper.cs" />
     <Compile Include="Lib\CollectionsExt.cs" />

@@ -56,9 +56,14 @@ namespace TickTrader.Algo.Core
                 if (_server.TryGetExecutor(request.Id, out var executor))
                 {
                     _executor = executor;
+
                     _executor.AccInfoProvider.OrderUpdated += r => _session.Tell(RpcMessage.Notification(r));
                     _executor.AccInfoProvider.PositionUpdated += r => _session.Tell(RpcMessage.Notification(r));
                     _executor.AccInfoProvider.BalanceUpdated += r => _session.Tell(RpcMessage.Notification(r));
+
+                    _executor.Feed.RateUpdated += r => _session.Tell(RpcMessage.Notification(r.GetFullQuote()));
+                    _executor.Feed.RatesUpdated += r => _session.Tell(RpcMessage.Notification(QuotePage.Create(r)));
+
                     ThreadPool.QueueUserWorkItem(_ =>
                     {
                         try
@@ -98,6 +103,12 @@ namespace TickTrader.Algo.Core
                 return TradeHistoryRequestNextPageHandler(callId);
             else if (payload.Is(TradeHistoryRequestDispose.Descriptor))
                 return TradeHistoryRequestDisposeHandler(callId);
+            else if (payload.Is(FeedSnapshotRequest.Descriptor))
+                return FeedSnapshotRequestHandler();
+            else if (payload.Is(ModifyFeedSubscriptionRequest.Descriptor))
+                return ModifyFeedSubscriptionRequestHandler(payload);
+            else if (payload.Is(CancelAllFeedSubscriptionsRequest.Descriptor))
+                return CancelAllFeedSubscriptionsRequestHandler();
             return null;
         }
 
@@ -253,6 +264,28 @@ namespace TickTrader.Algo.Core
                 enumerator.Dispose();
             }
             return null;
+        }
+
+        private Any FeedSnapshotRequestHandler()
+        {
+            var response = new QuotePage();
+            response.Quotes.AddRange(_executor.Feed.GetSnapshot().Select(q => q.GetFullQuote()));
+            return Any.Pack(response);
+        }
+
+        private Any ModifyFeedSubscriptionRequestHandler(Any payload)
+        {
+            var request = payload.Unpack<ModifyFeedSubscriptionRequest>();
+            var response = new QuotePage();
+            var snapshot = _executor.Feed.Sync.Invoke(() => _executor.Feed.Modify(request.Updates.ToList()));
+            response.Quotes.AddRange(snapshot.Select(q => q.GetFullQuote()));
+            return Any.Pack(response);
+        }
+
+        private Any CancelAllFeedSubscriptionsRequestHandler()
+        {
+            _executor.Feed.Sync.Invoke(() => _executor.Feed.CancelAll());
+            return VoidResponse;
         }
     }
 }

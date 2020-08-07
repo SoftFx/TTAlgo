@@ -53,7 +53,7 @@ namespace TickTrader.Algo.Core.Infrastructure
                 foreach (var group in groups.Values)
                 {
                     var depth = group.GetMaxDepth();
-                    updates.Add(new FeedSubscriptionUpdate(group.Symbol, depth));
+                    updates.Add(FeedSubscriptionUpdate.Upsert(group.Symbol, depth));
                     group.Depth = depth;
                 }
 

@@ -120,6 +120,19 @@ message QuoteChunk {
     repeated QuoteData quotes = 2;
 }
 
+message FeedSnapshotRequest { } // returns QuotePage
+
+message FeedSubscriptionUpdate {
+    string symbol = 1;
+    int32 depth = 2;
+}
+
+message ModifyFeedSubscriptionRequest { // returns QuotePage
+    repeated FeedSubscriptionUpdate updates = 1;
+}
+
+message CancelAllFeedSubscriptionsRequest { }
+
 message BarInfo {
     string symbol = 1;
     BarData data = 2;

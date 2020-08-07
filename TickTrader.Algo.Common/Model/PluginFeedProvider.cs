@@ -9,9 +9,8 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class PluginFeedProvider : CrossDomainObject, IFeedProvider, IFeedHistoryProvider, IPluginMetadata, ISynchronizationContext
+    public class PluginFeedProvider : CrossDomainObject, IFeedProvider, IFeedHistoryProvider, IPluginMetadata
     {
-        private ISyncContext _sync;
         private IFeedSubscription subscription;
         private IVarSet<string, SymbolInfo> symbols;
         private QuoteDistributor _distributor;
@@ -22,11 +21,11 @@ namespace TickTrader.Algo.Common.Model
         public event Action<QuoteInfo> RateUpdated;
         public event Action<List<QuoteInfo>> RatesUpdated { add { } remove { } }
 
-        public ISynchronizationContext Sync { get { return this; } }
+        public ISyncContext Sync { get; }
 
         public PluginFeedProvider(EntityCache cache, QuoteDistributor quoteDistributor, FeedHistoryProviderModel.Handler history, ISyncContext sync)
         {
-            _sync = sync;
+            Sync = sync;
             this.symbols = cache.Symbols;
             _distributor = quoteDistributor;
             this.history = history;
@@ -76,7 +75,7 @@ namespace TickTrader.Algo.Common.Model
             subscription.CancelAll();
         }
 
-        public IEnumerable<QuoteInfo> GetSnapshot()
+        public List<QuoteInfo> GetSnapshot()
         {
             return symbols.Snapshot
                 .Where(s => s.Value.LastQuote != null)
@@ -95,25 +94,6 @@ namespace TickTrader.Algo.Common.Model
         public IEnumerable<CurrencyEntity> GetCurrencyMetadata()
         {
             return currencies.Values.ToList();
-        }
-
-        #endregion
-
-        #region ISynchronizationContext
-
-        public void Invoke(Action action)
-        {
-            _sync.Invoke(action);
-        }
-
-        public void Send(Action action)
-        {
-            _sync.Send(action);
-        }
-
-        public void Invoke<T>(Action<T> action, T arg)
-        {
-            _sync.Invoke(action, arg);
         }
 
         #endregion

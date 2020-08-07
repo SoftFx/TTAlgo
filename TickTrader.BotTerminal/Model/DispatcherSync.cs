@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 using System.Windows.Threading;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotTerminal
 {
-    public class DispatcherSync : ISyncContext, ISynchronizationContext
+    public class DispatcherSync : ISyncContext
     {
         public void Invoke(Action syncAction)
         {

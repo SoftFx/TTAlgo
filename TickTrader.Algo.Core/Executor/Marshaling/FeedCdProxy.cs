@@ -26,12 +26,12 @@ namespace TickTrader.Algo.Core
             _bBlock.Completion.Wait();
         }
 
-        public ISynchronizationContext Sync => _feed.Sync;
+        public ISyncContext Sync => _feed.Sync;
 
         public event Action<QuoteInfo> RateUpdated { add { } remove { } }
         public event Action<List<QuoteInfo>> RatesUpdated;
 
-        public IEnumerable<QuoteInfo> GetSnapshot()
+        public List<QuoteInfo> GetSnapshot()
         {
             return _feed.GetSnapshot();
         }

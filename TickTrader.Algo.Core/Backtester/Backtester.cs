@@ -14,12 +14,12 @@ namespace TickTrader.Algo.Core
     {
         private static int IdSeed;
 
-        private ISynchronizationContext _sync;
+        private ISyncContext _sync;
         private readonly FeedEmulator _feed;
         private readonly PluginExecutor _executor;
         private readonly EmulationControlFixture _control;
 
-        public Backtester(AlgoPluginRef pluginRef, ISynchronizationContext syncObj, DateTime? from, DateTime? to)
+        public Backtester(AlgoPluginRef pluginRef, ISyncContext syncObj, DateTime? from, DateTime? to)
         {
             pluginRef = pluginRef ?? throw new ArgumentNullException("pluginRef");
             PluginInfo = pluginRef.Metadata.Descriptor;

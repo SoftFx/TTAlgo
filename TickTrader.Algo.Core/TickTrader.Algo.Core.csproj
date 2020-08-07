@@ -238,11 +238,11 @@
     <Compile Include="Executor\SubscriptionManager.cs" />
     <Compile Include="Executor\QuoteStrategy.cs" />
     <Compile Include="Executor\QuoteSeriesFixture.cs" />
-    <Compile Include="Infrastructure\Interfaces.cs" />
     <Compile Include="Infrastructure\QuoteDistributor.cs" />
     <Compile Include="Infrastructure\Subscription.cs" />
     <Compile Include="Infrastructure\SubscriptionExtentions.cs" />
     <Compile Include="Infrastructure\SubscriptionGroup.cs" />
+    <Compile Include="Lib\ActorSharpExt.cs" />
     <Compile Include="Lib\AsyncEnumerator.cs" />
     <Compile Include="Lib\BunchingBlock.cs" />
     <Compile Include="Lib\CollectionExtentions.cs" />
@@ -256,6 +256,7 @@
     <Compile Include="Lib\PagedGate.cs" />
     <Compile Include="Lib\QueueGate.cs" />
     <Compile Include="Lib\Ref.cs" />
+    <Compile Include="Lib\SyncContext.cs" />
     <Compile Include="Lib\TaskExtensions.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Math\BarExtentions.cs" />
@@ -325,6 +326,10 @@
     <Compile Include="Math\TimeVectorBase.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ActorSharp\ActorSharp.csproj">
+      <Project>{7D6B7BBA-586C-4A69-A368-6BF9B87026B2}</Project>
+      <Name>ActorSharp</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Machinarium\Machinarium.csproj">
       <Project>{df05b4cc-200a-436b-91cc-bebe7d89b8ad}</Project>
       <Name>Machinarium</Name>

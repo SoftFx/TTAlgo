@@ -21,6 +21,9 @@ namespace TickTrader.Algo.Core
         public event Action<Domain.PositionExecReport> PositionUpdated;
         public event Action<BalanceOperation> BalanceUpdated;
 
+        public event Action<QuoteInfo> RateUpdated;
+        public event Action<List<QuoteInfo>> RatesUpdated;
+
 
         public UnitRuntimeV1Handler(PluginExecutorCore executorCore)
         {
@@ -104,14 +107,37 @@ namespace TickTrader.Algo.Core
             context.TaskSrc.Task.GetAwaiter().GetResult();
         }
 
-        internal IAsyncPagedEnumerator<Domain.TradeReportInfo> GetTradeHistory(TradeHistoryRequest request)
+        internal IAsyncPagedEnumerator<TradeReportInfo> GetTradeHistory(TradeHistoryRequest request)
         {
             var callId = RpcMessage.GenerateCallId();
-            var context = new PagedEnumeratorAdapter<Domain.TradeReportInfo>(TradeHistoryPageResponseHandler,
+            var context = new PagedEnumeratorAdapter<TradeReportInfo>(TradeHistoryPageResponseHandler,
                 () => _session.Tell(RpcMessage.Request(new TradeHistoryRequestNextPage(), callId)),
                 () => _session.Tell(RpcMessage.Request(new TradeHistoryRequestDispose(), callId)));
             _session.Ask(RpcMessage.Request(request, callId), context);
             return context;
+        }
+
+        internal List<QuoteInfo> GetFeedSnapshot()
+        {
+            var context = new RpcResponseTaskContext<QuotePage>(SingleReponseHandler);
+            _session.Ask(RpcMessage.Request(new FeedSnapshotRequest()), context);
+            var res = context.TaskSrc.Task.GetAwaiter().GetResult();
+            return res.Quotes.Select(q => new QuoteInfo(q)).ToList();
+        }
+
+        internal List<QuoteInfo> ModifyFeedSubscription(ModifyFeedSubscriptionRequest request)
+        {
+            var context = new RpcResponseTaskContext<QuotePage>(SingleReponseHandler);
+            _session.Ask(RpcMessage.Request(request), context);
+            var res = context.TaskSrc.Task.GetAwaiter().GetResult();
+            return res.Quotes.Select(q => new QuoteInfo(q)).ToList();
+        }
+
+        internal void CancelAllFeedSubscriptions()
+        {
+            var context = new RpcResponseTaskContext<VoidResponse>(SingleReponseHandler);
+            _session.Ask(RpcMessage.Request(new CancelAllFeedSubscriptionsRequest()), context);
+            context.TaskSrc.Task.GetAwaiter().GetResult();
         }
 
 
@@ -126,8 +152,12 @@ namespace TickTrader.Algo.Core
                 OrderExecReportNotificationHandler(payload);
             else if (payload.Is(Domain.PositionExecReport.Descriptor))
                 PositionExecReportNotificationHandler(payload);
-            if (payload.Is(BalanceOperation.Descriptor))
+            else if (payload.Is(BalanceOperation.Descriptor))
                 BalanceOperationNotificationHandler(payload);
+            else if (payload.Is(FullQuoteInfo.Descriptor))
+                FullQuoteInfoNotificationHandler(payload);
+            else if (payload.Is(QuotePage.Descriptor))
+                QuotePageNotificationHandler(payload);
 
         }
 
@@ -271,6 +301,18 @@ namespace TickTrader.Algo.Core
         {
             var report = payload.Unpack<BalanceOperation>();
             BalanceUpdated?.Invoke(report);
+        }
+
+        private void FullQuoteInfoNotificationHandler(Any payload)
+        {
+            var quote = payload.Unpack<FullQuoteInfo>();
+            RateUpdated?.Invoke(new QuoteInfo(quote));
+        }
+
+        private void QuotePageNotificationHandler(Any payload)
+        {
+            var page = payload.Unpack<QuotePage>();
+            RatesUpdated?.Invoke(page.Quotes.Select(q => new QuoteInfo(q)).ToList());
         }
 
 

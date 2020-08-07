@@ -181,6 +181,11 @@ namespace TickTrader.Algo.Domain
             };
         }
 
+        public FullQuoteInfo GetFullQuote()
+        {
+            return new FullQuoteInfo { Symbol = _symbol, Data = _data };
+        }
+
 
         #region IRateInfo
 

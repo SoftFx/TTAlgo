@@ -98,11 +98,11 @@ namespace TickTrader.Algo.Core
             feed.CustomCommds.Unsubscribe(Name);
         }
 
-        public void UpdateRate(Api.Quote quote)
+        public void UpdateRate(QuoteInfo quote)
         {
             Ask = quote.Ask;
             Bid = quote.Bid;
-            LastQuote = quote;
+            LastQuote = new QuoteEntity(quote);
 
             RateUpdated?.Invoke(this);
         }
@@ -157,7 +157,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public void UpdateRate(IQuoteInfo quote) => UpdateRate((Quote)quote);
+        public void UpdateRate(IQuoteInfo quote) => UpdateRate((QuoteInfo)quote);
     }
 
     public class NullSymbol : Api.Symbol

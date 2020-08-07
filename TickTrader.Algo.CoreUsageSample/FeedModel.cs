@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Infrastructure;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreUsageSample
 {
-    internal class FeedModel : IFeedProvider, IFeedHistoryProvider, ISynchronizationContext
+    internal class FeedModel : IFeedProvider, IFeedHistoryProvider, ISyncContext
     {
         private Action<QuoteInfo[]> FeedUpdated;
         private Dictionary<string, SymbolDataModel> dataBySymbol = new Dictionary<string, SymbolDataModel>();
@@ -18,7 +18,7 @@ namespace TickTrader.Algo.CoreUsageSample
 
         public TimeFrames TimeFrame { get; private set; }
 
-        public ISynchronizationContext Sync { get { return this; } }
+        public ISyncContext Sync { get { return this; } }
 
         public FeedModel(TimeFrames timeFrame)
         {
@@ -67,7 +67,7 @@ namespace TickTrader.Algo.CoreUsageSample
             throw new NotImplementedException();
         }
 
-        IEnumerable<QuoteInfo> IFeedProvider.GetSnapshot()
+        List<QuoteInfo> IFeedProvider.GetSnapshot()
         {
             return dataBySymbol.Values.Where(d => d.LastQuote != null).Select(d => d.LastQuote).ToList();
         }
@@ -100,6 +100,16 @@ namespace TickTrader.Algo.CoreUsageSample
         public void Invoke<T>(Action<T> action, T arg)
         {
             action(arg);
+        }
+
+        public T Invoke<T>(Func<T> syncFunc)
+        {
+            return syncFunc();
+        }
+
+        public TOut Invoke<TIn, TOut>(Func<TIn, TOut> syncFunc, TIn args)
+        {
+            return syncFunc(args);
         }
 
         private class SymbolDataModel

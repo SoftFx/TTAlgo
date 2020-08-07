@@ -1,12 +1,9 @@
 ﻿using Google.Protobuf;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Calc;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
@@ -45,20 +42,19 @@ namespace TickTrader.Algo.Core
         List<QuoteInfo> QueryTicks(string symbolCode, DateTime from, int count, bool level2);
     }
 
-    public interface IFeedProvider : Infrastructure.IFeedSubscription
+    public interface IFeedSubscription
     {
-        ISynchronizationContext Sync { get; }
-        IEnumerable<QuoteInfo> GetSnapshot();
+        List<QuoteInfo> Modify(List<FeedSubscriptionUpdate> updates);
+        void CancelAll();
+    }
+
+    public interface IFeedProvider : IFeedSubscription
+    {
+        ISyncContext Sync { get; }
+        List<QuoteInfo> GetSnapshot();
         
         event Action<QuoteInfo> RateUpdated;
         event Action<List<QuoteInfo>> RatesUpdated;
-    }
-
-    public interface ISynchronizationContext
-    {
-        void Invoke(Action action);
-        void Invoke<T>(Action<T> action, T arg);
-        void Send(Action action);
     }
 
     public interface ILinkOutput<T> : IDisposable

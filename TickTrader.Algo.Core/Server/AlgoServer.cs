@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Rpc;
 using TickTrader.Algo.Rpc.OverGrpc;
@@ -35,7 +36,7 @@ namespace TickTrader.Algo.Core
             await _rpcServer.Stop();
         }
 
-        public PluginExecutor CreateExecutor(AlgoPluginRef pluginRef, ISynchronizationContext updatesSync)
+        public PluginExecutor CreateExecutor(AlgoPluginRef pluginRef, ISyncContext updatesSync)
         {
             var id = Guid.NewGuid().ToString("N");
             var executor = new PluginExecutor(id, pluginRef, updatesSync);

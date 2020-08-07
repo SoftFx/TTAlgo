@@ -1,4 +1,5 @@
-﻿using Google.Protobuf.WellKnownTypes;
+﻿using ActorSharp;
+using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
 using TickTrader.Algo.Core.Lib;
@@ -6,20 +7,29 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    internal class RuntimeInfoProvider : CrossDomainObject, IAccountInfoProvider, ITradeExecutor, ITradeHistoryProvider
+    internal class RuntimeInfoProvider : CrossDomainObject, IAccountInfoProvider, ITradeExecutor, ITradeHistoryProvider, IFeedProvider
     {
+        private class RuntimeContext : Actor { }
+
+        private readonly Ref<RuntimeContext> _context;
+        private readonly ISyncContext _sync;
+
         private readonly UnitRuntimeV1Handler _handler;
-        private readonly IAccountInfoProvider _remotingAccInfo;
 
 
-        public RuntimeInfoProvider(UnitRuntimeV1Handler handler, IAccountInfoProvider remotingAccInfo)
+        public RuntimeInfoProvider(UnitRuntimeV1Handler handler)
         {
             _handler = handler;
-            _remotingAccInfo = remotingAccInfo;
+
+            _context = Actor.SpawnLocal<RuntimeContext>(null, $"Runtime {Guid.NewGuid()}");
+            _sync = _context.GetSyncContext();
 
             _handler.OrderUpdated += o => OrderUpdated?.Invoke(o);
             _handler.PositionUpdated += p => PositionUpdated?.Invoke(p);
             _handler.BalanceUpdated += b => BalanceUpdated?.Invoke(b);
+
+            _handler.RateUpdated += q => RateUpdated?.Invoke(q);
+            _handler.RatesUpdated += q => RatesUpdated?.Invoke(q);
         }
 
 
@@ -46,29 +56,29 @@ namespace TickTrader.Algo.Core
 
         public void SyncInvoke(Action action)
         {
-            _remotingAccInfo.SyncInvoke(action);
+            _sync.Invoke(action);
         }
 
         #endregion IAccountInfoProvider
 
         #region ITradeExecutor
 
-        public void SendOpenOrder(Domain.OpenOrderRequest request)
+        public void SendOpenOrder(OpenOrderRequest request)
         {
             _handler.SendOpenOrder(request);
         }
 
-        public void SendModifyOrder(Domain.ModifyOrderRequest request)
+        public void SendModifyOrder(ModifyOrderRequest request)
         {
             _handler.SendModifyOrder(request);
         }
 
-        public void SendCloseOrder(Domain.CloseOrderRequest request)
+        public void SendCloseOrder(CloseOrderRequest request)
         {
             _handler.SendCloseOrder(request);
         }
 
-        public void SendCancelOrder(Domain.CancelOrderRequest request)
+        public void SendCancelOrder(CancelOrderRequest request)
         {
             _handler.SendCancelOrder(request);
         }
@@ -77,11 +87,37 @@ namespace TickTrader.Algo.Core
 
         #region ITradeHistoryProvider
 
-        public IAsyncPagedEnumerator<Domain.TradeReportInfo> GetTradeHistory(DateTime? from, DateTime? to, TradeHistoryRequestOptions options)
+        public IAsyncPagedEnumerator<TradeReportInfo> GetTradeHistory(DateTime? from, DateTime? to, TradeHistoryRequestOptions options)
         {
             return _handler.GetTradeHistory(new TradeHistoryRequest { From = from?.ToUniversalTime().ToTimestamp(), To = to?.ToUniversalTime().ToTimestamp(), Options = options });
         }
 
         #endregion ITradeHistoryProvider
+
+        #region IFeedProvider
+
+        public event Action<QuoteInfo> RateUpdated;
+        public event Action<List<QuoteInfo>> RatesUpdated;
+
+        public ISyncContext Sync => _sync;
+
+        public List<QuoteInfo> GetSnapshot()
+        {
+            return _handler.GetFeedSnapshot();
+        }
+
+        public List<QuoteInfo> Modify(List<FeedSubscriptionUpdate> updates)
+        {
+            var request = new ModifyFeedSubscriptionRequest();
+            request.Updates.AddRange(updates);
+            return _handler.ModifyFeedSubscription(request);
+        }
+
+        public void CancelAll()
+        {
+            _handler.CancelAllFeedSubscriptions();
+        }
+
+        #endregion IFeedProvider
     }
 }

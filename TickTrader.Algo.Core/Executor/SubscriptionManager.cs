@@ -33,14 +33,8 @@ namespace TickTrader.Algo.Core
 
         protected override List<QuoteInfo> ModifySourceSubscription(List<FeedSubscriptionUpdate> updates)
         {
-            using (var request = new CrossdomainRequest { Feed = _context.FeedProvider, Updates = updates })
-            {
-                if (IsSynchronized)
-                    request.Modify();
-                else
-                    _context.FeedProvider.Sync.Invoke(request.Modify);
-                return request.Result;
-            }
+            var feed = _context.FeedProvider;
+            return IsSynchronized ? feed.Modify(updates) : feed.Sync.Invoke(() => feed.Modify(updates));
         }
 
         public void OnUpdateEvent(AlgoMarketNode node)
@@ -103,23 +97,6 @@ namespace TickTrader.Algo.Core
             {
                 node.UserSubscriptionInfo?.CancelAll();
                 node.UserSubscriptionInfo = null;
-            }
-        }
-
-        private class CrossdomainRequest : CrossDomainObject
-        {
-            public List<FeedSubscriptionUpdate> Updates { get; set; }
-            public IFeedProvider Feed { get; set; }
-            public List<QuoteInfo> Result { get; set; }
-
-            public void Modify()
-            {
-                Result = Feed.Modify(Updates);
-            }
-
-            public void CancellAll()
-            {
-                Feed.CancelAll();
             }
         }
     }

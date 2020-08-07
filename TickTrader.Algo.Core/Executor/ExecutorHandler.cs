@@ -1,12 +1,6 @@
-﻿using C5;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Repository;
 
@@ -15,7 +9,7 @@ namespace TickTrader.Algo.Core
     public class PluginExecutor : CrossDomainObject, IDisposable
     {
         private readonly string _id;
-        private ISynchronizationContext _syncContext;
+        private ISyncContext _syncContext;
 
         private AlgoPluginRef _pluginRef;
         private PluginContainer _container;
@@ -23,7 +17,7 @@ namespace TickTrader.Algo.Core
         private FeedCdProxy _fProxy;
         private TradeApiProxy _tProxy;
 
-        internal PluginExecutor(string id, AlgoPluginRef pluginRef, ISynchronizationContext updatesSync)
+        internal PluginExecutor(string id, AlgoPluginRef pluginRef, ISyncContext updatesSync)
         {
             _id = id;
             _pluginRef = pluginRef;
