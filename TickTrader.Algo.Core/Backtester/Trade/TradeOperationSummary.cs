@@ -213,7 +213,7 @@ namespace TickTrader.Algo.Core
         {
             _builder.Append(" #").Append(order.Info.Id)
                 .Append(' ').Append(order.Info.Type);
-            if (order.Info.ImmediateOrCancel)
+            if (order.Info.IsImmediateOrCancel)
                 _builder.Append(" IoC");
             _builder.Append(' ').Append(order.Info.Symbol)
                 .Append(' ').Append(order.Info.Side);

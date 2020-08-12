@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -32,7 +27,7 @@ namespace TickTrader.Algo.Core
             if (entity != null)
                 this.ResultingOrder = entity;
             else
-                this.ResultingOrder = OrderEntity.Null;
+                this.ResultingOrder = Null.Order;
             IsServerResponse = true;
             TransactionTime = trTime ?? DateTime.MinValue;
         }

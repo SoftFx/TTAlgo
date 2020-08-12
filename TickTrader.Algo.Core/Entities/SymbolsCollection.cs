@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using TickTrader.Algo.Api;
+﻿using TickTrader.Algo.Api;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
@@ -27,7 +25,5 @@ namespace TickTrader.Algo.Core
         {
             _entities.TryAdd(info.Name, new SymbolAccessor(info, _feedProvider, _currencies));
         }
-
-        public override IEnumerable<SymbolAccessor> Values => _entities.Values.Where(e => !e.IsNull).OrderBy(s => s.Info.GroupSortOrder).ThenBy(s => s.Info.SortOrder).ThenBy(s => s.Info.Name);
     }
 }

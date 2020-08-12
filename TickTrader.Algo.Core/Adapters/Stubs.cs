@@ -194,6 +194,37 @@ namespace TickTrader.Algo.Core
     }
 
     [Serializable]
+    public class NullOrder : Order
+    {
+        public string Id { get { return ""; } }
+        public double RequestedVolume { get { return double.NaN; } }
+        public double RemainingVolume { get { return double.NaN; } }
+        public double MaxVisibleVolume { get { return double.NaN; } }
+        public string Symbol { get { return ""; } }
+        public OrderType Type { get { return OrderType.Market; } }
+        public OrderSide Side { get { return OrderSide.Buy; } }
+        public double Price { get { return double.NaN; } }
+        public double StopPrice { get { return double.NaN; } }
+        public double StopLoss { get { return double.NaN; } }
+        public double TakeProfit { get { return double.NaN; } }
+        public double Slippage => double.NaN;
+        public string Comment { get { return ""; } }
+        public string Tag { get { return ""; } }
+        public string InstanceId { get { return ""; } }
+        public DateTime Created { get { return DateTime.MinValue; } }
+        public DateTime Modified { get { return DateTime.MinValue; } }
+        public DateTime Expiration { get { return DateTime.MinValue; } }
+        public bool IsNull { get { return true; } }
+        public double ExecPrice { get { return double.NaN; } }
+        public double ExecVolume { get { return double.NaN; } }
+        public double LastFillPrice { get { return double.NaN; } }
+        public double LastFillVolume { get { return double.NaN; } }
+        public double Margin => double.NaN;
+        public double Profit => double.NaN;
+        public OrderOptions Options => OrderOptions.None;
+    }
+
+    [Serializable]
     public class NullCurrency : Currency
     {
         public NullCurrency() : this("")

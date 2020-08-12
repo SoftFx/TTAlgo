@@ -4,7 +4,6 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
-using TickTrader.Algo.Core.Calc;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
@@ -16,6 +15,15 @@ namespace TickTrader.Algo.Core
         Modify,
         Cancel,
     }
+
+    public enum BalanceAction
+    {
+        Deposite,
+        Withdrawal,
+        Dividend,
+    }
+
+    public enum OrderEntityAction { None, Added, Removed, Updated }
 
     internal class TradeApiAdapter : TradeCommands
     {
@@ -69,7 +77,7 @@ namespace TickTrader.Algo.Core
 
             if (code == OrderCmdResultCodes.Ok)
             {
-                _logger.LogOrderValidationSuccess(domainRequest, OrderAction.Open);
+                _logger.LogOrderValidationSuccess(domainRequest, OrderAction.Open, smbMetadata.LotSize);
                 var orderResp = await _api.OpenOrder(isAsync, domainRequest);
                 var resCode = orderResp.ResultCode.ToApiEnum();
                 if (resCode != OrderCmdResultCodes.Ok)
@@ -84,7 +92,7 @@ namespace TickTrader.Algo.Core
                 resultEntity = new OrderResultEntity(code, null, null) { IsServerResponse = false };
             }
 
-            _logger.LogOrderOpenResults(resultEntity, domainRequest);
+            _logger.LogRequestResults(domainRequest, resultEntity, OrderAction.Open);
             return resultEntity;
         }
 
@@ -111,7 +119,7 @@ namespace TickTrader.Algo.Core
                 resultEntity = new OrderResultEntity(code, orderToCancel, null) { IsServerResponse = false };
             }
 
-            _logger.LogOrderCancelResults(request, resultEntity);
+            _logger.LogRequestResults(request, resultEntity, OrderAction.Cancel);
             return resultEntity;
         }
 
@@ -130,7 +138,7 @@ namespace TickTrader.Algo.Core
 
             if (code == OrderCmdResultCodes.Ok)
             {
-                _logger.LogOrderValidationSuccess(requestContext, OrderAction.Close);
+                _logger.LogOrderValidationSuccess(requestContext, OrderAction.Close, smbMetadata.LotSize);
 
                 var orderResp = await _api.CloseOrder(isAsync, requestContext);
                 var resCode = orderResp.ResultCode.ToApiEnum();
@@ -147,7 +155,7 @@ namespace TickTrader.Algo.Core
                 resultEntity = new OrderResultEntity(code, orderToClose, null) { IsServerResponse = false };
             }
 
-            _logger.LogOrderCloseResults(requestContext, resultEntity);
+            _logger.LogRequestResults(requestContext, resultEntity, OrderAction.Close);
             return resultEntity;
         }
 
@@ -174,7 +182,7 @@ namespace TickTrader.Algo.Core
                 resultEntity = new OrderResultEntity(code, orderToClose, null) { IsServerResponse = false };
             }
 
-            _logger.LogOrderCloseByResults(request, resultEntity);
+            _logger.LogRequestResults(request, resultEntity, OrderAction.Close);
             return resultEntity;
         }
 
@@ -205,7 +213,7 @@ namespace TickTrader.Algo.Core
 
             if (code == OrderCmdResultCodes.Ok)
             {
-                _logger.LogOrderValidationSuccess(domainRequest, OrderAction.Modify);
+                _logger.LogOrderValidationSuccess(domainRequest, OrderAction.Modify, smbMetadata.LotSize);
 
                 var result = await _api.ModifyOrder(isAsync, domainRequest);
                 var resCode = result.ResultCode.ToApiEnum();
@@ -226,7 +234,7 @@ namespace TickTrader.Algo.Core
                 resultEntity = new OrderResultEntity(code, orderToModify, null) { IsServerResponse = false };
             }
 
-            _logger.LogOrderModifyResults(domainRequest, resultEntity);
+            _logger.LogRequestResults(domainRequest, resultEntity, OrderAction.Modify);
             return resultEntity;
         }
 
@@ -413,8 +421,8 @@ namespace TickTrader.Algo.Core
             if (!ValidateSlippage(request.Slippage, ref code))
                 return;
 
-            if (!ValidateMargin(request, smbMetadata, ref code))
-                return;
+            //if (!ValidateMargin(request, smbMetadata, ref code)) //incorrect behavior when Margine Call
+            //    return;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -752,42 +760,42 @@ namespace TickTrader.Algo.Core
             return true;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool ValidateMargin(Domain.OpenOrderRequest request, SymbolInfo symbol, ref OrderCmdResultCodes code)
-        {
-            var isHidden = OrderEntity.IsHiddenOrder((decimal?)request.MaxVisibleAmount);
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //private bool ValidateMargin(Domain.OpenOrderRequest request, SymbolInfo symbol, ref OrderCmdResultCodes code)
+        //{
+        //    var isHidden = request.MaxVisibleAmount != null && request.MaxVisibleAmount == 0;
 
-            if (Calc != null && !Calc.HasEnoughMarginToOpenOrder(symbol, request.Amount, request.Type, request.Side, request.Price, request.StopPrice, isHidden, out CalcErrorCodes error))
-            {
-                code = error.ToOrderError();
+        //    if (Calc != null && !Calc.HasEnoughMarginToOpenOrder(symbol, request.Amount, request.Type, request.Side, request.Price, request.StopPrice, isHidden, out CalcErrorCodes error))
+        //    {
+        //        code = error.ToOrderError();
 
-                if (code == OrderCmdResultCodes.Ok)
-                    code = OrderCmdResultCodes.NotEnoughMoney;
+        //        if (code == OrderCmdResultCodes.Ok)
+        //            code = OrderCmdResultCodes.NotEnoughMoney;
 
-                return false;
-            }
-            return true;
-        }
+        //        return false;
+        //    }
+        //    return true;
+        //}
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool ValidateMargin(Domain.ModifyOrderRequest request, SymbolInfo symbol, ref OrderCmdResultCodes code)
-        {
-            var oldOrder = _account.Orders.GetOrNull(request.OrderId);
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //private bool ValidateMargin(Domain.ModifyOrderRequest request, SymbolInfo symbol, ref OrderCmdResultCodes code)
+        //{
+        //    var oldOrder = _account.Orders.GetOrNull(request.OrderId);
 
-            var newIsHidden = OrderEntity.IsHiddenOrder((decimal?)request.MaxVisibleAmount);
+        //    var newIsHidden = request.MaxVisibleAmount != null && request.MaxVisibleAmount == 0;
 
-            var newVol = request.NewAmount ?? (double)oldOrder.Info.RemainingAmount;
-            var newPrice = request.Price ?? oldOrder.Info.Price;
-            var newStopPrice = request.StopPrice ?? oldOrder.Info.StopPrice;
+        //    var newVol = request.NewAmount ?? (double)oldOrder.Info.RemainingAmount;
+        //    var newPrice = request.Price ?? oldOrder.Info.Price;
+        //    var newStopPrice = request.StopPrice ?? oldOrder.Info.StopPrice;
 
-            if (Calc != null && !Calc.HasEnoughMarginToModifyOrder(oldOrder, symbol, newVol, newPrice, newStopPrice, newIsHidden))
-            {
-                code = OrderCmdResultCodes.NotEnoughMoney;
-                return false;
-            }
+        //    if (Calc != null && !Calc.HasEnoughMarginToModifyOrder(oldOrder, symbol, newVol, newPrice, newStopPrice, newIsHidden))
+        //    {
+        //        code = OrderCmdResultCodes.NotEnoughMoney;
+        //        return false;
+        //    }
 
-            return true;
-        }
+        //    return true;
+        //}
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool ValidateQuotes(SymbolInfo symbol, Domain.OrderInfo.Types.Side side, ref OrderCmdResultCodes code)

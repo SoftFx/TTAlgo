@@ -537,7 +537,7 @@ namespace TickTrader.Algo.Core
                 fillInfo = FillOrder(order, execPrice, execAmount, trReason);
                 isInstantOrder = _acc.Type != AccountInfo.Types.Type.Gross;
             }
-            else if (order.Info.Type == Domain.OrderInfo.Types.Type.Limit && order.Info.ImmediateOrCancel)
+            else if (order.Info.Type == Domain.OrderInfo.Types.Type.Limit && order.Info.IsImmediateOrCancel)
             {
                 // fill order
                 fillInfo = FillOrder(order, execPrice, execAmount, trReason);
@@ -1110,7 +1110,7 @@ namespace TickTrader.Algo.Core
             //TradeChargesInfo charges = new TradeChargesInfo();
             var currentRate = _calcFixture.GetCurrentRateOrNull(smb.Name);
             var wasTmpOrder = parentOrder.Info.Type == Domain.OrderInfo.Types.Type.Market
-                || (parentOrder.Info.Type == Domain.OrderInfo.Types.Type.Limit && parentOrder.Info.ImmediateOrCancel);
+                || (parentOrder.Info.Type == Domain.OrderInfo.Types.Type.Limit && parentOrder.Info.IsImmediateOrCancel);
 
             //if (parentOrder != null)
             //{

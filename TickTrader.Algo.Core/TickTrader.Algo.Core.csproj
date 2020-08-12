@@ -162,7 +162,6 @@
     <Compile Include="Entities\AlgoMarketNode.cs" />
     <Compile Include="Entities\ApiEnumConverter.cs" />
     <Compile Include="Entities\AssetAccessor.cs" />
-    <Compile Include="Entities\AssetEntity.cs" />
     <Compile Include="Entities\AssetsCollection.cs" />
     <Compile Include="Entities\BalanceOperationReport.cs" />
     <Compile Include="Entities\BarEntity.cs" />
@@ -186,18 +185,13 @@
     <Compile Include="Entities\FileEntity.cs" />
     <Compile Include="Entities\IndicatorsCollection.cs" />
     <Compile Include="Entities\MarkerEntity.cs" />
-    <Compile Include="Entities\MockOrder.cs" />
     <Compile Include="Entities\NetPositionOpenInfo.cs" />
     <Compile Include="Entities\OrderAccessor.cs" />
     <Compile Include="Entities\OrderFilteredCollection.cs" />
     <Compile Include="Entities\OutputPoint.cs" />
     <Compile Include="Entities\PositionAccessor.cs" />
     <Compile Include="Entities\PositionCollection.cs" />
-    <Compile Include="Entities\PositionEntity.cs" />
-    <Compile Include="Entities\OrderEntity.cs" />
-    <Compile Include="Entities\OrderExecReport.cs" />
     <Compile Include="Entities\OrdersCollection.cs" />
-    <Compile Include="Entities\PositionExecReport.cs" />
     <Compile Include="Entities\QuoteEntity.cs" />
     <Compile Include="Entities\SymbolAccessor.cs" />
     <Compile Include="Entities\SymbolsCollection.cs" />

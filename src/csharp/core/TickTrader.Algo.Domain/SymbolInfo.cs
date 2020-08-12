@@ -97,5 +97,7 @@ namespace TickTrader.Algo.Domain
         string Name { get; }
 
         int SortOrder { get; }
+
+        int GroupSortOrder { get; }
     }
 }

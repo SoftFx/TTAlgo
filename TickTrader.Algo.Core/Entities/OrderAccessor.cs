@@ -1,6 +1,7 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
@@ -89,6 +90,8 @@ namespace TickTrader.Algo.Core
         public override string ToString() => $"#{Info.Id} {Info.Symbol} {Info.Side} {Info.RemainingAmount}";
 
         public OrderAccessor Clone() => new OrderAccessor(SymbolInfo, Info);
+
+        public static bool IsHiddenOrder(double? maxVisibleVolume) => maxVisibleVolume != null && maxVisibleVolume.Value.E(0.0);
 
 
         internal sealed class WriteEntity : Order, IOrderCalcInfo

@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Domain
     }
 
 
-    public partial class OrderInfo : IOrderUpdateInfo, IOrderCalcInfo
+    public partial class OrderInfo : IOrderUpdateInfo, IOrderCalcInfo, IOrderLogDetailsInfo
     {
         public OrderOptions Options
         {
@@ -21,7 +21,7 @@ namespace TickTrader.Algo.Domain
             set { OptionsBitmask = (int)value; }
         }
 
-        public bool ImmediateOrCancel => Options.HasFlag(OrderOptions.ImmediateOrCancel);
+        public bool IsImmediateOrCancel => Options.HasFlag(OrderOptions.ImmediateOrCancel);
 
         public bool MarketWithSlippdage => Options.HasFlag(OrderOptions.MarketWithSlippage);
 
@@ -46,6 +46,12 @@ namespace TickTrader.Algo.Domain
         decimal? IOrderCommonInfo.Swap => (decimal)Swap;
 
         double IMarginProfitCalc.Price => Price ?? 0;
+
+        double? IOrderLogDetailsInfo.Amount => IsImmediateOrCancel ? LastFillAmount : RemainingAmount;
+
+        double? IOrderLogDetailsInfo.Price => IsImmediateOrCancel ? LastFillPrice : Price;
+
+        string IOrderLogDetailsInfo.OrderId => Id;
 
         public event Action<OrderEssentialsChangeArgs> EssentialsChanged;
         public event Action<OrderPropArgs<decimal>> SwapChanged;
@@ -195,6 +201,31 @@ namespace TickTrader.Algo.Domain
         Domain.OrderInfo.Types.Type Type { get; }
         decimal RemainingAmount { get; }
         bool IsHidden { get; }
+    }
+
+    public interface IOrderLogDetailsInfo
+    {
+        string OrderId { get; }
+
+        string Symbol { get; }
+
+        //double SymbolLotSize { get; set; }
+
+        Domain.OrderInfo.Types.Type Type { get; }
+
+        Domain.OrderInfo.Types.Side Side { get; }
+
+        double? Amount { get; }
+
+        double? Price { get; }
+
+        double? StopPrice { get; }
+
+        double? StopLoss { get; }
+
+        double? TakeProfit { get; }
+
+        double? Slippage { get; }
     }
 
     public struct OrderPropArgs<T>

@@ -71,7 +71,7 @@ namespace TickTrader.BotTerminal
 
             TradeHistory = new TradeHistoryViewModel(clientModel, cManager, storage.ProfileManager);
 
-            Notifications = new NotificationsViewModel(notificationCenter, clientModel.Account, cManager, storage);
+            //Notifications = new NotificationsViewModel(notificationCenter, clientModel.Account, cManager, storage);
 
             Charts = new ChartCollectionViewModel(clientModel, this, algoEnv);
 
@@ -299,7 +299,7 @@ namespace TickTrader.BotTerminal
         public string ProtocolName => cManager.Connection.CurrentProtocol;
         public EventJournal EventJournal => eventJournal;
 
-        public NotificationsViewModel Notifications { get; private set; }
+        //public NotificationsViewModel Notifications { get; private set; }
 
         public AlertViewModel AlertsManager { get; }
 

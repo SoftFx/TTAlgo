@@ -14,8 +14,7 @@ namespace TickTrader.Algo.Core
         public Domain.OrderExecReport.Types.ExecAction PositionExecAction { get; private set; }
 
         public Domain.PositionExecReport NetPositionUpdate { get; private set; }
-        public AssetEntity Asset1Update { get; }
-        public AssetEntity Asset2Update { get; }
+
         public double? Balance { get; private set; }
 
         internal static TesterTradeTransaction OnOpenOrder(OrderAccessor order, bool isInstantOrder, FillInfo fillInfo, double balance)

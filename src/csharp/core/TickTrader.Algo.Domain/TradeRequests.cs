@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Domain
     }
 
 
-    public partial class OpenOrderRequest : ITradeRequest
+    public partial class OpenOrderRequest : IOrderLogDetailsInfo, ITradeRequest
     {
         public OrderExecOptions ExecOptions
         {
@@ -30,10 +30,12 @@ namespace TickTrader.Algo.Domain
         public string OrderId => string.Empty;
 
         public string LogDetails => string.Empty;
+
+        double? IOrderLogDetailsInfo.Amount => Amount;
     }
 
 
-    public partial class ModifyOrderRequest : ITradeRequest
+    public partial class ModifyOrderRequest : IOrderLogDetailsInfo, ITradeRequest
     {
         public OrderExecOptions? ExecOptions
         {
@@ -42,12 +44,16 @@ namespace TickTrader.Algo.Domain
         }
 
         public string LogDetails => string.Empty;
+
+        double? IOrderLogDetailsInfo.Amount => NewAmount ?? CurrentAmount;
     }
+
 
     public partial class CloseOrderRequest : ITradeRequest
     {
         public string LogDetails => ByOrderId != null ? $"{(Amount.HasValue && Amount != 0 ? Amount.ToString() : "")}" : $"{ByOrderId}";
     }
+
 
     public partial class CancelOrderRequest : ITradeRequest
     {

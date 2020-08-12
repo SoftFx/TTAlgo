@@ -74,7 +74,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Entities\HistoryFilesPackage.cs" />
     <Compile Include="Entities\EntityUpdate.cs" />
     <Compile Include="Entities\Slice.cs" />
     <Compile Include="Extencions.cs" />
@@ -98,10 +97,7 @@
     <Compile Include="Lib\AsyncEvent.cs" />
     <Compile Include="Lib\BotIdHelper.cs" />
     <Compile Include="Lib\CollectionsExt.cs" />
-    <Compile Include="Lib\ConvertionExtentions.cs" />
     <Compile Include="Lib\DateTimeExt.cs" />
-    <Compile Include="Lib\DictionarySyncrhonizer.cs" />
-    <Compile Include="Lib\EnumerableExt.cs" />
     <Compile Include="Lib\Extensions\AssemblyExtension.cs" />
     <Compile Include="Lib\Extensions\AssemblyNameExtension.cs" />
     <Compile Include="Lib\HashCode.cs" />

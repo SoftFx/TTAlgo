@@ -421,7 +421,7 @@ namespace TickTrader.Algo.Core
             {
                 var amount = volume * symbolAccessor.LotSize;
 
-                return _builder.Calculator.CalculateOrderMargin(symbolAccessor, amount, price, stopPrice, type.ToCoreEnum(), side.ToCoreEnum(), OrderEntity.IsHiddenOrder(maxVisibleVolume));
+                return _builder.Calculator.CalculateOrderMargin(symbolAccessor, amount, price, stopPrice, type.ToCoreEnum(), side.ToCoreEnum(), OrderAccessor.IsHiddenOrder(maxVisibleVolume));
             }
             return null;
         }
@@ -433,7 +433,7 @@ namespace TickTrader.Algo.Core
             {
                 var amount = volume * symbolAccessor.LotSize;
 
-                return _builder.Calculator.HasEnoughMarginToOpenOrder(symbolAccessor, amount, type.ToCoreEnum(), side.ToCoreEnum(), price, stopPrice, OrderEntity.IsHiddenOrder(maxVisibleVolume), out _);
+                return _builder.Calculator.HasEnoughMarginToOpenOrder(symbolAccessor, amount, type.ToCoreEnum(), side.ToCoreEnum(), price, stopPrice, OrderAccessor.IsHiddenOrder(maxVisibleVolume), out _);
             }
             return false;
         }

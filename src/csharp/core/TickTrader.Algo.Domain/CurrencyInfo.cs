@@ -7,5 +7,6 @@
 
     public partial class CurrencyInfo : ICurrencyInfo
     {
+        int IBaseSymbolInfo.GroupSortOrder => 1;
     }
 }

@@ -146,15 +146,13 @@ namespace TickTrader.Algo.Core
 
                     if (report.Type == BalanceOperation.Types.Type.DepositWithdrawal)
                     {
-                        context.Logger.NotifyDespositWithdrawal(report.TransactionAmount, accProxy.BalanceCurrencyInfo);
+                        context.Logger.NotifyBalanceEvent(report.TransactionAmount, accProxy.BalanceCurrencyInfo, report.TransactionAmount > 0 ? BalanceAction.Deposite : BalanceAction.Withdrawal);
                         context.EnqueueEvent(builder => accProxy.FireBalanceUpdateEvent());
                     }
 
                     if (report.Type == BalanceOperation.Types.Type.Dividend)
                     {
-                        var format = new NumberFormatInfo { NumberDecimalDigits = currencyInfo.Digits };
-
-                        context.Logger.NotifyDividend(report.TransactionAmount, currencyInfo.Name, format);
+                        context.Logger.NotifyBalanceEvent(report.TransactionAmount, currencyInfo, BalanceAction.Dividend);
                         context.EnqueueEvent(builder => accProxy.FireBalanceDividendEvent(new BalanceDividendEventArgsImpl(report)));
                     }
                 }
@@ -167,7 +165,7 @@ namespace TickTrader.Algo.Core
                     {
                         if (report.Type == BalanceOperation.Types.Type.DepositWithdrawal)
                         {
-                            context.Logger.NotifyDespositWithdrawal(report.TransactionAmount, currencyInfo);
+                            context.Logger.NotifyBalanceEvent(report.TransactionAmount, currencyInfo, report.TransactionAmount > 0 ? BalanceAction.Deposite : BalanceAction.Withdrawal);
                             context.EnqueueEvent(builder => accProxy.Assets.FireModified(new AssetUpdateEventArgsImpl(asset)));
                             context.EnqueueEvent(builder => accProxy.FireBalanceUpdateEvent());
                         }

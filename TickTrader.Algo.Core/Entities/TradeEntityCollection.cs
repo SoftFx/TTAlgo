@@ -75,9 +75,7 @@ namespace TickTrader.Algo.Core
             newInformation.Foreach(AddOrUpdate);
         }
 
-        //protected virtual IEnumerable<CoreType> SortedEntities => _entities.Values.Where(e => !e.IsNull).OrderBy(e => e.Info.SortOrder).ThenBy(e => e.Info.Name);
-
-        public override IEnumerable<CoreType> Values => _entities.Values.Where(e => !e.IsNull).OrderBy(e => e.Info.SortOrder).ThenBy(e => e.Info.Name);
+        public override IEnumerable<CoreType> Values => _entities.Values.Where(e => !e.IsNull).OrderBy(s => s.Info.GroupSortOrder).ThenBy(s => s.Info.SortOrder).ThenBy(s => s.Info.Name);
 
         public abstract void Add(InfoType info);
 
