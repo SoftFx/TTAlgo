@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using Google.Protobuf.WellKnownTypes;
 using Machinarium.Qnil;
 using SciChart.Charting.Model.ChartSeries;
 using SciChart.Charting.Model.DataSeries;
@@ -109,11 +110,11 @@ namespace TickTrader.BotTerminal
             backtester.Executor.TradesUpdated -= Executor_TradesUpdated;
         }
 
-        private void Backtester_OnChartUpdate(BarEntity bar, string symbol, SeriesUpdateActions action)
+        private void Backtester_OnChartUpdate(BarData bar, string symbol, SeriesUpdateActions action)
         {
             if (action == SeriesUpdateActions.Append)
             {
-                _barVector.AppendBarPart(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume);
+                _barVector.AppendBarPart(bar);
                 ApplyPostponedMarkers();
             }
         }
@@ -127,13 +128,13 @@ namespace TickTrader.BotTerminal
                 if (update is QuoteInfo)
                 {
                     var q = (QuoteInfo)update;
-                    _barVector.AppendQuote(q.Time, q.Bid, 1);
+                    _barVector.AppendQuote(q.Timestamp, q.Bid, 1);
                 }
                 else if (update is BarRateUpdate)
                 {
                     var bar = ((BarRateUpdate)update).BidBar;
                     if (bar != null)
-                        _barVector.AppendBarPart(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume);
+                        _barVector.AppendBarPart(bar);
                 }
 
                 ApplyPostponedMarkers();
@@ -262,7 +263,7 @@ namespace TickTrader.BotTerminal
         {
             var markerInfo = new MarkerInfo(key, pointTime, isBuy, description);
 
-            if (_barVector.Count == 0 || _barVector.Last().CloseTime < pointTime)
+            if (_barVector.Count == 0 || _barVector.Last().CloseTime < pointTime.ToTimestamp())
                 _postponedMarkers.Enqueue(markerInfo);
             else
                 PlaceMarker(markerInfo);
@@ -272,7 +273,7 @@ namespace TickTrader.BotTerminal
         {
             if (_barVector.Count > 0)
             {
-                var timeEdge = _barVector.Last().CloseTime;
+                var timeEdge = _barVector.Last().CloseTime.ToDateTime();
 
                 while (_postponedMarkers.Count > 0)
                 {
@@ -290,7 +291,7 @@ namespace TickTrader.BotTerminal
 
         private void PlaceMarker(MarkerInfo info)
         {
-            var index = _barVector.Ref.BinarySearch(info.Timestamp, BinarySearchTypes.NearestHigher);
+            var index = _barVector.Ref.BinarySearch(info.Timestamp.ToTimestamp(), BinarySearchTypes.NearestHigher);
             if (index > 0)
             {
                 var bar = _barVector[index];

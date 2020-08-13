@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -57,7 +58,7 @@ namespace TickTrader.Algo.Core
         internal PluginAdapter PluginProxy { get; private set; }
         internal ITimerApi TimerApi { get; set; }
         public string MainSymbol { get; set; }
-        public Tuple<string, BarPriceType> MainBufferId { get; set; }
+        public Tuple<string, Feed.Types.MarketSide> MainBufferId { get; set; }
         public SymbolsCollection Symbols { get; private set; }
         public CurrenciesCollection Currencies { get; private set; }
         public int DataSize { get { return PluginProxy.Coordinator.VirtualPos; } }
@@ -118,7 +119,7 @@ namespace TickTrader.Algo.Core
                 _tradeApater.IsolationTag = value;
             }
         }
-        public TimeFrames TimeFrame { get; set; }
+        public Feed.Types.Timeframe TimeFrame { get; set; }
 
         internal PluginLoggerAdapter LogAdapter => logAdapter;
 
@@ -151,14 +152,14 @@ namespace TickTrader.Algo.Core
             PluginProxy.SetParameter(paramName, value);
         }
 
-        public InputBuffer<BarEntity> GetBarBuffer(string bufferId)
+        public InputBuffer<BarData> GetBarBuffer(string bufferId)
         {
-            return GetBuffer<BarEntity>(bufferId);
+            return GetBuffer<BarData>(bufferId);
         }
 
-        public InputBuffer<BarEntity> GetBarBuffer(object bufferId)
+        public InputBuffer<BarData> GetBarBuffer(object bufferId)
         {
-            return GetBuffer<BarEntity>(bufferId);
+            return GetBuffer<BarData>(bufferId);
         }
 
         public IReaonlyDataBuffer GetOutput(string outputName)
@@ -173,14 +174,14 @@ namespace TickTrader.Algo.Core
             return (OutputBuffer<T>)outputProxy.Buffer;
         }
 
-        public void MapBarInput<TVal>(string inputName, object bufferId, Func<BarEntity, TVal> selector)
+        public void MapBarInput<TVal>(string inputName, object bufferId, Func<BarData, TVal> selector)
         {
             MapInput(inputName, bufferId, selector);
         }
 
         public void MapBarInput(string inputName, object bufferId)
         {
-            MapInput<BarEntity, Api.Bar>(inputName, bufferId, b => b);
+            MapInput<BarData, Api.Bar>(inputName, bufferId, b => new BarEntity(b));
         }
 
         public void MapInput<TSrc, TVal>(string inputName, object bufferId, Func<TSrc, TVal> selector)
@@ -309,7 +310,7 @@ namespace TickTrader.Algo.Core
         IHelperApi IPluginContext.Helper => this;
         bool IPluginContext.IsStopped => isStopped;
         ITimerApi IPluginContext.TimerApi => TimerApi;
-        TimeFrames IPluginContext.TimeFrame => TimeFrame;
+        TimeFrames IPluginContext.TimeFrame => TimeFrame.ToApiEnum();
         IndicatorProvider IPluginContext.Indicators => _indicators;
 
         void IPluginContext.OnExit()
@@ -547,10 +548,10 @@ namespace TickTrader.Algo.Core
                             IDataBuffer mainBuffer;
                             if (builder.inputBuffers.TryGetValue(builder.MainBufferId, out mainBuffer))
                             {
-                                if (mainBuffer is InputBuffer<BarEntity>)
-                                    mainBars.Buffer = new ProxyBuffer<BarEntity, Api.Bar>(b => b) { SrcBuffer = (InputBuffer<BarEntity>)mainBuffer };
-                                else if (mainBuffer is InputBuffer<QuoteEntity>)
-                                    mainBars.Buffer = new QuoteToBarAdapter((InputBuffer<QuoteEntity>)mainBuffer);
+                                if (mainBuffer is InputBuffer<BarData>)
+                                    mainBars.Buffer = new ProxyBuffer<BarData, Api.Bar>(b => new BarEntity(b)) { SrcBuffer = (InputBuffer<BarData>)mainBuffer };
+                                else if (mainBuffer is InputBuffer<QuoteInfo>)
+                                    mainBars.Buffer = new QuoteToBarAdapter((InputBuffer<QuoteInfo>)mainBuffer);
                             }
                         }
 

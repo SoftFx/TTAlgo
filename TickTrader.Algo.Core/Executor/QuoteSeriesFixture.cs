@@ -1,55 +1,54 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
     internal class QuoteSeriesFixture : FeedFixture, IFeedBuffer
     {
-        private InputBuffer<Quote> _buffer;
+        private InputBuffer<QuoteInfo> _buffer;
 
         public QuoteSeriesFixture(string symbolCode, IFixtureContext context) : base(symbolCode, context)
         {
-            _buffer = context.Builder.GetBuffer<Quote>(SymbolCode);
+            _buffer = context.Builder.GetBuffer<QuoteInfo>(SymbolCode);
         }
 
-        public DateTime this[int index] => _buffer[index].Time;
+        public Timestamp this[int index] => _buffer[index].Timestamp;
         public int Count { get { return _buffer.Count; } }
         public bool IsLoaded { get; private set; }
         public int LastIndex => _buffer.Count - 1;
-        public DateTime OpenTime => _buffer[0].Time;
+        public Timestamp OpenTime => _buffer[0].Timestamp;
 
         public event Action Appended { add { } remove { } }
 
-        public DateTime? GetTimeAtIndex(int index)
+        public Timestamp GetTimeAtIndex(int index)
         {
             if (index < 0 || index >= Count)
                 return null;
-            return _buffer[index].Time;
+            return _buffer[index].Timestamp;
         }
 
-        public void LoadFeed(DateTime from, DateTime to)
+        public void LoadFeed(Timestamp from, Timestamp to)
         {
-            var data = Context.FeedHistory.QueryTicks(SymbolCode, from, to, false);
+            var data = Context.FeedHistory.QueryQuotes(SymbolCode, from, to, false);
             AppendData(data);
         }
 
-        public void LoadFeed(int size)
+        public void LoadFeed(int count)
         {
-            var to = DateTime.Now + TimeSpan.FromDays(1);
-            var data = Context.FeedHistory.QueryTicks(SymbolCode, to, -size, false);
+            var to = (DateTime.Now + TimeSpan.FromDays(1)).ToTimestamp();
+            var data = Context.FeedHistory.QueryQuotes(SymbolCode, to, -count, false);
             AppendData(data);
         }
 
-        public void LoadFeed(DateTime from, int size)
+        public void LoadFeed(Timestamp from, int count)
         {
-            var data = Context.FeedHistory.QueryTicks(SymbolCode, from, size, false);
+            var data = Context.FeedHistory.QueryQuotes(SymbolCode, from, count, false);
             AppendData(data);
         }
 
-        public void LoadFeedFrom(DateTime from)
+        public void LoadFeedFrom(Timestamp from)
         {
             throw new NotImplementedException();
         }
@@ -61,14 +60,14 @@ namespace TickTrader.Algo.Core
 
         public BufferUpdateResult Update(QuoteInfo quote)
         {
-            _buffer.Append(new QuoteEntity(quote));
+            _buffer.Append(quote);
             return new BufferUpdateResult() { IsLastUpdated = true };
         }
 
         private void AppendData(List<QuoteInfo> data)
         {
             IsLoaded = true;
-            _buffer.AppendRange(data.Select(q => new QuoteEntity(q)));
+            _buffer.AppendRange(data);
         }
     }
 

@@ -235,7 +235,7 @@ namespace TickTrader.BotTerminal
             Model = series;
             Key = series.Key;
             Symbol = Key.Symbol;
-            Cfg = Key.Frame + " " + Key.PriceType;
+            Cfg = Key.Frame + " " + Key.MarketSide;
         }
 
         public FeedCacheKey Key { get; }

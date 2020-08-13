@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Core
         private ChartDataCollector _marginCollector;
         private DateTime _startTime;
         private string _mainSymbol;
-        private TimeFrames _mainTimeframe;
+        private Feed.Types.Timeframe _mainTimeframe;
         private string _lastStatus;
         private TimeKeyGenerator _logKeyGen = new TimeKeyGenerator();
 
@@ -68,7 +68,7 @@ namespace TickTrader.Algo.Core
                 Stats.AccBalanceDigits = acc.BalanceCurrencyInfo?.Digits ?? 00;
             }
 
-            var mainVector = feed?.GetBarBuilder(_mainSymbol, _mainTimeframe, BarPriceType.Bid);
+            var mainVector = feed?.GetBarBuilder(_mainSymbol, _mainTimeframe, Feed.Types.MarketSide.Bid);
             Stats.BarsCount = mainVector?.Count ?? 0;
 
             Stats.Elapsed = DateTime.UtcNow - _startTime;
@@ -107,7 +107,7 @@ namespace TickTrader.Algo.Core
 
         private void InitChartDataCollection(IBacktesterSettings settings, FeedEmulator feed)
         {
-            var mainVector = feed.GetBarBuilder(_mainSymbol, _mainTimeframe, BarPriceType.Bid);
+            var mainVector = feed.GetBarBuilder(_mainSymbol, _mainTimeframe, Feed.Types.MarketSide.Bid);
 
             foreach (var record in settings.SymbolDataConfig)
             {
@@ -211,32 +211,32 @@ namespace TickTrader.Algo.Core
 
         #endregion
 
-        public IPagedEnumerator<BarEntity> GetSymbolHistory(string symbol, TimeFrames timeFrame)
+        public IPagedEnumerator<BarData> GetSymbolHistory(string symbol, Feed.Types.Timeframe timeframe)
         {
             var collector = _symbolDataCollectors.GetOrDefault(symbol);
             if (collector != null)
-                return MarshalBars(collector.Snapshot, timeFrame);
+                return MarshalBars(collector.Snapshot, timeframe);
             return null;
         }
 
-        public IPagedEnumerator<BarEntity> GetEquityHistory(TimeFrames timeFrame)
+        public IPagedEnumerator<BarData> GetEquityHistory(Feed.Types.Timeframe timeframe)
         {
-            return MarshalBars(_equityCollector.Snapshot, timeFrame);
+            return MarshalBars(_equityCollector.Snapshot, timeframe);
         }
 
-        public IPagedEnumerator<BarEntity> GetMarginHistory(TimeFrames timeFrame)
+        public IPagedEnumerator<BarData> GetMarginHistory(Feed.Types.Timeframe timeframe)
         {
-            return MarshalBars(_marginCollector.Snapshot, timeFrame);
+            return MarshalBars(_marginCollector.Snapshot, timeframe);
         }
 
-        private IPagedEnumerator<BarEntity> MarshalBars(IEnumerable<BarEntity> barCollection, TimeFrames targeTimeframe)
+        private IPagedEnumerator<BarData> MarshalBars(IEnumerable<BarData> barCollection, Feed.Types.Timeframe targetTimeframe)
         {
             const int pageSize = 4000;
 
-            if (_mainTimeframe == targeTimeframe)
+            if (_mainTimeframe == targetTimeframe)
                 return barCollection.GetCrossDomainEnumerator(pageSize);
             else
-                return barCollection.Transform(targeTimeframe).GetCrossDomainEnumerator(pageSize);
+                return barCollection.Transform(targetTimeframe).GetCrossDomainEnumerator(pageSize);
         }
 
         private IPagedEnumerator<T> MarshalLongCollection<T>(IEnumerable<T> collection)
@@ -246,14 +246,14 @@ namespace TickTrader.Algo.Core
             return collection.GetCrossDomainEnumerator(pageSize);
         }
 
-        internal IEnumerable<BarEntity> LocalGetEquityHistory(TimeFrames targeTimeframe)
+        internal IEnumerable<BarData> LocalGetEquityHistory(Feed.Types.Timeframe targetTimeframe)
         {
-            return _equityCollector.Snapshot.Transform(targeTimeframe);
+            return _equityCollector.Snapshot.Transform(targetTimeframe);
         }
 
-        internal IEnumerable<BarEntity> LocalGetMarginHistory(TimeFrames targeTimeframe)
+        internal IEnumerable<BarData> LocalGetMarginHistory(Feed.Types.Timeframe targetTimeframe)
         {
-            return _marginCollector.Snapshot.Transform(targeTimeframe);
+            return _marginCollector.Snapshot.Transform(targetTimeframe);
         }
 
         #region Output collection

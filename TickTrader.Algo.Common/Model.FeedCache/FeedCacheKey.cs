@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -12,17 +9,17 @@ namespace TickTrader.Algo.Common.Model
     public class FeedCacheKey
     {
         public string Symbol { get; private set; }
-        public TimeFrames Frame { get; private set; }
-        public BarPriceType? PriceType { get; private set; }
+        public Feed.Types.Timeframe Frame { get; private set; }
+        public Feed.Types.MarketSide? MarketSide { get; private set; }
 
-        public FeedCacheKey(string symbol, TimeFrames timeFrame, BarPriceType? priceType = null)
+        public FeedCacheKey(string symbol, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide? priceType = null)
         {
             Symbol = symbol;
-            Frame = timeFrame;
-            if (Frame == TimeFrames.Ticks || Frame == TimeFrames.TicksLevel2)
-                PriceType = null;
+            Frame = timeframe;
+            if (Frame == Feed.Types.Timeframe.Ticks || Frame == Feed.Types.Timeframe.TicksLevel2)
+                MarketSide = null;
             else
-                PriceType = priceType;
+                MarketSide = priceType;
         }
 
         internal string ToCodeString()
@@ -31,34 +28,33 @@ namespace TickTrader.Algo.Common.Model
             builder.Append(Symbol).Append('_');
             builder.Append(Frame);
             builder.Append('_');
-            if (PriceType != null)
-                builder.Append(PriceType.Value);
+            if (MarketSide != null)
+                builder.Append(MarketSide.Value);
             return builder.ToString();
         }
 
         internal static bool TryParse(string strCode, out FeedCacheKey key)
         {
             key = null;
-            BarPriceType? price;
-            TimeFrames timeFrame;
+            Feed.Types.MarketSide? side;
+            Feed.Types.Timeframe timeframe;
             string symbol;
 
             var parser = new TextParser(strCode);
 
             // price
 
-            var pricePart = parser.ReadNextFromEnd('_');
+            var sidePart = parser.ReadNextFromEnd('_');
 
-            if (pricePart == null)
+            if (sidePart == null)
                 return false;
-            else if (pricePart == string.Empty)
-                price = null;
+            else if (sidePart == string.Empty)
+                side = null;
             else
             {
-                BarPriceType parsedPrice;
-                if (!Enum.TryParse(pricePart, out parsedPrice))
+                if (!Enum.TryParse(sidePart, out Feed.Types.MarketSide parsedSide))
                     return false;
-                price = parsedPrice;
+                side = parsedSide;
             }
 
             // time frame
@@ -68,7 +64,7 @@ namespace TickTrader.Algo.Common.Model
             if (string.IsNullOrEmpty(timeframePart))
                 return false;
 
-            if (!Enum.TryParse(timeframePart, out timeFrame))
+            if (!Enum.TryParse(timeframePart, out timeframe))
                 return false;
 
             // symbol
@@ -78,7 +74,7 @@ namespace TickTrader.Algo.Common.Model
             if (string.IsNullOrEmpty(symbol))
                 return false;
 
-            key = new FeedCacheKey(symbol, timeFrame, price);
+            key = new FeedCacheKey(symbol, timeframe, side);
             return true;
 
 
@@ -86,17 +82,17 @@ namespace TickTrader.Algo.Common.Model
             //if (parts.Length < 2 || parts.Length > 3)
             //throw new Exception("Cannot deserialize cache key: " + str);
             //var symbol = parts[0];
-            //var frame = (TimeFrames)Enum.Parse(typeof(TimeFrames), parts[1]);
-            //BarPriceType? priceType = null;
+            //var frame = (Feed.Types.Timeframe)Enum.Parse(typeof(Feed.Types.Timeframe), parts[1]);
+            //Feed.Types.MarketSide? priceType = null;
             //if (parts.Length > 2)
-            //    priceType = (BarPriceType)Enum.Parse(typeof(BarPriceType), parts[2]);
+            //    priceType = (Feed.Types.MarketSide)Enum.Parse(typeof(Feed.Types.MarketSide), parts[2]);
             //return new FeedCacheKey(symbol, frame, priceType);
         }
 
         public override bool Equals(object obj)
         {
             var other = obj as FeedCacheKey;
-            return other != null && other.Symbol == Symbol && other.PriceType == PriceType && other.Frame == Frame;
+            return other != null && other.Symbol == Symbol && other.MarketSide == MarketSide && other.Frame == Frame;
         }
 
         public override int GetHashCode()
@@ -105,7 +101,7 @@ namespace TickTrader.Algo.Common.Model
             {
                 int hash = (int)2166136261;
                 hash = (hash * 16777619) ^ Symbol.GetHashCode();
-                hash = (hash * 16777619) ^ PriceType.GetHashCode();
+                hash = (hash * 16777619) ^ MarketSide.GetHashCode();
                 hash = (hash * 16777619) ^ Frame.GetHashCode();
                 return hash;
             }

@@ -1,102 +1,104 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    [Serializable]
     public abstract class BarSampler
     {
-        private static readonly Dictionary<Api.TimeFrames, BarSampler> cachedSamplers = new Dictionary<Api.TimeFrames, BarSampler>();
+        private static readonly Dictionary<Feed.Types.Timeframe, BarSampler> CachedSamplers = new Dictionary<Feed.Types.Timeframe, BarSampler>();
 
         static BarSampler()
         {
-            cachedSamplers.Add(Api.TimeFrames.MN, new MonthSampler());
-            cachedSamplers.Add(Api.TimeFrames.W, new WeekSampler());
-            cachedSamplers.Add(Api.TimeFrames.D, new FormulaSampler(TimeSpan.FromDays(1)));
-            cachedSamplers.Add(Api.TimeFrames.H4, new FormulaSampler(TimeSpan.FromHours(4)));
-            cachedSamplers.Add(Api.TimeFrames.H1, new FormulaSampler(TimeSpan.FromHours(1)));
-            cachedSamplers.Add(Api.TimeFrames.M30, new FormulaSampler(TimeSpan.FromMinutes(30)));
-            cachedSamplers.Add(Api.TimeFrames.M15, new FormulaSampler(TimeSpan.FromMinutes(15)));
-            cachedSamplers.Add(Api.TimeFrames.M5, new FormulaSampler(TimeSpan.FromMinutes(5)));
-            cachedSamplers.Add(Api.TimeFrames.M1, new FormulaSampler(TimeSpan.FromMinutes(1)));
-            cachedSamplers.Add(Api.TimeFrames.S10, new FormulaSampler(TimeSpan.FromSeconds(10)));
-            cachedSamplers.Add(Api.TimeFrames.S1, new FormulaSampler(TimeSpan.FromSeconds(1)));
+            CachedSamplers.Add(Feed.Types.Timeframe.MN, new MonthSampler());
+            CachedSamplers.Add(Feed.Types.Timeframe.W, new WeekSampler());
+            CachedSamplers.Add(Feed.Types.Timeframe.D, new DurationSampler(TimeSpan.FromDays(1)));
+            CachedSamplers.Add(Feed.Types.Timeframe.H4, new DurationSampler(TimeSpan.FromHours(4)));
+            CachedSamplers.Add(Feed.Types.Timeframe.H1, new DurationSampler(TimeSpan.FromHours(1)));
+            CachedSamplers.Add(Feed.Types.Timeframe.M30, new DurationSampler(TimeSpan.FromMinutes(30)));
+            CachedSamplers.Add(Feed.Types.Timeframe.M15, new DurationSampler(TimeSpan.FromMinutes(15)));
+            CachedSamplers.Add(Feed.Types.Timeframe.M5, new DurationSampler(TimeSpan.FromMinutes(5)));
+            CachedSamplers.Add(Feed.Types.Timeframe.M1, new DurationSampler(TimeSpan.FromMinutes(1)));
+            CachedSamplers.Add(Feed.Types.Timeframe.S10, new DurationSampler(TimeSpan.FromSeconds(10)));
+            CachedSamplers.Add(Feed.Types.Timeframe.S1, new SecondSampler());
         }
 
-        public static BarSampler Get(Api.TimeFrames timeFrame)
+        public static BarSampler Get(Feed.Types.Timeframe timeFrame)
         {
-            BarSampler result;
-            if (cachedSamplers.TryGetValue(timeFrame, out result))
+            if (CachedSamplers.TryGetValue(timeFrame, out var result))
                 return result;
-            throw new ArgumentException("Time frame '" + timeFrame + "' is not supported!");
+            throw new ArgumentException($"Timeframe '{timeFrame}' is not supported!");
         }
 
-        internal BarSampler()
-        {
-        }
-
-        public abstract BarBoundaries GetBar(DateTime timepoint);
+        public abstract BarBoundaries GetBar(Timestamp timepoint);
     }
 
     public struct BarBoundaries
     {
-        public BarBoundaries(DateTime start, DateTime end)
+        public BarBoundaries(long openSeconds, long closeSeconds)
         {
-            this.Open = start;
-            this.Close = end;
+            Open = new Timestamp { Seconds = openSeconds, Nanos = 0 };
+            Close = new Timestamp { Seconds = closeSeconds, Nanos = 0 };
         }
 
-        public DateTime Open { get; private set; }
-        public DateTime Close { get; private set; }
+        public Timestamp Open { get; }
+        public Timestamp Close { get; }
     }
 
-    [Serializable]
-    internal class FormulaSampler : BarSampler
+    internal class SecondSampler : BarSampler
     {
-        private long spTicks;
-
-        public FormulaSampler(TimeSpan sampleSize)
+        public override BarBoundaries GetBar(Timestamp timepoint)
         {
-            spTicks = sampleSize.Ticks;
-        }
-
-        public override BarBoundaries GetBar(DateTime timepoint)
-        {
-            var delta = spTicks - (timepoint.Ticks % spTicks);
-            var endTicks = timepoint.Ticks + delta;
-            var startTicks = endTicks - spTicks;
-            return new BarBoundaries(new DateTime(startTicks, timepoint.Kind), new DateTime(endTicks, timepoint.Kind));
-        }
-
-        public DateTime RoundUp(DateTime point)
-        {
-            var delta = (spTicks - (point.Ticks % spTicks)) % spTicks;
-            return new DateTime(point.Ticks + delta, point.Kind);
+            var s = timepoint.Seconds;
+            return new BarBoundaries(s, s + 1);
         }
     }
 
-    [Serializable]
+    internal class DurationSampler : BarSampler
+    {
+        private readonly long _durationSeconds;
+
+        public DurationSampler(TimeSpan duration)
+        {
+            _durationSeconds = (long)duration.TotalSeconds;
+        }
+
+        public override BarBoundaries GetBar(Timestamp timepoint)
+        {
+            var s = timepoint.Seconds;
+            var delta = _durationSeconds - (s % _durationSeconds);
+            var close = s + delta;
+            var open = close - _durationSeconds;
+            return new BarBoundaries(open, close);
+        }
+    }
+
     internal class WeekSampler : BarSampler
     {
-        public override BarBoundaries GetBar(DateTime timepoint)
+        // 1970-01-01 - Thursday (timestamp zero)
+        // 1970-01-04 - Sunday (start of week on forex)
+        public static readonly long ShiftSeconds = (long)TimeSpan.FromDays(3).TotalSeconds;
+        public static readonly long DurationSeconds = (long)TimeSpan.FromDays(7).TotalSeconds;
+
+        public override BarBoundaries GetBar(Timestamp timepoint)
         {
-            var weekStart = timepoint.StartOfWeek(DayOfWeek.Sunday);
-            var weekEnd = weekStart.AddDays(7).Date;
+            var s = timepoint.Seconds - ShiftSeconds;
+            var weekDelta = DurationSeconds - (s % DurationSeconds);
+            var weekEnd = s + weekDelta + ShiftSeconds;
+            var weekStart = weekEnd - DurationSeconds;
             return new BarBoundaries(weekStart, weekEnd);
         }
     }
 
-    [Serializable]
     internal class MonthSampler : BarSampler
     {
-        public override BarBoundaries GetBar(DateTime timepoint)
+        public override BarBoundaries GetBar(Timestamp timepoint)
         {
-            var start = new DateTime(timepoint.Year, timepoint.Month, 1);
+            var t = timepoint.ToDateTime();
+            var start = new DateTime(t.Year, t.Month, 1);
             var end = start.AddMonths(1);
-            return new BarBoundaries(start, end);
+            return new BarBoundaries(start.ToTimestamp().Seconds, end.ToTimestamp().Seconds);
         }
     }
 }

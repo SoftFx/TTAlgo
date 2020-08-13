@@ -34,7 +34,7 @@ namespace TickTrader.BotTerminal
             Support(SelectableChartTypes.DigitalLine);
             Support(SelectableChartTypes.Scatter);
 
-            TimeFrame = TimeFrames.Ticks;
+            TimeFrame = Feed.Types.Timeframe.Ticks;
 
             Navigator = new RealTimeChartNavigator();
             SelectedChartType = SelectableChartTypes.Scatter;

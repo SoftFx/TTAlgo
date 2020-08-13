@@ -1,14 +1,13 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    public interface ITimeVectorRef : IReadOnlyList<DateTime>
+    public interface ITimeVectorRef : IReadOnlyList<Timestamp>
     {
         event Action Extended;
     }
@@ -37,7 +36,7 @@ namespace TickTrader.Algo.Core
 
         protected abstract void ClearInternalCollection();
 
-        protected abstract DateTime GetItemTimeCoordinate(T item);
+        protected abstract Timestamp GetItemTimeCoordinate(T item);
 
         public void InitSynchronization(ITimeVectorRef masterVector, Func<int, T> fillItemFunc)
         {
@@ -107,7 +106,7 @@ namespace TickTrader.Algo.Core
             }
 
             public int Count => _vector.Count;
-            public DateTime this[int index] => _vector.GetItemTimeCoordinate(_vector[index]);
+            public Timestamp this[int index] => _vector.GetItemTimeCoordinate(_vector[index]);
 
             public event Action Extended;
 
@@ -116,7 +115,7 @@ namespace TickTrader.Algo.Core
                 Extended?.Invoke();
             }
 
-            public IEnumerator<DateTime> GetEnumerator()
+            public IEnumerator<Timestamp> GetEnumerator()
             {
                 return _vector.Select(i => _vector.GetItemTimeCoordinate(i)).GetEnumerator();
             }

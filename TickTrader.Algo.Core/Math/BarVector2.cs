@@ -1,36 +1,33 @@
-﻿using System;
-using System.Collections;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    public abstract class BarVectorBase2 : TimeVectorBase<BarEntity>
+    public abstract class BarVectorBase2 : TimeVectorBase<BarData>
     {
-        private TimeFrames _timeFrame;
+        private Feed.Types.Timeframe _timeFrame;
         private BarSampler _sampler;
 
-        protected BarVectorBase2(TimeFrames timeFrame)
+        protected BarVectorBase2(Feed.Types.Timeframe timeFrame)
         {
             TimeFrame = timeFrame;
             _sampler = BarSampler.Get(timeFrame);
         }
 
-        public void AppendBar(BarEntity bar)
+        public void AppendBar(BarData bar)
         {
             AppendBarIntenral(bar, false);
         }
 
-        public bool TryAppendBar(BarEntity bar)
+        public bool TryAppendBar(BarData bar)
         {
             return AppendBarIntenral(bar, true);
         }
 
-        private bool AppendBarIntenral(BarEntity bar, bool noThrow)
+        private bool AppendBarIntenral(BarData bar, bool noThrow)
         {
             var boundaries = _sampler.GetBar(bar.OpenTime);
             var currentBar = GetLastItem();
@@ -54,17 +51,17 @@ namespace TickTrader.Algo.Core
             return Append(bar) != null;
         }
 
-        public BarEntity AppendQuote(DateTime time, double price, double volume)
+        public BarData AppendQuote(Timestamp time, double price, double volume)
         {
             return AppendQuoteInternal(false, time, price, volume);
         }
 
-        public BarEntity TryAppendQuote(DateTime time, double price, double volume)
+        public BarData TryAppendQuote(Timestamp time, double price, double volume)
         {
             return AppendQuoteInternal(true, time, price, volume);
         }
 
-        private BarEntity AppendQuoteInternal(bool noThrow, DateTime time, double price, double volume)
+        private BarData AppendQuoteInternal(bool noThrow, Timestamp time, double price, double volume)
         {
             var boundaries = _sampler.GetBar(time);
             int currentBarIndex;
@@ -87,15 +84,15 @@ namespace TickTrader.Algo.Core
             else
             {
                 // add new bar
-                var newBar = new BarEntity(boundaries.Open, boundaries.Close, price, volume);
+                var newBar = new BarData(boundaries.Open, boundaries.Close, price, volume);
                 return Append(newBar);
             }
             return null;
         }
 
-        public BarEntity AppendBarPart(DateTime time, double open, double high, double low, double close, double volume)
+        public BarData AppendBarPart(BarData bar)
         {
-            var boundaries = _sampler.GetBar(time);
+            var boundaries = _sampler.GetBar(bar.OpenTime);
             int currentBarIndex;
             var currentBar = GetLastItem(out currentBarIndex);
 
@@ -105,35 +102,32 @@ namespace TickTrader.Algo.Core
             if (currentBar != null && currentBar.OpenTime == boundaries.Open)
             {
                 // join
-                currentBar.AppendPart(open, high, low, close, volume);
+                currentBar.AppendPart(bar);
                 OnBarUpdated(currentBarIndex, currentBar);
             }
             else
             {
                 // append
-                var entity = new BarEntity();
-                entity.OpenTime = boundaries.Open;
-                entity.CloseTime = boundaries.Close;
-                entity.Open = open;
-                entity.High = high;
-                entity.Low = low;
-                entity.Close = close;
-                entity.Volume = volume;
+                var entity = new BarData(bar)
+                {
+                    OpenTime = boundaries.Open,
+                    CloseTime = boundaries.Close
+                };
                 return Append(entity);
             }
 
             return null;
         }
 
-        public void AppendRange(IEnumerable<BarEntity> barRange)
+        public void AppendRange(IEnumerable<BarData> barRange)
         {
             foreach (var bar in barRange)
                 AppendBar(bar);
         }
 
-        protected virtual void OnBarUpdated(int barIndex, BarEntity bar) { }
+        protected virtual void OnBarUpdated(int barIndex, BarData bar) { }
 
-        public TimeFrames TimeFrame
+        public Feed.Types.Timeframe TimeFrame
         {
             get => _timeFrame;
             set
@@ -149,18 +143,18 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        protected override DateTime GetItemTimeCoordinate(BarEntity item) => item.OpenTime;
+        protected override Timestamp GetItemTimeCoordinate(BarData item) => item.OpenTime;
     }
 
     public sealed class BarVector2 : BarVectorBase2
     {
-        private CircularList<BarEntity> _barList = new CircularList<BarEntity>();
+        private CircularList<BarData> _barList = new CircularList<BarData>();
 
-        private BarVector2(TimeFrames timeFrame) : base(timeFrame)
+        private BarVector2(Feed.Types.Timeframe timeFrame) : base(timeFrame)
         {
         }
 
-        public static BarVector2 Create(TimeFrames timeFrame)
+        public static BarVector2 Create(Feed.Types.Timeframe timeFrame)
         {
             return new BarVector2(timeFrame);
         }
@@ -171,7 +165,7 @@ namespace TickTrader.Algo.Core
             newVector.InitSynchronization(master.Ref, i =>
             {
                 var masterBar = master[i];
-                return new BarEntity(masterBar.OpenTime, masterBar.CloseTime, 0, 0);
+                return new BarData(masterBar.OpenTime, masterBar.CloseTime, 0, 0);
             });
             return newVector;
         }
@@ -179,10 +173,10 @@ namespace TickTrader.Algo.Core
         #region TimeVectorBase implementation
 
         public override int Count => _barList.Count;
-        public override BarEntity this[int index] => _barList[index];
+        public override BarData this[int index] => _barList[index];
 
-        protected override void AddToInternalCollection(BarEntity item) => _barList.Add(item);
-        public override IEnumerator<BarEntity> GetEnumerator() => _barList.GetEnumerator();
+        protected override void AddToInternalCollection(BarData item) => _barList.Add(item);
+        public override IEnumerator<BarData> GetEnumerator() => _barList.GetEnumerator();
         protected override void ClearInternalCollection() => _barList.Clear();
 
         #endregion

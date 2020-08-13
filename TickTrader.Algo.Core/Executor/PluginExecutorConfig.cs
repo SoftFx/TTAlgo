@@ -1,10 +1,8 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -12,7 +10,7 @@ namespace TickTrader.Algo.Core
     public class PluginExecutorConfig : IPluginSetupTarget
     {
         public string MainSymbolCode { get; set; }
-        public TimeFrames TimeFrame { get; set; }
+        public Feed.Types.Timeframe TimeFrame { get; set; }
         public string WorkingFolder { get; set; }
         public string BotWorkingFolder { get; set; }
         public string InstanceId { get; set; }
@@ -44,9 +42,9 @@ namespace TickTrader.Algo.Core
             Mappings[new Tuple<string, string>(inputName, symbolCode)] = mapping;
         }
 
-        public BarStrategy InitBarStrategy(BarPriceType mainPirceTipe)
+        public BarStrategy InitBarStrategy(Feed.Types.MarketSide marketSide)
         {
-            var strategy = new BarStrategy(mainPirceTipe);
+            var strategy = new BarStrategy(marketSide);
             FeedStrategy = strategy;
             return strategy;
         }
@@ -65,7 +63,7 @@ namespace TickTrader.Algo.Core
 
         public void InitTimeSpanBuffering(DateTime from, DateTime to)
         {
-            BufferStartegy = new TimeSpanStrategy(from, to);
+            BufferStartegy = new TimeSpanStrategy(from.ToUniversalTime().ToTimestamp(), to.ToUniversalTime().ToTimestamp());
         }
 
         public void SetupOutput<T>(string outputSeriesId)

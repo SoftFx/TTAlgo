@@ -58,8 +58,8 @@ namespace TickTrader.BotTerminal
             DateRange = new DateRangeSelectionViewModel(false);
             IsUpdatingRange = new BoolProperty();
             _isDateRangeValid = new BoolProperty();
-            MainTimeFrame = new Property<TimeFrames>();
-            MainTimeFrame.Value = TimeFrames.M1;
+            MainTimeFrame = new Property<Feed.Types.Timeframe>();
+            MainTimeFrame.Value = Feed.Types.Timeframe.M1;
 
             SaveResultsToFile = new BoolProperty();
             SaveResultsToFile.Set();
@@ -69,8 +69,8 @@ namespace TickTrader.BotTerminal
             MainSymbolSetup = CreateSymbolSetupModel(SymbolSetupType.Main);
             UpdateSymbolsState();
 
-            AvailableModels = _var.AddProperty<List<TimeFrames>>();
-            SelectedModel = _var.AddProperty<TimeFrames>(TimeFrames.M1);
+            AvailableModels = _var.AddProperty<List<Feed.Types.Timeframe>>();
+            SelectedModel = _var.AddProperty<Feed.Types.Timeframe>(Feed.Types.Timeframe.M1);
 
             ModeProp = _var.AddProperty<OptionalItem<TesterModes>>();
             PluginErrorProp = _var.AddProperty<string>();
@@ -134,7 +134,7 @@ namespace TickTrader.BotTerminal
 
             _var.TriggerOnChange(MainSymbolSetup.SelectedTimeframe, a =>
             {
-                AvailableModels.Value = EnumHelper.AllValues<TimeFrames>().Where(t => t >= a.New).ToList();
+                AvailableModels.Value = EnumHelper.AllValues<Feed.Types.Timeframe>().Where(t => t >= a.New).ToList();
 
                 if (_openedPluginSetup != null)
                     _openedPluginSetup.Setup.SelectedTimeFrame = a.New;
@@ -174,11 +174,11 @@ namespace TickTrader.BotTerminal
         public BoolVar IsSetupValid { get; }
         public BacktesterSettings Settings { get; private set; } = new BacktesterSettings();
         public IObservableList<AlgoPluginViewModel> Plugins { get; private set; }
-        public Property<List<TimeFrames>> AvailableModels { get; private set; }
-        public Property<TimeFrames> SelectedModel { get; private set; }
+        public Property<List<Feed.Types.Timeframe>> AvailableModels { get; private set; }
+        public Property<Feed.Types.Timeframe> SelectedModel { get; private set; }
         public Property<AlgoPluginViewModel> SelectedPlugin { get; private set; }
         public Property<string> PluginErrorProp { get; }
-        public Property<TimeFrames> MainTimeFrame { get; private set; }
+        public Property<Feed.Types.Timeframe> MainTimeFrame { get; private set; }
         public BacktesterSymbolSetupViewModel MainSymbolSetup { get; private set; }
         public PluginSetupModel PluginSetup { get; private set; }
         //public PluginConfig PluginConfig { get; private set; }
@@ -522,7 +522,7 @@ namespace TickTrader.BotTerminal
 
         #region IAlgoSetupContext
 
-        TimeFrames IAlgoSetupContext.DefaultTimeFrame => MainTimeFrame.Value;
+        Feed.Types.Timeframe IAlgoSetupContext.DefaultTimeFrame => MainTimeFrame.Value;
 
         ISetupSymbolInfo IAlgoSetupContext.DefaultSymbol => _mainSymbolToken;
 

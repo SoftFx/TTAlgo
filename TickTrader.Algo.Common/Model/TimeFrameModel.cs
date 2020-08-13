@@ -1,44 +1,39 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
+﻿using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model
 {
     public static class TimeFrameModel
     {
-        public static readonly TimeFrames[] AllTimeFrames = new TimeFrames[]
+        public static readonly Feed.Types.Timeframe[] AllTimeFrames = new Feed.Types.Timeframe[]
         {
-            TimeFrames.MN,
-            TimeFrames.W,
-            TimeFrames.D,
-            TimeFrames.H4,
-            TimeFrames.H1,
-            TimeFrames.M30,
-            TimeFrames.M15,
-            TimeFrames.M5,
-            TimeFrames.M1,
-            TimeFrames.S10,
-            TimeFrames.S1,
-            TimeFrames.Ticks,
-            TimeFrames.TicksLevel2
+            Feed.Types.Timeframe.MN,
+            Feed.Types.Timeframe.W,
+            Feed.Types.Timeframe.D,
+            Feed.Types.Timeframe.H4,
+            Feed.Types.Timeframe.H1,
+            Feed.Types.Timeframe.M30,
+            Feed.Types.Timeframe.M15,
+            Feed.Types.Timeframe.M5,
+            Feed.Types.Timeframe.M1,
+            Feed.Types.Timeframe.S10,
+            Feed.Types.Timeframe.S1,
+            Feed.Types.Timeframe.Ticks,
+            Feed.Types.Timeframe.TicksLevel2
         };
 
-        public static readonly TimeFrames[] BarTimeFrames = new TimeFrames[]
+        public static readonly Feed.Types.Timeframe[] BarTimeFrames = new Feed.Types.Timeframe[]
         {
-            TimeFrames.MN,
-            TimeFrames.W,
-            TimeFrames.D,
-            TimeFrames.H4,
-            TimeFrames.H1,
-            TimeFrames.M30,
-            TimeFrames.M15,
-            TimeFrames.M5,
-            TimeFrames.M1,
-            TimeFrames.S10,
-            TimeFrames.S1,
+            Feed.Types.Timeframe.MN,
+            Feed.Types.Timeframe.W,
+            Feed.Types.Timeframe.D,
+            Feed.Types.Timeframe.H4,
+            Feed.Types.Timeframe.H1,
+            Feed.Types.Timeframe.M30,
+            Feed.Types.Timeframe.M15,
+            Feed.Types.Timeframe.M5,
+            Feed.Types.Timeframe.M1,
+            Feed.Types.Timeframe.S10,
+            Feed.Types.Timeframe.S1,
         };
 
     }

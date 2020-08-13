@@ -15,7 +15,6 @@ using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
-using CoreMath = TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
@@ -32,8 +31,8 @@ namespace TickTrader.BotTerminal
 
             DisplayName = "Import Series";
 
-            SelectedTimeFrame = _context.AddProperty(TimeFrames.M1);
-            SelectedPriceType = _context.AddProperty(BarPriceType.Bid);
+            SelectedTimeFrame = _context.AddProperty(Feed.Types.Timeframe.M1);
+            SelectedPriceType = _context.AddProperty(Feed.Types.MarketSide.Bid);
             SelectedSymbol = _context.AddProperty<SymbolData>(initialSymbol);
             SelectedImporter = _context.AddProperty<FeedImporter>(_importers[0]);
             ActionRunner = new ActionViewModel();
@@ -55,11 +54,11 @@ namespace TickTrader.BotTerminal
         public IEnumerable<FeedImporter> Importers => _importers;
         public Property<FeedImporter> SelectedImporter { get; }
         public ActionViewModel ActionRunner { get; }
-        public Property<TimeFrames> SelectedTimeFrame { get; }
-        public Property<BarPriceType> SelectedPriceType { get; }
+        public Property<Feed.Types.Timeframe> SelectedTimeFrame { get; }
+        public Property<Feed.Types.MarketSide> SelectedPriceType { get; }
         public Property<SymbolData> SelectedSymbol { get; }
-        public IEnumerable<TimeFrames> AvailableTimeFrames => EnumHelper.AllValues<TimeFrames>();
-        public IEnumerable<BarPriceType> AvailablePriceTypes => EnumHelper.AllValues<BarPriceType>();
+        public IEnumerable<Feed.Types.Timeframe> AvailableTimeFrames => EnumHelper.AllValues<Feed.Types.Timeframe>();
+        public IEnumerable<Feed.Types.MarketSide> AvailablePriceTypes => EnumHelper.AllValues<Feed.Types.MarketSide>();
         public IObservableList<SymbolData> Symbols { get; }
         public BoolVar CanImport { get; }
         public BoolVar CanCancel { get; }
@@ -87,11 +86,11 @@ namespace TickTrader.BotTerminal
 
             if (!timeFrame.IsTicks())
             {
-                var vector = new CoreMath.BarVector(timeFrame);
+                var vector = new BarVector(timeFrame);
 
                 foreach (var bar in importer.ImportBars())
                 {
-                    vector.AppendBarPart(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume);
+                    vector.AppendBarPart(bar);
                     count++;
 
                     if (vector.Count >= pageSize + 1)
@@ -122,7 +121,7 @@ namespace TickTrader.BotTerminal
                         // we cannot put ticks with same time into different chunks
                         if (lastTick.Time != tick.Time)
                         {
-                            symbol.WriteSlice(timeFrame, page[0].Time, tick.Time, page.ToArray());
+                            symbol.WriteSlice(timeFrame, page[0].Timestamp, tick.Timestamp, page.ToArray());
                             observer.SetMessage(string.Format("Importing...  {0} ticks are imported.", count));
                             page.Clear();
                         }
@@ -136,7 +135,7 @@ namespace TickTrader.BotTerminal
                 if (page.Count > 0)
                 {
                     var toCorrected = page.Last().Time + TimeSpan.FromTicks(1);
-                    symbol.WriteSlice(timeFrame, page[0].Time, toCorrected, page.ToArray());
+                    symbol.WriteSlice(timeFrame, page[0].Timestamp, toCorrected.ToTimestamp(), page.ToArray());
                 }
 
                 observer.SetMessage(string.Format("Done importing. {0} ticks were imported.", count));
@@ -167,7 +166,7 @@ namespace TickTrader.BotTerminal
 
         public string Name { get; }
         public BoolProperty CanImport { get; }
-        public abstract IEnumerable<BarEntity> ImportBars();
+        public abstract IEnumerable<BarData> ImportBars();
         public abstract IEnumerable<QuoteInfo> ImportQuotes();
     }
 
@@ -184,7 +183,7 @@ namespace TickTrader.BotTerminal
 
         public Validable<string> FilePath { get; }
 
-        public override IEnumerable<BarEntity> ImportBars()
+        public override IEnumerable<BarData> ImportBars()
         {
             int lineNo = 1;
 
@@ -201,13 +200,15 @@ namespace TickTrader.BotTerminal
 
                     lineNo++;
 
-                    var bar = new BarEntity();
-                    bar.OpenTime = DateTime.Parse(parts[0]);
-                    bar.Open = double.Parse(parts[1]);
-                    bar.High = double.Parse(parts[2]);
-                    bar.Low = double.Parse(parts[3]);
-                    bar.Close = double.Parse(parts[4]);
-                    bar.Volume = double.Parse(parts[5]);
+                    var bar = new BarData
+                    {
+                        OpenTime = DateTime.Parse(parts[0]).ToTimestamp(),
+                        Open = double.Parse(parts[1]),
+                        High = double.Parse(parts[2]),
+                        Low = double.Parse(parts[3]),
+                        Close = double.Parse(parts[4]),
+                        RealVolume = double.Parse(parts[5])
+                    };
 
                     yield return bar;
                 }

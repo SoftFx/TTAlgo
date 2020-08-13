@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -71,7 +71,7 @@ namespace TickTrader.BotAgent.BA.Models
         private static SymbolToken _defaultSymbol = new SymbolToken("none");
 
 
-        public TimeFrames DefaultTimeFrame => TimeFrames.M1;
+        public Feed.Types.Timeframe DefaultTimeFrame => Feed.Types.Timeframe.M1;
 
         public ISetupSymbolInfo DefaultSymbol => _defaultSymbol;
 

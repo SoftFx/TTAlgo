@@ -1,4 +1,5 @@
 ﻿using ActorSharp;
+using Google.Protobuf.WellKnownTypes;
 using Machinarium.Qnil;
 using System;
 using System.Collections.Generic;
@@ -42,42 +43,42 @@ namespace TickTrader.BotTerminal
 
         public IVarSet<SymbolStorageSeries> SeriesCollection { get; }
 
-        public abstract Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(TimeFrames timeFrame, BarPriceType? priceType = null);
+        public abstract Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide? priceType = null);
         public abstract Task DownloadToStorage(IActionObserver observer, bool showStats, CancellationToken cancelToken,
-            TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to);
+            Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide priceType, DateTime from, DateTime to);
 
         public abstract Task Remove();
 
         public abstract SymbolToken ToSymbolToken();
 
-        public IBarStorage GetCrossDomainBarReader(TimeFrames frame, BarPriceType priceType, DateTime from, DateTime to)
+        public IBarStorage GetCrossDomainBarReader(Feed.Types.Timeframe frame, Feed.Types.MarketSide priceType, DateTime from, DateTime to)
         {
             return _storage.CreateBarCrossDomainReader(new FeedCacheKey(Name, frame, priceType), from, to);
         }
 
-        public ITickStorage GetCrossDomainTickReader(TimeFrames timeFrame, DateTime from, DateTime to)
+        public ITickStorage GetCrossDomainTickReader(Feed.Types.Timeframe timeFrame, DateTime from, DateTime to)
         {
             return _storage.CreateTickCrossDomainReader(new FeedCacheKey(Name, timeFrame), from, to);
         }
 
-        public void WriteSlice(TimeFrames frame, BarPriceType priceType, DateTime from, DateTime to, BarEntity[] values)
+        public void WriteSlice(Feed.Types.Timeframe frame, Feed.Types.MarketSide priceType, Timestamp from, Timestamp to, BarData[] values)
         {
-            _storage.Put(Name, frame, priceType, from, to, values).Wait();
+            _storage.Put(Name, frame, priceType, from.ToDateTime(), to.ToDateTime(), values).Wait();
         }
 
-        public void WriteSlice(TimeFrames timeFrame, DateTime from, DateTime to, QuoteInfo[] values)
+        public void WriteSlice(Feed.Types.Timeframe timeFrame, Timestamp from, Timestamp to, QuoteInfo[] values)
         {
-            _storage.Put(Name, timeFrame, from, to, values).Wait();
+            _storage.Put(Name, timeFrame, from.ToDateTime(), to.ToDateTime(), values).Wait();
         }
 
-        public BlockingChannel<Slice<DateTime, BarEntity>> ReadCachedBars(TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
+        public BlockingChannel<Slice<DateTime, BarData>> ReadCachedBars(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide priceType, DateTime from, DateTime to)
         {
             var seriesKey = new FeedCacheKey(Name, timeFrame, priceType);
             return _storage.IterateBarCache(seriesKey, from, to);
         }
 
         [Conditional("DEBUG")]
-        public void PrintCacheData(TimeFrames timeFrame, BarPriceType? priceType)
+        public void PrintCacheData(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide? priceType)
         {
             var seriesKey = new FeedCacheKey(Name, timeFrame, priceType);
             _storage.PrintSlices(seriesKey);
@@ -109,12 +110,12 @@ namespace TickTrader.BotTerminal
         public override SymbolInfo InfoEntity => _symbolInfo;
         public override bool IsDataAvailable => _client.IsConnected.Value;
 
-        public override Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(TimeFrames timeFrame, BarPriceType? priceType = null)
+        public override Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide? priceType = null)
         {
-            return _client.FeedHistory.GetAvailableRange(_symbolInfo.Name, priceType ?? BarPriceType.Bid, timeFrame);
+            return _client.FeedHistory.GetAvailableRange(_symbolInfo.Name, priceType ?? Feed.Types.MarketSide.Bid, timeFrame);
         }
 
-        public async override Task DownloadToStorage(IActionObserver observer, bool showStats, CancellationToken cancelToken, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
+        public async override Task DownloadToStorage(IActionObserver observer, bool showStats, CancellationToken cancelToken, Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide priceType, DateTime from, DateTime to)
         {
             var symbol = _symbolInfo.Name;
 
@@ -224,12 +225,12 @@ namespace TickTrader.BotTerminal
         public override SymbolInfo InfoEntity => _symbolInfo.ToAlgo();
         public override bool IsDataAvailable => true;
 
-        public override Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(TimeFrames timeFrame, BarPriceType? priceType = null)
+        public override Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide? priceType = null)
         {
             return _storage.GetRange(new FeedCacheKey(_symbolInfo.Name, timeFrame, priceType));
         }
 
-        public override Task DownloadToStorage(IActionObserver observer, bool showStats, CancellationToken cancelToken, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
+        public override Task DownloadToStorage(IActionObserver observer, bool showStats, CancellationToken cancelToken, Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide priceType, DateTime from, DateTime to)
         {
             return CompletedTask.Default;
         }
@@ -269,7 +270,7 @@ namespace TickTrader.BotTerminal
             return _storage.RemoveSeries(Key);
         }
 
-        internal Channel<Slice<DateTime, BarEntity>> IterateBarCache(DateTime from, DateTime to)
+        internal Channel<Slice<DateTime, BarData>> IterateBarCache(DateTime from, DateTime to)
         {
             return _storage.IterateBarCacheAsync(Key, from, to);
         }

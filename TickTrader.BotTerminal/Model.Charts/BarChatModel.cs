@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Core;
-using Api = TickTrader.Algo.Api;
 using SciChart.Charting.Model.DataSeries;
 using SciChart.Charting.Visuals.RenderableSeries;
 using Machinarium.Qnil;
@@ -17,12 +16,13 @@ using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.BotTerminal.Lib;
 using TickTrader.Algo.Domain;
+using Google.Protobuf.WellKnownTypes;
 
 namespace TickTrader.BotTerminal
 {
     internal class BarChartModel : ChartModelBase
     {
-        private readonly ChartBarVector _barVector = new ChartBarVector(Api.TimeFrames.M1);
+        private readonly ChartBarVector _barVector = new ChartBarVector(Feed.Types.Timeframe.M1);
 
         public BarChartModel(SymbolInfo symbol, AlgoEnvironment algoEnv)
             : base(symbol, algoEnv)
@@ -37,7 +37,7 @@ namespace TickTrader.BotTerminal
             SelectedChartType = SelectableChartTypes.Candle;
         }
 
-        public void Activate(Api.TimeFrames timeframe)
+        public void Activate(Feed.Types.Timeframe timeframe)
         {
             TimeFrame = timeframe;
             base.Activate();
@@ -53,7 +53,7 @@ namespace TickTrader.BotTerminal
         protected async override Task LoadData(CancellationToken cToken)
         {
             var aproximateTimeRef = DateTime.Now + TimeSpan.FromDays(1) - TimeSpan.FromMinutes(15);
-            var barArray = await ClientModel.FeedHistory.GetBarPage(SymbolCode, Api.BarPriceType.Bid, TimeFrame, aproximateTimeRef, -4000);
+            var barArray = await ClientModel.FeedHistory.GetBarPage(SymbolCode, Feed.Types.MarketSide.Bid, TimeFrame, aproximateTimeRef.ToTimestamp(), -4000);
 
             cToken.ThrowIfCancellationRequested();
 
@@ -62,7 +62,7 @@ namespace TickTrader.BotTerminal
             _barVector.AppendRange(barArray);
 
             if (barArray.Length > 0)
-                InitBoundaries(barArray.Length, barArray.First().OpenTime, barArray.Last().OpenTime);
+                InitBoundaries(barArray.Length, barArray.First().OpenTime.ToDateTime(), barArray.Last().OpenTime.ToDateTime());
         }
 
         protected override IndicatorModel CreateIndicator(PluginConfig config)
@@ -76,7 +76,7 @@ namespace TickTrader.BotTerminal
             var feed = new PluginFeedProvider(ClientModel.Cache, ClientModel.Distributor, ClientModel.FeedHistory, new DispatcherSync());
             plugin.Feed = feed;
             plugin.FeedHistory = feed;
-            plugin.Config.InitBarStrategy(Algo.Api.BarPriceType.Bid);
+            plugin.Config.InitBarStrategy(Feed.Types.MarketSide.Bid);
             plugin.Metadata = feed;
         }
 
@@ -90,7 +90,7 @@ namespace TickTrader.BotTerminal
         {
             if (quote.HasBid)
             {
-                _barVector.TryAppendQuote(quote.Time, quote.Bid, 1);
+                _barVector.TryAppendQuote(quote.Timestamp, quote.Bid, 1);
                 ExtendBoundaries(_barVector.Count, quote.Time);
             }
         }

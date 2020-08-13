@@ -1,5 +1,5 @@
-﻿using System;
-using TickTrader.Algo.Api;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
@@ -9,25 +9,25 @@ namespace TickTrader.Algo.Core
     {
         private QuoteInfo _lastQuote;
         private int _quoteCount;
-        private DateTime _openTime;
-        private DateTime _closeTime;
+        private Timestamp _openTime;
+        private Timestamp _closeTime;
 
-        public BarRateUpdate(DateTime barStartTime, DateTime barEndTime, QuoteInfo quote)
+        public BarRateUpdate(Timestamp barStartTime, Timestamp barEndTime, QuoteInfo quote)
         {
             _openTime = barStartTime;
             _closeTime = barEndTime;
 
             if (quote.HasBid)
-                BidBar = new BarEntity(barStartTime, barEndTime, quote.Bid, 1);
+                BidBar = new BarData(barStartTime, barEndTime, quote.Bid, 1);
             if (quote.HasAsk)
-                AskBar = new BarEntity(barStartTime, barEndTime, quote.Ask, 1);
+                AskBar = new BarData(barStartTime, barEndTime, quote.Ask, 1);
 
             _lastQuote = quote;
             Symbol = quote.Symbol;
             _quoteCount = 1;
         }
 
-        public BarRateUpdate(BarEntity bidBar, BarEntity askBar, string symbol)
+        public BarRateUpdate(BarData bidBar, BarData askBar, string symbol)
         {
             _openTime = bidBar.OpenTime;
             _closeTime = bidBar.CloseTime;
@@ -45,7 +45,7 @@ namespace TickTrader.Algo.Core
                 if (HasBid)
                     BidBar.Append(quote.Bid, 1);
                 else
-                    BidBar = new BarEntity(_openTime, _closeTime, quote.Bid, 1);
+                    BidBar = new BarData(_openTime, _closeTime, quote.Bid, 1);
             }
 
             if (quote.HasAsk)
@@ -53,7 +53,7 @@ namespace TickTrader.Algo.Core
                 if (HasAsk)
                     AskBar.Append(quote.Ask, 1);
                 else
-                    AskBar = new BarEntity(_openTime, _closeTime, quote.Ask, 1);
+                    AskBar = new BarData(_openTime, _closeTime, quote.Ask, 1);
             }
 
             _lastQuote = quote;
@@ -63,10 +63,11 @@ namespace TickTrader.Algo.Core
         public bool HasAsk => AskBar != null;
         public bool HasBid => BidBar != null;
         public string Symbol { get; }
-        public BarEntity BidBar { get; private set; }
-        public BarEntity AskBar { get; private set; }
+        public BarData BidBar { get; private set; }
+        public BarData AskBar { get; private set; }
 
-        DateTime IRateInfo.Time => _openTime;
+        DateTime IRateInfo.Time => _openTime.ToDateTime();
+        Timestamp IRateInfo.Timestamp => _openTime;
         double IRateInfo.Ask => AskBar.Close;
         double IRateInfo.AskHigh => AskBar.High;
         double IRateInfo.AskLow => AskBar.Low;

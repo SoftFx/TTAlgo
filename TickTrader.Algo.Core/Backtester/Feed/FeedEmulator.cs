@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
@@ -83,22 +83,22 @@ namespace TickTrader.Algo.Core
                 series.Close();
         }
 
-        internal BarVector GetBarBuilder(string symbol, TimeFrames timeframe, BarPriceType price)
+        internal BarVector GetBarBuilder(string symbol, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide price)
         {
             return GetFeedSrcOrThrow(symbol).InitSeries(timeframe, price);
         }
 
-        internal FeedSeriesEmulator GetFeedSymbolFixture(string symbol, TimeFrames timeframe)
+        internal FeedSeriesEmulator GetFeedSymbolFixture(string symbol, Feed.Types.Timeframe timeframe)
         {
             return GetFeedSrcOrThrow(symbol);
         }
 
-        public void AddBarBuilder(string symbol, TimeFrames timeframe, BarPriceType price)
+        public void AddBarBuilder(string symbol, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide price)
         {
             GetFeedSrcOrThrow(symbol).InitSeries(timeframe, price);
         }
 
-        public IReadOnlyList<BarEntity> GetBarSeriesData(string symbol, TimeFrames timeframe, BarPriceType price)
+        public IReadOnlyList<BarData> GetBarSeriesData(string symbol, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide price)
         {
             return GetFeedSrcOrThrow(symbol).GetSeriesData(timeframe, price);
         }
@@ -120,15 +120,15 @@ namespace TickTrader.Algo.Core
             _storages.Add(storage);
         }
 
-        public void AddSource(string symbol, TimeFrames timeFrame, IEnumerable<BarEntity> bidStream, IEnumerable<BarEntity> askStream)
+        public void AddSource(string symbol, Feed.Types.Timeframe timeframe, IEnumerable<BarData> bidStream, IEnumerable<BarData> askStream)
         {
-            _feedReaders.Add(symbol, new BarSeriesReader(symbol, timeFrame, bidStream, askStream));
+            _feedReaders.Add(symbol, new BarSeriesReader(symbol, timeframe, bidStream, askStream));
             _feedSeries.Add(symbol, new FeedSeriesEmulator());
         }
 
-        public void AddSource(string symbol, TimeFrames timeFrame, IBarStorage bidStream, IBarStorage askStream)
+        public void AddSource(string symbol, Feed.Types.Timeframe timeframe, IBarStorage bidStream, IBarStorage askStream)
         {
-            _feedReaders.Add(symbol, new BarSeriesReader(symbol, timeFrame, bidStream, askStream));
+            _feedReaders.Add(symbol, new BarSeriesReader(symbol, timeframe, bidStream, askStream));
             _feedSeries.Add(symbol, new FeedSeriesEmulator());
 
             _storages.Add(bidStream);
@@ -163,24 +163,24 @@ namespace TickTrader.Algo.Core
             return _feedSeries.Values.Where(s => s.Current != null).Select(s => s.Current.LastQuote).ToList();
         }
 
-        List<BarEntity> IFeedHistoryProvider.QueryBars(string symbolCode, BarPriceType priceType, DateTime from, DateTime to, TimeFrames timeFrame)
+        List<BarData> IFeedHistoryProvider.QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
         {
-            return GetFeedSrcOrThrow(symbolCode).QueryBars(timeFrame, priceType, from, to).ToList() ?? new List<BarEntity>();
+            return GetFeedSrcOrThrow(symbol).QueryBars(marketSide, timeframe, from, to).ToList() ?? new List<BarData>();
         }
 
-        List<BarEntity> IFeedHistoryProvider.QueryBars(string symbolCode, BarPriceType priceType, DateTime from, int size, TimeFrames timeFrame)
+        List<BarData> IFeedHistoryProvider.QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count)
         {
-            return GetFeedSrcOrThrow(symbolCode).QueryBars(timeFrame, priceType, from, size).ToList() ?? new List<BarEntity>();
+            return GetFeedSrcOrThrow(symbol).QueryBars(marketSide, timeframe, from, count).ToList() ?? new List<BarData>();
         }
 
-        List<QuoteInfo> IFeedHistoryProvider.QueryTicks(string symbolCode, DateTime from, DateTime to, bool level2)
+        List<QuoteInfo> IFeedHistoryProvider.QueryQuotes(string symbol, Timestamp from, Timestamp to, bool level2)
         {
-            return GetFeedSrcOrThrow(symbolCode).QueryTicks(from, to, level2) ?? new List<QuoteInfo>();
+            return GetFeedSrcOrThrow(symbol).QueryTicks(from, to, level2) ?? new List<QuoteInfo>();
         }
 
-        List<QuoteInfo> IFeedHistoryProvider.QueryTicks(string symbolCode, DateTime from, int count, bool level2)
+        List<QuoteInfo> IFeedHistoryProvider.QueryQuotes(string symbol, Timestamp from, int count, bool level2)
         {
-            return GetFeedSrcOrThrow(symbolCode).QueryTicks(from, count, level2) ?? new List<QuoteInfo>();
+            return GetFeedSrcOrThrow(symbol).QueryTicks(from, count, level2) ?? new List<QuoteInfo>();
         }
 
         List<QuoteInfo> IFeedSubscription.Modify(List<FeedSubscriptionUpdate> updates)

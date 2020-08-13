@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Domain;
+﻿using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -53,30 +49,14 @@ namespace TickTrader.Algo.Core
             return (decimal)price;
         }
 
-        public static bool IsTicks(this TimeFrames timeFrame)
+        public static bool IsTicks(this Feed.Types.Timeframe timeFrame)
         {
-            return timeFrame == TimeFrames.Ticks || timeFrame == TimeFrames.TicksLevel2;
+            return timeFrame == Feed.Types.Timeframe.Ticks || timeFrame == Feed.Types.Timeframe.TicksLevel2;
         }
 
-        //internal static Currency GetOrStub(this Dictionary<string, Currency> currencies, string key)
-        //{
-        //    return currencies.GetOrDefault(key) ?? new CurrencyAccessor(null);
-        //}
-
-        //internal static Currency GetOrStub(this Dictionary<string, CurrencyInfo> currencies, string key)
-        //{
-        //    return currencies.GetOrDefault(key) ?? new CurrencyAccessor(null);
-        //}
-
-        public static Domain.OrderInfo.Types.Side Revert(this Domain.OrderInfo.Types.Side side)
+        public static OrderInfo.Types.Side Revert(this OrderInfo.Types.Side side)
         {
-            return side == Domain.OrderInfo.Types.Side.Sell ? Domain.OrderInfo.Types.Side.Buy : Domain.OrderInfo.Types.Side.Sell;
-        }
-
-        public static DateTime StartOfWeek(this DateTime dt, DayOfWeek startOfWeek)
-        {
-            int diff = (7 + (dt.DayOfWeek - startOfWeek)) % 7;
-            return dt.AddDays(-1 * diff).Date;
+            return side == OrderInfo.Types.Side.Sell ? OrderInfo.Types.Side.Buy : OrderInfo.Types.Side.Sell;
         }
     }
 }

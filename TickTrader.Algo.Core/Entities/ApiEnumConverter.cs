@@ -136,7 +136,7 @@ namespace TickTrader.Algo.Core
 
         public static TradeExecActions ToApiEnum(this Domain.TradeReportInfo.Types.ReportType reportType)
         {
-            switch(reportType)
+            switch (reportType)
             {
                 case Domain.TradeReportInfo.Types.ReportType.NoType: return TradeExecActions.None;
                 case Domain.TradeReportInfo.Types.ReportType.OrderOpened: return TradeExecActions.OrderOpened;
@@ -151,6 +151,61 @@ namespace TickTrader.Algo.Core
                 case Domain.TradeReportInfo.Types.ReportType.TradeModified: return TradeExecActions.TradeModified;
 
                 default: throw new ArgumentException($"Unsupported report type {reportType}");
+            }
+        }
+
+        public static Domain.Feed.Types.MarketSide ToDomainEnum(this BarPriceType priceType)
+        {
+            switch (priceType)
+            {
+                case BarPriceType.Bid: return Domain.Feed.Types.MarketSide.Bid;
+                case BarPriceType.Ask: return Domain.Feed.Types.MarketSide.Ask;
+
+                default: throw new ArgumentException($"Unsupported bar price type {priceType}");
+            }
+        }
+
+        public static Domain.Feed.Types.Timeframe ToDomainEnum(this TimeFrames timeframe)
+        {
+            switch (timeframe)
+            {
+                case TimeFrames.MN: return Domain.Feed.Types.Timeframe.MN;
+                case TimeFrames.D: return Domain.Feed.Types.Timeframe.D;
+                case TimeFrames.W: return Domain.Feed.Types.Timeframe.W;
+                case TimeFrames.H4: return Domain.Feed.Types.Timeframe.H4;
+                case TimeFrames.H1: return Domain.Feed.Types.Timeframe.H1;
+                case TimeFrames.M30: return Domain.Feed.Types.Timeframe.M30;
+                case TimeFrames.M15: return Domain.Feed.Types.Timeframe.M15;
+                case TimeFrames.M5: return Domain.Feed.Types.Timeframe.M5;
+                case TimeFrames.M1: return Domain.Feed.Types.Timeframe.M1;
+                case TimeFrames.S10: return Domain.Feed.Types.Timeframe.S10;
+                case TimeFrames.S1: return Domain.Feed.Types.Timeframe.S1;
+                case TimeFrames.Ticks: return Domain.Feed.Types.Timeframe.Ticks;
+                case TimeFrames.TicksLevel2: return Domain.Feed.Types.Timeframe.TicksLevel2;
+
+                default: throw new ArgumentException($"Unsupported timeframe {timeframe}");
+            }
+        }
+
+        public static TimeFrames ToApiEnum(this Domain.Feed.Types.Timeframe timeframe)
+        {
+            switch (timeframe)
+            {
+                case Domain.Feed.Types.Timeframe.MN: return TimeFrames.MN;
+                case Domain.Feed.Types.Timeframe.D: return TimeFrames.D;
+                case Domain.Feed.Types.Timeframe.W: return TimeFrames.W;
+                case Domain.Feed.Types.Timeframe.H4: return TimeFrames.H4;
+                case Domain.Feed.Types.Timeframe.H1: return TimeFrames.H1;
+                case Domain.Feed.Types.Timeframe.M30: return TimeFrames.M30;
+                case Domain.Feed.Types.Timeframe.M15: return TimeFrames.M15;
+                case Domain.Feed.Types.Timeframe.M5: return TimeFrames.M5;
+                case Domain.Feed.Types.Timeframe.M1: return TimeFrames.M1;
+                case Domain.Feed.Types.Timeframe.S10: return TimeFrames.S10;
+                case Domain.Feed.Types.Timeframe.S1: return TimeFrames.S1;
+                case Domain.Feed.Types.Timeframe.Ticks: return TimeFrames.Ticks;
+                case Domain.Feed.Types.Timeframe.TicksLevel2: return TimeFrames.TicksLevel2;
+
+                default: throw new ArgumentException($"Unsupported timeframe {timeframe}");
             }
         }
     }

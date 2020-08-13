@@ -37,6 +37,13 @@ namespace TickTrader.Algo.Domain
             SetAsks(new QuoteBand[] { new QuoteBand(ask, 0) });
         }
 
+        public QuoteData(Timestamp time, double bid, double ask)
+        {
+            Time = time;
+            SetBids(new QuoteBand[] { new QuoteBand(bid, 0) });
+            SetAsks(new QuoteBand[] { new QuoteBand(ask, 0) });
+        }
+
 
         public void SetAsks(QuoteBand[] bands)
         {
@@ -69,6 +76,7 @@ namespace TickTrader.Algo.Domain
     {
         string Symbol { get; }
         DateTime Time { get; }
+        Timestamp Timestamp { get; }
         bool HasAsk { get; }
         bool HasBid { get; }
         double Ask { get; }
@@ -147,6 +155,11 @@ namespace TickTrader.Algo.Domain
         }
 
         public QuoteInfo(string symbol, DateTime time, double bid, double ask)
+            : this(symbol, new QuoteData(time, bid, ask), null)
+        {
+        }
+
+        public QuoteInfo(string symbol, Timestamp time, double bid, double ask)
             : this(symbol, new QuoteData(time, bid, ask), null)
         {
         }

@@ -1,7 +1,7 @@
 ﻿using System;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Ext;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Repository
 {
@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Core.Repository
 
         public override void MapInput(IPluginSetupTarget target, string inputName, string symbol)
         {
-            target.GetFeedStrategy<BarStrategy>().MapInput(inputName, symbol, BarPriceType.Bid);
+            target.GetFeedStrategy<BarStrategy>().MapInput(inputName, symbol, Feed.Types.MarketSide.Bid);
         }
     }
 
@@ -42,7 +42,7 @@ namespace TickTrader.Algo.Core.Repository
         {
             var doubleReduction = AlgoAssemblyInspector.GetReduction(Key.SecondaryReduction.DescriptorId);
             var doubleReductionInstance = doubleReduction?.CreateInstance<BarToDoubleReduction>() ?? new BarToCloseReduction();
-            target.GetFeedStrategy<BarStrategy>().MapInput(inputName, symbol, BarPriceType.Bid, bar => doubleReductionInstance.Reduce(bar));
+            target.GetFeedStrategy<BarStrategy>().MapInput(inputName, symbol, Feed.Types.MarketSide.Bid, bar => doubleReductionInstance.Reduce(new BarEntity(bar)));
         }
     }
 }

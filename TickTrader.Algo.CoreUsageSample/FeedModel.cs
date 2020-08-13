@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
@@ -16,16 +16,16 @@ namespace TickTrader.Algo.CoreUsageSample
         public event Action<QuoteInfo> RateUpdated;
         public event Action<List<QuoteInfo>> RatesUpdated;
 
-        public TimeFrames TimeFrame { get; private set; }
+        public Feed.Types.Timeframe TimeFrame { get; private set; }
 
         public ISyncContext Sync { get { return this; } }
 
-        public FeedModel(TimeFrames timeFrame)
+        public FeedModel(Feed.Types.Timeframe timeFrame)
         {
             this.TimeFrame = timeFrame;
         }
 
-        public void Fill(string symbol, IEnumerable<BarEntity> data)
+        public void Fill(string symbol, IEnumerable<BarData> data)
         {
             GetSymbolData(symbol).Fill(data);
         }
@@ -47,22 +47,22 @@ namespace TickTrader.Algo.CoreUsageSample
             return data;
         }
 
-        List<BarEntity> IFeedHistoryProvider.QueryBars(string symbolCode, BarPriceType priceType, DateTime from, DateTime to, TimeFrames timeFrame)
+        List<BarData> IFeedHistoryProvider.QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
         {
-            return GetSymbolData(symbolCode).QueryBars(from, to, timeFrame).ToList();
+            return GetSymbolData(symbol).QueryBars(from, to, timeframe).ToList();
         }
 
-        List<QuoteInfo> IFeedHistoryProvider.QueryTicks(string symbolCode, DateTime from, DateTime to, bool level2)
+        List<QuoteInfo> IFeedHistoryProvider.QueryQuotes(string symbol, Timestamp from, Timestamp to, bool level2)
         {
             return null;
         }
 
-        List<BarEntity> IFeedHistoryProvider.QueryBars(string symbolCode, BarPriceType priceType, DateTime from, int size, TimeFrames timeFrame)
+        List<BarData> IFeedHistoryProvider.QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count)
         {
             throw new NotImplementedException();
         }
 
-        List<QuoteInfo> IFeedHistoryProvider.QueryTicks(string symbolCode, DateTime from, int count, bool level2)
+        List<QuoteInfo> IFeedHistoryProvider.QueryQuotes(string symbol, Timestamp from, int count, bool level2)
         {
             throw new NotImplementedException();
         }
@@ -114,11 +114,11 @@ namespace TickTrader.Algo.CoreUsageSample
 
         private class SymbolDataModel
         {
-            private List<BarEntity> data = new List<BarEntity>();
-            private TimeFrames timeFrame;
+            private List<BarData> data = new List<BarData>();
+            private Feed.Types.Timeframe timeFrame;
             private BarSampler sampler;
 
-            public SymbolDataModel(TimeFrames timeFrame)
+            public SymbolDataModel(Feed.Types.Timeframe timeFrame)
             {
                 this.timeFrame = timeFrame;
                 sampler = BarSampler.Get(timeFrame);
@@ -126,7 +126,7 @@ namespace TickTrader.Algo.CoreUsageSample
 
             public QuoteInfo LastQuote { get; private set; }
 
-            public void Fill(IEnumerable<BarEntity> data)
+            public void Fill(IEnumerable<BarData> data)
             {
                 if (this.data.Count > 0)
                     throw new InvalidOperationException("Already filled!");
@@ -136,7 +136,7 @@ namespace TickTrader.Algo.CoreUsageSample
 
             public void Update(QuoteInfo quote)
             {
-                var barBoundaries = sampler.GetBar(quote.Time);
+                var barBoundaries = sampler.GetBar(quote.Timestamp);
                 var barOpenTime = barBoundaries.Open;
 
                 if (data.Count > 0)
@@ -153,14 +153,14 @@ namespace TickTrader.Algo.CoreUsageSample
                     }
                 }
 
-                data.Add(new BarEntity(barOpenTime, barBoundaries.Close, quote.Bid, 1));
+                data.Add(new BarData(barOpenTime, barBoundaries.Close, quote.Bid, 1));
 
                 LastQuote = quote;
             }
 
-            public IEnumerable<BarEntity> QueryBars(DateTime from, DateTime to, TimeFrames timeFrame)
+            public IEnumerable<BarData> QueryBars(Timestamp from, Timestamp to, Feed.Types.Timeframe timeframe)
             {
-                if (timeFrame != this.timeFrame)
+                if (timeframe != this.timeFrame)
                     return null;
 
                 return data.Where(b => b.OpenTime >= from && b.OpenTime < to);

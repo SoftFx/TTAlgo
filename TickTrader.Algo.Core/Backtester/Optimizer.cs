@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -29,7 +28,7 @@ namespace TickTrader.Algo.Core
             _sync = updatesSync;
             _core = _container.CreateObject<OptimizerCore>();
             _core.Factory = _container.CreateExecutorFactory(pluginRef.Id);
-            _core.InitBarStrategy(BarPriceType.Bid);
+            _core.InitBarStrategy(Domain.Feed.Types.MarketSide.Bid);
             IsIsolated = pluginRef.IsIsolated;
         }
 
@@ -360,9 +359,9 @@ namespace TickTrader.Algo.Core
 
             #region Setup
 
-            public BarStrategy InitBarStrategy(BarPriceType mainPirceTipe)
+            public BarStrategy InitBarStrategy(Feed.Types.MarketSide marketSide)
             {
-                var barStrategy = new BarStrategy(mainPirceTipe);
+                var barStrategy = new BarStrategy(marketSide);
                 FStrategy = barStrategy;
                 return barStrategy;
             }

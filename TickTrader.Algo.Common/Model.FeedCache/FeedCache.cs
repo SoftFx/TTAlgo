@@ -5,10 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
-using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 using TickTrader.SeriesStorage;
@@ -96,21 +93,21 @@ namespace TickTrader.Algo.Common.Model
             public Task Put(FeedCacheKey key, DateTime from, DateTime to, QuoteInfo[] values)
                 => Put(key.Symbol, key.Frame, from, to, values);
 
-            public Task Put(string symbol, Api.TimeFrames timeFrame, DateTime from, DateTime to, QuoteInfo[] values)
-                => _ref.Call(a => a.Put(symbol, timeFrame, from, to, values));
+            public Task Put(string symbol, Feed.Types.Timeframe timeframe, DateTime from, DateTime to, QuoteInfo[] values)
+                => _ref.Call(a => a.Put(symbol, timeframe, from, to, values));
 
-            public Task Put(string symbol, Api.TimeFrames timeFrame, Slice<DateTime, QuoteInfo> slice)
-                => _ref.Call(a => a.Put(symbol, timeFrame, slice));
+            public Task Put(string symbol, Feed.Types.Timeframe timeframe, Slice<DateTime, QuoteInfo> slice)
+                => _ref.Call(a => a.Put(symbol, timeframe, slice));
 
-            public Task Put(FeedCacheKey key, DateTime from, DateTime to, BarEntity[] values)
+            public Task Put(FeedCacheKey key, DateTime from, DateTime to, BarData[] values)
                 => _ref.Call(a => a.Put(key, from, to, values));
 
-            public Task Put(string symbol, Api.TimeFrames frame, Api.BarPriceType priceType, DateTime from, DateTime to, BarEntity[] values)
-                => Put(new FeedCacheKey(symbol, frame, priceType), from, to, values);
+            public Task Put(string symbol, Feed.Types.Timeframe frame, Feed.Types.MarketSide marketSide, DateTime from, DateTime to, BarData[] values)
+                => Put(new FeedCacheKey(symbol, frame, marketSide), from, to, values);
 
-            public Channel<Slice<DateTime, BarEntity>> IterateBarCacheAsync(FeedCacheKey key, DateTime from, DateTime to)
+            public Channel<Slice<DateTime, BarData>> IterateBarCacheAsync(FeedCacheKey key, DateTime from, DateTime to)
             {
-                var channel = new Channel<Slice<DateTime, BarEntity>>(ChannelDirections.Out, 1);
+                var channel = new Channel<Slice<DateTime, BarData>>(ChannelDirections.Out, 1);
                 _ref.SendChannel(channel, (a, c) => a.IterateBarCache(c, key, from, to));
                 return channel;
             }
@@ -122,9 +119,9 @@ namespace TickTrader.Algo.Common.Model
                 return channel;
             }
 
-            public BlockingChannel<Slice<DateTime, BarEntity>> IterateBarCache(FeedCacheKey key, DateTime from, DateTime to)
+            public BlockingChannel<Slice<DateTime, BarData>> IterateBarCache(FeedCacheKey key, DateTime from, DateTime to)
             {
-                return _ref.OpenBlockingChannel<FeedCache, Slice<DateTime, BarEntity>>(ChannelDirections.Out, 2, (a, c) => a.IterateBarCache(c, key, from, to));
+                return _ref.OpenBlockingChannel<FeedCache, Slice<DateTime, BarData>>(ChannelDirections.Out, 2, (a, c) => a.IterateBarCache(c, key, from, to));
             }
 
             public BlockingChannel<Slice<DateTime, QuoteInfo>> IterateTickCache(FeedCacheKey key, DateTime from, DateTime to)
@@ -139,8 +136,8 @@ namespace TickTrader.Algo.Common.Model
                 return channel;
             }
 
-            public Task<KeyRange<DateTime>> GetFirstRange(string symbol, Api.TimeFrames frame, Api.BarPriceType? priceType, DateTime from, DateTime to)
-                => _ref.Call(a => a.GetFirstRange(symbol, frame, priceType, from, to));
+            public Task<KeyRange<DateTime>> GetFirstRange(string symbol, Feed.Types.Timeframe frame, Feed.Types.MarketSide? marketSide, DateTime from, DateTime to)
+                => _ref.Call(a => a.GetFirstRange(symbol, frame, marketSide, from, to));
 
             public Task<Tuple<DateTime?, DateTime?>> GetRange(FeedCacheKey key)
                 => _ref.Call(a => a.GetRange(key));
@@ -185,8 +182,7 @@ namespace TickTrader.Algo.Common.Model
             {
                 if (!IsSpecialCollection(collectionName))
                 {
-                    FeedCacheKey key;
-                    if (FeedCacheKey.TryParse(collectionName, out key))
+                    if (FeedCacheKey.TryParse(collectionName, out var key))
                         loadedKeys.Add(key);
                 }
             }
@@ -246,26 +242,26 @@ namespace TickTrader.Algo.Common.Model
 
         #region Bar History
 
-        private KeyRange<DateTime> GetFirstRange(string symbol, Api.TimeFrames frame, Api.BarPriceType? priceType, DateTime from, DateTime to)
+        private KeyRange<DateTime> GetFirstRange(string symbol, Feed.Types.Timeframe frame, Feed.Types.MarketSide? marketSide, DateTime from, DateTime to)
         {
-            var key = new FeedCacheKey(symbol, frame, priceType);
+            var key = new FeedCacheKey(symbol, frame, marketSide);
             return GetSeries(key)?.GetFirstRange(from, to);
         }
 
-        private KeyRange<DateTime> GetLastRange(string symbol, Api.TimeFrames frame, Api.BarPriceType? priceType, DateTime from, DateTime to)
+        private KeyRange<DateTime> GetLastRange(string symbol, Feed.Types.Timeframe frame, Feed.Types.MarketSide? marketSide, DateTime from, DateTime to)
         {
             CheckState();
 
-            var key = new FeedCacheKey(symbol, frame, priceType);
+            var key = new FeedCacheKey(symbol, frame, marketSide);
             return GetSeries(key)?.GetFirstRange(from, to);
         }
 
-        private Slice<DateTime, BarEntity> GetFirstBarSlice(string symbol, Api.TimeFrames frame, Api.BarPriceType priceType, DateTime from, DateTime to)
+        private Slice<DateTime, BarData> GetFirstBarSlice(string symbol, Feed.Types.Timeframe frame, Feed.Types.MarketSide marketSide, DateTime from, DateTime to)
         {
             CheckState();
 
-            var key = new FeedCacheKey(symbol, frame, priceType);
-            return GetSeries<BarEntity>(key)?.GetFirstSlice(from, to);
+            var key = new FeedCacheKey(symbol, frame, marketSide);
+            return GetSeries<BarData>(key)?.GetFirstSlice(from, to);
         }
 
         private IEnumerable<KeyRange<DateTime>> IterateCacheKeysInternal(FeedCacheKey key)
@@ -303,40 +299,40 @@ namespace TickTrader.Algo.Common.Model
             channel.WriteAll(() => IterateCacheKeysInternal(key, from, to));
         }
 
-        protected void IterateBarCache(Channel<Slice<DateTime, BarEntity>> channel, FeedCacheKey key, DateTime from, DateTime to)
+        protected void IterateBarCache(Channel<Slice<DateTime, BarData>> channel, FeedCacheKey key, DateTime from, DateTime to)
         {
             channel.WriteAll(() => IterateBarCacheInternal(key, from, to));
         }
 
-        private IEnumerable<Slice<DateTime, BarEntity>> IterateBarCacheInternal(FeedCacheKey key, DateTime from, DateTime to)
+        private IEnumerable<Slice<DateTime, BarData>> IterateBarCacheInternal(FeedCacheKey key, DateTime from, DateTime to)
         {
             CheckState();
-            foreach (var entry in GetSeries<BarEntity>(key)?.IterateSlices(from, to))
+            foreach (var entry in GetSeries<BarData>(key)?.IterateSlices(from, to))
             {
                 CheckState();
                 yield return entry;
             }
         }
 
-        protected Slice<DateTime, BarEntity> QueryBarCache(string symbol, Api.TimeFrames frame, Api.BarPriceType priceType, DateTime from, DateTime to)
+        protected Slice<DateTime, BarData> QueryBarCache(string symbol, Feed.Types.Timeframe frame, Feed.Types.MarketSide marketSide, DateTime from, DateTime to)
         {
             CheckState();
 
-            var key = new FeedCacheKey(symbol, frame, priceType);
-            return GetSeries<BarEntity>(key)?.GetFirstSlice(from, to);
+            var key = new FeedCacheKey(symbol, frame, marketSide);
+            return GetSeries<BarData>(key)?.GetFirstSlice(from, to);
         }
 
-        protected void Put(FeedCacheKey key, DateTime from, DateTime to, BarEntity[] values)
+        protected void Put(FeedCacheKey key, DateTime from, DateTime to, BarData[] values)
         {
             CheckState();
 
-            var collection = GetSeries<BarEntity>(key, true);
+            var collection = GetSeries<BarData>(key, true);
             collection.Write(from, to, values);
         }
 
-        protected void Put(string symbol, Api.TimeFrames frame, Api.BarPriceType priceType, DateTime from, DateTime to, BarEntity[] values)
+        protected void Put(string symbol, Feed.Types.Timeframe frame, Feed.Types.MarketSide marketSide, DateTime from, DateTime to, BarData[] values)
         {
-            Put(new FeedCacheKey(symbol, frame, priceType), from, to, values);
+            Put(new FeedCacheKey(symbol, frame, marketSide), from, to, values);
         }
 
         #endregion
@@ -358,7 +354,7 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        protected void Put(string symbol, Api.TimeFrames timeFrame, DateTime from, DateTime to, QuoteInfo[] values)
+        protected void Put(string symbol, Feed.Types.Timeframe timeFrame, DateTime from, DateTime to, QuoteInfo[] values)
         {
             CheckState();
 
@@ -367,7 +363,7 @@ namespace TickTrader.Algo.Common.Model
             collection.Write(from, to, values);
         }
 
-        protected void Put(string symbol, Api.TimeFrames timeFrame, Slice<DateTime, QuoteInfo> slice)
+        protected void Put(string symbol, Feed.Types.Timeframe timeFrame, Slice<DateTime, QuoteInfo> slice)
         {
             CheckState();
 
@@ -382,10 +378,10 @@ namespace TickTrader.Algo.Common.Model
         {
             ISeriesStorage<DateTime> collection;
 
-            if (key.Frame == Api.TimeFrames.Ticks || key.Frame == Api.TimeFrames.TicksLevel2)
+            if (key.Frame == Feed.Types.Timeframe.Ticks || key.Frame == Feed.Types.Timeframe.TicksLevel2)
                 collection = _diskStorage.GetSeries(new DateTimeKeySerializer(), TickSerializer.GetSerializer(key), b => b.Time, key.ToCodeString(), true);
             else
-                collection = _diskStorage.GetSeries(new DateTimeKeySerializer(), new BarSerializer(key.Frame), b => b.OpenTime, key.ToCodeString(), false);
+                collection = _diskStorage.GetSeries(new DateTimeKeySerializer(), new BarSerializer(key.Frame), b => b.OpenTime.ToDateTime(), key.ToCodeString(), false);
 
             _series.Add(key, collection);
             return collection;

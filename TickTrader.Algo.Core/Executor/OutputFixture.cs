@@ -43,7 +43,7 @@ namespace TickTrader.Algo.Core
             if (!isBatch)
             {
                 var timeCoordinate = timeRef[index];
-                Appended(new OutputPoint<T>(timeCoordinate, index, data));
+                Appended(new OutputPoint<T>(timeCoordinate?.ToDateTime(), index, data));
             }
         }
 
@@ -52,7 +52,7 @@ namespace TickTrader.Algo.Core
             if (!isBatch)
             {
                 var timeCoordinate = timeRef[index];
-                Updated(new OutputPoint<T>(timeCoordinate, index, data));
+                Updated(new OutputPoint<T>(timeCoordinate?.ToDateTime(), index, data));
             }
         }
 
@@ -65,7 +65,7 @@ namespace TickTrader.Algo.Core
             for (int i = 0; i < count; i++)
             {
                 var timeCoordinate = timeRef[i];
-                list[i] = new OutputPoint<T>(timeCoordinate, i, buffer[i]);
+                list[i] = new OutputPoint<T>(timeCoordinate?.ToDateTime(), i, buffer[i]);
             }
 
             RangeAppended(list);
@@ -101,7 +101,7 @@ namespace TickTrader.Algo.Core
         }
 
         internal int Count => buffer.Count;
-        internal OutputPoint<T> this[int index] => new OutputPoint<T>(timeRef[index], index, buffer[index]);
+        internal OutputPoint<T> this[int index] => new OutputPoint<T>(timeRef[index]?.ToDateTime(), index, buffer[index]);
         internal OutputBuffer<T> Buffer => buffer;
 
         public event Action<OutputPoint<T>[]> RangeAppended = delegate { };

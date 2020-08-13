@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
@@ -18,7 +18,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         private List<InputSetupModel> _tickBasedInputs;
         private List<OutputSetupModel> _outputs;
 
-        public TimeFrames SelectedTimeFrame { get; private set; }
+        public Feed.Types.Timeframe SelectedTimeFrame { get; private set; }
 
         public ISetupSymbolInfo MainSymbol { get; private set; }
 
@@ -56,7 +56,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             set { Permissions.Isolated = value; }
         }
 
-        private List<InputSetupModel> ActiveInputs => SelectedTimeFrame == TimeFrames.Ticks ? _tickBasedInputs : _barBasedInputs;
+        private List<InputSetupModel> ActiveInputs => SelectedTimeFrame == Feed.Types.Timeframe.Ticks ? _tickBasedInputs : _barBasedInputs;
 
         public event Action ValidityChanged = delegate { };
 
@@ -92,7 +92,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public void Load(PluginConfig cfg)
         {
-            SelectedTimeFrame = cfg.TimeFrame;
+            SelectedTimeFrame = cfg.TimeFrame.ToDomainEnum();
             SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(cfg.SelectedMapping);
             InstanceId = cfg.InstanceId;
             Permissions = cfg.Permissions.Clone();
@@ -113,7 +113,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         public PluginConfig Save()
         {
             var cfg = new PluginConfig();
-            cfg.TimeFrame = SelectedTimeFrame;
+            cfg.TimeFrame = SelectedTimeFrame.ToApiEnum();
             cfg.MainSymbol = MainSymbol.ToConfig();
             cfg.SelectedMapping = SelectedMapping.Key;
             cfg.InstanceId = InstanceId;

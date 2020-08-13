@@ -36,7 +36,7 @@ namespace TickTrader.BotTerminal
 
             _exporters.Add(new CsvExporter());
 
-            DisplayName = string.Format("Export Series: {0} {1} {2}", key.Symbol, key.Frame, key.PriceType);
+            DisplayName = string.Format("Export Series: {0} {1} {2}", key.Symbol, key.Frame, key.MarketSide);
             
             DateRange = new DateRangeSelectionViewModel();
             ExportObserver = new ProgressViewModel();
@@ -206,7 +206,7 @@ namespace TickTrader.BotTerminal
             DateRange.Reset();
 
             var key = _series.Key;
-            var range = await _series.Symbol.GetAvailableRange(key.Frame, key.PriceType);
+            var range = await _series.Symbol.GetAvailableRange(key.Frame, key.MarketSide);
 
             DateTime from = DateTime.UtcNow.Date;
             DateTime to = from;
@@ -248,7 +248,7 @@ namespace TickTrader.BotTerminal
         }
 
         public virtual void StartExport() { }
-        public abstract void ExportSlice(DateTime from, DateTime to, ArraySegment<BarEntity> values);
+        public abstract void ExportSlice(DateTime from, DateTime to, ArraySegment<BarData> values);
         public abstract void ExportSlice(DateTime from, DateTime to, ArraySegment<QuoteInfo> values);
         public virtual void EndExport() { }
 
@@ -289,11 +289,11 @@ namespace TickTrader.BotTerminal
             _writer = new StreamWriter(File.Open(GetCorrectPath(), FileMode.Create));
         }
 
-        public override void ExportSlice(DateTime from, DateTime to, ArraySegment<BarEntity> values)
+        public override void ExportSlice(DateTime from, DateTime to, ArraySegment<BarData> values)
         {
             foreach (var val in values)
             {
-                _writer.Write(val.OpenTime);
+                _writer.Write(val.OpenTime.ToDateTime());
                 _writer.Write(",");
                 _writer.Write(val.Open);
                 _writer.Write(",");
@@ -303,7 +303,7 @@ namespace TickTrader.BotTerminal
                 _writer.Write(",");
                 _writer.Write(val.Close);
                 _writer.Write(",");
-                _writer.WriteLine(val.Volume);
+                _writer.WriteLine(val.RealVolume);
             }
         }
 

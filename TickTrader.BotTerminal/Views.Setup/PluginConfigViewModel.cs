@@ -15,6 +15,7 @@ using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -31,7 +32,7 @@ namespace TickTrader.BotTerminal
         private List<InputSetupViewModel> _barBasedInputs;
         private List<InputSetupViewModel> _tickBasedInputs;
         private List<OutputSetupViewModel> _outputs;
-        private TimeFrames _selectedTimeFrame;
+        private Feed.Types.Timeframe _selectedTimeFrame;
         private ISetupSymbolInfo _mainSymbol;
         private MappingInfo _selectedMapping;
         private string _instanceId;
@@ -41,7 +42,7 @@ namespace TickTrader.BotTerminal
         private bool _visible;
         private bool _runBot;
 
-        public IEnumerable<TimeFrames> AvailableTimeFrames { get; private set; }
+        public IEnumerable<Feed.Types.Timeframe> AvailableTimeFrames { get; private set; }
 
         public bool IsFixedFeed { get; set; }
         public bool IsEmulation { get; set; }
@@ -62,7 +63,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public TimeFrames SelectedTimeFrame
+        public Feed.Types.Timeframe SelectedTimeFrame
         {
             get { return _selectedTimeFrame; }
             set
@@ -70,7 +71,7 @@ namespace TickTrader.BotTerminal
                 if (_selectedTimeFrame == value)
                     return;
 
-                var changeInputs = _selectedTimeFrame == TimeFrames.Ticks || value == TimeFrames.Ticks;
+                var changeInputs = _selectedTimeFrame == Feed.Types.Timeframe.Ticks || value == Feed.Types.Timeframe.Ticks;
                 _selectedTimeFrame = value;
                 NotifyOfPropertyChange(nameof(SelectedTimeFrame));
                 if (changeInputs)
@@ -202,7 +203,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private List<InputSetupViewModel> ActiveInputs => _selectedTimeFrame == TimeFrames.Ticks ? _tickBasedInputs : _barBasedInputs;
+        private List<InputSetupViewModel> ActiveInputs => _selectedTimeFrame == Feed.Types.Timeframe.Ticks ? _tickBasedInputs : _barBasedInputs;
 
         public event System.Action ValidityChanged = delegate { };
 
@@ -226,7 +227,7 @@ namespace TickTrader.BotTerminal
 
         public void Load(PluginConfig cfg)
         {
-            SelectedTimeFrame = cfg.TimeFrame;
+            SelectedTimeFrame = cfg.TimeFrame.ToDomainEnum();
             MainSymbol = AvailableSymbols.GetSymbolOrDefault(cfg.MainSymbol) ?? AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol);
 
             if (!IsEmulation)
@@ -251,7 +252,7 @@ namespace TickTrader.BotTerminal
         public PluginConfig Save()
         {
             var cfg = new PluginConfig();
-            cfg.TimeFrame = SelectedTimeFrame;
+            cfg.TimeFrame = SelectedTimeFrame.ToApiEnum();
             cfg.MainSymbol = MainSymbol.ToConfig();
             cfg.SelectedMapping = SelectedMapping.Key;
             cfg.InstanceId = InstanceId;

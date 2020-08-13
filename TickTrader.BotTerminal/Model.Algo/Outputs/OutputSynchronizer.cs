@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -39,6 +40,7 @@ namespace TickTrader.BotTerminal
             foreach (var point in points)
             {
                 var pointTime = point.TimeCoordinate.Value;
+                var pointTimestamp = point.TimeCoordinate.Value.ToTimestamp();
 
                 if (syncIndex >= 0)
                 {
@@ -51,14 +53,14 @@ namespace TickTrader.BotTerminal
 
                         var baseTime = _baseVector[syncIndex];
 
-                        if (baseTime == pointTime)
+                        if (baseTime == pointTimestamp)
                         {
                             // hit -> append point
                             DoAppend?.Invoke(pointTime, point.Value);
                             _size++;
                             break; // take next point
                         }
-                        else if (pointTime < baseTime)
+                        else if (pointTimestamp < baseTime)
                         {
                             // miss => base vector does not have this point -> skip point
                             break; // take next point
@@ -71,7 +73,7 @@ namespace TickTrader.BotTerminal
                         }
                     }
                 }
-                else if (pointTime >= _baseVector[0])
+                else if (pointTimestamp >= _baseVector[0])
                     syncIndex = Append(point);
             }
         }
@@ -79,7 +81,7 @@ namespace TickTrader.BotTerminal
         public int Append(OutputPoint<T> point)
         {
             var pointTime = point.TimeCoordinate.Value;
-            var index = _baseVector.BinarySearch(pointTime, BinarySearchTypes.Exact);
+            var index = _baseVector.BinarySearch(pointTime.ToTimestamp(), BinarySearchTypes.Exact);
 
             if (index >= 0)
             {
@@ -94,7 +96,7 @@ namespace TickTrader.BotTerminal
         public void Update(OutputPoint<T> point)
         {
             var pointTime = point.TimeCoordinate.Value;
-            var index = _baseVector.BinarySearch(pointTime, BinarySearchTypes.Exact);
+            var index = _baseVector.BinarySearch(pointTime.ToTimestamp(), BinarySearchTypes.Exact);
             if (index >= 0)
             {
                 FillEmptySpace(index);
@@ -111,7 +113,7 @@ namespace TickTrader.BotTerminal
             while (_size <= targetSize)
             {
                 var pointTime = _baseVector[_size];
-                DoAppend?.Invoke(pointTime, _emptyValue);
+                DoAppend?.Invoke(pointTime.ToDateTime(), _emptyValue);
                 _size++;
             }
         }

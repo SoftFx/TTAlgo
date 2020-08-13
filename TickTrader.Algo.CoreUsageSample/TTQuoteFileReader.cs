@@ -1,24 +1,21 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreUsageSample
 {
     class TTQuoteFileReader
     {
-        public static List<BarEntity> ReadFile(string path)
+        public static List<BarData> ReadFile(string path)
         {
             using (var file = System.IO.File.OpenText(path))
             {
-                List<BarEntity> result = new List<BarEntity>();
+                var result = new List<BarData>();
 
                 while (true)
                 {
-                    BarEntity nextBar;
-                    if (!ReadNext(out nextBar, file))
+                    if (!ReadNext(out var nextBar, file))
                         break;
                     result.Add(nextBar);
                 }
@@ -27,27 +24,27 @@ namespace TickTrader.Algo.CoreUsageSample
             }
         }
 
-        private static bool ReadNext(out BarEntity bar, System.IO.StreamReader reader)
+        private static bool ReadNext(out BarData bar, System.IO.StreamReader reader)
         {
-            bar = new BarEntity();
+            bar = new BarData();
 
-            string line = reader.ReadLine();
+            var line = reader.ReadLine();
             if (line == null)
                 return false;
 
-            string[] parts = line.Split('\t');
+            var parts = line.Split('\t');
 
             if (parts.Length != 6)
                 throw new System.IO.InvalidDataException("Invalid file format!");
 
             try
             {
-                bar.OpenTime = DateTime.Parse(parts[0]);
+                bar.OpenTime = DateTime.Parse(parts[0]).ToTimestamp();
                 bar.Open = double.Parse(parts[1]);
                 bar.High = double.Parse(parts[2]);
                 bar.Low = double.Parse(parts[3]);
                 bar.Close = double.Parse(parts[4]);
-                bar.Volume = double.Parse(parts[5]);
+                bar.RealVolume = double.Parse(parts[5]);
             }
             catch (Exception)
             {

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
@@ -12,12 +11,12 @@ namespace TickTrader.Algo.Core
         private Action<object> _sendUpdateAction;
         private string _symbol;
 
-        public FeedSeriesCollector(FeedEmulator feed, TestDataSeriesFlags seriesFlags, string symbol, TimeFrames timeFrame, Action<object> sendUpdateAction)
+        public FeedSeriesCollector(FeedEmulator feed, TestDataSeriesFlags seriesFlags, string symbol, Feed.Types.Timeframe timeFrame, Action<object> sendUpdateAction)
         {
             _symbol = symbol;
             _sendUpdateAction = sendUpdateAction;
 
-            _barVector = feed.GetBarBuilder(symbol, timeFrame, BarPriceType.Bid);
+            _barVector = feed.GetBarBuilder(symbol, timeFrame, Feed.Types.MarketSide.Bid);
 
             if (seriesFlags.HasFlag(TestDataSeriesFlags.Stream))
             {
@@ -34,7 +33,7 @@ namespace TickTrader.Algo.Core
         }
 
         public int BarCount => _barVector.Count;
-        public IEnumerable<BarEntity> Snapshot => _barVector;
+        public IEnumerable<BarData> Snapshot => _barVector;
 
         public void Dispose()
         {
@@ -49,9 +48,9 @@ namespace TickTrader.Algo.Core
             _sendUpdateAction(rate);
         }
 
-        private void _barVector_BarClosed(BarEntity bar)
+        private void _barVector_BarClosed(BarData bar)
         {
-            var update = new DataSeriesUpdate<BarEntity>(DataSeriesTypes.SymbolRate, _symbol, SeriesUpdateActions.Append, bar);
+            var update = new DataSeriesUpdate<BarData>(DataSeriesTypes.SymbolRate, _symbol, SeriesUpdateActions.Append, bar);
             _sendUpdateAction(update);
         }
     }

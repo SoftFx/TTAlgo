@@ -1,4 +1,5 @@
-﻿using Machinarium.Qnil;
+﻿using Google.Protobuf.WellKnownTypes;
+using Machinarium.Qnil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,22 +37,22 @@ namespace TickTrader.Algo.Common.Model
 
         #region IFeedHistoryProvider implementation
 
-        public List<BarEntity> QueryBars(string symbolCode, Api.BarPriceType priceType, DateTime from, DateTime to, Api.TimeFrames timeFrame)
+        public List<BarData> QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
         {
-            return history.GetBarList(symbolCode, priceType, timeFrame, from, to).Result;
+            return history.GetBarList(symbol, marketSide, timeframe, from, to).Result;
         }
 
-        public List<BarEntity> QueryBars(string symbolCode, Api.BarPriceType priceType, DateTime from, int size, Api.TimeFrames timeFrame)
+        public List<BarData> QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count)
         {
-            return history.GetBarPage(symbolCode, priceType, timeFrame, from, size).Result.ToList();
+            return history.GetBarPage(symbol, marketSide, timeframe, from, count).Result.ToList();
         }
 
-        public List<QuoteInfo> QueryTicks(string symbolCode, DateTime from, DateTime to, bool level2)
+        public List<QuoteInfo> QueryQuotes(string symbolCode, Timestamp from, Timestamp to, bool level2)
         {
             return history.GetQuoteList(symbolCode, from, to, level2).Result;
         }
 
-        public List<QuoteInfo> QueryTicks(string symbolCode, DateTime from, int count, bool level2)
+        public List<QuoteInfo> QueryQuotes(string symbolCode, Timestamp from, int count, bool level2)
         {
             return history.GetQuotePage(symbolCode, from, count, level2).Result.ToList();
         }

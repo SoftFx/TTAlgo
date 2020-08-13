@@ -1,4 +1,5 @@
 ﻿using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +9,7 @@ using TickTrader.Algo.Core.Calc;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -36,7 +38,7 @@ namespace TickTrader.Algo.Core
         private string _mainSymbol;
         private Func<PluginMetadata, PluginBuilder> _builderFactory = m => new PluginBuilder(m);
         private PluginBuilder _builder;
-        private Api.TimeFrames _timeframe;
+        private Feed.Types.Timeframe _timeframe;
         private List<Action> setupActions = new List<Action>();
         private readonly PluginMetadata descriptor;
         private Dictionary<string, IOutputFixture> outputFixtures = new Dictionary<string, IOutputFixture>();
@@ -151,7 +153,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public TimeFrames TimeFrame
+        public Feed.Types.Timeframe TimeFrame
         {
             get { return _timeframe; }
             set
@@ -513,13 +515,13 @@ namespace TickTrader.Algo.Core
             mapping?.MapInput(this, inputName, symbolCode);
         }
 
-        public BarStrategy InitBarStrategy(BarPriceType mainPirceTipe)
+        public BarStrategy InitBarStrategy(Feed.Types.MarketSide marketSide)
         {
             lock (_sync)
             {
                 ThrowIfRunning();
                 ThrowIfAlreadyHasFStrategy();
-                var strategy = new BarStrategy(mainPirceTipe);
+                var strategy = new BarStrategy(marketSide);
                 this._fStrategy = strategy;
                 return strategy;
             }
@@ -553,7 +555,7 @@ namespace TickTrader.Algo.Core
             {
                 ThrowIfRunning();
                 //ThrowIfAlreadyHasBufferStrategy();
-                this._bStrategy = new TimeSpanStrategy(from, to);
+                this._bStrategy = new TimeSpanStrategy(from.ToUniversalTime().ToTimestamp(), to.ToUniversalTime().ToTimestamp());
             }
         }
 
@@ -827,7 +829,7 @@ namespace TickTrader.Algo.Core
         FeedBufferStrategy IFixtureContext.BufferingStrategy => _fStrategy.BufferingStrategy;
         string IFixtureContext.MainSymbolCode => _mainSymbol;
         AlgoMarketState IFixtureContext.MarketData => _marketFixture.Market;
-        TimeFrames IFixtureContext.TimeFrame => _timeframe;
+        Feed.Types.Timeframe IFixtureContext.TimeFrame => _timeframe;
         PluginBuilder IFixtureContext.Builder => _builder;
         FeedStrategy IFixtureContext.FeedStrategy => _fStrategy;
         PluginLoggerAdapter IFixtureContext.Logger => _builder.LogAdapter;

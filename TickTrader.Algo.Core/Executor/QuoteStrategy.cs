@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Core
             return new QuoteStrategy();
         }
 
-        public void MapInput<TVal>(string inputName, string symbolCode, Func<QuoteEntity, TVal> selector)
+        public void MapInput<TVal>(string inputName, string symbolCode, Func<QuoteInfo, TVal> selector)
         {
             AddSetupAction(new MapAction<TVal>(inputName, symbolCode, selector));
         }
@@ -57,7 +57,7 @@ namespace TickTrader.Algo.Core
             throw new NotImplementedException();
         }
 
-        protected override BarSeries GetBarSeries(string symbol, BarPriceType side)
+        protected override BarSeries GetBarSeries(string symbol, Feed.Types.MarketSide side)
         {
             throw new NotImplementedException();
         }
@@ -65,12 +65,12 @@ namespace TickTrader.Algo.Core
         [Serializable]
         public class MapAction<TVal> : InputSetupAction
         {
-            public MapAction(string inputName, string symbol, Func<QuoteEntity, TVal> selector) : base(inputName, symbol)
+            public MapAction(string inputName, string symbol, Func<QuoteInfo, TVal> selector) : base(inputName, symbol)
             {
                 Selector = selector;
             }
 
-            public Func<QuoteEntity, TVal> Selector { get; }
+            public Func<QuoteInfo, TVal> Selector { get; }
 
             public override void Apply(FeedStrategy fStartegy)
             {

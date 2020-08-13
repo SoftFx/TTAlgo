@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Xml.Serialization;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Domain;
@@ -47,7 +46,7 @@ namespace TickTrader.Algo.CoreUsageSample
 
             //Serialize(setup.Serialize(), "Alligator.cfg");
 
-            var dataModel = new FeedModel(TimeFrames.M1);
+            var dataModel = new FeedModel(Feed.Types.Timeframe.M1);
             dataModel.Fill("EURUSD", TTQuoteFileReader.ReadFile("EURUSD-M1-bids.txt"));
 
             var descriptor = AlgoAssemblyInspector.GetPlugin(typeof(Alligator));
@@ -60,8 +59,8 @@ namespace TickTrader.Algo.CoreUsageSample
             executor.Feed = dataModel;
             executor.FeedHistory = dataModel;
 
-            var feedCfg = executor.InitBarStrategy(BarPriceType.Bid);
-            feedCfg.MapInput("Input", "EURUSD", BarPriceType.Bid);
+            var feedCfg = executor.InitBarStrategy(Feed.Types.MarketSide.Bid);
+            feedCfg.MapInput("Input", "EURUSD", Feed.Types.MarketSide.Bid);
 
             executor.Start();
 

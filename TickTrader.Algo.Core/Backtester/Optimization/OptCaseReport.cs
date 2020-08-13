@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -22,7 +20,7 @@ namespace TickTrader.Algo.Core
         public Exception ExecError { get; }
         public TestingStatistics Stats { get; }
 
-        public List<BarEntity> Equity { get; set; }
-        public List<BarEntity> Margin { get; set; }
+        public List<BarData> Equity { get; set; }
+        public List<BarData> Margin { get; set; }
     }
 }

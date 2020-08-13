@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -52,9 +53,9 @@ namespace TickTrader.Algo.Core
         public event Action<TesterTradeTransaction> TradesUpdated;
         public event Action<Domain.TradeReportInfo> TradeHistoryUpdated;
         public event Action<Domain.IRateInfo> SymbolRateUpdated;
-        public event Action<BarEntity, string, SeriesUpdateActions> ChartBarUpdated;
-        public event Action<BarEntity, SeriesUpdateActions> EquityUpdated;
-        public event Action<BarEntity, SeriesUpdateActions> MarginUpdated;
+        public event Action<BarData, string, SeriesUpdateActions> ChartBarUpdated;
+        public event Action<BarData, SeriesUpdateActions> EquityUpdated;
+        public event Action<BarData, SeriesUpdateActions> MarginUpdated;
         public event Action<IDataSeriesUpdate> OutputUpdate;
         public event Action<Exception> ErrorOccurred;
 
@@ -220,12 +221,12 @@ namespace TickTrader.Algo.Core
                 var seriesUpdate = (IDataSeriesUpdate)update;
                 if (seriesUpdate.SeriesType == DataSeriesTypes.SymbolRate)
                 {
-                    var barUpdate = (DataSeriesUpdate<BarEntity>)update;
+                    var barUpdate = (DataSeriesUpdate<BarData>)update;
                     ChartBarUpdated?.Invoke(barUpdate.Value, barUpdate.SeriesId, barUpdate.Action);
                 }
                 else if (seriesUpdate.SeriesType == DataSeriesTypes.NamedStream)
                 {
-                    var barUpdate = (DataSeriesUpdate<BarEntity>)update;
+                    var barUpdate = (DataSeriesUpdate<BarData>)update;
                     if (barUpdate.SeriesId == BacktesterCollector.EquityStreamName)
                         EquityUpdated?.Invoke(barUpdate.Value, barUpdate.Action);
                     else if (barUpdate.SeriesId == BacktesterCollector.MarginStreamName)

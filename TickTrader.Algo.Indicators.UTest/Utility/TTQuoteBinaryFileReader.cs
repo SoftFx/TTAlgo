@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Indicators.UTest.Utility
 {
@@ -11,9 +12,9 @@ namespace TickTrader.Algo.Indicators.UTest.Utility
 
         public static readonly DateTime StartDate = DateTime.Parse("1970.01.01 00:00:00");
 
-        public static List<BarEntity> ReadQuotes(string path)
+        public static List<BarData> ReadQuotes(string path)
         {
-            var result = new List<BarEntity>();
+            var result = new List<BarData>();
             var assembly = typeof(TTQuoteBinaryFileReader).Assembly;
             using (var file = assembly.GetManifestResourceStream(path))
             {
@@ -27,15 +28,16 @@ namespace TickTrader.Algo.Indicators.UTest.Utility
                     {
                         while (true)
                         {
-                            var bar = new BarEntity
+                            var bar = new BarData
                             {
-                                OpenTime = StartDate.Add(TimeSpan.FromSeconds(reader.ReadInt64())),
+                                OpenTime = new Timestamp {Seconds = reader.ReadInt64() },
                                 Open = reader.ReadDouble(),
                                 High = reader.ReadDouble(),
                                 Low = reader.ReadDouble(),
                                 Close = reader.ReadDouble(),
-                                Volume = reader.ReadInt64(),
+                                RealVolume = reader.ReadInt64(),
                             };
+                            bar.TickVolume = (long)bar.RealVolume;
                             result.Add(bar);
 
                         }

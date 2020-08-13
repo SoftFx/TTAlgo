@@ -1,20 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model
 {
     public static class TimeSlicer
     {
-        public static TimeSlicer<BarEntity> GetBarSlicer(int pageSize, DateTime? from = null, DateTime? to = null)
+        public static TimeSlicer<BarData> GetBarSlicer(int pageSize, DateTime? from = null, DateTime? to = null)
         {
-            return new TimeSlicer<BarEntity>(pageSize, from, to, b => b.OpenTime, b => ToUtc(b.CloseTime));
+            return new TimeSlicer<BarData>(pageSize, from, to, b => b.OpenTime.ToDateTime(), b => b.CloseTime.ToDateTime());
         }
 
-        public static TimeSlicer<Domain.QuoteInfo> GetQuoteSlicer(int pageSize, DateTime? from = null, DateTime? to = null)
+        public static TimeSlicer<QuoteInfo> GetQuoteSlicer(int pageSize, DateTime? from = null, DateTime? to = null)
         {
-            return new TimeSlicer<Domain.QuoteInfo>(pageSize, from, to, b => ToUtc(b.Time));
+            return new TimeSlicer<QuoteInfo>(pageSize, from, to, b => ToUtc(b.Time));
         }
 
         public static DateTime ToUtc(DateTime dateTime)

@@ -122,7 +122,7 @@ namespace TickTrader.BotTerminal
         public BoolVar CanCanel { get; private set; }
         public BoolVar CanControlSpeed { get; private set; }
         public IntProperty SelectedSpeed { get; private set; }
-        //public IEnumerable<TimeFrames> AvailableTimeFrames => EnumHelper.AllValues<TimeFrames>();
+        //public IEnumerable<Feed.Types.Timeframe> AvailableTimeFrames => EnumHelper.AllValues<TimeFrames>();
 
         public BacktesterSetupPageViewModel SetupPage { get; }
         public BacktesterJournalViewModel JournalPage { get; } = new BacktesterJournalViewModel();
@@ -169,7 +169,7 @@ namespace TickTrader.BotTerminal
         {
             var chartSymbol = SetupPage.MainSymbolSetup.SelectedSymbol.Value;
             var chartTimeframe = SetupPage.MainSymbolSetup.SelectedTimeframe.Value;
-            var chartPriceLayer = BarPriceType.Bid;
+            var chartPriceLayer = Feed.Types.MarketSide.Bid;
 
             SetupPage.InitToken();
 
@@ -193,7 +193,7 @@ namespace TickTrader.BotTerminal
         }
 
         private async Task DoBacktesting(IActionObserver observer, CancellationToken cToken, AlgoPluginRef pluginRef, PluginSetupModel pluginSetupModel,
-            SymbolData chartSymbol, TimeFrames chartTimeframe, BarPriceType chartPriceLayer)
+            SymbolData chartSymbol, Feed.Types.Timeframe chartTimeframe, Feed.Types.MarketSide chartPriceLayer)
         {
             var progressMin = _emulteFrom.GetAbsoluteDay();
 
@@ -274,7 +274,7 @@ namespace TickTrader.BotTerminal
         }
 
         private async Task DoOptimization(IActionObserver observer, CancellationToken cToken, AlgoPluginRef pluginRef, PluginSetupModel pluginSetupModel,
-            SymbolData chartSymbol, TimeFrames chartTimeframe, BarPriceType chartPriceLayer)
+            SymbolData chartSymbol, Feed.Types.Timeframe chartTimeframe, Feed.Types.MarketSide chartPriceLayer)
         {
             using (var optimizer = new Optimizer(pluginRef, new DispatcherSync()))
             {
@@ -445,7 +445,7 @@ namespace TickTrader.BotTerminal
             //ChartPage.SetMarginSeries(marginChartData);
         }
 
-        private Task<OhlcDataSeries<DateTime, double>> LoadBarSeriesAsync(IPagedEnumerator<BarEntity> src, IActionObserver observer, TimeFrames timeFrame, int totalCount)
+        private Task<OhlcDataSeries<DateTime, double>> LoadBarSeriesAsync(IPagedEnumerator<BarData> src, IActionObserver observer, Feed.Types.Timeframe timeFrame, int totalCount)
         {
             observer.StartProgress(0, totalCount);
 
@@ -458,7 +458,7 @@ namespace TickTrader.BotTerminal
                     foreach (var bar in src.JoinPages(i => observer.SetProgress(i)))
                     {
                         if (!double.IsNaN(bar.Open))
-                            chartData.Append(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close);
+                            chartData.Append(bar.OpenTime.ToDateTime(), bar.Open, bar.High, bar.Low, bar.Close);
                     }
 
                     observer.SetProgress(totalCount);
@@ -468,14 +468,14 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        private OhlcDataSeries<DateTime, double> Convert(IEnumerable<BarEntity> bars)
+        private OhlcDataSeries<DateTime, double> Convert(IEnumerable<BarData> bars)
         {
             var chartData = new OhlcDataSeries<DateTime, double>();
 
             foreach (var bar in bars)
             {
                 if (!double.IsNaN(bar.Open))
-                    chartData.Append(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close);
+                    chartData.Append(bar.OpenTime.ToDateTime(), bar.Open, bar.High, bar.Low, bar.Close);
             }
 
             return chartData;

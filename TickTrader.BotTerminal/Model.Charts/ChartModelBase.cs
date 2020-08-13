@@ -60,7 +60,7 @@ namespace TickTrader.BotTerminal
         private List<QuoteInfo> updateQueue;
         private IFeedSubscription subscription;
         private Property<IRateInfo> _currentRateProp = new Property<IRateInfo>();
-        private Api.TimeFrames _timeframe;
+        private Feed.Types.Timeframe _timeframe;
 
         public ChartModelBase(SymbolInfo symbol, AlgoEnvironment algoEnv)
         {
@@ -110,7 +110,7 @@ namespace TickTrader.BotTerminal
         protected ConnectionModel.Handler Connection { get { return ClientModel.Connection; } }
         protected VarList<IRenderableSeriesViewModel> SeriesCollection { get { return seriesCollection; } }
 
-        public Api.TimeFrames TimeFrame
+        public Feed.Types.Timeframe TimeFrame
         {
             get => _timeframe;
             set
@@ -429,7 +429,7 @@ namespace TickTrader.BotTerminal
 
         #region IAlgoSetupContext
 
-        Api.TimeFrames IAlgoSetupContext.DefaultTimeFrame => TimeFrame;
+        Feed.Types.Timeframe IAlgoSetupContext.DefaultTimeFrame => TimeFrame;
 
         ISetupSymbolInfo IAlgoSetupContext.DefaultSymbol => new SymbolToken(SymbolCode);
 

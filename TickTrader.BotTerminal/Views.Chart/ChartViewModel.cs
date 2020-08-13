@@ -30,6 +30,7 @@ using System.Windows.Controls;
 using TickTrader.Algo.Common.Info;
 using Machinarium.Var;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
@@ -86,17 +87,17 @@ namespace TickTrader.BotTerminal
             allIndicators.Updated += AllIndicators_Updated;
             allBots.Updated += AllBots_Updated;
 
-            periodActivatos.Add(ChartPeriods.MN1, () => ActivateBarChart(TimeFrames.MN, "MMMM yyyy"));
-            periodActivatos.Add(ChartPeriods.W1, () => ActivateBarChart(TimeFrames.W, "d MMMM yyyy"));
-            periodActivatos.Add(ChartPeriods.D1, () => ActivateBarChart(TimeFrames.D, "d MMMM yyyy"));
-            periodActivatos.Add(ChartPeriods.H4, () => ActivateBarChart(TimeFrames.H4, "d MMMM yyyy HH:mm"));
-            periodActivatos.Add(ChartPeriods.H1, () => ActivateBarChart(TimeFrames.H1, "d MMMM yyyy HH:mm"));
-            periodActivatos.Add(ChartPeriods.M30, () => ActivateBarChart(TimeFrames.M30, "d MMMM yyyy HH:mm"));
-            periodActivatos.Add(ChartPeriods.M15, () => ActivateBarChart(TimeFrames.M15, "d MMMM yyyy HH:mm"));
-            periodActivatos.Add(ChartPeriods.M5, () => ActivateBarChart(TimeFrames.M5, "d MMMM yyyy HH:mm"));
-            periodActivatos.Add(ChartPeriods.M1, () => ActivateBarChart(TimeFrames.M1, "d MMMM yyyy HH:mm"));
-            periodActivatos.Add(ChartPeriods.S10, () => ActivateBarChart(TimeFrames.S10, "d MMMM yyyy HH:mm:ss"));
-            periodActivatos.Add(ChartPeriods.S1, () => ActivateBarChart(TimeFrames.S1, "d MMMM yyyy HH:mm:ss"));
+            periodActivatos.Add(ChartPeriods.MN1, () => ActivateBarChart(Feed.Types.Timeframe.MN, "MMMM yyyy"));
+            periodActivatos.Add(ChartPeriods.W1, () => ActivateBarChart(Feed.Types.Timeframe.W, "d MMMM yyyy"));
+            periodActivatos.Add(ChartPeriods.D1, () => ActivateBarChart(Feed.Types.Timeframe.D, "d MMMM yyyy"));
+            periodActivatos.Add(ChartPeriods.H4, () => ActivateBarChart(Feed.Types.Timeframe.H4, "d MMMM yyyy HH:mm"));
+            periodActivatos.Add(ChartPeriods.H1, () => ActivateBarChart(Feed.Types.Timeframe.H1, "d MMMM yyyy HH:mm"));
+            periodActivatos.Add(ChartPeriods.M30, () => ActivateBarChart(Feed.Types.Timeframe.M30, "d MMMM yyyy HH:mm"));
+            periodActivatos.Add(ChartPeriods.M15, () => ActivateBarChart(Feed.Types.Timeframe.M15, "d MMMM yyyy HH:mm"));
+            periodActivatos.Add(ChartPeriods.M5, () => ActivateBarChart(Feed.Types.Timeframe.M5, "d MMMM yyyy HH:mm"));
+            periodActivatos.Add(ChartPeriods.M1, () => ActivateBarChart(Feed.Types.Timeframe.M1, "d MMMM yyyy HH:mm"));
+            periodActivatos.Add(ChartPeriods.S10, () => ActivateBarChart(Feed.Types.Timeframe.S10, "d MMMM yyyy HH:mm:ss"));
+            periodActivatos.Add(ChartPeriods.S1, () => ActivateBarChart(Feed.Types.Timeframe.S1, "d MMMM yyyy HH:mm:ss"));
             periodActivatos.Add(ChartPeriods.Ticks, () => ActivateTickChart());
 
             SelectedPeriod = periodActivatos.ContainsKey(period) ? periodActivatos.FirstOrDefault(p => p.Key == period) : periodActivatos.ElementAt(8);
@@ -279,7 +280,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void ActivateBarChart(TimeFrames timeFrame, string dateLabelFormat)
+        private void ActivateBarChart(Feed.Types.Timeframe timeFrame, string dateLabelFormat)
         {
             barChart.DateAxisLabelFormat = dateLabelFormat;
             this.Chart = barChart;
@@ -414,7 +415,7 @@ namespace TickTrader.BotTerminal
             return bot.Descriptor != null && bot.Config != null && Chart != null
                 && bot.Descriptor.SetupMainSymbol
                 && bot.Config.MainSymbol.Name == Symbol
-                && bot.Config.TimeFrame == Chart.TimeFrame;
+                && bot.Config.TimeFrame == Chart.TimeFrame.ToApiEnum();
         }
 
         private bool IsChartBot(AlgoBotViewModel botVM)

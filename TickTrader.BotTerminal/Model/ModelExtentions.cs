@@ -1,21 +1,16 @@
 ﻿using Machinarium.Var;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
     internal static class ModelExtentions
     {
-        public static bool IsTicks(this TimeFrames timeFrame)
+        public static bool IsTicks(this Feed.Types.Timeframe timeFrame)
         {
-            return timeFrame == TimeFrames.Ticks || timeFrame == TimeFrames.TicksLevel2;
+            return timeFrame == Feed.Types.Timeframe.Ticks || timeFrame == Feed.Types.Timeframe.TicksLevel2;
         }
 
-        public static BoolVar IsTicks(this Var<TimeFrames> timeFrame)
+        public static BoolVar IsTicks(this Var<Feed.Types.Timeframe> timeFrame)
         {
             return timeFrame.Check(IsTicks);
         }

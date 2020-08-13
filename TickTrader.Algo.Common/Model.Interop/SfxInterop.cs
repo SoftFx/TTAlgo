@@ -286,13 +286,14 @@ namespace TickTrader.Algo.Common.Model
             return array.Select(Convert).ToArray();
         }
 
-        public void DownloadBars(BlockingChannel<BarEntity> stream, string symbol, DateTime from, DateTime to, BarPriceType priceType, TimeFrames barPeriod)
+        public void DownloadBars(BlockingChannel<Domain.BarData> stream, string symbol, Timestamp from, Timestamp to, Domain.Feed.Types.MarketSide marketSide, Domain.Feed.Types.Timeframe timeframe)
         {
             Task.Factory.StartNew(() =>
             {
                 try
                 {
-                    var e = _feedHistoryProxy.DownloadBars(symbol, ConvertBack(priceType), ToBarPeriod(barPeriod), from, to, DownloadTimeoutMs);
+                    var fromDt = from.ToDateTime();
+                    var e = _feedHistoryProxy.DownloadBars(symbol, ConvertBack(marketSide), ToBarPeriod(timeframe), fromDt, to.ToDateTime(), DownloadTimeoutMs);
                     DateTime? timeEdge = null;
 
                     while (true)
@@ -303,7 +304,7 @@ namespace TickTrader.Algo.Common.Model
                         {
                             if (timeEdge == null)
                             {
-                                if (bar.From < from)
+                                if (bar.From < fromDt)
                                     continue;
                             }
                             else if (bar.From <= timeEdge.Value)
@@ -327,13 +328,13 @@ namespace TickTrader.Algo.Common.Model
             });
         }
 
-        public async Task<BarEntity[]> DownloadBarPage(string symbol, DateTime from, int count, BarPriceType priceType, TimeFrames barPeriod)
+        public async Task<Domain.BarData[]> DownloadBarPage(string symbol, Timestamp from, int count, Domain.Feed.Types.MarketSide marketSide, Domain.Feed.Types.Timeframe timeframe)
         {
-            var result = new List<BarEntity>();
+            var result = new List<Domain.BarData>();
 
             try
             {
-                var bars = await _feedHistoryProxy.GetBarListAsync(symbol, ConvertBack(priceType), ToBarPeriod(barPeriod), from.ToUniversalTime(), count);
+                var bars = await _feedHistoryProxy.GetBarListAsync(symbol, ConvertBack(marketSide), ToBarPeriod(timeframe), from.ToDateTime(), count);
                 return bars.Select(Convert).ToArray();
             }
             catch (Exception ex)
@@ -342,13 +343,13 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        public void DownloadQuotes(BlockingChannel<Domain.QuoteInfo> stream, string symbol, DateTime from, DateTime to, bool includeLevel2)
+        public void DownloadQuotes(BlockingChannel<Domain.QuoteInfo> stream, string symbol, Timestamp from, Timestamp to, bool includeLevel2)
         {
             Task.Factory.StartNew(() =>
             {
                 try
                 {
-                    var e = _feedHistoryProxy.DownloadQuotes(symbol, includeLevel2 ? QuoteDepth.Level2 : QuoteDepth.Top, from.ToUniversalTime(), to.ToUniversalTime(), DownloadTimeoutMs);
+                    var e = _feedHistoryProxy.DownloadQuotes(symbol, includeLevel2 ? QuoteDepth.Level2 : QuoteDepth.Top, from.ToDateTime(), to.ToDateTime(), DownloadTimeoutMs);
 
                     while (true)
                     {
@@ -368,13 +369,13 @@ namespace TickTrader.Algo.Common.Model
             });
         }
 
-        public async Task<Domain.QuoteInfo[]> DownloadQuotePage(string symbol, DateTime from, int count, bool includeLevel2)
+        public async Task<Domain.QuoteInfo[]> DownloadQuotePage(string symbol, Timestamp from, int count, bool includeLevel2)
         {
             var result = new List<Domain.QuoteInfo>();
 
             try
             {
-                var quotes = await _feedHistoryProxy.GetQuoteListAsync(symbol, includeLevel2 ? QuoteDepth.Level2 : QuoteDepth.Top, from.ToUniversalTime(), count);
+                var quotes = await _feedHistoryProxy.GetQuoteListAsync(symbol, includeLevel2 ? QuoteDepth.Level2 : QuoteDepth.Top, from.ToDateTime(), count);
                 return quotes.Select(Convert).ToArray();
             }
             catch (Exception ex)
@@ -383,17 +384,17 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        public async Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
+        public async Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(string symbol, Domain.Feed.Types.MarketSide marketSide, Domain.Feed.Types.Timeframe timeframe)
         {
-            if (timeFrame.IsTicks())
+            if (timeframe.IsTicks())
             {
-                var level2 = timeFrame == TimeFrames.TicksLevel2;
+                var level2 = timeframe == Domain.Feed.Types.Timeframe.TicksLevel2;
                 var info = await _feedHistoryProxy.GetQuotesHistoryInfoAsync(symbol, level2);
                 return new Tuple<DateTime?, DateTime?>(info.AvailFrom, info.AvailTo);
             }
             else // bars
             {
-                var info = await _feedHistoryProxy.GetBarsHistoryInfoAsync(symbol, ToBarPeriod(timeFrame), ConvertBack(priceType));
+                var info = await _feedHistoryProxy.GetBarsHistoryInfoAsync(symbol, ToBarPeriod(timeframe), ConvertBack(marketSide));
                 return new Tuple<DateTime?, DateTime?>(info.AvailFrom, info.AvailTo);
             }
         }
@@ -714,21 +715,21 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private static BarPeriod ToBarPeriod(Api.TimeFrames timeframe)
+        private static BarPeriod ToBarPeriod(Domain.Feed.Types.Timeframe timeframe)
         {
             switch (timeframe)
             {
-                case Api.TimeFrames.MN: return BarPeriod.MN1;
-                case Api.TimeFrames.W: return BarPeriod.W1;
-                case Api.TimeFrames.D: return BarPeriod.D1;
-                case Api.TimeFrames.H4: return BarPeriod.H4;
-                case Api.TimeFrames.H1: return BarPeriod.H1;
-                case Api.TimeFrames.M30: return BarPeriod.M30;
-                case Api.TimeFrames.M15: return BarPeriod.M15;
-                case Api.TimeFrames.M5: return BarPeriod.M5;
-                case Api.TimeFrames.M1: return BarPeriod.M1;
-                case Api.TimeFrames.S10: return BarPeriod.S10;
-                case Api.TimeFrames.S1: return BarPeriod.S1;
+                case Domain.Feed.Types.Timeframe.MN: return BarPeriod.MN1;
+                case Domain.Feed.Types.Timeframe.W: return BarPeriod.W1;
+                case Domain.Feed.Types.Timeframe.D: return BarPeriod.D1;
+                case Domain.Feed.Types.Timeframe.H4: return BarPeriod.H4;
+                case Domain.Feed.Types.Timeframe.H1: return BarPeriod.H1;
+                case Domain.Feed.Types.Timeframe.M30: return BarPeriod.M30;
+                case Domain.Feed.Types.Timeframe.M15: return BarPeriod.M15;
+                case Domain.Feed.Types.Timeframe.M5: return BarPeriod.M5;
+                case Domain.Feed.Types.Timeframe.M1: return BarPeriod.M1;
+                case Domain.Feed.Types.Timeframe.S10: return BarPeriod.S10;
+                case Domain.Feed.Types.Timeframe.S1: return BarPeriod.S1;
 
                 default: throw new ArgumentException("Unsupported time frame: " + timeframe);
             }
@@ -1002,17 +1003,17 @@ namespace TickTrader.Algo.Common.Model
         }
 
 
-        internal static BarEntity Convert(SFX.Bar fdkBar)
+        internal static Domain.BarData Convert(SFX.Bar fdkBar)
         {
-            return new BarEntity()
+            return new Domain.BarData()
             {
                 Open = fdkBar.Open,
                 Close = fdkBar.Close,
                 High = fdkBar.High,
                 Low = fdkBar.Low,
-                Volume = fdkBar.Volume,
-                OpenTime = fdkBar.From,
-                CloseTime = fdkBar.To
+                RealVolume = fdkBar.Volume,
+                OpenTime = fdkBar.From.ToUniversalTime().ToTimestamp(),
+                CloseTime = fdkBar.To.ToUniversalTime().ToTimestamp(),
             };
         }
 
@@ -1199,14 +1200,14 @@ namespace TickTrader.Algo.Common.Model
             throw new NotImplementedException("Unsupported balance transaction type: " + type);
         }
 
-        public static PriceType ConvertBack(BarPriceType priceType)
+        public static PriceType ConvertBack(Domain.Feed.Types.MarketSide marketSide)
         {
-            switch (priceType)
+            switch (marketSide)
             {
-                case Api.BarPriceType.Ask: return PriceType.Ask;
-                case Api.BarPriceType.Bid: return PriceType.Bid;
+                case Domain.Feed.Types.MarketSide.Ask: return PriceType.Ask;
+                case Domain.Feed.Types.MarketSide.Bid: return PriceType.Bid;
             }
-            throw new NotImplementedException("Unsupported price type: " + priceType);
+            throw new NotImplementedException("Unsupported market side: " + marketSide);
         }
 
         private static ConnectionErrorCodes Convert(LogoutReason fdkCode)

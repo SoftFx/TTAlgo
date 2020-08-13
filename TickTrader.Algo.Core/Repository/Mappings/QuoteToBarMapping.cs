@@ -2,6 +2,7 @@
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Ext;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Repository
 {
@@ -26,14 +27,10 @@ namespace TickTrader.Algo.Core.Repository
             target.GetFeedStrategy<QuoteStrategy>().MapInput<Bar>(inputName, symbol, q => MapValue(barReductionInstance, q));
         }
 
-        private BarEntity MapValue(QuoteToBarReduction reductionInstance, QuoteEntity quote)
+        private BarEntity MapValue(QuoteToBarReduction reductionInstance, QuoteInfo quote)
         {
-            var res = new BarEntity
-            {
-                OpenTime = quote.Time,
-                CloseTime = quote.Time,
-            };
-            reductionInstance.Reduce(quote, res);
+            var res = new BarEntity(BarData.CreateBlank(quote.Timestamp, quote.Timestamp));
+            reductionInstance.Reduce(new QuoteEntity(quote), res);
             return res;
         }
     }

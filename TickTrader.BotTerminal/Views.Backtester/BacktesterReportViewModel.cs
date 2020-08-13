@@ -13,6 +13,7 @@ using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -92,7 +93,7 @@ namespace TickTrader.BotTerminal
             
         }
 
-        public static void SaveCsv(Stream entryStream, IEnumerable<BarEntity> data)
+        public static void SaveCsv(Stream entryStream, IEnumerable<BarData> data)
         {
             using (var writer = new StreamWriter(entryStream))
             {
@@ -101,7 +102,7 @@ namespace TickTrader.BotTerminal
                 foreach (var bar in data)
                 {
                     writer.WriteLine();
-                    writer.Write("{0},{1},{2},{3},{4}", InvariantFormat.CsvFormat(bar.OpenTime), bar.Open, bar.High, bar.Low, bar.Close);
+                    writer.Write("{0},{1},{2},{3},{4}", InvariantFormat.CsvFormat(bar.OpenTime.ToDateTime()), bar.Open, bar.High, bar.Low, bar.Close);
                 }
             }
         }

@@ -1,54 +1,56 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    [Serializable]
     public class BarEntity : Api.Bar, Api.Ext.IBarWriter
     {
-        public static readonly BarEntity Empty = new BarEntity() { IsNull = true, Open = double.NaN, Close = double.NaN, High = double.NaN , Low = double.NaN, Volume = double.NaN };
+        private readonly BarData _data;
+
+        public static readonly BarEntity Empty = new BarEntity(null);
 
         public BarEntity()
         {
         }
 
-        public BarEntity(DateTime openTime, DateTime closeTime, double price, double volume)
+        public BarEntity(BarData data)
         {
-            OpenTime = openTime;
-            CloseTime = closeTime;
-            Open = price;
-            Close = price;
-            High = price;
-            Low = price;
-            Volume = volume;
+            _data = data ?? BarData.CreateEmpty();
+            IsNull = data == null;
         }
 
-        public BarEntity(BarEntity original)
+        public double Open
         {
-            OpenTime = original.OpenTime;
-            CloseTime = original.CloseTime;
-            Open = original.Open;
-            Close = original.Close;
-            High = original.High;
-            Low = original.Low;
+            get { return _data.Open; }
+            set { _data.Open = value; }
         }
-
-        public double Open { get; set; }
-        public double Close { get; set; }
-        public double High { get; set; }
-        public double Low { get; set; }
-        public double Volume { get; set; }
-        public DateTime OpenTime { get; set; }
-        public DateTime CloseTime { get; set; }
-        public bool IsNull { get; set; }
+        public double Close
+        {
+            get { return _data.Close; }
+            set { _data.Close = value; }
+        }
+        public double High
+        {
+            get { return _data.High; }
+            set { _data.High = value; }
+        }
+        public double Low
+        {
+            get { return _data.Low; }
+            set { _data.Low = value; }
+        }
+        public double Volume
+        {
+            get { return _data.RealVolume; }
+            set { _data.RealVolume = value; }
+        }
+        public DateTime OpenTime => _data.OpenTime.ToDateTime();
+        public DateTime CloseTime => _data.CloseTime.ToDateTime();
+        public bool IsNull { get; }
 
         public BarEntity Clone()
         {
-            return new BarEntity(this);
+            return new BarEntity(_data.Clone());
         }
 
         public void Append(double price, double volume)
@@ -69,21 +71,6 @@ namespace TickTrader.Algo.Core
             Volume += volume;
         }
 
-        internal void AppendNanProof(double price, double volume)
-        {
-            Close = price;
-            if (double.IsNaN(High) || price > High)
-                High = price;
-            if (double.IsNaN(Low) || price < Low)
-                Low = price;
-            if (double.IsNaN(Open))
-                Open = price;
-            if (double.IsNaN(Volume))
-                Volume = volume;
-            else
-                Volume += volume;
-        }
-
         public void Append(BarEntity anotherBar)
         {
             Close = anotherBar.Close;
@@ -93,22 +80,5 @@ namespace TickTrader.Algo.Core
                 Low = anotherBar.Low;
             Volume += anotherBar.Volume;
         }
-
-        public BarEntity CopyAndAppend(double price, double volume)
-        {
-            var clone = Clone();
-            clone.Append(price, volume);
-            return clone;
-        }
-    }
-
-    public class FullBar
-    {
-        public FullBar(Bar bid, Bar ask)
-        {
-        }
-
-        public Bar Bid { get; private set; }
-        public Bar Ask { get; private set; }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 using TickTrader.Algo.Indicators.UTest.Utility;
 
 namespace TickTrader.Algo.Indicators.UTest.TestCases
@@ -10,7 +11,7 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
     {
         public double Epsilon = 1e-9;
 
-        protected List<BarEntity> Quotes;
+        protected List<BarData> Quotes;
         protected IndicatorBuilder Builder; 
 
         public Type IndicatorType { get; protected set; }

@@ -1,38 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
+﻿using System.Collections.Generic;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
     public static class BarExtentions
     {
-        private static readonly Dictionary<TimeFrames, int> _frameWeights = new Dictionary<TimeFrames, int>();
+        private static readonly Dictionary<Feed.Types.Timeframe, int> _frameWeights = new Dictionary<Feed.Types.Timeframe, int>();
 
         static BarExtentions()
         {
-            _frameWeights.Add(TimeFrames.S1, 1);
-            _frameWeights.Add(TimeFrames.S10, 10);
-            _frameWeights.Add(TimeFrames.M1, 60);
-            _frameWeights.Add(TimeFrames.M5, 60 * 5);
-            _frameWeights.Add(TimeFrames.M15, 60 * 15);
-            _frameWeights.Add(TimeFrames.M30, 60 * 30);
-            _frameWeights.Add(TimeFrames.H1, 60 * 60);
-            _frameWeights.Add(TimeFrames.H4, 60 * 60 * 4);
-            _frameWeights.Add(TimeFrames.D, 60 * 60 * 24);
-            _frameWeights.Add(TimeFrames.W, 60 * 60 * 24 * 7);
-            _frameWeights.Add(TimeFrames.MN, 60 * 60 * 24 * 30);
+            _frameWeights.Add(Feed.Types.Timeframe.S1, 1);
+            _frameWeights.Add(Feed.Types.Timeframe.S10, 10);
+            _frameWeights.Add(Feed.Types.Timeframe.M1, 60);
+            _frameWeights.Add(Feed.Types.Timeframe.M5, 60 * 5);
+            _frameWeights.Add(Feed.Types.Timeframe.M15, 60 * 15);
+            _frameWeights.Add(Feed.Types.Timeframe.M30, 60 * 30);
+            _frameWeights.Add(Feed.Types.Timeframe.H1, 60 * 60);
+            _frameWeights.Add(Feed.Types.Timeframe.H4, 60 * 60 * 4);
+            _frameWeights.Add(Feed.Types.Timeframe.D, 60 * 60 * 24);
+            _frameWeights.Add(Feed.Types.Timeframe.W, 60 * 60 * 24 * 7);
+            _frameWeights.Add(Feed.Types.Timeframe.MN, 60 * 60 * 24 * 30);
         }
 
-        public static IEnumerable<BarEntity> Transform(this IEnumerable<BarEntity> src, TimeFrames targetTimeframe)
+        public static IEnumerable<BarData> Transform(this IEnumerable<BarData> src, Feed.Types.Timeframe targetTimeframe)
         {
             var builder = BarSequenceBuilder.Create(targetTimeframe);
 
             foreach (var srcBar in src)
             {
-                var closedBar = builder.AppendBarPart(srcBar.OpenTime, srcBar.Open, srcBar.High, srcBar.Low, srcBar.Close, srcBar.Volume);
+                var closedBar = builder.AppendBarPart(srcBar);
                 if (closedBar != null)
                     yield return closedBar;
             }
@@ -42,7 +38,7 @@ namespace TickTrader.Algo.Core
                 yield return finalBar;
         }
 
-        public static int GetApproximateTransformSize(TimeFrames srcTimeFrame, int srcCount, TimeFrames targetTimeframe)
+        public static int GetApproximateTransformSize(Feed.Types.Timeframe srcTimeFrame, int srcCount, Feed.Types.Timeframe targetTimeframe)
         {
             var srcWeight = _frameWeights[srcTimeFrame];
             var targetWeight = _frameWeights[targetTimeframe];
@@ -53,17 +49,17 @@ namespace TickTrader.Algo.Core
             return (int)(((double)srcCount * srcWeight) / targetWeight );
         }
 
-        public static TimeFrames AdjustTimeframe(TimeFrames currentFrame, int currentSize, int requiredSize, out int aproxNewSize)
+        public static Feed.Types.Timeframe AdjustTimeframe(Feed.Types.Timeframe currentFrame, int currentSize, int requiredSize, out int aproxNewSize)
         {
-            for (var i = currentFrame; i > TimeFrames.MN; i--)
+            for (var i = currentFrame; i > Feed.Types.Timeframe.MN; i--)
             {
                 aproxNewSize = GetApproximateTransformSize(currentFrame, currentSize, i);
                 if (aproxNewSize <= requiredSize)
                     return i;
             }
 
-            aproxNewSize = BarExtentions.GetApproximateTransformSize(currentFrame, currentSize, TimeFrames.MN);
-            return TimeFrames.MN;
+            aproxNewSize = BarExtentions.GetApproximateTransformSize(currentFrame, currentSize, Feed.Types.Timeframe.MN);
+            return Feed.Types.Timeframe.MN;
         }
     }
 }

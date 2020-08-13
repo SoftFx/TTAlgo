@@ -1,18 +1,20 @@
 ﻿using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Calc;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.UnitTest
 {
     public static class MockHelper
     {
-        internal static List<BarEntity> Add(this List<BarEntity> list, DateTime openTime, double open,
+        internal static List<BarData> Add(this List<BarData> list, Timestamp openTime, double open,
             double? close = null, double? high = null, double? low = null)
         {
-            var bar = new BarEntity()
+            var bar = new BarData()
             {
                 OpenTime = openTime,
                 Open = open,
@@ -24,18 +26,18 @@ namespace TickTrader.Algo.Core.UnitTest
             return list;
         }
 
-        internal static List<BarEntity> Add(this List<BarEntity> list, string openTime, double open,
+        internal static List<BarData> Add(this List<BarData> list, string openTime, double open,
             double? close = null, double? high = null, double? low = null)
         {
-            return Add(list, DateTime.Parse(openTime), open, close, high, low);
+            return Add(list, TimestampHelper.ParseLocalDateTime(openTime), open, close, high, low);
         }
 
         internal static QuoteInfo CreateQuote(string timestamp, double bid, double? ask)
         {
-            return CreateQuote("", DateTime.Parse(timestamp), bid, ask);
+            return CreateQuote("", TimestampHelper.ParseLocalDateTime(timestamp), bid, ask);
         }
 
-        internal static QuoteInfo CreateQuote(string symbol, DateTime timestamp, double bid, double? ask = null)
+        internal static QuoteInfo CreateQuote(string symbol, Timestamp timestamp, double bid, double? ask = null)
         {
             return new QuoteInfo(symbol, timestamp, bid, ask ?? bid);
         }
@@ -69,9 +71,9 @@ namespace TickTrader.Algo.Core.UnitTest
         public PluginBuilder Builder { get; private set; }
         public PluginLoggerAdapter Logger => Builder.LogAdapter;
         public string MainSymbolCode { get; set; }
-        public TimeFrames TimeFrame { get; set; }
-        public DateTime TimePeriodEnd { get; set; }
-        public DateTime TimePeriodStart { get; set; }
+        public Feed.Types.Timeframe TimeFrame { get; set; }
+        public Timestamp TimePeriodEnd { get; set; }
+        public Timestamp TimePeriodStart { get; set; }
         public IFeedProvider FeedProvider { get; set; }
         public IFeedHistoryProvider FeedHistory { get; set; }
         public FeedBufferStrategy BufferingStrategy => bStrategy;

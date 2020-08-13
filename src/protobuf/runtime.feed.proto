@@ -133,20 +133,46 @@ message ModifyFeedSubscriptionRequest { // returns QuotePage
 
 message CancelAllFeedSubscriptionsRequest { }
 
+message Feed {
+    enum MarketSide {
+        BID = 0;
+        ASK = 1;
+    }
+
+    enum Timeframe {
+        S1 = 0;
+        S10 = 1;
+        M1 = 2;
+        M5 = 3;
+        M15 = 4;
+        M30 = 5;
+        H1 = 6;
+        H4 = 7;
+        D = 8;
+        W = 9;
+        M_N = 10;
+        TICKS = 11;
+        TICKS_LEVEL2 = 12;
+        TICKS_VWAP = 13;
+    }
+}
+
 message BarInfo {
     string symbol = 1;
-    BarData data = 2;
+    Feed.MarketSide market_side = 2;
+    Feed.Timeframe timeframe = 3;
+    BarData data = 4;
 }
 
 message BarData {
-    google.protobuf.Timestamp from = 1;
-    google.protobuf.Timestamp to = 2;
+    google.protobuf.Timestamp open_time = 1;
+    google.protobuf.Timestamp close_time = 2;
     double open = 3;
     double close = 4;
     double high = 5;
     double low = 6;
-    double tick_volume = 7;
-    double real_volume = 8;
+    double real_volume = 7;
+    int64 tick_volume = 8;
 }
 
 message BarPage {
@@ -155,5 +181,26 @@ message BarPage {
 
 message BarChunk {
     string symbol = 1;
-    repeated BarData bars = 2;
+    Feed.MarketSide market_side = 2;
+    Feed.Timeframe timeframe = 3;
+    repeated BarData bars = 4;
+}
+
+message BarListRequest {
+    string symbol = 1;
+    Feed.MarketSide market_side = 2;
+    Feed.Timeframe timeframe = 3;
+    google.protobuf.Timestamp from = 4;
+    google.protobuf.Timestamp to = 5;
+    google.protobuf.Int32Value count = 6;
+}
+
+message EndOfListResponse { }
+
+message QuoteListRequest {
+    string symbol = 1;
+    bool level2 = 2;
+    google.protobuf.Timestamp from = 3;
+    google.protobuf.Timestamp to = 4;
+    google.protobuf.Int32Value count = 5;
 }

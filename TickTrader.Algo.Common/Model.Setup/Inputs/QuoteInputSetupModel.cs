@@ -21,7 +21,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             //if (useL2)
             //    target.MapInput<QuoteEntity, Api.Quote>(Descriptor.Id, SymbolCode, b => b);
             //else
-            target.GetFeedStrategy<QuoteStrategy>().MapInput<Api.Quote>(Metadata.Id, SelectedSymbol.Id, b => b);
+            target.GetFeedStrategy<QuoteStrategy>().MapInput<Api.Quote>(Metadata.Id, SelectedSymbol.Id, q => new QuoteEntity(q));
         }
 
         public override void Load(Property srcProperty)

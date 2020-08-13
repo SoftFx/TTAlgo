@@ -38,33 +38,33 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         #region descriptors.proto
 
-        public static Lib.ApiDescriptor.Types.TimeFrame Convert(this TimeFrames timeFrame)
+        public static Lib.ApiDescriptor.Types.TimeFrame Convert(this Feed.Types.Timeframe timeFrame)
         {
             switch (timeFrame)
             {
-                case TimeFrames.MN:
+                case Feed.Types.Timeframe.MN:
                     return Lib.ApiDescriptor.Types.TimeFrame.MN;
-                case TimeFrames.D:
+                case Feed.Types.Timeframe.D:
                     return Lib.ApiDescriptor.Types.TimeFrame.D;
-                case TimeFrames.W:
+                case Feed.Types.Timeframe.W:
                     return Lib.ApiDescriptor.Types.TimeFrame.W;
-                case TimeFrames.H4:
+                case Feed.Types.Timeframe.H4:
                     return Lib.ApiDescriptor.Types.TimeFrame.H4;
-                case TimeFrames.H1:
+                case Feed.Types.Timeframe.H1:
                     return Lib.ApiDescriptor.Types.TimeFrame.H1;
-                case TimeFrames.M30:
+                case Feed.Types.Timeframe.M30:
                     return Lib.ApiDescriptor.Types.TimeFrame.M30;
-                case TimeFrames.M15:
+                case Feed.Types.Timeframe.M15:
                     return Lib.ApiDescriptor.Types.TimeFrame.M15;
-                case TimeFrames.M5:
+                case Feed.Types.Timeframe.M5:
                     return Lib.ApiDescriptor.Types.TimeFrame.M5;
-                case TimeFrames.M1:
+                case Feed.Types.Timeframe.M1:
                     return Lib.ApiDescriptor.Types.TimeFrame.M1;
-                case TimeFrames.S10:
+                case Feed.Types.Timeframe.S10:
                     return Lib.ApiDescriptor.Types.TimeFrame.S10;
-                case TimeFrames.S1:
+                case Feed.Types.Timeframe.S1:
                     return Lib.ApiDescriptor.Types.TimeFrame.S1;
-                case TimeFrames.Ticks:
+                case Feed.Types.Timeframe.Ticks:
                     return Lib.ApiDescriptor.Types.TimeFrame.Ticks;
                 default:
                     throw new ArgumentException();
@@ -638,7 +638,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = new Lib.PluginConfig
             {
                 Key = config.Key.Convert(),
-                TimeFrame = config.TimeFrame.Convert(),
+                TimeFrame = config.TimeFrame.ToDomainEnum().Convert(),
                 MainSymbol = config.MainSymbol.Convert(version),
                 SelectedMapping = config.SelectedMapping.Convert(),
                 InstanceId = Convert(config.InstanceId),

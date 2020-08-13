@@ -96,7 +96,7 @@ namespace TickTrader.Algo.Core
             if (!isBatch)
             {
                 var timeCoordinate = timeRef[index];
-                SendUpdate(new OutputPoint<T>(timeCoordinate, index, data), SeriesUpdateActions.Append);
+                SendUpdate(new OutputPoint<T>(timeCoordinate?.ToDateTime(), index, data), SeriesUpdateActions.Append);
             }
         }
 
@@ -105,7 +105,7 @@ namespace TickTrader.Algo.Core
             if (!isBatch)
             {
                 var timeCoordinate = timeRef[index];
-                SendUpdate(new OutputPoint<T>(timeCoordinate, index, data), SeriesUpdateActions.Update);
+                SendUpdate(new OutputPoint<T>(timeCoordinate?.ToDateTime(), index, data), SeriesUpdateActions.Update);
             }
         }
 
@@ -118,7 +118,7 @@ namespace TickTrader.Algo.Core
             for (int i = 0; i < count; i++)
             {
                 var timeCoordinate = timeRef[i];
-                list[i] = new OutputPoint<T>(timeCoordinate, i, buffer[i]);
+                list[i] = new OutputPoint<T>(timeCoordinate?.ToDateTime(), i, buffer[i]);
             }
 
             SendUpdate(list, SeriesUpdateActions.Append);

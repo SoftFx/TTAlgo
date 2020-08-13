@@ -37,22 +37,13 @@ namespace TickTrader.Algo.Core
         }
     }
 
-    public class QuoteToBarAdapter : BufferProxy<QuoteEntity, Bar>
+    public class QuoteToBarAdapter : BufferProxy<QuoteInfo, Bar>
     {
-        public QuoteToBarAdapter(InputBuffer<QuoteEntity> srcSeries) : base(srcSeries) { }
+        public QuoteToBarAdapter(InputBuffer<QuoteInfo> srcSeries) : base(srcSeries) { }
 
-        protected override Bar Convert(QuoteEntity quote)
+        protected override Bar Convert(QuoteInfo quote)
         {
-            return new BarEntity()
-            {
-                OpenTime = quote.Time,
-                Open = quote.Bid,
-                Close = quote.Bid,
-                High = quote.Bid,
-                Low = quote.Bid,
-                CloseTime = quote.Time,
-                Volume = 1
-            };
+            return new BarEntity(new BarData(quote.Timestamp, quote.Timestamp, quote.Bid, 1));
         }
     }
 }

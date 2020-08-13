@@ -1,8 +1,6 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Core
 {
@@ -24,7 +22,7 @@ namespace TickTrader.Algo.Core
         }
 
         public abstract void OnBufferExtended();
-        public abstract bool InBoundaries(DateTime timePoint);
+        public abstract bool InBoundaries(Timestamp timePoint);
         public abstract void OnUserSetBufferSize(int newSize, out string error);
 
         protected abstract void LoadMainBuffer(ILoadableFeedBuffer buffer);
@@ -66,13 +64,13 @@ namespace TickTrader.Algo.Core
     public interface ILoadableFeedBuffer
     {
         bool IsLoaded { get; }
-        DateTime OpenTime { get; }
+        Timestamp OpenTime { get; }
         int Count { get; }
 
-        void LoadFeedFrom(DateTime from);
-        void LoadFeed(DateTime from, DateTime to);
+        void LoadFeedFrom(Timestamp from);
+        void LoadFeed(Timestamp from, Timestamp to);
         void LoadFeed(int size);
-        void LoadFeed(DateTime from, int size);
+        void LoadFeed(Timestamp from, int size);
 
         void SyncByTime();
     }
@@ -91,7 +89,7 @@ namespace TickTrader.Algo.Core
     public class SlidingBufferStrategy : FeedBufferStrategy
     {
         private int _size;
-        private DateTime? _mainBufferStartTime;
+        private Timestamp _mainBufferStartTime;
 
         public SlidingBufferStrategy(int size)
         {
@@ -111,7 +109,7 @@ namespace TickTrader.Algo.Core
             //    throw new AlgoException("Main symbol has no data, cannot synchronize auxilary symbols.");
 
             if (_mainBufferStartTime != null)
-                buffer.LoadFeedFrom(_mainBufferStartTime.Value);
+                buffer.LoadFeedFrom(_mainBufferStartTime);
         }
 
         public override void OnBufferExtended()
@@ -125,7 +123,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public override bool InBoundaries(DateTime timePoint)
+        public override bool InBoundaries(Timestamp timePoint)
         {
             return true; // do not need to check boundaries in this strategy
         }
@@ -147,10 +145,10 @@ namespace TickTrader.Algo.Core
     [Serializable]
     public class TimeSpanStrategy : FeedBufferStrategy
     {
-        private DateTime _from;
-        private DateTime _to;
+        private Timestamp _from;
+        private Timestamp _to;
 
-        public TimeSpanStrategy(DateTime from, DateTime to)
+        public TimeSpanStrategy(Timestamp from, Timestamp to)
         {
             _from = from;
             _to = to;
@@ -170,7 +168,7 @@ namespace TickTrader.Algo.Core
         {
         }
 
-        public override bool InBoundaries(DateTime timePoint)
+        public override bool InBoundaries(Timestamp timePoint)
         {
             return timePoint >= _from || timePoint <= _to;
         }

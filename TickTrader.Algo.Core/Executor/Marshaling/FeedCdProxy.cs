@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections.Generic;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Infrastructure;
@@ -41,24 +42,24 @@ namespace TickTrader.Algo.Core
         //    return _feed.GetRate(symbol);
         //}
 
-        public List<BarEntity> QueryBars(string symbolCode, BarPriceType priceType, DateTime from, DateTime to, TimeFrames timeFrame)
+        public List<BarData> QueryBars(string symbolCode, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
         {
-            return _history.QueryBars(symbolCode, priceType, from, to, timeFrame);
+            return _history.QueryBars(symbolCode, marketSide, timeframe, from, to);
         }
 
-        public List<BarEntity> QueryBars(string symbolCode, BarPriceType priceType, DateTime from, int size, TimeFrames timeFrame)
+        public List<BarData> QueryBars(string symbolCode, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count)
         {
-            return _history.QueryBars(symbolCode, priceType, from, size, timeFrame);
+            return _history.QueryBars(symbolCode, marketSide, timeframe, from, count);
         }
 
-        public List<QuoteInfo> QueryTicks(string symbolCode, DateTime from, DateTime to, bool level2)
+        public List<QuoteInfo> QueryQuotes(string symbolCode, Timestamp from, Timestamp to, bool level2)
         {
-            return _history.QueryTicks(symbolCode, from, to, level2);
+            return _history.QueryQuotes(symbolCode, from, to, level2);
         }
 
-        public List<QuoteInfo> QueryTicks(string symbolCode, DateTime from, int count, bool level2)
+        public List<QuoteInfo> QueryQuotes(string symbolCode, Timestamp from, int count, bool level2)
         {
-            return _history.QueryTicks(symbolCode, from, count, level2);
+            return _history.QueryQuotes(symbolCode, from, count, level2);
         }
 
         public List<QuoteInfo> Modify(List<FeedSubscriptionUpdate> updates)

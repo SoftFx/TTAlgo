@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 using TickTrader.SeriesStorage;
-using TickTrader.SeriesStorage.Protobuf;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -42,13 +38,13 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        public IEnumerable<BarEntity> GrtBarStream()
+        public IEnumerable<BarData> GrtBarStream()
         {
-            SeriesStorage<DateTime, BarEntity> series = null;
+            SeriesStorage<DateTime, BarData> series = null;
 
             try
             {
-                series = _db.GetSeries(new DateTimeKeySerializer(), new BarSerializer(_key.Frame), b => b.OpenTime, _key.ToCodeString(), false);
+                series = _db.GetSeries(new DateTimeKeySerializer(), new BarSerializer(_key.Frame), b => b.OpenTime.ToDateTime(), _key.ToCodeString(), false);
             }
             catch (DbMissingException)
             {

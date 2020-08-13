@@ -22,7 +22,7 @@ namespace TickTrader.BotTerminal
         private Property<IRateInfo> _currentRateProp = new Property<IRateInfo>();
         private Property<double?> _askProp = new Property<double?>();
         private Property<double?> _bidProp = new Property<double?>();
-        private Property<TimeFrames> _timeframeProp = new Property<TimeFrames>();
+        private Property<Feed.Types.Timeframe> _timeframeProp = new Property<Feed.Types.Timeframe>();
         private IDisposable _axisBind;
         private IDisposable _currentRateBind;
 
@@ -66,7 +66,7 @@ namespace TickTrader.BotTerminal
         public Property<SymbolInfo> SymbolInfo { get; } = new Property<SymbolInfo>();
         public int Precision { get; private set; }
         public Property<string> YAxisLabelFormat { get; } = new Property<string>();
-        public Var<TimeFrames> Timeframe => _timeframeProp.Var;
+        public Var<Feed.Types.Timeframe> Timeframe => _timeframeProp.Var;
 
         public void BindCurrentRate(Var<IRateInfo> rateSrc)
         {
@@ -85,7 +85,7 @@ namespace TickTrader.BotTerminal
             _axisBind = _var.TriggerOnChange(axis, a => TimeAxis.Value = a.New);
         }
 
-        public void SetTimeframe(TimeFrames timeframe)
+        public void SetTimeframe(Feed.Types.Timeframe timeframe)
         {
             _timeframeProp.Value = timeframe;
         }

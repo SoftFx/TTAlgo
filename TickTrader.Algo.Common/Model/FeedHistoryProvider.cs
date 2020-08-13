@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
@@ -56,49 +55,49 @@ namespace TickTrader.Algo.Common.Model
             }
 
             /// Warning: This method downloads all bars into a collection of unlimmited size! Use wisely!
-            public Task<List<BarEntity>> GetBarList(string symbol, BarPriceType priceType, TimeFrames timeFrame, DateTime from, DateTime to)
+            public Task<List<BarData>> GetBarList(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
             {
-                return Actor.Call(a => a.GetBarList(symbol, priceType, timeFrame, Prepare(from), Prepare(to)));
+                return Actor.Call(a => a.GetBarList(symbol, marketSide, timeframe, from, to));
             }
 
             /// Warning: This method downloads all bars into a collection of unlimmited size! Use wisely!
-            public Task<List<QuoteInfo>> GetQuoteList(string symbol, DateTime from, DateTime to, bool includeLevel2)
+            public Task<List<QuoteInfo>> GetQuoteList(string symbol, Timestamp from, Timestamp to, bool includeLevel2)
             {
-                return Actor.Call(a => a.GetQuoteList(symbol, Prepare(from), Prepare(to), includeLevel2));
+                return Actor.Call(a => a.GetQuoteList(symbol, from, to, includeLevel2));
             }
 
-            public Task<BarEntity[]> GetBarPage(string symbol, BarPriceType priceType, TimeFrames timeFrame, DateTime startTime, int count)
+            public Task<BarData[]> GetBarPage(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp startTime, int count)
             {
-                return Actor.Call(a => a.GetBarPage(symbol, priceType, timeFrame, Prepare(startTime), count));
+                return Actor.Call(a => a.GetBarPage(symbol, marketSide, timeframe, startTime, count));
             }
 
-            public Task<QuoteInfo[]> GetQuotePage(string symbol, DateTime startTime, int count, bool includeLevel2)
+            public Task<QuoteInfo[]> GetQuotePage(string symbol, Timestamp startTime, int count, bool includeLevel2)
             {
-                return Actor.Call(a => a.GetQuotePage(symbol, Prepare(startTime), count, includeLevel2));
+                return Actor.Call(a => a.GetQuotePage(symbol, startTime, count, includeLevel2));
             }
 
-            public Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
+            public Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe)
             {
-                return Actor.Call(a => a.GetAvailableRange(symbol, priceType, timeFrame));
+                return Actor.Call(a => a.GetAvailableRange(symbol, marketSide, timeframe));
             }
 
-            public async Task<Channel<SliceInfo>> DownloadBarSeriesToStorage(string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
+            public async Task<Channel<SliceInfo>> DownloadBarSeriesToStorage(string symbol, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide, DateTime from, DateTime to)
             {
                 if (from.Kind != DateTimeKind.Utc || to.Kind != DateTimeKind.Utc)
                     throw new Exception("FeedHistoryProviderModel accepts only UTC dates!");
 
                 var channel = Channel.NewOutput<SliceInfo>();
-                await Actor.OpenChannel(channel, (a, c) => a.DownloadBarSeriesToStorage(c, symbol, timeFrame, priceType, Prepare(from), Prepare(to)));
+                await Actor.OpenChannel(channel, (a, c) => a.DownloadBarSeriesToStorage(c, symbol, timeframe, marketSide, Prepare(from), Prepare(to)));
                 return channel;
             }
 
-            public async Task<Channel<SliceInfo>> DownloadTickSeriesToStorage(string symbol, TimeFrames timeFrame, DateTime from, DateTime to)
+            public async Task<Channel<SliceInfo>> DownloadTickSeriesToStorage(string symbol, Feed.Types.Timeframe timeframe, DateTime from, DateTime to)
             {
                 if (from.Kind != DateTimeKind.Utc || to.Kind != DateTimeKind.Utc)
                     throw new Exception("FeedHistoryProviderModel accepts only UTC dates!");
 
                 var channel = Channel.NewOutput<SliceInfo>();
-                await Actor.OpenChannel(channel, (a, c) => a.DownloadTickSeriesToStorage(c, symbol, timeFrame, Prepare(from), Prepare(to)));
+                await Actor.OpenChannel(channel, (a, c) => a.DownloadTickSeriesToStorage(c, symbol, timeframe, Prepare(from), Prepare(to)));
                 return channel;
             }
 
@@ -138,25 +137,24 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
+        private Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe)
         {
-            return _feedProxy?.GetAvailableRange(symbol, priceType, timeFrame) ?? Task.FromResult<Tuple<DateTime?, DateTime?>>(null);
+            return _feedProxy?.GetAvailableRange(symbol, marketSide, timeframe) ?? Task.FromResult<Tuple<DateTime?, DateTime?>>(null);
         }
 
-        private async Task<BarEntity[]> GetBarPage(string symbol, BarPriceType priceType, TimeFrames timeFrame, DateTime startTime, int pageSize)
+        private async Task<BarData[]> GetBarPage(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int pageSize)
         {
-            var pages = new List<BarEntity[]>();
+            var pages = new List<BarData[]>();
 
-            var from = startTime.ToUniversalTime();
             var isBackward = pageSize < 0;
             pageSize = Math.Abs(pageSize);
 
             while (pageSize > 0)
             {
-                if (!isBackward && from > DateTime.UtcNow)
+                if (!isBackward && from > DateTime.UtcNow.ToTimestamp())
                     break; // we get last bar somehow even it is out of our requested frame
 
-                var page = await _feedProxy.DownloadBarPage(symbol, from, isBackward ? -pageSize : pageSize, priceType, timeFrame);
+                var page = await _feedProxy.DownloadBarPage(symbol, from, isBackward ? -pageSize : pageSize, marketSide, timeframe);
 
                 if (page.Length == 0)
                     break;
@@ -164,23 +162,24 @@ namespace TickTrader.Algo.Common.Model
                 pages.Add(page);
                 pageSize -= page.Length;
 
-                from = isBackward ? page.First().OpenTime.AddMilliseconds(-1) : page.Last().CloseTime.AddMilliseconds(1);
+                from = isBackward
+                    ? page.First().OpenTime.AddMilliseconds(-1)
+                    : page.Last().CloseTime.AddMilliseconds(1);
             }
 
             return pages.ConcatAll();
         }
 
-        private async Task<QuoteInfo[]> GetQuotePage(string symbol, DateTime startTime, int count, bool includeLevel2)
+        private async Task<QuoteInfo[]> GetQuotePage(string symbol, Timestamp from, int count, bool includeLevel2)
         {
             var pages = new List<QuoteInfo[]>();
 
-            var from = startTime.ToUniversalTime();
             var isBackward = count < 0;
             count = Math.Abs(count);
 
             while (count > 0)
             {
-                if (!isBackward && from > DateTime.UtcNow)
+                if (!isBackward && from > DateTime.UtcNow.ToTimestamp())
                     break; // we get last bar somehow even it is out of our requested frame
 
                 var page = await _feedProxy.DownloadQuotePage(symbol, from, isBackward ? -count : count, includeLevel2);
@@ -191,26 +190,26 @@ namespace TickTrader.Algo.Common.Model
                 pages.Add(page);
                 count -= page.Length;
 
-                from = isBackward 
-                    ? page.First().Time.AddMilliseconds(-1)
-                    : page.Last().Time.AddMilliseconds(1);
+                from = isBackward
+                    ? page.First().Timestamp.AddMilliseconds(-1)
+                    : page.Last().Timestamp.AddMilliseconds(1);
             }
 
             return pages.ConcatAll();
         }
 
-        private async Task<List<BarEntity>> GetBarList(string symbol, BarPriceType priceType, TimeFrames timeFrame, DateTime from, DateTime to)
+        private async Task<List<BarData>> GetBarList(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
         {
-            var result = new List<BarEntity>();
+            var result = new List<BarData>();
 
             while (true)
             {
-                var page = await _feedProxy.DownloadBarPage(symbol, from, 4000, priceType, timeFrame);
+                var page = await _feedProxy.DownloadBarPage(symbol, from, 4000, marketSide, timeframe);
 
                 if (page == null || page.Length == 0)
                     return result;
 
-                logger.Debug("Downloaded bar page {0} : {1} ({2} {3} {4})", from, page.Length, symbol, timeFrame, priceType);
+                logger.Debug("Downloaded bar page {0} : {1} ({2} {3} {4})", from, page.Length, symbol, marketSide, timeframe);
 
                 foreach (var bar in page)
                 {
@@ -228,15 +227,12 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private async Task<List<QuoteInfo>> GetQuoteList(string symbol, DateTime from, DateTime to, bool includeLevel2)
+        private async Task<List<QuoteInfo>> GetQuoteList(string symbol, Timestamp from, Timestamp to, bool includeLevel2)
         {
             var result = new List<QuoteInfo>();
-            var pageFrom = from.ToTimestamp();
-            var toTime = to.ToTimestamp();
 
             while (true)
             {
-                from = pageFrom.ToDateTime();
                 var page = await _feedProxy.DownloadQuotePage(symbol, from, 4000, includeLevel2);
 
                 if (page == null || page.Length == 0)
@@ -246,10 +242,10 @@ namespace TickTrader.Algo.Common.Model
 
                 foreach (var quote in page)
                 {
-                    if (quote.Timestamp <= toTime)
+                    if (quote.Timestamp <= to)
                     {
                         result.Add(quote);
-                        pageFrom = quote.Timestamp;
+                        from = quote.Timestamp;
                     }
                     else
                         return result;
@@ -260,14 +256,14 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private void DownloadBarSeriesToStorage(Channel<SliceInfo> stream, string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
+        private void DownloadBarSeriesToStorage(Channel<SliceInfo> stream, string symbol, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide, DateTime from, DateTime to)
         {
-            GetSeriesData(stream, symbol, timeFrame, priceType, from, to, GetCacheInfo, DownloadBarsInternal);
+            GetSeriesData(stream, symbol, timeframe, marketSide, from, to, GetCacheInfo, DownloadBarsInternal);
         }
 
-        private void DownloadTickSeriesToStorage(Channel<SliceInfo> stream, string symbol, TimeFrames timeFrame, DateTime from, DateTime to)
+        private void DownloadTickSeriesToStorage(Channel<SliceInfo> stream, string symbol, Feed.Types.Timeframe timeframe, DateTime from, DateTime to)
         {
-            GetSeriesData(stream, symbol, timeFrame, null, from, to, GetCacheInfo, DownloadTicksInternal);
+            GetSeriesData(stream, symbol, timeframe, null, from, to, GetCacheInfo, DownloadTicksInternal);
         }
 
         private IAsyncReader<SliceInfo> GetCacheInfo(FeedCacheKey key, DateTime from, DateTime to)
@@ -275,7 +271,7 @@ namespace TickTrader.Algo.Common.Model
             return _diskCache.IterateCacheKeys(key, from, to).Select(s => new SliceInfo(s.From, s.To, 0));
         }
 
-        private Task<DateTime> DownloadBarsInternal(Channel<Slice<BarEntity>> buffer, FeedCacheKey key, DateTime from, DateTime to)
+        private Task<DateTime> DownloadBarsInternal(Channel<Slice<BarData>> buffer, FeedCacheKey key, DateTime from, DateTime to)
         {
             return DownloadBarsInternal(s => buffer.Write(s), key, from, to);
         }
@@ -285,9 +281,9 @@ namespace TickTrader.Algo.Common.Model
             return DownloadBarsInternal(s => buffer.Write(s), key, from, to);
         }
 
-        private async Task<DateTime> DownloadBarsInternal(Func<Slice<BarEntity>, IAwaitable<bool>> outputAction, FeedCacheKey key, DateTime from, DateTime to)
+        private async Task<DateTime> DownloadBarsInternal(Func<Slice<BarData>, IAwaitable<bool>> outputAction, FeedCacheKey key, DateTime from, DateTime to)
         {
-            var inputStream = Channel.NewInput<BarEntity>();
+            var inputStream = Channel.NewInput<BarData>();
             var barSlicer = TimeSlicer.GetBarSlicer(SliceMaxSize, from, to);
 
             logger.Debug("start downloading bars (" + from + " - " + to + ")");
@@ -297,7 +293,7 @@ namespace TickTrader.Algo.Common.Model
 
             try
             {
-                _feedProxy.DownloadBars(CreateBlockingChannel(inputStream), key.Symbol, from, correctedTo, key.PriceType.Value, key.Frame);
+                _feedProxy.DownloadBars(CreateBlockingChannel(inputStream), key.Symbol, from.ToTimestamp(), correctedTo.ToTimestamp(), key.MarketSide.Value, key.Frame);
 
                 var i = from;
                 while (await inputStream.ReadNext())
@@ -364,7 +360,7 @@ namespace TickTrader.Algo.Common.Model
 
         private async Task<DateTime> DownloadTicksInternal(Func<Slice<QuoteInfo>, IAwaitable<bool>> outputAction, FeedCacheKey key, DateTime from, DateTime to)
         {
-            var level2 = key.Frame == TimeFrames.TicksLevel2;
+            var level2 = key.Frame == Feed.Types.Timeframe.TicksLevel2;
             var inputStream = Channel.NewInput<QuoteInfo>();
             var quoteSlicer = TimeSlicer.GetQuoteSlicer(SliceMaxSize, from, to);
             var hasData = false;
@@ -373,7 +369,7 @@ namespace TickTrader.Algo.Common.Model
 
             try
             {
-                _feedProxy.DownloadQuotes(CreateBlockingChannel(inputStream), key.Symbol, from, to, level2);
+                _feedProxy.DownloadQuotes(CreateBlockingChannel(inputStream), key.Symbol, from.ToTimestamp(), to.ToTimestamp(), level2);
 
                 var i = from;
                 while (await inputStream.ReadNext())
@@ -429,14 +425,14 @@ namespace TickTrader.Algo.Common.Model
         }
 
         private async void GetSeriesData<TOut>(Channel<TOut> buffer,
-            string symbol, TimeFrames timeFrame, BarPriceType? priceType, DateTime from, DateTime to,
+            string symbol, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide? marketSide, DateTime from, DateTime to,
             Func<FeedCacheKey, DateTime, DateTime, IAsyncReader<TOut>> cacheProvider,
             Func<Channel<TOut>, FeedCacheKey, DateTime, DateTime, Task<DateTime>> download)
             where TOut : SliceInfo
         {
             try
             {
-                var key = new FeedCacheKey(symbol, timeFrame, priceType);
+                var key = new FeedCacheKey(symbol, timeframe, marketSide);
                 var i = from;
                 var cache = cacheProvider(key, from, to);
                 try
@@ -473,7 +469,7 @@ namespace TickTrader.Algo.Common.Model
 
         private Task WriteEmptyBarSegment(FeedCacheKey key, DateTime from, DateTime to)
         {
-            return Cache.Put(key, from, to, new BarEntity[0]);
+            return Cache.Put(key, from, to, new BarData[0]);
         }
 
         private Task WriteEmptyQuoteSegment(FeedCacheKey key, DateTime from, DateTime to)

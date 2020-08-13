@@ -1,6 +1,7 @@
 ﻿using System;
 using TickTrader.Algo.Api.Ext;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Repository
 {
@@ -36,19 +37,15 @@ namespace TickTrader.Algo.Core.Repository
         }
 
 
-        private double MapValueStraight(FullBarToDoubleReduction reductionInstance, BarEntity bidBar, BarEntity askBar)
+        private double MapValueStraight(FullBarToDoubleReduction reductionInstance, BarData bidBar, BarData askBar)
         {
-            return reductionInstance.Reduce(bidBar, askBar);
+            return reductionInstance.Reduce(new BarEntity(bidBar), new BarEntity(askBar));
         }
 
-        private double MapValueComposite(FullBarToBarReduction barReductionInstance, BarToDoubleReduction doubleReductionInstance, BarEntity bidBar, BarEntity askBar)
+        private double MapValueComposite(FullBarToBarReduction barReductionInstance, BarToDoubleReduction doubleReductionInstance, BarData bidBar, BarData askBar)
         {
-            var bar = new BarEntity
-            {
-                OpenTime = bidBar.OpenTime,
-                CloseTime = bidBar.CloseTime,
-            };
-            barReductionInstance.Reduce(bidBar, askBar, bar);
+            var bar = new BarEntity(BarData.CreateBlank(bidBar.OpenTime, bidBar.CloseTime));
+            barReductionInstance.Reduce(new BarEntity(bidBar), new BarEntity(askBar), bar);
             return doubleReductionInstance.Reduce(bar);
         }
     }

@@ -12,9 +12,9 @@ namespace TickTrader.Algo.Common.Model
     {
         public static ISliceSerializer<QuoteInfo> GetSerializer(FeedCacheKey key)
         {
-            if (key.Frame == Api.TimeFrames.Ticks)
+            if (key.Frame == Feed.Types.Timeframe.Ticks)
                 return new TopOfTheBook(key.Symbol);
-            else if (key.Frame == Api.TimeFrames.TicksLevel2)
+            else if (key.Frame == Feed.Types.Timeframe.TicksLevel2)
                 return new FullBook(key.Symbol);
 
             throw new ArgumentException("Time frame is not supported: " + key.Frame);

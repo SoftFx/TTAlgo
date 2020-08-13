@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -34,7 +34,7 @@ namespace TickTrader.Algo.Core
             _feed = _control.Feed;
             _executor.Core.Feed = _feed;
             _executor.Core.FeedHistory = _feed;
-            _executor.Core.InitBarStrategy(Api.BarPriceType.Bid);
+            _executor.Core.InitBarStrategy(Domain.Feed.Types.MarketSide.Bid);
 
             CommonSettings.Leverage = 100;
             CommonSettings.InitialBalance = 10000;
@@ -63,7 +63,7 @@ namespace TickTrader.Algo.Core
         public event Action<EmulatorStates> StateChanged;
         public event Action<Exception> ErrorOccurred { add => Executor.ErrorOccurred += value; remove => Executor.ErrorOccurred -= value; }
 
-        public event Action<BarEntity, string, SeriesUpdateActions> OnChartUpdate
+        public event Action<BarData, string, SeriesUpdateActions> OnChartUpdate
         {
             add { Executor.ChartBarUpdated += value; }
             remove { Executor.ChartBarUpdated -= value; }
@@ -156,19 +156,19 @@ namespace TickTrader.Algo.Core
             return _control.Collector.GetSymbolHistoryBarCount(symbol);
         }
 
-        public IPagedEnumerator<BarEntity> GetSymbolHistory(string symbol, TimeFrames timeFrame)
+        public IPagedEnumerator<BarData> GetSymbolHistory(string symbol, Feed.Types.Timeframe timeframe)
         {
-            return _control.Collector.GetSymbolHistory(symbol, timeFrame);
+            return _control.Collector.GetSymbolHistory(symbol, timeframe);
         }
 
-        public IPagedEnumerator<BarEntity> GetEquityHistory(TimeFrames timeFrame)
+        public IPagedEnumerator<BarData> GetEquityHistory(Feed.Types.Timeframe timeframe)
         {
-            return _control.Collector.GetEquityHistory(timeFrame);
+            return _control.Collector.GetEquityHistory(timeframe);
         }
 
-        public IPagedEnumerator<BarEntity> GetMarginHistory(TimeFrames timeFrame)
+        public IPagedEnumerator<BarData> GetMarginHistory(Feed.Types.Timeframe timeframe)
         {
-            return _control.Collector.GetMarginHistory(timeFrame);
+            return _control.Collector.GetMarginHistory(timeframe);
         }
 
         public IPagedEnumerator<Domain.TradeReportInfo> GetTradeHistory()

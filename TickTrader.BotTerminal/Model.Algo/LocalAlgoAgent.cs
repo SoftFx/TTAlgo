@@ -18,6 +18,7 @@ using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 using TickTrader.Algo.Protocol;
 using TickTrader.BotTerminal.Lib;
 using File = System.IO.File;
@@ -527,7 +528,7 @@ namespace TickTrader.BotTerminal
 
         #region IAlgoSetupContext
 
-        TimeFrames IAlgoSetupContext.DefaultTimeFrame => TimeFrames.M1;
+        Feed.Types.Timeframe IAlgoSetupContext.DefaultTimeFrame => Feed.Types.Timeframe.M1;
 
         ISetupSymbolInfo IAlgoSetupContext.DefaultSymbol => _defaultSymbol;
 
@@ -576,11 +577,11 @@ namespace TickTrader.BotTerminal
             plugin.FeedHistory = feedProvider;
             switch (plugin.Config.TimeFrame)
             {
-                case Algo.Api.TimeFrames.Ticks:
+                case Feed.Types.Timeframe.Ticks:
                     plugin.Config.InitQuoteStrategy();
                     break;
                 default:
-                    plugin.Config.InitBarStrategy(Algo.Api.BarPriceType.Bid);
+                    plugin.Config.InitBarStrategy(Feed.Types.MarketSide.Bid);
                     break;
             }
             plugin.Config.InitSlidingBuffering(4000);

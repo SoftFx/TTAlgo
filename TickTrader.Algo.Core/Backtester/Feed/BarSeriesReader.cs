@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections.Generic;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
@@ -8,28 +8,28 @@ namespace TickTrader.Algo.Core
     class BarSeriesReader : SeriesReader
     {
         private string _symbol;
-        private IEnumerable<BarEntity> _bidSrc;
-        private IEnumerable<BarEntity> _askSrc;
+        private IEnumerable<BarData> _bidSrc;
+        private IEnumerable<BarData> _askSrc;
 
-        private IEnumerator<BarEntity> _bidE;
-        private IEnumerator<BarEntity> _askE;
+        private IEnumerator<BarData> _bidE;
+        private IEnumerator<BarData> _askE;
 
-        private DateTime _lastBarTime;
-        private BarEntity _lastBid;
-        private BarEntity _lastAsk;
-        private TimeFrames _baseTimeFrame;
+        private Timestamp _lastBarTime;
+        private BarData _lastBid;
+        private BarData _lastAsk;
+        private Feed.Types.Timeframe _baseTimeFrame;
 
         //private IBarStorage _bidStorage;
         //private IBarStorage _askStorage;
 
-        public BarSeriesReader(string symbol, TimeFrames baseTimeFrame, IBarStorage bidSrc, IBarStorage askSrc)
+        public BarSeriesReader(string symbol, Feed.Types.Timeframe baseTimeFrame, IBarStorage bidSrc, IBarStorage askSrc)
             : this(symbol, baseTimeFrame, bidSrc?.GrtBarStream(), askSrc?.GrtBarStream())
         {
             //_bidStorage = bidSrc;
             //_askStorage = askSrc;
         }
 
-        public BarSeriesReader(string symbol, TimeFrames baseTimeFrame, IEnumerable<BarEntity> bidSrc, IEnumerable<BarEntity> askSrc)
+        public BarSeriesReader(string symbol, Feed.Types.Timeframe baseTimeFrame, IEnumerable<BarData> bidSrc, IEnumerable<BarData> askSrc)
         {
             _symbol = symbol;
             _bidSrc = bidSrc;
@@ -88,10 +88,10 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        private void UpdateBars(IEnumerable<BarVector> collection, BarEntity bar)
+        private void UpdateBars(IEnumerable<BarVector> collection, BarData bar)
         {
             foreach (var rec in collection)
-                rec.AppendBarPart(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume);
+                rec.AppendBarPart(bar);
         }
 
         private bool TakeAskBar()
@@ -170,9 +170,9 @@ namespace TickTrader.Algo.Core
             return new BarRateUpdate(_lastBid, _lastAsk, _symbol);
         }
 
-        private BarEntity CreateFiller(DateTime barOpenTime, DateTime barCloseTime, double price)
+        private BarData CreateFiller(Timestamp barOpenTime, Timestamp barCloseTime, double price)
         {
-            return new BarEntity(barOpenTime, barCloseTime, price, 0);
+            return new BarData(barOpenTime, barCloseTime, price, 0);
         }
     }
 }

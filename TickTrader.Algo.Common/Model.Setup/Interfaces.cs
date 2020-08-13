@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
@@ -28,7 +28,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
     public interface IAlgoSetupContext
     {
-        TimeFrames DefaultTimeFrame { get; }
+        Feed.Types.Timeframe DefaultTimeFrame { get; }
 
         ISetupSymbolInfo DefaultSymbol { get; }
 

@@ -337,7 +337,7 @@ namespace TickTrader.Algo.Core
             StartFeedRead();
 
             var warmupStart = _timePoint;
-            var buider = _feed.GetBarBuilder(_settings.CommonSettings.MainSymbol, _settings.CommonSettings.MainTimeframe, BarPriceType.Bid);
+            var buider = _feed.GetBarBuilder(_settings.CommonSettings.MainSymbol, _settings.CommonSettings.MainTimeframe, Feed.Types.MarketSide.Bid);
             var tickCount = 1;
 
             while (true)

@@ -1,7 +1,7 @@
 ﻿using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Calc;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
@@ -36,10 +36,10 @@ namespace TickTrader.Algo.Core
 
     public interface IFeedHistoryProvider
     {
-        List<BarEntity> QueryBars(string symbolCode, BarPriceType priceType, DateTime from, DateTime to, Api.TimeFrames timeFrame);
-        List<BarEntity> QueryBars(string symbolCode, BarPriceType priceType, DateTime from, int size, Api.TimeFrames timeFrame);
-        List<QuoteInfo> QueryTicks(string symbolCode, DateTime from, DateTime to, bool level2);
-        List<QuoteInfo> QueryTicks(string symbolCode, DateTime from, int count, bool level2);
+        List<BarData> QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to);
+        List<BarData> QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count);
+        List<QuoteInfo> QueryQuotes(string symbol, Timestamp from, Timestamp to, bool level2);
+        List<QuoteInfo> QueryQuotes(string symbol, Timestamp from, int count, bool level2);
     }
 
     public interface IFeedSubscription
@@ -52,7 +52,7 @@ namespace TickTrader.Algo.Core
     {
         ISyncContext Sync { get; }
         List<QuoteInfo> GetSnapshot();
-        
+
         event Action<QuoteInfo> RateUpdated;
         event Action<List<QuoteInfo>> RatesUpdated;
     }
@@ -82,7 +82,7 @@ namespace TickTrader.Algo.Core
         AlgoMarketState MarketData { get; }
         FeedStrategy FeedStrategy { get; }
         string MainSymbolCode { get; }
-        Api.TimeFrames TimeFrame { get; }
+        Feed.Types.Timeframe TimeFrame { get; }
         PluginLoggerAdapter Logger { get; }
         bool IsGlobalUpdateMarshalingEnabled { get; }
 
@@ -147,7 +147,7 @@ namespace TickTrader.Algo.Core
     public interface ITimeRef
     {
         int LastIndex { get; }
-        DateTime this[int index] { get; }
+        Timestamp this[int index] { get; }
         event Action Appended;
     }
 }
