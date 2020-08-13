@@ -7,7 +7,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    internal class RuntimeInfoProvider : CrossDomainObject, IAccountInfoProvider, ITradeExecutor, ITradeHistoryProvider, IFeedProvider
+    internal class RuntimeInfoProvider : CrossDomainObject, IAccountInfoProvider, ITradeExecutor, ITradeHistoryProvider, IFeedProvider, IFeedHistoryProvider
     {
         private class RuntimeContext : Actor { }
 
@@ -119,5 +119,59 @@ namespace TickTrader.Algo.Core
         }
 
         #endregion IFeedProvider
+
+        #region IFeedHistoryProvider
+
+        public List<BarData> QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
+        {
+            var request = new BarListRequest
+            {
+                Symbol = symbol,
+                MarketSide = marketSide,
+                Timeframe = timeframe,
+                From = from,
+                To = to,
+            };
+            return _handler.GetBarList(request);
+        }
+
+        public List<BarData> QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count)
+        {
+            var request = new BarListRequest
+            {
+                Symbol = symbol,
+                MarketSide = marketSide,
+                Timeframe = timeframe,
+                From = from,
+                Count = count,
+            };
+            return _handler.GetBarList(request);
+        }
+
+        public List<QuoteInfo> QueryQuotes(string symbol, Timestamp from, Timestamp to, bool level2)
+        {
+            var request = new QuoteListRequest
+            {
+                Symbol = symbol,
+                From = from,
+                To = to,
+                Level2 = level2,
+            };
+            return _handler.GetQuoteList(request);
+        }
+
+        public List<QuoteInfo> QueryQuotes(string symbol, Timestamp from, int count, bool level2)
+        {
+            var request = new QuoteListRequest
+            {
+                Symbol = symbol,
+                From = from,
+                Count = count,
+                Level2 = level2,
+            };
+            return _handler.GetQuoteList(request);
+        }
+
+        #endregion IFeedHistoryProvider
     }
 }

@@ -53,7 +53,7 @@ namespace TickTrader.BotTerminal
         protected async override Task LoadData(CancellationToken cToken)
         {
             var aproximateTimeRef = DateTime.Now + TimeSpan.FromDays(1) - TimeSpan.FromMinutes(15);
-            var barArray = await ClientModel.FeedHistory.GetBarPage(SymbolCode, Feed.Types.MarketSide.Bid, TimeFrame, aproximateTimeRef.ToTimestamp(), -4000);
+            var barArray = await ClientModel.FeedHistory.GetBarPage(SymbolCode, Feed.Types.MarketSide.Bid, TimeFrame, aproximateTimeRef.ToUniversalTime().ToTimestamp(), -4000);
 
             cToken.ThrowIfCancellationRequested();
 

@@ -109,6 +109,10 @@ namespace TickTrader.Algo.Core
                 return ModifyFeedSubscriptionRequestHandler(payload);
             else if (payload.Is(CancelAllFeedSubscriptionsRequest.Descriptor))
                 return CancelAllFeedSubscriptionsRequestHandler();
+            else if (payload.Is(BarListRequest.Descriptor))
+                return BarListRequestHandler(payload);
+            else if (payload.Is(QuoteListRequest.Descriptor))
+                return QuoteListRequestHandler(payload);
             return null;
         }
 
@@ -284,6 +288,40 @@ namespace TickTrader.Algo.Core
         {
             _executor.Feed.Sync.Invoke(() => _executor.Feed.CancelAll());
             return VoidResponse;
+        }
+
+        private Any BarListRequestHandler(Any payload)
+        {
+            var request = payload.Unpack<BarListRequest>();
+            var symbol = request.Symbol;
+            var marketSide = request.MarketSide;
+            var timeframe = request.Timeframe;
+            var count = request.Count;
+            var response = new BarChunk
+            {
+                Symbol = symbol,
+                MarketSide = marketSide,
+                Timeframe = timeframe,
+            };
+            response.Bars.AddRange(count.HasValue
+                ? _executor.FeedHistory.QueryBars(symbol, marketSide, timeframe, request.From, count.Value)
+                : _executor.FeedHistory.QueryBars(symbol, marketSide, timeframe, request.From, request.To));
+
+            return Any.Pack(response);
+        }
+
+        private Any QuoteListRequestHandler(Any payload)
+        {
+            var request = payload.Unpack<QuoteListRequest>();
+            var symbol = request.Symbol;
+            var count = request.Count;
+            var response = new QuoteChunk { Symbol = symbol, };
+            response.Quotes.AddRange((count.HasValue
+                ? _executor.FeedHistory.QueryQuotes(symbol, request.From, count.Value, request.Level2)
+                : _executor.FeedHistory.QueryQuotes(symbol, request.From, request.To, request.Level2))
+                .Select(q => q.GetData()));
+
+            return Any.Pack(response);
         }
     }
 }

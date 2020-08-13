@@ -50,6 +50,7 @@ namespace TickTrader.Algo.Core
             Core.TradeExecutor = provider;
             Core.TradeHistoryProvider = provider;
             Core.Feed = provider;
+            Core.FeedHistory = provider;
         }
 
 

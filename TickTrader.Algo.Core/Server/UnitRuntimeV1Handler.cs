@@ -140,6 +140,23 @@ namespace TickTrader.Algo.Core
             context.TaskSrc.Task.GetAwaiter().GetResult();
         }
 
+        internal List<BarData> GetBarList(BarListRequest request)
+        {
+            var context = new RpcResponseTaskContext<BarChunk>(SingleReponseHandler);
+            _session.Ask(RpcMessage.Request(request), context);
+            var res = context.TaskSrc.Task.GetAwaiter().GetResult();
+            return res.Bars.ToList();
+        }
+
+        internal List<QuoteInfo> GetQuoteList(QuoteListRequest request)
+        {
+            var context = new RpcResponseTaskContext<QuoteChunk>(SingleReponseHandler);
+            _session.Ask(RpcMessage.Request(request), context);
+            var res = context.TaskSrc.Task.GetAwaiter().GetResult();
+            var symbol = res.Symbol;
+            return res.Quotes.Select(q => new QuoteInfo(symbol, q)).ToList();
+        }
+
 
         public void SetSession(RpcSession session)
         {

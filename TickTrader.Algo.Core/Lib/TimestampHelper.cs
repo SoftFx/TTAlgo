@@ -33,6 +33,11 @@ namespace TickTrader.Algo.Core.Lib
         {
             long newNanos = time.Nanos + (long)NanosInMillisecond * cnt;
             var seconds = time.Seconds + Math.DivRem(newNanos, NanosInSecond, out var nanos);
+            if (nanos < 0)
+            {
+                nanos += NanosInSecond;
+                seconds -= 1;
+            }
             return new Timestamp { Seconds = seconds, Nanos = (int)nanos };
         }
     }
