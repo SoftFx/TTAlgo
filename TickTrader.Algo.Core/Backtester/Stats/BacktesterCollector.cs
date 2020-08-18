@@ -116,8 +116,8 @@ namespace TickTrader.Algo.Core
                 _symbolDataCollectors.Add(symbol, collector);
             }
 
-            _equityCollector = new ChartDataCollector(settings.EquityDataMode, DataSeriesTypes.NamedStream, EquityStreamName, _executor.OnUpdate, mainVector.Ref);
-            _marginCollector = new ChartDataCollector(settings.MarginDataMode, DataSeriesTypes.NamedStream, MarginStreamName, _executor.OnUpdate, mainVector.Ref);
+            _equityCollector = new ChartDataCollector(settings.EquityDataMode, DataSeriesUpdate.Types.Type.NamedStream, EquityStreamName, _executor.OnUpdate, mainVector.Ref);
+            _marginCollector = new ChartDataCollector(settings.MarginDataMode, DataSeriesUpdate.Types.Type.NamedStream, MarginStreamName, _executor.OnUpdate, mainVector.Ref);
         }
 
         private void InitOutputCollection(IBacktesterSettings settings)
@@ -258,10 +258,10 @@ namespace TickTrader.Algo.Core
 
         #region Output collection
 
-        public IPagedEnumerator<T> GetOutputData<T>(string id)
+        public IPagedEnumerator<OutputPoint> GetOutputData(string id)
         {
             var collector = _outputCollectors[id];
-            var data = ((OutputCollector<T>)collector).Snapshot;
+            var data = collector.Snapshot;
             return MarshalLongCollection(data);
         }
 

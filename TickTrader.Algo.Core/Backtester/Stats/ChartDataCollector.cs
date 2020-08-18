@@ -12,10 +12,10 @@ namespace TickTrader.Algo.Core
         private BarData _currentBar;
         private bool _sendOnUpdate;
         private bool _sendOnClose;
-        private DataSeriesTypes _type;
+        private DataSeriesUpdate.Types.Type _type;
         private string _streamId;
 
-        public ChartDataCollector(TestDataSeriesFlags seriesFlags, DataSeriesTypes type, string seriesName, Action<object> sendUpdateAction, ITimeSequenceRef timeRef)
+        public ChartDataCollector(TestDataSeriesFlags seriesFlags, DataSeriesUpdate.Types.Type type, string seriesName, Action<object> sendUpdateAction, ITimeSequenceRef timeRef)
         {
             _timeRef = timeRef;
             _sendUpdateAction = sendUpdateAction;
@@ -35,14 +35,14 @@ namespace TickTrader.Algo.Core
                 _currentBar.Init(price, 1);
 
                 if (_sendOnUpdate)
-                    SendUpdate(_currentBar.Clone(), SeriesUpdateActions.Append);
+                    SendUpdate(_currentBar.Clone(), DataSeriesUpdate.Types.UpdateAction.Append);
             }
             else
             {
                 _currentBar.Append(price, 1);
 
                 if (_sendOnUpdate)
-                    SendUpdate(_currentBar.Clone(), SeriesUpdateActions.Update);
+                    SendUpdate(_currentBar.Clone(), DataSeriesUpdate.Types.UpdateAction.Update);
             }
         }
 
@@ -54,14 +54,14 @@ namespace TickTrader.Algo.Core
             //    System.Diagnostics.Debug.WriteLine("EM DATA UPDATE - " + _currentBar.OpenTime);
 
             //    if (_sendOnClose)
-            //        SendUpdate(_currentBar, SeriesUpdateActions.Append);
+            //        SendUpdate(_currentBar, DataSeriesUpdate.Types.UpdateAction.Append);
             //}
 
             _timeRef.BarOpened -= _timeRef_BarOpened;
             _timeRef.BarClosed -= _timeRef_BarClosed;
         }
 
-        private void Init(TestDataSeriesFlags seriesFlags, DataSeriesTypes dataType, string seriesId)
+        private void Init(TestDataSeriesFlags seriesFlags, DataSeriesUpdate.Types.Type dataType, string seriesId)
         {
             if (seriesFlags != TestDataSeriesFlags.Disabled)
             {
@@ -94,12 +94,12 @@ namespace TickTrader.Algo.Core
             if (_currentBar?.TickVolume > 0)
                 _snapshot?.Add(_currentBar);
             if (_sendOnClose)
-                SendUpdate(_currentBar, SeriesUpdateActions.Append);
+                SendUpdate(_currentBar, DataSeriesUpdate.Types.UpdateAction.Append);
         }
 
-        private void SendUpdate(BarData bar, SeriesUpdateActions action)
+        private void SendUpdate(BarData bar, DataSeriesUpdate.Types.UpdateAction action)
         {
-            var update = new DataSeriesUpdate<BarData>(_type, _streamId, action, bar);
+            var update = new DataSeriesUpdate(_type, _streamId, action, bar);
             _sendUpdateAction(update);
         }
     }

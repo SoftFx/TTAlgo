@@ -14,7 +14,6 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Core.Entities;
 using TickTrader.Algo.Common.Model.Setup;
 
 namespace TickTrader.BotTerminal

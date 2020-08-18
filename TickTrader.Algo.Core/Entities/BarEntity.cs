@@ -7,7 +7,7 @@ namespace TickTrader.Algo.Core
     {
         private readonly BarData _data;
 
-        public static readonly BarEntity Empty = new BarEntity(null);
+        public static BarEntity Empty => new BarEntity(null);
 
         public BarEntity()
         {

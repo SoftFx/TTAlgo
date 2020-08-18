@@ -208,5 +208,37 @@ namespace TickTrader.Algo.Core
                 default: throw new ArgumentException($"Unsupported timeframe {timeframe}");
             }
         }
+
+        public static MarkerIcons ToApiEnum(this Domain.MarkerInfo.Types.IconType icon)
+        {
+            switch (icon)
+            {
+                case Domain.MarkerInfo.Types.IconType.Circle: return MarkerIcons.Circle;
+                case Domain.MarkerInfo.Types.IconType.UpArrow: return MarkerIcons.UpArrow;
+                case Domain.MarkerInfo.Types.IconType.DownArrow: return MarkerIcons.DownArrow;
+                case Domain.MarkerInfo.Types.IconType.UpTriangle: return MarkerIcons.UpTriangle;
+                case Domain.MarkerInfo.Types.IconType.DownTriangle: return MarkerIcons.DownTriangle;
+                case Domain.MarkerInfo.Types.IconType.Diamond: return MarkerIcons.Diamond;
+                case Domain.MarkerInfo.Types.IconType.Square: return MarkerIcons.Square;
+
+                default: throw new ArgumentException($"Unsupported icon {icon}");
+            }
+        }
+
+        public static Domain.MarkerInfo.Types.IconType ToDomainEnum(this MarkerIcons icon)
+        {
+            switch (icon)
+            {
+                case MarkerIcons.Circle: return Domain.MarkerInfo.Types.IconType.Circle;
+                case MarkerIcons.UpArrow: return Domain.MarkerInfo.Types.IconType.UpArrow;
+                case MarkerIcons.DownArrow: return Domain.MarkerInfo.Types.IconType.DownArrow;
+                case MarkerIcons.UpTriangle: return Domain.MarkerInfo.Types.IconType.UpTriangle;
+                case MarkerIcons.DownTriangle: return Domain.MarkerInfo.Types.IconType.DownTriangle;
+                case MarkerIcons.Diamond: return Domain.MarkerInfo.Types.IconType.Diamond;
+                case MarkerIcons.Square: return Domain.MarkerInfo.Types.IconType.Square;
+
+                default: throw new ArgumentException($"Unsupported icon {icon}");
+            }
+        }
     }
 }

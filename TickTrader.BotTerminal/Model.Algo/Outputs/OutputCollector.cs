@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -18,11 +19,11 @@ namespace TickTrader.BotTerminal
 
     internal interface IOutputCollector<T> : IOutputCollector
     {
-        IList<OutputPoint<T>> Cache { get; }
+        IList<OutputPoint> Cache { get; }
 
-        event Action<OutputPoint<T>> Appended;
-        event Action<OutputPoint<T>> Updated;
-        event Action<OutputPoint<T>[]> SnapshotAppended;
+        event Action<OutputPoint> Appended;
+        event Action<OutputPoint> Updated;
+        event Action<OutputPointRange> SnapshotAppended;
         event Action<int> Truncated;
     }
 
@@ -41,12 +42,12 @@ namespace TickTrader.BotTerminal
         }
 
         public virtual bool IsNotSyncrhonized => false;
-        public virtual IList<OutputPoint<T>> Cache => null;
+        public virtual IList<OutputPoint> Cache => null;
         public OutputSetupModel OutputConfig { get; }
 
-        public event Action<OutputPoint<T>> Appended;
-        public event Action<OutputPoint<T>> Updated;
-        public event Action<OutputPoint<T>[]> SnapshotAppended;
+        public event Action<OutputPoint> Appended;
+        public event Action<OutputPoint> Updated;
+        public event Action<OutputPointRange> SnapshotAppended;
         public event Action<int> Truncated;
 
         public virtual void Dispose()
@@ -54,36 +55,35 @@ namespace TickTrader.BotTerminal
             _executor.OutputUpdate -= Executor_OutputUpdate;
         }
 
-        private void Executor_OutputUpdate(IDataSeriesUpdate update)
+        private void Executor_OutputUpdate(DataSeriesUpdate update)
         {
             if (update.SeriesId == _outputId)
             {
-                if (update.BufferTrucatedBy > 0)
-                    OnTruncate(update.BufferTrucatedBy);
+                if (update.BufferTruncatedBy > 0)
+                    OnTruncate(update.BufferTruncatedBy);
 
-                var batchUpdate = update as DataSeriesUpdate<OutputPoint<T>[]>;
-                if (batchUpdate != null)
-                    OnSnapshot(batchUpdate.Value);
+                if (update.Value.Is(OutputPointRange.Descriptor))
+                    OnSnapshot(update.Value.Unpack<OutputPointRange>());
                 else
                 {
-                    var pointUpdate = update as DataSeriesUpdate<OutputPoint<T>>;
-                    if (pointUpdate != null)
+                    if (update.Value.Is(OutputPoint.Descriptor))
                     {
-                        if (pointUpdate.Action == SeriesUpdateActions.Append)
-                            OnAppend(pointUpdate.Value);
-                        else if (pointUpdate.Action == SeriesUpdateActions.Update)
-                            OnUpdate(pointUpdate.Value);
+                        var point = update.Value.Unpack<OutputPoint>();
+                        if (update.UpdateAction == DataSeriesUpdate.Types.UpdateAction.Append)
+                            OnAppend(point);
+                        else if (update.UpdateAction == DataSeriesUpdate.Types.UpdateAction.Update)
+                            OnUpdate(point);
                     }
                 }
             }
         }
 
-        protected virtual void OnAppend(OutputPoint<T> point)
+        protected virtual void OnAppend(OutputPoint point)
         {
             Appended?.Invoke(point);
         }
 
-        protected virtual void OnSnapshot(OutputPoint<T>[] points)
+        protected virtual void OnSnapshot(OutputPointRange points)
         {
             SnapshotAppended?.Invoke(points);
         }
@@ -93,7 +93,7 @@ namespace TickTrader.BotTerminal
             Truncated?.Invoke(truncateSize);
         }
 
-        protected virtual void OnUpdate(OutputPoint<T> point)
+        protected virtual void OnUpdate(OutputPoint point)
         {
             Updated?.Invoke(point);
         }
@@ -101,28 +101,28 @@ namespace TickTrader.BotTerminal
 
     internal class CachingOutputCollector<T> : OutputCollector<T>
     {
-        private CircularList<OutputPoint<T>> _cache = new CircularList<OutputPoint<T>>();
+        private CircularList<OutputPoint> _cache = new CircularList<OutputPoint>();
 
         public CachingOutputCollector(OutputSetupModel setup, PluginExecutor executor) : base(setup, executor)
         {
         }
 
         public override bool IsNotSyncrhonized => true;
-        public override IList<OutputPoint<T>> Cache => _cache;
+        public override IList<OutputPoint> Cache => _cache;
 
-        protected override void OnAppend(OutputPoint<T> point)
+        protected override void OnAppend(OutputPoint point)
         {
             _cache.Add(point);
             base.OnAppend(point);
         }
 
-        protected override void OnSnapshot(OutputPoint<T>[] points)
+        protected override void OnSnapshot(OutputPointRange range)
         {
-            _cache.AddRange(points);
-            base.OnSnapshot(points);
+            _cache.AddRange(range.Points);
+            base.OnSnapshot(range);
         }
 
-        protected override void OnUpdate(OutputPoint<T> point)
+        protected override void OnUpdate(OutputPoint point)
         {
             _cache[point.Index] = point;
             base.OnUpdate(point);

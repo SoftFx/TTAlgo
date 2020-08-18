@@ -15,7 +15,6 @@ using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Entities;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.BotTerminal.Lib;
@@ -110,9 +109,9 @@ namespace TickTrader.BotTerminal
             backtester.Executor.TradesUpdated -= Executor_TradesUpdated;
         }
 
-        private void Backtester_OnChartUpdate(BarData bar, string symbol, SeriesUpdateActions action)
+        private void Backtester_OnChartUpdate(BarData bar, string symbol, Algo.Domain.DataSeriesUpdate.Types.UpdateAction action)
         {
-            if (action == SeriesUpdateActions.Append)
+            if (action == Algo.Domain.DataSeriesUpdate.Types.UpdateAction.Append)
             {
                 _barVector.AppendBarPart(bar);
                 ApplyPostponedMarkers();

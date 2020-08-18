@@ -1,88 +1,69 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.Core.Entities
+namespace TickTrader.Algo.Core
 {
-    [Serializable]
     public class MarkerEntity : Marker, IFixedEntry<Marker>
     {
-        private static Action<Marker> emptyHandler = e => { };
+        private static Action<Marker> EmptyHandler = e => { };
 
-        private double y = double.NaN;
-        private Colors color = Colors.Auto;
-        private string text;
-        private MarkerIcons icon;
-        //private MarkerAlignments aligment;
-        private Dictionary<string, string> properties = new Dictionary<string, string>();
-        [NonSerialized]
-        private Action<Marker> changed = emptyHandler;
+        private double _y = double.NaN;
+        private Colors _color = Colors.Auto;
+        private string _text;
+        private MarkerIcons _icon;
+        private Action<Marker> _changed = EmptyHandler;
 
         public Colors Color
         {
-            get { return color; }
+            get { return _color; }
             set
             {
-                color = value;
+                _color = value;
                 Changed(this);
             }
         }
 
-        public IDictionary<string, string> DisplayProperties { get; private set; }
-
         public string DisplayText
         {
-            get { return text; }
+            get { return _text; }
             set
             {
-                text = Normalize(value);
+                _text = Normalize(value);
                 Changed(this);
             }
         }
 
         public MarkerIcons Icon
         {
-            get { return icon; }
+            get { return _icon; }
             set
             {
-                icon = value;
+                _icon = value;
                 Changed(this);
             }
         }
 
         public double Y
         {
-            get { return y; }
+            get { return _y; }
             set
             {
-                y = value;
+                _y = value;
                 Changed(this);
             }
         }
 
         public Action<Marker> Changed
         {
-            get { return changed; }
+            get { return _changed; }
             set
             {
-                if (changed == null)
+                if (_changed == null)
                     throw new InvalidOperationException("Changed cannot be null!");
-                changed = value;
+                _changed = value;
             }
         }
-
-        //public MarkerAlignments Alignment
-        //{
-        //    get { return aligment; }
-        //    set
-        //    {
-        //        aligment = value;
-        //        Changed(this);
-        //    }
-        //}
 
         public void Clear()
         {
@@ -96,12 +77,34 @@ namespace TickTrader.Algo.Core.Entities
                 Reset();
             else
             {
-                y = val.Y;
-                color = val.Color;
-                text = Normalize(val.DisplayText);
-                icon = val.Icon;
+                _y = val.Y;
+                _color = val.Color;
+                _text = Normalize(val.DisplayText);
+                _icon = val.Icon;
             }
             Changed(this);
+        }
+
+        public MarkerInfo GetInfo()
+        {
+            return new MarkerInfo
+            {
+                Y = Y,
+                DisplayText = DisplayText,
+                ColorRgb = (int)Color,
+                Icon = Icon.ToDomainEnum(),
+            };
+        }
+
+        public static MarkerEntity From(MarkerInfo info)
+        {
+            return new MarkerEntity
+            {
+                _y = info.Y,
+                _color = (Colors)info.ColorRgb,
+                _text = info.DisplayText,
+                _icon = info.Icon.ToApiEnum(),
+            };
         }
 
         private string Normalize(string input)
@@ -113,10 +116,10 @@ namespace TickTrader.Algo.Core.Entities
 
         private void Reset()
         {
-            y = double.NaN;
-            color = Colors.Auto;
-            text = string.Empty;
-            icon = MarkerIcons.Circle;
+            _y = double.NaN;
+            _color = Colors.Auto;
+            _text = string.Empty;
+            _icon = MarkerIcons.Circle;
         }
     }
 }

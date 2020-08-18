@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Core.Entities;
 
 namespace TickTrader.Algo.Core
 {
@@ -36,8 +32,8 @@ namespace TickTrader.Algo.Core
 
     internal class ValueFactory<T>
     {
-        private Func<T> newValueFactory;
-        private Func<T> nullValueFactory;
+        private Func<T> _newValueFactory;
+        private Func<T> _nullValueFactory;
 
         public ValueFactory(Func<T> valueFactory)
             : this(valueFactory, valueFactory)
@@ -46,18 +42,18 @@ namespace TickTrader.Algo.Core
 
         public ValueFactory(Func<T> newValueFactory, Func<T> nullValueFactory)
         {
-            this.newValueFactory = newValueFactory;
-            this.nullValueFactory = nullValueFactory;
+            _newValueFactory = newValueFactory;
+            _nullValueFactory = nullValueFactory;
         }
 
         public T GetNullValue()
         {
-            return newValueFactory();
+            return _newValueFactory();
         }
 
         public T GetNewValue()
         {
-            return nullValueFactory();
+            return _nullValueFactory();
         }
     }
 }

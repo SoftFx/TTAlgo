@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
@@ -15,23 +12,24 @@ namespace TickTrader.Algo.Core
 
     public class OutputFixture<T> : CrossDomainObject, IOutputFixture
     {
-        private OutputBuffer<T> buffer;
-        private bool isBatch;
-        private ITimeRef timeRef;
+        private OutputBuffer<T> _buffer;
+        private bool _isBatch;
+        private ITimeRef _timeRef;
+        private readonly OutputPointFactory<T> _pointFactory = OutputPointFactory.Get<T>();
 
         internal void BindTo(OutputBuffer<T> buffer, ITimeRef timeRef)
         {
             Unbind();
 
-            this.buffer = buffer ?? throw new ArgumentNullException("buffer");
-            this.timeRef = timeRef ?? throw new ArgumentNullException("timeRef");
+            _buffer = buffer ?? throw new ArgumentNullException("buffer");
+            _timeRef = timeRef ?? throw new ArgumentNullException("timeRef");
 
             buffer.Appended = OnAppend;
             buffer.Updated = OnUpdate;
-            buffer.BeginBatchBuild = () => isBatch = true;
+            buffer.BeginBatchBuild = () => _isBatch = true;
             buffer.EndBatchBuild = () =>
             {
-                isBatch = false;
+                _isBatch = false;
                 OnRangeAppend();
             };
             buffer.Truncated = OnTruncate;
@@ -40,35 +38,36 @@ namespace TickTrader.Algo.Core
 
         private void OnAppend(int index, T data)
         {
-            if (!isBatch)
+            if (!_isBatch)
             {
-                var timeCoordinate = timeRef[index];
-                Appended(new OutputPoint<T>(timeCoordinate?.ToDateTime(), index, data));
+                var timeCoordinate = _timeRef[index];
+                Appended(new OutputPoint(timeCoordinate, index, _pointFactory.PackValue(data)));
             }
         }
 
         private void OnUpdate(int index, T data)
         {
-            if (!isBatch)
+            if (!_isBatch)
             {
-                var timeCoordinate = timeRef[index];
-                Updated(new OutputPoint<T>(timeCoordinate?.ToDateTime(), index, data));
+                var timeCoordinate = _timeRef[index];
+                Updated(new OutputPoint(timeCoordinate, index, _pointFactory.PackValue(data)));
             }
         }
 
         private void OnRangeAppend()
         {
-            var count = buffer.Count;
+            var count = _buffer.Count;
 
-            OutputPoint<T>[] list = new OutputPoint<T>[count];
+            var range = new OutputPointRange();
+            range.Points.Capacity = count;
 
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
-                var timeCoordinate = timeRef[i];
-                list[i] = new OutputPoint<T>(timeCoordinate?.ToDateTime(), i, buffer[i]);
+                var timeCoordinate = _timeRef[i];
+                range.Points.Add(new OutputPoint(timeCoordinate, i, _pointFactory.PackValue(_buffer[i])));
             }
 
-            RangeAppended(list);
+            RangeAppended(range);
         }
 
         private void OnTruncate(int truncateSize)
@@ -83,15 +82,15 @@ namespace TickTrader.Algo.Core
 
         public void Unbind()
         {
-            if (buffer != null)
+            if (_buffer != null)
             {
-                buffer.Appended = null;
-                buffer.Updated = null;
-                buffer.BeginBatchBuild = null;
-                buffer.EndBatchBuild = null;
-                buffer.Truncated = null;
-                buffer.Truncating = null;
-                buffer = null;
+                _buffer.Appended = null;
+                _buffer.Updated = null;
+                _buffer.BeginBatchBuild = null;
+                _buffer.EndBatchBuild = null;
+                _buffer.Truncated = null;
+                _buffer.Truncating = null;
+                _buffer = null;
             }
         }
 
@@ -100,13 +99,13 @@ namespace TickTrader.Algo.Core
             BindTo((OutputBuffer<T>)buffer, timeRef);
         }
 
-        internal int Count => buffer.Count;
-        internal OutputPoint<T> this[int index] => new OutputPoint<T>(timeRef[index]?.ToDateTime(), index, buffer[index]);
-        internal OutputBuffer<T> Buffer => buffer;
+        internal int Count => _buffer.Count;
+        internal OutputPoint this[int index] => new OutputPoint(_timeRef[index], index, _pointFactory.PackValue(_buffer[index]));
+        internal OutputBuffer<T> Buffer => _buffer;
 
-        public event Action<OutputPoint<T>[]> RangeAppended = delegate { };
-        public event Action<OutputPoint<T>> Updated = delegate { };
-        public event Action<OutputPoint<T>> Appended = delegate { };
+        public event Action<OutputPointRange> RangeAppended = delegate { };
+        public event Action<OutputPoint> Updated = delegate { };
+        public event Action<OutputPoint> Appended = delegate { };
         public event Action<int> Truncating;
         public event Action<int> Truncated;
     }

@@ -91,7 +91,6 @@
   <ItemGroup>
     <Compile Include="Adapters\BotAdapter.cs" />
     <Compile Include="Adapters\IndicatorAdapter.cs" />
-    <Compile Include="Adapters\OutputAdapter.cs" />
     <Compile Include="Adapters\PluginLoggerAdapter.cs" />
     <Compile Include="Adapters\Stubs.cs" />
     <Compile Include="Adapters\SynchronizationContextAdapter.cs" />
@@ -136,6 +135,7 @@
     <Compile Include="Backtester\Trade\TradeEmulator.cs" />
     <Compile Include="Backtester\Feed\TickSeriesReader.cs" />
     <Compile Include="Buffers\ProxyBuffer2.cs" />
+    <Compile Include="Buffers\OutputPointFactory.cs" />
     <Compile Include="Builder\SimpleTimerFixture.cs" />
     <Compile Include="Builder\SimplifiedBuilder.cs" />
     <Compile Include="Calc\CashAccountCalculator.cs" />
@@ -176,7 +176,6 @@
     <Compile Include="Entities\CoreEnumConverterExtentions.cs" />
     <Compile Include="Entities\CurrenciesCollection.cs" />
     <Compile Include="Entities\CurrencyAccessor.cs" />
-    <Compile Include="Entities\DataSeriesUpdate.cs" />
     <Compile Include="Entities\Dealer\CancelOrderDealerRequest.cs" />
     <Compile Include="Entities\Dealer\ClosePositionDealerRequest.cs" />
     <Compile Include="Entities\Dealer\ModifyOrderDealerRequest.cs" />
@@ -188,7 +187,6 @@
     <Compile Include="Entities\NetPositionOpenInfo.cs" />
     <Compile Include="Entities\OrderAccessor.cs" />
     <Compile Include="Entities\OrderFilteredCollection.cs" />
-    <Compile Include="Entities\OutputPoint.cs" />
     <Compile Include="Entities\PositionAccessor.cs" />
     <Compile Include="Entities\PositionCollection.cs" />
     <Compile Include="Entities\OrdersCollection.cs" />

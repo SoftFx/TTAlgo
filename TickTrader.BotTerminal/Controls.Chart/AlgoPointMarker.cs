@@ -11,6 +11,7 @@ using System.ComponentModel;
 using TickTrader.Algo.Api;
 using System.Windows.Media;
 using NLog;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -19,8 +20,8 @@ namespace TickTrader.BotTerminal
         private static Logger _logger = LogManager.GetCurrentClassLogger();
 
 
-        private IList<int> dataPointIndexes = new List<int>();
-        private IPen2D strokePen;
+        private IList<int> _dataPointIndexes = new List<int>();
+        private IPen2D _strokePen;
 
         protected override GeometryHitTestResult HitTestCore(GeometryHitTestParameters hitTestParameters)
         {
@@ -36,7 +37,7 @@ namespace TickTrader.BotTerminal
 
         public override void BeginBatch(IRenderContext2D context, Color? strokeColor, Color? fillColor)
         {
-            dataPointIndexes.Clear();
+            _dataPointIndexes.Clear();
 
             base.BeginBatch(context, strokeColor, fillColor);
         }
@@ -44,7 +45,7 @@ namespace TickTrader.BotTerminal
         public override void MoveTo(IRenderContext2D context, double x, double y, int index)
         {
             if (IsInBounds(x, y))
-                dataPointIndexes.Add(index);
+                _dataPointIndexes.Add(index);
 
             base.MoveTo(context, x, y, index);
         }
@@ -59,14 +60,14 @@ namespace TickTrader.BotTerminal
 
             foreach (Point center in centers)
             {
-                var index = dataPointIndexes[i++];
+                var index = _dataPointIndexes[i++];
                 var pointMetadata = metadata[index] as AlgoMarkerMetadata;
                 if (pointMetadata == null)
                 {
                     //_logger.Error($"{RenderableSeries.DataSeries.SeriesName}: No metadata at {index}");
                     continue;
                 }
-                var fillColor = Algo.Common.Model.Setup.Convert.ToWindowsColor(pointMetadata.MarkerEntity.Color, Stroke);
+                var fillColor = Algo.Common.Model.Setup.Convert.ToWindowsColor(pointMetadata.MarkerEntity.ColorRgb, Stroke);
                 var newCenter = center;
 
                 //var newCenter = Shift(center, pointMetadata.MarkerEntity.Alignment);
@@ -78,13 +79,13 @@ namespace TickTrader.BotTerminal
 
                     switch (pointMetadata.MarkerEntity.Icon)
                     {
-                        case MarkerIcons.Diamond: DrawDiamond(context, newCenter, Width, iconHeight, strokePen, fillBrush); break;
-                        case MarkerIcons.Square: DrawSquare(context, newCenter, Width, iconHeight, strokePen, fillBrush); break;
-                        case MarkerIcons.Circle: DrawCircle(context, newCenter, Width, iconHeight, strokePen, fillBrush); break;
-                        case MarkerIcons.UpTriangle: DrawUpTriangle(context, newCenter, Width, iconHeight, strokePen, fillBrush); break;
-                        case MarkerIcons.DownTriangle: DrawDownTriangle(context, newCenter, Width, iconHeight, strokePen, fillBrush); break;
-                        case MarkerIcons.UpArrow: DrawUpArrow(context, newCenter, Width, iconHeight, strokePen, fillBrush); break;
-                        case MarkerIcons.DownArrow: DrawDownArrow(context, newCenter, Width, iconHeight, strokePen, fillBrush); break;
+                        case MarkerInfo.Types.IconType.Diamond: DrawDiamond(context, newCenter, Width, iconHeight, _strokePen, fillBrush); break;
+                        case MarkerInfo.Types.IconType.Square: DrawSquare(context, newCenter, Width, iconHeight, _strokePen, fillBrush); break;
+                        case MarkerInfo.Types.IconType.Circle: DrawCircle(context, newCenter, Width, iconHeight, _strokePen, fillBrush); break;
+                        case MarkerInfo.Types.IconType.UpTriangle: DrawUpTriangle(context, newCenter, Width, iconHeight, _strokePen, fillBrush); break;
+                        case MarkerInfo.Types.IconType.DownTriangle: DrawDownTriangle(context, newCenter, Width, iconHeight, _strokePen, fillBrush); break;
+                        case MarkerInfo.Types.IconType.UpArrow: DrawUpArrow(context, newCenter, Width, iconHeight, _strokePen, fillBrush); break;
+                        case MarkerInfo.Types.IconType.DownArrow: DrawDownArrow(context, newCenter, Width, iconHeight, _strokePen, fillBrush); break;
                     }
                 }
             }
@@ -229,24 +230,24 @@ namespace TickTrader.BotTerminal
 
         private void InitResources(IRenderContext2D context)
         {
-            strokePen = strokePen ?? context.CreatePen(Stroke, AntiAliasing, (float)StrokeThickness, Opacity);
+            _strokePen = _strokePen ?? context.CreatePen(Stroke, AntiAliasing, (float)StrokeThickness, Opacity);
         }
 
         public override void Dispose()
         {
             base.Dispose();
-            strokePen?.Dispose();
+            _strokePen?.Dispose();
         }
     }
 
     public class AlgoMarkerMetadata : IPointMetadata
     {
-        public AlgoMarkerMetadata(Marker marker)
+        public AlgoMarkerMetadata(MarkerInfo marker)
         {
-            this.MarkerEntity = marker;
+            MarkerEntity = marker;
         }
 
-        public Marker MarkerEntity { get; private set; }
+        public MarkerInfo MarkerEntity { get; private set; }
         public bool IsSelected { get; set; }
         public string Text { get { return MarkerEntity.DisplayText; } }
 

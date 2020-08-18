@@ -53,10 +53,10 @@ namespace TickTrader.Algo.Core
         public event Action<TesterTradeTransaction> TradesUpdated;
         public event Action<Domain.TradeReportInfo> TradeHistoryUpdated;
         public event Action<Domain.IRateInfo> SymbolRateUpdated;
-        public event Action<BarData, string, SeriesUpdateActions> ChartBarUpdated;
-        public event Action<BarData, SeriesUpdateActions> EquityUpdated;
-        public event Action<BarData, SeriesUpdateActions> MarginUpdated;
-        public event Action<IDataSeriesUpdate> OutputUpdate;
+        public event Action<BarData, string, DataSeriesUpdate.Types.UpdateAction> ChartBarUpdated;
+        public event Action<BarData, DataSeriesUpdate.Types.UpdateAction> EquityUpdated;
+        public event Action<BarData, DataSeriesUpdate.Types.UpdateAction> MarginUpdated;
+        public event Action<DataSeriesUpdate> OutputUpdate;
         public event Action<Exception> ErrorOccurred;
 
         public event Action<PluginExecutor> Stopped;
@@ -216,23 +216,23 @@ namespace TickTrader.Algo.Core
                 TradesUpdated?.Invoke((TesterTradeTransaction)update);
             else if (update is Domain.IRateInfo)
                 SymbolRateUpdated?.Invoke((Domain.IRateInfo)update);
-            else if (update is IDataSeriesUpdate)
+            else if (update is DataSeriesUpdate)
             {
-                var seriesUpdate = (IDataSeriesUpdate)update;
-                if (seriesUpdate.SeriesType == DataSeriesTypes.SymbolRate)
+                var seriesUpdate = (DataSeriesUpdate)update;
+                if (seriesUpdate.SeriesType == DataSeriesUpdate.Types.Type.SymbolRate)
                 {
-                    var barUpdate = (DataSeriesUpdate<BarData>)update;
-                    ChartBarUpdated?.Invoke(barUpdate.Value, barUpdate.SeriesId, barUpdate.Action);
+                    var bar = seriesUpdate.Value.Unpack<BarData>();
+                    ChartBarUpdated?.Invoke(bar, seriesUpdate.SeriesId, seriesUpdate.UpdateAction);
                 }
-                else if (seriesUpdate.SeriesType == DataSeriesTypes.NamedStream)
+                else if (seriesUpdate.SeriesType == DataSeriesUpdate.Types.Type.NamedStream)
                 {
-                    var barUpdate = (DataSeriesUpdate<BarData>)update;
-                    if (barUpdate.SeriesId == BacktesterCollector.EquityStreamName)
-                        EquityUpdated?.Invoke(barUpdate.Value, barUpdate.Action);
-                    else if (barUpdate.SeriesId == BacktesterCollector.MarginStreamName)
-                        MarginUpdated?.Invoke(barUpdate.Value, barUpdate.Action);
+                    var bar = seriesUpdate.Value.Unpack<BarData>();
+                    if (seriesUpdate.SeriesId == BacktesterCollector.EquityStreamName)
+                        EquityUpdated?.Invoke(bar, seriesUpdate.UpdateAction);
+                    else if (seriesUpdate.SeriesId == BacktesterCollector.MarginStreamName)
+                        MarginUpdated?.Invoke(bar, seriesUpdate.UpdateAction);
                 }
-                else if (seriesUpdate.SeriesType == DataSeriesTypes.Output)
+                else if (seriesUpdate.SeriesType == DataSeriesUpdate.Types.Type.Output)
                     OutputUpdate?.Invoke(seriesUpdate);
             }
             //else if (update is Exception)

@@ -22,5 +22,23 @@ namespace TickTrader.Algo.Common.Model.Setup
                 return Color.FromRgb(r, g, b);
             }
         }
+
+        public static Color ToWindowsColor(int colorRgb)
+        {
+            return ToWindowsColor(colorRgb, Colors.Green);
+        }
+
+        public static Color ToWindowsColor(int colorRgb, Color autoColor)
+        {
+            if (colorRgb == -1)
+                return autoColor;
+            else
+            {
+                byte r = (byte)(colorRgb >> 16);
+                byte g = (byte)(colorRgb >> 8);
+                byte b = (byte)(colorRgb >> 0);
+                return Color.FromRgb(r, g, b);
+            }
+        }
     }
 }

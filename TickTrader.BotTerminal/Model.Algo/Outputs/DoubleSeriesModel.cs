@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using Google.Protobuf.WellKnownTypes;
 using SciChart.Charting.Model.DataSeries;
 using System;
 using System.Collections.Generic;
@@ -31,14 +32,14 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        protected override void AppendInternal(DateTime time, double data)
+        protected override void AppendInternal(DateTime time, Any data)
         {
-            _seriesData.Append(time, data);
+            _seriesData.Append(time, UnpackValue(data));
         }
 
-        protected override void UpdateInternal(int index, DateTime time, double data)
+        protected override void UpdateInternal(int index, DateTime time, Any data)
         {
-            _seriesData.Update(index, data);
+            _seriesData.Update(index, UnpackValue(data));
         }
 
         protected override void Clear()
@@ -46,13 +47,12 @@ namespace TickTrader.BotTerminal
             _seriesData.Clear();
         }
 
-        //protected override void CopyAllInternal(OutputFixture<double>.Point[] points)
-        //{
-        //    Execute.OnUIThread(() =>
-        //    {
-                
-        //        _seriesData.Append(points.Select(p => p.TimeCoordinate.Value), points.Select(p => p.Value));
-        //    });
-        //}
+        private double UnpackValue(Any data)
+        {
+            var y = NanValue;
+            if (data != null)
+                y = data.Unpack<DoubleValue>().Value;
+            return y;
+        }
     }
 }

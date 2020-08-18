@@ -63,13 +63,13 @@ namespace TickTrader.Algo.Core
         public event Action<EmulatorStates> StateChanged;
         public event Action<Exception> ErrorOccurred { add => Executor.ErrorOccurred += value; remove => Executor.ErrorOccurred -= value; }
 
-        public event Action<BarData, string, SeriesUpdateActions> OnChartUpdate
+        public event Action<BarData, string, DataSeriesUpdate.Types.UpdateAction> OnChartUpdate
         {
             add { Executor.ChartBarUpdated += value; }
             remove { Executor.ChartBarUpdated -= value; }
         }
 
-        public event Action<IDataSeriesUpdate> OnOutputUpdate
+        public event Action<DataSeriesUpdate> OnOutputUpdate
         {
             add { Executor.OutputUpdate += value; }
             remove { Executor.OutputUpdate -= value; }
@@ -176,9 +176,9 @@ namespace TickTrader.Algo.Core
             return _control.TradeHistory.Marshal();
         }
 
-        public IPagedEnumerator<T> GetOutputData<T>(string id)
+        public IPagedEnumerator<OutputPoint> GetOutputData(string id)
         {
-            return _control.Collector.GetOutputData<T>(id);
+            return _control.Collector.GetOutputData(id);
         }
 
         public override void Dispose()

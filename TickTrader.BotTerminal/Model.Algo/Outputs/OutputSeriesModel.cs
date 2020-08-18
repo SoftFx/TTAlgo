@@ -1,4 +1,5 @@
-﻿using SciChart.Charting.Model.DataSeries;
+﻿using Google.Protobuf.WellKnownTypes;
+using SciChart.Charting.Model.DataSeries;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -95,30 +97,30 @@ namespace TickTrader.BotTerminal
             return CompletedTask.Default;
         }
 
-        private void Append(OutputPoint<T> point)
+        private void Append(OutputPoint point)
         {
             if (_synchronizer != null)
                 _synchronizer.Append(point);
             else
-                AppendInternal(point.TimeCoordinate.Value, point.Value);
+                AppendInternal(point.Time.ToDateTime(), point.Value);
         }
 
-        private void Update(OutputPoint<T> point)
+        private void Update(OutputPoint point)
         {
             if (_synchronizer != null)
                 _synchronizer.Update(point);
             else
-                UpdateInternal(point.Index, point.TimeCoordinate.Value, point.Value);
+                UpdateInternal(point.Index, point.Time.ToDateTime(), point.Value);
         }
 
-        private void _collector_SnapshotAppended(OutputPoint<T>[] points)
+        private void _collector_SnapshotAppended(OutputPointRange range)
         {
             if (_synchronizer != null)
-                _synchronizer.AppendSnapshot(points);
+                _synchronizer.AppendSnapshot(range.Points);
             else
             {
-                foreach (var p in points)
-                    AppendInternal(p.TimeCoordinate.Value, p.Value);
+                foreach (var p in range.Points)
+                    AppendInternal(p.Time.ToDateTime(), p.Value);
             }
         }
 
@@ -129,8 +131,8 @@ namespace TickTrader.BotTerminal
 
         protected abstract T NanValue { get; }
 
-        protected abstract void AppendInternal(DateTime time, T data);
-        protected abstract void UpdateInternal(int index, DateTime time, T data);
+        protected abstract void AppendInternal(DateTime time, Any data);
+        protected abstract void UpdateInternal(int index, DateTime time, Any data);
         protected abstract void Clear();
 
         public override void Dispose()

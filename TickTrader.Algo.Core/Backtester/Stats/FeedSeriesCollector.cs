@@ -27,7 +27,7 @@ namespace TickTrader.Algo.Core
                 }
                 else
                 {
-                    _barVector.BarClosed += _barVector_BarClosed;
+                    _barVector.BarClosed += BarVector_BarClosed;
                 }
             }
         }
@@ -40,7 +40,7 @@ namespace TickTrader.Algo.Core
             if (_fixture != null)
                 _fixture.RateUpdated -= Fixture_RateUpdated;
             if (_barVector != null)
-                _barVector.BarClosed -= _barVector_BarClosed;
+                _barVector.BarClosed -= BarVector_BarClosed;
         }
 
         private void Fixture_RateUpdated(IRateInfo rate)
@@ -48,9 +48,9 @@ namespace TickTrader.Algo.Core
             _sendUpdateAction(rate);
         }
 
-        private void _barVector_BarClosed(BarData bar)
+        private void BarVector_BarClosed(BarData bar)
         {
-            var update = new DataSeriesUpdate<BarData>(DataSeriesTypes.SymbolRate, _symbol, SeriesUpdateActions.Append, bar);
+            var update = new DataSeriesUpdate(DataSeriesUpdate.Types.Type.SymbolRate, _symbol, DataSeriesUpdate.Types.UpdateAction.Append, bar);
             _sendUpdateAction(update);
         }
     }

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -22,28 +23,28 @@ namespace TickTrader.BotTerminal
             executor.OutputUpdate += Executor_OutputUpdate;
         }
 
-        private void Executor_OutputUpdate(IDataSeriesUpdate update)
+        private void Executor_OutputUpdate(DataSeriesUpdate update)
         {
             if (update.SeriesId == _outputId)
             {
-                var typedUpdate = update as DataSeriesUpdate<OutputPoint<T>>;
-                if (typedUpdate != null)
+                if (update.Value.Is(OutputPoint.Descriptor))
                 {
-                    if (typedUpdate.Action == SeriesUpdateActions.Append)
-                        Appended?.Invoke(typedUpdate.Value);
-                    else if (typedUpdate.Action == SeriesUpdateActions.Update)
-                        Updated?.Invoke(typedUpdate.Value);
+                    var point = update.Value.Unpack<OutputPoint>();
+                    if (update.UpdateAction == DataSeriesUpdate.Types.UpdateAction.Append)
+                        Appended?.Invoke(point);
+                    else if (update.UpdateAction == DataSeriesUpdate.Types.UpdateAction.Update)
+                        Updated?.Invoke(point);
                 }
             }
         }
 
         public bool IsNotSyncrhonized => false;
         public OutputSetupModel OutputConfig { get; }
-        public IList<OutputPoint<T>> Cache => null;
+        public IList<OutputPoint> Cache => null;
 
-        public event Action<OutputPoint<T>> Appended;
-        public event Action<OutputPoint<T>> Updated;
-        public event Action<OutputPoint<T>[]> SnapshotAppended { add { } remove { } }
+        public event Action<OutputPoint> Appended;
+        public event Action<OutputPoint> Updated;
+        public event Action<OutputPointRange> SnapshotAppended { add { } remove { } }
         public event Action<int> Truncated { add { } remove { } }
 
         public void Dispose()
