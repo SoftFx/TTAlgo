@@ -64,7 +64,7 @@ namespace TickTrader.Algo.Core.UnitTest
             dispenser = new SubscriptionFixtureManager(this, _marketState);
             Builder = new PluginBuilder(new Metadata.PluginMetadata(typeof(MockBot)));
             Builder.Logger = new NullLogger();
-            bStrategy = new TimeSpanStrategy(TimePeriodStart, TimePeriodEnd);
+            bStrategy = new TimeSpanStrategy(TimePeriodStart.ToDateTime(), TimePeriodEnd.ToDateTime());
         }
 
         public string InstanceId => "Mock Plugin";
