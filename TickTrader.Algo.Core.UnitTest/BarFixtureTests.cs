@@ -135,12 +135,10 @@ namespace TickTrader.Algo.Core.UnitTest
 
         private static IFixtureContext CreateBarBasedContext()
         {
-            var context = new MockFixtureContext()
+            var context = new MockFixtureContext(DateTime.MinValue.ToUniversalTime().ToTimestamp(), DateTime.MaxValue.ToUniversalTime().ToTimestamp())
             {
                 MainSymbolCode = "EURUSD",
                 TimeFrame = Feed.Types.Timeframe.M1,
-                TimePeriodStart = DateTime.MinValue.ToUniversalTime().ToTimestamp(),
-                TimePeriodEnd = DateTime.MaxValue.ToUniversalTime().ToTimestamp(),
             };
 
             return context;

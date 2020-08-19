@@ -58,8 +58,11 @@ namespace TickTrader.Algo.Core.UnitTest
         private FeedBufferStrategy bStrategy;
         private MarketStateFixture _marketState;
 
-        public MockFixtureContext()
+        public MockFixtureContext(Timestamp timePeriodStart, Timestamp timePeriodEnd)
         {
+            TimePeriodStart = timePeriodStart;
+            TimePeriodEnd = timePeriodEnd;
+
             _marketState = new MarketStateFixture(this);
             dispenser = new SubscriptionFixtureManager(this, _marketState);
             Builder = new PluginBuilder(new Metadata.PluginMetadata(typeof(MockBot)));
@@ -72,8 +75,8 @@ namespace TickTrader.Algo.Core.UnitTest
         public PluginLoggerAdapter Logger => Builder.LogAdapter;
         public string MainSymbolCode { get; set; }
         public Feed.Types.Timeframe TimeFrame { get; set; }
-        public Timestamp TimePeriodEnd { get; set; }
-        public Timestamp TimePeriodStart { get; set; }
+        public Timestamp TimePeriodEnd { get; private set; }
+        public Timestamp TimePeriodStart { get; private set; }
         public IFeedProvider FeedProvider { get; set; }
         public IFeedHistoryProvider FeedHistory { get; set; }
         public FeedBufferStrategy BufferingStrategy => bStrategy;
