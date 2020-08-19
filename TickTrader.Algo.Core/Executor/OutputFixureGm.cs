@@ -87,7 +87,7 @@ namespace TickTrader.Algo.Core
             var update = new DataSeriesUpdate(DataSeriesUpdate.Types.Type.Output, _outputId, action, data);
             update.BufferTruncatedBy = _truncatedBy;
             _truncatedBy = 0;
-            _context.SendExtUpdate(update);
+            _context.SendNotification(update);
         }
 
         #region Buffer events

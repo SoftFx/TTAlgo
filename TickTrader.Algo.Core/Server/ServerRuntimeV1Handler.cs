@@ -41,6 +41,8 @@ namespace TickTrader.Algo.Core
                 UnitErrorHandler(payload);
             else if (payload.Is(UnitStopped.Descriptor))
                 UnitStoppedHandler();
+            else if (payload.Is(DataSeriesUpdate.Descriptor))
+                DataSeriesUpdateHandler(payload);
 
         }
 
@@ -227,6 +229,12 @@ namespace TickTrader.Algo.Core
         private void UnitStoppedHandler()
         {
             _executor.OnStopped();
+        }
+
+        private void DataSeriesUpdateHandler(Any payload)
+        {
+            var update = payload.Unpack<DataSeriesUpdate>();
+            _executor.DataSeriesUpdate(update);
         }
 
         private Any TradeHistoryRequestHandler(string callId, Any payload)

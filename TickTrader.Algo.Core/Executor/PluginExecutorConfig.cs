@@ -63,7 +63,7 @@ namespace TickTrader.Algo.Core
 
         public void InitTimeSpanBuffering(DateTime from, DateTime to)
         {
-            BufferStartegy = new TimeSpanStrategy(from.ToUniversalTime().ToTimestamp(), to.ToUniversalTime().ToTimestamp());
+            BufferStartegy = new TimeSpanStrategy(from, to);
         }
 
         public void SetupOutput<T>(string outputSeriesId)

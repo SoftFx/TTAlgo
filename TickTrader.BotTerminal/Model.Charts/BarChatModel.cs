@@ -83,7 +83,7 @@ namespace TickTrader.BotTerminal
         public override void UpdatePlugin(PluginExecutor plugin)
         {
             base.UpdatePlugin(plugin);
-            plugin.Config.GetFeedStrategy<BarStrategy>().SetMainSeries(_barVector.ToList());
+            //plugin.Config.GetFeedStrategy<BarStrategy>().SetMainSeries(_barVector.ToList());
         }
 
         protected override void ApplyUpdate(QuoteInfo quote)

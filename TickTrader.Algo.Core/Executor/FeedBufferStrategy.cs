@@ -145,10 +145,10 @@ namespace TickTrader.Algo.Core
     [Serializable]
     public class TimeSpanStrategy : FeedBufferStrategy
     {
-        private Timestamp _from;
-        private Timestamp _to;
+        private DateTime _from;
+        private DateTime _to;
 
-        public TimeSpanStrategy(Timestamp from, Timestamp to)
+        public TimeSpanStrategy(DateTime from, DateTime to)
         {
             _from = from;
             _to = to;
@@ -156,12 +156,12 @@ namespace TickTrader.Algo.Core
 
         protected override void LoadMainBuffer(ILoadableFeedBuffer buffer)
         {
-            buffer.LoadFeed(_from, _to);
+            buffer.LoadFeed(_from.ToUniversalTime().ToTimestamp(), _to.ToUniversalTime().ToTimestamp());
         }
 
         protected override void LoadAuxBuffer(ILoadableFeedBuffer buffer)
         {
-            buffer.LoadFeed(_from, _to);
+            buffer.LoadFeed(_from.ToUniversalTime().ToTimestamp(), _to.ToUniversalTime().ToTimestamp());
         }
 
         public override void OnBufferExtended()
@@ -170,7 +170,7 @@ namespace TickTrader.Algo.Core
 
         public override bool InBoundaries(Timestamp timePoint)
         {
-            return timePoint >= _from || timePoint <= _to;
+            return timePoint >= _from.ToUniversalTime().ToTimestamp() || timePoint <= _to.ToUniversalTime().ToTimestamp();
         }
 
         public override void OnUserSetBufferSize(int newSize, out string error)

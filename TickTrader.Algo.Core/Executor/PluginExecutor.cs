@@ -555,7 +555,7 @@ namespace TickTrader.Algo.Core
             {
                 ThrowIfRunning();
                 //ThrowIfAlreadyHasBufferStrategy();
-                this._bStrategy = new TimeSpanStrategy(from.ToUniversalTime().ToTimestamp(), to.ToUniversalTime().ToTimestamp());
+                this._bStrategy = new TimeSpanStrategy(from, to);
             }
         }
 

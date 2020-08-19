@@ -79,6 +79,25 @@ namespace TickTrader.Algo.Core
                 Stopped?.Invoke(this);
         }
 
+        internal void DataSeriesUpdate(DataSeriesUpdate update)
+        {
+            if (update.SeriesType == Domain.DataSeriesUpdate.Types.Type.SymbolRate)
+            {
+                var bar = update.Value.Unpack<BarData>();
+                ChartBarUpdated?.Invoke(bar, update.SeriesId, update.UpdateAction);
+            }
+            else if (update.SeriesType == Domain.DataSeriesUpdate.Types.Type.NamedStream)
+            {
+                var bar = update.Value.Unpack<BarData>();
+                if (update.SeriesId == BacktesterCollector.EquityStreamName)
+                    EquityUpdated?.Invoke(bar, update.UpdateAction);
+                else if (update.SeriesId == BacktesterCollector.MarginStreamName)
+                    MarginUpdated?.Invoke(bar, update.UpdateAction);
+            }
+            else if (update.SeriesType == Domain.DataSeriesUpdate.Types.Type.Output)
+                OutputUpdate?.Invoke(update);
+        }
+
         #region Excec control
 
         public void Launch(string address, int port)
@@ -219,12 +238,12 @@ namespace TickTrader.Algo.Core
             else if (update is DataSeriesUpdate)
             {
                 var seriesUpdate = (DataSeriesUpdate)update;
-                if (seriesUpdate.SeriesType == DataSeriesUpdate.Types.Type.SymbolRate)
+                if (seriesUpdate.SeriesType == Domain.DataSeriesUpdate.Types.Type.SymbolRate)
                 {
                     var bar = seriesUpdate.Value.Unpack<BarData>();
                     ChartBarUpdated?.Invoke(bar, seriesUpdate.SeriesId, seriesUpdate.UpdateAction);
                 }
-                else if (seriesUpdate.SeriesType == DataSeriesUpdate.Types.Type.NamedStream)
+                else if (seriesUpdate.SeriesType == Domain.DataSeriesUpdate.Types.Type.NamedStream)
                 {
                     var bar = seriesUpdate.Value.Unpack<BarData>();
                     if (seriesUpdate.SeriesId == BacktesterCollector.EquityStreamName)
@@ -232,7 +251,7 @@ namespace TickTrader.Algo.Core
                     else if (seriesUpdate.SeriesId == BacktesterCollector.MarginStreamName)
                         MarginUpdated?.Invoke(bar, seriesUpdate.UpdateAction);
                 }
-                else if (seriesUpdate.SeriesType == DataSeriesUpdate.Types.Type.Output)
+                else if (seriesUpdate.SeriesType == Domain.DataSeriesUpdate.Types.Type.Output)
                     OutputUpdate?.Invoke(seriesUpdate);
             }
             //else if (update is Exception)
