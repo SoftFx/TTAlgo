@@ -9,7 +9,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
-    internal class TesterOutputCollector<T> : IOutputCollector<T>
+    internal class TesterOutputCollector<T> : IOutputCollector
     {
         private string _outputId;
         private PluginExecutor _executor;

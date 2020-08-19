@@ -15,10 +15,7 @@ namespace TickTrader.BotTerminal
     {
         bool IsNotSyncrhonized { get; }
         OutputSetupModel OutputConfig { get; }
-    }
 
-    internal interface IOutputCollector<T> : IOutputCollector
-    {
         IList<OutputPoint> Cache { get; }
 
         event Action<OutputPoint> Appended;
@@ -27,7 +24,7 @@ namespace TickTrader.BotTerminal
         event Action<int> Truncated;
     }
 
-    internal class OutputCollector<T> : IOutputCollector<T>, IDisposable
+    internal class OutputCollector<T> : IOutputCollector, IDisposable
     {
         private readonly PluginExecutor _executor;
         private readonly string _outputId;
