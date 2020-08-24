@@ -389,6 +389,11 @@ namespace TickTrader.BotTerminal
             ParamsUnlocked();
         }
 
+        void IAlgoPluginHost.EnqueueStartAction(System.Action action)
+        {
+            ((IAlgoPluginHost)AlgoEnv.LocalAgent).EnqueueStartAction(action);
+        }
+
         ITradeExecutor IAlgoPluginHost.GetTradeApi()
         {
             return ClientModel.TradeApi;

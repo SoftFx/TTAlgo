@@ -16,12 +16,14 @@ namespace TickTrader.BotTerminal
     {
         private IndicatorListenerProxy _indicatorListener;
         private EventJournal _journal;
+        private IAlgoPluginHost _host;
 
         public IndicatorModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext)
             : base(config, agent, host, setupContext)
         {
             _journal = agent.Shell.EventJournal;
 
+            _host = host;
             host.StartEvent += Host_StartEvent;
             host.StopEvent += Host_StopEvent;
 
@@ -64,8 +66,9 @@ namespace TickTrader.BotTerminal
         {
             if (PluginStateHelper.CanStart(State))
             {
-                if (StartExcecutor())
-                    ChangeState(PluginStates.Running);
+                _host.EnqueueStartAction(() => StartExcecutor());
+                //if (StartExcecutor())
+                //    ChangeState(PluginStates.Running);
             }
         }
 

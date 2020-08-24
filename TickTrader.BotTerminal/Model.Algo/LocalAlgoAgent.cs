@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -537,6 +538,19 @@ namespace TickTrader.BotTerminal
         #endregion
 
 
+        private readonly ConcurrentQueue<Action> _startQueue = new ConcurrentQueue<Action>();
+        private bool _isStartQueueRunning = false;
+
+        private void StartQueueLoop()
+        {
+            while (_startQueue.TryDequeue(out var action))
+            {
+                action();
+            }
+
+            _isStartQueueRunning = false;
+        }
+
         #region IAlgoPluginHost
 
         ITimeVectorRef IPluginDataChartModel.TimeSyncRef => null;
@@ -550,6 +564,17 @@ namespace TickTrader.BotTerminal
         void IAlgoPluginHost.Unlock()
         {
             Shell.ConnectionLock.Release();
+        }
+
+        void IAlgoPluginHost.EnqueueStartAction(Action action)
+        {
+            _startQueue.Enqueue(action);
+
+            if (!_isStartQueueRunning)
+            {
+                _isStartQueueRunning = true;
+                Task.Factory.StartNew(() => StartQueueLoop());
+            }
         }
 
         ITradeExecutor IAlgoPluginHost.GetTradeApi()
