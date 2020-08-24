@@ -2,7 +2,7 @@
 using System.Threading;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Rpc;
-using TickTrader.Algo.Rpc.OverGrpc;
+using TickTrader.Algo.Rpc.OverTcp;
 
 namespace TickTrader.Algo.Core
 {
@@ -18,7 +18,7 @@ namespace TickTrader.Algo.Core
 
         public PluginLauncher()
         {
-            _client = new RpcClient(new GrpcFactory(), this, new ProtocolSpec { Url = KnownProtocolUrls.RuntimeV1, MajorVerion = 1, MinorVerion = 0 });
+            _client = new RpcClient(new TcpFactory(), this, new ProtocolSpec { Url = KnownProtocolUrls.RuntimeV1, MajorVerion = 1, MinorVerion = 0 });
         }
 
 

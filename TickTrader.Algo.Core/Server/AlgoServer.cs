@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Rpc;
-using TickTrader.Algo.Rpc.OverGrpc;
+using TickTrader.Algo.Rpc.OverTcp;
 
 namespace TickTrader.Algo.Core
 {
@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Core
         private readonly RpcServer _rpcServer;
 
 
-        public string Address { get; } = "localhost";
+        public string Address { get; } = "127.0.0.1";
 
         public int BoundPort => _rpcServer.BoundPort;
 
@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Core
         public AlgoServer()
         {
             _executorsMap = new Dictionary<string, PluginExecutor>();
-            _rpcServer = new RpcServer(new GrpcFactory(), this);
+            _rpcServer = new RpcServer(new TcpFactory(), this);
         }
 
 

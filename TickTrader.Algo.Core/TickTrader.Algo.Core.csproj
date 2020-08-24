@@ -52,6 +52,9 @@
     </Reference>
     <Reference Include="System.Core" />
     <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Pipelines, Version=4.0.2.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.Pipelines.4.7.2\lib\net461\System.IO.Pipelines.dll</HintPath>
+    </Reference>
     <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
     </Reference>
@@ -328,6 +331,10 @@
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Rpc.OverGrpc\TickTrader.Algo.Rpc.OverGrpc.csproj">
       <Project>{95412c83-3be8-4d58-a787-96ad459c1246}</Project>
       <Name>TickTrader.Algo.Rpc.OverGrpc</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Rpc.OverTcp\TickTrader.Algo.Rpc.OverTcp.csproj">
+      <Project>{b64b583d-1d18-4d74-bdb2-71388171fd36}</Project>
+      <Name>TickTrader.Algo.Rpc.OverTcp</Name>
     </ProjectReference>
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Rpc\TickTrader.Algo.Rpc.csproj">
       <Project>{64cddab4-5127-4eb3-b38f-36ce37e62a66}</Project>

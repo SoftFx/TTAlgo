@@ -48,6 +48,7 @@ namespace TickTrader.Algo.Rpc
         private Task _heartbeatTask;
         private CancellationTokenSource _heartbeatCancelTokenSrc;
         private int _inHeartbeatCnt, _outHeartbeatCnt;
+        private TaskCompletionSource<bool> _initTaskSrc;
         private TaskCompletionSource<bool> _connectTaskSrc;
         private TaskCompletionSource<bool> _disconnectTaskSrc;
 
@@ -62,6 +63,7 @@ namespace TickTrader.Algo.Rpc
             _transport = transport;
             _rpcHost = rpcHost;
 
+            _initTaskSrc = new TaskCompletionSource<bool>();
             _transport.AttachListener(this);
         }
 
@@ -71,6 +73,7 @@ namespace TickTrader.Algo.Rpc
             if (State != RpcSessionState.Disconnected)
                 return _connectTaskSrc?.Task ?? Task.CompletedTask;
 
+            _initTaskSrc.TrySetResult(true);
             _connectTaskSrc = new TaskCompletionSource<bool>();
 
             if (protocol != null)
@@ -221,6 +224,7 @@ namespace TickTrader.Algo.Rpc
             finally
             {
                 ChangeState(connectSuссessful ? RpcSessionState.Connected : RpcSessionState.Disconnected);
+                _initTaskSrc.Task.GetAwaiter().GetResult();
                 _connectTaskSrc.TrySetResult(connectSuссessful);
             }
         }

@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Reactive;
 using System.Threading.Tasks;
-using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Rpc
 {

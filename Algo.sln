@@ -130,6 +130,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sandbox", "Sandbox", "{BE89
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.RpcTest", "src\csharp\sandbox\TickTrader.Algo.RpcTest\TickTrader.Algo.RpcTest.csproj", "{4EEF7FAC-E34C-4C93-BC50-4218949EDC44}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.Rpc.OverTcp", "src\csharp\core\TickTrader.Algo.Rpc.OverTcp\TickTrader.Algo.Rpc.OverTcp.csproj", "{B64B583D-1D18-4D74-BDB2-71388171FD36}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -677,6 +679,18 @@ Global
 		{4EEF7FAC-E34C-4C93-BC50-4218949EDC44}.Release|x64.Build.0 = Release|Any CPU
 		{4EEF7FAC-E34C-4C93-BC50-4218949EDC44}.Release|x86.ActiveCfg = Release|Any CPU
 		{4EEF7FAC-E34C-4C93-BC50-4218949EDC44}.Release|x86.Build.0 = Release|Any CPU
+		{B64B583D-1D18-4D74-BDB2-71388171FD36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B64B583D-1D18-4D74-BDB2-71388171FD36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B64B583D-1D18-4D74-BDB2-71388171FD36}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B64B583D-1D18-4D74-BDB2-71388171FD36}.Debug|x64.Build.0 = Debug|Any CPU
+		{B64B583D-1D18-4D74-BDB2-71388171FD36}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B64B583D-1D18-4D74-BDB2-71388171FD36}.Debug|x86.Build.0 = Debug|Any CPU
+		{B64B583D-1D18-4D74-BDB2-71388171FD36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B64B583D-1D18-4D74-BDB2-71388171FD36}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B64B583D-1D18-4D74-BDB2-71388171FD36}.Release|x64.ActiveCfg = Release|Any CPU
+		{B64B583D-1D18-4D74-BDB2-71388171FD36}.Release|x64.Build.0 = Release|Any CPU
+		{B64B583D-1D18-4D74-BDB2-71388171FD36}.Release|x86.ActiveCfg = Release|Any CPU
+		{B64B583D-1D18-4D74-BDB2-71388171FD36}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -729,6 +743,7 @@ Global
 		{64CDDAB4-5127-4EB3-B38F-36CE37E62A66} = {C5AE642C-4A61-47BD-9272-69909998B71D}
 		{95412C83-3BE8-4D58-A787-96AD459C1246} = {C5AE642C-4A61-47BD-9272-69909998B71D}
 		{4EEF7FAC-E34C-4C93-BC50-4218949EDC44} = {BE89D066-2450-4926-9BDC-B03CF17D3277}
+		{B64B583D-1D18-4D74-BDB2-71388171FD36} = {C5AE642C-4A61-47BD-9272-69909998B71D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {676AD27B-E03C-4277-A423-E2533F837976}
