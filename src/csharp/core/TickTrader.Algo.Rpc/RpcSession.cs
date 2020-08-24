@@ -136,7 +136,7 @@ namespace TickTrader.Algo.Rpc
 
         internal void SendMessage(RpcMessage msg)
         {
-            Debug.WriteLine($"RPC < {AppDomain.CurrentDomain.Id}: {msg}");
+            //Debug.WriteLine($"RPC < {AppDomain.CurrentDomain.Id}: {msg}");
             _transport.SendMessage(msg);
         }
 
@@ -328,7 +328,7 @@ namespace TickTrader.Algo.Rpc
 
         private void HandleMessage(RpcMessage msg)
         {
-            Debug.WriteLine($"RPC > {AppDomain.CurrentDomain.Id}: {msg}");
+            //Debug.WriteLine($"RPC > {AppDomain.CurrentDomain.Id}: {msg}");
 
             if (msg.Payload.Is(Heartbeat.Descriptor))
             {
