@@ -266,6 +266,7 @@ namespace TickTrader.Algo.Core
                     stopPrice = RoundPrice(stopPrice, smbMetadata, orderToModify.Side);
                     sl = RoundPrice(sl, smbMetadata, orderToModify.Side);
                     tp = RoundPrice(tp, smbMetadata, orderToModify.Side);
+                    comment = string.IsNullOrEmpty(comment) ? orderToModify.Comment : comment;
 
                     var request = new ReplaceOrderRequest
                     {
@@ -668,7 +669,7 @@ namespace TickTrader.Algo.Core
             //}
 
             //if (Request.MaxVisibleAmount.HasValue && (Request.MaxVisibleAmount.Value >= 0))
-                //Facade.VerifyMaxVisibleAmout(Request.MaxVisibleAmount, securityCfg, symbolInfo, Request.IsClientRequest);
+            //Facade.VerifyMaxVisibleAmout(Request.MaxVisibleAmount, securityCfg, symbolInfo, Request.IsClientRequest);
 
             var newVolume = (decimal?)request.NewVolume ?? order.Amount;
             var newPrice = request.Price ?? order.Price;
@@ -1416,6 +1417,9 @@ namespace TickTrader.Algo.Core
             var closePrice = 0M;
             //NetAccountModel acc = position.Acc;
 
+            var copy = position.Clone();
+            var isClosed = position.IsEmpty;
+
             if (oneSideClosingAmount > 0)
             {
                 var k = oneSideClosingAmount / oneSideClosableAmount;
@@ -1429,14 +1433,10 @@ namespace TickTrader.Algo.Core
                 if (error != CalcErrorCodes.None)
                     throw new Exception();
 
-                var copy = position.Clone();
-
                 position.DecreaseBothSides(oneSideClosingAmount);
 
                 position.Swap -= closeSwap;
                 balanceMovement = profit + closeSwap;
-
-                var isClosed = position.IsEmpty;
 
                 if (position.IsEmpty)
                     _acc.NetPositions.RemovePosition(position.Symbol);
@@ -1454,8 +1454,9 @@ namespace TickTrader.Algo.Core
                 //    JournalEntrySeverities.Info, TransactDetails.Create(position.Id, position.Symbol));
 
                 _collector.OnPositionClosed(ExecutionTime, (double)profit, 0, (double)closeSwap);
-                _scheduler.EnqueueEvent(b => b.Account.NetPositions.FirePositionUpdated(new PositionModifiedEventArgsImpl(copy, position, isClosed)));
             }
+
+            _scheduler.EnqueueEvent(b => b.Account.NetPositions.FirePositionUpdated(new PositionModifiedEventArgsImpl(copy, position, isClosed)));
 
             var info = new NetPositionCloseInfo();
             info.CloseAmount = oneSideClosingAmount;
@@ -1490,7 +1491,7 @@ namespace TickTrader.Algo.Core
             //if (account.IsBlocked)
             //    return;
 
-            if (record.Order.RemainingVolume == 0) 
+            if (record.Order.RemainingVolume == 0)
                 return; // already activated
 
             //GroupSecurityCfg securityCfg = account.GetSecurityCfg(smbInfo);
@@ -1833,10 +1834,10 @@ namespace TickTrader.Algo.Core
             //}
             //else
             //{
-                pos2options |= ClosePositionOptions.Nullify;
-                pos2options |= ClosePositionOptions.DropCommision;
-                ClosePosition(position1, trReason, null, null, closeAmount, (double)position2.Price, smb, pos1options, position2.Id);
-                ClosePosition(position2, trReason, null, null, closeAmount, (double)position2.Price, smb, pos2options, position1.Id);
+            pos2options |= ClosePositionOptions.Nullify;
+            pos2options |= ClosePositionOptions.DropCommision;
+            ClosePosition(position1, trReason, null, null, closeAmount, (double)position2.Price, smb, pos1options, position2.Id);
+            ClosePosition(position2, trReason, null, null, closeAmount, (double)position2.Price, smb, pos2options, position1.Id);
             //}
         }
 
@@ -1910,7 +1911,7 @@ namespace TickTrader.Algo.Core
                 await _scheduler.EmulateAsyncDelay(TimeSpan.FromSeconds(1), true);
 
                 CheckExpiration();
-            }            
+            }
         }
 
         private void RegisterForExpirationCheck(OrderAccessor order)
@@ -2104,7 +2105,7 @@ namespace TickTrader.Algo.Core
 
             //try
             //{
-                
+
             //}
             //catch (Exception)
             //{
