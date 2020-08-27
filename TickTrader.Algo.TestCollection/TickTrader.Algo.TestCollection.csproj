@@ -113,6 +113,12 @@
     <Compile Include="Lib\PrintExt.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TickTrader.Algo.Indicators\TickTrader.Algo.Indicators.csproj">
+      <Project>{127406A9-5D62-4FE7-9680-1D2DEED7564F}</Project>
+      <Name>TickTrader.Algo.Indicators</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
     <VisualStudio>

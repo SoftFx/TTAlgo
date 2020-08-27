@@ -1,5 +1,4 @@
-﻿using System;
-using TickTrader.Algo.Api;
+﻿using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Indicators;
 
 namespace TickTrader.Algo.TestCollection.Bots
@@ -27,7 +26,7 @@ namespace TickTrader.Algo.TestCollection.Bots
         private IFATLSignal _fatls;
         private IFTLMSTLM _ftlmstlm;
         private IPerfectCommodityChannelIndex _pcci;
-        private IRangeBoundChannelIndex _rbci;
+        private IRangeBoundChannelIndexAvg _rbci;
         private IReferenceFastTrendLine _rftl;
         private IReferenceSlowTrendLine _rstl;
         private ISlowAdaptiveTrendLine _satl;
@@ -95,7 +94,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                     _fatls = Indicators.FATLSignal(bars);
                     _ftlmstlm = Indicators.FTLMSTLM(price);
                     _pcci = Indicators.PerfectCommodityChannelIndex(price);
-                    _rbci = Indicators.RangeBoundChannelIndex(price);
+                    _rbci = Indicators.RangeBoundChannelIndexAvg(price);
                     _rftl = Indicators.ReferenceFastTrendLine(price);
                     _rstl = Indicators.ReferenceSlowTrendLine(price);
                     _satl = Indicators.SlowAdaptiveTrendLine(price);
