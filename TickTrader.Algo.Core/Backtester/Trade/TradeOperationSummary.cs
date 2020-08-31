@@ -72,7 +72,7 @@ namespace TickTrader.Algo.Core
             PrintAmountAndPrice(order);
             PrintAuxFields(order);
             PrintCharges(charges);
-            PrintComment(order);
+            //PrintComment(order);
         }
 
         public void AddOpenFailAction(OrderType type, string symbol, OrderSide side, decimal amountLots, OrderCmdResultCodes error, AccountAccessor acc)
@@ -249,11 +249,14 @@ namespace TickTrader.Algo.Core
 
             var tp = order.Entity.TakeProfit;
             var sl = order.Entity.StopLoss;
+            var comment = order.Entity.Comment;
 
             if (tp != null)
                 _builder.Append(", tp=").AppendNumber(tp.Value, priceFormat);
             if (sl != null)
                 _builder.Append(", sl=").AppendNumber(sl.Value, priceFormat);
+            if (!string.IsNullOrEmpty(comment))
+                _builder.Append($", comment={comment}");
         }
 
         private void StartNewAction()
