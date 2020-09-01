@@ -75,5 +75,12 @@ namespace TickTrader.Algo.Core.Repository
                 SecondaryReduction = SecondaryReduction?.Clone(),
             };
         }
+
+        public PackageKey[] GetPackageKeys()
+        {
+            return SecondaryReduction == null
+                ? (new[] { PrimaryReduction.GetPackageKey() })
+                : (new[] { PrimaryReduction.GetPackageKey(), SecondaryReduction.GetPackageKey() });
+        }
     }
 }

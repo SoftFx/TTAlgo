@@ -75,5 +75,10 @@ namespace TickTrader.Algo.Core.Repository
                 DescriptorId = DescriptorId,
             };
         }
+
+        public PackageKey GetPackageKey()
+        {
+            return new PackageKey { Name = PackageName, Location = PackageLocation };
+        }
     }
 }

@@ -8,11 +8,13 @@ import "google/protobuf/wrappers.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/any.proto";
 
-message AttachPluginRequest {
+import "runtime.feed.proto";
+
+message AttachRuntimeRequest {
     string id = 1;
 }
 
-message AttachPluginResponse {
+message AttachRuntimeResponse {
     bool success = 1;
 }
 
@@ -86,4 +88,39 @@ message MarkerInfo {
     google.protobuf.StringValue display_text = 2;
     IconType icon = 3;
     int32 color_rgb = 4;
+}
+
+message RuntimeConfigRequest { }
+
+message RuntimeConfig {
+    string working_directory = 1;
+    bool is_logging_enabled = 2;
+    google.protobuf.Any plugin_config = 3;
+    google.protobuf.Any feed_strategy_config = 4;
+    google.protobuf.Any buffer_strategy_config = 5;
+    google.protobuf.Any invoke_strategy_config = 6;
+}
+
+message BarStratefyConfig {
+    Feed.MarketSide market_side = 1;
+}
+
+message QuoteStrategyConfig { }
+
+message SlidingBufferStrategyConfig {
+    int32 size = 1;
+}
+
+message TimeSpanStrategyConfig {
+    google.protobuf.Timestamp from = 1;
+    google.protobuf.Timestamp to = 2;
+}
+
+message PackagePathRequest {
+    string name = 1;
+    int32 location = 2;
+}
+
+message PackagePathResponse {
+    string path = 1;
 }

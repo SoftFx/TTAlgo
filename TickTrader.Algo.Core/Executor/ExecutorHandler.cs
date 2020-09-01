@@ -79,7 +79,7 @@ namespace TickTrader.Algo.Core
                 Stopped?.Invoke(this);
         }
 
-        internal void DataSeriesUpdate(DataSeriesUpdate update)
+        internal void OnDataSeriesUpdate(DataSeriesUpdate update)
         {
             if (update.SeriesType == Domain.DataSeriesUpdate.Types.Type.SymbolRate)
             {

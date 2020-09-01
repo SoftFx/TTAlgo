@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using TickTrader.Algo.Common.Lib;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Common.Model.Setup;
 
 namespace TickTrader.Algo.Common.Info

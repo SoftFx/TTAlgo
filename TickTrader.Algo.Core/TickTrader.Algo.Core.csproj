@@ -46,6 +46,7 @@
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
@@ -241,6 +242,7 @@
     <Compile Include="Lib\CrossDomainTask.cs" />
     <Compile Include="Lib\FlipGate.cs" />
     <Compile Include="Lib\FormatExtentions.cs" />
+    <Compile Include="Lib\HashCode.cs" />
     <Compile Include="Lib\IoHelper.cs" />
     <Compile Include="Lib\LinqExtentions.cs" />
     <Compile Include="Lib\PagedGate.cs" />
@@ -264,6 +266,38 @@
     <Compile Include="Metadata\Descriptors\PropertyDescriptor.cs" />
     <Compile Include="Metadata\Descriptors\ReductionDescriptor.cs" />
     <Compile Include="Metadata\ReductionMetadata.cs" />
+    <Compile Include="Model.Config\Inputs.cs" />
+    <Compile Include="Model.Config\Outputs.cs" />
+    <Compile Include="Model.Config\Parameters.cs" />
+    <Compile Include="Model.Config\PluginConfig.cs" />
+    <Compile Include="Model.Config\Version1\Inputs.cs" />
+    <Compile Include="Model.Config\Version1\Outputs.cs" />
+    <Compile Include="Model.Config\Version1\Parameters.cs" />
+    <Compile Include="Model.Config\Version1\PluginConfig.cs" />
+    <Compile Include="Model.Config\Version1\PluginConfigResolver.cs" />
+    <Compile Include="Model.Setup\Convert.cs" />
+    <Compile Include="Model.Setup\ErrorMsgModel.cs" />
+    <Compile Include="Model.Setup\Extensions.cs" />
+    <Compile Include="Model.Setup\Inputs\BarToBarInputSetupModel.cs" />
+    <Compile Include="Model.Setup\Inputs\BarToDoubleInputSetupModel.cs" />
+    <Compile Include="Model.Setup\Inputs\InputSetupModel.cs" />
+    <Compile Include="Model.Setup\Inputs\MappedInputSetupModel.cs" />
+    <Compile Include="Model.Setup\Inputs\QuoteInputSetupModel.cs" />
+    <Compile Include="Model.Setup\Inputs\QuoteToBarInputSetupModel.cs" />
+    <Compile Include="Model.Setup\Inputs\QuoteToDoubleInputSetupModel.cs" />
+    <Compile Include="Model.Setup\Interfaces.cs" />
+    <Compile Include="Model.Setup\Outputs\ColoredLineOutputSetupModel.cs" />
+    <Compile Include="Model.Setup\Outputs\MarkerSeriesOutputSetupModel.cs" />
+    <Compile Include="Model.Setup\Outputs\OutputSetupModel.cs" />
+    <Compile Include="Model.Setup\Parameters\EnumParameterSetupModel.cs" />
+    <Compile Include="Model.Setup\Parameters\FileParamSetupModel.cs" />
+    <Compile Include="Model.Setup\Parameters\GenericParameterSetupModel.cs" />
+    <Compile Include="Model.Setup\Parameters\ParameterSetupModel.cs" />
+    <Compile Include="Model.Setup\PluginSetupModel.cs" />
+    <Compile Include="Model.Setup\PropertySetupModel.cs" />
+    <Compile Include="Model.Setup\SpecialSymbols.cs" />
+    <Compile Include="Model.Setup\SymbolKey.cs" />
+    <Compile Include="Model.Setup\UiConverter.cs" />
     <Compile Include="Package\Package.cs" />
     <Compile Include="Package\PackageMetadata.cs" />
     <Compile Include="Repository\AlgoPackageRef.cs" />
@@ -306,6 +340,9 @@
     <Compile Include="Buffers\DataSeriesImpl.cs" />
     <Compile Include="Buffers\TypedProxies.cs" />
     <Compile Include="Repository\ReductionCollection.cs" />
+    <Compile Include="Runtime\RuntimeHost.cs" />
+    <Compile Include="Runtime\RuntimeModel.cs" />
+    <Compile Include="Runtime\RuntimeV1Loader.cs" />
     <Compile Include="Server\AlgoServer.cs" />
     <Compile Include="Server\PluginLauncher.cs" />
     <Compile Include="Server\RuntimeInfoProvider.cs" />

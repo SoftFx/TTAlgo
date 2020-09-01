@@ -1,5 +1,5 @@
 ﻿using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Lib;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {

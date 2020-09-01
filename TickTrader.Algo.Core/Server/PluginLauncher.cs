@@ -29,7 +29,7 @@ namespace TickTrader.Algo.Core
                 try
                 {
                     await _client.Connect(address, port);
-                    await Handler.AttachPlugin(executorId);
+                    await Handler.AttachRuntime(executorId);
                 }
                 catch (Exception) { }
             });
@@ -38,14 +38,14 @@ namespace TickTrader.Algo.Core
         public PluginExecutorCore CreateExecutor(string pluginId)
         {
             Core = new PluginExecutorCore(pluginId);
-            Handler = new UnitRuntimeV1Handler(Core);
+            //Handler = new UnitRuntimeV1Handler(Core);
             return Core;
         }
 
         public void ConfigureRuntime()
         {
             var provider = new RuntimeInfoProvider(Handler);
-            Core.Metadata = Handler;
+            Core.Metadata = provider;
             Core.AccInfoProvider = provider;
             Core.TradeExecutor = provider;
             Core.TradeHistoryProvider = provider;

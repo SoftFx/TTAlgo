@@ -11,6 +11,7 @@ namespace TickTrader.Algo.Core
     public class AlgoServer : IRpcHost
     {
         private readonly Dictionary<string, PluginExecutor> _executorsMap;
+        private readonly Dictionary<string, RuntimeModel> _runtimesMap;
         private readonly RpcServer _rpcServer;
 
 
@@ -22,6 +23,7 @@ namespace TickTrader.Algo.Core
         public AlgoServer()
         {
             _executorsMap = new Dictionary<string, PluginExecutor>();
+            _runtimesMap = new Dictionary<string, RuntimeModel>();
             _rpcServer = new RpcServer(new TcpFactory(), this);
         }
 
@@ -42,6 +44,14 @@ namespace TickTrader.Algo.Core
             var executor = new PluginExecutor(id, pluginRef, updatesSync);
             _executorsMap.Add(id, executor);
             return executor;
+        }
+
+        public RuntimeModel CreateRuntimeModel(AlgoPluginRef pluginRef, ISyncContext updatesSync)
+        {
+            var id = Guid.NewGuid().ToString("N");
+            var runtime = new RuntimeModel(id, pluginRef, updatesSync);
+            _runtimesMap.Add(id, runtime);
+            return runtime;
         }
 
 

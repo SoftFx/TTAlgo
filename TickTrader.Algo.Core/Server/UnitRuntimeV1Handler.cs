@@ -11,9 +11,9 @@ using TickTrader.Algo.Rpc;
 
 namespace TickTrader.Algo.Core
 {
-    internal class UnitRuntimeV1Handler : IRpcHandler, IPluginMetadata
+    internal class UnitRuntimeV1Handler : IRpcHandler
     {
-        private readonly PluginExecutorCore _executorCore;
+        private readonly RuntimeV1Loader _runtime;
         private RpcSession _session;
 
 
@@ -25,36 +25,53 @@ namespace TickTrader.Algo.Core
         public event Action<List<QuoteInfo>> RatesUpdated;
 
 
-        public UnitRuntimeV1Handler(PluginExecutorCore executorCore)
+        public UnitRuntimeV1Handler(RuntimeV1Loader runtime)
         {
-            _executorCore = executorCore;
-
-            executorCore.OnNotification = msg => _session.Tell(RpcMessage.Notification(msg));
+            _runtime = runtime;
         }
 
 
-        public Task<bool> AttachPlugin(string executorId)
+        public Task<bool> AttachRuntime(string executorId)
         {
-            var context = new RpcResponseTaskContext<bool>(AttachPluginResponseHandler);
-            _session.Ask(RpcMessage.Request(new AttachPluginRequest { Id = executorId }), context);
+            var context = new RpcResponseTaskContext<bool>(AttachRuntimeResponseHandler);
+            _session.Ask(RpcMessage.Request(new AttachRuntimeRequest { Id = executorId }), context);
             return context.TaskSrc.Task;
         }
 
+        public Task<RuntimeConfig> GetRuntimeConfig()
+        {
+            var context = new RpcResponseTaskContext<RuntimeConfig>(SingleReponseHandler);
+            _session.Ask(RpcMessage.Request(new RuntimeConfigRequest()), context);
+            return context.TaskSrc.Task;
+        }
 
-        IEnumerable<CurrencyInfo> IPluginMetadata.GetCurrencyMetadata()
+        public async Task<string> GetPackagePath(string name, int location)
+        {
+            var request = new PackagePathRequest { Name = name, Location = location };
+            var context = new RpcResponseTaskContext<PackagePathResponse>(SingleReponseHandler);
+            _session.Ask(RpcMessage.Request(request), context);
+            return (await context.TaskSrc.Task).Path;
+        }
+
+        internal void SendNotification(IMessage msg)
+        {
+            _session.Tell(RpcMessage.Notification(msg));
+        }
+
+        internal List<CurrencyInfo> GetCurrencyList()
         {
             var context = new RpcResponseTaskContext<CurrencyListResponse>(SingleReponseHandler);
             _session.Ask(RpcMessage.Request(new CurrencyListRequest()), context);
             var res = context.TaskSrc.Task.GetAwaiter().GetResult();
-            return res.Currencies;
+            return res.Currencies.ToList();
         }
 
-        IEnumerable<SymbolInfo> IPluginMetadata.GetSymbolMetadata()
+        internal List<SymbolInfo> GetSymbolList()
         {
             var context = new RpcResponseTaskContext<SymbolListResponse>(SingleReponseHandler);
             _session.Ask(RpcMessage.Request(new SymbolListRequest()), context);
             var res = context.TaskSrc.Task.GetAwaiter().GetResult();
-            return res.Symbols;
+            return res.Symbols.ToList();
         }
 
         internal AccountInfo GetAccountInfo()
@@ -184,7 +201,7 @@ namespace TickTrader.Algo.Core
         }
 
 
-        private bool AttachPluginResponseHandler(TaskCompletionSource<bool> taskSrc, Any payload)
+        private bool AttachRuntimeResponseHandler(TaskCompletionSource<bool> taskSrc, Any payload)
         {
             if (payload.Is(ErrorResponse.Descriptor))
             {
@@ -192,7 +209,7 @@ namespace TickTrader.Algo.Core
                 taskSrc.TrySetException(new Exception(error.Message));
                 return true;
             }
-            var response = payload.Unpack<AttachPluginResponse>();
+            var response = payload.Unpack<AttachRuntimeResponse>();
             taskSrc.TrySetResult(response.Success);
             return true;
         }

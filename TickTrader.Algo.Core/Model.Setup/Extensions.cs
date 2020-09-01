@@ -5,7 +5,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
-    public static class ISymbolInfoExtensions
+    public static class SymbolInfoExtensions
     {
         public static SymbolConfig ToConfig(this ISetupSymbolInfo symbol)
         {
@@ -15,6 +15,11 @@ namespace TickTrader.Algo.Common.Model.Setup
         public static SymbolKey ToInfo(this ISetupSymbolInfo symbol)
         {
             return new SymbolKey(symbol.Name, symbol.Origin);
+        }
+
+        public static SymbolKey ToKey(this SymbolInfo info)
+        {
+            return new SymbolKey(info.Name, SymbolOrigin.Online);
         }
     }
 

@@ -7,7 +7,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    internal class RuntimeInfoProvider : CrossDomainObject, IAccountInfoProvider, ITradeExecutor, ITradeHistoryProvider, IFeedProvider, IFeedHistoryProvider
+    internal class RuntimeInfoProvider : CrossDomainObject, IPluginMetadata, IAccountInfoProvider, ITradeExecutor, ITradeHistoryProvider, IFeedProvider, IFeedHistoryProvider
     {
         private class RuntimeContext : Actor { }
 
@@ -32,6 +32,20 @@ namespace TickTrader.Algo.Core
             _handler.RatesUpdated += q => RatesUpdated?.Invoke(q);
         }
 
+
+        #region IPluginMetadata
+
+        public IEnumerable<CurrencyInfo> GetCurrencyMetadata()
+        {
+            return _handler.GetCurrencyList();
+        }
+
+        public IEnumerable<SymbolInfo> GetSymbolMetadata()
+        {
+            return _handler.GetSymbolList();
+        }
+
+        #endregion IPluginMetadata
 
         #region IAccountInfoProvider
 

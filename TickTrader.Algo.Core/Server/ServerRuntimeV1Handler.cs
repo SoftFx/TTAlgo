@@ -48,9 +48,9 @@ namespace TickTrader.Algo.Core
 
         public Any HandleRequest(string callId, Any payload)
         {
-            if (payload.Is(AttachPluginRequest.Descriptor))
+            if (payload.Is(AttachRuntimeRequest.Descriptor))
             {
-                var request = payload.Unpack<AttachPluginRequest>();
+                var request = payload.Unpack<AttachRuntimeRequest>();
                 if (_executor != null)
                 {
                     return Any.Pack(new ErrorResponse { Message = "Executor already attached!" });
@@ -74,13 +74,17 @@ namespace TickTrader.Algo.Core
                         }
                         catch (Exception) { }
                     });
-                    return Any.Pack(new AttachPluginResponse { Success = true });
+                    return Any.Pack(new AttachRuntimeResponse { Success = true });
                 }
                 else
                 {
-                    return Any.Pack(new AttachPluginResponse { Success = false });
+                    return Any.Pack(new AttachRuntimeResponse { Success = false });
                 }
             }
+            else if (payload.Is(RuntimeConfigRequest.Descriptor))
+                return RuntimeConfigRequestHandler();
+            else if (payload.Is(PackagePathRequest.Descriptor))
+                return PackagePathRequestHandler(payload);
             else if (payload.Is(CurrencyListRequest.Descriptor))
                 return CurrencyListRequestHandler();
             else if (payload.Is(SymbolListRequest.Descriptor))
@@ -118,6 +122,18 @@ namespace TickTrader.Algo.Core
             return null;
         }
 
+
+        private Any RuntimeConfigRequestHandler()
+        {
+            //return _executor.Config;
+            return VoidResponse;
+        }
+
+        private Any PackagePathRequestHandler(Any payload)
+        {
+            //var request = payload.Unpack<PackagePathRequest>();
+            return VoidResponse;
+        }
 
         private Any CurrencyListRequestHandler()
         {
@@ -234,7 +250,7 @@ namespace TickTrader.Algo.Core
         private void DataSeriesUpdateHandler(Any payload)
         {
             var update = payload.Unpack<DataSeriesUpdate>();
-            _executor.DataSeriesUpdate(update);
+            _executor.OnDataSeriesUpdate(update);
         }
 
         private Any TradeHistoryRequestHandler(string callId, Any payload)
