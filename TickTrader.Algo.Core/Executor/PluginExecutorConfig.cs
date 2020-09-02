@@ -1,6 +1,7 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
+using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 
@@ -69,6 +70,32 @@ namespace TickTrader.Algo.Core
         public void SetupOutput<T>(string outputSeriesId)
         {
             Outputs[outputSeriesId] = new OutputFixtureFactory<T>(outputSeriesId);
+        }
+
+
+        internal void LoadFrom(RuntimeConfig config, PluginConfig pluginConfig)
+        {
+            if (config.FeedStrategyConfig.TryUnpack<BarStratefyConfig>(out var barStrategyConfig))
+                InitBarStrategy(barStrategyConfig.MarketSide);
+            else if (config.FeedStrategyConfig.TryUnpack<QuoteStrategyConfig>(out var quoteStrategyConfig))
+                InitQuoteStrategy();
+
+            if (config.BufferStrategyConfig.TryUnpack<SlidingBufferStrategyConfig>(out var slidingbufferConfig))
+                InitSlidingBuffering(slidingbufferConfig.Size);
+            else if (config.BufferStrategyConfig.TryUnpack<TimeSpanStrategyConfig>(out var timeSpanConfig))
+                InitTimeSpanBuffering(timeSpanConfig.From.ToDateTime(), timeSpanConfig.To.ToDateTime());
+
+            if (config.InvokeStrategyConfig.TryUnpack<PriorityInvokeStrategyConfig>(out var priorityStrategyConfig))
+                InvokeStrategy = new PriorityInvokeStartegy();
+
+            IsLoggingEnabled = config.IsLoggingEnabled;
+            WorkingFolder = config.WorkingDirectory;
+            BotWorkingFolder = config.WorkingDirectory;
+
+            InstanceId = pluginConfig.InstanceId;
+            MainSymbolCode = pluginConfig.MainSymbol.Name;
+            TimeFrame = pluginConfig.TimeFrame.ToDomainEnum();
+            Permissions = pluginConfig.Permissions;
         }
     }
 }

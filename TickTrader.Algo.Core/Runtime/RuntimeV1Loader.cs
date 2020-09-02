@@ -12,7 +12,7 @@ using TickTrader.Algo.Rpc.OverTcp;
 
 namespace TickTrader.Algo.Core
 {
-    public class RuntimeV1Loader : CrossDomainObject, IRpcHost
+    public class RuntimeV1Loader : CrossDomainObject, IRpcHost, IRuntimeProxy
     {
         private readonly RpcClient _client;
         private readonly UnitRuntimeV1Handler _handler;
@@ -28,6 +28,8 @@ namespace TickTrader.Algo.Core
 
         public async void Init(string address, int port, string proxyId)
         {
+            CoreLoggerFactory.Init(n => new RuntimeLoggerAdapter(n));
+
             await _client.Connect(address, port).ConfigureAwait(false);
             await _handler.AttachRuntime(proxyId).ConfigureAwait(false);
         }
@@ -72,7 +74,13 @@ namespace TickTrader.Algo.Core
             var metadata = AlgoAssemblyInspector.GetPlugin(config.Key.DescriptorId);
             var algoRef = new AlgoPluginRef(metadata, path);
 
-            var setup = new PluginSetupModel(algoRef, null, null, config.MainSymbol);
+            var reductions = new ReductionCollection(CoreLoggerFactory.GetLogger("Extensions"));
+            var mappings = new MappingCollection(reductions);
+
+            var setupMetadata = new AlgoSetupMetadata(await _handler.GetSymbolListAsync(), mappings);
+            var setupContext = new AlgoSetupContext(config.TimeFrame.ToDomainEnum(), config.MainSymbol);
+
+            var setup = new PluginSetupModel(algoRef, setupMetadata, setupContext, config.MainSymbol);
             setup.Load(config);
 
             _executorCore = new PluginExecutorCore(config.Key.DescriptorId);
@@ -81,20 +89,21 @@ namespace TickTrader.Algo.Core
             _executorCore.IsGlobalMarshalingEnabled = true;
             _executorCore.IsBunchingRequired = true;
 
-            var provider = new RuntimeInfoProvider(_handler);
-            _executorCore.Metadata = provider;
-            _executorCore.AccInfoProvider = provider;
-            _executorCore.TradeExecutor = provider;
-            _executorCore.TradeHistoryProvider = provider;
-            _executorCore.Feed = provider;
-            _executorCore.FeedHistory = provider;
+            var executorConfig = new PluginExecutorConfig();
+            executorConfig.LoadFrom(runtimeConfig, config);
+            setup.Apply(executorConfig);
 
-            _executorCore.Start();
+            var provider = new RuntimeInfoProvider(_handler);
+
+            _executorCore.ApplyConfig(executorConfig, provider, provider, provider, provider, provider, provider);
+
+            var t = Task.Factory.StartNew(() => _executorCore.Start());
         }
 
-        public void Stop()
+        public Task Stop()
         {
-            _executorCore.Stop();
+            var t = Task.Factory.StartNew(() => _executorCore.Stop());
+            return Task.CompletedTask;
         }
 
 

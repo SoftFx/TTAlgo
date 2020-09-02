@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
-using System.Threading;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
@@ -14,7 +13,7 @@ namespace TickTrader.Algo.Core
         private static readonly Any VoidResponse = Any.Pack(new VoidResponse());
 
         private readonly AlgoServer _server;
-        private PluginExecutor _executor;
+        private RuntimeModel _runtime;
         private RpcSession _session;
 
         private ConcurrentDictionary<string, object> _pendingRequestHandlers;
@@ -51,29 +50,17 @@ namespace TickTrader.Algo.Core
             if (payload.Is(AttachRuntimeRequest.Descriptor))
             {
                 var request = payload.Unpack<AttachRuntimeRequest>();
-                if (_executor != null)
+                if (_runtime != null)
                 {
-                    return Any.Pack(new ErrorResponse { Message = "Executor already attached!" });
+                    return Any.Pack(new ErrorResponse { Message = "Runtime already attached!" });
                 }
-                if (_server.TryGetExecutor(request.Id, out var executor))
+                if (_server.TryGetRuntime(request.Id, out var runtime))
                 {
-                    _executor = executor;
+                    _runtime = runtime;
 
-                    _executor.AccInfoProvider.OrderUpdated += r => _session.Tell(RpcMessage.Notification(r));
-                    _executor.AccInfoProvider.PositionUpdated += r => _session.Tell(RpcMessage.Notification(r));
-                    _executor.AccInfoProvider.BalanceUpdated += r => _session.Tell(RpcMessage.Notification(r));
+                    var proxy = new RuntimeProxy(_session);
+                    _runtime.OnAttached(r => _session.Tell(r), proxy);
 
-                    _executor.Feed.RateUpdated += r => _session.Tell(RpcMessage.Notification(r.GetFullQuote()));
-                    _executor.Feed.RatesUpdated += r => _session.Tell(RpcMessage.Notification(QuotePage.Create(r)));
-
-                    ThreadPool.QueueUserWorkItem(_ =>
-                    {
-                        try
-                        {
-                            _executor.Start();
-                        }
-                        catch (Exception) { }
-                    });
                     return Any.Pack(new AttachRuntimeResponse { Success = true });
                 }
                 else
@@ -85,6 +72,8 @@ namespace TickTrader.Algo.Core
                 return RuntimeConfigRequestHandler();
             else if (payload.Is(PackagePathRequest.Descriptor))
                 return PackagePathRequestHandler(payload);
+            else if (payload.Is(ConnectionInfoRequest.Descriptor))
+                return ConnectionInfoRequestHandler();
             else if (payload.Is(CurrencyListRequest.Descriptor))
                 return CurrencyListRequestHandler();
             else if (payload.Is(SymbolListRequest.Descriptor))
@@ -125,34 +114,38 @@ namespace TickTrader.Algo.Core
 
         private Any RuntimeConfigRequestHandler()
         {
-            //return _executor.Config;
-            return VoidResponse;
+            return Any.Pack(_runtime.Config);
         }
 
         private Any PackagePathRequestHandler(Any payload)
         {
             //var request = payload.Unpack<PackagePathRequest>();
-            return VoidResponse;
+            return Any.Pack(new PackagePathResponse { Path = _runtime.GetPackagePath() });
+        }
+
+        private Any ConnectionInfoRequestHandler()
+        {
+            return Any.Pack(new ConnectionInfoResponse { ConnectionInfo = _runtime.ConnectionInfo });
         }
 
         private Any CurrencyListRequestHandler()
         {
             var response = new CurrencyListResponse();
-            response.Currencies.Add(_executor.Metadata.GetCurrencyMetadata());
+            response.Currencies.Add(_runtime.Metadata.GetCurrencyMetadata());
             return Any.Pack(response);
         }
 
         private Any SymbolListRequestHandler()
         {
             var response = new SymbolListResponse();
-            response.Symbols.Add(_executor.Metadata.GetSymbolMetadata());
+            response.Symbols.Add(_runtime.Metadata.GetSymbolMetadata());
             return Any.Pack(response);
         }
 
         private Any AccountInfoRequestHandler()
         {
             var response = new AccountInfoResponse();
-            response.Account = _executor.AccInfoProvider.GetAccountInfo();
+            response.Account = _runtime.AccInfoProvider.GetAccountInfo();
             return Any.Pack(response);
         }
 
@@ -161,7 +154,7 @@ namespace TickTrader.Algo.Core
             const int chunkSize = 10;
 
             var response = new OrderListResponse { IsFinal = false };
-            var orders = _executor.AccInfoProvider.GetOrders();
+            var orders = _runtime.AccInfoProvider.GetOrders();
             var cnt = orders.Count;
 
             var nextFlush = chunkSize;
@@ -184,7 +177,7 @@ namespace TickTrader.Algo.Core
             const int chunkSize = 10;
 
             var response = new PositionListResponse { IsFinal = false };
-            var positions = _executor.AccInfoProvider.GetPositions();
+            var positions = _runtime.AccInfoProvider.GetPositions();
             var cnt = positions.Count;
 
             var nextFlush = chunkSize;
@@ -205,58 +198,58 @@ namespace TickTrader.Algo.Core
         private Any OpenOrderRequestHandler(Any payload)
         {
             var request = payload.Unpack<OpenOrderRequest>();
-            _executor.TradeExecutor.SendOpenOrder(request);
+            _runtime.TradeExecutor.SendOpenOrder(request);
             return VoidResponse;
         }
 
         private Any ModifyOrderRequestHandler(Any payload)
         {
             var request = payload.Unpack<ModifyOrderRequest>();
-            _executor.TradeExecutor.SendModifyOrder(request);
+            _runtime.TradeExecutor.SendModifyOrder(request);
             return VoidResponse;
         }
 
         private Any CloseOrderRequestHandler(Any payload)
         {
             var request = payload.Unpack<CloseOrderRequest>();
-            _executor.TradeExecutor.SendCloseOrder(request);
+            _runtime.TradeExecutor.SendCloseOrder(request);
             return VoidResponse;
         }
 
         private Any CancelOrderRequestHandler(Any payload)
         {
             var request = payload.Unpack<CancelOrderRequest>();
-            _executor.TradeExecutor.SendCancelOrder(request);
+            _runtime.TradeExecutor.SendCancelOrder(request);
             return VoidResponse;
         }
 
         private void UnitLogRecordHandler(Any payload)
         {
             var record = payload.Unpack<UnitLogRecord>();
-            _executor.OnLogUpdated(record);
+            _runtime.OnLogUpdated(record);
         }
 
         private void UnitErrorHandler(Any payload)
         {
             var error = payload.Unpack<UnitError>();
-            _executor.OnErrorOccured(new AlgoUnitException(error));
+            _runtime.OnErrorOccured(new AlgoUnitException(error));
         }
 
         private void UnitStoppedHandler()
         {
-            _executor.OnStopped();
+            _runtime.OnStopped();
         }
 
         private void DataSeriesUpdateHandler(Any payload)
         {
             var update = payload.Unpack<DataSeriesUpdate>();
-            _executor.OnDataSeriesUpdate(update);
+            _runtime.OnDataSeriesUpdate(update);
         }
 
         private Any TradeHistoryRequestHandler(string callId, Any payload)
         {
             var request = payload.Unpack<TradeHistoryRequest>();
-            var enumerator = _executor.TradeHistoryProvider.GetTradeHistory(request.From?.ToDateTime(), request.To?.ToDateTime(), request.Options);
+            var enumerator = _runtime.TradeHistoryProvider.GetTradeHistory(request.From?.ToDateTime(), request.To?.ToDateTime(), request.Options);
             if (enumerator != null)
             {
                 _pendingRequestHandlers.TryAdd(callId, enumerator);
@@ -295,7 +288,7 @@ namespace TickTrader.Algo.Core
         private Any FeedSnapshotRequestHandler()
         {
             var response = new QuotePage();
-            response.Quotes.AddRange(_executor.Feed.GetSnapshot().Select(q => q.GetFullQuote()));
+            response.Quotes.AddRange(_runtime.Feed.GetSnapshot().Select(q => q.GetFullQuote()));
             return Any.Pack(response);
         }
 
@@ -303,14 +296,14 @@ namespace TickTrader.Algo.Core
         {
             var request = payload.Unpack<ModifyFeedSubscriptionRequest>();
             var response = new QuotePage();
-            var snapshot = _executor.Feed.Sync.Invoke(() => _executor.Feed.Modify(request.Updates.ToList()));
+            var snapshot = _runtime.Feed.Sync.Invoke(() => _runtime.Feed.Modify(request.Updates.ToList()));
             response.Quotes.AddRange(snapshot.Select(q => q.GetFullQuote()));
             return Any.Pack(response);
         }
 
         private Any CancelAllFeedSubscriptionsRequestHandler()
         {
-            _executor.Feed.Sync.Invoke(() => _executor.Feed.CancelAll());
+            _runtime.Feed.Sync.Invoke(() => _runtime.Feed.CancelAll());
             return VoidResponse;
         }
 
@@ -328,8 +321,8 @@ namespace TickTrader.Algo.Core
                 Timeframe = timeframe,
             };
             response.Bars.AddRange(count.HasValue
-                ? _executor.FeedHistory.QueryBars(symbol, marketSide, timeframe, request.From, count.Value)
-                : _executor.FeedHistory.QueryBars(symbol, marketSide, timeframe, request.From, request.To));
+                ? _runtime.FeedHistory.QueryBars(symbol, marketSide, timeframe, request.From, count.Value)
+                : _runtime.FeedHistory.QueryBars(symbol, marketSide, timeframe, request.From, request.To));
 
             return Any.Pack(response);
         }
@@ -341,8 +334,8 @@ namespace TickTrader.Algo.Core
             var count = request.Count;
             var response = new QuoteChunk { Symbol = symbol, };
             response.Quotes.AddRange((count.HasValue
-                ? _executor.FeedHistory.QueryQuotes(symbol, request.From, count.Value, request.Level2)
-                : _executor.FeedHistory.QueryQuotes(symbol, request.From, request.To, request.Level2))
+                ? _runtime.FeedHistory.QueryQuotes(symbol, request.From, count.Value, request.Level2)
+                : _runtime.FeedHistory.QueryQuotes(symbol, request.From, request.To, request.Level2))
                 .Select(q => q.GetData()));
 
             return Any.Pack(response);

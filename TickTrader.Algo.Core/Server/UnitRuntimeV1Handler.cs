@@ -4,7 +4,6 @@ using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
@@ -13,7 +12,9 @@ namespace TickTrader.Algo.Core
 {
     internal class UnitRuntimeV1Handler : IRpcHandler
     {
-        private readonly RuntimeV1Loader _runtime;
+        private static readonly Any VoidResponse = Any.Pack(new VoidResponse());
+
+        private readonly IRuntimeProxy _runtime;
         private RpcSession _session;
 
 
@@ -25,7 +26,7 @@ namespace TickTrader.Algo.Core
         public event Action<List<QuoteInfo>> RatesUpdated;
 
 
-        public UnitRuntimeV1Handler(RuntimeV1Loader runtime)
+        public UnitRuntimeV1Handler(IRuntimeProxy runtime)
         {
             _runtime = runtime;
         }
@@ -40,7 +41,7 @@ namespace TickTrader.Algo.Core
 
         public Task<RuntimeConfig> GetRuntimeConfig()
         {
-            var context = new RpcResponseTaskContext<RuntimeConfig>(SingleReponseHandler);
+            var context = new RpcResponseTaskContext<RuntimeConfig>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(new RuntimeConfigRequest()), context);
             return context.TaskSrc.Task;
         }
@@ -48,7 +49,7 @@ namespace TickTrader.Algo.Core
         public async Task<string> GetPackagePath(string name, int location)
         {
             var request = new PackagePathRequest { Name = name, Location = location };
-            var context = new RpcResponseTaskContext<PackagePathResponse>(SingleReponseHandler);
+            var context = new RpcResponseTaskContext<PackagePathResponse>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(request), context);
             return (await context.TaskSrc.Task).Path;
         }
@@ -60,7 +61,7 @@ namespace TickTrader.Algo.Core
 
         internal List<CurrencyInfo> GetCurrencyList()
         {
-            var context = new RpcResponseTaskContext<CurrencyListResponse>(SingleReponseHandler);
+            var context = new RpcResponseTaskContext<CurrencyListResponse>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(new CurrencyListRequest()), context);
             var res = context.TaskSrc.Task.GetAwaiter().GetResult();
             return res.Currencies.ToList();
@@ -68,15 +69,23 @@ namespace TickTrader.Algo.Core
 
         internal List<SymbolInfo> GetSymbolList()
         {
-            var context = new RpcResponseTaskContext<SymbolListResponse>(SingleReponseHandler);
+            var context = new RpcResponseTaskContext<SymbolListResponse>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(new SymbolListRequest()), context);
             var res = context.TaskSrc.Task.GetAwaiter().GetResult();
             return res.Symbols.ToList();
         }
 
+        internal async Task<List<SymbolInfo>> GetSymbolListAsync()
+        {
+            var context = new RpcResponseTaskContext<SymbolListResponse>(RpcHandler.SingleReponseHandler);
+            _session.Ask(RpcMessage.Request(new SymbolListRequest()), context);
+            var res = await context.TaskSrc.Task;
+            return res.Symbols.ToList();
+        }
+
         internal AccountInfo GetAccountInfo()
         {
-            var context = new RpcResponseTaskContext<AccountInfoResponse>(SingleReponseHandler);
+            var context = new RpcResponseTaskContext<AccountInfoResponse>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(new AccountInfoRequest()), context);
             var res = context.TaskSrc.Task.GetAwaiter().GetResult();
             return res.Account;
@@ -98,28 +107,28 @@ namespace TickTrader.Algo.Core
 
         internal void SendOpenOrder(OpenOrderRequest request)
         {
-            var context = new RpcResponseTaskContext<VoidResponse>(SingleReponseHandler);
+            var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(request), context);
             context.TaskSrc.Task.GetAwaiter().GetResult();
         }
 
         internal void SendModifyOrder(ModifyOrderRequest request)
         {
-            var context = new RpcResponseTaskContext<VoidResponse>(SingleReponseHandler);
+            var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(request), context);
             context.TaskSrc.Task.GetAwaiter().GetResult();
         }
 
         internal void SendCloseOrder(CloseOrderRequest request)
         {
-            var context = new RpcResponseTaskContext<VoidResponse>(SingleReponseHandler);
+            var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(request), context);
             context.TaskSrc.Task.GetAwaiter().GetResult();
         }
 
         internal void SendCancelOrder(CancelOrderRequest request)
         {
-            var context = new RpcResponseTaskContext<VoidResponse>(SingleReponseHandler);
+            var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(request), context);
             context.TaskSrc.Task.GetAwaiter().GetResult();
         }
@@ -136,7 +145,7 @@ namespace TickTrader.Algo.Core
 
         internal List<QuoteInfo> GetFeedSnapshot()
         {
-            var context = new RpcResponseTaskContext<QuotePage>(SingleReponseHandler);
+            var context = new RpcResponseTaskContext<QuotePage>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(new FeedSnapshotRequest()), context);
             var res = context.TaskSrc.Task.GetAwaiter().GetResult();
             return res.Quotes.Select(q => new QuoteInfo(q)).ToList();
@@ -144,7 +153,7 @@ namespace TickTrader.Algo.Core
 
         internal List<QuoteInfo> ModifyFeedSubscription(ModifyFeedSubscriptionRequest request)
         {
-            var context = new RpcResponseTaskContext<QuotePage>(SingleReponseHandler);
+            var context = new RpcResponseTaskContext<QuotePage>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(request), context);
             var res = context.TaskSrc.Task.GetAwaiter().GetResult();
             return res.Quotes.Select(q => new QuoteInfo(q)).ToList();
@@ -152,14 +161,14 @@ namespace TickTrader.Algo.Core
 
         internal void CancelAllFeedSubscriptions()
         {
-            var context = new RpcResponseTaskContext<VoidResponse>(SingleReponseHandler);
+            var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(new CancelAllFeedSubscriptionsRequest()), context);
             context.TaskSrc.Task.GetAwaiter().GetResult();
         }
 
         internal List<BarData> GetBarList(BarListRequest request)
         {
-            var context = new RpcResponseTaskContext<BarChunk>(SingleReponseHandler);
+            var context = new RpcResponseTaskContext<BarChunk>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(request), context);
             var res = context.TaskSrc.Task.GetAwaiter().GetResult();
             return res.Bars.ToList();
@@ -167,7 +176,7 @@ namespace TickTrader.Algo.Core
 
         internal List<QuoteInfo> GetQuoteList(QuoteListRequest request)
         {
-            var context = new RpcResponseTaskContext<QuoteChunk>(SingleReponseHandler);
+            var context = new RpcResponseTaskContext<QuoteChunk>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(request), context);
             var res = context.TaskSrc.Task.GetAwaiter().GetResult();
             var symbol = res.Symbol;
@@ -197,10 +206,27 @@ namespace TickTrader.Algo.Core
 
         public Any HandleRequest(string callId, Any payload)
         {
-            throw new NotImplementedException();
+            if (payload.Is(StartRuntimeRequest.Descriptor))
+                return StartRuntimeRequestHandler();
+            else if (payload.Is(StopRuntimeRequest.Descriptor))
+                return StopRuntimeRequestHandler();
+
+            return null;
         }
 
 
+        private Any StartRuntimeRequestHandler()
+        {
+            _runtime.Launch();//.GetAwaiter().GetResult();
+            return VoidResponse;
+        }
+
+        private Any StopRuntimeRequestHandler()
+        {
+            _runtime.Stop();//.GetAwaiter().GetResult();
+            return VoidResponse;
+        }
+        
         private bool AttachRuntimeResponseHandler(TaskCompletionSource<bool> taskSrc, Any payload)
         {
             if (payload.Is(ErrorResponse.Descriptor))
@@ -216,7 +242,7 @@ namespace TickTrader.Algo.Core
 
         private bool OrderListReponseHandler(IObserver<RepeatedField<OrderInfo>> observer, Any payload)
         {
-            if (TryGetError(payload, out var ex))
+            if (payload.TryGetError(out var ex))
             {
                 observer.OnError(ex);
             }
@@ -235,7 +261,7 @@ namespace TickTrader.Algo.Core
 
         private bool PositionListReponseHandler(IObserver<RepeatedField<PositionInfo>> observer, Any payload)
         {
-            if (TryGetError(payload, out var ex))
+            if (payload.TryGetError(out var ex))
             {
                 observer.OnError(ex);
             }
@@ -254,7 +280,7 @@ namespace TickTrader.Algo.Core
 
         private bool TradeHistoryPageResponseHandler(TaskCompletionSource<Domain.TradeReportInfo[]> taskSrc, Any payload)
         {
-            if (TryGetError(payload, out var ex))
+            if (payload.TryGetError(out var ex))
             {
                 taskSrc.TrySetException(ex);
             }
@@ -271,53 +297,6 @@ namespace TickTrader.Algo.Core
             return true;
         }
 
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool TryGetError(Any payload, out Exception ex)
-        {
-            ex = null;
-            if (payload.Is(ErrorResponse.Descriptor))
-            {
-                var error = payload.Unpack<ErrorResponse>();
-                ex = new Exception(error.Message);
-                return true;
-            }
-            return false;
-        }
-
-        private bool SingleReponseHandler<T>(TaskCompletionSource<T> taskSrc, Any payload) where T : IMessage, new()
-        {
-            if (TryGetError(payload, out var ex))
-            {
-                taskSrc.TrySetException(ex);
-            }
-            else
-            {
-                var response = payload.Unpack<T>();
-                taskSrc.TrySetResult(response);
-            }
-
-            return true;
-        }
-
-        private bool ListReponseHandler<T>(IObserver<RepeatedField<T>> observer, Any payload) where T : IMessage, new()
-        {
-            if (TryGetError(payload, out var ex))
-            {
-                observer.OnError(ex);
-            }
-            else
-            {
-                var response = payload.Unpack<T>();
-                //observer.OnNext(response.Items);
-                //if (!response.IsFinal)
-                //    return false;
-
-                observer.OnCompleted();
-            }
-
-            return true;
-        }
 
         private void OrderExecReportNotificationHandler(Any payload)
         {

@@ -79,12 +79,12 @@ namespace TickTrader.BotTerminal
                 AbortExecutor();
         }
 
-        public void Start()
+        public async Task Start()
         {
             if (!PluginStateHelper.CanStart(State))
                 return;
 
-            if (StartExcecutor())
+            if (await StartExcecutor())
             {
                 _botListener?.Start();
                 ChangeState(PluginStates.Running);
@@ -103,14 +103,14 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        protected override PluginExecutor CreateExecutor()
+        protected override RuntimeModel CreateExecutor()
         {
             var executor = base.CreateExecutor();
             executor.TradeExecutor = Host.GetTradeApi();
-            executor.Config.WorkingFolder = Path.Combine(EnvService.Instance.AlgoWorkingFolder, PathHelper.GetSafeFileName(InstanceId));
-            executor.Config.BotWorkingFolder = executor.Config.WorkingFolder;
-            EnvService.Instance.EnsureFolder(executor.Config.WorkingFolder);
+            executor.Config.WorkingDirectory = Path.Combine(EnvService.Instance.AlgoWorkingFolder, PathHelper.GetSafeFileName(InstanceId));
+            EnvService.Instance.EnsureFolder(executor.Config.WorkingDirectory);
 
+            executor.Config.IsLoggingEnabled = true;
             _botListener = new BotListenerProxy(executor, OnBotExited, this);
             return executor;
         }
@@ -156,7 +156,7 @@ namespace TickTrader.BotTerminal
             Updated?.Invoke(this);
         }
 
-        protected override IOutputCollector CreateOutputCollector<T>(PluginExecutor executor, OutputSetupModel outputSetup)
+        protected override IOutputCollector CreateOutputCollector<T>(RuntimeModel executor, OutputSetupModel outputSetup)
         {
             return new CachingOutputCollector<T>(outputSetup, executor);
         }

@@ -46,7 +46,7 @@ namespace TickTrader.Algo.Core
             return executor;
         }
 
-        public RuntimeModel CreateRuntimeModel(AlgoPluginRef pluginRef, ISyncContext updatesSync)
+        public RuntimeModel CreateRuntime(AlgoPluginRef pluginRef, ISyncContext updatesSync)
         {
             var id = Guid.NewGuid().ToString("N");
             var runtime = new RuntimeModel(id, pluginRef, updatesSync);
@@ -58,6 +58,11 @@ namespace TickTrader.Algo.Core
         internal bool TryGetExecutor(string executorId, out PluginExecutor executor)
         {
             return _executorsMap.TryGetValue(executorId, out executor);
+        }
+
+        internal bool TryGetRuntime(string executorId, out RuntimeModel runtime)
+        {
+            return _runtimesMap.TryGetValue(executorId, out runtime);
         }
 
 

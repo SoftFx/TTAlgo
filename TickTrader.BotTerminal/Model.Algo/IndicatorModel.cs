@@ -53,10 +53,11 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        protected override PluginExecutor CreateExecutor()
+        protected override RuntimeModel CreateExecutor()
         {
             var executor = base.CreateExecutor();
 
+            executor.Config.IsLoggingEnabled = true;
             _indicatorListener = new IndicatorListenerProxy(executor, this);
 
             return executor;

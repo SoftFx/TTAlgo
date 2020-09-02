@@ -90,6 +90,10 @@ message MarkerInfo {
     int32 color_rgb = 4;
 }
 
+message StartRuntimeRequest { } // void response
+
+message StopRuntimeRequest { } // void response
+
 message RuntimeConfigRequest { }
 
 message RuntimeConfig {
@@ -116,6 +120,8 @@ message TimeSpanStrategyConfig {
     google.protobuf.Timestamp to = 2;
 }
 
+message PriorityInvokeStrategyConfig { }
+
 message PackagePathRequest {
     string name = 1;
     int32 location = 2;
@@ -124,3 +130,13 @@ message PackagePathRequest {
 message PackagePathResponse {
     string path = 1;
 }
+
+message ConnectionInfoRequest { }
+
+message ConnectionInfoResponse {
+    string connection_info = 1;
+}
+
+message AccountDisconnectNotification { }
+
+message AccountReconnectNotification { }

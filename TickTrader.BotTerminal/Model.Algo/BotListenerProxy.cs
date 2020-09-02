@@ -19,22 +19,21 @@ namespace TickTrader.BotTerminal
 
     public class BotListenerProxy
     {
-        private PluginExecutor _executor;
+        private RuntimeModel _runtime;
         private Action _onStopped;
         private IBotWriter _writer;
         //private object _sync = new object();
         private string _currentStatus;
         private DispatcherTimer _timer;
 
-        public BotListenerProxy(PluginExecutor executor, Action onStopped, IBotWriter writer)
+        public BotListenerProxy(RuntimeModel runtime, Action onStopped, IBotWriter writer)
         {
-            _executor = executor;
+            _runtime = runtime;
             _onStopped = onStopped;
             _writer = writer;
 
-            executor.Config.IsLoggingEnabled = true;
-            executor.Stopped += Executor_Stopped; //IsRunning .IsRunningChanged += Executor_IsRunningChanged;
-            executor.LogUpdated += Executor_LogUpdated; //NewRecords += ListenerProxy_NewRecords;
+            runtime.Stopped += Executor_Stopped; //IsRunning .IsRunningChanged += Executor_IsRunningChanged;
+            runtime.LogUpdated += Executor_LogUpdated; //NewRecords += ListenerProxy_NewRecords;
         }
 
         public void Start()
@@ -64,8 +63,8 @@ namespace TickTrader.BotTerminal
             if (disposing)
             {
                 //_executor.IsRunningChanged -= Executor_IsRunningChanged;
-                _executor.Stopped -= Executor_Stopped;
-                _executor.LogUpdated -= Executor_LogUpdated;
+                _runtime.Stopped -= Executor_Stopped;
+                _runtime.LogUpdated -= Executor_LogUpdated;
             }
         }
 
@@ -80,7 +79,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void Executor_Stopped(PluginExecutor executor)
+        private void Executor_Stopped(RuntimeModel runtime)
         {
             _onStopped();
         }

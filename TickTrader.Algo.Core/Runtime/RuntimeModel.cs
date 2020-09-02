@@ -1,8 +1,15 @@
-﻿using System;
+﻿using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Rpc;
 
 namespace TickTrader.Algo.Core
 {
@@ -11,6 +18,10 @@ namespace TickTrader.Algo.Core
         private readonly AlgoPluginRef _pluginRef;
         private readonly ISyncContext _syncContext;
         private readonly IRuntimeHostProxy _runtimeHost;
+
+        private Action<RpcMessage> _onNotification;
+        private IRuntimeProxy _proxy;
+        private TaskCompletionSource<bool> _attachTask;
 
 
         public string Id { get; }
@@ -34,6 +45,10 @@ namespace TickTrader.Algo.Core
         public event Action<Exception> ErrorOccurred;
         public event Action<RuntimeModel> Stopped;
 
+        public Feed.Types.Timeframe Timeframe { get; private set; }
+
+        public string ConnectionInfo { get; private set; }
+
 
         internal RuntimeModel(string id, AlgoPluginRef pluginRef, ISyncContext updatesSync)
         {
@@ -41,20 +56,90 @@ namespace TickTrader.Algo.Core
             _pluginRef = pluginRef;
             _syncContext = updatesSync;
 
-            _runtimeHost = RuntimeHost.Create(_pluginRef.IsIsolated);
+            _runtimeHost = RuntimeHost.Create(true);// _pluginRef.IsIsolated);
         }
 
 
-        public Task Start(string address, int port)
+        public void SetConfig(PluginConfig config)
         {
-            return _runtimeHost.Start(address, port, Id);
+            Timeframe = config.TimeFrame.ToDomainEnum();
+            using (var stream = new MemoryStream())
+            {
+                var serializer = new DataContractSerializer(typeof(PluginConfig));
+                serializer.WriteObject(stream, config);
+                stream.Seek(0, SeekOrigin.Begin);
+                Config.PluginConfig = new Any { TypeUrl = "ttalgo-config-v2", Value = ByteString.FromStream(stream) };
+            }
         }
 
-        public Task Stop()
+        public async Task Start(string address, int port)
         {
-            return _runtimeHost.Stop();
+            _attachTask = new TaskCompletionSource<bool>();
+            await _runtimeHost.Start(address, port, Id);
+            await _attachTask.Task;
+            await _proxy.Launch();
         }
 
+        public async Task Stop()
+        {
+            await _proxy.Stop();
+            OnDetached();
+            await _runtimeHost.Stop();
+        }
+
+        public void Abort()
+        {
+
+        }
+
+        public void NotifyDisconnectNotification()
+        {
+            _onNotification?.Invoke(RpcMessage.Notification(new AccountDisconnectNotification()));
+        }
+
+        public void NotifyReconnectNotification()
+        {
+            _onNotification?.Invoke(RpcMessage.Notification(new AccountReconnectNotification()));
+        }
+
+        public void SetConnectionInfo(string connectionInfo)
+        {
+            ConnectionInfo = connectionInfo;
+        }
+
+
+        internal void OnAttached(Action<RpcMessage> onNotification, IRuntimeProxy proxy)
+        {
+            _onNotification = onNotification;
+            _proxy = proxy;
+
+            AccInfoProvider.OrderUpdated += OnOrderUpdated;
+            AccInfoProvider.PositionUpdated += OnPositionUpdated;
+            AccInfoProvider.BalanceUpdated += OnBalanceUpdated;
+
+            Feed.RateUpdated += OnRateUpdated;
+            Feed.RatesUpdated += OnRatesUpdated;
+
+            _attachTask?.TrySetResult(true);
+        }
+
+        internal void OnDetached()
+        {
+            _onNotification = null;
+            _proxy = null;
+
+            AccInfoProvider.OrderUpdated -= OnOrderUpdated;
+            AccInfoProvider.PositionUpdated -= OnPositionUpdated;
+            AccInfoProvider.BalanceUpdated -= OnBalanceUpdated;
+
+            Feed.RateUpdated -= OnRateUpdated;
+            Feed.RatesUpdated -= OnRatesUpdated;
+        }
+
+        internal string GetPackagePath()
+        {
+            return _pluginRef.PackagePath;
+        }
 
         internal void OnLogUpdated(UnitLogRecord record)
         {
@@ -93,5 +178,16 @@ namespace TickTrader.Algo.Core
             if (update.SeriesType == DataSeriesUpdate.Types.Type.Output)
                 OutputUpdate?.Invoke(update);
         }
+
+
+        private void OnOrderUpdated(OrderExecReport r) => _onNotification?.Invoke(RpcMessage.Notification(r));
+
+        private void OnPositionUpdated(PositionExecReport r) => _onNotification?.Invoke(RpcMessage.Notification(r));
+
+        private void OnBalanceUpdated(BalanceOperation r) => _onNotification?.Invoke(RpcMessage.Notification(r));
+
+        private void OnRateUpdated(QuoteInfo r) => _onNotification?.Invoke(RpcMessage.Notification(r.GetFullQuote()));
+
+        private void OnRatesUpdated(List<QuoteInfo> r) => _onNotification?.Invoke(RpcMessage.Notification(QuotePage.Create(r)));
     }
 }

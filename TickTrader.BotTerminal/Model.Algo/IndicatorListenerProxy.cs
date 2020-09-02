@@ -10,16 +10,15 @@ namespace TickTrader.BotTerminal
 {
     public class IndicatorListenerProxy
     {
-        private PluginExecutor _executor;
+        private RuntimeModel _runtime;
         private IIndicatorWriter _writer;
 
-        public IndicatorListenerProxy(PluginExecutor executor, IIndicatorWriter writer)
+        public IndicatorListenerProxy(RuntimeModel runtime, IIndicatorWriter writer)
         {
-            _executor = executor;
+            _runtime = runtime;
             _writer = writer;
 
-            executor.Config.IsLoggingEnabled = true;
-            executor.LogUpdated += Executor_LogUpdated;
+            runtime.LogUpdated += Executor_LogUpdated;
         }
 
         private void Executor_LogUpdated(UnitLogRecord record)

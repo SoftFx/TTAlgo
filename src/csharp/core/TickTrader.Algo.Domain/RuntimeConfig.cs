@@ -1,4 +1,5 @@
 ﻿using Google.Protobuf.WellKnownTypes;
+using System;
 
 namespace TickTrader.Algo.Domain
 {
@@ -19,9 +20,14 @@ namespace TickTrader.Algo.Domain
             BufferStrategyConfig = Any.Pack(new SlidingBufferStrategyConfig { Size = size });
         }
 
-        public void InitTimeSpanBuffering(Timestamp from, Timestamp to)
+        public void InitTimeSpanBuffering(DateTime from, DateTime to)
         {
-            BufferStrategyConfig = Any.Pack(new TimeSpanStrategyConfig { From = from, To = to });
+            BufferStrategyConfig = Any.Pack(new TimeSpanStrategyConfig { From = from.ToUniversalTime().ToTimestamp(), To = to.ToUniversalTime().ToTimestamp() });
+        }
+
+        public void InitPriorityInvokeStrategy()
+        {
+            InvokeStrategyConfig = Any.Pack(new PriorityInvokeStrategyConfig());
         }
     }
 }

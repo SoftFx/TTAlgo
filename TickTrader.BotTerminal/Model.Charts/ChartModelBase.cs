@@ -31,6 +31,7 @@ using SM = Machinarium.State;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core.Infrastructure;
 using TickTrader.Algo.Domain;
+using Google.Protobuf.WellKnownTypes;
 
 namespace TickTrader.BotTerminal
 {
@@ -409,17 +410,17 @@ namespace TickTrader.BotTerminal
             return $"account {ClientModel.Connection.CurrentLogin} on {ClientModel.Connection.CurrentServer} using {ClientModel.Connection.CurrentProtocol}";
         }
 
-        public virtual void InitializePlugin(PluginExecutor plugin)
+        public virtual void InitializePlugin(RuntimeModel runtime)
         {
-            plugin.Config.InvokeStrategy = new PriorityInvokeStartegy();
-            plugin.AccInfoProvider = new PluginTradeInfoProvider(ClientModel.Cache, new DispatcherSync());
+            runtime.Config.InitPriorityInvokeStrategy();
+            runtime.AccInfoProvider = new PluginTradeInfoProvider(ClientModel.Cache, new DispatcherSync());
         }
 
-        public virtual void UpdatePlugin(PluginExecutor plugin)
+        public virtual void UpdatePlugin(RuntimeModel runtime)
         {
-            plugin.Config.TimeFrame = TimeFrame;
-            plugin.Config.MainSymbolCode = SymbolCode;
-            plugin.Config.InitTimeSpanBuffering(TimelineStart, DateTime.Now + TimeSpan.FromDays(100));
+            //runtime.Config.TimeFrame = TimeFrame;
+            //runtime.Config.MainSymbolCode = SymbolCode;
+            runtime.Config.InitTimeSpanBuffering(TimelineStart, DateTime.Now + TimeSpan.FromDays(100));
         }
 
         bool IExecStateObservable.IsStarted { get { return isIndicatorsOnline; } }

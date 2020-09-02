@@ -16,7 +16,7 @@ namespace TickTrader.BotTerminal
     {
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
-        private PluginExecutor _executor;
+        private RuntimeModel _executor;
         private Dictionary<string, IOutputCollector> _outputs;
 
         public PluginConfig Config { get; private set; }
@@ -66,7 +66,7 @@ namespace TickTrader.BotTerminal
             //AlertUpdateEvent += agent.Shell.AlertsManager.UpdateAlertModel;
         }
 
-        protected bool StartExcecutor()
+        protected async Task<bool> StartExcecutor()
         {
             if (PackageRef?.IsObsolete ?? true)
                 UpdateRefs();
@@ -82,11 +82,11 @@ namespace TickTrader.BotTerminal
                 Setup.Load(Config);
 
                 _executor = CreateExecutor();
-                Setup.SetWorkingFolder(_executor.Config.WorkingFolder);
-                Setup.Apply(_executor.Config);
+                //Setup.SetWorkingFolder(_executor.Config.WorkingFolder);
+                //Setup.Apply(_executor.Config);
 
                 Host.UpdatePlugin(_executor);
-                _executor.Launch(Agent.AlgoServer.Address, Agent.AlgoServer.BoundPort);
+                await _executor.Start(Agent.AlgoServer.Address, Agent.AlgoServer.BoundPort);
                 //_executor.WriteConnectionInfo(Host.GetConnectionInfo());
                 return true;
             }
@@ -111,8 +111,7 @@ namespace TickTrader.BotTerminal
 
             try
             {
-                _executor.WriteConnectionInfo(Host.GetConnectionInfo());
-                await _executor.StopAsync();
+                await _executor.Stop();
                 ClearOutputs();
                 UnlockResources();
                 return true;
@@ -131,37 +130,31 @@ namespace TickTrader.BotTerminal
             _executor.Abort();
         }
 
-        protected virtual PluginExecutor CreateExecutor()
+        protected virtual RuntimeModel CreateExecutor()
         {
-            var executor = Agent.AlgoServer.CreateExecutor(PluginRef, null);
+            var runtime = Agent.AlgoServer.CreateRuntime(PluginRef, null);
 
-            executor.ErrorOccurred += Executor_OnRuntimeError;
+            runtime.ErrorOccurred += Executor_OnRuntimeError;
 
-            executor.Config.TimeFrame = Setup.SelectedTimeFrame;
-            executor.Config.MainSymbolCode = Setup.MainSymbol.Id;
-            executor.Config.InstanceId = InstanceId;
-            executor.Config.Permissions = Setup.Permissions;
-            executor.Config.WorkingFolder = EnvService.Instance.AlgoWorkingFolder;
-            executor.Config.BotWorkingFolder = EnvService.Instance.AlgoWorkingFolder;
-            executor.TradeHistoryProvider = Host.GetTradeHistoryApi();
+            runtime.SetConfig(Config);
+            runtime.Config.WorkingDirectory = EnvService.Instance.AlgoWorkingFolder;
+            runtime.TradeHistoryProvider = Host.GetTradeHistoryApi();
 
-            Host.InitializePlugin(executor);
+            Host.InitializePlugin(runtime);
 
-            CreateOutputs(executor);
+            CreateOutputs(runtime);
 
-            return executor;
+            return runtime;
         }
 
         protected virtual void HandleReconnect()
         {
-            _executor.HandleReconnect();
-            _executor.WriteConnectionInfo(Host.GetConnectionInfo());
+            _executor.NotifyReconnectNotification();
         }
 
         protected virtual void HandleDisconnect()
         {
-            _executor.HandleDisconnect();
-            _executor.WriteConnectionInfo(Host.GetConnectionInfo());
+            _executor.NotifyDisconnectNotification();
         }
 
         protected virtual void ChangeState(PluginStates state, string faultMessage = null)
@@ -223,7 +216,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void CreateOutputs(PluginExecutor executor)
+        private void CreateOutputs(RuntimeModel executor)
         {
             try
             {
@@ -242,14 +235,14 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void CreateOuput<T>(PluginExecutor executor, OutputSetupModel setup)
+        private void CreateOuput<T>(RuntimeModel executor, OutputSetupModel setup)
         {
-            executor.Config.SetupOutput<T>(setup.Id);
+            //executor.Config.SetupOutput<T>(setup.Id);
             var collector = CreateOutputCollector<T>(executor, setup);
             _outputs.Add(setup.Id, collector);
         }
 
-        protected virtual IOutputCollector CreateOutputCollector<T>(PluginExecutor executor, OutputSetupModel setup)
+        protected virtual IOutputCollector CreateOutputCollector<T>(RuntimeModel executor, OutputSetupModel setup)
         {
             return new OutputCollector<T>(setup, executor);
         }

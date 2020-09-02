@@ -150,7 +150,7 @@ namespace TickTrader.BotTerminal
         {
             if (_bots.TryGetValue(instanceId, out var bot))
             {
-                bot.Start();
+                return bot.Start();
             }
             return Task.FromResult(this);
         }
@@ -592,27 +592,27 @@ namespace TickTrader.BotTerminal
             return $"account {ClientModel.Connection.CurrentLogin} on {ClientModel.Connection.CurrentServer} using {ClientModel.Connection.CurrentProtocol}";
         }
 
-        public virtual void InitializePlugin(PluginExecutor plugin)
+        public virtual void InitializePlugin(RuntimeModel runtime)
         {
-            plugin.Config.InvokeStrategy = new PriorityInvokeStartegy();
-            plugin.AccInfoProvider = new PluginTradeInfoProvider(ClientModel.Cache, new DispatcherSync());
+            runtime.Config.InitPriorityInvokeStrategy();
+            runtime.AccInfoProvider = new PluginTradeInfoProvider(ClientModel.Cache, new DispatcherSync());
             var feedProvider = new PluginFeedProvider(ClientModel.Cache, ClientModel.Distributor, ClientModel.FeedHistory, new DispatcherSync());
-            plugin.Metadata = feedProvider;
-            plugin.Feed = feedProvider;
-            plugin.FeedHistory = feedProvider;
-            switch (plugin.Config.TimeFrame)
+            runtime.Metadata = feedProvider;
+            runtime.Feed = feedProvider;
+            runtime.FeedHistory = feedProvider;
+            switch (runtime.Timeframe)
             {
                 case Feed.Types.Timeframe.Ticks:
-                    plugin.Config.InitQuoteStrategy();
+                    runtime.Config.InitQuoteStrategy();
                     break;
                 default:
-                    plugin.Config.InitBarStrategy(Feed.Types.MarketSide.Bid);
+                    runtime.Config.InitBarStrategy(Feed.Types.MarketSide.Bid);
                     break;
             }
-            plugin.Config.InitSlidingBuffering(4000);
+            runtime.Config.InitSlidingBuffering(4000);
         }
 
-        public virtual void UpdatePlugin(PluginExecutor plugin)
+        public virtual void UpdatePlugin(RuntimeModel runtime)
         {
         }
 
