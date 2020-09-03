@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model.Config;
@@ -51,8 +52,18 @@ namespace TickTrader.Algo.Core
             }
 
             var package = config.Key.GetPackageKey();
-            var path = await _handler.GetPackagePath(package.Name, (int)package.Location).ConfigureAwait(false);
-            var sandbox = new AlgoSandbox(path, true);
+            var path = string.Empty;
+            if (package.Location == RepositoryLocation.Embedded && package.Name.Equals("TickTrader.Algo.Indicators.dll", System.StringComparison.OrdinalIgnoreCase))
+            {
+                var indicatorsAssembly = Assembly.Load("TickTrader.Algo.Indicators");
+                AlgoAssemblyInspector.FindPlugins(indicatorsAssembly);
+                path = indicatorsAssembly.Location;
+            }
+            else
+            {
+                path = await _handler.GetPackagePath(package.Name, (int)package.Location).ConfigureAwait(false);
+                var sandbox = new AlgoSandbox(path, false);
+            }
 
             //var requiredPackages = new List<PackageKey> { config.Key.GetPackageKey() };
             //requiredPackages.AddRange(config.SelectedMapping.GetPackageKeys());
@@ -92,6 +103,13 @@ namespace TickTrader.Algo.Core
             var executorConfig = new PluginExecutorConfig();
             executorConfig.LoadFrom(runtimeConfig, config);
             setup.Apply(executorConfig);
+            foreach (var outputSetup in setup.Outputs)
+            {
+                if (outputSetup is ColoredLineOutputSetupModel)
+                    executorConfig.SetupOutput<double>(outputSetup.Id);
+                else if (outputSetup is MarkerSeriesOutputSetupModel)
+                    executorConfig.SetupOutput<Api.Marker>(outputSetup.Id);
+            }
 
             var provider = new RuntimeInfoProvider(_handler);
 
