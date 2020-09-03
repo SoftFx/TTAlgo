@@ -67,7 +67,7 @@ namespace TickTrader.BotTerminal
         {
             if (PluginStateHelper.CanStart(State))
             {
-                _host.EnqueueStartAction(() => StartExcecutor());
+                _host.EnqueueStartAction(() => StartExcecutor().ContinueWith(t => { if (t.Result) ChangeState(PluginStates.Running); }));
                 //if (StartExcecutor())
                 //    ChangeState(PluginStates.Running);
             }

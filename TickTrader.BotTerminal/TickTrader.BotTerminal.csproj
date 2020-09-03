@@ -1336,7 +1336,10 @@
     <PostBuildEvent>rem moving BotTerminal and Avalon dock resource files
 rmdir /s /q $(TargetDir)\Resources
 for %25%25i in (en-gb, ru-ru, de, es, fr, hu, it, pt-BR, ro, ru, sv, zh-Hans, cs-CZ) do call "$(ProjectDir)\move.directory.bat" $(TargetDir)\%25%25i $(TargetDir)\Resources\%25%25i
-</PostBuildEvent>
+
+rmdir /s /q $(TargetDir)\AlgoRuntime
+mkdir $(TargetDir)\AlgoRuntime
+copy $(SolutionDir)\src\csharp\sandbox\TickTrader.Algo.RuntimeV1\$(OutDir) $(TargetDir)\AlgoRuntime</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
