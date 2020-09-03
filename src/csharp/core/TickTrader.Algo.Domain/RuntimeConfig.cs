@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System;
+using System.Collections.Generic;
 
 namespace TickTrader.Algo.Domain
 {
@@ -28,6 +29,13 @@ namespace TickTrader.Algo.Domain
         public void InitPriorityInvokeStrategy()
         {
             InvokeStrategyConfig = Any.Pack(new PriorityInvokeStrategyConfig());
+        }
+
+        public void SetMainSeries(IEnumerable<BarData> bars)
+        {
+            var barChunk = new BarChunk();
+            barChunk.Bars.AddRange(bars);
+            MainSeries = Any.Pack(barChunk);
         }
     }
 }

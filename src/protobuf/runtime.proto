@@ -103,6 +103,7 @@ message RuntimeConfig {
     google.protobuf.Any feed_strategy_config = 4;
     google.protobuf.Any buffer_strategy_config = 5;
     google.protobuf.Any invoke_strategy_config = 6;
+    google.protobuf.Any main_series = 7;
 }
 
 message BarStratefyConfig {
