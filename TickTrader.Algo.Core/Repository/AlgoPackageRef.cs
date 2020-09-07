@@ -1,19 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Repository
 {
-    public enum RepositoryLocation
-    {
-        Embedded = 0,
-        LocalRepository = 1,
-        LocalExtensions = 2,
-        CommonRepository = 3,
-        CommonExtensions = 4,
-    }
-
-
     public class AlgoPackageRef : IDisposable
     {
         private List<AlgoPluginRef> _plugins;

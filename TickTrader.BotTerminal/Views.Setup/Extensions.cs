@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -21,7 +21,7 @@ namespace TickTrader.BotTerminal
             return symbols;
         }
 
-        public static SymbolKey GetSymbolOrDefault(this IReadOnlyList<SymbolKey> availableSymbols, SymbolConfig config)
+        public static SymbolKey GetSymbolOrDefault(this IReadOnlyList<SymbolKey> availableSymbols, Algo.Common.Model.Config.SymbolConfig config)
         {
             if (config != null)
                 return availableSymbols.FirstOrDefault(s => s.Origin == config.Origin && s.Name == config.Name);
@@ -43,9 +43,9 @@ namespace TickTrader.BotTerminal
 
     public static class SymbolInfoExtensions
     {
-        public static SymbolConfig ToConfig(this SymbolKey info)
+        public static Algo.Common.Model.Config.SymbolConfig ToConfig(this SymbolKey info)
         {
-            return new SymbolConfig { Name = info.Name, Origin = info.Origin };
+            return new Algo.Common.Model.Config.SymbolConfig { Name = info.Name, Origin = info.Origin };
         }
     }
 

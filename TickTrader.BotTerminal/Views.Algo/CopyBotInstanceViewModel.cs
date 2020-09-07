@@ -256,12 +256,12 @@ namespace TickTrader.BotTerminal
 
         private async Task ResolvePackage(ITradeBot srcBot, PluginConfig dstConfig)
         {
-            if (!_fromAgent.Model.Packages.Snapshot.TryGetValue(srcBot.Config.Key.GetPackageKey(), out var srcPackage))
+            if (!_fromAgent.Model.Packages.Snapshot.TryGetValue(srcBot.Config.Key.GetPackageKey().Convert(), out var srcPackage))
                 throw new ArgumentException("Can't find bot package");
 
             var uploadSrcPackage = false;
-            var dstPackageKey = dstConfig.Key.GetPackageKey();
-            dstPackageKey.Location = RepositoryLocation.LocalRepository; //remote bot agents have only local package location
+            var dstPackageKey = dstConfig.Key.GetPackageKey().Convert();
+            dstPackageKey.Location = Algo.Domain.RepositoryLocation.LocalRepository; //remote bot agents have only local package location
             var dstPackage = _selectedAgent.Model.Packages.Snapshot.Values.Where(p => p.Identity.Size == srcPackage.Identity.Size && p.Identity.Hash == srcPackage.Identity.Hash)
                 .OrderBy(p => p.Key.Location == dstPackageKey.Location ? 0 : 1).ThenBy(p => p.Key.Name == dstPackageKey.Name ? 0 : 1).FirstOrDefault();
             if (dstPackage != null)
@@ -316,7 +316,7 @@ namespace TickTrader.BotTerminal
             }
 
             dstConfig.Key.PackageName = dstPackageKey.Name;
-            dstConfig.Key.PackageLocation = dstPackageKey.Location;
+            dstConfig.Key.PackageLocation = (RepositoryLocation)dstPackageKey.Location;
         }
 
         private async Task ResolveBotFiles(ITradeBot srcBot, PluginConfig dstConfig)

@@ -12,7 +12,7 @@ namespace TickTrader.BotTerminal
         private MappingInfo _selectedMapping;
 
 
-        protected abstract MappingKey DefaultMapping { get; }
+        protected abstract Algo.Domain.MappingKey DefaultMapping { get; }
 
 
         public IReadOnlyList<MappingInfo> AvailableMappings { get; protected set; }
@@ -45,13 +45,13 @@ namespace TickTrader.BotTerminal
         }
 
 
-        protected abstract MappingInfo GetMapping(MappingKey mappingKey);
+        protected abstract MappingInfo GetMapping(Algo.Domain.MappingKey mappingKey);
 
 
         protected override void LoadConfig(Input input)
         {
             var mappedInput = input as MappedInput;
-            SelectedMapping = GetMapping(mappedInput?.SelectedMapping ?? DefaultMapping);
+            SelectedMapping = GetMapping(mappedInput?.SelectedMapping?.Convert() ?? DefaultMapping);
 
             base.LoadConfig(input);
         }
@@ -61,7 +61,7 @@ namespace TickTrader.BotTerminal
             var mappedInput = input as MappedInput;
             if (mappedInput != null)
             {
-                mappedInput.SelectedMapping = SelectedMapping.Key;
+                mappedInput.SelectedMapping = SelectedMapping.Key.Convert();
             }
 
             base.SaveConfig(input);

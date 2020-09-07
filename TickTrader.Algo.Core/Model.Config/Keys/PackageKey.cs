@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TickTrader.Algo.Core.Repository
+namespace TickTrader.Algo.Common.Model.Config
 {
     [Serializable]
     public class PackageKey : IComparable<PackageKey>

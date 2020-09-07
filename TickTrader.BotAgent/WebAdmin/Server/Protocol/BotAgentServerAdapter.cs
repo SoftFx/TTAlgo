@@ -4,10 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Protocol;
 using TickTrader.BotAgent.BA;
@@ -116,7 +114,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             _botAgent.StopBotAsync(botId);
         }
 
-        public void AddBot(AccountKey account, PluginConfig config)
+        public void AddBot(AccountKey account, Algo.Common.Model.Config.PluginConfig config)
         {
             _botAgent.AddBot(account, config);
         }
@@ -126,7 +124,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             _botAgent.RemoveBot(botId, cleanLog, cleanAlgoData);
         }
 
-        public void ChangeBotConfig(string botId, PluginConfig newConfig)
+        public void ChangeBotConfig(string botId, Algo.Common.Model.Config.PluginConfig newConfig)
         {
             _botAgent.ChangeBotConfig(botId, newConfig);
         }

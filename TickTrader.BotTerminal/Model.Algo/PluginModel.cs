@@ -183,13 +183,13 @@ namespace TickTrader.BotTerminal
 
         protected void UpdateRefs()
         {
-            var packageRef = Agent.Library.GetPackageRef(Config.Key.GetPackageKey());
+            var packageRef = Agent.Library.GetPackageRef(Config.Key.GetPackageKey().Convert());
             if (packageRef == null)
             {
                 ChangeState(PluginStates.Broken, $"Package {Config.Key.PackageName} at {Config.Key.PackageLocation} is not found!");
                 return;
             }
-            var pluginRef = Agent.Library.GetPluginRef(Config.Key);
+            var pluginRef = Agent.Library.GetPluginRef(Config.Key.Convert());
             if (pluginRef == null)
             {
                 ChangeState(PluginStates.Broken, $"Plugin {Config.Key.DescriptorId} is missing in package {Config.Key.PackageName} at {Config.Key.PackageLocation}!");

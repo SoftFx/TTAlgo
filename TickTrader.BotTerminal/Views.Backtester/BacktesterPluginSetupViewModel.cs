@@ -8,6 +8,7 @@ using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -93,7 +94,7 @@ namespace TickTrader.BotTerminal
         public PluginConfig GetConfig()
         {
             var res = Setup.Save();
-            res.Key = Info.Key;
+            res.Key = Info.Key.Convert();
             return res;
         }
 

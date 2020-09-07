@@ -533,7 +533,7 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             var res = new Lib.MappedInput
             {
-                SelectedMapping = input.SelectedMapping.Convert(),
+                SelectedMapping = input.SelectedMapping.Convert2(),
             };
             switch (input)
             {
@@ -637,10 +637,10 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             var res = new Lib.PluginConfig
             {
-                Key = config.Key.Convert(),
+                Key = config.Key.Convert2(),
                 TimeFrame = config.TimeFrame.ToDomainEnum().Convert(),
                 MainSymbol = config.MainSymbol.Convert(version),
-                SelectedMapping = config.SelectedMapping.Convert(),
+                SelectedMapping = config.SelectedMapping.Convert2(),
                 InstanceId = Convert(config.InstanceId),
                 Permissions = config.Permissions.Convert(),
             };
@@ -661,26 +661,26 @@ namespace TickTrader.Algo.Protocol.Grpc
             };
         }
 
-        public static Lib.RepositoryLocation Convert(this RepositoryLocation location)
+        public static Lib.RepositoryLocation Convert(this Domain.RepositoryLocation location)
         {
             switch (location)
             {
-                case RepositoryLocation.Embedded:
+                case Domain.RepositoryLocation.Embedded:
                     return Lib.RepositoryLocation.Embedded;
-                case RepositoryLocation.LocalRepository:
+                case Domain.RepositoryLocation.LocalRepository:
                     return Lib.RepositoryLocation.LocalRepository;
-                case RepositoryLocation.LocalExtensions:
+                case Domain.RepositoryLocation.LocalExtensions:
                     return Lib.RepositoryLocation.LocalExtensions;
-                case RepositoryLocation.CommonRepository:
+                case Domain.RepositoryLocation.CommonRepository:
                     return Lib.RepositoryLocation.CommonRepository;
-                case RepositoryLocation.CommonExtensions:
+                case Domain.RepositoryLocation.CommonExtensions:
                     return Lib.RepositoryLocation.CommonExtensions;
                 default:
                     throw new ArgumentException();
             }
         }
 
-        public static Lib.PackageKey Convert(this PackageKey key)
+        public static Lib.PackageKey Convert(this Domain.PackageKey key)
         {
             return new Lib.PackageKey
             {
@@ -689,32 +689,89 @@ namespace TickTrader.Algo.Protocol.Grpc
             };
         }
 
-        public static Lib.PluginKey Convert(this PluginKey key)
+        public static Lib.PluginKey Convert(this Domain.PluginKey key)
         {
             return new Lib.PluginKey
             {
-                PackageName = Convert(key.PackageName),
-                PackageLocation = key.PackageLocation.Convert(),
+                PackageName = Convert(key.Package.Name),
+                PackageLocation = key.Package.Location.Convert(),
                 DescriptorId = Convert(key.DescriptorId),
             };
         }
 
-        public static Lib.ReductionKey Convert(this ReductionKey key)
+        public static Lib.ReductionKey Convert(this Domain.ReductionKey key)
         {
             return new Lib.ReductionKey
             {
-                PackageName = Convert(key.PackageName),
-                PackageLocation = key.PackageLocation.Convert(),
+                PackageName = Convert(key.Package.Name),
+                PackageLocation = key.Package.Location.Convert(),
                 DescriptorId = Convert(key.DescriptorId),
             };
         }
 
-        public static Lib.MappingKey Convert(this MappingKey key)
+        public static Lib.MappingKey Convert(this Domain.MappingKey key)
         {
             return new Lib.MappingKey
             {
                 PrimaryReduction = key.PrimaryReduction.Convert(),
                 SecondaryReduction = key.SecondaryReduction?.Convert(),
+            };
+        }
+
+        public static Lib.RepositoryLocation Convert2(this Common.Model.Config.RepositoryLocation location)
+        {
+            switch (location)
+            {
+                case Common.Model.Config.RepositoryLocation.Embedded:
+                    return Lib.RepositoryLocation.Embedded;
+                case Common.Model.Config.RepositoryLocation.LocalRepository:
+                    return Lib.RepositoryLocation.LocalRepository;
+                case Common.Model.Config.RepositoryLocation.LocalExtensions:
+                    return Lib.RepositoryLocation.LocalExtensions;
+                case Common.Model.Config.RepositoryLocation.CommonRepository:
+                    return Lib.RepositoryLocation.CommonRepository;
+                case Common.Model.Config.RepositoryLocation.CommonExtensions:
+                    return Lib.RepositoryLocation.CommonExtensions;
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
+        public static Lib.PackageKey Convert2(this Common.Model.Config.PackageKey key)
+        {
+            return new Lib.PackageKey
+            {
+                Name = Convert(key.Name),
+                Location = key.Location.Convert2(),
+            };
+        }
+
+        public static Lib.PluginKey Convert2(this Common.Model.Config.PluginKey key)
+        {
+            return new Lib.PluginKey
+            {
+                PackageName = Convert(key.PackageName),
+                PackageLocation = key.PackageLocation.Convert2(),
+                DescriptorId = Convert(key.DescriptorId),
+            };
+        }
+
+        public static Lib.ReductionKey Convert2(this Common.Model.Config.ReductionKey key)
+        {
+            return new Lib.ReductionKey
+            {
+                PackageName = Convert(key.PackageName),
+                PackageLocation = key.PackageLocation.Convert2(),
+                DescriptorId = Convert(key.DescriptorId),
+            };
+        }
+
+        public static Lib.MappingKey Convert2(this Common.Model.Config.MappingKey key)
+        {
+            return new Lib.MappingKey
+            {
+                PrimaryReduction = key.PrimaryReduction.Convert2(),
+                SecondaryReduction = key.SecondaryReduction?.Convert2(),
             };
         }
 

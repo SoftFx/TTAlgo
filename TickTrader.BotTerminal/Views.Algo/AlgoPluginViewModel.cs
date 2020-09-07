@@ -8,6 +8,7 @@ using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Core.Metadata;
 using System.Diagnostics;
 using System.Windows;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -64,11 +65,11 @@ namespace TickTrader.BotTerminal
             PluginInfo = info;
             Agent = agent;
 
-            PackageName = PluginInfo.Key.PackageName;
+            PackageName = PluginInfo.Key.Package.Name;
             PackageDirectory = UnknownPath;
             CurrentGroup = (GroupType)Type;
 
-            if (Agent.Model.Packages.Snapshot.TryGetValue(info.Key.GetPackageKey(), out var packageInfo))
+            if (Agent.Model.Packages.Snapshot.TryGetValue(info.Key.Package, out var packageInfo))
             {
                 PackageInfo = packageInfo;
 
@@ -81,7 +82,7 @@ namespace TickTrader.BotTerminal
                 Description = string.Join(Environment.NewLine, PluginInfo.Descriptor.Description, string.Empty, $"Package {PackageName} at {PackageDirectory}").Trim();
             }
 
-            switch (PluginInfo.Key.PackageLocation)
+            switch (PluginInfo.Key.Package.Location)
             {
                 case RepositoryLocation.LocalRepository:
                 case RepositoryLocation.LocalExtensions:

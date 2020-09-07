@@ -8,16 +8,16 @@ namespace TickTrader.BotTerminal
 {
     public class QuoteToDoubleInputSetupViewModel : MappedInputSetupViewModel
     {
-        private MappingKey _defaultMapping;
+        private Algo.Domain.MappingKey _defaultMapping;
 
 
-        protected override MappingKey DefaultMapping => _defaultMapping;
+        protected override Algo.Domain.MappingKey DefaultMapping => _defaultMapping;
 
 
         public QuoteToDoubleInputSetupViewModel(InputDescriptor descriptor, SetupMetadata setupMetadata)
             : base(descriptor, setupMetadata)
         {
-            _defaultMapping = new MappingKey(setupMetadata.Mappings.DefaultQuoteToDoubleReduction);
+            _defaultMapping = new Algo.Domain.MappingKey(setupMetadata.Mappings.DefaultQuoteToDoubleReduction);
             AvailableMappings = setupMetadata.Mappings.QuoteToDoubleMappings;
         }
 
@@ -45,7 +45,7 @@ namespace TickTrader.BotTerminal
             SelectedSymbol = SetupMetadata.DefaultSymbol; // Quote inputs does not support Main Symbol token
         }
 
-        protected override MappingInfo GetMapping(MappingKey mappingKey)
+        protected override MappingInfo GetMapping(Algo.Domain.MappingKey mappingKey)
         {
             return SetupMetadata.Mappings.GetQuoteToDoubleMappingOrDefault(mappingKey);
         }

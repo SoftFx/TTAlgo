@@ -25,7 +25,6 @@ using TickTrader.Algo.Common.Model;
 using System.Collections.Specialized;
 using TickTrader.Algo.Common.Model.Interop;
 using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Config;
 using Machinarium.Var;
 using SM = Machinarium.State;
 using TickTrader.Algo.Common.Lib;
@@ -220,7 +219,7 @@ namespace TickTrader.BotTerminal
         public event System.Action ParamsLocked = delegate { };
         public event System.Action ParamsUnlocked = delegate { };
 
-        public void AddIndicator(PluginConfig config)
+        public void AddIndicator(Algo.Common.Model.Config.PluginConfig config)
         {
             var indicator = CreateIndicator(config);
             indicators.Add(indicator);
@@ -244,7 +243,7 @@ namespace TickTrader.BotTerminal
         protected abstract void ClearData();
         protected abstract void UpdateSeries();
         protected abstract Task LoadData(CancellationToken cToken);
-        protected abstract IndicatorModel CreateIndicator(PluginConfig config);
+        protected abstract IndicatorModel CreateIndicator(Algo.Common.Model.Config.PluginConfig config);
         protected abstract void ApplyUpdate(QuoteInfo update);
 
         protected void Support(SelectableChartTypes chartType)

@@ -154,7 +154,7 @@ message ReductionMetadata {
     Metadata.ReductionType type = 4;
 }*/
 
-/*message AccountKey {
+message AccountKey {
     string server = 1;
     string login = 2;
 }
@@ -187,7 +187,7 @@ message MappingKey {
     ReductionKey secondary_reduction = 2;
 }
 
-message BoolParameterConfig {
+/*message BoolParameterConfig {
     string property_id = 1;
     bool value = 2;
 }

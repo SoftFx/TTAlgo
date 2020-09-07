@@ -14,7 +14,6 @@ using TickTrader.Algo.Common;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
@@ -164,7 +163,7 @@ namespace TickTrader.BotTerminal
             return Task.FromResult(this);
         }
 
-        public Task AddBot(AccountKey account, PluginConfig config)
+        public Task AddBot(AccountKey account, Algo.Common.Model.Config.PluginConfig config)
         {
             var bot = new TradeBotModel(config, this, this, this, Accounts.Snapshot.Values.First().Key);
             IdProvider.RegisterPluginId(bot.InstanceId);
@@ -186,7 +185,7 @@ namespace TickTrader.BotTerminal
             return Task.FromResult(this);
         }
 
-        public Task ChangeBotConfig(string instanceId, PluginConfig newConfig)
+        public Task ChangeBotConfig(string instanceId, Algo.Common.Model.Config.PluginConfig newConfig)
         {
             if (_bots.TryGetValue(instanceId, out var bot))
             {

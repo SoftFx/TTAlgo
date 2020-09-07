@@ -1,8 +1,18 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace TickTrader.Algo.Core.Repository
+namespace TickTrader.Algo.Common.Model.Config
 {
+    public enum RepositoryLocation
+    {
+        Embedded = 0,
+        LocalRepository = 1,
+        LocalExtensions = 2,
+        CommonRepository = 3,
+        CommonExtensions = 4,
+    }
+
+
     [Serializable]
     [DataContract(Name = "PluginKey", Namespace = "TTAlgo.Config.v2")]
     public class PluginKey : IComparable<PluginKey>

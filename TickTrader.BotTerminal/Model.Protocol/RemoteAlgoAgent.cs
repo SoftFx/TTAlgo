@@ -7,11 +7,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 using TickTrader.Algo.Protocol;
 
 namespace TickTrader.BotTerminal
@@ -144,7 +144,7 @@ namespace TickTrader.BotTerminal
             return _protocolClient.StopBot(instanceId);
         }
 
-        public Task AddBot(AccountKey account, PluginConfig config)
+        public Task AddBot(AccountKey account, Algo.Common.Model.Config.PluginConfig config)
         {
             return _protocolClient.AddBot(account, config);
         }
@@ -154,7 +154,7 @@ namespace TickTrader.BotTerminal
             return _protocolClient.RemoveBot(instanceId, cleanLog, cleanAlgoData);
         }
 
-        public Task ChangeBotConfig(string instanceId, PluginConfig newConfig)
+        public Task ChangeBotConfig(string instanceId, Algo.Common.Model.Config.PluginConfig newConfig)
         {
             return _protocolClient.ChangeBotConfig(instanceId, newConfig);
         }
@@ -186,7 +186,7 @@ namespace TickTrader.BotTerminal
 
         public async Task UploadPackage(string fileName, string srcFilePath, IFileProgressListener progressListener)
         {
-            await Task.Run(() => _protocolClient.UploadPackage(new PackageKey(fileName, Algo.Core.Repository.RepositoryLocation.LocalRepository), srcFilePath, DefaultChunkSize, 0, progressListener));
+            await Task.Run(() => _protocolClient.UploadPackage(new PackageKey(fileName, RepositoryLocation.LocalRepository), srcFilePath, DefaultChunkSize, 0, progressListener));
         }
 
         public Task RemovePackage(PackageKey package)
@@ -420,7 +420,7 @@ namespace TickTrader.BotTerminal
 
             // remove
             var newPluginsLookup = package.Plugins.ToDictionary(p => p.Key);
-            foreach (var plugin in _plugins.Values.Where(p => p.Key.IsFromPackage(package.Key)).ToList())
+            foreach (var plugin in _plugins.Values.Where(p => p.Key.Package.Equals(package.Key)).ToList())
             {
                 if (!newPluginsLookup.ContainsKey(plugin.Key))
                 {

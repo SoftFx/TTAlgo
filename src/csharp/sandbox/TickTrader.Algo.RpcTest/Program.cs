@@ -2,8 +2,8 @@
 using System.IO;
 using System.Linq;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.RpcTest
 {

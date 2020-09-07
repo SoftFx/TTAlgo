@@ -3,7 +3,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Common.Model.Config
 {

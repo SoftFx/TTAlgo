@@ -30,12 +30,12 @@ namespace TickTrader.Algo.Common.Model.Setup
             SelectedMapping = GetMapping(SetupContext.DefaultMapping);
         }
 
-        protected abstract Mapping GetMapping(MappingKey mappingKey);
+        protected abstract Mapping GetMapping(Domain.MappingKey mappingKey);
 
         protected override void LoadConfig(Input input)
         {
             var mappedInput = input as MappedInput;
-            SelectedMapping = GetMapping(mappedInput?.SelectedMapping ?? SetupContext.DefaultMapping);
+            SelectedMapping = GetMapping(mappedInput?.SelectedMapping?.Convert() ?? SetupContext.DefaultMapping);
 
             base.LoadConfig(input);
         }
@@ -45,7 +45,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             var mappedInput = input as MappedInput;
             if (mappedInput != null)
             {
-                mappedInput.SelectedMapping = SelectedMapping.Key;
+                mappedInput.SelectedMapping = SelectedMapping.Key.Convert();
             }
 
             base.SaveConfig(input);

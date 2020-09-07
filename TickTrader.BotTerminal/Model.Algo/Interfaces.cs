@@ -5,13 +5,13 @@ using TickTrader.Algo.Core;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.BotTerminal.Lib;
 using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Protocol;
 using TickTrader.Algo.Core.Repository;
 using System.Collections.Generic;
 using SciChart.Charting.Visuals.Axes;
 using TickTrader.Algo.Common.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -53,11 +53,11 @@ namespace TickTrader.BotTerminal
 
         Task StopBot(string botId);
 
-        Task AddBot(AccountKey account, PluginConfig config);
+        Task AddBot(AccountKey account, Algo.Common.Model.Config.PluginConfig config);
 
         Task RemoveBot(string botId, bool cleanLog, bool cleanAlgoData);
 
-        Task ChangeBotConfig(string botId, PluginConfig newConfig);
+        Task ChangeBotConfig(string botId, Algo.Common.Model.Config.PluginConfig newConfig);
 
         Task AddAccount(AccountKey account, string password);
 

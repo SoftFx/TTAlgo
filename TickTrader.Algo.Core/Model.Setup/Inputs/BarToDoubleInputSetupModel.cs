@@ -29,7 +29,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             return input;
         }
 
-        protected override Mapping GetMapping(MappingKey mappingKey)
+        protected override Mapping GetMapping(Domain.MappingKey mappingKey)
         {
             return SetupMetadata.Mappings.GetBarToDoubleMappingOrDefault(mappingKey);
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Repository
 {

@@ -232,7 +232,7 @@ namespace TickTrader.BotTerminal
 
             if (!IsEmulation)
             {
-                SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(cfg.SelectedMapping);
+                SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(cfg.SelectedMapping.Convert());
 
                 InstanceId = cfg.InstanceId;
                 AllowTrade = cfg.Permissions.TradeAllowed;
@@ -254,7 +254,7 @@ namespace TickTrader.BotTerminal
             var cfg = new PluginConfig();
             cfg.TimeFrame = SelectedTimeFrame.ToApiEnum();
             cfg.MainSymbol = MainSymbol.ToConfig();
-            cfg.SelectedMapping = SelectedMapping.Key;
+            cfg.SelectedMapping = SelectedMapping.Key.Convert();
             cfg.InstanceId = InstanceId;
             cfg.Permissions = new PluginPermissions();
             cfg.Permissions.TradeAllowed = _allowTrade;

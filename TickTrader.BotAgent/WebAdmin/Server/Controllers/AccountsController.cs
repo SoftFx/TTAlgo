@@ -8,6 +8,7 @@ using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using System.Net;
 using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 {

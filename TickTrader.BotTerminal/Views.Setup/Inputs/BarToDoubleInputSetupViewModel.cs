@@ -8,14 +8,14 @@ namespace TickTrader.BotTerminal
 {
     public class BarToDoubleInputSetupViewModel : MappedInputSetupViewModel
     {
-        private MappingKey _defaultMapping;
+        private Algo.Domain.MappingKey _defaultMapping;
 
-        protected override MappingKey DefaultMapping => _defaultMapping;
+        protected override Algo.Domain.MappingKey DefaultMapping => _defaultMapping;
 
         public BarToDoubleInputSetupViewModel(InputDescriptor descriptor, SetupMetadata setupMetadata)
             : base(descriptor, setupMetadata)
         {
-            _defaultMapping = new MappingKey(setupMetadata.Context.DefaultMapping, setupMetadata.Mappings.DefaultBarToDoubleReduction);
+            _defaultMapping = new Algo.Domain.MappingKey(setupMetadata.Context.DefaultMapping, setupMetadata.Mappings.DefaultBarToDoubleReduction);
             AvailableMappings = setupMetadata.Mappings.BarToDoubleMappings;
         }
 
@@ -35,7 +35,7 @@ namespace TickTrader.BotTerminal
             return input;
         }
 
-        protected override MappingInfo GetMapping(MappingKey mappingKey)
+        protected override MappingInfo GetMapping(Algo.Domain.MappingKey mappingKey)
         {
             return SetupMetadata.Mappings.GetBarToDoubleMappingOrDefault(mappingKey);
         }

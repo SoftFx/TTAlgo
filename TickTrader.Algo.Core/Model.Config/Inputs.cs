@@ -1,6 +1,5 @@
 ﻿using System.Runtime.Serialization;
 using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Common.Model.Config
 {

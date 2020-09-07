@@ -12,9 +12,9 @@ using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Config;
 using System.Threading;
 using System.Collections.Specialized;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -188,7 +188,7 @@ namespace TickTrader.BotTerminal
         }
 
         public AgentPluginSetupViewModel(AlgoEnvironment algoEnv, string agentName, ITradeBot bot)
-            : this(algoEnv, agentName, bot.Account, bot.Config.Key, AlgoTypes.Robot, null, PluginSetupMode.Edit)
+            : this(algoEnv, agentName, bot.Account, Algo.Common.Model.Config.ConvertExt.Convert(bot.Config.Key), AlgoTypes.Robot, null, PluginSetupMode.Edit)
         {
             Bot = bot;
             UpdateSetup();
@@ -200,7 +200,7 @@ namespace TickTrader.BotTerminal
 
         public void AddNewAccount() => SelectedAgent.OpenAccountSetup(null, this, false);
 
-        public void UploadNewPlugin() => SelectedAgent.OpenUploadPackageDialog(SelectedPlugin.Key.GetPackageKey());
+        public void UploadNewPlugin() => SelectedAgent.OpenUploadPackageDialog(SelectedPlugin.Key.Package);
 
         public void Reset()
         {
@@ -249,10 +249,10 @@ namespace TickTrader.BotTerminal
             Dispose();
         }
 
-        public PluginConfig GetConfig()
+        public Algo.Common.Model.Config.PluginConfig GetConfig()
         {
             var res = Setup.Save();
-            res.Key = SelectedPlugin.Key;
+            res.Key = Algo.Common.Model.Config.ConvertExt.Convert(SelectedPlugin.Key);
             return res;
         }
 
@@ -395,12 +395,12 @@ namespace TickTrader.BotTerminal
                 Setup.Visible = false;
         }
 
-        private async Task UploadBotFiles(PluginConfig config)
+        private async Task UploadBotFiles(Algo.Common.Model.Config.PluginConfig config)
         {
             ShowFileProgress = true;
             try
             {
-                foreach (FileParameter fileParam in config.Properties.Where(p => p is FileParameter))
+                foreach (Algo.Common.Model.Config.FileParameter fileParam in config.Properties.Where(p => p is Algo.Common.Model.Config.FileParameter))
                 {
                     var path = fileParam.FileName;
                     if (System.IO.File.Exists(path) && System.IO.Path.GetFullPath(path) == path)

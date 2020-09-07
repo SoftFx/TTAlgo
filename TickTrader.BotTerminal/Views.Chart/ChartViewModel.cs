@@ -231,7 +231,7 @@ namespace TickTrader.BotTerminal
                     return;
                 }
 
-                var model = new LocalPluginSetupViewModel(_shell.Agent, item.Key, AlgoTypes.Indicator, Chart.GetSetupContextInfo());
+                var model = new LocalPluginSetupViewModel(_shell.Agent, Algo.Common.Model.Config.ConvertExt.Convert(item.Key), AlgoTypes.Indicator, Chart.GetSetupContextInfo());
                 if (!model.Setup.CanBeSkipped)
                     _shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
                 else

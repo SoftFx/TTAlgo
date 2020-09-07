@@ -8,16 +8,16 @@ namespace TickTrader.BotTerminal
 {
     public class QuoteToBarInputSetupViewModel : MappedInputSetupViewModel
     {
-        private MappingKey _defaultMapping;
+        private Algo.Domain.MappingKey _defaultMapping;
 
 
-        protected override MappingKey DefaultMapping => _defaultMapping;
+        protected override Algo.Domain.MappingKey DefaultMapping => _defaultMapping;
 
 
         public QuoteToBarInputSetupViewModel(InputDescriptor descriptor, SetupMetadata setupMetadata)
             : base(descriptor, setupMetadata)
         {
-            _defaultMapping = new MappingKey(setupMetadata.Mappings.DefaultQuoteToBarReduction);
+            _defaultMapping = new Algo.Domain.MappingKey(setupMetadata.Mappings.DefaultQuoteToBarReduction);
             AvailableMappings = setupMetadata.Mappings.QuoteToBarMappings;
         }
 
@@ -39,7 +39,7 @@ namespace TickTrader.BotTerminal
         }
 
 
-        protected override MappingInfo GetMapping(MappingKey mappingKey)
+        protected override MappingInfo GetMapping(Algo.Domain.MappingKey mappingKey)
         {
             return SetupMetadata.Mappings.GetQuoteToBarMappingOrDefault(mappingKey);
         }

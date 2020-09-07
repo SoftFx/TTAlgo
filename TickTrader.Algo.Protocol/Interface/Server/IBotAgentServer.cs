@@ -3,8 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Protocol
 {
@@ -65,11 +64,11 @@ namespace TickTrader.Algo.Protocol
 
         void StopBot(string botId);
 
-        void AddBot(AccountKey account, PluginConfig config);
+        void AddBot(AccountKey account, Common.Model.Config.PluginConfig config);
 
         void RemoveBot(string botId, bool cleanLog, bool cleanAlgoData);
 
-        void ChangeBotConfig(string botId, PluginConfig newConfig);
+        void ChangeBotConfig(string botId, Common.Model.Config.PluginConfig newConfig);
 
         void AddAccount(AccountKey account, string password);
 

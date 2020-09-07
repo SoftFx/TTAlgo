@@ -93,7 +93,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         public void Load(PluginConfig cfg)
         {
             SelectedTimeFrame = cfg.TimeFrame.ToDomainEnum();
-            SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(cfg.SelectedMapping);
+            SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(cfg.SelectedMapping.Convert());
             InstanceId = cfg.InstanceId;
             Permissions = cfg.Permissions.Clone();
             SetMainSymbol(cfg.MainSymbol);
@@ -115,7 +115,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             var cfg = new PluginConfig();
             cfg.TimeFrame = SelectedTimeFrame.ToApiEnum();
             cfg.MainSymbol = MainSymbol.ToConfig();
-            cfg.SelectedMapping = SelectedMapping.Key;
+            cfg.SelectedMapping = SelectedMapping.Key.Convert();
             cfg.InstanceId = InstanceId;
             cfg.Permissions = Permissions.Clone();
             foreach (var propertyModel in _allProperties)

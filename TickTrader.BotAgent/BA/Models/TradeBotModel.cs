@@ -5,12 +5,12 @@ using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 using TickTrader.BotAgent.BA.Exceptions;
 using TickTrader.BotAgent.BA.Repository;
 
@@ -33,20 +33,19 @@ namespace TickTrader.BotAgent.BA.Models
         private TaskCompletionSource<object> _startedEvent;
         private bool _closed;
 
-        public TradeBotModel(PluginConfig config)
+        public TradeBotModel(Algo.Common.Model.Config.PluginConfig config)
         {
             Config = config;
         }
 
         [DataMember(Name = "configuration")]
-        public PluginConfig Config { get; private set; }
+        public Algo.Common.Model.Config.PluginConfig Config { get; private set; }
         [DataMember(Name = "running")]
         public bool IsRunning { get; private set; }
 
 
         public string Id => Config.InstanceId;
         public PluginPermissions Permissions => Config.Permissions;
-        public PluginKey PluginKey => Config.Key;
         public PackageKey PackageKey { get; private set; }
         public PluginStates State { get; private set; }
         public AlgoPackageRef Package { get; private set; }
@@ -90,7 +89,7 @@ namespace TickTrader.BotAgent.BA.Models
             return false;
         }
 
-        public void ChangeBotConfig(PluginConfig config)
+        public void ChangeBotConfig(Algo.Common.Model.Config.PluginConfig config)
         {
             CheckShutdownFlag();
 
@@ -347,7 +346,8 @@ namespace TickTrader.BotAgent.BA.Models
 
         private void UpdatePackage()
         {
-            PackageKey = PluginKey.GetPackageKey();
+            var pluginKey = Algo.Common.Model.Config.ConvertExt.Convert(Config.Key);
+            PackageKey = pluginKey.Package;
             Package = _packageRepo.GetPackageRef(PackageKey);
 
             if (Package == null)
@@ -356,10 +356,10 @@ namespace TickTrader.BotAgent.BA.Models
                 return;
             }
 
-            _ref = _packageRepo.Library.GetPluginRef(PluginKey);
+            _ref = _packageRepo.Library.GetPluginRef(pluginKey);
             if (_ref == null || _ref.Metadata.Descriptor.Type != AlgoTypes.Robot)
             {
-                BreakBot($"Trade bot {PluginKey.DescriptorId} is missing in package {PluginKey.PackageName} at {PluginKey.PackageLocation}!");
+                BreakBot($"Trade bot {pluginKey.DescriptorId} is missing in package {pluginKey.Package.Name} at {pluginKey.Package.Location}!");
                 return;
             }
 

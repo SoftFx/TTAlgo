@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace TickTrader.Algo.Core.Repository
+namespace TickTrader.Algo.Common.Model.Config
 {
     [Serializable]
     [DataContract(Name = "ReductionKey", Namespace = "TTAlgo.Config.v2")]

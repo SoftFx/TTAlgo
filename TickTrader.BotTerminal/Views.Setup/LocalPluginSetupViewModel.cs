@@ -144,7 +144,7 @@ namespace TickTrader.BotTerminal
         public PluginConfig GetConfig()
         {
             var res = Setup.Save();
-            res.Key = SelectedPlugin.Key;
+            res.Key = SelectedPlugin.Key.Convert();
             return res;
         }
 

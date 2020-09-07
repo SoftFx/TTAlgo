@@ -30,7 +30,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         }
 
 
-        protected override Mapping GetMapping(MappingKey mappingKey)
+        protected override Mapping GetMapping(Domain.MappingKey mappingKey)
         {
             return SetupMetadata.Mappings.GetBarToBarMappingOrDefault(mappingKey);
         }

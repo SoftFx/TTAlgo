@@ -8,10 +8,10 @@ namespace TickTrader.BotTerminal
 {
     public class BarToBarInputSetupViewModel : MappedInputSetupViewModel
     {
-        private MappingKey _defaultMapping;
+        private Algo.Domain.MappingKey _defaultMapping;
 
 
-        protected override MappingKey DefaultMapping => _defaultMapping;
+        protected override Algo.Domain.MappingKey DefaultMapping => _defaultMapping;
 
 
         public BarToBarInputSetupViewModel(InputDescriptor descriptor, SetupMetadata setupMetadata)
@@ -39,7 +39,7 @@ namespace TickTrader.BotTerminal
         }
 
 
-        protected override MappingInfo GetMapping(MappingKey mappingKey)
+        protected override MappingInfo GetMapping(Algo.Domain.MappingKey mappingKey)
         {
             return SetupMetadata.Mappings.GetBarToBarMappingOrDefault(mappingKey);
         }

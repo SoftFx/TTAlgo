@@ -527,7 +527,7 @@ namespace TickTrader.Algo.Protocol.Grpc
                 default:
                     throw new ArgumentException();
             }
-            res.SelectedMapping = input.SelectedMapping.Convert();
+            res.SelectedMapping = input.SelectedMapping.Convert2();
             return res;
         }
 
@@ -611,10 +611,10 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             var res = new PluginConfig
             {
-                Key = config.Key.Convert(),
+                Key = config.Key.Convert2(),
                 TimeFrame = config.TimeFrame.Convert().ToApiEnum(),
                 MainSymbol = config.MainSymbol.Convert(),
-                SelectedMapping = config.SelectedMapping.Convert(),
+                SelectedMapping = config.SelectedMapping.Convert2(),
                 InstanceId = config.InstanceId,
                 Permissions = config.Permissions.Convert()
             };
@@ -635,60 +635,106 @@ namespace TickTrader.Algo.Protocol.Grpc
             };
         }
 
-        public static RepositoryLocation Convert(this Lib.RepositoryLocation location)
+        public static Domain.RepositoryLocation Convert(this Lib.RepositoryLocation location)
         {
             switch (location)
             {
                 case Lib.RepositoryLocation.Embedded:
-                    return RepositoryLocation.Embedded;
+                    return Domain.RepositoryLocation.Embedded;
                 case Lib.RepositoryLocation.LocalRepository:
-                    return RepositoryLocation.LocalRepository;
+                    return Domain.RepositoryLocation.LocalRepository;
                 case Lib.RepositoryLocation.LocalExtensions:
-                    return RepositoryLocation.LocalExtensions;
+                    return Domain.RepositoryLocation.LocalExtensions;
                 case Lib.RepositoryLocation.CommonRepository:
-                    return RepositoryLocation.CommonRepository;
+                    return Domain.RepositoryLocation.CommonRepository;
                 case Lib.RepositoryLocation.CommonExtensions:
-                    return RepositoryLocation.CommonExtensions;
+                    return Domain.RepositoryLocation.CommonExtensions;
                 default:
                     throw new ArgumentException();
             }
         }
 
-        public static PackageKey Convert(this Lib.PackageKey key)
+        public static Domain.PackageKey Convert(this Lib.PackageKey key)
         {
-            return new PackageKey
+            return new Domain.PackageKey
             {
                 Name = key.Name,
                 Location = key.Location.Convert(),
             };
         }
 
-        public static PluginKey Convert(this Lib.PluginKey key)
+        public static Domain.PluginKey Convert(this Lib.PluginKey key)
         {
-            return new PluginKey
+            return new Domain.PluginKey
             {
-                PackageName = key.PackageName,
-                PackageLocation = key.PackageLocation.Convert(),
+                Package = new Domain.PackageKey(key.PackageName, key.PackageLocation.Convert()),
                 DescriptorId = key.DescriptorId,
             };
         }
 
-        public static ReductionKey Convert(this Lib.ReductionKey key)
+        public static Domain.ReductionKey Convert(this Lib.ReductionKey key)
         {
-            return new ReductionKey
+            return new Domain.ReductionKey
             {
-                PackageName = key.PackageName,
-                PackageLocation = key.PackageLocation.Convert(),
+                Package = new Domain.PackageKey(key.PackageName, key.PackageLocation.Convert()),
                 DescriptorId = key.DescriptorId,
             };
         }
 
-        public static MappingKey Convert(this Lib.MappingKey key)
+        public static Domain.MappingKey Convert(this Lib.MappingKey key)
         {
-            return new MappingKey
+            return new Domain.MappingKey
             {
                 PrimaryReduction = key.PrimaryReduction.Convert(),
                 SecondaryReduction = key.SecondaryReduction?.Convert(),
+            };
+        }
+
+        public static Common.Model.Config.PluginKey Convert2(this Lib.PluginKey key)
+        {
+            return new Common.Model.Config.PluginKey
+            {
+                PackageName = key.PackageName,
+                PackageLocation = key.PackageLocation.Convert2(),
+                DescriptorId = key.DescriptorId,
+            };
+        }
+
+        public static Common.Model.Config.ReductionKey Convert2(this Lib.ReductionKey key)
+        {
+            return new Common.Model.Config.ReductionKey
+            {
+                PackageName = key.PackageName,
+                PackageLocation = key.PackageLocation.Convert2(),
+                DescriptorId = key.DescriptorId,
+            };
+        }
+
+        public static Common.Model.Config.RepositoryLocation Convert2(this Lib.RepositoryLocation location)
+        {
+            switch (location)
+            {
+                case Lib.RepositoryLocation.Embedded:
+                    return Common.Model.Config.RepositoryLocation.Embedded;
+                case Lib.RepositoryLocation.LocalRepository:
+                    return Common.Model.Config.RepositoryLocation.LocalRepository;
+                case Lib.RepositoryLocation.LocalExtensions:
+                    return Common.Model.Config.RepositoryLocation.LocalExtensions;
+                case Lib.RepositoryLocation.CommonRepository:
+                    return Common.Model.Config.RepositoryLocation.CommonRepository;
+                case Lib.RepositoryLocation.CommonExtensions:
+                    return Common.Model.Config.RepositoryLocation.CommonExtensions;
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
+        public static Common.Model.Config.MappingKey Convert2(this Lib.MappingKey key)
+        {
+            return new Common.Model.Config.MappingKey
+            {
+                PrimaryReduction = key.PrimaryReduction.Convert2(),
+                SecondaryReduction = key.SecondaryReduction?.Convert2(),
             };
         }
 

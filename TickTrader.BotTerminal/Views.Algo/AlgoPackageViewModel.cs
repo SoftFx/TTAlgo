@@ -4,6 +4,7 @@ using System;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -80,7 +81,7 @@ namespace TickTrader.BotTerminal
 
         private bool PluginIsFromPackage(AlgoPluginViewModel plugin)
         {
-            return Info.Key.Name == plugin.Key.PackageName && Info.Key.Location == plugin.Key.PackageLocation;
+            return Info.Key.Equals(plugin.Key.Package);
         }
 
         private void OnAccessLevelChanged()

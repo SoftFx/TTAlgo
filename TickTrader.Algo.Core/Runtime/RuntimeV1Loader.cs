@@ -55,7 +55,7 @@ namespace TickTrader.Algo.Core
 
             var package = config.Key.GetPackageKey();
             var path = string.Empty;
-            if (package.Location == RepositoryLocation.Embedded && package.Name.Equals("TickTrader.Algo.Indicators.dll", System.StringComparison.OrdinalIgnoreCase))
+            if (package.Location == Common.Model.Config.RepositoryLocation.Embedded && package.Name.Equals("TickTrader.Algo.Indicators.dll", System.StringComparison.OrdinalIgnoreCase))
             {
                 var indicatorsAssembly = Assembly.Load("TickTrader.Algo.Indicators");
                 AlgoAssemblyInspector.FindPlugins(indicatorsAssembly);

@@ -387,9 +387,9 @@
     <Compile Include="Model.Lib\OptionalItem.cs" />
     <Compile Include="Model.Profiles\ProfileResolver.cs" />
     <Compile Include="Model.Profiles\ProfileStorageModel.cs" />
-    <Compile Include="Model.Profiles\Version1\ChartStorageEntry.cs" />
-    <Compile Include="Model.Profiles\Version1\PluginStorageEntry.cs" />
-    <Compile Include="Model.Profiles\Version1\ProfileResolver.cs" />
+    <None Include="Model.Profiles\Version1\ChartStorageEntry.cs" />
+    <None Include="Model.Profiles\Version1\PluginStorageEntry.cs" />
+    <None Include="Model.Profiles\Version1\ProfileResolver.cs" />
     <Compile Include="Model.Profiles\ViewModelStorageEntry.cs" />
     <Compile Include="Model.Protocol\BotAgentConnectionManager.cs" />
     <Compile Include="Model.Protocol\BotAgentManager.cs" />
@@ -405,7 +405,7 @@
     <Compile Include="Model.Profiles\PluginStorageEntry.cs" />
     <Compile Include="Model.Profiles\ProfileManager.cs" />
     <Compile Include="Model.Profiles\ProfileRepository.cs" />
-    <Compile Include="Model.Profiles\Version1\ProfileStorageModel.cs" />
+    <None Include="Model.Profiles\Version1\ProfileStorageModel.cs" />
     <Compile Include="Infrustructure\PreferencesStorageModel.cs" />
     <Compile Include="Model.Lib\FilteredListModel.cs" />
     <Compile Include="Model.Protocol\RemoteAlgoAgent.cs" />

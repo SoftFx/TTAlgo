@@ -9,6 +9,7 @@ using TickTrader.Algo.Core;
 using System.Reflection;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
 {

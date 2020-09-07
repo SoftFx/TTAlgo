@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Domain;
 using TickTrader.BotAgent.BA.Models;
 
 namespace TickTrader.BotAgent.Extensions

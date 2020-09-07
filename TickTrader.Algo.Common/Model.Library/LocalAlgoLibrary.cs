@@ -8,6 +8,7 @@ using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -181,7 +182,7 @@ namespace TickTrader.Algo.Common.Model
 
             // remove
             var newPluginsLookup = package.Plugins.ToDictionary(p => p.Key);
-            foreach (var plugin in _plugins.Values.Where(p => p.Key.IsFromPackage(package.Key)).ToList())
+            foreach (var plugin in _plugins.Values.Where(p => p.Key.Package.Equals(package.Key)).ToList())
             {
                 if (!newPluginsLookup.ContainsKey(plugin.Key))
                 {

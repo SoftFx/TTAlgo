@@ -9,6 +9,7 @@ using NLog;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotAgent.BA.Repository
 {

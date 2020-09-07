@@ -4,6 +4,7 @@ using System.Linq;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {

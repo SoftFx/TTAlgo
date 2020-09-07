@@ -1,4 +1,6 @@
-﻿namespace TickTrader.Algo.Common.Info
+﻿using TickTrader.Algo.Domain;
+
+namespace TickTrader.Algo.Common.Info
 {
     public enum ConnectionStates
     {

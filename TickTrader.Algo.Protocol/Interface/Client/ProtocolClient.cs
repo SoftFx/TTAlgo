@@ -5,8 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Protocol
 {
@@ -266,7 +265,7 @@ namespace TickTrader.Algo.Protocol
 
         public abstract Task<List<BotModelInfo>> GetBotList();
 
-        public abstract Task AddBot(AccountKey account, PluginConfig config);
+        public abstract Task AddBot(AccountKey account, Common.Model.Config.PluginConfig config);
 
         public abstract Task RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false);
 
@@ -274,7 +273,7 @@ namespace TickTrader.Algo.Protocol
 
         public abstract Task StopBot(string botId);
 
-        public abstract Task ChangeBotConfig(string botId, PluginConfig newConfig);
+        public abstract Task ChangeBotConfig(string botId, Common.Model.Config.PluginConfig newConfig);
 
         public abstract Task<List<AccountModelInfo>> GetAccountList();
 

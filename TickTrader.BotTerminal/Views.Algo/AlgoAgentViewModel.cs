@@ -6,11 +6,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 using Xceed.Wpf.AvalonDock.Layout;
 
 namespace TickTrader.BotTerminal
@@ -84,7 +84,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public async Task AddBot(AccountKey account, PluginConfig config)
+        public async Task AddBot(AccountKey account, Algo.Common.Model.Config.PluginConfig config)
         {
             try
             {
@@ -156,7 +156,7 @@ namespace TickTrader.BotTerminal
                 if (result != DialogResult.OK)
                     return;
 
-                var bots = Bots.Where(u => u.Plugin.IsFromPackage(package)).AsObservable();
+                var bots = Bots.Where(u => u.Plugin.Package.Equals(package)).AsObservable();
 
                 if (bots.Any(u => u.IsRunning))
                 {

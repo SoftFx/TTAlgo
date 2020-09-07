@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Info
 {
