@@ -1,9 +1,9 @@
 ﻿using Caliburn.Micro;
 using System;
 using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -34,9 +34,9 @@ namespace TickTrader.BotTerminal
 
         public event Action<PropertySetupViewModel> ErrorChanged = delegate { };
 
-        public abstract void Load(Property srcProperty);
+        public abstract void Load(IPropertyConfig srcProperty);
 
-        public abstract Property Save();
+        public abstract IPropertyConfig Save();
 
         public abstract void Reset();
 

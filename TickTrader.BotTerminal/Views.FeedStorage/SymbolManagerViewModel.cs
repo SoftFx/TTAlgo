@@ -221,7 +221,8 @@ namespace TickTrader.BotTerminal
         private bool HasSymbol(string smbName)
         {
             smbName = smbName.Trim();
-            return _onlineManagedSymbols.Snapshot.ContainsKey(new SymbolKey(smbName, SymbolOrigin.Online)) || _customManagedSymbols.Snapshot.ContainsKey(new SymbolKey(smbName, SymbolOrigin.Custom));
+            return _onlineManagedSymbols.Snapshot.ContainsKey(new SymbolKey(smbName, SymbolConfig.Types.SymbolOrigin.Online))
+                || _customManagedSymbols.Snapshot.ContainsKey(new SymbolKey(smbName, SymbolConfig.Types.SymbolOrigin.Custom));
         }
     }
 

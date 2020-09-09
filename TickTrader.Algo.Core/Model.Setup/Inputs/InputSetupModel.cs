@@ -1,7 +1,7 @@
 ﻿using System;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
@@ -39,14 +39,14 @@ namespace TickTrader.Algo.Common.Model.Setup
             SelectedSymbol = _mainSymbol;
         }
 
-        protected virtual void LoadConfig(Input input)
+        protected virtual void LoadConfig(IInputConfig input)
         {
             SelectedSymbol = input.SelectedSymbol.ResolveInputSymbol(SetupMetadata, SetupContext, _mainSymbol);
         }
 
-        protected virtual void SaveConfig(Input input)
+        protected virtual void SaveConfig(IInputConfig input)
         {
-            input.Id = Id;
+            input.PropertyId = Id;
             input.SelectedSymbol = SelectedSymbol.ToConfig();
         }
 
@@ -68,11 +68,11 @@ namespace TickTrader.Algo.Common.Model.Setup
                 throw new Exception("Cannot configure invalid input!");
             }
 
-            public override void Load(Property srcProperty)
+            public override void Load(IPropertyConfig srcProperty)
             {
             }
 
-            public override Property Save()
+            public override IPropertyConfig Save()
             {
                 //throw new Exception("Cannot save invalid input!");
                 return null;

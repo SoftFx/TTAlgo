@@ -53,11 +53,11 @@ namespace TickTrader.BotTerminal
 
         Task StopBot(string botId);
 
-        Task AddBot(AccountKey account, Algo.Common.Model.Config.PluginConfig config);
+        Task AddBot(AccountKey account, PluginConfig config);
 
         Task RemoveBot(string botId, bool cleanLog, bool cleanAlgoData);
 
-        Task ChangeBotConfig(string botId, Algo.Common.Model.Config.PluginConfig newConfig);
+        Task ChangeBotConfig(string botId, PluginConfig newConfig);
 
         Task AddAccount(AccountKey account, string password);
 

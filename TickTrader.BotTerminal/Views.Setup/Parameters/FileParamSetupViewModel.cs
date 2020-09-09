@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -93,18 +93,18 @@ namespace TickTrader.BotTerminal
             FilePath = DefaultFile;
         }
 
-        public override void Load(Property srcProperty)
+        public override void Load(IPropertyConfig srcProperty)
         {
-            var typedSrcProperty = srcProperty as FileParameter;
+            var typedSrcProperty = srcProperty as FileParameterConfig;
             if (typedSrcProperty != null)
             {
                 FilePath = typedSrcProperty.FileName;
             }
         }
 
-        public override Property Save()
+        public override IPropertyConfig Save()
         {
-            return new FileParameter() { Id = Id, FileName = FilePath };
+            return new FileParameterConfig() { PropertyId = Id, FileName = FilePath };
         }
 
         private void CheckFileName()

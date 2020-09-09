@@ -11,7 +11,6 @@ using Machinarium.Qnil;
 using NLog;
 using ActorSharp.Lib;
 using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
@@ -390,10 +389,10 @@ namespace TickTrader.BotAgent.BA.Models
 
             var algoKey = config.Key;
 
-            var package = _packageProvider.GetPackageRef(algoKey.PackageName);
+            var package = _packageProvider.GetPackageRef(algoKey.Package.Name);
 
             if (package == null)
-                throw new PackageNotFoundException($"Package {algoKey.PackageName} at {algoKey.PackageLocation} cannot be found!");
+                throw new PackageNotFoundException($"Package {algoKey.Package.Name} at {algoKey.Package.Location} cannot be found!");
 
             var newBot = new TradeBotModel(config);
             BotValidation?.Invoke(newBot);

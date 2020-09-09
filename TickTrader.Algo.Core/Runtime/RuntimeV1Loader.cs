@@ -1,9 +1,6 @@
-﻿using System.IO;
-using System.Linq;
+﻿using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Container;
 using TickTrader.Algo.Core.Lib;
@@ -46,16 +43,11 @@ namespace TickTrader.Algo.Core
         {
             var runtimeConfig = await _handler.GetRuntimeConfig().ConfigureAwait(false);
 
-            PluginConfig config;
-            using (var stream = new MemoryStream(runtimeConfig.PluginConfig.Value.ToByteArray()))
-            {
-                var serializer = new DataContractSerializer(typeof(PluginConfig));
-                config = (PluginConfig)serializer.ReadObject(stream);
-            }
+            var config = runtimeConfig.PluginConfig.Unpack<PluginConfig>();
 
-            var package = config.Key.GetPackageKey();
+            var package = config.Key.Package;
             var path = string.Empty;
-            if (package.Location == Common.Model.Config.RepositoryLocation.Embedded && package.Name.Equals("TickTrader.Algo.Indicators.dll", System.StringComparison.OrdinalIgnoreCase))
+            if (package.Location == RepositoryLocation.Embedded && package.Name.Equals("TickTrader.Algo.Indicators.dll", System.StringComparison.OrdinalIgnoreCase))
             {
                 var indicatorsAssembly = Assembly.Load("TickTrader.Algo.Indicators");
                 AlgoAssemblyInspector.FindPlugins(indicatorsAssembly);
@@ -91,7 +83,7 @@ namespace TickTrader.Algo.Core
             var mappings = new MappingCollection(reductions);
 
             var setupMetadata = new AlgoSetupMetadata(await _handler.GetSymbolListAsync(), mappings);
-            var setupContext = new AlgoSetupContext(config.TimeFrame.ToDomainEnum(), config.MainSymbol);
+            var setupContext = new AlgoSetupContext(config.Timeframe, config.MainSymbol);
 
             var setup = new PluginSetupModel(algoRef, setupMetadata, setupContext, config.MainSymbol);
             setup.Load(config);

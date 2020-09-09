@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
@@ -92,17 +91,17 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public void Load(PluginConfig cfg)
         {
-            SelectedTimeFrame = cfg.TimeFrame.ToDomainEnum();
-            SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(cfg.SelectedMapping.Convert());
+            SelectedTimeFrame = cfg.Timeframe;
+            SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(cfg.SelectedMapping);
             InstanceId = cfg.InstanceId;
             Permissions = cfg.Permissions.Clone();
             SetMainSymbol(cfg.MainSymbol);
 
-            foreach (var scrProperty in cfg.Properties)
+            foreach (var srcProperty in cfg.UnpackProperties())
             {
-                var thisProperty = _allProperties.FirstOrDefault(p => p.Id == scrProperty.Id);
+                var thisProperty = _allProperties.FirstOrDefault(p => p.Id == srcProperty.PropertyId);
                 if (thisProperty != null)
-                    thisProperty.Load(scrProperty);
+                    thisProperty.Load(srcProperty);
             }
 
             InstanceId = cfg.InstanceId;
@@ -113,17 +112,12 @@ namespace TickTrader.Algo.Common.Model.Setup
         public PluginConfig Save()
         {
             var cfg = new PluginConfig();
-            cfg.TimeFrame = SelectedTimeFrame.ToApiEnum();
+            cfg.Timeframe = SelectedTimeFrame;
             cfg.MainSymbol = MainSymbol.ToConfig();
-            cfg.SelectedMapping = SelectedMapping.Key.Convert();
+            cfg.SelectedMapping = SelectedMapping.Key;
             cfg.InstanceId = InstanceId;
             cfg.Permissions = Permissions.Clone();
-            foreach (var propertyModel in _allProperties)
-            {
-                var prop = propertyModel.Save();
-                if (prop != null)
-                    cfg.Properties.Add(prop);
-            }
+            cfg.PackProperties(_allProperties.Select(p => p.Save()));
             return cfg;
         }
 

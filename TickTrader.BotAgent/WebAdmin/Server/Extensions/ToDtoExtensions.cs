@@ -1,11 +1,9 @@
 ﻿using System.Linq;
 using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.BotAgent.BA;
 using TickTrader.BotAgent.WebAdmin.Server.Dto;
 using TickTrader.BotAgent.BA.Models;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
-using TickTrader.Algo.Core;
 using System.Reflection;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Common.Info;
@@ -39,7 +37,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                 Id = bot.InstanceId,
                 Account = bot.Account.ToDto(),
                 State = bot.State.ToString(),
-                PackageName = bot.Config.Key.PackageName,
+                PackageName = bot.Config.Key.Package.Name,
                 BotName = bot.Descriptor?.UiDisplayName,
                 FaultMessage = bot.FaultMessage,
                 Config = bot.ToConfigDto(),
@@ -85,12 +83,12 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             var config = new TradeBotConfigDto()
             {
                 Symbol = bot.Config.MainSymbol.Name,
-                Parameters = bot.Config.Properties.Where(p => p is Parameter).Select(p =>
+                Parameters = bot.Config.UnpackProperties().Where(p => p is IParameterConfig).Select(p =>
                      new ParameterDto()
                      {
-                         Id = p.Id,
-                         Value = ((Parameter)p).ValObj,
-                         Descriptor = bot.Descriptor?.Parameters.FirstOrDefault(dp => dp.Id == p.Id)?.ToDto()
+                         Id = p.PropertyId,
+                         Value = ((IParameterConfig)p).ValObj,
+                         Descriptor = bot.Descriptor?.Parameters.FirstOrDefault(dp => dp.Id == p.PropertyId)?.ToDto()
                      }).ToArray()
             };
             return config;

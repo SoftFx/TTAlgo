@@ -114,7 +114,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             _botAgent.StopBotAsync(botId);
         }
 
-        public void AddBot(AccountKey account, Algo.Common.Model.Config.PluginConfig config)
+        public void AddBot(AccountKey account, PluginConfig config)
         {
             _botAgent.AddBot(account, config);
         }
@@ -124,7 +124,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             _botAgent.RemoveBot(botId, cleanLog, cleanAlgoData);
         }
 
-        public void ChangeBotConfig(string botId, Algo.Common.Model.Config.PluginConfig newConfig)
+        public void ChangeBotConfig(string botId, PluginConfig newConfig)
         {
             _botAgent.ChangeBotConfig(botId, newConfig);
         }

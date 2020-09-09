@@ -17,7 +17,7 @@ namespace TickTrader.BotTerminal
 {
     internal class MarkerSeriesModel : OutputSeriesModel<MarkerInfo>
     {
-        private static readonly MarkerInfo NanMarker = new MarkerInfo { ColorRgb = -1, Y = double.NaN };
+        private static readonly MarkerInfo NanMarker = new MarkerInfo { ColorArgb = uint.MaxValue, Y = double.NaN };
 
         private XyDataSeries<DateTime, double> _seriesData;
 

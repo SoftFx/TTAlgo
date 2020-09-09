@@ -163,7 +163,7 @@ namespace TickTrader.BotTerminal
             return Task.FromResult(this);
         }
 
-        public Task AddBot(AccountKey account, Algo.Common.Model.Config.PluginConfig config)
+        public Task AddBot(AccountKey account, PluginConfig config)
         {
             var bot = new TradeBotModel(config, this, this, this, Accounts.Snapshot.Values.First().Key);
             IdProvider.RegisterPluginId(bot.InstanceId);
@@ -185,7 +185,7 @@ namespace TickTrader.BotTerminal
             return Task.FromResult(this);
         }
 
-        public Task ChangeBotConfig(string instanceId, Algo.Common.Model.Config.PluginConfig newConfig)
+        public Task ChangeBotConfig(string instanceId, PluginConfig newConfig)
         {
             if (_bots.TryGetValue(instanceId, out var bot))
             {
@@ -447,7 +447,7 @@ namespace TickTrader.BotTerminal
                 profileStorage.Bots = _bots.Snapshot.Values.Select(b => new TradeBotStorageEntry
                 {
                     Started = PluginStateHelper.IsRunning(b.State),
-                    Config = b.Config,
+                    Config = Algo.Common.Model.Config.PluginConfig.FromDomain(b.Config),
                 }).ToList();
             }
             catch (Exception ex)
@@ -503,7 +503,7 @@ namespace TickTrader.BotTerminal
                 _logger.Error("Trade bot key missing!");
             }
 
-            AddBot(null, entry.Config);
+            AddBot(null, entry.Config.ToDomain());
             if (entry.Started && _preferences.RestartBotsOnStartup)
                 StartBot(entry.Config.InstanceId);
         }

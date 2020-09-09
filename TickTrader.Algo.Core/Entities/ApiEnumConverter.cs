@@ -240,5 +240,35 @@ namespace TickTrader.Algo.Core
                 default: throw new ArgumentException($"Unsupported icon {icon}");
             }
         }
+
+        public static Domain.Metadata.Types.LineStyle ToDomainEnum(this LineStyles line)
+        {
+            switch (line)
+            {
+                case LineStyles.Solid: return Domain.Metadata.Types.LineStyle.Solid;
+                case LineStyles.Dots: return Domain.Metadata.Types.LineStyle.Dots;
+                case LineStyles.DotsRare: return Domain.Metadata.Types.LineStyle.DotsRare;
+                case LineStyles.DotsVeryRare: return Domain.Metadata.Types.LineStyle.DotsVeryRare;
+                case LineStyles.LinesDots: return Domain.Metadata.Types.LineStyle.LinesDots;
+                case LineStyles.Lines: return Domain.Metadata.Types.LineStyle.Lines;
+
+                default: throw new ArgumentException($"Unsupported line style {line}");
+            }
+        }
+
+        public static LineStyles ToApiEnum(this Domain.Metadata.Types.LineStyle line)
+        {
+            switch (line)
+            {
+                case Domain.Metadata.Types.LineStyle.Solid: return LineStyles.Solid;
+                case Domain.Metadata.Types.LineStyle.Dots: return LineStyles.Dots;
+                case Domain.Metadata.Types.LineStyle.DotsRare: return LineStyles.DotsRare;
+                case Domain.Metadata.Types.LineStyle.DotsVeryRare: return LineStyles.DotsVeryRare;
+                case Domain.Metadata.Types.LineStyle.LinesDots: return LineStyles.LinesDots;
+                case Domain.Metadata.Types.LineStyle.Lines: return LineStyles.Lines;
+
+                default: throw new ArgumentException($"Unsupported line style {line}");
+            }
+        }
     }
 }

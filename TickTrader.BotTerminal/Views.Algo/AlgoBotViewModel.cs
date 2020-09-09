@@ -20,7 +20,7 @@ namespace TickTrader.BotTerminal
 
         public PluginStates State => Model.State;
 
-        public PluginKey Plugin => Algo.Common.Model.Config.ConvertExt.Convert(Model.Config.Key);
+        public PluginKey Plugin => Model.Config.Key;
 
         public bool IsRunning => PluginStateHelper.IsRunning(Model.State) || Agent.Model.IsRemote && Model.State == PluginStates.Starting;
 
@@ -117,7 +117,7 @@ namespace TickTrader.BotTerminal
 
         public void AddBot()
         {
-            Agent.OpenBotSetup(Model.Account, Algo.Common.Model.Config.ConvertExt.Convert(Model.Config.Key));
+            Agent.OpenBotSetup(Model.Account, Model.Config.Key);
         }
 
 

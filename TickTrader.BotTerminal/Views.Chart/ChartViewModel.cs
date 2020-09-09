@@ -183,7 +183,7 @@ namespace TickTrader.BotTerminal
                 CrosshairEnabled = ChartControl.IsCrosshairEnabled.Value,
                 Indicators = Indicators.Select(i => new IndicatorStorageEntry
                 {
-                    Config = i.Model.Config,
+                    Config = Algo.Common.Model.Config.PluginConfig.FromDomain(i.Model.Config),
                 }).ToList(),
             };
         }
@@ -211,7 +211,7 @@ namespace TickTrader.BotTerminal
                 logger.Error("Indicator key missing!");
             }
 
-            Chart.AddIndicator(entry.Config);
+            Chart.AddIndicator(entry.Config.ToDomain());
         }
 
         #region Algo
@@ -231,7 +231,7 @@ namespace TickTrader.BotTerminal
                     return;
                 }
 
-                var model = new LocalPluginSetupViewModel(_shell.Agent, Algo.Common.Model.Config.ConvertExt.Convert(item.Key), AlgoTypes.Indicator, Chart.GetSetupContextInfo());
+                var model = new LocalPluginSetupViewModel(_shell.Agent, item.Key, AlgoTypes.Indicator, Chart.GetSetupContextInfo());
                 if (!model.Setup.CanBeSkipped)
                     _shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
                 else
@@ -415,7 +415,7 @@ namespace TickTrader.BotTerminal
             return bot.Descriptor != null && bot.Config != null && Chart != null
                 && bot.Descriptor.SetupMainSymbol
                 && bot.Config.MainSymbol.Name == Symbol
-                && bot.Config.TimeFrame == Chart.TimeFrame.ToApiEnum();
+                && bot.Config.Timeframe == Chart.TimeFrame;
         }
 
         private bool IsChartBot(AlgoBotViewModel botVM)

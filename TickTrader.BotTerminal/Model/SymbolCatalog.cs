@@ -65,9 +65,9 @@ namespace TickTrader.BotTerminal
         {
             var key = new SymbolKey(info.Name, info.Origin);
 
-            if (info.Origin == Algo.Common.Info.SymbolOrigin.Online)
+            if (info.Origin == SymbolConfig.Types.SymbolOrigin.Online)
                 return OnlineSymbols.Snapshot[key];
-            else if (info.Origin == Algo.Common.Info.SymbolOrigin.Custom)
+            else if (info.Origin == SymbolConfig.Types.SymbolOrigin.Custom)
                 return CustomSymbols.Snapshot[key];
 
             throw new Exception("Unsupported symbol origin: " + info.Origin);
@@ -75,7 +75,7 @@ namespace TickTrader.BotTerminal
 
         private KeyValuePair<SymbolKey, SymbolData> CreateSymbolData(SymbolInfo smb, TraderClientModel client)
         {
-            var key = new SymbolKey(smb.Name, SymbolOrigin.Online);
+            var key = new SymbolKey(smb.Name, SymbolConfig.Types.SymbolOrigin.Online);
             var data = new OnlineSymbolData(smb, client);
             return new KeyValuePair<SymbolKey, SymbolData>(key, data);
 

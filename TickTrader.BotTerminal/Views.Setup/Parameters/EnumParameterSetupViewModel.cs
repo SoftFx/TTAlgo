@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -50,9 +50,9 @@ namespace TickTrader.BotTerminal
             SelectedValue = DefaultValue;
         }
 
-        public override void Load(Property srcProperty)
+        public override void Load(IPropertyConfig srcProperty)
         {
-            var typedSrcProperty = srcProperty as EnumParameter;
+            var typedSrcProperty = srcProperty as EnumParameterConfig;
             if (typedSrcProperty != null)
             {
                 if (EnumValues.Contains(typedSrcProperty.Value))
@@ -60,11 +60,11 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public override Property Save()
+        public override IPropertyConfig Save()
         {
-            return new EnumParameter
+            return new EnumParameterConfig
             {
-                Id = Id,
+                PropertyId = Id,
                 Value = SelectedValue,
             };
         }

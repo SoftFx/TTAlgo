@@ -1,6 +1,6 @@
-﻿using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Core.Metadata;
+﻿using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
@@ -14,18 +14,18 @@ namespace TickTrader.Algo.Common.Model.Setup
             SelectedSymbol = mainSymbol; // Quotes Input does not support Main Symbol token
         }
 
-        public override void Load(Property srcProperty)
+        public override void Load(IPropertyConfig srcProperty)
         {
-            var input = srcProperty as QuoteToBarInput;
+            var input = srcProperty as QuoteToBarInputConfig;
             if (input != null)
             {
                 LoadConfig(input);
             }
         }
 
-        public override Property Save()
+        public override IPropertyConfig Save()
         {
-            var input = new QuoteToBarInput();
+            var input = new QuoteToBarInputConfig();
             SaveConfig(input);
             return input;
         }

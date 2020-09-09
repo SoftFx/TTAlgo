@@ -6,9 +6,9 @@ using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Repository;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -183,16 +183,17 @@ namespace TickTrader.BotTerminal
 
         protected void UpdateRefs()
         {
-            var packageRef = Agent.Library.GetPackageRef(Config.Key.GetPackageKey().Convert());
+            var package = Config.Key.Package;
+            var packageRef = Agent.Library.GetPackageRef(package);
             if (packageRef == null)
             {
-                ChangeState(PluginStates.Broken, $"Package {Config.Key.PackageName} at {Config.Key.PackageLocation} is not found!");
+                ChangeState(PluginStates.Broken, $"Package {package.Name} at {package.Location} is not found!");
                 return;
             }
-            var pluginRef = Agent.Library.GetPluginRef(Config.Key.Convert());
+            var pluginRef = Agent.Library.GetPluginRef(Config.Key);
             if (pluginRef == null)
             {
-                ChangeState(PluginStates.Broken, $"Plugin {Config.Key.DescriptorId} is missing in package {Config.Key.PackageName} at {Config.Key.PackageLocation}!");
+                ChangeState(PluginStates.Broken, $"Plugin {Config.Key.DescriptorId} is missing in package {package.Name} at {package.Location}!");
                 return;
             }
 

@@ -87,7 +87,7 @@ message MarkerInfo {
     double y = 1;
     google.protobuf.StringValue display_text = 2;
     IconType icon = 3;
-    int32 color_rgb = 4;
+    uint32 color_argb = 4;
 }
 
 message StartRuntimeRequest { } // void response

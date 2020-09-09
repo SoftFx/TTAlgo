@@ -1,7 +1,7 @@
-﻿using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Core;
+﻿using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
@@ -30,22 +30,22 @@ namespace TickTrader.Algo.Common.Model.Setup
             SelectedMapping = GetMapping(SetupContext.DefaultMapping);
         }
 
-        protected abstract Mapping GetMapping(Domain.MappingKey mappingKey);
+        protected abstract Mapping GetMapping(MappingKey mappingKey);
 
-        protected override void LoadConfig(Input input)
+        protected override void LoadConfig(IInputConfig input)
         {
-            var mappedInput = input as MappedInput;
-            SelectedMapping = GetMapping(mappedInput?.SelectedMapping?.Convert() ?? SetupContext.DefaultMapping);
+            var mappedInput = input as IMappedInputConfig;
+            SelectedMapping = GetMapping(mappedInput?.SelectedMapping ?? SetupContext.DefaultMapping);
 
             base.LoadConfig(input);
         }
 
-        protected override void SaveConfig(Input input)
+        protected override void SaveConfig(IInputConfig input)
         {
-            var mappedInput = input as MappedInput;
+            var mappedInput = input as IMappedInputConfig;
             if (mappedInput != null)
             {
-                mappedInput.SelectedMapping = SelectedMapping.Key.Convert();
+                mappedInput.SelectedMapping = SelectedMapping.Key;
             }
 
             base.SaveConfig(input);

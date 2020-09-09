@@ -2,25 +2,19 @@
 using System.Collections.Generic;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Info
 {
-    public enum SymbolOrigin
-    {
-        Online = 0,
-        Custom = 1,
-        Token = 2,
-    }
-
     public class SymbolKey : ISetupSymbolInfo, IComparable
     {
         public string Name { get; set; }
 
-        public SymbolOrigin Origin { get; set; }
+        public SymbolConfig.Types.SymbolOrigin Origin { get; set; }
 
         public string Id => Name;
 
-        public SymbolKey(string name, SymbolOrigin origin)
+        public SymbolKey(string name, SymbolConfig.Types.SymbolOrigin origin)
         {
             Name = name;
             Origin = origin;

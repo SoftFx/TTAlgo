@@ -49,9 +49,9 @@ namespace TickTrader.BotAgent.BA
         BotModelInfo GetBotInfo(string botId);
         IBotFolder GetAlgoData(string botId);
         string GenerateBotId(string botDisplayName);
-        BotModelInfo AddBot(AccountKey accountId, Algo.Common.Model.Config.PluginConfig config);
+        BotModelInfo AddBot(AccountKey accountId, PluginConfig config);
         void RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false);
-        void ChangeBotConfig(string botId, Algo.Common.Model.Config.PluginConfig newConfig);
+        void ChangeBotConfig(string botId, PluginConfig newConfig);
         void StartBot(string botId);
         Task StopBotAsync(string botId);
         void AbortBot(string botId);

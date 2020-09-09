@@ -2,11 +2,11 @@
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace TickTrader.Algo.Core
+namespace TickTrader.Algo.Common.Model.Config
 {
     [Serializable]
     [DataContract(Name = "PluginPermissions", Namespace = "TTAlgo.Config.v2")]
-    public class PluginPermissions : IPluginPermissions
+    public class PluginPermissions
     {
         [DataMember(Name = "tradeAllowed")]
         public bool TradeAllowed { get; set; }

@@ -201,7 +201,7 @@ namespace TickTrader.BotTerminal
 
         public override SymbolToken ToSymbolToken()
         {
-            return new SymbolToken(Name, SymbolOrigin.Online);
+            return new SymbolToken(Name, SymbolConfig.Types.SymbolOrigin.Online);
         }
     }
 
@@ -242,7 +242,7 @@ namespace TickTrader.BotTerminal
 
         public override SymbolToken ToSymbolToken()
         {
-            return new SymbolToken(Name, SymbolOrigin.Custom);
+            return new SymbolToken(Name, SymbolConfig.Types.SymbolOrigin.Custom);
         }
     }
 

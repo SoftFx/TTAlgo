@@ -21,7 +21,7 @@ namespace TickTrader.BotTerminal
             return symbols;
         }
 
-        public static SymbolKey GetSymbolOrDefault(this IReadOnlyList<SymbolKey> availableSymbols, Algo.Common.Model.Config.SymbolConfig config)
+        public static SymbolKey GetSymbolOrDefault(this IReadOnlyList<SymbolKey> availableSymbols, SymbolConfig config)
         {
             if (config != null)
                 return availableSymbols.FirstOrDefault(s => s.Origin == config.Origin && s.Name == config.Name);
@@ -36,16 +36,16 @@ namespace TickTrader.BotTerminal
 
         public static bool ContainMainToken(this IReadOnlyList<SymbolKey> availableSymbols)
         {
-            return availableSymbols.FirstOrDefault(u => u.Name == SpecialSymbols.MainSymbol && u.Origin == SymbolOrigin.Token) != null;
+            return availableSymbols.FirstOrDefault(u => u.Name == SpecialSymbols.MainSymbol && u.Origin == SymbolConfig.Types.SymbolOrigin.Token) != null;
         }
     }
 
 
     public static class SymbolInfoExtensions
     {
-        public static Algo.Common.Model.Config.SymbolConfig ToConfig(this SymbolKey info)
+        public static SymbolConfig ToConfig(this SymbolKey info)
         {
-            return new Algo.Common.Model.Config.SymbolConfig { Name = info.Name, Origin = info.Origin };
+            return new SymbolConfig { Name = info.Name, Origin = info.Origin };
         }
     }
 

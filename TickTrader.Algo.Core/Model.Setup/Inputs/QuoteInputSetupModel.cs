@@ -1,6 +1,6 @@
-﻿using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Core;
+﻿using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
@@ -24,9 +24,9 @@ namespace TickTrader.Algo.Common.Model.Setup
             target.GetFeedStrategy<QuoteStrategy>().MapInput<Api.Quote>(Metadata.Id, SelectedSymbol.Id, q => new QuoteEntity(q));
         }
 
-        public override void Load(Property srcProperty)
+        public override void Load(IPropertyConfig srcProperty)
         {
-            var input = srcProperty as QuoteInput;
+            var input = srcProperty as QuoteInputConfig;
             if (input != null)
             {
                 _useL2 = input.UseL2;
@@ -34,9 +34,9 @@ namespace TickTrader.Algo.Common.Model.Setup
             }
         }
 
-        public override Property Save()
+        public override IPropertyConfig Save()
         {
-            var input = new QuoteInput { UseL2 = _useL2 };
+            var input = new QuoteInputConfig { UseL2 = _useL2 };
             SaveConfig(input);
             return input;
         }

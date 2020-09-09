@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -58,15 +58,15 @@ namespace TickTrader.BotTerminal
         }
 
 
-        protected virtual void LoadConfig(Input input)
+        protected virtual void LoadConfig(IInputConfig input)
         {
             SelectedSymbol = AvailableSymbols.GetSymbolOrDefault(input.SelectedSymbol)
                 ?? AvailableSymbols.GetSymbolOrAny(_defaultSymbol);
         }
 
-        protected virtual void SaveConfig(Input input)
+        protected virtual void SaveConfig(IInputConfig input)
         {
-            input.Id = Id;
+            input.PropertyId = Id;
             input.SelectedSymbol = _selectedSymbol.ToConfig();
         }
 
@@ -83,11 +83,11 @@ namespace TickTrader.BotTerminal
             }
 
 
-            public override void Load(Property srcProperty)
+            public override void Load(IPropertyConfig srcProperty)
             {
             }
 
-            public override Property Save()
+            public override IPropertyConfig Save()
             {
                 throw new Exception("Cannot save invalid input!");
             }

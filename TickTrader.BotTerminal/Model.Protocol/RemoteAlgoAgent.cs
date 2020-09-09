@@ -144,7 +144,7 @@ namespace TickTrader.BotTerminal
             return _protocolClient.StopBot(instanceId);
         }
 
-        public Task AddBot(AccountKey account, Algo.Common.Model.Config.PluginConfig config)
+        public Task AddBot(AccountKey account, PluginConfig config)
         {
             return _protocolClient.AddBot(account, config);
         }
@@ -154,7 +154,7 @@ namespace TickTrader.BotTerminal
             return _protocolClient.RemoveBot(instanceId, cleanLog, cleanAlgoData);
         }
 
-        public Task ChangeBotConfig(string instanceId, Algo.Common.Model.Config.PluginConfig newConfig)
+        public Task ChangeBotConfig(string instanceId, PluginConfig newConfig)
         {
             return _protocolClient.ChangeBotConfig(instanceId, newConfig);
         }

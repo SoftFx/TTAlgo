@@ -37,7 +37,6 @@
     <Reference Include="ICSharpCode.SharpZipLib">
       <HintPath>..\lib\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
-    <Reference Include="PresentationCore" />
     <Reference Include="protobuf-net, Version=2.4.0.0, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
       <HintPath>..\packages\protobuf-net.2.4.0\lib\net40\protobuf-net.dll</HintPath>
     </Reference>
@@ -103,6 +102,20 @@
     <Compile Include="Lib\PathEscaper.cs" />
     <Compile Include="Lib\TaskExt.cs" />
     <Compile Include="Lib\TextParser.cs" />
+    <Compile Include="Model.Config\Inputs.cs" />
+    <Compile Include="Model.Config\Keys\MappingKey.cs" />
+    <Compile Include="Model.Config\Keys\PackageKey.cs" />
+    <Compile Include="Model.Config\Keys\PluginKey.cs" />
+    <Compile Include="Model.Config\Keys\ReductionKey.cs" />
+    <Compile Include="Model.Config\Outputs.cs" />
+    <Compile Include="Model.Config\Parameters.cs" />
+    <Compile Include="Model.Config\PluginConfig.cs" />
+    <Compile Include="Model.Config\PluginPermissions.cs" />
+    <None Include="Model.Config\Version1\Inputs.cs" />
+    <None Include="Model.Config\Version1\Outputs.cs" />
+    <None Include="Model.Config\Version1\Parameters.cs" />
+    <None Include="Model.Config\Version1\PluginConfig.cs" />
+    <None Include="Model.Config\Version1\PluginConfigResolver.cs" />
     <Compile Include="Model.FeedCache\BarSerializer.cs" />
     <Compile Include="Model.FeedCache\CustomFeedStorage.cs" />
     <Compile Include="Model.FeedCache\CustomSymbol.cs" />

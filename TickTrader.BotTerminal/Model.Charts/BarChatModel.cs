@@ -13,7 +13,6 @@ using Machinarium.Qnil;
 using SciChart.Charting.Model.ChartSeries;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.BotTerminal.Lib;
 using TickTrader.Algo.Domain;
 using Google.Protobuf.WellKnownTypes;

@@ -15,7 +15,6 @@ using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using SciChart.Charting.Model.ChartSeries;
 using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal

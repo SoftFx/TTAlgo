@@ -84,7 +84,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public async Task AddBot(AccountKey account, Algo.Common.Model.Config.PluginConfig config)
+        public async Task AddBot(AccountKey account, PluginConfig config)
         {
             try
             {
@@ -288,7 +288,7 @@ namespace TickTrader.BotTerminal
 
             try
             {
-                _algoEnv.Shell.ShowChart(bot.Config.MainSymbol.Name, bot.Config.TimeFrame.Convert());
+                _algoEnv.Shell.ShowChart(bot.Config.MainSymbol.Name, bot.Config.Timeframe.Convert());
             }
             catch (Exception ex)
             {

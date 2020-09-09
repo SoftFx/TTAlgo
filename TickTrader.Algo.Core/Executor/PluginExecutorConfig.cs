@@ -1,7 +1,5 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 
@@ -94,7 +92,7 @@ namespace TickTrader.Algo.Core
 
             InstanceId = pluginConfig.InstanceId;
             MainSymbolCode = pluginConfig.MainSymbol.Name;
-            TimeFrame = pluginConfig.TimeFrame.ToDomainEnum();
+            TimeFrame = pluginConfig.Timeframe;
             Permissions = pluginConfig.Permissions;
         }
     }

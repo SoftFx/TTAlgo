@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Domain;
 using Xceed.Wpf.AvalonDock.Controls;
 using Xceed.Wpf.AvalonDock.Layout;
 
@@ -208,17 +209,20 @@ namespace TickTrader.BotTerminal
             }
             if (Bot.Model.Config != null)
             {
-                res.Add($"Package Name: {Bot.Model.Config.Key.PackageName}");
-                res.Add($"Package Location: {Bot.Model.Config.Key.PackageLocation}");
-                res.Add($"Symbol: {Bot.Model.Config.MainSymbol.Name}");
-                res.Add($"Timeframe: {Bot.Model.Config.TimeFrame}");
+                var config = Bot.Model.Config;
+                var package = config.Key.Package;
+                res.Add($"Package Name: {package.Name}");
+                res.Add($"Package Location: {package.Location}");
+                res.Add($"Symbol: {config.MainSymbol.Name}");
+                res.Add($"Timeframe: {config.Timeframe}");
                 res.Add($"Show on chart: {Bot.Model.Descriptor.SetupMainSymbol}");
-                if (Bot.Model.Config.Properties.Any())
+                var properties = config.UnpackProperties();
+                if (properties.Any())
                 {
                     res.Add("");
                     res.Add("------------ Parameters ------------");
-                    res.AddRange(Bot.Model.Config.Properties.Select(x => x as Algo.Common.Model.Config.Parameter).Where(x => x != null)
-                        .Select(x => $"{x.Id}: {x.ValObj}").OrderBy(x => x).ToArray());
+                    res.AddRange(properties.Select(x => x as IParameterConfig).Where(x => x != null)
+                        .Select(x => $"{x.PropertyId}: {x.ValObj}").OrderBy(x => x).ToArray());
                 }
             }
             return res;

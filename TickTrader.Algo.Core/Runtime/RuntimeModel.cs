@@ -1,11 +1,7 @@
-﻿using Google.Protobuf;
-using Google.Protobuf.WellKnownTypes;
+﻿using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
@@ -62,14 +58,8 @@ namespace TickTrader.Algo.Core
 
         public void SetConfig(PluginConfig config)
         {
-            Timeframe = config.TimeFrame.ToDomainEnum();
-            using (var stream = new MemoryStream())
-            {
-                var serializer = new DataContractSerializer(typeof(PluginConfig));
-                serializer.WriteObject(stream, config);
-                stream.Seek(0, SeekOrigin.Begin);
-                Config.PluginConfig = new Any { TypeUrl = "ttalgo-config-v2", Value = ByteString.FromStream(stream) };
-            }
+            Timeframe = config.Timeframe;
+            Config.PluginConfig = Any.Pack(config);
         }
 
         public async Task Start(string address, int port)

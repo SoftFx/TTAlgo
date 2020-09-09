@@ -1,7 +1,7 @@
 ﻿using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -17,9 +17,9 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public override void Load(Property srcProperty)
+        public override void Load(IPropertyConfig srcProperty)
         {
-            var input = srcProperty as QuoteInput;
+            var input = srcProperty as QuoteInputConfig;
             if (input != null)
             {
                 _useL2 = input.UseL2;
@@ -27,9 +27,9 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public override Property Save()
+        public override IPropertyConfig Save()
         {
-            var input = new QuoteInput { UseL2 = _useL2 };
+            var input = new QuoteInputConfig { UseL2 = _useL2 };
             SaveConfig(input);
             return input;
         }

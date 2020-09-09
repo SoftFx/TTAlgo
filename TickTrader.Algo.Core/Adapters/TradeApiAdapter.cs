@@ -47,7 +47,7 @@ namespace TickTrader.Algo.Core
         }
 
         public ICalculatorApi Calc { get; set; }
-        public IPluginPermissions Permissions { get; set; }
+        public PluginPermissions Permissions { get; set; }
         public string IsolationTag { get; set; }
 
         public async Task<OrderCmdResult> OpenOrder(bool isAsync, Api.OpenOrderRequest apiRequest)

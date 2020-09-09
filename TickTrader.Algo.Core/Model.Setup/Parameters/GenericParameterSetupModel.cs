@@ -1,6 +1,6 @@
 ﻿using System;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
@@ -79,18 +79,18 @@ namespace TickTrader.Algo.Common.Model.Setup
             return Value;
         }
 
-        public override void Load(Property srcProperty)
+        public override void Load(IPropertyConfig srcProperty)
         {
-            var typedSrcProperty = srcProperty as Parameter<T>;
+            var typedSrcProperty = srcProperty as IParameterConfig<T>;
             if (typedSrcProperty != null)
                 Value = typedSrcProperty.Value;
         }
 
 
-        protected Property SaveTyped<TCfg>()
-            where TCfg : Parameter<T>, new()
+        protected IPropertyConfig SaveTyped<TCfg>()
+            where TCfg : IParameterConfig<T>, new()
         {
-            return new TCfg() { Id = Id, Value = Value };
+            return new TCfg() { PropertyId = Id, Value = Value };
         }
 
 
@@ -112,9 +112,9 @@ namespace TickTrader.Algo.Common.Model.Setup
         {
         }
 
-        public override Property Save()
+        public override IPropertyConfig Save()
         {
-            return SaveTyped<BoolParameter>();
+            return SaveTyped<BoolParameterConfig>();
         }
     }
 
@@ -127,9 +127,9 @@ namespace TickTrader.Algo.Common.Model.Setup
         {
         }
 
-        public override Property Save()
+        public override IPropertyConfig Save()
         {
-            return SaveTyped<IntParameter>();
+            return SaveTyped<Int32ParameterConfig>();
         }
     }
 
@@ -142,9 +142,9 @@ namespace TickTrader.Algo.Common.Model.Setup
         {
         }
 
-        public override Property Save()
+        public override IPropertyConfig Save()
         {
-            return SaveTyped<NullableIntParameter>();
+            return SaveTyped<NullableInt32ParameterConfig>();
         }
     }
 
@@ -157,9 +157,9 @@ namespace TickTrader.Algo.Common.Model.Setup
         {
         }
 
-        public override Property Save()
+        public override IPropertyConfig Save()
         {
-            return SaveTyped<DoubleParameter>();
+            return SaveTyped<DoubleParameterConfig>();
         }
     }
 
@@ -172,9 +172,9 @@ namespace TickTrader.Algo.Common.Model.Setup
         {
         }
 
-        public override Property Save()
+        public override IPropertyConfig Save()
         {
-            return SaveTyped<NullableDoubleParameter>();
+            return SaveTyped<NullableDoubleParameterConfig>();
         }
     }
 
@@ -187,9 +187,9 @@ namespace TickTrader.Algo.Common.Model.Setup
         {
         }
 
-        public override Property Save()
+        public override IPropertyConfig Save()
         {
-            return SaveTyped<StringParameter>();
+            return SaveTyped<StringParameterConfig>();
         }
     }
 }

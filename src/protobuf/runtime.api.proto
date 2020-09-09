@@ -187,17 +187,17 @@ message MappingKey {
     ReductionKey secondary_reduction = 2;
 }
 
-/*message BoolParameterConfig {
+message BoolParameterConfig {
     string property_id = 1;
     bool value = 2;
 }
 
-message IntParameterConfig {
+message Int32ParameterConfig {
     string property_id = 1;
     int32 value = 2;
 }
 
-message NullableIntParameterConfig {
+message NullableInt32ParameterConfig {
     string property_id = 1;
     google.protobuf.Int32Value value = 2;
 }
@@ -270,17 +270,19 @@ message QuoteToDoubleInputConfig {
 }
 
 message ColoredLineOutputConfig {
-    bool is_enabled = 1;
-    google.protobuf.Int32Value line_color_argb = 2;
-    int32 line_thickness = 3;
-    Metadata.LineStyle line_style = 4;
+    string property_id = 1;
+    bool is_enabled = 2;
+    uint32 line_color_argb = 3;
+    int32 line_thickness = 4;
+    Metadata.LineStyle line_style = 5;
 }
 
 message MarkerSeriesOutputConfig {
-    bool is_enabled = 1;
-    google.protobuf.Int32Value line_color_argb = 2;
-    int32 line_thickness = 3;
-    Metadata.MarkerSize marker_size = 4;
+    string property_id = 1;
+    bool is_enabled = 2;
+    uint32 line_color_argb = 3;
+    int32 line_thickness = 4;
+    Metadata.MarkerSize marker_size = 5;
 }
 
 message PluginPermissions {
@@ -296,4 +298,4 @@ message PluginConfig {
     string instance_id = 5;
     PluginPermissions permissions = 6;
     repeated google.protobuf.Any properties = 7;
-}*/
+}

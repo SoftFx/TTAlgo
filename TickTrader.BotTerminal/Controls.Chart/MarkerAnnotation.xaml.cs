@@ -15,6 +15,8 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -23,7 +25,7 @@ namespace TickTrader.BotTerminal
     /// </summary>
     public partial class MarkerAnnotation : CustomAnnotation
     {
-        public MarkerAnnotation(Marker marker, Color stroke, double strokeThickness, MarkerSizes size, DateTime x)
+        public MarkerAnnotation(Marker marker, Color stroke, double strokeThickness, Metadata.Types.MarkerSize size, DateTime x)
         {
             InitializeComponent();
 
@@ -38,12 +40,12 @@ namespace TickTrader.BotTerminal
             this.Icon.Data = (Geometry)FindResource(GetIconResxKey(marker.Icon));
             this.Icon.Stroke = new SolidColorBrush(stroke);
             this.Icon.StrokeThickness = strokeThickness;
-            this.Icon.Fill = new SolidColorBrush(Algo.Common.Model.Setup.Convert.ToWindowsColor(marker.Color));
+            this.Icon.Fill = new SolidColorBrush(marker.Color.ToArgb(ApiColorConverter.GreenColor).ToWindowsColor());
 
             switch (size)
             {
-                case MarkerSizes.Large: Width = 24; Height = 24; break;
-                case MarkerSizes.Small: Width = 10; Height = 10; break;
+                case Metadata.Types.MarkerSize.Large: Width = 24; Height = 24; break;
+                case Metadata.Types.MarkerSize.Small: Width = 10; Height = 10; break;
                 default: Width = 16; Height = 16; break;
             }
         }

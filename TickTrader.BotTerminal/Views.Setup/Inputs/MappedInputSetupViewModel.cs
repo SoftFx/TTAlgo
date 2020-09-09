@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -12,7 +12,7 @@ namespace TickTrader.BotTerminal
         private MappingInfo _selectedMapping;
 
 
-        protected abstract Algo.Domain.MappingKey DefaultMapping { get; }
+        protected abstract MappingKey DefaultMapping { get; }
 
 
         public IReadOnlyList<MappingInfo> AvailableMappings { get; protected set; }
@@ -45,23 +45,23 @@ namespace TickTrader.BotTerminal
         }
 
 
-        protected abstract MappingInfo GetMapping(Algo.Domain.MappingKey mappingKey);
+        protected abstract MappingInfo GetMapping(MappingKey mappingKey);
 
 
-        protected override void LoadConfig(Input input)
+        protected override void LoadConfig(IInputConfig input)
         {
-            var mappedInput = input as MappedInput;
-            SelectedMapping = GetMapping(mappedInput?.SelectedMapping?.Convert() ?? DefaultMapping);
+            var mappedInput = input as IMappedInputConfig;
+            SelectedMapping = GetMapping(mappedInput?.SelectedMapping ?? DefaultMapping);
 
             base.LoadConfig(input);
         }
 
-        protected override void SaveConfig(Input input)
+        protected override void SaveConfig(IInputConfig input)
         {
-            var mappedInput = input as MappedInput;
+            var mappedInput = input as IMappedInputConfig;
             if (mappedInput != null)
             {
-                mappedInput.SelectedMapping = SelectedMapping.Key.Convert();
+                mappedInput.SelectedMapping = SelectedMapping.Key;
             }
 
             base.SaveConfig(input);

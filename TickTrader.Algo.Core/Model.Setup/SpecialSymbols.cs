@@ -1,5 +1,6 @@
 ﻿using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
@@ -8,7 +9,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         public const string MainSymbol = "[Main Symbol]";
 
 
-        public static SymbolToken MainSymbolPlaceholder => new SymbolToken(MainSymbol, SymbolOrigin.Token, null);
+        public static SymbolToken MainSymbolPlaceholder => new SymbolToken(MainSymbol, SymbolConfig.Types.SymbolOrigin.Token, null);
 
         public static SymbolKey GetKey(this ISetupSymbolInfo info)
         {
@@ -20,23 +21,23 @@ namespace TickTrader.Algo.Common.Model.Setup
     {
         public string Name { get; set; }
 
-        public SymbolOrigin Origin { get; set; }
+        public SymbolConfig.Types.SymbolOrigin Origin { get; set; }
 
         public string Id { get; set; }
 
         public SymbolToken(string name)
-            : this(name, SymbolOrigin.Online, name)
+            : this(name, SymbolConfig.Types.SymbolOrigin.Online, name)
         {
 
         }
 
-        public SymbolToken(string name, SymbolOrigin origin)
+        public SymbolToken(string name, SymbolConfig.Types.SymbolOrigin origin)
             : this(name, origin, name)
         {
 
         }
 
-        public SymbolToken(string name, SymbolOrigin origin, string id)
+        public SymbolToken(string name, SymbolConfig.Types.SymbolOrigin origin, string id)
         {
             Name = name;
             Origin = origin;

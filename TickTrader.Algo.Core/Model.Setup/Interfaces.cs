@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
@@ -10,7 +9,7 @@ namespace TickTrader.Algo.Common.Model.Setup
     {
         string Name { get; }
 
-        SymbolOrigin Origin { get; }
+        SymbolConfig.Types.SymbolOrigin Origin { get; }
 
         string Id { get; }
     }

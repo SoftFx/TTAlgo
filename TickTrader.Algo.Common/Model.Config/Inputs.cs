@@ -1,8 +1,14 @@
 ﻿using System.Runtime.Serialization;
-using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.Algo.Common.Model.Config
 {
+    public enum SymbolOrigin
+    {
+        Online = 0,
+        Custom = 1,
+        Token = 2,
+    }
+
     [DataContract(Name = "SymbolConfig", Namespace = "TTAlgo.Config.v2")]
     public class SymbolConfig
     {

@@ -1,23 +1,11 @@
-﻿using System;
-using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Core.Metadata;
+﻿using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
-    public enum MarkerSizes
-    {
-        Large,
-        Medium,
-        Small,
-    }
-
-
     public class MarkerSeriesOutputSetupModel : OutputSetupModel
     {
-        private static MarkerSizes[] _availableSizes = (MarkerSizes[])Enum.GetValues(typeof(MarkerSizes));
-
-
-        public MarkerSizes MarkerSize { get; protected set; }
+        public Metadata.Types.MarkerSize MarkerSize { get; protected set; }
 
         public MarkerSeriesOutputSetupModel(OutputMetadata metadata)
             : base(metadata)
@@ -29,13 +17,13 @@ namespace TickTrader.Algo.Common.Model.Setup
         {
             base.Reset();
 
-            MarkerSize = MarkerSizes.Medium;
+            MarkerSize = Domain.Metadata.Types.MarkerSize.Medium;
         }
 
 
-        public override void Load(Property srcProperty)
+        public override void Load(IPropertyConfig srcProperty)
         {
-            var output = srcProperty as MarkerSeriesOutput;
+            var output = srcProperty as MarkerSeriesOutputConfig;
             if (output != null)
             {
                 MarkerSize = output.MarkerSize;
@@ -43,9 +31,9 @@ namespace TickTrader.Algo.Common.Model.Setup
             }
         }
 
-        public override Property Save()
+        public override IPropertyConfig Save()
         {
-            var output = new MarkerSeriesOutput { MarkerSize = MarkerSize };
+            var output = new MarkerSeriesOutputConfig { MarkerSize = MarkerSize };
             SaveConfig(output);
             return output;
         }

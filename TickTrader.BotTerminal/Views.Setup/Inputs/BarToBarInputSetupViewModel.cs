@@ -1,17 +1,17 @@
 ﻿using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
     public class BarToBarInputSetupViewModel : MappedInputSetupViewModel
     {
-        private Algo.Domain.MappingKey _defaultMapping;
+        private MappingKey _defaultMapping;
 
 
-        protected override Algo.Domain.MappingKey DefaultMapping => _defaultMapping;
+        protected override MappingKey DefaultMapping => _defaultMapping;
 
 
         public BarToBarInputSetupViewModel(InputDescriptor descriptor, SetupMetadata setupMetadata)
@@ -22,24 +22,24 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public override void Load(Property srcProperty)
+        public override void Load(IPropertyConfig srcProperty)
         {
-            var input = srcProperty as BarToBarInput;
+            var input = srcProperty as BarToBarInputConfig;
             if (input != null)
             {
                 LoadConfig(input);
             }
         }
 
-        public override Property Save()
+        public override IPropertyConfig Save()
         {
-            var input = new BarToBarInput();
+            var input = new BarToBarInputConfig();
             SaveConfig(input);
             return input;
         }
 
 
-        protected override MappingInfo GetMapping(Algo.Domain.MappingKey mappingKey)
+        protected override MappingInfo GetMapping(MappingKey mappingKey)
         {
             return SetupMetadata.Mappings.GetBarToBarMappingOrDefault(mappingKey);
         }

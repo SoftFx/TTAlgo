@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Info
@@ -26,21 +24,21 @@ namespace TickTrader.Algo.Common.Info
 
         public List<Feed.Types.Timeframe> TimeFrames { get; set; }
 
-        public List<LineStyles> LineStyles { get; set; }
+        public List<Metadata.Types.LineStyle> LineStyles { get; set; }
 
         public List<int> Thicknesses { get; set; }
 
-        public List<MarkerSizes> MarkerSizes { get; set; }
+        public List<Metadata.Types.MarkerSize> MarkerSizes { get; set; }
 
 
         public ApiMetadataInfo() {
             TimeFrames = new List<Feed.Types.Timeframe>();
-            LineStyles = new List<LineStyles>();
+            LineStyles = new List<Metadata.Types.LineStyle>();
             Thicknesses = new List<int>();
-            MarkerSizes = new List<MarkerSizes>();
+            MarkerSizes = new List<Metadata.Types.MarkerSize>();
         }
 
-        public ApiMetadataInfo(List<Feed.Types.Timeframe> timeFrames, List<LineStyles> lineStyles, List<int> thicknesses, List<MarkerSizes> markerSizes)
+        public ApiMetadataInfo(List<Feed.Types.Timeframe> timeFrames, List<Metadata.Types.LineStyle> lineStyles, List<int> thicknesses, List<Metadata.Types.MarkerSize> markerSizes)
         {
             TimeFrames = timeFrames;
             LineStyles = lineStyles;
@@ -54,9 +52,9 @@ namespace TickTrader.Algo.Common.Info
             return new ApiMetadataInfo
             {
                 TimeFrames = Enum.GetValues(typeof(Feed.Types.Timeframe)).Cast<Feed.Types.Timeframe>().Where(tf => tf != Feed.Types.Timeframe.TicksLevel2 && tf != Feed.Types.Timeframe.TicksVwap).ToList(),
-                LineStyles = Enum.GetValues(typeof(LineStyles)).Cast<LineStyles>().ToList(),
+                LineStyles = Enum.GetValues(typeof(Metadata.Types.LineStyle)).Cast<Metadata.Types.LineStyle>().ToList(),
                 Thicknesses = new List<int> { 1, 2, 3, 4, 5 },
-                MarkerSizes = Enum.GetValues(typeof(MarkerSizes)).Cast<MarkerSizes>().ToList(),
+                MarkerSizes = Enum.GetValues(typeof(Metadata.Types.MarkerSize)).Cast<Metadata.Types.MarkerSize>().ToList(),
             };
         }
     }

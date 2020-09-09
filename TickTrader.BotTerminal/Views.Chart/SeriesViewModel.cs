@@ -15,6 +15,7 @@ using TickTrader.Algo.Common.Model.Setup;
 using SciChart.Charting.Visuals.RenderableSeries;
 using TickTrader.Algo.Api;
 using SciChart.Charting.Visuals.PointMarkers;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -74,7 +75,7 @@ namespace TickTrader.BotTerminal
                 viewModel.DataSeries = seriesData;
                 viewModel.DrawNaNAs = outputSetup.Metadata.Descriptor.PlotType == Algo.Api.PlotType.DiscontinuousLine ?
                      LineDrawMode.Gaps : LineDrawMode.ClosedLines;
-                viewModel.Stroke = outputSetup.LineColor;
+                viewModel.Stroke = outputSetup.LineColorArgb.ToWindowsColor();
                 viewModel.StrokeThickness = outputSetup.LineThickness;
                 viewModel.IsVisible = outputSetup.IsEnabled && outputSetup.IsValid;
                 viewModel.StrokeDashArray = outputSetup.LineStyle.ToStrokeDashArray();
@@ -86,13 +87,13 @@ namespace TickTrader.BotTerminal
             {
                 var viewModel = new LineRenderableSeriesViewModel();
                 viewModel.DataSeries = seriesData;
-                viewModel.Stroke = outputSetup.LineColor;
+                viewModel.Stroke = outputSetup.LineColorArgb.ToWindowsColor();
                 viewModel.StrokeThickness = 0;
                 viewModel.PointMarker = new EllipsePointMarker()
                 {
                     Height = 4,
                     Width = 4,
-                    Fill = outputSetup.LineColor,
+                    Fill = outputSetup.LineColorArgb.ToWindowsColor(),
                     StrokeThickness = outputSetup.LineThickness / 2
                 };
                 viewModel.IsVisible = outputSetup.IsEnabled && outputSetup.IsValid;
@@ -106,8 +107,8 @@ namespace TickTrader.BotTerminal
                 viewModel.DataSeries = seriesData;
                 viewModel.DrawNaNAs = outputSetup.Metadata.Descriptor.PlotType == Algo.Api.PlotType.DiscontinuousLine ?
                      LineDrawMode.Gaps : LineDrawMode.ClosedLines;
-                viewModel.Stroke = outputSetup.LineColor;
-                viewModel.Fill = new SolidColorBrush(outputSetup.LineColor);
+                viewModel.Stroke = outputSetup.LineColorArgb.ToWindowsColor();
+                viewModel.Fill = new SolidColorBrush(outputSetup.LineColorArgb.ToWindowsColor());
                 viewModel.StrokeThickness = outputSetup.LineThickness;
                 viewModel.ZeroLineY = outputSetup.Metadata.Descriptor.ZeroLine;
                 viewModel.IsVisible = outputSetup.IsEnabled && outputSetup.IsValid;
@@ -129,13 +130,13 @@ namespace TickTrader.BotTerminal
             viewModel.StyleKey = "MarkerSeries_Style";
             var markerTool = new AlgoPointMarker()
             {
-                Stroke = outputSetup.LineColor,
+                Stroke = outputSetup.LineColorArgb.ToWindowsColor(),
                 StrokeThickness = outputSetup.LineThickness
             };
             switch (outputSetup.MarkerSize)
             {
-                case MarkerSizes.Large: markerTool.Width = 10; markerTool.Height = 20; break;
-                case MarkerSizes.Small: markerTool.Width = 6; markerTool.Height = 12; break;
+                case Metadata.Types.MarkerSize.Large: markerTool.Width = 10; markerTool.Height = 20; break;
+                case Metadata.Types.MarkerSize.Small: markerTool.Width = 6; markerTool.Height = 12; break;
                 default: markerTool.Width = 8; markerTool.Height = 16; break;
             }
             viewModel.PointMarker = markerTool;

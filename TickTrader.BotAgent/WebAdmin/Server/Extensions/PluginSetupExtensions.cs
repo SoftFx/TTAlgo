@@ -3,9 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 using TickTrader.BotAgent.WebAdmin.Server.Dto;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
 
@@ -39,40 +38,40 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
         {
             var botConfig = new PluginConfig()
             {
-                TimeFrame = TimeFrames.M1,
-                MainSymbol = new SymbolConfig { Name = setup.Symbol, Origin = Algo.Common.Info.SymbolOrigin.Online },
-                SelectedMapping = new MappingKey(MappingCollection.DefaultFullBarToBarReduction.Convert()),
+                Timeframe = Feed.Types.Timeframe.M1,
+                MainSymbol = new SymbolConfig { Name = setup.Symbol, Origin = SymbolConfig.Types.SymbolOrigin.Online },
+                SelectedMapping = new MappingKey(MappingCollection.DefaultFullBarToBarReduction),
                 InstanceId = setup.InstanceId,
                 Permissions = setup.Permissions.Parse(),
             };
 
             var parameters = ParseParameters(setup);
 
-            botConfig.Properties.AddRange(parameters);
+            botConfig.PackProperties(parameters);
 
             return botConfig;
         }
 
-        private static IEnumerable<Property> ParseParameters(PluginSetupDto setup)
+        private static IEnumerable<IPropertyConfig> ParseParameters(PluginSetupDto setup)
         {
             foreach (var param in setup.Parameters)
             {
                 switch (param.DataType)
                 {
                     case ParameterTypes.Integer:
-                        yield return new IntParameter() { Id = param.Id, Value = (int)(long)param.Value };
+                        yield return new Int32ParameterConfig() { PropertyId = param.Id, Value = (int)(long)param.Value };
                         break;
                     case ParameterTypes.NullableInteger:
-                        yield return new NullableIntParameter() { Id = param.Id, Value = param.Value == null ? (int?)null : (int)(long)param.Value };
+                        yield return new NullableInt32ParameterConfig() { PropertyId = param.Id, Value = param.Value == null ? (int?)null : (int)(long)param.Value };
                         break;
                     case ParameterTypes.Double:
                         switch (param.Value)
                         {
                             case Int64 l:
-                                yield return new DoubleParameter() { Id = param.Id, Value = (long)param.Value };
+                                yield return new DoubleParameterConfig() { PropertyId = param.Id, Value = (long)param.Value };
                                 break;
                             case Double d:
-                                yield return new DoubleParameter() { Id = param.Id, Value = (double)param.Value };
+                                yield return new DoubleParameterConfig() { PropertyId = param.Id, Value = (double)param.Value };
                                 break;
                             default: throw new InvalidCastException($"Can't cast {param.Value} to Double");
                         }
@@ -80,35 +79,35 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                     case ParameterTypes.NullableDouble:
                         if (param.Value == null)
                         {
-                            yield return new NullableDoubleParameter() { Id = param.Id, Value = null };
+                            yield return new NullableDoubleParameterConfig() { PropertyId = param.Id, Value = null };
                             break;
                         }
                         switch (param.Value)
                         {
                             case Int64 l:
-                                yield return new NullableDoubleParameter() { Id = param.Id, Value = (long)param.Value };
+                                yield return new NullableDoubleParameterConfig() { PropertyId = param.Id, Value = (long)param.Value };
                                 break;
                             case Double d:
-                                yield return new NullableDoubleParameter() { Id = param.Id, Value = (double)param.Value };
+                                yield return new NullableDoubleParameterConfig() { PropertyId = param.Id, Value = (double)param.Value };
                                 break;
                             default: throw new InvalidCastException($"Can't cast {param.Value} to NullableDouble");
                         }
                         break;
                     case ParameterTypes.String:
-                        yield return new StringParameter() { Id = param.Id, Value = (string)param.Value };
+                        yield return new StringParameterConfig() { PropertyId = param.Id, Value = (string)param.Value };
                         break;
                     case ParameterTypes.Enumeration:
-                        yield return new EnumParameter() { Id = param.Id, Value = (string)param.Value };
+                        yield return new EnumParameterConfig() { PropertyId = param.Id, Value = (string)param.Value };
                         break;
                     case ParameterTypes.File:
                         var jObject = param.Value as JObject;
                         var fileName = jObject["FileName"]?.ToString();
 
-                        yield return new FileParameter { Id = param.Id, FileName = fileName };
+                        yield return new FileParameterConfig { PropertyId = param.Id, FileName = fileName };
 
                         break;
                     case ParameterTypes.Boolean:
-                        yield return new BoolParameter() { Id = param.Id, Value = (bool)param.Value };
+                        yield return new BoolParameterConfig() { PropertyId = param.Id, Value = (bool)param.Value };
                         break;
                 }
             }

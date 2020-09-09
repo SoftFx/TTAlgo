@@ -33,13 +33,13 @@ namespace TickTrader.BotAgent.BA.Models
         private TaskCompletionSource<object> _startedEvent;
         private bool _closed;
 
-        public TradeBotModel(Algo.Common.Model.Config.PluginConfig config)
+        public TradeBotModel(PluginConfig config)
         {
             Config = config;
         }
 
         [DataMember(Name = "configuration")]
-        public Algo.Common.Model.Config.PluginConfig Config { get; private set; }
+        public PluginConfig Config { get; private set; }
         [DataMember(Name = "running")]
         public bool IsRunning { get; private set; }
 
@@ -89,7 +89,7 @@ namespace TickTrader.BotAgent.BA.Models
             return false;
         }
 
-        public void ChangeBotConfig(Algo.Common.Model.Config.PluginConfig config)
+        public void ChangeBotConfig(PluginConfig config)
         {
             CheckShutdownFlag();
 
@@ -346,7 +346,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         private void UpdatePackage()
         {
-            var pluginKey = Algo.Common.Model.Config.ConvertExt.Convert(Config.Key);
+            var pluginKey = Config.Key;
             PackageKey = pluginKey.Package;
             Package = _packageRepo.GetPackageRef(PackageKey);
 

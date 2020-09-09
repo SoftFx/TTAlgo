@@ -1,8 +1,9 @@
 ﻿using System;
-using TickTrader.Algo.Common.Model.Config;
 using System.Windows.Media;
 using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -76,25 +77,25 @@ namespace TickTrader.BotTerminal
         }
 
 
-        protected virtual void LoadConfig(Output output)
+        protected virtual void LoadConfig(IOutputConfig output)
         {
             IsEnabled = output.IsEnabled;
-            LineColor = output.LineColor.ToWindowsColor();
+            LineColor = output.LineColorArgb.ToWindowsColor();
             LineThickness = output.LineThickness;
         }
 
-        protected virtual void SaveConfig(Output output)
+        protected virtual void SaveConfig(IOutputConfig output)
         {
-            output.Id = Id;
+            output.PropertyId = Id;
             output.IsEnabled = IsEnabled;
-            output.LineColor = OutputColor.FromWindowsColor(LineColor);
+            output.LineColorArgb = LineColor.ToArgb();
             output.LineThickness = LineThickness;
         }
 
 
         private void InitColor()
         {
-            LineColor = Algo.Common.Model.Setup.Convert.ToWindowsColor(Descriptor.DefaultColor);
+            LineColor = Descriptor.DefaultColor.ToArgb(ApiColorConverter.GreenColor).ToWindowsColor();
         }
 
         private void InitThickness()
@@ -120,11 +121,11 @@ namespace TickTrader.BotTerminal
             }
 
 
-            public override void Load(Property srcProperty)
+            public override void Load(IPropertyConfig srcProperty)
             {
             }
 
-            public override Property Save()
+            public override IPropertyConfig Save()
             {
                 throw new Exception("Cannot save error output!");
             }

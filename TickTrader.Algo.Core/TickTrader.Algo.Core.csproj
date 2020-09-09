@@ -46,7 +46,6 @@
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
@@ -79,8 +78,6 @@
     <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
     </Reference>
-    <Reference Include="System.Windows" />
-    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -90,7 +87,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\TickTrader.Common.dll</HintPath>
     </Reference>
-    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Adapters\BotAdapter.cs" />
@@ -164,6 +160,7 @@
     <Compile Include="Entities\AccountAccessor.cs" />
     <Compile Include="Entities\AccountEntity.cs" />
     <Compile Include="Entities\AlgoMarketNode.cs" />
+    <Compile Include="Entities\ApiColorConverter.cs" />
     <Compile Include="Entities\ApiEnumConverter.cs" />
     <Compile Include="Entities\AssetAccessor.cs" />
     <Compile Include="Entities\AssetsCollection.cs" />
@@ -266,18 +263,7 @@
     <Compile Include="Metadata\Descriptors\PropertyDescriptor.cs" />
     <Compile Include="Metadata\Descriptors\ReductionDescriptor.cs" />
     <Compile Include="Metadata\ReductionMetadata.cs" />
-    <Compile Include="Model.Config\Convert.cs" />
-    <Compile Include="Model.Config\Inputs.cs" />
-    <Compile Include="Model.Config\Outputs.cs" />
-    <Compile Include="Model.Config\Parameters.cs" />
-    <Compile Include="Model.Config\PluginConfig.cs" />
-    <None Include="Model.Config\Version1\Inputs.cs" />
-    <None Include="Model.Config\Version1\Outputs.cs" />
-    <None Include="Model.Config\Version1\Parameters.cs" />
-    <None Include="Model.Config\Version1\PluginConfig.cs" />
-    <None Include="Model.Config\Version1\PluginConfigResolver.cs" />
     <Compile Include="Model.Setup\AlgoSetupProxy.cs" />
-    <Compile Include="Model.Setup\Convert.cs" />
     <Compile Include="Model.Setup\ErrorMsgModel.cs" />
     <Compile Include="Model.Setup\Extensions.cs" />
     <Compile Include="Model.Setup\Inputs\BarToBarInputSetupModel.cs" />
@@ -321,11 +307,6 @@
     <Compile Include="Metadata\InputMetadata.cs" />
     <Compile Include="Metadata\OutputMetadata.cs" />
     <Compile Include="Metadata\ParameterMetadata.cs" />
-    <Compile Include="PluginPermissions.cs" />
-    <Compile Include="Model.Config\Keys\MappingKey.cs" />
-    <Compile Include="Model.Config\Keys\PackageKey.cs" />
-    <Compile Include="Model.Config\Keys\PluginKey.cs" />
-    <Compile Include="Model.Config\Keys\ReductionKey.cs" />
     <Compile Include="Repository\Mappings\AskBarMappings.cs" />
     <Compile Include="Repository\Mappings\BidBarMappings.cs" />
     <Compile Include="Repository\Mappings\DefaultReductions.cs" />

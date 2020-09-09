@@ -11,7 +11,6 @@ using System.Xml;
 using System.Xml.Serialization;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
@@ -227,21 +226,21 @@ namespace TickTrader.BotTerminal
 
         public void Load(PluginConfig cfg)
         {
-            SelectedTimeFrame = cfg.TimeFrame.ToDomainEnum();
+            SelectedTimeFrame = cfg.Timeframe;
             MainSymbol = AvailableSymbols.GetSymbolOrDefault(cfg.MainSymbol) ?? AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol);
 
             if (!IsEmulation)
             {
-                SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(cfg.SelectedMapping.Convert());
+                SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(cfg.SelectedMapping);
 
                 InstanceId = cfg.InstanceId;
                 AllowTrade = cfg.Permissions.TradeAllowed;
                 Isolated = cfg.Permissions.Isolated;
             }
 
-            foreach (var scrProperty in cfg.Properties)
+            foreach (var scrProperty in cfg.UnpackProperties())
             {
-                var thisProperty = _allProperties.FirstOrDefault(p => p.Id == scrProperty.Id);
+                var thisProperty = _allProperties.FirstOrDefault(p => p.Id == scrProperty.PropertyId);
                 if (thisProperty != null)
                     thisProperty.Load(scrProperty);
             }
@@ -252,19 +251,14 @@ namespace TickTrader.BotTerminal
         public PluginConfig Save()
         {
             var cfg = new PluginConfig();
-            cfg.TimeFrame = SelectedTimeFrame.ToApiEnum();
+            cfg.Timeframe = SelectedTimeFrame;
             cfg.MainSymbol = MainSymbol.ToConfig();
-            cfg.SelectedMapping = SelectedMapping.Key.Convert();
+            cfg.SelectedMapping = SelectedMapping.Key;
             cfg.InstanceId = InstanceId;
             cfg.Permissions = new PluginPermissions();
             cfg.Permissions.TradeAllowed = _allowTrade;
             cfg.Permissions.Isolated = _isolate;
-            foreach (var propertyModel in _allProperties)
-            {
-                var prop = propertyModel.Save();
-                if (prop != null)
-                    cfg.Properties.Add(prop);
-            }
+            cfg.PackProperties(_allProperties.Select(p => p.Save()));
             return cfg;
         }
 
@@ -390,7 +384,7 @@ namespace TickTrader.BotTerminal
         private void Init()
         {
             AvailableTimeFrames = SetupMetadata.Api.TimeFrames;
-            AvailableSymbols = SetupMetadata.Account.GetAvaliableSymbols(SetupMetadata.Context.DefaultSymbol).Where(u => u.Origin != SymbolOrigin.Token).ToList();
+            AvailableSymbols = SetupMetadata.Account.GetAvaliableSymbols(SetupMetadata.Context.DefaultSymbol).Where(u => u.Origin != SymbolConfig.Types.SymbolOrigin.Token).ToList();
             AvailableMappings = SetupMetadata.Mappings.BarToBarMappings;
 
 

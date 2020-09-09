@@ -131,8 +131,8 @@ namespace TickTrader.BotAgent.BA.Models
             #region Bot Management
             public IAlertStorage GetAlertStorage() => CallActorFlatten(a => a.GetAlertsStorage());
             public string GenerateBotId(string botDisplayName) => CallActorFlatten(a => a.AutogenerateBotId(botDisplayName));
-            public BotModelInfo AddBot(AccountKey accountId, Algo.Common.Model.Config.PluginConfig config) => CallActorFlatten(a => a.AddBot(accountId, config));
-            public void ChangeBotConfig(string botId, Algo.Common.Model.Config.PluginConfig config) => CallActorFlatten(a => a.GetBotOrThrow(botId).ChangeBotConfig(config));
+            public BotModelInfo AddBot(AccountKey accountId, PluginConfig config) => CallActorFlatten(a => a.AddBot(accountId, config));
+            public void ChangeBotConfig(string botId, PluginConfig config) => CallActorFlatten(a => a.GetBotOrThrow(botId).ChangeBotConfig(config));
             public void RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false) => CallActorFlatten(a => a.RemoveBot(botId, cleanLog, cleanAlgoData));
             public void StartBot(string botId) => CallActorFlatten(a => a.GetBotOrThrow(botId).Start());
             public Task StopBotAsync(string botId) => CallActorFlattenAsync(a => a.GetBotOrThrow(botId).StopAsync());
@@ -361,7 +361,7 @@ namespace TickTrader.BotAgent.BA.Models
         private event Action<BotModelInfo, ChangeAction> BotChanged;
         private event Action<BotModelInfo> BotStateChanged;
 
-        private BotModelInfo AddBot(AccountKey account, Algo.Common.Model.Config.PluginConfig config)
+        private BotModelInfo AddBot(AccountKey account, PluginConfig config)
         {
             var bot = GetAccountOrThrow(account).AddBot(config);
             return bot.GetInfoCopy();

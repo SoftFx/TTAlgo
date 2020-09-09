@@ -1,16 +1,12 @@
-﻿using System;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Model.Config;
+﻿using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
     public class ColoredLineOutputSetupModel : OutputSetupModel
     {
-        private static LineStyles[] _availableLineStyles = (LineStyles[])Enum.GetValues(typeof(LineStyles));
-
-
-        public LineStyles LineStyle { get; protected set; }
+        public Metadata.Types.LineStyle LineStyle { get; protected set; }
 
 
         public ColoredLineOutputSetupModel(OutputMetadata metadata)
@@ -23,12 +19,12 @@ namespace TickTrader.Algo.Common.Model.Setup
         {
             base.Reset();
 
-            LineStyle = Metadata.Descriptor.DefaultLineStyle;
+            LineStyle = Metadata.Descriptor.DefaultLineStyle.ToDomainEnum();
         }
 
-        public override void Load(Property srcProperty)
+        public override void Load(IPropertyConfig srcProperty)
         {
-            var output = srcProperty as ColoredLineOutput;
+            var output = srcProperty as ColoredLineOutputConfig;
             if (output != null)
             {
                 LineStyle = output.LineStyle;
@@ -36,9 +32,9 @@ namespace TickTrader.Algo.Common.Model.Setup
             }
         }
 
-        public override Property Save()
+        public override IPropertyConfig Save()
         {
-            var output = new ColoredLineOutput { LineStyle = LineStyle };
+            var output = new ColoredLineOutputConfig { LineStyle = LineStyle };
             SaveConfig(output);
             return output;
         }

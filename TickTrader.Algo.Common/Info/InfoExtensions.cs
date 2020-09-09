@@ -1,6 +1,4 @@
 ﻿using System.Linq;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 
@@ -80,9 +78,9 @@ namespace TickTrader.Algo.Common.Info
             };
         }
 
-        public static SymbolKey ToInfo(this Domain.ISymbolInfo symbol)
+        public static SymbolKey ToInfo(this ISymbolInfo symbol)
         {
-            return new SymbolKey(symbol.Name, SymbolOrigin.Online);
+            return new SymbolKey(symbol.Name, SymbolConfig.Types.SymbolOrigin.Online);
         }
     }
 }

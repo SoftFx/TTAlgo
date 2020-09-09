@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model.Setup
@@ -19,7 +18,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public static SymbolKey ToKey(this SymbolInfo info)
         {
-            return new SymbolKey(info.Name, SymbolOrigin.Online);
+            return new SymbolKey(info.Name, SymbolConfig.Types.SymbolOrigin.Online);
         }
     }
 
@@ -31,7 +30,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             ISetupSymbolInfo res = null;
             switch (config.Origin)
             {
-                case SymbolOrigin.Token:
+                case SymbolConfig.Types.SymbolOrigin.Token:
                     switch (config.Name)
                     {
                         case SpecialSymbols.MainSymbol:
@@ -53,7 +52,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             {
                 switch (config.Origin)
                 {
-                    case SymbolOrigin.Token:
+                    case SymbolConfig.Types.SymbolOrigin.Token:
                         switch (config.Name)
                         {
                             case SpecialSymbols.MainSymbol:

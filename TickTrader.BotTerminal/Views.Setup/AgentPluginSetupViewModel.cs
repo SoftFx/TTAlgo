@@ -188,7 +188,7 @@ namespace TickTrader.BotTerminal
         }
 
         public AgentPluginSetupViewModel(AlgoEnvironment algoEnv, string agentName, ITradeBot bot)
-            : this(algoEnv, agentName, bot.Account, Algo.Common.Model.Config.ConvertExt.Convert(bot.Config.Key), AlgoTypes.Robot, null, PluginSetupMode.Edit)
+            : this(algoEnv, agentName, bot.Account, bot.Config.Key, AlgoTypes.Robot, null, PluginSetupMode.Edit)
         {
             Bot = bot;
             UpdateSetup();
@@ -249,10 +249,10 @@ namespace TickTrader.BotTerminal
             Dispose();
         }
 
-        public Algo.Common.Model.Config.PluginConfig GetConfig()
+        public PluginConfig GetConfig()
         {
             var res = Setup.Save();
-            res.Key = Algo.Common.Model.Config.ConvertExt.Convert(SelectedPlugin.Key);
+            res.Key = SelectedPlugin.Key;
             return res;
         }
 
@@ -395,13 +395,14 @@ namespace TickTrader.BotTerminal
                 Setup.Visible = false;
         }
 
-        private async Task UploadBotFiles(Algo.Common.Model.Config.PluginConfig config)
+        private async Task UploadBotFiles(PluginConfig config)
         {
             ShowFileProgress = true;
             try
             {
-                foreach (Algo.Common.Model.Config.FileParameter fileParam in config.Properties.Where(p => p is Algo.Common.Model.Config.FileParameter))
+                foreach (var prop in config.Properties.Where(p => p.Is(FileParameterConfig.Descriptor)))
                 {
+                    var fileParam = prop.Unpack<FileParameterConfig>();
                     var path = fileParam.FileName;
                     if (System.IO.File.Exists(path) && System.IO.Path.GetFullPath(path) == path)
                     {

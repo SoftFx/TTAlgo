@@ -32,7 +32,7 @@ namespace TickTrader.BotAgent.BA.Models
     {
         public string Name { get; set; }
 
-        public SymbolOrigin Origin { get; set; }
+        public SymbolConfig.Types.SymbolOrigin Origin { get; set; }
 
         public string Id => Name;
 
@@ -40,7 +40,7 @@ namespace TickTrader.BotAgent.BA.Models
         public StubSymbolInfo(SymbolKey symbolInfo)
         {
             Name = symbolInfo.Name;
-            Origin = SymbolOrigin.Online;
+            Origin = SymbolConfig.Types.SymbolOrigin.Online;
         }
     }
 

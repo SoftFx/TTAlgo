@@ -2,15 +2,11 @@
 using ActorSharp.Lib;
 using Machinarium.Qnil;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Lib;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 using TickTrader.SeriesStorage;
-using TickTrader.SeriesStorage.LevelDb;
 using TickTrader.SeriesStorage.Protobuf;
 
 namespace TickTrader.Algo.Common.Model
@@ -91,7 +87,7 @@ namespace TickTrader.Algo.Common.Model
 
             private SymbolKey GetKey(CustomSymbol smb)
             {
-                return new SymbolKey(smb.Name, SymbolOrigin.Custom);
+                return new SymbolKey(smb.Name, SymbolConfig.Types.SymbolOrigin.Custom);
             }
         }
 

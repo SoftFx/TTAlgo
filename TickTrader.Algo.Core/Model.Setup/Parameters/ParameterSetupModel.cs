@@ -1,8 +1,7 @@
-﻿using System;
-using System.Reflection;
-using TickTrader.Algo.Common.Model.Config;
+﻿using System.Reflection;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
@@ -65,11 +64,11 @@ namespace TickTrader.Algo.Common.Model.Setup
                 return null;
             }
 
-            public override void Load(Property srcProperty)
+            public override void Load(IPropertyConfig srcProperty)
             {
             }
 
-            public override Property Save()
+            public override IPropertyConfig Save()
             {
                 //throw new Exception("Invalid parameter cannot be saved!");
                 return null;

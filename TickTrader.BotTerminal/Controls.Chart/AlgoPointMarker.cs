@@ -67,7 +67,7 @@ namespace TickTrader.BotTerminal
                     //_logger.Error($"{RenderableSeries.DataSeries.SeriesName}: No metadata at {index}");
                     continue;
                 }
-                var fillColor = Algo.Common.Model.Setup.Convert.ToWindowsColor(pointMetadata.MarkerEntity.ColorRgb, Stroke);
+                var fillColor = pointMetadata.MarkerEntity.ColorArgb.ToWindowsColor();
                 var newCenter = center;
 
                 //var newCenter = Shift(center, pointMetadata.MarkerEntity.Alignment);

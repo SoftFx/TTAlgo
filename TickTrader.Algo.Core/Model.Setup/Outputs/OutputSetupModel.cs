@@ -1,21 +1,17 @@
 ﻿using System;
 using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
-using System.Windows.Media;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
     public abstract class OutputSetupModel : PropertySetupModel
     {
-        private static int[] _availableThicknesses = new int[] { 1, 2, 3, 4, 5 };
-
-
         public OutputMetadata Metadata { get; }
 
         public bool IsEnabled { get; protected set; }
 
-        public Color LineColor { get; protected set; }
+        public uint LineColorArgb { get; protected set; }
 
         public int LineThickness { get; protected set; }
 
@@ -35,25 +31,25 @@ namespace TickTrader.Algo.Common.Model.Setup
         }
 
 
-        protected virtual void LoadConfig(Output output)
+        protected virtual void LoadConfig(IOutputConfig output)
         {
             IsEnabled = output.IsEnabled;
-            LineColor = output.LineColor.ToWindowsColor();
+            LineColorArgb = output.LineColorArgb;
             LineThickness = output.LineThickness;
         }
 
-        protected virtual void SaveConfig(Output output)
+        protected virtual void SaveConfig(IOutputConfig output)
         {
-            output.Id = Id;
+            output.PropertyId = Id;
             output.IsEnabled = IsEnabled;
-            output.LineColor = OutputColor.FromWindowsColor(LineColor);
+            output.LineColorArgb = output.LineColorArgb;
             output.LineThickness = LineThickness;
         }
 
 
         private void InitColor()
         {
-            LineColor = Convert.ToWindowsColor(Metadata.Descriptor.DefaultColor);
+            LineColorArgb = Metadata.Descriptor.DefaultColor.ToArgb() ?? ApiColorConverter.GreenColor;
         }
 
         private void InitThickness()
@@ -83,11 +79,11 @@ namespace TickTrader.Algo.Common.Model.Setup
                 throw new Exception("Cannot configure invalid output!");
             }
 
-            public override void Load(Property srcProperty)
+            public override void Load(IPropertyConfig srcProperty)
             {
             }
 
-            public override Property Save()
+            public override IPropertyConfig Save()
             {
                 throw new Exception("Cannot save error output!");
             }

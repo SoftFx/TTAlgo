@@ -1,45 +1,45 @@
 ﻿using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
     public class QuoteToBarInputSetupViewModel : MappedInputSetupViewModel
     {
-        private Algo.Domain.MappingKey _defaultMapping;
+        private MappingKey _defaultMapping;
 
 
-        protected override Algo.Domain.MappingKey DefaultMapping => _defaultMapping;
+        protected override MappingKey DefaultMapping => _defaultMapping;
 
 
         public QuoteToBarInputSetupViewModel(InputDescriptor descriptor, SetupMetadata setupMetadata)
             : base(descriptor, setupMetadata)
         {
-            _defaultMapping = new Algo.Domain.MappingKey(setupMetadata.Mappings.DefaultQuoteToBarReduction);
+            _defaultMapping = new MappingKey(setupMetadata.Mappings.DefaultQuoteToBarReduction);
             AvailableMappings = setupMetadata.Mappings.QuoteToBarMappings;
         }
 
 
-        public override void Load(Property srcProperty)
+        public override void Load(IPropertyConfig srcProperty)
         {
-            var input = srcProperty as QuoteToBarInput;
+            var input = srcProperty as QuoteToBarInputConfig;
             if (input != null)
             {
                 LoadConfig(input);
             }
         }
 
-        public override Property Save()
+        public override IPropertyConfig Save()
         {
-            var input = new QuoteToBarInput();
+            var input = new QuoteToBarInputConfig();
             SaveConfig(input);
             return input;
         }
 
 
-        protected override MappingInfo GetMapping(Algo.Domain.MappingKey mappingKey)
+        protected override MappingInfo GetMapping(MappingKey mappingKey)
         {
             return SetupMetadata.Mappings.GetQuoteToBarMappingOrDefault(mappingKey);
         }

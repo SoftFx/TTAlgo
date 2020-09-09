@@ -1,7 +1,7 @@
 ﻿using System;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
@@ -32,9 +32,9 @@ namespace TickTrader.Algo.Common.Model.Setup
         public event Action<PropertySetupModel> ErrorChanged = delegate { };
 
 
-        public abstract void Load(Property srcProperty);
+        public abstract void Load(IPropertyConfig srcProperty);
 
-        public abstract Property Save();
+        public abstract IPropertyConfig Save();
 
         public abstract void Reset();
 

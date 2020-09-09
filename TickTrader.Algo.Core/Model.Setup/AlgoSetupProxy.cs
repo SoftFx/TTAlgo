@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Core
         public MappingKey DefaultMapping => _defaultMapping;
 
 
-        public AlgoSetupContext(Feed.Types.Timeframe defaultTimeFrame, Common.Model.Config.SymbolConfig defaultSymbol)
+        public AlgoSetupContext(Feed.Types.Timeframe defaultTimeFrame, SymbolConfig defaultSymbol)
         {
             DefaultTimeFrame = defaultTimeFrame;
             DefaultSymbol = new SymbolToken(defaultSymbol.Name, defaultSymbol.Origin);

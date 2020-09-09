@@ -9,7 +9,6 @@ using System.Threading.Tasks.Dataflow;
 using System.Linq;
 using System.Collections.Generic;
 using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Domain;
