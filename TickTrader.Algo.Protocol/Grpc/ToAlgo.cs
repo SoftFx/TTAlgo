@@ -228,7 +228,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             res.DataSeriesBaseTypeFullName = output.DataSeriesBaseTypeFullName;
             res.DefaultThickness = output.DefaultThickness;
             res.DefaultColor = (Colors)output.DefaultColor;
-            res.DefaultLineStyle = (LineStyles)output.DefaultLineStyle.Convert();
+            //res.DefaultLineStyle = (LineStyles)output.DefaultLineStyle.Convert();
             res.PlotType = output.PlotType.Convert();
             res.Target = output.Target.Convert();
             res.Precision = output.Precision;

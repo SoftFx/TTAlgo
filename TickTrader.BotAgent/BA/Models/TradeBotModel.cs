@@ -21,10 +21,14 @@ namespace TickTrader.BotAgent.BA.Models
     {
         private static readonly ILogger _log = LogManager.GetLogger(nameof(ServerModel));
 
+        private PluginConfig _config;
+        [DataMember(Name = "configuration")]
+        private Algo.Common.Model.Config.PluginConfig _configEntry;
+
         private AlgoServer _server;
         private ClientModel _client;
         private Task _stopTask;
-        private PluginExecutor executor;
+        private RuntimeModel executor;
         private BotLog.ControlHandler _botLog;
         private AlgoData _algoData;
         private AlgoPluginRef _ref;
@@ -38,8 +42,16 @@ namespace TickTrader.BotAgent.BA.Models
             Config = config;
         }
 
-        [DataMember(Name = "configuration")]
-        public PluginConfig Config { get; private set; }
+
+        public PluginConfig Config
+        {
+            get => _config;
+            private set
+            {
+                _config = value;
+                _configEntry = Algo.Common.Model.Config.PluginConfig.FromDomain(value);
+            }
+        }
         [DataMember(Name = "running")]
         public bool IsRunning { get; private set; }
 
@@ -61,6 +73,22 @@ namespace TickTrader.BotAgent.BA.Models
         public event Action<TradeBotModel> IsRunningChanged;
         public event Action<TradeBotModel> ConfigurationChanged;
 
+        public bool OnDeserialized()
+        {
+            try
+            {
+                _config = _configEntry.ToDomain();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _log.Error(ex, $"Failed to deserialize bot config {_configEntry.InstanceId}");
+            }
+
+            return false;
+        }
+        
         public bool Init(AlgoServer server, ClientModel client, PackageStorage packageRepo, string workingFolder, AlertStorage storage)
         {
             try
@@ -116,8 +144,7 @@ namespace TickTrader.BotAgent.BA.Models
                     StartExecutor();
                 else if (State == PluginStates.Reconnecting)
                 {
-                    executor.HandleReconnect();
-                    executor.WriteConnectionInfo(GetConnectionInfo());
+                    executor.NotifyReconnectNotification();
                     ChangeState(PluginStates.Running);
                 }
             }
@@ -125,8 +152,7 @@ namespace TickTrader.BotAgent.BA.Models
             {
                 if (State == PluginStates.Running)
                 {
-                    executor.HandleDisconnect();
-                    executor.WriteConnectionInfo(GetConnectionInfo());
+                    executor.NotifyDisconnectNotification();
                     ChangeState(PluginStates.Reconnecting, client.LastError != null && client.LastError.Code != ConnectionErrorCodes.None ? client.ErrorText : null);
                 }
             }
@@ -235,36 +261,27 @@ namespace TickTrader.BotAgent.BA.Models
                 if (executor != null)
                     throw new InvalidOperationException("Cannot start executor: old executor instance is not disposed!");
 
-                executor = _server.CreateExecutor(_ref, null);
+                executor = _server.CreateRuntime(_ref, null);
+                executor.SetConfig(Config);
+                executor.Config.WorkingDirectory = AlgoData.Folder;
+                executor.SetConnectionInfo(GetConnectionInfo());
 
-                var setupModel = new PluginSetupModel(_ref, new SetupMetadata((await _client.GetMetadata()).Symbols), new SetupContext(), Config.MainSymbol);
-                setupModel.Load(Config);
+                executor.Config.InitPriorityInvokeStrategy();
+                executor.Config.InitSlidingBuffering(4000);
+                executor.Config.InitBarStrategy(Feed.Types.MarketSide.Bid);
 
                 var feedAdapter = _client.CreatePluginFeedAdapter();
                 executor.Feed = feedAdapter;
                 executor.FeedHistory = feedAdapter;
-                executor.Config.InitBarStrategy(Algo.Domain.Feed.Types.MarketSide.Bid);
-                executor.Config.MainSymbolCode = setupModel.MainSymbol.Id;
-                executor.Config.TimeFrame = setupModel.SelectedTimeFrame;
                 executor.Metadata = feedAdapter;
-                executor.Config.InitSlidingBuffering(4000);
 
-                executor.Config.InvokeStrategy = new PriorityInvokeStartegy();
                 executor.AccInfoProvider = _client.PluginTradeInfo;
                 executor.TradeExecutor = _client.PluginTradeApi;
                 executor.TradeHistoryProvider = _client.PluginTradeHistory.AlgoAdapter;
-                executor.Config.BotWorkingFolder = AlgoData.Folder;
-                executor.Config.WorkingFolder = AlgoData.Folder;
-                executor.Config.InstanceId = Id;
-                executor.Config.Permissions = Permissions;
                 _botListener = new BotListenerProxy(executor, OnBotExited, _botLog.GetWriter());
 
-                setupModel.SetWorkingFolder(AlgoData.Folder);
-                setupModel.Apply(executor.Config);
-
-                executor.Launch(_server.Address, _server.BoundPort);
+                await executor.Start(_server.Address, _server.BoundPort);
                 _botListener.Start();
-                executor.WriteConnectionInfo(GetConnectionInfo());
 
                 ChangeState(PluginStates.Running);
             }
@@ -287,8 +304,6 @@ namespace TickTrader.BotAgent.BA.Models
             if (_startedEvent != null)
                 await _startedEvent.Task;
 
-            executor.WriteConnectionInfo(GetConnectionInfo());
-
             try
             {
                 await Task.Factory.StartNew(() => executor?.Stop());
@@ -308,7 +323,7 @@ namespace TickTrader.BotAgent.BA.Models
         private void DisposeExecutor()
         {
             _botListener?.Dispose();
-            executor?.Dispose();
+            //executor?.Dispose();
             executor = null;
         }
 

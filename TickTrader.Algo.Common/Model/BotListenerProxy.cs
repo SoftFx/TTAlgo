@@ -17,22 +17,22 @@ namespace TickTrader.Algo.Common.Model
 
     public class BotListenerProxy : CrossDomainObject
     {
-        private PluginExecutor _executor;
+        private RuntimeModel _runtime;
         private Action _onStopped;
         private IBotWriter _writer;
         private string _currentStatus;
         private Timer _timer;
 
 
-        public BotListenerProxy(PluginExecutor executor, Action onStopped, IBotWriter writer)
+        public BotListenerProxy(RuntimeModel runtime, Action onStopped, IBotWriter writer)
         {
-            _executor = executor;
+            _runtime = runtime;
             _onStopped = onStopped;
             _writer = writer;
 
-            executor.Config.IsLoggingEnabled = true;
-            executor.Stopped += Executor_Stopped;
-            executor.LogUpdated += Executor_LogUpdated;
+            runtime.Config.IsLoggingEnabled = true;
+            runtime.Stopped += Executor_Stopped;
+            runtime.LogUpdated += Executor_LogUpdated;
         }
 
 
@@ -60,8 +60,8 @@ namespace TickTrader.Algo.Common.Model
 
             if (disposing)
             {
-                _executor.Stopped -= Executor_Stopped;
-                _executor.LogUpdated -= Executor_LogUpdated;
+                _runtime.Stopped -= Executor_Stopped;
+                _runtime.LogUpdated -= Executor_LogUpdated;
             }
 
             base.Dispose(disposing);
@@ -79,7 +79,7 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private void Executor_Stopped(PluginExecutor executor)
+        private void Executor_Stopped(RuntimeModel runtime)
         {
             _onStopped();
         }

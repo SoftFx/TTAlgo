@@ -139,6 +139,7 @@ namespace TickTrader.BotTerminal
             runtime.SetConfig(Config);
             runtime.Config.WorkingDirectory = EnvService.Instance.AlgoWorkingFolder;
             runtime.TradeHistoryProvider = Host.GetTradeHistoryApi();
+            runtime.SetConnectionInfo(Host.GetConnectionInfo());
 
             Host.InitializePlugin(runtime);
 

@@ -72,6 +72,12 @@ namespace TickTrader.BotAgent.BA.Models
 
                 foreach (var bot in _bots)
                 {
+                    if (!bot.OnDeserialized())
+                    {
+                        toRemove.Add(bot);
+                        continue;
+                    }
+
                     try
                     {
                         BotValidation?.Invoke(bot);

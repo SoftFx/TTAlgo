@@ -52,9 +52,9 @@ namespace TickTrader.Algo.Common.Info
             return new ApiMetadataInfo
             {
                 TimeFrames = Enum.GetValues(typeof(Feed.Types.Timeframe)).Cast<Feed.Types.Timeframe>().Where(tf => tf != Feed.Types.Timeframe.TicksLevel2 && tf != Feed.Types.Timeframe.TicksVwap).ToList(),
-                LineStyles = Enum.GetValues(typeof(Metadata.Types.LineStyle)).Cast<Metadata.Types.LineStyle>().ToList(),
+                LineStyles = Enum.GetValues(typeof(Metadata.Types.LineStyle)).Cast<Metadata.Types.LineStyle>().Where(l => l != Metadata.Types.LineStyle.UnknownLineStyle).ToList(),
                 Thicknesses = new List<int> { 1, 2, 3, 4, 5 },
-                MarkerSizes = Enum.GetValues(typeof(Metadata.Types.MarkerSize)).Cast<Metadata.Types.MarkerSize>().ToList(),
+                MarkerSizes = Enum.GetValues(typeof(Metadata.Types.MarkerSize)).Cast<Metadata.Types.MarkerSize>().Where(m => m != Metadata.Types.MarkerSize.UnknownMarkerSize).ToList(),
             };
         }
     }
