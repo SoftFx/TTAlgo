@@ -18,12 +18,14 @@ namespace TickTrader.Algo.Core.Calc
         private decimal _swap;
         private double _dblCms;
         private double _dblSwap;
+        private Action<string, Exception> _onLogError;
 
-        public MarginAccountCalc(IMarginAccountInfo2 accInfo, MarketStateBase market, bool autoUpdate = false)
+        public MarginAccountCalc(IMarginAccountInfo2 accInfo, MarketStateBase market, Action<string, Exception> onLogError, bool autoUpdate = false)
         {
             Info = accInfo;
             _market = market;
             _autoUpdate = autoUpdate;
+            _onLogError = onLogError;
 
             _market.CurrenciesChanged += InitRounding;
             InitRounding();
@@ -187,14 +189,36 @@ namespace TickTrader.Algo.Core.Calc
 
         private void AddOrder(IOrderModel2 order)
         {
-            AddInternal(order);
-            GetOrAddSymbolCalculator(order.Symbol).AddOrder(order);
+            try
+            {
+                AddInternal(order);
+                GetOrAddSymbolCalculator(order.Symbol).AddOrder(order);
+            }
+            catch (SymbolNotFoundException snfex)
+            {
+                _onLogError?.Invoke($"{nameof(MarginAccountCalc)} failed to add order: {snfex.Message}. {order?.GetSnapshotString()}", null);
+            }
+            catch (Exception ex)
+            {
+                _onLogError?.Invoke($"{nameof(MarginAccountCalc)} failed to add order. {order?.GetSnapshotString()}", ex);
+            }
         }
 
         private void AddOrderWithoutCalculation(IOrderModel2 order)
         {
-            AddInternal(order);
-            GetOrAddSymbolCalculator(order.Symbol).AddOrderWithoutCalculation(order);
+            try
+            {
+                AddInternal(order);
+                GetOrAddSymbolCalculator(order.Symbol).AddOrderWithoutCalculation(order);
+            }
+            catch (SymbolNotFoundException snfex)
+            {
+                _onLogError?.Invoke($"{nameof(MarginAccountCalc)} failed to add order without calculation: {snfex.Message}. {order?.GetSnapshotString()}", null);
+            }
+            catch (Exception ex)
+            {
+                _onLogError?.Invoke($"{nameof(MarginAccountCalc)} failed to add order without calculation. {order?.GetSnapshotString()}", ex);
+            }
         }
 
         private void AddInternal(IOrderModel2 order)
@@ -216,13 +240,24 @@ namespace TickTrader.Algo.Core.Calc
 
         private void RemoveOrder(IOrderModel2 order)
         {
-            Swap -= order.Swap ?? 0;
-            Commission -= order.Commission ?? 0;
-            order.SwapChanged -= Order_SwapChanged;
-            order.CommissionChanged -= Order_CommissionChanged;
-            var smbCalc = GetOrAddSymbolCalculator(order.Symbol);
-            smbCalc.RemoveOrder(order);
-            RemoveIfEmpty(smbCalc);
+            try
+            {
+                Swap -= order.Swap ?? 0;
+                Commission -= order.Commission ?? 0;
+                order.SwapChanged -= Order_SwapChanged;
+                order.CommissionChanged -= Order_CommissionChanged;
+                var smbCalc = GetOrAddSymbolCalculator(order.Symbol);
+                smbCalc.RemoveOrder(order);
+                RemoveIfEmpty(smbCalc);
+            }
+            catch (SymbolNotFoundException snfex)
+            {
+                _onLogError?.Invoke($"{nameof(MarginAccountCalc)} failed to remove order: {snfex.Message}. {order?.GetSnapshotString()}", null);
+            }
+            catch (Exception ex)
+            {
+                _onLogError?.Invoke($"{nameof(MarginAccountCalc)} failed to remove order. {order?.GetSnapshotString()}", ex);
+            }
         }
 
         private void AddPositions(IEnumerable<IPositionModel2> positions)
@@ -236,10 +271,21 @@ namespace TickTrader.Algo.Core.Calc
 
         private void UpdateNetPos(IPositionModel2 position)
         {
-            var smbCalc = GetOrAddSymbolCalculator(position.Symbol);
-            smbCalc.UpdatePosition(position, out var dSwap, out var dComm);
-            Swap += dSwap;
-            Commission += dComm;
+            try
+            {
+                var smbCalc = GetOrAddSymbolCalculator(position.Symbol);
+                smbCalc.UpdatePosition(position, out var dSwap, out var dComm);
+                Swap += dSwap;
+                Commission += dComm;
+            }
+            catch(SymbolNotFoundException snfex)
+            {
+                _onLogError?.Invoke($"{nameof(MarginAccountCalc)} failed to update net position: {snfex.Message}. {position?.GetSnapshotString()}", null);
+            }
+            catch (Exception ex)
+            {
+                _onLogError?.Invoke($"{nameof(MarginAccountCalc)} failed to update net position. {position?.GetSnapshotString()}", ex);
+            }
         }
 
         private void RemoveIfEmpty(SymbolCalc calc)

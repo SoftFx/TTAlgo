@@ -24,11 +24,13 @@ namespace TickTrader.Algo.Core.Calc
             AccInfo = accInfo;
             Buy = new SideCalc(this, OrderSides.Buy);
             Sell = new SideCalc(this, OrderSides.Sell);
+
+            var tracker = market.GetSymbolNodeInternal(Symbol) ?? throw new SymbolNotFoundException("Market state lacks symbol:" + Symbol);
             CreateCalculator();
 
             if (autoUpdate)
             {
-                Tracker = market.GetSymbolNodeInternal(Symbol) ?? throw new Exception("Market state lacks symbol:" + Symbol);
+                Tracker = tracker;
                 Tracker.Changed += Recalculate;
             }
         }

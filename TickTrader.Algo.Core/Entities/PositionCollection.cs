@@ -81,15 +81,11 @@ namespace TickTrader.Algo.Core
 
         internal PositionAccessor GetOrCreatePosition(string symbol, Func<string> idGenerator)
         {
-            var smbInfo = _builder.Symbols.GetOrDefault(symbol);
-            if (smbInfo == null)
-                throw new OrderValidationError("Symbol Not Found:  " + symbol, OrderCmdResultCodes.SymbolNotFound);
-
             var pos = _fixture.GetOrDefault(symbol);
 
             if (pos == null)
             {
-                pos = _fixture.CreatePosition(smbInfo);
+                pos = _fixture.CreatePosition(symbol);
                 pos.Id = idGenerator();
                 pos.Changed += Pos_Changed;
             }
@@ -154,9 +150,9 @@ namespace TickTrader.Algo.Core
                 Splitted?.Invoke(args);
             }
 
-            public PositionAccessor CreatePosition(SymbolAccessor symbol)
+            public PositionAccessor CreatePosition(string symbol)
             {
-                return _positions.GetOrAdd(symbol.Name, n => new PositionAccessor(symbol, _builder.Account.Leverage));
+                return _positions.GetOrAdd(symbol, n => new PositionAccessor(symbol, _builder.Symbols.GetOrDefault, _builder.Account.Leverage));
             }
 
             public bool RemovePosition(string symbol)

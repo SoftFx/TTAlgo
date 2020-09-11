@@ -56,7 +56,8 @@ namespace TickTrader.Algo.Common.Model
             Long.MarginUpdated = OnMarginUpdated;
             Short.MarginUpdated = OnMarginUpdated;
 
-            SymbolModel.RateUpdated += OnDeviationPriceUpdate;
+            if (SymbolModel != null)
+                SymbolModel.RateUpdated += OnDeviationPriceUpdate;
         }
 
         private void OnProfitUpdated()
@@ -204,7 +205,7 @@ namespace TickTrader.Algo.Common.Model
         {
             get
             {
-                double sPrice = (Side == OrderSide.Buy ? SymbolModel.CurrentBid : SymbolModel.CurrentAsk) ?? 0;
+                double sPrice = (Side == OrderSide.Buy ? SymbolModel?.CurrentBid : SymbolModel?.CurrentAsk) ?? 0;
                 return Side == OrderSide.Buy ? sPrice - Price : Price - sPrice;
             }
         }

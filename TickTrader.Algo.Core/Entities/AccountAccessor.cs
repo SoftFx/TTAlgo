@@ -291,6 +291,13 @@ namespace TickTrader.Algo.Core
                 _positions.UpdatePosition(position.PositionInfo);
         }
 
+        internal void Deinit()
+        {
+            _orders.Clear();
+            _positions.Clear();
+            _assets.Clear();
+        }
+
         #endregion
 
         #region BO
@@ -451,6 +458,65 @@ namespace TickTrader.Algo.Core
                 return builder.Calculator.HasEnoughMarginToOpenOrder(symbolAccessor, amount, type, side, price, stopPrice, OrderEntity.IsHiddenOrder(maxVisibleVolume), out _);
             }
             return false;
+        }
+
+        internal string GetSnapshotString()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("Account snapshot:");
+            if (AccountingType == BO.AccountingTypes.Cash)
+            {
+                sb.AppendLine($"{nameof(Assets)}");
+                if (Assets != null)
+                {
+                    foreach (var a in Assets)
+                    {
+                        sb.Append($"{nameof(a.Currency)} = {a.Currency}, ");
+                        sb.Append($"{nameof(a.IsNull)} = {a.IsNull}, ");
+                        sb.Append($"{nameof(a.Volume)} = {a.Volume}, ");
+                        sb.Append($"{nameof(a.LockedVolume)} = {a.LockedVolume}, ");
+                        sb.AppendLine();
+                    }
+                }
+                else
+                {
+                    sb.AppendLine("Empty");
+                }
+            }
+            else
+            {
+                sb.AppendLine($"{nameof(Balance)} = {Balance} {BalanceCurrency}");
+            }
+            if (AccountingType == BO.AccountingTypes.Net)
+            {
+                sb.AppendLine($"{nameof(NetPositions)}");
+                if (NetPositions != null)
+                {
+                    foreach (var p in NetPositions)
+                    {
+                        sb.Append(p.GetSnapshotString());
+                        sb.AppendLine();
+                    }
+                }
+                else
+                {
+                    sb.AppendLine("Empty");
+                }
+            }
+            sb.AppendLine($"{nameof(Orders)}");
+            if (Orders != null)
+            {
+                foreach (var o in Orders)
+                {
+                    sb.Append(o.GetSnapshotString());
+                    sb.AppendLine();
+                }
+            }
+            else
+            {
+                sb.AppendLine("Empty");
+            }
+            return sb.ToString();
         }
     }
 }

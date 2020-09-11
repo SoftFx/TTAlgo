@@ -309,6 +309,7 @@ namespace TickTrader.BotAgent.BA.Models
             _botListener?.Dispose();
             executor?.Dispose();
             executor = null;
+            _botListener = null;
         }
 
         private void OnStop()

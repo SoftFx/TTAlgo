@@ -300,7 +300,7 @@ namespace TickTrader.Algo.Core
 
                     // Setup strategy
 
-                    _marketFixture.Start();
+                    _marketFixture.Init();
                     iStrategy.Init(_builder, OnInternalException, OnRuntimeException, _fStrategy);
                     _fStrategy.Init(this, _bStrategy, _marketFixture);
                     _fStrategy.SetUserSubscription(MainSymbolCode, 1);   // Default subscribe
@@ -411,10 +411,21 @@ namespace TickTrader.Algo.Core
                 {
                     iStrategy.EnqueueCustomInvoke(b =>
                     {
+                        _calcFixture.PreRestart();
+                        accFixture.PreRestart();
+
                         _calcFixture.Stop();
+                        accFixture.Stop();
+
                         MergeMetadata();
-                        accFixture.Restart();
+                        _marketFixture.Init();
+
+                        accFixture.Start();
                         _calcFixture.Start();
+
+                        _calcFixture.PostRestart();
+                        accFixture.PostRestart();
+
                         _builder.Account.FireResetEvent();
                         _builder.FireConnectedEvent();
                     });

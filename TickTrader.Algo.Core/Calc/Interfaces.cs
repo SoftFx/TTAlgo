@@ -82,6 +82,8 @@ namespace TickTrader.Algo.Core.Calc
         decimal CashMargin { get; set; }
         SymbolAccessor SymbolInfo { get; }
 
+        string GetSnapshotString();
+
         event Action<OrderEssentialsChangeArgs> EssentialsChanged;
         //event Action<OrderPropArgs<decimal>> PriceChanged;
         event Action<OrderPropArgs<decimal>> SwapChanged;
@@ -97,6 +99,8 @@ namespace TickTrader.Algo.Core.Calc
         IPositionSide2 Short { get; } //sell
         DateTime? Modified { get; }
         OrderCalculator Calculator { get; set; }
+
+        string GetSnapshotString();
     }
 
     public interface IPositionSide2

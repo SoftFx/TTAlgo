@@ -105,7 +105,11 @@ namespace TickTrader.Algo.Core
             CancelAllPendings(BO.TradeTransReasons.Rollover);
         }
 
-        public void Restart()
+        public void PreRestart()
+        {
+        }
+
+        public void PostRestart()
         {
         }
 
