@@ -19,9 +19,10 @@ namespace TickTrader.Algo.Core
         [NonSerialized]
         private Dictionary<string, BarSeriesFixture[]> fixtures;
 
-        public BarStrategy(BarPriceType mainPirceTipe)
+        public BarStrategy(BarPriceType mainPriceType, IndicatorCalcMode calcMode)
+            : base(calcMode)
         {
-            this.MainPriceType = mainPirceTipe;
+            this.MainPriceType = mainPriceType;
         }
 
         public BarPriceType MainPriceType { get; private set; }
@@ -39,9 +40,9 @@ namespace TickTrader.Algo.Core
             AddFixture(ExecContext.MainSymbolCode, MainPriceType, mainSeriesFixture);
         }
 
-        protected override FeedStrategy CreateClone()
+        protected override FeedStrategy CreateClone(IndicatorCalcMode calcMode)
         {
-            return new BarStrategy(MainPriceType);
+            return new BarStrategy(MainPriceType, calcMode);
         }
 
         internal static Tuple<string, BarPriceType> GetKey(string symbol, BarPriceType priceType)
@@ -110,7 +111,7 @@ namespace TickTrader.Algo.Core
 
             if (askFixture != null)
             {
-                var askResult =  askFixture.Update(update);
+                var askResult = askFixture.Update(update);
                 if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Ask)
                     askResult.ExtendedBy = 0;
                 overallResult += askResult;

@@ -63,7 +63,7 @@ namespace TickTrader.Algo.CoreUsageSample
             executor.Feed = dataModel;
             executor.FeedHistory = dataModel;
 
-            var feedCfg = executor.InitBarStrategy(BarPriceType.Bid);
+            var feedCfg = executor.InitBarStrategy(BarPriceType.Bid, IndicatorCalcMode.PerTick);
             feedCfg.MapInput("Input", "EURUSD", BarPriceType.Bid);
 
             executor.Start();

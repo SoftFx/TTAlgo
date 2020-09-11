@@ -10,6 +10,13 @@ using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Core
 {
+    public enum IndicatorCalcMode
+    {
+        PerTick = 0,
+        PerBar = 1,
+    }
+
+
     [Serializable]
     public abstract class FeedStrategy : IFeedBuferStrategyContext, CustomFeedProvider
     {
@@ -19,9 +26,11 @@ namespace TickTrader.Algo.Core
         private IFeedSubscription _defaultSubscription;
         private readonly List<SetupAction> _setupActions = new List<SetupAction>();
         private CrossDomainProxy _proxy;
+        private readonly IndicatorCalcMode _calcMode;
 
-        public FeedStrategy()
+        public FeedStrategy(IndicatorCalcMode calcMode)
         {
+            _calcMode = calcMode;
         }
 
         internal IFixtureContext ExecContext { get; private set; }
@@ -39,7 +48,7 @@ namespace TickTrader.Algo.Core
         protected abstract RateUpdate Aggregate(RateUpdate last, QuoteEntity quote);
         protected abstract BarSeries GetBarSeries(string symbol);
         protected abstract BarSeries GetBarSeries(string symbol, BarPriceType side);
-        protected abstract FeedStrategy CreateClone();
+        protected abstract FeedStrategy CreateClone(IndicatorCalcMode calcMode);
 
         internal void Init(IFixtureContext executor, FeedBufferStrategy bStrategy, MarketStateFixture marketFixture)
         {
@@ -72,7 +81,7 @@ namespace TickTrader.Algo.Core
 
         internal FeedStrategy Clone()
         {
-            var copy = CreateClone();
+            var copy = CreateClone(_calcMode);
             copy._setupActions.AddRange(_setupActions);
             return copy;
         }
@@ -151,11 +160,13 @@ namespace TickTrader.Algo.Core
 
             var result = UpdateBuffers(update);
 
-            if (result.IsLastUpdated)
+            if (_calcMode == IndicatorCalcMode.PerTick && result.IsLastUpdated)
                 ExecContext.Builder.InvokeCalculate(true);
 
             for (int i = 0; i < result.ExtendedBy; i++)
             {
+                if (_calcMode == IndicatorCalcMode.PerBar && i == 0)
+                    ExecContext.Builder.InvokeCalculate(true);
                 ExecContext.Builder.IncreaseVirtualPosition();
                 ExecContext.Builder.InvokeCalculate(false);
             }

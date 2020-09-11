@@ -572,7 +572,7 @@ namespace TickTrader.BotTerminal
                     plugin.Config.InitQuoteStrategy();
                     break;
                 default:
-                    plugin.Config.InitBarStrategy(Algo.Api.BarPriceType.Bid);
+                    plugin.Config.InitBarStrategy(Algo.Api.BarPriceType.Bid, IndicatorCalcMode.PerBar);
                     break;
             }
             plugin.Config.InitSlidingBuffering(4000);

@@ -34,7 +34,7 @@ namespace TickTrader.Algo.Core
             _feed = _control.Feed;
             _executor.Core.Feed = _feed;
             _executor.Core.FeedHistory = _feed;
-            _executor.Core.InitBarStrategy(Api.BarPriceType.Bid);
+            _executor.Core.InitBarStrategy(Api.BarPriceType.Bid, IndicatorCalcMode.PerTick);
 
             CommonSettings.Leverage = 100;
             CommonSettings.InitialBalance = 10000;
