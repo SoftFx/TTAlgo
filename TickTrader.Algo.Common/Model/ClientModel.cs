@@ -533,7 +533,7 @@ namespace TickTrader.Algo.Common.Model
             }
             catch (Exception ex)
             {
-                logger.Debug("Failed to modify quote subscription: " + ex.Message);
+                logger.Debug($"Failed to modify quote subscription. Arguments Symbols = {string.Join(",", symbols)}, Depth = {depth}, Error = {ex}");
             }
         }
 
