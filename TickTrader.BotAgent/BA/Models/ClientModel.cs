@@ -13,13 +13,16 @@ using ActorSharp.Lib;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.BotAgent.BA.Models
 {
     [DataContract(Name = "account", Namespace = "")]
     public class ClientModel
     {
-        private static ILogger _log = LogManager.GetLogger(nameof(ClientModel));
+        private IAlgoCoreLogger _log;
+        private int _loggerId;
+        private static int LoggerNameIdSeed = 0;
 
         private static readonly TimeSpan KeepAliveThreshold = TimeSpan.FromMinutes(2);
         private static readonly TimeSpan ReconnectThreshold = TimeSpan.FromSeconds(5);
@@ -56,6 +59,9 @@ namespace TickTrader.BotAgent.BA.Models
 
         public async Task Init(PackageStorage packageProvider, IFdkOptionsProvider fdkOptionsProvider, AlertStorage storage)
         {
+            _loggerId = Interlocked.Increment(ref LoggerNameIdSeed);
+            _log = CoreLoggerFactory.GetLogger<ClientModel>(_loggerId);
+
             try
             {
                 _packageProvider = packageProvider;
@@ -93,7 +99,7 @@ namespace TickTrader.BotAgent.BA.Models
                 //var options = new ConnectionOptions() { EnableLogs = false, LogsFolder = ServerModel.Environment.LogFolder, Type = AppType.BotAgent };
 
                 _core = new Algo.Common.Model.ClientModel.ControlHandler2(fdkOptionsProvider.GetConnectionOptions(),
-                    ServerModel.Environment.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerClientHierarchy);
+                    ServerModel.Environment.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerClientHierarchy, _loggerId);
 
                 await _core.OpenHandler();
 

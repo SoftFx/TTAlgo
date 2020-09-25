@@ -20,7 +20,7 @@ namespace TickTrader.Algo.Common.Model
 {
     public class FeedHistoryProviderModel : Actor
     {
-        private static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger<FeedHistoryProviderModel>();
+        private IAlgoCoreLogger logger;
 
         private const int SliceMaxSize = 4000;
         private string _dataFolder;
@@ -28,18 +28,19 @@ namespace TickTrader.Algo.Common.Model
         private FeedCache.Handler _diskCache = new FeedCache.Handler(SpawnLocal<FeedCache>());
         private IFeedServerApi _feedProxy;
 
-        private void Init(string onlieDataFolder, FeedHistoryFolderOptions folderOptions)
+        private void Init(string onlieDataFolder, FeedHistoryFolderOptions folderOptions, int loggerId)
         {
+            logger = CoreLoggerFactory.GetLogger<FeedHistoryProviderModel>(loggerId);
             _dataFolder = onlieDataFolder;
             _folderOptions = folderOptions;
         }
 
         internal class ControlHandler : Handler<FeedHistoryProviderModel>
         {
-            public ControlHandler(ConnectionModel connection, string onlieDataFolder, FeedHistoryFolderOptions folderOptions)
+            public ControlHandler(ConnectionModel connection, string onlieDataFolder, FeedHistoryFolderOptions folderOptions, int loggerId)
                 : base(SpawnLocal<FeedHistoryProviderModel>())
             {
-                Actor.Send(a => a.Init(onlieDataFolder, folderOptions));
+                Actor.Send(a => a.Init(onlieDataFolder, folderOptions, loggerId));
             }
 
             public Task Start(IFeedServerApi api, string server, string login) => Actor.Call(a => a.Start(api, server, login));

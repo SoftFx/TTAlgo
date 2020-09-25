@@ -258,7 +258,7 @@ namespace TickTrader.BotTerminal
                     Type = AppType.BotTerminal,
                 };
 
-                var clientHandler = new ClientModel.ControlHandler(connectionOptions, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy);
+                var clientHandler = new ClientModel.ControlHandler(connectionOptions, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy, 0);
                 var dataHandler = clientHandler.CreateDataHandler();
                 await dataHandler.Init();
 

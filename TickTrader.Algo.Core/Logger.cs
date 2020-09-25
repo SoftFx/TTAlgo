@@ -32,6 +32,11 @@ namespace TickTrader.Algo.Core
             return _factoryFunc(typeof(T).Name);
         }
 
+        public static IAlgoCoreLogger GetLogger<T>(int loggerId)
+        {
+            return _factoryFunc($"{typeof(T).Name} {loggerId}");
+        }
+
         public static void Init(Func<string, IAlgoCoreLogger> factoryFunc)
         {
             _factoryFunc = factoryFunc;
