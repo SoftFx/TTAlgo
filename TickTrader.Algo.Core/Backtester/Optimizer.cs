@@ -27,7 +27,7 @@ namespace TickTrader.Algo.Core
             _sync = updatesSync;
             _core = _ref.CreateObject<OptimizerCore>();
             _core.Factory = _ref.CreateExecutorFactory();
-            _core.InitBarStrategy(BarPriceType.Bid, IndicatorCalcMode.PerTick);
+            _core.InitBarStrategy(BarPriceType.Bid);
             IsIsolated = pluginRef.IsIsolated;
         }
 
@@ -348,9 +348,9 @@ namespace TickTrader.Algo.Core
 
             #region Setup
 
-            public BarStrategy InitBarStrategy(BarPriceType mainPriceType, IndicatorCalcMode calcMode)
+            public BarStrategy InitBarStrategy(BarPriceType mainPriceType)
             {
-                var barStrategy = new BarStrategy(mainPriceType, calcMode);
+                var barStrategy = new BarStrategy(mainPriceType);
                 FStrategy = barStrategy;
                 return barStrategy;
             }

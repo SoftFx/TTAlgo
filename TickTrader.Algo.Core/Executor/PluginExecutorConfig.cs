@@ -44,9 +44,9 @@ namespace TickTrader.Algo.Core
             Mappings[new Tuple<string, string>(inputName, symbolCode)] = mapping;
         }
 
-        public BarStrategy InitBarStrategy(BarPriceType mainPriceType, IndicatorCalcMode calcMode)
+        public BarStrategy InitBarStrategy(BarPriceType mainPriceType)
         {
-            var strategy = new BarStrategy(mainPriceType, calcMode);
+            var strategy = new BarStrategy(mainPriceType);
             FeedStrategy = strategy;
             return strategy;
         }

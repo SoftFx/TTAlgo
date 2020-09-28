@@ -18,7 +18,6 @@ namespace TickTrader.Algo.Core
         public override IEnumerable<string> BufferedSymbols => mainSeries.SymbolCode.Yield();
 
         public QuoteStrategy()
-            : base(IndicatorCalcMode.PerTick)
         {
         }
 
@@ -32,7 +31,7 @@ namespace TickTrader.Algo.Core
             return quote;
         }
 
-        protected override FeedStrategy CreateClone(IndicatorCalcMode calcMode)
+        protected override FeedStrategy CreateClone()
         {
             return new QuoteStrategy();
         }

@@ -523,13 +523,13 @@ namespace TickTrader.Algo.Core
             mapping?.MapInput(this, inputName, symbolCode);
         }
 
-        public BarStrategy InitBarStrategy(BarPriceType mainPriceType, IndicatorCalcMode calcMode)
+        public BarStrategy InitBarStrategy(BarPriceType mainPriceType)
         {
             lock (_sync)
             {
                 ThrowIfRunning();
                 ThrowIfAlreadyHasFStrategy();
-                var strategy = new BarStrategy(mainPriceType, calcMode);
+                var strategy = new BarStrategy(mainPriceType);
                 this._fStrategy = strategy;
                 return strategy;
             }

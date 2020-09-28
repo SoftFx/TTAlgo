@@ -75,7 +75,7 @@ namespace TickTrader.BotTerminal
             var feed = new PluginFeedProvider(ClientModel.Cache, ClientModel.Distributor, ClientModel.FeedHistory, new DispatcherSync());
             plugin.Feed = feed;
             plugin.FeedHistory = feed;
-            plugin.Config.InitBarStrategy(Algo.Api.BarPriceType.Bid, IndicatorCalcMode.PerTick);
+            plugin.Config.InitBarStrategy(Algo.Api.BarPriceType.Bid);
             plugin.Metadata = feed;
         }
 
