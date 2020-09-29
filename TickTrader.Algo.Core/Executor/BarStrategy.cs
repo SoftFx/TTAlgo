@@ -104,30 +104,60 @@ namespace TickTrader.Algo.Core
 
         protected override BufferUpdateResult UpdateBuffers(RateUpdate update)
         {
-            var overallResult = new BufferUpdateResult();
-
-            GetBothFixtures(update.Symbol, out var bidFixture, out var askFixture);
-
-            if (askFixture != null)
+            if (mainSeriesFixture.ModelTimeline.IsRealTime)
             {
-                var askResult = askFixture.Update(update);
-                if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Ask)
-                    askResult.ExtendedBy = 0;
-                overallResult += askResult;
-            }
+                var overallResult = new BufferUpdateResult();
 
-            if (bidFixture != null)
+                GetBothFixtures(update.Symbol, out var bidFixture, out var askFixture);
+
+                if (askFixture != null)
+                {
+                    var askResult = askFixture.Update(update);
+                    if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Ask)
+                        askResult.ExtendedBy = 0;
+                    overallResult += askResult;
+                }
+
+                if (bidFixture != null)
+                {
+                    var bidResult = bidFixture.Update(update);
+                    if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Bid)
+                        bidResult.ExtendedBy = 0;
+                    overallResult += bidResult;
+                }
+
+                if (overallResult.ExtendedBy > 0)
+                    BufferingStrategy.OnBufferExtended();
+
+                return overallResult;
+            }
+            else
             {
-                var bidResult = bidFixture.Update(update);
-                if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Bid)
-                    bidResult.ExtendedBy = 0;
-                overallResult += bidResult;
+                var timeRefResult = mainSeriesFixture.ModelTimeline.Update(update.Time);
+                if (timeRefResult.ExtendedBy == 0)
+                    return new BufferUpdateResult();
+
+                var lastTime = mainSeriesFixture.ModelTimeline.LastTime.AddMilliseconds(-100);
+
+                foreach (var symbol in fixtures.Keys)
+                {
+                    GetBothFixtures(update.Symbol, out var bidFixture, out var askFixture);
+
+                    if (askFixture != null)
+                    {
+                        var askBar = ExecContext.FeedHistory.QueryBars(symbol, BarPriceType.Ask, lastTime, -1, ExecContext.ModelTimeFrame);
+                        askFixture?.Update(askBar[0]);
+                    }
+
+                    if (bidFixture != null)
+                    {
+                        var bidBar = ExecContext.FeedHistory.QueryBars(symbol, BarPriceType.Bid, lastTime, -1, ExecContext.ModelTimeFrame);
+                        bidFixture?.Update(bidBar[0]);
+                    }
+                }
+
+                return new BufferUpdateResult { ExtendedBy = 1, IsLastUpdated = true };
             }
-
-            if (overallResult.ExtendedBy > 0)
-                BufferingStrategy.OnBufferExtended();
-
-            return overallResult;
         }
 
         protected override RateUpdate Aggregate(RateUpdate last, QuoteEntity quote)

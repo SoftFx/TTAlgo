@@ -245,6 +245,7 @@ namespace TickTrader.BotAgent.BA.Models
                 executor.InitBarStrategy(Algo.Api.BarPriceType.Bid);
                 executor.MainSymbolCode = setupModel.MainSymbol.Id;
                 executor.TimeFrame = setupModel.SelectedTimeFrame;
+                executor.ModelTimeFrame = setupModel.SelectedTimeFrame;
                 executor.Metadata = feedAdapter;
                 executor.InitSlidingBuffering(4000);
 

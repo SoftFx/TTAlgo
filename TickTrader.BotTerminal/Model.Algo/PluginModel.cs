@@ -138,6 +138,7 @@ namespace TickTrader.BotTerminal
             executor.ErrorOccurred += Executor_OnRuntimeError;
 
             executor.Config.TimeFrame = Setup.SelectedTimeFrame;
+            executor.Config.ModelTimeFrame = TimeFrames.Ticks;
             executor.Config.MainSymbolCode = Setup.MainSymbol.Id;
             executor.Config.InstanceId = InstanceId;
             executor.Config.Permissions = Setup.Permissions;

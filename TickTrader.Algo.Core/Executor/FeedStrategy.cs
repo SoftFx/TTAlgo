@@ -156,7 +156,6 @@ namespace TickTrader.Algo.Core
 
             for (int i = 0; i < result.ExtendedBy; i++)
             {
-                ExecContext.Builder.InvokeCalculate(true);
                 ExecContext.Builder.IncreaseVirtualPosition();
                 ExecContext.Builder.InvokeCalculate(false);
             }

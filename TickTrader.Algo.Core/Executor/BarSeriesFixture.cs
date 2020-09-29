@@ -28,8 +28,12 @@ namespace TickTrader.Algo.Core
 
             sampler = BarSampler.Get(context.TimeFrame);
 
-            if (refTimeline != null)
-                futureBarCache = new List<BarEntity>();
+            futureBarCache = new List<BarEntity>();
+            if (refTimeline == null)
+            {
+                ModelTimeline = new TimeRefFixture(context);
+                ModelTimeline.Appended += RefTimeline_Appended;
+            }
 
             var key = BarStrategy.GetKey(SymbolCode, priceType);
             Buffer = context.Builder.GetBarBuffer(key);
@@ -39,6 +43,7 @@ namespace TickTrader.Algo.Core
         }
 
         internal InputBuffer<BarEntity> Buffer { get; private set; }
+        internal TimeRefFixture ModelTimeline { get; }
         public int Count { get { return Buffer.Count; } }
         public int LastIndex { get { return Buffer.Count - 1; } }
         public DateTime this[int index] { get { return Buffer[index].OpenTime; } }
@@ -151,14 +156,15 @@ namespace TickTrader.Algo.Core
 
         private void RefTimeline_Appended()
         {
-            var atIndex = refTimeline.LastIndex;
-            var timeCoordinate = refTimeline[atIndex];
+            var timeline = refTimeline ?? ModelTimeline;
+            var atIndex = timeline.LastIndex;
+            var timeCoordinate = timeline[atIndex];
 
             while (futureBarCache.Count > 0)
             {
                 if (futureBarCache[0].OpenTime == timeCoordinate)
                 {
-                    Buffer.Append(futureBarCache[0]);
+                    AppendBarToBuffer(futureBarCache[0]);
                     return;
                 }
                 else if (futureBarCache[0].OpenTime < timeCoordinate)
@@ -168,8 +174,7 @@ namespace TickTrader.Algo.Core
             }
 
             var fillingBar = CreateFillingBar(timeCoordinate);
-            Buffer.Append(fillingBar);
-            LastBar = fillingBar;
+            AppendBarToBuffer(fillingBar);
         }
 
         private void AppendBar(BarEntity bar)
@@ -220,6 +225,8 @@ namespace TickTrader.Algo.Core
         private void AppendSnapshot(List<BarEntity> data)
         {
             IsLoaded = true;
+
+            ModelTimeline.InitTimeline(data);
 
             defaultBarValue = 0;
             if (data != null)
