@@ -136,6 +136,7 @@ namespace TickTrader.Algo.Core.UnitTest
             {
                 MainSymbolCode = "EURUSD",
                 TimeFrame = Api.TimeFrames.M1,
+                ModelTimeFrame = Api.TimeFrames.Ticks,
                 TimePeriodStart = DateTime.MinValue,
                 TimePeriodEnd = DateTime.MaxValue
             };

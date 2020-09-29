@@ -226,7 +226,7 @@ namespace TickTrader.Algo.Core
         {
             IsLoaded = true;
 
-            ModelTimeline.InitTimeline(data);
+            ModelTimeline?.InitTimeline(data);
 
             defaultBarValue = 0;
             if (data != null)
