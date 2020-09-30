@@ -28,11 +28,13 @@ namespace TickTrader.Algo.Core
 
             sampler = BarSampler.Get(context.TimeFrame);
 
-            futureBarCache = new List<BarEntity>();
             if (refTimeline == null)
             {
                 ModelTimeline = new TimeRefFixture(context);
-                ModelTimeline.Appended += RefTimeline_Appended;
+            }
+            else
+            {
+                futureBarCache = new List<BarEntity>();
             }
 
             var key = BarStrategy.GetKey(SymbolCode, priceType);
@@ -156,9 +158,8 @@ namespace TickTrader.Algo.Core
 
         private void RefTimeline_Appended()
         {
-            var timeline = refTimeline ?? ModelTimeline;
-            var atIndex = timeline.LastIndex;
-            var timeCoordinate = timeline[atIndex];
+            var atIndex = refTimeline.LastIndex;
+            var timeCoordinate = refTimeline[atIndex];
 
             while (futureBarCache.Count > 0)
             {

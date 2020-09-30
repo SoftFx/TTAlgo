@@ -133,30 +133,43 @@ namespace TickTrader.Algo.Core
             }
             else
             {
-                var timeRefResult = mainSeriesFixture.ModelTimeline.Update(update.Time);
+                var timeRefResult = mainSeriesFixture.ModelTimeline.Update(update.LastQuote.Time);
                 if (timeRefResult.ExtendedBy == 0)
                     return new BufferUpdateResult();
 
-                var lastTime = mainSeriesFixture.ModelTimeline.LastTime.AddMilliseconds(-100);
+                var lastTime = mainSeriesFixture.ModelTimeline.LastTime;
 
+                var overallResult = new BufferUpdateResult();
                 foreach (var symbol in fixtures.Keys)
                 {
-                    GetBothFixtures(update.Symbol, out var bidFixture, out var askFixture);
+                    GetBothFixtures(symbol, out var bidFixture, out var askFixture);
 
                     if (askFixture != null)
                     {
-                        var askBar = ExecContext.FeedHistory.QueryBars(symbol, BarPriceType.Ask, lastTime, -1, ExecContext.ModelTimeFrame);
-                        askFixture?.Update(askBar[0]);
+                        var askBar = ExecContext.FeedHistory.QueryBars(symbol, BarPriceType.Ask, lastTime.AddMilliseconds(-100), -1, ExecContext.ModelTimeFrame);
+                        if (askBar[0].CloseTime == lastTime)
+                        {
+                            var askResult = askFixture.Update(askBar[0]);
+                            if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Ask)
+                                askResult.ExtendedBy = 0;
+                            overallResult += askResult;
+                        }
                     }
 
                     if (bidFixture != null)
                     {
-                        var bidBar = ExecContext.FeedHistory.QueryBars(symbol, BarPriceType.Bid, lastTime, -1, ExecContext.ModelTimeFrame);
-                        bidFixture?.Update(bidBar[0]);
+                        var bidBar = ExecContext.FeedHistory.QueryBars(symbol, BarPriceType.Bid, lastTime.AddMilliseconds(-100), -1, ExecContext.ModelTimeFrame);
+                        if (bidBar[0].CloseTime == lastTime)
+                        {
+                            var bidResult = bidFixture.Update(bidBar[0]);
+                            if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Bid)
+                                bidResult.ExtendedBy = 0;
+                            overallResult += bidResult;
+                        }
                     }
                 }
 
-                return new BufferUpdateResult { ExtendedBy = 1, IsLastUpdated = true };
+                return overallResult;
             }
         }
 
