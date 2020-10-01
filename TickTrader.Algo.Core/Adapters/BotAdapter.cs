@@ -46,5 +46,10 @@ namespace TickTrader.Algo.Core
         {
             return ((TradeBot)PluginInstance).InvokeGetMetric();
         }
+
+        public override void InvokeOnModelTick()
+        {
+            ((TradeBot)PluginInstance).InvokeOnModelTick();
+        }
     }
 }

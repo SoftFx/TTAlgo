@@ -162,8 +162,8 @@ namespace TickTrader.Algo.Core
 
             RateDispenser.OnUpdateEvent(node);
 
-            //if (result.ExtendedBy > 0 || result.IsLastUpdated)
-            //    ExecContext.Builder.InvokeOnModelTick();
+            if (result.ExtendedBy > 0 || result.IsLastUpdated)
+                ExecContext.Builder.InvokeOnModelTick();
 
             return result;
         }
