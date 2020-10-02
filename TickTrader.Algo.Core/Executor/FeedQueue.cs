@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
     internal class FeedQueue
     {
-        private Queue<RateUpdate> queue = new Queue<RateUpdate>();
-        private Dictionary<string, RateUpdate> lasts = new Dictionary<string, RateUpdate>();
+        private Queue<RateUpdate> _queue = new Queue<RateUpdate>();
         private FeedStrategy _fStrategy;
 
         public FeedQueue(FeedStrategy fStrategy)
@@ -18,7 +14,7 @@ namespace TickTrader.Algo.Core
             _fStrategy = fStrategy;
         }
 
-        public int Count { get { return queue.Count; } }
+        public int Count { get { return _queue.Count; } }
 
         public void Enqueue(RateUpdate rate)
         {
@@ -32,34 +28,31 @@ namespace TickTrader.Algo.Core
 
         public void Enqueue(BarRateUpdate bars)
         {
-            queue.Enqueue(bars);
-            lasts[bars.Symbol] = bars;
+            RateUpdate newUpdate = _fStrategy.InvokeAggregate(bars);
+            if (newUpdate != null)
+            {
+                _queue.Enqueue(bars);
+            }
         }
 
         public void Enqueue(QuoteEntity quote)
         {
-            RateUpdate last;
-            lasts.TryGetValue(quote.Symbol, out last);
-            RateUpdate newUpdate = _fStrategy.InvokeAggregate(last, quote);
+            RateUpdate newUpdate = _fStrategy.InvokeAggregate(quote);
             if (newUpdate != null)
             {
-                lasts[quote.Symbol] = newUpdate;
-                queue.Enqueue(newUpdate);
+                _queue.Enqueue(newUpdate);
             }
         }
 
         public RateUpdate Dequeue()
         {
-            var update = queue.Dequeue();
-            var last = lasts[update.Symbol];
-            if (update == last)
-                lasts.Remove(update.Symbol);
+            var update = _queue.Dequeue();
             return update;
         }
 
         public void Clear()
         {
-            queue.Clear();
+            _queue.Clear();
         }
     }
 }

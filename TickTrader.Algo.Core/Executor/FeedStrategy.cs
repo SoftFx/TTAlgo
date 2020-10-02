@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Infrastructure;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Core
 {
@@ -36,7 +33,8 @@ namespace TickTrader.Algo.Core
         internal abstract void OnInit();
         public FeedBufferStrategy BufferingStrategy { get; private set; }
         protected abstract BufferUpdateResult UpdateBuffers(RateUpdate update);
-        protected abstract RateUpdate Aggregate(RateUpdate last, QuoteEntity quote);
+        protected abstract RateUpdate Aggregate(QuoteEntity quote);
+        protected abstract RateUpdate Aggregate(BarRateUpdate barUpdate);
         protected abstract BarSeries GetBarSeries(string symbol);
         protected abstract BarSeries GetBarSeries(string symbol, BarPriceType side);
         protected abstract FeedStrategy CreateClone();
@@ -168,9 +166,14 @@ namespace TickTrader.Algo.Core
             return result;
         }
 
-        internal RateUpdate InvokeAggregate(RateUpdate last, QuoteEntity quote)
+        internal RateUpdate InvokeAggregate(QuoteEntity quote)
         {
-            return Aggregate(last, quote);
+            return Aggregate(quote);
+        }
+
+        internal RateUpdate InvokeAggregate(BarRateUpdate barUpdate)
+        {
+            return Aggregate(barUpdate);
         }
 
         #region IFeedBufferController

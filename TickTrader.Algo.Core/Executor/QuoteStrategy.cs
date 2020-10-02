@@ -26,9 +26,14 @@ namespace TickTrader.Algo.Core
             return mainSeries.Update(update.LastQuote);
         }
 
-        protected override RateUpdate Aggregate(RateUpdate last, QuoteEntity quote)
+        protected override RateUpdate Aggregate(QuoteEntity quote)
         {
             return quote;
+        }
+
+        protected override RateUpdate Aggregate(BarRateUpdate barUpdate)
+        {
+            return barUpdate.LastQuote;
         }
 
         protected override FeedStrategy CreateClone()

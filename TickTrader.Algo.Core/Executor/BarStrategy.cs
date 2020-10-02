@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Core
 {
@@ -12,12 +8,16 @@ namespace TickTrader.Algo.Core
     public sealed class BarStrategy : FeedStrategy
     {
         [NonSerialized]
-        private BarSampler sampler;
+        private BarSampler _sampler, _modelSampler;
         [NonSerialized]
         private BarSeriesFixture mainSeriesFixture;
         private List<BarEntity> mainSeries;
         [NonSerialized]
         private Dictionary<string, BarSeriesFixture[]> fixtures;
+        [NonSerialized]
+        private Dictionary<string, BarRateUpdate> _lasts;
+        [NonSerialized]
+        private bool _isRealtimeModel;
 
         public BarStrategy(BarPriceType mainPriceType)
         {
@@ -31,10 +31,15 @@ namespace TickTrader.Algo.Core
 
         internal override void OnInit()
         {
-            sampler = BarSampler.Get(ExecContext.TimeFrame);
+            _sampler = BarSampler.Get(ExecContext.TimeFrame);
             fixtures = new Dictionary<string, BarSeriesFixture[]>();
+            _lasts = new Dictionary<string, BarRateUpdate>();
             mainSeriesFixture = new BarSeriesFixture(ExecContext.MainSymbolCode, MainPriceType, ExecContext, mainSeries);
             ExecContext.Builder.MainBufferId = GetKey(ExecContext.MainSymbolCode, MainPriceType);
+
+            _isRealtimeModel = ExecContext.ModelTimeFrame.IsTicks();
+            if (!_isRealtimeModel)
+                _modelSampler = BarSampler.Get(ExecContext.ModelTimeFrame);
 
             AddFixture(ExecContext.MainSymbolCode, MainPriceType, mainSeriesFixture);
         }
@@ -104,86 +109,113 @@ namespace TickTrader.Algo.Core
 
         protected override BufferUpdateResult UpdateBuffers(RateUpdate update)
         {
-            if (mainSeriesFixture.ModelTimeline.IsRealTime)
+            //if (mainSeriesFixture.ModelTimeline.IsRealTime)
+            //{
+            var overallResult = new BufferUpdateResult();
+
+            GetBothFixtures(update.Symbol, out var bidFixture, out var askFixture);
+
+            if (askFixture != null)
             {
-                var overallResult = new BufferUpdateResult();
-
-                GetBothFixtures(update.Symbol, out var bidFixture, out var askFixture);
-
-                if (askFixture != null)
-                {
-                    var askResult = askFixture.Update(update);
-                    if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Ask)
-                        askResult.ExtendedBy = 0;
-                    overallResult += askResult;
-                }
-
-                if (bidFixture != null)
-                {
-                    var bidResult = bidFixture.Update(update);
-                    if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Bid)
-                        bidResult.ExtendedBy = 0;
-                    overallResult += bidResult;
-                }
-
-                if (overallResult.ExtendedBy > 0)
-                    BufferingStrategy.OnBufferExtended();
-
-                return overallResult;
+                var askResult = askFixture.Update(update);
+                if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Ask)
+                    askResult.ExtendedBy = 0;
+                overallResult += askResult;
             }
-            else
+
+            if (bidFixture != null)
             {
-                var timeRefResult = mainSeriesFixture.ModelTimeline.Update(update.LastQuote.Time);
-                if (timeRefResult.ExtendedBy == 0)
-                    return new BufferUpdateResult();
-
-                var lastTime = mainSeriesFixture.ModelTimeline.LastTime;
-
-                var overallResult = new BufferUpdateResult();
-                foreach (var symbol in fixtures.Keys)
-                {
-                    GetBothFixtures(symbol, out var bidFixture, out var askFixture);
-
-                    if (askFixture != null)
-                    {
-                        var askBar = ExecContext.FeedHistory.QueryBars(symbol, BarPriceType.Ask, lastTime.AddMilliseconds(-100), -1, ExecContext.ModelTimeFrame);
-                        if (askBar[0].CloseTime == lastTime)
-                        {
-                            var askResult = askFixture.Update(askBar[0]);
-                            if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Ask)
-                                askResult.ExtendedBy = 0;
-                            overallResult += askResult;
-                        }
-                    }
-
-                    if (bidFixture != null)
-                    {
-                        var bidBar = ExecContext.FeedHistory.QueryBars(symbol, BarPriceType.Bid, lastTime.AddMilliseconds(-100), -1, ExecContext.ModelTimeFrame);
-                        if (bidBar[0].CloseTime == lastTime)
-                        {
-                            var bidResult = bidFixture.Update(bidBar[0]);
-                            if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Bid)
-                                bidResult.ExtendedBy = 0;
-                            overallResult += bidResult;
-                        }
-                    }
-                }
-
-                return overallResult;
+                var bidResult = bidFixture.Update(update);
+                if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Bid)
+                    bidResult.ExtendedBy = 0;
+                overallResult += bidResult;
             }
+
+            if (overallResult.ExtendedBy > 0)
+                BufferingStrategy.OnBufferExtended();
+
+            return overallResult;
+            //}
+            //else
+            //{
+            //    var timeRefResult = mainSeriesFixture.ModelTimeline.Update(update.LastQuote.Time);
+            //    if (timeRefResult.ExtendedBy == 0)
+            //        return new BufferUpdateResult();
+
+            //    var lastTime = mainSeriesFixture.ModelTimeline.LastTime;
+
+            //    var overallResult = new BufferUpdateResult();
+            //    foreach (var symbol in fixtures.Keys)
+            //    {
+            //        GetBothFixtures(symbol, out var bidFixture, out var askFixture);
+
+            //        if (askFixture != null)
+            //        {
+            //            var askBar = ExecContext.FeedHistory.QueryBars(symbol, BarPriceType.Ask, lastTime.AddMilliseconds(-100), -1, ExecContext.ModelTimeFrame);
+            //            if (askBar[0].CloseTime == lastTime)
+            //            {
+            //                var askResult = askFixture.Update(askBar[0]);
+            //                if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Ask)
+            //                    askResult.ExtendedBy = 0;
+            //                overallResult += askResult;
+            //            }
+            //        }
+
+            //        if (bidFixture != null)
+            //        {
+            //            var bidBar = ExecContext.FeedHistory.QueryBars(symbol, BarPriceType.Bid, lastTime.AddMilliseconds(-100), -1, ExecContext.ModelTimeFrame);
+            //            if (bidBar[0].CloseTime == lastTime)
+            //            {
+            //                var bidResult = bidFixture.Update(bidBar[0]);
+            //                if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Bid)
+            //                    bidResult.ExtendedBy = 0;
+            //                overallResult += bidResult;
+            //            }
+            //        }
+            //    }
+
+            //    return overallResult;
+            //}
         }
 
-        protected override RateUpdate Aggregate(RateUpdate last, QuoteEntity quote)
+        protected override RateUpdate Aggregate(QuoteEntity quote)
         {
-            var bounds = sampler.GetBar(quote.Time);
+            if (_isRealtimeModel)
+                return quote;
+
+            var bounds = _modelSampler.GetBar(quote.Time);
+            _lasts.TryGetValue(quote.Symbol, out var last);
 
             if (last != null && last.Time == bounds.Open)
             {
-                ((BarRateUpdate)last).Append(quote);
+                last.Append(quote);
                 return null;
             }
             else
-                return new BarRateUpdate(bounds.Open, bounds.Close, quote);
+            {
+                _lasts[quote.Symbol] = new BarRateUpdate(bounds.Open, bounds.Close, quote);
+                return last;
+            }
+        }
+
+        protected override RateUpdate Aggregate(BarRateUpdate barUpdate)
+        {
+            if (_isRealtimeModel)
+                return barUpdate.LastQuote;
+
+            var bounds = _modelSampler.GetBar(barUpdate.Time);
+            _lasts.TryGetValue(barUpdate.Symbol, out var last);
+
+            if (last != null && last.Time == bounds.Open)
+            {
+                last.Append(barUpdate);
+                return null;
+            }
+            else
+            {
+                _lasts[barUpdate.Symbol] = new BarRateUpdate(barUpdate);
+                return last;
+            }
         }
 
         protected override BarSeries GetBarSeries(string symbol)
