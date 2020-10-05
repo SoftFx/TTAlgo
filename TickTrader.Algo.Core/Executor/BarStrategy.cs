@@ -8,7 +8,7 @@ namespace TickTrader.Algo.Core
     public sealed class BarStrategy : FeedStrategy
     {
         [NonSerialized]
-        private BarSampler _sampler, _modelSampler;
+        private BarSampler _sampler;
         [NonSerialized]
         private BarSeriesFixture mainSeriesFixture;
         private List<BarEntity> mainSeries;
@@ -16,8 +16,6 @@ namespace TickTrader.Algo.Core
         private Dictionary<string, BarSeriesFixture[]> fixtures;
         [NonSerialized]
         private Dictionary<string, BarRateUpdate> _lasts;
-        [NonSerialized]
-        private bool _isRealtimeModel;
 
         public BarStrategy(BarPriceType mainPriceType)
         {
@@ -36,10 +34,6 @@ namespace TickTrader.Algo.Core
             _lasts = new Dictionary<string, BarRateUpdate>();
             mainSeriesFixture = new BarSeriesFixture(ExecContext.MainSymbolCode, MainPriceType, ExecContext, mainSeries);
             ExecContext.Builder.MainBufferId = GetKey(ExecContext.MainSymbolCode, MainPriceType);
-
-            _isRealtimeModel = ExecContext.ModelTimeFrame.IsTicks();
-            if (!_isRealtimeModel)
-                _modelSampler = BarSampler.Get(ExecContext.ModelTimeFrame);
 
             AddFixture(ExecContext.MainSymbolCode, MainPriceType, mainSeriesFixture);
         }
@@ -62,6 +56,8 @@ namespace TickTrader.Algo.Core
                 fixture = new BarSeriesFixture(symbol, priceType, ExecContext, null, mainSeriesFixture);
                 AddFixture(symbol, priceType, fixture);
                 BufferingStrategy.InitBuffer(fixture);
+                fixture.SyncByTime();
+                AddSubscription(symbol);
             }
         }
 
@@ -107,28 +103,33 @@ namespace TickTrader.Algo.Core
                 fixturePair[1] = fixture;
         }
 
-        protected override BufferUpdateResult UpdateBuffers(RateUpdate update)
+        protected override BufferUpdateResult UpdateBuffers(RateUpdate rateUpdate)
         {
             //if (mainSeriesFixture.ModelTimeline.IsRealTime)
             //{
+            var updates = rateUpdate is MultiRateUpdate ? ((MultiRateUpdate)rateUpdate).Updates : new RateUpdate[] { rateUpdate };
+
             var overallResult = new BufferUpdateResult();
 
-            GetBothFixtures(update.Symbol, out var bidFixture, out var askFixture);
-
-            if (askFixture != null)
+            foreach (var update in updates)
             {
-                var askResult = askFixture.Update(update);
-                if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Ask)
-                    askResult.ExtendedBy = 0;
-                overallResult += askResult;
-            }
+                GetBothFixtures(update.Symbol, out var bidFixture, out var askFixture);
 
-            if (bidFixture != null)
-            {
-                var bidResult = bidFixture.Update(update);
-                if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Bid)
-                    bidResult.ExtendedBy = 0;
-                overallResult += bidResult;
+                if (askFixture != null)
+                {
+                    var askResult = askFixture.Update(update);
+                    if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Ask)
+                        askResult.ExtendedBy = 0;
+                    overallResult += askResult;
+                }
+
+                if (bidFixture != null)
+                {
+                    var bidResult = bidFixture.Update(update);
+                    if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Bid)
+                        bidResult.ExtendedBy = 0;
+                    overallResult += bidResult;
+                }
             }
 
             if (overallResult.ExtendedBy > 0)
@@ -180,42 +181,58 @@ namespace TickTrader.Algo.Core
 
         protected override RateUpdate Aggregate(QuoteEntity quote)
         {
-            if (_isRealtimeModel)
-                return quote;
+            var updateResult = ModelTimeline.Update(quote.Time);
+            if (!updateResult.IsLastUpdated && updateResult.ExtendedBy <= 0)
+                return null;
 
-            var bounds = _modelSampler.GetBar(quote.Time);
+            RateUpdate update = null;
+            if (updateResult.ExtendedBy > 0 && _lasts.Count > 0)
+            {
+                update = new MultiRateUpdate(_lasts.Values);
+                _lasts.Clear();
+            }
+
+            var bounds = _sampler.GetBar(quote.Time);
             _lasts.TryGetValue(quote.Symbol, out var last);
 
             if (last != null && last.Time == bounds.Open)
             {
                 last.Append(quote);
-                return null;
             }
             else
             {
                 _lasts[quote.Symbol] = new BarRateUpdate(bounds.Open, bounds.Close, quote);
-                return last;
             }
+
+            return update;
         }
 
         protected override RateUpdate Aggregate(BarRateUpdate barUpdate)
         {
-            if (_isRealtimeModel)
-                return barUpdate.LastQuote;
+            var updateResult = ModelTimeline.Update(barUpdate.Time);
+            if (!updateResult.IsLastUpdated && updateResult.ExtendedBy <= 0)
+                return null;
 
-            var bounds = _modelSampler.GetBar(barUpdate.Time);
+            RateUpdate update = null;
+            if (updateResult.ExtendedBy > 0 && _lasts.Count > 0)
+            {
+                update = new MultiRateUpdate(_lasts.Values);
+                _lasts.Clear();
+            }
+
+            var bounds = _sampler.GetBar(barUpdate.Time);
             _lasts.TryGetValue(barUpdate.Symbol, out var last);
 
             if (last != null && last.Time == bounds.Open)
             {
                 last.Append(barUpdate);
-                return null;
             }
             else
             {
                 _lasts[barUpdate.Symbol] = new BarRateUpdate(barUpdate);
-                return last;
             }
+
+            return update;
         }
 
         protected override BarSeries GetBarSeries(string symbol)

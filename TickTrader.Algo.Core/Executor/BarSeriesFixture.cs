@@ -28,14 +28,8 @@ namespace TickTrader.Algo.Core
 
             sampler = BarSampler.Get(context.TimeFrame);
 
-            if (refTimeline == null)
-            {
-                ModelTimeline = new TimeRefFixture(context);
-            }
-            else
-            {
+            if (refTimeline != null)
                 futureBarCache = new List<BarEntity>();
-            }
 
             var key = BarStrategy.GetKey(SymbolCode, priceType);
             Buffer = context.Builder.GetBarBuffer(key);
@@ -45,7 +39,6 @@ namespace TickTrader.Algo.Core
         }
 
         internal InputBuffer<BarEntity> Buffer { get; private set; }
-        internal TimeRefFixture ModelTimeline { get; }
         public int Count { get { return Buffer.Count; } }
         public int LastIndex { get { return Buffer.Count - 1; } }
         public DateTime this[int index] { get { return Buffer[index].OpenTime; } }
@@ -226,8 +219,6 @@ namespace TickTrader.Algo.Core
         private void AppendSnapshot(List<BarEntity> data)
         {
             IsLoaded = true;
-
-            ModelTimeline?.InitTimeline(data);
 
             defaultBarValue = 0;
             if (data != null)

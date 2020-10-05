@@ -25,6 +25,7 @@ namespace TickTrader.Algo.Core
         internal IFeedProvider Feed { get; private set; }
         internal IFeedHistoryProvider FeedHistory { get; private set; }
         internal SubscriptionFixtureManager RateDispenser => ExecContext.Dispenser;
+        internal TimelineFixture ModelTimeline { get; private set; }
 
         public abstract int BufferSize { get; }
         public abstract IFeedBuffer MainBuffer { get; }
@@ -50,6 +51,8 @@ namespace TickTrader.Algo.Core
             OnInit();
             BufferingStrategy.Init(this);
             _setupActions.ForEach(a => a.Apply(this));
+
+            ModelTimeline = new TimelineFixture(ExecContext.ModelTimeFrame);
         }
 
         internal virtual void Start()
@@ -121,6 +124,12 @@ namespace TickTrader.Algo.Core
             ApplySnaphost(snaphsot);
         }
 
+        protected void AddSubscription(string symbol)
+        {
+            var snaphsot = _defaultSubscription.AddOrModify(symbol, 1);
+            ApplySnaphost(new List<QuoteEntity> { snaphsot });
+        }
+
         internal void SubscribeAll()
         {
             var symbols = ExecContext.Builder.Symbols.Select(s => s.Name);
@@ -168,12 +177,12 @@ namespace TickTrader.Algo.Core
 
         internal RateUpdate InvokeAggregate(QuoteEntity quote)
         {
-            return Aggregate(quote);
+            return ModelTimeline.IsRealTime ? quote : Aggregate(quote);
         }
 
         internal RateUpdate InvokeAggregate(BarRateUpdate barUpdate)
         {
-            return Aggregate(barUpdate);
+            return ModelTimeline.IsRealTime ? barUpdate : Aggregate(barUpdate);
         }
 
         #region IFeedBufferController
