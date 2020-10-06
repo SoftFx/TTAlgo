@@ -126,8 +126,8 @@ namespace TickTrader.Algo.Core
 
         protected void AddSubscription(string symbol)
         {
-            var snaphsot = _defaultSubscription.AddOrModify(symbol, 1);
-            ApplySnaphost(new List<QuoteEntity> { snaphsot });
+            var snapshot = _defaultSubscription.AddOrModify(symbol, 1);
+            ApplySnaphost(snapshot == null ? null : new List<QuoteEntity> { snapshot });
         }
 
         internal void SubscribeAll()

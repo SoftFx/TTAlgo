@@ -52,8 +52,11 @@ namespace TickTrader.Algo.Core
         public void InitBuffer(ILoadableFeedBuffer buffer)
         {
             if (IsStarted)
+            {
                 LoadMainBuffer(buffer);
-            else if(!_auxBuffers.Contains(buffer))
+                buffer.SyncByTime();
+            }
+            else if (!_auxBuffers.Contains(buffer))
                 _auxBuffers.Add(buffer);
         }
 

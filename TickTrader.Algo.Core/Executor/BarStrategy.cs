@@ -50,18 +50,17 @@ namespace TickTrader.Algo.Core
 
         private void InitSymbol(string symbol, BarPriceType priceType)
         {
-            BarSeriesFixture fixture = GetFixutre(symbol, priceType);
+            BarSeriesFixture fixture = GetFixture(symbol, priceType);
             if (fixture == null)
             {
                 fixture = new BarSeriesFixture(symbol, priceType, ExecContext, null, mainSeriesFixture);
                 AddFixture(symbol, priceType, fixture);
                 BufferingStrategy.InitBuffer(fixture);
-                fixture.SyncByTime();
                 AddSubscription(symbol);
             }
         }
 
-        private BarSeriesFixture GetFixutre(string smbCode, BarPriceType priceType)
+        private BarSeriesFixture GetFixture(string smbCode, BarPriceType priceType)
         {
             BarSeriesFixture[] fixturePair;
             if (fixtures.TryGetValue(smbCode, out fixturePair))
@@ -105,8 +104,6 @@ namespace TickTrader.Algo.Core
 
         protected override BufferUpdateResult UpdateBuffers(RateUpdate rateUpdate)
         {
-            //if (mainSeriesFixture.ModelTimeline.IsRealTime)
-            //{
             var updates = rateUpdate is MultiRateUpdate ? ((MultiRateUpdate)rateUpdate).Updates : new RateUpdate[] { rateUpdate };
 
             var overallResult = new BufferUpdateResult();
@@ -136,47 +133,6 @@ namespace TickTrader.Algo.Core
                 BufferingStrategy.OnBufferExtended();
 
             return overallResult;
-            //}
-            //else
-            //{
-            //    var timeRefResult = mainSeriesFixture.ModelTimeline.Update(update.LastQuote.Time);
-            //    if (timeRefResult.ExtendedBy == 0)
-            //        return new BufferUpdateResult();
-
-            //    var lastTime = mainSeriesFixture.ModelTimeline.LastTime;
-
-            //    var overallResult = new BufferUpdateResult();
-            //    foreach (var symbol in fixtures.Keys)
-            //    {
-            //        GetBothFixtures(symbol, out var bidFixture, out var askFixture);
-
-            //        if (askFixture != null)
-            //        {
-            //            var askBar = ExecContext.FeedHistory.QueryBars(symbol, BarPriceType.Ask, lastTime.AddMilliseconds(-100), -1, ExecContext.ModelTimeFrame);
-            //            if (askBar[0].CloseTime == lastTime)
-            //            {
-            //                var askResult = askFixture.Update(askBar[0]);
-            //                if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Ask)
-            //                    askResult.ExtendedBy = 0;
-            //                overallResult += askResult;
-            //            }
-            //        }
-
-            //        if (bidFixture != null)
-            //        {
-            //            var bidBar = ExecContext.FeedHistory.QueryBars(symbol, BarPriceType.Bid, lastTime.AddMilliseconds(-100), -1, ExecContext.ModelTimeFrame);
-            //            if (bidBar[0].CloseTime == lastTime)
-            //            {
-            //                var bidResult = bidFixture.Update(bidBar[0]);
-            //                if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Bid)
-            //                    bidResult.ExtendedBy = 0;
-            //                overallResult += bidResult;
-            //            }
-            //        }
-            //    }
-
-            //    return overallResult;
-            //}
         }
 
         protected override RateUpdate Aggregate(QuoteEntity quote)
@@ -243,7 +199,7 @@ namespace TickTrader.Algo.Core
         protected override BarSeries GetBarSeries(string symbol, BarPriceType side)
         {
             InitSymbol(symbol, side);
-            var fixture = GetFixutre(symbol, side);
+            var fixture = GetFixture(symbol, side);
             var proxyBuffer = new ProxyBuffer<BarEntity, Api.Bar>(b => b) { SrcBuffer = fixture.Buffer };
             return new BarSeriesProxy() { Buffer = proxyBuffer };
         }
