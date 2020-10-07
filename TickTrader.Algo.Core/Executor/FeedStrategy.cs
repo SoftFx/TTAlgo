@@ -16,6 +16,9 @@ namespace TickTrader.Algo.Core
         private IFeedSubscription _defaultSubscription;
         private readonly List<SetupAction> _setupActions = new List<SetupAction>();
         private CrossDomainProxy _proxy;
+        private string _mainSymbol;
+        [NonSerialized]
+        private BufferUpdateResult _mainSymbolUpdateResult;
 
         public FeedStrategy()
         {
@@ -34,8 +37,7 @@ namespace TickTrader.Algo.Core
         internal abstract void OnInit();
         public FeedBufferStrategy BufferingStrategy { get; private set; }
         protected abstract BufferUpdateResult UpdateBuffers(RateUpdate update);
-        protected abstract RateUpdate Aggregate(QuoteEntity quote);
-        protected abstract RateUpdate Aggregate(BarRateUpdate barUpdate);
+        protected abstract RateUpdate Aggregate(RateUpdate last, QuoteEntity quote);
         protected abstract BarSeries GetBarSeries(string symbol);
         protected abstract BarSeries GetBarSeries(string symbol, BarPriceType side);
         protected abstract FeedStrategy CreateClone();
@@ -44,6 +46,7 @@ namespace TickTrader.Algo.Core
         {
             ExecContext = executor;
             _marketFixture = marketFixture;
+            _mainSymbol = executor.MainSymbolCode;
             Feed = executor.FeedProvider;
             FeedHistory = executor.FeedHistory;
             BufferingStrategy = bStrategy;
@@ -53,6 +56,7 @@ namespace TickTrader.Algo.Core
             _setupActions.ForEach(a => a.Apply(this));
 
             ModelTimeline = new TimelineFixture(ExecContext.ModelTimeFrame);
+            _mainSymbolUpdateResult = new BufferUpdateResult();
         }
 
         internal virtual void Start()
@@ -158,6 +162,35 @@ namespace TickTrader.Algo.Core
 
             var result = UpdateBuffers(update);
 
+            var modelUpdate = new BufferUpdateResult();
+            if (ModelTimeline.IsRealTime)
+            {
+                CalculateIndicators(result);
+            }
+            else
+            {
+                if (update.Symbol == _mainSymbol)
+                {
+                    _mainSymbolUpdateResult += result;
+                    modelUpdate += ModelTimeline.Update(update.LastQuote.Time);
+                }
+                if (modelUpdate.ExtendedBy > 0)
+                {
+                    CalculateIndicators(_mainSymbolUpdateResult);
+                    _mainSymbolUpdateResult = new BufferUpdateResult();
+                }
+            }
+
+            RateDispenser.OnUpdateEvent(node);
+
+            if (ModelTimeline.IsRealTime || modelUpdate.ExtendedBy > 0)
+                ExecContext.Builder.InvokeOnModelTick();
+
+            return result;
+        }
+
+        private void CalculateIndicators(BufferUpdateResult result)
+        {
             if (result.IsLastUpdated)
                 ExecContext.Builder.InvokeCalculate(true);
 
@@ -166,23 +199,11 @@ namespace TickTrader.Algo.Core
                 ExecContext.Builder.IncreaseVirtualPosition();
                 ExecContext.Builder.InvokeCalculate(false);
             }
-
-            RateDispenser.OnUpdateEvent(node);
-
-            if (result.ExtendedBy > 0 || result.IsLastUpdated)
-                ExecContext.Builder.InvokeOnModelTick();
-
-            return result;
         }
 
-        internal RateUpdate InvokeAggregate(QuoteEntity quote)
+        internal RateUpdate InvokeAggregate(RateUpdate last, QuoteEntity quote)
         {
-            return ModelTimeline.IsRealTime ? quote : Aggregate(quote);
-        }
-
-        internal RateUpdate InvokeAggregate(BarRateUpdate barUpdate)
-        {
-            return ModelTimeline.IsRealTime ? barUpdate : Aggregate(barUpdate);
+            return Aggregate(last, quote);
         }
 
         #region IFeedBufferController

@@ -6,7 +6,8 @@ namespace TickTrader.Algo.Core
 {
     internal class FeedQueue
     {
-        private Queue<RateUpdate> _queue = new Queue<RateUpdate>();
+        private readonly Queue<RateUpdate> _queue = new Queue<RateUpdate>();
+        private readonly Dictionary<string, RateUpdate> _lasts = new Dictionary<string, RateUpdate>();
         private FeedStrategy _fStrategy;
 
         public FeedQueue(FeedStrategy fStrategy)
@@ -28,18 +29,17 @@ namespace TickTrader.Algo.Core
 
         public void Enqueue(BarRateUpdate bars)
         {
-            RateUpdate newUpdate = _fStrategy.InvokeAggregate(bars);
-            if (newUpdate != null)
-            {
-                _queue.Enqueue(bars);
-            }
+            _lasts[bars.Symbol] = bars;
+            _queue.Enqueue(bars);
         }
 
         public void Enqueue(QuoteEntity quote)
         {
-            RateUpdate newUpdate = _fStrategy.InvokeAggregate(quote);
+            _lasts.TryGetValue(quote.Symbol, out var last);
+            var newUpdate = _fStrategy.InvokeAggregate(last, quote);
             if (newUpdate != null)
             {
+                _lasts[quote.Symbol] = newUpdate;
                 _queue.Enqueue(newUpdate);
             }
         }
@@ -47,6 +47,9 @@ namespace TickTrader.Algo.Core
         public RateUpdate Dequeue()
         {
             var update = _queue.Dequeue();
+            _lasts.TryGetValue(update.Symbol, out var last);
+            if (update == last)
+                _lasts.Remove(update.Symbol);
             return update;
         }
 

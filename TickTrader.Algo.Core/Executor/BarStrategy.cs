@@ -14,8 +14,6 @@ namespace TickTrader.Algo.Core
         private List<BarEntity> mainSeries;
         [NonSerialized]
         private Dictionary<string, BarSeriesFixture[]> fixtures;
-        [NonSerialized]
-        private Dictionary<string, BarRateUpdate> _lasts;
 
         public BarStrategy(BarPriceType mainPriceType)
         {
@@ -31,7 +29,6 @@ namespace TickTrader.Algo.Core
         {
             _sampler = BarSampler.Get(ExecContext.TimeFrame);
             fixtures = new Dictionary<string, BarSeriesFixture[]>();
-            _lasts = new Dictionary<string, BarRateUpdate>();
             mainSeriesFixture = new BarSeriesFixture(ExecContext.MainSymbolCode, MainPriceType, ExecContext, mainSeries);
             ExecContext.Builder.MainBufferId = GetKey(ExecContext.MainSymbolCode, MainPriceType);
 
@@ -102,31 +99,26 @@ namespace TickTrader.Algo.Core
                 fixturePair[1] = fixture;
         }
 
-        protected override BufferUpdateResult UpdateBuffers(RateUpdate rateUpdate)
+        protected override BufferUpdateResult UpdateBuffers(RateUpdate update)
         {
-            var updates = rateUpdate is MultiRateUpdate ? ((MultiRateUpdate)rateUpdate).Updates : new RateUpdate[] { rateUpdate };
-
             var overallResult = new BufferUpdateResult();
 
-            foreach (var update in updates)
+            GetBothFixtures(update.Symbol, out var bidFixture, out var askFixture);
+
+            if (askFixture != null)
             {
-                GetBothFixtures(update.Symbol, out var bidFixture, out var askFixture);
+                var askResult = askFixture.Update(update);
+                if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Ask)
+                    askResult.ExtendedBy = 0;
+                overallResult += askResult;
+            }
 
-                if (askFixture != null)
-                {
-                    var askResult = askFixture.Update(update);
-                    if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Ask)
-                        askResult.ExtendedBy = 0;
-                    overallResult += askResult;
-                }
-
-                if (bidFixture != null)
-                {
-                    var bidResult = bidFixture.Update(update);
-                    if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Bid)
-                        bidResult.ExtendedBy = 0;
-                    overallResult += bidResult;
-                }
+            if (bidFixture != null)
+            {
+                var bidResult = bidFixture.Update(update);
+                if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Bid)
+                    bidResult.ExtendedBy = 0;
+                overallResult += bidResult;
             }
 
             if (overallResult.ExtendedBy > 0)
@@ -135,60 +127,19 @@ namespace TickTrader.Algo.Core
             return overallResult;
         }
 
-        protected override RateUpdate Aggregate(QuoteEntity quote)
+        protected override RateUpdate Aggregate(RateUpdate last, QuoteEntity quote)
         {
-            var updateResult = ModelTimeline.Update(quote.Time);
-            if (!updateResult.IsLastUpdated && updateResult.ExtendedBy <= 0)
-                return null;
-
-            RateUpdate update = null;
-            if (updateResult.ExtendedBy > 0 && _lasts.Count > 0)
-            {
-                update = new MultiRateUpdate(_lasts.Values);
-                _lasts.Clear();
-            }
-
             var bounds = _sampler.GetBar(quote.Time);
-            _lasts.TryGetValue(quote.Symbol, out var last);
 
             if (last != null && last.Time == bounds.Open)
             {
-                last.Append(quote);
-            }
-            else
-            {
-                _lasts[quote.Symbol] = new BarRateUpdate(bounds.Open, bounds.Close, quote);
-            }
-
-            return update;
-        }
-
-        protected override RateUpdate Aggregate(BarRateUpdate barUpdate)
-        {
-            var updateResult = ModelTimeline.Update(barUpdate.Time);
-            if (!updateResult.IsLastUpdated && updateResult.ExtendedBy <= 0)
+                ((BarRateUpdate)last).Append(quote);
                 return null;
-
-            RateUpdate update = null;
-            if (updateResult.ExtendedBy > 0 && _lasts.Count > 0)
-            {
-                update = new MultiRateUpdate(_lasts.Values);
-                _lasts.Clear();
-            }
-
-            var bounds = _sampler.GetBar(barUpdate.Time);
-            _lasts.TryGetValue(barUpdate.Symbol, out var last);
-
-            if (last != null && last.Time == bounds.Open)
-            {
-                last.Append(barUpdate);
             }
             else
             {
-                _lasts[barUpdate.Symbol] = new BarRateUpdate(barUpdate);
+                return new BarRateUpdate(bounds.Open, bounds.Close, quote);
             }
-
-            return update;
         }
 
         protected override BarSeries GetBarSeries(string symbol)

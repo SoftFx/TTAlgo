@@ -172,7 +172,6 @@
     <Compile Include="Entities\IndicatorsCollection.cs" />
     <Compile Include="Entities\MarkerEntity.cs" />
     <Compile Include="Entities\MockOrder.cs" />
-    <Compile Include="Entities\MultiRateUpdate.cs" />
     <Compile Include="Entities\NetPositionOpenInfo.cs" />
     <Compile Include="Entities\OrderAccessor.cs" />
     <Compile Include="Entities\OrderFilteredCollection.cs" />
