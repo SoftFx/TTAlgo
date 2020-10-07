@@ -55,6 +55,7 @@ namespace TickTrader.Algo.Common.Model.Config
             {
                 Key = Key.Clone(),
                 TimeFrame = TimeFrame,
+                ModelTimeFrame = ModelTimeFrame,
                 MainSymbol = MainSymbol.Clone(),
                 SelectedMapping = SelectedMapping.Clone(),
                 InstanceId = InstanceId,

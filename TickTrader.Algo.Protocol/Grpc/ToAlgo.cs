@@ -606,12 +606,13 @@ namespace TickTrader.Algo.Protocol.Grpc
             };
         }
 
-        public static PluginConfig Convert(this Lib.PluginConfig config)
+        public static PluginConfig Convert(this Lib.PluginConfig config, VersionSpec version)
         {
             var res = new PluginConfig
             {
                 Key = config.Key.Convert(),
-                TimeFrame = config.TimeFrame.Convert(),
+                TimeFrame = version.SupportModelTimeframe ? config.TimeFrame.Convert() : TimeFrames.Ticks,
+                ModelTimeFrame = config.ModelTimeframe.Convert(),
                 MainSymbol = config.MainSymbol.Convert(),
                 SelectedMapping = config.SelectedMapping.Convert(),
                 InstanceId = config.InstanceId,
@@ -917,10 +918,10 @@ namespace TickTrader.Algo.Protocol.Grpc
             };
         }
 
-        public static BotModelInfo Convert(this Lib.BotModelInfo bot)
+        public static BotModelInfo Convert(this Lib.BotModelInfo bot, VersionSpec version)
         {
             var res = bot.ConvertLight();
-            res.Config = bot.Config.Convert();
+            res.Config = bot.Config.Convert(version);
             res.Descriptor = bot.Descriptor_?.ConvertLight();
             return res;
         }
@@ -1045,7 +1046,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             }
         }
 
-        public static UpdateInfo Convert(this Lib.UpdateInfo update)
+        public static UpdateInfo Convert(this Lib.UpdateInfo update, VersionSpec version)
         {
             UpdateInfo res;
             switch (update.UpdateInfoCase)
@@ -1063,7 +1064,7 @@ namespace TickTrader.Algo.Protocol.Grpc
                     res = update.AccountState.ConvertStateUpdate();
                     break;
                 case Lib.UpdateInfo.UpdateInfoOneofCase.Bot:
-                    res = update.Bot.Convert();
+                    res = update.Bot.Convert(version);
                     break;
                 case Lib.UpdateInfo.UpdateInfoOneofCase.BotState:
                     res = update.BotState.ConvertStateUpdate();
@@ -1095,9 +1096,9 @@ namespace TickTrader.Algo.Protocol.Grpc
             return new UpdateInfo<AccountModelInfo> { Value = update.Account.Convert() };
         }
 
-        public static UpdateInfo<BotModelInfo> Convert(this Lib.BotUpdateInfo update)
+        public static UpdateInfo<BotModelInfo> Convert(this Lib.BotUpdateInfo update, VersionSpec version)
         {
-            return new UpdateInfo<BotModelInfo> { Value = update.Bot.Convert() };
+            return new UpdateInfo<BotModelInfo> { Value = update.Bot.Convert(version) };
         }
 
         public static UpdateInfo<BotModelInfo> ConvertStateUpdate(this Lib.BotStateUpdateInfo update)
