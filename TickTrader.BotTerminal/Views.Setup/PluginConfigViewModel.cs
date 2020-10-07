@@ -80,7 +80,7 @@ namespace TickTrader.BotTerminal
                     NotifyOfPropertyChange(nameof(Inputs));
                     NotifyOfPropertyChange(nameof(HasInputs));
                 }
-                AvailableModels.Value = EnumHelper.AllValues<TimeFrames>().Where(t => t >= value && t != TimeFrames.TicksLevel2).ToList();
+                AvailableModels.Value = AvailableTimeFrames.Where(t => t >= value && t != TimeFrames.TicksLevel2).ToList();
                 if (SelectedModel.Value < value)
                     SelectedModel.Value = value;
             }
@@ -238,6 +238,7 @@ namespace TickTrader.BotTerminal
 
         public void Load(PluginConfig cfg)
         {
+            SelectedModel.Value = cfg.ModelTimeFrame;
             SelectedTimeFrame = cfg.TimeFrame;
             MainSymbol = AvailableSymbols.GetSymbolOrDefault(cfg.MainSymbol) ?? AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol);
 
@@ -264,6 +265,7 @@ namespace TickTrader.BotTerminal
         {
             var cfg = new PluginConfig();
             cfg.TimeFrame = SelectedTimeFrame;
+            cfg.ModelTimeFrame = SelectedModel.Value;
             cfg.MainSymbol = MainSymbol.ToConfig();
             cfg.SelectedMapping = SelectedMapping.Key;
             cfg.InstanceId = InstanceId;
@@ -281,6 +283,7 @@ namespace TickTrader.BotTerminal
 
         public void Reset()
         {
+            SelectedModel.Value = TimeFrames.Ticks;
             SelectedTimeFrame = SetupMetadata.Context.DefaultTimeFrame;
             MainSymbol = AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol);
             SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(SetupMetadata.Context.DefaultMapping);
