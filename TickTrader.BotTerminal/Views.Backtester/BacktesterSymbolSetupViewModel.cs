@@ -68,7 +68,7 @@ namespace TickTrader.BotTerminal
 
             IsSymbolSelected = SelectedSymbol.Var.IsNotNull();
 
-            if (type == SymbolSetupType.Additional)
+            if (type != SymbolSetupType.Main)
             {
                 TriggerOnChange(SelectedSymbol.Var, a => UpdateAvailableRange(SelectedTimeframe.Value));
                 TriggerOnChange(SelectedTimeframe.Var, a => UpdateAvailableRange(SelectedTimeframe.Value));
@@ -181,8 +181,8 @@ namespace TickTrader.BotTerminal
             if (cToken.IsCancellationRequested)
                 return;
 
-            //if (SetupType == SymbolSetupType.Main)
-            //    return;
+            if (SetupType == SymbolSetupType.Main)
+                return;
 
             if (SelectedSymbol.Value == null)
                 return;
@@ -253,6 +253,8 @@ namespace TickTrader.BotTerminal
             {
                 settings.MainSymbol = smbData.Name;
                 settings.MainTimeframe = SelectedTimeframe.Value; // SelectedTimeframe may differ from baseTimeFrame in case of main symbol
+                settings.ModelTimeframe = baseTimeFrame;
+                return;
             }
 
             var precacheFrom = GetLocalFrom(fromLimit);
@@ -306,7 +308,7 @@ namespace TickTrader.BotTerminal
                 _suppressRangeUpdates = false;
             }
 
-            if (SetupType == SymbolSetupType.Additional)
+            if (SetupType != SymbolSetupType.Main)
                 UpdateAvailableRange(SelectedTimeframe.Value);
         }
 
@@ -386,5 +388,5 @@ namespace TickTrader.BotTerminal
     }
 
     internal enum DownloadPriceChoices { Bid, Ask, Both }
-    internal enum SymbolSetupType { Main, Additional }
+    internal enum SymbolSetupType { Main, Additional, MainShadow }
 }

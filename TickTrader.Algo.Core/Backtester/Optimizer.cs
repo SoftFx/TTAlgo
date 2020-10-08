@@ -294,7 +294,7 @@ namespace TickTrader.Algo.Core
 
                 executor.MainSymbolCode = CommonSettings.MainSymbol;
                 executor.TimeFrame = CommonSettings.MainTimeframe;
-                executor.ModelTimeFrame = TimeFrames.Ticks;
+                executor.ModelTimeFrame = CommonSettings.ModelTimeframe;
                 executor.InstanceId = "Optimizing-" + Interlocked.Increment(ref _idSeed).ToString();
                 executor.Permissions = new PluginPermissions() { TradeAllowed = true };
 

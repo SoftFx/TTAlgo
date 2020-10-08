@@ -38,7 +38,7 @@ namespace TickTrader.Algo.Core
             AskBar = askBar;
             _quoteCount = 1;
             Symbol = symbol;
-            _lastQuote = new QuoteEntity(symbol, _closeTime, bidBar.Close, askBar.Close);
+            _lastQuote = new QuoteEntity(symbol, _closeTime.AddMilliseconds(-10), bidBar.Close, askBar.Close);
         }
 
         public BarRateUpdate(BarRateUpdate barUpdate)
