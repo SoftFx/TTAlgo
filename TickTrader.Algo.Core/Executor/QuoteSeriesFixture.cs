@@ -52,7 +52,7 @@ namespace TickTrader.Algo.Core
             AppendData(data);
         }
 
-        public void LoadFeedFrom(DateTime from)
+        public void LoadFeedFrom(DateTime? from)
         {
             throw new NotImplementedException();
         }

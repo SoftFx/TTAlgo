@@ -260,10 +260,9 @@ namespace TickTrader.Algo.Core
             AppendSnapshot(data);
         }
 
-        public void LoadFeedFrom(DateTime from)
+        public void LoadFeedFrom(DateTime? from)
         {
-            var to = DateTime.UtcNow + TimeSpan.FromDays(2);
-            var data = Context.FeedHistory.QueryBars(SymbolCode, priceType, from, to, Context.TimeFrame);
+            var data = from != null ? Context.FeedHistory.QueryBars(SymbolCode, priceType, from.Value, DateTime.UtcNow + TimeSpan.FromDays(2), Context.TimeFrame) : null;
             AppendSnapshot(data);
         }
     }

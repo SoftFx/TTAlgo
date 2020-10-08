@@ -72,7 +72,7 @@ namespace TickTrader.Algo.Core
         DateTime OpenTime { get; }
         int Count { get; }
 
-        void LoadFeedFrom(DateTime from);
+        void LoadFeedFrom(DateTime? from);
         void LoadFeed(DateTime from, DateTime to);
         void LoadFeed(int size);
         void LoadFeed(DateTime from, int size);
@@ -113,8 +113,8 @@ namespace TickTrader.Algo.Core
             //if (_mainBufferStartTime == null)
             //    throw new AlgoException("Main symbol has no data, cannot synchronize auxilary symbols.");
 
-            if (_mainBufferStartTime != null)
-                buffer.LoadFeedFrom(_mainBufferStartTime.Value);
+            //if (_mainBufferStartTime != null)
+                buffer.LoadFeedFrom(_mainBufferStartTime);
         }
 
         public override void OnBufferExtended()
