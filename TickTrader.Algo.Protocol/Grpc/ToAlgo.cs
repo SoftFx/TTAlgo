@@ -611,8 +611,8 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = new PluginConfig
             {
                 Key = config.Key.Convert(),
-                TimeFrame = version.SupportModelTimeframe ? config.TimeFrame.Convert() : TimeFrames.Ticks,
-                ModelTimeFrame = config.ModelTimeframe.Convert(),
+                TimeFrame = config.TimeFrame.Convert(),
+                ModelTimeFrame = version.SupportModelTimeframe ? config.ModelTimeframe.Convert() : TimeFrames.Ticks,
                 MainSymbol = config.MainSymbol.Convert(),
                 SelectedMapping = config.SelectedMapping.Convert(),
                 InstanceId = config.InstanceId,
