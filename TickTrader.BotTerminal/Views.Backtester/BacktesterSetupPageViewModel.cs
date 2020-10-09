@@ -53,7 +53,7 @@ namespace TickTrader.BotTerminal
             _localWnd = new WindowManager(this);
 
             //ActionOverlay = new Property<ActionOverlayViewModel>();
-            AdditionalSymbols = new ObservableCollection<BacktesterSymbolSetupViewModel>();
+            FeedSymbols = new ObservableCollection<BacktesterSymbolSetupViewModel>();
 
             DateRange = new DateRangeSelectionViewModel(false);
             IsUpdatingRange = new BoolProperty();
@@ -67,6 +67,8 @@ namespace TickTrader.BotTerminal
             //_availableSymbols = env.Symbols;
 
             MainSymbolSetup = CreateSymbolSetupModel(SymbolSetupType.Main);
+            MainSymbolShadowSetup = CreateSymbolSetupModel(SymbolSetupType.MainShadow);
+            FeedSymbols.Add(MainSymbolShadowSetup);
             UpdateSymbolsState();
 
             AvailableModels = _var.AddProperty<List<Feed.Types.Timeframe>>();
@@ -134,18 +136,13 @@ namespace TickTrader.BotTerminal
 
             _var.TriggerOnChange(MainSymbolSetup.SelectedTimeframe, a =>
             {
-                AvailableModels.Value = EnumHelper.AllValues<Feed.Types.Timeframe>().Where(t => t >= a.New).ToList();
+                AvailableModels.Value = EnumHelper.AllValues<Feed.Types.Timeframe>().Where(t => t >= a.New && t != Feed.Types.Timeframe.TicksLevel2).ToList();
 
                 if (_openedPluginSetup != null)
                     _openedPluginSetup.Setup.SelectedTimeFrame = a.New;
 
                 if (SelectedModel.Value < a.New)
                     SelectedModel.Value = a.New;
-            });
-
-            _var.TriggerOnChange(SelectedModel, a =>
-            {
-                MainSymbolSetup.UpdateAvailableRange(SelectedModel.Value);
             });
 
             _var.TriggerOnChange(MainSymbolSetup.SelectedSymbol, a =>
@@ -157,14 +154,13 @@ namespace TickTrader.BotTerminal
                     if (_openedPluginSetup != null)
                         _openedPluginSetup.Setup.MainSymbol = a.New.ToSymbolToken();
 
-                    MainSymbolSetup.UpdateAvailableRange(SelectedModel.Value);
+                    MainSymbolShadowSetup.SelectedSymbolName.Value = a.New.Name;
                 }
             });
 
             client.Connected += () =>
             {
-                GetAllSymbols().Foreach(s => s.Reset());
-                MainSymbolSetup.UpdateAvailableRange(SelectedModel.Value);
+                FeedSymbols.Foreach(s => s.Reset());
             };
 
             UpdateTradeSummary();
@@ -180,6 +176,7 @@ namespace TickTrader.BotTerminal
         public Property<string> PluginErrorProp { get; }
         public Property<Feed.Types.Timeframe> MainTimeFrame { get; private set; }
         public BacktesterSymbolSetupViewModel MainSymbolSetup { get; private set; }
+        public BacktesterSymbolSetupViewModel MainSymbolShadowSetup { get; private set; }
         public PluginSetupModel PluginSetup { get; private set; }
         //public PluginConfig PluginConfig { get; private set; }
         public Property<string> TradeSettingsSummary { get; private set; }
@@ -193,7 +190,7 @@ namespace TickTrader.BotTerminal
         public BoolProperty IsUpdatingRange { get; private set; }
         public DateRangeSelectionViewModel DateRange { get; }
         public BoolVar IsDateRangeEnabled => _isDateRangeValid.Var;
-        public ObservableCollection<BacktesterSymbolSetupViewModel> AdditionalSymbols { get; private set; }
+        public ObservableCollection<BacktesterSymbolSetupViewModel> FeedSymbols { get; private set; }
         public event System.Action PluginSelected;
 
         public async void OpenTradeSetup()
@@ -213,7 +210,7 @@ namespace TickTrader.BotTerminal
         {
             await MainSymbolSetup.PrecacheData(observer, cToken, from, to, SelectedModel.Value);
 
-            foreach (var symbolSetup in AdditionalSymbols)
+            foreach (var symbolSetup in FeedSymbols)
                 await symbolSetup.PrecacheData(observer, cToken, from, to);
         }
 
@@ -227,7 +224,7 @@ namespace TickTrader.BotTerminal
         {
             MainSymbolSetup.Apply(backtester, from, to, SelectedModel.Value, isVisualizing);
 
-            foreach (var symbolSetup in AdditionalSymbols)
+            foreach (var symbolSetup in FeedSymbols)
                 symbolSetup.Apply(backtester, from, to, isVisualizing);
 
             foreach (var rec in _client.Currencies.Snapshot)
@@ -240,7 +237,7 @@ namespace TickTrader.BotTerminal
         {
             MainSymbolSetup.Apply(optimizer, from, to, SelectedModel.Value);
 
-            foreach (var symbolSetup in AdditionalSymbols)
+            foreach (var symbolSetup in FeedSymbols)
                 symbolSetup.Apply(optimizer, from, to);
 
             foreach (var rec in _client.Currencies.Snapshot)
@@ -270,7 +267,8 @@ namespace TickTrader.BotTerminal
             writer.AppendLine("Main symbol: " + MainSymbolSetup.AsText());
             writer.AppendLine("Model: based on " + SelectedModel.Value);
 
-            foreach (var addSymbols in AdditionalSymbols)
+            writer.AppendLine("Symbols data feed: " + MainSymbolSetup.AsText());
+            foreach (var addSymbols in FeedSymbols)
                 writer.AppendLine("+Symbol " + addSymbols.AsText());
 
             writer.AppendFormat("Period: {0} to {1}", from.ToShortDateString(), to.ToShortDateString());
@@ -371,7 +369,7 @@ namespace TickTrader.BotTerminal
 
         private void AddSymbol()
         {
-            AdditionalSymbols.Add(CreateSymbolSetupModel(SymbolSetupType.Additional));
+            FeedSymbols.Add(CreateSymbolSetupModel(SymbolSetupType.Additional));
             UpdateSymbolsState();
         }
 
@@ -389,7 +387,7 @@ namespace TickTrader.BotTerminal
 
         private void Smb_Removed(BacktesterSymbolSetupViewModel smb)
         {
-            AdditionalSymbols.Remove(smb);
+            FeedSymbols.Remove(smb);
             smb.IsUpdating.PropertyChanged -= IsUpdating_PropertyChanged;
             smb.IsSymbolSelected.PropertyChanged -= IsSymbolSelected_PropertyChanged;
             smb.Removed -= Smb_Removed;
@@ -400,7 +398,7 @@ namespace TickTrader.BotTerminal
 
         private void UpdateRangeState()
         {
-            var allSymbols = GetAllSymbols();
+            var allSymbols = FeedSymbols;
 
             IsUpdatingRange.Value = allSymbols.Any(s => s.IsUpdating.Value);
 
@@ -430,7 +428,7 @@ namespace TickTrader.BotTerminal
         {
             yield return MainSymbolSetup;
 
-            foreach (var smb in AdditionalSymbols)
+            foreach (var smb in FeedSymbols)
                 yield return smb;
         }
 
@@ -448,9 +446,8 @@ namespace TickTrader.BotTerminal
         public void CheckDuplicateSymbols()
         {
             var unique = new HashSet<string>();
-            unique.Add(MainSymbolSetup.SelectedSymbol.Value.Name);
 
-            foreach (var smb in AdditionalSymbols)
+            foreach (var smb in FeedSymbols)
             {
                 var name = smb.SelectedSymbolName.Value;
 

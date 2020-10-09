@@ -50,8 +50,11 @@ namespace TickTrader.Algo.Core
         public void InitBuffer(ILoadableFeedBuffer buffer)
         {
             if (IsStarted)
+            {
                 LoadMainBuffer(buffer);
-            else if(!_auxBuffers.Contains(buffer))
+                buffer.SyncByTime();
+            }
+            else if (!_auxBuffers.Contains(buffer))
                 _auxBuffers.Add(buffer);
         }
 
@@ -108,7 +111,7 @@ namespace TickTrader.Algo.Core
             //if (_mainBufferStartTime == null)
             //    throw new AlgoException("Main symbol has no data, cannot synchronize auxilary symbols.");
 
-            if (_mainBufferStartTime != null)
+            //if (_mainBufferStartTime != null)
                 buffer.LoadFeedFrom(_mainBufferStartTime);
         }
 

@@ -293,9 +293,10 @@ message PluginPermissions {
 message PluginConfig {
     PluginKey key = 1;
     Feed.Timeframe timeframe = 2;
-    SymbolConfig main_symbol = 3;
-    MappingKey selected_mapping = 4;
-    string instance_id = 5;
-    PluginPermissions permissions = 6;
-    repeated google.protobuf.Any properties = 7;
+    Feed.Timeframe model_timeframe = 3;
+    SymbolConfig main_symbol = 4;
+    MappingKey selected_mapping = 5;
+    string instance_id = 6;
+    PluginPermissions permissions = 7;
+    repeated google.protobuf.Any properties = 8;
 }

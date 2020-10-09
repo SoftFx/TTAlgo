@@ -10,6 +10,7 @@ namespace TickTrader.Algo.Core
     {
         public string MainSymbolCode { get; set; }
         public Feed.Types.Timeframe TimeFrame { get; set; }
+        public Feed.Types.Timeframe ModelTimeFrame { get; set; }
         public string WorkingFolder { get; set; }
         public string BotWorkingFolder { get; set; }
         public string InstanceId { get; set; }

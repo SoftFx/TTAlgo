@@ -410,7 +410,7 @@ namespace TickTrader.BotAgent.BA.Models
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failed to save config file! {0}");
+                _logger.Error(ex, $"Failed to save config file! {ex.Message}");
             }
         }
 

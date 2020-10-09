@@ -19,6 +19,7 @@ namespace TickTrader.Algo.Core
         private MarginAccountCalculator _marginCalc;
         private CashAccountCalculator _cashCalc;
         private bool _isRunning;
+        private bool _isRestart;
 
         public CalculatorFixture(IFixtureContext context)
         {
@@ -40,6 +41,20 @@ namespace TickTrader.Algo.Core
             _context.Builder.Account.CalcRequested += LazyInit;
         }
 
+        public void PreRestart()
+        {
+            _isRestart = true;
+        }
+
+        public void PostRestart()
+        {
+            if (_isRestart)
+            {
+                _isRestart = false;
+                LazyInit();
+            }
+        }
+
         private void LazyInit()
         {
             if (!_isRunning)
@@ -57,19 +72,33 @@ namespace TickTrader.Algo.Core
 
                 if (Acc.IsMarginType)
                 {
-                    _marginCalc = new MarginAccountCalculator(Acc, Market, true);
+                    _marginCalc = new MarginAccountCalculator(Acc, Market, OnCalculatorError, true);
                     Acc.MarginCalc = _marginCalc;
                 }
                 else
-                    _cashCalc = new CashAccountCalculator(Acc, Market);
+                    _cashCalc = new CashAccountCalculator(Acc, Market, OnCalculatorError);
                 Acc.EnableBlEvents();
             }
             catch (Exception ex)
             {
+                _context.Builder.Logger.OnError("Failed to start account calculator", ex);
+                _context.Builder.Logger.OnError(Market.GetSnapshotString());
+                _context.Builder.Logger.OnError(Acc.GetSnapshotString());
                 _marginCalc = null;
                 _cashCalc = null;
                 Acc = null;
-                _context.Builder.Logger.OnError("Failed to start account calculator", ex);
+            }
+        }
+
+        private void OnCalculatorError(string msg, Exception ex)
+        {
+            if (ex != null)
+            {
+                _context.Builder.Logger.OnError(msg, ex);
+            }
+            else
+            {
+                _context.Builder.Logger.OnError(msg);
             }
         }
 

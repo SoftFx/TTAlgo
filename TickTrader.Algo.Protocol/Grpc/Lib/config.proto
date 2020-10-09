@@ -175,4 +175,5 @@ message PluginConfig
     string instance_id = 5;
     PluginPermissions permissions = 6;
     repeated Property properties = 7;
+    ApiDescriptor.TimeFrame model_timeframe = 8;
 }

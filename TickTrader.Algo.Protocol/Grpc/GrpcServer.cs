@@ -785,7 +785,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
             try
             {
-                _botAgent.AddBot(request.Account.Convert(), request.Config.Convert());
+                _botAgent.AddBot(request.Account.Convert(), request.Config.Convert(session.VersionSpec));
             }
             catch (Exception ex)
             {
@@ -879,7 +879,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
             try
             {
-                _botAgent.ChangeBotConfig(request.BotId, request.NewConfig.Convert());
+                _botAgent.ChangeBotConfig(request.BotId, request.NewConfig.Convert(session.VersionSpec));
             }
             catch (Exception ex)
             {

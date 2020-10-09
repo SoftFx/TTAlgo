@@ -12,6 +12,8 @@ namespace TickTrader.Algo.Common.Model
 {
     public class AccountModel : CrossDomainObject, IOrderDependenciesResolver, IMarginAccountInfo2, ICashAccountInfo2
     {
+        private IAlgoCoreLogger _logger;
+
         private readonly VarDictionary<string, PositionInfo> _positions = new VarDictionary<string, PositionInfo>();
         private readonly VarDictionary<string, AssetInfo> _assets = new VarDictionary<string, AssetInfo>();
         private readonly VarDictionary<string, OrderInfo> _orders = new VarDictionary<string, OrderInfo>();
@@ -29,6 +31,8 @@ namespace TickTrader.Algo.Common.Model
 
         public AccountModel(IVarSet<string, CurrencyInfo> currecnies, IVarSet<string, SymbolInfo> symbols)
         {
+            _logger = CoreLoggerFactory.GetLogger<AccountModel>();
+
             _currencies = currecnies.Snapshot;
             _symbols = symbols.Snapshot;
 
@@ -104,11 +108,11 @@ namespace TickTrader.Algo.Common.Model
                 switch (Type)
                 {
                     case AccountInfo.Types.Type.Cash:
-                        CashCalculator = new CashAccountCalculator(this, Market);
+                        CashCalculator = new CashAccountCalculator(this, Market, _logger.Error);
                         break;
                     case AccountInfo.Types.Type.Net:
                     case AccountInfo.Types.Type.Gross:
-                        MarginCalculator = new MarginAccountCalculator(this, Market, true);
+                        MarginCalculator = new MarginAccountCalculator(this, Market, _logger.Error, true);
                         break;
 
                     default:

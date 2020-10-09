@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
@@ -35,7 +36,18 @@ namespace TickTrader.Algo.Core
             AskBar = askBar;
             _quoteCount = 1;
             Symbol = symbol;
-            _lastQuote = new QuoteInfo(symbol, _closeTime, bidBar.Close, askBar.Close);
+            _lastQuote = new QuoteInfo(symbol, _closeTime.AddMilliseconds(-10), bidBar.Close, askBar.Close);
+        }
+
+        public BarRateUpdate(BarRateUpdate barUpdate)
+        {
+            Symbol = barUpdate.Symbol;
+            BidBar = barUpdate.BidBar;
+            AskBar = barUpdate.AskBar;
+            _lastQuote = barUpdate._lastQuote;
+            _quoteCount = barUpdate._quoteCount;
+            _openTime = barUpdate._openTime;
+            _closeTime = barUpdate._closeTime;
         }
 
         public void Append(QuoteInfo quote)
@@ -60,11 +72,39 @@ namespace TickTrader.Algo.Core
             _quoteCount++;
         }
 
+        public void Append(BarRateUpdate barUpdate)
+        {
+            var quoteTime = _openTime;
+
+            if (barUpdate.HasBid)
+            {
+                quoteTime = barUpdate.BidBar.CloseTime;
+                if (HasBid)
+                    BidBar.AppendPart(barUpdate.BidBar);
+                else
+                    BidBar = new BarData(barUpdate.BidBar);
+            }
+
+            if (barUpdate.HasAsk)
+            {
+                quoteTime = barUpdate.AskBar.CloseTime;
+                if (HasAsk)
+                    AskBar.AppendPart(barUpdate.AskBar);
+                else
+                    AskBar = new BarData(barUpdate.AskBar);
+            }
+
+            _lastQuote = new QuoteInfo(Symbol, quoteTime, barUpdate.BidBar?.Close, barUpdate.AskBar?.Close);
+            _quoteCount++;
+        }
+
         public bool HasAsk => AskBar != null;
         public bool HasBid => BidBar != null;
         public string Symbol { get; }
         public BarData BidBar { get; private set; }
         public BarData AskBar { get; private set; }
+        public QuoteInfo LastQuote => _lastQuote;
+        public Timestamp Time => _openTime;
 
         DateTime IRateInfo.Time => _openTime.ToDateTime();
         Timestamp IRateInfo.Timestamp => _openTime;

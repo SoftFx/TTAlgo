@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Common.Model
 {
     public class TradeHistoryProvider : ActorPart
     {
-        private static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger<TradeHistoryProvider>();
+        private IAlgoCoreLogger logger;
 
         private ConnectionModel _connection;
         private AsyncLock _updateLock = new AsyncLock();
@@ -22,8 +22,10 @@ namespace TickTrader.Algo.Common.Model
         private Dictionary<Ref<Handler>, Channel<Domain.TradeReportInfo>> _listeners = new Dictionary<Ref<Handler>, Channel<Domain.TradeReportInfo>>();
         private bool _isStarted;
 
-        public TradeHistoryProvider(ConnectionModel connection)
+        public TradeHistoryProvider(ConnectionModel connection, int loggerId)
         {
+            logger = CoreLoggerFactory.GetLogger<TradeHistoryProvider>(loggerId);
+
             _connection = connection;
             _connection.InitProxies += () =>
             {

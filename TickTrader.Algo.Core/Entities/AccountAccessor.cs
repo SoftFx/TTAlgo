@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Calc;
 using TickTrader.Algo.Domain;
@@ -180,7 +181,7 @@ namespace TickTrader.Algo.Core
             if (byTagFilterCache.TryGetValue(orderTag, out collection))
                 return collection;
 
-            collection = new OrderFilteredCollection(Orders, o => o.Comment == orderTag);
+            collection = new OrderFilteredCollection(Orders, o => o.Tag == orderTag);
             byTagFilterCache.Add(orderTag, collection);
             return collection;
         }
@@ -293,6 +294,13 @@ namespace TickTrader.Algo.Core
                 _orders.Add(order);
             foreach (var position in dataProvider.GetPositions())
                 _positions.UpdatePosition(position);
+        }
+
+        internal void Deinit()
+        {
+            _orders.Clear();
+            _positions.Clear();
+            _assets.Clear();
         }
 
         #endregion
@@ -436,6 +444,65 @@ namespace TickTrader.Algo.Core
                 return _builder.Calculator.HasEnoughMarginToOpenOrder(symbolAccessor, amount, type.ToCoreEnum(), side.ToCoreEnum(), price, stopPrice, OrderAccessor.IsHiddenOrder(maxVisibleVolume), out _);
             }
             return false;
+        }
+
+        internal string GetSnapshotString()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("Account snapshot:");
+            if (_type == AccountInfo.Types.Type.Cash)
+            {
+                sb.AppendLine($"{nameof(Assets)}");
+                if (Assets != null)
+                {
+                    foreach (var a in Assets)
+                    {
+                        sb.Append($"{nameof(a.Currency)} = {a.Currency}, ");
+                        sb.Append($"{nameof(a.IsNull)} = {a.IsNull}, ");
+                        sb.Append($"{nameof(a.Volume)} = {a.Volume}, ");
+                        sb.Append($"{nameof(a.LockedVolume)} = {a.LockedVolume}, ");
+                        sb.AppendLine();
+                    }
+                }
+                else
+                {
+                    sb.AppendLine("Empty");
+                }
+            }
+            else
+            {
+                sb.AppendLine($"{nameof(Balance)} = {Balance} {BalanceCurrency}");
+            }
+            if (_type == AccountInfo.Types.Type.Net)
+            {
+                sb.AppendLine($"{nameof(NetPositions)}");
+                if (NetPositions != null)
+                {
+                    foreach (var p in NetPositions.Values)
+                    {
+                        sb.Append(p.Info.GetSnapshotString());
+                        sb.AppendLine();
+                    }
+                }
+                else
+                {
+                    sb.AppendLine("Empty");
+                }
+            }
+            sb.AppendLine($"{nameof(Orders)}");
+            if (Orders != null)
+            {
+                foreach (var o in Orders.Values)
+                {
+                    sb.Append(o.Info.GetSnapshotString());
+                    sb.AppendLine();
+                }
+            }
+            else
+            {
+                sb.AppendLine("Empty");
+            }
+            return sb.ToString();
         }
     }
 }

@@ -6,13 +6,20 @@ namespace TickTrader.Algo.Core
 {
     public sealed class PositionAccessor : NetPosition
     {
-        private readonly Symbol _symbol;
+        private readonly string _symbolName;
+        private readonly double _lotSize;
 
-        internal PositionAccessor(Symbol symbol, Domain.PositionInfo info = null)
+        internal PositionAccessor(string symbolName, Symbol symbol, Domain.PositionInfo info = null)
+            : this(symbolName, symbol?.ContractSize, info)
         {
-            _symbol = symbol;
+        }
 
-            Info = info ?? new PositionInfo() { Symbol = symbol.Name };
+        private PositionAccessor(string symbolName, double? lotSize, Domain.PositionInfo info = null)
+        {
+            _symbolName = symbolName;
+            _lotSize = lotSize ?? 1;
+
+            Info = info ?? new PositionInfo() { Symbol = symbolName };
             Info.Short = Short;
             Info.Long = Long;
 
@@ -36,7 +43,7 @@ namespace TickTrader.Algo.Core
             Changed?.Invoke(this);
         }
 
-        public PositionAccessor Clone() => new PositionAccessor(_symbol, Info);
+        public PositionAccessor Clone() => new PositionAccessor(_symbolName, _lotSize, Info);
 
         public double Price => (double)(Side == OrderInfo.Types.Side.Buy ? Long.Price : Short.Price);
 
@@ -44,7 +51,7 @@ namespace TickTrader.Algo.Core
 
         public string Id => Info.Id;
         public bool IsEmpty => Amount == 0;
-        public string Symbol => _symbol.Name;
+        public string Symbol => _symbolName;
         public decimal Amount => Math.Max(Long.Amount, Short.Amount);
 
         public PositionInfo Info { get; }
@@ -52,7 +59,7 @@ namespace TickTrader.Algo.Core
         public SideProxy Long { get; } = new SideProxy();
         public SideProxy Short { get; } = new SideProxy();
 
-        double NetPosition.Volume => (double)Amount / (_symbol?.ContractSize ?? 1);
+        double NetPosition.Volume => (double)Amount / _lotSize;
         double NetPosition.Margin => Info?.Calculator?.CalculateMargin(Info) ?? double.NaN;
         double NetPosition.Profit => Info?.Calculator?.CalculateProfit(Info) ?? double.NaN;
         double NetPosition.Swap => (double)Info.Swap;

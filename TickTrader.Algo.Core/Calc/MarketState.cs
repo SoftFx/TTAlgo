@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using TickTrader.Algo.Core.Calc.Conversion;
 using TickTrader.Algo.Core.Infrastructure;
 using TickTrader.Algo.Core.Lib;
@@ -69,6 +70,37 @@ namespace TickTrader.Algo.Core.Calc
             }
             return calculator;
         }
+
+        internal string GetSnapshotString()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"Market snapshot:");
+            sb.AppendLine($"{nameof(Currencies)}");
+            if (Currencies != null)
+            {
+                foreach (var c in Currencies)
+                {
+                    sb.AppendLine(c.ToString());
+                }
+            }
+            else
+            {
+                sb.AppendLine("Empty");
+            }
+            sb.AppendLine($"{nameof(Symbols)}");
+            if (Symbols != null)
+            {
+                foreach (var s in Symbols)
+                {
+                    sb.AppendLine(s.ToString());
+                }
+            }
+            else
+            {
+                sb.AppendLine("Empty");
+            }
+            return sb.ToString();
+        }
     }
 
     public class MarketState : MarketStateBase
@@ -121,15 +153,35 @@ namespace TickTrader.Algo.Core.Calc
 
         protected override void InitNodes()
         {
-            _smbMap.Clear();
+            // We have to leave deleted symbols, MarketNodes contain subscription info
+            // In case they will come back after reconnect we need to re-enable their subscription
+
+            foreach (var node in _smbMap.Values)
+            {
+                node.Update((SymbolInfo)null);
+            }
 
             foreach (var smb in Symbols)
-                _smbMap.Add(smb.Name, new AlgoMarketNode(smb));
+
+            {
+                if (_smbMap.TryGetValue(smb.Name, out var node))
+                {
+                    node.Update(smb);
+                }
+                else
+                {
+                    _smbMap.Add(smb.Name, new AlgoMarketNode(smb));
+                }
+            }
         }
 
         public AlgoMarketNode GetSymbolNodeOrNull(string symbol)
         {
-            return _smbMap.GetOrDefault(symbol);
+            if (_smbMap.TryGetValue(symbol, out var node))
+            {
+                return node.IsShadowCopy ? null : node;
+            }
+            return null;
         }
 
         internal override SymbolMarketNode GetSymbolNodeInternal(string smb)

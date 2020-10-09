@@ -18,6 +18,9 @@ namespace TickTrader.Algo.Core
         private IFeedSubscription _defaultSubscription;
         private readonly List<SetupAction> _setupActions = new List<SetupAction>();
         private CrossDomainProxy _proxy;
+        private string _mainSymbol;
+        [NonSerialized]
+        private BufferUpdateResult _mainSymbolUpdateResult;
 
         public FeedStrategy()
         {
@@ -27,6 +30,7 @@ namespace TickTrader.Algo.Core
         internal IFeedProvider FeedProvider { get; private set; }
         internal IFeedHistoryProvider FeedHistory { get; private set; }
         internal SubscriptionFixtureManager RateDispenser => ExecContext.Dispenser;
+        internal TimelineFixture ModelTimeline { get; private set; }
 
         public abstract int BufferSize { get; }
         public abstract IFeedBuffer MainBuffer { get; }
@@ -44,6 +48,7 @@ namespace TickTrader.Algo.Core
         {
             ExecContext = executor;
             _marketFixture = marketFixture;
+            _mainSymbol = executor.MainSymbolCode;
             FeedProvider = executor.FeedProvider;
             FeedHistory = executor.FeedHistory;
             BufferingStrategy = bStrategy;
@@ -51,6 +56,9 @@ namespace TickTrader.Algo.Core
             OnInit();
             BufferingStrategy.Init(this);
             _setupActions.ForEach(a => a.Apply(this));
+
+            ModelTimeline = new TimelineFixture(ExecContext.ModelTimeFrame);
+            _mainSymbolUpdateResult = new BufferUpdateResult();
         }
 
         internal virtual void Start()
@@ -122,6 +130,12 @@ namespace TickTrader.Algo.Core
             ApplySnaphost(snaphsot);
         }
 
+        protected void AddSubscription(string symbol)
+        {
+            var snapshot = _defaultSubscription.AddOrModify(symbol, 1);
+            ApplySnaphost(snapshot == null ? null : new List<QuoteInfo> { snapshot });
+        }
+
         internal void SubscribeAll()
         {
             var symbols = ExecContext.Builder.Symbols.Select(s => s.Name);
@@ -150,6 +164,35 @@ namespace TickTrader.Algo.Core
 
             var result = UpdateBuffers(update);
 
+            var modelUpdate = new BufferUpdateResult();
+            if (ModelTimeline.IsRealTime)
+            {
+                CalculateIndicators(result);
+            }
+            else
+            {
+                if (update.Symbol == _mainSymbol)
+                {
+                    _mainSymbolUpdateResult += result;
+                    modelUpdate += ModelTimeline.Update(update.LastQuote.Timestamp);
+                }
+                if (modelUpdate.ExtendedBy > 0)
+                {
+                    CalculateIndicators(_mainSymbolUpdateResult);
+                    _mainSymbolUpdateResult = new BufferUpdateResult();
+                }
+            }
+
+            RateDispenser.OnUpdateEvent(node);
+
+            if (ModelTimeline.IsRealTime || modelUpdate.ExtendedBy > 0)
+                ExecContext.Builder.InvokeOnModelTick();
+
+            return result;
+        }
+
+        private void CalculateIndicators(BufferUpdateResult result)
+        {
             if (result.IsLastUpdated)
                 ExecContext.Builder.InvokeCalculate(true);
 
@@ -158,10 +201,6 @@ namespace TickTrader.Algo.Core
                 ExecContext.Builder.IncreaseVirtualPosition();
                 ExecContext.Builder.InvokeCalculate(false);
             }
-
-            RateDispenser.OnUpdateEvent(node);
-
-            return result;
         }
 
         internal IRateInfo InvokeAggregate(IRateInfo last, QuoteInfo quote)

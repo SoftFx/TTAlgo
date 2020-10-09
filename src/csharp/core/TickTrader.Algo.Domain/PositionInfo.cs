@@ -25,6 +25,9 @@ namespace TickTrader.Algo.Domain
         OrderInfo.Types.Type IMarginProfitCalc.Type => OrderInfo.Types.Type.Position;
 
         bool IMarginProfitCalc.IsHidden => false;
+
+
+        public string GetSnapshotString() => ToString();
     }
 
     public interface IPositionInfo : IMarginProfitCalc
@@ -38,6 +41,9 @@ namespace TickTrader.Algo.Domain
         DateTime? Modified { get; }
         IOrderCalculator Calculator { get; set; }
         bool IsEmpty { get; }
+
+
+        string GetSnapshotString();
     }
 
     public interface IPositionSide

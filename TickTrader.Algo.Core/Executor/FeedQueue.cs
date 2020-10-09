@@ -29,8 +29,8 @@ namespace TickTrader.Algo.Core
 
         public void Enqueue(BarRateUpdate bars)
         {
-            _queue.Enqueue(bars);
             _lasts[bars.Symbol] = bars;
+            _queue.Enqueue(bars);
         }
 
         public void Enqueue(QuoteInfo quote)
@@ -47,7 +47,7 @@ namespace TickTrader.Algo.Core
         public IRateInfo Dequeue()
         {
             var update = _queue.Dequeue();
-            var last = _lasts[update.Symbol];
+            _lasts.TryGetValue(update.Symbol, out var last);
             if (update == last)
                 _lasts.Remove(update.Symbol);
             return update;

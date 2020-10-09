@@ -205,7 +205,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
                 var bots = snapshot.BotList;
                 FailForNonSuccess(bots.ExecResult);
-                AgentClient.InitBotList(bots.Bots.Select(ToAlgo.Convert).ToList());
+                AgentClient.InitBotList(bots.Bots.Select(b => ToAlgo.Convert(b, VersionSpec)).ToList());
             }
             catch (UnauthorizedException uex)
             {
@@ -254,22 +254,22 @@ namespace TickTrader.Algo.Protocol.Grpc
                     switch (update.UpdateInfoCase)
                     {
                         case Lib.UpdateInfo.UpdateInfoOneofCase.Package:
-                            AgentClient.UpdatePackage((UpdateInfo<PackageInfo>)update.Convert());
+                            AgentClient.UpdatePackage((UpdateInfo<PackageInfo>)update.Convert(VersionSpec));
                             break;
                         case Lib.UpdateInfo.UpdateInfoOneofCase.PackageState:
-                            AgentClient.UpdatePackageState((UpdateInfo<PackageInfo>)update.Convert());
+                            AgentClient.UpdatePackageState((UpdateInfo<PackageInfo>)update.Convert(VersionSpec));
                             break;
                         case Lib.UpdateInfo.UpdateInfoOneofCase.Account:
-                            AgentClient.UpdateAccount((UpdateInfo<AccountModelInfo>)update.Convert());
+                            AgentClient.UpdateAccount((UpdateInfo<AccountModelInfo>)update.Convert(VersionSpec));
                             break;
                         case Lib.UpdateInfo.UpdateInfoOneofCase.AccountState:
-                            AgentClient.UpdateAccountState((UpdateInfo<AccountModelInfo>)update.Convert());
+                            AgentClient.UpdateAccountState((UpdateInfo<AccountModelInfo>)update.Convert(VersionSpec));
                             break;
                         case Lib.UpdateInfo.UpdateInfoOneofCase.Bot:
-                            AgentClient.UpdateBot((UpdateInfo<BotModelInfo>)update.Convert());
+                            AgentClient.UpdateBot((UpdateInfo<BotModelInfo>)update.Convert(VersionSpec));
                             break;
                         case Lib.UpdateInfo.UpdateInfoOneofCase.BotState:
-                            AgentClient.UpdateBotState((UpdateInfo<BotModelInfo>)update.Convert());
+                            AgentClient.UpdateBotState((UpdateInfo<BotModelInfo>)update.Convert(VersionSpec));
                             break;
                         default:
                             throw new ArgumentException();
@@ -617,7 +617,7 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             var response = await ExecuteUnaryRequestAuthorized(GetBotListInternal, new Lib.BotListRequest());
             FailForNonSuccess(response.ExecResult);
-            return response.Bots.Select(ToAlgo.Convert).ToList();
+            return response.Bots.Select(b => ToAlgo.Convert(b, VersionSpec)).ToList();
         }
 
         public override async Task AddBot(AccountKey account, PluginConfig config)

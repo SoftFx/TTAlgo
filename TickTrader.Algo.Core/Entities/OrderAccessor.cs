@@ -140,6 +140,8 @@ namespace TickTrader.Algo.Core
                 };
             }
 
+            public string GetSnapshotString() => GetInfo().GetSnapshotString();
+
             public string Id { get; internal set; }
 
             public string Symbol { get; internal set; }

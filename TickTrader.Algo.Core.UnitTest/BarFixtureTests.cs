@@ -139,6 +139,7 @@ namespace TickTrader.Algo.Core.UnitTest
             {
                 MainSymbolCode = "EURUSD",
                 TimeFrame = Feed.Types.Timeframe.M1,
+                ModelTimeFrame = Feed.Types.Timeframe.Ticks,
             };
 
             return context;

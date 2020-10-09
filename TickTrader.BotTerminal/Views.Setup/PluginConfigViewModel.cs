@@ -26,6 +26,8 @@ namespace TickTrader.BotTerminal
 
     public sealed class PluginConfigViewModel : PropertyChangedBase
     {
+        private readonly VarContext _var = new VarContext();
+
         private List<PropertySetupViewModel> _allProperties;
         private List<ParameterSetupViewModel> _parameters;
         private List<InputSetupViewModel> _barBasedInputs;
@@ -46,7 +48,7 @@ namespace TickTrader.BotTerminal
         public bool IsFixedFeed { get; set; }
         public bool IsEmulation { get; set; }
 
-        public bool EnableFeedSetup => !IsFixedFeed && Descriptor.SetupMainSymbol;
+        public bool EnableFeedSetup => (!IsFixedFeed && Descriptor.SetupMainSymbol) || (!IsBot);
 
         public bool Visible
         {
@@ -78,6 +80,9 @@ namespace TickTrader.BotTerminal
                     NotifyOfPropertyChange(nameof(Inputs));
                     NotifyOfPropertyChange(nameof(HasInputs));
                 }
+                AvailableModels.Value = AvailableTimeFrames.Where(t => t >= value && t != Feed.Types.Timeframe.TicksLevel2).ToList();
+                if (SelectedModel.Value < value)
+                    SelectedModel.Value = value;
             }
         }
 
@@ -111,6 +116,10 @@ namespace TickTrader.BotTerminal
                 NotifyOfPropertyChange(nameof(SelectedMapping));
             }
         }
+
+        public Property<List<Feed.Types.Timeframe>> AvailableModels { get; private set; }
+
+        public Property<Feed.Types.Timeframe> SelectedModel { get; private set; }
 
         public IEnumerable<ParameterSetupViewModel> Parameters => _parameters;
 
@@ -221,12 +230,16 @@ namespace TickTrader.BotTerminal
 
             _paramsFileHistory.SetContext(plugin.ToString());
 
+            AvailableModels = _var.AddProperty<List<Feed.Types.Timeframe>>();
+            SelectedModel = _var.AddProperty<Feed.Types.Timeframe>(Feed.Types.Timeframe.M1);
+
             Init();
         }
 
         public void Load(PluginConfig cfg)
         {
             SelectedTimeFrame = cfg.Timeframe;
+            SelectedModel.Value = cfg.ModelTimeframe;
             MainSymbol = AvailableSymbols.GetSymbolOrDefault(cfg.MainSymbol) ?? AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol);
 
             if (!IsEmulation)
@@ -252,6 +265,7 @@ namespace TickTrader.BotTerminal
         {
             var cfg = new PluginConfig();
             cfg.Timeframe = SelectedTimeFrame;
+            cfg.ModelTimeframe = SelectedModel.Value;
             cfg.MainSymbol = MainSymbol.ToConfig();
             cfg.SelectedMapping = SelectedMapping.Key;
             cfg.InstanceId = InstanceId;
@@ -264,6 +278,7 @@ namespace TickTrader.BotTerminal
 
         public void Reset()
         {
+            SelectedModel.Value = Feed.Types.Timeframe.Ticks;
             SelectedTimeFrame = SetupMetadata.Context.DefaultTimeFrame;
             MainSymbol = AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol);
             SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(SetupMetadata.Context.DefaultMapping);

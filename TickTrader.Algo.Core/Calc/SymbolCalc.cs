@@ -4,6 +4,11 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Calc
 {
+    public class SymbolNotFoundException : Exception
+    {
+        public SymbolNotFoundException(string message) : base(message) { }
+    }
+
     public class SymbolCalc : IDisposable
     {
         private MarketStateBase _market;
@@ -19,11 +24,13 @@ namespace TickTrader.Algo.Core.Calc
             AccInfo = accInfo;
             Buy = new SideCalc(this, Domain.OrderInfo.Types.Side.Buy);
             Sell = new SideCalc(this, Domain.OrderInfo.Types.Side.Sell);
+
+            var tracker = market.GetSymbolNodeInternal(Symbol) ?? throw new SymbolNotFoundException("Market state lacks symbol:" + Symbol);
             CreateCalculator();
 
             if (autoUpdate)
             {
-                Tracker = market.GetSymbolNodeInternal(Symbol) ?? throw new Exception("Market state lacks symbol:" + Symbol);
+                Tracker = tracker;
                 Tracker.Changed += Recalculate;
             }
         }

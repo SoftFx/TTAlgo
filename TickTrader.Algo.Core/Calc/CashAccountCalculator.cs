@@ -11,6 +11,7 @@ namespace TickTrader.Algo.Core.Calc
         private readonly ICashAccountInfo2 account;
         private readonly Dictionary<string, IAssetInfo> assets = new Dictionary<string, IAssetInfo>();
         private MarketStateBase market;
+        private Action<string, Exception> _onLogError;
 
         public MarketStateBase Market
         {
@@ -27,7 +28,7 @@ namespace TickTrader.Algo.Core.Calc
             }
         }
 
-        public CashAccountCalculator(ICashAccountInfo2 infoProvider, MarketStateBase market)
+        public CashAccountCalculator(ICashAccountInfo2 infoProvider, MarketStateBase market, Action<string, Exception> onLogError)
         {
             if (infoProvider == null)
                 throw new ArgumentNullException("infoProvider");
@@ -37,6 +38,7 @@ namespace TickTrader.Algo.Core.Calc
 
             this.account = infoProvider;
             this.market = market;
+            _onLogError = onLogError;
 
             if (this.account.Assets != null)
                 this.account.Assets.Foreach2(a => AddRemoveAsset(a, AssetChangeType.Added));
@@ -148,48 +150,65 @@ namespace TickTrader.Algo.Core.Calc
 
         public void AddOrder(IOrderCalcInfo order)
         {
-            var symbol = order.SymbolInfo;
-            if (symbol == null) //can be caused by server misconfiguration
-                return;
+            try
+            {
+                var symbol = order.SymbolInfo;
+                if (symbol == null) //can be caused by server misconfiguration
+                {
+                    _onLogError?.Invoke($"{nameof(CashAccountCalculator)} failed to add order: symbol not found. {order?.GetSnapshotString()}", null);
+                    return;
+                }
 
-            order.CashMargin = CalculateMargin(order, symbol);
-            //order.Margin = margin;
-            //OrderLightClone clone = new OrderLightClone(order);
-            //orders.Add(order.OrderId, clone);
+                order.CashMargin = CalculateMargin(order, symbol);
+                //order.Margin = margin;
+                //OrderLightClone clone = new OrderLightClone(order);
+                //orders.Add(order.OrderId, clone);
 
-            var marginAsset = GetMarginAsset(symbol, order.Side);
-            if (marginAsset != null)
-                marginAsset.Margin += order.CashMargin;
+                var marginAsset = GetMarginAsset(symbol, order.Side);
+                if (marginAsset != null)
+                    marginAsset.Margin += order.CashMargin;
 
-            order.EssentialsChanged += OnOrderChanged;
+                order.EssentialsChanged += OnOrderChanged;
+            }
+            catch (Exception ex)
+            {
+                _onLogError?.Invoke($"{nameof(CashAccountCalculator)} failed to add order. {order?.GetSnapshotString()}", ex);
+            }
         }
 
         public void OnOrderChanged(OrderEssentialsChangeArgs args)
         {
-            var order = args.Order;
-            var symbol = order.SymbolInfo;
-            if (symbol == null)
+            try
             {
-                // theoretically impossible
-                Debug.Fail("Cash account calculator invalid!");
-                order.EssentialsChanged -= OnOrderChanged;
-                return;
+                var order = args.Order;
+                var symbol = order.SymbolInfo;
+                if (symbol == null)
+                {
+                    // theoretically impossible
+                    _onLogError?.Invoke($"{nameof(CashAccountCalculator)} failed to handle order update: symbol not found. {order?.GetSnapshotString()}", null);
+                    order.EssentialsChanged -= OnOrderChanged;
+                    return;
+                }
+
+                //OrderLightClone clone = GetOrderOrThrow(order.OrderId);
+                var marginAsset = GetMarginAsset(symbol, order.Side);
+                marginAsset.Margin -= order.CashMargin;
+                order.CashMargin = CalculateMargin(order, symbol);
+                marginAsset.Margin += order.CashMargin;
+
+                //OrderLightClone newClone = new OrderLightClone(order);
+                //orders[order.OrderId] = newClone;
+
+                //if (clone.OrderModelRef != order) // resubscribe if order model is replaced
+                //{
+                //    clone.OrderModelRef.EssentialParametersChanged -= UpdateOrder;
+                //    order.EssentialParametersChanged += UpdateOrder;
+                //}
             }
-
-            //OrderLightClone clone = GetOrderOrThrow(order.OrderId);
-            var marginAsset = GetMarginAsset(symbol, order.Side);
-            marginAsset.Margin -= order.CashMargin;
-            order.CashMargin = CalculateMargin(order, symbol);
-            marginAsset.Margin += order.CashMargin;
-
-            //OrderLightClone newClone = new OrderLightClone(order);
-            //orders[order.OrderId] = newClone;
-
-            //if (clone.OrderModelRef != order) // resubscribe if order model is replaced
-            //{
-            //    clone.OrderModelRef.EssentialParametersChanged -= UpdateOrder;
-            //    order.EssentialParametersChanged += UpdateOrder;
-            //}
+            catch (Exception ex)
+            {
+                _onLogError?.Invoke($"{nameof(CashAccountCalculator)} failed to handle order update. {args.Order?.GetSnapshotString()}", ex);
+            }
         }
 
         public void AddOrdersBunch(IEnumerable<IOrderCalcInfo> bunch)
@@ -199,18 +218,28 @@ namespace TickTrader.Algo.Core.Calc
 
         public void RemoveOrder(IOrderCalcInfo order)
         {
-            //OrderLightClone clone = GetOrderOrThrow(order.OrderId);
-            //orders.Remove(order.OrderId);
+            try
+            {
+                //OrderLightClone clone = GetOrderOrThrow(order.OrderId);
+                //orders.Remove(order.OrderId);
 
-            var symbol = order.SymbolInfo;
-            if (symbol == null) //can be caused by server misconfiguration
-                return;
+                var symbol = order.SymbolInfo;
+                if (symbol == null) //can be caused by server misconfiguration
+                {
+                    _onLogError?.Invoke($"{nameof(CashAccountCalculator)} failed to remove order: symbol not found. {order?.GetSnapshotString()}", null);
+                    return;
+                }
 
-            var marginAsset = GetMarginAsset(symbol, order.Side);
-            if (marginAsset != null)
-                marginAsset.Margin -= order.CashMargin;
+                var marginAsset = GetMarginAsset(symbol, order.Side);
+                if (marginAsset != null)
+                    marginAsset.Margin -= order.CashMargin;
 
-            order.EssentialsChanged -= OnOrderChanged;
+                order.EssentialsChanged -= OnOrderChanged;
+            }
+            catch (Exception ex)
+            {
+                _onLogError?.Invoke($"{nameof(CashAccountCalculator)} failed to remove order. {order?.GetSnapshotString()}", ex);
+            }
         }
 
         //OrderLightClone GetOrderOrThrow(long orderId)

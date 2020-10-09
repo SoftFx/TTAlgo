@@ -105,17 +105,24 @@ namespace TickTrader.Algo.Core
                 rec.Close();
         }
 
+
         protected BarVector GetOrAddBuilder(Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe)
         {
             // TO DO : build-up series data basing on data from other time frames
 
-            var collection = marketSide == Feed.Types.MarketSide.Bid ? _bidBars : _askBars;
-            if (!collection.TryGetValue(timeframe, out var builder))
+            if (!_bidBars.TryGetValue(timeframe, out var bidBuilder))
             {
-                builder = new BarVector(timeframe);
-                collection.Add(timeframe, builder);
+                bidBuilder = new BarVector(timeframe);
+                _bidBars.Add(timeframe, bidBuilder);
             }
-            return builder;
+
+            if (!_askBars.TryGetValue(timeframe, out var askBuilder))
+            {
+                askBuilder = new BarVector(timeframe);
+                _askBars.Add(timeframe, askBuilder);
+            }
+
+            return marketSide == Feed.Types.MarketSide.Bid ? bidBuilder : askBuilder;
         }
 
         private void UpdateBars(BarRateUpdate barUpdate)

@@ -102,7 +102,11 @@ namespace TickTrader.Algo.Core
             CancelAllPendings(Domain.TradeReportInfo.Types.Reason.Rollover);
         }
 
-        public void Restart()
+        public void PreRestart()
+        {
+        }
+
+        public void PostRestart()
         {
         }
 
@@ -1401,6 +1405,9 @@ namespace TickTrader.Algo.Core
             var closePrice = 0M;
             //NetAccountModel acc = position.Acc;
 
+            var copy = position.Clone();
+            var isClosed = position.IsEmpty;
+
             if (oneSideClosingAmount > 0)
             {
                 var k = oneSideClosingAmount / oneSideClosableAmount;
@@ -1414,14 +1421,10 @@ namespace TickTrader.Algo.Core
                 if (error != CalcErrorCodes.None)
                     throw new Exception();
 
-                var copy = position.Clone();
-
                 position.DecreaseBothSides(oneSideClosingAmount);
 
                 position.Info.Swap -= (double)closeSwap;
                 balanceMovement = profit + closeSwap;
-
-                var isClosed = position.IsEmpty;
 
                 if (position.IsEmpty)
                     _acc.NetPositions.RemovePosition(position.Symbol);
@@ -1439,8 +1442,9 @@ namespace TickTrader.Algo.Core
                 //    JournalEntrySeverities.Info, TransactDetails.Create(position.Id, position.Symbol));
 
                 _collector.OnPositionClosed(ExecutionTime, (double)profit, 0, (double)closeSwap);
-                _scheduler.EnqueueEvent(b => b.Account.NetPositions.FirePositionUpdated(new PositionModifiedEventArgsImpl(copy, position, isClosed)));
             }
+
+            _scheduler.EnqueueEvent(b => b.Account.NetPositions.FirePositionUpdated(new PositionModifiedEventArgsImpl(copy, position, isClosed)));
 
             var info = new NetPositionCloseInfo();
             info.CloseAmount = oneSideClosingAmount;

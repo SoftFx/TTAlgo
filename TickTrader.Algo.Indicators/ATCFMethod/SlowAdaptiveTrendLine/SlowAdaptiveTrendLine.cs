@@ -12,7 +12,7 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.SlowAdaptiveTrendLine
         [Input]
         public DataSeries Price { get; set; }
 
-        [Output(DisplayName = "SATL", Target = OutputTargets.Overlay, DefaultColor = Colors.Cornsilk)]
+        [Output(DisplayName = "SATL", Target = OutputTargets.Overlay, DefaultColor = Colors.DarkMagenta)]
         public DataSeries Satl { get; set; }
 
         public int LastPositionChanged { get { return 0; } }
@@ -43,10 +43,10 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.SlowAdaptiveTrendLine
         {
             var pos = LastPositionChanged;
             Satl[pos] = CalculateDigitalIndicator(isNewBar, Price);
-            if (Price.Count > CountBars)
-            {
-                Satl[CountBars] = double.NaN;
-            }
+            //if (Price.Count > CountBars)
+            //{
+            //    Satl[CountBars] = double.NaN;
+            //}
         }
 
         protected override void SetupCoefficients()

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Ext;
 
@@ -8,8 +10,8 @@ namespace TickTrader.Algo.Core.Metadata
 {
     public static class AlgoAssemblyInspector
     {
-        private static Dictionary<string, PluginMetadata> PluginCacheByName = new Dictionary<string, PluginMetadata>();
-        private static Dictionary<string, ReductionMetadata> ReductionCacheByName = new Dictionary<string, ReductionMetadata>();
+        private static ConcurrentDictionary<string, PluginMetadata> PluginCacheByName = new ConcurrentDictionary<string, PluginMetadata>();
+        private static ConcurrentDictionary<string, ReductionMetadata> ReductionCacheByName = new ConcurrentDictionary<string, ReductionMetadata>();
 
 
         public static PluginMetadata GetPlugin(Type algoCustomType)
@@ -17,7 +19,7 @@ namespace TickTrader.Algo.Core.Metadata
             if (!PluginCacheByName.TryGetValue(algoCustomType.FullName, out var metadata))
             {
                 metadata = new PluginMetadata(algoCustomType);
-                PluginCacheByName.Add(algoCustomType.FullName, metadata);
+                PluginCacheByName.TryAdd(algoCustomType.FullName, metadata);
             }
 
             return metadata;
@@ -28,7 +30,7 @@ namespace TickTrader.Algo.Core.Metadata
             if (!ReductionCacheByName.TryGetValue(algoCustomType.FullName, out var metadata))
             {
                 metadata = new ReductionMetadata(algoCustomType, reductionAttr);
-                ReductionCacheByName.Add(algoCustomType.FullName, metadata);
+                ReductionCacheByName.TryAdd(algoCustomType.FullName, metadata);
             }
 
             return metadata;

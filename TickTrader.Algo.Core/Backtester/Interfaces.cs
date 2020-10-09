@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
@@ -34,6 +33,7 @@ namespace TickTrader.Algo.Core
         public Dictionary<string, Domain.SymbolInfo> Symbols { get; } = new Dictionary<string, Domain.SymbolInfo>();
         public Dictionary<string, Domain.CurrencyInfo> Currencies { get; } = new Dictionary<string, Domain.CurrencyInfo>();
         public Feed.Types.Timeframe MainTimeframe { get; set; }
+        public Feed.Types.Timeframe ModelTimeframe { get; set; }
         public DateTime? EmulationPeriodStart { get; set; }
         public DateTime? EmulationPeriodEnd { get; set; }
         public int WarmupSize { get; set; } = 10;

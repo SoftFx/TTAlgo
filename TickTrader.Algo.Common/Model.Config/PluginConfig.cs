@@ -10,6 +10,10 @@ namespace TickTrader.Algo.Common.Model.Config
     [DataContract(Namespace = "TTAlgo.Config.v2")]
     public class PluginConfig
     {
+        [DataMember(Name = "ModelTimeFrame")]
+        private TimeFrames? _modelTimeframe;
+
+
         [DataMember(Name = "Key")]
         public PluginKey Key { get; set; }
 
@@ -32,6 +36,13 @@ namespace TickTrader.Algo.Common.Model.Config
         public List<Property> Properties { get; internal set; }
 
 
+        public TimeFrames ModelTimeFrame
+        {
+            get => _modelTimeframe.HasValue ? _modelTimeframe.Value : TimeFrames.Ticks;
+            set => _modelTimeframe = value;
+        }
+
+
         public PluginConfig()
         {
             Properties = new List<Property>();
@@ -44,6 +55,7 @@ namespace TickTrader.Algo.Common.Model.Config
             {
                 Key = Key.Clone(),
                 TimeFrame = TimeFrame,
+                ModelTimeFrame = ModelTimeFrame,
                 MainSymbol = MainSymbol.Clone(),
                 SelectedMapping = SelectedMapping.Clone(),
                 InstanceId = InstanceId,

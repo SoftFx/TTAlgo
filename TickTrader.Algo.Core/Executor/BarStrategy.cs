@@ -9,7 +9,7 @@ namespace TickTrader.Algo.Core
     public sealed class BarStrategy : FeedStrategy
     {
         [NonSerialized]
-        private BarSampler sampler;
+        private BarSampler _sampler;
         [NonSerialized]
         private BarSeriesFixture mainSeriesFixture;
         private List<BarData> mainSeries;
@@ -28,7 +28,7 @@ namespace TickTrader.Algo.Core
 
         internal override void OnInit()
         {
-            sampler = BarSampler.Get(ExecContext.TimeFrame);
+            _sampler = BarSampler.Get(ExecContext.TimeFrame);
             fixtures = new Dictionary<string, BarSeriesFixture[]>();
             mainSeriesFixture = new BarSeriesFixture(ExecContext.MainSymbolCode, MainMarketSide, ExecContext, mainSeries);
             ExecContext.Builder.MainBufferId = GetKey(ExecContext.MainSymbolCode, MainMarketSide);
@@ -48,16 +48,17 @@ namespace TickTrader.Algo.Core
 
         private void InitSymbol(string symbol, Feed.Types.MarketSide marketSide)
         {
-            BarSeriesFixture fixture = GetFixutre(symbol, marketSide);
+            BarSeriesFixture fixture = GetFixture(symbol, marketSide);
             if (fixture == null)
             {
                 fixture = new BarSeriesFixture(symbol, marketSide, ExecContext, null, mainSeriesFixture);
                 AddFixture(symbol, marketSide, fixture);
                 BufferingStrategy.InitBuffer(fixture);
+                AddSubscription(symbol);
             }
         }
 
-        private BarSeriesFixture GetFixutre(string smbCode, Feed.Types.MarketSide marketSide)
+        private BarSeriesFixture GetFixture(string smbCode, Feed.Types.MarketSide marketSide)
         {
             BarSeriesFixture[] fixturePair;
             if (fixtures.TryGetValue(smbCode, out fixturePair))
@@ -129,7 +130,7 @@ namespace TickTrader.Algo.Core
 
         protected override IRateInfo Aggregate(IRateInfo last, QuoteInfo quote)
         {
-            var bounds = sampler.GetBar(quote.Timestamp);
+            var bounds = _sampler.GetBar(quote.Timestamp);
 
             if (last != null && last.Timestamp == bounds.Open)
             {
@@ -137,7 +138,9 @@ namespace TickTrader.Algo.Core
                 return null;
             }
             else
+            {
                 return new BarRateUpdate(bounds.Open, bounds.Close, quote);
+            }
         }
 
         protected override BarSeries GetBarSeries(string symbol)
@@ -148,7 +151,7 @@ namespace TickTrader.Algo.Core
         protected override BarSeries GetBarSeries(string symbol, Feed.Types.MarketSide side)
         {
             InitSymbol(symbol, side);
-            var fixture = GetFixutre(symbol, side);
+            var fixture = GetFixture(symbol, side);
             var proxyBuffer = new ProxyBuffer<BarData, Api.Bar>(b => new BarEntity(b)) { SrcBuffer = fixture.Buffer };
             return new BarSeriesProxy() { Buffer = proxyBuffer };
         }

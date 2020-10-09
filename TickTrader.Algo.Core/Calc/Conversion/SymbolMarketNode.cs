@@ -12,8 +12,9 @@ namespace TickTrader.Algo.Core.Calc.Conversion
         }
 
 
-        public SymbolInfo SymbolInfo { get; }
+        public SymbolInfo SymbolInfo { get; private set; }
         public IRateInfo Rate { get; private set; }
+        public bool IsShadowCopy { get; private set; }
 
         public double Ask => Rate.Ask;
         public double Bid => Rate.Bid;
@@ -28,5 +29,16 @@ namespace TickTrader.Algo.Core.Calc.Conversion
         }
 
         public event Action Changed;
+
+        public void Update(SymbolInfo smb)
+        {
+            if (smb == null)
+            {
+                IsShadowCopy = true;
+                return;
+            }
+            IsShadowCopy = false;
+            SymbolInfo = smb;
+        }
     }
 }

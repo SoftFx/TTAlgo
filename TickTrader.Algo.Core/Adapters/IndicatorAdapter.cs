@@ -58,6 +58,11 @@ namespace TickTrader.Algo.Core
             return -1;
         }
 
+        public override void InvokeOnModelTick()
+        {
+            // Do nothing. Indicators does not have OnModelTick() method
+        }
+
         public override string ToString()
         {
             return "Indicator: " + Metadata.Descriptor.DisplayName;

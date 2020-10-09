@@ -39,7 +39,7 @@ namespace TickTrader.Algo.Core
 
         public void OnUpdateEvent(AlgoMarketNode node)
         {
-            var sub = node.UserSubscriptionInfo;
+            var sub = node?.UserSubscriptionInfo;
             if (sub != null)
             {
                 var quote = node.Rate.LastQuote;

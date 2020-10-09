@@ -207,6 +207,7 @@
     <Compile Include="Executor\PluignExecutorFactory.cs" />
     <Compile Include="Executor\ExecutorHandler.cs" />
     <Compile Include="Executor\MarketStateFixture.cs" />
+    <Compile Include="Executor\TimelineFixture.cs" />
     <Compile Include="Executor\TimerFixture.cs" />
     <Compile Include="Executor\TradingFixture.cs" />
     <Compile Include="Executor\BarStrategy.cs" />

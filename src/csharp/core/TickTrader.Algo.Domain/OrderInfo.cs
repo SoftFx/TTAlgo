@@ -128,6 +128,8 @@ namespace TickTrader.Algo.Domain
             if (Math.Abs(oldCommission - Commission) > 1e-10)
                 CommissionChanged?.Invoke(new OrderPropArgs<decimal>(this, (decimal)oldCommission, (decimal)Commission));
         }
+
+        public string GetSnapshotString() => ToString();
     }
 
     public static class OrderOptionsExtensions
@@ -146,6 +148,9 @@ namespace TickTrader.Algo.Domain
         event Action<OrderEssentialsChangeArgs> EssentialsChanged;
         event Action<OrderPropArgs<decimal>> SwapChanged;
         event Action<OrderPropArgs<decimal>> CommissionChanged;
+
+
+        string GetSnapshotString();
     }
 
     public interface IOrderUpdateInfo : IOrderCommonInfo

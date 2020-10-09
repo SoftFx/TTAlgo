@@ -8,7 +8,7 @@ namespace TickTrader.Algo.Core
     {
         public PositionCollection(PluginBuilder builder) : base(builder) { }
 
-        public NetPosition this[string symbol] => !_entities.TryGetValue(symbol, out PositionAccessor entity) ? entity : new PositionAccessor(_builder.Symbols.GetOrNull(symbol));
+        public NetPosition this[string symbol] => !_entities.TryGetValue(symbol, out PositionAccessor entity) ? entity : new PositionAccessor(symbol, _builder.Symbols.GetOrNull(symbol));
 
         public PositionAccessor UpdatePosition(PositionInfo posInfo)
         {
@@ -29,7 +29,7 @@ namespace TickTrader.Algo.Core
             {
                 var smbInfo = _builder.Symbols.GetOrNull(symbol) ?? throw new OrderValidationError("Symbol Not Found:  " + symbol, OrderCmdResultCodes.SymbolNotFound);
 
-                pos = _entities.GetOrAdd(symbol, _ => new PositionAccessor(smbInfo));
+                pos = _entities.GetOrAdd(symbol, _ => new PositionAccessor(symbol, _builder.Symbols.GetOrNull(symbol)));
                 pos.Info.Id = posId;
                 pos.Changed += Pos_Changed;
             }

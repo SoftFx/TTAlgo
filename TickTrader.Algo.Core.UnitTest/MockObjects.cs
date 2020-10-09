@@ -75,6 +75,7 @@ namespace TickTrader.Algo.Core.UnitTest
         public PluginLoggerAdapter Logger => Builder.LogAdapter;
         public string MainSymbolCode { get; set; }
         public Feed.Types.Timeframe TimeFrame { get; set; }
+        public Feed.Types.Timeframe ModelTimeFrame { get; set; }
         public Timestamp TimePeriodEnd { get; private set; }
         public Timestamp TimePeriodStart { get; private set; }
         public IFeedProvider FeedProvider { get; set; }

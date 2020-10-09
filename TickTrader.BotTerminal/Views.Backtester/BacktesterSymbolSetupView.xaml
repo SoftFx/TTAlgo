@@ -48,7 +48,13 @@
             <DataTrigger Binding="{Binding SetupType}" Value="Main">
                 <Setter TargetName="SymbolLabel" Property="Content" Value="Main symbol:"/>
                 <Setter TargetName="RemoveBtn" Property="Visibility" Value="Hidden"/>
+                <!--<Setter TargetName="PriceTypeCombo" Property="Visibility" Value="Hidden"/>-->
+            </DataTrigger>
+            <DataTrigger Binding="{Binding SetupType}" Value="MainShadow">
+                <Setter TargetName="SymbolLabel" Property="Content" Value="Main symbol:"/>
+                <Setter TargetName="RemoveBtn" Property="Visibility" Value="Hidden"/>
                 <Setter TargetName="AddBtn" Property="Visibility" Value="Visible"/>
+                <Setter TargetName="SymbolCombo" Property="IsEnabled" Value="False"/>
                 <!--<Setter TargetName="PriceTypeCombo" Property="Visibility" Value="Hidden"/>-->
             </DataTrigger>
             <!--<DataTrigger Binding="{Binding SetupType}" Value="MainFeed">

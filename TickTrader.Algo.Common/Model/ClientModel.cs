@@ -16,9 +16,9 @@ namespace TickTrader.Algo.Common.Model
 {
     public class ClientModel : Actor, IFeedSubscription
     {
-        protected static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger("ClientModel");
+        private IAlgoCoreLogger logger;
 
-        private static int ActorNameIdSeed = 1;
+        private static int ActorNameIdSeed = 0;
 
         private ConnectionModel _connection;
         private FeedHistoryProviderModel.ControlHandler _feedHistory;
@@ -45,11 +45,13 @@ namespace TickTrader.Algo.Common.Model
             _defaultSubscription = _rootDistributor.AddSubscription(q => { });
         }
 
-        private void Init(ConnectionOptions connectionOptions, string historyFolder, FeedHistoryFolderOptions historyOptions)
+        private void Init(ConnectionOptions connectionOptions, string historyFolder, FeedHistoryFolderOptions historyOptions, int loggerId)
         {
-            _connection = new ConnectionModel(connectionOptions);
-            _feedHistory = new FeedHistoryProviderModel.ControlHandler(_connection, historyFolder, historyOptions);
-            _tradeHistory = new TradeHistoryProvider(_connection);
+            logger = CoreLoggerFactory.GetLogger<ClientModel>(loggerId);
+
+            _connection = new ConnectionModel(connectionOptions, loggerId);
+            _feedHistory = new FeedHistoryProviderModel.ControlHandler(_connection, historyFolder, historyOptions, loggerId);
+            _tradeHistory = new TradeHistoryProvider(_connection, loggerId);
             _tradeApi = new PluginTradeApiProvider(_connection);
 
             _tradeApi.OnExclusiveReport += er => _updateQueue.Enqueue(er);
@@ -100,10 +102,10 @@ namespace TickTrader.Algo.Common.Model
 
         public class ControlHandler : BlockingHandler<ClientModel>
         {
-            public ControlHandler(ConnectionOptions options, string historyFolder, FeedHistoryFolderOptions hsitoryOptions)
+            public ControlHandler(ConnectionOptions options, string historyFolder, FeedHistoryFolderOptions hsitoryOptions, int loggerId)
                 : base(SpawnLocal<ClientModel>(null, "ClientModel " + Interlocked.Increment(ref ActorNameIdSeed)))
             {
-                ActorSend(a => a.Init(options, historyFolder, hsitoryOptions));
+                ActorSend(a => a.Init(options, historyFolder, hsitoryOptions, loggerId));
             }
 
             public Data CreateDataHandler() => new Data(Actor);
@@ -111,10 +113,10 @@ namespace TickTrader.Algo.Common.Model
 
         public class ControlHandler2 : Handler<ClientModel>
         {
-            public ControlHandler2(ConnectionOptions options, string historyFolder, FeedHistoryFolderOptions hsitoryOptions)
+            public ControlHandler2(ConnectionOptions options, string historyFolder, FeedHistoryFolderOptions hsitoryOptions, int loggerId)
                 : base(SpawnLocal<ClientModel>(null, "ClientModel " + Interlocked.Increment(ref ActorNameIdSeed)))
             {
-                Actor.Send(a => a.Init(options, historyFolder, hsitoryOptions));
+                Actor.Send(a => a.Init(options, historyFolder, hsitoryOptions, loggerId));
             }
 
             public ConnectionModel.Handler Connection { get; private set; }
@@ -527,7 +529,7 @@ namespace TickTrader.Algo.Common.Model
             }
             catch (Exception ex)
             {
-                logger.Debug("Failed to modify quote subscription: " + ex.Message);
+                logger.Debug($"Failed to modify quote subscription. Arguments Symbols = {string.Join(",", symbols)}, Depth = {depth}, Error = {ex}");
             }
         }
 

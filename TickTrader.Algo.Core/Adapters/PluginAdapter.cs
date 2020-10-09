@@ -200,6 +200,7 @@ namespace TickTrader.Algo.Core
         public abstract void InvokeOnQuote(Quote quote);
         public abstract Task InvokeAsyncStop();
         public abstract double InvokeGetMetric();
+        public abstract void InvokeOnModelTick();
 
         protected void InvokeCalculateForNestedIndicators(bool isUpdate)
         {

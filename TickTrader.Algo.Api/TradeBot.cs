@@ -24,6 +24,12 @@ namespace TickTrader.Algo.Api
         /// <param name="update"></param>
         protected virtual void OnRateUpdate(RateUpdate update) { }
 
+        /// <summary>
+        /// Override this method to react to market changes. Update frequency is determined by user on setup.
+        /// Method might be called after each quote or once in timeframe period after current bar is closed.
+        /// </summary>
+        protected virtual void OnModelTick() { }
+
         protected bool IsStopped { get { return context.IsStopped; } }
 
         protected void Exit()
@@ -59,6 +65,11 @@ namespace TickTrader.Algo.Api
         internal double InvokeGetMetric()
         {
             return GetOptimizationMetric();
+        }
+
+        internal void InvokeOnModelTick()
+        {
+            OnModelTick();
         }
 
         #region Logger

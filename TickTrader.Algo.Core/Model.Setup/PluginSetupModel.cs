@@ -18,6 +18,8 @@ namespace TickTrader.Algo.Common.Model.Setup
         private List<OutputSetupModel> _outputs;
 
         public Feed.Types.Timeframe SelectedTimeFrame { get; private set; }
+        
+        public Feed.Types.Timeframe ModelTimeFrame { get; private set; }
 
         public ISetupSymbolInfo MainSymbol { get; private set; }
 
@@ -92,6 +94,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         public void Load(PluginConfig cfg)
         {
             SelectedTimeFrame = cfg.Timeframe;
+            ModelTimeFrame = cfg.ModelTimeframe;
             SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(cfg.SelectedMapping);
             InstanceId = cfg.InstanceId;
             Permissions = cfg.Permissions.Clone();
@@ -113,6 +116,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         {
             var cfg = new PluginConfig();
             cfg.Timeframe = SelectedTimeFrame;
+            cfg.ModelTimeframe = ModelTimeFrame;
             cfg.MainSymbol = MainSymbol.ToConfig();
             cfg.SelectedMapping = SelectedMapping.Key;
             cfg.InstanceId = InstanceId;
@@ -135,6 +139,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         public void Reset()
         {
             SelectedTimeFrame = SetupContext.DefaultTimeFrame;
+            ModelTimeFrame = Feed.Types.Timeframe.Ticks;
             MainSymbol = SetupContext.DefaultSymbol;
             SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(SetupContext.DefaultMapping);
             InstanceId = SetupMetadata.IdProvider.GeneratePluginId(Metadata.Descriptor);

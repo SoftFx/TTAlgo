@@ -30,18 +30,16 @@ namespace TickTrader.Algo.Domain
         public bool HasBid => BidBytes.Length > 0;
 
 
-        public QuoteData(DateTime time, double bid, double ask)
+        public QuoteData(DateTime time, double? bid, double? ask)
+            : this(time.ToUniversalTime().ToTimestamp(), bid,ask)
         {
-            Time = time.ToUniversalTime().ToTimestamp();
-            SetBids(new QuoteBand[] { new QuoteBand(bid, 0) });
-            SetAsks(new QuoteBand[] { new QuoteBand(ask, 0) });
         }
 
-        public QuoteData(Timestamp time, double bid, double ask)
+        public QuoteData(Timestamp time, double? bid, double? ask)
         {
             Time = time;
-            SetBids(new QuoteBand[] { new QuoteBand(bid, 0) });
-            SetAsks(new QuoteBand[] { new QuoteBand(ask, 0) });
+            SetBids(bid.HasValue ? new QuoteBand[] { new QuoteBand(bid.Value, 0) } : new QuoteBand[0]);
+            SetAsks(ask.HasValue ? new QuoteBand[] { new QuoteBand(ask.Value, 0) } : new QuoteBand[0]);
         }
 
 
@@ -154,12 +152,12 @@ namespace TickTrader.Algo.Domain
         {
         }
 
-        public QuoteInfo(string symbol, DateTime time, double bid, double ask)
+        public QuoteInfo(string symbol, DateTime time, double? bid, double? ask)
             : this(symbol, new QuoteData(time, bid, ask), null)
         {
         }
 
-        public QuoteInfo(string symbol, Timestamp time, double bid, double ask)
+        public QuoteInfo(string symbol, Timestamp time, double? bid, double? ask)
             : this(symbol, new QuoteData(time, bid, ask), null)
         {
         }

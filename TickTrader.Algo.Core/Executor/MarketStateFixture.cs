@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Core
 
         public AlgoMarketState Market { get; }
 
-        public void Start()
+        public void Init()
         {
             var builder = _context.Builder;
             Market.Init(builder.Symbols.Values.Select(u => u.Info), builder.Currencies.Values.Select(u => u.Info));

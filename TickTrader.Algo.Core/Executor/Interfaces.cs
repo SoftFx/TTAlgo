@@ -83,6 +83,7 @@ namespace TickTrader.Algo.Core
         FeedStrategy FeedStrategy { get; }
         string MainSymbolCode { get; }
         Feed.Types.Timeframe TimeFrame { get; }
+        Feed.Types.Timeframe ModelTimeFrame { get; }
         PluginLoggerAdapter Logger { get; }
         bool IsGlobalUpdateMarshalingEnabled { get; }
 
@@ -113,13 +114,15 @@ namespace TickTrader.Algo.Core
     {
         void Start();
         void Stop();
-        void Restart();
+        void PreRestart();
+        void PostRestart();
     }
 
     internal class NullExecFixture : IExecutorFixture
     {
         public void Dispose() { }
-        public void Restart() { }
+        public void PreRestart() { }
+        public void PostRestart() { }
         public void Start() { }
         public void Stop() { }
     }
