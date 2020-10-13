@@ -324,6 +324,13 @@ namespace TickTrader.Algo.Core
 
                     iStrategy.EnqueueCustomInvoke(b =>
                     {
+                        // Update state
+
+                        ChangeState(States.Running);
+                    });
+
+                    iStrategy.EnqueueCustomInvoke(b =>
+                    {
                         if (InRunningState)
                             b.InvokeInit();
                     });
@@ -344,10 +351,6 @@ namespace TickTrader.Algo.Core
                     });
 
                     iStrategy.Start(); // Must be last action! It starts queue processing.
-
-                    // Update state
-
-                    ChangeState(States.Running);
                 }
                 catch (AlgoMetadataException ex)
                 {
