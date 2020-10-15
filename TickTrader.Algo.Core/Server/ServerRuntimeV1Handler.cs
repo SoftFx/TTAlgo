@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
+using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
@@ -45,14 +46,14 @@ namespace TickTrader.Algo.Core
 
         }
 
-        public Any HandleRequest(string callId, Any payload)
+        public Task<Any> HandleRequest(string callId, Any payload)
         {
             if (payload.Is(AttachRuntimeRequest.Descriptor))
             {
                 var request = payload.Unpack<AttachRuntimeRequest>();
                 if (_runtime != null)
                 {
-                    return Any.Pack(new ErrorResponse { Message = "Runtime already attached!" });
+                    return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Runtime already attached!" }));
                 }
                 if (_server.TryGetRuntime(request.Id, out var runtime))
                 {
@@ -61,11 +62,11 @@ namespace TickTrader.Algo.Core
                     var proxy = new RuntimeProxy(_session);
                     _runtime.OnAttached(r => _session.Tell(r), proxy);
 
-                    return Any.Pack(new AttachRuntimeResponse { Success = true });
+                    return Task.FromResult(Any.Pack(new AttachRuntimeResponse { Success = true }));
                 }
                 else
                 {
-                    return Any.Pack(new AttachRuntimeResponse { Success = false });
+                    return Task.FromResult(Any.Pack(new AttachRuntimeResponse { Success = false }));
                 }
             }
             else if (payload.Is(RuntimeConfigRequest.Descriptor))
@@ -112,44 +113,44 @@ namespace TickTrader.Algo.Core
         }
 
 
-        private Any RuntimeConfigRequestHandler()
+        private Task<Any> RuntimeConfigRequestHandler()
         {
-            return Any.Pack(_runtime.Config);
+            return Task.FromResult(Any.Pack(_runtime.Config));
         }
 
-        private Any PackagePathRequestHandler(Any payload)
+        private Task<Any> PackagePathRequestHandler(Any payload)
         {
             //var request = payload.Unpack<PackagePathRequest>();
-            return Any.Pack(new PackagePathResponse { Path = _runtime.GetPackagePath() });
+            return Task.FromResult(Any.Pack(new PackagePathResponse { Path = _runtime.GetPackagePath() }));
         }
 
-        private Any ConnectionInfoRequestHandler()
+        private Task<Any> ConnectionInfoRequestHandler()
         {
-            return Any.Pack(new ConnectionInfoResponse { ConnectionInfo = _runtime.ConnectionInfo });
+            return Task.FromResult(Any.Pack(new ConnectionInfoResponse { ConnectionInfo = _runtime.ConnectionInfo }));
         }
 
-        private Any CurrencyListRequestHandler()
+        private Task<Any> CurrencyListRequestHandler()
         {
             var response = new CurrencyListResponse();
             response.Currencies.Add(_runtime.Metadata.GetCurrencyMetadata());
-            return Any.Pack(response);
+            return Task.FromResult(Any.Pack(response));
         }
 
-        private Any SymbolListRequestHandler()
+        private Task<Any> SymbolListRequestHandler()
         {
             var response = new SymbolListResponse();
             response.Symbols.Add(_runtime.Metadata.GetSymbolMetadata());
-            return Any.Pack(response);
+            return Task.FromResult(Any.Pack(response));
         }
 
-        private Any AccountInfoRequestHandler()
+        private Task<Any> AccountInfoRequestHandler()
         {
             var response = new AccountInfoResponse();
             response.Account = _runtime.AccInfoProvider.GetAccountInfo();
-            return Any.Pack(response);
+            return Task.FromResult(Any.Pack(response));
         }
 
-        private Any OrderListRequestHandler(string callId)
+        private Task<Any> OrderListRequestHandler(string callId)
         {
             const int chunkSize = 10;
 
@@ -169,10 +170,10 @@ namespace TickTrader.Algo.Core
                 response.Orders.Add(orders[i]);
             }
             response.IsFinal = true;
-            return Any.Pack(response);
+            return Task.FromResult(Any.Pack(response));
         }
 
-        private Any PositionListRequestHandler(string callId)
+        private Task<Any> PositionListRequestHandler(string callId)
         {
             const int chunkSize = 10;
 
@@ -192,35 +193,35 @@ namespace TickTrader.Algo.Core
                 response.Positions.Add(positions[i]);
             }
             response.IsFinal = true;
-            return Any.Pack(response);
+            return Task.FromResult(Any.Pack(response));
         }
 
-        private Any OpenOrderRequestHandler(Any payload)
+        private Task<Any> OpenOrderRequestHandler(Any payload)
         {
             var request = payload.Unpack<OpenOrderRequest>();
             _runtime.TradeExecutor.SendOpenOrder(request);
-            return VoidResponse;
+            return Task.FromResult(VoidResponse);
         }
 
-        private Any ModifyOrderRequestHandler(Any payload)
+        private Task<Any> ModifyOrderRequestHandler(Any payload)
         {
             var request = payload.Unpack<ModifyOrderRequest>();
             _runtime.TradeExecutor.SendModifyOrder(request);
-            return VoidResponse;
+            return Task.FromResult(VoidResponse);
         }
 
-        private Any CloseOrderRequestHandler(Any payload)
+        private Task<Any> CloseOrderRequestHandler(Any payload)
         {
             var request = payload.Unpack<CloseOrderRequest>();
             _runtime.TradeExecutor.SendCloseOrder(request);
-            return VoidResponse;
+            return Task.FromResult(VoidResponse);
         }
 
-        private Any CancelOrderRequestHandler(Any payload)
+        private Task<Any> CancelOrderRequestHandler(Any payload)
         {
             var request = payload.Unpack<CancelOrderRequest>();
             _runtime.TradeExecutor.SendCancelOrder(request);
-            return VoidResponse;
+            return Task.FromResult(VoidResponse);
         }
 
         private void UnitLogRecordHandler(Any payload)
@@ -246,7 +247,7 @@ namespace TickTrader.Algo.Core
             _runtime.OnDataSeriesUpdate(update);
         }
 
-        private Any TradeHistoryRequestHandler(string callId, Any payload)
+        private Task<Any> TradeHistoryRequestHandler(string callId, Any payload)
         {
             var request = payload.Unpack<TradeHistoryRequest>();
             var enumerator = _runtime.TradeHistoryProvider.GetTradeHistory(request.From?.ToDateTime(), request.To?.ToDateTime(), request.Options);
@@ -254,10 +255,10 @@ namespace TickTrader.Algo.Core
             {
                 _pendingRequestHandlers.TryAdd(callId, enumerator);
             }
-            return null;
+            return Task.FromResult<Any>(null);
         }
 
-        private Any TradeHistoryRequestNextPageHandler(string callId)
+        private Task<Any> TradeHistoryRequestNextPageHandler(string callId)
         {
             _pendingRequestHandlers.TryGetValue(callId, out var state);
             var enumerator = (IAsyncPagedEnumerator<TradeReportInfo>)state;
@@ -272,42 +273,42 @@ namespace TickTrader.Algo.Core
             {
                 response.Reports.AddRange(page);
             }
-            return Any.Pack(response);
+            return Task.FromResult(Any.Pack(response));
         }
 
-        private Any TradeHistoryRequestDisposeHandler(string callId)
+        private Task<Any> TradeHistoryRequestDisposeHandler(string callId)
         {
             if (_pendingRequestHandlers.TryRemove(callId, out var state))
             {
                 var enumerator = (IAsyncPagedEnumerator<TradeReportInfo>)state;
                 enumerator.Dispose();
             }
-            return null;
+            return Task.FromResult<Any>(null);
         }
 
-        private Any FeedSnapshotRequestHandler()
+        private Task<Any> FeedSnapshotRequestHandler()
         {
             var response = new QuotePage();
             response.Quotes.AddRange(_runtime.Feed.GetSnapshot().Select(q => q.GetFullQuote()));
-            return Any.Pack(response);
+            return Task.FromResult(Any.Pack(response));
         }
 
-        private Any ModifyFeedSubscriptionRequestHandler(Any payload)
+        private Task<Any> ModifyFeedSubscriptionRequestHandler(Any payload)
         {
             var request = payload.Unpack<ModifyFeedSubscriptionRequest>();
             var response = new QuotePage();
             var snapshot = _runtime.Feed.Sync.Invoke(() => _runtime.Feed.Modify(request.Updates.ToList()));
             response.Quotes.AddRange(snapshot.Select(q => q.GetFullQuote()));
-            return Any.Pack(response);
+            return Task.FromResult(Any.Pack(response));
         }
 
-        private Any CancelAllFeedSubscriptionsRequestHandler()
+        private Task<Any> CancelAllFeedSubscriptionsRequestHandler()
         {
             _runtime.Feed.Sync.Invoke(() => _runtime.Feed.CancelAll());
-            return VoidResponse;
+            return Task.FromResult(VoidResponse);
         }
 
-        private Any BarListRequestHandler(Any payload)
+        private Task<Any> BarListRequestHandler(Any payload)
         {
             var request = payload.Unpack<BarListRequest>();
             var symbol = request.Symbol;
@@ -324,10 +325,10 @@ namespace TickTrader.Algo.Core
                 ? _runtime.FeedHistory.QueryBars(symbol, marketSide, timeframe, request.From, count.Value)
                 : _runtime.FeedHistory.QueryBars(symbol, marketSide, timeframe, request.From, request.To));
 
-            return Any.Pack(response);
+            return Task.FromResult(Any.Pack(response));
         }
 
-        private Any QuoteListRequestHandler(Any payload)
+        private Task<Any> QuoteListRequestHandler(Any payload)
         {
             var request = payload.Unpack<QuoteListRequest>();
             var symbol = request.Symbol;
@@ -338,7 +339,7 @@ namespace TickTrader.Algo.Core
                 : _runtime.FeedHistory.QueryQuotes(symbol, request.From, request.To, request.Level2))
                 .Select(q => q.GetData()));
 
-            return Any.Pack(response);
+            return Task.FromResult(Any.Pack(response));
         }
     }
 }

@@ -367,9 +367,9 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public void Stop()
+        public Task Stop()
         {
-            StopInternal()?.Wait();
+            return StopInternal();
         }
 
         public void StopAsync(ICallback asyncCallback)

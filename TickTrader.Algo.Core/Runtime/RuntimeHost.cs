@@ -55,6 +55,8 @@ namespace TickTrader.Algo.Core
 
         public async Task Stop()
         {
+            await Task.Delay(2000); // ugly hack to give code in another domain some time for correct stop without thread abort
+
             await Task.Factory.StartNew(() => _subDomain.Value.Deinit());
 
             _subDomain?.Dispose();

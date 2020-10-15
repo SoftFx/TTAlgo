@@ -1,4 +1,5 @@
 ﻿using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -88,7 +89,7 @@ namespace TickTrader.Algo.Rpc
         public Task Disconnect(string reason)
         {
             if (State != RpcSessionState.Connected)
-                return _disconnectTaskSrc?.Task ?? Task.FromResult(true);
+                return _disconnectTaskSrc?.Task ?? Task.CompletedTask;
 
             _disconnectTaskSrc = new TaskCompletionSource<bool>();
             SendDisconnect(reason);
@@ -137,6 +138,7 @@ namespace TickTrader.Algo.Rpc
         internal void SendMessage(RpcMessage msg)
         {
             //Debug.WriteLine($"RPC < {AppDomain.CurrentDomain.Id}: {msg}");
+            Debug.WriteLine($"RPC < {AppDomain.CurrentDomain.Id}: msg type - {msg.Payload.TypeUrl}");
             _transport.SendMessage(msg);
         }
 
@@ -367,20 +369,31 @@ namespace TickTrader.Algo.Rpc
 
                 if (msg.Flags == RpcFlags.Request)
                 {
-                    try
-                    {
-                        var response = _rpcHandler.HandleRequest(msg.CallId, msg.Payload);
-                        if (response != null)
-                            SendMessage(RpcMessage.Response(msg.CallId, response));
-                    }
-                    catch (Exception ex)
-                    {
-                        SendMessage(RpcMessage.Response(msg.CallId, new ErrorResponse
+                    _rpcHandler.HandleRequest(msg.CallId, msg.Payload)
+                        .ContinueWith(t =>
                         {
-                            Message = "Internal error: Failed to process request",
-                            Details = ex.ToString(),
-                        }));
-                    }
+                            switch (t.Status)
+                            {
+                                case TaskStatus.RanToCompletion:
+                                    var response = t.Result;
+                                    if (response != null)
+                                        SendMessage(RpcMessage.Response(msg.CallId, response));
+                                    break;
+                                case TaskStatus.Faulted:
+                                    SendMessage(RpcMessage.Response(msg.CallId, new ErrorResponse
+                                    {
+                                        Message = "Internal error: Failed to process request",
+                                        Details = t.Exception.ToString(),
+                                    }));
+                                    break;
+                                case TaskStatus.Canceled:
+                                    SendMessage(RpcMessage.Response(msg.CallId, new ErrorResponse
+                                    {
+                                        Message = "Request processing has been canceled",
+                                    }));
+                                    break;
+                            }
+                        });
                 }
 
                 if (msg.Flags == RpcFlags.Notification)

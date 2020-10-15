@@ -1,4 +1,5 @@
 ﻿using Google.Protobuf.WellKnownTypes;
+using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Rpc
 {
@@ -6,7 +7,7 @@ namespace TickTrader.Algo.Rpc
     {
         void SetSession(RpcSession session);
 
-        Any HandleRequest(string callId, Any payload);
+        Task<Any> HandleRequest(string callId, Any payload);
 
         void HandleNotification(string callId, Any payload);
     }

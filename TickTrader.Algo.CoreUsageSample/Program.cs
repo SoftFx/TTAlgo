@@ -69,7 +69,7 @@ namespace TickTrader.Algo.CoreUsageSample
             dataModel.Update(new QuoteInfo("EURUSD", DateTime.Parse("2015.11.03 00:00:28"), 1.10148, 1.10151));
             dataModel.Update(new QuoteInfo("EURUSD", DateTime.Parse("2015.11.03 00:00:31"), 1.10149, 1.10149));
 
-            executor.Stop();
+            executor.Stop()?.Wait();
 
             //executor.Reset();
 

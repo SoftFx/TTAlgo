@@ -114,7 +114,7 @@ namespace TickTrader.Algo.Core
 
         public void Stop()
         {
-            Core.Stop();
+            Core.Stop()?.Wait();
         }
 
         public Task StopAsync()

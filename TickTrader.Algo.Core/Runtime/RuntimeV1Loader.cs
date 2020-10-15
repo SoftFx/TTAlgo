@@ -119,8 +119,7 @@ namespace TickTrader.Algo.Core
 
         public Task Stop()
         {
-            var t = Task.Factory.StartNew(() => _executorCore.Stop());
-            return Task.CompletedTask;
+            return _executorCore.Stop();
         }
 
 

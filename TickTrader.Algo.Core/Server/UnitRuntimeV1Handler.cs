@@ -204,7 +204,7 @@ namespace TickTrader.Algo.Core
 
         }
 
-        public Any HandleRequest(string callId, Any payload)
+        public Task<Any> HandleRequest(string callId, Any payload)
         {
             if (payload.Is(StartRuntimeRequest.Descriptor))
                 return StartRuntimeRequestHandler();
@@ -215,15 +215,15 @@ namespace TickTrader.Algo.Core
         }
 
 
-        private Any StartRuntimeRequestHandler()
+        private async Task<Any> StartRuntimeRequestHandler()
         {
-            _runtime.Launch();//.GetAwaiter().GetResult();
+            await _runtime.Launch();
             return VoidResponse;
         }
 
-        private Any StopRuntimeRequestHandler()
+        private async Task<Any> StopRuntimeRequestHandler()
         {
-            _runtime.Stop();//.GetAwaiter().GetResult();
+            await _runtime.Stop();
             return VoidResponse;
         }
         
