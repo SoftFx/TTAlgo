@@ -925,6 +925,8 @@ namespace TickTrader.Algo.Common.Model
                                 return Api.OrderCmdResultCodes.TradeServerError;
                             else if (message.StartsWith("Only Limit, Stop and StopLimit orders can be canceled."))
                                 return Api.OrderCmdResultCodes.IncorrectType;
+                            else if (message.Contains("was called too frequently"))
+                                return Api.OrderCmdResultCodes.ThrottlingError;
                         }
                         break;
                     }
