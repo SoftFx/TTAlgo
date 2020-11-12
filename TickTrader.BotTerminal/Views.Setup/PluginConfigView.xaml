@@ -476,7 +476,7 @@
                       SelectedItem="{Binding SelectedTimeFrame}" IsEnabled="{Binding IsBot}"
                       ItemsSource="{Binding AvailableTimeFrames}"/>
 
-            <Label Grid.Column="0" Grid.Row="4" Content="Model:"/>
+            <Label Grid.Column="0" Grid.Row="4" Content="Model"/>
             <ComboBox Grid.Column="1" Grid.Row="4" Grid.ColumnSpan="2" ItemsSource="{Binding AvailableModels.Value}" SelectedItem="{Binding SelectedModel.Value}" />
         </Grid>
     </ControlTemplate>

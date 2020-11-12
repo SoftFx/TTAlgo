@@ -212,6 +212,7 @@ namespace TickTrader.BotTerminal
                 res.Add($"Package Location: {Bot.Model.Config.Key.PackageLocation}");
                 res.Add($"Symbol: {Bot.Model.Config.MainSymbol.Name}");
                 res.Add($"Timeframe: {Bot.Model.Config.TimeFrame}");
+                res.Add($"Model: {Bot.Model.Config.ModelTimeFrame}");
                 res.Add($"Show on chart: {Bot.Model.Descriptor.SetupMainSymbol}");
                 if (Bot.Model.Config.Properties.Any())
                 {
