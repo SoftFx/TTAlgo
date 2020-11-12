@@ -116,12 +116,17 @@ namespace TickTrader.BotTerminal
 
         internal override void Configurate(PluginConfig config)
         {
-            if (State != PluginStates.Stopped)
+            if (State == PluginStates.Broken)
                 return;
 
-            base.Configurate(config);
+            if (PluginStateHelper.IsStopped(State))
+            {
+                base.Configurate(config);
 
-            Updated?.Invoke(this);
+                Updated?.Invoke(this);
+            }
+            else
+                throw new InvalidOperationException("Make sure that the bot is stopped before setting a new configuration");
         }
 
         protected override void ChangeState(PluginStates state, string faultMessage = null)
