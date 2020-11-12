@@ -287,7 +287,7 @@ namespace TickTrader.BotTerminal
         {
             var smbData = SelectedSymbol.Value;
 
-            if (isVisualizing)
+            if (isVisualizing && SetupType != SymbolSetupType.MainShadow)
                 tester.SymbolDataConfig.Add(smbData.Name, TestDataSeriesFlags.Stream | TestDataSeriesFlags.Realtime);
             else if (SetupType == SymbolSetupType.Main)
                 tester.SymbolDataConfig.Add(smbData.Name, TestDataSeriesFlags.Stream);
