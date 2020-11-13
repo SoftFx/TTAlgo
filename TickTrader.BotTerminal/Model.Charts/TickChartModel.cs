@@ -52,7 +52,7 @@ namespace TickTrader.BotTerminal
             bidData.Clear();
         }
 
-        protected override Task LoadData(CancellationToken cToken)
+        protected override async Task LoadData(CancellationToken cToken)
         {
             lastSeriesQuote = null;
 
@@ -60,16 +60,15 @@ namespace TickTrader.BotTerminal
             {
                 DateTime timeMargin = Model.LastQuote.CreatingTime;
 
-                QuoteEntity[] tickArray = new QuoteEntity[0];
+                var ticks = new QuoteEntity[0];
 
                 try
                 {
-                    //var ticks = await ClientModel.History.IterateTicks(SymbolCode, timeMargin - TimeSpan.FromMinutes(15), timeMargin, 0);
+                    ticks = await ClientModel.FeedHistory.GetQuotePage(SymbolCode, timeMargin + TimeSpan.FromMinutes(15), -100, false);
                 }
                 catch (Exception)
                 {
                     // TO DO: dysplay error on chart
-                    tickArray = new QuoteEntity[0];
                 }
 
                 //foreach (var tick in tickArray)
@@ -79,23 +78,21 @@ namespace TickTrader.BotTerminal
                 //}
 
                 askData.Append(
-                    tickArray.Select(t => t.CreatingTime),
-                    tickArray.Select(t => t.Ask));
+                    ticks.Select(t => t.CreatingTime),
+                    ticks.Select(t => t.Ask));
                 bidData.Append(
-                    tickArray.Select(t => t.CreatingTime),
-                    tickArray.Select(t => t.Bid));
+                    ticks.Select(t => t.CreatingTime),
+                    ticks.Select(t => t.Bid));
 
-                if (tickArray.Length > 0)
+                if (ticks.Length > 0)
                 {
-                    lastSeriesQuote = tickArray.Last();
+                    lastSeriesQuote = ticks.Last();
 
-                    var start = tickArray.First().CreatingTime;
-                    var end = tickArray.Last().CreatingTime;
-                    InitBoundaries(tickArray.Length, start, end);
+                    var start = ticks.First().CreatingTime;
+                    var end = ticks.Last().CreatingTime;
+                    InitBoundaries(ticks.Length, start, end);
                 }
             }
-
-            return Task.FromResult(this);
         }
 
         protected override void ApplyUpdate(QuoteEntity update)

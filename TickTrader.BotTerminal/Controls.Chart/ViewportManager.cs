@@ -18,7 +18,7 @@ namespace TickTrader.BotTerminal
     {
         private double _selectedZoom = 1;
         private double _rightLimitExt = 100;
-        private IndexRange _prevRange;
+        private IRange _prevRange;
 
         public ViewportManager()
         {
@@ -57,10 +57,10 @@ namespace TickTrader.BotTerminal
         public bool KeepAtMax { get; set; }
 
         public event Action ZoomScaleChanged;
-        public event Action<IAxis, IndexRange, IndexRange> AxisRangeUpdated;
+        public event Action<IAxis, IRange, IRange> AxisRangeUpdated;
         public event Action MovedOutOfMax;
 
-        public void ScrollTo(int newIndex)
+        public void ScrollTo(long newIndex)
         {
             var surface = XDragModifier?.ParentSurface;
             var axis = surface?.XAxis;
@@ -70,11 +70,20 @@ namespace TickTrader.BotTerminal
             if (axis != null && axis.VisibleRange is IndexRange)
             {
                 var currentRange = (IndexRange)axis.VisibleRange;
-                var diff = newIndex - currentRange.Min;
-                var newRange = new IndexRange(newIndex, currentRange.Max + diff);
+                var diff = (int)newIndex - currentRange.Min;
+                var newRange = new IndexRange((int)newIndex, currentRange.Max + diff);
 
                 if (axis != null && axis.DataRange != null && axis.VisibleRange != null)
-                    UpdateTo(axis, (IndexRange)axis.DataRange, newRange);
+                    UpdateTo(axis, axis.DataRange, newRange);
+            }
+            else if (axis != null && axis.VisibleRange is DateRange)
+            {
+                var currentRange = (DateRange)axis.VisibleRange;
+                var diff = newIndex - currentRange.Min.Ticks;
+                var newRange = new DateRange(currentRange.Min.AddTicks(diff), currentRange.Max.AddTicks(diff));
+
+                if (axis != null && axis.DataRange != null && axis.VisibleRange != null)
+                    UpdateTo(axis, axis.DataRange, newRange);
             }
         }
 
@@ -90,41 +99,56 @@ namespace TickTrader.BotTerminal
                 //System.Diagnostics.Debug.WriteLine("ScrollToMax() new=" + newRange.Min + "-" + newRange.Max);
 
                 if (axis != null && axis.DataRange != null && axis.VisibleRange != null)
-                    UpdateTo(axis, (IndexRange)axis.DataRange, newRange);
+                    UpdateTo(axis, axis.DataRange, newRange);
             }
         }
 
-        private IndexRange CalcMaxVisibleRange(IAxis axis)
+        private IRange CalcMaxVisibleRange(IAxis axis)
         {
-            var currentRange = (IndexRange)axis.VisibleRange;
-            var limits = (IndexRange)axis.VisibleRangeLimit;
-            var diff = limits.Max - currentRange.Max;
-            return new IndexRange(currentRange.Min + diff, limits.Max);
+            if (axis.VisibleRange is IndexRange)
+            {
+                var currentRange = (IndexRange)axis.VisibleRange;
+                var limits = (IndexRange)axis.VisibleRangeLimit;
+                var diff = limits.Max - currentRange.Max;
+                return new IndexRange(currentRange.Min + diff, limits.Max);
+            }
+            else
+            {
+                var currentRange = (DateRange)axis.VisibleRange;
+                var limits = (DateRange)axis.VisibleRangeLimit;
+                var diff = limits.Max - currentRange.Max;
+                return new DateRange(currentRange.Min + diff, limits.Max);
+            }
         }
 
         protected override IRange OnCalculateNewXRange(IAxis xAxis)
         {
-            var dataRange = (IndexRange)xAxis.DataRange;
-            var visRange = (IndexRange)xAxis.VisibleRange;
+            var dataRange = xAxis.DataRange;
+            var visRange = xAxis.VisibleRange;
             var viewWidth = xAxis.Width;
 
-            if (viewWidth != 0 && dataRange != null && visRange != null)
+            if (viewWidth != 0 && dataRange != null && visRange != null && (visRange is IndexRange || visRange is DateRange))
             {
                 if (XDragModifier?.IsDragging == true)
                 {
+                    var diff = visRange is IndexRange
+                        ? (visRange as IndexRange).Diff
+                        : (visRange as DateRange).Diff.Ticks / 10_000_000;
                     // zoom changed
-                    var reqestedZoom = viewWidth / visRange.Diff;
+                    var reqestedZoom = viewWidth / diff;
                     _selectedZoom = LimitZoom(reqestedZoom);
                     ZoomScaleChanged?.Invoke();
                 }
 
+                if ((_prevRange is DateRange && visRange is IndexRange) || (_prevRange is IndexRange && visRange is DateRange))
+                    _prevRange = null;
+
                 if (_selectedZoom != 0)
                 {
-                    if (_prevRange != null && _prevRange.Max > visRange.Max)
+                    if (_prevRange != null && _prevRange.Max.CompareTo(visRange.Max) > 0)
                         MovedOutOfMax?.Invoke();
 
-                    IndexRange limit;
-                    var result = RecalculateRange(viewWidth, dataRange, visRange, out limit);
+                    var result = RecalculateRange(viewWidth, dataRange, visRange, out var limit);
 
                     //System.Diagnostics.Debug.WriteLine("OnCalculateNewXRange() in=[{0}-{1}] out=[{2}-{3}]",
                     //    visRange.Min, visRange.Max, result.Min, result.Max);
@@ -142,13 +166,30 @@ namespace TickTrader.BotTerminal
             return base.OnCalculateNewXRange(xAxis);
         }
 
-        private IndexRange RecalculateRange(double viewWidth, IndexRange dataRange, IndexRange visRange, out IndexRange rangeLimit)
+        private IRange RecalculateRange(double viewWidth, IRange dataRange, IRange visRange, out IRange rangeLimit)
         {
-            var reqTotalWidth = dataRange.Diff * _selectedZoom;
-            var targetVisDiff = (int)(viewWidth / _selectedZoom);
+            IRange res;
+            if (visRange is IndexRange)
+            {
+                res = RecalculateIndexRange(viewWidth, (IndexRange)dataRange, (IndexRange)visRange, out var indexLimit);
+                rangeLimit = indexLimit;
+            }
+            else
+            {
+                res = RecalculateDateRange(viewWidth, (DateRange)dataRange, (DateRange)visRange, out var dateLimit);
+                rangeLimit = dateLimit;
+            }
+
+            return res;
+        }
+
+        private IndexRange RecalculateIndexRange(double viewWidth, IndexRange dataRange, IndexRange visRange, out IndexRange rangeLimit)
+        {
+            var zoom = _selectedZoom;
+            var reqTotalWidth = dataRange.Diff * zoom;
+            var targetVisDiff = (int)(viewWidth / zoom);
 
             var ext = _rightLimitExt;
-            var indexExt = (int)(ext / _selectedZoom);
 
             if (reqTotalWidth <= viewWidth - ext )
             {
@@ -157,7 +198,7 @@ namespace TickTrader.BotTerminal
             }
             else
             {
-                var targetLimitDiff = (int)((reqTotalWidth + ext) / _selectedZoom);
+                var targetLimitDiff = (int)((reqTotalWidth + ext) / zoom);
                 rangeLimit = new IndexRange(dataRange.Min, dataRange.Min + targetLimitDiff);
 
                 var newVisMin = visRange.Max - targetVisDiff;
@@ -172,6 +213,36 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        private DateRange RecalculateDateRange(double viewWidth, DateRange dataRange, DateRange visRange, out DateRange rangeLimit)
+        {
+            var zoom = _selectedZoom;
+            var reqTotalWidth = (dataRange.Diff.Ticks / 10_000_000) * zoom;
+            var targetVisDiff = (long)(viewWidth / zoom) * 10_000_000;
+
+            var ext = _rightLimitExt;
+
+            if (reqTotalWidth <= viewWidth - ext)
+            {
+                rangeLimit = new DateRange(dataRange.Min, dataRange.Min.AddTicks(targetVisDiff));
+                return new DateRange(dataRange.Min, dataRange.Min.AddTicks(targetVisDiff));
+            }
+            else
+            {
+                var targetLimitDiff = (long)((reqTotalWidth + ext) / zoom) * 10_000_000;
+                rangeLimit = new DateRange(dataRange.Min, dataRange.Min.AddTicks(targetLimitDiff));
+
+                var newVisMin = visRange.Max.AddTicks(-targetVisDiff);
+                var newVisMax = visRange.Max;
+
+                if (newVisMin < rangeLimit.Min)
+                    return new DateRange(rangeLimit.Min, rangeLimit.Min.AddTicks(targetVisDiff));
+                if (KeepAtMax || newVisMax > rangeLimit.Max)
+                    return new DateRange(rangeLimit.Max.AddTicks(-targetVisDiff), rangeLimit.Max);
+
+                return new DateRange(newVisMin, newVisMax);
+            }
+        }
+
         private double LimitZoom(double currentZoom)
         {
             if (currentZoom < MinZoom)
@@ -181,10 +252,9 @@ namespace TickTrader.BotTerminal
             return currentZoom;
         }
 
-        private void UpdateTo(IAxis axis, IndexRange dataRange, IndexRange visRange)
+        private void UpdateTo(IAxis axis, IRange dataRange, IRange visRange)
         {
-            IndexRange limit;
-            axis.VisibleRange = RecalculateRange(axis.Width, dataRange, visRange, out limit);
+            axis.VisibleRange = RecalculateRange(axis.Width, dataRange, visRange, out var limit);
             if (!Equals(axis.VisibleRangeLimit, limit))
                 axis.VisibleRangeLimit = limit;
         }
@@ -195,17 +265,7 @@ namespace TickTrader.BotTerminal
             var axis = surface?.XAxis;
 
             if (axis != null && axis.DataRange != null && axis.VisibleRange != null)
-                UpdateTo(axis, (IndexRange)axis.DataRange, (IndexRange)axis.VisibleRange);
-        }
-
-        private static bool Equals(IndexRange range1, IndexRange range2)
-        {
-            if (range1 == null)
-                return range2 == null;
-            else if (range2 == null)
-                return false;
-
-            return range1.Max == range2.Max && range1.Min == range2.Min;
+                UpdateTo(axis, axis.DataRange, axis.VisibleRange);
         }
     }
 }

@@ -49,7 +49,7 @@ namespace TickTrader.BotTerminal
             base.OnDetached();
         }
 
-        private void ViewPort_AxisRangeUpdated(IAxis axis, IndexRange range, IndexRange limit)
+        private void ViewPort_AxisRangeUpdated(IAxis axis, IRange range, IRange limit)
         {
             //System.Diagnostics.Debug.WriteLine("CustomViewPort_AxisWidthChanged w=" + axis.Width);
             UpdateAxisTicks(axis);
