@@ -45,7 +45,7 @@ namespace TickTrader.Algo.Core
             return new Tuple<string, BarPriceType>(symbol, priceType);
         }
 
-        private void InitSymbol(string symbol, BarPriceType priceType)
+        private void InitSymbol(string symbol, BarPriceType priceType, bool isSetup)
         {
             BarSeriesFixture fixture = GetFixture(symbol, priceType);
             if (fixture == null)
@@ -53,7 +53,8 @@ namespace TickTrader.Algo.Core
                 fixture = new BarSeriesFixture(symbol, priceType, ExecContext, null, mainSeriesFixture);
                 AddFixture(symbol, priceType, fixture);
                 BufferingStrategy.InitBuffer(fixture);
-                AddSubscription(symbol);
+                if (!isSetup)
+                    AddSubscription(symbol);
             }
         }
 
@@ -149,7 +150,7 @@ namespace TickTrader.Algo.Core
 
         protected override BarSeries GetBarSeries(string symbol, BarPriceType side)
         {
-            InitSymbol(symbol, side);
+            InitSymbol(symbol, side, false);
             var fixture = GetFixture(symbol, side);
             var proxyBuffer = new ProxyBuffer<BarEntity, Api.Bar>(b => b) { SrcBuffer = fixture.Buffer };
             return new BarSeriesProxy() { Buffer = proxyBuffer };
@@ -207,7 +208,7 @@ namespace TickTrader.Algo.Core
 
             public override void Apply(FeedStrategy fStartegy)
             {
-                ((BarStrategy)fStartegy).InitSymbol(SymbolName, PriceType);
+                ((BarStrategy)fStartegy).InitSymbol(SymbolName, PriceType, true);
                 var key = GetKey(SymbolName, PriceType);
                 fStartegy.ExecContext.Builder.MapInput(InputName, key, Selector);
             }
@@ -227,8 +228,8 @@ namespace TickTrader.Algo.Core
             {
                 var key1 = GetKey(SymbolName, BarPriceType.Bid);
                 var key2 = GetKey(SymbolName, BarPriceType.Ask);
-                ((BarStrategy)fStartegy).InitSymbol(SymbolName, BarPriceType.Ask);
-                ((BarStrategy)fStartegy).InitSymbol(SymbolName, BarPriceType.Bid);
+                ((BarStrategy)fStartegy).InitSymbol(SymbolName, BarPriceType.Ask, true);
+                ((BarStrategy)fStartegy).InitSymbol(SymbolName, BarPriceType.Bid, true);
                 fStartegy.ExecContext.Builder.MapInput(InputName, key1, key2, Selector);
             }
         }
