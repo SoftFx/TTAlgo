@@ -48,7 +48,7 @@ namespace TickTrader.BotTerminal
         public bool IsFixedFeed { get; set; }
         public bool IsEmulation { get; set; }
 
-        public bool EnableFeedSetup => (!IsFixedFeed && Descriptor.SetupMainSymbol) || (!IsBot);
+        public bool EnableFeedSetup => !IsFixedFeed && (Descriptor.SetupMainSymbol || !IsBot);
 
         public bool Visible
         {
