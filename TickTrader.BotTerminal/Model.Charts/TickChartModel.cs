@@ -36,7 +36,7 @@ namespace TickTrader.BotTerminal
             TimeFrame = TimeFrames.Ticks;
 
             Navigator = new RealTimeChartNavigator();
-            SelectedChartType = SelectableChartTypes.Scatter;
+            SelectedChartType = SelectableChartTypes.DigitalLine;
         }
 
         public override ITimeVectorRef TimeSyncRef => null;
