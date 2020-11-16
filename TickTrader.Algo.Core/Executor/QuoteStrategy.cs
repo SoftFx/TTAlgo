@@ -8,12 +8,14 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
+    [Serializable]
     public class QuoteStrategy : FeedStrategy
     {
+        [NonSerialized]
         private QuoteSeriesFixture mainSeries;
         private List<QuoteEntity> mainSerieData;
 
-        public override IFeedBuffer MainBuffer { get { return null; } }
+        public override IFeedBuffer MainBuffer { get { return mainSeries; } }
         public override int BufferSize { get { return mainSeries.Count; } }
         public override IEnumerable<string> BufferedSymbols => mainSeries.SymbolCode.Yield();
 
@@ -36,7 +38,7 @@ namespace TickTrader.Algo.Core
             return new QuoteStrategy();
         }
 
-        public void MapInput<TVal>(string inputName, string symbolCode, Func<QuoteEntity, TVal> selector)
+        public void MapInput<TVal>(string inputName, string symbolCode, Func<Quote, TVal> selector)
         {
             AddSetupAction(new MapAction<TVal>(inputName, symbolCode, selector));
         }
@@ -73,12 +75,12 @@ namespace TickTrader.Algo.Core
         [Serializable]
         public class MapAction<TVal> : InputSetupAction
         {
-            public MapAction(string inputName, string symbol, Func<QuoteEntity, TVal> selector) : base(inputName, symbol)
+            public MapAction(string inputName, string symbol, Func<Quote, TVal> selector) : base(inputName, symbol)
             {
                 Selector = selector;
             }
 
-            public Func<QuoteEntity, TVal> Selector { get; }
+            public Func<Quote, TVal> Selector { get; }
 
             public override void Apply(FeedStrategy fStartegy)
             {

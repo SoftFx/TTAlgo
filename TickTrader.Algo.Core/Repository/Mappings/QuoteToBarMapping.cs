@@ -26,7 +26,7 @@ namespace TickTrader.Algo.Core.Repository
             target.GetFeedStrategy<QuoteStrategy>().MapInput<Bar>(inputName, symbol, q => MapValue(barReductionInstance, q));
         }
 
-        private BarEntity MapValue(QuoteToBarReduction reductionInstance, QuoteEntity quote)
+        private BarEntity MapValue(QuoteToBarReduction reductionInstance, Quote quote)
         {
             var res = new BarEntity
             {
