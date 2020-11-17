@@ -65,9 +65,11 @@ namespace TickTrader.Algo.Core
 
         public BufferUpdateResult Update(Api.Quote quote)
         {
-            return UpdateBuffer(quote)
-                ? new BufferUpdateResult { IsLastUpdated = true }
-                : new BufferUpdateResult { IsLastUpdated = false, ExtendedBy = 1 };
+            var res = UpdateBuffer(quote);
+            return res == null ? new BufferUpdateResult()
+                : res.Value
+                    ? new BufferUpdateResult { IsLastUpdated = true }
+                    : new BufferUpdateResult { IsLastUpdated = false, ExtendedBy = 1 };
         }
 
         private void AppendData(List<QuoteEntity> data)
@@ -79,8 +81,12 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        private bool UpdateBuffer(Api.Quote quote)
+        private bool? UpdateBuffer(Api.Quote quote)
         {
+            // ticks from past are not accepted
+            if (_lastQuote?.Time.Ticks > quote.Time.Ticks)
+                return true;
+
             // chart can't process output points with equal ticks
             var res = _lastQuote?.Time.Ticks == quote.Time.Ticks;
             _lastQuote = quote;
