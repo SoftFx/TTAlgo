@@ -80,7 +80,7 @@ namespace TickTrader.BotTerminal
                     NotifyOfPropertyChange(nameof(Inputs));
                     NotifyOfPropertyChange(nameof(HasInputs));
                 }
-                AvailableModels.Value = AvailableTimeFrames.Where(t => t >= value && t != TimeFrames.TicksLevel2).ToList();
+                AvailableModels.Value = SetupMetadata.Api.TimeFrames.Where(t => t >= value && t != TimeFrames.TicksLevel2).ToList();
                 if (SelectedModel.Value < value)
                     SelectedModel.Value = value;
             }
@@ -403,7 +403,9 @@ namespace TickTrader.BotTerminal
 
         private void Init()
         {
-            AvailableTimeFrames = SetupMetadata.Api.TimeFrames;
+            AvailableTimeFrames = Plugin.Descriptor.Type != AlgoTypes.Robot
+                ? SetupMetadata.Api.TimeFrames
+                : SetupMetadata.Api.TimeFrames.Where(t => t != TimeFrames.Ticks);
             AvailableSymbols = SetupMetadata.Account.GetAvaliableSymbols(SetupMetadata.Context.DefaultSymbol).Where(u => u.Origin != SymbolOrigin.Token).ToList();
             AvailableMappings = SetupMetadata.Mappings.BarToBarMappings;
 
