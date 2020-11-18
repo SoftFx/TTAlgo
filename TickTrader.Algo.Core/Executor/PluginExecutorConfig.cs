@@ -13,6 +13,7 @@ namespace TickTrader.Algo.Core
     {
         public string MainSymbolCode { get; set; }
         public TimeFrames TimeFrame { get; set; }
+        public TimeFrames ModelTimeFrame { get; set; }
         public string WorkingFolder { get; set; }
         public string BotWorkingFolder { get; set; }
         public string InstanceId { get; set; }
@@ -44,9 +45,9 @@ namespace TickTrader.Algo.Core
             Mappings[new Tuple<string, string>(inputName, symbolCode)] = mapping;
         }
 
-        public BarStrategy InitBarStrategy(BarPriceType mainPirceTipe)
+        public BarStrategy InitBarStrategy(BarPriceType mainPriceType)
         {
-            var strategy = new BarStrategy(mainPirceTipe);
+            var strategy = new BarStrategy(mainPriceType);
             FeedStrategy = strategy;
             return strategy;
         }

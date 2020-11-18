@@ -86,7 +86,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             "dBJQCgttYXJrZXJfc2l6ZRgCIAEoDjI7LlRpY2tUcmFkZXIuQWxnby5Qcm90",
             "b2NvbC5HcnBjLkxpYi5BcGlEZXNjcmlwdG9yLk1hcmtlclNpemUiPAoRUGx1",
             "Z2luUGVybWlzc2lvbnMSFQoNdHJhZGVfYWxsb3dlZBgBIAEoCBIQCghpc29s",
-            "YXRlZBgCIAEoCCLJAwoMUGx1Z2luQ29uZmlnEjkKA2tleRgBIAEoCzIsLlRp",
+            "YXRlZBgCIAEoCCKeBAoMUGx1Z2luQ29uZmlnEjkKA2tleRgBIAEoCzIsLlRp",
             "Y2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5QbHVnaW5LZXkSTgoK",
             "dGltZV9mcmFtZRgCIAEoDjI6LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5H",
             "cnBjLkxpYi5BcGlEZXNjcmlwdG9yLlRpbWVGcmFtZRJECgttYWluX3N5bWJv",
@@ -96,7 +96,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             "c3RhbmNlX2lkGAUgASgJEkkKC3Blcm1pc3Npb25zGAYgASgLMjQuVGlja1Ry",
             "YWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlBsdWdpblBlcm1pc3Npb25z",
             "Ej8KCnByb3BlcnRpZXMYByADKAsyKy5UaWNrVHJhZGVyLkFsZ28uUHJvdG9j",
-            "b2wuR3JwYy5MaWIuUHJvcGVydHliBnByb3RvMw=="));
+            "b2wuR3JwYy5MaWIuUHJvcGVydHkSUwoPbW9kZWxfdGltZWZyYW1lGAggASgO",
+            "MjouVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFwaURlc2Ny",
+            "aXB0b3IuVGltZUZyYW1lYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.DescriptorsReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.KeysReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
@@ -123,7 +125,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ColoredLineOutput), global::TickTrader.Algo.Protocol.Grpc.Lib.ColoredLineOutput.Parser, new[]{ "LineStyle" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.MarkerSeriesOutput), global::TickTrader.Algo.Protocol.Grpc.Lib.MarkerSeriesOutput.Parser, new[]{ "MarkerSize" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.PluginPermissions), global::TickTrader.Algo.Protocol.Grpc.Lib.PluginPermissions.Parser, new[]{ "TradeAllowed", "Isolated" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.PluginConfig), global::TickTrader.Algo.Protocol.Grpc.Lib.PluginConfig.Parser, new[]{ "Key", "TimeFrame", "MainSymbol", "SelectedMapping", "InstanceId", "Permissions", "Properties" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.PluginConfig), global::TickTrader.Algo.Protocol.Grpc.Lib.PluginConfig.Parser, new[]{ "Key", "TimeFrame", "MainSymbol", "SelectedMapping", "InstanceId", "Permissions", "Properties", "ModelTimeframe" }, null, null, null)
           }));
     }
     #endregion
@@ -4094,6 +4096,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       instanceId_ = other.instanceId_;
       Permissions = other.permissions_ != null ? other.Permissions.Clone() : null;
       properties_ = other.properties_.Clone();
+      modelTimeframe_ = other.modelTimeframe_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -4178,6 +4181,17 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       get { return properties_; }
     }
 
+    /// <summary>Field number for the "model_timeframe" field.</summary>
+    public const int ModelTimeframeFieldNumber = 8;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.ApiDescriptor.Types.TimeFrame modelTimeframe_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.ApiDescriptor.Types.TimeFrame ModelTimeframe {
+      get { return modelTimeframe_; }
+      set {
+        modelTimeframe_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as PluginConfig);
@@ -4198,6 +4212,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (InstanceId != other.InstanceId) return false;
       if (!object.Equals(Permissions, other.Permissions)) return false;
       if(!properties_.Equals(other.properties_)) return false;
+      if (ModelTimeframe != other.ModelTimeframe) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -4211,6 +4226,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (InstanceId.Length != 0) hash ^= InstanceId.GetHashCode();
       if (permissions_ != null) hash ^= Permissions.GetHashCode();
       hash ^= properties_.GetHashCode();
+      if (ModelTimeframe != 0) hash ^= ModelTimeframe.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -4249,6 +4265,10 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         output.WriteMessage(Permissions);
       }
       properties_.WriteTo(output, _repeated_properties_codec);
+      if (ModelTimeframe != 0) {
+        output.WriteRawTag(64);
+        output.WriteEnum((int) ModelTimeframe);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -4276,6 +4296,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Permissions);
       }
       size += properties_.CalculateSize(_repeated_properties_codec);
+      if (ModelTimeframe != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) ModelTimeframe);
+      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -4318,6 +4341,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         Permissions.MergeFrom(other.Permissions);
       }
       properties_.Add(other.properties_);
+      if (other.ModelTimeframe != 0) {
+        ModelTimeframe = other.ModelTimeframe;
+      }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -4367,6 +4393,10 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           }
           case 58: {
             properties_.AddEntriesFrom(input, _repeated_properties_codec);
+            break;
+          }
+          case 64: {
+            modelTimeframe_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.ApiDescriptor.Types.TimeFrame) input.ReadEnum();
             break;
           }
         }

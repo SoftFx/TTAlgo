@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Core
 {
@@ -12,16 +8,16 @@ namespace TickTrader.Algo.Core
     public sealed class BarStrategy : FeedStrategy
     {
         [NonSerialized]
-        private BarSampler sampler;
+        private BarSampler _sampler;
         [NonSerialized]
         private BarSeriesFixture mainSeriesFixture;
         private List<BarEntity> mainSeries;
         [NonSerialized]
         private Dictionary<string, BarSeriesFixture[]> fixtures;
 
-        public BarStrategy(BarPriceType mainPirceTipe)
+        public BarStrategy(BarPriceType mainPriceType)
         {
-            this.MainPriceType = mainPirceTipe;
+            this.MainPriceType = mainPriceType;
         }
 
         public BarPriceType MainPriceType { get; private set; }
@@ -31,7 +27,7 @@ namespace TickTrader.Algo.Core
 
         internal override void OnInit()
         {
-            sampler = BarSampler.Get(ExecContext.TimeFrame);
+            _sampler = BarSampler.Get(ExecContext.TimeFrame);
             fixtures = new Dictionary<string, BarSeriesFixture[]>();
             mainSeriesFixture = new BarSeriesFixture(ExecContext.MainSymbolCode, MainPriceType, ExecContext, mainSeries);
             ExecContext.Builder.MainBufferId = GetKey(ExecContext.MainSymbolCode, MainPriceType);
@@ -49,18 +45,20 @@ namespace TickTrader.Algo.Core
             return new Tuple<string, BarPriceType>(symbol, priceType);
         }
 
-        private void InitSymbol(string symbol, BarPriceType priceType)
+        private void InitSymbol(string symbol, BarPriceType priceType, bool isSetup)
         {
-            BarSeriesFixture fixture = GetFixutre(symbol, priceType);
+            BarSeriesFixture fixture = GetFixture(symbol, priceType);
             if (fixture == null)
             {
                 fixture = new BarSeriesFixture(symbol, priceType, ExecContext, null, mainSeriesFixture);
                 AddFixture(symbol, priceType, fixture);
                 BufferingStrategy.InitBuffer(fixture);
+                if (!isSetup)
+                    AddSubscription(symbol);
             }
         }
 
-        private BarSeriesFixture GetFixutre(string smbCode, BarPriceType priceType)
+        private BarSeriesFixture GetFixture(string smbCode, BarPriceType priceType)
         {
             BarSeriesFixture[] fixturePair;
             if (fixtures.TryGetValue(smbCode, out fixturePair))
@@ -110,7 +108,7 @@ namespace TickTrader.Algo.Core
 
             if (askFixture != null)
             {
-                var askResult =  askFixture.Update(update);
+                var askResult = askFixture.Update(update);
                 if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Ask)
                     askResult.ExtendedBy = 0;
                 overallResult += askResult;
@@ -132,7 +130,7 @@ namespace TickTrader.Algo.Core
 
         protected override RateUpdate Aggregate(RateUpdate last, QuoteEntity quote)
         {
-            var bounds = sampler.GetBar(quote.Time);
+            var bounds = _sampler.GetBar(quote.Time);
 
             if (last != null && last.Time == bounds.Open)
             {
@@ -140,7 +138,9 @@ namespace TickTrader.Algo.Core
                 return null;
             }
             else
+            {
                 return new BarRateUpdate(bounds.Open, bounds.Close, quote);
+            }
         }
 
         protected override BarSeries GetBarSeries(string symbol)
@@ -150,8 +150,8 @@ namespace TickTrader.Algo.Core
 
         protected override BarSeries GetBarSeries(string symbol, BarPriceType side)
         {
-            InitSymbol(symbol, side);
-            var fixture = GetFixutre(symbol, side);
+            InitSymbol(symbol, side, false);
+            var fixture = GetFixture(symbol, side);
             var proxyBuffer = new ProxyBuffer<BarEntity, Api.Bar>(b => b) { SrcBuffer = fixture.Buffer };
             return new BarSeriesProxy() { Buffer = proxyBuffer };
         }
@@ -208,7 +208,7 @@ namespace TickTrader.Algo.Core
 
             public override void Apply(FeedStrategy fStartegy)
             {
-                ((BarStrategy)fStartegy).InitSymbol(SymbolName, PriceType);
+                ((BarStrategy)fStartegy).InitSymbol(SymbolName, PriceType, true);
                 var key = GetKey(SymbolName, PriceType);
                 fStartegy.ExecContext.Builder.MapInput(InputName, key, Selector);
             }
@@ -228,8 +228,8 @@ namespace TickTrader.Algo.Core
             {
                 var key1 = GetKey(SymbolName, BarPriceType.Bid);
                 var key2 = GetKey(SymbolName, BarPriceType.Ask);
-                ((BarStrategy)fStartegy).InitSymbol(SymbolName, BarPriceType.Ask);
-                ((BarStrategy)fStartegy).InitSymbol(SymbolName, BarPriceType.Bid);
+                ((BarStrategy)fStartegy).InitSymbol(SymbolName, BarPriceType.Ask, true);
+                ((BarStrategy)fStartegy).InitSymbol(SymbolName, BarPriceType.Bid, true);
                 fStartegy.ExecContext.Builder.MapInput(InputName, key1, key2, Selector);
             }
         }

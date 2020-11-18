@@ -522,4 +522,7 @@
   <data name="Order_PriceDeviation" xml:space="preserve">
     <value>Price Deviation</value>
   </data>
+  <data name="ConnectionErrorCode_RejectedByServer" xml:space="preserve">
+    <value>Incorrect throttling setting</value>
+  </data>
 </root>

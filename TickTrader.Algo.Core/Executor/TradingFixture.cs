@@ -135,7 +135,7 @@ namespace TickTrader.Algo.Core
         {
             var accProxy = context.Builder.Account;
             var orderType = eReport.OrderCopy.Type;
-            var instantOrder = orderType == OrderType.Market || (orderType == OrderType.Limit && eReport.OrderCopy.ImmediateOrCancel);
+            var instantOrder = orderType == OrderType.Market;;
 
             if (instantOrder && accProxy.Type == AccountTypes.Gross) // workaround for Gross accounts
             {
@@ -252,18 +252,6 @@ namespace TickTrader.Algo.Core
                 var isOwnOrder = CallListener(eReport);
                 if (!isOwnOrder && !IsInvisible(clone))
                     context.Logger.NotifyOrderOpened(clone);
-                if (clone.Type == OrderType.Position)
-                {
-                    OrderAccessor prevOrder = null;
-                    if (eReport.OrderCopy.ParentOrderId != null && eReport.OrderCopy.ParentOrderId != clone.Id)
-                    {
-                        prevOrder = orderCollection.GetOrderOrNull(eReport.OrderCopy.ParentOrderId)?.Clone();
-                    }
-                    if (prevOrder != null)
-                        context.EnqueueEvent(b => b.Account.Orders.FireOrderFilled(new OrderFilledEventArgsImpl(prevOrder, prevOrder)));
-                    else
-                        context.EnqueueEvent(b => b.Account.Orders.FireOrderFilled(new OrderFilledEventArgsImpl(clone, clone)));
-                }
                 context.EnqueueEvent(b => b.Account.Orders.FireOrderOpened(new OrderOpenedEventArgsImpl(clone)));
             }
             else if (eReport.ExecAction == OrderExecAction.Closed)
@@ -296,10 +284,9 @@ namespace TickTrader.Algo.Core
                 {
                     var order = ApplyOrderEntity(eReport, orderCollection);
                     var clone = order.Clone();
-                    var args = new OrderCanceledEventArgsImpl(clone);
                     if (!IsInvisible(clone))
                         context.Logger.NotifyOrderExpiration(clone);
-                    context.EnqueueEvent(b => orderCollection.FireOrderExpired(args));
+                    context.EnqueueEvent(b => orderCollection.FireOrderExpired(new OrderExpiredEventArgsImpl(clone)));
                 }
             }
             else if (eReport.ExecAction == OrderExecAction.Modified)
@@ -422,7 +409,7 @@ namespace TickTrader.Algo.Core
 
         #region TradeCommands impl
 
-        public Task<TradeResultEntity> OpenOrder(bool isAysnc, OpenOrderRequest request)
+        public Task<TradeResultEntity> OpenOrder(bool isAysnc, OpenOrderCoreRequest request)
         {
             return ExecTradeRequest(isAysnc, request, (r, e, c) => e.SendOpenOrder(c, r));
         }
@@ -432,12 +419,12 @@ namespace TickTrader.Algo.Core
             return ExecTradeRequest(isAysnc, request, (r, e, c) => e.SendCancelOrder(c, r));
         }
 
-        public Task<TradeResultEntity> ModifyOrder(bool isAysnc, ReplaceOrderRequest request)
+        public Task<TradeResultEntity> ModifyOrder(bool isAysnc, ReplaceOrderCoreRequest request)
         {
             return ExecTradeRequest(isAysnc, request, (r, e, c) => e.SendModifyOrder(c, r));
         }
 
-        public Task<TradeResultEntity> CloseOrder(bool isAysnc, CloseOrderRequest request)
+        public Task<TradeResultEntity> CloseOrder(bool isAysnc, CloseOrderCoreRequest request)
         {
             if (request.ByOrderId != null)
                 return ExecDoubleOrderTradeRequest(isAysnc, request, (r, e, c) => e.SendCloseOrder(c, r));
@@ -449,7 +436,7 @@ namespace TickTrader.Algo.Core
 
         private Task<TradeResultEntity> ExecTradeRequest<TRequest>(bool isAsync, TRequest orderRequest,
             Action<TRequest, ITradeExecutor, CrossDomainCallback<OrderCmdResultCodes>> executorInvoke)
-            where TRequest : OrderRequest
+            where TRequest : OrderCoreRequest
         {
             var resultTask = new TaskCompletionSource<TradeResultEntity>();
             var callbackTask = new TaskCompletionSource<TradeResultEntity>();
@@ -487,7 +474,7 @@ namespace TickTrader.Algo.Core
 
         private async Task<TradeResultEntity> ExecDoubleOrderTradeRequest<TRequest>(bool isAsync, TRequest orderRequest,
             Action<TRequest, ITradeExecutor, CrossDomainCallback<OrderCmdResultCodes>> executorInvoke)
-            where TRequest : OrderRequest
+            where TRequest : OrderCoreRequest
         {
             var resultTask = new TaskCompletionSource<TradeResultEntity>();
 

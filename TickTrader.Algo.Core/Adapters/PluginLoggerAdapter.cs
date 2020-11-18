@@ -88,7 +88,7 @@ namespace TickTrader.Algo.Core
 
         #region Trade Log Builder methods
 
-        public void LogOrderOpening(OpenOrderRequest request, SymbolAccessor smbInfo)
+        public void LogOrderOpening(OpenOrderCoreRequest request, SymbolAccessor smbInfo)
         {
             var logEntry = new StringBuilder();
             logEntry.Append("[Out] Opening ");
@@ -97,7 +97,7 @@ namespace TickTrader.Algo.Core
             PrintTrade(logEntry.ToString());
         }
 
-        public void LogOrderOpenResults(OrderResultEntity result, OpenOrderRequest request, SymbolAccessor smbInfo)
+        public void LogOrderOpenResults(OrderResultEntity result, OpenOrderCoreRequest request, SymbolAccessor smbInfo)
         {
             var logEntry = new StringBuilder();
 
@@ -134,7 +134,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public void LogOrderModifying(ReplaceOrderRequest request, SymbolAccessor smbInfo)
+        public void LogOrderModifying(ReplaceOrderCoreRequest request, SymbolAccessor smbInfo)
         {
             var logEntry = new StringBuilder();
             logEntry.Append("[Out] Modifying order #").Append(request.OrderId).Append(" to ");
@@ -143,7 +143,7 @@ namespace TickTrader.Algo.Core
             PrintTrade(logEntry.ToString());
         }
 
-        public void LogOrderModifyResults(ReplaceOrderRequest request, SymbolAccessor smbInfo, OrderResultEntity result)
+        public void LogOrderModifyResults(ReplaceOrderCoreRequest request, SymbolAccessor smbInfo, OrderResultEntity result)
         {
             var logEntry = new StringBuilder();
 
@@ -188,16 +188,16 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public void LogOrderClosing(CloseOrderRequest request)
+        public void LogOrderClosing(CloseOrderCoreRequest request)
         {
             var postfix = (request.Volume.HasValue && request.Volume != 0) ? $", volume={request.Volume}" : "";
             PrintTrade($"[Out] Closing order #{request.OrderId}{postfix}");
         }
 
-        public void LogOrderCloseResults(CloseOrderRequest request, OrderResultEntity result)
+        public void LogOrderCloseResults(CloseOrderCoreRequest request, OrderResultEntity result)
         {
             var suffix = result.IsServerResponse ? "[In]" : "[Self]";
-            var postfix = result.ResultingOrder.RemainingVolume != 0 ? $", remaining volume={result.ResultingOrder.RemainingVolume}" : "";
+            var postfix = result.ResultingOrder.RemainingVolume != 0 ? $", remaining volume={result.ResultingOrder.RemainingVolume}" : $", volume={result.ResultingOrder.LastFillVolume}";
             if (result.IsCompleted)
             {
                 PrintTradeSuccess($"{suffix} SUCCESS: Order #{request.OrderId} closed{postfix}");
@@ -208,12 +208,12 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public void LogOrderClosingBy(CloseOrderRequest request)
+        public void LogOrderClosingBy(CloseOrderCoreRequest request)
         {
             PrintTrade($"[Out] Closing order #{request.OrderId} by order #{request.ByOrderId}");
         }
 
-        public void LogOrderCloseByResults(CloseOrderRequest request, OrderResultEntity result)
+        public void LogOrderCloseByResults(CloseOrderCoreRequest request, OrderResultEntity result)
         {
             var suffix = result.IsServerResponse ? "[In]" : "[Self]";
             if (result.IsCompleted)
@@ -353,25 +353,25 @@ namespace TickTrader.Algo.Core
 
         private void AppendOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, Order order)
         {
-            AppendOrderParams(logEntry, smbInfo, suffix, order.Type, order.Side, order.RemainingVolume, order.Price, order.StopPrice, order.StopLoss, order.TakeProfit);
+            AppendOrderParams(logEntry, smbInfo, suffix, order.Type, order.Side, order.RemainingVolume, order.Price, order.StopPrice, order.StopLoss, order.TakeProfit, order.Slippage);
         }
 
         private void AppendIocOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, Order order)
         {
-            AppendOrderParams(logEntry, smbInfo, suffix, order.Type, order.Side, order.LastFillVolume, order.LastFillPrice, double.NaN, order.StopLoss, order.TakeProfit);
+            AppendOrderParams(logEntry, smbInfo, suffix, order.Type, order.Side, order.LastFillVolume, order.LastFillPrice, double.NaN, order.StopLoss, order.TakeProfit, order.Slippage);
         }
 
-        private void AppendOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, OpenOrderRequest request)
+        private void AppendOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, OpenOrderCoreRequest request)
         {
-            AppendOrderParams(logEntry, smbInfo, suffix, request.Type, request.Side, request.VolumeLots, request.Price ?? double.NaN, request.StopPrice ?? double.NaN, request.StopLoss, request.TakeProfit);
+            AppendOrderParams(logEntry, smbInfo, suffix, request.Type, request.Side, request.VolumeLots, request.Price ?? double.NaN, request.StopPrice ?? double.NaN, request.StopLoss, request.TakeProfit, request.Slippage);
         }
 
-        private void AppendOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, ReplaceOrderRequest request)
+        private void AppendOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, ReplaceOrderCoreRequest request)
         {
-            AppendOrderParams(logEntry, smbInfo, suffix, request.Type, request.Side, request.NewVolume ?? request.CurrentVolume, request.Price ?? double.NaN, request.StopPrice ?? double.NaN, request.StopLoss, request.TakeProfit);
+            AppendOrderParams(logEntry, smbInfo, suffix, request.Type, request.Side, request.NewVolume ?? request.CurrentVolume, request.Price ?? double.NaN, request.StopPrice ?? double.NaN, request.StopLoss, request.TakeProfit, request.Slippage);
         }
 
-        private void AppendOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, OrderType type, OrderSide side, double volumeLots, double price, double stopPrice, double? sl, double? tp)
+        private void AppendOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, OrderType type, OrderSide side, double volumeLots, double price, double stopPrice, double? sl, double? tp, double? slippage)
         {
             var priceFormat = smbInfo?.PriceFormat ?? DefaultPriceFormat;
 
@@ -381,18 +381,15 @@ namespace TickTrader.Algo.Core
             if (smbInfo != null)
                 logEntry.Append(" ").Append(smbInfo.Name);
 
-            if ((tp != null && !double.IsNaN(tp.Value)) || (sl != null && !double.IsNaN(sl.Value)))
-            {
-                logEntry.Append(" (");
-                if (sl != null)
-                    logEntry.Append("SL:").AppendNumber(sl.Value, priceFormat);
-                if (sl != null && tp != null)
-                    logEntry.Append(", ");
-                if (tp != null)
-                    logEntry.Append("TP:").AppendNumber(tp.Value, priceFormat);
+            var extraParams = new StringBuilder();
+            AppendExstraParams(extraParams, tp, "TP", priceFormat);
+            AppendExstraParams(extraParams, sl, "SL", priceFormat);
+            AppendExstraParams(extraParams, slippage, "Slippage");
 
-                logEntry.Append(")");
-            }
+            if (extraParams.Length != 0)
+                extraParams.Append(")");
+
+            logEntry.Append(extraParams);
 
             if (!double.IsNaN(price))
                 logEntry.Append(" at price ").AppendNumber(price, priceFormat);
@@ -406,6 +403,18 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        private void AppendExstraParams(StringBuilder str, double? value, string name, NumberFormatInfo format = null)
+        {
+            if (value == null || double.IsNaN(value.Value))
+                return;
+
+            str.Append(str.Length == 0 ? " (" : ", ").Append($"{name}:");
+
+            if (format == null)
+                str.Append(value.Value.ToString("0.#########################"));
+            else
+                str.AppendNumber(value.Value, format);
+        }
         #endregion
     }
 }

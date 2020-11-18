@@ -17,7 +17,7 @@ namespace TickTrader.Algo.TestCollection.Bots
             Symbol.Subscribe();
         }
 
-        protected override void OnQuote(Quote quote)
+        protected override void OnModelTick()
         {
             OpenMarketOrder(Side, Volume);
         }

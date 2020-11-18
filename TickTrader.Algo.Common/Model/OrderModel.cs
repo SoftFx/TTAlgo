@@ -30,6 +30,7 @@ namespace TickTrader.Algo.Common.Model
         private string instanceId;
         private double? stopLoss;
         private double? takeProfit;
+        private double? slippage;
         private decimal? profit;
         private decimal? margin;
         private decimal? currentPrice;
@@ -313,6 +314,18 @@ namespace TickTrader.Algo.Common.Model
                 }
             }
         }
+        public double? Slippage
+        {
+            get { return slippage; }
+            private set
+            {
+                if (slippage != value)
+                {
+                    slippage = value;
+                    NotifyOfPropertyChange(nameof(Slippage));
+                }
+            }
+        }
         public decimal? Profit
         {
             get { return profit; }
@@ -522,12 +535,14 @@ namespace TickTrader.Algo.Common.Model
                 RequestedVolume = Amount,
                 MaxVisibleVolume = MaxVisibleVolume,
                 Symbol = Symbol,
+                InitialType = initOrderType,
                 Type = orderType,
                 Side = Side,
                 Price = (double?)LimitPrice ?? (double?)Price,
                 StopPrice = (double?)StopPrice,
                 StopLoss = stopLoss,
                 TakeProfit = takeProfit,
+                Slippage = slippage,
                 Comment = Comment,
                 UserTag = Tag,
                 InstanceId = InstanceId,
@@ -564,6 +579,7 @@ namespace TickTrader.Algo.Common.Model
             this.Tag = record.UserTag;
             this.StopLoss = record.StopLoss;
             this.TakeProfit = record.TakeProfit;
+            this.Slippage = record.Slippage;
             this.Swap = (decimal?)record.Swap;
             this.Commission = (decimal?)record.Commission;
             this.ExecOptions = record.Options;
@@ -600,6 +616,7 @@ namespace TickTrader.Algo.Common.Model
             this.Tag = report.Tag;
             this.StopLoss = report.StopLoss;
             this.TakeProfit = report.TakeProfit;
+            this.Slippage = report.Slippage;
             this.Swap = report.Swap.ToDecimalSafe();
             this.Commission = report.Commission.ToDecimalSafe();
             this.ExecPrice = report.AveragePrice;

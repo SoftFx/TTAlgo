@@ -10,6 +10,8 @@ namespace TickTrader.Algo.Api
     {
         string ReportId { get; }
         string OrderId { get; }
+        string PositionId { get; }
+        string PositionById { get; }
         DateTime ReportTime { get; }
         DateTime OpenTime { get; }
         TradeRecordTypes Type { get; }
@@ -30,6 +32,16 @@ namespace TickTrader.Algo.Api
         string Comment { get; }
         double GrossProfitLoss { get; }
         double NetProfitLoss { get; }
+        OrderSide TradeRecordSide { get; }
+        OrderType TradeRecordType { get; }
+        double? MaxVisibleQuantity { get; }
+        string Tag { get; }
+        double? Slippage { get; }
+        double? ReqCloseQuantity { get; }
+        double? ReqClosePrice { get; }
+        double? ReqOpenQuantity { get; }
+        double? ReqOpenPrice { get; }
+        bool ImmediateOrCancel { get; }
     }
 
     public enum TradeRecordTypes

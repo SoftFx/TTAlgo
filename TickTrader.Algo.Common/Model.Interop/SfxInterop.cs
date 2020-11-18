@@ -26,7 +26,7 @@ namespace TickTrader.Algo.Common.Model
         private const int DisconnectTimeoutMs = 60 * 1000;
         private const int DownloadTimeoutMs = 120 * 1000;
 
-        private static IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger<SfxInterop>();
+        private IAlgoCoreLogger logger;
 
         public IFeedServerApi FeedApi => this;
         public ITradeServerApi TradeApi => this;
@@ -45,8 +45,10 @@ namespace TickTrader.Algo.Common.Model
 
         public event Action<IServerInterop, ConnectionErrorInfo> Disconnected;
 
-        public SfxInterop(ConnectionOptions options)
+        public SfxInterop(ConnectionOptions options, int loggerId)
         {
+            logger = CoreLoggerFactory.GetLogger<SfxInterop>(loggerId);
+
             const int connectInterval = 10000;
 #if DEBUG
             const int heartbeatInterval = 120000;
@@ -432,7 +434,7 @@ namespace TickTrader.Algo.Common.Model
             _tradeHistoryProxy.DownloadTradesAsync(direction, from?.ToUniversalTime(), to?.ToUniversalTime(), skipCancelOrders, rxStream);
         }
 
-        public Task<OrderInteropResult> SendOpenOrder(OpenOrderRequest request)
+        public Task<OrderInteropResult> SendOpenOrder(OpenOrderCoreRequest request)
         {
             return ExecuteOrderOperation(request, r =>
             {
@@ -440,7 +442,7 @@ namespace TickTrader.Algo.Common.Model
                 var ioc = GetIoC(r.Options);
 
                 return _tradeProxyAdapter.NewOrderAsync(r.OperationId, r.Symbol, Convert(r.Type), Convert(r.Side), r.Volume, r.MaxVisibleVolume,
-                    r.Price, r.StopPrice, timeInForce, r.Expiration, r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, ioc, null);
+                    r.Price, r.StopPrice, timeInForce, r.Expiration, r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, ioc, r.Slippage);
             });
         }
 
@@ -449,34 +451,34 @@ namespace TickTrader.Algo.Common.Model
             return ExecuteOrderOperation(request, r => _tradeProxyAdapter.CancelOrderAsync(r.OperationId, "", r.OrderId));
         }
 
-        public Task<OrderInteropResult> SendModifyOrder(ReplaceOrderRequest request)
+        public Task<OrderInteropResult> SendModifyOrder(ReplaceOrderCoreRequest request)
         {
             if (_tradeProxy.ProtocolSpec.SupportsOrderReplaceQtyChange)
             {
                 return ExecuteOrderOperation(request, r => _tradeProxyAdapter.ReplaceOrderAsync(r.OperationId, "",
                     r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.VolumeChange,
                     r.MaxVisibleVolume, r.Price, r.StopPrice, GetTimeInForceReplace(r.Options, r.Expiration), r.Expiration,
-                    r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, GetIoCReplace(r.Options), null));
+                    r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, GetIoCReplace(r.Options), r.Slippage));
             }
             return ExecuteOrderOperation(request, r => _tradeProxyAdapter.ReplaceOrderAsync(r.OperationId, "",
                 r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.NewVolume ?? r.CurrentVolume, r.CurrentVolume,
                 r.MaxVisibleVolume, r.Price, r.StopPrice, GetTimeInForceReplace(r.Options, r.Expiration), r.Expiration,
-                r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, GetIoCReplace(r.Options), null));
+                r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, GetIoCReplace(r.Options), r.Slippage));
         }
 
-        public Task<OrderInteropResult> SendCloseOrder(CloseOrderRequest request)
+        public Task<OrderInteropResult> SendCloseOrder(CloseOrderCoreRequest request)
         {
             return ExecuteOrderOperation(request, r =>
             {
                 if (request.ByOrderId != null)
                     return _tradeProxyAdapter.ClosePositionByAsync(r.OperationId, r.OrderId, r.ByOrderId);
                 else
-                    return _tradeProxyAdapter.ClosePositionAsync(r.OperationId, r.OrderId, r.Volume);
+                    return _tradeProxyAdapter.ClosePositionAsync(r.OperationId, r.OrderId, r.Volume, r.Slippage == null || !double.IsNaN(r.Slippage.Value) ? r.Slippage : null);
             });
         }
 
         private async Task<OrderInteropResult> ExecuteOrderOperation<TReq>(TReq request, Func<TReq, Task<List<SFX.ExecutionReport>>> operationDef)
-            where TReq : OrderRequest
+            where TReq : OrderCoreRequest
         {
             var operationId = request.OperationId;
 
@@ -571,6 +573,7 @@ namespace TickTrader.Algo.Common.Model
                 IsTradeEnabled = info.IsTradeEnabled,
                 Description = info.Description,
                 DefaultSlippage = info.DefaultSlippage,
+                SlippageType = Convert(info.SlippageType),
                 HiddenLimitOrderMarginReduction = info.HiddenLimitOrderMarginReduction
             };
         }
@@ -581,6 +584,16 @@ namespace TickTrader.Algo.Common.Model
             {
                 case SwapType.PercentPerYear: return BO.SwapType.PercentPerYear;
                 case SwapType.Points: return BO.SwapType.Points;
+                default: throw new NotImplementedException();
+            }
+        }
+
+        private static Api.SlippageType Convert(SFX.SlippageType type)
+        {
+            switch (type)
+            {
+                case SFX.SlippageType.Percent: return API.SlippageType.Percent;
+                case SFX.SlippageType.Pips: return API.SlippageType.Pips;
                 default: throw new NotImplementedException();
             }
         }
@@ -763,6 +776,7 @@ namespace TickTrader.Algo.Common.Model
                 Modified = record.Modified,
                 StopLoss = record.StopLoss,
                 TakeProfit = record.TakeProfit,
+                Slippage = record.Slippage,
                 Commission = (decimal)record.Commission,
                 ExecVolume = record.ExecutedVolume,
                 UserTag = record.Tag,
@@ -821,6 +835,7 @@ namespace TickTrader.Algo.Common.Model
                 RejectReason = Convert(report.RejectReason, report.Text ?? ""),
                 TakeProfit = report.TakeProfit,
                 StopLoss = report.StopLoss,
+                Slippage = report.Slippage,
                 Text = report.Text,
                 Comment = report.Comment,
                 Tag = report.Tag,
@@ -898,18 +913,26 @@ namespace TickTrader.Algo.Common.Model
                                 return Api.OrderCmdResultCodes.CloseOnlyTrading;
                             else if (message == "Max visible amount is not valid for market orders" || message.StartsWith("Max visible amount is valid only for"))
                                 return Api.OrderCmdResultCodes.MaxVisibleVolumeNotSupported;
-                            else if (message.StartsWith("Order Not Found"))
+                            else if (message.StartsWith("Order Not Found") || message.EndsWith("was not found."))
                                 return Api.OrderCmdResultCodes.OrderNotFound;
                             else if (message.StartsWith("Invalid order type") || message.Contains("is not supported"))
                                 return Api.OrderCmdResultCodes.Unsupported;
                             else if (message.StartsWith("Invalid AmountChange") || message == "Cannot modify amount.")
                                 return Api.OrderCmdResultCodes.InvalidAmountChange;
+                            else if (message == "Account Is Readonly")
+                                return Api.OrderCmdResultCodes.ReadOnlyAccount;
+                            else if (message == "Internal server error")
+                                return Api.OrderCmdResultCodes.TradeServerError;
+                            else if (message.StartsWith("Only Limit, Stop and StopLimit orders can be canceled."))
+                                return Api.OrderCmdResultCodes.IncorrectType;
+                            else if (message.Contains("was called too frequently"))
+                                return Api.OrderCmdResultCodes.ThrottlingError;
                         }
                         break;
                     }
                 case RejectReason.None:
                     {
-                        if (message != null && message.StartsWith("Order Not Found"))
+                        if (message != null && (message.StartsWith("Order Not Found") || message.EndsWith("not found.")))
                             return Api.OrderCmdResultCodes.OrderNotFound;
                         return Api.OrderCmdResultCodes.Ok;
                     }
@@ -1142,6 +1165,7 @@ namespace TickTrader.Algo.Common.Model
                 TradeTransactionReason = Convert(report.TradeTransactionReason),
                 SplitRatio = report.SplitRatio,
                 Tax = report.Tax,
+                Slippage = report.Slippage,
             };
         }
 
@@ -1242,7 +1266,7 @@ namespace TickTrader.Algo.Common.Model
             throw new NotImplementedException("Unsupported price type: " + priceType);
         }
 
-        private ConnectionErrorCodes Convert(LogoutReason fdkCode)
+        private static ConnectionErrorCodes Convert(LogoutReason fdkCode)
         {
             switch (fdkCode)
             {

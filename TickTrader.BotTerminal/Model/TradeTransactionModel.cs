@@ -68,7 +68,6 @@ namespace TickTrader.BotTerminal
             InitialType = GetInitialOrderType(transaction);
             Reason = GetReason(transaction);
             Volume = GetVolume(transaction);
-            Slippage = GetSlippage(transaction);
             Tag = GetTag(transaction);
             PosQuantity = GetPosQuantity(transaction);
             Fees = GetFees(transaction);
@@ -77,6 +76,8 @@ namespace TickTrader.BotTerminal
             ReqClosePrice = GetReqClosePrice(transaction);
             ReqOpenVolume = GetReqOpenVolume(transaction);
             ReqCloseVolume = GetReqCloseVolume(transaction);
+
+            ReqSlippage = GetReqSlippage(transaction);
             OpenSlippage = GetOpenSlippage(transaction);
             CloseSlippage = GetCloseSlippage(transaction);
 
@@ -143,7 +144,6 @@ namespace TickTrader.BotTerminal
         public double? MaxVisibleVolume { get; protected set; }
         public double LotSize { get; }
         public double? Volume { get; protected set; }
-        public double? Slippage { get; protected set; }
         public double? ReqQuantity { get; protected set; }
         public double? PosRemainingPrice { get; protected set; }
         public string OrderExecutionOption { get; protected set; }
@@ -156,8 +156,10 @@ namespace TickTrader.BotTerminal
         public double? ReqOpenVolume { get; protected set; }
         public double? ReqClosePrice { get; protected set; }
         public double? ReqCloseVolume { get; protected set; }
+
         public double? OpenSlippage { get; protected set; }
         public double? CloseSlippage { get; protected set; }
+        public double? ReqSlippage { get; protected set; }
 
         public string OpenSortedNumber { get; protected set; }
         public string CloseSortedNumber { get; protected set; }
@@ -332,14 +334,6 @@ namespace TickTrader.BotTerminal
             return (OrderWasCanceled() ? transaction.RemainingQuantity : transaction.OrderLastFillAmount) / LotSize;
         }
 
-        protected virtual double? GetSlippage(TradeReportEntity transaction)
-        {
-            if (IsBalanceTransaction || IsSplitTransaction)
-                return null;
-
-            return GetTransactionSide(transaction) == TransactionSide.Buy ? OpenPrice - transaction.ReqOpenPrice : transaction.ReqOpenPrice - OpenPrice;
-        }
-
         protected virtual double? GetReqQuantity(TradeReportEntity transaction)
         {
             return IsBalanceTransaction ? null : ((transaction.RemainingQuantity + transaction.OrderLastFillAmount) / LotSize);
@@ -429,6 +423,14 @@ namespace TickTrader.BotTerminal
                 return null;
 
             return GetTransactionSide(transaction) == TransactionSide.Buy ? ClosePrice - ReqClosePrice : ReqClosePrice - ClosePrice;
+        }
+
+        protected virtual double? GetReqSlippage(TradeReportEntity transaction)
+        {
+            if (IsBalanceTransaction || IsSplitTransaction)
+                return null;
+
+            return transaction.Slippage;
         }
 
         protected virtual Reasons? GetReason(TradeReportEntity transaction)

@@ -111,21 +111,19 @@ namespace TickTrader.Algo.Core
         {
             // TO DO : build-up series data basing on data from other time frames
 
-            if (priceType == BarPriceType.Bid)
-                return GetOrAddBuilder(_bidBars, timeframe);
-            else
-                return GetOrAddBuilder(_askBars, timeframe);
-        }
-
-        private BarVector GetOrAddBuilder(Dictionary<TimeFrames, BarVector> collection, TimeFrames timeframe)
-        {
-            BarVector builder;
-            if (!collection.TryGetValue(timeframe, out builder))
+            if (!_bidBars.TryGetValue(timeframe, out var bidBuilder))
             {
-                builder = new BarVector(timeframe);
-                collection.Add(timeframe, builder);
+                bidBuilder = new BarVector(timeframe);
+                _bidBars.Add(timeframe, bidBuilder);
             }
-            return builder;
+
+            if (!_askBars.TryGetValue(timeframe, out var askBuilder))
+            {
+                askBuilder = new BarVector(timeframe);
+                _askBars.Add(timeframe, askBuilder);
+            }
+
+            return priceType == BarPriceType.Bid ? bidBuilder : askBuilder;
         }
 
         private void UpdateBars(BarRateUpdate barUpdate)

@@ -353,7 +353,7 @@ namespace TickTrader.BotTerminal
 
         private void FireOnStart(SymbolData mainSymbol, PluginSetupModel setup, Backtester tester)
         {
-            var symbols = SetupPage.GetAllSymbols().Select(ss => ss.SelectedSymbol.Value.InfoEntity).ToList();
+            var symbols = SetupPage.FeedSymbols.Select(ss => ss.SelectedSymbol.Value.InfoEntity).ToList();
             var currecnies = _client.Currencies.Snapshot.Values.ToList();
 
             JournalPage.IsVisible = true;

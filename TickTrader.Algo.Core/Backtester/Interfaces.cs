@@ -36,6 +36,7 @@ namespace TickTrader.Algo.Core
         public Dictionary<string, SymbolEntity> Symbols { get; } = new Dictionary<string, SymbolEntity>();
         public Dictionary<string, CurrencyEntity> Currencies { get; } = new Dictionary<string, CurrencyEntity>();
         public TimeFrames MainTimeframe { get; set; }
+        public TimeFrames ModelTimeframe { get; set; }
         public DateTime? EmulationPeriodStart { get; set; }
         public DateTime? EmulationPeriodEnd { get; set; }
         public int WarmupSize { get; set; } = 10;

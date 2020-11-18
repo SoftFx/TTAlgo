@@ -14,6 +14,7 @@ using TickTrader.BotTerminal.Lib;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Lib;
+using System.Configuration;
 
 namespace TickTrader.BotTerminal
 {
@@ -184,6 +185,17 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public void SaveNewServer(string adress)
+        {
+            if (Servers.Any(u => u.Address == adress))
+                return;
+
+            Configuration config = AuthConfigSection.GetConfig();
+            var section = AuthConfigSection.GetCfgSection(config);
+            Servers.Add(new ServerAuthEntry(section.Servers.AddElement(adress)));
+            config.Save(ConfigurationSaveMode.Modified);
+        }
+
         private void InitAuthData()
         {
             AuthConfigSection cfgSection = AuthConfigSection.GetCfgSection();
@@ -193,6 +205,8 @@ namespace TickTrader.BotTerminal
 
             foreach (var acc in authStorage.Accounts.Values)
                 Accounts.Add(CreateEntry(acc));
+
+            Accounts.Select(u => u.Server.Address).Distinct().Except(Servers.Select(u => u.Address)).Foreach(u => SaveNewServer(u)); //add cached servers
         }
 
         private void SaveLogin(AccountAuthEntry entry)

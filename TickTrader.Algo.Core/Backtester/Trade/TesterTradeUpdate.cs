@@ -78,7 +78,8 @@ namespace TickTrader.Algo.Core
                     update.OnPositionAdded(OrderExecAction.Filled, fillInfo.Position);
             }
 
-            if (fillInfo.WasNetPositionClosed)
+            if (fillInfo.NetPos != null)
+            //if (fillInfo.WasNetPositionClosed)
             {
                 update.OnPositionChanged(fillInfo.NetPos.ResultingPosition);
                 if (fillInfo.WasNetPositionClosed)

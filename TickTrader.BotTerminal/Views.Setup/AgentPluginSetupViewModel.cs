@@ -52,6 +52,7 @@ namespace TickTrader.BotTerminal
                 }
                 _selectedAgent = value;
                 NotifyOfPropertyChange(nameof(SelectedAgent));
+                NotifyOfPropertyChange(nameof(IsNotTerminal));
                 InitAgent();
                 _selectedAgent.Plugins.Updated += AllPlugins_Updated;
                 _selectedAgent.Model.BotStateChanged += BotStateChanged;
@@ -195,9 +196,11 @@ namespace TickTrader.BotTerminal
             DisplayName = $"{bot.InstanceId} Bot Instance";
         }
 
-        public void AddNewAccount() => SelectedAgent.OpenAccountSetup(null, this);
+        public bool IsNotTerminal => Mode == PluginSetupMode.New && SelectedAgent.Name != LocalAlgoAgent.LocalAgentName;
 
-        public void UploadNewPlugin() => SelectedAgent.OpenUploadPackageDialog();
+        public void AddNewAccount() => SelectedAgent.OpenAccountSetup(null, this, false);
+
+        public void UploadNewPlugin() => SelectedAgent.OpenUploadPackageDialog(SelectedPlugin.Key.GetPackageKey());
 
         public void Reset()
         {

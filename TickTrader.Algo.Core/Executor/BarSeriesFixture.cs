@@ -158,7 +158,7 @@ namespace TickTrader.Algo.Core
             {
                 if (futureBarCache[0].OpenTime == timeCoordinate)
                 {
-                    Buffer.Append(futureBarCache[0]);
+                    AppendBarToBuffer(futureBarCache[0]);
                     return;
                 }
                 else if (futureBarCache[0].OpenTime < timeCoordinate)
@@ -168,8 +168,7 @@ namespace TickTrader.Algo.Core
             }
 
             var fillingBar = CreateFillingBar(timeCoordinate);
-            Buffer.Append(fillingBar);
-            LastBar = fillingBar;
+            AppendBarToBuffer(fillingBar);
         }
 
         private void AppendBar(BarEntity bar)
@@ -261,10 +260,9 @@ namespace TickTrader.Algo.Core
             AppendSnapshot(data);
         }
 
-        public void LoadFeedFrom(DateTime from)
+        public void LoadFeedFrom(DateTime? from)
         {
-            var to = DateTime.UtcNow + TimeSpan.FromDays(2);
-            var data = Context.FeedHistory.QueryBars(SymbolCode, priceType, from, to, Context.TimeFrame);
+            var data = from != null ? Context.FeedHistory.QueryBars(SymbolCode, priceType, from.Value, DateTime.UtcNow + TimeSpan.FromDays(2), Context.TimeFrame) : null;
             AppendSnapshot(data);
         }
     }

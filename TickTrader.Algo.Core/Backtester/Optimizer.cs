@@ -294,6 +294,7 @@ namespace TickTrader.Algo.Core
 
                 executor.MainSymbolCode = CommonSettings.MainSymbol;
                 executor.TimeFrame = CommonSettings.MainTimeframe;
+                executor.ModelTimeFrame = CommonSettings.ModelTimeframe;
                 executor.InstanceId = "Optimizing-" + Interlocked.Increment(ref _idSeed).ToString();
                 executor.Permissions = new PluginPermissions() { TradeAllowed = true };
 
@@ -348,9 +349,9 @@ namespace TickTrader.Algo.Core
 
             #region Setup
 
-            public BarStrategy InitBarStrategy(BarPriceType mainPirceTipe)
+            public BarStrategy InitBarStrategy(BarPriceType mainPriceType)
             {
-                var barStrategy = new BarStrategy(mainPirceTipe);
+                var barStrategy = new BarStrategy(mainPriceType);
                 FStrategy = barStrategy;
                 return barStrategy;
             }

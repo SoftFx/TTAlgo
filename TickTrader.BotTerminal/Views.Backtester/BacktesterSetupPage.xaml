@@ -80,6 +80,7 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
                     <Label Grid.Column="0" Grid.Row="0" Content="Bot/Indicator:"/>
@@ -124,11 +125,13 @@
                     <ComboBox Grid.Column="2" Grid.Row="4" Grid.ColumnSpan="2" ItemsSource="{Binding AvailableModels.Value}" SelectedItem="{Binding SelectedModel.Value}"
                               ItemTemplate="{StaticResource ModelTemplate}" Margin="0,4,4,0"/>
 
-                    <ItemsControl ItemsSource="{Binding AdditionalSymbols}" Grid.ColumnSpan="4" Grid.Row="5" ItemTemplate="{StaticResource CaliburnViewTemplate}"/>
+                    <TextBlock Grid.ColumnSpan="4" Grid.Row="5" Text="Symbols' Data Feed" HorizontalAlignment="Center" Margin="0,10" FontStyle="Italic"/>
 
-                    <Label Grid.Column="0" Grid.Row="6" Content="Time range:"/>
-                    <l:WaitIndicator x:Name="RangeUpdateIndicator" Grid.Column="2" Grid.Row="6" Height="22" Content="Updating..." Margin="2" Visibility="Hidden" />
-                    <ContentControl Name="DateRangeSelector" cal:View.Model="{Binding DateRange}" Grid.Column="2" Grid.Row="6" Grid.ColumnSpan="2" Margin="0,4,4,0"
+                    <ItemsControl ItemsSource="{Binding FeedSymbols}" Grid.ColumnSpan="4" Grid.Row="6" ItemTemplate="{StaticResource CaliburnViewTemplate}"/>
+
+                    <Label Grid.Column="0" Grid.Row="7" Content="Time range:"/>
+                    <l:WaitIndicator x:Name="RangeUpdateIndicator" Grid.Column="2" Grid.Row="7" Height="22" Content="Updating..." Margin="2" Visibility="Hidden" />
+                    <ContentControl Name="DateRangeSelector" cal:View.Model="{Binding DateRange}" Grid.Column="2" Grid.Row="7" Grid.ColumnSpan="2" Margin="0,4,4,0"
                                     IsEnabled="{Binding IsDateRangeEnabled.Value}"/>
                 </Grid>
             </Grid>

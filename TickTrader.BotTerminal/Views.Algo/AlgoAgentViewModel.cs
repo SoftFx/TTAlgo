@@ -176,11 +176,11 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public void OpenAccountSetup(AccountModelInfo account, AgentPluginSetupViewModel selectedPlugin = null)
+        public void OpenAccountSetup(AccountModelInfo account, AgentPluginSetupViewModel selectedPlugin = null, bool allowedChangeAgentKey = true)
         {
             try
             {
-                var model = new BAAccountDialogViewModel(_algoEnv, account, Name, selectedPlugin);
+                var model = new BAAccountDialogViewModel(_algoEnv, account, Name, selectedPlugin, allowedChangeAgentKey);
                 _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AccountSetupWindow", model);
             }
             catch (Exception ex)
@@ -228,11 +228,11 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void OpenUploadPackageDialog()
+        public void OpenUploadPackageDialog(PackageKey package = null, string agentName = null)
         {
             try
             {
-                var model = new UploadPackageViewModel(_algoEnv, Name);
+                var model = new UploadPackageViewModel(_algoEnv, agentName ?? Name, package);
                 _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoUploadPackageWindow", model);
             }
             catch (Exception ex)
@@ -241,50 +241,11 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void OpenUploadPackageDialog(PackageKey packageKey)
+        public void OpenDownloadPackageDialog(PackageKey packageKey = null)
         {
             try
             {
-                var model = new UploadPackageViewModel(_algoEnv, packageKey, Name);
-                _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoUploadPackageWindow", model);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Failed to open upload package dialog");
-            }
-        }
-
-        public void OpenUploadPackageDialog(PackageKey packageKey, string agentName)
-        {
-            try
-            {
-                var model = new UploadPackageViewModel(_algoEnv, packageKey, agentName);
-                _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoUploadPackageWindow", model);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Failed to open upload package dialog");
-            }
-        }
-
-        public void OpenDownloadPackageDialog()
-        {
-            try
-            {
-                var model = new DownloadPackageViewModel(_algoEnv, Name);
-                _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoDownloadPackageWindow", model);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Failed to open download package dialog");
-            }
-        }
-
-        public void OpenDownloadPackageDialog(PackageKey packageKey)
-        {
-            try
-            {
-                var model = new DownloadPackageViewModel(_algoEnv, packageKey, Name);
+                var model = new DownloadPackageViewModel(_algoEnv, Name, packageKey);
                 _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoDownloadPackageWindow", model);
             }
             catch (Exception ex)

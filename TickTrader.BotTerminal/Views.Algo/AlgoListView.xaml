@@ -113,34 +113,29 @@
                             <Setter Property="IsExpanded" Value="False"/>
                         </Style>
                     </TreeView.ItemContainerStyle>
-                    <TreeView.Resources>
-                        <Style TargetType="{x:Type TreeViewItem}">
-                            <Style.Setters>
-                                <Setter Property="ToolTip" Value="{Binding PackagePath}" />
-                            </Style.Setters>
-                        </Style>
-                    </TreeView.Resources>
                     <TreeView.ItemTemplate>
                         <HierarchicalDataTemplate ItemsSource="{Binding Items}">
                             <TextBlock Text="{Binding Name}"/>
                             <HierarchicalDataTemplate.ItemTemplate>
                                 <HierarchicalDataTemplate ItemsSource="{Binding Items}">
-                                    <TextBlock Text="{Binding Name}" ToolTip="{Binding Items[0].DisplayPackagePath}">
+                                    <TextBlock Text="{Binding Name, Converter={StaticResource GetFileName}}" ToolTip="{Binding Items[0].DisplayPackagePath}">
                                         <TextBlock.ContextMenu>
                                             <ContextMenu cal:Bind.ModelWithoutContext="{Binding Items[0]}">
                                                 <MenuItem Header="Download..." 
-                                                          cal:Message.Attach="DownloadPackage"/>
+                                                          cal:Message.Attach="DownloadPackage"
+                                                          Visibility="{Binding Items[0].IsRemote, Converter={StaticResource BoolToVis}}"/>
                                                 <MenuItem Header="Upload..." 
-                                                          cal:Message.Attach="UploadPackage"/>
+                                                          cal:Message.Attach="UploadPackage"
+                                                          Visibility="{Binding Items[0].IsRemote, Converter={StaticResource BoolToVis}}"/>
                                                 <MenuItem Header="Remove"
                                                           cal:Message.Attach="RemovePackage"/>
                                                 <Separator/>
                                                 <MenuItem Header="Open folder" 
-                                                                cal:Message.Attach="OpenFolder"
-                                                                Visibility="{Binding Items[0].IsLocal, Converter={StaticResource BoolToVis}}"/>
+                                                          cal:Message.Attach="OpenFolder"
+                                                          Visibility="{Binding Items[0].IsLocal, Converter={StaticResource BoolToVis}}"/>
                                                 <MenuItem Header="Copy path"
-                                                                cal:Message.Attach="CopyPath"
-                                                                Visibility="{Binding Items[0].IsRemote, Converter={StaticResource BoolToVis}}"/>
+                                                          cal:Message.Attach="CopyPath"
+                                                          Visibility="{Binding Items[0].IsRemote, Converter={StaticResource BoolToVis}}"/>
                                             </ContextMenu>
                                         </TextBlock.ContextMenu>
                                     </TextBlock>
@@ -151,18 +146,20 @@
                                                     <StackPanel.ContextMenu>
                                                         <ContextMenu>
                                                             <MenuItem Header="Download package..." 
-                                                                cal:Message.Attach="DownloadPackage"/>
+                                                                      cal:Message.Attach="DownloadPackage"
+                                                                      Visibility="{Binding IsRemote, Converter={StaticResource BoolToVis}}"/>
                                                             <MenuItem Header="Upload package..." 
-                                                                cal:Message.Attach="UploadPackage"/>
+                                                                      cal:Message.Attach="UploadPackage"
+                                                                      Visibility="{Binding IsRemote, Converter={StaticResource BoolToVis}}"/>
                                                             <MenuItem Header="Remove package" 
-                                                                cal:Message.Attach="RemovePackage"/>
+                                                                      cal:Message.Attach="RemovePackage"/>
                                                             <Separator/>
                                                             <MenuItem Header="Open folder" 
-                                                                cal:Message.Attach="OpenFolder"
-                                                                Visibility="{Binding IsLocal, Converter={StaticResource BoolToVis}}"/>
+                                                                      cal:Message.Attach="OpenFolder"
+                                                                      Visibility="{Binding IsLocal, Converter={StaticResource BoolToVis}}"/>
                                                             <MenuItem Header="Copy path"
-                                                                cal:Message.Attach="CopyPath"
-                                                                Visibility="{Binding IsRemote, Converter={StaticResource BoolToVis}}"/>
+                                                                      cal:Message.Attach="CopyPath"
+                                                                      Visibility="{Binding IsRemote, Converter={StaticResource BoolToVis}}"/>
                                                         </ContextMenu>
                                                     </StackPanel.ContextMenu>
                                                     <ContentControl Margin="2,0" Style="{StaticResource PluginIconStyle}" />

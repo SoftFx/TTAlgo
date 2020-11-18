@@ -62,7 +62,7 @@
             </l:MenuItemSelector.ItemTemplate>
         </l:MenuItemSelector>
 
-        <MenuItem Header="Add Indicator"
+        <MenuItem Header="Add Indicator" IsEnabled="{Binding CanAddIndicator}"
                   Visibility="{Binding Converter={StaticResource boolToVisibilityConverter}, Path=Chart.HasAvailableIndicators}"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
                   cal:Message.Attach="OpenPlugin($originalsourcecontext)">
@@ -84,7 +84,7 @@
             </MenuItem.Style>
         </MenuItem>
 
-        <MenuItem Header="Add Bot Trader"
+        <MenuItem Header="Add Bot Trader" IsEnabled="{Binding CanAddBot}"
                   Visibility="{Binding Converter={StaticResource boolToVisibilityConverter}, Path=Chart.HasAvailableBotTraders}"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
                   cal:Message.Attach="OpenPlugin($originalsourcecontext)">

@@ -74,14 +74,20 @@ namespace TickTrader.BotTerminal
             get { return server; }
             set
             {
+                if (server == value)
+                    return;
+
                 server = value;
                 NotifyOfPropertyChange(nameof(Server));
+                NotifyOfPropertyChange(nameof(Accounts));
+
+                SelectedAccount = Accounts.FirstOrDefault();
                 ValidateState();
             }
         }
 
         public ObservableCollection<ServerAuthEntry> Servers { get { return cManager.Servers; } }
-        public IEnumerable<AccountAuthEntry> Accounts => cManager.Accounts.OrderBy(u => long.Parse(u.Login));
+        public IEnumerable<AccountAuthEntry> Accounts => cManager.Accounts.Where(u => u.Server.Address == ResolveServerAddress()).OrderBy(u => long.Parse(u.Login));
 
         public bool SavePassword
         {
@@ -166,7 +172,13 @@ namespace TickTrader.BotTerminal
             set
             {
                 if (value != null)
-                    ApplyAccount(value);
+                    ApplyAccount(value, false);
+                else
+                {
+                    Login = "";
+                    Password = "";
+                }
+
                 NotifyOfPropertyChange(nameof(SelectedAccount));
             }
         }
@@ -192,7 +204,10 @@ namespace TickTrader.BotTerminal
                 string address = ResolveServerAddress();
                 Error = await cManager.Connect(login, password, address, savePassword, CancellationToken.None);
                 if (Error.Code == ConnectionErrorCodes.None)
+                {
+                    cManager.SaveNewServer(address);
                     Done();
+                }
             }
             catch (Exception ex)
             {
@@ -202,21 +217,14 @@ namespace TickTrader.BotTerminal
             IsConnecting = false;
         }
 
-        //private void RefreshAccount()
-        //{
-        //    var acc =  Accounts.FirstOrDefault(a => a.Login == login);
-        //    if (acc != null)
-        //        ApplyAccount(acc);
-        //    else
-        //        Password = null;
-        //}
-
-        private void ApplyAccount(AccountAuthEntry acc)
+        private void ApplyAccount(AccountAuthEntry acc, bool applyServer = true)
         {
             Login = acc.Login;
             Password = acc.Password;
-            Server = acc.Server.Name;
             SavePassword = acc.Password != null;
+
+            if (applyServer)
+                server = acc.Server.Name;
         }
 
         private string ResolveServerAddress()

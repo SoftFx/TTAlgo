@@ -423,6 +423,11 @@ namespace TickTrader.Algo.Core
             InvokePluginMethod((b, q) => b.PluginProxy.InvokeOnQuote(q), quote, false);
         }
 
+        internal void InvokeOnModelTick()
+        {
+            InvokePluginMethod((b, p) => b.PluginProxy.InvokeOnModelTick(), false);
+        }
+
         internal void InvokeAsyncAction(Action asyncAction)
         {
             InvokePluginMethod((b, p) => asyncAction(), false);

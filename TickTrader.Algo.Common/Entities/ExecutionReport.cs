@@ -19,6 +19,7 @@ namespace TickTrader.Algo.Common.Model
         public OrderCmdResultCodes RejectReason { get; set; }
         public double? TakeProfit { get; set; }
         public double? StopLoss { get; set; }
+        public double? Slippage { get; set; }
         public string Text { get; set; }
         public string Comment { get; set; }
         public string Tag { get; set; }

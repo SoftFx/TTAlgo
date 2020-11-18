@@ -38,7 +38,18 @@ namespace TickTrader.Algo.Core
             AskBar = askBar;
             _quoteCount = 1;
             Symbol = symbol;
-            _lastQuote = new QuoteEntity(symbol, _closeTime, bidBar.Close, askBar.Close);
+            _lastQuote = new QuoteEntity(symbol, _closeTime.AddMilliseconds(-10), bidBar.Close, askBar.Close);
+        }
+
+        public BarRateUpdate(BarRateUpdate barUpdate)
+        {
+            Symbol = barUpdate.Symbol;
+            BidBar = barUpdate.BidBar;
+            AskBar = barUpdate.AskBar;
+            _lastQuote = barUpdate._lastQuote;
+            _quoteCount = barUpdate._quoteCount;
+            _openTime = barUpdate._openTime;
+            _closeTime = barUpdate._closeTime;
         }
 
         public void Append(QuoteEntity quote)
@@ -63,11 +74,39 @@ namespace TickTrader.Algo.Core
             _quoteCount++;
         }
 
+        public void Append(BarRateUpdate barUpdate)
+        {
+            var quoteTime = _openTime;
+
+            if (barUpdate.HasBid)
+            {
+                quoteTime = barUpdate.BidBar.CloseTime;
+                if (HasBid)
+                    BidBar.Append(barUpdate.BidBar);
+                else
+                    BidBar = new BarEntity(barUpdate.BidBar);
+            }
+
+            if (barUpdate.HasAsk)
+            {
+                quoteTime = barUpdate.AskBar.CloseTime;
+                if (HasAsk)
+                    AskBar.Append(barUpdate.AskBar);
+                else
+                    AskBar = new BarEntity(barUpdate.AskBar);
+            }
+
+            _lastQuote = new QuoteEntity(Symbol, quoteTime, barUpdate.BidBar?.Close, barUpdate.AskBar?.Close);
+            _quoteCount++;
+        }
+
         public bool HasAsk => AskBar != null;
         public bool HasBid => BidBar != null;
         public string Symbol { get; }
         public BarEntity BidBar { get; private set; }
         public BarEntity AskBar { get; private set; }
+        public QuoteEntity LastQuote => _lastQuote;
+        public DateTime Time => _openTime;
 
         DateTime RateUpdate.Time => _openTime;
         double RateUpdate.Ask => AskBar.Close;

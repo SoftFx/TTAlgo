@@ -18,7 +18,7 @@
                 <ColumnDefinition Width="90"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Label Grid.Row="0" Grid.Column="0" Content="Plugin Host" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+            <Label Grid.Row="0" Grid.Column="0" Content="Algo Server" Foreground="{DynamicResource Shell_PrimaryForeground}" />
             <ComboBox Grid.Row="0" Grid.Column="1" IsEditable="False"
                       IsEnabled="{Binding IsNewMode}"
                       ItemsSource="{Binding Agents}"
@@ -31,7 +31,13 @@
                       ItemsSource="{Binding Accounts}"
                       DisplayMemberPath="DisplayName"
                       SelectedItem="{Binding SelectedAccount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0 5 0 0"/>
-            <Button Grid.Row="2" Grid.Column="1" Content="Add..." cal:Message.Attach="AddNewAccount" Height="21" Width="65" HorizontalAlignment="Right" Margin="0 6 0 0"/>
+            <Button Grid.Row="2" Grid.Column="1" 
+                    Content="Add..." 
+                    cal:Message.Attach="AddNewAccount"
+                    Height="21" Width="65" 
+                    HorizontalAlignment="Right"
+                    Margin="0 6 0 0"
+                    IsEnabled="{Binding IsNotTerminal}"/>
         </Grid>
     </ControlTemplate>
 
@@ -54,7 +60,13 @@
                       ItemsSource="{Binding Plugins}"
                       SelectedItem="{Binding SelectedPlugin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                       DisplayMemberPath="DisplayName"/>
-            <Button Grid.Row="2" Grid.ColumnSpan="4" Content="Upload..." cal:Message.Attach="UploadNewPlugin" Height="21" Width="65" HorizontalAlignment="Right" Margin="0 5 0 0"/>
+            <Button Grid.Row="2" Grid.ColumnSpan="4" 
+                    Content="Upload..." 
+                    cal:Message.Attach="UploadNewPlugin" 
+                    Height="21" Width="65" 
+                    HorizontalAlignment="Right" 
+                    Margin="0 5 0 0"
+                    IsEnabled="{Binding IsNotTerminal}"/>
         </Grid>
     </ControlTemplate>
 

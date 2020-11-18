@@ -176,7 +176,7 @@ namespace TickTrader.Algo.Core
             if (byTagFilterCache.TryGetValue(orderTag, out collection))
                 return collection;
 
-            collection = new OrderFilteredCollection(Orders.OrderListImpl, o => o.Comment == orderTag);
+            collection = new OrderFilteredCollection(Orders.OrderListImpl, o => o.Tag == orderTag);
             byTagFilterCache.Add(orderTag, collection);
             return collection;
         }

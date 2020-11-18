@@ -36,6 +36,7 @@ namespace TickTrader.Algo.Core
         private Func<PluginMetadata, PluginBuilder> _builderFactory = m => new PluginBuilder(m);
         private PluginBuilder _builder;
         private Api.TimeFrames _timeframe;
+        private Api.TimeFrames _modelTimeframe;
         private List<Action> setupActions = new List<Action>();
         private readonly PluginMetadata descriptor;
         private Dictionary<string, IOutputFixture> outputFixtures = new Dictionary<string, IOutputFixture>();
@@ -159,6 +160,19 @@ namespace TickTrader.Algo.Core
                 {
                     ThrowIfRunning();
                     _timeframe = value;
+                }
+            }
+        }
+
+        public TimeFrames ModelTimeFrame
+        {
+            get { return _modelTimeframe; }
+            set
+            {
+                lock (_sync)
+                {
+                    ThrowIfRunning();
+                    _modelTimeframe = value;
                 }
             }
         }
@@ -523,13 +537,13 @@ namespace TickTrader.Algo.Core
             mapping?.MapInput(this, inputName, symbolCode);
         }
 
-        public BarStrategy InitBarStrategy(BarPriceType mainPirceTipe)
+        public BarStrategy InitBarStrategy(BarPriceType mainPriceType)
         {
             lock (_sync)
             {
                 ThrowIfRunning();
                 ThrowIfAlreadyHasFStrategy();
-                var strategy = new BarStrategy(mainPirceTipe);
+                var strategy = new BarStrategy(mainPriceType);
                 this._fStrategy = strategy;
                 return strategy;
             }
@@ -605,6 +619,7 @@ namespace TickTrader.Algo.Core
             InstanceId = config.InstanceId;
             MainSymbolCode = config.MainSymbolCode;
             TimeFrame = config.TimeFrame;
+            ModelTimeFrame = config.ModelTimeFrame;
 
             Permissions = config.Permissions;
 
@@ -851,6 +866,7 @@ namespace TickTrader.Algo.Core
         string IFixtureContext.MainSymbolCode => _mainSymbol;
         AlgoMarketState IFixtureContext.MarketData => _marketFixture.Market;
         TimeFrames IFixtureContext.TimeFrame => _timeframe;
+        TimeFrames IFixtureContext.ModelTimeFrame => _modelTimeframe;
         PluginBuilder IFixtureContext.Builder => _builder;
         FeedStrategy IFixtureContext.FeedStrategy => _fStrategy;
         PluginLoggerAdapter IFixtureContext.Logger => _builder.LogAdapter;

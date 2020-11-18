@@ -148,6 +148,8 @@ namespace TickTrader.BotTerminal
         public GenericCommand CloseCommand { get; private set; }
 
         public bool HasIndicators { get { return Indicators.Count > 0; } }
+        public bool CanAddBot => Chart.TimeFrame != TimeFrames.Ticks;
+        public bool CanAddIndicator => Chart.TimeFrame != TimeFrames.Ticks;
 
         #endregion
 
@@ -314,6 +316,8 @@ namespace TickTrader.BotTerminal
         private void Chart_TimeframeChanged()
         {
             ChartControl.SetTimeframe(Chart.TimeFrame);
+            NotifyOfPropertyChange(nameof(CanAddBot));
+            NotifyOfPropertyChange(nameof(CanAddIndicator));
         }
 
         private void TimeAxis_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -379,7 +383,7 @@ namespace TickTrader.BotTerminal
             //ChartControl.TimeAxis.Value = Chart.TimeAxis.Value;
             ChartControl.BindAxis(Chart.TimeAxis);
             ChartControl.BindCurrentRate(Chart.CurrentRate);
-            ChartControl.SetTimeframe(Chart.TimeFrame);
+            Chart_TimeframeChanged();
 
             Chart.TimeframeChanged += Chart_TimeframeChanged;
             Chart.TimeAxis.PropertyChanged += TimeAxis_PropertyChanged;
@@ -400,9 +404,13 @@ namespace TickTrader.BotTerminal
         public bool CanDrop(object o)
         {
             var plugin = o as AlgoPluginViewModel;
-            if (plugin != null && plugin.Agent.Name == _algoEnv.LocalAgentVM.Name && (plugin.Type == AlgoTypes.Indicator || plugin.Type == AlgoTypes.Robot))
+            if (plugin != null && plugin.Agent.Name == _algoEnv.LocalAgentVM.Name)
             {
-                return true;
+                //if (plugin.Type == AlgoTypes.Indicator)
+                if (plugin.Type == AlgoTypes.Indicator && Chart.TimeFrame != TimeFrames.Ticks)
+                    return true;
+                if (plugin.Type == AlgoTypes.Robot && Chart.TimeFrame != TimeFrames.Ticks)
+                    return true;
             }
             return false;
         }

@@ -4,7 +4,7 @@ using TickTrader.Algo.Api;
 namespace TickTrader.Algo.Core
 {
     [Serializable]
-    public class OpenOrderRequest : OrderRequest
+    public class OpenOrderCoreRequest : OrderCoreRequest
     {
         public string Symbol { get; set; }
         public OrderType Type { get; set; }
@@ -18,6 +18,7 @@ namespace TickTrader.Algo.Core
         public double? StopLoss { get; set; }
         public double? TakeProfit { get; set; }
         public DateTime? Expiration { get; set; }
+        public double? Slippage { get; set; }
         public string Comment { get; set; }
         public OrderExecOptions Options { get; set; }
         public string Tag { get; set; }

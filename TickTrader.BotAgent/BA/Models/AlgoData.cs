@@ -8,7 +8,7 @@ namespace TickTrader.BotAgent.BA.Models
 {
     public class AlgoData : IBotFolder
     {
-        private static ILogger _log = LogManager.GetLogger(nameof(ClientModel));
+        private static ILogger _log = LogManager.GetLogger(nameof(AlgoData));
 
         public AlgoData(string path)
         {

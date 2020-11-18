@@ -3,7 +3,7 @@
 
 !define AGENT_NAME "BotAgent"
 !define AGENT_DISPLAY_NAME "${BASE_NAME} ${AGENT_NAME}"
-!define AGENT_BINDIR "..\TickTrader.BotAgent\bin\Release\net462\publish"
+!define AGENT_BINDIR "..\TickTrader.BotAgent\bin\Release\net472\publish"
 !define AGENT_EXE "TickTrader.BotAgent.exe"
 
 !define SERVICE_NAME_BASE "_TTBotAgent"

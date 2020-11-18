@@ -40,12 +40,12 @@
     <Grid Visibility="{Binding IsStatsVisible, Converter={StaticResource BoolToVis}}">
         <StackPanel Orientation="Horizontal">
             <l:KeyValueLabel Key="Balance:" Value="{Binding Balance, Mode=OneWay}" />
-            <l:KeyValueLabel Key="Equity:" Value="{Binding Equity}" />
-            <l:KeyValueLabel Key="Margin Used:" Value="{Binding Margin}" />
-            <l:KeyValueLabel Key="Free Margin:" Value="{Binding FreeMargin}" />
-            <l:KeyValueLabel Key="Margin Level:" Value="{Binding MarginLevel}" />
-            <l:KeyValueLabel Key="Floating:" Value="{Binding Floating}" />
-            <l:KeyValueLabel Key="Swap:" Value="{Binding Swap}" />
+            <l:KeyValueLabel Key="Equity:" Value="{Binding Equity, Mode=OneWay}" />
+            <l:KeyValueLabel Key="Margin Used:" Value="{Binding Margin, Mode=OneWay}" />
+            <l:KeyValueLabel Key="Free Margin:" Value="{Binding FreeMargin, Mode=OneWay}" />
+            <l:KeyValueLabel Key="Margin Level:" Value="{Binding MarginLevel, Mode=OneWay}" />
+            <l:KeyValueLabel Key="Floating:" Value="{Binding Floating, Mode=OneWay}" />
+            <l:KeyValueLabel Key="Swap:" Value="{Binding Swap, Mode=OneWay}" />
             <!--<ContentControl ContentTemplate="{StaticResource ProfitEntryTemplate}" Content="{Binding}" />-->
         </StackPanel>
     </Grid>

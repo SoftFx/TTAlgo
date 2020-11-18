@@ -86,6 +86,7 @@ namespace TickTrader.Algo.Core
         FeedStrategy FeedStrategy { get; }
         string MainSymbolCode { get; }
         Api.TimeFrames TimeFrame { get; }
+        Api.TimeFrames ModelTimeFrame { get; }
         PluginLoggerAdapter Logger { get; }
         bool IsGlobalUpdateMarshalingEnabled { get; }
 

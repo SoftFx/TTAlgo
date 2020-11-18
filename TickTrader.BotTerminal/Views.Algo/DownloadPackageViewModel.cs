@@ -2,6 +2,7 @@
 using Machinarium.Qnil;
 using NLog;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using TickTrader.Algo.Common.Info;
@@ -10,240 +11,39 @@ using TickTrader.Algo.Protocol;
 
 namespace TickTrader.BotTerminal
 {
-    internal class DownloadPackageViewModel : Screen, IWindowModel
+    internal class DownloadPackageViewModel : BaseloadPackageViewModel
     {
-        private readonly static ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
+        private SortedSet<string> _filesInFolder;
 
-        private AlgoEnvironment _algoEnv;
-        private AlgoPackageViewModel _selectedPackage;
-        private AlgoAgentViewModel _selectedBotAgent;
-        private string _fileName;
-        private string _filePath;
-        private bool _isValid;
-        private bool _hasPendingRequest;
-        private string _error;
-
-
-        public IObservableList<AlgoAgentViewModel> BotAgents { get; }
-
-        public AlgoAgentViewModel SelectedBotAgent
+        public DownloadPackageViewModel(AlgoEnvironment algoEnv, string agentName, PackageKey package) : base(algoEnv, agentName, LoadPackageMode.Download)
         {
-            get { return _selectedBotAgent; }
-            set
-            {
-                if (_selectedBotAgent == value)
-                    return;
+            _filesInFolder = new SortedSet<string>();
+            _logger = NLog.LogManager.GetCurrentClassLogger();
 
-                DeinitAlgoAgent(_selectedBotAgent);
-                _selectedBotAgent = value;
-                InitAlgoAgent(_selectedBotAgent);
-                NotifyOfPropertyChange(nameof(SelectedBotAgent));
-                NotifyOfPropertyChange(nameof(Packages));
-                Validate();
-            }
+            UpdatePackageSource();
+            SetDefaultFileSource(package, out _);
+            SelectedFolder = EnvService.Instance.AlgoCommonRepositoryFolder;
         }
 
-        public IObservableList<AlgoPackageViewModel> Packages { get; private set; }
-
-        public AlgoPackageViewModel SelectedPackage
+        protected override void UpdateAgentPackage(ListUpdateArgs<AlgoPackageViewModel> args)
         {
-            get { return _selectedPackage; }
-            set
-            {
-                if (_selectedPackage == value)
-                    return;
+            var selectedFile = FileNameSource; //Restore previous value after package upload
 
-                _selectedPackage = value;
-                NotifyOfPropertyChange(nameof(SelectedPackage));
-                Validate();
-            }
+            UpdatePackageSource();
+
+            FileNameSource = Packages.Any(u => u.FileName == selectedFile) ? selectedFile : Packages.FirstOrDefault()?.FileName;
         }
 
-        public string FileName
-        {
-            get { return _fileName; }
-            set
-            {
-                if (_fileName == value)
-                    return;
+        protected override void WatcherEventHandling(object o, object e) => UploadSelectedSource();
 
-                _fileName = value;
-                NotifyOfPropertyChange(nameof(FileName));
-            }
+        protected override void UploadSelectedSource()
+        {
+            _filesInFolder = new SortedSet<string>(Directory.GetFiles(SelectedFolder, FileNameWatcherTemplate).Select(u => Path.GetFileName(u)));
+            RefreshTargetName();
         }
 
-        public string FilePath
-        {
-            get { return _filePath; }
-            set
-            {
-                if (_filePath == value)
-                    return;
+        protected override bool CheckFileNameTarget(string name) => !_filesInFolder.Contains(name);
 
-                _filePath = value;
-                NotifyOfPropertyChange(nameof(FilePath));
-                FileName = Path.GetFileName(_filePath);
-                Validate();
-            }
-        }
-
-        public string FileFilter => "Algo Packages (*.ttalgo)|*.ttalgo|Dll Files (*.dll)|*.dll|All files (*.*)|*.*";
-
-        public bool HasPendingRequest
-        {
-            get { return _hasPendingRequest; }
-            set
-            {
-                if (_hasPendingRequest == value)
-                    return;
-
-                _hasPendingRequest = value;
-                NotifyOfPropertyChange(nameof(HasPendingRequest));
-                NotifyOfPropertyChange(nameof(IsEnabled));
-                NotifyOfPropertyChange(nameof(CanOk));
-            }
-        }
-
-        public bool IsEnabled => !_hasPendingRequest;
-
-        public bool IsValid
-        {
-            get { return _isValid; }
-            set
-            {
-                if (_isValid == value)
-                    return;
-
-                _isValid = value;
-                NotifyOfPropertyChange(nameof(IsValid));
-                NotifyOfPropertyChange(nameof(CanOk));
-            }
-        }
-
-        public bool CanOk => !_hasPendingRequest && _isValid;
-
-        public bool HasError { get; set; }
-
-        public string Error
-        {
-            get { return _error; }
-            set
-            {
-                if (_error == value)
-                    return;
-
-                _error = value;
-                HasError = !string.IsNullOrEmpty(_error);
-                NotifyOfPropertyChange(nameof(Error));
-                NotifyOfPropertyChange(nameof(HasError));
-            }
-        }
-
-        public ProgressViewModel DownloadProgress { get; }
-
-
-        private DownloadPackageViewModel(AlgoEnvironment algoEnv)
-        {
-            _algoEnv = algoEnv;
-
-            DisplayName = "Download package";
-
-            BotAgents = _algoEnv.BotAgents.Select(b => b.Agent).AsObservable();
-
-            DownloadProgress = new ProgressViewModel();
-        }
-
-        public DownloadPackageViewModel(AlgoEnvironment algoEnv, string agentName)
-            : this(algoEnv)
-        {
-            SelectedBotAgent = BotAgents.FirstOrDefault(a => a.Name == agentName);
-        }
-
-        public DownloadPackageViewModel(AlgoEnvironment algoEnv, PackageKey packageKey, string agentName)
-            : this(algoEnv)
-        {
-            SelectedBotAgent = BotAgents.FirstOrDefault(a => agentName == LocalAlgoAgent.LocalAgentName ? true : a.Name == agentName);
-            SelectedPackage = Packages?.FirstOrDefault(p => p.Key.Equals(packageKey)) ?? Packages?.FirstOrDefault();
-        }
-
-
-        public async void Ok()
-        {
-            HasPendingRequest = true;
-            try
-            {
-                DownloadProgress.SetMessage($"Downloading package {SelectedPackage.Key.Name} from {SelectedBotAgent.Name} to {FilePath}");
-                var progressListener = new FileProgressListenerAdapter(DownloadProgress, SelectedPackage.Identity.Size);
-                await SelectedBotAgent.Model.DownloadPackage(SelectedPackage.Key, FilePath, progressListener);
-                TryClose();
-            }
-            catch (Exception ex)
-            {
-                Error = ex.Message;
-                _logger.Error(ex, "Failed to download package");
-            }
-            HasPendingRequest = false;
-        }
-
-        public void Cancel()
-        {
-            TryClose();
-        }
-
-
-        protected override void OnDeactivate(bool close)
-        {
-            DeinitAlgoAgent(SelectedBotAgent);
-
-            base.OnDeactivate(close);
-        }
-
-
-        private void Validate()
-        {
-            if (SelectedBotAgent == null || SelectedPackage == null || FilePath == null)
-            {
-                Error = null;
-                IsValid = false;
-                return;
-            }
-
-            if (!PackageWatcher.IsFileSupported(FileName))
-            {
-                Error = "File extension is not supported. Supported extensions are .ttalgo and .dll";
-                IsValid = false;
-                return;
-            }
-
-            Error = null;
-            IsValid = true;
-        }
-
-        private void InitAlgoAgent(AlgoAgentViewModel agent)
-        {
-            if (agent != null)
-            {
-                Packages = agent.Packages.Where(p => p.Location == RepositoryLocation.LocalRepository).AsObservable();
-                SelectedPackage = Packages.FirstOrDefault();
-
-                agent.Model.Packages.Updated += BotAgentPackagesUpdated;
-            }
-        }
-
-        private void DeinitAlgoAgent(AlgoAgentViewModel agent)
-        {
-            if (agent != null)
-            {
-                agent.Model.Packages.Updated -= BotAgentPackagesUpdated;
-            }
-        }
-
-        private void BotAgentPackagesUpdated(DictionaryUpdateArgs<PackageKey, PackageInfo> args)
-        {
-            if (args.Key.Equals(SelectedPackage?.Key))
-            {
-                SelectedPackage = null;
-            }
-        }
+        private void UpdatePackageSource() => Packages = SelectedBotAgent.Packages.Where(p => p.Location == RepositoryLocation.LocalRepository).Select(u => u.Identity).AsObservable();
     }
 }

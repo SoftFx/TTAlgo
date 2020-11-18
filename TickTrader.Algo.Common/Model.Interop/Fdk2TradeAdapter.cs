@@ -139,10 +139,10 @@ namespace TickTrader.Algo.Common.Model.Interop
             return taskSrc.Task;
         }
 
-        public Task<List<FDK2.ExecutionReport>> ClosePositionAsync(string clientOrderId, string orderId, double? qty)
+        public Task<List<FDK2.ExecutionReport>> ClosePositionAsync(string clientOrderId, string orderId, double? qty, double? slippage)
         {
             var taskSrc = new OrderResultSource(_execReportHandler);
-            _tradeProxy.ClosePositionAsync(taskSrc, clientOrderId, orderId, qty);
+            _tradeProxy.ClosePositionAsync(taskSrc, clientOrderId, orderId, qty, slippage);
             return taskSrc.Task;
         }
 

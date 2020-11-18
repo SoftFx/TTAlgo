@@ -3,7 +3,7 @@
 namespace TickTrader.Algo.Core
 {
     [Serializable]
-    public class CancelOrderRequest : OrderRequest
+    public class CancelOrderRequest : OrderCoreRequest
     {
          public string OrderId { get; set; }
     }

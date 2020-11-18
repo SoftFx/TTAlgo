@@ -28,18 +28,18 @@ namespace TickTrader.Algo.Core
 
     public interface ITradeApi
     {
-        Task<TradeResultEntity> OpenOrder(bool isAysnc, OpenOrderRequest request);
+        Task<TradeResultEntity> OpenOrder(bool isAysnc, OpenOrderCoreRequest request);
         Task<TradeResultEntity> CancelOrder(bool isAysnc, CancelOrderRequest request);
-        Task<TradeResultEntity> ModifyOrder(bool isAysnc, ReplaceOrderRequest request);
-        Task<TradeResultEntity> CloseOrder(bool isAysnc, CloseOrderRequest request);
+        Task<TradeResultEntity> ModifyOrder(bool isAysnc, ReplaceOrderCoreRequest request);
+        Task<TradeResultEntity> CloseOrder(bool isAysnc, CloseOrderCoreRequest request);
     }
 
     public interface ITradeExecutor
     {
-        void SendOpenOrder(ICallback<OrderCmdResultCodes> callback, OpenOrderRequest request);
+        void SendOpenOrder(ICallback<OrderCmdResultCodes> callback, OpenOrderCoreRequest request);
         void SendCancelOrder(ICallback<OrderCmdResultCodes> callback, CancelOrderRequest request);
-        void SendModifyOrder(ICallback<OrderCmdResultCodes> callback, ReplaceOrderRequest request);
-        void SendCloseOrder(ICallback<OrderCmdResultCodes> callback, CloseOrderRequest request);
+        void SendModifyOrder(ICallback<OrderCmdResultCodes> callback, ReplaceOrderCoreRequest request);
+        void SendCloseOrder(ICallback<OrderCmdResultCodes> callback, CloseOrderCoreRequest request);
     }
 
 

@@ -55,6 +55,7 @@
                                     <Binding Path="SplitReqVolume"/>
                                     <Binding Path="SplitReqPrice"/>
                                     <Binding Path="SplitRatio"/>
+                                    <Binding Path="ReqSlippage"/>
                                 </MultiBinding>
                             </Setter.Value>
                         </Setter>
@@ -96,6 +97,10 @@
                                         <StackPanel Orientation="Horizontal" Visibility="{Binding PosQuantity, Converter={StaticResource NullOrEmptyToVis}}">
                                             <TextBlock Text="Pos Volume: " VerticalAlignment="Center" />
                                             <TextBlock Text="{Binding PosQuantity}" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Visibility="{Binding ReqSlippage, Converter={StaticResource NullOrEmptyToVis}}">
+                                            <TextBlock Text="ReqSlippage: " VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding ReqSlippage, Converter={StaticResource Round}}" VerticalAlignment="Center" />
                                         </StackPanel>
                                     </StackPanel>
 
@@ -141,7 +146,7 @@
                     <DataGridTextColumn Header="Slippage" Width="100" Visibility="{Binding Visibility, Source={StaticResource SlippageShow}}">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource PriceConverter}" >
-                                <Binding Path="Slippage"/>
+                                <Binding Path="OpenSlippage"/>
                                 <Binding Path="PriceDigits"/>
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
@@ -267,6 +272,7 @@
                                     <Binding Path="InitialType"/>
                                     <Binding Path="MaxVisibleVolume"/>
                                     <Binding Path="OrderExecutionOption"/>
+                                    <Binding Path="ReqSlippage"/>
                                     <!--<Binding Path="SplitReqVolume"/>
                                     <Binding Path="SplitReqPrice"/>-->
                                     <Binding Path="SplitRatio"/>
@@ -296,6 +302,10 @@
                                         <StackPanel Orientation="Horizontal" Visibility="{Binding MaxVisibleVolume, Converter={StaticResource NullOrEmptyToVis}}">
                                             <TextBlock Text="Max Visible Volume: " VerticalAlignment="Center" />
                                             <TextBlock Text="{Binding MaxVisibleVolume}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Visibility="{Binding ReqSlippage, Converter={StaticResource NullOrEmptyToVis}}">
+                                            <TextBlock Text="ReqSlippage: " VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding ReqSlippage, Converter={StaticResource Round}}" VerticalAlignment="Center" />
                                         </StackPanel>
                                         <StackPanel Orientation="Horizontal" Visibility="{Binding OrderExecutionOption, Converter={StaticResource NullOrEmptyToVis}}">
                                             <TextBlock Text="Option: " VerticalAlignment="Center" />
@@ -472,6 +482,7 @@
                                     <Binding Path="SplitReqVolume"/>
                                     <Binding Path="SplitReqPrice"/>
                                     <Binding Path="SplitRatio"/>
+                                    <Binding Path="ReqSlippage"/>
                                 </MultiBinding>
                             </Setter.Value>
                         </Setter>
@@ -489,6 +500,10 @@
                                     <StackPanel Orientation="Horizontal" Visibility="{Binding SplitRatio, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Split Ratio: " VerticalAlignment="Center" />
                                         <TextBlock Text="{Binding SplitRatio}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding ReqSlippage, Converter={StaticResource NullOrEmptyToVis}}">
+                                        <TextBlock Text="ReqSlippage: " VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding ReqSlippage, Converter={StaticResource Round}}" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </StackPanel>
                             </Setter.Value>

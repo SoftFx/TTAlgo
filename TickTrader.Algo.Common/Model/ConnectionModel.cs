@@ -20,7 +20,8 @@ namespace TickTrader.Algo.Common.Model
     public class ConnectionModel : ActorPart, IStateMachineSync
     {
         private StateMachine<States> _stateControl;
-        private static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger<ConnectionModel>();
+        private IAlgoCoreLogger logger;
+        private readonly int _loggerId;
         public enum States { Offline, Connecting, Online, Disconnecting, OfflineRetry }
         public enum Events { LostConnection, ConnectFailed, Connected, DoneDisconnecting, OnRequest, OnRetry, StopRetryRequested }
         //public enum DiconnectReasons { ConnectSequenceFailed, ClientRequest, LostConnection }
@@ -37,8 +38,10 @@ namespace TickTrader.Algo.Common.Model
         private ActorEvent _deinitListeners = new ActorEvent();
         private ActorEvent<StateInfo> _stateListeners = new ActorEvent<StateInfo>();
 
-        public ConnectionModel(ConnectionOptions options)
+        public ConnectionModel(ConnectionOptions options, int loggerId)
         {
+            _loggerId = loggerId;
+            logger = CoreLoggerFactory.GetLogger<ConnectionModel>(loggerId);
             _options = options;
 
             Func<bool> canRecconect = () => _options.AutoReconnect && wasConnected
@@ -218,7 +221,7 @@ namespace TickTrader.Algo.Common.Model
                 CheckValidType(_options);
 
                 var options = _options.WithNewLogsFolder(Path.Combine(_options.LogsFolder, CurrentProtocol, $"{request.Address} - {request.Usermame}"));
-                _interop = new SfxInterop(options);
+                _interop = new SfxInterop(options, _loggerId);
 
                 _interop.Disconnected += _interop_Disconnected;
 

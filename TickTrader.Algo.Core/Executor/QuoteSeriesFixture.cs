@@ -10,6 +10,7 @@ namespace TickTrader.Algo.Core
     internal class QuoteSeriesFixture : FeedFixture, IFeedBuffer
     {
         private InputBuffer<Quote> buffer;
+        private Quote _lastQuote;
 
         public QuoteSeriesFixture(string symbolCode, IFixtureContext context, List<QuoteEntity> data = null) : base(symbolCode, context)
         {
@@ -52,7 +53,7 @@ namespace TickTrader.Algo.Core
             AppendData(data);
         }
 
-        public void LoadFeedFrom(DateTime from)
+        public void LoadFeedFrom(DateTime? from)
         {
             throw new NotImplementedException();
         }
@@ -64,14 +65,40 @@ namespace TickTrader.Algo.Core
 
         public BufferUpdateResult Update(Api.Quote quote)
         {
-            buffer.Append(quote);
-            return new BufferUpdateResult() { IsLastUpdated = true };
+            var res = UpdateBuffer(quote);
+            return res == null ? new BufferUpdateResult()
+                : res.Value
+                    ? new BufferUpdateResult { IsLastUpdated = true }
+                    : new BufferUpdateResult { IsLastUpdated = false, ExtendedBy = 1 };
         }
 
         private void AppendData(List<QuoteEntity> data)
         {
             IsLoaded = true;
-            buffer.AppendRange(data);
+            foreach(var q in data)
+            {
+                UpdateBuffer(q);
+            }
+        }
+
+        private bool? UpdateBuffer(Api.Quote quote)
+        {
+            // ticks from past are not accepted
+            if (_lastQuote?.Time.Ticks > quote.Time.Ticks)
+                return true;
+
+            // chart can't process output points with equal ticks
+            var res = _lastQuote?.Time.Ticks == quote.Time.Ticks;
+            _lastQuote = quote;
+            if (res)
+            {
+                buffer[LastIndex] = quote;
+            }
+            else
+            {
+                buffer.Append(quote);
+            }
+            return res;
         }
     }
 

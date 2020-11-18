@@ -59,12 +59,11 @@ namespace TickTrader.BotTerminal
         private void PluginViewUpdate()
         {
             PluginsView = CollectionViewSource.GetDefaultView(SelectedAgent.Plugins?.AsObservable());
-
-            PluginsView.SortDescriptions.Add(new SortDescription(AlgoPluginViewModel.GroupLevelHeader, ListSortDirection.Descending));
-            PluginsView.SortDescriptions.Add(new SortDescription(AlgoPluginViewModel.PackageLevelHeader, ListSortDirection.Ascending));
+            PluginsView.SortDescriptions.Add(new SortDescription(AlgoPluginViewModel.LevelHeader, ListSortDirection.Descending));
+            PluginsView.SortDescriptions.Add(new SortDescription(AlgoPluginViewModel.SortPackageLevelHeader, ListSortDirection.Ascending));
             PluginsView.SortDescriptions.Add(new SortDescription(AlgoPluginViewModel.BotLevelHeader, ListSortDirection.Ascending));
 
-            PluginsView.GroupDescriptions.Add(new PropertyGroupDescription(AlgoPluginViewModel.GroupLevelHeader));
+            PluginsView.GroupDescriptions.Add(new PropertyGroupDescription(AlgoPluginViewModel.LevelHeader));
             PluginsView.GroupDescriptions.Add(new PropertyGroupDescription(AlgoPluginViewModel.PackageLevelHeader));
 
             PluginsView.Filter = new Predicate<object>(Filter);
@@ -79,7 +78,7 @@ namespace TickTrader.BotTerminal
                 if (string.IsNullOrEmpty(_filterString))
                     return true;
 
-                return FindMatches(vm.DisplayName) || FindMatches(vm.PackageDisplayName);
+                return FindMatches(vm.DisplayName) || FindMatches(vm.PackageName);
             }
 
             return false;

@@ -22,6 +22,8 @@ namespace TickTrader.Algo.Core
 
         public string ReportId => Entity.Id;
         public string OrderId => Entity.OrderId;
+        public string PositionId => Entity.PositionId;
+        public string PositionById => Entity.PositionById;
         public DateTime ReportTime => Entity.ReportTime;
         public DateTime OpenTime => Entity.OpenTime;
         public TradeRecordTypes Type => Entity.Type;
@@ -42,6 +44,16 @@ namespace TickTrader.Algo.Core
         public string Comment => Entity.Comment;
         public double GrossProfitLoss => Entity.GrossProfitLoss;
         public double NetProfitLoss => Entity.NetProfitLoss;
+        public OrderSide TradeRecordSide => Entity.TradeRecordSide;
+        public OrderType TradeRecordType => Entity.TradeRecordType;
+        public double? MaxVisibleQuantity => Entity.MaxVisibleQuantity;
+        public string Tag => Entity.Tag;
+        public double? Slippage => Entity.Slippage;
+        public double? ReqCloseQuantity => Entity.ReqCloseQuantity;
+        public double? ReqClosePrice => Entity.ReqClosePrice;
+        public double? ReqOpenQuantity => Entity.ReqOpenQuantity;
+        public double? ReqOpenPrice => Entity.ReqOpenPrice;
+        public bool ImmediateOrCancel => Entity.ImmediateOrCancel;
 
         #region Emulation
 
@@ -120,7 +132,7 @@ namespace TickTrader.Algo.Core
             Entity.PositionOpened = order.PositionCreated;
             Entity.PosOpenPrice = order.Price;
             Entity.PositionClosed = closeTime;
-            Entity.ClosePrice =  (double)closePrice;
+            Entity.ClosePrice = (double)closePrice;
             Entity.PositionModified = order.Modified;
             Entity.PositionById = posById;
             Entity.ReqClosePrice = (double?)requestPrice;
@@ -148,7 +160,7 @@ namespace TickTrader.Algo.Core
 
         public TradeReportAdapter FillCharges(TradeChargesInfo charges, decimal profit, decimal balanceMovement)
         {
-            Entity.Commission +=  (double)charges.Commission;
+            Entity.Commission += (double)charges.Commission;
             //Entity.AgentCommission += (double)charges.AgentCommission;
             Entity.Swap += (double)charges.Swap;
             Entity.TransactionAmount = (double)balanceMovement;

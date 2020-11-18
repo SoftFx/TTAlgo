@@ -1,6 +1,7 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using TickTrader.Algo.Common.Info;
@@ -49,7 +50,9 @@ namespace TickTrader.BotTerminal
                     return;
 
                 _login = value;
-                _password = null;
+
+                if (!Accounts.Any(u => u.Login == Login && u.Server.Address == Server))
+                    _password = null;
 
                 NotifyOfPropertyChange(nameof(Login));
                 NotifyOfPropertyChange(nameof(Password));
@@ -81,6 +84,10 @@ namespace TickTrader.BotTerminal
 
                 _server = value;
                 NotifyOfPropertyChange(nameof(Server));
+                NotifyOfPropertyChange(nameof(Accounts));
+
+                SelectedAccount = Accounts.FirstOrDefault();
+
                 ValidateState();
             }
         }
@@ -101,11 +108,15 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public bool AllowedChangeAgentKey { get; }
+
         public bool IsNewMode { get; }
+
+        public bool CanChangeAgentKey => AllowedChangeAgentKey && CanChangeAccountKey;
 
         public bool CanChangeAccountKey => IsNewMode && IsEditable;
 
-        public bool CanOk => _isValid && IsEditable 
+        public bool CanOk => _isValid && IsEditable
             && (IsNewMode ? SelectedAgent.Model.AccessManager.CanAddAccount() : SelectedAgent.Model.AccessManager.CanChangeAccount());
 
         public bool CanTest => _isValid && IsEditable && !string.IsNullOrEmpty(_password) && SelectedAgent.Model.AccessManager.CanTestAccountCreds();
@@ -163,7 +174,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public ObservableCollection<AccountAuthEntry> Accounts => _algoEnv.Shell.ConnectionManager.Accounts;
+        public IEnumerable<AccountAuthEntry> Accounts => _algoEnv.Shell.ConnectionManager.Accounts.Where(u => u.Server.Address == Server).OrderBy(u => long.Parse(u.Login));
 
         public AccountAuthEntry SelectedAccount
         {
@@ -174,20 +185,26 @@ namespace TickTrader.BotTerminal
                 {
                     Login = value.Login;
                     Password = value.Password;
-                    Server = value.Server.Address;
                 }
+                else
+                {
+                    Login = "";
+                    Password = "";
+                }
+
                 NotifyOfPropertyChange(nameof(SelectedAccount));
             }
         }
 
 
-        public BAAccountDialogViewModel(AlgoEnvironment algoEnv, AccountModelInfo account, string agentName, AgentPluginSetupViewModel plugin = null)
+        public BAAccountDialogViewModel(AlgoEnvironment algoEnv, AccountModelInfo account, string agentName, AgentPluginSetupViewModel plugin = null, bool allowedChangeAgentKey = true)
         {
             _algoEnv = algoEnv;
             _account = account;
             _selectedPlugin = plugin;
 
             IsEditable = true;
+            AllowedChangeAgentKey = allowedChangeAgentKey;
 
             Agents = _algoEnv.BotAgents.Select(b => b.Agent).AsObservable();
             SelectedAgent = Agents.FirstOrDefault(a => a.Name == agentName);
@@ -260,8 +277,8 @@ namespace TickTrader.BotTerminal
 
         private void ValidateState()
         {
-            _isValid = _selectedAgent != null 
-                && !string.IsNullOrWhiteSpace(_login) 
+            _isValid = _selectedAgent != null
+                && !string.IsNullOrWhiteSpace(_login)
                 && !string.IsNullOrWhiteSpace(_server)
                 && (!string.IsNullOrEmpty(_password) || _account != null);
             NotifyOfPropertyChange(nameof(CanOk));

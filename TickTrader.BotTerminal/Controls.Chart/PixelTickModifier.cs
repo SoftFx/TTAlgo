@@ -10,6 +10,10 @@ using System.Windows;
 
 namespace TickTrader.BotTerminal
 {
+    /// <summary>
+    /// Default chart grid is too frequent (dates overlap with time).
+    /// Larger MinDelta will make grid lines appear more distant.
+    /// </summary>
     public class PixelTickModifier : AxisModifierBase
     {
         private List<IAxis> _axes = new List<IAxis>();
@@ -49,9 +53,8 @@ namespace TickTrader.BotTerminal
             base.OnDetached();
         }
 
-        private void ViewPort_AxisRangeUpdated(IAxis axis, IndexRange range, IndexRange limit)
+        private void ViewPort_AxisRangeUpdated(IAxis axis, IRange range, IRange limit)
         {
-            //System.Diagnostics.Debug.WriteLine("CustomViewPort_AxisWidthChanged w=" + axis.Width);
             UpdateAxisTicks(axis);
         }
 
@@ -59,7 +62,6 @@ namespace TickTrader.BotTerminal
         {
             if (!_axes.Contains(axis))
                 _axes.Add(axis);
-            axis.AutoTicks = false;
             UpdateAxisTicks(axis);
         }
 
@@ -74,22 +76,6 @@ namespace TickTrader.BotTerminal
             if (maxTicks <= 0)
                 maxTicks = 1;
             axis.MaxAutoTicks = maxTicks;
-
-
-
-            //var range = axis.VisibleRange as IndexRange;
-            //if (range != null)
-            //{
-            //    var dataPointWidth = axis.Width / range.Diff;
-
-            //    var delta = (int)Math.Floor(MinDelta / dataPointWidth);
-            //    if (delta <= 0)
-            //        delta = 1;
-
-            //    axis.MinorDelta = delta / 2;
-            //    axis.MajorDelta = delta;
         }
-
-        //System.Diagnostics.Debug.WriteLine("MaxTicks=" + maxTicks + " mDelta=" + axis.MajorDelta);
     }
 }

@@ -638,6 +638,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             {
                 Key = config.Key.Convert(),
                 TimeFrame = config.TimeFrame.Convert(),
+                ModelTimeframe = config.ModelTimeFrame.Convert(),
                 MainSymbol = config.MainSymbol.Convert(version),
                 SelectedMapping = config.SelectedMapping.Convert(),
                 InstanceId = Convert(config.InstanceId),
