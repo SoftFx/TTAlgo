@@ -403,9 +403,7 @@ namespace TickTrader.BotTerminal
 
         private void Init()
         {
-            AvailableTimeFrames = Plugin.Descriptor.Type != AlgoTypes.Robot
-                ? SetupMetadata.Api.TimeFrames
-                : SetupMetadata.Api.TimeFrames.Where(t => t != TimeFrames.Ticks);
+            AvailableTimeFrames = SetupMetadata.Api.TimeFrames.Where(t => t != TimeFrames.Ticks);
             AvailableSymbols = SetupMetadata.Account.GetAvaliableSymbols(SetupMetadata.Context.DefaultSymbol).Where(u => u.Origin != SymbolOrigin.Token).ToList();
             AvailableMappings = SetupMetadata.Mappings.BarToBarMappings;
 
