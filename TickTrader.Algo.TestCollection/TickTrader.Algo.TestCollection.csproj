@@ -122,7 +122,14 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+<<<<<<< HEAD
     <None Include="packages.config" />
+=======
+    <ProjectReference Include="..\TickTrader.Algo.Indicators\TickTrader.Algo.Indicators.csproj">
+      <Project>{127406A9-5D62-4FE7-9680-1D2DEED7564F}</Project>
+      <Name>TickTrader.Algo.Indicators</Name>
+    </ProjectReference>
+>>>>>>> Backtester_Net_event_fix
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

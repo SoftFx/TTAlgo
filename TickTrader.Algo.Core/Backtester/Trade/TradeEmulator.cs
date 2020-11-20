@@ -251,6 +251,7 @@ namespace TickTrader.Algo.Core
                     var stopPrice = RoundPrice(request.StopPrice, smbMetadata, orderToModify.Side);
                     var sl = RoundPrice(request.StopLoss, smbMetadata, orderToModify.Side);
                     var tp = RoundPrice(request.TakeProfit, smbMetadata, orderToModify.Side);
+                    var comment = string.IsNullOrEmpty(request.Comment) ? orderToModify.Comment : request.Comment;
 
                     var coreRequest = new ReplaceOrderCoreRequest
                     {
@@ -264,7 +265,7 @@ namespace TickTrader.Algo.Core
                         StopPrice = stopPrice,
                         StopLoss = sl,
                         TakeProfit = tp,
-                        Comment = request.Comment,
+                        Comment = comment,
                         Expiration = request.Expiration,
                         MaxVisibleVolume = (double?)orderMaxVisibleVolume,
                         Options = request.Options

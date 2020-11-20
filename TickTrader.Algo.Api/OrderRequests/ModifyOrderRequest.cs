@@ -75,17 +75,17 @@ namespace TickTrader.Algo.Api
 
             public Template WithParams(string orderId, double? price)
             {
-                return WithParams(orderId, price, null, null, null, null, null, "", null, null, null);
+                return WithParams(orderId, price, null, null, null, null, null, null, null, null, null);
             }
 
             public Template WithParams(string orderId, double? price, double? volume)
             {
-                return WithParams(orderId, price, null, volume, null, null, null, "", null, null, null);
+                return WithParams(orderId, price, null, volume, null, null, null, null, null, null, null);
             }
 
             public Template WithParams(string orderId, double? price, double? takeProfit, double? stopLoss)
             {
-                return WithParams(orderId, price, null, null, null, takeProfit, stopLoss, "", null, null, null);
+                return WithParams(orderId, price, null, null, null, takeProfit, stopLoss, null, null, null, null);
             }
 
             public Template WithParams(string orderId, double? price, double? stopPrice, double? volume, double? maxVisibleVolume, double? takeProfit, double? stopLoss, string comment, DateTime? expiration, OrderExecOptions? options, double? slippage)
