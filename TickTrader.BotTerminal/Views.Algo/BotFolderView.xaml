@@ -34,7 +34,7 @@
                       DisplayMemberPath="InstanceId"
                       SelectedItem="{Binding SelectedBot}" />
                 <Label Grid.Row="6" Content="Path"/>
-                <TextBox Grid.Row="7" Text="{Binding Path}" IsReadOnly="True"/>
+                <TextBox Grid.Row="7" Text="{Binding Path, Mode=OneWay}" IsReadOnly="True"/>
                 <DockPanel Grid.Row="8" Style="{DynamicResource DockPanelAsToolBarStyle}">
                     <l:FlatButton DockPanel.Dock="Left" Content="Upload file" Padding="5 0" 
                           Style="{DynamicResource PanelActionButtonStyle}"
