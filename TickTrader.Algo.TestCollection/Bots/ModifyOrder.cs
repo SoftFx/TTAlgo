@@ -56,7 +56,7 @@ namespace TickTrader.Algo.TestCollection.Bots
 
             var request = ModifyOrderRequest.Template.Create().WithOrderId(OrderId)
                 .WithPrice(Price).WithStopPrice(StopPrice).WithMaxVisibleVolume(MaxVisibleVolume)
-                .WithStopLoss(StopLoss).WithTakeProfit(TakeProfit).WithComment(Comment)
+                .WithStopLoss(StopLoss).WithTakeProfit(TakeProfit).WithComment(comment)
                 .WithExpiration(ExpirationTimeout.HasValue ? DateTime.Now + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null)
                 .WithVolume(Volume).WithOptions(options).WithSlippage(Slippage).MakeRequest();
 
