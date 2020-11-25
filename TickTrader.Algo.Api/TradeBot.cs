@@ -181,13 +181,13 @@ namespace TickTrader.Algo.Api
         }
 
         [Obsolete]
-        public OrderCmdResult ModifyOrder(string orderId, double price, double? sl = null, double? tp = null, string comment = "")
+        public OrderCmdResult ModifyOrder(string orderId, double price, double? sl = null, double? tp = null, string comment = null)
         {
             return context.TradeApi.ModifyOrder(false, ModifyOrderRequest.Template.Create().WithParams(orderId, price, tp, sl).WithComment(comment).MakeRequest()).Result;
         }
 
         [Obsolete]
-        public OrderCmdResult ModifyOrder(string orderId, double? price, double? stopPrice, double? maxVisibleVolume = null, double? sl = null, double? tp = null, string comment = "", DateTime? expiration = null, double? volume = null, OrderExecOptions? options = null)
+        public OrderCmdResult ModifyOrder(string orderId, double? price, double? stopPrice, double? maxVisibleVolume = null, double? sl = null, double? tp = null, string comment = null, DateTime? expiration = null, double? volume = null, OrderExecOptions? options = null)
         {
             return context.TradeApi.ModifyOrder(false, ModifyOrderRequest.Template.Create().WithParams(orderId, price, stopPrice, volume, maxVisibleVolume, tp, sl, comment, expiration, options, null).MakeRequest()).Result;
         }
@@ -198,13 +198,14 @@ namespace TickTrader.Algo.Api
         }
 
         [Obsolete]
-        public Task<OrderCmdResult> ModifyOrderAsync(string orderId, double price, double? sl = null, double? tp = null, string comment = "")
+        public Task<OrderCmdResult> ModifyOrderAsync(string orderId, double price, double? sl = null, double? tp = null, string comment = null)
         {
             return context.TradeApi.ModifyOrder(true, ModifyOrderRequest.Template.Create().WithParams(orderId, price, tp, sl).WithComment(comment).MakeRequest());
         }
 
+
         [Obsolete]
-        public Task<OrderCmdResult> ModifyOrderAsync(string orderId, double? price, double? stopPrice, double? maxVisibleVolume = null, double? sl = null, double? tp = null, string comment = "", DateTime? expiration = null, double? volume = null, OrderExecOptions? options = null)
+        public Task<OrderCmdResult> ModifyOrderAsync(string orderId, double? price, double? stopPrice, double? maxVisibleVolume = null, double? sl = null, double? tp = null, string comment = null, DateTime? expiration = null, double? volume = null, OrderExecOptions? options = null)
         {
             return context.TradeApi.ModifyOrder(true, ModifyOrderRequest.Template.Create().WithParams(orderId, price, stopPrice, volume, maxVisibleVolume, tp, sl, comment, expiration, options, null).MakeRequest());
         }
