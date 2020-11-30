@@ -523,7 +523,7 @@ namespace TickTrader.Algo.Common.Model
 
         private bool? GetIoCReplace(OrderExecOptions? options)
         {
-            return options.HasValue && options.Value.IsFlagSet(OrderExecOptions.ImmediateOrCancel);
+            return options?.IsFlagSet(OrderExecOptions.ImmediateOrCancel);
         }
 
         private OrderTimeInForce GetTimeInForce(DateTime? expiration)
