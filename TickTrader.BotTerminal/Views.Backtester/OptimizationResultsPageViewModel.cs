@@ -168,7 +168,7 @@ namespace TickTrader.BotTerminal
             serializer.AddColumn("No", r => r.Config.Id);
 
             foreach (var p in _optParams)
-                serializer.AddColumn(p.DisplayName, r => r.Config.Params[p.Id].ToString());
+                serializer.AddColumn(p.DisplayName, r => r.Config.Parameters[p.Id].ToString());
 
             serializer.AddColumn("Metric", r => r.Stats.FinalBalance);
 

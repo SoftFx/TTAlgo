@@ -7,21 +7,17 @@ using System.Threading.Tasks;
 namespace TickTrader.Algo.Core
 {
     [Serializable]
-    public class BruteforceStrategy : ParamSeekStrategy
+    public class BruteforceStrategy : OptimizationAlgorithm
     {
-        private IEnumerator<OptCaseConfig> _e;
-        private long _casesLeft;
+        private IEnumerator<ParamsMessage> _e;
 
-        public override long CaseCount => Params.Values.Aggregate(1, (s, p) => s * p.Size);
+        public override long CaseCount => InitParams.Values.Aggregate(1, (s, p) => s * p.Size);
 
         public override void Start(IBacktestQueue queue, int degreeOfParallelism)
         {
-            _casesLeft = CaseCount;
+            SetQueue(queue);
 
-            if (_casesLeft <= 0)
-                return;
-
-            int firstPartSize = (int)Math.Min(_casesLeft, (long)degreeOfParallelism * 2);
+            int firstPartSize = (int)Math.Min(CaseCount, (long)degreeOfParallelism * 2);
 
             _e = GetCases().GetEnumerator();
 
@@ -29,27 +25,24 @@ namespace TickTrader.Algo.Core
             {
                 if (!_e.MoveNext())
                     break;
-                queue.Enqueue(_e.Current);
+
+                SendParams(_e.Current);
             }
         }
 
-        public override long OnCaseCompleted(OptCaseReport report, IBacktestQueue queue)
+        public override long OnCaseCompleted(OptCaseReport report)
         {
-            if (_e.MoveNext())
-                queue.Enqueue(_e.Current);
-
-            _casesLeft--;
-            return _casesLeft;
+            return _e.MoveNext() ? SendParams(_e.Current) : 0;
         }
 
-        private IEnumerable<OptCaseConfig> GetCases()
+        private IEnumerable<ParamsMessage> GetCases()
         {
             for (long i = 0; i < CaseCount; i++)
             {
                 var rm = i;
-                var cfgCase = new OptCaseConfig(i);
+                var cfgCase = new ParamsMessage(i);
 
-                foreach (var p in Params)
+                foreach (var p in InitParams)
                 {
                     var set = p.Value;
                     var valCount = set.Size;
