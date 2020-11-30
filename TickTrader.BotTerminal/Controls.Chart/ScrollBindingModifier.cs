@@ -47,20 +47,22 @@ namespace TickTrader.BotTerminal
                 _viewport.AxisRangeUpdated += _viewport_AxisRangeUpdated;
         }
 
-        private void _viewport_AxisRangeUpdated(IAxis axis, IndexRange range, IndexRange limit)
+        private void _viewport_AxisRangeUpdated(IAxis axis, IRange range, IRange limit)
         {
             if (!_isUpdating && limit != null && range != null)
             {
-                var vSize = range.Diff;
-                var scrollMax = limit.Max - vSize;
-                var pos = range.Min;
+                var pos = range is IndexRange ? (range as IndexRange).Min : (range as DateRange).Min.Ticks;
+                var vSize = range is IndexRange ? (range as IndexRange).Diff : (range as DateRange).Diff.Ticks;
+                var limitMax = limit is IndexRange ? (limit as IndexRange).Max : (limit as DateRange).Max.Ticks;
+                var limitMin = limit is IndexRange ? (limit as IndexRange).Min : (limit as DateRange).Min.Ticks;
+                var scrollMax = limitMax - vSize;
 
                 try
                 {
                     _isUpdating = true;
 
-                    if (_minimumProp.Value != limit.Min)
-                        _minimumProp.Value = limit.Min;
+                    if (_minimumProp.Value != limitMin)
+                        _minimumProp.Value = limitMin;
                     if (_maximumProp.Value != scrollMax)
                         _maximumProp.Value = scrollMax;
 
@@ -85,7 +87,7 @@ namespace TickTrader.BotTerminal
             try
             {
                 _isUpdating = true;
-                _viewport?.ScrollTo((int)_positionProp.Value);
+                _viewport?.ScrollTo((long)_positionProp.Value);
             }
             finally
             {

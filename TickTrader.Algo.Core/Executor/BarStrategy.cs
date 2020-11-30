@@ -46,7 +46,7 @@ namespace TickTrader.Algo.Core
             return new Tuple<string, Feed.Types.MarketSide>(symbol, marketSide);
         }
 
-        private void InitSymbol(string symbol, Feed.Types.MarketSide marketSide)
+        private void InitSymbol(string symbol, Feed.Types.MarketSide marketSide, bool isSetup)
         {
             BarSeriesFixture fixture = GetFixture(symbol, marketSide);
             if (fixture == null)
@@ -54,7 +54,8 @@ namespace TickTrader.Algo.Core
                 fixture = new BarSeriesFixture(symbol, marketSide, ExecContext, null, mainSeriesFixture);
                 AddFixture(symbol, marketSide, fixture);
                 BufferingStrategy.InitBuffer(fixture);
-                AddSubscription(symbol);
+                if (!isSetup)
+                    AddSubscription(symbol);
             }
         }
 
@@ -150,7 +151,7 @@ namespace TickTrader.Algo.Core
 
         protected override BarSeries GetBarSeries(string symbol, Feed.Types.MarketSide side)
         {
-            InitSymbol(symbol, side);
+            InitSymbol(symbol, side, false);
             var fixture = GetFixture(symbol, side);
             var proxyBuffer = new ProxyBuffer<BarData, Api.Bar>(b => new BarEntity(b)) { SrcBuffer = fixture.Buffer };
             return new BarSeriesProxy() { Buffer = proxyBuffer };
@@ -208,7 +209,7 @@ namespace TickTrader.Algo.Core
 
             public override void Apply(FeedStrategy fStartegy)
             {
-                ((BarStrategy)fStartegy).InitSymbol(SymbolName, MarketSide);
+                ((BarStrategy)fStartegy).InitSymbol(SymbolName, MarketSide, true);
                 var key = GetKey(SymbolName, MarketSide);
                 fStartegy.ExecContext.Builder.MapInput(InputName, key, Selector);
             }
@@ -228,8 +229,8 @@ namespace TickTrader.Algo.Core
             {
                 var key1 = GetKey(SymbolName, Feed.Types.MarketSide.Bid);
                 var key2 = GetKey(SymbolName, Feed.Types.MarketSide.Ask);
-                ((BarStrategy)fStartegy).InitSymbol(SymbolName, Feed.Types.MarketSide.Ask);
-                ((BarStrategy)fStartegy).InitSymbol(SymbolName, Feed.Types.MarketSide.Bid);
+                ((BarStrategy)fStartegy).InitSymbol(SymbolName, Feed.Types.MarketSide.Ask, true);
+                ((BarStrategy)fStartegy).InitSymbol(SymbolName, Feed.Types.MarketSide.Bid, true);
                 fStartegy.ExecContext.Builder.MapInput(InputName, key1, key2, Selector);
             }
         }

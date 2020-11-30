@@ -73,5 +73,6 @@ namespace TickTrader.Algo.Api
         ReadOnlyAccount = 124,
         IncorrectSlippage = 125,
         IncorrectType = 126,
+        ThrottlingError = 127,
     }
 }

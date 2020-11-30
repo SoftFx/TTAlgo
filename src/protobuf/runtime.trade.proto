@@ -175,6 +175,7 @@ message OrderExecReport {
         READ_ONLY_ACCOUNT = 124;
         INCORRECT_SLIPPAGE = 125;
         INCORRECT_TYPE = 126;
+        THROTTLING_ERROR = 127;
     }
 
     google.protobuf.StringValue operation_id = 1;

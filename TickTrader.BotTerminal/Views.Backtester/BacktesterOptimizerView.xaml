@@ -14,6 +14,18 @@
         <Setter Property="Margin" Value="5,0,0,5"/>
     </Style>
 
+    <Style x:Key="OpenConfig" TargetType="Button">
+        <Setter Property="Width" Value="22"/>
+        <Setter Property="Height" Value="22"/>
+        <Setter Property="Margin" Value="5 0 0 4"/>
+        
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding AlgorithmProp.Value}" Value="{x:Static l:OptimizationAlgorithms.Bruteforce}">
+                <Setter Property="IsEnabled" Value="False"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+    
     <DataTemplate x:Key="CheckCellTemplate">
         <CheckBox IsChecked="{Binding SeekEnabledProp.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
     </DataTemplate>
@@ -53,6 +65,8 @@
                     <ComboBox Style="{StaticResource SettingsCombo}" Width="200"
                               ItemsSource="{Binding AvailableAlgorithms}" SelectedValue="{Binding AlgorithmProp.Value}"
                               ItemTemplate="{StaticResource AlgorithmComboBoxItem}"/>
+                    <Button Content="{DynamicResource CogwheelIcon}" Style="{StaticResource OpenConfig}"
+                            cal:Message.Attach="OpenAlgoSetup"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="5,5,5,0">
                     <Label Content="Metric:" Style="{StaticResource SettingsLabel}"/>

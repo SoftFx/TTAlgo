@@ -57,7 +57,7 @@ namespace TickTrader.BotTerminal
             rangeBinding.Source = this;
             rangeBinding.Mode = BindingMode.TwoWay;
             axis.SetBinding(AxisBase.VisibleRangeProperty, rangeBinding);
-            
+
             //Binding rangeLimitBinding = new Binding("VisibleRangeLimit");
             //rangeLimitBinding.Source = this;
             //rangeLimitBinding.Mode = BindingMode.OneWay;
@@ -156,6 +156,7 @@ namespace TickTrader.BotTerminal
 
         public override void OnDataLoaded(int itemsCount, DateTime start, DateTime end)
         {
+            VisibleRange = new DateRange(start, end);
         }
 
         //public override void Init(int itemsCount, DateTime start, DateTime end)

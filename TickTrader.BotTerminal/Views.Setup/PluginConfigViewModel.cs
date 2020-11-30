@@ -48,7 +48,7 @@ namespace TickTrader.BotTerminal
         public bool IsFixedFeed { get; set; }
         public bool IsEmulation { get; set; }
 
-        public bool EnableFeedSetup => (!IsFixedFeed && Descriptor.SetupMainSymbol) || (!IsBot);
+        public bool EnableFeedSetup => !IsFixedFeed && (Descriptor.SetupMainSymbol || !IsBot);
 
         public bool Visible
         {
@@ -80,7 +80,7 @@ namespace TickTrader.BotTerminal
                     NotifyOfPropertyChange(nameof(Inputs));
                     NotifyOfPropertyChange(nameof(HasInputs));
                 }
-                AvailableModels.Value = AvailableTimeFrames.Where(t => t >= value && t != Feed.Types.Timeframe.TicksLevel2).ToList();
+                AvailableModels.Value = SetupMetadata.Api.TimeFrames.Where(t => t >= value && t != Feed.Types.Timeframe.TicksLevel2).ToList();
                 if (SelectedModel.Value < value)
                     SelectedModel.Value = value;
             }
@@ -398,7 +398,7 @@ namespace TickTrader.BotTerminal
 
         private void Init()
         {
-            AvailableTimeFrames = SetupMetadata.Api.TimeFrames;
+            AvailableTimeFrames = SetupMetadata.Api.TimeFrames.Where(t => t != Feed.Types.Timeframe.Ticks);
             AvailableSymbols = SetupMetadata.Account.GetAvaliableSymbols(SetupMetadata.Context.DefaultSymbol).Where(u => u.Origin != SymbolConfig.Types.SymbolOrigin.Token).ToList();
             AvailableMappings = SetupMetadata.Mappings.BarToBarMappings;
 

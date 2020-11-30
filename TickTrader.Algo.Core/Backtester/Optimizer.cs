@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ namespace TickTrader.Algo.Core
         private readonly OptimizerCore _core;
         private readonly ISyncContext _sync;
         private readonly Dictionary<string, ParamSeekSet> _params = new Dictionary<string, ParamSeekSet>();
-        private ParamSeekStrategy _seekStrategy;
+        private OptimizationAlgorithm _seekStrategy;
         private EmulatorStates _innerState = EmulatorStates.Stopped;
         private MetricProvider _mSelector = MetricProvider.Default;
 
@@ -59,7 +60,7 @@ namespace TickTrader.Algo.Core
             _params[paramId] = seekSet;
         }
 
-        public void SetSeekStrategy(ParamSeekStrategy strategy)
+        public void SetSeekStrategy(OptimizationAlgorithm strategy)
         {
             strategy.OnInit(_params);
             _seekStrategy = strategy;
@@ -174,9 +175,10 @@ namespace TickTrader.Algo.Core
         {
             //private UpdateChannel _channel;
             private int _idSeed;
+            private Stopwatch _st = new Stopwatch();
             private CancellationTokenSource _cancelSrc = new CancellationTokenSource();
             private Action<OptCaseReport, long> _repHandler;
-            private TransformBlock<OptCaseConfig, OptCaseReport> _workerBlock;
+            private TransformBlock<ParamsMessage, OptCaseReport> _workerBlock;
             private ActionBlock<OptCaseReport> _controlBlock;
             private Exception _fatalError;
 
@@ -192,7 +194,7 @@ namespace TickTrader.Algo.Core
             //public TimeFrames MainTimeframe { get; private set; }
             public CommonTestSettings CommonSettings { get; private set; }
             public PluignExecutorFactory Factory { get; set; }
-            public ParamSeekStrategy SeekStrategy { get; private set; }
+            public OptimizationAlgorithm SeekStrategy { get; private set; }
             public MetricProvider MetricSelector { get; set; } = MetricProvider.Default;
             public int EquityHistoryTargetSize { get; set; } = 500;
 
@@ -207,7 +209,7 @@ namespace TickTrader.Algo.Core
                 _cancelSrc.Cancel();
             }
 
-            public void Run(ParamSeekStrategy sStrategy, CommonTestSettings settings, int degreeOfP, Action<OptCaseReport, long> updateHandler)
+            public void Run(OptimizationAlgorithm sStrategy, CommonTestSettings settings, int degreeOfP, Action<OptCaseReport, long> updateHandler)
             {
                 _fatalError = null;
                 CommonSettings = settings;
@@ -226,6 +228,7 @@ namespace TickTrader.Algo.Core
 
                     _workerBlock.LinkTo(_controlBlock, new DataflowLinkOptions() { PropagateCompletion = true });
 
+                    _st.Start();
                     SeekStrategy.Start(this, degreeOfP);
 
                     _controlBlock.Completion.Wait();
@@ -235,11 +238,13 @@ namespace TickTrader.Algo.Core
                 }
                 finally
                 {
+                    _st.Stop();
+                    //MessageBox.Show($"Total test time: {_st.ElapsedMilliseconds}ms");
                     Feed.DeinitStorages();
                 }
             }
 
-            private OptCaseReport Backtest(OptCaseConfig caseCfg)
+            private OptCaseReport Backtest(ParamsMessage caseCfg)
             {
                 var emFixture = SetupEmulation();
                 caseCfg.Apply(emFixture.Executor);
@@ -284,7 +289,7 @@ namespace TickTrader.Algo.Core
                     }
                 }
 
-                var casesLeft = SeekStrategy.OnCaseCompleted(report, this);
+                var casesLeft = SeekStrategy.OnCaseCompleted(report);
                 if (casesLeft <= 0)
                     _workerBlock.Complete();
 
@@ -312,7 +317,7 @@ namespace TickTrader.Algo.Core
                 return emFixture;
             }
 
-            private OptCaseReport FilleReport(OptCaseConfig cfg, PluginBuilder builder, BacktesterCollector collector, Exception error)
+            private OptCaseReport FilleReport(ParamsMessage cfg, PluginBuilder builder, BacktesterCollector collector, Exception error)
             {
                 var metric = 0d;
 
@@ -339,7 +344,7 @@ namespace TickTrader.Algo.Core
                 workerOptions.MaxMessagesPerTask = 1;
                 workerOptions.CancellationToken = _cancelSrc.Token;
 
-                _workerBlock = new TransformBlock<OptCaseConfig, OptCaseReport>((Func<OptCaseConfig, OptCaseReport>)Backtest, workerOptions);
+                _workerBlock = new TransformBlock<ParamsMessage, OptCaseReport>((Func<ParamsMessage, OptCaseReport>)Backtest, workerOptions);
             }
 
             private void CreateControlBlock()
@@ -412,7 +417,7 @@ namespace TickTrader.Algo.Core
             IEnumerable<Domain.SymbolInfo> IPluginMetadata.GetSymbolMetadata() => CommonSettings.Symbols.Values;
             IEnumerable<Domain.CurrencyInfo> IPluginMetadata.GetCurrencyMetadata() => CommonSettings.Currencies.Values;
 
-            void IBacktestQueue.Enqueue(OptCaseConfig caseCfg)
+            void IBacktestQueue.Enqueue(ParamsMessage caseCfg)
             {
                 _workerBlock.Post(caseCfg);
             }

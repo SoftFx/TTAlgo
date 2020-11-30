@@ -154,15 +154,6 @@ namespace TickTrader.Algo.Core.Repository
                                 reductionBar.Value.DisplayName, reductionDouble.Key, reductionDouble.Value.DisplayName));
                         }
                     }
-
-                    if (_extCollection?.QuoteToBarReductions != null)
-                    {
-                        foreach (var reductionBar in _extCollection.QuoteToBarReductions)
-                        {
-                            _quoteToDoubleMappings.Add(new QuoteToDoubleMapping(reductionBar.Key,
-                                reductionBar.Value.DisplayName, reductionDouble.Key, reductionDouble.Value.DisplayName));
-                        }
-                    }
                 }
             }
         }

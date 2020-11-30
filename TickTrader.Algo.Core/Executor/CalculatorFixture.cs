@@ -322,43 +322,52 @@ namespace TickTrader.Algo.Core
         {
             LazyInit();
 
-            var side = oldOrder.Info.Side;
-            var type = oldOrder.Info.Type;
-
-            // OrderReplaceRequest with InFlightMitigation == false asks server to set RemainingVolume to specified value
-            var newRemVolume = (decimal)newVolume;
-
-            if (_marginCalc != null)
+            try
             {
-                var calc = Market.GetCalculator(oldOrder.Info.Symbol, Acc);
-                using (calc.UsageScope())
+                var side = oldOrder.Info.Side;
+                var type = oldOrder.Info.Type;
+
+                // OrderReplaceRequest with InFlightMitigation == false asks server to set RemainingVolume to specified value
+                var newRemVolume = (decimal)newVolume;
+
+                if (_marginCalc != null)
                 {
-                    var oldMargin = calc.CalculateMargin(oldOrder.Info.RequestedAmount / oldOrder.LotSize, type, side, oldOrder.Info.IsHidden, out var error);
+                    var calc = Market.GetCalculator(oldOrder.Info.Symbol, Acc);
+                    using (calc.UsageScope())
+                    {
+                        var oldMargin = calc.CalculateMargin(oldOrder.Info.RemainingAmount / oldOrder.LotSize, type, side, oldOrder.Info.IsHidden, out var error);
 
-                    if (error != CalcErrorCodes.None)
-                        return false;
+                        if (error != CalcErrorCodes.None)
+                            return false;
 
-                    var newMargin = calc.CalculateMargin((double)newRemVolume, type, side, newIsHidden, out error);
+                        var newMargin = calc.CalculateMargin((double)newRemVolume, type, side, newIsHidden, out error);
 
-                    HandleMarginCalcError(error, symbol.Name);
+                        HandleMarginCalcError(error, symbol.Name);
 
-                    if (error != CalcErrorCodes.None)
-                        return false;
+                        if (error != CalcErrorCodes.None)
+                            return false;
 
-                    var marginDelta = newMargin - oldMargin;
+                        var marginDelta = newMargin - oldMargin;
 
-                    if (marginDelta <= 0)
-                        return true;
+                        if (marginDelta <= 0)
+                            return true;
 
-                    return _marginCalc.HasSufficientMarginToOpenOrder(marginDelta, oldOrder.Info.Symbol, side);
+                        return _marginCalc.HasSufficientMarginToOpenOrder(marginDelta, oldOrder.Info.Symbol, side);
+                    }
+                }
+
+                if (_cashCalc != null)
+                {
+                    var oldMargin = CashAccountCalculator.CalculateMargin(oldOrder.Info, symbol);
+                    var newMargin = CashAccountCalculator.CalculateMargin(type, (decimal)newRemVolume, newPrice, newStopPrice, side, symbol, newIsHidden);
+                    return _cashCalc.HasSufficientMarginToOpenOrder(type, side, symbol, newMargin - oldMargin);
                 }
             }
-
-            if (_cashCalc != null)
+            catch (NotEnoughMoneyException)
+            { }
+            catch (Exception ex)
             {
-                var oldMargin = CashAccountCalculator.CalculateMargin(oldOrder.Info, symbol);
-                var newMargin = CashAccountCalculator.CalculateMargin(type, (decimal)newRemVolume, newPrice, newStopPrice, side, symbol, newIsHidden);
-                return _cashCalc.HasSufficientMarginToOpenOrder(type, side, symbol, newMargin - oldMargin);
+                _context.Builder.Logger.OnError("Failed to calculate margin for modify order", ex);
             }
 
             return false;

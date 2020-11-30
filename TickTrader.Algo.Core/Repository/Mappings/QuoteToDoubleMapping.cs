@@ -28,14 +28,14 @@ namespace TickTrader.Algo.Core.Repository
         public override void MapInput(IPluginSetupTarget target, string inputName, string symbol)
         {
             var barReduction = AlgoAssemblyInspector.GetReduction(Key.PrimaryReduction.DescriptorId);
-            var doubleReduction = AlgoAssemblyInspector.GetReduction(Key.SecondaryReduction.DescriptorId);
-            if (doubleReduction == null)
+            if (Key.SecondaryReduction == null)
             {
                 var doubleReductionInstance = barReduction?.CreateInstance<QuoteToDoubleReduction>() ?? new QuoteToBestBidReduction();
                 target.GetFeedStrategy<QuoteStrategy>().MapInput(inputName, symbol, q => MapValueStraight(doubleReductionInstance, q));
             }
             else
             {
+                var doubleReduction = AlgoAssemblyInspector.GetReduction(Key.SecondaryReduction.DescriptorId);
                 var barReductionInstance = barReduction.CreateInstance<QuoteToBarReduction>();
                 var doubleReductionInstance = doubleReduction.CreateInstance<BarToDoubleReduction>();
                 target.GetFeedStrategy<QuoteStrategy>().MapInput(inputName, symbol, q => MapValueComposite(barReductionInstance, doubleReductionInstance, q));

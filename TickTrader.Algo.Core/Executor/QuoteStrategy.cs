@@ -6,11 +6,13 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
+    [Serializable]
     public class QuoteStrategy : FeedStrategy
     {
+        [NonSerialized]
         private QuoteSeriesFixture mainSeries;
 
-        public override IFeedBuffer MainBuffer { get { return null; } }
+        public override IFeedBuffer MainBuffer { get { return mainSeries; } }
         public override int BufferSize { get { return mainSeries.Count; } }
         public override IEnumerable<string> BufferedSymbols => mainSeries.SymbolCode.Yield();
 
