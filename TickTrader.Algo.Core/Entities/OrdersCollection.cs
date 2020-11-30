@@ -46,6 +46,7 @@ namespace TickTrader.Algo.Core
 
             if (order != null)
             {
+                info.SetSymbol(order.SymbolInfo);
                 Removed?.Invoke(order);
                 RemovedInfo?.Invoke(info);
             }
