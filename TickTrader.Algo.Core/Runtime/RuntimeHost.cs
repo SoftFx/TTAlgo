@@ -29,14 +29,21 @@ namespace TickTrader.Algo.Core
 
     public class TransparentRuntimeHost : IRuntimeHostProxy
     {
-        public Task Start(string address, int port, string proxyId)
+        private RuntimeV1Loader _runtime;
+
+
+        public async Task Start(string address, int port, string proxyId)
         {
-            return Task.CompletedTask;
+            _runtime = new RuntimeV1Loader();
+
+            await Task.Factory.StartNew(() => _runtime.Init(address, port, proxyId));
         }
 
-        public Task Stop()
+        public async Task Stop()
         {
-            return Task.CompletedTask;
+            await Task.Delay(2000); // ugly hack to give code in another domain some time for correct stop without thread abort
+
+            await Task.Factory.StartNew(() => _runtime.Deinit());
         }
     }
 

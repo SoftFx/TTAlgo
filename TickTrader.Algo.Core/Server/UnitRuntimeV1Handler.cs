@@ -75,6 +75,14 @@ namespace TickTrader.Algo.Core
             return res.Symbols.ToList();
         }
 
+        internal async Task<List<CurrencyInfo>> GetCurrencyListAsync()
+        {
+            var context = new RpcResponseTaskContext<CurrencyListResponse>(RpcHandler.SingleReponseHandler);
+            _session.Ask(RpcMessage.Request(new CurrencyListRequest()), context);
+            var res = await context.TaskSrc.Task;
+            return res.Currencies.ToList();
+        }
+
         internal async Task<List<SymbolInfo>> GetSymbolListAsync()
         {
             var context = new RpcResponseTaskContext<SymbolListResponse>(RpcHandler.SingleReponseHandler);
@@ -91,6 +99,14 @@ namespace TickTrader.Algo.Core
             return res.Account;
         }
 
+        internal async Task<AccountInfo> GetAccountInfoAsync()
+        {
+            var context = new RpcResponseTaskContext<AccountInfoResponse>(RpcHandler.SingleReponseHandler);
+            _session.Ask(RpcMessage.Request(new AccountInfoRequest()), context);
+            var res = await context.TaskSrc.Task;
+            return res.Account;
+        }
+
         internal List<OrderInfo> GetOrderList()
         {
             var context = new RpcListResponseTaskContext<OrderInfo>(OrderListReponseHandler);
@@ -98,11 +114,25 @@ namespace TickTrader.Algo.Core
             return context.TaskSrc.Task.GetAwaiter().GetResult();
         }
 
+        internal Task<List<OrderInfo>> GetOrderListAsync()
+        {
+            var context = new RpcListResponseTaskContext<OrderInfo>(OrderListReponseHandler);
+            _session.Ask(RpcMessage.Request(new OrderListRequest()), context);
+            return context.TaskSrc.Task;
+        }
+
         internal List<PositionInfo> GetPositionList()
         {
             var context = new RpcListResponseTaskContext<PositionInfo>(PositionListReponseHandler);
             _session.Ask(RpcMessage.Request(new PositionListRequest()), context);
             return context.TaskSrc.Task.GetAwaiter().GetResult();
+        }
+
+        internal Task<List<PositionInfo>> GetPositionListAsync()
+        {
+            var context = new RpcListResponseTaskContext<PositionInfo>(PositionListReponseHandler);
+            _session.Ask(RpcMessage.Request(new PositionListRequest()), context);
+            return context.TaskSrc.Task;
         }
 
         internal void SendOpenOrder(OpenOrderRequest request)

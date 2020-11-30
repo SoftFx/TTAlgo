@@ -132,7 +132,7 @@ namespace TickTrader.Algo.Rpc.OverTcp
             {
                 try
                 {
-                    var read = await Task.Factory.FromAsync(socketBeginReceive, socketEndReceive, _recieveBuffer, null);
+                    var read = await Task.Factory.FromAsync(socketBeginReceive, socketEndReceive, _recieveBuffer, null).ConfigureAwait(false);
                     if (read == 0)
                     {
                         pipeWriter.Complete();
@@ -166,12 +166,15 @@ namespace TickTrader.Algo.Rpc.OverTcp
                 }
                 foreach (var segment in res.Buffer)
                 {
+                    if (cancelToken.IsCancellationRequested)
+                        return;
+
                     var len = segment.Length;
                     var buffer = ArrayPool<byte>.Shared.Rent(len);
                     try
                     {
                         segment.CopyTo(buffer);
-                        await Task.Factory.FromAsync(socketBeginSend, socketEndSend, buffer, len, null);
+                        await Task.Factory.FromAsync(socketBeginSend, socketEndSend, buffer, len, null).ConfigureAwait(false);
                     }
                     finally
                     {

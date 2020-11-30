@@ -2,6 +2,7 @@
 using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
@@ -15,6 +16,12 @@ namespace TickTrader.Algo.Core
         private readonly ISyncContext _sync;
 
         private readonly UnitRuntimeV1Handler _handler;
+
+        private List<CurrencyInfo> _currencies;
+        private List<SymbolInfo> _symbols;
+        private AccountInfo _accInfo;
+        private List<OrderInfo> _orders;
+        private List<PositionInfo> _positions;
 
 
         public RuntimeInfoProvider(UnitRuntimeV1Handler handler)
@@ -33,16 +40,27 @@ namespace TickTrader.Algo.Core
         }
 
 
+        public async Task PreLoad()
+        {
+            _currencies = await _handler.GetCurrencyListAsync();
+            _symbols = await _handler.GetSymbolListAsync();
+
+            _accInfo = await _handler.GetAccountInfoAsync();
+            _orders = await _handler.GetOrderListAsync();
+            _positions = await _handler.GetPositionListAsync();
+        }
+
+
         #region IPluginMetadata
 
         public IEnumerable<CurrencyInfo> GetCurrencyMetadata()
         {
-            return _handler.GetCurrencyList();
+            return _currencies;
         }
 
         public IEnumerable<SymbolInfo> GetSymbolMetadata()
         {
-            return _handler.GetSymbolList();
+            return _symbols;
         }
 
         #endregion IPluginMetadata
@@ -55,17 +73,17 @@ namespace TickTrader.Algo.Core
 
         public AccountInfo GetAccountInfo()
         {
-            return _handler.GetAccountInfo();
+            return _accInfo;
         }
 
         public List<OrderInfo> GetOrders()
         {
-            return _handler.GetOrderList();
+            return _orders;
         }
 
         public List<PositionInfo> GetPositions()
         {
-            return _handler.GetPositionList();
+            return _positions;
         }
 
         public void SyncInvoke(Action action)

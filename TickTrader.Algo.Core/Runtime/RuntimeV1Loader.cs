@@ -82,7 +82,10 @@ namespace TickTrader.Algo.Core
             var reductions = new ReductionCollection(CoreLoggerFactory.GetLogger("Extensions"));
             var mappings = new MappingCollection(reductions);
 
-            var setupMetadata = new AlgoSetupMetadata(await _handler.GetSymbolListAsync(), mappings);
+            var provider = new RuntimeInfoProvider(_handler);
+            await provider.PreLoad();
+
+            var setupMetadata = new AlgoSetupMetadata(provider.GetSymbolMetadata(), mappings);
             var setupContext = new AlgoSetupContext(config.Timeframe, config.MainSymbol);
 
             var setup = new PluginSetupModel(algoRef, setupMetadata, setupContext, config.MainSymbol);
@@ -109,8 +112,6 @@ namespace TickTrader.Algo.Core
                 var bars = runtimeConfig.MainSeries.Unpack<BarChunk>();
                 executorConfig.GetFeedStrategy<BarStrategy>().SetMainSeries(bars.Bars.ToList());
             }
-
-            var provider = new RuntimeInfoProvider(_handler);
 
             _executorCore.ApplyConfig(executorConfig, provider, provider, provider, provider, provider, provider);
 

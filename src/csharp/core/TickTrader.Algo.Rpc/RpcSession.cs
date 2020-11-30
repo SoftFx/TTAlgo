@@ -138,7 +138,7 @@ namespace TickTrader.Algo.Rpc
         internal void SendMessage(RpcMessage msg)
         {
             //Debug.WriteLine($"RPC < {AppDomain.CurrentDomain.Id}: {msg}");
-            Debug.WriteLine($"RPC < {AppDomain.CurrentDomain.Id}: msg type - {msg.Payload.TypeUrl}");
+            //Debug.WriteLine($"RPC < {AppDomain.CurrentDomain.Id}: msg type - {msg.Payload.TypeUrl}");
             _transport.SendMessage(msg);
         }
 
