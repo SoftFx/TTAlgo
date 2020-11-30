@@ -45,7 +45,7 @@ namespace TickTrader.Algo.Api
             private double? _slippage;
             private DateTime? _expiration;
             private OrderExecOptions? _options;
-            public string _comment;
+            private string _comment;
 
 
             private Template() { }

@@ -34,7 +34,7 @@ namespace TickTrader.Algo.Core
         public AccountAccessor Acc => acc;
         public AlgoMarketState Market => _context.MarketData;
         public bool IsCalculated => _marginCalc?.IsCalculated ?? true;
-        public int RoundingDigits => _marginCalc?.RoundingDigits ??  BL.AccountCalculator.DefaultRounding;
+        public int RoundingDigits => _marginCalc?.RoundingDigits ?? BL.AccountCalculator.DefaultRounding;
 
         public void Start()
         {
@@ -203,8 +203,8 @@ namespace TickTrader.Algo.Core
         {
             if (Acc.IsMarginType)
                 ValidateModifyOrder_MarginAccount(order, newAmount);
-            else if(Acc.IsCashType)
-                ValidateModifyOrder_CashAccount(order, newAmount, newPrice, newStopPrice );
+            else if (Acc.IsCashType)
+                ValidateModifyOrder_CashAccount(order, newAmount, newPrice, newStopPrice);
         }
 
         private void ValidateModifyOrder_MarginAccount(OrderAccessor order, decimal newAmount)
@@ -319,7 +319,7 @@ namespace TickTrader.Algo.Core
                 }
             }
             catch (BL.NotEnoughMoneyException)
-            {}
+            { }
             catch (Exception ex)
             {
                 _context.Builder.Logger.OnError("Failed to calculate margin for new order", ex);
