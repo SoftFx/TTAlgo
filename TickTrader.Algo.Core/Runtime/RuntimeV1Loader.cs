@@ -17,6 +17,7 @@ namespace TickTrader.Algo.Core
         private readonly RpcClient _client;
         private readonly UnitRuntimeV1Handler _handler;
         private PluginExecutorCore _executorCore;
+        private TaskCompletionSource<bool> _finishTaskSrc;
 
 
         public RuntimeV1Loader()
@@ -37,6 +38,14 @@ namespace TickTrader.Algo.Core
         public async void Deinit()
         {
             await _client.Disconnect("Runtime shutdown").ConfigureAwait(false);
+        }
+
+        public Task WhenFinished()
+        {
+            if (_finishTaskSrc == null)
+                _finishTaskSrc = new TaskCompletionSource<bool>();
+
+            return _finishTaskSrc.Task;
         }
 
         public async Task Launch()
@@ -118,9 +127,10 @@ namespace TickTrader.Algo.Core
             var t = Task.Factory.StartNew(() => _executorCore.Start());
         }
 
-        public Task Stop()
+        public async Task Stop()
         {
-            return _executorCore.Stop();
+            await _executorCore.Stop();
+            _finishTaskSrc.TrySetResult(true);
         }
 
 

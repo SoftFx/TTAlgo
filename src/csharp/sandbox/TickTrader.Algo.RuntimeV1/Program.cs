@@ -14,10 +14,8 @@ namespace TickTrader.Algo.RuntimeV1
             var loader = new RuntimeV1Loader();
             loader.Init(args[0], int.Parse(args[1]), args[2]);
 
-            while(true)
-            {
-                Task.Delay(1000).Wait();
-            }
+            loader.WhenFinished().Wait();
+            loader.Deinit();
         }
     }
 }
