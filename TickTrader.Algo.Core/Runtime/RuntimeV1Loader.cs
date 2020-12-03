@@ -29,8 +29,6 @@ namespace TickTrader.Algo.Core
 
         public async void Init(string address, int port, string proxyId)
         {
-            CoreLoggerFactory.Init(n => new RuntimeLoggerAdapter(n));
-
             await _client.Connect(address, port).ConfigureAwait(false);
             await _handler.AttachRuntime(proxyId).ConfigureAwait(false);
         }

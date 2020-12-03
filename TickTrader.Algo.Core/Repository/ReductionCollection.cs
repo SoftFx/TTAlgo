@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Ext;
 
 namespace TickTrader.Algo.Core.Repository
 {
@@ -37,7 +38,7 @@ namespace TickTrader.Algo.Core.Repository
             _quoteToDouble = new Dictionary<ReductionKey, ReductionMetadata>();
             _quoteToBar = new Dictionary<ReductionKey, ReductionMetadata>();
 
-            AddAssembly(EmbeddedReductionsAssemblyName);
+            AddAssembly(typeof(BarOpenReduction).Assembly);
         }
 
 
@@ -94,16 +95,28 @@ namespace TickTrader.Algo.Core.Repository
             try
             {
                 var extAssembly = Assembly.Load(extAssemblyName);
+                AddAssembly(extAssembly);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Cannot load extensions from {extAssemblyName}!", ex);
+            }
+        }
+
+        public void AddAssembly(Assembly extAssembly)
+        {
+            try
+            {
                 var packageKey = new PackageKey(Path.GetFileName(extAssembly.Location).ToLowerInvariant(), RepositoryLocation.Embedded);
                 var reductions = AlgoAssemblyInspector.FindReductions(extAssembly);
                 foreach (var r in reductions)
                     Add(new ReductionKey(packageKey, r.Id), r);
 
-                _logger.Info($"Loaded extensions from {extAssemblyName}");
+                _logger.Info($"Loaded extensions from {extAssembly.FullName}");
             }
             catch (Exception ex)
             {
-                _logger.Error($"Cannot load extensions from {extAssemblyName}!", ex);
+                _logger.Error($"Cannot load extensions from {extAssembly.FullName}!", ex);
             }
         }
     }

@@ -97,6 +97,7 @@ namespace TickTrader.Algo.Core
                 RedirectStandardInput = true,
                 CreateNoWindow = true,
                 Arguments = string.Join(" ", address, port.ToString(), proxyId),
+                WorkingDirectory = Path.Combine(Directory.GetCurrentDirectory(), ".."),
             };
             _process = Process.Start(startInfo);
             _process.EnableRaisingEvents = true;
