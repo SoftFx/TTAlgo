@@ -10,6 +10,9 @@ namespace TickTrader.Algo.Core
     [Serializable]
     public class AlgoParameter
     {
+        private readonly int _stepPrecision;
+        private readonly string _stepTemplate;
+
         private double _cur;
 
         public bool IsStub { get; protected set; }
@@ -51,6 +54,11 @@ namespace TickTrader.Algo.Core
             Step = step;
 
             Current = min;
+
+            var stepStr = step.ToString();
+            _stepPrecision = stepStr.IndexOf('.');
+            _stepPrecision = _stepPrecision == -1 ? 0 : stepStr.Length - _stepPrecision;
+            _stepTemplate = $"0.{new string('#', _stepPrecision)}";
         }
 
         private AlgoParameter(double min, double max, double step, double cur) : this(min, max, step)
@@ -78,6 +86,7 @@ namespace TickTrader.Algo.Core
 
         public override string ToString() => IsStub ? "stub" : $"Min: {Min:F12}, Max: {Max:F12}, Step: {Step:F12}";
 
-        public string ToShortString() => IsStub ? "stub" : $"{Current}";
+        public string ToShortString() => IsStub ? "stub" : Current.ToString(_stepTemplate);
+
     }
 }

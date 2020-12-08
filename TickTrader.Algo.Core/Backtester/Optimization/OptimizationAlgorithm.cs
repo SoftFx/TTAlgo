@@ -49,7 +49,7 @@ namespace TickTrader.Algo.Core
                 if (v is EnumParamSet<bool> pb)
                     parameter = new AlgoParameter(0, 1, 1);
                 if (v is EnumParamSet<string> ps)
-                    parameter = new AlgoParameter(0, ps.Size, 1);
+                    parameter = new AlgoParameter(0, ps.Size - 1, 1);
 
                 if (parameter == null)
                     throw new ArgumentException($"Unsupported property type: {v.GetType()}");
@@ -93,7 +93,9 @@ namespace TickTrader.Algo.Core
         {
             --_casesLeft;
 
-            if (!_existingItems.ContainsKey(par.ToString()))
+            var cacheKey = par.ToString();
+
+            if (!_existingItems.ContainsKey(cacheKey))
             {
                 var dict = new ParamsMessage(_sendMessages++);
 
@@ -118,11 +120,11 @@ namespace TickTrader.Algo.Core
 
                 _queue.Enqueue(dict);
                 _dispatchQueue.Add(dict.Id, par);
-                _existingItems.Add(par.ToString(), par);
+                _existingItems.Add(cacheKey, par);
             }
             else
             {
-                par.Result = _existingItems[par.ToString()].Result ?? 0;
+                par.Result = _existingItems[cacheKey].Result ?? 0;
                 count++;
             }
         }
