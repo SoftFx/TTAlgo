@@ -100,11 +100,16 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             test.Options = options;
 
             if (!test.IsInstantOrder)
+            {
                 await PerfomOpenModifyTests(GenerateTemplate(test));
+
+                if (test.Async && test.Type != OrderType.Market) //incorrect for Gross Market
+                    await ModifyCancelTest(GenerateTemplate(test));
+            }
 
             await PerformExecutionTests(test);
 
-            if (!test.Async && Account.Type == AccountTypes.Gross && test.Type == OrderType.Market)
+            if (!test.Async && Account.Type == AccountTypes.Gross && test.Type == OrderType.Market) //if test.async = true throw error
                 await PerformCloseByTests(test);
 
             if (test.IsSlippageSupported)
@@ -466,8 +471,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         {
             PrintLog(template.GetInfo(TestOrderAction.Modify));
 
-            var request = ModifyOrderRequest.Template.Create().WithParams(template.Id, template.Price, template.StopPrice, template.Volume, template.MaxVisibleVolume,
-                template.TP, template.SL, template.Comment, template.Expiration, template.Options, template.GetSlippageInPercent()).MakeRequest();
+            var request = GetModifyRequest(template);
 
             var response = template.Async ? await ModifyOrderAsync(request) : ModifyOrder(request);
 
@@ -477,6 +481,10 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
             template.Verification();
         }
+
+        private static ModifyOrderRequest GetModifyRequest(OrderTemplate template) => ModifyOrderRequest.Template.Create().WithParams(template.Id, template.Price, template.StopPrice, template.Volume, template.MaxVisibleVolume,
+                template.TP, template.SL, template.Comment, template.Expiration, template.Options, template.GetSlippageInPercent()).MakeRequest();
+
 
         #endregion
 
@@ -948,6 +956,33 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
                 }
             }
         }
+        #endregion
+
+        #region Specific Tests
+
+        private async Task ModifyCancelTest(TestParamsSet test)
+        {
+            async Task func(OrderTemplate template)
+            {
+                await TryPerformTest(() => TestOpenOrder(template, false));
+
+                template.Volume *= 0.3;
+
+                var request = GetModifyRequest(template);
+
+                var t1 = ModifyOrderAsync(request);
+                await Task.Delay(10);
+                var t2 = ModifyOrderAsync(request);
+
+                await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
+                await WaitAndStoreEvent<OrderCanceledEventArgs>(template, CancelEventTimeout);
+
+                await Task.WhenAll(t1, t2);
+            }
+
+            await PrepareAndRun(TestAcion.ModifyCancel, func, test, OrderExecutionMode.Waiting);
+        }
+
         #endregion
     }
 }

@@ -110,7 +110,7 @@ namespace TickTrader.Algo.Common.Model.Interop
             double? takeProfit, string comment, string tag, int? magic, bool immediateOrCancel, double? slippage)
         {
             var taskSrc = new OrderResultSource(_execReportHandler);
-            _tradeProxy.NewOrderAsync(taskSrc, clientOrderId, symbol, type, side, qty, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, comment, tag, magic, immediateOrCancel, slippage);
+            _tradeProxy.NewOrderAsync(taskSrc, clientOrderId, symbol, type, side, qty, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, comment, tag, magic, immediateOrCancel, slippage, false, false, null);
             return taskSrc.Task;
         }
 
@@ -135,7 +135,7 @@ namespace TickTrader.Algo.Common.Model.Interop
             double? takeProfit, string comment, string tag, int? magic, bool? immediateOrCancel, double? slippage)
         {
             var taskSrc = new OrderResultSource(_execReportHandler);
-            _tradeProxy.ReplaceOrderAsync(taskSrc, clientOrderId, origClientOrderId, orderId, symbol, type, side, qtyChange, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, comment, tag, magic, immediateOrCancel, slippage);
+            _tradeProxy.ReplaceOrderAsync(taskSrc, clientOrderId, origClientOrderId, orderId, symbol, type, side, qtyChange, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, comment, tag, magic, immediateOrCancel, slippage, null, null, null);
             return taskSrc.Task;
         }
 
