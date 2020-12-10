@@ -85,6 +85,7 @@ namespace TickTrader.Algo.Common.Model
         PendingReplace = 8,
         Done = 9,
         PendingClose = 10,
-        Activated = 11
+        Activated = 11,
+        Executing = 12,
     }
 }
