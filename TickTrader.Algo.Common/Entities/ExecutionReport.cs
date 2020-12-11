@@ -52,6 +52,8 @@ namespace TickTrader.Algo.Common.Model
         public double? Price { get; set; }
         public double Balance { get; set; }
         public double? ReqOpenPrice { get; set; }
+        public bool IsOneCancelsTheOther { get; set; }
+        public string OCORelatedOrderId { get; set; }
     }
 
     public enum ExecutionType

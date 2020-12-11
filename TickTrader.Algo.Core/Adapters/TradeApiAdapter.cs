@@ -53,6 +53,8 @@ namespace TickTrader.Algo.Core
                 Options = apiRequest.Options,
                 Tag = CompositeTag.NewTag(IsolationTag, apiRequest.Tag),
                 Expiration = apiRequest.Expiration,
+                OcoEqualVolume = apiRequest.OcoEqualVolume,
+                OcoRelatedOrderId = apiRequest.OcoRelatedOrderId,
             };
 
             PreprocessAndValidateOpenOrderRequest(coreRequest, out var smbMetadata, ref code);

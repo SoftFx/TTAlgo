@@ -42,6 +42,7 @@ namespace TickTrader.Algo.Core
             Commission = src.Commission;
             Options = src.Options;
             ParentOrderId = src.ParentOrderId;
+            OCORelatedOrderId = src.OCORelatedOrderId;
         }
 
         public string Id { get; private set; }
@@ -75,11 +76,12 @@ namespace TickTrader.Algo.Core
         public double? StopPrice { get; set; }
         public decimal? MaxVisibleVolume { get; set; }
         public OrderOptions Options { get; set; }
+        public string OCORelatedOrderId { get; set; }
         public bool ImmediateOrCancel => Options.HasFlag(OrderOptions.ImmediateOrCancel);
         public bool IsHidden => IsHiddenOrder(MaxVisibleVolume);
         public bool MarketWithSlippdage => Options.HasFlag(OrderOptions.MarketWithSlippage);
         public bool HiddenIceberg => Options.HasFlag(OrderOptions.HiddenIceberg);
-
+        public bool IsOCO => Options.HasFlag(OrderOptions.OneCancelsTheOther);
         static OrderEntity() { Null = new NullOrder(); }
 
         public OrderEntity Clone() => new OrderEntity(this);

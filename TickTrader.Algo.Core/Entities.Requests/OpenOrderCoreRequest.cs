@@ -22,6 +22,8 @@ namespace TickTrader.Algo.Core
         public string Comment { get; set; }
         public OrderExecOptions Options { get; set; }
         public string Tag { get; set; }
+        public bool OcoEqualVolume { get; set; }
+        public string OcoRelatedOrderId { get; set; }
 
         internal bool IsOptionSet(OrderExecOptions option)
         {

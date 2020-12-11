@@ -440,9 +440,12 @@ namespace TickTrader.Algo.Common.Model
             {
                 var timeInForce = GetTimeInForce(r.Expiration);
                 var ioc = GetIoC(r.Options);
+                var oco = GetOCO(r.Options);
+
+                long.TryParse(r.OcoRelatedOrderId, out var relatedOrderId);
 
                 return _tradeProxyAdapter.NewOrderAsync(r.OperationId, r.Symbol, Convert(r.Type), Convert(r.Side), r.Volume, r.MaxVisibleVolume,
-                    r.Price, r.StopPrice, timeInForce, r.Expiration, r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, ioc, r.Slippage);
+                    r.Price, r.StopPrice, timeInForce, r.Expiration, r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, ioc, r.Slippage, oco, r.OcoEqualVolume, relatedOrderId != 0 ? (long?)relatedOrderId : null);
             });
         }
 
@@ -534,6 +537,11 @@ namespace TickTrader.Algo.Common.Model
         private bool GetIoC(OrderExecOptions options)
         {
             return options.IsFlagSet(OrderExecOptions.ImmediateOrCancel);
+        }
+
+        private bool GetOCO(OrderExecOptions options)
+        {
+            return options.IsFlagSet(OrderExecOptions.OneCancelsTheOther);
         }
 
         #endregion
@@ -790,6 +798,7 @@ namespace TickTrader.Algo.Common.Model
                 LastFillPrice = record.TradePrice,
                 LastFillVolume = record.TradeAmount,
                 ParentOrderId = record.ParentOrderId,
+                OCORelatedOrderId = record.RelatedOrderId?.ToString(),
             };
         }
 
@@ -806,6 +815,9 @@ namespace TickTrader.Algo.Common.Model
 
             if (record.MaxVisibleVolume >= 0)
                 result |= OrderOptions.HiddenIceberg;
+
+            if (record.OneCancelsTheOtherFlag)
+                result |= OrderOptions.OneCancelsTheOther;
 
             return result;
         }
@@ -866,6 +878,8 @@ namespace TickTrader.Algo.Common.Model
                 Price = report.Price,
                 Balance = report.Balance ?? double.NaN,
                 ReqOpenPrice = report.InitialPrice,
+                IsOneCancelsTheOther = report.OneCancelsTheOtherFlag,
+                OCORelatedOrderId = report.RelatedOrderId?.ToString(),
             };
         }
 
@@ -927,6 +941,10 @@ namespace TickTrader.Algo.Common.Model
                                 return Api.OrderCmdResultCodes.IncorrectType;
                             else if (message.Contains("was called too frequently"))
                                 return Api.OrderCmdResultCodes.ThrottlingError;
+                            else if (message.StartsWith("OCO flag requires to specify"))
+                                return Api.OrderCmdResultCodes.OCORelatedIdNotFound;
+                            else if (message.EndsWith("already has OCO flag!"))
+                                return Api.OrderCmdResultCodes.RelatedOrderAlreadyExistOCO;
                         }
                         break;
                     }

@@ -27,6 +27,7 @@ namespace TickTrader.Algo.Api
     {
         None = 0,
         ImmediateOrCancel = 1,
+        OneCancelsTheOther = 2,
     }
 
     [Flags]
@@ -36,6 +37,7 @@ namespace TickTrader.Algo.Api
         ImmediateOrCancel = 1,
         MarketWithSlippage = 2,
         HiddenIceberg = 4,
+        OneCancelsTheOther = 8,
     }
 
     public enum OrderCmdResultCodes
@@ -74,6 +76,8 @@ namespace TickTrader.Algo.Api
         IncorrectSlippage = 125,
         IncorrectType = 126,
         ThrottlingError = 127,
+        OCORelatedIdNotFound = 128,
+        RelatedOrderAlreadyExistOCO = 129,
     }
 
     public static class OrderOptionExtension
