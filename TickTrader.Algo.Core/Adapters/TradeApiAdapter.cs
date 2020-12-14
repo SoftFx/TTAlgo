@@ -53,8 +53,8 @@ namespace TickTrader.Algo.Core
                 Options = apiRequest.Options,
                 Tag = CompositeTag.NewTag(IsolationTag, apiRequest.Tag),
                 Expiration = apiRequest.Expiration,
-                OcoEqualVolume = apiRequest.OcoEqualVolume,
-                OcoRelatedOrderId = apiRequest.OcoRelatedOrderId,
+                OCOEqualVolume = apiRequest.OcoEqualVolume,
+                OCORelatedOrderId = apiRequest.OcoRelatedOrderId,
             };
 
             PreprocessAndValidateOpenOrderRequest(coreRequest, out var smbMetadata, ref code);
@@ -187,6 +187,8 @@ namespace TickTrader.Algo.Core
                 Comment = request.Comment,
                 Expiration = request.Expiration,
                 Options = request.Options,
+                OCOEqualVolume = request.OcoEqualVolume,
+                OCORealtedOrderId = request.OcoRelatedOrderId,
             };
 
             var code = OrderCmdResultCodes.Ok;
@@ -249,7 +251,7 @@ namespace TickTrader.Algo.Core
                 return;
             if (!ValidateMaxVisibleVolumeLots(request.MaxVisibleVolumeLots, smbMetadata, type, request.VolumeLots, ref code))
                 return;
-            if (!ValidateOCO(request.Options, request.OcoRelatedOrderId, ref code))
+            if (!ValidateOCO(request.Options, request.OCORelatedOrderId, ref code))
                 return;
 
 

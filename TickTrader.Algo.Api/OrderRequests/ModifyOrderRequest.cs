@@ -30,6 +30,10 @@ namespace TickTrader.Algo.Api
 
         public string Comment { get; private set; }
 
+        public bool? OcoEqualVolume { get; private set; }
+
+        public string OcoRelatedOrderId { get; private set; }
+
 
         private ModifyOrderRequest() { }
 
@@ -47,6 +51,8 @@ namespace TickTrader.Algo.Api
             private OrderExecOptions? _options;
             private string _comment;
 
+            private bool? _ocoEqualVolume;
+            private string _ocoRelatedOrderId;
 
             private Template() { }
 
@@ -70,6 +76,8 @@ namespace TickTrader.Algo.Api
                     Expiration = _expiration,
                     Options = _options,
                     Comment = _comment,
+                    OcoEqualVolume = _ocoEqualVolume,
+                    OcoRelatedOrderId = _ocoRelatedOrderId,
                 };
             }
 
@@ -169,6 +177,18 @@ namespace TickTrader.Algo.Api
             public Template WithComment(string comment)
             {
                 _comment = comment;
+                return this;
+            }
+
+            public Template WithOCOEqualVolume(bool? equalVolume)
+            {
+                _ocoEqualVolume = equalVolume;
+                return this;
+            }
+
+            public Template WithOCORelatedOrderId(string relatedId)
+            {
+                _ocoRelatedOrderId = relatedId;
                 return this;
             }
         }

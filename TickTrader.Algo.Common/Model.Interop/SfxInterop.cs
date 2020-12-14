@@ -442,10 +442,10 @@ namespace TickTrader.Algo.Common.Model
                 var ioc = GetIoC(r.Options);
                 var oco = GetOCO(r.Options);
 
-                long.TryParse(r.OcoRelatedOrderId, out var relatedOrderId);
+                long.TryParse(r.OCORelatedOrderId, out var relatedOrderId);
 
                 return _tradeProxyAdapter.NewOrderAsync(r.OperationId, r.Symbol, Convert(r.Type), Convert(r.Side), r.Volume, r.MaxVisibleVolume,
-                    r.Price, r.StopPrice, timeInForce, r.Expiration, r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, ioc, r.Slippage, oco, r.OcoEqualVolume, relatedOrderId != 0 ? (long?)relatedOrderId : null);
+                    r.Price, r.StopPrice, timeInForce, r.Expiration, r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, ioc, r.Slippage, oco, r.OCOEqualVolume, relatedOrderId != 0 ? (long?)relatedOrderId : null);
             });
         }
 
@@ -458,10 +458,12 @@ namespace TickTrader.Algo.Common.Model
         {
             if (_tradeProxy.ProtocolSpec.SupportsOrderReplaceQtyChange)
             {
+                long.TryParse(request.OCORealtedOrderId, out var relatedOrderId);
+
                 return ExecuteOrderOperation(request, r => _tradeProxyAdapter.ReplaceOrderAsync(r.OperationId, "",
                     r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.VolumeChange,
                     r.MaxVisibleVolume, r.Price, r.StopPrice, GetTimeInForceReplace(r.Options, r.Expiration), r.Expiration,
-                    r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, GetIoCReplace(r.Options), r.Slippage));
+                    r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, GetIoCReplace(r.Options), r.Slippage, GetOCOReplace(r.Options), r.OCOEqualVolume, relatedOrderId != 0 ? (long?)relatedOrderId : null));
             }
             return ExecuteOrderOperation(request, r => _tradeProxyAdapter.ReplaceOrderAsync(r.OperationId, "",
                 r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.NewVolume ?? r.CurrentVolume, r.CurrentVolume,
@@ -527,6 +529,11 @@ namespace TickTrader.Algo.Common.Model
         private bool? GetIoCReplace(OrderExecOptions? options)
         {
             return options?.IsFlagSet(OrderExecOptions.ImmediateOrCancel);
+        }
+
+        private bool? GetOCOReplace(OrderExecOptions? options)
+        {
+            return options?.IsFlagSet(OrderExecOptions.OneCancelsTheOther);
         }
 
         private OrderTimeInForce GetTimeInForce(DateTime? expiration)

@@ -38,16 +38,30 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter(DisplayName = "Expiration Timeout(ms)", DefaultValue = null, IsRequired = false)]
         public int? ExpirationTimeout { get; set; }
 
-        [Parameter(DisplayName = "IoC Flag", DefaultValue = IocTypes.DoNotModify, IsRequired = false)]
-        public IocTypes IoC { get; set; }
+        [Parameter(DisplayName = "Options", DefaultValue = OptionsTypes.DoNotModify, IsRequired = false)]
+        public OptionsTypes Options { get; set; }
+
+        [Parameter(DisplayName = "OCO Equals Volume", DefaultValue = BoolTypes.DoNotModify, IsRequired = false)]
+        public BoolTypes OCOEqualsVolume { get; set; }
+
+        [Parameter(DisplayName = "OCO Related Id", DefaultValue = null, IsRequired = false)]
+        public string OCORelatedId { get; set; }
 
         protected override void OnStart()
         {
             OrderExecOptions? options = null;
-            if (IoC == IocTypes.IoC)
+            if (Options == OptionsTypes.IoC)
                 options = OrderExecOptions.ImmediateOrCancel;
-            if (IoC == IocTypes.None)
+            if (Options == OptionsTypes.None)
                 options = OrderExecOptions.None;
+            if (Options == OptionsTypes.OCO)
+                options = OrderExecOptions.OneCancelsTheOther;
+
+            bool? ocoEqualsVolume = null;
+            if (OCOEqualsVolume == BoolTypes.False)
+                ocoEqualsVolume = false;
+            if (OCOEqualsVolume == BoolTypes.True)
+                ocoEqualsVolume = true;
 
             var comment = string.IsNullOrWhiteSpace(Comment) ? null : Comment;
 
@@ -58,7 +72,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 .WithPrice(Price).WithStopPrice(StopPrice).WithMaxVisibleVolume(MaxVisibleVolume)
                 .WithStopLoss(StopLoss).WithTakeProfit(TakeProfit).WithComment(comment)
                 .WithExpiration(ExpirationTimeout.HasValue ? DateTime.Now + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null)
-                .WithVolume(Volume).WithOptions(options).WithSlippage(Slippage).MakeRequest();
+                .WithVolume(Volume).WithOptions(options).WithSlippage(Slippage).WithOCOEqualVolume(ocoEqualsVolume).WithOCORelatedOrderId(OCORelatedId).MakeRequest();
 
             var result = ModifyOrder(request);
 
@@ -70,5 +84,6 @@ namespace TickTrader.Algo.TestCollection.Bots
         }
     }
 
-    public enum IocTypes { DoNotModify, None, IoC }
+    public enum OptionsTypes { DoNotModify, None, IoC, OCO }
+    public enum BoolTypes { DoNotModify, True, False}
 }
