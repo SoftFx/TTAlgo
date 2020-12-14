@@ -945,6 +945,8 @@ namespace TickTrader.Algo.Common.Model
                                 return Api.OrderCmdResultCodes.OCORelatedIdNotFound;
                             else if (message.EndsWith("already has OCO flag!"))
                                 return Api.OrderCmdResultCodes.RelatedOrderAlreadyExistOCO;
+                            else if (message.StartsWith("Buy price must be less than"))
+                                return Api.OrderCmdResultCodes.IncorrectPrice;
                         }
                         break;
                     }
@@ -1184,6 +1186,8 @@ namespace TickTrader.Algo.Common.Model
                 SplitRatio = report.SplitRatio,
                 Tax = report.Tax,
                 Slippage = report.Slippage,
+                OCORelativeOrderId = report.RelatedOrderId?.ToString(),
+                OneCancelsTheOther = report.RelatedOrderId != null,
             };
         }
 

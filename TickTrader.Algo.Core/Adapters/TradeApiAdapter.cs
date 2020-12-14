@@ -249,6 +249,9 @@ namespace TickTrader.Algo.Core
                 return;
             if (!ValidateMaxVisibleVolumeLots(request.MaxVisibleVolumeLots, smbMetadata, type, request.VolumeLots, ref code))
                 return;
+            if (!ValidateOCO(request.Options, request.OcoRelatedOrderId, ref code))
+                return;
+
 
             request.VolumeLots = RoundVolume(request.VolumeLots, smbMetadata);
             request.MaxVisibleVolumeLots = RoundVolume(request.MaxVisibleVolumeLots, smbMetadata);
@@ -733,11 +736,35 @@ namespace TickTrader.Algo.Core
 
             var isOrderTypeCompatibleToIoC = orderType == OrderType.Limit || orderType == OrderType.StopLimit;
 
-            if (options == OrderExecOptions.ImmediateOrCancel && !isOrderTypeCompatibleToIoC)
+            if (options.Value.HasFlag(OrderExecOptions.ImmediateOrCancel) && !isOrderTypeCompatibleToIoC)
             {
                 code = OrderCmdResultCodes.Unsupported;
                 return false;
             }
+
+            var isOrderTypeCompabilityToOCO = orderType == OrderType.Limit || orderType == OrderType.Stop;
+
+            if (options.Value.HasFlag(OrderExecOptions.OneCancelsTheOther) && !isOrderTypeCompabilityToOCO)
+            {
+                code = OrderCmdResultCodes.Unsupported;
+                return false;
+            }
+
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool ValidateOCO(OrderExecOptions? options, string relatedOrderId, ref OrderCmdResultCodes code)
+        {
+            if (options == null || !options.Value.HasFlag(OrderExecOptions.OneCancelsTheOther))
+                return true;
+
+            if (string.IsNullOrEmpty(relatedOrderId))
+            {
+                code = OrderCmdResultCodes.OCORelatedIdNotFound;
+                return false;
+            }
+
             return true;
         }
 

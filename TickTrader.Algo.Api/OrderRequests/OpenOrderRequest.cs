@@ -36,8 +36,6 @@ namespace TickTrader.Algo.Api
 
         public string Tag { get; private set; }
 
-        public bool OneCancelsTheFlag { get; private set; }
-
         public bool OcoEqualVolume { get; private set; }
 
         public string OcoRelatedOrderId { get; private set; }

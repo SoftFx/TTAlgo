@@ -81,6 +81,8 @@ namespace TickTrader.BotTerminal
             OpenSlippage = GetOpenSlippage(transaction);
             CloseSlippage = GetCloseSlippage(transaction);
 
+            OCORelatedOrderId = GetOCORelatedOrderId(transaction);
+
             // should be last (it's based on other fields)
             UniqueId = GetUniqueId(transaction, transaction.OrderId, out long orderNum);
             OrderNum = orderNum;
@@ -173,6 +175,7 @@ namespace TickTrader.BotTerminal
         public bool IsDividendTransaction => Type == AggregatedTransactionType.Dividend;
         public double? Taxes { get; protected set; }
         public double? Fees { get; protected set; }
+        public string OCORelatedOrderId { get; protected set; }
 
         protected virtual AggregatedTransactionType GetTransactionType(TradeReportEntity transaction)
         {
@@ -238,7 +241,7 @@ namespace TickTrader.BotTerminal
             if (transaction.ActionId > 1)
                 return new TradeReportKey(orderNum, transaction.ActionId);
 
-            if (ActionId == 1 && RemainingQuantity > 0 && !OrderWasCanceled() && Reason != Reasons.Activated)
+            if (ActionId == 1 && RemainingQuantity > 0 && !OrderWasCanceled() && Reason != Reasons.Activated && transaction.OCORelativeOrderId == null)
                 return new TradeReportKey(orderNum, transaction.ActionId);
             else
                 return new TradeReportKey(orderNum, null);
@@ -381,6 +384,9 @@ namespace TickTrader.BotTerminal
             if (transaction.MaxVisibleQuantity >= 0)
                 options.Add(OrderOptions.HiddenIceberg);
 
+            if (transaction.OneCancelsTheOther)
+                options.Add(OrderOptions.OneCancelsTheOther);
+
             return string.Join(",", options);
         }
 
@@ -483,6 +489,11 @@ namespace TickTrader.BotTerminal
         protected AggregatedTransactionType GetBuyOrSellType(TradeReportEntity transaction)
         {
             return transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
+        }
+
+        protected virtual string GetOCORelatedOrderId(TradeReportEntity transaction)
+        {
+            return transaction.OCORelativeOrderId;
         }
 
         protected AggregatedTransactionType GetCanceledType(TradeReportEntity transaction)
