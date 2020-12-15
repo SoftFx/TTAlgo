@@ -182,14 +182,18 @@ namespace TickTrader.Algo.Api
 
             public Template WithOCOEqualVolume(bool? equalVolume)
             {
-                _options = _options | OrderExecOptions.OneCancelsTheOther ?? OrderExecOptions.OneCancelsTheOther;
+                if (equalVolume != null)
+                    _options = _options | OrderExecOptions.OneCancelsTheOther ?? OrderExecOptions.OneCancelsTheOther;
+
                 _ocoEqualVolume = equalVolume;
                 return this;
             }
 
             public Template WithOCORelatedOrderId(string relatedId)
             {
-                _options = _options | OrderExecOptions.OneCancelsTheOther ?? OrderExecOptions.OneCancelsTheOther;
+                if (!string.IsNullOrEmpty(relatedId))
+                    _options = _options | OrderExecOptions.OneCancelsTheOther ?? OrderExecOptions.OneCancelsTheOther;
+
                 _ocoRelatedOrderId = relatedId;
                 return this;
             }
