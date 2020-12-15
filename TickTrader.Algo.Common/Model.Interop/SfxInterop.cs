@@ -954,6 +954,12 @@ namespace TickTrader.Algo.Common.Model
                                 return Api.OrderCmdResultCodes.RelatedOrderAlreadyExistOCO;
                             else if (message.StartsWith("Buy price must be less than"))
                                 return Api.OrderCmdResultCodes.IncorrectPrice;
+                            else if (message.Contains("has different Symbol"))
+                                return Api.OrderCmdResultCodes.IncorrectSymbol;
+                            else if (message.StartsWith("OCO flag is used only for"))
+                                return Api.OrderCmdResultCodes.IncorrectType;
+                            else if (message.EndsWith("Remove OCO relation first."))
+                                return Api.OrderCmdResultCodes.OCOAlreadyExist;
                         }
                         break;
                     }
@@ -1096,6 +1102,8 @@ namespace TickTrader.Algo.Common.Model
                     return Core.TradeTransactionReason.Split;
                 case SFX.TradeTransactionReason.Dividend:
                     return Core.TradeTransactionReason.Dividend;
+                case SFX.TradeTransactionReason.OneCancelsTheOther:
+                    return Core.TradeTransactionReason.OneCancelsTheOther;
                 default:
                     return Core.TradeTransactionReason.None;
             }

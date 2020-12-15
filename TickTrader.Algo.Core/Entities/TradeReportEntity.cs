@@ -133,6 +133,7 @@ namespace TickTrader.Algo.Core
         Expired = 8,
         TransferMoney = 9,
         Split = 10,
-        Dividend = 11
+        Dividend = 11,
+        OneCancelsTheOther = 12,
     }
 }

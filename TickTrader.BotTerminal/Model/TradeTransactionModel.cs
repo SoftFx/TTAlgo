@@ -19,7 +19,7 @@ namespace TickTrader.BotTerminal
 
         public enum TransactionSide { None = -1, Buy, Sell }
 
-        public enum Reasons { None = -1, DealerDecision, StopOut, Activated, CanceledByDealer, Expired }
+        public enum Reasons { None = -1, DealerDecision, StopOut, Activated, CanceledByDealer, Expired, OcoRelatedOrder }
 
         public TransactionReport() { }
 
@@ -241,7 +241,7 @@ namespace TickTrader.BotTerminal
             if (transaction.ActionId > 1)
                 return new TradeReportKey(orderNum, transaction.ActionId);
 
-            if (ActionId == 1 && RemainingQuantity > 0 && !OrderWasCanceled() && Reason != Reasons.Activated && transaction.OCORelativeOrderId == null)
+            if (ActionId == 1 && RemainingQuantity > 0 && !OrderWasCanceled() && Reason != Reasons.Activated)
                 return new TradeReportKey(orderNum, transaction.ActionId);
             else
                 return new TradeReportKey(orderNum, null);
@@ -467,6 +467,12 @@ namespace TickTrader.BotTerminal
             {
                 Type = GetCanceledType(transaction);
                 return Reasons.CanceledByDealer;
+            }
+
+            if (transaction.TradeTransactionReportType == TradeExecActions.OrderCanceled && transaction.TradeTransactionReason == TradeTransactionReason.OneCancelsTheOther)
+            {
+                Type = GetCanceledType(transaction);
+                return Reasons.OcoRelatedOrder;
             }
 
             if (transaction.TradeTransactionReportType == TradeExecActions.OrderCanceled && transaction.TradeTransactionReason == TradeTransactionReason.StopOut)

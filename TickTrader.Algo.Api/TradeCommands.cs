@@ -78,6 +78,8 @@ namespace TickTrader.Algo.Api
         ThrottlingError = 127,
         OCORelatedIdNotFound = 128,
         RelatedOrderAlreadyExistOCO = 129,
+        IncorrectSymbol = 130,
+        OCOAlreadyExist = 131,
     }
 
     public static class OrderOptionExtension
