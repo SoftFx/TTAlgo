@@ -489,6 +489,7 @@
                                     <Binding Path="SplitRatio"/>
                                     <Binding Path="ReqSlippage"/>
                                     <Binding Path="OCORelatedOrderId"/>
+                                    <Binding Path="OrderExecutionOption"/>
                                 </MultiBinding>
                             </Setter.Value>
                         </Setter>
@@ -510,6 +511,10 @@
                                     <StackPanel Orientation="Horizontal" Visibility="{Binding ReqSlippage, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="ReqSlippage: " VerticalAlignment="Center" />
                                         <TextBlock Text="{Binding ReqSlippage, Converter={StaticResource Round}}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding OrderExecutionOption, Converter={StaticResource NullOrEmptyToVis}}">
+                                        <TextBlock Text="Option: " VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding OrderExecutionOption}" VerticalAlignment="Center" />
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal" Visibility="{Binding OCORelatedOrderId, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Related Order Id: " VerticalAlignment="Center" />
