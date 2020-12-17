@@ -254,7 +254,14 @@ namespace TickTrader.BotAgent.BA.Models
                 _shutdownCompletedSrc = new TaskCompletionSource<object>();
 
                 Task[] stopBots = _bots.Select(tb => tb.StopAsync()).ToArray();
-                await Task.WhenAll(stopBots);
+                try
+                {
+                    await Task.WhenAll(stopBots);
+                }
+                catch(Exception ex)
+                {
+                    _log.Error("Failed to shutdown bots", ex);
+                }
 
                 if (ConnectionState == ConnectionStates.Offline)
                     _shutdownCompletedSrc.TrySetResult(null);

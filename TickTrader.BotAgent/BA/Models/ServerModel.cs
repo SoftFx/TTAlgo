@@ -130,7 +130,7 @@ namespace TickTrader.BotAgent.BA.Models
             public void RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false) => CallActorFlatten(a => a.RemoveBot(botId, cleanLog, cleanAlgoData));
             public void StartBot(string botId) => CallActorFlatten(a => a.GetBotOrThrow(botId).Start());
             public Task StopBotAsync(string botId) => CallActorFlattenAsync(a => a.GetBotOrThrow(botId).StopAsync());
-            public void AbortBot(string botId) => CallActorFlatten(a => a.GetBotOrThrow(botId).Abort());
+            public void AbortBot(string botId) => ActorSend(a => a.GetBotOrThrow(botId).Abort());
             public BotModelInfo GetBotInfo(string botId) => CallActorFlatten(a => a.GetBotOrThrow(botId).GetInfoCopy());
             public List<BotModelInfo> GetTradeBots() => CallActorFlatten(a => a._allBots.Values.GetInfoCopy());
             public IBotFolder GetAlgoData(string botId) => CallActorFlatten(a => a.GetBotOrThrow(botId).AlgoData);

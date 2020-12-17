@@ -291,7 +291,12 @@ namespace TickTrader.BotAgent.BA.Models
 
             try
             {
-                await Task.Factory.StartNew(() => executor?.Stop());
+                if (executor != null)
+                {
+                    var taskSrc = new CrossDomainTaskProxy();
+                    await Task.Factory.StartNew(() => executor.StopAsync(taskSrc));
+                    await taskSrc.Task;
+                }
             }
             catch (Exception ex)
             {
