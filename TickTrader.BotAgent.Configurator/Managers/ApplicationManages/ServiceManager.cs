@@ -67,7 +67,7 @@ namespace TickTrader.BotAgent.Configurator
 
                 var processId = GetProcessIdByServiceName(ServiceController.ServiceName);
 
-                if (processId != 0 && service.Status == ServiceControllerStatus.Running)
+                if (processId != 0/* && service.Status == ServiceControllerStatus.Running*/)
                 {
                     _logger.Info($"The process {processId} will be killed");
                     Process.GetProcessById(processId).Kill();
