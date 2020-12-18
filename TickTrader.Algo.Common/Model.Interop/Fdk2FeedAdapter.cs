@@ -98,7 +98,7 @@ namespace TickTrader.Algo.Common.Model.Interop
         public async Task<QuoteEntity[]> SubscribeQuotesAsync(string[] symbolIds, int marketDepth)
         {
             var taskSrc = new SfxTaskAdapter.RequestResultSource<QuoteEntity[]>("SubscribeQuotesRequest");
-            _feedProxy.SubscribeQuotesAsync(taskSrc, SfxTaskAdapter.GetSymbolEntries(symbolIds, marketDepth));
+            _feedProxy.SubscribeQuotesAsync(taskSrc, SfxConvert.GetSymbolEntries(symbolIds, marketDepth));
             var res = await taskSrc.Task;
             _logger.Debug(taskSrc.MeasureRequestTime());
             return res;
@@ -107,7 +107,7 @@ namespace TickTrader.Algo.Common.Model.Interop
         public async Task<Quote[]> GetQuotesAsync(string[] symbolIds, int marketDepth)
         {
             var taskSrc = new SfxTaskAdapter.RequestResultSource<Quote[]>("GetQuotesRequest");
-            _feedProxy.GetQuotesAsync(taskSrc, SfxTaskAdapter.GetSymbolEntries(symbolIds, marketDepth));
+            _feedProxy.GetQuotesAsync(taskSrc, SfxConvert.GetSymbolEntries(symbolIds, marketDepth));
             var res = await taskSrc.Task;
             _logger.Debug(taskSrc.MeasureRequestTime());
             return res;

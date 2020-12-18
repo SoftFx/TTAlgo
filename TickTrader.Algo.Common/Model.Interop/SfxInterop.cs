@@ -39,8 +39,10 @@ namespace TickTrader.Algo.Common.Model
         private FDK.Client.OrderEntry _tradeProxy;
         private FDK.Client.TradeCapture _tradeHistoryProxy;
 
-        private Fdk2FeedAdapter _feedproxyAdapter;
+        private Fdk2FeedAdapter _feedProxyAdapter;
+        private Fdk2FeedHistoryAdapter _feedHistoryProxyAdapter;
         private Fdk2TradeAdapter _tradeProxyAdapter;
+        private Fdk2TradeHistoryAdapter _tradeHistoryProxyAdapter;
 
         private AppType _appType;
 
@@ -76,11 +78,10 @@ namespace TickTrader.Algo.Common.Model
             _tradeHistoryProxy = new FDK.Client.TradeCapture("trade.history.proxy", logEvents, logStates, logMessages, port: 5044, validateClientCertificate: ValidateCertificate,
                 connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir);
 
-            _feedHistoryProxy.InitTaskAdapter();
-            _tradeHistoryProxy.InitTaskAdapter();
-
-            _feedproxyAdapter = new Fdk2FeedAdapter(_feedProxy, logger);
+            _feedProxyAdapter = new Fdk2FeedAdapter(_feedProxy, logger);
+            _feedHistoryProxyAdapter = new Fdk2FeedHistoryAdapter(_feedHistoryProxy, logger);
             _tradeProxyAdapter = new Fdk2TradeAdapter(_tradeProxy, rep => ExecutionReport?.Invoke(ConvertToEr(rep)));
+            _tradeHistoryProxyAdapter = new Fdk2TradeHistoryAdapter(_tradeHistoryProxy, logger);
 
             _feedProxy.QuoteUpdateEvent += (c, q) => Tick?.Invoke(Convert(q));
             _feedProxy.LogoutEvent += (c, m) => OnLogout(m);
@@ -136,10 +137,10 @@ namespace TickTrader.Algo.Common.Model
         private async Task ConnectFeed(string address, string login, string password)
         {
             logger.Debug("Feed: Connecting...");
-            await _feedproxyAdapter.ConnectAsync(address);
+            await _feedProxyAdapter.ConnectAsync(address);
             logger.Debug("Feed: Connected.");
 
-            await _feedproxyAdapter.LoginAsync(login, password, "", _appType.ToString(), Guid.NewGuid().ToString());
+            await _feedProxyAdapter.LoginAsync(login, password, "", _appType.ToString(), Guid.NewGuid().ToString());
             logger.Debug("Feed: Logged in.");
         }
 
@@ -155,20 +156,20 @@ namespace TickTrader.Algo.Common.Model
         private async Task ConnectFeedHistory(string address, string login, string password)
         {
             logger.Debug("Feed.History: Connecting...");
-            await _feedHistoryProxy.ConnectAsync(address);
+            await _feedHistoryProxyAdapter.ConnectAsync(address);
             logger.Debug("Feed.History: Connected.");
-            await _feedHistoryProxy.LoginAsync(login, password, "", _appType.ToString(), Guid.NewGuid().ToString());
+            await _feedHistoryProxyAdapter.LoginAsync(login, password, "", _appType.ToString(), Guid.NewGuid().ToString());
             logger.Debug("Feed.History: Logged in.");
         }
 
         private async Task ConnectTradeHistory(string address, string login, string password)
         {
             logger.Debug("Trade.History: Connecting...");
-            await _tradeHistoryProxy.ConnectAsync(address);
+            await _tradeHistoryProxyAdapter.ConnectAsync(address);
             logger.Debug("Trade.History: Connected.");
-            await _tradeHistoryProxy.LoginAsync(login, password, "", _appType.ToString(), Guid.NewGuid().ToString());
+            await _tradeHistoryProxyAdapter.LoginAsync(login, password, "", _appType.ToString(), Guid.NewGuid().ToString());
             logger.Debug("Trade.History: Logged in.");
-            await _tradeHistoryProxy.SubscribeTradesAsync(false);
+            await _tradeHistoryProxyAdapter.SubscribeTradesAsync(false);
             logger.Debug("Trade.History: Subscribed.");
         }
 
@@ -202,13 +203,13 @@ namespace TickTrader.Algo.Common.Model
             logger.Debug("Feed: Disconnecting...");
             try
             {
-                await _feedproxyAdapter.LogoutAsync("");
+                await _feedProxyAdapter.LogoutAsync("");
                 logger.Debug("Feed: Logged out.");
-                await _feedproxyAdapter.DisconnectAsync("");
+                await _feedProxyAdapter.DisconnectAsync("");
             }
             catch (Exception) { }
 
-            await _feedproxyAdapter.Deinit();
+            await _feedProxyAdapter.Deinit();
 
             logger.Debug("Feed: Disconnected.");
         }
@@ -218,13 +219,13 @@ namespace TickTrader.Algo.Common.Model
             logger.Debug("Feed.History: Disconnecting...");
             try
             {
-                await _feedHistoryProxy.LogoutAsync("");
+                await _feedHistoryProxyAdapter.LogoutAsync("");
                 logger.Debug("Feed.History: Logged out.");
-                await _feedHistoryProxy.DisconnectAsync("");
+                await _feedHistoryProxyAdapter.DisconnectAsync("");
             }
             catch (Exception) { }
 
-            await Task.Factory.StartNew(() => _feedHistoryProxy.Dispose());
+            await _feedHistoryProxyAdapter.Deinit();
 
             logger.Debug("Feed.History: Disconnected.");
         }
@@ -250,13 +251,13 @@ namespace TickTrader.Algo.Common.Model
             logger.Debug("Trade.History: Disconnecting...");
             try
             {
-                await _tradeHistoryProxy.LogoutAsync("");
+                await _tradeHistoryProxyAdapter.LogoutAsync("");
                 logger.Debug("Trade.History: Logged out.");
-                await _tradeHistoryProxy.DisconnectAsync("");
+                await _tradeHistoryProxyAdapter.DisconnectAsync("");
             }
             catch (Exception) { }
 
-            await Task.Factory.StartNew(() => _tradeHistoryProxy.Dispose());
+            await _tradeHistoryProxyAdapter.Deinit();
 
             logger.Debug("Trade.History: Disconnected.");
         }
@@ -267,24 +268,24 @@ namespace TickTrader.Algo.Common.Model
 
         public async Task<CurrencyEntity[]> GetCurrencies()
         {
-            var currencies = await _feedproxyAdapter.GetCurrencyListAsync();
+            var currencies = await _feedProxyAdapter.GetCurrencyListAsync();
             return currencies.Select(Convert).ToArray();
         }
 
         public async Task<SymbolEntity[]> GetSymbols()
         {
-            var symbols = await _feedproxyAdapter.GetSymbolListAsync();
+            var symbols = await _feedProxyAdapter.GetSymbolListAsync();
             return symbols.Select(Convert).ToArray();
         }
 
         public Task<QuoteEntity[]> SubscribeToQuotes(string[] symbols, int depth)
         {
-            return _feedproxyAdapter.SubscribeQuotesAsync(symbols, depth);
+            return _feedProxyAdapter.SubscribeQuotesAsync(symbols, depth);
         }
 
         public async Task<QuoteEntity[]> GetQuoteSnapshot(string[] symbols, int depth)
         {
-            var array = await _feedproxyAdapter.GetQuotesAsync(symbols, depth);
+            var array = await _feedProxyAdapter.GetQuotesAsync(symbols, depth);
             return array.Select(Convert).ToArray();
         }
 
@@ -335,7 +336,7 @@ namespace TickTrader.Algo.Common.Model
 
             try
             {
-                var bars = await _feedHistoryProxy.GetBarListAsync(symbol, ConvertBack(priceType), ToBarPeriod(barPeriod), from.ToUniversalTime(), count);
+                var bars = await _feedHistoryProxyAdapter.GetBarListAsync(symbol, ConvertBack(priceType), ToBarPeriod(barPeriod), from.ToUniversalTime(), count);
                 return bars.Select(Convert).ToArray();
             }
             catch (Exception ex)
@@ -376,7 +377,7 @@ namespace TickTrader.Algo.Common.Model
 
             try
             {
-                var quotes = await _feedHistoryProxy.GetQuoteListAsync(symbol, includeLevel2 ? QuoteDepth.Level2 : QuoteDepth.Top, from.ToUniversalTime(), count);
+                var quotes = await _feedHistoryProxyAdapter.GetQuoteListAsync(symbol, includeLevel2 ? QuoteDepth.Level2 : QuoteDepth.Top, from.ToUniversalTime(), count);
                 return quotes.Select(Convert).ToArray();
             }
             catch (Exception ex)
@@ -390,12 +391,12 @@ namespace TickTrader.Algo.Common.Model
             if (timeFrame.IsTicks())
             {
                 var level2 = timeFrame == TimeFrames.TicksLevel2;
-                var info = await _feedHistoryProxy.GetQuotesHistoryInfoAsync(symbol, level2);
+                var info = await _feedHistoryProxyAdapter.GetQuotesHistoryInfoAsync(symbol, level2);
                 return new Tuple<DateTime?, DateTime?>(info.AvailFrom, info.AvailTo);
             }
             else // bars
             {
-                var info = await _feedHistoryProxy.GetBarsHistoryInfoAsync(symbol, ToBarPeriod(timeFrame), ConvertBack(priceType));
+                var info = await _feedHistoryProxyAdapter.GetBarsHistoryInfoAsync(symbol, ToBarPeriod(timeFrame), ConvertBack(priceType));
                 return new Tuple<DateTime?, DateTime?>(info.AvailFrom, info.AvailTo);
             }
         }
@@ -432,7 +433,7 @@ namespace TickTrader.Algo.Common.Model
         {
             var direction = backwards ? TimeDirection.Backward : TimeDirection.Forward;
 
-            _tradeHistoryProxy.DownloadTradesAsync(direction, from?.ToUniversalTime(), to?.ToUniversalTime(), skipCancelOrders, rxStream);
+            _tradeHistoryProxyAdapter.DownloadTradesAsync(direction, from?.ToUniversalTime(), to?.ToUniversalTime(), skipCancelOrders, rxStream);
         }
 
         public Task<OrderInteropResult> SendOpenOrder(OpenOrderCoreRequest request)
