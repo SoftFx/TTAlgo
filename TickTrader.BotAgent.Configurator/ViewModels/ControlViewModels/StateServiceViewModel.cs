@@ -5,7 +5,7 @@ namespace TickTrader.BotAgent.Configurator
 {
     public class StateServiceViewModel : BaseViewModel
     {
-        private string _serviceName, _infoMessage;
+        private string _displayServiceName, _infoMessage;
         private bool _visibleRestartMessage;
 
         private RefreshCounter _refresh;
@@ -17,7 +17,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public string RestartMessage => Resources.ApplyNewSettingMes;
 
-        public string ServiceState => $"{_serviceName} is {Status}";
+        public string ServiceState => $"{_displayServiceName} is {Status}";
 
         public bool ServiceRunning => Status == ServiceControllerStatus.Running;
 
@@ -58,13 +58,13 @@ namespace TickTrader.BotAgent.Configurator
             }
         }
 
-        public void RefreshService(string serviceName)
+        public void RefreshService(string machineName, string displayServiceName)
         {
-            _serviceName = serviceName;
+            _displayServiceName = displayServiceName;
 
             var oldStatus = Status;
 
-            Status = new ServiceController(_serviceName).Status;
+            Status = new ServiceController(machineName).Status;
             VisibleRestartMessage = ServiceRunning ? (_refresh.Restart || RestartRequired) : false;
 
             if (oldStatus != 0 && oldStatus != Status)
