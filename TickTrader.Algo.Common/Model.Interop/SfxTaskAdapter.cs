@@ -72,11 +72,13 @@ namespace TickTrader.Algo.Common.Model
             return taskSrc.Task;
         }
 
-        public static Task<FDK2.CurrencyInfo[]> GetCurrencyListAsync(this FDK.Client.QuoteFeed client)
+        public static async Task<FDK2.CurrencyInfo[]> GetCurrencyListAsync(this FDK.Client.QuoteFeed client)
         {
             var taskSrc = new TaskCompletionSource<FDK2.CurrencyInfo[]>();
             client.GetCurrencyListAsync(taskSrc);
-            return taskSrc.Task;
+            var res = await taskSrc.Task;
+
+            return res;
         }
 
         public static Task<FDK2.SymbolInfo[]> GetSymbolListAsync(this FDK.Client.QuoteFeed client)
@@ -271,7 +273,12 @@ namespace TickTrader.Algo.Common.Model
 
         internal static void SetCompleted<T>(object state, T result)
         {
-            if (state != null)
+            if (state is RequestResultSource<T>)
+            {
+                var src = (RequestResultSource<T>)state;
+                src.SetCompleted(result);
+            }
+            else if (state != null)
             {
                 var src = (TaskCompletionSource<T>)state;
                 src.SetResult(result);
@@ -285,7 +292,13 @@ namespace TickTrader.Algo.Common.Model
 
         internal static void SetFailed<T>(object state, Exception ex)
         {
-            if (state != null)
+
+            if (state is RequestResultSource<T>)
+            {
+                var src = (RequestResultSource<T>)state;
+                src.SetFailed(Convert(ex));
+            }
+            else if (state != null)
             {
                 var src = (TaskCompletionSource<T>)state;
                 src.SetException(Convert(ex));
@@ -301,7 +314,7 @@ namespace TickTrader.Algo.Common.Model
             return ex;
         }
 
-        private static FDK2.SymbolEntry[] GetSymbolEntries(string[] symbolIds, int marketDepth)
+        internal static FDK2.SymbolEntry[] GetSymbolEntries(string[] symbolIds, int marketDepth)
         {
             return symbolIds.Select(id => new FDK2.SymbolEntry { Id = id, MarketDepth = (ushort)marketDepth }).ToArray();
         }
@@ -329,6 +342,44 @@ namespace TickTrader.Algo.Common.Model
                     }
                 });
             return taskSrc.Task;
+        }
+
+
+        internal class RequestResultSource<T> : TaskCompletionSource<T>
+        {
+            private string _requestName;
+            private long _creationTime;
+            private long _reportTime;
+
+
+            public RequestResultSource(string requestName)
+            {
+                _requestName = requestName;
+                _creationTime = DateTime.Now.Ticks;
+            }
+
+
+            public void SetCompleted(T result)
+            {
+                //System.Diagnostics.Debug.WriteLine("RRS - report: " + Thread.CurrentThread.ManagedThreadId);
+                _reportTime = DateTime.Now.Ticks;
+                SetResult(result);
+            }
+
+            public void SetFailed(Exception ex)
+            {
+                _reportTime = DateTime.Now.Ticks;
+                SetException(ex);
+            }
+
+            public string MeasureRequestTime()
+            {
+                //System.Diagnostics.Debug.WriteLine("RRS - result: " + Thread.CurrentThread.ManagedThreadId);
+                var currentTime = DateTime.Now.Ticks;
+                var sfxPing = (_reportTime - _creationTime) * 1e-4;
+                var totalPing = (currentTime - _creationTime) * 1e-4;
+                return $"Measured {_requestName}: sfxPing = {sfxPing} ms; totalPing = {totalPing} ms";
+            }
         }
 
         #endregion

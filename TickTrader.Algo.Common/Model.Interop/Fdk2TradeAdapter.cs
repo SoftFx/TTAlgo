@@ -58,6 +58,12 @@ namespace TickTrader.Algo.Common.Model.Interop
         }
 
 
+        public Task Deinit()
+        {
+            return Task.Factory.StartNew(() => _tradeProxy.Dispose());
+        }
+
+
         public Task ConnectAsync(string address)
         {
             var taskSrc = new TaskCompletionSource<object>();
@@ -93,7 +99,7 @@ namespace TickTrader.Algo.Common.Model.Interop
             return taskSrc.Task;
         }
 
-        public void GetOrdersAsync(BlockingChannel<ExecutionReport> stream)
+        public void GetOrdersAsync(BlockingChannel<OrderEntity> stream)
         {
             _tradeProxy.GetOrdersAsync(stream);
         }

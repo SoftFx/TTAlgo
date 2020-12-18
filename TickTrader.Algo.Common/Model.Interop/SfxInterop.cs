@@ -39,6 +39,7 @@ namespace TickTrader.Algo.Common.Model
         private FDK.Client.OrderEntry _tradeProxy;
         private FDK.Client.TradeCapture _tradeHistoryProxy;
 
+        private Fdk2FeedAdapter _feedproxyAdapter;
         private Fdk2TradeAdapter _tradeProxyAdapter;
 
         private AppType _appType;
@@ -75,10 +76,10 @@ namespace TickTrader.Algo.Common.Model
             _tradeHistoryProxy = new FDK.Client.TradeCapture("trade.history.proxy", logEvents, logStates, logMessages, port: 5044, validateClientCertificate: ValidateCertificate,
                 connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir);
 
-            _feedProxy.InitTaskAdapter();
             _feedHistoryProxy.InitTaskAdapter();
             _tradeHistoryProxy.InitTaskAdapter();
 
+            _feedproxyAdapter = new Fdk2FeedAdapter(_feedProxy, logger);
             _tradeProxyAdapter = new Fdk2TradeAdapter(_tradeProxy, rep => ExecutionReport?.Invoke(ConvertToEr(rep)));
 
             _feedProxy.QuoteUpdateEvent += (c, q) => Tick?.Invoke(Convert(q));
@@ -135,10 +136,10 @@ namespace TickTrader.Algo.Common.Model
         private async Task ConnectFeed(string address, string login, string password)
         {
             logger.Debug("Feed: Connecting...");
-            await _feedProxy.ConnectAsync(address);
+            await _feedproxyAdapter.ConnectAsync(address);
             logger.Debug("Feed: Connected.");
 
-            await _feedProxy.LoginAsync(login, password, "", _appType.ToString(), Guid.NewGuid().ToString());
+            await _feedproxyAdapter.LoginAsync(login, password, "", _appType.ToString(), Guid.NewGuid().ToString());
             logger.Debug("Feed: Logged in.");
         }
 
@@ -201,13 +202,13 @@ namespace TickTrader.Algo.Common.Model
             logger.Debug("Feed: Disconnecting...");
             try
             {
-                await _feedProxy.LogoutAsync("");
+                await _feedproxyAdapter.LogoutAsync("");
                 logger.Debug("Feed: Logged out.");
-                await _feedProxy.DisconnectAsync("");
+                await _feedproxyAdapter.DisconnectAsync("");
             }
             catch (Exception) { }
 
-            await Task.Factory.StartNew(() => _feedProxy.Dispose());
+            await _feedproxyAdapter.Deinit();
 
             logger.Debug("Feed: Disconnected.");
         }
@@ -239,7 +240,7 @@ namespace TickTrader.Algo.Common.Model
             }
             catch (Exception) { }
 
-            await Task.Factory.StartNew(() => _tradeProxy.Dispose());
+            await _tradeProxyAdapter.Deinit();
 
             logger.Debug("Trade: Disconnected.");
         }
@@ -266,24 +267,24 @@ namespace TickTrader.Algo.Common.Model
 
         public async Task<CurrencyEntity[]> GetCurrencies()
         {
-            var currencies = await _feedProxy.GetCurrencyListAsync();
+            var currencies = await _feedproxyAdapter.GetCurrencyListAsync();
             return currencies.Select(Convert).ToArray();
         }
 
         public async Task<SymbolEntity[]> GetSymbols()
         {
-            var symbols = await _feedProxy.GetSymbolListAsync();
+            var symbols = await _feedproxyAdapter.GetSymbolListAsync();
             return symbols.Select(Convert).ToArray();
         }
 
         public Task<QuoteEntity[]> SubscribeToQuotes(string[] symbols, int depth)
         {
-            return _feedProxy.SubscribeQuotesAsync(symbols, depth);
+            return _feedproxyAdapter.SubscribeQuotesAsync(symbols, depth);
         }
 
         public async Task<QuoteEntity[]> GetQuoteSnapshot(string[] symbols, int depth)
         {
-            var array = await _feedProxy.GetQuotesAsync(symbols, depth);
+            var array = await _feedproxyAdapter.GetQuotesAsync(symbols, depth);
             return array.Select(Convert).ToArray();
         }
 
@@ -418,7 +419,7 @@ namespace TickTrader.Algo.Common.Model
 
         public void GetTradeRecords(BlockingChannel<OrderEntity> rxStream)
         {
-            _tradeProxy.GetOrdersAsync(rxStream);
+            _tradeProxyAdapter.GetOrdersAsync(rxStream);
         }
 
         public Task<PositionEntity[]> GetPositions()
