@@ -45,6 +45,11 @@ namespace ActorSharp
             Actor.Call(actorMethod).Wait();
         }
 
+        protected Task CallActorAsync(Action<TActor> actorMethod)
+        {
+            return Actor.Call(actorMethod);
+        }
+
         protected Task<TResult> CallActorAsync<TResult>(Func<TActor, TResult> actorMethod)
         {
             return Actor.Call(actorMethod);

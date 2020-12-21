@@ -68,17 +68,17 @@ namespace TickTrader.BotAgent.BA.Models
 
             #region Repository Management
 
-            public List<PackageInfo> GetPackages() => CallActorFlatten(a => a.GetPackages());
-            public PackageInfo GetPackage(string package) => CallActorFlatten(a => a.GetPackage(package));
-            public void UpdatePackage(byte[] fileContent, string fileName) => CallActorFlatten(a => a.UpdatePackage(fileContent, fileName));
-            public byte[] DownloadPackage(PackageKey package) => CallActorFlatten(a => a.DownloadPackage(package));
-            public void RemovePackage(string package) => CallActorFlatten(a => a.RemovePackage(package));
-            public void RemovePackage(PackageKey package) => CallActorFlatten(a => a.RemovePackage(package));
-            public List<PluginInfo> GetAllPlugins() => CallActorFlatten(a => a.GetAllPlugins());
-            public List<PluginInfo> GetPluginsByType(AlgoTypes type) => CallActorFlatten(a => a.GetPluginsByType(type));
-            public MappingCollectionInfo GetMappingsInfo() => CallActorFlatten(a => a.GetMappingsInfo());
-            public string GetPackageReadPath(PackageKey package) => CallActorFlatten(a => a.GetPackageReadPath(package));
-            public string GetPackageWritePath(PackageKey package) => CallActorFlatten(a => a.GetPackageWritePath(package));
+            public Task<List<PackageInfo>> GetPackages() => CallActorAsync(a => a.GetPackages());
+            public Task<PackageInfo> GetPackage(string package) => CallActorAsync(a => a.GetPackage(package));
+            public Task UpdatePackage(byte[] fileContent, string fileName) => CallActorAsync(a => a.UpdatePackage(fileContent, fileName));
+            public Task<byte[]> DownloadPackage(PackageKey package) => CallActorAsync(a => a.DownloadPackage(package));
+            public Task RemovePackage(string package) => CallActorAsync(a => a.RemovePackage(package));
+            public Task RemovePackage(PackageKey package) => CallActorAsync(a => a.RemovePackage(package));
+            public Task<List<PluginInfo>> GetAllPlugins() => CallActorAsync(a => a.GetAllPlugins());
+            public Task<List<PluginInfo>> GetPluginsByType(AlgoTypes type) => CallActorAsync(a => a.GetPluginsByType(type));
+            public Task<MappingCollectionInfo> GetMappingsInfo() => CallActorAsync(a => a.GetMappingsInfo());
+            public Task<string> GetPackageReadPath(PackageKey package) => CallActorAsync(a => a.GetPackageReadPath(package));
+            public Task<string> GetPackageWritePath(PackageKey package) => CallActorAsync(a => a.GetPackageWritePath(package));
 
             public event Action<PackageInfo, ChangeAction> PackageChanged
             {
@@ -98,13 +98,13 @@ namespace TickTrader.BotAgent.BA.Models
 
             #region Account Management
 
-            public void AddAccount(AccountKey key, string password) => CallActorFlatten(a => a.AddAccount(key, password));
-            public void ChangeAccount(AccountKey key, string password) => CallActorFlatten(a => a.ChangeAccount(key, password));
-            public void ChangeAccountPassword(AccountKey key, string password) => CallActorFlatten(a => a.ChangeAccountPassword(key, password));
-            public List<AccountModelInfo> GetAccounts() => CallActorFlatten(a => a._accounts.GetInfoCopy());
-            public void RemoveAccount(AccountKey key) => CallActorFlatten(a => a.RemoveAccount(key));
-            public ConnectionErrorInfo TestAccount(AccountKey accountId) => CallActorFlatten(a => a.GetAccountOrThrow(accountId).TestConnection());
-            public ConnectionErrorInfo TestCreds(AccountKey accountId, string password) => CallActorFlatten(a => a.TestCreds(accountId, password));
+            public Task AddAccount(AccountKey key, string password) => CallActorAsync(a => a.AddAccount(key, password));
+            public Task ChangeAccount(AccountKey key, string password) => CallActorAsync(a => a.ChangeAccount(key, password));
+            public Task ChangeAccountPassword(AccountKey key, string password) => CallActorAsync(a => a.ChangeAccountPassword(key, password));
+            public Task<List<AccountModelInfo>> GetAccounts() => CallActorAsync(a => a._accounts.GetInfoCopy());
+            public Task RemoveAccount(AccountKey key) => CallActorAsync(a => a.RemoveAccount(key));
+            public Task<ConnectionErrorInfo> TestAccount(AccountKey accountId) => CallActorFlattenAsync(a => a.GetAccountOrThrow(accountId).TestConnection());
+            public Task<ConnectionErrorInfo> TestCreds(AccountKey accountId, string password) => CallActorFlattenAsync(a => a.TestCreds(accountId, password));
 
             public event Action<AccountModelInfo, ChangeAction> AccountChanged
             {
@@ -123,36 +123,25 @@ namespace TickTrader.BotAgent.BA.Models
             #endregion
 
             #region Bot Management
-            public IAlertStorage GetAlertStorage() => CallActorFlatten(a => a.GetAlertsStorage());
-            public string GenerateBotId(string botDisplayName) => CallActorFlatten(a => a.AutogenerateBotId(botDisplayName));
-            public BotModelInfo AddBot(AccountKey accountId, PluginConfig config) => CallActorFlatten(a => a.AddBot(accountId, config));
-            public void ChangeBotConfig(string botId, PluginConfig config) => CallActorFlatten(a => a.GetBotOrThrow(botId).ChangeBotConfig(config));
-            public void RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false) => CallActorFlatten(a => a.RemoveBot(botId, cleanLog, cleanAlgoData));
-            public void StartBot(string botId) => CallActorFlatten(a => a.GetBotOrThrow(botId).Start());
+            public Task<IAlertStorage> GetAlertStorage() => CallActorAsync(a => a.GetAlertsStorage());
+            public Task<string> GenerateBotId(string botDisplayName) => CallActorAsync(a => a.AutogenerateBotId(botDisplayName));
+            public Task<BotModelInfo> AddBot(AccountKey accountId, PluginConfig config) => CallActorAsync(a => a.AddBot(accountId, config));
+            public Task ChangeBotConfig(string botId, PluginConfig config) => CallActorAsync(a => a.GetBotOrThrow(botId).ChangeBotConfig(config));
+            public Task RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false) => CallActorAsync(a => a.RemoveBot(botId, cleanLog, cleanAlgoData));
+            public Task StartBot(string botId) => CallActorAsync(a => a.GetBotOrThrow(botId).Start());
             public Task StopBotAsync(string botId) => CallActorFlattenAsync(a => a.GetBotOrThrow(botId).StopAsync());
             public void AbortBot(string botId) => ActorSend(a => a.GetBotOrThrow(botId).Abort());
-            public BotModelInfo GetBotInfo(string botId) => CallActorFlatten(a => a.GetBotOrThrow(botId).GetInfoCopy());
-            public List<BotModelInfo> GetTradeBots() => CallActorFlatten(a => a._allBots.Values.GetInfoCopy());
-            public IBotFolder GetAlgoData(string botId) => CallActorFlatten(a => a.GetBotOrThrow(botId).AlgoData);
+            public Task<BotModelInfo> GetBotInfo(string botId) => CallActorAsync(a => a.GetBotOrThrow(botId).GetInfoCopy());
+            public Task<List<BotModelInfo>> GetBots() => CallActorAsync(a => a._allBots.Values.GetInfoCopy());
+            public Task<IBotFolder> GetAlgoData(string botId) => CallActorAsync(a => a.GetBotOrThrow(botId).AlgoData);
 
-            public IBotLog GetBotLog(string botId)
-            {
-                var logRef = CallActorFlatten(a => a.GetBotOrThrow(botId).LogRef);
-                return new BotLog.Handler(logRef);
-            }
-
-            public async Task<IBotLog> GetBotLogAsync(string botId)
+            public async Task<IBotLog> GetBotLog(string botId)
             {
                 var logRef = await CallActorAsync(a => a.GetBotOrThrow(botId).LogRef);
                 return new BotLog.Handler(logRef);
             }
 
-            public ConnectionErrorInfo GetAccountMetadata(AccountKey key, out AccountMetadataInfo info)
-            {
-                var result = CallActorFlatten(a => a.GetAccountMetadata(key));
-                info = result.Item2;
-                return result.Item1;
-            }
+            public Task<Tuple<ConnectionErrorInfo, AccountMetadataInfo>> GetAccountMetadata(AccountKey key) => CallActorFlattenAsync(a => a.GetAccountMetadata(key));
 
             public event Action<BotModelInfo, ChangeAction> BotChanged
             {
