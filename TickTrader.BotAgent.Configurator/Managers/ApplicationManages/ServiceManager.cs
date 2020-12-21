@@ -2,14 +2,17 @@
 using System.Diagnostics;
 using System.Management;
 using System.ServiceProcess;
+using System.Threading.Tasks;
 using TickTrader.BotAgent.Configurator.Properties;
 
 namespace TickTrader.BotAgent.Configurator
 {
     public class ServiceManager
     {
+        private const int DelayKillProcess = 5 * 60 * 1000;
+
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
-        private readonly TimeSpan ProcessCloseDelay;
+        private readonly TimeSpan ServiceCloseDelay;
 
         private ServiceController ServiceController => new ServiceController(MachineServiceName);
 
@@ -23,13 +26,16 @@ namespace TickTrader.BotAgent.Configurator
         public ServiceManager(string serviceName)
         {
             MachineServiceName = serviceName;
-            ProcessCloseDelay = new TimeSpan(0, 0, 90);
+            ServiceCloseDelay = new TimeSpan(0, 0, 90);
         }
 
-        public void ServiceStart(int listeningPort)
+        public async void ServiceStart(int listeningPort)
         {
             if (IsServiceRunning)
+            {
                 ServiceStop();
+                await Task.Delay(5000);
+            }
 
             var service = ServiceController;
 
@@ -51,7 +57,6 @@ namespace TickTrader.BotAgent.Configurator
         public void ServiceStop()
         {
             var service = ServiceController;
-            var machineName = ServiceController.MachineName;
 
             if (service.Status == ServiceControllerStatus.Stopped)
                 throw new Exception(Resources.StopServiceEx);
@@ -59,7 +64,7 @@ namespace TickTrader.BotAgent.Configurator
             try
             {
                 service.Stop();
-                service.WaitForStatus(ServiceControllerStatus.Stopped, ProcessCloseDelay);
+                service.WaitForStatus(ServiceControllerStatus.Stopped, ServiceCloseDelay);
             }
             catch (System.ServiceProcess.TimeoutException ex)
             {
@@ -70,7 +75,10 @@ namespace TickTrader.BotAgent.Configurator
                 if (processId != 0/* && service.Status == ServiceControllerStatus.Running*/)
                 {
                     _logger.Info($"The process {processId} will be killed");
-                    Process.GetProcessById(processId).Kill();
+                    var process = Process.GetProcessById(processId);
+
+                    process.Kill();
+                    process.WaitForExit(DelayKillProcess);
                 }
             }
             catch (Exception ex)
