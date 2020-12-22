@@ -38,7 +38,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         [HttpHead("{name}")]
         public async Task<IActionResult> Head(string name)
         {
-            var package = _botAgent.GetPackage(name);
+            var package = await _botAgent.GetPackage(name);
 
             if (package != null)
                 return Ok();
