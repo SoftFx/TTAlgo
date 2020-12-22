@@ -130,6 +130,7 @@ namespace TickTrader.BotAgent.BA.Models
         public PluginTradeInfoProvider PluginTradeInfo { get; private set; }
         public TradeHistoryProvider.Handler PluginTradeHistory { get; private set; }
 
+        public int TotalBotsCount => _bots.Count;
         public int RunningBotsCount => _startedBotsCount;
         public bool HasRunningBots => _startedBotsCount > 0;
         public bool HasError => _lastError != null && _lastError.Code != ConnectionErrorCodes.None;

@@ -34,6 +34,7 @@ namespace TickTrader.BotAgent.BA.Models
         private IFdkOptionsProvider _fdkOptionsProvider;
 
         private AlertStorage _alertStorage;
+        private ThreadPoolManager _threadPoolManager;
 
         public static EnvService Environment => envService;
 
@@ -44,18 +45,28 @@ namespace TickTrader.BotAgent.BA.Models
 
         private async Task InitAsync(IFdkOptionsProvider fdkOptionsProvider)
         {
+            _fdkOptionsProvider = fdkOptionsProvider;
+
             _botIdHelper = new BotIdHelper();
             _allBots = new Dictionary<string, TradeBotModel>();
             _packageStorage = new PackageStorage();
             _alertStorage = new AlertStorage();
-            _fdkOptionsProvider = fdkOptionsProvider;
+            _threadPoolManager = new ThreadPoolManager();
 
             await _packageStorage.Library.WaitInit();
 
             _packageStorage.PackageChanged += (p, a) => PackageChanged?.Invoke(p, a);
             _packageStorage.PackageStateChanged += p => PackageStateChanged?.Invoke(p);
+
+            _threadPoolManager.Start(GetBotsCnt());
+
             foreach (var acc in _accounts)
                 await InitAccount(acc);
+        }
+
+        private int GetBotsCnt()
+        {
+            return _accounts.Sum(a => a.TotalBotsCount);
         }
 
         public void Close()
@@ -98,11 +109,11 @@ namespace TickTrader.BotAgent.BA.Models
 
             #region Account Management
 
-            public Task AddAccount(AccountKey key, string password) => CallActorAsync(a => a.AddAccount(key, password));
+            public Task AddAccount(AccountKey key, string password) => CallActorFlattenAsync(a => a.AddAccount(key, password));
             public Task ChangeAccount(AccountKey key, string password) => CallActorAsync(a => a.ChangeAccount(key, password));
             public Task ChangeAccountPassword(AccountKey key, string password) => CallActorAsync(a => a.ChangeAccountPassword(key, password));
             public Task<List<AccountModelInfo>> GetAccounts() => CallActorAsync(a => a._accounts.GetInfoCopy());
-            public Task RemoveAccount(AccountKey key) => CallActorAsync(a => a.RemoveAccount(key));
+            public Task RemoveAccount(AccountKey key) => CallActorFlattenAsync(a => a.RemoveAccount(key));
             public Task<ConnectionErrorInfo> TestAccount(AccountKey accountId) => CallActorFlattenAsync(a => a.GetAccountOrThrow(accountId).TestConnection());
             public Task<ConnectionErrorInfo> TestCreds(AccountKey accountId, string password) => CallActorFlattenAsync(a => a.TestCreds(accountId, password));
 
@@ -318,7 +329,15 @@ namespace TickTrader.BotAgent.BA.Models
         private void OnBotChanged(TradeBotModel bot, ChangeAction changeAction)
         {
             if (changeAction == ChangeAction.Removed)
+            {
                 _allBots.Remove(bot.Id);
+                _threadPoolManager.OnNewBotsCnt(GetBotsCnt());
+            }
+
+            if (changeAction == ChangeAction.Added)
+            {
+                _threadPoolManager.OnNewBotsCnt(GetBotsCnt());
+            }
 
             Save();
             BotChanged?.Invoke(bot.GetInfoCopy(), changeAction);
@@ -497,11 +516,12 @@ namespace TickTrader.BotAgent.BA.Models
 
         #endregion
 
-        private Task ShutdownAsync()
+        private async Task ShutdownAsync()
         {
             _logger.Debug("ServerModel is shutting down...");
             var shutdonwTasks = _accounts.Select(ac => ac.ShutdownAsync()).ToArray();
-            return Task.WhenAll(shutdonwTasks);
+            await Task.WhenAll(shutdonwTasks);
+            await _threadPoolManager.Stop();
         }
     }
 
