@@ -33,7 +33,7 @@ namespace TickTrader.BotAgent.Infrastructure
 
         public void OnNewBotsCnt(int botsCnt)
         {
-            //SetMinThreads(2 * botsCnt);
+            SetMinThreads(2 * botsCnt);
         }
 
 
