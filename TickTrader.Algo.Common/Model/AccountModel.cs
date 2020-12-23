@@ -373,7 +373,7 @@ namespace TickTrader.Algo.Common.Model
                     break;
 
                 case ExecutionType.Calculated:
-                    bool ignoreCalculate = (accType == AccountTypes.Gross && report.OrderType == OrderType.Market);
+                    bool ignoreCalculate = (accType == AccountTypes.Gross && report.OrderType == OrderType.Market) || report.OrderStatus == OrderStatus.Executing;
                     if (!ignoreCalculate)
                     {
                         if (orders.ContainsKey(report.OrderId))

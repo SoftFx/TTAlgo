@@ -8,39 +8,36 @@ using System.Threading.Tasks;
 namespace TickTrader.Algo.Core
 {
     [Serializable]
-    public class OptCaseConfig : IEnumerable<KeyValuePair<string, object>>
+    public class ParamsMessage : IEnumerable<KeyValuePair<string, object>>
     {
-        public Dictionary<string, object> Params { get; } = new Dictionary<string, object>();
-        public long Id { get; }
+        public Dictionary<string, object> Parameters { get; } = new Dictionary<string, object>();
 
-        public OptCaseConfig(long id)
+        public long Id { get; } = -1;
+
+        public ParamsMessage(long id)
         {
             Id = id;
         }
 
         public void Add(string paramId, object paramVal)
         {
-            Params.Add(paramId, paramVal);
+            Parameters.Add(paramId, paramVal);
         }
 
         public void Apply(IPluginSetupTarget target)
         {
-            foreach (var pair in Params)
+            foreach (var pair in Parameters)
                 target.SetParameter(pair.Key, pair.Value);
         }
 
-        #region IEnumerable
-
         IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator()
         {
-            return Params.GetEnumerator();
+            return Parameters.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return Params.GetEnumerator();
+            return Parameters.GetEnumerator();
         }
-
-        #endregion
     }
 }

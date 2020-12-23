@@ -28,4 +28,11 @@ namespace TickTrader.Algo.Protocol
         {
         }
     }
+
+    public class TimeoutException : BAException
+    {
+        public TimeoutException(string message) : base(message)
+        {
+        }
+    }
 }

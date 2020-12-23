@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using TickTrader.BotAgent.BA;
 using TickTrader.BotAgent.BA.Exceptions;
 using TickTrader.BotAgent.WebAdmin.Server.Dto;
@@ -27,26 +28,26 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         }
 
         [HttpGet]
-        public PackageDto[] Get()
+        public async Task<PackageDto[]> Get()
         {
-            var packages = _botAgent.GetPackages();
+            var packages = await _botAgent.GetPackages();
 
             return packages.Select(p => p.ToDto()).ToArray();
         }
 
         [HttpHead("{name}")]
-        public IActionResult Head(string name)
+        public async Task<IActionResult> Head(string name)
         {
-            var packages = _botAgent.GetPackages();
+            var package = await _botAgent.GetPackage(name);
 
-            if (_botAgent.GetPackage(name) != null)
+            if (package != null)
                 return Ok();
 
             return NotFound();
         }
 
         [HttpPost]
-        public IActionResult Post(IFormFile file)
+        public async Task<IActionResult> Post(IFormFile file)
         {
             if (file == null) throw new ArgumentNullException("File is null");
             if (file.Length == 0) throw new ArgumentException("File is empty");
@@ -58,7 +59,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
                     var fileContent = binaryReader.ReadBytes((int)file.Length);
                     try
                     {
-                        _botAgent.UpdatePackage(fileContent, file.FileName);
+                        await _botAgent.UpdatePackage(fileContent, file.FileName);
                     }
                     catch (BAException dsex)
                     {
@@ -72,11 +73,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         }
 
         [HttpDelete("{name}")]
-        public IActionResult Delete(string name)
+        public async Task<IActionResult> Delete(string name)
         {
             try
             {
-                _botAgent.RemovePackage(WebUtility.UrlDecode(name));
+                await _botAgent.RemovePackage(WebUtility.UrlDecode(name));
             }
             catch (BAException dsex)
             {

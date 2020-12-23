@@ -66,134 +66,118 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return AccessLevels.Anonymous;
         }
 
-        public List<AccountModelInfo> GetAccountList()
+        public Task<List<AccountModelInfo>> GetAccountList()
         {
             return _botAgent.GetAccounts();
         }
 
-        public List<BotModelInfo> GetBotList()
+        public Task<List<BotModelInfo>> GetBotList()
         {
-            return _botAgent.GetTradeBots();
+            return _botAgent.GetBots();
         }
 
-        public List<PackageInfo> GetPackageList()
+        public Task<List<PackageInfo>> GetPackageList()
         {
             return _botAgent.GetPackages();
         }
 
-        public ApiMetadataInfo GetApiMetadata()
+        public Task<ApiMetadataInfo> GetApiMetadata()
         {
-            return ApiMetadataInfo.CreateCurrentMetadata();
+            return Task.FromResult(ApiMetadataInfo.CreateCurrentMetadata());
         }
 
-        public MappingCollectionInfo GetMappingsInfo()
+        public Task<MappingCollectionInfo> GetMappingsInfo()
         {
             return _botAgent.GetMappingsInfo();
         }
 
-        public SetupContextInfo GetSetupContext()
+        public Task<SetupContextInfo> GetSetupContext()
         {
-            return new SetupContextInfo(_agentContext.DefaultTimeFrame, _agentContext.DefaultSymbol.ToInfo(), _agentContext.DefaultMapping);
+            return Task.FromResult(new SetupContextInfo(_agentContext.DefaultTimeFrame, _agentContext.DefaultSymbol.ToInfo(), _agentContext.DefaultMapping));
         }
 
-        public AccountMetadataInfo GetAccountMetadata(AccountKey account)
+        public async Task<AccountMetadataInfo> GetAccountMetadata(AccountKey account)
         {
-            var error = _botAgent.GetAccountMetadata(account, out var accountMetadata);
+            var (error, accMetadata) = await _botAgent.GetAccountMetadata(account);
             if (error.Code != ConnectionErrorCodes.None)
                 throw new Exception($"Account {account.Login} at {account.Server} failed to connect");
-            return accountMetadata;
+            return accMetadata;
         }
 
-        public void StartBot(string botId)
+        public Task StartBot(string botId)
         {
-            _botAgent.StartBot(botId);
+            return _botAgent.StartBot(botId);
         }
 
-        public void StopBot(string botId)
+        public Task StopBot(string botId)
         {
-            _botAgent.StopBotAsync(botId);
+            return _botAgent.StopBotAsync(botId);
         }
 
-        public void AddBot(AccountKey account, PluginConfig config)
+        public Task AddBot(AccountKey account, PluginConfig config)
         {
-            _botAgent.AddBot(account, config);
+            return _botAgent.AddBot(account, config);
         }
 
-        public void RemoveBot(string botId, bool cleanLog, bool cleanAlgoData)
+        public Task RemoveBot(string botId, bool cleanLog, bool cleanAlgoData)
         {
-            _botAgent.RemoveBot(botId, cleanLog, cleanAlgoData);
+            return _botAgent.RemoveBot(botId, cleanLog, cleanAlgoData);
         }
 
-        public void ChangeBotConfig(string botId, PluginConfig newConfig)
+        public Task ChangeBotConfig(string botId, PluginConfig newConfig)
         {
-            _botAgent.ChangeBotConfig(botId, newConfig);
+            return _botAgent.ChangeBotConfig(botId, newConfig);
         }
 
-        public void AddAccount(AccountKey account, string password)
+        public Task AddAccount(AccountKey account, string password)
         {
-            _botAgent.AddAccount(account, password);
+            return _botAgent.AddAccount(account, password);
         }
 
-        public void RemoveAccount(AccountKey account)
+        public Task RemoveAccount(AccountKey account)
         {
-            _botAgent.RemoveAccount(account);
+            return _botAgent.RemoveAccount(account);
         }
 
-        public void ChangeAccount(AccountKey account, string password)
+        public Task ChangeAccount(AccountKey account, string password)
         {
-            _botAgent.ChangeAccount(account, password);
+            return _botAgent.ChangeAccount(account, password);
         }
 
-        public ConnectionErrorInfo TestAccount(AccountKey account)
+        public Task<ConnectionErrorInfo> TestAccount(AccountKey account)
         {
             return _botAgent.TestAccount(account);
         }
 
-        public ConnectionErrorInfo TestAccountCreds(AccountKey account, string password)
+        public Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password)
         {
             return _botAgent.TestCreds(account, password);
         }
 
-        public void RemovePackage(PackageKey package)
+        public Task RemovePackage(PackageKey package)
         {
-            _botAgent.RemovePackage(package);
+            return _botAgent.RemovePackage(package);
         }
 
-        public string GetPackageReadPath(PackageKey package)
+        public Task<string> GetPackageReadPath(PackageKey package)
         {
             return _botAgent.GetPackageReadPath(package);
         }
 
-        public string GetPackageWritePath(PackageKey package)
+        public Task<string> GetPackageWritePath(PackageKey package)
         {
             return _botAgent.GetPackageWritePath(package);
         }
 
-        public string GetBotStatus(string botId)
-        {
-            return _botAgent.GetBotLog(botId).Status;
-        }
-
         public async Task<string> GetBotStatusAsync(string botId)
         {
-            var log = await _botAgent.GetBotLogAsync(botId);
+            var log = await _botAgent.GetBotLog(botId);
             return await log.GetStatusAsync();
-        }
-
-        public LogRecordInfo[] GetBotLogs(string botId, DateTime lastLogTimeUtc, int maxCount)
-        {
-            return _botAgent.GetBotLog(botId).Messages.Where(e => e.TimeUtc.Timestamp > lastLogTimeUtc).Take(maxCount)
-                .Select(e => new LogRecordInfo
-                {
-                    TimeUtc = e.TimeUtc,
-                    Severity = Convert(e.Type),
-                    Message = e.Message,
-                }).ToArray();
         }
 
         public async Task<LogRecordInfo[]> GetBotLogsAsync(string botId, DateTime lastLogTimeUtc, int maxCount)
         {
-            var log = await _botAgent.GetBotLogAsync(botId);
+            var log = await _botAgent.GetBotLog(botId);
             var msgs = await log.QueryMessagesAsync(lastLogTimeUtc, maxCount);
 
             return msgs.Select(e => new LogRecordInfo
@@ -206,7 +190,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
 
         public async Task<AlertRecordInfo[]> GetAlertsAsync(DateTime lastLogTimeUtc, int maxCount)
         {
-            var storage = _botAgent.GetAlertStorage();
+            var storage = await _botAgent.GetAlertStorage();
             var alerts = await storage.QueryAlertsAsync(lastLogTimeUtc, maxCount);
 
             return alerts.Select(e => new AlertRecordInfo
@@ -217,9 +201,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }).ToArray();
         }
 
-        public BotFolderInfo GetBotFolderInfo(string botId, BotFolderId folderId)
+        public async Task<BotFolderInfo> GetBotFolderInfo(string botId, BotFolderId folderId)
         {
-            var botFolder = GetBotFolder(botId, folderId);
+            var botFolder = await GetBotFolder(botId, folderId);
 
             return new BotFolderInfo
             {
@@ -230,30 +214,30 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             };
         }
 
-        public void ClearBotFolder(string botId, BotFolderId folderId)
+        public async Task ClearBotFolder(string botId, BotFolderId folderId)
         {
-            var botFolder = GetBotFolder(botId, folderId);
+            var botFolder = await GetBotFolder(botId, folderId);
 
             botFolder.Clear();
         }
 
-        public void DeleteBotFile(string botId, BotFolderId folderId, string fileName)
+        public async Task DeleteBotFile(string botId, BotFolderId folderId, string fileName)
         {
-            var botFolder = GetBotFolder(botId, folderId);
+            var botFolder = await GetBotFolder(botId, folderId);
 
             botFolder.DeleteFile(fileName);
         }
 
-        public string GetBotFileReadPath(string botId, BotFolderId folderId, string fileName)
+        public async Task<string> GetBotFileReadPath(string botId, BotFolderId folderId, string fileName)
         {
-            var botFolder = GetBotFolder(botId, folderId);
+            var botFolder = await GetBotFolder(botId, folderId);
 
             return botFolder.GetFileReadPath(fileName);
         }
 
-        public string GetBotFileWritePath(string botId, BotFolderId folderId, string fileName)
+        public async Task<string> GetBotFileWritePath(string botId, BotFolderId folderId, string fileName)
         {
-            var botFolder = GetBotFolder(botId, folderId);
+            var botFolder = await GetBotFolder(botId, folderId);
 
             return botFolder.GetFileWritePath(fileName);
         }
@@ -297,14 +281,14 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }
         }
 
-        private IBotFolder GetBotFolder(string botId, BotFolderId folderId)
+        private async Task<IBotFolder> GetBotFolder(string botId, BotFolderId folderId)
         {
             switch (folderId)
             {
                 case BotFolderId.AlgoData:
-                    return _botAgent.GetAlgoData(botId);
+                    return await _botAgent.GetAlgoData(botId);
                 case BotFolderId.BotLogs:
-                    return _botAgent.GetBotLog(botId);
+                    return await _botAgent.GetBotLog(botId);
                 default:
                     throw new ArgumentException();
             }

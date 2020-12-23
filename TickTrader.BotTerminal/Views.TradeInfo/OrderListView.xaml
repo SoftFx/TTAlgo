@@ -78,6 +78,10 @@
                                         <TextBlock Text="Slippage: " VerticalAlignment="Center" />
                                         <TextBlock Text="{Binding Order.Slippage, Converter={StaticResource Round}}" VerticalAlignment="Center" />
                                     </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding Order.OCORelatedOrderId, Converter={StaticResource NullOrEmptyToVis}}">
+                                        <TextBlock Text="Related Order Id: " VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Order.OCORelatedOrderId}" VerticalAlignment="Center" />
+                                    </StackPanel>
                                 </StackPanel>
                             </Setter.Value>
                         </Setter>

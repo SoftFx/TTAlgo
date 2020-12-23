@@ -8,6 +8,7 @@ using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using System.Net;
 using TickTrader.Algo.Common.Info;
+using System.Threading.Tasks;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 {
@@ -25,17 +26,20 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         }
 
         [HttpGet]
-        public AccountDto[] Get()
+        public async Task<AccountDto[]> Get()
         {
-            return _botAgent.GetAccounts().Select(a => a.ToDto()).ToArray();
+            var accounts = await _botAgent.GetAccounts();
+            return accounts.Select(a => a.ToDto()).ToArray();
         }
 
         [HttpGet("{server}/{login}/[action]")]
-        public IActionResult Info(string server, string login)
+        public async Task<IActionResult> Info(string server, string login)
         {
             try
             {
-                var connError = _botAgent.GetAccountMetadata(new AccountKey(WebUtility.UrlDecode(server), WebUtility.UrlDecode(login)), out AccountMetadataInfo info);
+                var res = await _botAgent.GetAccountMetadata(new AccountKey(WebUtility.UrlDecode(server), WebUtility.UrlDecode(login)));
+                var connError = res.Item1;
+                var info = res.Item2;
 
                 if (connError.Code == ConnectionErrorCodes.None)
                 {
@@ -58,11 +62,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody]AccountDto account)
+        public async Task<IActionResult> Post([FromBody]AccountDto account)
         {
             try
             {
-                _botAgent.AddAccount(new AccountKey(account.Server, account.Login), account.Password);
+                await _botAgent.AddAccount(new AccountKey(account.Server, account.Login), account.Password);
             }
             catch (BAException dsex)
             {
@@ -74,11 +78,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         }
 
         [HttpDelete]
-        public IActionResult Delete(string login, string server)
+        public async Task<IActionResult> Delete(string login, string server)
         {
             try
             {
-                _botAgent.RemoveAccount(new AccountKey(server ?? "", login ?? ""));
+                await _botAgent.RemoveAccount(new AccountKey(server ?? "", login ?? ""));
             }
             catch (BAException dsex)
             {
@@ -90,11 +94,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         }
 
         [HttpPatch("[action]")]
-        public IActionResult UpdatePassword([FromBody] AccountDto account)
+        public async Task<IActionResult> UpdatePassword([FromBody] AccountDto account)
         {
             try
             {
-                _botAgent.ChangeAccountPassword(new AccountKey(account.Server, account.Login), account.Password);
+                await _botAgent.ChangeAccountPassword(new AccountKey(account.Server, account.Login), account.Password);
             }
             catch (BAException dsex)
             {
@@ -106,7 +110,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         }
 
         [HttpGet("[action]")]
-        public IActionResult Test(string login, string server, string password)
+        public async Task<IActionResult> Test(string login, string server, string password)
         {
             try
             {
@@ -114,7 +118,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
                     _botAgent.TestAccount(new AccountKey(server, login)) :
                     _botAgent.TestCreds(new AccountKey(server, login), password);
 
-                return Ok(testResult);
+                return Ok(await testResult);
             }
             catch (BAException dsex)
             {

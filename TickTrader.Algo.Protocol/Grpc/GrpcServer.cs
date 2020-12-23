@@ -657,119 +657,120 @@ namespace TickTrader.Algo.Protocol.Grpc
             return session.SetupUpdateStream(responseStream);
         }
 
-        private Task<Lib.ApiMetadataResponse> GetApiMetadataInternal(Lib.ApiMetadataRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
+        private async Task<Lib.ApiMetadataResponse> GetApiMetadataInternal(Lib.ApiMetadataRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.ApiMetadataResponse { ExecResult = execResult };
             if (session == null)
-                return Task.FromResult(res);
+                return res;
             if (!session.AccessManager.CanGetApiMetadata())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return Task.FromResult(res);
+                return res;
             }
 
             try
             {
-                res.ApiMetadata = _botAgent.GetApiMetadata().Convert();
+                res.ApiMetadata = (await _botAgent.GetApiMetadata()).Convert();
             }
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to get api metadata");
                 res.ExecResult = CreateErrorResult(ex);
             }
-            return Task.FromResult(res);
+            return res;
         }
 
-        private Task<Lib.MappingsInfoResponse> GetMappingsInfoInternal(Lib.MappingsInfoRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
+        private async Task<Lib.MappingsInfoResponse> GetMappingsInfoInternal(Lib.MappingsInfoRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.MappingsInfoResponse { ExecResult = execResult };
             if (session == null)
-                return Task.FromResult(res);
+                return res;
             if (!session.AccessManager.CanGetMappingsInfo())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return Task.FromResult(res);
+                return res;
             }
 
             try
             {
-                res.Mappings = _botAgent.GetMappingsInfo().Convert();
+                res.Mappings = (await _botAgent.GetMappingsInfo()).Convert();
             }
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to get mappings collection");
                 res.ExecResult = CreateErrorResult(ex);
             }
-            return Task.FromResult(res);
+            return res;
         }
 
-        private Task<Lib.SetupContextResponse> GetSetupContextInternal(Lib.SetupContextRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
+        private async Task<Lib.SetupContextResponse> GetSetupContextInternal(Lib.SetupContextRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.SetupContextResponse { ExecResult = execResult };
             if (session == null)
-                return Task.FromResult(res);
+                return res;
             if (!session.AccessManager.CanGetSetupContext())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return Task.FromResult(res);
+                return res;
             }
 
             try
             {
-                res.SetupContext = _botAgent.GetSetupContext().Convert();
+                res.SetupContext = (await _botAgent.GetSetupContext()).Convert();
             }
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to get setup context");
                 res.ExecResult = CreateErrorResult(ex);
             }
-            return Task.FromResult(res);
+            return res;
         }
 
-        private Task<Lib.AccountMetadataResponse> GetAccountMetadataInternal(Lib.AccountMetadataRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
+        private async Task<Lib.AccountMetadataResponse> GetAccountMetadataInternal(Lib.AccountMetadataRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.AccountMetadataResponse { ExecResult = execResult };
             if (session == null)
-                return Task.FromResult(res);
+                return res;
             if (!session.AccessManager.CanGetAccountMetadata())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return Task.FromResult(res);
+                return res;
             }
 
             try
             {
-                res.AccountMetadata = _botAgent.GetAccountMetadata(request.Account.Convert()).Convert();
+                res.AccountMetadata = (await _botAgent.GetAccountMetadata(request.Account.Convert())).Convert();
             }
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to get account metadata");
                 res.ExecResult = CreateErrorResult(ex);
             }
-            return Task.FromResult(res);
+            return res;
         }
 
-        private Task<Lib.BotListResponse> GetBotListInternal(Lib.BotListRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
+        private async Task<Lib.BotListResponse> GetBotListInternal(Lib.BotListRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.BotListResponse { ExecResult = execResult };
             if (session == null)
-                return Task.FromResult(res);
+                return res;
             if (!session.AccessManager.CanGetBotList())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return Task.FromResult(res);
+                return res;
             }
 
             try
             {
-                res.Bots.AddRange(_botAgent.GetBotList().Select(u => ToGrpc.Convert(u, _version)));
+                var bots = await _botAgent.GetBotList();
+                res.Bots.AddRange(bots.Select(u => ToGrpc.Convert(u, _version)));
             }
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to get bot list");
                 res.ExecResult = CreateErrorResult(ex);
             }
-            return Task.FromResult(res);
+            return res;
         }
 
         private Task<Lib.AddBotResponse> AddBotInternal(Lib.AddBotRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
@@ -890,27 +891,28 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         }
 
-        private Task<Lib.AccountListResponse> GetAccountListInternal(Lib.AccountListRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
+        private async Task<Lib.AccountListResponse> GetAccountListInternal(Lib.AccountListRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.AccountListResponse { ExecResult = execResult };
             if (session == null)
-                return Task.FromResult(res);
+                return res;
             if (!session.AccessManager.CanGetAccountList())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return Task.FromResult(res);
+                return res;
             }
 
             try
             {
-                res.Accounts.AddRange(_botAgent.GetAccountList().Select(ToGrpc.Convert));
+                var accounts = await _botAgent.GetAccountList();
+                res.Accounts.AddRange(accounts.Select(ToGrpc.Convert));
             }
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to get account list");
                 res.ExecResult = CreateErrorResult(ex);
             }
-            return Task.FromResult(res);
+            return res;
         }
 
         private Task<Lib.AddAccountResponse> AddAccountInternal(Lib.AddAccountRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
@@ -982,73 +984,74 @@ namespace TickTrader.Algo.Protocol.Grpc
             return Task.FromResult(res);
         }
 
-        private Task<Lib.TestAccountResponse> TestAccountInternal(Lib.TestAccountRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
+        private async Task<Lib.TestAccountResponse> TestAccountInternal(Lib.TestAccountRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.TestAccountResponse { ExecResult = execResult };
             if (session == null)
-                return Task.FromResult(res);
+                return res;
             if (!session.AccessManager.CanTestAccount())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return Task.FromResult(res);
+                return res;
             }
 
             try
             {
-                res.ErrorInfo = _botAgent.TestAccount(request.Account.Convert()).Convert();
+                res.ErrorInfo = (await _botAgent.TestAccount(request.Account.Convert())).Convert();
             }
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to test account");
                 res.ExecResult = CreateErrorResult(ex);
             }
-            return Task.FromResult(res);
+            return res;
         }
 
-        private Task<Lib.TestAccountCredsResponse> TestAccountCredsInternal(Lib.TestAccountCredsRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
+        private async Task<Lib.TestAccountCredsResponse> TestAccountCredsInternal(Lib.TestAccountCredsRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.TestAccountCredsResponse { ExecResult = execResult };
             if (session == null)
-                return Task.FromResult(res);
+                return res;
             if (!session.AccessManager.CanTestAccountCreds())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return Task.FromResult(res);
+                return res;
             }
 
             try
             {
-                res.ErrorInfo = _botAgent.TestAccountCreds(request.Account.Convert(), request.Password).Convert();
+                res.ErrorInfo = (await _botAgent.TestAccountCreds(request.Account.Convert(), request.Password)).Convert();
             }
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to test account creds");
                 res.ExecResult = CreateErrorResult(ex);
             }
-            return Task.FromResult(res);
+            return res;
         }
 
-        private Task<Lib.PackageListResponse> GetPackageListInternal(Lib.PackageListRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
+        private async Task<Lib.PackageListResponse> GetPackageListInternal(Lib.PackageListRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.PackageListResponse { ExecResult = execResult };
             if (session == null)
-                return Task.FromResult(res);
+                return res;
             if (!session.AccessManager.CanGetPackageList())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return Task.FromResult(res);
+                return res;
             }
 
             try
             {
-                res.Packages.AddRange(_botAgent.GetPackageList().Select(ToGrpc.Convert));
+                var packages = await _botAgent.GetPackageList();
+                res.Packages.AddRange(packages.Select(ToGrpc.Convert));
             }
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to get packages list");
                 res.ExecResult = CreateErrorResult(ex);
             }
-            return Task.FromResult(res);
+            return res;
         }
 
         private async Task<Lib.UploadPackageResponse> UploadPackageInternal(IAsyncStreamReader<Lib.UploadPackageRequest> requestStream, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
@@ -1074,7 +1077,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             {
                 var chunkSize = request.Package.ChunkSettings.Size;
                 var buffer = new byte[chunkSize];
-                var packagePath = _botAgent.GetPackageWritePath(request.Package.Key.Convert());
+                var packagePath = await _botAgent.GetPackageWritePath(request.Package.Key.Convert());
                 string oldPackagePath = null;
                 if (File.Exists(packagePath))
                 {
@@ -1126,27 +1129,27 @@ namespace TickTrader.Algo.Protocol.Grpc
             return res;
         }
 
-        private Task<Lib.RemovePackageResponse> RemovePackageInternal(Lib.RemovePackageRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
+        private async Task<Lib.RemovePackageResponse> RemovePackageInternal(Lib.RemovePackageRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.RemovePackageResponse { ExecResult = execResult };
             if (session == null)
-                return Task.FromResult(res);
+                return res;
             if (!session.AccessManager.CanRemovePackage())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return Task.FromResult(res);
+                return res;
             }
 
             try
             {
-                _botAgent.RemovePackage(request.Package.Convert());
+                await _botAgent.RemovePackage(request.Package.Convert());
             }
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to remove package");
                 res.ExecResult = CreateErrorResult(ex);
             }
-            return Task.FromResult(res);
+            return res;
         }
 
         private async Task DownloadPackageInternal(Lib.DownloadPackageRequest request, IServerStreamWriter<Lib.DownloadPackageResponse> responseStream, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
@@ -1172,7 +1175,8 @@ namespace TickTrader.Algo.Protocol.Grpc
             {
                 var chunkSize = request.Package.ChunkSettings.Size;
                 var buffer = new byte[chunkSize];
-                using (var stream = File.Open(_botAgent.GetPackageReadPath(request.Package.Key.Convert()), FileMode.Open, FileAccess.Read, FileShare.Read))
+                var packagePath = await _botAgent.GetPackageReadPath(request.Package.Key.Convert());
+                using (var stream = File.Open(packagePath, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     stream.Seek((long)chunkSize * request.Package.ChunkSettings.Offset, SeekOrigin.Begin);
                     for (var cnt = stream.Read(buffer, 0, chunkSize); cnt > 0; cnt = stream.Read(buffer, 0, chunkSize))
@@ -1265,27 +1269,27 @@ namespace TickTrader.Algo.Protocol.Grpc
             return res;
         }
 
-        private Task<Lib.BotFolderInfoResponse> GetBotFolderInfoInternal(Lib.BotFolderInfoRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
+        private async Task<Lib.BotFolderInfoResponse> GetBotFolderInfoInternal(Lib.BotFolderInfoRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.BotFolderInfoResponse { ExecResult = execResult };
             if (session == null)
-                return Task.FromResult(res);
+                return res;
             if (!session.AccessManager.CanGetBotFolderInfo(request.FolderId.Convert()))
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return Task.FromResult(res);
+                return res;
             }
 
             try
             {
-                res.FolderInfo = _botAgent.GetBotFolderInfo(request.BotId, request.FolderId.Convert()).Convert();
+                res.FolderInfo = (await _botAgent.GetBotFolderInfo(request.BotId, request.FolderId.Convert())).Convert();
             }
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to get bot folder info");
                 res.ExecResult = CreateErrorResult(ex);
             }
-            return Task.FromResult(res);
+            return res;
         }
 
         private Task<Lib.ClearBotFolderResponse> ClearBotFolderInternal(Lib.ClearBotFolderRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
@@ -1357,7 +1361,8 @@ namespace TickTrader.Algo.Protocol.Grpc
             {
                 var chunkSize = request.File.ChunkSettings.Size;
                 var buffer = new byte[chunkSize];
-                using (var stream = File.Open(_botAgent.GetBotFileReadPath(request.File.BotId, request.File.FolderId.Convert(), request.File.FileName), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                var packagePath = await _botAgent.GetBotFileReadPath(request.File.BotId, request.File.FolderId.Convert(), request.File.FileName);
+                using (var stream = File.Open(packagePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
                     stream.Seek((long)chunkSize * request.File.ChunkSettings.Offset, SeekOrigin.Begin);
                     for (var cnt = stream.Read(buffer, 0, chunkSize); cnt > 0; cnt = stream.Read(buffer, 0, chunkSize))
@@ -1402,7 +1407,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             {
                 var chunkSize = request.File.ChunkSettings.Size;
                 var buffer = new byte[chunkSize];
-                var filePath = _botAgent.GetBotFileWritePath(request.File.BotId, request.File.FolderId.Convert(), request.File.FileName);
+                var filePath = await _botAgent.GetBotFileWritePath(request.File.BotId, request.File.FolderId.Convert(), request.File.FileName);
                 string oldFilePath = null;
                 if (File.Exists(filePath))
                 {

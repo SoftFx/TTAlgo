@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Protocol;
 
 namespace TickTrader.BotTerminal
 {
@@ -96,6 +97,10 @@ namespace TickTrader.BotTerminal
                     _lastAlertTimeUtc = alerts.Max(l => l.TimeUtc).Timestamp;
                     AddAlerts(alerts.Select(Convert).ToList<IAlertUpdateEventArgs>());
                 }
+            }
+            catch (BAException baex)
+            {
+                _logger.Error($"Failed to get alerts at {Name}: {baex.Message}");
             }
             catch (Exception ex)
             {

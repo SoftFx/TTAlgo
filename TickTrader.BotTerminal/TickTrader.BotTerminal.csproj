@@ -413,6 +413,7 @@
     <Compile Include="Model\NumberFormat.cs" />
     <Compile Include="Model\PathHelper.cs" />
     <Compile Include="Views.Algo\BaseloadPackageViewModel.cs" />
+    <Compile Include="Views.Backtester\OptimizerAlgorithmSetupViewModel.cs" />
     <Compile Include="Views\SearchItemViewModel.cs" />
     <Compile Include="Model\SymbolCatalog.cs" />
     <Compile Include="Model\SymbolData.cs" />
@@ -1084,6 +1085,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views.Backtester\OptimizationResultsPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Backtester\OptimizerAlgorithmSetupView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

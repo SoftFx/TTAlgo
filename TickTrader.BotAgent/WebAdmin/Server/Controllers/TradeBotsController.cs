@@ -11,6 +11,7 @@ using TickTrader.BotAgent.BA.Models;
 using System.Net;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Repository;
+using System.Threading.Tasks;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 {
@@ -28,18 +29,18 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         }
 
         [HttpGet]
-        public TradeBotDto[] Get()
+        public async Task<TradeBotDto[]> Get()
         {
-            var bots = _botAgent.GetTradeBots();
+            var bots = await _botAgent.GetBots();
             return bots.Select(b => b.ToDto()).ToArray();
         }
 
         [HttpGet("{id}")]
-        public IActionResult Get(string id)
+        public async Task<IActionResult> Get(string id)
         {
             try
             {
-                var tradeBot = _botAgent.GetBotInfo(WebUtility.UrlDecode(id));
+                var tradeBot = await _botAgent.GetBotInfo(WebUtility.UrlDecode(id));
 
                 return Ok(tradeBot.ToDto());
             }
@@ -52,12 +53,12 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 
         #region Logs
         [HttpDelete("{id}/Logs")]
-        public IActionResult DeleteLogs(string id)
+        public async Task<IActionResult> DeleteLogs(string id)
         {
             try
             {
                 var botId = WebUtility.UrlDecode(id);
-                var log = _botAgent.GetBotLog(botId);
+                var log = await _botAgent.GetBotLog(botId);
                 log.Clear();
 
                 return Ok();
@@ -70,12 +71,12 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         }
 
         [HttpGet("{id}/[Action]")]
-        public IActionResult Logs(string id)
+        public async Task<IActionResult> Logs(string id)
         {
             try
             {
                 var botId = WebUtility.UrlDecode(id);
-                var log = _botAgent.GetBotLog(botId);
+                var log = await _botAgent.GetBotLog(botId);
 
                 return Ok(log.ToDto());
             }
@@ -87,12 +88,12 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         }
 
         [HttpGet("{id}/[Action]/{file}")]
-        public IActionResult Logs(string id, string file)
+        public async Task<IActionResult> Logs(string id, string file)
         {
             try
             {
                 var botId = WebUtility.UrlDecode(id);
-                var log = _botAgent.GetBotLog(botId);
+                var log = await _botAgent.GetBotLog(botId);
 
                 var decodedFile = WebUtility.UrlDecode(file);
                 var readOnlyFile = log.GetFile(decodedFile);
@@ -107,12 +108,12 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         }
 
         [HttpDelete("{id}/Logs/{file}")]
-        public IActionResult DeleteLog(string id, string file)
+        public async Task<IActionResult> DeleteLog(string id, string file)
         {
             try
             {
                 var botId = WebUtility.UrlDecode(id);
-                var log = _botAgent.GetBotLog(botId);
+                var log = await _botAgent.GetBotLog(botId);
                 log.DeleteFile(WebUtility.UrlDecode(file));
 
                 return Ok();
@@ -127,12 +128,12 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 
         #region AlgoData
         [HttpGet("{id}/[Action]")]
-        public IActionResult AlgoData(string id)
+        public async Task<IActionResult> AlgoData(string id)
         {
             try
             {
                 var botId = WebUtility.UrlDecode(id);
-                var algoData = _botAgent.GetAlgoData(botId);
+                var algoData = await _botAgent.GetAlgoData(botId);
 
                 var files = algoData.Files.Select(f => f.ToDto()).ToArray();
 
@@ -146,12 +147,12 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         }
 
         [HttpGet("{id}/[Action]/{file}")]
-        public IActionResult AlgoData(string id, string file)
+        public async Task<IActionResult> AlgoData(string id, string file)
         {
             try
             {
                 var botId = WebUtility.UrlDecode(id);
-                var algoData = _botAgent.GetAlgoData(botId);
+                var algoData = await _botAgent.GetAlgoData(botId);
 
                 var decodedFile = WebUtility.UrlDecode(file);
                 var readOnlyFile = algoData.GetFile(decodedFile);
@@ -167,12 +168,12 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         #endregion
 
         [HttpGet("{id}/[Action]")]
-        public IActionResult Status(string id)
+        public async Task<IActionResult> Status(string id)
         {
             try
             {
                 var botId = WebUtility.UrlDecode(id);
-                var log = _botAgent.GetBotLog(botId);
+                var log = await _botAgent.GetBotLog(botId);
 
                 return Ok(new BotStatusDto
                 {
@@ -188,13 +189,13 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         }
 
         [HttpGet("{botName}/[action]")]
-        public string BotId(string botName)
+        public Task<string> BotId(string botName)
         {
             return _botAgent.GenerateBotId(WebUtility.UrlDecode(botName));
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody]PluginSetupDto setup)
+        public async Task<IActionResult> Post([FromBody]PluginSetupDto setup)
         {
             try
             {
@@ -203,7 +204,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 
                 pluginCfg.Key = new PluginKey(setup.PackageName.ToLowerInvariant(), RepositoryLocation.LocalRepository, setup.PluginId);
 
-                var tradeBot = _botAgent.AddBot(accountKey, pluginCfg);
+                var tradeBot = await _botAgent.AddBot(accountKey, pluginCfg);
                 setup.EnsureFiles(ServerModel.GetWorkingFolderFor(tradeBot.InstanceId));
 
                 return Ok(tradeBot.ToDto());
@@ -216,7 +217,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Put(string id, [FromBody]PluginSetupDto setup)
+        public async Task<IActionResult> Put(string id, [FromBody]PluginSetupDto setup)
         {
             try
             {
@@ -225,7 +226,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
                 var pluginCfg = setup.Parse();
                 pluginCfg.InstanceId = botId;
 
-                _botAgent.ChangeBotConfig(botId, pluginCfg);
+                await _botAgent.ChangeBotConfig(botId, pluginCfg);
                 setup.EnsureFiles(ServerModel.GetWorkingFolderFor(botId));
 
                 return Ok();
@@ -238,11 +239,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(string id, [FromQuery] bool clean_log = true, [FromQuery] bool clean_algodata = true)
+        public async Task<IActionResult> Delete(string id, [FromQuery] bool clean_log = true, [FromQuery] bool clean_algodata = true)
         {
             try
             {
-                _botAgent.RemoveBot(WebUtility.UrlDecode(id), clean_log, clean_algodata);
+                await _botAgent.RemoveBot(WebUtility.UrlDecode(id), clean_log, clean_algodata);
 
                 return Ok();
             }
@@ -254,11 +255,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         }
 
         [HttpPatch("{id}/[action]")]
-        public IActionResult Start(string id)
+        public async Task<IActionResult> Start(string id)
         {
             try
             {
-                _botAgent.StartBot(WebUtility.UrlDecode(id));
+                await _botAgent.StartBot(WebUtility.UrlDecode(id));
 
                 return Ok();
             }

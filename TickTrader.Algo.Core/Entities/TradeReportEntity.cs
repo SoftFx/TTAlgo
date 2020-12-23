@@ -65,6 +65,8 @@ namespace TickTrader.Algo.Core
         public double? ReqClosePrice { get; set; }
         public double? ReqOpenQuantity { get; set; }
         public double? ReqOpenPrice { get; set; }
+        public bool OneCancelsTheOther { get; set; }
+        public string OCORelativeOrderId { get; set; }
 
         public int ActionId { get; set; }
 
@@ -131,6 +133,7 @@ namespace TickTrader.Algo.Core
         Expired = 8,
         TransferMoney = 9,
         Split = 10,
-        Dividend = 11
+        Dividend = 11,
+        OneCancelsTheOther = 12,
     }
 }

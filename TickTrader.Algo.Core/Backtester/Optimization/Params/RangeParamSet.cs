@@ -27,7 +27,7 @@ namespace TickTrader.Algo.Core
                 var min = Math.Min(Min, Max);
                 var step = Math.Abs(Step);
 
-                return min + step * valNo;
+                return Math.Min(min + step * valNo, Max);
             }
         }
 
@@ -50,7 +50,7 @@ namespace TickTrader.Algo.Core
                 var min = Math.Min(Min, Max);
                 var step = Math.Abs(Step);
 
-                return min + step * valNo;
+                return Math.Min(min + step * valNo, Max);
             }
         }
     }

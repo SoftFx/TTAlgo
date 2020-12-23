@@ -44,6 +44,7 @@ namespace TickTrader.Algo.Common.Model
         private DateTime? modified;
         private string orderExecutionOptionsStr;
         private string parentOrderId;
+        private string ocoRelatedOrderId;
 
         public OrderModel(OrderEntity record, IOrderDependenciesResolver resolver)
         {
@@ -290,6 +291,20 @@ namespace TickTrader.Algo.Common.Model
                 }
             }
         }
+
+        public string OCORelatedOrderId
+        {
+            get { return ocoRelatedOrderId; }
+            private set
+            {
+                if (ocoRelatedOrderId != value)
+                {
+                    ocoRelatedOrderId = value;
+                    NotifyOfPropertyChange(nameof(OCORelatedOrderId));
+                }
+            }
+        }
+
         public double? TakeProfit
         {
             get { return takeProfit; }
@@ -558,6 +573,7 @@ namespace TickTrader.Algo.Common.Model
                 Options = ExecOptions,
                 ReqOpenPrice = ReqOpenPrice,
                 ParentOrderId = ParentOrderId,
+                OCORelatedOrderId = OCORelatedOrderId,
             };
         }
 
@@ -586,6 +602,7 @@ namespace TickTrader.Algo.Common.Model
             this.OrderExecutionOptionsStr = record.Options.ToFullString();
             this.ReqOpenPrice = record.ReqOpenPrice;
             this.ParentOrderId = record.ParentOrderId;
+            this.OCORelatedOrderId = record.OCORelatedOrderId;
             //if (record.ImmediateOrCancel)
             //{
             //    this.RemainingAmount = (decimal)(record.InitialVolume - record.Volume);
@@ -626,9 +643,13 @@ namespace TickTrader.Algo.Common.Model
             this.OrderExecutionOptionsStr = GetOrderExecOptions(report);
             this.ReqOpenPrice = report.ReqOpenPrice;
             this.ParentOrderId = report.ParentOrderId;
+            this.OCORelatedOrderId = report.OCORelatedOrderId;
 
             if (report.ImmediateOrCancel)
-                ExecOptions = OrderOptions.ImmediateOrCancel;
+                ExecOptions |= OrderOptions.ImmediateOrCancel;
+
+            if (report.IsOneCancelsTheOther)
+                ExecOptions |= OrderOptions.OneCancelsTheOther;
 
             EssentialParametersChanged?.Invoke(this);
         }
@@ -671,6 +692,9 @@ namespace TickTrader.Algo.Common.Model
 
             if (report.MaxVisibleVolume >= 0)
                 op.Add(OrderOptions.HiddenIceberg);
+
+            if (report.IsOneCancelsTheOther)
+                op.Add(OrderOptions.OneCancelsTheOther);
 
             return string.Join(",", op);
         }

@@ -19,7 +19,7 @@ namespace TickTrader.BotTerminal
 
         public enum TransactionSide { None = -1, Buy, Sell }
 
-        public enum Reasons { None = -1, DealerDecision, StopOut, Activated, CanceledByDealer, Expired }
+        public enum Reasons { None = -1, DealerDecision, StopOut, Activated, CanceledByDealer, Expired, OcoRelatedOrder }
 
         public TransactionReport() { }
 
@@ -80,6 +80,8 @@ namespace TickTrader.BotTerminal
             ReqSlippage = GetReqSlippage(transaction);
             OpenSlippage = GetOpenSlippage(transaction);
             CloseSlippage = GetCloseSlippage(transaction);
+
+            OCORelatedOrderId = GetOCORelatedOrderId(transaction);
 
             // should be last (it's based on other fields)
             UniqueId = GetUniqueId(transaction, transaction.OrderId, out long orderNum);
@@ -173,6 +175,7 @@ namespace TickTrader.BotTerminal
         public bool IsDividendTransaction => Type == AggregatedTransactionType.Dividend;
         public double? Taxes { get; protected set; }
         public double? Fees { get; protected set; }
+        public string OCORelatedOrderId { get; protected set; }
 
         protected virtual AggregatedTransactionType GetTransactionType(TradeReportEntity transaction)
         {
@@ -381,6 +384,9 @@ namespace TickTrader.BotTerminal
             if (transaction.MaxVisibleQuantity >= 0)
                 options.Add(OrderOptions.HiddenIceberg);
 
+            if (transaction.OneCancelsTheOther)
+                options.Add(OrderOptions.OneCancelsTheOther);
+
             return string.Join(",", options);
         }
 
@@ -463,6 +469,12 @@ namespace TickTrader.BotTerminal
                 return Reasons.CanceledByDealer;
             }
 
+            if (transaction.TradeTransactionReportType == TradeExecActions.OrderCanceled && transaction.TradeTransactionReason == TradeTransactionReason.OneCancelsTheOther)
+            {
+                Type = GetCanceledType(transaction);
+                return Reasons.OcoRelatedOrder;
+            }
+
             if (transaction.TradeTransactionReportType == TradeExecActions.OrderCanceled && transaction.TradeTransactionReason == TradeTransactionReason.StopOut)
             {
                 Type = GetCanceledType(transaction);
@@ -483,6 +495,11 @@ namespace TickTrader.BotTerminal
         protected AggregatedTransactionType GetBuyOrSellType(TradeReportEntity transaction)
         {
             return transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
+        }
+
+        protected virtual string GetOCORelatedOrderId(TradeReportEntity transaction)
+        {
+            return transaction.OCORelativeOrderId;
         }
 
         protected AggregatedTransactionType GetCanceledType(TradeReportEntity transaction)

@@ -130,6 +130,7 @@ namespace TickTrader.BotAgent.BA.Models
         public PluginTradeInfoProvider PluginTradeInfo { get; private set; }
         public TradeHistoryProvider.Handler PluginTradeHistory { get; private set; }
 
+        public int TotalBotsCount => _bots.Count;
         public int RunningBotsCount => _startedBotsCount;
         public bool HasRunningBots => _startedBotsCount > 0;
         public bool HasError => _lastError != null && _lastError.Code != ConnectionErrorCodes.None;
@@ -254,7 +255,14 @@ namespace TickTrader.BotAgent.BA.Models
                 _shutdownCompletedSrc = new TaskCompletionSource<object>();
 
                 Task[] stopBots = _bots.Select(tb => tb.StopAsync()).ToArray();
-                await Task.WhenAll(stopBots);
+                try
+                {
+                    await Task.WhenAll(stopBots);
+                }
+                catch(Exception ex)
+                {
+                    _log.Error("Failed to shutdown bots", ex);
+                }
 
                 if (ConnectionState == ConnectionStates.Offline)
                     _shutdownCompletedSrc.TrySetResult(null);

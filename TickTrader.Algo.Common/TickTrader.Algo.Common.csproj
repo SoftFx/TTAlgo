@@ -134,7 +134,11 @@
     <Compile Include="Model.FeedCache\TickCrossDomainReader.cs" />
     <Compile Include="Model.FeedCache\TickSerializer.cs" />
     <Compile Include="Model.FeedCache\BarCrossDomainReader.cs" />
+    <Compile Include="Model.Interop\SfxConvert.cs" />
+    <Compile Include="Model.Interop\Fdk2FeedAdapter.cs" />
+    <Compile Include="Model.Interop\Fdk2FeedHistoryAdapter.cs" />
     <Compile Include="Model.Interop\Fdk2TradeAdapter.cs" />
+    <Compile Include="Model.Interop\Fdk2TradeHistoryAdapter.cs" />
     <Compile Include="Model.Interop\OrderInteropResult.cs" />
     <Compile Include="Model.Interop\SfxTaskAdapter.cs" />
     <Compile Include="Model.Interop\TimeSlicer.cs" />

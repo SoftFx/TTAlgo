@@ -16,51 +16,50 @@ namespace TickTrader.BotAgent.BA
     {
         // -------- Repository Management --------
 
-        List<PackageInfo> GetPackages();
-        PackageInfo GetPackage(string package);
-        void UpdatePackage(byte[] fileContent, string fileName);
-        byte[] DownloadPackage(PackageKey package);
-        void RemovePackage(string package);
-        void RemovePackage(PackageKey package);
-        List<PluginInfo> GetAllPlugins();
-        List<PluginInfo> GetPluginsByType(AlgoTypes type);
-        MappingCollectionInfo GetMappingsInfo();
-        string GetPackageReadPath(PackageKey package);
-        string GetPackageWritePath(PackageKey package);
+        Task<List<PackageInfo>> GetPackages();
+        Task<PackageInfo> GetPackage(string package);
+        Task UpdatePackage(byte[] fileContent, string fileName);
+        Task<byte[]> DownloadPackage(PackageKey package);
+        Task RemovePackage(string package);
+        Task RemovePackage(PackageKey package);
+        Task<List<PluginInfo>> GetAllPlugins();
+        Task<List<PluginInfo>> GetPluginsByType(AlgoTypes type);
+        Task<MappingCollectionInfo> GetMappingsInfo();
+        Task<string> GetPackageReadPath(PackageKey package);
+        Task<string> GetPackageWritePath(PackageKey package);
 
         event Action<PackageInfo, ChangeAction> PackageChanged;
         event Action<PackageInfo> PackageStateChanged;
         
         // -------- Account Management --------
 
-        List<AccountModelInfo> GetAccounts();
-        void AddAccount(AccountKey key, string password);
-        void RemoveAccount(AccountKey key);
-        void ChangeAccount(AccountKey key, string password);
-        void ChangeAccountPassword(AccountKey key, string password);
-        ConnectionErrorInfo GetAccountMetadata(AccountKey key, out AccountMetadataInfo info);
-        ConnectionErrorInfo TestAccount(AccountKey accountId);
-        ConnectionErrorInfo TestCreds(AccountKey accountId, string password);
+        Task<List<AccountModelInfo>> GetAccounts();
+        Task AddAccount(AccountKey key, string password);
+        Task RemoveAccount(AccountKey key);
+        Task ChangeAccount(AccountKey key, string password);
+        Task ChangeAccountPassword(AccountKey key, string password);
+        Task<Tuple<ConnectionErrorInfo, AccountMetadataInfo>> GetAccountMetadata(AccountKey key);
+        Task<ConnectionErrorInfo> TestAccount(AccountKey accountId);
+        Task<ConnectionErrorInfo> TestCreds(AccountKey accountId, string password);
 
         event Action<AccountModelInfo, ChangeAction> AccountChanged;
         event Action<AccountModelInfo> AccountStateChanged;
 
         // -------- Bot Management --------
 
-        List<BotModelInfo> GetTradeBots();
-        BotModelInfo GetBotInfo(string botId);
-        IBotFolder GetAlgoData(string botId);
-        string GenerateBotId(string botDisplayName);
-        BotModelInfo AddBot(AccountKey accountId, PluginConfig config);
-        void RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false);
-        void ChangeBotConfig(string botId, PluginConfig newConfig);
-        void StartBot(string botId);
+        Task<List<BotModelInfo>> GetBots();
+        Task<BotModelInfo> GetBotInfo(string botId);
+        Task<IBotFolder> GetAlgoData(string botId);
+        Task<string> GenerateBotId(string botDisplayName);
+        Task<BotModelInfo> AddBot(AccountKey accountId, PluginConfig config);
+        Task RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false);
+        Task ChangeBotConfig(string botId, PluginConfig newConfig);
+        Task StartBot(string botId);
         Task StopBotAsync(string botId);
         void AbortBot(string botId);
-        IBotLog GetBotLog(string botId);
-        Task<IBotLog> GetBotLogAsync(string botId);
+        Task<IBotLog> GetBotLog(string botId);
 
-        IAlertStorage GetAlertStorage();
+        Task<IAlertStorage> GetAlertStorage();
 
         event Action<BotModelInfo, ChangeAction> BotChanged;
         event Action<BotModelInfo> BotStateChanged;

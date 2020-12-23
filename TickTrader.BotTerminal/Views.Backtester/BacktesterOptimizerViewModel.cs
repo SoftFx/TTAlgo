@@ -12,6 +12,9 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
+
+    public enum OptimizationAlgorithms { Bruteforce, Genetic, /*Annealing*/ }
+
     internal class BacktesterOptimizerViewModel : Page
     {
         private static readonly Dictionary<string, MetricProvider> MetricSelectors = new Dictionary<string, MetricProvider>();
@@ -22,10 +25,11 @@ namespace TickTrader.BotTerminal
             MetricSelectors.Add("Custom", new MetricProvider.Custom());
         }
 
+        private readonly GenConfig _genConfig = new GenConfig();
+        private readonly AnnConfig _annConfig = new AnnConfig();
+
         private PluginDescriptor _descriptor;
         private WindowManager _localWnd;
-
-        public enum OptimizationAlgorithms { Bruteforce, Genetic }
 
         public BacktesterOptimizerViewModel(WindowManager manager, BoolVar isRunning)
         {
@@ -40,12 +44,31 @@ namespace TickTrader.BotTerminal
             SelectedMetric.Value = MetricSelectors.First();
 
             CanSetup = !isRunning;
+
+
+            _genConfig = new GenConfig()
+            {
+                CountGenInPopulations = 10,
+                CountSurvivingGen = 5,
+                CountMutationGen = 10,
+                CountGeneration = 100,
+
+                MutationMode = MutationMode.Step,
+                SurvivingMode = SurvivingMode.Uniform,
+                ReproductionMode = RepropuctionMode.IndividualGen,
+            };
+
+            _annConfig = new AnnConfig()
+            {
+                InitialTemperature = 100,
+                DeltaTemparature = 0.1,
+            };
         }
 
         public ObservableCollection<ParamSeekSetupModel> Parameters { get; } = new ObservableCollection<ParamSeekSetupModel>();
         public IEnumerable<int> AvailableParallelismList { get; }
         public IntProperty ParallelismProp { get; } = new IntProperty();
-        public IEnumerable<OptimizationAlgorithms> AvailableAlgorithms => EnumHelper.AllValues<OptimizationAlgorithms>();
+        public IEnumerable<OptimizationAlgorithms> AvailableAlgorithms => EnumHelper.AllValues<OptimizationAlgorithms>() ;
         public Property<OptimizationAlgorithms> AlgorithmProp { get; } = new Property<OptimizationAlgorithms>();
         public Dictionary<string, MetricProvider> AvailableMetrics => MetricSelectors;
         public Property<KeyValuePair<string, MetricProvider>> SelectedMetric { get; } = new Property<KeyValuePair<string, MetricProvider>>();
@@ -59,12 +82,23 @@ namespace TickTrader.BotTerminal
             foreach (var param in Parameters)
                 param.Apply(optimizer);
 
-            optimizer.SetSeekStrategy(new BruteforceStrategy());
+            switch (AlgorithmProp.Value)
+            {
+                case OptimizationAlgorithms.Bruteforce:
+                    optimizer.SetSeekStrategy(new BruteforceStrategy());
+                    break;
+                case OptimizationAlgorithms.Genetic:
+                    optimizer.SetSeekStrategy(new GeneticStrategy(_genConfig));
+                    break;
+                //case OptimizationAlgorithms.Annealing:
+                //    optimizer.SetSeekStrategy(new AnnealingStrategy(_annConfig, _descriptor.Parameters.Count));
+                //    break;
+            }
         }
 
         public void SetPluign(PluginDescriptor descriptor, PluginSetupModel setup)
         {
-            _descriptor = new PluginDescriptor();
+            _descriptor = descriptor;
 
             Parameters.Clear();
 
@@ -86,6 +120,13 @@ namespace TickTrader.BotTerminal
             //IsOptimizatioPossibleProp.Value = canOptimize;
             //if (!canOptimize)
             //    ModeProp.Value = OptimizationAlgorythm.Disabled;
+        }
+
+        public async void OpenAlgoSetup()
+        {
+            var setupWndModel = new OptimizerAlgorithmSetupViewModel(AlgorithmProp.Value, _annConfig, _genConfig);
+
+            _localWnd.OpenMdiWindow("SetupAuxWnd", setupWndModel);
         }
 
         public IEnumerable<ParameterDescriptor> GetSelectedParams()
