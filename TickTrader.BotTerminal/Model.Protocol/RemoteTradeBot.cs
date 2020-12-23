@@ -5,6 +5,7 @@ using System.Threading;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Protocol;
 
 namespace TickTrader.BotTerminal
 {
@@ -157,6 +158,10 @@ namespace TickTrader.BotTerminal
                     StatusChanged?.Invoke(this);
                 }
             }
+            catch(BAException baex)
+            {
+                _logger.Error($"Failed to get bot status {InstanceId} at {_agent.Name}: {baex.Message}");
+            }
             catch (Exception ex)
             {
                 _logger.Error(ex, $"Failed to get bot status {InstanceId} at {_agent.Name}");
@@ -176,6 +181,10 @@ namespace TickTrader.BotTerminal
 
                     Journal.Add(logs.Select(Convert).ToList());
                 }
+            }
+            catch (BAException baex)
+            {
+                _logger.Error($"Failed to get bot logs {InstanceId} at {_agent.Name}: {baex.Message}");
             }
             catch (Exception ex)
             {

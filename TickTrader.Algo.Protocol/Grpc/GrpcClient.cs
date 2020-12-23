@@ -357,6 +357,21 @@ namespace TickTrader.Algo.Protocol.Grpc
                 Logger.Error(uex, $"Bad access token for {_messageFormatter.ToJson(request)}");
                 throw;
             }
+            catch (RpcException rex)
+            {
+                if (rex.StatusCode == StatusCode.DeadlineExceeded)
+                {
+                    Logger.Error($"Request timed out {_messageFormatter.ToJson(request)}");
+                    throw new TimeoutException($"Request {nameof(TRequest)} timed out");
+                }
+                else if (rex.StatusCode == StatusCode.Unknown && rex.Status.Detail == "Stream removed")
+                {
+                    Logger.Error($"Disconnected while executing {_messageFormatter.ToJson(request)}");
+                    throw new BAException("Connection error");
+                }
+                Logger.Error(rex, $"Failed to execute {_messageFormatter.ToJson(request)}");
+                throw;
+            }
             catch (Exception ex)
             {
                 Logger.Error(ex, $"Failed to execute {_messageFormatter.ToJson(request)}");
