@@ -13,6 +13,7 @@ using TickTrader.Algo.Common.Model;
 using ActorSharp;
 using System.Threading.Tasks;
 using System.Text;
+using NLog.Targets.Wrappers;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -177,8 +178,16 @@ namespace TickTrader.BotAgent.BA.Models
                 EnableArchiveFileCompression = true,
             };
 
+            var logWrapper = new AsyncTargetWrapper(logFile)
+            {
+                Name = logTarget,
+                BatchSize = 50,
+                QueueLimit = 1000,
+                OverflowAction = AsyncTargetWrapperOverflowAction.Block,
+            };
+
             var logConfig = new LoggingConfiguration();
-            logConfig.AddTarget(logFile);
+            logConfig.AddTarget(logWrapper);
             logConfig.AddTarget(errorFile);
             logConfig.AddTarget(statusFile);
             logConfig.AddRule(LogLevel.Trace, LogLevel.Trace, statusTarget);
