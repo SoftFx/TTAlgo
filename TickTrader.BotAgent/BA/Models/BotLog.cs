@@ -181,14 +181,30 @@ namespace TickTrader.BotAgent.BA.Models
             var logWrapper = new AsyncTargetWrapper(logFile)
             {
                 Name = logTarget,
-                BatchSize = 50,
+                BatchSize = 100,
                 QueueLimit = 1000,
+                OverflowAction = AsyncTargetWrapperOverflowAction.Block,
+            };
+
+            var errorWrapper = new AsyncTargetWrapper(errorFile)
+            {
+                Name = errTarget,
+                BatchSize = 20,
+                QueueLimit = 100,
+                OverflowAction = AsyncTargetWrapperOverflowAction.Block,
+            };
+
+            var statusWrapper = new AsyncTargetWrapper(statusFile)
+            {
+                Name = statusTarget,
+                BatchSize = 20,
+                QueueLimit = 100,
                 OverflowAction = AsyncTargetWrapperOverflowAction.Block,
             };
 
             var logConfig = new LoggingConfiguration();
             logConfig.AddTarget(logWrapper);
-            logConfig.AddTarget(errorFile);
+            logConfig.AddTarget(errorWrapper);
             logConfig.AddTarget(statusFile);
             logConfig.AddRule(LogLevel.Trace, LogLevel.Trace, statusTarget);
             logConfig.AddRule(LogLevel.Debug, LogLevel.Fatal, logTarget);
