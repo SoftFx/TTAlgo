@@ -14,6 +14,7 @@ using ActorSharp;
 using System.Threading.Tasks;
 using System.Text;
 using NLog.Targets.Wrappers;
+using System.Threading.Channels;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -48,7 +49,7 @@ namespace TickTrader.BotAgent.BA.Models
             }
 
             public Ref<BotLog> Ref => Actor;
-            public IBotWriter GetWriter() => new LogWriter(Ref);
+            public IBotWriter GetWriter() => Actor.Call(a => new LogWriter(a)).Result;
             public Task Clear() => Actor.Call(a => a.Clear());
         }
 
@@ -102,11 +103,9 @@ namespace TickTrader.BotAgent.BA.Models
 
         //public event Action<string> StatusUpdated;
 
-        private void WriteLog(LogEntryType type, string message, string details)
+        private void WriteLog(LogEntry msg, string details)
         {
-            var msg = new LogEntry(type, message);
-
-            switch (type)
+            switch (msg.Type)
             {
                 case LogEntryType.Custom:
                 case LogEntryType.Info:
@@ -130,7 +129,7 @@ namespace TickTrader.BotAgent.BA.Models
 
             _logMessages.Add(msg);
 
-            if (type == LogEntryType.Alert)
+            if (msg.Type == LogEntryType.Alert)
                 _alertStorage.AddAlert(msg, _name);
         }
 
@@ -279,24 +278,67 @@ namespace TickTrader.BotAgent.BA.Models
             }
         }
 
-        private class LogWriter : BlockingHandler<BotLog>, IBotWriter
+        private static LogEntry Convert(PluginLogRecord rec)
         {
-            public LogWriter(Ref<BotLog> logRef) : base(logRef) { }
+            var time = new TimeKey(rec.Time.Timestamp.ToUniversalTime(), rec.Time.Shift);
+            return new LogEntry(time, Convert(rec.Severity), rec.Message);
+        }
+
+        private class LogWriter : IBotWriter
+        {
+            private const int MaxBatchSize = 500;
+
+            private BotLog _log;
+            private System.Threading.Channels.Channel<Action<BotLog>> _channel;
+
+            public LogWriter(BotLog log)
+            {
+                _log = log;
+
+                var options = new BoundedChannelOptions(1000)
+                {
+                    AllowSynchronousContinuations = false,
+                    FullMode = BoundedChannelFullMode.Wait,
+                    SingleReader = true,
+                };
+
+                _channel = System.Threading.Channels.Channel.CreateBounded<Action<BotLog>>(options);
+                var t = ReadLoop();
+            }
 
             public void LogMesssages(IEnumerable<PluginLogRecord> records)
             {
-                CallActor(a =>
+                foreach (var rec in records)
                 {
-                    foreach (var rec in records)
+                    if (rec.Severity != LogSeverities.CustomStatus)
                     {
-                        if (rec.Severity != LogSeverities.CustomStatus)
-                            a.WriteLog(Convert(rec.Severity), rec.Message, rec.Details);
+                        _channel.Writer.TryWrite(a => a.WriteLog(Convert(rec), rec.Details));
                     }
-                });
+                }
             }
 
-            public void Trace(string status) => CallActor(a => a._logger.Trace(status));
-            public void UpdateStatus(string status) => CallActor(a => a._status = status);
+            public void Trace(string status) => _channel.Writer.TryWrite(a => a._logger.Trace(status));
+            public void UpdateStatus(string status) => _channel.Writer.TryWrite(a => a._status = status);
+
+            public void Close()
+            {
+                _channel.Writer.Complete();
+            }
+
+            private async Task ReadLoop()
+            {
+                var reader = _channel.Reader;
+
+                while(await reader.WaitToReadAsync())
+                {
+                    var cnt = 0;
+                    while (reader.TryRead(out var action) && cnt < MaxBatchSize)
+                    {
+                        action(_log);
+                        cnt++;
+                    }
+                }
+            }
         }
     }
 }
