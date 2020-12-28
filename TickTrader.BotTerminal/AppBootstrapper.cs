@@ -4,6 +4,7 @@ using NLog;
 using NLog.Config;
 using NLog.Filters;
 using NLog.Targets;
+using NLog.Targets.Wrappers;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -184,19 +185,48 @@ namespace TickTrader.BotTerminal
                 EnableArchiveFileCompression = true
             };
 
-            var ruleForJournalTarget = new LoggingRule(string.Concat("*", nameof(EventJournal)), LogLevel.Trace, journalTarget) { Final = true };
-            var ruleForBotInfoTarget = new LoggingRule(string.Concat(LoggerHelper.LoggerNamePrefix, "*"), LogLevel.Debug, botInfoTarget) { Final = true };
-            var ruleForBotErrorTarget = new LoggingRule(string.Concat(LoggerHelper.LoggerNamePrefix, "*"), LogLevel.Error, botErrorTarget);
-            var ruleForBotStatusTarget = new LoggingRule(string.Concat(LoggerHelper.LoggerNamePrefix, "*"), LogLevel.Trace, LogLevel.Trace, botStatusTarget) { Final = true };
-            var ruleForAlertTarget = new LoggingRule(string.Concat("*", nameof(AlertViewModel)), LogLevel.Trace, alertTarget);
+            var alertWrapper = new AsyncTargetWrapper(alertTarget)
+            {
+                BatchSize = 100,
+                QueueLimit = 1000,
+                OverflowAction = AsyncTargetWrapperOverflowAction.Block,
+            };
+
+            var journalWrapper = new AsyncTargetWrapper(journalTarget)
+            {
+                BatchSize = 100,
+                QueueLimit = 1000,
+                OverflowAction = AsyncTargetWrapperOverflowAction.Block,
+            };
+
+            var botInfoWrapper = new AsyncTargetWrapper(botInfoTarget)
+            {
+                BatchSize = 100,
+                QueueLimit = 1000,
+                OverflowAction = AsyncTargetWrapperOverflowAction.Block,
+            };
+
+            var botErrorWrapper = new AsyncTargetWrapper(botErrorTarget)
+            {
+                BatchSize = 20,
+                QueueLimit = 100,
+                OverflowAction = AsyncTargetWrapperOverflowAction.Block,
+            };
+
+            var botStatusWrapper = new AsyncTargetWrapper(botStatusTarget)
+            {
+                BatchSize = 20,
+                QueueLimit = 100,
+                OverflowAction = AsyncTargetWrapperOverflowAction.Block,
+            };
+
+            var ruleForJournalTarget = new LoggingRule(string.Concat("*", nameof(EventJournal)), LogLevel.Trace, journalWrapper) { Final = true };
+            var ruleForBotInfoTarget = new LoggingRule(string.Concat(LoggerHelper.LoggerNamePrefix, "*"), LogLevel.Debug, botInfoWrapper) { Final = true };
+            var ruleForBotErrorTarget = new LoggingRule(string.Concat(LoggerHelper.LoggerNamePrefix, "*"), LogLevel.Error, botErrorWrapper);
+            var ruleForBotStatusTarget = new LoggingRule(string.Concat(LoggerHelper.LoggerNamePrefix, "*"), LogLevel.Trace, LogLevel.Trace, botStatusWrapper) { Final = true };
+            var ruleForAlertTarget = new LoggingRule(string.Concat(nameof(AlertViewModel), ".*"), LogLevel.Trace, alertWrapper) { Final = true };
             var ruleForLogTarget = new LoggingRule();
             ruleForLogTarget.LoggerNamePattern = "*";
-
-            ruleForLogTarget.Filters.Add(new ConditionBasedFilter()
-            {
-                Condition = "contains('${logger}','AlertViewModel')",
-                Action = FilterResult.Ignore
-            });
 
             ruleForLogTarget.EnableLoggingForLevels(LogLevel.Debug, LogLevel.Fatal);
             ruleForLogTarget.Targets.Add(debuggerTarget);
@@ -216,12 +246,12 @@ namespace TickTrader.BotTerminal
             Algo.Core.CoreLoggerFactory.Init(s => new AlgoLogAdapter(s));
         }
 
-        //protected override void OnExit(object sender, EventArgs e)
-        //{
-        //    base.OnExit(sender, e);
+        protected override void OnExit(object sender, EventArgs e)
+        {
+            base.OnExit(sender, e);
 
-
-        //}
+            NLog.LogManager.Shutdown();
+        }
 
         protected override object GetInstance(Type service, string key)
         {

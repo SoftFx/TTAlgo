@@ -191,7 +191,7 @@ namespace TickTrader.BotAgent.BA.Models
             var logConfig = new LoggingConfiguration();
             logConfig.AddTarget(logWrapper);
             logConfig.AddTarget(errorWrapper);
-            logConfig.AddTarget(statusFile);
+            logConfig.AddTarget(statusWrapper);
             logConfig.AddRule(LogLevel.Trace, LogLevel.Trace, statusTarget);
             logConfig.AddRule(LogLevel.Debug, LogLevel.Fatal, logTarget);
             logConfig.AddRule(LogLevel.Error, LogLevel.Fatal, errTarget);
