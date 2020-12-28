@@ -57,32 +57,19 @@ namespace TickTrader.BotAgent.BA.Models
         {
             public Handler(Ref<BotLog> logRef) : base(logRef) { }
 
-            public IEnumerable<ILogEntry> Messages => CallActor(a => a._logMessages.ToArray());
-            public string Status => CallActor(a => a._status);
-            public string Folder => CallActor(a => a._logDirectory);
-            public IFile[] Files => CallActor(a => a.GetFiles());
+            public Task<string> GetFolder() => CallActorAsync(a => a._logDirectory);
+            public Task<IFile[]> GetFiles() => CallActorAsync(a => a.GetFiles());
+            public Task Clear() => CallActorAsync(a => a.Clear());
+            public Task DeleteFile(string file) => CallActorAsync(a => a.DeleteFile(file));
+            public Task<IFile> GetFile(string file) => CallActorAsync(a => a.GetFile(file));
+            public Task SaveFile(string file, byte[] bytes) => throw new NotSupportedException("Saving files in bot logs folder is not allowed");
+            public Task<string> GetFileReadPath(string file) => CallActorAsync(a => a.GetFileReadPath(file));
+            public Task<string> GetFileWritePath(string file) => throw new NotSupportedException("Writing files in bot logs folder is not allowed");
 
-            public void Clear() => CallActor(a => a.Clear());
-            public void DeleteFile(string file) => CallActor(a => a.DeleteFile(file));
-            public IFile GetFile(string file) => CallActor(a => a.GetFile(file));
-            public void SaveFile(string file, byte[] bytes) => throw new NotSupportedException("Saving files in bot logs folder is not allowed");
-            public string GetFileReadPath(string file) => CallActor(a => a.GetFileReadPath(file));
-            public string GetFileWritePath(string file) => throw new NotSupportedException("Writing files in bot logs folder is not allowed");
-
+            public Task<ILogEntry[]> GetMessages() => CallActorAsync(a => a._logMessages.ToArray());
             public Task<string> GetStatusAsync() => CallActorAsync(a => a._status);
             public Task<List<ILogEntry>> QueryMessagesAsync(DateTime from, int maxCount) => CallActorAsync(a => a.QueryMessages(from, maxCount));
         }
-
-        //public string Status { get; private set; }
-        //public string Folder => _logDirectory;
-
-        //public IEnumerable<ILogEntry> Messages
-        //{
-        //    get
-        //    {
-        //        return _logMessages.ToArray();
-        //    }
-        //}
 
         private List<ILogEntry> QueryMessages(DateTime from, int maxCount)
         {
@@ -253,7 +240,7 @@ namespace TickTrader.BotAgent.BA.Models
                 }
                 catch (Exception ex)
                 {
-                    _logger.Warn(ex, "Could not clean log folder: " + _logDirectory);
+                    throw new Exception("Could not clean log folder: " + _logDirectory, ex);
                 }
             }
         }

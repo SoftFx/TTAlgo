@@ -59,7 +59,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             {
                 var botId = WebUtility.UrlDecode(id);
                 var log = await _botAgent.GetBotLog(botId);
-                log.Clear();
+                await log.Clear();
 
                 return Ok();
             }
@@ -78,7 +78,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
                 var botId = WebUtility.UrlDecode(id);
                 var log = await _botAgent.GetBotLog(botId);
 
-                return Ok(log.ToDto());
+                return Ok(await log.ToDto());
             }
             catch (BAException ex)
             {
@@ -96,7 +96,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
                 var log = await _botAgent.GetBotLog(botId);
 
                 var decodedFile = WebUtility.UrlDecode(file);
-                var readOnlyFile = log.GetFile(decodedFile);
+                var readOnlyFile = await log.GetFile(decodedFile);
 
                 return File(readOnlyFile.OpenRead(), MimeMipping.GetContentType(decodedFile), decodedFile);
             }
@@ -114,7 +114,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             {
                 var botId = WebUtility.UrlDecode(id);
                 var log = await _botAgent.GetBotLog(botId);
-                log.DeleteFile(WebUtility.UrlDecode(file));
+                await log.DeleteFile(WebUtility.UrlDecode(file));
 
                 return Ok();
             }
@@ -135,7 +135,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
                 var botId = WebUtility.UrlDecode(id);
                 var algoData = await _botAgent.GetAlgoData(botId);
 
-                var files = algoData.Files.Select(f => f.ToDto()).ToArray();
+                var files = (await algoData.GetFiles()).Select(f => f.ToDto()).ToArray();
 
                 return Ok(files);
             }
@@ -155,7 +155,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
                 var algoData = await _botAgent.GetAlgoData(botId);
 
                 var decodedFile = WebUtility.UrlDecode(file);
-                var readOnlyFile = algoData.GetFile(decodedFile);
+                var readOnlyFile = await algoData.GetFile(decodedFile);
 
                 return File(readOnlyFile.OpenRead(), MimeMipping.GetContentType(decodedFile), decodedFile);
             }
@@ -177,7 +177,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 
                 return Ok(new BotStatusDto
                 {
-                    Status = log.Status,
+                    Status = await log.GetStatusAsync(),
                     BotId = botId
                 });
             }

@@ -209,8 +209,8 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             {
                 BotId = botId,
                 FolderId = folderId,
-                Path = botFolder.Folder,
-                Files = botFolder.Files.Select(f => new BotFileInfo { Name = f.Name, Size = f.Size }).ToList(),
+                Path = await botFolder.GetFolder(),
+                Files = (await botFolder.GetFiles()).Select(f => new BotFileInfo { Name = f.Name, Size = f.Size }).ToList(),
             };
         }
 
@@ -218,28 +218,28 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         {
             var botFolder = await GetBotFolder(botId, folderId);
 
-            botFolder.Clear();
+            await botFolder.Clear();
         }
 
         public async Task DeleteBotFile(string botId, BotFolderId folderId, string fileName)
         {
             var botFolder = await GetBotFolder(botId, folderId);
 
-            botFolder.DeleteFile(fileName);
+            await botFolder.DeleteFile(fileName);
         }
 
         public async Task<string> GetBotFileReadPath(string botId, BotFolderId folderId, string fileName)
         {
             var botFolder = await GetBotFolder(botId, folderId);
 
-            return botFolder.GetFileReadPath(fileName);
+            return await botFolder.GetFileReadPath(fileName);
         }
 
         public async Task<string> GetBotFileWritePath(string botId, BotFolderId folderId, string fileName)
         {
             var botFolder = await GetBotFolder(botId, folderId);
 
-            return botFolder.GetFileWritePath(fileName);
+            return await botFolder.GetFileWritePath(fileName);
         }
 
 
