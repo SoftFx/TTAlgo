@@ -224,7 +224,7 @@ namespace TickTrader.BotTerminal
             var ruleForBotInfoTarget = new LoggingRule(string.Concat(LoggerHelper.LoggerNamePrefix, "*"), LogLevel.Debug, botInfoWrapper) { Final = true };
             var ruleForBotErrorTarget = new LoggingRule(string.Concat(LoggerHelper.LoggerNamePrefix, "*"), LogLevel.Error, botErrorWrapper);
             var ruleForBotStatusTarget = new LoggingRule(string.Concat(LoggerHelper.LoggerNamePrefix, "*"), LogLevel.Trace, LogLevel.Trace, botStatusWrapper) { Final = true };
-            var ruleForAlertTarget = new LoggingRule(string.Concat(nameof(AlertViewModel), ".*"), LogLevel.Trace, alertWrapper) { Final = true };
+            var ruleForAlertTarget = new LoggingRule(string.Concat("*", nameof(AlertViewModel)), LogLevel.Trace, alertWrapper) { Final = true };
             var ruleForLogTarget = new LoggingRule();
             ruleForLogTarget.LoggerNamePattern = "*";
 
