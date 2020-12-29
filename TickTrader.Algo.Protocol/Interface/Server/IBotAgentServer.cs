@@ -24,11 +24,11 @@ namespace TickTrader.Algo.Protocol
 
         #region Initialization
 
-        List<PackageInfo> GetPackageList();
+        Task<List<PackageInfo>> GetPackageList();
 
-        List<AccountModelInfo> GetAccountList();
+        Task<List<AccountModelInfo>> GetAccountList();
 
-        List<BotModelInfo> GetBotList();
+        Task<List<BotModelInfo>> GetBotList();
 
         #endregion Initialization
 
@@ -52,39 +52,39 @@ namespace TickTrader.Algo.Protocol
 
         #region Requests
 
-        ApiMetadataInfo GetApiMetadata();
+        Task<ApiMetadataInfo> GetApiMetadata();
 
-        MappingCollectionInfo GetMappingsInfo();
+        Task<MappingCollectionInfo> GetMappingsInfo();
 
-        SetupContextInfo GetSetupContext();
+        Task<SetupContextInfo> GetSetupContext();
 
-        AccountMetadataInfo GetAccountMetadata(AccountKey account);
+        Task<AccountMetadataInfo> GetAccountMetadata(AccountKey account);
 
-        void StartBot(string botId);
+        Task StartBot(string botId);
 
-        void StopBot(string botId);
+        Task StopBot(string botId);
 
-        void AddBot(AccountKey account, PluginConfig config);
+        Task AddBot(AccountKey account, PluginConfig config);
 
-        void RemoveBot(string botId, bool cleanLog, bool cleanAlgoData);
+        Task RemoveBot(string botId, bool cleanLog, bool cleanAlgoData);
 
-        void ChangeBotConfig(string botId, PluginConfig newConfig);
+        Task ChangeBotConfig(string botId, PluginConfig newConfig);
 
-        void AddAccount(AccountKey account, string password);
+        Task AddAccount(AccountKey account, string password);
 
-        void RemoveAccount(AccountKey account);
+        Task RemoveAccount(AccountKey account);
 
-        void ChangeAccount(AccountKey account, string password);
+        Task ChangeAccount(AccountKey account, string password);
 
-        ConnectionErrorInfo TestAccount(AccountKey account);
+        Task<ConnectionErrorInfo> TestAccount(AccountKey account);
 
-        ConnectionErrorInfo TestAccountCreds(AccountKey account, string password);
+        Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password);
 
-        void RemovePackage(PackageKey package);
+        Task RemovePackage(PackageKey package);
 
-        string GetPackageReadPath(PackageKey package);
+        Task<string> GetPackageReadPath(PackageKey package);
 
-        string GetPackageWritePath(PackageKey package);
+        Task<string> GetPackageWritePath(PackageKey package);
 
         Task<string> GetBotStatusAsync(string botId);
 
@@ -92,15 +92,15 @@ namespace TickTrader.Algo.Protocol
 
         Task<LogRecordInfo[]> GetBotLogsAsync(string botId, Timestamp lastLogTimeUtc, int maxCount);
 
-        BotFolderInfo GetBotFolderInfo(string botId, BotFolderId folderId);
+        Task<BotFolderInfo> GetBotFolderInfo(string botId, BotFolderId folderId);
 
-        void ClearBotFolder(string botId, BotFolderId folderId);
+        Task ClearBotFolder(string botId, BotFolderId folderId);
 
-        void DeleteBotFile(string botId, BotFolderId folderId, string fileName);
+        Task DeleteBotFile(string botId, BotFolderId folderId, string fileName);
 
-        string GetBotFileReadPath(string botId, BotFolderId folderId, string fileName);
+        Task<string> GetBotFileReadPath(string botId, BotFolderId folderId, string fileName);
 
-        string GetBotFileWritePath(string botId, BotFolderId folderId, string fileName);
+        Task<string> GetBotFileWritePath(string botId, BotFolderId folderId, string fileName);
 
         #endregion Requests
     }

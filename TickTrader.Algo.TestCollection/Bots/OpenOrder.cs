@@ -47,6 +47,12 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter(DefaultValue = "Open Order Bot Comment")]
         public string Comment { get; set; }
 
+        [Parameter]
+        public bool OcoEqualVolume { get; set; }
+
+        [Parameter]
+        public string OcoRelatedOrderId { get; set; }
+
         protected override void OnStart()
         {
             var request = OpenOrderRequest.Template.Create()
@@ -55,7 +61,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 .WithMaxVisibleVolume(MaxVisibleVolume).WithTakeProfit(TakeProfit)
                 .WithComment(Comment).WithOptions(Options).WithTag(Tag)
                 .WithExpiration(ExpirationTimeout.HasValue ? DateTime.Now + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null)
-                .WithSlippage(Slippage).MakeRequest();
+                .WithSlippage(Slippage).WithOCOEqualVolume(OcoEqualVolume).WithOCORelatedOrderId(OcoRelatedOrderId).MakeRequest();
 
             var res = OpenOrder(request);
 

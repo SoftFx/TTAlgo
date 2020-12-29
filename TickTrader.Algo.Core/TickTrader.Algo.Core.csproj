@@ -205,7 +205,7 @@
     <Compile Include="Builder\IndicatorBuilder.cs" />
     <Compile Include="Entities\TimeKeyGenerator.cs" />
     <Compile Include="Entities\TradeEntityCollection.cs" />
-    <Compile Include="Entities\TradeReportEntity.cs" />
+    <None Include="Entities\TradeReportEntity.cs" />
     <Compile Include="Entities\TradeResultEntity.cs" />
     <Compile Include="Executor\Marshaling\CommonCdProxy.cs" />
     <Compile Include="Executor\Marshaling\FeedCdProxy.cs" />

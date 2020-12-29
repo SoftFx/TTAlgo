@@ -10,6 +10,7 @@ namespace TickTrader.Algo.Domain
         ImmediateOrCancel = 1,
         MarketWithSlippage = 2,
         HiddenIceberg = 4,
+        OneCancelsTheOther = 8,
     }
 
 

@@ -430,7 +430,7 @@ namespace TickTrader.Algo.Common.Model
                     break;
 
                 case ExecutionType.Calculated:
-                    bool ignoreCalculate = (_accType == Domain.AccountInfo.Types.Type.Gross && report.Type == Domain.OrderInfo.Types.Type.Market);
+                    bool ignoreCalculate = (_accType == Domain.AccountInfo.Types.Type.Gross && report.Type == Domain.OrderInfo.Types.Type.Market) || report.OrderStatus == OrderStatus.Executing;
                     if (!ignoreCalculate)
                     {
                         if (_orders.ContainsKey(report.Id))

@@ -71,6 +71,8 @@ namespace TickTrader.Algo.Core
                 ExecOptions = apiRequest.Options.ToDomainEnum(),
                 Tag = CompositeTag.NewTag(IsolationTag, apiRequest.Tag),
                 Expiration = apiRequest.Expiration?.ToUniversalTime().ToTimestamp(),
+                OcoRelatedOrderId = apiRequest.OcoRelatedOrderId,
+                OcoEqualVolume = apiRequest.OcoEqualVolume,
             };
 
             PreprocessAndValidateOpenOrderRequest(domainRequest, out var smbMetadata, ref code);
@@ -205,6 +207,8 @@ namespace TickTrader.Algo.Core
                 Comment = request.Comment,
                 Expiration = request.Expiration?.ToUniversalTime().ToTimestamp(),
                 ExecOptions = request.Options?.ToDomainEnum(),
+                OcoRelatedOrderId = request.OcoRelatedOrderId,
+                OcoEqualVolume = request.OcoEqualVolume,
             };
 
             var code = OrderCmdResultCodes.Ok;
@@ -268,6 +272,9 @@ namespace TickTrader.Algo.Core
                 return;
             if (!ValidateMaxVisibleVolumeLots(request.MaxVisibleAmount, smbMetadata, type, request.Amount, ref code))
                 return;
+            if (!ValidateOCO(request.ExecOptions, request.OcoRelatedOrderId, ref code))
+                return;
+
 
             request.Amount = RoundVolume(request.Amount, smbMetadata);
             request.MaxVisibleAmount = RoundVolume(request.MaxVisibleAmount, smbMetadata);
@@ -752,11 +759,35 @@ namespace TickTrader.Algo.Core
 
             var isOrderTypeCompatibleToIoC = orderType == Domain.OrderInfo.Types.Type.Limit || orderType == Domain.OrderInfo.Types.Type.StopLimit;
 
-            if (options == Domain.OrderExecOptions.ImmediateOrCancel && !isOrderTypeCompatibleToIoC)
+            if (options.Value.HasFlag(Domain.OrderExecOptions.ImmediateOrCancel) && !isOrderTypeCompatibleToIoC)
             {
                 code = OrderCmdResultCodes.Unsupported;
                 return false;
             }
+
+            var isOrderTypeCompabilityToOCO = orderType == Domain.OrderInfo.Types.Type.Limit || orderType == Domain.OrderInfo.Types.Type.Stop;
+
+            if (options.Value.HasFlag(Domain.OrderExecOptions.OneCancelsTheOther) && !isOrderTypeCompabilityToOCO)
+            {
+                code = OrderCmdResultCodes.Unsupported;
+                return false;
+            }
+
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool ValidateOCO(Domain.OrderExecOptions? options, string relatedOrderId, ref OrderCmdResultCodes code)
+        {
+            if (options == null || !options.Value.HasFlag(Domain.OrderExecOptions.OneCancelsTheOther))
+                return true;
+
+            if (string.IsNullOrEmpty(relatedOrderId))
+            {
+                code = OrderCmdResultCodes.OCORelatedIdNotFound;
+                return false;
+            }
+
             return true;
         }
 

@@ -90,6 +90,10 @@ namespace TickTrader.Algo.Common.Model
 
             return options;
         }
+
+        public bool IsOneCancelsTheOther { get; set; }
+
+        public string OCORelatedOrderId { get; set; }
     }
 
     public enum ExecutionType
@@ -123,6 +127,7 @@ namespace TickTrader.Algo.Common.Model
         PendingReplace = 8,
         Done = 9,
         PendingClose = 10,
-        Activated = 11
+        Activated = 11,
+        Executing = 12,
     }
 }

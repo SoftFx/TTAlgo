@@ -20,7 +20,7 @@ namespace TickTrader.BotTerminal
 
         public enum TransactionSide { None = -1, Buy, Sell }
 
-        public enum Reasons { None = -1, DealerDecision, StopOut, Activated, CanceledByDealer, Expired }
+        public enum Reasons { None = -1, DealerDecision, StopOut, Activated, CanceledByDealer, Expired, OcoRelatedOrder }
 
         public TransactionReport() { }
 
@@ -81,6 +81,8 @@ namespace TickTrader.BotTerminal
             ReqSlippage = GetReqSlippage(transaction);
             OpenSlippage = GetOpenSlippage(transaction);
             CloseSlippage = GetCloseSlippage(transaction);
+
+            OCORelatedOrderId = GetOCORelatedOrderId(transaction);
 
             // should be last (it's based on other fields)
             UniqueId = GetUniqueId(transaction, transaction.OrderId, out long orderNum);
@@ -174,6 +176,7 @@ namespace TickTrader.BotTerminal
         public bool IsDividendTransaction => Type == AggregatedTransactionType.Dividend;
         public double? Taxes { get; protected set; }
         public double? Fees { get; protected set; }
+        public string OCORelatedOrderId { get; protected set; }
 
         protected virtual AggregatedTransactionType GetTransactionType(TradeReportInfo transaction)
         {
@@ -439,6 +442,12 @@ namespace TickTrader.BotTerminal
                 return Reasons.CanceledByDealer;
             }
 
+            if (transaction.ReportType == TradeReportInfo.Types.ReportType.OrderCanceled && transaction.TransactionReason == TradeReportInfo.Types.Reason.OneCancelsTheOther)
+            {
+                Type = GetCanceledType(transaction);
+                return Reasons.OcoRelatedOrder;
+            }
+
             if (transaction.ReportType == TradeReportInfo.Types.ReportType.OrderCanceled && transaction.TransactionReason == TradeReportInfo.Types.Reason.StopOut)
             {
                 Type = GetCanceledType(transaction);
@@ -459,6 +468,11 @@ namespace TickTrader.BotTerminal
         protected AggregatedTransactionType GetBuyOrSellType(TradeReportInfo transaction)
         {
             return transaction.OrderSide == OrderInfo.Types.Side.Buy ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
+        }
+
+        protected virtual string GetOCORelatedOrderId(TradeReportInfo transaction)
+        {
+            return transaction.OcoRelatedOrderId;
         }
 
         protected AggregatedTransactionType GetCanceledType(TradeReportInfo transaction)

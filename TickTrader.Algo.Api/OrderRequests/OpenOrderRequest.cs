@@ -36,6 +36,10 @@ namespace TickTrader.Algo.Api
 
         public string Tag { get; private set; }
 
+        public bool OcoEqualVolume { get; private set; }
+
+        public string OcoRelatedOrderId { get; private set; }
+
 
         private OpenOrderRequest() { }
 
@@ -57,6 +61,8 @@ namespace TickTrader.Algo.Api
             private string _comment;
             private string _tag;
 
+            private bool _ocoEqualVolume;
+            private string _ocoRelatedOrderId;
 
             private Template() { }
 
@@ -83,12 +89,14 @@ namespace TickTrader.Algo.Api
                     Options = _options,
                     Comment = _comment,
                     Tag = _tag,
+                    OcoEqualVolume = _ocoEqualVolume,
+                    OcoRelatedOrderId = _ocoRelatedOrderId,
                 };
             }
 
             public Template WithParams(string symbol, OrderSide side, OrderType type, double volume, double? price, double? stopPrice)
             {
-                return WithParams(symbol, side, type, volume, price, stopPrice, null, null, null, "", OrderExecOptions.None, null, null, null);
+                return WithParams(symbol, side, type, volume, price, stopPrice, null, null, null, null, OrderExecOptions.None, null, null, null);
             }
 
             public Template WithParams(string symbol, OrderSide side, OrderType type, double volume, double? price, double? stopPrice, string comment)
@@ -98,7 +106,7 @@ namespace TickTrader.Algo.Api
 
             public Template WithParams(string symbol, OrderSide side, OrderType type, double volume, double? price, double? stopPrice, double? maxVisibleVolume)
             {
-                return WithParams(symbol, side, type, volume, price, stopPrice, maxVisibleVolume, null, null, "", OrderExecOptions.None, null, null, null);
+                return WithParams(symbol, side, type, volume, price, stopPrice, maxVisibleVolume, null, null, null, OrderExecOptions.None, null, null, null);
             }
 
             public Template WithParams(string symbol, OrderSide side, OrderType type, double volume, double? price, double? stopPrice, double? maxVisibleVolume, string comment)
@@ -108,7 +116,7 @@ namespace TickTrader.Algo.Api
 
             public Template WithParams(string symbol, OrderSide side, OrderType type, double volume, double? price, double? stopPrice, double? takeProfit, double? stopLoss)
             {
-                return WithParams(symbol, side, type, volume, price, stopPrice, null, takeProfit, stopLoss, "", OrderExecOptions.None, null, null, null);
+                return WithParams(symbol, side, type, volume, price, stopPrice, null, takeProfit, stopLoss, null, OrderExecOptions.None, null, null, null);
             }
 
             public Template WithParams(string symbol, OrderSide side, OrderType type, double volume, double? price, double? stopPrice, double? takeProfit, double? stopLoss, string comment)
@@ -218,6 +226,23 @@ namespace TickTrader.Algo.Api
             public Template WithTag(string tag)
             {
                 _tag = tag;
+                return this;
+            }
+
+            public Template WithOCOParams(bool equalVolume, string relatedId)
+            {
+                return WithOptions(_options | OrderExecOptions.OneCancelsTheOther).WithOCOEqualVolume(equalVolume).WithOCORelatedOrderId(relatedId);
+            }
+
+            public Template WithOCOEqualVolume(bool equalVolume)
+            {
+                _ocoEqualVolume = equalVolume;
+                return this;
+            }
+
+            public Template WithOCORelatedOrderId(string relatedId)
+            {
+                _ocoRelatedOrderId = relatedId;
                 return this;
             }
         }

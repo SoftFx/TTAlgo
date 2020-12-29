@@ -16,6 +16,7 @@ namespace TickTrader.Algo.Domain
     {
         None = 0,
         ImmediateOrCancel = 1,
+        OneCancelsTheOther = 2,
     }
 
 

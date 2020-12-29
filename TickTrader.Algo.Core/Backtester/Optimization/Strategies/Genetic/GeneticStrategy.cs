@@ -191,7 +191,7 @@ namespace TickTrader.Algo.Core
                 var chance = generator.GetPart();
 
                 if ((calculateF(sorted[i].Result.Value) / totalResult).Gte(chance))
-                    gens[i - SurvivingSize] = sorted[i];
+                    gens[(i - SurvivingSize) % gens.Count] = sorted[i];
             }
         }
 

@@ -51,6 +51,7 @@ message OrderInfo {
         IMMEDIATE_OR_CANCEL = 1;
         MARKET_WITH_SLIPPAGE = 2;
         HIDDEN_ICEBERG = 4;
+        ONE_CANCELS_THE_OTHER = 8;
     }
 
     string id = 1;
@@ -81,6 +82,7 @@ message OrderInfo {
     google.protobuf.DoubleValue slippage = 26;
     google.protobuf.DoubleValue requested_open_price = 27;
     google.protobuf.StringValue parent_order_id = 28;
+    google.protobuf.StringValue oco_related_order_id = 29;
 }
 
 message OrderListRequest { }
@@ -176,6 +178,10 @@ message OrderExecReport {
         INCORRECT_SLIPPAGE = 125;
         INCORRECT_TYPE = 126;
         THROTTLING_ERROR = 127;
+        OCO_RELATED_ID_NOT_FOUND = 128;
+        OCO_RELATED_ORDER_ALREADY_EXISTS = 129;
+        INCORRECT_SYMBOL = 130;
+        OCO_ALREADY_EXISTS = 131;
     }
 
     google.protobuf.StringValue operation_id = 1;
@@ -198,6 +204,7 @@ message OrderRequest {
     enum ExecOptions {
         NONE = 0;
         IMMEDIATE_OR_CANCEL = 1;
+        ONE_CANCELS_THE_OTHER = 2;
     }
 }
 
@@ -217,6 +224,8 @@ message OpenOrderRequest {
     google.protobuf.StringValue comment = 13;
     google.protobuf.StringValue tag = 14;
     int32 exec_options_bitmask = 15;
+    google.protobuf.StringValue oco_related_order_id = 16;
+    bool oco_equal_volume = 17;
 }
 
 message ModifyOrderRequest {
@@ -238,6 +247,8 @@ message ModifyOrderRequest {
     google.protobuf.StringValue comment = 16;
     google.protobuf.StringValue tag = 17;
     google.protobuf.Int32Value exec_options_bitmask = 18;
+    google.protobuf.StringValue oco_related_order_id = 19;
+    google.protobuf.BoolValue oco_equal_volume = 20;
 }
 
 message CancelOrderRequest {
@@ -287,6 +298,7 @@ message TradeReportInfo {
         TRANSFER_MONEY = 10;
         SPLIT = 11;
         DIVIDEND = 12;
+        ONE_CANCELS_THE_OTHER = 13;
     }
 
     string id = 1;
@@ -354,6 +366,8 @@ message TradeReportInfo {
     google.protobuf.DoubleValue dst_asset_movement = 57;
     google.protobuf.DoubleValue dst_asset_amount = 58;
     google.protobuf.DoubleValue src_asset_amount = 59;
+
+    google.protobuf.StringValue oco_related_order_id = 60;
 }
 
 message TradeHistoryRequest {

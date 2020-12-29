@@ -7,6 +7,7 @@ using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
 using TickTrader.BotAgent.Configurator.Properties;
 
 namespace TickTrader.BotAgent.Configurator
@@ -297,13 +298,13 @@ namespace TickTrader.BotAgent.Configurator
             }
             catch (WarningException ex)
             {
-                _logger.Error(ex);
-                MessageBoxManager.WarningBox(ex.Message);
+                _logger.Warn(ex);
+                Application.Current.Dispatcher.BeginInvoke(new Action<string>(MessageBoxManager.WarningBox), ex.Message);
             }
             catch (Exception exx)
             {
                 _logger.Error(exx);
-                MessageBoxManager.OkError(exx.Message);
+                Application.Current.Dispatcher.BeginInvoke(new Action<string>(MessageBoxManager.OkError), exx.Message);
             }
             finally
             {
@@ -319,7 +320,7 @@ namespace TickTrader.BotAgent.Configurator
 
                 while (_runnignApplication)
                 {
-                    StateServiceModel.RefreshService(_model.ServiceManager.ServiceDisplayName);
+                    StateServiceModel.RefreshService(_model.ServiceManager.MachineServiceName, _model.ServiceManager.ServiceDisplayName);
 
                     sec = sec == 5 ? 0 : sec + 1;
 

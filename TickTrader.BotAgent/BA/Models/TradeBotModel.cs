@@ -306,7 +306,10 @@ namespace TickTrader.BotAgent.BA.Models
 
             try
             {
-                await Task.Factory.StartNew(() => executor?.Stop());
+                if (executor != null)
+                {
+                    await Task.Run(() => executor.Stop());
+                }
             }
             catch (Exception ex)
             {

@@ -58,6 +58,12 @@ namespace TickTrader.Algo.Common.Model.Interop
         }
 
 
+        public Task Deinit()
+        {
+            return Task.Factory.StartNew(() => _tradeProxy.Dispose());
+        }
+
+
         public Task ConnectAsync(string address)
         {
             var taskSrc = new TaskCompletionSource<object>();
@@ -93,7 +99,7 @@ namespace TickTrader.Algo.Common.Model.Interop
             return taskSrc.Task;
         }
 
-        public void GetOrdersAsync(BlockingChannel<ExecutionReport> stream)
+        public void GetOrdersAsync(BlockingChannel<Domain.OrderInfo> stream)
         {
             _tradeProxy.GetOrdersAsync(stream);
         }
@@ -107,10 +113,10 @@ namespace TickTrader.Algo.Common.Model.Interop
 
         public Task<List<FDK2.ExecutionReport>> NewOrderAsync(string clientOrderId, string symbol, OrderType type, OrderSide side,
             double qty, double? maxVisibleQty, double? price, double? stopPrice, OrderTimeInForce? timeInForce, DateTime? expireTime, double? stopLoss,
-            double? takeProfit, string comment, string tag, int? magic, bool immediateOrCancel, double? slippage)
+            double? takeProfit, string comment, string tag, int? magic, bool immediateOrCancel, double? slippage, bool oneCancelsTheOtherFlag, bool ocoEqualQty, long? relatedOrderId)
         {
             var taskSrc = new OrderResultSource(_execReportHandler);
-            _tradeProxy.NewOrderAsync(taskSrc, clientOrderId, symbol, type, side, qty, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, comment, tag, magic, immediateOrCancel, slippage);
+            _tradeProxy.NewOrderAsync(taskSrc, clientOrderId, symbol, type, side, qty, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, comment, tag, magic, immediateOrCancel, slippage, oneCancelsTheOtherFlag, ocoEqualQty, relatedOrderId);
             return taskSrc.Task;
         }
 
@@ -132,10 +138,10 @@ namespace TickTrader.Algo.Common.Model.Interop
 
         public Task<List<FDK2.ExecutionReport>> ReplaceOrderAsync(string clientOrderId, string origClientOrderId, string orderId, string symbol, OrderType type,
             OrderSide side, double qtyChange, double? maxVisibleQty, double? price, double? stopPrice, OrderTimeInForce? timeInForce, DateTime? expireTime, double? stopLoss,
-            double? takeProfit, string comment, string tag, int? magic, bool? immediateOrCancel, double? slippage)
+            double? takeProfit, string comment, string tag, int? magic, bool? immediateOrCancel, double? slippage, bool? isOneCancelsTheOther, bool? ocoEqualQty, long? relatedId)
         {
             var taskSrc = new OrderResultSource(_execReportHandler);
-            _tradeProxy.ReplaceOrderAsync(taskSrc, clientOrderId, origClientOrderId, orderId, symbol, type, side, qtyChange, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, comment, tag, magic, immediateOrCancel, slippage);
+            _tradeProxy.ReplaceOrderAsync(taskSrc, clientOrderId, origClientOrderId, orderId, symbol, type, side, qtyChange, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, comment, tag, magic, immediateOrCancel, slippage, isOneCancelsTheOther, ocoEqualQty, relatedId);
             return taskSrc.Task;
         }
 
