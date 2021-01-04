@@ -669,7 +669,8 @@ namespace TickTrader.Algo.Common.Model
         {
             return new CurrencyEntity(info.Name, info.Precision)
             {
-                SortOrder = info.SortOrder
+                SortOrder = info.SortOrder,
+                Type = info.TypeId,
             };
         }
 

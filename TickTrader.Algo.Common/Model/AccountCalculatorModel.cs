@@ -130,14 +130,17 @@ namespace TickTrader.Algo.Common.Model
             public CurrencyInfoAdapter(CurrencyEntity info)
             {
                 Name = info.Name;
-                Precision = info.Precision;
+                Precision = info.Digits;
                 SortOrder = info.SortOrder;
+                Type = info.Type;
             }
 
             public string Name { get; private set; }
             public int Precision { get; private set; }
             public int SortOrder { get; private set; }
-            public CurrencyType Type => CurrencyType.Default;
+            public string Type { get; private set; }
+
+            CurrencyType ICurrencyInfo.Type => CurrencyType.Default;
         }
 
         protected class AccountAdapter : IMarginAccountInfo, ICashAccountInfo

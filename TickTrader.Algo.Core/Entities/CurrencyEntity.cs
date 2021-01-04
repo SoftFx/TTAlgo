@@ -22,12 +22,15 @@ namespace TickTrader.Algo.Core
         public string Name { get; private set; }
         public int Digits { get; private set; }
         public int SortOrder { get; set; }
+        public string Type { get; set; }
         public bool IsNull { get; set; }
 
         public NumberFormatInfo Format => _format;
 
         int BO.ICurrencyInfo.Precision => Digits;
+
         int BO.ICurrencyInfo.SortOrder => SortOrder;
+
 
         [OnDeserialized]
         private void OnDeserialized(StreamingContext c)
@@ -42,9 +45,7 @@ namespace TickTrader.Algo.Core
 
         #region FDK compatibility
 
-        public int Precision => Digits;
-
-        public BO.CurrencyType Type => BO.CurrencyType.Default;
+        BO.CurrencyType BO.ICurrencyInfo.Type => BO.CurrencyType.Default;
 
         #endregion
 
@@ -63,6 +64,7 @@ namespace TickTrader.Algo.Core
                 Digits = other.Digits;
                 SortOrder = other.SortOrder;
                 IsNull = other.IsNull;
+                Type = other.Type;
                 InitFormat();
             }
         }
