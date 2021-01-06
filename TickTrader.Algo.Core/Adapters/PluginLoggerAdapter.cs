@@ -368,7 +368,7 @@ namespace TickTrader.Algo.Core
 
         private void AppendOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, ReplaceOrderCoreRequest request)
         {
-            AppendOrderParams(logEntry, smbInfo, suffix, request.Type, request.Side, request.NewVolume ?? request.CurrentVolume, request.Price ?? double.NaN, request.StopPrice ?? double.NaN, request.StopLoss, request.TakeProfit, request.Slippage);
+            AppendOrderParams(logEntry, smbInfo, suffix, request.Type, request.Side, request.NewVolumeLots ?? request.CurrentVolumeLots, request.Price ?? double.NaN, request.StopPrice ?? double.NaN, request.StopLoss, request.TakeProfit, request.Slippage);
         }
 
         private void AppendOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, OrderType type, OrderSide side, double volumeLots, double price, double stopPrice, double? sl, double? tp, double? slippage)
