@@ -136,7 +136,7 @@ namespace TickTrader.BotAgent.BA.Models
                 FileName = Layout.FromString(Path.Combine(_logDirectory, $"${{shortdate}}-log{_fileExtension}")),
                 Layout = Layout.FromString("${longdate} | ${logger} | ${message}"),
                 Encoding = Encoding.UTF8,
-                ArchiveEvery = FileArchivePeriod.Day,
+                ArchiveEvery = FileArchivePeriod.Hour,
                 ArchiveFileName = Layout.FromString(Path.Combine(_logDirectory, $"{{#}}-log{_archiveExtension}")),
                 ArchiveNumbering = ArchiveNumberingMode.Date,
                 EnableArchiveFileCompression = true,
