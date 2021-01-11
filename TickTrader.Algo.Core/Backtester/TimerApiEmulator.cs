@@ -67,15 +67,21 @@ namespace TickTrader.Algo.Core
             {
                 _parent = parent;
                 _callback = callback;
+                _period = period;
+
                 TimeLoop();
             }
 
             private async void TimeLoop()
             {
                 await _parent._scheduler.EmulateAsyncDelay(_period, false);
+
                 if (_isStopped)
                     return;
+
                 _parent._context.Builder.InvokeAsyncAction(() => _callback(this));
+
+                TimeLoop();
             }
 
             public void Change(int periodMs)
