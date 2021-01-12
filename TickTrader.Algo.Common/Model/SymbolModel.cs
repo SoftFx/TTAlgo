@@ -22,8 +22,8 @@ namespace TickTrader.Algo.Common.Model
             BaseCurrency = currencies.Snapshot.Read(info.Currency);
             QuoteCurrency = currencies.Snapshot.Read(info.SettlementCurrency);
 
-            BaseCurrencyDigits = BaseCurrency?.Precision ?? 2;
-            QuoteCurrencyDigits = QuoteCurrency?.Precision ?? 2;
+            BaseCurrencyDigits = BaseCurrency?.Digits ?? 2;
+            QuoteCurrencyDigits = QuoteCurrency?.Digits ?? 2;
 
             BidTracker = new RateDirectionTracker();
             AskTracker = new RateDirectionTracker();

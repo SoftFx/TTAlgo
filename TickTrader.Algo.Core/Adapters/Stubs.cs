@@ -208,6 +208,8 @@ namespace TickTrader.Algo.Core
         public string Name { get; }
         public int Digits => 2;
         public bool IsNull => true;
+        public string Type { get; }
+
         public override string ToString() { return "{null}"; }
     }
 

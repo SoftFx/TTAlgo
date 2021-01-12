@@ -42,6 +42,7 @@ namespace TickTrader.Algo.Api
         double? ReqOpenQuantity { get; }
         double? ReqOpenPrice { get; }
         bool ImmediateOrCancel { get; }
+        double? LastFillQuantity { get; }
     }
 
     public enum TradeRecordTypes

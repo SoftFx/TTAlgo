@@ -13,10 +13,11 @@ namespace TickTrader.BotTerminal
         public AssetViewModel(AssetModel asset, CurrencyEntity info)
         {
             Asset = asset;
-            CurrencyDigits = info?.Precision ?? 2;
+            CurrencyDigits = info?.Digits ?? 2;
         }
 
         public AssetModel Asset { get; private set; }
+
         public int CurrencyDigits { get; private set; }
     }
 }
