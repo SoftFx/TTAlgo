@@ -6,6 +6,7 @@ namespace TickTrader.Algo.Api
     {
         string Name { get; } 
         int Digits { get; }
+        string Type { get; }
         bool IsNull { get; }
     }
 

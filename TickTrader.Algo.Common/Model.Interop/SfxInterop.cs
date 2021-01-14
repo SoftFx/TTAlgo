@@ -671,6 +671,7 @@ namespace TickTrader.Algo.Common.Model
                 Name = info.Name,
                 Digits = info.Precision,
                 SortOrder = info.SortOrder,
+                Type = info.TypeId,
             };
         }
 

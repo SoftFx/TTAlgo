@@ -13,6 +13,8 @@ namespace TickTrader.Algo.Core
 
         int Currency.Digits => Info.Digits;
 
+        string Currency.Type => Info.Type;
+
         bool Currency.IsNull => IsNull;
     }
 

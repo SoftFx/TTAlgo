@@ -53,6 +53,7 @@ namespace TickTrader.Algo.Core
         public double? ReqOpenQuantity => Entity.RequestedOpenQuantity;
         public double? ReqOpenPrice => Entity.RequestedOpenPrice;
         public bool ImmediateOrCancel => Entity.OrderOptions.HasFlag(Domain.OrderOptions.ImmediateOrCancel);
+        public double? LastFillQuantity => Entity.OrderLastFillAmount / _lotSize;
 
         #region Emulation
 

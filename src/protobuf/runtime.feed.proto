@@ -11,6 +11,7 @@ message CurrencyInfo {
     string name = 1;
     int32 digits = 2;
     int32 sort_order = 3;
+    string type = 4;
 }
 
 message CurrencyListRequest { }
