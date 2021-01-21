@@ -169,7 +169,6 @@ namespace TickTrader.BotAgent.BA.Models
                 Name = logTarget,
                 BatchSize = 100,
                 QueueLimit = 1000,
-                TimeToSleepBetweenBatches = 100,
                 OverflowAction = AsyncTargetWrapperOverflowAction.Block,
             };
 
@@ -178,7 +177,6 @@ namespace TickTrader.BotAgent.BA.Models
                 Name = errTarget,
                 BatchSize = 20,
                 QueueLimit = 100,
-                TimeToSleepBetweenBatches = 100,
                 OverflowAction = AsyncTargetWrapperOverflowAction.Block,
             };
 
@@ -187,7 +185,6 @@ namespace TickTrader.BotAgent.BA.Models
                 Name = statusTarget,
                 BatchSize = 20,
                 QueueLimit = 100,
-                TimeToSleepBetweenBatches = 100,
                 OverflowAction = AsyncTargetWrapperOverflowAction.Block,
             };
 
