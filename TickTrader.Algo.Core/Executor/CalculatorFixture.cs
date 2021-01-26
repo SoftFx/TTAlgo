@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Core
         private CashAccountCalculator cashCalc;
         private AccountAccessor acc;
         private bool _isRunning;
-        private bool _isRestart;
+        private bool _shouldRestart;
 
         public CalculatorFixture(IFixtureContext context)
         {
@@ -48,14 +48,14 @@ namespace TickTrader.Algo.Core
 
         public void PreRestart()
         {
-            _isRestart = true;
+            _shouldRestart = _isRunning;
         }
 
         public void PostRestart()
         {
-            if (_isRestart)
+            if (_shouldRestart)
             {
-                _isRestart = false;
+                _shouldRestart = false;
                 LazyInit();
             }
         }
