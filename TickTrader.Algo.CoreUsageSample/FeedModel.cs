@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
@@ -52,7 +53,17 @@ namespace TickTrader.Algo.CoreUsageSample
             return GetSymbolData(symbol).QueryBars(from, to, timeframe).ToList();
         }
 
+        Task<List<BarData>> IFeedHistoryProvider.QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
+        {
+            return Task.FromResult(GetSymbolData(symbol).QueryBars(from, to, timeframe).ToList());
+        }
+
         List<QuoteInfo> IFeedHistoryProvider.QueryQuotes(string symbol, Timestamp from, Timestamp to, bool level2)
+        {
+            return null;
+        }
+
+        Task<List<QuoteInfo>> IFeedHistoryProvider.QueryQuotesAsync(string symbol, Timestamp from, Timestamp to, bool level2)
         {
             return null;
         }
@@ -62,7 +73,17 @@ namespace TickTrader.Algo.CoreUsageSample
             throw new NotImplementedException();
         }
 
+        Task<List<BarData>> IFeedHistoryProvider.QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count)
+        {
+            throw new NotImplementedException();
+        }
+
         List<QuoteInfo> IFeedHistoryProvider.QueryQuotes(string symbol, Timestamp from, int count, bool level2)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<List<QuoteInfo>> IFeedHistoryProvider.QueryQuotesAsync(string symbol, Timestamp from, int count, bool level2)
         {
             throw new NotImplementedException();
         }
@@ -72,14 +93,29 @@ namespace TickTrader.Algo.CoreUsageSample
             return dataBySymbol.Values.Where(d => d.LastQuote != null).Select(d => d.LastQuote).ToList();
         }
 
+        Task<List<QuoteInfo>> IFeedProvider.GetSnapshotAsync()
+        {
+            return Task.FromResult(dataBySymbol.Values.Where(d => d.LastQuote != null).Select(d => d.LastQuote).ToList());
+        }
+
 
         List<QuoteInfo> IFeedSubscription.Modify(List<FeedSubscriptionUpdate> updates)
         {
             return null;
         }
 
+        Task<List<QuoteInfo>> IFeedSubscription.ModifyAsync(List<FeedSubscriptionUpdate> updates)
+        {
+            return Task.FromResult<List<QuoteInfo>>(null);
+        }
+
         void IFeedSubscription.CancelAll()
         {
+        }
+
+        Task IFeedSubscription.CancelAllAsync()
+        {
+            return Task.CompletedTask;
         }
 
         public IEnumerable<SymbolInfo> GetSymbolMetadata()

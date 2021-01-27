@@ -173,11 +173,11 @@ namespace TickTrader.Algo.Core
             return context;
         }
 
-        internal List<QuoteInfo> GetFeedSnapshot()
+        internal async Task<List<QuoteInfo>> GetFeedSnapshotAsync()
         {
             var context = new RpcResponseTaskContext<QuotePage>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(new FeedSnapshotRequest()), context);
-            var res = context.TaskSrc.Task.GetAwaiter().GetResult();
+            var res = await context.TaskSrc.Task;
             return res.Quotes.Select(q => new QuoteInfo(q)).ToList();
         }
 
@@ -189,26 +189,34 @@ namespace TickTrader.Algo.Core
             return res.Quotes.Select(q => new QuoteInfo(q)).ToList();
         }
 
-        internal void CancelAllFeedSubscriptions()
+        internal async Task<List<QuoteInfo>> ModifyFeedSubscriptionAsync(ModifyFeedSubscriptionRequest request)
+        {
+            var context = new RpcResponseTaskContext<QuotePage>(RpcHandler.SingleReponseHandler);
+            _session.Ask(RpcMessage.Request(request), context);
+            var res = await context.TaskSrc.Task;
+            return res.Quotes.Select(q => new QuoteInfo(q)).ToList();
+        }
+
+        internal Task CancelAllFeedSubscriptionsAsync()
         {
             var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(new CancelAllFeedSubscriptionsRequest()), context);
-            context.TaskSrc.Task.GetAwaiter().GetResult();
+            return context.TaskSrc.Task;
         }
 
-        internal List<BarData> GetBarList(BarListRequest request)
+        internal async Task<List<BarData>> GetBarListAsync(BarListRequest request)
         {
             var context = new RpcResponseTaskContext<BarChunk>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(request), context);
-            var res = context.TaskSrc.Task.GetAwaiter().GetResult();
+            var res = await context.TaskSrc.Task;
             return res.Bars.ToList();
         }
 
-        internal List<QuoteInfo> GetQuoteList(QuoteListRequest request)
+        internal async Task<List<QuoteInfo>> GetQuoteListAsync(QuoteListRequest request)
         {
             var context = new RpcResponseTaskContext<QuoteChunk>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(request), context);
-            var res = context.TaskSrc.Task.GetAwaiter().GetResult();
+            var res = await context.TaskSrc.Task;
             var symbol = res.Symbol;
             return res.Quotes.Select(q => new QuoteInfo(symbol, q)).ToList();
         }

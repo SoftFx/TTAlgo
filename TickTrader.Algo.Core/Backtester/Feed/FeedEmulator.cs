@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
@@ -163,6 +164,11 @@ namespace TickTrader.Algo.Core
             return _feedSeries.Values.Where(s => s.Current != null).Select(s => s.Current.LastQuote).ToList();
         }
 
+        Task<List<QuoteInfo>> IFeedProvider.GetSnapshotAsync()
+        {
+            return Task.FromResult(_feedSeries.Values.Where(s => s.Current != null).Select(s => s.Current.LastQuote).ToList());
+        }
+
         List<BarData> IFeedHistoryProvider.QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
         {
             return GetFeedSrcOrThrow(symbol).QueryBars(marketSide, timeframe, from, to).ToList() ?? new List<BarData>();
@@ -183,6 +189,26 @@ namespace TickTrader.Algo.Core
             return GetFeedSrcOrThrow(symbol).QueryTicks(from, count, level2) ?? new List<QuoteInfo>();
         }
 
+        Task<List<BarData>> IFeedHistoryProvider.QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
+        {
+            return Task.FromResult(GetFeedSrcOrThrow(symbol).QueryBars(marketSide, timeframe, from, to).ToList() ?? new List<BarData>());
+        }
+
+        Task<List<BarData>> IFeedHistoryProvider.QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count)
+        {
+            return Task.FromResult(GetFeedSrcOrThrow(symbol).QueryBars(marketSide, timeframe, from, count).ToList() ?? new List<BarData>());
+        }
+
+        Task<List<QuoteInfo>> IFeedHistoryProvider.QueryQuotesAsync(string symbol, Timestamp from, Timestamp to, bool level2)
+        {
+            return Task.FromResult(GetFeedSrcOrThrow(symbol).QueryTicks(from, to, level2) ?? new List<QuoteInfo>());
+        }
+
+        Task<List<QuoteInfo>> IFeedHistoryProvider.QueryQuotesAsync(string symbol, Timestamp from, int count, bool level2)
+        {
+            return Task.FromResult(GetFeedSrcOrThrow(symbol).QueryTicks(from, count, level2) ?? new List<QuoteInfo>());
+        }
+
         List<QuoteInfo> IFeedSubscription.Modify(List<FeedSubscriptionUpdate> updates)
         {
             var snapshot = new List<QuoteInfo>();
@@ -199,8 +225,29 @@ namespace TickTrader.Algo.Core
             return snapshot;
         }
 
+        Task<List<QuoteInfo>> IFeedSubscription.ModifyAsync(List<FeedSubscriptionUpdate> updates)
+        {
+            var snapshot = new List<QuoteInfo>();
+
+            foreach (var upd in updates)
+            {
+                if (upd.IsUpsertAction)
+                {
+                    if (_feedSeries.TryGetValue(upd.Symbol, out var series) && series.Current != null)
+                        snapshot.Add(series.Current.LastQuote);
+                }
+            }
+
+            return Task.FromResult(snapshot);
+        }
+
         void IFeedSubscription.CancelAll()
         {
+        }
+
+        Task IFeedSubscription.CancelAllAsync()
+        {
+            return Task.CompletedTask;
         }
 
         public event Action<QuoteInfo> RateUpdated { add { } remove { } }

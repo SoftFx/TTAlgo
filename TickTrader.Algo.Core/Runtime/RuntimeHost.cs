@@ -57,6 +57,7 @@ namespace TickTrader.Algo.Core
         {
             _subDomain = new Isolated<RuntimeV1Loader>();
 
+            _subDomain.Value.InitDebugLogger();
             await Task.Factory.StartNew(() => _subDomain.Value.Init(address, port, proxyId));
         }
 

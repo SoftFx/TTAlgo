@@ -2,6 +2,7 @@
 using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using TickTrader.Algo.Core.Calc;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
@@ -40,18 +41,26 @@ namespace TickTrader.Algo.Core
         List<BarData> QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count);
         List<QuoteInfo> QueryQuotes(string symbol, Timestamp from, Timestamp to, bool level2);
         List<QuoteInfo> QueryQuotes(string symbol, Timestamp from, int count, bool level2);
+
+        Task<List<BarData>> QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to);
+        Task<List<BarData>> QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count);
+        Task<List<QuoteInfo>> QueryQuotesAsync(string symbol, Timestamp from, Timestamp to, bool level2);
+        Task<List<QuoteInfo>> QueryQuotesAsync(string symbol, Timestamp from, int count, bool level2);
     }
 
     public interface IFeedSubscription
     {
         List<QuoteInfo> Modify(List<FeedSubscriptionUpdate> updates);
+        Task<List<QuoteInfo>> ModifyAsync(List<FeedSubscriptionUpdate> updates);
         void CancelAll();
+        Task CancelAllAsync();
     }
 
     public interface IFeedProvider : IFeedSubscription
     {
         ISyncContext Sync { get; }
         List<QuoteInfo> GetSnapshot();
+        Task<List<QuoteInfo>> GetSnapshotAsync();
 
         event Action<QuoteInfo> RateUpdated;
         event Action<List<QuoteInfo>> RatesUpdated;

@@ -3,6 +3,7 @@ using Machinarium.Qnil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Infrastructure;
 using TickTrader.Algo.Core.Lib;
@@ -57,6 +58,26 @@ namespace TickTrader.Algo.Common.Model
             return history.GetQuotePage(symbolCode, from, count, level2).GetAwaiter().GetResult().ToList();
         }
 
+        public Task<List<BarData>> QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
+        {
+            return history.GetBarList(symbol, marketSide, timeframe, from, to);
+        }
+
+        public async Task<List<BarData>> QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count)
+        {
+            return (await history.GetBarPage(symbol, marketSide, timeframe, from, count)).ToList();
+        }
+
+        public Task<List<QuoteInfo>> QueryQuotesAsync(string symbolCode, Timestamp from, Timestamp to, bool level2)
+        {
+            return history.GetQuoteList(symbolCode, from, to, level2);
+        }
+
+        public async Task<List<QuoteInfo>> QueryQuotesAsync(string symbolCode, Timestamp from, int count, bool level2)
+        {
+            return (await history.GetQuotePage(symbolCode, from, count, level2)).ToList();
+        }
+
         #endregion
 
         #region IFeedProvider
@@ -71,9 +92,20 @@ namespace TickTrader.Algo.Common.Model
             return subscription.Modify(updates);
         }
 
+        public Task<List<QuoteInfo>> ModifyAsync(List<FeedSubscriptionUpdate> updates)
+        {
+            return Task.FromResult(Modify(updates));
+        }
+
         public void CancelAll()
         {
             subscription.CancelAll();
+        }
+
+        public Task CancelAllAsync()
+        {
+            CancelAll();
+            return Task.CompletedTask;
         }
 
         public List<QuoteInfo> GetSnapshot()
@@ -81,6 +113,11 @@ namespace TickTrader.Algo.Common.Model
             return symbols.Snapshot
                 .Where(s => s.Value.LastQuote != null)
                 .Select(s => s.Value.LastQuote).Cast<QuoteInfo>().ToList();
+        }
+
+        public Task<List<QuoteInfo>> GetSnapshotAsync()
+        {
+            return Task.FromResult(GetSnapshot());
         }
 
         #endregion

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Infrastructure
@@ -53,6 +54,11 @@ namespace TickTrader.Algo.Core.Infrastructure
             return instantSnaphsot;
         }
 
+        public Task<List<QuoteInfo>> ModifyAsync(List<FeedSubscriptionUpdate> updates)
+        {
+            return Task.FromResult(Modify(updates));
+        }
+
         private bool Modify(FeedSubscriptionUpdate update, List<QuoteInfo> snapshot)
         {
             if (update.IsUpsertAction)
@@ -102,6 +108,13 @@ namespace TickTrader.Algo.Core.Infrastructure
 
             if (symbols.Count > 0)
                 _parent.AdjustGroupSubscription(symbols);
+        }
+
+        public Task CancelAllAsync()
+        {
+            CancelAll();
+
+            return Task.CompletedTask;
         }
     }
 }

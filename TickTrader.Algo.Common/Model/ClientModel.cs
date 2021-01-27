@@ -254,9 +254,20 @@ namespace TickTrader.Algo.Common.Model
                 return null;
             }
 
+            async Task<List<QuoteInfo>> IFeedSubscription.ModifyAsync(List<FeedSubscriptionUpdate> updates)
+            {
+                await Actor.Call(a => a.UpsertSubscription(Ref, updates));
+                return null;
+            }
+
             void IFeedSubscription.CancelAll()
             {
                 Actor.Send(a => a.RemoveSubscription(Ref));
+            }
+
+            Task IFeedSubscription.CancelAllAsync()
+            {
+                return Actor.Call(a => a.RemoveSubscription(Ref));
             }
 
             private void Connection_Connected()
@@ -521,7 +532,7 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private async void ModifySubscription(IEnumerable<string> symbols, int depth)
+        private async Task ModifySubscription(IEnumerable<string> symbols, int depth)
         {
             try
             {
@@ -535,6 +546,13 @@ namespace TickTrader.Algo.Common.Model
 
         List<QuoteInfo> IFeedSubscription.Modify(List<FeedSubscriptionUpdate> updates)
         {
+            (this as IFeedSubscription).ModifyAsync(updates).Forget();
+
+            return null;
+        }
+
+        async Task<List<QuoteInfo>> IFeedSubscription.ModifyAsync(List<FeedSubscriptionUpdate> updates)
+        {
             var removes = updates.Where(u => u.IsRemoveAction);
             var upserts = updates.Where(u => u.IsUpsertAction).GroupBy(u => u.Depth);
 
@@ -542,7 +560,7 @@ namespace TickTrader.Algo.Common.Model
             {
                 var depth = upsertGourp.Key;
                 var symols = upsertGourp.Select(e => e.Symbol);
-                ModifySubscription(symols, depth);
+                await ModifySubscription(symols, depth);
             }
 
             return null;
@@ -550,6 +568,11 @@ namespace TickTrader.Algo.Common.Model
 
         void IFeedSubscription.CancelAll()
         {
+        }
+
+        Task IFeedSubscription.CancelAllAsync()
+        {
+            return Task.CompletedTask;
         }
 
         #endregion

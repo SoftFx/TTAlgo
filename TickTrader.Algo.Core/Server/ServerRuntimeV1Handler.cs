@@ -308,7 +308,7 @@ namespace TickTrader.Algo.Core
             return Task.FromResult(VoidResponse);
         }
 
-        private Task<Any> BarListRequestHandler(Any payload)
+        private async Task<Any> BarListRequestHandler(Any payload)
         {
             var request = payload.Unpack<BarListRequest>();
             var symbol = request.Symbol;
@@ -321,25 +321,26 @@ namespace TickTrader.Algo.Core
                 MarketSide = marketSide,
                 Timeframe = timeframe,
             };
-            response.Bars.AddRange(count.HasValue
-                ? _runtime.FeedHistory.QueryBars(symbol, marketSide, timeframe, request.From, count.Value)
-                : _runtime.FeedHistory.QueryBars(symbol, marketSide, timeframe, request.From, request.To));
+            var barList = await (count.HasValue
+                ? _runtime.FeedHistory.QueryBarsAsync(symbol, marketSide, timeframe, request.From, count.Value)
+                : _runtime.FeedHistory.QueryBarsAsync(symbol, marketSide, timeframe, request.From, request.To));
+            response.Bars.AddRange(barList);
 
-            return Task.FromResult(Any.Pack(response));
+            return Any.Pack(response);
         }
 
-        private Task<Any> QuoteListRequestHandler(Any payload)
+        private async Task<Any> QuoteListRequestHandler(Any payload)
         {
             var request = payload.Unpack<QuoteListRequest>();
             var symbol = request.Symbol;
             var count = request.Count;
             var response = new QuoteChunk { Symbol = symbol, };
-            response.Quotes.AddRange((count.HasValue
-                ? _runtime.FeedHistory.QueryQuotes(symbol, request.From, count.Value, request.Level2)
-                : _runtime.FeedHistory.QueryQuotes(symbol, request.From, request.To, request.Level2))
-                .Select(q => q.GetData()));
+            var quoteList = await (count.HasValue
+                ? _runtime.FeedHistory.QueryQuotesAsync(symbol, request.From, count.Value, request.Level2)
+                : _runtime.FeedHistory.QueryQuotesAsync(symbol, request.From, request.To, request.Level2));
+            response.Quotes.AddRange(quoteList.Select(q => q.GetData()));
 
-            return Task.FromResult(Any.Pack(response));
+            return Any.Pack(response);
         }
     }
 }

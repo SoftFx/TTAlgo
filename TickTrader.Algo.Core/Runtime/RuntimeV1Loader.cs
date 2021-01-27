@@ -128,7 +128,13 @@ namespace TickTrader.Algo.Core
         public async Task Stop()
         {
             await _executorCore.Stop();
-            _finishTaskSrc.TrySetResult(true);
+            _finishTaskSrc?.TrySetResult(true);
+        }
+
+
+        internal void InitDebugLogger()
+        {
+            CoreLoggerFactory.Init(n => new DebugLogger(n));
         }
 
 

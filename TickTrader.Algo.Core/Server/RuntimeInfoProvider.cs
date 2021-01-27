@@ -135,7 +135,12 @@ namespace TickTrader.Algo.Core
 
         public List<QuoteInfo> GetSnapshot()
         {
-            return _handler.GetFeedSnapshot();
+            return GetSnapshotAsync().GetAwaiter().GetResult();
+        }
+
+        public Task<List<QuoteInfo>> GetSnapshotAsync()
+        {
+            return _handler.GetFeedSnapshotAsync();
         }
 
         public List<QuoteInfo> Modify(List<FeedSubscriptionUpdate> updates)
@@ -143,11 +148,24 @@ namespace TickTrader.Algo.Core
             var request = new ModifyFeedSubscriptionRequest();
             request.Updates.AddRange(updates);
             return _handler.ModifyFeedSubscription(request);
+            //return ModifyAsync(updates).GetAwaiter().GetResult();
+        }
+
+        public Task<List<QuoteInfo>> ModifyAsync(List<FeedSubscriptionUpdate> updates)
+        {
+            var request = new ModifyFeedSubscriptionRequest();
+            request.Updates.AddRange(updates);
+            return _handler.ModifyFeedSubscriptionAsync(request);
         }
 
         public void CancelAll()
         {
-            _handler.CancelAllFeedSubscriptions();
+            CancelAllAsync().GetAwaiter().GetResult();
+        }
+
+        public Task CancelAllAsync()
+        {
+            return _handler.CancelAllFeedSubscriptionsAsync();
         }
 
         #endregion IFeedProvider
@@ -156,19 +174,39 @@ namespace TickTrader.Algo.Core
 
         public List<BarData> QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
         {
-            var request = new BarListRequest
-            {
-                Symbol = symbol,
-                MarketSide = marketSide,
-                Timeframe = timeframe,
-                From = from,
-                To = to,
-            };
-            return _handler.GetBarList(request);
+            return QueryBarsAsync(symbol, marketSide, timeframe, from, to).GetAwaiter().GetResult();
         }
 
         public List<BarData> QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count)
         {
+            return QueryBarsAsync(symbol, marketSide, timeframe, from, count).GetAwaiter().GetResult();
+        }
+
+        public List<QuoteInfo> QueryQuotes(string symbol, Timestamp from, Timestamp to, bool level2)
+        {
+            return QueryQuotesAsync(symbol, from, to, level2).GetAwaiter().GetResult();
+        }
+
+        public List<QuoteInfo> QueryQuotes(string symbol, Timestamp from, int count, bool level2)
+        {
+            return QueryQuotesAsync(symbol, from, count, level2).GetAwaiter().GetResult();
+        }
+
+        public Task<List<BarData>> QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
+        {
+            var request = new BarListRequest
+            {
+                Symbol = symbol,
+                MarketSide = marketSide,
+                Timeframe = timeframe,
+                From = from,
+                To = to,
+            };
+            return _handler.GetBarListAsync(request);
+        }
+
+        public Task<List<BarData>> QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count)
+        {
             var request = new BarListRequest
             {
                 Symbol = symbol,
@@ -177,10 +215,10 @@ namespace TickTrader.Algo.Core
                 From = from,
                 Count = count,
             };
-            return _handler.GetBarList(request);
+            return _handler.GetBarListAsync(request);
         }
 
-        public List<QuoteInfo> QueryQuotes(string symbol, Timestamp from, Timestamp to, bool level2)
+        public Task<List<QuoteInfo>> QueryQuotesAsync(string symbol, Timestamp from, Timestamp to, bool level2)
         {
             var request = new QuoteListRequest
             {
@@ -189,10 +227,10 @@ namespace TickTrader.Algo.Core
                 To = to,
                 Level2 = level2,
             };
-            return _handler.GetQuoteList(request);
+            return _handler.GetQuoteListAsync(request);
         }
 
-        public List<QuoteInfo> QueryQuotes(string symbol, Timestamp from, int count, bool level2)
+        public Task<List<QuoteInfo>> QueryQuotesAsync(string symbol, Timestamp from, int count, bool level2)
         {
             var request = new QuoteListRequest
             {
@@ -201,7 +239,7 @@ namespace TickTrader.Algo.Core
                 Count = count,
                 Level2 = level2,
             };
-            return _handler.GetQuoteList(request);
+            return _handler.GetQuoteListAsync(request);
         }
 
         #endregion IFeedHistoryProvider

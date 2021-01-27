@@ -1,6 +1,7 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Infrastructure;
 using TickTrader.Algo.Core.Lib;
@@ -37,6 +38,11 @@ namespace TickTrader.Algo.Core
             return _feed.GetSnapshot();
         }
 
+        public Task<List<QuoteInfo>> GetSnapshotAsync()
+        {
+            return _feed.GetSnapshotAsync();
+        }
+
         //public QuoteEntity GetRate(string symbol)
         //{
         //    return _feed.GetRate(symbol);
@@ -62,6 +68,26 @@ namespace TickTrader.Algo.Core
             return _history.QueryQuotes(symbolCode, from, count, level2);
         }
 
+        public Task<List<BarData>> QueryBarsAsync(string symbolCode, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
+        {
+            return _history.QueryBarsAsync(symbolCode, marketSide, timeframe, from, to);
+        }
+
+        public Task<List<BarData>> QueryBarsAsync(string symbolCode, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count)
+        {
+            return _history.QueryBarsAsync(symbolCode, marketSide, timeframe, from, count);
+        }
+
+        public Task<List<QuoteInfo>> QueryQuotesAsync(string symbolCode, Timestamp from, Timestamp to, bool level2)
+        {
+            return _history.QueryQuotesAsync(symbolCode, from, to, level2);
+        }
+
+        public Task<List<QuoteInfo>> QueryQuotesAsync(string symbolCode, Timestamp from, int count, bool level2)
+        {
+            return _history.QueryQuotesAsync(symbolCode, from, count, level2);
+        }
+
         public List<QuoteInfo> Modify(List<FeedSubscriptionUpdate> updates)
         {
             LazyInit();
@@ -69,9 +95,21 @@ namespace TickTrader.Algo.Core
             return _feed.Modify(updates);
         }
 
+        public Task<List<QuoteInfo>> ModifyAsync(List<FeedSubscriptionUpdate> updates)
+        {
+            LazyInit();
+
+            return _feed.ModifyAsync(updates);
+        }
+
         public void CancelAll()
         {
             _feed.CancelAll();
+        }
+
+        public Task CancelAllAsync()
+        {
+            return _feed.CancelAllAsync();
         }
 
         private void LazyInit()
