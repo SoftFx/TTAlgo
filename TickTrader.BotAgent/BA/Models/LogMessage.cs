@@ -5,7 +5,7 @@ namespace TickTrader.BotAgent.BA.Models
 {
     public class LogEntry : ILogEntry
     {
-        public LogEntry(LogEntryType type, string message)
+        public LogEntry(TimeKey key, LogEntryType type, string message)
         {
             TimeUtc = new TimeKey(DateTime.UtcNow, 0);
             Type = type;

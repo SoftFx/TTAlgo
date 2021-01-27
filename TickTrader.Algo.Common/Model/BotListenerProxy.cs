@@ -16,6 +16,8 @@ namespace TickTrader.Algo.Common.Model
         void UpdateStatus(string status);
 
         void Trace(string status);
+
+        void Close();
     }
 
 
@@ -54,6 +56,7 @@ namespace TickTrader.Algo.Common.Model
                 _timer = null;
                 LogStatus(null);
                 _writer.Trace("Bot stopped");
+                _writer.Close();
             }
         }
 

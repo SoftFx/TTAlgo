@@ -75,15 +75,14 @@ namespace TickTrader.BotAgent.BA
 
     public interface IBotFolder
     {
-        string Folder { get; }
-        IFile[] Files { get; }
-
-        void Clear();
-        IFile GetFile(string decodedFile);
-        void DeleteFile(string name);
-        void SaveFile(string name, byte[] bytes);
-        string GetFileReadPath(string name);
-        string GetFileWritePath(string name);
+        Task<string> GetFolder();
+        Task<IFile[]> GetFiles();
+        Task Clear();
+        Task<IFile> GetFile(string decodedFile);
+        Task DeleteFile(string name);
+        Task SaveFile(string name, byte[] bytes);
+        Task<string> GetFileReadPath(string name);
+        Task<string> GetFileWritePath(string name);
     }
 
     public enum LogEntryType { Info, Trading, Error, Custom, TradingSuccess, TradingFail, Alert }
@@ -97,8 +96,7 @@ namespace TickTrader.BotAgent.BA
 
     public interface IBotLog : IBotFolder
     {
-        IEnumerable<ILogEntry> Messages { get; }
-        string Status { get; }
+        Task<ILogEntry[]> GetMessages();
         Task<string> GetStatusAsync();
         Task<List<ILogEntry>> QueryMessagesAsync(DateTime from, int maxCount);
     }

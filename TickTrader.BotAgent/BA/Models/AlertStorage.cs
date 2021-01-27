@@ -11,6 +11,7 @@ using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using ActorSharp;
 using System.Text;
+using NLog.Targets.Wrappers;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -53,7 +54,15 @@ namespace TickTrader.BotAgent.BA.Models
                 EnableArchiveFileCompression = true,
             };
 
-            config.AddTarget(alertFile);
+            var alertWrapper = new AsyncTargetWrapper(alertFile)
+            {
+                Name = alertTarget,
+                BatchSize = 20,
+                QueueLimit = 100,
+                OverflowAction = AsyncTargetWrapperOverflowAction.Block,
+            };
+
+            config.AddTarget(alertWrapper);
             config.AddRule(LogLevel.Warn, LogLevel.Warn, alertTarget);
         }
 

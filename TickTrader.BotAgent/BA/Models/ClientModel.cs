@@ -476,7 +476,7 @@ namespace TickTrader.BotAgent.BA.Models
             bot.IsRunningChanged += OnBotIsRunningChanged;
             bot.ConfigurationChanged += OnBotConfigurationChanged;
             bot.StateChanged += OnBotStateChanged;
-            if (bot.Init(this, _packageProvider, ServerModel.GetWorkingFolderFor(bot.Id), _alertStorage))
+            if (bot.Init(this, _packageProvider, _alertStorage))
             {
                 BotInitialized?.Invoke(bot);
             }
