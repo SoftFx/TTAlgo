@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -16,18 +17,18 @@ namespace TickTrader.BotTerminal
         private StockLabelProvider _labelProvider = new StockLabelProvider();
 
         public static readonly DependencyProperty TimeframeProperty =
-            DependencyProperty.Register("Timeframe", typeof(TimeFrames), typeof(StockLabelModifier),
-                new PropertyMetadata(TimeFrames.M1, OnTimeframeChanged));
+            DependencyProperty.Register("Timeframe", typeof(Feed.Types.Timeframe), typeof(StockLabelModifier),
+                new PropertyMetadata(Feed.Types.Timeframe.M1, OnTimeframeChanged));
 
-        public TimeFrames Timeframe
+        public Feed.Types.Timeframe Timeframe
         {
-            get { return (TimeFrames)GetValue(TimeframeProperty); }
+            get { return (Feed.Types.Timeframe)GetValue(TimeframeProperty); }
             set { SetValue(TimeframeProperty, value); }
         }
 
         private static void OnTimeframeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((StockLabelModifier)d)._labelProvider.Timeframe = (TimeFrames)e.NewValue;
+            ((StockLabelModifier)d)._labelProvider.Timeframe = (Feed.Types.Timeframe)e.NewValue;
         }
 
         protected override void AttachTo(IAxis axis)

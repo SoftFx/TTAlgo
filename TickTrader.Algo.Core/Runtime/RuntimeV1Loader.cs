@@ -97,6 +97,7 @@ namespace TickTrader.Algo.Core
 
             var setup = new PluginSetupModel(algoRef, setupMetadata, setupContext, config.MainSymbol);
             setup.Load(config);
+            setup.SetWorkingFolder(runtimeConfig.WorkingDirectory);
 
             _executorCore = new PluginExecutorCore(config.Key.DescriptorId);
             _executorCore.OnNotification += msg => _handler.SendNotification(msg);

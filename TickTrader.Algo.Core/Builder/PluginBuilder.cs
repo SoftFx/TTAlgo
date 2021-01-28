@@ -46,7 +46,7 @@ namespace TickTrader.Algo.Core
             _tradeApater = new TradeApiAdapter(Symbols, Account, logAdapter);
             _commands = _tradeApater;
 
-            _permissions = new PluginPermissions();
+            _permissions = new PluginPermissions { Isolated = true, TradeAllowed = false };
 
             _indicators = new IndicatorsCollection();
 

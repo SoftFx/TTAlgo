@@ -176,6 +176,7 @@ namespace TickTrader.Algo.Rpc.OverTcp
                         segment.CopyTo(buffer);
                         await Task.Factory.FromAsync(socketBeginSend, socketEndSend, buffer, len, null).ConfigureAwait(false);
                     }
+                    catch (Exception) { }
                     finally
                     {
                         ArrayPool<byte>.Shared.Return(buffer);

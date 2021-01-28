@@ -147,8 +147,6 @@ namespace TickTrader.Algo.Common.Model.Setup
 
             foreach (var p in _allProperties)
                 p.Reset();
-
-            Permissions.Reset();
         }
 
         public void Validate()

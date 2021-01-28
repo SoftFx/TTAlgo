@@ -269,9 +269,7 @@ namespace TickTrader.BotTerminal
             cfg.MainSymbol = MainSymbol.ToConfig();
             cfg.SelectedMapping = SelectedMapping.Key;
             cfg.InstanceId = InstanceId;
-            cfg.Permissions = new PluginPermissions();
-            cfg.Permissions.TradeAllowed = _allowTrade;
-            cfg.Permissions.Isolated = _isolate;
+            cfg.Permissions = new PluginPermissions { TradeAllowed = _allowTrade, Isolated = _isolate };
             cfg.PackProperties(_allProperties.Select(p => p.Save()));
             return cfg;
         }
