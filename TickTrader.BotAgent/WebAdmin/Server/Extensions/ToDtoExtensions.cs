@@ -8,6 +8,7 @@ using System.Reflection;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Domain;
+using System.Threading.Tasks;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
 {
@@ -54,12 +55,12 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             };
         }
 
-        public static TradeBotLogDto ToDto(this IBotLog botlog)
+        public static async Task<TradeBotLogDto> ToDto(this IBotLog botlog)
         {
             return new TradeBotLogDto
             {
-                Snapshot = botlog.Messages.OrderByDescending(le => le.TimeUtc).Select(e => e.ToDto()).ToArray(),
-                Files = botlog.Files.Select(fm => fm.ToDto()).ToArray()
+                Snapshot = (await botlog.GetMessages()).OrderByDescending(le => le.TimeUtc).Select(e => e.ToDto()).ToArray(),
+                Files = (await botlog.GetFiles()).Select(fm => fm.ToDto()).ToArray()
             };
         }
 

@@ -30,7 +30,7 @@ namespace TickTrader.BotAgent.BA.Models
         private Task _stopTask;
         private RuntimeModel executor;
         private BotLog.ControlHandler _botLog;
-        private AlgoData _algoData;
+        private AlgoData.ControlHandler _algoData;
         private AlgoPluginRef _ref;
         private BotListenerProxy _botListener;
         private PackageStorage _packageRepo;
@@ -67,7 +67,7 @@ namespace TickTrader.BotAgent.BA.Models
         public Ref<BotLog> LogRef => _botLog.Ref;
         public AlgoPluginRef AlgoRef => _ref;
 
-        public IBotFolder AlgoData => _algoData;
+        public Ref<AlgoData> AlgoDataRef => _algoData.Ref;
 
         public event Action<TradeBotModel> StateChanged;
         public event Action<TradeBotModel> IsRunningChanged;
@@ -103,7 +103,7 @@ namespace TickTrader.BotAgent.BA.Models
 
                 _botLog = new BotLog.ControlHandler(Id, storage);
 
-                _algoData = new AlgoData(workingFolder);
+                _algoData = new AlgoData.ControlHandler(Id);
 
                 if (IsRunning && State != PluginStates.Broken)
                     Start();
@@ -163,9 +163,9 @@ namespace TickTrader.BotAgent.BA.Models
             return _botLog.Clear();
         }
 
-        public void ClearWorkingFolder()
+        public Task ClearWorkingFolder()
         {
-            AlgoData.Clear();
+            return _algoData.Clear();
         }
 
         public void Start()
@@ -174,8 +174,6 @@ namespace TickTrader.BotAgent.BA.Models
 
             if (!IsStopped())
                 throw new InvalidStateException("Trade bot has been already started!");
-
-            _algoData.EnsureDirectoryCreated();
 
             UpdatePackage();
 
@@ -258,12 +256,14 @@ namespace TickTrader.BotAgent.BA.Models
 
             try
             {
+                await _algoData.EnsureDirectoryCreated();
+
                 if (executor != null)
                     throw new InvalidOperationException("Cannot start executor: old executor instance is not disposed!");
 
                 executor = _server.CreateRuntime(_ref, null);
                 executor.SetConfig(Config);
-                executor.Config.WorkingDirectory = AlgoData.Folder;
+                executor.Config.WorkingDirectory = await _algoData.GetFolder();
                 executor.SetConnectionInfo(GetConnectionInfo());
 
                 executor.Config.InitPriorityInvokeStrategy();

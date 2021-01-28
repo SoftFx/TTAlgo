@@ -15,6 +15,8 @@ using System.Threading.Tasks;
 using System.Text;
 using Google.Protobuf.WellKnownTypes;
 using TickTrader.Algo.Domain;
+using NLog.Targets.Wrappers;
+using System.Threading.Channels;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -49,7 +51,7 @@ namespace TickTrader.BotAgent.BA.Models
             }
 
             public Ref<BotLog> Ref => Actor;
-            public IBotWriter GetWriter() => new LogWriter(Ref);
+            public IBotWriter GetWriter() => Actor.Call(a => new LogWriter(a)).Result;
             public Task Clear() => Actor.Call(a => a.Clear());
         }
 
@@ -57,32 +59,20 @@ namespace TickTrader.BotAgent.BA.Models
         {
             public Handler(Ref<BotLog> logRef) : base(logRef) { }
 
-            public IEnumerable<ILogEntry> Messages => CallActor(a => a._logMessages.ToArray());
-            public string Status => CallActor(a => a._status);
-            public string Folder => CallActor(a => a._logDirectory);
-            public IFile[] Files => CallActor(a => a.GetFiles());
+            public Task<string> GetFolder() => CallActorAsync(a => a._logDirectory);
+            public Task<IFile[]> GetFiles() => CallActorAsync(a => a.GetFiles());
+            public Task Clear() => CallActorAsync(a => a.Clear());
+            public Task DeleteFile(string file) => CallActorAsync(a => a.DeleteFile(file));
+            public Task<IFile> GetFile(string file) => CallActorAsync(a => a.GetFile(file));
+            public Task SaveFile(string file, byte[] bytes) => throw new NotSupportedException("Saving files in bot logs folder is not allowed");
+            public Task<string> GetFileReadPath(string file) => CallActorAsync(a => a.GetFileReadPath(file));
+            public Task<string> GetFileWritePath(string file) => throw new NotSupportedException("Writing files in bot logs folder is not allowed");
 
-            public void Clear() => CallActor(a => a.Clear());
-            public void DeleteFile(string file) => CallActor(a => a.DeleteFile(file));
-            public IFile GetFile(string file) => CallActor(a => a.GetFile(file));
-            public void SaveFile(string file, byte[] bytes) => throw new NotSupportedException("Saving files in bot logs folder is not allowed");
-            public string GetFileReadPath(string file) => CallActor(a => a.GetFileReadPath(file));
-            public string GetFileWritePath(string file) => throw new NotSupportedException("Writing files in bot logs folder is not allowed");
-
+            public Task<ILogEntry[]> GetMessages() => CallActorAsync(a => a._logMessages.ToArray());
             public Task<string> GetStatusAsync() => CallActorAsync(a => a._status);
             public Task<List<ILogEntry>> QueryMessagesAsync(Timestamp from, int maxCount) => CallActorAsync(a => a.QueryMessages(from, maxCount));
         }
 
-        //public string Status { get; private set; }
-        //public string Folder => _logDirectory;
-
-        //public IEnumerable<ILogEntry> Messages
-        //{
-        //    get
-        //    {
-        //        return _logMessages.ToArray();
-        //    }
-        //}
 
         private List<ILogEntry> QueryMessages(Timestamp from, int maxCount)
         {
@@ -179,10 +169,34 @@ namespace TickTrader.BotAgent.BA.Models
                 EnableArchiveFileCompression = true,
             };
 
+            var logWrapper = new AsyncTargetWrapper(logFile)
+            {
+                Name = logTarget,
+                BatchSize = 100,
+                QueueLimit = 1000,
+                OverflowAction = AsyncTargetWrapperOverflowAction.Block,
+            };
+
+            var errorWrapper = new AsyncTargetWrapper(errorFile)
+            {
+                Name = errTarget,
+                BatchSize = 20,
+                QueueLimit = 100,
+                OverflowAction = AsyncTargetWrapperOverflowAction.Block,
+            };
+
+            var statusWrapper = new AsyncTargetWrapper(statusFile)
+            {
+                Name = statusTarget,
+                BatchSize = 20,
+                QueueLimit = 100,
+                OverflowAction = AsyncTargetWrapperOverflowAction.Block,
+            };
+
             var logConfig = new LoggingConfiguration();
-            logConfig.AddTarget(logFile);
-            logConfig.AddTarget(errorFile);
-            logConfig.AddTarget(statusFile);
+            logConfig.AddTarget(logWrapper);
+            logConfig.AddTarget(errorWrapper);
+            logConfig.AddTarget(statusWrapper);
             logConfig.AddRule(LogLevel.Trace, LogLevel.Trace, statusTarget);
             logConfig.AddRule(LogLevel.Debug, LogLevel.Fatal, logTarget);
             logConfig.AddRule(LogLevel.Error, LogLevel.Fatal, errTarget);
@@ -231,7 +245,7 @@ namespace TickTrader.BotAgent.BA.Models
                 }
                 catch (Exception ex)
                 {
-                    _logger.Warn(ex, "Could not clean log folder: " + _logDirectory);
+                    throw new Exception("Could not clean log folder: " + _logDirectory, ex);
                 }
             }
         }
@@ -241,17 +255,56 @@ namespace TickTrader.BotAgent.BA.Models
             File.Delete(Path.Combine(_logDirectory, file));
         }
 
-        private class LogWriter : BlockingHandler<BotLog>, IBotWriter
+
+        private class LogWriter : IBotWriter
         {
-            public LogWriter(Ref<BotLog> logRef) : base(logRef) { }
+            private const int MaxBatchSize = 500;
+
+            private BotLog _log;
+            private System.Threading.Channels.Channel<Action<BotLog>> _channel;
+
+            public LogWriter(BotLog log)
+            {
+                _log = log;
+
+                var options = new BoundedChannelOptions(1000)
+                {
+                    AllowSynchronousContinuations = false,
+                    FullMode = BoundedChannelFullMode.Wait,
+                    SingleReader = true,
+                };
+
+                _channel = System.Threading.Channels.Channel.CreateBounded<Action<BotLog>>(options);
+                var t = ReadLoop();
+            }
 
             public void LogMesssage(UnitLogRecord record)
             {
-                CallActor(a => a.WriteLog(record));
+                _channel.Writer.TryWrite(a => a.WriteLog(record));
             }
 
-            public void Trace(string status) => CallActor(a => a._logger.Trace(status));
-            public void UpdateStatus(string status) => CallActor(a => a._status = status);
+            public void Trace(string status) => _channel.Writer.TryWrite(a => a._logger.Trace(status));
+            public void UpdateStatus(string status) => _channel.Writer.TryWrite(a => a._status = status);
+
+            public void Close()
+            {
+                _channel.Writer.Complete();
+            }
+
+            private async Task ReadLoop()
+            {
+                var reader = _channel.Reader;
+
+                while (await reader.WaitToReadAsync())
+                {
+                    var cnt = 0;
+                    while (reader.TryRead(out var action) && cnt < MaxBatchSize)
+                    {
+                        action(_log);
+                        cnt++;
+                    }
+                }
+            }
         }
     }
 }

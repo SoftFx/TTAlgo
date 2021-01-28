@@ -149,7 +149,11 @@ namespace TickTrader.BotAgent.BA.Models
             public void AbortBot(string botId) => ActorSend(a => a.GetBotOrThrow(botId).Abort());
             public Task<BotModelInfo> GetBotInfo(string botId) => CallActorAsync(a => a.GetBotOrThrow(botId).GetInfoCopy());
             public Task<List<BotModelInfo>> GetBots() => CallActorAsync(a => a._allBots.Values.GetInfoCopy());
-            public Task<IBotFolder> GetAlgoData(string botId) => CallActorAsync(a => a.GetBotOrThrow(botId).AlgoData);
+            public async Task<IBotFolder> GetAlgoData(string botId)
+            {
+                var algoDataRef = await CallActorAsync(a => a.GetBotOrThrow(botId).AlgoDataRef);
+                return new AlgoData.Handler(algoDataRef);
+            }
 
             public async Task<IBotLog> GetBotLog(string botId)
             {

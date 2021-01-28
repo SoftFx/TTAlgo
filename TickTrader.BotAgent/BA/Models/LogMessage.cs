@@ -1,6 +1,4 @@
 ﻿using Google.Protobuf.WellKnownTypes;
-using System;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotAgent.BA.Models
