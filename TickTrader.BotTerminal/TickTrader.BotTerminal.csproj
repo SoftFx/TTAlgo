@@ -201,7 +201,6 @@
     <Content Include="Resx\Sounds\Negative1.wav" />
     <Resource Include="terminal.ico" />
     <None Include="bot-terminal-sign.pfx" />
-    <None Include="move.directory.bat" />
     <None Include="Resx\Sounds\Woosh.wav" />
     <None Include="Resx\Sounds\SharpEcho.wav" />
     <None Include="Resx\Sounds\Save.wav" />
@@ -1342,13 +1341,8 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>rem moving BotTerminal and Avalon dock resource files
-rmdir /s /q $(TargetDir)\Resources
-for %25%25i in (en-gb, ru-ru, de, es, fr, hu, it, pt-BR, ro, ru, sv, zh-Hans, cs-CZ) do call "$(ProjectDir)\move.directory.bat" $(TargetDir)\%25%25i $(TargetDir)\Resources\%25%25i
-
-rmdir /s /q $(TargetDir)\AlgoRuntime
-mkdir $(TargetDir)\AlgoRuntime
-copy $(SolutionDir)\src\csharp\sandbox\TickTrader.Algo.RuntimeV1\$(OutDir) $(TargetDir)\AlgoRuntime</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
@@ -1357,4 +1351,22 @@ copy $(SolutionDir)\src\csharp\sandbox\TickTrader.Algo.RuntimeV1\$(OutDir) $(Tar
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Target Name="MoveResources" AfterTargets="Build">
+    <ItemGroup>
+      <EnGbLocale Include="$(TargetDir)en-gb\*.resources.dll" />
+      <RuRuLocale Include="$(TargetDir)ru-ru\*.resources.dll" />
+      <RuLocale Include="$(TargetDir)ru\*.resources.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(EnGbLocale)" DestinationFolder="$(TargetDir)Resources\en-gb" />
+    <Copy SourceFiles="@(RuRuLocale)" DestinationFolder="$(TargetDir)Resources\ru-ru" />
+    <Copy SourceFiles="@(RuLocale)" DestinationFolder="$(TargetDir)Resources\ru" />
+    <RemoveDir Directories="$(TargetDir)en-gb;$(TargetDir)ru-ru;$(TargetDir)de;$(TargetDir)es;$(TargetDir)fr;$(TargetDir)hu;$(TargetDir)it" />
+    <RemoveDir Directories="$(TargetDir)pt-BR;$(TargetDir)ro;$(TargetDir)ru;$(TargetDir)sv;$(TargetDir)zh-Hans;$(TargetDir)cs-CZ" />
+  </Target>
+  <Target Name="CopyBinaries" AfterTargets="Build">
+    <ItemGroup>
+      <RuntimeV1Binaries Include="$(ProjectDir)..\src\csharp\sandbox\TickTrader.Algo.RuntimeV1\bin\$(Configuration)\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(TargetDir)AlgoRuntime\" SkipUnchangedFiles="true" />
+  </Target>
 </Project>

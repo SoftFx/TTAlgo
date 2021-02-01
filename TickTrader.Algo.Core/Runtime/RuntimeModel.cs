@@ -11,6 +11,9 @@ namespace TickTrader.Algo.Core
 {
     public class RuntimeModel
     {
+        public const int ShutdownTimeout = 25000;
+
+
         private readonly AlgoPluginRef _pluginRef;
         private readonly ISyncContext _syncContext;
         private readonly IRuntimeHostProxy _runtimeHost;
@@ -72,7 +75,7 @@ namespace TickTrader.Algo.Core
 
         public async Task Stop()
         {
-            await _proxy.Stop();
+            await Task.WhenAny(_proxy.Stop(), Task.Delay(ShutdownTimeout));
             OnDetached();
             await _runtimeHost.Stop();
         }

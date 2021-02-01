@@ -14,6 +14,9 @@ namespace TickTrader.Algo.Core
 {
     public class RuntimeV1Loader : CrossDomainObject, IRpcHost, IRuntimeProxy
     {
+        public const int AbortTimeout = 10000;
+
+
         private readonly RpcClient _client;
         private readonly UnitRuntimeV1Handler _handler;
         private PluginExecutorCore _executorCore;
@@ -128,8 +131,18 @@ namespace TickTrader.Algo.Core
 
         public async Task Stop()
         {
-            await _executorCore.Stop();
-            _finishTaskSrc?.TrySetResult(true);
+            var stopTask = _executorCore.Stop();
+            var delayTask = Task.Delay(AbortTimeout);
+            var t = await Task.WhenAny(stopTask, delayTask);
+            if (t == delayTask)
+            {
+                _executorCore.Abort();
+                _finishTaskSrc?.TrySetResult(false);
+            }
+            else
+            {
+                _finishTaskSrc?.TrySetResult(true);
+            }
         }
 
 

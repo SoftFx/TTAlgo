@@ -83,7 +83,7 @@ namespace TickTrader.Algo.Core
     {
         private const int AbortTimeout = 5000;
 
-        private readonly string _filePath = "/AlgoRuntime/TickTrader.Algo.RuntimeV1.exe";
+        private static readonly string _filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "AlgoRuntime", "TickTrader.Algo.RuntimeV1.exe");
 
         private Process _process;
         private TaskCompletionSource<bool> _stopTaskSrc;
@@ -91,8 +91,7 @@ namespace TickTrader.Algo.Core
 
         public Task Start(string address, int port, string proxyId)
         {
-            var path = Path.Combine(Directory.GetCurrentDirectory(), "..", "AlgoRuntime", "TickTrader.Algo.RuntimeV1.exe");
-            var startInfo = new ProcessStartInfo(path)
+            var startInfo = new ProcessStartInfo(_filePath)
             {
                 UseShellExecute = false,
                 RedirectStandardInput = true,

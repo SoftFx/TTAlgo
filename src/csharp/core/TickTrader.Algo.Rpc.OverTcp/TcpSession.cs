@@ -164,23 +164,29 @@ namespace TickTrader.Algo.Rpc.OverTcp
                 {
                     return;
                 }
-                foreach (var segment in res.Buffer)
+                try
                 {
-                    if (cancelToken.IsCancellationRequested)
-                        return;
+                    foreach (var segment in res.Buffer)
+                    {
+                        if (cancelToken.IsCancellationRequested)
+                            return;
 
-                    var len = segment.Length;
-                    var buffer = ArrayPool<byte>.Shared.Rent(len);
-                    try
-                    {
-                        segment.CopyTo(buffer);
-                        await Task.Factory.FromAsync(socketBeginSend, socketEndSend, buffer, len, null).ConfigureAwait(false);
+                        var len = segment.Length;
+                        var buffer = ArrayPool<byte>.Shared.Rent(len);
+                        try
+                        {
+                            segment.CopyTo(buffer);
+                            await Task.Factory.FromAsync(socketBeginSend, socketEndSend, buffer, len, null).ConfigureAwait(false);
+                        }
+                        finally
+                        {
+                            ArrayPool<byte>.Shared.Return(buffer);
+                        }
                     }
-                    catch (Exception) { }
-                    finally
-                    {
-                        ArrayPool<byte>.Shared.Return(buffer);
-                    }
+                }
+                catch(Exception)
+                {
+                    return;
                 }
                 reader.AdvanceTo(res.Buffer.End);
             }
