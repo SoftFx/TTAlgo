@@ -123,7 +123,7 @@
                 </DataGridTextColumn>
                 <DataGridTextColumn x:Name="timeCol" Header="Time" Width="Auto" ElementStyle="{StaticResource DataGridCell.Text.Classic}" CanUserResize="False">
                     <DataGridTextColumn.Binding>
-                        <MultiBinding Converter="{StaticResource KindAwareTime}">
+                        <MultiBinding Converter="{StaticResource KindAwareFullDateTime}">
                             <Binding Path="QuoteTime"/>
                             <Binding Path="ShowLocalTime"/>
                         </MultiBinding>
