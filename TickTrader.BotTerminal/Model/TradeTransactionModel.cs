@@ -69,6 +69,7 @@ namespace TickTrader.BotTerminal
             Reason = GetReason(transaction);
             Volume = GetVolume(transaction);
             Tag = GetTag(transaction);
+            InstanceId = GetInstanceId(transaction);
             PosQuantity = GetPosQuantity(transaction);
             Fees = GetFees(transaction);
             Taxes = GetTaxes(transaction);
@@ -521,16 +522,9 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        protected string GetTag(TradeReportEntity transaction)
-        {
-            if (CompositeTag.TryParse(transaction.Tag, out CompositeTag tag))
-            {
-                InstanceId = tag?.Key;
-                return tag?.Tag;
-            }
+        protected string GetTag(TradeReportEntity transaction) => transaction.Tag;
 
-            return transaction.Tag;
-        }
+        protected string GetInstanceId(TradeReportEntity transaction) => transaction.InstanceId;
 
         protected virtual double? GetSplitRatio(TradeReportEntity transaction) => transaction.SplitRatio;
 

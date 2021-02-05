@@ -1117,6 +1117,15 @@ namespace TickTrader.Algo.Common.Model
             bool isBalanceTransaction = report.TradeTransactionReportType == TradeTransactionReportType.Credit
                 || report.TradeTransactionReportType == TradeTransactionReportType.BalanceTransaction;
 
+            var userTag = report.Tag;
+            var instanceId = "";
+
+            if (CompositeTag.TryParse(report.Tag, out CompositeTag tag))
+            {
+                instanceId = tag?.Key;
+                userTag = tag?.Tag;
+            }
+
             return new TradeReportEntity()
             {
                 Id = report.Id,
@@ -1191,7 +1200,8 @@ namespace TickTrader.Algo.Common.Model
                 TradeRecordType = Convert(report.OrderType),
                 ReqOpenQuantity = report.ReqOpenQuantity,
                 StopPrice = report.StopPrice,
-                Tag = report.Tag,
+                Tag = userTag,
+                InstanceId = instanceId,
                 TransactionAmount = report.TransactionAmount,
                 TransactionCurrency = report.TransactionCurrency,
                 TransactionTime = report.TransactionTime,
