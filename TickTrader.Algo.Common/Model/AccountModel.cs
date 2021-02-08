@@ -362,7 +362,7 @@ namespace TickTrader.Algo.Common.Model
 
         internal EntityCacheUpdate GetOrderUpdate(ExecutionReport report)
         {
-            System.Diagnostics.Debug.WriteLine("ER  #" + report.OrderId + " " + report.OrderType + " " + report.ExecutionType + " opId=" + report.TradeRequestId);
+            System.Diagnostics.Debug.WriteLine($"ER({report.ExecutionType}, {report.OrderStatus})  #{report.OrderId} {report.OrderType} opId={report.TradeRequestId}");
 
             switch (report.ExecutionType)
             {
@@ -376,8 +376,14 @@ namespace TickTrader.Algo.Common.Model
                     bool ignoreCalculate = (accType == AccountTypes.Gross && report.OrderType == OrderType.Market) || report.OrderStatus == OrderStatus.Executing;
                     if (!ignoreCalculate)
                     {
-                        if (orders.ContainsKey(report.OrderId))
-                            return OnOrderUpdated(report, OrderExecAction.Opened);
+                        if (orders.TryGetValue(report.OrderId, out var order))
+                        {
+                            // ExecutionReport(Type=Calculated, Status=Calculated) is usually a transition from Executing state, which we currently ignore
+                            // The only exception is fully filled pending orders on gross acc, which trigger position with same id
+                            if (order.OrderType == OrderType.Limit &&  report.OrderType == OrderType.Position)
+                                return OnOrderUpdated(report, OrderExecAction.Opened);
+                            else break;
+                        }
                         else
                             return OnOrderAdded(report, OrderExecAction.Opened);
                     }
