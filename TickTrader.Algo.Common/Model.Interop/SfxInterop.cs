@@ -915,6 +915,7 @@ namespace TickTrader.Algo.Common.Model
                 case RejectReason.OffQuotes: return Api.OrderCmdResultCodes.OffQuotes;
                 case RejectReason.OrderExceedsLImit: return Api.OrderCmdResultCodes.NotEnoughMoney;
                 case RejectReason.CloseOnly: return Api.OrderCmdResultCodes.CloseOnlyTrading;
+                case RejectReason.ThrottlingLimits: return Api.OrderCmdResultCodes.ThrottlingError;
                 case RejectReason.Other:
                     {
                         if (message != null)
