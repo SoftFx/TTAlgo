@@ -380,7 +380,8 @@ namespace TickTrader.Algo.Common.Model
                         {
                             // ExecutionReport(Type=Calculated, Status=Calculated) is usually a transition from Executing state, which we currently ignore
                             // The only exception is fully filled pending orders on gross acc, which trigger position with same id
-                            if (order.OrderType == OrderType.Limit &&  report.OrderType == OrderType.Position)
+                            // StopLimit orders get new order id and opened as limit orders after activation
+                            if ((order.OrderType == OrderType.Limit || order.OrderType == OrderType.Stop) &&  report.OrderType == OrderType.Position)
                                 return OnOrderUpdated(report, OrderExecAction.Opened);
                             else break;
                         }
