@@ -60,6 +60,11 @@ namespace TickTrader.Algo.Common.Model
                 SymbolModel.RateUpdated += OnDeviationPriceUpdate;
         }
 
+        public void Dispose()
+        {
+            SymbolModel.RateUpdated -= OnDeviationPriceUpdate;
+        }
+
         private void OnProfitUpdated()
         {
             NotifyOfPropertyChange(nameof(Profit));
@@ -75,6 +80,7 @@ namespace TickTrader.Algo.Common.Model
         {
             NotifyOfPropertyChange(nameof(DeviationPrice));
         }
+
         #region Properties
 
         public string Id { get; private set; }

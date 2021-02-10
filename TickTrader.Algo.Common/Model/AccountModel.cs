@@ -81,6 +81,9 @@ namespace TickTrader.Algo.Common.Model
         internal void Init(AccountEntity accInfo, IEnumerable<OrderEntity> orders,
             IEnumerable<PositionEntity> positions, IEnumerable<AssetEntity> assets)
         {
+            foreach(var pos in this.positions.Snapshot.Values)
+                pos.Dispose();
+
             this.positions.Clear();
             this.orders.Clear();
             this.assets.Clear();
@@ -133,6 +136,9 @@ namespace TickTrader.Algo.Common.Model
 
         internal void Clear()
         {
+            foreach (var position in positions.Snapshot.Values)
+                position.Dispose();
+
             positions.Clear();
             orders.Clear();
             assets.Clear();
@@ -277,14 +283,20 @@ namespace TickTrader.Algo.Common.Model
                 return;
 
             positions.Remove(model.Symbol);
+            model.Dispose();
             if (notify)
                 PositionUpdate?.Invoke(model, OrderExecAction.Closed);
         }
 
         private PositionModel UpsertPosition(PositionEntity position)
         {
+            var isReplace = positions.TryGetValue(position.Symbol, out var oldModel);
+
             var positionModel = new PositionModel(position, this);
             positions[position.Symbol] = positionModel;
+
+            if (isReplace)
+                oldModel.Dispose();
 
             return positionModel;
         }
