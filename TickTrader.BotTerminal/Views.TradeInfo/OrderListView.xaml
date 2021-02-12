@@ -115,7 +115,7 @@
                     <DataGridTextColumn Header="{l:Resx Order_OpenPrice}" Width="100">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource PriceConverter}" >
-                                <Binding Path="Price"/>
+                                <Binding Path="Order.Price"/>
                                 <Binding Path="PriceDigits"/>
                             </MultiBinding>
                         </DataGridTextColumn.Binding>

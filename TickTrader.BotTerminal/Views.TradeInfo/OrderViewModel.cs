@@ -12,47 +12,44 @@ namespace TickTrader.BotTerminal
 {
     class OrderViewModel : PropertyChangedBase, IDisposable
     {
-        private AccountModel account;
-        private SymbolModel symbol;
+        private AccountModel _account;
+        private SymbolModel _symbol;
 
         public OrderViewModel(OrderModel order, SymbolModel symbol, AccountModel account)
         {
-            this.symbol = symbol;
-            this.account = account;
+            _symbol = symbol;
+            _account = account;
 
             Order = order;
             PriceDigits = symbol?.PriceDigits ?? 5;
             ProfitDigits = account.BalanceDigits;
 
-            order.EssentialParametersChanged += o =>
-            {
-                NotifyOfPropertyChange(nameof(Price));
-            };
-
             SortedNumber = GetSortedNumber(order);
 
-            if (this.symbol != null) // server misconfiguration can cause unexisting symbols
+            if (_symbol != null) // server misconfiguration can cause unexisting symbols
             {
-                this.symbol.RateUpdated += UpdateDeviationPrice;
+                _symbol.RateUpdated += UpdateDeviationPrice;
             }
         }
 
         public OrderModel Order { get; private set; }
         public int PriceDigits { get; private set; }
         public int ProfitDigits { get; private set; }
-        public decimal? Price => Order.Price;
 
         public RateDirectionTracker CurrentPrice => Order.OrderType != OrderType.Position ?
-                                                    Order.Side == OrderSide.Buy ? symbol?.AskTracker : symbol?.BidTracker :
-                                                    Order.Side == OrderSide.Buy ? symbol?.BidTracker : symbol?.AskTracker;
+                                                    Order.Side == OrderSide.Buy ? _symbol?.AskTracker : _symbol?.BidTracker :
+                                                    Order.Side == OrderSide.Buy ? _symbol?.BidTracker : _symbol?.AskTracker;
 
-        public decimal? DeviationPrice => Order.Side == OrderSide.Buy ? (decimal?)CurrentPrice?.Rate - Price : Price - (decimal?)CurrentPrice?.Rate;
-
+        public decimal? DeviationPrice => Order.Side == OrderSide.Buy ? (decimal?)CurrentPrice?.Rate - Order?.Price : Order?.Price - (decimal?)CurrentPrice?.Rate;
 
         public string SortedNumber { get; }
 
         public void Dispose()
         {
+            if (_symbol != null)
+            {
+                _symbol.RateUpdated -= UpdateDeviationPrice;
+            }
         }
 
         private void UpdateDeviationPrice(SymbolModel model)
