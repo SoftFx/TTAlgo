@@ -20,6 +20,7 @@ namespace TickTrader.Algo.Core
         private IAccountInfoProvider _dataProvider;
         private bool _isStarted;
         private bool _isRestart;
+        private bool _connected;
 
         private Dictionary<string, Action<OrderExecReport>> reportListeners = new Dictionary<string, Action<OrderExecReport>>();
 
@@ -90,6 +91,8 @@ namespace TickTrader.Algo.Core
             currencies = builder.Currencies.CurrencyListImp.ToDictionary(c => c.Name);
 
             builder.Account.Init(_dataProvider, currencies);
+
+            _connected = true;
         }
 
         public void Stop()
@@ -107,11 +110,30 @@ namespace TickTrader.Algo.Core
 
             _isStarted = false;
 
+            _connected = false;
+
             _dataProvider.OrderUpdated -= DataProvider_OrderUpdated;
             _dataProvider.BalanceUpdated -= DataProvider_BalanceUpdated;
             _dataProvider.PositionUpdated -= DataProvider_PositionUpdated;
 
             context.Builder.Account.Deinit();
+
+            CleanupListeners();
+        }
+
+        public void ConnectionLost()
+        {
+            _connected = false;
+        }
+
+        private void CleanupListeners()
+        {
+            // clean up remaining requests
+            foreach (var listener in reportListeners.Values)
+            {
+                listener.Invoke(new OrderExecReport { ResultCode = OrderCmdResultCodes.ConnectionError });
+            }
+            reportListeners.Clear();
         }
 
         private bool CallListener(OrderExecReport eReport)
@@ -438,8 +460,10 @@ namespace TickTrader.Algo.Core
             Action<TRequest, ITradeExecutor, CrossDomainCallback<OrderCmdResultCodes>> executorInvoke)
             where TRequest : OrderCoreRequest
         {
+            if (!_connected)
+                return Task.FromResult(new TradeResultEntity(OrderCmdResultCodes.ConnectionError, null));
+
             var resultTask = new TaskCompletionSource<TradeResultEntity>();
-            var callbackTask = new TaskCompletionSource<TradeResultEntity>();
 
             string operationId = Guid.NewGuid().ToString();
 
@@ -476,6 +500,9 @@ namespace TickTrader.Algo.Core
             Action<TRequest, ITradeExecutor, CrossDomainCallback<OrderCmdResultCodes>> executorInvoke)
             where TRequest : OrderCoreRequest
         {
+            if (!_connected)
+                return new TradeResultEntity(OrderCmdResultCodes.ConnectionError, null);
+
             var resultTask = new TaskCompletionSource<TradeResultEntity>();
 
             var resultContainer = new List<OrderEntity>(2);
