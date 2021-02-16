@@ -128,12 +128,19 @@ namespace TickTrader.Algo.Core
 
         private void CleanupListeners()
         {
-            // clean up remaining requests
-            foreach (var listener in reportListeners.Values)
+            try
             {
-                listener.Invoke(new OrderExecReport { ResultCode = OrderCmdResultCodes.ConnectionError });
+                // clean up remaining requests
+                foreach (var listener in reportListeners.Values.ToArray())
+                {
+                    listener.Invoke(new OrderExecReport { ResultCode = OrderCmdResultCodes.ConnectionError });
+                }
+                reportListeners.Clear();
             }
-            reportListeners.Clear();
+            catch (Exception ex)
+            {
+                context?.OnInternalException(ex);
+            }
         }
 
         private bool CallListener(OrderExecReport eReport)
@@ -157,7 +164,7 @@ namespace TickTrader.Algo.Core
         {
             var accProxy = context.Builder.Account;
             var orderType = eReport.OrderCopy.Type;
-            var instantOrder = orderType == OrderType.Market;;
+            var instantOrder = orderType == OrderType.Market;
 
             if (instantOrder && accProxy.Type == AccountTypes.Gross) // workaround for Gross accounts
             {
@@ -456,12 +463,17 @@ namespace TickTrader.Algo.Core
 
         #endregion
 
-        private Task<TradeResultEntity> ExecTradeRequest<TRequest>(bool isAsync, TRequest orderRequest,
+        private async Task<TradeResultEntity> ExecTradeRequest<TRequest>(bool isAsync, TRequest orderRequest,
             Action<TRequest, ITradeExecutor, CrossDomainCallback<OrderCmdResultCodes>> executorInvoke)
             where TRequest : OrderCoreRequest
         {
             if (!_connected)
-                return Task.FromResult(new TradeResultEntity(OrderCmdResultCodes.ConnectionError, null));
+            {
+                if (isAsync)
+                    await Task.Yield(); // avoiding synchronous execution
+
+                return new TradeResultEntity(OrderCmdResultCodes.ConnectionError, null);
+            }
 
             var resultTask = new TaskCompletionSource<TradeResultEntity>();
 
@@ -493,7 +505,7 @@ namespace TickTrader.Algo.Core
                     context.ProcessNextOrderUpdate();
             }
 
-            return resultTask.Task;
+            return await resultTask.Task;
         }
 
         private async Task<TradeResultEntity> ExecDoubleOrderTradeRequest<TRequest>(bool isAsync, TRequest orderRequest,
@@ -501,7 +513,12 @@ namespace TickTrader.Algo.Core
             where TRequest : OrderCoreRequest
         {
             if (!_connected)
+            {
+                if (isAsync)
+                    await Task.Yield(); // avoiding synchronous execution
+
                 return new TradeResultEntity(OrderCmdResultCodes.ConnectionError, null);
+            }
 
             var resultTask = new TaskCompletionSource<TradeResultEntity>();
 
