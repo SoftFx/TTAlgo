@@ -332,11 +332,14 @@
     <Compile Include="Buffers\DataSeriesImpl.cs" />
     <Compile Include="Buffers\TypedProxies.cs" />
     <Compile Include="Repository\ReductionCollection.cs" />
+    <Compile Include="Runtime\AccountProxy.cs" />
+    <Compile Include="Runtime\ExecutorModel.cs" />
     <Compile Include="Runtime\RuntimeHost.cs" />
     <Compile Include="Runtime\RuntimeLoggerAdapter.cs" />
     <Compile Include="Runtime\RuntimeModel.cs" />
     <Compile Include="Runtime\RuntimeProxy.cs" />
     <Compile Include="Runtime\RuntimeV1Loader.cs" />
+    <Compile Include="Runtime\ServerProxy.cs" />
     <Compile Include="Server\AlgoServer.cs" />
     <Compile Include="Server\PluginLauncher.cs" />
     <Compile Include="Server\RuntimeInfoProvider.cs" />

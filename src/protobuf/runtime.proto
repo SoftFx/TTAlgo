@@ -18,6 +18,17 @@ message AttachRuntimeResponse {
     bool success = 1;
 }
 
+message StartRuntimeRequest { } // void response
+
+message StopRuntimeRequest { } // void response
+
+message RuntimeConfigRequest { }
+
+message RuntimeConfig {
+    string package_path = 1;
+    string working_directory = 2;
+}
+
 message UnitLogRecord {
     enum LogSeverity {
         INFO = 0;
@@ -90,13 +101,13 @@ message MarkerInfo {
     uint32 color_argb = 4;
 }
 
-message StartRuntimeRequest { } // void response
+message StartExecutorRequest { } // void response
 
-message StopRuntimeRequest { } // void response
+message StopExecutorRequest { } // void response
 
-message RuntimeConfigRequest { }
+message ExecutorConfigRequest { }
 
-message RuntimeConfig {
+message ExecutorConfig {
     string working_directory = 1;
     bool is_logging_enabled = 2;
     google.protobuf.Any plugin_config = 3;
@@ -104,6 +115,7 @@ message RuntimeConfig {
     google.protobuf.Any buffer_strategy_config = 5;
     google.protobuf.Any invoke_strategy_config = 6;
     google.protobuf.Any main_series = 7;
+    string account_id = 8;
 }
 
 message BarStratefyConfig {
@@ -141,3 +153,11 @@ message ConnectionInfoResponse {
 message AccountDisconnectNotification { }
 
 message AccountReconnectNotification { }
+
+message AttachAccountRequest { // void response
+    string account_id = 1;
+}
+
+message DetachAccountRequest { // void response
+    string account_id = 1;
+}

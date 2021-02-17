@@ -656,6 +656,11 @@ namespace TickTrader.Algo.Core
                 record.Value.MapInput(this, record.Key.Item1, record.Key.Item2);
         }
 
+        internal void ApplyConfig(PluginExecutorConfig config, IAccountProxy account)
+        {
+            ApplyConfig(config, account.AccInfoProvider, account.Metadata, account.TradeHistoryProvider, account.Feed, account.FeedHistory, account.TradeExecutor);
+        }
+
         #region Emulator Support
 
         internal EmulationControlFixture InitEmulation(IBacktesterSettings settings, AlgoTypes pluginType, FeedEmulator emulator = null, FeedStrategy fStrategy = null)

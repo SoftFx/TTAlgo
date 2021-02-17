@@ -369,7 +369,7 @@ namespace TickTrader.Algo.Rpc
 
                 if (msg.Flags == RpcFlags.Request)
                 {
-                    _rpcHandler.HandleRequest(msg.CallId, msg.Payload)
+                    _rpcHandler.HandleRequest(msg.ProxyId, msg.CallId, msg.Payload)
                         .ContinueWith(t =>
                         {
                             switch (t.Status)
@@ -377,17 +377,17 @@ namespace TickTrader.Algo.Rpc
                                 case TaskStatus.RanToCompletion:
                                     var response = t.Result;
                                     if (response != null)
-                                        SendMessage(RpcMessage.Response(msg.CallId, response));
+                                        SendMessage(RpcMessage.Response(msg.CallId, msg.ProxyId, response));
                                     break;
                                 case TaskStatus.Faulted:
-                                    SendMessage(RpcMessage.Response(msg.CallId, new ErrorResponse
+                                    SendMessage(RpcMessage.Response(msg.CallId, msg.ProxyId, new ErrorResponse
                                     {
                                         Message = "Internal error: Failed to process request",
                                         Details = t.Exception.ToString(),
                                     }));
                                     break;
                                 case TaskStatus.Canceled:
-                                    SendMessage(RpcMessage.Response(msg.CallId, new ErrorResponse
+                                    SendMessage(RpcMessage.Response(msg.CallId, msg.ProxyId, new ErrorResponse
                                     {
                                         Message = "Request processing has been canceled",
                                     }));
@@ -406,7 +406,7 @@ namespace TickTrader.Algo.Rpc
                     {
                         try
                         {
-                            _rpcHandler.HandleNotification(msg.CallId, msg.Payload);
+                            _rpcHandler.HandleNotification(msg.ProxyId, msg.CallId, msg.Payload);
                         }
                         catch (Exception ex)
                         {

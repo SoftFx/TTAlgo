@@ -382,9 +382,11 @@ message TradeHistoryRequest {
     int32 options_bitmask = 3;
 }
 
-message TradeHistoryRequestNextPage { }
+message TradeHistoryRequestNextPage {
+}
 
-message TradeHistoryRequestDispose { }
+message TradeHistoryRequestDispose {
+}
 
 message TradeHistoryPageResponse {
     repeated TradeReportInfo reports = 1;

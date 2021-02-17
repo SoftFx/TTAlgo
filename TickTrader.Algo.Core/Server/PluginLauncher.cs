@@ -44,13 +44,13 @@ namespace TickTrader.Algo.Core
 
         public void ConfigureRuntime()
         {
-            var provider = new RuntimeInfoProvider(Handler);
-            Core.Metadata = provider;
-            Core.AccInfoProvider = provider;
-            Core.TradeExecutor = provider;
-            Core.TradeHistoryProvider = provider;
-            Core.Feed = provider;
-            Core.FeedHistory = provider;
+            //var provider = new RuntimeInfoProvider(Handler);
+            //Core.Metadata = provider;
+            //Core.AccInfoProvider = provider;
+            //Core.TradeExecutor = provider;
+            //Core.TradeHistoryProvider = provider;
+            //Core.Feed = provider;
+            //Core.FeedHistory = provider;
         }
 
 

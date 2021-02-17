@@ -72,7 +72,7 @@ namespace TickTrader.Algo.Core
         }
 
 
-        internal void LoadFrom(RuntimeConfig config, PluginConfig pluginConfig)
+        internal void LoadFrom(ExecutorConfig config, PluginConfig pluginConfig)
         {
             if (config.FeedStrategyConfig.TryUnpack<BarStratefyConfig>(out var barStrategyConfig))
                 InitBarStrategy(barStrategyConfig.MarketSide);

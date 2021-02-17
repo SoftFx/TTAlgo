@@ -51,6 +51,22 @@ namespace TickTrader.BotTerminal
             _journal = journal;
         }
 
+        public IAccountProxy GetAccountProxy()
+        {
+            var sync = new DispatcherSync();
+            var accInfoProvider = new PluginTradeInfoProvider(Cache, sync);
+            var feedProvider = new PluginFeedProvider(Cache, Distributor, FeedHistory, sync);
+            return new LocalAccountProxy(_core.Id)
+            {
+                Feed = feedProvider,
+                FeedHistory = feedProvider,
+                Metadata = feedProvider,
+                AccInfoProvider = accInfoProvider,
+                TradeExecutor = _core.TradeApi,
+                TradeHistoryProvider = _core.TradeHistory.AlgoAdapter,
+            };
+        }
+
         private void State_StateChanged(ConnectionModel.States oldState, ConnectionModel.States newState)
         {
             if (newState == ConnectionModel.States.Connecting)

@@ -7,9 +7,9 @@ namespace TickTrader.Algo.Rpc
     {
         void SetSession(RpcSession session);
 
-        Task<Any> HandleRequest(string callId, Any payload);
+        Task<Any> HandleRequest(string proxyId, string callId, Any payload);
 
-        void HandleNotification(string callId, Any payload);
+        void HandleNotification(string proxyId, string callId, Any payload);
     }
 
     public interface IRpcHost

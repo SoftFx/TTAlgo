@@ -119,6 +119,7 @@ namespace TickTrader.Algo.Common.Model
                 Actor.Send(a => a.Init(options, historyFolder, hsitoryOptions, loggerId));
             }
 
+            public string Id => Actor.ActorName;
             public ConnectionModel.Handler Connection { get; private set; }
 
             public async Task OpenHandler()
@@ -175,6 +176,7 @@ namespace TickTrader.Algo.Common.Model
                 _defaultSubscription = Distributor.AddSubscription(q => { });
             }
 
+            public string Id => Actor.ActorName;
             public ConnectionModel.Handler Connection { get; private set; }
             public Ref<Data> Ref { get; private set; }
             public EntityCache Cache { get; private set; }

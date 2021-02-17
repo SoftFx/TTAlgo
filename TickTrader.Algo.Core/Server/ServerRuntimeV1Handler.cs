@@ -33,20 +33,20 @@ namespace TickTrader.Algo.Core
             _session = session;
         }
 
-        public void HandleNotification(string callId, Any payload)
+        public void HandleNotification(string proxyId, string callId, Any payload)
         {
             if (payload.Is(UnitLogRecord.Descriptor))
-                UnitLogRecordHandler(payload);
+                UnitLogRecordHandler(proxyId, payload);
             else if (payload.Is(UnitError.Descriptor))
-                UnitErrorHandler(payload);
+                UnitErrorHandler(proxyId, payload);
             else if (payload.Is(UnitStopped.Descriptor))
-                UnitStoppedHandler();
+                UnitStoppedHandler(proxyId);
             else if (payload.Is(DataSeriesUpdate.Descriptor))
-                DataSeriesUpdateHandler(payload);
+                DataSeriesUpdateHandler(proxyId, payload);
 
         }
 
-        public Task<Any> HandleRequest(string callId, Any payload)
+        public Task<Any> HandleRequest(string proxyId, string callId, Any payload)
         {
             if (payload.Is(AttachRuntimeRequest.Descriptor))
             {
@@ -74,41 +74,41 @@ namespace TickTrader.Algo.Core
             else if (payload.Is(PackagePathRequest.Descriptor))
                 return PackagePathRequestHandler(payload);
             else if (payload.Is(ConnectionInfoRequest.Descriptor))
-                return ConnectionInfoRequestHandler();
+                return ConnectionInfoRequestHandler(proxyId);
             else if (payload.Is(CurrencyListRequest.Descriptor))
-                return CurrencyListRequestHandler();
+                return CurrencyListRequestHandler(proxyId);
             else if (payload.Is(SymbolListRequest.Descriptor))
-                return SymbolListRequestHandler();
+                return SymbolListRequestHandler(proxyId);
             else if (payload.Is(AccountInfoRequest.Descriptor))
-                return AccountInfoRequestHandler();
+                return AccountInfoRequestHandler(proxyId);
             else if (payload.Is(OrderListRequest.Descriptor))
-                return OrderListRequestHandler(callId);
+                return OrderListRequestHandler(proxyId, callId);
             else if (payload.Is(PositionListRequest.Descriptor))
-                return PositionListRequestHandler(callId);
+                return PositionListRequestHandler(proxyId, callId);
             else if (payload.Is(OpenOrderRequest.Descriptor))
-                return OpenOrderRequestHandler(payload);
+                return OpenOrderRequestHandler(proxyId, payload);
             else if (payload.Is(ModifyOrderRequest.Descriptor))
-                return ModifyOrderRequestHandler(payload);
+                return ModifyOrderRequestHandler(proxyId, payload);
             else if (payload.Is(CloseOrderRequest.Descriptor))
-                return CloseOrderRequestHandler(payload);
+                return CloseOrderRequestHandler(proxyId, payload);
             else if (payload.Is(CancelOrderRequest.Descriptor))
-                return CancelOrderRequestHandler(payload);
+                return CancelOrderRequestHandler(proxyId, payload);
             else if (payload.Is(TradeHistoryRequest.Descriptor))
-                return TradeHistoryRequestHandler(callId, payload);
+                return TradeHistoryRequestHandler(proxyId, callId, payload);
             else if (payload.Is(TradeHistoryRequestNextPage.Descriptor))
                 return TradeHistoryRequestNextPageHandler(callId);
             else if (payload.Is(TradeHistoryRequestDispose.Descriptor))
                 return TradeHistoryRequestDisposeHandler(callId);
             else if (payload.Is(FeedSnapshotRequest.Descriptor))
-                return FeedSnapshotRequestHandler();
+                return FeedSnapshotRequestHandler(proxyId);
             else if (payload.Is(ModifyFeedSubscriptionRequest.Descriptor))
-                return ModifyFeedSubscriptionRequestHandler(payload);
+                return ModifyFeedSubscriptionRequestHandler(proxyId, payload);
             else if (payload.Is(CancelAllFeedSubscriptionsRequest.Descriptor))
-                return CancelAllFeedSubscriptionsRequestHandler();
+                return CancelAllFeedSubscriptionsRequestHandler(proxyId);
             else if (payload.Is(BarListRequest.Descriptor))
-                return BarListRequestHandler(payload);
+                return BarListRequestHandler(proxyId, payload);
             else if (payload.Is(QuoteListRequest.Descriptor))
-                return QuoteListRequestHandler(payload);
+                return QuoteListRequestHandler(proxyId, payload);
             return null;
         }
 
@@ -124,38 +124,53 @@ namespace TickTrader.Algo.Core
             return Task.FromResult(Any.Pack(new PackagePathResponse { Path = _runtime.GetPackagePath() }));
         }
 
-        private Task<Any> ConnectionInfoRequestHandler()
+        private Task<Any> ConnectionInfoRequestHandler(string accountId)
         {
-            return Task.FromResult(Any.Pack(new ConnectionInfoResponse { ConnectionInfo = _runtime.ConnectionInfo }));
+            if (!_server.TryGetAccount(accountId, out var account))
+                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown account" }));
+
+            return Task.FromResult(Any.Pack(new ConnectionInfoResponse { ConnectionInfo = account.Id }));
         }
 
-        private Task<Any> CurrencyListRequestHandler()
+        private Task<Any> CurrencyListRequestHandler(string accountId)
         {
+            if (!_server.TryGetAccount(accountId, out var account))
+                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown account" }));
+
             var response = new CurrencyListResponse();
-            response.Currencies.Add(_runtime.Metadata.GetCurrencyMetadata());
+            response.Currencies.Add(account.Metadata.GetCurrencyMetadata());
             return Task.FromResult(Any.Pack(response));
         }
 
-        private Task<Any> SymbolListRequestHandler()
+        private Task<Any> SymbolListRequestHandler(string accountId)
         {
+            if (!_server.TryGetAccount(accountId, out var account))
+                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown account" }));
+
             var response = new SymbolListResponse();
-            response.Symbols.Add(_runtime.Metadata.GetSymbolMetadata());
+            response.Symbols.Add(account.Metadata.GetSymbolMetadata());
             return Task.FromResult(Any.Pack(response));
         }
 
-        private Task<Any> AccountInfoRequestHandler()
+        private Task<Any> AccountInfoRequestHandler(string accountId)
         {
+            if (!_server.TryGetAccount(accountId, out var account))
+                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown account" }));
+
             var response = new AccountInfoResponse();
-            response.Account = _runtime.AccInfoProvider.GetAccountInfo();
+            response.Account = account.AccInfoProvider.GetAccountInfo();
             return Task.FromResult(Any.Pack(response));
         }
 
-        private Task<Any> OrderListRequestHandler(string callId)
+        private Task<Any> OrderListRequestHandler(string accountId, string callId)
         {
             const int chunkSize = 10;
 
+            if (!_server.TryGetAccount(accountId, out var account))
+                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown account" }));
+
             var response = new OrderListResponse { IsFinal = false };
-            var orders = _runtime.AccInfoProvider.GetOrders();
+            var orders = account.AccInfoProvider.GetOrders();
             var cnt = orders.Count;
 
             var nextFlush = chunkSize;
@@ -173,12 +188,15 @@ namespace TickTrader.Algo.Core
             return Task.FromResult(Any.Pack(response));
         }
 
-        private Task<Any> PositionListRequestHandler(string callId)
+        private Task<Any> PositionListRequestHandler(string accountId, string callId)
         {
             const int chunkSize = 10;
 
+            if (!_server.TryGetAccount(accountId, out var account))
+                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown account" }));
+
             var response = new PositionListResponse { IsFinal = false };
-            var positions = _runtime.AccInfoProvider.GetPositions();
+            var positions = account.AccInfoProvider.GetPositions();
             var cnt = positions.Count;
 
             var nextFlush = chunkSize;
@@ -196,61 +214,88 @@ namespace TickTrader.Algo.Core
             return Task.FromResult(Any.Pack(response));
         }
 
-        private Task<Any> OpenOrderRequestHandler(Any payload)
+        private Task<Any> OpenOrderRequestHandler(string accountId, Any payload)
         {
+            if (!_server.TryGetAccount(accountId, out var account))
+                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown account" }));
+
             var request = payload.Unpack<OpenOrderRequest>();
-            _runtime.TradeExecutor.SendOpenOrder(request);
+            account.TradeExecutor.SendOpenOrder(request);
             return Task.FromResult(VoidResponse);
         }
 
-        private Task<Any> ModifyOrderRequestHandler(Any payload)
+        private Task<Any> ModifyOrderRequestHandler(string accountId, Any payload)
         {
+            if (!_server.TryGetAccount(accountId, out var account))
+                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown account" }));
+
             var request = payload.Unpack<ModifyOrderRequest>();
-            _runtime.TradeExecutor.SendModifyOrder(request);
+            account.TradeExecutor.SendModifyOrder(request);
             return Task.FromResult(VoidResponse);
         }
 
-        private Task<Any> CloseOrderRequestHandler(Any payload)
+        private Task<Any> CloseOrderRequestHandler(string accountId, Any payload)
         {
+            if (!_server.TryGetAccount(accountId, out var account))
+                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown account" }));
+
             var request = payload.Unpack<CloseOrderRequest>();
-            _runtime.TradeExecutor.SendCloseOrder(request);
+            account.TradeExecutor.SendCloseOrder(request);
             return Task.FromResult(VoidResponse);
         }
 
-        private Task<Any> CancelOrderRequestHandler(Any payload)
+        private Task<Any> CancelOrderRequestHandler(string accountId, Any payload)
         {
+            if (!_server.TryGetAccount(accountId, out var account))
+                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown account" }));
+
             var request = payload.Unpack<CancelOrderRequest>();
-            _runtime.TradeExecutor.SendCancelOrder(request);
+            account.TradeExecutor.SendCancelOrder(request);
             return Task.FromResult(VoidResponse);
         }
 
-        private void UnitLogRecordHandler(Any payload)
+        private void UnitLogRecordHandler(string executorId, Any payload)
         {
+            if (!_server.TryGetExecutor(executorId, out var executor))
+                return;
+
             var record = payload.Unpack<UnitLogRecord>();
-            _runtime.OnLogUpdated(record);
+            executor.OnLogUpdated(record);
         }
 
-        private void UnitErrorHandler(Any payload)
+        private void UnitErrorHandler(string executorId, Any payload)
         {
+            if (!_server.TryGetExecutor(executorId, out var executor))
+                return;
+
             var error = payload.Unpack<UnitError>();
-            _runtime.OnErrorOccured(new AlgoUnitException(error));
+            executor.OnErrorOccured(new AlgoUnitException(error));
         }
 
-        private void UnitStoppedHandler()
+        private void UnitStoppedHandler(string executorId)
         {
-            _runtime.OnStopped();
+            if (!_server.TryGetExecutor(executorId, out var executor))
+                return;
+
+            executor.OnStopped();
         }
 
-        private void DataSeriesUpdateHandler(Any payload)
+        private void DataSeriesUpdateHandler(string executorId, Any payload)
         {
+            if (!_server.TryGetExecutor(executorId, out var executor))
+                return;
+
             var update = payload.Unpack<DataSeriesUpdate>();
-            _runtime.OnDataSeriesUpdate(update);
+            executor.OnDataSeriesUpdate(update);
         }
 
-        private Task<Any> TradeHistoryRequestHandler(string callId, Any payload)
+        private Task<Any> TradeHistoryRequestHandler(string accountId, string callId, Any payload)
         {
+            if (!_server.TryGetAccount(accountId, out var account))
+                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown account" }));
+
             var request = payload.Unpack<TradeHistoryRequest>();
-            var enumerator = _runtime.TradeHistoryProvider.GetTradeHistory(request.From?.ToDateTime(), request.To?.ToDateTime(), request.Options);
+            var enumerator = account.TradeHistoryProvider.GetTradeHistory(request.From?.ToDateTime(), request.To?.ToDateTime(), request.Options);
             if (enumerator != null)
             {
                 _pendingRequestHandlers.TryAdd(callId, enumerator);
@@ -286,30 +331,42 @@ namespace TickTrader.Algo.Core
             return Task.FromResult<Any>(null);
         }
 
-        private Task<Any> FeedSnapshotRequestHandler()
+        private Task<Any> FeedSnapshotRequestHandler(string accountId)
         {
+            if (!_server.TryGetAccount(accountId, out var account))
+                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown account" }));
+
             var response = new QuotePage();
-            response.Quotes.AddRange(_runtime.Feed.GetSnapshot().Select(q => q.GetFullQuote()));
+            response.Quotes.AddRange(account.Feed.GetSnapshot().Select(q => q.GetFullQuote()));
             return Task.FromResult(Any.Pack(response));
         }
 
-        private Task<Any> ModifyFeedSubscriptionRequestHandler(Any payload)
+        private Task<Any> ModifyFeedSubscriptionRequestHandler(string accountId, Any payload)
         {
+            if (!_server.TryGetAccount(accountId, out var account))
+                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown account" }));
+
             var request = payload.Unpack<ModifyFeedSubscriptionRequest>();
             var response = new QuotePage();
-            var snapshot = _runtime.Feed.Sync.Invoke(() => _runtime.Feed.Modify(request.Updates.ToList()));
+            var snapshot = account.Feed.Sync.Invoke(() => account.Feed.Modify(request.Updates.ToList()));
             response.Quotes.AddRange(snapshot.Select(q => q.GetFullQuote()));
             return Task.FromResult(Any.Pack(response));
         }
 
-        private Task<Any> CancelAllFeedSubscriptionsRequestHandler()
+        private Task<Any> CancelAllFeedSubscriptionsRequestHandler(string accountId)
         {
-            _runtime.Feed.Sync.Invoke(() => _runtime.Feed.CancelAll());
+            if (!_server.TryGetAccount(accountId, out var account))
+                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown account" }));
+
+            account.Feed.Sync.Invoke(() => account.Feed.CancelAll());
             return Task.FromResult(VoidResponse);
         }
 
-        private async Task<Any> BarListRequestHandler(Any payload)
+        private async Task<Any> BarListRequestHandler(string accountId, Any payload)
         {
+            if (!_server.TryGetAccount(accountId, out var account))
+                return Any.Pack(new ErrorResponse { Message = "Unknown account" });
+
             var request = payload.Unpack<BarListRequest>();
             var symbol = request.Symbol;
             var marketSide = request.MarketSide;
@@ -322,22 +379,25 @@ namespace TickTrader.Algo.Core
                 Timeframe = timeframe,
             };
             var barList = await (count.HasValue
-                ? _runtime.FeedHistory.QueryBarsAsync(symbol, marketSide, timeframe, request.From, count.Value)
-                : _runtime.FeedHistory.QueryBarsAsync(symbol, marketSide, timeframe, request.From, request.To));
+                ? account.FeedHistory.QueryBarsAsync(symbol, marketSide, timeframe, request.From, count.Value)
+                : account.FeedHistory.QueryBarsAsync(symbol, marketSide, timeframe, request.From, request.To));
             response.Bars.AddRange(barList);
 
             return Any.Pack(response);
         }
 
-        private async Task<Any> QuoteListRequestHandler(Any payload)
+        private async Task<Any> QuoteListRequestHandler(string accountId, Any payload)
         {
+            if (!_server.TryGetAccount(accountId, out var account))
+                return Any.Pack(new ErrorResponse { Message = "Unknown account" });
+
             var request = payload.Unpack<QuoteListRequest>();
             var symbol = request.Symbol;
             var count = request.Count;
             var response = new QuoteChunk { Symbol = symbol, };
             var quoteList = await (count.HasValue
-                ? _runtime.FeedHistory.QueryQuotesAsync(symbol, request.From, count.Value, request.Level2)
-                : _runtime.FeedHistory.QueryQuotesAsync(symbol, request.From, request.To, request.Level2));
+                ? account.FeedHistory.QueryQuotesAsync(symbol, request.From, count.Value, request.Level2)
+                : account.FeedHistory.QueryQuotesAsync(symbol, request.From, request.To, request.Level2));
             response.Quotes.AddRange(quoteList.Select(q => q.GetData()));
 
             return Any.Pack(response);

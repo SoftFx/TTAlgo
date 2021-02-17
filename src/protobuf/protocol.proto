@@ -16,6 +16,7 @@ message RpcMessage {
     RpcFlags flags = 1;
     string call_id = 2;
     google.protobuf.Any payload = 3;
+    string proxy_id = 4;
 }
 
 message ErrorResponse {

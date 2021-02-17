@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
@@ -14,9 +13,10 @@ namespace TickTrader.Algo.Core
         public const int ShutdownTimeout = 25000;
 
 
+        private readonly AlgoServer _server;
         private readonly AlgoPluginRef _pluginRef;
-        private readonly ISyncContext _syncContext;
         private readonly IRuntimeHostProxy _runtimeHost;
+        private readonly Dictionary<string, AttachedAccount> _attachedAccounts;
 
         private Action<RpcMessage> _onNotification;
         private IRuntimeProxy _proxy;
@@ -24,6 +24,8 @@ namespace TickTrader.Algo.Core
 
 
         public string Id { get; }
+
+        internal IRuntimeProxy Proxy { get; }
 
         public IAccountInfoProvider AccInfoProvider { get; set; }
 
@@ -37,7 +39,7 @@ namespace TickTrader.Algo.Core
 
         public ITradeExecutor TradeExecutor { get; set; }
 
-        public RuntimeConfig Config { get; } = new RuntimeConfig();
+        public ExecutorConfig Config { get; } = new ExecutorConfig();
 
         public event Action<UnitLogRecord> LogUpdated;
         public event Action<DataSeriesUpdate> OutputUpdate;
@@ -49,11 +51,13 @@ namespace TickTrader.Algo.Core
         public string ConnectionInfo { get; private set; }
 
 
-        internal RuntimeModel(string id, AlgoPluginRef pluginRef, ISyncContext updatesSync)
+        internal RuntimeModel(AlgoServer server, string id, AlgoPluginRef pluginRef)
         {
+            _server = server;
             Id = id;
             _pluginRef = pluginRef;
-            _syncContext = updatesSync;
+
+            _attachedAccounts = new Dictionary<string, AttachedAccount>();
 
             _runtimeHost = RuntimeHost.Create(true);// _pluginRef.IsIsolated);
         }
@@ -106,13 +110,6 @@ namespace TickTrader.Algo.Core
             _onNotification = onNotification;
             _proxy = proxy;
 
-            AccInfoProvider.OrderUpdated += OnOrderUpdated;
-            AccInfoProvider.PositionUpdated += OnPositionUpdated;
-            AccInfoProvider.BalanceUpdated += OnBalanceUpdated;
-
-            Feed.RateUpdated += OnRateUpdated;
-            Feed.RatesUpdated += OnRatesUpdated;
-
             _attachTask?.TrySetResult(true);
         }
 
@@ -120,13 +117,6 @@ namespace TickTrader.Algo.Core
         {
             _onNotification = null;
             _proxy = null;
-
-            AccInfoProvider.OrderUpdated -= OnOrderUpdated;
-            AccInfoProvider.PositionUpdated -= OnPositionUpdated;
-            AccInfoProvider.BalanceUpdated -= OnBalanceUpdated;
-
-            Feed.RateUpdated -= OnRateUpdated;
-            Feed.RatesUpdated -= OnRatesUpdated;
         }
 
         internal string GetPackagePath()
@@ -146,10 +136,7 @@ namespace TickTrader.Algo.Core
 
         internal void OnStopped()
         {
-            if (_syncContext != null)
-                _syncContext.Invoke(() => Stopped?.Invoke(this));
-            else
-                Stopped?.Invoke(this);
+            Stopped?.Invoke(this);
         }
 
         internal void OnDataSeriesUpdate(DataSeriesUpdate update)
@@ -172,15 +159,99 @@ namespace TickTrader.Algo.Core
                 OutputUpdate?.Invoke(update);
         }
 
+        internal ExecutorModel CreateExecutor(PluginConfig config, string accountId)
+        {
+            return new ExecutorModel(this, config, accountId);
+        }
 
-        private void OnOrderUpdated(OrderExecReport r) => _onNotification?.Invoke(RpcMessage.Notification(r));
+        internal void AttachAccount(string accountId)
+        {
+            if (!_attachedAccounts.TryGetValue(accountId, out var account))
+            {
+                if (!_server.TryGetAccount(accountId, out var accountProxy))
+                    throw new ArgumentException("Unknown account id");
 
-        private void OnPositionUpdated(PositionExecReport r) => _onNotification?.Invoke(RpcMessage.Notification(r));
+                account = new AttachedAccount(this, accountProxy);
+            }
+            account.AddRef();
+        }
 
-        private void OnBalanceUpdated(BalanceOperation r) => _onNotification?.Invoke(RpcMessage.Notification(r));
+        internal void DetachAccount(string accountId)
+        {
+            if (!_attachedAccounts.TryGetValue(accountId, out var account))
+                    throw new ArgumentException("Unknown account id");
 
-        private void OnRateUpdated(QuoteInfo r) => _onNotification?.Invoke(RpcMessage.Notification(r.GetFullQuote()));
+            var refCnt = account.RemoveRef();
+            if (refCnt == 0)
+                _attachedAccounts.Remove(accountId);
+        }
 
-        private void OnRatesUpdated(List<QuoteInfo> r) => _onNotification?.Invoke(RpcMessage.Notification(QuotePage.Create(r)));
+
+        private class AttachedAccount
+        {
+            private readonly RuntimeModel _runtime;
+            private readonly IAccountProxy _account;
+            private readonly string _accId;
+            private readonly object _lock = new object();
+            private int _refCnt;
+
+
+            public AttachedAccount(RuntimeModel runtime, IAccountProxy account)
+            {
+                _runtime = runtime;
+                _account = account;
+                _accId = _account.Id;
+            }
+
+
+            public int AddRef()
+            {
+                lock (_lock)
+                {
+                    if (_refCnt == 0)
+                    {
+                        _account.AccInfoProvider.OrderUpdated += OnOrderUpdated;
+                        _account.AccInfoProvider.PositionUpdated += OnPositionUpdated;
+                        _account.AccInfoProvider.BalanceUpdated += OnBalanceUpdated;
+
+                        _account.Feed.RateUpdated += OnRateUpdated;
+                        _account.Feed.RatesUpdated += OnRatesUpdated;
+                    }
+                    _refCnt++;
+
+                    return _refCnt;
+                }
+            }
+
+            public int RemoveRef()
+            {
+                lock(_lock)
+                {
+                    _refCnt--;
+                    if (_refCnt == 0)
+                    {
+                        _account.AccInfoProvider.OrderUpdated -= OnOrderUpdated;
+                        _account.AccInfoProvider.PositionUpdated -= OnPositionUpdated;
+                        _account.AccInfoProvider.BalanceUpdated -= OnBalanceUpdated;
+
+                        _account.Feed.RateUpdated -= OnRateUpdated;
+                        _account.Feed.RatesUpdated -= OnRatesUpdated;
+                    }
+
+                    return _refCnt;
+                }
+            }
+
+
+            private void OnOrderUpdated(OrderExecReport r) => _runtime._onNotification?.Invoke(RpcMessage.Notification(_accId, r));
+
+            private void OnPositionUpdated(PositionExecReport r) => _runtime._onNotification?.Invoke(RpcMessage.Notification(_accId, r));
+
+            private void OnBalanceUpdated(BalanceOperation r) => _runtime._onNotification?.Invoke(RpcMessage.Notification(_accId, r));
+
+            private void OnRateUpdated(QuoteInfo r) => _runtime._onNotification?.Invoke(RpcMessage.Notification(_accId, r.GetFullQuote()));
+
+            private void OnRatesUpdated(List<QuoteInfo> r) => _runtime._onNotification?.Invoke(RpcMessage.Notification(_accId, QuotePage.Create(r)));
+        }
     }
 }

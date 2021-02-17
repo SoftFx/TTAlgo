@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace TickTrader.Algo.Domain
 {
-    public partial class RuntimeConfig
+    public partial class ExecutorConfig
     {
         public void InitBarStrategy(Feed.Types.MarketSide marketSide)
         {

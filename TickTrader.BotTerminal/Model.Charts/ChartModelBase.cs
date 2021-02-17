@@ -409,17 +409,17 @@ namespace TickTrader.BotTerminal
             return $"account {ClientModel.Connection.CurrentLogin} on {ClientModel.Connection.CurrentServer} using {ClientModel.Connection.CurrentProtocol}";
         }
 
-        public virtual void InitializePlugin(RuntimeModel runtime)
+        public virtual void InitializePlugin(ExecutorModel executor)
         {
-            runtime.Config.InitPriorityInvokeStrategy();
-            runtime.AccInfoProvider = new PluginTradeInfoProvider(ClientModel.Cache, new DispatcherSync());
+            executor.Config.InitPriorityInvokeStrategy();
+            //runtime.AccInfoProvider = new PluginTradeInfoProvider(ClientModel.Cache, new DispatcherSync());
         }
 
-        public virtual void UpdatePlugin(RuntimeModel runtime)
+        public virtual void UpdatePlugin(ExecutorModel executor)
         {
             //runtime.Config.TimeFrame = TimeFrame;
             //runtime.Config.MainSymbolCode = SymbolCode;
-            runtime.Config.InitTimeSpanBuffering(TimelineStart, DateTime.Now + TimeSpan.FromDays(100));
+            executor.Config.InitTimeSpanBuffering(TimelineStart, DateTime.Now + TimeSpan.FromDays(100));
         }
 
         bool IExecStateObservable.IsStarted { get { return isIndicatorsOnline; } }

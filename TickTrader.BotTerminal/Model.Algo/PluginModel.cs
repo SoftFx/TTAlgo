@@ -16,7 +16,7 @@ namespace TickTrader.BotTerminal
     {
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
-        private RuntimeModel _executor;
+        private ExecutorModel _executor;
         private Dictionary<string, IOutputCollector> _outputs;
 
         public PluginConfig Config { get; private set; }
@@ -81,12 +81,12 @@ namespace TickTrader.BotTerminal
                 Setup = new PluginSetupModel(PluginRef, Agent, SetupContext, Config.MainSymbol);
                 Setup.Load(Config);
 
-                _executor = CreateExecutor();
+                _executor = await CreateExecutor();
                 //Setup.SetWorkingFolder(_executor.Config.WorkingFolder);
                 //Setup.Apply(_executor.Config);
 
                 Host.UpdatePlugin(_executor);
-                await _executor.Start(Agent.AlgoServer.Address, Agent.AlgoServer.BoundPort);
+                await _executor.Start();
                 //_executor.WriteConnectionInfo(Host.GetConnectionInfo());
                 return true;
             }
@@ -127,19 +127,16 @@ namespace TickTrader.BotTerminal
 
         protected void AbortExecutor()
         {
-            _executor.Abort();
+            //_executor.Abort();
         }
 
-        protected virtual RuntimeModel CreateExecutor()
+        protected virtual async Task<ExecutorModel> CreateExecutor()
         {
-            var runtime = Agent.AlgoServer.CreateRuntime(PluginRef, null);
+            var runtime = await Agent.AlgoServer.CreateExecutor(PluginRef, Config, string.Empty);
 
             runtime.ErrorOccurred += Executor_OnRuntimeError;
 
-            runtime.SetConfig(Config);
             runtime.Config.WorkingDirectory = EnvService.Instance.AlgoWorkingFolder;
-            runtime.TradeHistoryProvider = Host.GetTradeHistoryApi();
-            runtime.SetConnectionInfo(Host.GetConnectionInfo());
 
             Host.InitializePlugin(runtime);
 
@@ -150,12 +147,12 @@ namespace TickTrader.BotTerminal
 
         protected virtual void HandleReconnect()
         {
-            _executor.NotifyReconnectNotification();
+            //_executor.NotifyReconnectNotification();
         }
 
         protected virtual void HandleDisconnect()
         {
-            _executor.NotifyDisconnectNotification();
+            //_executor.NotifyDisconnectNotification();
         }
 
         protected virtual void ChangeState(PluginStates state, string faultMessage = null)
@@ -218,7 +215,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void CreateOutputs(RuntimeModel executor)
+        private void CreateOutputs(ExecutorModel executor)
         {
             try
             {
@@ -237,14 +234,14 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void CreateOuput<T>(RuntimeModel executor, OutputSetupModel setup)
+        private void CreateOuput<T>(ExecutorModel executor, OutputSetupModel setup)
         {
             //executor.Config.SetupOutput<T>(setup.Id);
             var collector = CreateOutputCollector<T>(executor, setup);
             _outputs.Add(setup.Id, collector);
         }
 
-        protected virtual IOutputCollector CreateOutputCollector<T>(RuntimeModel executor, OutputSetupModel setup)
+        protected virtual IOutputCollector CreateOutputCollector<T>(ExecutorModel executor, OutputSetupModel setup)
         {
             return new OutputCollector<T>(setup, executor);
         }

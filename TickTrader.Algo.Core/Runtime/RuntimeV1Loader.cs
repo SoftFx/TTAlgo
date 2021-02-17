@@ -21,6 +21,8 @@ namespace TickTrader.Algo.Core
         private readonly UnitRuntimeV1Handler _handler;
         private PluginExecutorCore _executorCore;
         private TaskCompletionSource<bool> _finishTaskSrc;
+        private RuntimeConfig _runtimeConfig;
+        private AlgoSandbox _sandbox;
 
 
         public RuntimeV1Loader()
@@ -51,23 +53,23 @@ namespace TickTrader.Algo.Core
 
         public async Task Launch()
         {
-            var runtimeConfig = await _handler.GetRuntimeConfig().ConfigureAwait(false);
+            _runtimeConfig = await _handler.GetRuntimeConfig().ConfigureAwait(false);
 
-            var config = runtimeConfig.PluginConfig.Unpack<PluginConfig>();
+            _sandbox = new AlgoSandbox(_runtimeConfig.PackagePath, false);
 
-            var package = config.Key.Package;
-            var path = string.Empty;
-            if (package.Location == RepositoryLocation.Embedded && package.Name.Equals("TickTrader.Algo.Indicators.dll", System.StringComparison.OrdinalIgnoreCase))
-            {
-                var indicatorsAssembly = Assembly.Load("TickTrader.Algo.Indicators");
-                AlgoAssemblyInspector.FindPlugins(indicatorsAssembly);
-                path = indicatorsAssembly.Location;
-            }
-            else
-            {
-                path = await _handler.GetPackagePath(package.Name, (int)package.Location).ConfigureAwait(false);
-                var sandbox = new AlgoSandbox(path, false);
-            }
+            //var package = config.Key.Package;
+            //var path = string.Empty;
+            //if (package.Location == RepositoryLocation.Embedded && package.Name.Equals("TickTrader.Algo.Indicators.dll", System.StringComparison.OrdinalIgnoreCase))
+            //{
+            //    var indicatorsAssembly = Assembly.Load("TickTrader.Algo.Indicators");
+            //    AlgoAssemblyInspector.FindPlugins(indicatorsAssembly);
+            //    path = indicatorsAssembly.Location;
+            //}
+            //else
+            //{
+            //    path = await _handler.GetPackagePath(package.Name, (int)package.Location).ConfigureAwait(false);
+            //    var sandbox = new AlgoSandbox(path, false);
+            //}
 
             //var requiredPackages = new List<PackageKey> { config.Key.GetPackageKey() };
             //requiredPackages.AddRange(config.SelectedMapping.GetPackageKeys());
@@ -85,48 +87,6 @@ namespace TickTrader.Algo.Core
             //    var path = await _handler.GetPackagePath(package.Name, (int)package.Location);
             //    var sandbox = new AlgoSandbox(path, true);
             //}
-
-            var metadata = AlgoAssemblyInspector.GetPlugin(config.Key.DescriptorId);
-            var algoRef = new AlgoPluginRef(metadata, path);
-
-            var reductions = new ReductionCollection(CoreLoggerFactory.GetLogger("Extensions"));
-            var mappings = new MappingCollection(reductions);
-
-            var provider = new RuntimeInfoProvider(_handler);
-            await provider.PreLoad();
-
-            var setupMetadata = new AlgoSetupMetadata(provider.GetSymbolMetadata(), mappings);
-            var setupContext = new AlgoSetupContext(config.Timeframe, config.MainSymbol);
-
-            var setup = new PluginSetupModel(algoRef, setupMetadata, setupContext, config.MainSymbol);
-            setup.Load(config);
-            setup.SetWorkingFolder(runtimeConfig.WorkingDirectory);
-
-            _executorCore = new PluginExecutorCore(config.Key.DescriptorId);
-            _executorCore.OnNotification += msg => _handler.SendNotification(msg);
-
-            _executorCore.IsGlobalMarshalingEnabled = true;
-            _executorCore.IsBunchingRequired = true;
-
-            var executorConfig = new PluginExecutorConfig();
-            executorConfig.LoadFrom(runtimeConfig, config);
-            setup.Apply(executorConfig);
-            foreach (var outputSetup in setup.Outputs)
-            {
-                if (outputSetup is ColoredLineOutputSetupModel)
-                    executorConfig.SetupOutput<double>(outputSetup.Id);
-                else if (outputSetup is MarkerSeriesOutputSetupModel)
-                    executorConfig.SetupOutput<Api.Marker>(outputSetup.Id);
-            }
-            if (runtimeConfig.MainSeries?.Is(BarChunk.Descriptor) ?? false)
-            {
-                var bars = runtimeConfig.MainSeries.Unpack<BarChunk>();
-                executorConfig.GetFeedStrategy<BarStrategy>().SetMainSeries(bars.Bars.ToList());
-            }
-
-            _executorCore.ApplyConfig(executorConfig, provider, provider, provider, provider, provider, provider);
-
-            var t = Task.Factory.StartNew(() => _executorCore.Start());
         }
 
         public async Task Stop()
@@ -142,6 +102,65 @@ namespace TickTrader.Algo.Core
             else
             {
                 _finishTaskSrc?.TrySetResult(true);
+            }
+        }
+
+        public async Task StartExecutor(string executorId)
+        {
+            var executorConfig = await _handler.GetExecutorConfig(executorId).ConfigureAwait(false);
+
+            var config = executorConfig.PluginConfig.Unpack<PluginConfig>();
+
+            var metadata = AlgoAssemblyInspector.GetPlugin(config.Key.DescriptorId);
+            var algoRef = new AlgoPluginRef(metadata, _runtimeConfig.PackagePath);
+
+            var reductions = new ReductionCollection(CoreLoggerFactory.GetLogger("Extensions"));
+            var mappings = new MappingCollection(reductions);
+
+            var accountProxy = await _handler.AttachAccount(executorConfig.AccountId);
+
+            var setupMetadata = new AlgoSetupMetadata(accountProxy.Metadata.GetSymbolMetadata(), mappings);
+            var setupContext = new AlgoSetupContext(config.Timeframe, config.MainSymbol);
+
+            var setup = new PluginSetupModel(algoRef, setupMetadata, setupContext, config.MainSymbol);
+            setup.Load(config);
+            setup.SetWorkingFolder(executorConfig.WorkingDirectory);
+
+            _executorCore = new PluginExecutorCore(config.Key.DescriptorId);
+            _executorCore.OnNotification += msg => _handler.SendNotification(msg);
+
+            _executorCore.IsGlobalMarshalingEnabled = true;
+            _executorCore.IsBunchingRequired = true;
+
+            var coreExecutorConfig = new PluginExecutorConfig();
+            coreExecutorConfig.LoadFrom(executorConfig, config);
+            setup.Apply(coreExecutorConfig);
+            foreach (var outputSetup in setup.Outputs)
+            {
+                if (outputSetup is ColoredLineOutputSetupModel)
+                    coreExecutorConfig.SetupOutput<double>(outputSetup.Id);
+                else if (outputSetup is MarkerSeriesOutputSetupModel)
+                    coreExecutorConfig.SetupOutput<Api.Marker>(outputSetup.Id);
+            }
+            if (executorConfig.MainSeries?.Is(BarChunk.Descriptor) ?? false)
+            {
+                var bars = executorConfig.MainSeries.Unpack<BarChunk>();
+                coreExecutorConfig.GetFeedStrategy<BarStrategy>().SetMainSeries(bars.Bars.ToList());
+            }
+
+            _executorCore.ApplyConfig(coreExecutorConfig, accountProxy);
+
+            var t = Task.Factory.StartNew(() => _executorCore.Start());
+        }
+
+        public async Task StopExecutor(string executorId)
+        {
+            var stopTask = _executorCore.Stop();
+            var delayTask = Task.Delay(AbortTimeout);
+            var t = await Task.WhenAny(stopTask, delayTask);
+            if (t == delayTask)
+            {
+                _executorCore.Abort();
             }
         }
 

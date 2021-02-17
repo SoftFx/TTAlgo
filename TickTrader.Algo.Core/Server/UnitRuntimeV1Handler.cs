@@ -1,9 +1,7 @@
 ﻿using Google.Protobuf;
-using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
@@ -15,27 +13,21 @@ namespace TickTrader.Algo.Core
         private static readonly Any VoidResponse = Any.Pack(new VoidResponse());
 
         private readonly IRuntimeProxy _runtime;
+        private readonly Dictionary<string, IRpcHandler> _knownProxies;
         private RpcSession _session;
-
-
-        public event Action<Domain.OrderExecReport> OrderUpdated;
-        public event Action<Domain.PositionExecReport> PositionUpdated;
-        public event Action<BalanceOperation> BalanceUpdated;
-
-        public event Action<QuoteInfo> RateUpdated;
-        public event Action<List<QuoteInfo>> RatesUpdated;
 
 
         public UnitRuntimeV1Handler(IRuntimeProxy runtime)
         {
             _runtime = runtime;
+            _knownProxies = new Dictionary<string, IRpcHandler>();
         }
 
 
-        public Task<bool> AttachRuntime(string executorId)
+        public Task<bool> AttachRuntime(string runtimeId)
         {
             var context = new RpcResponseTaskContext<bool>(AttachRuntimeResponseHandler);
-            _session.Ask(RpcMessage.Request(new AttachRuntimeRequest { Id = executorId }), context);
+            _session.Ask(RpcMessage.Request(new AttachRuntimeRequest { Id = runtimeId }), context);
             return context.TaskSrc.Task;
         }
 
@@ -54,200 +46,60 @@ namespace TickTrader.Algo.Core
             return (await context.TaskSrc.Task).Path;
         }
 
+        public Task<ExecutorConfig> GetExecutorConfig(string executorId)
+        {
+            var context = new RpcResponseTaskContext<ExecutorConfig>(RpcHandler.SingleReponseHandler);
+            _session.Ask(RpcMessage.Request(executorId, new ExecutorConfigRequest()), context);
+            return context.TaskSrc.Task;
+        }
+
+        public async Task<IAccountProxy> AttachAccount(string accountId)
+        {
+            var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
+            _session.Ask(RpcMessage.Request(new AttachAccountRequest { AccountId = accountId }), context);
+            await context.TaskSrc.Task;
+            var account = new RemoteAccountProxy(accountId);
+            _knownProxies.Add(accountId, account);
+            (account as IRpcHandler).SetSession(_session);
+            return account;
+        }
+
+        public Task DetachAccount(string accountId)
+        {
+            var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
+            _session.Ask(RpcMessage.Request(new DetachAccountRequest { AccountId = accountId }), context);
+            return context.TaskSrc.Task;
+        }
+
         internal void SendNotification(IMessage msg)
         {
             _session.Tell(RpcMessage.Notification(msg));
-        }
-
-        internal List<CurrencyInfo> GetCurrencyList()
-        {
-            var context = new RpcResponseTaskContext<CurrencyListResponse>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(new CurrencyListRequest()), context);
-            var res = context.TaskSrc.Task.GetAwaiter().GetResult();
-            return res.Currencies.ToList();
-        }
-
-        internal List<SymbolInfo> GetSymbolList()
-        {
-            var context = new RpcResponseTaskContext<SymbolListResponse>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(new SymbolListRequest()), context);
-            var res = context.TaskSrc.Task.GetAwaiter().GetResult();
-            return res.Symbols.ToList();
-        }
-
-        internal async Task<List<CurrencyInfo>> GetCurrencyListAsync()
-        {
-            var context = new RpcResponseTaskContext<CurrencyListResponse>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(new CurrencyListRequest()), context);
-            var res = await context.TaskSrc.Task;
-            return res.Currencies.ToList();
-        }
-
-        internal async Task<List<SymbolInfo>> GetSymbolListAsync()
-        {
-            var context = new RpcResponseTaskContext<SymbolListResponse>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(new SymbolListRequest()), context);
-            var res = await context.TaskSrc.Task;
-            return res.Symbols.ToList();
-        }
-
-        internal AccountInfo GetAccountInfo()
-        {
-            var context = new RpcResponseTaskContext<AccountInfoResponse>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(new AccountInfoRequest()), context);
-            var res = context.TaskSrc.Task.GetAwaiter().GetResult();
-            return res.Account;
-        }
-
-        internal async Task<AccountInfo> GetAccountInfoAsync()
-        {
-            var context = new RpcResponseTaskContext<AccountInfoResponse>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(new AccountInfoRequest()), context);
-            var res = await context.TaskSrc.Task;
-            return res.Account;
-        }
-
-        internal List<OrderInfo> GetOrderList()
-        {
-            var context = new RpcListResponseTaskContext<OrderInfo>(OrderListReponseHandler);
-            _session.Ask(RpcMessage.Request(new OrderListRequest()), context);
-            return context.TaskSrc.Task.GetAwaiter().GetResult();
-        }
-
-        internal Task<List<OrderInfo>> GetOrderListAsync()
-        {
-            var context = new RpcListResponseTaskContext<OrderInfo>(OrderListReponseHandler);
-            _session.Ask(RpcMessage.Request(new OrderListRequest()), context);
-            return context.TaskSrc.Task;
-        }
-
-        internal List<PositionInfo> GetPositionList()
-        {
-            var context = new RpcListResponseTaskContext<PositionInfo>(PositionListReponseHandler);
-            _session.Ask(RpcMessage.Request(new PositionListRequest()), context);
-            return context.TaskSrc.Task.GetAwaiter().GetResult();
-        }
-
-        internal Task<List<PositionInfo>> GetPositionListAsync()
-        {
-            var context = new RpcListResponseTaskContext<PositionInfo>(PositionListReponseHandler);
-            _session.Ask(RpcMessage.Request(new PositionListRequest()), context);
-            return context.TaskSrc.Task;
-        }
-
-        internal void SendOpenOrder(OpenOrderRequest request)
-        {
-            var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(request), context);
-            context.TaskSrc.Task.GetAwaiter().GetResult();
-        }
-
-        internal void SendModifyOrder(ModifyOrderRequest request)
-        {
-            var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(request), context);
-            context.TaskSrc.Task.GetAwaiter().GetResult();
-        }
-
-        internal void SendCloseOrder(CloseOrderRequest request)
-        {
-            var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(request), context);
-            context.TaskSrc.Task.GetAwaiter().GetResult();
-        }
-
-        internal void SendCancelOrder(CancelOrderRequest request)
-        {
-            var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(request), context);
-            context.TaskSrc.Task.GetAwaiter().GetResult();
-        }
-
-        internal IAsyncPagedEnumerator<TradeReportInfo> GetTradeHistory(TradeHistoryRequest request)
-        {
-            var callId = RpcMessage.GenerateCallId();
-            var context = new PagedEnumeratorAdapter<TradeReportInfo>(TradeHistoryPageResponseHandler,
-                () => _session.Tell(RpcMessage.Request(new TradeHistoryRequestNextPage(), callId)),
-                () => _session.Tell(RpcMessage.Request(new TradeHistoryRequestDispose(), callId)));
-            _session.Ask(RpcMessage.Request(request, callId), context);
-            return context;
-        }
-
-        internal async Task<List<QuoteInfo>> GetFeedSnapshotAsync()
-        {
-            var context = new RpcResponseTaskContext<QuotePage>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(new FeedSnapshotRequest()), context);
-            var res = await context.TaskSrc.Task;
-            return res.Quotes.Select(q => new QuoteInfo(q)).ToList();
-        }
-
-        internal List<QuoteInfo> ModifyFeedSubscription(ModifyFeedSubscriptionRequest request)
-        {
-            var context = new RpcResponseTaskContext<QuotePage>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(request), context);
-            var res = context.TaskSrc.Task.GetAwaiter().GetResult();
-            return res.Quotes.Select(q => new QuoteInfo(q)).ToList();
-        }
-
-        internal async Task<List<QuoteInfo>> ModifyFeedSubscriptionAsync(ModifyFeedSubscriptionRequest request)
-        {
-            var context = new RpcResponseTaskContext<QuotePage>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(request), context);
-            var res = await context.TaskSrc.Task;
-            return res.Quotes.Select(q => new QuoteInfo(q)).ToList();
-        }
-
-        internal Task CancelAllFeedSubscriptionsAsync()
-        {
-            var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(new CancelAllFeedSubscriptionsRequest()), context);
-            return context.TaskSrc.Task;
-        }
-
-        internal async Task<List<BarData>> GetBarListAsync(BarListRequest request)
-        {
-            var context = new RpcResponseTaskContext<BarChunk>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(request), context);
-            var res = await context.TaskSrc.Task;
-            return res.Bars.ToList();
-        }
-
-        internal async Task<List<QuoteInfo>> GetQuoteListAsync(QuoteListRequest request)
-        {
-            var context = new RpcResponseTaskContext<QuoteChunk>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(request), context);
-            var res = await context.TaskSrc.Task;
-            var symbol = res.Symbol;
-            return res.Quotes.Select(q => new QuoteInfo(symbol, q)).ToList();
         }
 
 
         public void SetSession(RpcSession session)
         {
             _session = session;
+            foreach (var proxy in _knownProxies.Values)
+            {
+                proxy.SetSession(_session);
+            }
         }
 
-        public void HandleNotification(string callId, Any payload)
+        public void HandleNotification(string proxyId, string callId, Any payload)
         {
-            if (payload.Is(Domain.OrderExecReport.Descriptor))
-                OrderExecReportNotificationHandler(payload);
-            else if (payload.Is(Domain.PositionExecReport.Descriptor))
-                PositionExecReportNotificationHandler(payload);
-            else if (payload.Is(BalanceOperation.Descriptor))
-                BalanceOperationNotificationHandler(payload);
-            else if (payload.Is(FullQuoteInfo.Descriptor))
-                FullQuoteInfoNotificationHandler(payload);
-            else if (payload.Is(QuotePage.Descriptor))
-                QuotePageNotificationHandler(payload);
-
+            if (_knownProxies.TryGetValue(proxyId, out var proxy))
+                proxy.HandleNotification(proxyId, callId, payload);
         }
 
-        public Task<Any> HandleRequest(string callId, Any payload)
+        public Task<Any> HandleRequest(string proxyId, string callId, Any payload)
         {
             if (payload.Is(StartRuntimeRequest.Descriptor))
                 return StartRuntimeRequestHandler();
             else if (payload.Is(StopRuntimeRequest.Descriptor))
                 return StopRuntimeRequestHandler();
+            else if (_knownProxies.TryGetValue(proxyId, out var proxy))
+                proxy.HandleNotification(proxyId, callId, payload);
 
             return null;
         }
@@ -276,139 +128,6 @@ namespace TickTrader.Algo.Core
             var response = payload.Unpack<AttachRuntimeResponse>();
             taskSrc.TrySetResult(response.Success);
             return true;
-        }
-
-        private bool OrderListReponseHandler(IObserver<RepeatedField<OrderInfo>> observer, Any payload)
-        {
-            if (payload.TryGetError(out var ex))
-            {
-                observer.OnError(ex);
-            }
-            else
-            {
-                var response = payload.Unpack<OrderListResponse>();
-                observer.OnNext(response.Orders);
-                if (!response.IsFinal)
-                    return false;
-
-                observer.OnCompleted();
-            }
-
-            return true;
-        }
-
-        private bool PositionListReponseHandler(IObserver<RepeatedField<PositionInfo>> observer, Any payload)
-        {
-            if (payload.TryGetError(out var ex))
-            {
-                observer.OnError(ex);
-            }
-            else
-            {
-                var response = payload.Unpack<PositionListResponse>();
-                observer.OnNext(response.Positions);
-                if (!response.IsFinal)
-                    return false;
-
-                observer.OnCompleted();
-            }
-
-            return true;
-        }
-
-        private bool TradeHistoryPageResponseHandler(TaskCompletionSource<Domain.TradeReportInfo[]> taskSrc, Any payload)
-        {
-            if (payload.TryGetError(out var ex))
-            {
-                taskSrc.TrySetException(ex);
-            }
-            else
-            {
-                var response = payload.Unpack<TradeHistoryPageResponse>();
-                var res = new Domain.TradeReportInfo[response.Reports.Count];
-                response.Reports.CopyTo(res, 0);
-                taskSrc.TrySetResult(res);
-                if (res.Length != 0)
-                    return false;
-            }
-
-            return true;
-        }
-
-
-        private void OrderExecReportNotificationHandler(Any payload)
-        {
-            var report = payload.Unpack<Domain.OrderExecReport>();
-            OrderUpdated?.Invoke(report);
-        }
-
-        private void PositionExecReportNotificationHandler(Any payload)
-        {
-            var report = payload.Unpack<Domain.PositionExecReport>();
-            PositionUpdated?.Invoke(report);
-        }
-
-        private void BalanceOperationNotificationHandler(Any payload)
-        {
-            var report = payload.Unpack<BalanceOperation>();
-            BalanceUpdated?.Invoke(report);
-        }
-
-        private void FullQuoteInfoNotificationHandler(Any payload)
-        {
-            var quote = payload.Unpack<FullQuoteInfo>();
-            RateUpdated?.Invoke(new QuoteInfo(quote));
-        }
-
-        private void QuotePageNotificationHandler(Any payload)
-        {
-            var page = payload.Unpack<QuotePage>();
-            RatesUpdated?.Invoke(page.Quotes.Select(q => new QuoteInfo(q)).ToList());
-        }
-
-
-        private class PagedEnumeratorAdapter<T> : IAsyncPagedEnumerator<T>, IRpcResponseContext
-        {
-            private TaskCompletionSource<T[]> _pageTaskSrc;
-
-            Func<TaskCompletionSource<T[]>, Any, bool> ResponseHandler { get; }
-
-            Action GetNextPageHandler { get; }
-
-            Action DisposeHandler { get; }
-
-
-            public PagedEnumeratorAdapter(Func<TaskCompletionSource<T[]>, Any, bool> responseHandler, Action getNextPageHandler, Action disposeHandler)
-            {
-                ResponseHandler = responseHandler;
-                GetNextPageHandler = getNextPageHandler;
-                DisposeHandler = disposeHandler;
-            }
-
-
-            public void Dispose()
-            {
-                _pageTaskSrc?.TrySetCanceled();
-                DisposeHandler();
-            }
-
-            public Task<T[]> GetNextPage()
-            {
-                if (_pageTaskSrc != null)
-                    throw new Exception("Can't get more than one page at a time");
-
-                _pageTaskSrc = new TaskCompletionSource<T[]>();
-                var res = _pageTaskSrc.Task;
-                GetNextPageHandler();
-                return res;
-            }
-
-            public bool OnNext(Any payload)
-            {
-                var taskSrc = _pageTaskSrc;
-                _pageTaskSrc = null;
-                return ResponseHandler(taskSrc, payload);
-            }
         }
     }
 }

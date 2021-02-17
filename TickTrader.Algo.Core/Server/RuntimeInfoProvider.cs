@@ -15,7 +15,7 @@ namespace TickTrader.Algo.Core
         private readonly Ref<RuntimeContext> _context;
         private readonly ISyncContext _sync;
 
-        private readonly UnitRuntimeV1Handler _handler;
+        private readonly RemoteAccountProxy _account;
 
         private List<CurrencyInfo> _currencies;
         private List<SymbolInfo> _symbols;
@@ -24,30 +24,30 @@ namespace TickTrader.Algo.Core
         private List<PositionInfo> _positions;
 
 
-        public RuntimeInfoProvider(UnitRuntimeV1Handler handler)
+        public RuntimeInfoProvider(RemoteAccountProxy account)
         {
-            _handler = handler;
+            _account = account;
 
             _context = Actor.SpawnLocal<RuntimeContext>(null, $"Runtime {Guid.NewGuid()}");
             _sync = _context.GetSyncContext();
 
-            _handler.OrderUpdated += o => OrderUpdated?.Invoke(o);
-            _handler.PositionUpdated += p => PositionUpdated?.Invoke(p);
-            _handler.BalanceUpdated += b => BalanceUpdated?.Invoke(b);
+            _account.OrderUpdated += o => OrderUpdated?.Invoke(o);
+            _account.PositionUpdated += p => PositionUpdated?.Invoke(p);
+            _account.BalanceUpdated += b => BalanceUpdated?.Invoke(b);
 
-            _handler.RateUpdated += q => RateUpdated?.Invoke(q);
-            _handler.RatesUpdated += q => RatesUpdated?.Invoke(q);
+            _account.RateUpdated += q => RateUpdated?.Invoke(q);
+            _account.RatesUpdated += q => RatesUpdated?.Invoke(q);
         }
 
 
         public async Task PreLoad()
         {
-            _currencies = await _handler.GetCurrencyListAsync();
-            _symbols = await _handler.GetSymbolListAsync();
+            _currencies = await _account.GetCurrencyListAsync();
+            _symbols = await _account.GetSymbolListAsync();
 
-            _accInfo = await _handler.GetAccountInfoAsync();
-            _orders = await _handler.GetOrderListAsync();
-            _positions = await _handler.GetPositionListAsync();
+            _accInfo = await _account.GetAccountInfoAsync();
+            _orders = await _account.GetOrderListAsync();
+            _positions = await _account.GetPositionListAsync();
         }
 
 
@@ -97,22 +97,22 @@ namespace TickTrader.Algo.Core
 
         public void SendOpenOrder(OpenOrderRequest request)
         {
-            _handler.SendOpenOrder(request);
+            _account.SendOpenOrder(request);
         }
 
         public void SendModifyOrder(ModifyOrderRequest request)
         {
-            _handler.SendModifyOrder(request);
+            _account.SendModifyOrder(request);
         }
 
         public void SendCloseOrder(CloseOrderRequest request)
         {
-            _handler.SendCloseOrder(request);
+            _account.SendCloseOrder(request);
         }
 
         public void SendCancelOrder(CancelOrderRequest request)
         {
-            _handler.SendCancelOrder(request);
+            _account.SendCancelOrder(request);
         }
 
         #endregion ITradeExecutor
@@ -121,7 +121,7 @@ namespace TickTrader.Algo.Core
 
         public IAsyncPagedEnumerator<TradeReportInfo> GetTradeHistory(DateTime? from, DateTime? to, TradeHistoryRequestOptions options)
         {
-            return _handler.GetTradeHistory(new TradeHistoryRequest { From = from?.ToUniversalTime().ToTimestamp(), To = to?.ToUniversalTime().ToTimestamp(), Options = options });
+            return _account.GetTradeHistory(new TradeHistoryRequest { From = from?.ToUniversalTime().ToTimestamp(), To = to?.ToUniversalTime().ToTimestamp(), Options = options });
         }
 
         #endregion ITradeHistoryProvider
@@ -140,14 +140,14 @@ namespace TickTrader.Algo.Core
 
         public Task<List<QuoteInfo>> GetSnapshotAsync()
         {
-            return _handler.GetFeedSnapshotAsync();
+            return _account.GetFeedSnapshotAsync();
         }
 
         public List<QuoteInfo> Modify(List<FeedSubscriptionUpdate> updates)
         {
             var request = new ModifyFeedSubscriptionRequest();
             request.Updates.AddRange(updates);
-            return _handler.ModifyFeedSubscription(request);
+            return _account.ModifyFeedSubscription(request);
             //return ModifyAsync(updates).GetAwaiter().GetResult();
         }
 
@@ -155,7 +155,7 @@ namespace TickTrader.Algo.Core
         {
             var request = new ModifyFeedSubscriptionRequest();
             request.Updates.AddRange(updates);
-            return _handler.ModifyFeedSubscriptionAsync(request);
+            return _account.ModifyFeedSubscriptionAsync(request);
         }
 
         public void CancelAll()
@@ -165,7 +165,7 @@ namespace TickTrader.Algo.Core
 
         public Task CancelAllAsync()
         {
-            return _handler.CancelAllFeedSubscriptionsAsync();
+            return _account.CancelAllFeedSubscriptionsAsync();
         }
 
         #endregion IFeedProvider
@@ -202,7 +202,7 @@ namespace TickTrader.Algo.Core
                 From = from,
                 To = to,
             };
-            return _handler.GetBarListAsync(request);
+            return _account.GetBarListAsync(request);
         }
 
         public Task<List<BarData>> QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count)
@@ -215,7 +215,7 @@ namespace TickTrader.Algo.Core
                 From = from,
                 Count = count,
             };
-            return _handler.GetBarListAsync(request);
+            return _account.GetBarListAsync(request);
         }
 
         public Task<List<QuoteInfo>> QueryQuotesAsync(string symbol, Timestamp from, Timestamp to, bool level2)
@@ -227,7 +227,7 @@ namespace TickTrader.Algo.Core
                 To = to,
                 Level2 = level2,
             };
-            return _handler.GetQuoteListAsync(request);
+            return _account.GetQuoteListAsync(request);
         }
 
         public Task<List<QuoteInfo>> QueryQuotesAsync(string symbol, Timestamp from, int count, bool level2)
@@ -239,7 +239,7 @@ namespace TickTrader.Algo.Core
                 Count = count,
                 Level2 = level2,
             };
-            return _handler.GetQuoteListAsync(request);
+            return _account.GetQuoteListAsync(request);
         }
 
         #endregion IFeedHistoryProvider

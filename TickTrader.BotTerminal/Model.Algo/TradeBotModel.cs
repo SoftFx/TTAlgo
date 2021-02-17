@@ -102,10 +102,9 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        protected override RuntimeModel CreateExecutor()
+        protected override async Task<ExecutorModel> CreateExecutor()
         {
-            var executor = base.CreateExecutor();
-            executor.TradeExecutor = Host.GetTradeApi();
+            var executor = await base.CreateExecutor();
             executor.Config.WorkingDirectory = Path.Combine(EnvService.Instance.AlgoWorkingFolder, PathHelper.GetSafeFileName(InstanceId));
             EnvService.Instance.EnsureFolder(executor.Config.WorkingDirectory);
 
@@ -160,7 +159,7 @@ namespace TickTrader.BotTerminal
             Updated?.Invoke(this);
         }
 
-        protected override IOutputCollector CreateOutputCollector<T>(RuntimeModel executor, OutputSetupModel outputSetup)
+        protected override IOutputCollector CreateOutputCollector<T>(ExecutorModel executor, OutputSetupModel outputSetup)
         {
             return new CachingOutputCollector<T>(outputSetup, executor);
         }

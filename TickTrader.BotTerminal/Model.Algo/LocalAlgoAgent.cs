@@ -103,6 +103,8 @@ namespace TickTrader.BotTerminal
             AlgoServer.Start().GetAwaiter().GetResult();
             _logger.Info($"Started AlgoServer on port {AlgoServer.BoundPort}");
 
+            AlgoServer.RegisterAccountProxy(ClientModel.GetAccountProxy());
+
             _reductions = new ReductionCollection(new AlgoLogAdapter("Extensions"));
             IdProvider = new PluginIdProvider();
             Library = new LocalAlgoLibrary(new AlgoLogAdapter("AlgoRepository"));
@@ -591,27 +593,27 @@ namespace TickTrader.BotTerminal
             return $"account {ClientModel.Connection.CurrentLogin} on {ClientModel.Connection.CurrentServer} using {ClientModel.Connection.CurrentProtocol}";
         }
 
-        public virtual void InitializePlugin(RuntimeModel runtime)
+        public virtual void InitializePlugin(ExecutorModel executor)
         {
-            runtime.Config.InitPriorityInvokeStrategy();
-            runtime.AccInfoProvider = new PluginTradeInfoProvider(ClientModel.Cache, new DispatcherSync());
-            var feedProvider = new PluginFeedProvider(ClientModel.Cache, ClientModel.Distributor, ClientModel.FeedHistory, new DispatcherSync());
-            runtime.Metadata = feedProvider;
-            runtime.Feed = feedProvider;
-            runtime.FeedHistory = feedProvider;
-            switch (runtime.Timeframe)
+            executor.Config.InitPriorityInvokeStrategy();
+            //executor.AccInfoProvider = new PluginTradeInfoProvider(ClientModel.Cache, new DispatcherSync());
+            //var feedProvider = new PluginFeedProvider(ClientModel.Cache, ClientModel.Distributor, ClientModel.FeedHistory, new DispatcherSync());
+            //executor.Metadata = feedProvider;
+            //executor.Feed = feedProvider;
+            //executor.FeedHistory = feedProvider;
+            switch (executor.Timeframe)
             {
                 case Feed.Types.Timeframe.Ticks:
-                    runtime.Config.InitQuoteStrategy();
+                    executor.Config.InitQuoteStrategy();
                     break;
                 default:
-                    runtime.Config.InitBarStrategy(Feed.Types.MarketSide.Bid);
+                    executor.Config.InitBarStrategy(Feed.Types.MarketSide.Bid);
                     break;
             }
-            runtime.Config.InitSlidingBuffering(4000);
+            executor.Config.InitSlidingBuffering(4000);
         }
 
-        public virtual void UpdatePlugin(RuntimeModel runtime)
+        public virtual void UpdatePlugin(ExecutorModel executor)
         {
         }
 

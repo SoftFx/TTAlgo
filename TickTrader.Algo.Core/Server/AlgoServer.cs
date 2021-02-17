@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
 using TickTrader.Algo.Rpc.OverTcp;
 
@@ -10,8 +11,12 @@ namespace TickTrader.Algo.Core
 {
     public class AlgoServer : IRpcHost
     {
-        private readonly Dictionary<string, PluginExecutor> _executorsMap;
+        private static readonly IAlgoCoreLogger _logger = CoreLoggerFactory.GetLogger<AlgoServer>();
+
+        private readonly Dictionary<string, string> _runtimeIdMap;
         private readonly Dictionary<string, RuntimeModel> _runtimesMap;
+        private readonly Dictionary<string, ExecutorModel> _executorsMap;
+        private readonly Dictionary<string, IAccountProxy> _accountsMap;
         private readonly RpcServer _rpcServer;
 
 
@@ -22,8 +27,11 @@ namespace TickTrader.Algo.Core
 
         public AlgoServer()
         {
-            _executorsMap = new Dictionary<string, PluginExecutor>();
+            _runtimeIdMap = new Dictionary<string, string>();
             _runtimesMap = new Dictionary<string, RuntimeModel>();
+            _executorsMap = new Dictionary<string, ExecutorModel>();
+            _accountsMap = new Dictionary<string, IAccountProxy>();
+
             _rpcServer = new RpcServer(new TcpFactory(), this);
         }
 
@@ -35,34 +43,88 @@ namespace TickTrader.Algo.Core
 
         public async Task Stop()
         {
+            foreach (var runtime in _runtimesMap.Values)
+            {
+                try
+                {
+                    await runtime.Stop();
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error($"Failed to stop runtime {runtime.Id}", ex);
+                }
+            }
             await _rpcServer.Stop();
-        }
-
-        public PluginExecutor CreateExecutor(AlgoPluginRef pluginRef, ISyncContext updatesSync)
-        {
-            var id = Guid.NewGuid().ToString("N");
-            var executor = new PluginExecutor(id, pluginRef, updatesSync);
-            _executorsMap.Add(id, executor);
-            return executor;
         }
 
         public RuntimeModel CreateRuntime(AlgoPluginRef pluginRef, ISyncContext updatesSync)
         {
             var id = Guid.NewGuid().ToString("N");
-            var runtime = new RuntimeModel(id, pluginRef, updatesSync);
+            var runtime = new RuntimeModel(this, id, pluginRef);
             _runtimesMap.Add(id, runtime);
             return runtime;
         }
 
+        public async Task<ExecutorModel> CreateExecutor(AlgoPluginRef pluginRef, PluginConfig config, string accountId)
+        {
+            if (_executorsMap.ContainsKey(config.InstanceId))
+                throw new ArgumentException("Duplicate instance id");
 
-        internal bool TryGetExecutor(string executorId, out PluginExecutor executor)
+            var runtime = await GetOrCreateRuntime(pluginRef);
+            var executor = runtime.CreateExecutor(config, accountId);
+            _executorsMap.Add(executor.Id, executor);
+            return executor;
+        }
+
+        public bool RegisterAccountProxy(IAccountProxy account)
+        {
+            if (_accountsMap.ContainsKey(account.Id))
+                return false;
+
+            _accountsMap.Add(account.Id, account);
+            return true;
+        }
+
+
+        internal bool TryGetRuntime(string runtimeId, out RuntimeModel runtime)
+        {
+            return _runtimesMap.TryGetValue(runtimeId, out runtime);
+        }
+
+        internal bool TryGetExecutor(string executorId, out ExecutorModel executor)
         {
             return _executorsMap.TryGetValue(executorId, out executor);
         }
 
-        internal bool TryGetRuntime(string executorId, out RuntimeModel runtime)
+        internal bool TryGetAccount(string accountId, out IAccountProxy account)
         {
-            return _runtimesMap.TryGetValue(executorId, out runtime);
+            return _accountsMap.TryGetValue(accountId, out account);
+        }
+
+
+        private string GenerateRuntimeId(string packagePath)
+        {
+            var fileName = System.IO.Path.GetFileNameWithoutExtension(packagePath);
+            int cnt = 0;
+            var id = $"{fileName} - {cnt++}";
+            while (_runtimesMap.ContainsKey(id)) id = $"{fileName} - {cnt++}";
+            return id;
+        }
+
+        private async Task<RuntimeModel> GetOrCreateRuntime(AlgoPluginRef pluginRef)
+        {
+            var path = pluginRef.PackagePath;
+            if (_runtimeIdMap.TryGetValue(pluginRef.PackagePath, out var runtimeId))
+            {
+                return _runtimesMap[runtimeId];
+            }
+            runtimeId = GenerateRuntimeId(pluginRef.PackagePath);
+            _runtimeIdMap[path] = runtimeId;
+            var runtime = new RuntimeModel(this, runtimeId, pluginRef);
+            _runtimesMap[runtimeId] = runtime;
+            await runtime.Start(Address, BoundPort);
+
+            return runtime;
         }
 
 

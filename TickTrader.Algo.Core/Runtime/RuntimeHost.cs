@@ -19,8 +19,8 @@ namespace TickTrader.Algo.Core
         public static IRuntimeHostProxy Create(bool isolated)
         {
             if (isolated)
-                //return new CrossDomainRuntimeHost();
-                return new ChildProcessRuntimeHost();
+                return new CrossDomainRuntimeHost();
+                //return new ChildProcessRuntimeHost();
             else
                 return new TransparentRuntimeHost();
         }

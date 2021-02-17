@@ -1356,6 +1356,7 @@
       <EnGbLocale Include="$(TargetDir)en-gb\*.resources.dll" />
       <RuRuLocale Include="$(TargetDir)ru-ru\*.resources.dll" />
       <RuLocale Include="$(TargetDir)ru\*.resources.dll" />
+      <!-- Other locales avaliable in AvalonDock are removed since app doesn't support them -->
     </ItemGroup>
     <Copy SourceFiles="@(EnGbLocale)" DestinationFolder="$(TargetDir)Resources\en-gb" />
     <Copy SourceFiles="@(RuRuLocale)" DestinationFolder="$(TargetDir)Resources\ru-ru" />

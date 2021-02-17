@@ -21,6 +21,7 @@ namespace ActorSharp
         internal SynchronizationContext ActorContext => _context;
         internal TActor ActorInstance => _actor;
 
+        public override string ActorName => (_actor as Actor)?.Name;
         public override bool IsInActorContext => SynchronizationContext.Current == _context;
 
         /// <summary>

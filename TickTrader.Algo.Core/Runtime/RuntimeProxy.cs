@@ -9,6 +9,10 @@ namespace TickTrader.Algo.Core
         Task Launch();
 
         Task Stop();
+
+        Task StartExecutor(string executorId);
+
+        Task StopExecutor(string executorId);
     }
 
 
@@ -35,6 +39,16 @@ namespace TickTrader.Algo.Core
             var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(new StopRuntimeRequest()), context);
             return context.TaskSrc.Task;
+        }
+
+        public Task StartExecutor(string executorId)
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task StopExecutor(string executorId)
+        {
+            return Task.CompletedTask;
         }
     }
 }

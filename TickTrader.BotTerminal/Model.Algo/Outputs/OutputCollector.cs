@@ -26,10 +26,10 @@ namespace TickTrader.BotTerminal
 
     internal class OutputCollector<T> : IOutputCollector, IDisposable
     {
-        private readonly RuntimeModel _executor;
+        private readonly ExecutorModel _executor;
         private readonly string _outputId;
 
-        public OutputCollector(OutputSetupModel setup, RuntimeModel executor)
+        public OutputCollector(OutputSetupModel setup, ExecutorModel executor)
         {
             OutputConfig = setup;
             _executor = executor;
@@ -100,7 +100,7 @@ namespace TickTrader.BotTerminal
     {
         private CircularList<OutputPoint> _cache = new CircularList<OutputPoint>();
 
-        public CachingOutputCollector(OutputSetupModel setup, RuntimeModel executor) : base(setup, executor)
+        public CachingOutputCollector(OutputSetupModel setup, ExecutorModel executor) : base(setup, executor)
         {
         }
 

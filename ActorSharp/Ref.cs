@@ -12,6 +12,7 @@ namespace ActorSharp
 
     public abstract class Ref<TActor> : ActorRef
     {
+        public abstract string ActorName { get; }
         public abstract bool IsInActorContext { get; }
 
         public abstract void Send(Action<TActor> method);
