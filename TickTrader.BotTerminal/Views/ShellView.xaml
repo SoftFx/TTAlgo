@@ -47,7 +47,7 @@
                 </l:MenuItemSelector.ItemTemplate>
             </l:MenuItemSelector>-->
             <MenuItem Header="Sounds" IsChecked="{l:Setting EnableSounds}" IsCheckable="True"></MenuItem>
-            <MenuItem Header="Notifications" IsChecked="{l:Setting EnableNotifications}" IsCheckable="True"></MenuItem>
+            <!--<MenuItem Header="Notifications" IsChecked="{l:Setting EnableNotifications}" IsCheckable="True"></MenuItem>-->
             <MenuItem Header="Restart Bots On Startup" IsChecked="{l:Setting RestartBotsOnStartup}" IsCheckable="True"></MenuItem>
         </MenuItem>
         <MenuItem Header="{l:Resx Menu_Profile}" DataContext="{Binding ProfileManager}">
