@@ -28,7 +28,7 @@ namespace TickTrader.BotAgent.BA.Models
         private AlgoServer _server;
         private ClientModel _client;
         private Task _stopTask;
-        private RuntimeModel executor;
+        private ExecutorModel executor;
         private BotLog.ControlHandler _botLog;
         private AlgoData.ControlHandler _algoData;
         private AlgoPluginRef _ref;
@@ -144,7 +144,7 @@ namespace TickTrader.BotAgent.BA.Models
                     StartExecutor();
                 else if (State == PluginStates.Reconnecting)
                 {
-                    executor.NotifyReconnectNotification();
+                    //executor.NotifyReconnectNotification();
                     ChangeState(PluginStates.Running);
                 }
             }
@@ -152,7 +152,7 @@ namespace TickTrader.BotAgent.BA.Models
             {
                 if (State == PluginStates.Running)
                 {
-                    executor.NotifyDisconnectNotification();
+                    //executor.NotifyDisconnectNotification();
                     ChangeState(PluginStates.Reconnecting, client.LastError != null && client.LastError.Code != ConnectionErrorCodes.None ? client.ErrorText : null);
                 }
             }
@@ -261,26 +261,25 @@ namespace TickTrader.BotAgent.BA.Models
                 if (executor != null)
                     throw new InvalidOperationException("Cannot start executor: old executor instance is not disposed!");
 
-                executor = _server.CreateRuntime(_ref, null);
-                executor.SetConfig(Config);
+                executor = await _server.CreateExecutor(_ref, Config, _client.Id);
                 executor.Config.WorkingDirectory = await _algoData.GetFolder();
-                executor.SetConnectionInfo(GetConnectionInfo());
+                //executor.SetConnectionInfo(GetConnectionInfo());
 
                 executor.Config.InitPriorityInvokeStrategy();
                 executor.Config.InitSlidingBuffering(4000);
                 executor.Config.InitBarStrategy(Feed.Types.MarketSide.Bid);
 
-                var feedAdapter = _client.CreatePluginFeedAdapter();
-                executor.Feed = feedAdapter;
-                executor.FeedHistory = feedAdapter;
-                executor.Metadata = feedAdapter;
+                //var feedAdapter = _client.PluginFeedAdapter;
+                //executor.Feed = feedAdapter;
+                //executor.FeedHistory = feedAdapter;
+                //executor.Metadata = feedAdapter;
 
-                executor.AccInfoProvider = _client.PluginTradeInfo;
-                executor.TradeExecutor = _client.PluginTradeApi;
-                executor.TradeHistoryProvider = _client.PluginTradeHistory.AlgoAdapter;
+                //executor.AccInfoProvider = _client.PluginTradeInfo;
+                //executor.TradeExecutor = _client.PluginTradeApi;
+                //executor.TradeHistoryProvider = _client.PluginTradeHistory.AlgoAdapter;
                 _botListener = new BotListenerProxy(executor, OnBotExited, _botLog.GetWriter());
 
-                await executor.Start(_server.Address, _server.BoundPort);
+                await executor.Start();
                 _botListener.Start();
 
                 ChangeState(PluginStates.Running);
@@ -390,8 +389,8 @@ namespace TickTrader.BotAgent.BA.Models
         {
             CheckShutdownFlag();
 
-            if (State == PluginStates.Stopping)
-                executor?.Abort();
+            //if (State == PluginStates.Stopping)
+            //    executor?.Abort();
         }
 
         private void BreakBot(string message)

@@ -101,6 +101,11 @@ namespace TickTrader.Algo.Core
             return _accountsMap.TryGetValue(accountId, out account);
         }
 
+        internal void OnExecutorStopped(string executorId)
+        {
+            _executorsMap.Remove(executorId);
+        }
+
 
         private string GenerateRuntimeId(string packagePath)
         {

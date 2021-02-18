@@ -132,7 +132,7 @@ namespace TickTrader.BotTerminal
 
         protected virtual async Task<ExecutorModel> CreateExecutor()
         {
-            var runtime = await Agent.AlgoServer.CreateExecutor(PluginRef, Config, string.Empty);
+            var runtime = await Agent.AlgoServer.CreateExecutor(PluginRef, Config, Agent.ClientModel.Id);
 
             runtime.ErrorOccurred += Executor_OnRuntimeError;
 

@@ -114,6 +114,7 @@ namespace TickTrader.BotAgent.BA.Models
                     ManageConnection();
                 };
 
+                PluginFeedAdapter = await _core.CreateFeedProvider();
                 PluginTradeApi = await _core.CreateTradeApi();
                 PluginTradeInfo = await _core.CreateTradeProvider();
                 PluginTradeHistory = await _core.CreateTradeHistory();
@@ -128,13 +129,28 @@ namespace TickTrader.BotAgent.BA.Models
             }
         }
 
+        public IAccountProxy GetAccountProxy()
+        {
+            return new LocalAccountProxy(_core.Id)
+            {
+                Feed = PluginFeedAdapter,
+                FeedHistory = PluginFeedAdapter,
+                Metadata = PluginFeedAdapter,
+                AccInfoProvider = PluginTradeInfo,
+                TradeExecutor = PluginTradeApi,
+                TradeHistoryProvider = PluginTradeHistory.AlgoAdapter,
+            };
+        }
+
         public AlertStorage AlertStorage { get; }
         public ConnectionStates ConnectionState { get; private set; }
         public ConnectionErrorInfo LastError => _lastError;
+        public PluginFeedProvider PluginFeedAdapter { get; private set; }
         public PluginTradeApiProvider.Handler PluginTradeApi { get; private set; }
         public PluginTradeInfoProvider PluginTradeInfo { get; private set; }
         public TradeHistoryProvider.Handler PluginTradeHistory { get; private set; }
 
+        public string Id => _core.Id;
         public int TotalBotsCount => _bots.Count;
         public int RunningBotsCount => _startedBotsCount;
         public bool HasRunningBots => _startedBotsCount > 0;

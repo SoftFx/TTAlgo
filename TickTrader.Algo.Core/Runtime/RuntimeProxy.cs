@@ -43,12 +43,16 @@ namespace TickTrader.Algo.Core
 
         public Task StartExecutor(string executorId)
         {
-            return Task.CompletedTask;
+            var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
+            _session.Ask(RpcMessage.Request(new StartExecutorRequest { ExecutorId = executorId }), context);
+            return context.TaskSrc.Task;
         }
 
         public Task StopExecutor(string executorId)
         {
-            return Task.CompletedTask;
+            var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
+            _session.Ask(RpcMessage.Request(new StopExecutorRequest { ExecutorId = executorId }), context);
+            return context.TaskSrc.Task;
         }
     }
 }

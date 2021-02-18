@@ -196,6 +196,7 @@ namespace TickTrader.BotTerminal
         public event AsyncEventHandler Deinitializing;
         public event Action Disconnected;
 
+        public string Id => _core.Id;
         public ConnectionModel.Handler Connection { get; private set; }
         public ITradeExecutor TradeApi => _core.TradeApi;
         public AccountModel Account { get; private set; }

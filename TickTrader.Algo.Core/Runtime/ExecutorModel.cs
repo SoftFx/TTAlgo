@@ -62,6 +62,8 @@ namespace TickTrader.Algo.Core
 
         internal void OnStopped()
         {
+            _host.OnExecutorStopped(Id);
+
             Stopped?.Invoke(this);
         }
 

@@ -113,6 +113,11 @@ namespace TickTrader.Algo.Core
         }
 
 
+        internal Task PreLoad()
+        {
+            return _provider.PreLoad();
+        }
+        
         internal List<CurrencyInfo> GetCurrencyList()
         {
             return GetCurrencyListAsync().GetAwaiter().GetResult();
@@ -231,7 +236,7 @@ namespace TickTrader.Algo.Core
         {
             var context = new RpcResponseTaskContext<QuotePage>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(Id, request), context);
-            var res = await context.TaskSrc.Task;
+            var res = await context.TaskSrc.Task.ConfigureAwait(false);
             return res.Quotes.Select(q => new QuoteInfo(q)).ToList();
         }
 

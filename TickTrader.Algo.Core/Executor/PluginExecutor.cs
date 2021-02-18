@@ -275,6 +275,8 @@ namespace TickTrader.Algo.Core
         public event Action<PluginExecutorCore> IsRunningChanged = delegate { };
         public event Action<Exception> OnRuntimeError = delegate { };
 
+        internal string AccountId { get; set; }
+
         #endregion
 
         public void Start()

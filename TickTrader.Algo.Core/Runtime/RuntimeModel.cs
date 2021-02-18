@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Repository;
@@ -25,30 +24,9 @@ namespace TickTrader.Algo.Core
 
         public string Id { get; }
 
-        internal IRuntimeProxy Proxy { get; }
+        internal IRuntimeProxy Proxy => _proxy;
 
-        public IAccountInfoProvider AccInfoProvider { get; set; }
-
-        public ITradeHistoryProvider TradeHistoryProvider { get; set; }
-
-        public IPluginMetadata Metadata { get; set; }
-
-        public IFeedProvider Feed { get; set; }
-
-        public IFeedHistoryProvider FeedHistory { get; set; }
-
-        public ITradeExecutor TradeExecutor { get; set; }
-
-        public ExecutorConfig Config { get; } = new ExecutorConfig();
-
-        public event Action<UnitLogRecord> LogUpdated;
-        public event Action<DataSeriesUpdate> OutputUpdate;
-        public event Action<Exception> ErrorOccurred;
-        public event Action<RuntimeModel> Stopped;
-
-        public Feed.Types.Timeframe Timeframe { get; private set; }
-
-        public string ConnectionInfo { get; private set; }
+        public RuntimeConfig Config { get; } = new RuntimeConfig();
 
 
         internal RuntimeModel(AlgoServer server, string id, AlgoPluginRef pluginRef)
@@ -57,17 +35,12 @@ namespace TickTrader.Algo.Core
             Id = id;
             _pluginRef = pluginRef;
 
+            Config.PackagePath = pluginRef.PackagePath;
             _attachedAccounts = new Dictionary<string, AttachedAccount>();
 
             _runtimeHost = RuntimeHost.Create(true);// _pluginRef.IsIsolated);
         }
 
-
-        public void SetConfig(PluginConfig config)
-        {
-            Timeframe = config.Timeframe;
-            Config.PluginConfig = Any.Pack(config);
-        }
 
         public async Task Start(string address, int port)
         {
@@ -82,26 +55,6 @@ namespace TickTrader.Algo.Core
             await Task.WhenAny(_proxy.Stop(), Task.Delay(ShutdownTimeout));
             OnDetached();
             await _runtimeHost.Stop();
-        }
-
-        public void Abort()
-        {
-
-        }
-
-        public void NotifyDisconnectNotification()
-        {
-            _onNotification?.Invoke(RpcMessage.Notification(new AccountDisconnectNotification()));
-        }
-
-        public void NotifyReconnectNotification()
-        {
-            _onNotification?.Invoke(RpcMessage.Notification(new AccountReconnectNotification()));
-        }
-
-        public void SetConnectionInfo(string connectionInfo)
-        {
-            ConnectionInfo = connectionInfo;
         }
 
 
@@ -124,41 +77,6 @@ namespace TickTrader.Algo.Core
             return _pluginRef.PackagePath;
         }
 
-        internal void OnLogUpdated(UnitLogRecord record)
-        {
-            LogUpdated?.Invoke(record);
-        }
-
-        internal void OnErrorOccured(Exception ex)
-        {
-            ErrorOccurred?.Invoke(ex);
-        }
-
-        internal void OnStopped()
-        {
-            Stopped?.Invoke(this);
-        }
-
-        internal void OnDataSeriesUpdate(DataSeriesUpdate update)
-        {
-            //if (update.SeriesType == DataSeriesUpdate.Types.Type.SymbolRate)
-            //{
-            //    var bar = update.Value.Unpack<BarData>();
-            //    ChartBarUpdated?.Invoke(bar, update.SeriesId, update.UpdateAction);
-            //}
-            //else if (update.SeriesType == DataSeriesUpdate.Types.Type.NamedStream)
-            //{
-            //    var bar = update.Value.Unpack<BarData>();
-            //    if (update.SeriesId == BacktesterCollector.EquityStreamName)
-            //        EquityUpdated?.Invoke(bar, update.UpdateAction);
-            //    else if (update.SeriesId == BacktesterCollector.MarginStreamName)
-            //        MarginUpdated?.Invoke(bar, update.UpdateAction);
-            //}
-            //else if (update.SeriesType == DataSeriesUpdate.Types.Type.Output)
-            if (update.SeriesType == DataSeriesUpdate.Types.Type.Output)
-                OutputUpdate?.Invoke(update);
-        }
-
         internal ExecutorModel CreateExecutor(PluginConfig config, string accountId)
         {
             return new ExecutorModel(this, config, accountId);
@@ -172,6 +90,7 @@ namespace TickTrader.Algo.Core
                     throw new ArgumentException("Unknown account id");
 
                 account = new AttachedAccount(this, accountProxy);
+                _attachedAccounts.Add(accountId, account);
             }
             account.AddRef();
         }
@@ -184,6 +103,11 @@ namespace TickTrader.Algo.Core
             var refCnt = account.RemoveRef();
             if (refCnt == 0)
                 _attachedAccounts.Remove(accountId);
+        }
+
+        internal void OnExecutorStopped(string executorId)
+        {
+            _server.OnExecutorStopped(executorId);
         }
 
 

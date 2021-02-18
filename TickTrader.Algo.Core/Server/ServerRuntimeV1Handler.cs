@@ -73,6 +73,12 @@ namespace TickTrader.Algo.Core
                 return RuntimeConfigRequestHandler();
             else if (payload.Is(PackagePathRequest.Descriptor))
                 return PackagePathRequestHandler(payload);
+            else if (payload.Is(ExecutorConfigRequest.Descriptor))
+                return ExecutorConfigRequestHandler(proxyId);
+            else if (payload.Is(AttachAccountRequest.Descriptor))
+                return AttachAccountRequestHandler(payload);
+            else if (payload.Is(DetachAccountRequest.Descriptor))
+                return DetachAccountRequestHandler(payload);
             else if (payload.Is(ConnectionInfoRequest.Descriptor))
                 return ConnectionInfoRequestHandler(proxyId);
             else if (payload.Is(CurrencyListRequest.Descriptor))
@@ -109,7 +115,8 @@ namespace TickTrader.Algo.Core
                 return BarListRequestHandler(proxyId, payload);
             else if (payload.Is(QuoteListRequest.Descriptor))
                 return QuoteListRequestHandler(proxyId, payload);
-            return null;
+
+            return Task.FromResult(default(Any));
         }
 
 
@@ -122,6 +129,28 @@ namespace TickTrader.Algo.Core
         {
             //var request = payload.Unpack<PackagePathRequest>();
             return Task.FromResult(Any.Pack(new PackagePathResponse { Path = _runtime.GetPackagePath() }));
+        }
+
+        private Task<Any> ExecutorConfigRequestHandler(string executorId)
+        {
+            if (!_server.TryGetExecutor(executorId, out var executor))
+                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown executor" }));
+
+            return Task.FromResult(Any.Pack(executor.Config));
+        }
+
+        private Task<Any> AttachAccountRequestHandler(Any payload)
+        {
+            var request = payload.Unpack<AttachAccountRequest>();
+            _runtime.AttachAccount(request.AccountId);
+            return Task.FromResult(VoidResponse);
+        }
+
+        private Task<Any> DetachAccountRequestHandler(Any payload)
+        {
+            var request = payload.Unpack<DetachAccountRequest>();
+            _runtime.DetachAccount(request.AccountId);
+            return Task.FromResult(VoidResponse);
         }
 
         private Task<Any> ConnectionInfoRequestHandler(string accountId)

@@ -101,9 +101,13 @@ message MarkerInfo {
     uint32 color_argb = 4;
 }
 
-message StartExecutorRequest { } // void response
+message StartExecutorRequest { // void response
+    string executor_id = 1;
+}
 
-message StopExecutorRequest { } // void response
+message StopExecutorRequest { // void response
+    string executor_id = 1;
+}
 
 message ExecutorConfigRequest { }
 

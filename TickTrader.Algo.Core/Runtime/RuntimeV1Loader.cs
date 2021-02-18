@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model.Setup;
@@ -19,16 +21,18 @@ namespace TickTrader.Algo.Core
 
         private readonly RpcClient _client;
         private readonly UnitRuntimeV1Handler _handler;
-        private PluginExecutorCore _executorCore;
         private TaskCompletionSource<bool> _finishTaskSrc;
         private RuntimeConfig _runtimeConfig;
         private AlgoSandbox _sandbox;
+        private Dictionary<string, PluginExecutorCore> _executorsMap;
 
 
         public RuntimeV1Loader()
         {
             _client = new RpcClient(new TcpFactory(), this, new ProtocolSpec { Url = KnownProtocolUrls.RuntimeV1, MajorVerion = 1, MinorVerion = 0 });
             _handler = new UnitRuntimeV1Handler(this);
+
+            _executorsMap = new Dictionary<string, PluginExecutorCore>();
         }
 
 
@@ -91,22 +95,24 @@ namespace TickTrader.Algo.Core
 
         public async Task Stop()
         {
-            var stopTask = _executorCore.Stop();
-            var delayTask = Task.Delay(AbortTimeout);
-            var t = await Task.WhenAny(stopTask, delayTask);
-            if (t == delayTask)
+            try
             {
-                _executorCore.Abort();
-                _finishTaskSrc?.TrySetResult(false);
-            }
-            else
-            {
+                var stopTasks = _executorsMap.Values.Select(e => StopExecutor(e));
+                await Task.WhenAll(stopTasks);
+
                 _finishTaskSrc?.TrySetResult(true);
+            }
+            catch (Exception)
+            {
+                _finishTaskSrc?.TrySetResult(false);
             }
         }
 
         public async Task StartExecutor(string executorId)
         {
+            if (_executorsMap.TryGetValue(executorId, out var executorCore))
+                throw new Exception("Executor already started");
+
             var executorConfig = await _handler.GetExecutorConfig(executorId).ConfigureAwait(false);
 
             var config = executorConfig.PluginConfig.Unpack<PluginConfig>();
@@ -126,12 +132,6 @@ namespace TickTrader.Algo.Core
             setup.Load(config);
             setup.SetWorkingFolder(executorConfig.WorkingDirectory);
 
-            _executorCore = new PluginExecutorCore(config.Key.DescriptorId);
-            _executorCore.OnNotification += msg => _handler.SendNotification(msg);
-
-            _executorCore.IsGlobalMarshalingEnabled = true;
-            _executorCore.IsBunchingRequired = true;
-
             var coreExecutorConfig = new PluginExecutorConfig();
             coreExecutorConfig.LoadFrom(executorConfig, config);
             setup.Apply(coreExecutorConfig);
@@ -148,26 +148,50 @@ namespace TickTrader.Algo.Core
                 coreExecutorConfig.GetFeedStrategy<BarStrategy>().SetMainSeries(bars.Bars.ToList());
             }
 
-            _executorCore.ApplyConfig(coreExecutorConfig, accountProxy);
+            executorCore = new PluginExecutorCore(config.Key.DescriptorId);
+            executorCore.OnNotification += msg => _handler.SendNotification(executorId, msg);
 
-            var t = Task.Factory.StartNew(() => _executorCore.Start());
+            executorCore.IsGlobalMarshalingEnabled = true;
+            executorCore.IsBunchingRequired = true;
+
+            executorCore.AccountId = executorConfig.AccountId;
+
+            executorCore.ApplyConfig(coreExecutorConfig, accountProxy);
+
+            _executorsMap.Add(executorId, executorCore);
+
+            var t = Task.Factory.StartNew(() => executorCore.Start());
         }
 
-        public async Task StopExecutor(string executorId)
+        public Task StopExecutor(string executorId)
         {
-            var stopTask = _executorCore.Stop();
-            var delayTask = Task.Delay(AbortTimeout);
-            var t = await Task.WhenAny(stopTask, delayTask);
-            if (t == delayTask)
-            {
-                _executorCore.Abort();
-            }
+            if (!_executorsMap.TryGetValue(executorId, out var executorCore))
+                throw new ArgumentException("Unknown executorId");
+
+            return StopExecutor(executorCore);
         }
 
 
         internal void InitDebugLogger()
         {
             CoreLoggerFactory.Init(n => new DebugLogger(n));
+        }
+
+
+        private async Task StopExecutor(PluginExecutorCore executorCore)
+        {
+            var stopTask = executorCore.Stop();
+            var delayTask = Task.Delay(AbortTimeout);
+            var t = await Task.WhenAny(stopTask, delayTask);
+            if (t == delayTask)
+            {
+                executorCore.Abort();
+            }
+
+            executorCore.Dispose();
+            _executorsMap.Remove(executorCore.InstanceId);
+
+            await _handler.DetachAccount(executorCore.AccountId);
         }
 
 
