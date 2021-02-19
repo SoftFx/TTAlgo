@@ -222,11 +222,8 @@ namespace TickTrader.BotTerminal
         {
             storage.ProfileManager.Stop();
 
-            if (algoEnv.LocalAgent.HasRunningBots)
-            {
-                var shutdown = new ShutdownDialogViewModel(algoEnv.LocalAgent);
-                wndManager.ShowDialog(shutdown, this);
-            }
+            var shutdown = new ShutdownDialogViewModel(algoEnv.LocalAgent);
+            wndManager.ShowDialog(shutdown, this);
         }
 
         public void Connect(AccountAuthEntry creds = null)

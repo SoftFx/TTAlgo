@@ -34,6 +34,8 @@ namespace TickTrader.Algo.Rpc
 
         public async Task Stop()
         {
+            await _transportServer.StopNewConnections();
+
             _newConnectionSubscription?.Dispose();
             _newConnectionSubscription = null;
             Task[] tasks;
@@ -57,6 +59,7 @@ namespace TickTrader.Algo.Rpc
                 }
                 _sessions.Clear();
             }
+
             await _transportServer.Stop();
             _transportServer = null;
         }

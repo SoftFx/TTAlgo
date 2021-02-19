@@ -124,15 +124,16 @@ namespace TickTrader.Algo.Rpc.OverTcp
 
         private async Task ListenLoop(CancellationToken cancelToken)
         {
-            Func<byte[], AsyncCallback, object, IAsyncResult> socketBeginReceive = (buffer, callback, state) => _socket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, callback, state);
-            Func<IAsyncResult, int> socketEndReceive = _socket.EndReceive;
+            //Func<byte[], AsyncCallback, object, IAsyncResult> socketBeginReceive = (buffer, callback, state) => _socket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, callback, state);
+            //Func<IAsyncResult, int> socketEndReceive = _socket.EndReceive;
 
             var pipeWriter = _listenPipe.Writer;
             while (!cancelToken.IsCancellationRequested)
             {
                 try
                 {
-                    var read = await Task.Factory.FromAsync(socketBeginReceive, socketEndReceive, _recieveBuffer, null).ConfigureAwait(false);
+                    var read = await _socket.ReceiveAsync(new ArraySegment<byte>(_recieveBuffer, 0, _socket.ReceiveBufferSize), SocketFlags.None);
+                    //var read = await Task.Factory.FromAsync(socketBeginReceive, socketEndReceive, _recieveBuffer, null).ConfigureAwait(false);
                     if (read == 0)
                     {
                         pipeWriter.Complete();
@@ -153,8 +154,8 @@ namespace TickTrader.Algo.Rpc.OverTcp
 
         private async Task SendLoop(CancellationToken cancelToken)
         {
-            Func<byte[], int, AsyncCallback, object, IAsyncResult> socketBeginSend = (buffer, len, callback, state) => _socket.BeginSend(buffer, 0, len, SocketFlags.None, callback, state);
-            Func<IAsyncResult, int> socketEndSend = _socket.EndSend;
+            //Func<byte[], int, AsyncCallback, object, IAsyncResult> socketBeginSend = (buffer, len, callback, state) => _socket.BeginSend(buffer, 0, len, SocketFlags.None, callback, state);
+            //Func<IAsyncResult, int> socketEndSend = _socket.EndSend;
 
             var reader = _sendPipe.Reader;
             while (!cancelToken.IsCancellationRequested)
@@ -176,8 +177,10 @@ namespace TickTrader.Algo.Rpc.OverTcp
                         try
                         {
                             segment.CopyTo(buffer);
-                            await Task.Factory.FromAsync(socketBeginSend, socketEndSend, buffer, len, null).ConfigureAwait(false);
+                            await _socket.SendAsync(new ArraySegment<byte>(buffer, 0, len), SocketFlags.None).ConfigureAwait(false);
+                            //await Task.Factory.FromAsync(socketBeginSend, socketEndSend, buffer, len, null).ConfigureAwait(false);
                         }
+                        catch (Exception) { }
                         finally
                         {
                             ArrayPool<byte>.Shared.Return(buffer);

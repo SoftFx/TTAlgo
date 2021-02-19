@@ -43,16 +43,24 @@ namespace TickTrader.Algo.Rpc.OverTcp
             return Task.CompletedTask;
         }
 
-        public async Task Stop()
+        public async Task StopNewConnections()
         {
             _cancelTokenSrc.Cancel();
-            await _acceptTask;
+            _listenSocket.Close();
+            try
+            {
+                await _acceptTask;
+            }
+            catch (SocketException) { }
 
             BoundPort = -1;
             _newConnectionSubject.OnCompleted();
             _newConnectionSubject.Dispose();
+        }
 
-            _listenSocket.Close();
+        public Task Stop()
+        {
+            return Task.CompletedTask;
         }
 
 

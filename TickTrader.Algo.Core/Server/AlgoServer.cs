@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Repository;
@@ -43,17 +44,7 @@ namespace TickTrader.Algo.Core
 
         public async Task Stop()
         {
-            foreach (var runtime in _runtimesMap.Values)
-            {
-                try
-                {
-                    await runtime.Stop();
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error($"Failed to stop runtime {runtime.Id}", ex);
-                }
-            }
+            await Task.WhenAll(_runtimesMap.Values.Select(r => StopRuntime(r)));
             await _rpcServer.Stop();
         }
 
@@ -130,6 +121,18 @@ namespace TickTrader.Algo.Core
             await runtime.Start(Address, BoundPort);
 
             return runtime;
+        }
+
+        private async Task StopRuntime(RuntimeModel runtime)
+        {
+            try
+            {
+                await runtime.Stop();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Failed to stop runtime {runtime.Id}", ex);
+            }
         }
 
 

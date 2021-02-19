@@ -18,7 +18,7 @@
             <ColumnDefinition Width="200"/>
         </Grid.ColumnDefinitions>
 
-        <Label Grid.Row="0" Content="Waiting for bots to stop" Margin="10" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+        <Label Grid.Row="0" Content="Waiting for AlgoServer to stop" Margin="10" VerticalAlignment="Center" HorizontalAlignment="Center"/>
 
         <ProgressBar Grid.Row="1" Margin="5" Value="{Binding StoppedBots}"
                      Minimum="0" Maximum="{Binding TotalBots}" />

@@ -21,6 +21,8 @@ namespace TickTrader.Algo.Rpc
 
         Task Start(string address, int port);
 
+        Task StopNewConnections();
+
         Task Stop();
     }
 

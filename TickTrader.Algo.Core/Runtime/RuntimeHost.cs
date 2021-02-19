@@ -19,8 +19,8 @@ namespace TickTrader.Algo.Core
         public static IRuntimeHostProxy Create(bool isolated)
         {
             if (isolated)
-                return new CrossDomainRuntimeHost();
-                //return new ChildProcessRuntimeHost();
+                //return new CrossDomainRuntimeHost();
+                return new ChildProcessRuntimeHost();
             else
                 return new TransparentRuntimeHost();
         }
@@ -96,7 +96,7 @@ namespace TickTrader.Algo.Core
                 UseShellExecute = false,
                 RedirectStandardInput = true,
                 CreateNoWindow = true,
-                Arguments = string.Join(" ", address, port.ToString(), proxyId),
+                Arguments = string.Join(" ", address, port.ToString(), $"\"{proxyId}\""),
                 WorkingDirectory = Path.Combine(Directory.GetCurrentDirectory(), ".."),
             };
             _process = Process.Start(startInfo);
@@ -120,9 +120,14 @@ namespace TickTrader.Algo.Core
         {
             _stopTaskSrc?.TrySetResult(true);
         }
-        
+
         private async void StopInternal()
         {
+            if (_process.HasExited)
+            {
+                _stopTaskSrc.TrySetResult(true);
+                return;
+            }
             await Task.Delay(AbortTimeout).ConfigureAwait(false);
             _stopTaskSrc.TrySetResult(_process.HasExited);
         }

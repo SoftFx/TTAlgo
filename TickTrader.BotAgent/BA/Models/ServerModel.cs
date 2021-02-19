@@ -531,6 +531,7 @@ namespace TickTrader.BotAgent.BA.Models
             _logger.Debug("ServerModel is shutting down...");
             var shutdonwTasks = _accounts.Select(ac => ac.ShutdownAsync()).ToArray();
             await Task.WhenAll(shutdonwTasks);
+            await _algoServer.Stop();
             await _threadPoolManager.Stop();
         }
     }

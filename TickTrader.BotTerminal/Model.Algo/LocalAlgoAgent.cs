@@ -426,9 +426,32 @@ namespace TickTrader.BotTerminal
 
         #region Local bots management
 
-        public void StopBots()
+        public async Task Shutdown()
         {
-            _bots.Values.Foreach(StopBot);
+            try
+            {
+                await Task.WhenAll(_bots.Values.Where(b => b.State == PluginStates.Running).Select(b => b.Stop()));
+            }
+            catch(AggregateException agEx)
+            {
+                foreach (var e in agEx.InnerExceptions)
+                {
+                    _logger.Error(e, "Failed to stop bots");
+                }
+            }
+            catch(Exception ex)
+            {
+                _logger.Error(ex, "Failed to stop bots");
+            }
+
+            try
+            {
+                await AlgoServer.Stop();
+            }
+            catch(Exception ex)
+            {
+                _logger.Error(ex, "Failed to stop AlgoServer");
+            }
         }
 
         public void RemoveAllBots(CancellationToken token)
@@ -485,14 +508,6 @@ namespace TickTrader.BotTerminal
             }
         }
 
-
-        private async void StopBot(TradeBotModel bot)
-        {
-            if (bot.State == PluginStates.Running)
-            {
-                await bot.Stop();
-            }
-        }
 
         private void RestoreTradeBot(TradeBotStorageEntry entry)
         {

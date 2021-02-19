@@ -12,7 +12,7 @@ namespace TickTrader.BotTerminal
         public const int Delay = 500;
 
 
-        public static readonly TimeSpan WaitTimeout = TimeSpan.FromSeconds(60);
+        public static readonly TimeSpan WaitTimeout = TimeSpan.FromSeconds(120);
 
 
         private LocalAlgoAgent _algoAgent;
@@ -61,11 +61,11 @@ namespace TickTrader.BotTerminal
 
         private async void StopBots()
         {
-            _algoAgent.StopBots();
+            var shutdownTask = _algoAgent.Shutdown();
 
             StoppedBots = TotalBots - _algoAgent.RunningBotsCnt;
             var startTime = DateTime.Now;
-            while (_algoAgent.HasRunningBots && DateTime.Now - startTime < WaitTimeout)
+            while (!shutdownTask.IsCompleted && DateTime.Now - startTime < WaitTimeout)
             {
                 await Task.Delay(Delay);
                 StoppedBots = TotalBots - _algoAgent.RunningBotsCnt;
