@@ -21,6 +21,7 @@ namespace TickTrader.Algo.Core
 
         private readonly RpcClient _client;
         private readonly UnitRuntimeV1Handler _handler;
+        private IAlgoCoreLogger _logger;
         private TaskCompletionSource<bool> _finishTaskSrc;
         private RuntimeConfig _runtimeConfig;
         private AlgoSandbox _sandbox;
@@ -38,6 +39,8 @@ namespace TickTrader.Algo.Core
 
         public async void Init(string address, int port, string proxyId)
         {
+            _logger = CoreLoggerFactory.GetLogger<RuntimeV1Loader>();
+
             await _client.Connect(address, port).ConfigureAwait(false);
             await _handler.AttachRuntime(proxyId).ConfigureAwait(false);
         }
@@ -160,7 +163,7 @@ namespace TickTrader.Algo.Core
 
             _executorsMap.Add(executorId, executorCore);
 
-            var t = Task.Factory.StartNew(() => executorCore.Start());
+            var _ = Task.Run(() => StartExecutor(executorCore));
         }
 
         public Task StopExecutor(string executorId)
@@ -178,6 +181,21 @@ namespace TickTrader.Algo.Core
         }
 
 
+        private async Task StartExecutor(PluginExecutorCore executorCore)
+        {
+            try
+            {
+                executorCore.Start();
+                executorCore.Stopped += OnExecutorStopped;
+            }
+            catch(Exception ex)
+            {
+                _logger.Error(ex, $"Failed to start executor '{executorCore.InstanceId}'");
+                _executorsMap.Remove(executorCore.InstanceId);
+                executorCore.Dispose();
+            }
+        }
+
         private async Task StopExecutor(PluginExecutorCore executorCore)
         {
             var stopTask = executorCore.Stop();
@@ -187,11 +205,22 @@ namespace TickTrader.Algo.Core
             {
                 executorCore.Abort();
             }
+            else if (stopTask.IsFaulted)
+            {
+                _logger.Error(stopTask.Exception, $"Failed to stop executor '{executorCore.InstanceId}'");
+                if (_executorsMap.ContainsKey(executorCore.InstanceId))
+                    _executorsMap.Remove(executorCore.InstanceId);
+            }
 
             executorCore.Dispose();
-            _executorsMap.Remove(executorCore.InstanceId);
 
             await _handler.DetachAccount(executorCore.AccountId);
+        }
+
+        private void OnExecutorStopped(PluginExecutorCore executorCore)
+        {
+            executorCore.Stopped -= OnExecutorStopped;
+            _executorsMap.Remove(executorCore.InstanceId);
         }
 
 

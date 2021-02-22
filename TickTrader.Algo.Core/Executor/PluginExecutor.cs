@@ -277,6 +277,8 @@ namespace TickTrader.Algo.Core
 
         internal string AccountId { get; set; }
 
+        internal event Action<PluginExecutorCore> Stopped = delegate { };
+
         #endregion
 
         public void Start()
@@ -495,6 +497,7 @@ namespace TickTrader.Algo.Core
             try
             {
                 OnNotification(new Domain.UnitStopped());
+                Stopped?.Invoke(this);
             }
             catch (Exception ex)
             {
