@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
@@ -10,17 +11,37 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter(DisplayName = "Target Instance Id", DefaultValue = "")]
         public string TargetInstanceId { get; set; }
 
+        [Parameter(DisplayName = "Batch size", DefaultValue = 50)]
+        public int BatchSize { get; set; }
+
+        [Parameter(DisplayName = "Run until stopped", DefaultValue = false)]
+        public bool IsInfinite { get; set; }
+
 
         protected async override void OnStart()
         {
-            var pendings = string.IsNullOrEmpty(TargetInstanceId)
-                ? Account.Orders.Where(o => o.Type != OrderType.Position).ToList()
-                : Account.Orders.Where(o => o.Type != OrderType.Position && o.InstanceId == TargetInstanceId).ToList();
+            while (!IsStopped)
+            {
+                var pendings = string.IsNullOrEmpty(TargetInstanceId)
+                    ? Account.Orders.Where(o => o.Type != OrderType.Position)
+                    : Account.Orders.Where(o => o.Type != OrderType.Position && o.InstanceId == TargetInstanceId);
 
-            foreach (var order in pendings)
-                await CancelOrderAsync(order.Id);
+                var cancelTasks = pendings.Take(BatchSize).Select(o => CancelOrderAsync(o.Id)).ToArray();
 
-            Exit();
+                if (cancelTasks.Length == 0 && IsInfinite)
+                {
+                    await Task.Delay(1000);
+                    continue;
+                }
+
+                if (cancelTasks.Length == 0 && !IsInfinite)
+                {
+                    Exit();
+                    return;
+                }
+
+                await Task.WhenAll(cancelTasks);
+            }
         }
     }
 }
