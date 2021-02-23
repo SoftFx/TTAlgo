@@ -25,14 +25,17 @@ namespace TickTrader.Algo.TestCollection.Bots.Trade
 
         protected async override void OnStart()
         {
-            int uniformDelay = 1000 / RequestCount;
+            int countInGroup = RequestCount / 10;
             var side = OrderSide.Buy;
+            var group = 0;
+            var systemTime = 0;
+            var countRequestPerSec = 0;
 
             while (_run)
             {
                 if (Mode == OpenMode.Exponential)
                 {
-                    await Delay(1000 - DateTime.Now.Millisecond);
+                    await Delay(1000 - DateTime.UtcNow.Millisecond);
 
                     side = DateTime.Now.Second % 2 == 0 ? OrderSide.Buy : OrderSide.Sell;
 
@@ -47,13 +50,23 @@ namespace TickTrader.Algo.TestCollection.Bots.Trade
                 }
                 else
                 {
-                    await Task.Delay(uniformDelay);
+                    await Task.Delay(Math.Max(100 - systemTime, 0));
 
-                    side = side == OrderSide.Buy ? OrderSide.Sell : OrderSide.Buy;
+                    _stopwatch.Restart();
 
-                    SendRequest(side);
+                    if (++group == 10)
+                    {
+                        Status.WriteLine($"Operations per sec: {countRequestPerSec}");
+                        side = side == OrderSide.Buy ? OrderSide.Sell : OrderSide.Buy;
+                        group = 0;
+                        countRequestPerSec = 0;
+                    }
 
-                    Status.WriteLine($"Current side = {side}");
+                    for (int i = 0; i < countInGroup; ++i, ++countRequestPerSec)
+                        SendRequest(side);
+
+                    _stopwatch.Stop();
+                    systemTime = (int)_stopwatch.ElapsedMilliseconds;
                 }
             }
         }
