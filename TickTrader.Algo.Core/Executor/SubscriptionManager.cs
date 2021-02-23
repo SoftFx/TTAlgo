@@ -12,6 +12,7 @@ namespace TickTrader.Algo.Core
         private readonly IFixtureContext _context;
         private readonly Dictionary<string, IFeedSubscription> _userSubscriptions = new Dictionary<string, IFeedSubscription>();
         private readonly MarketStateFixture _marketFixture;
+        private IFeedSubscription _subscription;
 
         public SubscriptionFixtureManager(IFixtureContext context, MarketStateFixture marketFixture)
         {
@@ -23,7 +24,8 @@ namespace TickTrader.Algo.Core
 
         public void Start()
         {
-            Start(_context.FeedProvider, _context.Builder.Symbols.Select(s => s.Name));
+            _subscription = _context.FeedProvider.GetSubscription();
+            Start(_subscription, _context.Builder.Symbols.Select(s => s.Name));
         }
 
         public void Stop()
@@ -34,7 +36,7 @@ namespace TickTrader.Algo.Core
         protected override List<QuoteInfo> ModifySourceSubscription(List<FeedSubscriptionUpdate> updates)
         {
             var feed = _context.FeedProvider;
-            return IsSynchronized ? feed.Modify(updates) : feed.Sync.Invoke(() => feed.Modify(updates));
+            return IsSynchronized ? _subscription.Modify(updates) : feed.Sync.Invoke(() => _subscription.Modify(updates));
         }
 
         public void OnUpdateEvent(AlgoMarketNode node)

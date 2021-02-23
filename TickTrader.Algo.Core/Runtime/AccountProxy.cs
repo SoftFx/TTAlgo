@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core.Infrastructure;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
 
@@ -54,8 +55,10 @@ namespace TickTrader.Algo.Core
     public class RemoteAccountProxy : IAccountProxy, IRpcHandler
     {
         private readonly RuntimeInfoProvider _provider;
+        private readonly QuoteDistributor _distributor;
 
         private RpcSession _session;
+        private int _refCnt;
 
 
         public string Id { get; }
@@ -85,6 +88,7 @@ namespace TickTrader.Algo.Core
             Id = id;
 
             _provider = new RuntimeInfoProvider(this);
+            _distributor = new QuoteDistributor();
         }
 
 
@@ -113,11 +117,41 @@ namespace TickTrader.Algo.Core
         }
 
 
-        internal Task PreLoad()
+        internal async Task AddRef()
         {
-            return _provider.PreLoad();
+            _refCnt++;
+            if (_refCnt == 1)
+            {
+                await Start();
+            }
+        }
+
+        internal async Task RemoveRef()
+        {
+            _refCnt--;
+            if (_refCnt == 0)
+            {
+                await Stop();
+            }
         }
         
+        private async Task Start()
+        {
+            await _provider.PreLoad();
+            await Task.Factory.StartNew(() => _distributor.Start(_provider));
+        }
+
+        private async Task Stop()
+        {
+            await Task.Factory.StartNew(() => _distributor.Stop());
+        }
+
+
+        internal IFeedSubscription GetSubscription()
+        {
+            return _distributor.AddSubscription(q => { });
+        }
+
         internal List<CurrencyInfo> GetCurrencyList()
         {
             return GetCurrencyListAsync().GetAwaiter().GetResult();

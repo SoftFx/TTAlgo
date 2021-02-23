@@ -169,6 +169,11 @@ namespace TickTrader.Algo.Core
             return Task.FromResult(_feedSeries.Values.Where(s => s.Current != null).Select(s => s.Current.LastQuote).ToList());
         }
 
+        IFeedSubscription IFeedProvider.GetSubscription()
+        {
+            return this;
+        }
+
         List<BarData> IFeedHistoryProvider.QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
         {
             return GetFeedSrcOrThrow(symbol).QueryBars(marketSide, timeframe, from, to).ToList() ?? new List<BarData>();

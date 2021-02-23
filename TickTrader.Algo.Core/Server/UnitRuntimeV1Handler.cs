@@ -58,21 +58,34 @@ namespace TickTrader.Algo.Core
             var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(new AttachAccountRequest { AccountId = accountId }), context);
             await context.TaskSrc.Task;
-            if (_knownProxies.TryGetValue(accountId, out var proxy))
-                return (IAccountProxy)proxy;
 
-            var account = new RemoteAccountProxy(accountId);
-            _knownProxies.Add(accountId, account);
-            (account as IRpcHandler).SetSession(_session);
-            await account.PreLoad();
+            RemoteAccountProxy account;
+            if (_knownProxies.TryGetValue(accountId, out var proxy))
+            {
+                account = (RemoteAccountProxy)proxy;
+            }
+            else
+            {
+                account = new RemoteAccountProxy(accountId);
+                _knownProxies.Add(accountId, account);
+                (account as IRpcHandler).SetSession(_session);
+            }
+
+            await account.AddRef();
             return account;
         }
 
-        public Task DetachAccount(string accountId)
+        public async Task DetachAccount(string accountId)
         {
+            if (!_knownProxies.TryGetValue(accountId, out var proxy))
+                throw new ArgumentException("Unknown account id");
+
             var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(new DetachAccountRequest { AccountId = accountId }), context);
-            return context.TaskSrc.Task;
+            await context.TaskSrc.Task;
+
+            var account = (RemoteAccountProxy)proxy;
+            await account.RemoveRef();
         }
 
         internal void SendNotification(string proxyId, IMessage msg)

@@ -43,6 +43,11 @@ namespace TickTrader.Algo.Core
             return _feed.GetSnapshotAsync();
         }
 
+        public IFeedSubscription GetSubscription()
+        {
+            return this;
+        }
+
         //public QuoteEntity GetRate(string symbol)
         //{
         //    return _feed.GetRate(symbol);

@@ -98,6 +98,11 @@ namespace TickTrader.Algo.CoreUsageSample
             return Task.FromResult(dataBySymbol.Values.Where(d => d.LastQuote != null).Select(d => d.LastQuote).ToList());
         }
 
+        IFeedSubscription IFeedProvider.GetSubscription()
+        {
+            return this;
+        }
+
 
         List<QuoteInfo> IFeedSubscription.Modify(List<FeedSubscriptionUpdate> updates)
         {

@@ -61,6 +61,7 @@ namespace TickTrader.Algo.Core
         ISyncContext Sync { get; }
         List<QuoteInfo> GetSnapshot();
         Task<List<QuoteInfo>> GetSnapshotAsync();
+        IFeedSubscription GetSubscription();
 
         event Action<QuoteInfo> RateUpdated;
         event Action<List<QuoteInfo>> RatesUpdated;

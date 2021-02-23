@@ -143,6 +143,11 @@ namespace TickTrader.Algo.Core
             return _account.GetFeedSnapshotAsync();
         }
 
+        public IFeedSubscription GetSubscription()
+        {
+            return _account.GetSubscription();
+        }
+
         public List<QuoteInfo> Modify(List<FeedSubscriptionUpdate> updates)
         {
             var request = new ModifyFeedSubscriptionRequest();

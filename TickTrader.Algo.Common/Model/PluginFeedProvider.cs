@@ -120,6 +120,11 @@ namespace TickTrader.Algo.Common.Model
             return Task.FromResult(GetSnapshot());
         }
 
+        public IFeedSubscription GetSubscription()
+        {
+            return this;
+        }
+
         #endregion
 
         #region IPluginMetadata
