@@ -112,7 +112,9 @@ namespace TickTrader.Algo.Core
             var path = pluginRef.PackagePath;
             if (_runtimeIdMap.TryGetValue(pluginRef.PackagePath, out var runtimeId))
             {
-                return _runtimesMap[runtimeId];
+                var startedRuntime = _runtimesMap[runtimeId];
+                await startedRuntime.WaitForLaunch();
+                return startedRuntime;
             }
             runtimeId = GenerateRuntimeId(pluginRef.PackagePath);
             _runtimeIdMap[path] = runtimeId;

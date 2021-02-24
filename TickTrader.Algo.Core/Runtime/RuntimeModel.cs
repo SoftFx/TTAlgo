@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Core
 
         private Action<RpcMessage> _onNotification;
         private IRuntimeProxy _proxy;
-        private TaskCompletionSource<bool> _attachTask;
+        private TaskCompletionSource<bool> _attachTask, _launchTask;
 
 
         public string Id { get; }
@@ -38,6 +38,8 @@ namespace TickTrader.Algo.Core
             Config.PackagePath = pluginRef.PackagePath;
             _attachedAccounts = new Dictionary<string, AttachedAccount>();
 
+            _launchTask = new TaskCompletionSource<bool>();
+
             _runtimeHost = RuntimeHost.Create(true);// _pluginRef.IsIsolated);
         }
 
@@ -48,6 +50,7 @@ namespace TickTrader.Algo.Core
             await _runtimeHost.Start(address, port, Id);
             await _attachTask.Task;
             await _proxy.Launch();
+            _launchTask.TrySetResult(true);
         }
 
         public async Task Stop()
@@ -55,6 +58,11 @@ namespace TickTrader.Algo.Core
             await Task.WhenAny(_proxy.Stop(), Task.Delay(ShutdownTimeout));
             OnDetached();
             await _runtimeHost.Stop();
+        }
+
+        public Task WaitForLaunch()
+        {
+            return _launchTask.Task;
         }
 
 
