@@ -26,6 +26,7 @@ namespace TickTrader.Algo.Core
         private RuntimeConfig _runtimeConfig;
         private AlgoSandbox _sandbox;
         private Dictionary<string, PluginExecutorCore> _executorsMap;
+        private MappingCollection _mappings;
 
 
         public RuntimeV1Loader()
@@ -62,7 +63,17 @@ namespace TickTrader.Algo.Core
         {
             _runtimeConfig = await _handler.GetRuntimeConfig().ConfigureAwait(false);
 
-            _sandbox = new AlgoSandbox(_runtimeConfig.PackagePath, false);
+            var reductions = new ReductionCollection(CoreLoggerFactory.GetLogger("Extensions"));
+            _mappings = new MappingCollection(reductions);
+
+            if (_runtimeConfig.PackagePath.EndsWith("TickTrader.Algo.Indicators.dll", StringComparison.OrdinalIgnoreCase))
+            {
+                AlgoAssemblyInspector.FindPlugins(Assembly.Load("TickTrader.Algo.Indicators"));
+            }
+            else
+            {
+                _sandbox = new AlgoSandbox(_runtimeConfig.PackagePath, false);
+            }
 
             //var package = config.Key.Package;
             //var path = string.Empty;
@@ -123,12 +134,9 @@ namespace TickTrader.Algo.Core
             var metadata = AlgoAssemblyInspector.GetPlugin(config.Key.DescriptorId);
             var algoRef = new AlgoPluginRef(metadata, _runtimeConfig.PackagePath);
 
-            var reductions = new ReductionCollection(CoreLoggerFactory.GetLogger("Extensions"));
-            var mappings = new MappingCollection(reductions);
-
             var accountProxy = await _handler.AttachAccount(executorConfig.AccountId);
 
-            var setupMetadata = new AlgoSetupMetadata(accountProxy.Metadata.GetSymbolMetadata(), mappings);
+            var setupMetadata = new AlgoSetupMetadata(accountProxy.Metadata.GetSymbolMetadata(), _mappings);
             var setupContext = new AlgoSetupContext(config.Timeframe, config.MainSymbol);
 
             var setup = new PluginSetupModel(algoRef, setupMetadata, setupContext, config.MainSymbol);
