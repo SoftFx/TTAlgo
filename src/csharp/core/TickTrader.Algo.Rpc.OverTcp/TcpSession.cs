@@ -17,6 +17,7 @@ namespace TickTrader.Algo.Rpc.OverTcp
         private Task _listenTask, _sendTask, _readTask;
         private CancellationTokenSource _cancelTokenSrc;
         private IObserver<RpcMessage> _msgListener;
+        private object _lock = new object();
 
 
         public TcpSession(Socket socket)
@@ -72,12 +73,15 @@ namespace TickTrader.Algo.Rpc.OverTcp
             msg.WriteTo(codedStream);
 
             var pipeWriter = _sendPipe.Writer;
-            var memory = pipeWriter.GetMemory(len);
-            buffer.AsSpan(0, len).CopyTo(memory.Span);
-            ArrayPool<byte>.Shared.Return(buffer);
+            lock (_lock)
+            {
+                var memory = pipeWriter.GetMemory(len);
+                buffer.AsSpan(0, len).CopyTo(memory.Span);
+                ArrayPool<byte>.Shared.Return(buffer);
 
-            pipeWriter.Advance(len);
-            pipeWriter.FlushAsync();
+                pipeWriter.Advance(len);
+                pipeWriter.FlushAsync();
+            }
             //pipeWriter.FlushAsync().AsTask().ContinueWith(t =>
             //{
             //    sw.Stop();
@@ -187,7 +191,7 @@ namespace TickTrader.Algo.Rpc.OverTcp
                         }
                     }
                 }
-                catch(Exception)
+                catch (Exception)
                 {
                     return;
                 }
