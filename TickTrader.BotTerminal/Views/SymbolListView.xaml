@@ -105,7 +105,7 @@
                 <DataGridTextColumn Binding="{Binding SymbolName}" Header="Symbol" Width="Auto" ElementStyle="{StaticResource DataGridCell.SymbolName.Classic}" CanUserResize="False" />
                 <DataGridTextColumn Header="Bid" Width="Auto" Binding="{Binding Bid.Rate.DisplayValue}" ElementStyle="{StaticResource BidTextStyle.Classic}" CanUserResize="False"/>
                 <DataGridTextColumn Header="Ask" Width="Auto" Binding="{Binding Ask.Rate.DisplayValue}" ElementStyle="{StaticResource AskTextStyle.Classic}" CanUserResize="False"/>
-                <DataGridTextColumn Header="Time" Binding="{Binding QuoteTime.Value}" Width="Auto" ElementStyle="{StaticResource DataGridCell.Text.Classic}" CanUserResize="False"/>
+                <DataGridTextColumn Header="Time" Binding="{Binding QuoteTime.Value, Converter={StaticResource UtcExtDateTimeFormat}}" Width="Auto" ElementStyle="{StaticResource DataGridCell.Text.Classic}" CanUserResize="False"/>
             </DataGrid.Columns>
         </DataGrid>
     </ControlTemplate>
