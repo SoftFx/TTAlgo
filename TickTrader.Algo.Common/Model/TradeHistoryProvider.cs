@@ -29,23 +29,23 @@ namespace TickTrader.Algo.Common.Model
             _connection = connection;
             _connection.InitProxies += () =>
             {
+                _updateQueue = new AsyncQueue<Domain.TradeReportInfo>();
+
                 _connection.TradeProxy.TradeTransactionReport += TradeProxy_TradeTransactionReport;
             };
 
             _connection.AsyncInitalizing += (s, c) => Start();
-            _connection.AsyncDisconnected += (s, c) => Stop();
-
-            _connection.DeinitProxies += () =>
+            _connection.AsyncDisconnected += (s, c) =>
             {
-                _isStarted = false;
                 _connection.TradeProxy.TradeTransactionReport -= TradeProxy_TradeTransactionReport;
+
+                return Stop();
             };
         }
 
         private void TradeProxy_TradeTransactionReport(Domain.TradeReportInfo report)
         {
-            if (_updateQueue != null)
-                ContextInvoke(() => _updateQueue.Enqueue(report));
+            ContextSend(() => _updateQueue.Enqueue(report));
         }
 
         private async void GetTradeHistory(Channel<Domain.TradeReportInfo> txChannel, DateTime? from, DateTime? to, bool skipCanceledOrders, bool backwards)
@@ -84,7 +84,6 @@ namespace TickTrader.Algo.Common.Model
 
         private Task Start()
         {
-            _updateQueue = new AsyncQueue<Domain.TradeReportInfo>();
             _isStarted = true;
 
             UpdateLoop();
@@ -104,6 +103,8 @@ namespace TickTrader.Algo.Common.Model
 
             using (await _updateLock.GetLock("stop")) { }; // wait till update loop is stopped
             _updateQueue = null;
+
+            _isStarted = false;
 
             logger.Debug("Stopped.");
         }

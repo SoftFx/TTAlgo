@@ -109,6 +109,8 @@
     <Compile Include="Bots\TradeHistoryBot.cs" />
     <Compile Include="Bots\CalculateOrderMarginBot.cs" />
     <Compile Include="Bots\Trade\ExecuteLimits.cs" />
+    <Compile Include="Bots\Trade\FastTradingBot.cs" />
+    <Compile Include="Bots\Trade\OpenRequestsInSecond.cs" />
     <Compile Include="Indicators\AlertIndicator.cs" />
     <Compile Include="Indicators\BarSeriesIndicator.cs" />
     <Compile Include="Indicators\CustomHistogramIndicator.cs" />

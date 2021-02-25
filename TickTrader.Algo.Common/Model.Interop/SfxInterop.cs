@@ -913,6 +913,7 @@ namespace TickTrader.Algo.Common.Model
                 case RejectReason.OffQuotes: return Domain.OrderExecReport.Types.CmdResultCode.OffQuotes;
                 case RejectReason.OrderExceedsLImit: return Domain.OrderExecReport.Types.CmdResultCode.NotEnoughMoney;
                 case RejectReason.CloseOnly: return Domain.OrderExecReport.Types.CmdResultCode.CloseOnlyTrading;
+                case RejectReason.ThrottlingLimits: return Domain.OrderExecReport.Types.CmdResultCode.ThrottlingError;
                 case RejectReason.Other:
                     {
                         if (message != null)
@@ -1101,6 +1102,15 @@ namespace TickTrader.Algo.Common.Model
             bool isBalanceTransaction = report.TradeTransactionReportType == TradeTransactionReportType.Credit
                 || report.TradeTransactionReportType == TradeTransactionReportType.BalanceTransaction;
 
+            var userTag = report.Tag;
+            var instanceId = "";
+
+            if (Domain.CompositeTag.TryParse(report.Tag, out var tag))
+            {
+                instanceId = tag?.Key;
+                userTag = tag?.Tag;
+            }
+
             return new Domain.TradeReportInfo()
             {
                 IsEmulated = false,
@@ -1154,7 +1164,8 @@ namespace TickTrader.Algo.Common.Model
                 OrderType = Convert(report.OrderType),
                 RequestedOpenQuantity = report.ReqOpenQuantity,
                 StopPrice = report.StopPrice,
-                Tag = report.Tag,
+                Tag = userTag,
+                InstanceId = instanceId,
                 TransactionAmount = report.TransactionAmount,
                 TransactionCurrency = report.TransactionCurrency,
                 TransactionTime = report.TransactionTime.ToUniversalTime().ToTimestamp(),

@@ -421,7 +421,11 @@ namespace TickTrader.Algo.Core
             lock (_sync)
             {
                 if (state == States.Running)
-                    iStrategy.EnqueueCustomInvoke(b => _builder.FireDisconnectedEvent());
+                    iStrategy.EnqueueCustomInvoke(b =>
+                    {
+                        (accFixture as TradingFixture)?.ConnectionLost();
+                        _builder.FireDisconnectedEvent();
+                    });
             }
         }
 

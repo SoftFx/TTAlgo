@@ -57,6 +57,8 @@ namespace TickTrader.Algo.Core
         public double? RequestedOpenPrice { get; set; }
         public bool OneCancelsTheOther { get; set; }
         public string OCORelativeOrderId { get; set; }
+        public string InstanceId { get; set; }
+
 
         public int ActionId { get; set; }
 

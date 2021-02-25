@@ -69,6 +69,7 @@ namespace TickTrader.BotTerminal
         public Property<double?> StopLoss { get; }
         public Property<double?> Slippage { get; }
 
+
         protected override void Update()
         {
             Price.Value = _order.Type == OrderInfo.Types.Type.Stop || _order.Type == OrderInfo.Types.Type.StopLimit ? _order.StopPrice : _order.Price;

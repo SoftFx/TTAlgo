@@ -20,6 +20,7 @@ namespace TickTrader.Algo.Core
         private IAccountInfoProvider _dataProvider;
         private bool _isStarted;
         private bool _isRestart;
+        private bool _connected;
 
         private Dictionary<string, Action<Domain.OrderExecReport>> reportListeners = new Dictionary<string, Action<Domain.OrderExecReport>>();
 
@@ -90,6 +91,8 @@ namespace TickTrader.Algo.Core
             currencies = builder.Currencies.Values.Select(u => u.Info).ToDictionary(c => c.Name);
 
             builder.Account.Init(_dataProvider, currencies);
+
+            _connected = true;
         }
 
         public void Stop()
@@ -107,11 +110,37 @@ namespace TickTrader.Algo.Core
 
             _isStarted = false;
 
+            _connected = false;
+
             _dataProvider.OrderUpdated -= DataProvider_OrderUpdated;
             _dataProvider.BalanceUpdated -= DataProvider_BalanceUpdated;
             _dataProvider.PositionUpdated -= DataProvider_PositionUpdated;
 
             context.Builder.Account.Deinit();
+
+            CleanupListeners();
+        }
+
+        public void ConnectionLost()
+        {
+            _connected = false;
+        }
+
+        private void CleanupListeners()
+        {
+            try
+            {
+                // clean up remaining requests
+                foreach (var listener in reportListeners.Values.ToArray())
+                {
+                    listener.Invoke(new OrderExecReport { ResultCode = OrderExecReport.Types.CmdResultCode.ConnectionError });
+                }
+                reportListeners.Clear();
+            }
+            catch (Exception ex)
+            {
+                context?.OnInternalException(ex);
+            }
         }
 
         private bool CallListener(Domain.OrderExecReport eReport)
@@ -135,6 +164,7 @@ namespace TickTrader.Algo.Core
         {
             var accProxy = context.Builder.Account;
             var orderType = eReport.OrderCopy.Type;
+
             var instantOrder = orderType == Domain.OrderInfo.Types.Type.Market;
 
             if (instantOrder && accProxy.Type == AccountInfo.Types.Type.Gross) // workaround for Gross accounts
@@ -434,10 +464,19 @@ namespace TickTrader.Algo.Core
 
         #endregion
 
-        private Task<Domain.TradeResultInfo> ExecTradeRequest<TRequest>(bool isAsync, TRequest orderRequest,
+
+        private async Task<Domain.TradeResultInfo> ExecTradeRequest<TRequest>(bool isAsync, TRequest orderRequest,
             Action<TRequest, ITradeExecutor> executorInvoke)
             where TRequest : ITradeRequest
         {
+            if (!_connected)
+            {
+                if (isAsync)
+                    await Task.Yield(); // avoiding synchronous execution
+
+                return new TradeResultInfo(OrderExecReport.Types.CmdResultCode.ConnectionError, null);
+            }
+
             var resultTask = new TaskCompletionSource<Domain.TradeResultInfo>();
 
             string operationId = Guid.NewGuid().ToString();
@@ -458,13 +497,21 @@ namespace TickTrader.Algo.Core
                     context.ProcessNextOrderUpdate();
             }
 
-            return resultTask.Task;
+            return await resultTask.Task;
         }
 
         private async Task<Domain.TradeResultInfo> ExecDoubleOrderTradeRequest<TRequest>(bool isAsync, TRequest orderRequest,
             Action<TRequest, ITradeExecutor> executorInvoke)
             where TRequest : ITradeRequest
         {
+            if (!_connected)
+            {
+                if (isAsync)
+                    await Task.Yield(); // avoiding synchronous execution
+
+                return new TradeResultInfo(OrderExecReport.Types.CmdResultCode.ConnectionError, null);
+            }
+
             var resultTask = new TaskCompletionSource<Domain.TradeResultInfo>();
 
             var resultContainer = new List<OrderInfo>(2);

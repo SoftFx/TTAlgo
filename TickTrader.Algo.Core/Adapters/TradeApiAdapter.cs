@@ -603,7 +603,7 @@ namespace TickTrader.Algo.Core
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool ValidateVolumeLots(double volumeLots, SymbolInfo smbMetadata, ref OrderCmdResultCodes code)
         {
-            if (volumeLots <= 0 || volumeLots < smbMetadata.MinTradeVolume || volumeLots > smbMetadata.MaxTradeVolume)
+            if (volumeLots.Lt(0.0) || volumeLots.Lt(smbMetadata.MinTradeVolume) || volumeLots.Gt(smbMetadata.MaxTradeVolume))
             {
                 code = OrderCmdResultCodes.IncorrectVolume;
                 return false;
@@ -617,7 +617,7 @@ namespace TickTrader.Algo.Core
             if (!volumeLots.HasValue)
                 return true;
 
-            if (volumeLots <= 0 || volumeLots < smbMetadata.MinTradeVolume || volumeLots > smbMetadata.MaxTradeVolume)
+            if (volumeLots.Value.Lt(0.0) || volumeLots.Value.Lt(smbMetadata.MinTradeVolume) || volumeLots.Value.Gt(smbMetadata.MaxTradeVolume))
             {
                 code = OrderCmdResultCodes.IncorrectVolume;
                 return false;
@@ -632,8 +632,8 @@ namespace TickTrader.Algo.Core
                 return true;
 
             var isIncorrectMaxVisibleVolume = orderType == Domain.OrderInfo.Types.Type.Stop
-                || (maxVisibleVolumeLots > 0 && maxVisibleVolumeLots < smbMetadata.MinTradeVolume)
-                || maxVisibleVolumeLots > smbMetadata.MaxTradeVolume;
+                || (maxVisibleVolumeLots.Value.Gt(0.0) && maxVisibleVolumeLots.Value.Lt(smbMetadata.MinTradeVolume))
+                || maxVisibleVolumeLots.Value.Gt(smbMetadata.MaxTradeVolume);
 
             if (isIncorrectMaxVisibleVolume)
             {

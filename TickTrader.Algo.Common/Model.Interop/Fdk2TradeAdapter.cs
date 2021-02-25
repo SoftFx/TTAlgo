@@ -88,7 +88,8 @@ namespace TickTrader.Algo.Common.Model.Interop
         public Task DisconnectAsync(string text)
         {
             var taskSrc = new TaskCompletionSource<string>();
-            _tradeProxy.DisconnectAsync(taskSrc, text);
+            if (!_tradeProxy.DisconnectAsync(taskSrc, text))
+                taskSrc.SetResult("Already disconnected!");
             return taskSrc.Task;
         }
 

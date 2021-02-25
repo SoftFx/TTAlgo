@@ -368,6 +368,7 @@ message TradeReportInfo {
     google.protobuf.DoubleValue src_asset_amount = 59;
 
     google.protobuf.StringValue oco_related_order_id = 60;
+    google.protobuf.StringValue instance_id = 61;
 }
 
 message TradeHistoryRequest {

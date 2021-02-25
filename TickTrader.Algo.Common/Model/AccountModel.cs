@@ -369,7 +369,6 @@ namespace TickTrader.Algo.Common.Model
             _positions.Remove(model.Symbol);
 
             PositionRemoved?.Invoke(model);
-
             if (notify)
                 PositionUpdate?.Invoke(model, Domain.OrderExecReport.Types.ExecAction.Closed);
         }
@@ -419,7 +418,7 @@ namespace TickTrader.Algo.Common.Model
 
         internal EntityCacheUpdate GetOrderUpdate(ExecutionReport report)
         {
-            System.Diagnostics.Debug.WriteLine("ER  #" + report.Id + " " + report.Type + " " + report.ExecutionType + " opId=" + report.TradeRequestId);
+            System.Diagnostics.Debug.WriteLine($"ER({report.ExecutionType}, {report.OrderStatus})  #{report.Id} {report.Type} opId={report.TradeRequestId}");
 
             switch (report.ExecutionType)
             {
@@ -433,8 +432,15 @@ namespace TickTrader.Algo.Common.Model
                     bool ignoreCalculate = (_accType == Domain.AccountInfo.Types.Type.Gross && report.Type == Domain.OrderInfo.Types.Type.Market) || report.OrderStatus == OrderStatus.Executing;
                     if (!ignoreCalculate)
                     {
-                        if (_orders.ContainsKey(report.Id))
-                            return OnOrderUpdated(report, Domain.OrderExecReport.Types.ExecAction.Opened);
+                        if (_orders.TryGetValue(report.Id, out var order))
+                        {
+                            // ExecutionReport(Type=Calculated, Status=Calculated) is usually a transition from Executing state, which we currently ignore
+                            // The only exception is fully filled pending orders on gross acc, which trigger position with same id
+                            // StopLimit orders get new order id and opened as limit orders after activation
+                            if ((order.Type == OrderInfo.Types.Type.Limit || order.Type == OrderInfo.Types.Type.Stop) && report.Type == OrderInfo.Types.Type.Position)
+                                return OnOrderUpdated(report, OrderExecReport.Types.ExecAction.Opened);
+                            else break;
+                        }
                         else
                             return OnOrderAdded(report, Domain.OrderExecReport.Types.ExecAction.Opened);
                     }
