@@ -133,6 +133,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.Rpc.OverTcp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.RuntimeV1", "src\csharp\sandbox\TickTrader.Algo.RuntimeV1\TickTrader.Algo.RuntimeV1.csproj", "{3C991F1D-E8F3-4374-9A3C-6625A432D93C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.Util", "src\csharp\core\TickTrader.Algo.Util\TickTrader.Algo.Util.csproj", "{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -692,6 +694,18 @@ Global
 		{3C991F1D-E8F3-4374-9A3C-6625A432D93C}.Release|x64.Build.0 = Release|Any CPU
 		{3C991F1D-E8F3-4374-9A3C-6625A432D93C}.Release|x86.ActiveCfg = Release|Any CPU
 		{3C991F1D-E8F3-4374-9A3C-6625A432D93C}.Release|x86.Build.0 = Release|Any CPU
+		{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B}.Debug|x64.Build.0 = Debug|Any CPU
+		{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B}.Debug|x86.Build.0 = Debug|Any CPU
+		{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B}.Release|x64.ActiveCfg = Release|Any CPU
+		{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B}.Release|x64.Build.0 = Release|Any CPU
+		{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B}.Release|x86.ActiveCfg = Release|Any CPU
+		{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -745,6 +759,7 @@ Global
 		{95412C83-3BE8-4D58-A787-96AD459C1246} = {C5AE642C-4A61-47BD-9272-69909998B71D}
 		{B64B583D-1D18-4D74-BDB2-71388171FD36} = {C5AE642C-4A61-47BD-9272-69909998B71D}
 		{3C991F1D-E8F3-4374-9A3C-6625A432D93C} = {BE89D066-2450-4926-9BDC-B03CF17D3277}
+		{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B} = {C5AE642C-4A61-47BD-9272-69909998B71D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {676AD27B-E03C-4277-A423-E2533F837976}

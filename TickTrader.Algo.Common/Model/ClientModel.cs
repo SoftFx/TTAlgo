@@ -11,6 +11,7 @@ using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Infrastructure;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Util;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -27,20 +28,16 @@ namespace TickTrader.Algo.Common.Model
         private EntityCache _cache = new EntityCache();
         private Dictionary<ActorRef, Channel<EntityCacheUpdate>> _tradeListeners = new Dictionary<ActorRef, Channel<EntityCacheUpdate>>();
         private Dictionary<ActorRef, Channel<QuoteInfo>> _feedListeners = new Dictionary<ActorRef, Channel<QuoteInfo>>();
-        private AsyncQueue<object> _updateQueue;
-        private AsyncQueue<QuoteInfo> _feedQueue;
         private Ref<ClientModel> _ref;
         private QuoteDistributor _rootDistributor;
-        private ActorSharp.Lib.AsyncLock _updateLock;
-        private ActorSharp.Lib.AsyncLock _feedLock;
         private Dictionary<ActorRef, IFeedSubscription> _feedSubcribers = new Dictionary<ActorRef, IFeedSubscription>();
         private IFeedSubscription _defaultSubscription;
+        private AsyncChannelProcessor<QuoteInfo> _feedProcessor;
+        private AsyncChannelProcessor<object> _tradeProcessor;
 
         protected override void ActorInit()
         {
             _ref = this.GetRef();
-            _updateLock = new ActorSharp.Lib.AsyncLock();
-            _feedLock = new ActorSharp.Lib.AsyncLock();
             _rootDistributor = new QuoteDistributor();
             _defaultSubscription = _rootDistributor.AddSubscription(q => { });
         }
@@ -54,13 +51,15 @@ namespace TickTrader.Algo.Common.Model
             _tradeHistory = new TradeHistoryProvider(_connection, loggerId);
             _tradeApi = new PluginTradeApiProvider(_connection);
 
-            _tradeApi.OnExclusiveReport += er => _updateQueue.Enqueue(er);
+
+            _feedProcessor = AsyncChannelProcessor<QuoteInfo>.CreateUnbounded($"{Name} feed loop", true);
+            _tradeProcessor = AsyncChannelProcessor<object>.CreateUnbounded($"{Name} trade loop", true);
+
+
+            _tradeApi.OnExclusiveReport += er => _tradeProcessor.Add(er);
 
             _connection.InitProxies += () =>
             {
-                _updateQueue = new AsyncQueue<object>();
-                _feedQueue = new AsyncQueue<QuoteInfo>();
-
                 _connection.FeedProxy.Tick += FeedProxy_Tick;
                 _connection.TradeProxy.ExecutionReport += TradeProxy_ExecutionReport;
                 _connection.TradeProxy.PositionReport += TradeProxy_PositionReport;
@@ -82,22 +81,22 @@ namespace TickTrader.Algo.Common.Model
 
         private void FeedProxy_Tick(QuoteInfo q)
         {
-            ContextSend(() => _feedQueue.Enqueue(q));
+            _feedProcessor.Add(q);
         }
 
         private void TradeProxy_ExecutionReport(ExecutionReport er)
         {
-            ContextSend(() => _updateQueue.Enqueue(er));
+            _tradeProcessor.Add(er);
         }
 
         private void TradeProxy_PositionReport(Domain.PositionExecReport pr)
         {
-            ContextSend(() => _updateQueue.Enqueue(pr));
+            _tradeProcessor.Add(pr);
         }
 
         private void TradeProxy_BalanceOperation(Domain.BalanceOperation rep)
         {
-            ContextSend(() => _updateQueue.Enqueue(rep));
+            _tradeProcessor.Add(rep);
         }
 
         public class ControlHandler : BlockingHandler<ClientModel>
@@ -351,8 +350,8 @@ namespace TickTrader.Algo.Common.Model
 
             // start multicasting
 
-            MulticastUpdates();
-            MulticastQuotes();
+            _tradeProcessor.Start(ApplyTradeUpdate);
+            _feedProcessor.Start(ApplyQuote);
         }
 
         private async Task Stop()
@@ -362,16 +361,12 @@ namespace TickTrader.Algo.Common.Model
                 logger.Debug("Stopping...");
 
                 _defaultSubscription.CancelAll();
-                _updateQueue.Close();
-                _feedQueue.Close(true);
+                
+                await _tradeProcessor.Stop();
+                logger.Debug("Stopped trade stream.");
 
-                using (await _updateLock.GetLock("Stop")) { }
-
-                logger.Debug("Stopped update stream.");
-
-                using (await _feedLock.GetLock("Stop")) { }
-
-                logger.Debug("Stopped quote stream.");
+                await _feedProcessor.Stop();
+                logger.Debug("Stopped feed stream.");
 
                 await _feedHistory.Stop();
 
@@ -387,9 +382,6 @@ namespace TickTrader.Algo.Common.Model
             {
                 logger.Error(ex);
             }
-
-            _updateQueue = null;
-            _feedQueue = null;
         }
 
         private T ExecDataRequest<T>(Func<EntityCache, T> request)
@@ -424,19 +416,6 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private async void MulticastUpdates()
-        {
-            using (await _updateLock.GetLock("loop"))
-            {
-                while (await _updateQueue.Dequeue())
-                {
-                    var update = CreateCacheUpdate(_updateQueue.Item);
-
-                    await ApplyUpdate(update);
-                }
-            }
-        }
-
         private async Task ApplyUpdate(EntityCacheUpdate update)
         {
             try
@@ -453,6 +432,12 @@ namespace TickTrader.Algo.Common.Model
             {
                 logger.Error(ex);
             }
+        }
+
+        private Task ApplyTradeUpdate(object update)
+        {
+            var cacheUpdate = CreateCacheUpdate(update);
+            return ApplyUpdate(cacheUpdate);
         }
 
         private async Task FlushListeners()
@@ -498,15 +483,6 @@ namespace TickTrader.Algo.Common.Model
 
                 foreach (var q in quotes)
                     await ApplyQuote(q);
-            }
-        }
-
-        private async void MulticastQuotes()
-        {
-            using (await _feedLock.GetLock("loop"))
-            {
-                while (await _feedQueue.Dequeue())
-                    await ApplyQuote(_feedQueue.Item);
             }
         }
 

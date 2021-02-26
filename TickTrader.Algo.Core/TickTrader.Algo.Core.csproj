@@ -374,6 +374,10 @@
       <Project>{64cddab4-5127-4eb3-b38f-36ce37e62a66}</Project>
       <Name>TickTrader.Algo.Rpc</Name>
     </ProjectReference>
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Util\TickTrader.Algo.Util.csproj">
+      <Project>{f6e91df8-4706-4979-af0f-259b5f9e3d0b}</Project>
+      <Name>TickTrader.Algo.Util</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
       <Project>{8901c84d-fb62-433c-a25f-4d24255b9453}</Project>
       <Name>TickTrader.Algo.Api</Name>
