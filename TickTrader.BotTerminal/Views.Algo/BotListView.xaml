@@ -138,7 +138,7 @@
                     </CollectionViewSource>
                 </TreeView.Resources>
 
-                <TreeViewItem Header="Bot Terminal" ItemsSource="{Binding Source={StaticResource LocalBotsViewSrc}}"
+                <TreeViewItem Header="Algo Terminal" ItemsSource="{Binding Source={StaticResource LocalBotsViewSrc}}"
                               l:StyleInteraction.Behaviors="{StaticResource TreeViewItemBehaviors}">
                     <TreeViewItem.ItemContainerStyle>
                         <Style TargetType="{x:Type TreeViewItem}">

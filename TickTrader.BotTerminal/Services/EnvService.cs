@@ -14,8 +14,7 @@ namespace TickTrader.BotTerminal
 
         private EnvService()
         {
-
-            ApplicationName = "BotTrader";
+            ApplicationName = "AlgoTerminal";
 
             AppFolder = AppDomain.CurrentDomain.BaseDirectory;
             var myDocumentsFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);

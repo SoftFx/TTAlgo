@@ -4,18 +4,18 @@
     "SecretKey": "Secret key is used for singing auth tokens. Changing it makes all existing tokens invalid, all users will have relogin. It is not recomended to change it unless it becomes compromised."
   },
   "Credentials": {
-    "Admin": "User that has full rights to modify AlgoServer state. Avaliable both in browser and BotTerminal.",
-    "Dealer": "User that has same access as viewer, but can start and stop bots. Available only in BotTerminal.",
-    "Viewer": "User that has readonly access to AlgoServer state. He can see packages, accounts, bots, their status, logs. But he can't see AlgoData and download packages. Also viewer can download logs. Available only in BotTerminal."
+    "Admin": "User that has full rights to modify AlgoServer state. Avaliable both in browser and AlgoTerminal.",
+    "Dealer": "User that has same access as viewer, but can start and stop bots. Available only in AlgoTerminal.",
+    "Viewer": "User that has readonly access to AlgoServer state. He can see packages, accounts, bots, their status, logs. But he can't see AlgoData and download packages. Also viewer can download logs. Available only in AlgoTerminal."
   },
   "Ssl": {
     "File": "PKCS#12 file containing private and public keys for web server certificate, that are protected by password. Since we don't have own certificate authority server, this feature is disabled now.",
     "Password": "Password to required to open PKCS#12 file."
   },
   "Protocol": {
-    "ListeningPort": "Port that is used for BotTerminal connection. It should be different from web server ports.",
+    "ListeningPort": "Port that is used for AlgoTerminal connection. It should be different from web server ports.",
     "LogDirectoryName": "Directory where BotTermianl connection logs will be stored.",
-    "LogMessages": "Enables writing messages sent over BotTerminal connection to logs. Only for troubleshooting, has severe impact on performance."
+    "LogMessages": "Enables writing messages sent over AlgoTerminal connection to logs. Only for troubleshooting, has severe impact on performance."
   },
   "Fdk": {
     "EnableLogs": "Enables writing messages sent over trade server connection to logs. Only for troubleshooting, has severe impact on performance."

@@ -319,7 +319,7 @@ namespace TickTrader.BotTerminal
 
         protected override void OnViewLoaded(object view)
         {
-            eventJournal.Info("BotTrader started");
+            eventJournal.Info("AlgoTerminal started");
             PrintSystemInfo();
 
             App.Current.Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new System.Action(OnLoaded));

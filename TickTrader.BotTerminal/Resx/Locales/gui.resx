@@ -190,7 +190,7 @@
     <value>#JournalTime#</value>
   </data>
   <data name="Menu_BotTrader" xml:space="preserve">
-    <value>##BotTrader##</value>
+    <value>##AlgoTerminal##</value>
   </data>
   <data name="Menu_ExitBotTrader" xml:space="preserve">
     <value>##Exit##</value>

@@ -27,7 +27,7 @@ namespace TickTrader.BotTerminal
 {
     internal class LocalAlgoAgent : IAlgoAgent, IAlgoSetupMetadata, IAlgoPluginHost, IAlgoSetupContext
     {
-        public const string LocalAgentName = "BotTerminal";
+        public const string LocalAgentName = "AlgoTerminal";
 
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private static readonly ApiMetadataInfo _apiMetadata = ApiMetadataInfo.CreateCurrentMetadata();

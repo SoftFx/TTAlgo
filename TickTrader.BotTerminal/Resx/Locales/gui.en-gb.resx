@@ -190,7 +190,7 @@
     <value>Time</value>
   </data>
   <data name="Menu_BotTrader" xml:space="preserve">
-    <value>BotTrader</value>
+    <value>AlgoTerminal</value>
   </data>
   <data name="Menu_ExitBotTrader" xml:space="preserve">
     <value>Exit</value>
@@ -343,7 +343,7 @@
     <value>Classic</value>
   </data>
   <data name="PluginError_IncompatibleApiVersion" xml:space="preserve">
-    <value>This indicator or bot uses incompatible (newer) API version. Please update Bot Terminal to be able to run this indicator/bot.</value>
+    <value>This indicator or bot uses incompatible (newer) API version. Please update Algo Terminal to be able to run this indicator/bot.</value>
   </data>
   <data name="PluginError_HasInvalidProperties" xml:space="preserve">
     <value />
