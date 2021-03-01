@@ -158,10 +158,10 @@
                     </TreeViewItem.ItemTemplate>
                 </TreeViewItem>
 
-                <TreeViewItem Header="Bot Agents" ItemsSource="{Binding BotAgents}">
+                <TreeViewItem Header="Algo Servers" ItemsSource="{Binding BotAgents}">
                     <TreeViewItem.ContextMenu>
                         <ContextMenu>
-                            <MenuItem Header="Register BotAgent..." cal:Message.Attach="AddBotAgent" />
+                            <MenuItem Header="Register AlgoServer..." cal:Message.Attach="AddBotAgent" />
                         </ContextMenu>
                     </TreeViewItem.ContextMenu>
                     <TreeViewItem.ItemContainerStyle>

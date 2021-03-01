@@ -19,7 +19,7 @@ namespace TickTrader.BotAgent.Configurator.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -88,7 +88,7 @@ namespace TickTrader.BotAgent.Configurator.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Please, install TickTrader BotAgent!.
+        ///   Looks up a localized string similar to Please, install TickTrader AlgoServer!.
         /// </summary>
         internal static string AgentNotFoundEx {
             get {
@@ -295,7 +295,7 @@ namespace TickTrader.BotAgent.Configurator.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to To start the agent you need to save new settings. Do you want to proceed?.
+        ///   Looks up a localized string similar to To start the server you need to save new settings. Do you want to proceed?.
         /// </summary>
         internal static string SaveBeforeStartQuestion {
             get {
@@ -313,7 +313,7 @@ namespace TickTrader.BotAgent.Configurator.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Do you want to save new changes for current agent?.
+        ///   Looks up a localized string similar to Do you want to save new changes for current server?.
         /// </summary>
         internal static string SaveChangesQuestion {
             get {
@@ -331,7 +331,7 @@ namespace TickTrader.BotAgent.Configurator.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Agent.
+        ///   Looks up a localized string similar to Server.
         /// </summary>
         internal static string SelectAgentMes_ {
             get {
@@ -340,7 +340,7 @@ namespace TickTrader.BotAgent.Configurator.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Agent has been started!.
+        ///   Looks up a localized string similar to Server has been started!.
         /// </summary>
         internal static string StartAgentLog {
             get {
@@ -358,7 +358,7 @@ namespace TickTrader.BotAgent.Configurator.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Agent has been stopped!.
+        ///   Looks up a localized string similar to Server has been stopped!.
         /// </summary>
         internal static string StopAgentLog {
             get {
@@ -367,7 +367,7 @@ namespace TickTrader.BotAgent.Configurator.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The current agent will be stopped. Do you want to proceed?.
+        ///   Looks up a localized string similar to The current server will be stopped. Do you want to proceed?.
         /// </summary>
         internal static string StopAgentQuestion {
             get {

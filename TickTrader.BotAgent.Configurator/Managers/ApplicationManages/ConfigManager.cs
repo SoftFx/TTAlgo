@@ -22,7 +22,7 @@ namespace TickTrader.BotAgent.Configurator
 
             _defaultProperties = new ConfigurationProperies(new Dictionary<string, string>()
             {
-                { "LogsPath", "Logs\\agent.log" },
+                { "LogsPath", "Logs\\server.log" },
                 { "DeveloperVersion", "false" }
             });
 

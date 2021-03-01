@@ -77,7 +77,7 @@ namespace TickTrader.BotTerminal
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"BotAgent Connect failed: {ex.Message}");
+                _logger.Error(ex, $"AlgoServer Connect failed: {ex.Message}");
             }
         }
 
@@ -94,7 +94,7 @@ namespace TickTrader.BotTerminal
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"BotAgent Disconnect failed: {ex.Message}");
+                _logger.Error(ex, $"AlgoServer Disconnect failed: {ex.Message}");
             }
         }
 
@@ -112,7 +112,7 @@ namespace TickTrader.BotTerminal
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"BotAgent Connect failed: {ex.Message}");
+                _logger.Error(ex, $"AlgoServer Connect failed: {ex.Message}");
             }
         }
 

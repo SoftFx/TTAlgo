@@ -86,7 +86,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
 
             var serverSettings = new ProtocolServerSettings
             {
-                ServerName = "BotAgentServer",
+                ServerName = "AlgoServer",
                 Certificate = _cert,
                 ProtocolSettings = protocolConfig,
             };

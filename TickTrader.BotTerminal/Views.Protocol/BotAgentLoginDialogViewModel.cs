@@ -145,7 +145,7 @@ namespace TickTrader.BotTerminal
         {
             _botAgentManager = botAgentManager;
 
-            DisplayName = "BotAgent Log In";
+            DisplayName = "AlgoServer Log In";
 
             Init(creds);
         }

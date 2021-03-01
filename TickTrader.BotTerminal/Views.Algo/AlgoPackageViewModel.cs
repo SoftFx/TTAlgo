@@ -47,7 +47,7 @@ namespace TickTrader.BotTerminal
             Agent = agent;
 
             Plugins = Agent.Plugins.Where(p => PluginIsFromPackage(p)).AsObservable();
-            Description = $"Agent {Agent.Name}. Path {Info.Identity.FilePath}";
+            Description = $"Server {Agent.Name}. Path {Info.Identity.FilePath}";
 
             Agent.Model.PackageStateChanged += OnPackageStateChanged;
             Agent.Model.AccessLevelChanged += OnAccessLevelChanged;

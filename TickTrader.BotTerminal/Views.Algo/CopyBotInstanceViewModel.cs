@@ -261,7 +261,7 @@ namespace TickTrader.BotTerminal
 
             var uploadSrcPackage = false;
             var dstPackageKey = dstConfig.Key.Package;
-            dstPackageKey.Location = RepositoryLocation.LocalRepository; //remote bot agents have only local package location
+            dstPackageKey.Location = RepositoryLocation.LocalRepository; //remote algo servers have only local package location
             var dstPackage = _selectedAgent.Model.Packages.Snapshot.Values.Where(p => p.Identity.Size == srcPackage.Identity.Size && p.Identity.Hash == srcPackage.Identity.Hash)
                 .OrderBy(p => p.Key.Location == dstPackageKey.Location ? 0 : 1).ThenBy(p => p.Key.Name == dstPackageKey.Name ? 0 : 1).FirstOrDefault();
             if (dstPackage != null)

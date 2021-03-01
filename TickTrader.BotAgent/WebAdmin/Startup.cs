@@ -56,7 +56,7 @@ namespace TickTrader.BotAgent.WebAdmin
                 })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
-            services.AddSwaggerGen(c => c.SwaggerDoc("v1", new Swashbuckle.AspNetCore.Swagger.Info { Title = "BotAgent WebAPI", Version = "v1" }));
+            services.AddSwaggerGen(c => c.SwaggerDoc("v1", new Swashbuckle.AspNetCore.Swagger.Info { Title = "AlgoServer WebAPI", Version = "v1" }));
             services.AddStorageOptions(Configuration.GetSection("PackageStorage"));
 
             services.AddAuthentication(options =>
@@ -84,7 +84,7 @@ namespace TickTrader.BotAgent.WebAdmin
                     ConfigFile = "./WebAdmin/webpack.config"
                 });
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "BotAgent WebAPI v1"));
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "AlgoServer WebAPI v1"));
             }
             else
             {

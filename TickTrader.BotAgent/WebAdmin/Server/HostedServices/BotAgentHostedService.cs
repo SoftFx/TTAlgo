@@ -28,10 +28,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.HostedServices
             if (_started)
                 return;
 
-            _logger.LogInformation("Starting bot agent...");
+            _logger.LogInformation("Starting algo server...");
             await _botAgent.InitAsync(_fdkOptionsProvider);
             _started = true;
-            _logger.LogInformation("Started bot agent...");
+            _logger.LogInformation("Started algo server...");
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)
@@ -39,10 +39,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.HostedServices
             if (!_started)
                 return;
 
-            _logger.LogInformation("Stopping bot agent...");
+            _logger.LogInformation("Stopping algo server...");
             await Task.WhenAny(_botAgent.ShutdownAsync(), Task.Delay(TimeSpan.FromMinutes(1)));
             _started = false;
-            _logger.LogInformation("Stopped bot agent...");
+            _logger.LogInformation("Stopped algo server...");
         }
     }
 }

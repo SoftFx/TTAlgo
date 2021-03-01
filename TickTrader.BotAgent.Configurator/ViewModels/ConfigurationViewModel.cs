@@ -41,7 +41,7 @@ namespace TickTrader.BotAgent.Configurator
                 if (_title == value)
                     return;
 
-                _title = $"BotAgent Configurator: {value}";
+                _title = $"AlgoServer Configurator: {value}";
                 OnPropertyChanged(nameof(Title));
             }
         }

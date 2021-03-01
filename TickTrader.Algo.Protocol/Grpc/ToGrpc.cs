@@ -490,7 +490,7 @@ namespace TickTrader.Algo.Protocol.Grpc
                 if (version != null && version.SupportMainToken)
                     name = mainSymbol;
                 else
-                    throw new UnsupportedException($"\"{SpecialSymbols.MainSymbol}\" token not supported by current agent version");
+                    throw new UnsupportedException($"\"{SpecialSymbols.MainSymbol}\" token not supported by current Algo server version");
             }
 
             return new Lib.SymbolConfig

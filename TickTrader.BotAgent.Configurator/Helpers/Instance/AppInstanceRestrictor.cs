@@ -20,7 +20,7 @@ namespace TickTrader.BotAgent.Configurator
                 var lockId = TryReadProcessId();
                 if (lockId != null)
                 {
-                    if (MessageBoxManager.YesNoBoxError("Another instance of BotAgent Configurator is running. Terminate?"))
+                    if (MessageBoxManager.YesNoBoxError("Another instance of AlgoServer Configurator is running. Terminate?"))
                     {
                         var process = System.Diagnostics.Process.GetProcessById(lockId.Value);
                         if (process != null)
@@ -28,7 +28,7 @@ namespace TickTrader.BotAgent.Configurator
                             process.Kill();
                             if (!process.WaitForExit(5000))
                             {
-                                MessageBoxManager.OkError("Failed to terminate another instance of BotAgent Configurator!");
+                                MessageBoxManager.OkError("Failed to terminate another instance of AlgoServer Configurator!");
                                 return false;
                             }
                             else continue; // go for another try

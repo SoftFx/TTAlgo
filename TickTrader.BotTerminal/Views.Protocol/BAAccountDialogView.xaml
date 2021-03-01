@@ -39,7 +39,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Label Grid.Row="0" Content="{Binding DisplayName}" FontSize="26" VerticalAlignment="Center" Style="{DynamicResource DialogPageTitleLabelStyle}"/>
-        <Label Grid.Row="1" Content="Bot Agent"/>
+        <Label Grid.Row="1" Content="Algo Server"/>
         <ComboBox Grid.Row="2" DisplayMemberPath="Name"
                   ItemsSource="{Binding Agents}" SelectedItem="{Binding SelectedAgent}"
                   IsEnabled="{Binding CanChangeAgentKey}"/>
