@@ -5,7 +5,7 @@
                 <div class="card max_height_600">
                     <div class="header">
                         <h4 class="title truncate">
-                            Add Package
+                            Add Algo package
                         </h4>
                     </div>
                     <div id="uploadPanel" class="content">
@@ -34,13 +34,13 @@
                     <overlay-cmp *ngIf="CheckPackageRequest && CheckPackageRequest.IsRunning">
                         <div class="text-center">
                             <span class="fa fa-circle-o-notch fa-spin black"></span>
-                            Checking package ...
+                            Checking Algo package ...
                         </div>
                     </overlay-cmp>
 
                     <overlay-cmp *ngIf="CheckPackageRequest && CheckPackageRequest.IsCompleted && !CheckPackageRequest.IsFaulted">
                         <div class="text-center">
-                            <p class="text-info">Package with same name already exists on the server. Do you want to update the existing package?</p>
+                            <p class="text-info">Algo package with same name already exists on the server. Do you want to update the existing package?</p>
                             <button (click)="UploadPackage()" class="btn btn-primary">Upload</button>
                             <button (click)="CancelUploadingPackage()" class="btn btn-danger">Cancel</button>
                         </div>

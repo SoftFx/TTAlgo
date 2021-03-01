@@ -1069,7 +1069,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             var request = GetClientStreamRequest(requestStream, session);
             if (request == null || request.ValueCase != Lib.UploadPackageRequest.ValueOneofCase.Package)
             {
-                res.ExecResult = CreateRejectResult("First message should specify package details");
+                res.ExecResult = CreateRejectResult("First message should specify Algo package details");
                 return res;
             }
 
@@ -1189,7 +1189,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             }
             catch (Exception ex)
             {
-                session.Logger.Error(ex, "Failed to download package");
+                session.Logger.Error(ex, "Failed to download Algo package");
                 res.ExecResult = CreateErrorResult(ex);
             }
             res.Chunk.Binary = ByteString.Empty;

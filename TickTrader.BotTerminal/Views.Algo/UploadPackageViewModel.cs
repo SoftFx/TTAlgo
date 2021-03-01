@@ -30,7 +30,7 @@ namespace TickTrader.BotTerminal
 
         protected override void WatcherEventHandling(object o, object e)
         {
-            var selectedFile = FileNameSource; //Restore previous value after package upload
+            var selectedFile = FileNameSource; //Restore previous value after Algo package upload
 
             UploadSelectedSource();
 

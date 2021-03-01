@@ -73,7 +73,7 @@ namespace TickTrader.Algo.Core.Container
             byte[] symbolsBytes = _loader.GetFileBytes(pdbFileName);
 
             if (assemblyBytes == null)
-                throw new FileNotFoundException($"Package {_loader.MainAssemblyName} is missing required file '{assemblyFileName}'");
+                throw new FileNotFoundException($"Algo package {_loader.MainAssemblyName} is missing required file '{assemblyFileName}'");
 
             var assembly = Assembly.Load(assemblyBytes, symbolsBytes);
             _loadedAssemblies.Add(assembly);

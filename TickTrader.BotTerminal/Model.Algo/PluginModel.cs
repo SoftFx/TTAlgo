@@ -185,13 +185,13 @@ namespace TickTrader.BotTerminal
             var packageRef = Agent.Library.GetPackageRef(package);
             if (packageRef == null)
             {
-                ChangeState(PluginStates.Broken, $"Package {package.Name} at {package.Location} is not found!");
+                ChangeState(PluginStates.Broken, $"Algo package {package.Name} at {package.Location} is not found!");
                 return;
             }
             var pluginRef = Agent.Library.GetPluginRef(Config.Key);
             if (pluginRef == null)
             {
-                ChangeState(PluginStates.Broken, $"Plugin {Config.Key.DescriptorId} is missing in package {package.Name} at {package.Location}!");
+                ChangeState(PluginStates.Broken, $"Plugin {Config.Key.DescriptorId} is missing in Algo package {package.Name} at {package.Location}!");
                 return;
             }
 

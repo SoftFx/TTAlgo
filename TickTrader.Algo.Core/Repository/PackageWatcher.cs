@@ -96,7 +96,7 @@ namespace TickTrader.Algo.Core.Repository
         {
             if (!_isolation)
             {
-                _logger.Info($"Isolation is disabled. Skipping check for changes in package {FileName} at {Location}");
+                _logger.Info($"Isolation is disabled. Skipping check for changes in Algo package {FileName} at {Location}");
                 return;
             }
 
@@ -129,7 +129,7 @@ namespace TickTrader.Algo.Core.Repository
                         var identity = CreateIdentity(info, out retry);
                         PackageRef = new IsolatedAlgoPackageRef(FileName, Location, identity, container);
                         _currentFileInfo = info;
-                        _logger.Info("Loaded package " + FileName);
+                        _logger.Info("Loaded Algo package " + FileName);
                     }
                 }
             }
@@ -137,17 +137,17 @@ namespace TickTrader.Algo.Core.Repository
             {
                 if (ioEx.IsLockExcpetion())
                 {
-                    _logger?.Debug($"Package {FileName} at {Location} is locked");
+                    _logger?.Debug($"Algo package {FileName} at {Location} is locked");
                     retry = true; // File is in use. We should retry loading.
                 }
                 else
                 {
-                    _logger?.Info($"Cannot open package {FileName} at {Location}: {ioEx.Message}"); // other errors
+                    _logger?.Info($"Cannot open Algo package {FileName} at {Location}: {ioEx.Message}"); // other errors
                 }
             }
             catch (Exception ex)
             {
-                _logger?.Error($"Failed to update package {FileName} at {Location}", ex);
+                _logger?.Error($"Failed to update Algo package {FileName} at {Location}", ex);
                 PackageRef = new AlgoPackageRef(FileName, Location, PackageIdentity.CreateInvalid(FileName, FilePath), null);
             }
 
@@ -190,7 +190,7 @@ namespace TickTrader.Algo.Core.Repository
             }
             catch (Exception ex)
             {
-                _logger?.Error($"Failed to send update events for package {FileName} at {Location}", ex);
+                _logger?.Error($"Failed to send update events for Algo package {FileName} at {Location}", ex);
             }
         }
 

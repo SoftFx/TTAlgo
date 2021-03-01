@@ -110,7 +110,7 @@ namespace TickTrader.Algo.Core
                 }
 
                 if (metadata == null)
-                    throw new Exception("Invalid package: metadata file is missing.");
+                    throw new Exception("Invalid Algo package: metadata file is missing.");
 
                 return new Package(metadata, files);
             }

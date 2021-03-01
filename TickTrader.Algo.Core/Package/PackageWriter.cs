@@ -52,7 +52,7 @@ namespace TickTrader.Algo.Core
 
             string pckgPath = Path.Combine(targetFolder, pckgFileName);
 
-            trace("Creating algo package...");
+            trace("Creating Algo package...");
             trace("\tPackage name = " + pckgFileName);
             trace("\tSource folder = " + SrcFolder);
             trace("\tOutput file  = " + pckgPath);

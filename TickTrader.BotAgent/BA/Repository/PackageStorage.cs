@@ -62,7 +62,7 @@ namespace TickTrader.BotAgent.BA.Repository
             if (packageRef != null)
             {
                 if (packageRef.IsLocked)
-                    throw new PackageLockedException($"Cannot update package '{packageName}': one or more trade bots from this package is being executed! Please stop all bots and try again!");
+                    throw new PackageLockedException($"Cannot update Algo package '{packageName}': one or more trade bots from this package is being executed! Please stop all bots and try again!");
 
                 RemovePackage(packageRef);
             }
@@ -74,7 +74,7 @@ namespace TickTrader.BotAgent.BA.Repository
         {
             var packageRef = Library.GetPackageRef(package);
             if (packageRef == null)
-                throw new ArgumentException("Package not found");
+                throw new ArgumentException("Algo package not found");
 
             return File.ReadAllBytes(packageRef.Identity.FilePath);
         }
@@ -107,7 +107,7 @@ namespace TickTrader.BotAgent.BA.Repository
         {
             var packageRef = Library.GetPackageRef(package);
             if (packageRef == null)
-                throw new ArgumentException("Package not found");
+                throw new ArgumentException("Algo package not found");
 
             return packageRef.Identity.FilePath;
         }
@@ -115,7 +115,7 @@ namespace TickTrader.BotAgent.BA.Repository
         public string GetPackageWritePath(PackageKey package)
         {
             if (package.Location != RepositoryLocation.LocalRepository)
-                throw new ArgumentException($"Package location '{package.Location}' is not defined");
+                throw new ArgumentException($"Algo package location '{package.Location}' is not defined");
 
             EnsureStorageDirectoryCreated();
 
@@ -123,7 +123,7 @@ namespace TickTrader.BotAgent.BA.Repository
             if (packageRef != null)
             {
                 if (packageRef.IsLocked)
-                    throw new PackageLockedException($"Cannot update package '{package.Name}': one or more trade bots from this package is being executed! Please stop all bots and try again!");
+                    throw new PackageLockedException($"Cannot update Algo package '{package.Name}': one or more trade bots from this package is being executed! Please stop all bots and try again!");
             }
 
             return GetFullPathToPackage(package.Name);
@@ -135,7 +135,7 @@ namespace TickTrader.BotAgent.BA.Repository
         private static void CheckLock(AlgoPackageRef package)
         {
             if (package.IsLocked)
-                throw new PackageLockedException("Cannot remove package: one or more trade robots from this package is being executed! Please stop all robots and try again!");
+                throw new PackageLockedException("Cannot remove Algo package: one or more trade robots from this package is being executed! Please stop all robots and try again!");
         }
 
         private void RemovePackage(AlgoPackageRef package)
@@ -148,7 +148,7 @@ namespace TickTrader.BotAgent.BA.Repository
             }
             catch
             {
-                _logger.Warn($"Error deleting file package '{package.Name}'");
+                _logger.Warn($"Error deleting file Algo package '{package.Name}'");
                 throw;
             }
         }
@@ -180,7 +180,7 @@ namespace TickTrader.BotAgent.BA.Repository
             }
             catch
             {
-                _logger.Warn($"Error saving file package '{packageName}'");
+                _logger.Warn($"Error saving file Algo package '{packageName}'");
                 throw;
             }
         }

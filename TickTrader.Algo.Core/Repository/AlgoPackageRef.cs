@@ -59,7 +59,7 @@ namespace TickTrader.Algo.Core.Repository
         public void SetObsolete()
         {
             if (IsObsolete)
-                throw new AlgoException($"Package {Name} at {Location} already marked obsolete");
+                throw new AlgoException($"Algo package {Name} at {Location} already marked obsolete");
 
             IsObsolete = true;
             if (!IsLocked)
@@ -124,7 +124,7 @@ namespace TickTrader.Algo.Core.Repository
         public override void IncrementRef()
         {
             if (IsObsolete)
-                throw new AlgoException($"Package {Name} at {Location} is obsolete");
+                throw new AlgoException($"Algo package {Name} at {Location} is obsolete");
 
             _refCount++;
             if (_refCount == 1)

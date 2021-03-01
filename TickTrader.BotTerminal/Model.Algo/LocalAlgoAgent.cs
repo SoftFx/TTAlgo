@@ -245,7 +245,7 @@ namespace TickTrader.BotTerminal
                     filePath = Path.Combine(EnvService.Instance.AlgoCommonRepositoryFolder, package.Name);
                     break;
                 default:
-                    throw new ArgumentException("Can't resolve path to package location");
+                    throw new ArgumentException("Can't resolve path to Algo package location");
             }
             File.Delete(filePath);
             return Task.FromResult(this);
@@ -266,7 +266,7 @@ namespace TickTrader.BotTerminal
                     srcFilePath = Path.Combine(EnvService.Instance.AlgoCommonRepositoryFolder, package.Name);
                     break;
                 default:
-                    throw new ArgumentException("Can't resolve path to package location");
+                    throw new ArgumentException("Can't resolve path to Algo package location");
             }
             progressListener.Init(0);
             File.Copy(srcFilePath, dstFilePath, true);

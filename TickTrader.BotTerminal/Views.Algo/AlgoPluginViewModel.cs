@@ -79,7 +79,7 @@ namespace TickTrader.BotTerminal
                 PackageDirectory = Path.GetDirectoryName(FullPackagePath);
 
                 DisplayPackagePath = $"Full path: {FullPackagePath}{Environment.NewLine}Last modified: {PackageInfo.Identity.LastModifiedUtc} (UTC)";
-                Description = string.Join(Environment.NewLine, PluginInfo.Descriptor.Description, string.Empty, $"Package {PackageName} at {PackageDirectory}").Trim();
+                Description = string.Join(Environment.NewLine, PluginInfo.Descriptor.Description, string.Empty, $"Algo package {PackageName} at {PackageDirectory}").Trim();
             }
 
             switch (PluginInfo.Key.Package.Location)

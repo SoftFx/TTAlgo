@@ -125,7 +125,7 @@ namespace TickTrader.BotTerminal
             _mode = mode;
             //_selectedFolder = EnvService.Instance.AlgoRepositoryFolder;
 
-            DisplayName = $"{mode} package";
+            DisplayName = $"{mode} Algo package";
             ProgressModel = new ProgressViewModel();
 
             SelectedBotAgent = _algoEnv.BotAgents.Where(b => b.Agent.Name == agentName).AsObservable().FirstOrDefault()?.Agent;
@@ -139,9 +139,9 @@ namespace TickTrader.BotTerminal
             try
             {
                 if (FileNameSource == null)
-                    throw new Exception("Please select a package.");
+                    throw new Exception("Please select a Algo package.");
 
-                var message = $"{_mode}ing package {FileNameTarget} {(_mode == LoadPackageMode.Upload ? $"to {SelectedBotAgent.Name}" : $"from {SelectedBotAgent.Name} to {SelectedFolder}")}";
+                var message = $"{_mode}ing Algo package {FileNameTarget} {(_mode == LoadPackageMode.Upload ? $"to {SelectedBotAgent.Name}" : $"from {SelectedBotAgent.Name} to {SelectedFolder}")}";
 
                 ProgressModel.SetMessage(message);
 
@@ -165,7 +165,7 @@ namespace TickTrader.BotTerminal
             }
             catch (Exception ex)
             {
-                Error = $"{ex.Message} Failed to {_mode} package";
+                Error = $"{ex.Message} Failed to {_mode} Algo package";
                 _logger.Error(ex, Error);
             }
 

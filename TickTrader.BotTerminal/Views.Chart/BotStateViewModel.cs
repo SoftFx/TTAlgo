@@ -211,8 +211,8 @@ namespace TickTrader.BotTerminal
             {
                 var config = Bot.Model.Config;
                 var package = config.Key.Package;
-                res.Add($"Package Name: {package.Name}");
-                res.Add($"Package Location: {package.Location}");
+                res.Add($"Algo Package Name: {package.Name}");
+                res.Add($"Algo Package Location: {package.Location}");
                 res.Add($"Symbol: {config.MainSymbol.Name}");
                 res.Add($"Timeframe: {config.Timeframe}");
                 res.Add($"Model: {config.ModelTimeframe}");

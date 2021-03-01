@@ -121,10 +121,10 @@
                                     <TextBlock Text="{Binding Name, Converter={StaticResource GetFileName}}" ToolTip="{Binding Items[0].DisplayPackagePath}">
                                         <TextBlock.ContextMenu>
                                             <ContextMenu cal:Bind.ModelWithoutContext="{Binding Items[0]}">
-                                                <MenuItem Header="Download..." 
+                                                <MenuItem Header="Download..."
                                                           cal:Message.Attach="DownloadPackage"
                                                           Visibility="{Binding Items[0].IsRemote, Converter={StaticResource BoolToVis}}"/>
-                                                <MenuItem Header="Upload..." 
+                                                <MenuItem Header="Upload..."
                                                           cal:Message.Attach="UploadPackage"
                                                           Visibility="{Binding Items[0].IsRemote, Converter={StaticResource BoolToVis}}"/>
                                                 <MenuItem Header="Remove"
@@ -145,13 +145,13 @@
                                                 <StackPanel Orientation="Horizontal">
                                                     <StackPanel.ContextMenu>
                                                         <ContextMenu>
-                                                            <MenuItem Header="Download package..." 
+                                                            <MenuItem Header="Download Algo package..."
                                                                       cal:Message.Attach="DownloadPackage"
                                                                       Visibility="{Binding IsRemote, Converter={StaticResource BoolToVis}}"/>
-                                                            <MenuItem Header="Upload package..." 
+                                                            <MenuItem Header="Upload Algo package..."
                                                                       cal:Message.Attach="UploadPackage"
                                                                       Visibility="{Binding IsRemote, Converter={StaticResource BoolToVis}}"/>
-                                                            <MenuItem Header="Remove package" 
+                                                            <MenuItem Header="Remove Algo package"
                                                                       cal:Message.Attach="RemovePackage"/>
                                                             <Separator/>
                                                             <MenuItem Header="Open folder" 

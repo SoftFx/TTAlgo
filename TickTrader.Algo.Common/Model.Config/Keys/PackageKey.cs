@@ -23,7 +23,7 @@ namespace TickTrader.Algo.Common.Model.Config
 
         public override string ToString()
         {
-            return $"Package {Name} from {Location}";
+            return $"Algo Package {Name} from {Location}";
         }
 
         public override int GetHashCode()

@@ -30,7 +30,7 @@
                     <Label Grid.Column="1" Content="{Binding SelectedBotAgent.Name}"/>
                 </Grid>
 
-                <Label Grid.Row="2" Content="Package:"/>
+                <Label Grid.Row="2" Content="Algo package:"/>
                 <ComboBox Grid.Row="3" IsEnabled="{Binding IsEnabled}"
                           Margin="5 0 0 0"
                           ItemsSource="{Binding Packages}"

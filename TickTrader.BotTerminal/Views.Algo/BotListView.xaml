@@ -77,10 +77,10 @@
                   cal:Message.Attach="AddAccount"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
         <Separator/>
-        <MenuItem Header="Upload Package..."
+        <MenuItem Header="Upload Algo Package..."
                   cal:Message.Attach="UploadPackage"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
-        <MenuItem Header="Download Package..."
+        <MenuItem Header="Download Algo Package..."
                   cal:Message.Attach="DownloadPackage"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
         <Separator/>

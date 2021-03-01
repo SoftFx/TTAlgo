@@ -167,7 +167,7 @@ namespace TickTrader.BotTerminal
                 }
                 else
                 {
-                    _logger.Info("Both agents are local. No package resolving required");
+                    _logger.Info("Both agents are local. No Algo package resolving required");
                 }
 
                 dstConfig.InstanceId = InstanceId;
@@ -257,22 +257,22 @@ namespace TickTrader.BotTerminal
         private async Task ResolvePackage(ITradeBot srcBot, PluginConfig dstConfig)
         {
             if (!_fromAgent.Model.Packages.Snapshot.TryGetValue(srcBot.Config.Key.Package, out var srcPackage))
-                throw new ArgumentException("Can't find bot package");
+                throw new ArgumentException("Can't find bot Algo package");
 
             var uploadSrcPackage = false;
             var dstPackageKey = dstConfig.Key.Package;
-            dstPackageKey.Location = RepositoryLocation.LocalRepository; //remote algo servers have only local package location
+            dstPackageKey.Location = RepositoryLocation.LocalRepository; //remote algo servers have only local Algo package location
             var dstPackage = _selectedAgent.Model.Packages.Snapshot.Values.Where(p => p.Identity.Size == srcPackage.Identity.Size && p.Identity.Hash == srcPackage.Identity.Hash)
                 .OrderBy(p => p.Key.Location == dstPackageKey.Location ? 0 : 1).ThenBy(p => p.Key.Name == dstPackageKey.Name ? 0 : 1).FirstOrDefault();
             if (dstPackage != null)
             {
-                _logger.Info($"'{_selectedAgent.Name}' has matching package {dstPackage.Key.Name}({dstPackage.Key.Location})");
-                _logger.Info($"Src package: {srcPackage.Identity.Hash}; Dst package: {dstPackage.Identity.Hash}");
+                _logger.Info($"'{_selectedAgent.Name}' has matching Algo package {dstPackage.Key.Name}({dstPackage.Key.Location})");
+                _logger.Info($"Src package: {srcPackage.Identity.Hash}; Dst Algo package: {dstPackage.Identity.Hash}");
                 dstPackageKey = dstPackage.Key;
             }
             else
             {
-                _logger.Info($"'{_selectedAgent.Name}' has no matching package.");
+                _logger.Info($"'{_selectedAgent.Name}' has no matching Algo package.");
                 uploadSrcPackage = true;
             }
 
@@ -284,14 +284,14 @@ namespace TickTrader.BotTerminal
                 if (!_fromAgent.Model.IsRemote)
                 {
                     srcPath = srcPackage.Identity.FilePath;
-                    _logger.Info($"Package is local. Using path: {srcPath}");
+                    _logger.Info($"Algo package is local. Using path: {srcPath}");
                 }
                 else
                 {
                     srcPath = Path.GetTempFileName();
                     CopyProgress.SetMessage($"Downloading package {srcPackage.Key.Name} from {_fromAgent.Name}");
                     await _fromAgent.Model.DownloadPackage(srcPackage.Key, srcPath, progressListener);
-                    _logger.Info($"Downloaded remote package to: {srcPath}");
+                    _logger.Info($"Downloaded remote Algo package to: {srcPath}");
                 }
                 if (_selectedAgent.Model.Packages.Snapshot.ContainsKey(dstPackageKey))
                 {
@@ -301,9 +301,9 @@ namespace TickTrader.BotTerminal
                         dstPackageKey.Name = $"{dstPackageName} ({i}).ttalgo";
                     }
                 }
-                CopyProgress.SetMessage($"Uploading package {dstPackageKey.Name} to {_selectedAgent.Name}");
+                CopyProgress.SetMessage($"Uploading Algo package {dstPackageKey.Name} to {_selectedAgent.Name}");
                 await _selectedAgent.Model.UploadPackage(dstPackageKey.Name, srcPath, progressListener);
-                _logger.Info($"Uploaded remote package to as {dstPackageKey.Name} to {_selectedAgent.Name}");
+                _logger.Info($"Uploaded remote Algo package to as {dstPackageKey.Name} to {_selectedAgent.Name}");
                 if (_fromAgent.Model.IsRemote)
                     File.Delete(srcPath);
 

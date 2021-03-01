@@ -237,7 +237,7 @@ namespace TickTrader.BotTerminal
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failed to open upload package dialog");
+                _logger.Error(ex, "Failed to open upload Algo package dialog");
             }
         }
 
@@ -250,7 +250,7 @@ namespace TickTrader.BotTerminal
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failed to open download package dialog");
+                _logger.Error(ex, "Failed to open download Algo package dialog");
             }
         }
 

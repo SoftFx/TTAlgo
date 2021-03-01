@@ -370,14 +370,14 @@ namespace TickTrader.BotAgent.BA.Models
 
             if (Package == null)
             {
-                BreakBot($"Package {PackageKey.Name} at {PackageKey.Location} is not found!");
+                BreakBot($"Algo package {PackageKey.Name} at {PackageKey.Location} is not found!");
                 return;
             }
 
             _ref = _packageRepo.Library.GetPluginRef(pluginKey);
             if (_ref == null || _ref.Metadata.Descriptor.Type != AlgoTypes.Robot)
             {
-                BreakBot($"Trade bot {pluginKey.DescriptorId} is missing in package {pluginKey.Package.Name} at {pluginKey.Package.Location}!");
+                BreakBot($"Trade bot {pluginKey.DescriptorId} is missing in Algo package {pluginKey.Package.Name} at {pluginKey.Package.Location}!");
                 return;
             }
 

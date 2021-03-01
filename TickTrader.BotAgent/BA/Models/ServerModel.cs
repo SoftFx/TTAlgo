@@ -486,7 +486,7 @@ namespace TickTrader.BotAgent.BA.Models
             if (dPackage != null)
             {
                 if (dPackage.IsLocked)
-                    throw new PackageLockedException("Cannot remove package: one or more trade bots from this package is being executed! Please stop all bots and try again!");
+                    throw new PackageLockedException("Cannot remove Algo package: one or more trade bots from this package is being executed! Please stop all bots and try again!");
 
                 var botsToDelete = _allBots.Values.Where(b => b.Package == dPackage).ToList();
 
