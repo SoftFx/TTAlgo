@@ -1,6 +1,6 @@
 <project name="TickTrader Algo" default="help">
 
-  <property name="MSBuildDir"          value="c:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\16.0\Bin\"      unless="${property::exists('MSBuildDir')}" />
+  <property name="MSBuildDir"          value="c:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"      unless="${property::exists('MSBuildDir')}" />
   <property name="NSIS_Path"           value="c:\Program Files (x86)\NSIS\"      unless="${property::exists('NSIS_Path')}" />
   <property name="WinScpPath"          value="c:\Program Files (x86)\WinSCP\WinSCP.com" unless="${property::exists('WinScpPath')}" />
 
