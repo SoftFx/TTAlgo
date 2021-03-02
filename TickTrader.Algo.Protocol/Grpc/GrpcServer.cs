@@ -7,6 +7,7 @@ using Google.Protobuf;
 using Grpc.Core;
 using NLog;
 using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Domain;
 using GrpcCore = Grpc.Core;
 
 namespace TickTrader.Algo.Protocol.Grpc

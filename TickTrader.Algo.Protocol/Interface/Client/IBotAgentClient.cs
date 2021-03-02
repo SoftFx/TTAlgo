@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Protocol
 {

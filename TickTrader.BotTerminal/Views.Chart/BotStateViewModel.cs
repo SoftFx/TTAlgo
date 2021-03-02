@@ -216,7 +216,8 @@ namespace TickTrader.BotTerminal
                 res.Add($"Symbol: {config.MainSymbol.Name}");
                 res.Add($"Timeframe: {config.Timeframe}");
                 res.Add($"Model: {config.ModelTimeframe}");
-                res.Add($"Show on chart: {Bot.Model.Descriptor.SetupMainSymbol}");
+                if (Bot.Model.Descriptor != null)
+                    res.Add($"Show on chart: {Bot.Model.Descriptor.SetupMainSymbol}");
                 var properties = config.UnpackProperties();
                 if (properties.Any())
                 {

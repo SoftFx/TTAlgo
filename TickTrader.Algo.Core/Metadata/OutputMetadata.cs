@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Reflection;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Metadata
 {
-    [Serializable]
     public class OutputMetadata : PropertyMetadataBase
     {
-        [NonSerialized]
         private Type _dataSeriesBaseType;
 
 
@@ -20,7 +19,7 @@ namespace TickTrader.Algo.Core.Metadata
         public bool IsHiddenEntity { get; private set; }
 
 
-        protected override PropertyDescriptor PropDescriptor => Descriptor;
+        protected override IPropertyDescriptor PropDescriptor => Descriptor;
 
 
         public OutputMetadata(PropertyInfo reflectionInfo, OutputAttribute attribute)
@@ -48,17 +47,17 @@ namespace TickTrader.Algo.Core.Metadata
                 _dataSeriesBaseType = reflectionInfo.PropertyType.GetGenericArguments()[0];
             }
             else
-                SetError(AlgoPropertyErrors.OutputIsNotDataSeries);
+                SetError(Domain.Metadata.Types.PropertyErrorCode.OutputIsNotDataSeries);
 
             if (DataSeriesBaseType != null && DataSeriesBaseType.IsInterface)
                 IsHiddenEntity = true;
 
             Descriptor.DataSeriesBaseTypeFullName = _dataSeriesBaseType?.FullName ?? string.Empty;
             Descriptor.DefaultThickness = attribute.DefaultThickness;
-            Descriptor.DefaultColor = attribute.DefaultColor;
-            Descriptor.DefaultLineStyle = attribute.DefaultLineStyle;
-            Descriptor.PlotType = attribute.PlotType;
-            Descriptor.Target = attribute.Target;
+            Descriptor.DefaultColorArgb = attribute.DefaultColor.ToArgb();
+            Descriptor.DefaultLineStyle = attribute.DefaultLineStyle.ToDomainEnum();
+            Descriptor.PlotType = attribute.PlotType.ToDomainEnum();
+            Descriptor.Target = attribute.Target.ToDomainEnum();
             Descriptor.Precision = attribute.Precision;
             Descriptor.ZeroLine = attribute.ZeroLine;
             Descriptor.Visibility = attribute.Visibility;

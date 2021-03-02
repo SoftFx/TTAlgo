@@ -39,7 +39,7 @@ namespace TickTrader.BotTerminal
         {
             base.Reset();
 
-            LineStyle = Descriptor.DefaultLineStyle.ToDomainEnum();
+            LineStyle = Descriptor.DefaultLineStyle;
         }
 
         public override void Load(IPropertyConfig srcProperty)

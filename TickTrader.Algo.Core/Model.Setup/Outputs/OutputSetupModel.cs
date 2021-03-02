@@ -49,7 +49,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         private void InitColor()
         {
-            LineColorArgb = Metadata.Descriptor.DefaultColor.ToArgb() ?? ApiColorConverter.GreenColor;
+            LineColorArgb = Metadata.Descriptor.DefaultColorArgb ?? ApiColorConverter.GreenColor;
         }
 
         private void InitThickness()

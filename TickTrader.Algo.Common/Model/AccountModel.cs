@@ -10,7 +10,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class AccountModel : CrossDomainObject, IOrderDependenciesResolver, IMarginAccountInfo2, ICashAccountInfo2
+    public class AccountModel : IOrderDependenciesResolver, IMarginAccountInfo2, ICashAccountInfo2
     {
         private IAlgoCoreLogger _logger;
 

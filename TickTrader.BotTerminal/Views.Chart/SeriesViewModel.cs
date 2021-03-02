@@ -69,11 +69,11 @@ namespace TickTrader.BotTerminal
         {
             var plotType = outputSetup.Metadata.Descriptor.PlotType;
 
-            if (plotType == PlotType.Line || plotType == PlotType.DiscontinuousLine)
+            if (plotType == Metadata.Types.PlotType.Line || plotType == Metadata.Types.PlotType.DiscontinuousLine)
             {
                 var viewModel = new LineRenderableSeriesViewModel();
                 viewModel.DataSeries = seriesData;
-                viewModel.DrawNaNAs = outputSetup.Metadata.Descriptor.PlotType == Algo.Api.PlotType.DiscontinuousLine ?
+                viewModel.DrawNaNAs = outputSetup.Metadata.Descriptor.PlotType == Metadata.Types.PlotType.DiscontinuousLine ?
                      LineDrawMode.Gaps : LineDrawMode.ClosedLines;
                 viewModel.Stroke = outputSetup.LineColorArgb.ToWindowsColor();
                 viewModel.StrokeThickness = outputSetup.LineThickness;
@@ -83,7 +83,7 @@ namespace TickTrader.BotTerminal
 
                 return viewModel;
             }
-            else if (plotType == PlotType.Points)
+            else if (plotType == Metadata.Types.PlotType.Points)
             {
                 var viewModel = new LineRenderableSeriesViewModel();
                 viewModel.DataSeries = seriesData;
@@ -101,11 +101,11 @@ namespace TickTrader.BotTerminal
 
                 return viewModel;
             }
-            else if (plotType == PlotType.Histogram)
+            else if (plotType == Metadata.Types.PlotType.Histogram)
             {
                 var viewModel = new ColumnRenderableSeriesViewModel();
                 viewModel.DataSeries = seriesData;
-                viewModel.DrawNaNAs = outputSetup.Metadata.Descriptor.PlotType == Algo.Api.PlotType.DiscontinuousLine ?
+                viewModel.DrawNaNAs = outputSetup.Metadata.Descriptor.PlotType == Metadata.Types.PlotType.DiscontinuousLine ?
                      LineDrawMode.Gaps : LineDrawMode.ClosedLines;
                 viewModel.Stroke = outputSetup.LineColorArgb.ToWindowsColor();
                 viewModel.Fill = new SolidColorBrush(outputSetup.LineColorArgb.ToWindowsColor());

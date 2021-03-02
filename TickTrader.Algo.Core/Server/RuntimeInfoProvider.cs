@@ -8,7 +8,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    internal class RuntimeInfoProvider : CrossDomainObject, IPluginMetadata, IAccountInfoProvider, ITradeExecutor, ITradeHistoryProvider, IFeedProvider, IFeedHistoryProvider
+    internal class RuntimeInfoProvider : IPluginMetadata, IAccountInfoProvider, ITradeExecutor, ITradeHistoryProvider, IFeedProvider, IFeedHistoryProvider
     {
         private class RuntimeContext : Actor { }
 

@@ -227,13 +227,13 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                if (item.Descriptor.Type == AlgoTypes.Robot)
+                if (item.Descriptor.Type == Metadata.Types.PluginType.TradeBot)
                 {
                     _algoEnv.LocalAgentVM.OpenBotSetup(item.PluginInfo, Chart.GetSetupContextInfo());
                     return;
                 }
 
-                var model = new LocalPluginSetupViewModel(_shell.Agent, item.Key, AlgoTypes.Indicator, Chart.GetSetupContextInfo());
+                var model = new LocalPluginSetupViewModel(_shell.Agent, item.Key, Metadata.Types.PluginType.Indicator, Chart.GetSetupContextInfo());
                 if (!model.Setup.CanBeSkipped)
                     _shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
                 else
@@ -256,7 +256,7 @@ namespace TickTrader.BotTerminal
 
             switch (setupModel.Setup.Descriptor.Type)
             {
-                case AlgoTypes.Indicator:
+                case Metadata.Types.PluginType.Indicator:
                     Chart.AddIndicator(setupModel.GetConfig());
                     break;
                 default:
@@ -404,9 +404,9 @@ namespace TickTrader.BotTerminal
             if (plugin != null && plugin.Agent.Name == _algoEnv.LocalAgentVM.Name)
             {
                 //if (plugin.Type == AlgoTypes.Indicator)
-                if (plugin.Type == AlgoTypes.Indicator && Chart.TimeFrame != Feed.Types.Timeframe.Ticks)
+                if (plugin.Type == Metadata.Types.PluginType.Indicator && Chart.TimeFrame != Feed.Types.Timeframe.Ticks)
                     return true;
-                if (plugin.Type == AlgoTypes.Robot && Chart.TimeFrame != Feed.Types.Timeframe.Ticks)
+                if (plugin.Type == Metadata.Types.PluginType.TradeBot && Chart.TimeFrame != Feed.Types.Timeframe.Ticks)
                     return true;
             }
             return false;

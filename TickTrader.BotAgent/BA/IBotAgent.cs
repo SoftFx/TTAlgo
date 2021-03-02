@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Domain;
 using TickTrader.BotAgent.BA.Models;
 
@@ -21,7 +20,7 @@ namespace TickTrader.BotAgent.BA
         Task RemovePackage(string package);
         Task RemovePackage(PackageKey package);
         Task<List<PluginInfo>> GetAllPlugins();
-        Task<List<PluginInfo>> GetPluginsByType(AlgoTypes type);
+        Task<List<PluginInfo>> GetPluginsByType(Metadata.Types.PluginType type);
         Task<MappingCollectionInfo> GetMappingsInfo();
         Task<string> GetPackageReadPath(PackageKey package);
         Task<string> GetPackageWritePath(PackageKey package);

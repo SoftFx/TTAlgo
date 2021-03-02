@@ -1,0 +1,214 @@
+syntax = "proto3";
+
+package ticktrader.algo.domain;
+
+option csharp_namespace = "TickTrader.Algo.Domain";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+message Metadata {
+    enum LineStyle {
+        UNKNOWN_LINE_STYLE = 0;
+        SOLID = 1;
+        DOTS = 2;
+        DOTS_RARE = 3;
+        DOTS_VERY_RARE = 4;
+        LINES_DOTS = 5;
+        LINES = 6;
+    }
+
+    enum PlotType {
+        UNKNOWN_PLOT_TYPE = 0;
+        LINE = 1;
+        HISTOGRAM = 2;
+        POINTS = 3;
+        DISCONTINUOUS_LINE = 4;
+    }
+
+    enum OutputTarget {
+        UNKNOWN_OUTPUT_TARGET = 0;
+        OVERLAY = 1;
+        WINDOW1 = 2;
+        WINDOW2 = 3;
+        WINDOW3 = 4;
+        WINDOW4 = 5;
+    }
+
+    enum MarkerSize {
+        UNKNOWN_MARKER_SIZE = 0;
+        LARGE = 1;
+        MEDIUM = 2;
+        SMALL = 3;
+    }
+
+    enum PropertyErrorCode {
+        NO_PROPERTY_ERROR = 0;
+        UNKNOWN_PROPERTY_ERROR = 1;
+        SET_IS_NOT_PUBLIC = 2;
+        GET_IS_NOT_PUBLIC = 3;
+        MULTIPLE_ATTRIBUTES = 4;
+        INPUT_IS_NOT_DATA_SERIES = 5;
+        OUTPUT_IS_NOT_DATA_SERIES = 6;
+        EMPTY_ENUM = 7;
+    }
+
+    enum PluginType {
+        UNKNOWN_PLUGIN_TYPE = 0;
+        INDICATOR = 1;
+        TRADE_BOT = 2;
+    }
+
+    enum MetadataErrorCode {
+        NO_METADATA_ERROR = 0;
+        UNKNOWN_METADATA_ERROR = 1;
+        HAS_INVALID_PROPERTIES = 2;
+        UNKNOWN_BASE_TYPE = 3;
+        INCOMPATIBLE_API_VERSION = 4;
+    }
+
+    enum ReductionType {
+        UNKNOWN_REDUCTION_TYPE = 0;
+        BAR_TO_DOUBLE = 1;
+        FULL_BAR_TO_DOUBLE = 2;
+        FULL_BAR_TO_BAR = 3;
+        QUOTE_TO_DOUBLE = 4;
+        QUOTE_TO_BAR = 5;
+    }
+}
+
+message FileFilterEntry {
+    string file_type_name = 1;
+    string file_mask = 2;
+}
+
+message PropertyDescriptor {
+    string id = 1;
+    string display_name = 2;
+    Metadata.PropertyErrorCode error_code = 3;
+}
+
+message ParameterDescriptor {
+    string id = 1;
+    string display_name = 2;
+    Metadata.PropertyErrorCode error_code = 3;
+
+    string data_type = 4;
+    google.protobuf.StringValue default_value = 5;
+    bool is_required = 6;
+
+    bool is_enum = 7;
+    repeated string enum_values = 8;
+
+    repeated FileFilterEntry file_filters = 9;
+}
+
+message InputDescriptor {
+    string id = 1;
+    string display_name = 2;
+    Metadata.PropertyErrorCode error_code = 3;
+
+    string data_series_base_type_full_name = 4;
+}
+
+message OutputDescriptor {
+    string id = 1;
+    string display_name = 2;
+    Metadata.PropertyErrorCode error_code = 3;
+
+    string data_series_base_type_full_name = 4;
+    double default_thickness = 5;
+    google.protobuf.UInt32Value default_color_argb = 6;
+    Metadata.LineStyle default_line_style = 7;
+    Metadata.PlotType plot_type = 8;
+    Metadata.OutputTarget target = 9;
+    int32 precision = 10;
+    double zero_line = 11;
+    bool visibility = 12;
+}
+
+message PluginDescriptor {
+    string api_version_str = 1;
+    string id = 2;
+    string display_name = 3;
+    Metadata.PluginType type = 4;
+    Metadata.MetadataErrorCode error = 5;
+    google.protobuf.StringValue ui_display_name = 6;
+    google.protobuf.StringValue category = 7;
+    google.protobuf.StringValue version = 8;
+    google.protobuf.StringValue description = 9;
+    google.protobuf.StringValue copyright = 10;
+
+    repeated ParameterDescriptor parameters = 11;
+    repeated InputDescriptor inputs = 12;
+    repeated OutputDescriptor outputs = 13;
+
+    bool setup_main_symbol = 14;
+}
+
+message ReductionDescriptor {
+    string api_version_str = 1;
+    string id = 2;
+    string display_name = 3;
+    Metadata.ReductionType type = 4;
+}
+
+enum RepositoryLocation {
+    EMBEDDED = 0;
+    LOCAL_REPOSITORY = 1;
+    LOCAL_EXTENSIONS = 2;
+    COMMON_REPOSITORY = 3;
+    COMMON_EXTENSIONS = 4;
+}
+
+message PackageKey {
+    string name = 1;
+    RepositoryLocation location = 2;
+}
+
+message PluginKey {
+    PackageKey package = 1;
+    string descriptor_id = 2;
+}
+
+message ReductionKey {
+    PackageKey package = 1;
+    string descriptor_id = 2;
+}
+
+message MappingKey {
+    ReductionKey primary_reduction = 1;
+    ReductionKey secondary_reduction = 2;
+}
+
+message PluginInfo
+{
+    PluginKey key = 1;
+    PluginDescriptor descriptor = 2;
+}
+
+message ReductionInfo
+{
+    ReductionKey key = 1;
+    ReductionDescriptor descriptor = 2;
+}
+
+message PackageIdentity
+{
+    string file_name = 1;
+    string file_path = 2;
+    google.protobuf.Timestamp created_utc = 3;
+    google.protobuf.Timestamp last_modified_utc = 4;
+    int64 size = 5;
+    string hash = 6;
+}
+
+message PackageInfo
+{
+    PackageKey key = 1;
+    PackageIdentity identity = 2;
+    bool is_valid = 3;
+    repeated PluginInfo plugins = 4;
+    repeated ReductionInfo reductions = 5;
+    bool is_locked = 6;
+}

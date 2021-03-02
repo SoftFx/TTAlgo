@@ -32,11 +32,11 @@ namespace TickTrader.BotTerminal
 
         public AlgoAgentViewModel Agent { get; }
 
-        public PluginKey Key => PluginInfo.Key;
+        public PluginKey Key { get; }
 
-        public PluginDescriptor Descriptor => PluginInfo.Descriptor;
+        public PluginDescriptor Descriptor { get; }
 
-        public string DisplayName => PluginInfo.Descriptor.UiDisplayName;
+        public string DisplayName => Descriptor.UiDisplayName;
 
         public string PackageName { get; }
 
@@ -46,7 +46,7 @@ namespace TickTrader.BotTerminal
 
         public string DisplayPackagePath { get; }
 
-        public AlgoTypes Type => PluginInfo.Descriptor.Type;
+        public Metadata.Types.PluginType Type => Descriptor.Type;
 
         public FolderType Folder { get; }
 
@@ -54,18 +54,25 @@ namespace TickTrader.BotTerminal
 
         public GroupType CurrentGroup { get; }
 
-        public string Category => PluginInfo.Descriptor.Category; //used in ContextMenu AddIndicator/AddBot
+        public string Category => Descriptor.Category; //used in ContextMenu AddIndicator/AddBot
 
         public bool IsRemote => Agent.Model.IsRemote;
 
         public bool IsLocal => !Agent.Model.IsRemote;
+
+        public bool IsTradeBot => Descriptor.Type == Metadata.Types.PluginType.TradeBot;
+
+        public bool IsIndicator => Descriptor.Type == Metadata.Types.PluginType.Indicator;
 
         public AlgoPluginViewModel(PluginInfo info, AlgoAgentViewModel agent)
         {
             PluginInfo = info;
             Agent = agent;
 
-            PackageName = PluginInfo.Key.Package.Name;
+            Key = info.Key;
+            Descriptor = info.Descriptor_;
+
+            PackageName = Key.Package.Name;
             PackageDirectory = UnknownPath;
             CurrentGroup = (GroupType)Type;
 
@@ -79,10 +86,10 @@ namespace TickTrader.BotTerminal
                 PackageDirectory = Path.GetDirectoryName(FullPackagePath);
 
                 DisplayPackagePath = $"Full path: {FullPackagePath}{Environment.NewLine}Last modified: {PackageInfo.Identity.LastModifiedUtc} (UTC)";
-                Description = string.Join(Environment.NewLine, PluginInfo.Descriptor.Description, string.Empty, $"Package {PackageName} at {PackageDirectory}").Trim();
+                Description = string.Join(Environment.NewLine, Descriptor.Description, string.Empty, $"Package {PackageName} at {PackageDirectory}").Trim();
             }
 
-            switch (PluginInfo.Key.Package.Location)
+            switch (Key.Package.Location)
             {
                 case RepositoryLocation.LocalRepository:
                 case RepositoryLocation.LocalExtensions:

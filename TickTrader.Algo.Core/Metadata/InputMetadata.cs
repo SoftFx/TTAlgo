@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Reflection;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Metadata
 {
-    [Serializable]
     public class InputMetadata : PropertyMetadataBase
     {
-        [NonSerialized]
         private Type _dataSeriesBaseType;
 
 
@@ -18,7 +17,7 @@ namespace TickTrader.Algo.Core.Metadata
         public bool IsShortDefinition { get; private set; }
 
 
-        protected override PropertyDescriptor PropDescriptor => Descriptor;
+        protected override IPropertyDescriptor PropDescriptor => Descriptor;
 
 
         public InputMetadata(PropertyInfo reflectionInfo, InputAttribute attribute)
@@ -59,7 +58,7 @@ namespace TickTrader.Algo.Core.Metadata
             else if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(DataSeries<>))
                 _dataSeriesBaseType = reflectionInfo.PropertyType.GetGenericArguments()[0];
             else
-                SetError(AlgoPropertyErrors.InputIsNotDataSeries);
+                SetError(Domain.Metadata.Types.PropertyErrorCode.InputIsNotDataSeries);
 
             Descriptor.DataSeriesBaseTypeFullName = _dataSeriesBaseType?.FullName ?? string.Empty;
         }

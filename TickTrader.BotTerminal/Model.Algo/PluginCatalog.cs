@@ -18,11 +18,11 @@ namespace TickTrader.BotTerminal
 
         public PluginKey Key => Info.Key;
 
-        public PluginDescriptor Descriptor => Info.Descriptor;
+        public PluginDescriptor Descriptor => Info.Descriptor_;
 
-        public string DisplayName => Info.Descriptor.UiDisplayName;
+        public string DisplayName => Info.Descriptor_.UiDisplayName;
 
-        public string Category => Info.Descriptor.Category;
+        public string Category => Info.Descriptor_.Category;
 
 
         public PluginCatalogItem(IAlgoAgent agent, PluginInfo info)
@@ -51,9 +51,9 @@ namespace TickTrader.BotTerminal
         {
             _algoAgent = algoAgent;
 
-            PluginList = algoAgent.Plugins.OrderBy((k, p) => p.Descriptor.UiDisplayName).Select(info => new PluginCatalogItem(_algoAgent, info));
-            Indicators = PluginList.Where(i => i.Descriptor.Type == AlgoTypes.Indicator);
-            BotTraders = PluginList.Where(i => i.Descriptor.Type == AlgoTypes.Robot);
+            PluginList = algoAgent.Plugins.OrderBy((k, p) => p.Descriptor_.UiDisplayName).Select(info => new PluginCatalogItem(_algoAgent, info));
+            Indicators = PluginList.Where(i => i.Descriptor.Type == Metadata.Types.PluginType.Indicator);
+            BotTraders = PluginList.Where(i => i.Descriptor.Type == Metadata.Types.PluginType.TradeBot);
         }
     }
 }

@@ -70,10 +70,10 @@
 
     <Style x:Key="PluginIconStyle" TargetType="ContentControl">
         <Style.Triggers>
-            <DataTrigger Binding="{Binding Type}" Value="{x:Static meta:AlgoTypes.Robot}">
+            <DataTrigger Binding="{Binding IsTradeBot}" Value="True">
                 <Setter Property="Content" Value="{DynamicResource TradeBotIcon}"/>
             </DataTrigger>
-            <DataTrigger Binding="{Binding Type}" Value="{x:Static meta:AlgoTypes.Indicator}">
+            <DataTrigger Binding="{Binding IsIndicator}" Value="True">
                 <Setter Property="Content" Value="{DynamicResource IndicatorIcon}"/>
             </DataTrigger>
         </Style.Triggers>

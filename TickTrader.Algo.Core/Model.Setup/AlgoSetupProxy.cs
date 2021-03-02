@@ -50,7 +50,7 @@ namespace TickTrader.Algo.Core
                 return descriptor.Id;
             }
 
-            public bool IsValidPluginId(AlgoTypes pluginType, string pluginId)
+            public bool IsValidPluginId(Domain.Metadata.Types.PluginType pluginType, string pluginId)
             {
                 return true;
             }

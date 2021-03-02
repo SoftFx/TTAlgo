@@ -59,7 +59,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public AlgoTypes Type { get; }
+        public Metadata.Types.PluginType Type { get; }
 
         public string PluginType { get; }
 
@@ -71,7 +71,7 @@ namespace TickTrader.BotTerminal
 
         public event Action<LocalPluginSetupViewModel, bool> Closed = delegate { };
 
-        private LocalPluginSetupViewModel(LocalAlgoAgent agent, PluginKey key, AlgoTypes type, SetupContextInfo setupContext, PluginSetupMode mode)
+        private LocalPluginSetupViewModel(LocalAlgoAgent agent, PluginKey key, Metadata.Types.PluginType type, SetupContextInfo setupContext, PluginSetupMode mode)
         {
             Agent = agent;
             Mode = mode;
@@ -80,10 +80,10 @@ namespace TickTrader.BotTerminal
 
             switch (type)
             {
-                case AlgoTypes.Robot:
+                case Metadata.Types.PluginType.TradeBot:
                     Plugins = Agent.Catalog.BotTraders.AsObservable();
                     break;
-                case AlgoTypes.Indicator:
+                case Metadata.Types.PluginType.Indicator:
                     Plugins = Agent.Catalog.Indicators.AsObservable();
                     break;
                 default:
@@ -98,7 +98,7 @@ namespace TickTrader.BotTerminal
             RunBot = true;
         }
 
-        public LocalPluginSetupViewModel(LocalAlgoAgent agent, PluginKey key, AlgoTypes type, SetupContextInfo setupContext)
+        public LocalPluginSetupViewModel(LocalAlgoAgent agent, PluginKey key, Metadata.Types.PluginType type, SetupContextInfo setupContext)
             : this(agent, key, type, setupContext, PluginSetupMode.New)
         {
             DisplayName = $"Setting New {PluginType}";
@@ -107,7 +107,7 @@ namespace TickTrader.BotTerminal
         }
 
         public LocalPluginSetupViewModel(LocalAlgoAgent agent, ITradeBot bot)
-            : this(agent, bot.Config.Key, AlgoTypes.Robot, null, PluginSetupMode.Edit)
+            : this(agent, bot.Config.Key, Metadata.Types.PluginType.TradeBot, null, PluginSetupMode.Edit)
         {
             Bot = bot;
 
@@ -201,12 +201,12 @@ namespace TickTrader.BotTerminal
                 Setup.ValidityChanged -= Validate;
         }
 
-        private string GetPluginTypeDisplayName(AlgoTypes type)
+        private string GetPluginTypeDisplayName(Metadata.Types.PluginType type)
         {
             switch (type)
             {
-                case AlgoTypes.Robot: return "Bot";
-                case AlgoTypes.Indicator: return "Indicator";
+                case Metadata.Types.PluginType.TradeBot: return "Bot";
+                case Metadata.Types.PluginType.Indicator: return "Indicator";
                 default: return "PluginType";
             }
         }

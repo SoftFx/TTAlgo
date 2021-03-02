@@ -15,7 +15,7 @@ namespace TickTrader.BotTerminal
         private IntProperty _size;
         private BoolVar _isValid;
 
-        public EnumSetModel(List<string> values)
+        public EnumSetModel(IEnumerable<string> values)
         {
             Init(values.Select(v => new Item(this, v)));
         }

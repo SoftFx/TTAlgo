@@ -2,6 +2,7 @@
 using Machinarium.Qnil;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 using TickTrader.Algo.Protocol;
 
 namespace TickTrader.BotTerminal
@@ -52,7 +53,7 @@ namespace TickTrader.BotTerminal
             var algoBot = o as AlgoPluginViewModel;
             if (algoBot != null)
             {
-                Agent.OpenBotSetup(null, algoBot.PluginInfo.Key);
+                Agent.OpenBotSetup(null, algoBot.Key);
             }
             var algoPackage = o as AlgoPackageViewModel;
             if (algoPackage != null)
@@ -64,7 +65,7 @@ namespace TickTrader.BotTerminal
         public bool CanDrop(object o)
         {
             var algoBot = o as AlgoPluginViewModel;
-            if (algoBot != null && algoBot.Agent.Name == Agent.Name && algoBot.Type == AlgoTypes.Robot)
+            if (algoBot != null && algoBot.Agent.Name == Agent.Name && algoBot.Type == Metadata.Types.PluginType.TradeBot)
             {
                 return true;
             }

@@ -31,10 +31,8 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public override void Dispose()
+        public void Dispose()
         {
-            base.Dispose();
-
             Host.StartEvent -= Host_StartEvent;
             Host.StopEvent -= Host_StopEvent;
             if (State == PluginStates.Running)

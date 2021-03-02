@@ -40,7 +40,7 @@ namespace TickTrader.BotTerminal
                 : base(descriptor)
             {
                 if (error == null)
-                    Error = new ErrorMsgModel(descriptor.Error);
+                    Error = new ErrorMsgModel(descriptor.ErrorCode);
                 else
                     Error = new ErrorMsgModel(error);
             }

@@ -1,24 +1,23 @@
 ﻿using System;
 using System.Reflection;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Metadata
 {
-    [Serializable]
     public abstract class PropertyMetadataBase
     {
-        [NonSerialized]
         protected PropertyInfo _reflectionInfo;
 
 
         protected PropertyInfo ReflectionInfo => _reflectionInfo;
 
-        protected abstract PropertyDescriptor PropDescriptor { get; }
+        protected abstract IPropertyDescriptor PropDescriptor { get; }
 
         public string Id => PropDescriptor.Id;
 
         public string DisplayName => PropDescriptor.DisplayName;
 
-        public AlgoPropertyErrors Error => PropDescriptor.Error;
+        public Domain.Metadata.Types.PropertyErrorCode Error => PropDescriptor.ErrorCode;
 
         public bool IsValid => PropDescriptor.IsValid;
 
@@ -52,30 +51,29 @@ namespace TickTrader.Algo.Core.Metadata
         protected void Validate(PropertyInfo info)
         {
             if (!info.SetMethod.IsPublic)
-                SetError(AlgoPropertyErrors.SetIsNotPublic);
+                SetError(Domain.Metadata.Types.PropertyErrorCode.SetIsNotPublic);
             else if (!info.GetMethod.IsPublic)
-                SetError(AlgoPropertyErrors.GetIsNotPublic);
+                SetError(Domain.Metadata.Types.PropertyErrorCode.GetIsNotPublic);
         }
 
-        protected void SetError(AlgoPropertyErrors error)
+        protected void SetError(Domain.Metadata.Types.PropertyErrorCode error)
         {
             if (PropDescriptor.IsValid)
-                PropDescriptor.Error = error;
+                PropDescriptor.ErrorCode = error;
         }
     }
 
 
-    [Serializable]
     public class PropertyMetadata : PropertyMetadataBase
     {
 
-        public PropertyDescriptor Descriptor { get; }
+        public IPropertyDescriptor Descriptor { get; }
 
 
-        protected override PropertyDescriptor PropDescriptor => Descriptor;
+        protected override IPropertyDescriptor PropDescriptor => Descriptor;
 
 
-        public PropertyMetadata(PropertyInfo reflectionInfo, AlgoPropertyErrors error)
+        public PropertyMetadata(PropertyInfo reflectionInfo, Domain.Metadata.Types.PropertyErrorCode error)
             : base(reflectionInfo)
         {
             Descriptor = new PropertyDescriptor();

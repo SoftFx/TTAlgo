@@ -51,7 +51,7 @@ namespace TickTrader.BotTerminal
         public BacktesterPluginSetupViewModel(LocalAlgoAgent agent, PluginInfo info, IAlgoSetupMetadata setupMetadata, SetupContextInfo setupContext)
             : this(agent, info, setupMetadata, setupContext, PluginSetupMode.New)
         {
-            DisplayName = $"Setting - {info.Descriptor.DisplayName}";
+            DisplayName = $"Setting - {info.Descriptor_.DisplayName}";
 
             UpdateSetup();
         }
@@ -138,12 +138,12 @@ namespace TickTrader.BotTerminal
                 Setup.ValidityChanged -= Validate;
         }
 
-        private string GetPluginTypeDisplayName(AlgoTypes type)
+        private string GetPluginTypeDisplayName(Metadata.Types.PluginType type)
         {
             switch (type)
             {
-                case AlgoTypes.Robot: return "Bot";
-                case AlgoTypes.Indicator: return "Indicator";
+                case Metadata.Types.PluginType.TradeBot: return "Bot";
+                case Metadata.Types.PluginType.Indicator: return "Indicator";
                 default: return "PluginType";
             }
         }

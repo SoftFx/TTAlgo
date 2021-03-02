@@ -48,7 +48,7 @@ namespace TickTrader.BotTerminal
             _agentModel = agentModel;
             _algoEnv = algoEnv;
 
-            Plugins = _agentModel.Plugins.OrderBy((k, v) => v.Descriptor.UiDisplayName).Select(p => new AlgoPluginViewModel(p, this));
+            Plugins = _agentModel.Plugins.OrderBy((k, v) => v.Descriptor_.UiDisplayName).Select(p => new AlgoPluginViewModel(p, this));
             Packages = _agentModel.Packages.OrderBy((k, v) => k).Select(p => new AlgoPackageViewModel(p, this));
             Bots = _agentModel.Bots.OrderBy((k, v) => k).Select(p => new AlgoBotViewModel(p, this));
             Accounts = _agentModel.Accounts.OrderBy((k, v) => k).Select(p => new AlgoAccountViewModel(p, this));
@@ -206,7 +206,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                var model = new AgentPluginSetupViewModel(_algoEnv, Name, null, plugin.Key, plugin.Descriptor.Type, setupContext);
+                var model = new AgentPluginSetupViewModel(_algoEnv, Name, null, plugin.Key, plugin.Descriptor_.Type, setupContext);
                 _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
             }
             catch (Exception ex)
@@ -219,7 +219,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                var model = new AgentPluginSetupViewModel(_algoEnv, Name, account, pluginKey, AlgoTypes.Robot, null);
+                var model = new AgentPluginSetupViewModel(_algoEnv, Name, account, pluginKey, Metadata.Types.PluginType.TradeBot, null);
                 _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
             }
             catch (Exception ex)

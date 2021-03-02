@@ -265,12 +265,6 @@
     <Compile Include="Math\MathExt.cs" />
     <Compile Include="Math\Rounding.cs" />
     <Compile Include="Metadata\AlgoAssemblyInspector.cs" />
-    <Compile Include="Metadata\Descriptors\InputDescriptor.cs" />
-    <Compile Include="Metadata\Descriptors\OutputDescriptor.cs" />
-    <Compile Include="Metadata\Descriptors\ParameterDescriptor.cs" />
-    <Compile Include="Metadata\Descriptors\PluginDescriptor.cs" />
-    <Compile Include="Metadata\Descriptors\PropertyDescriptor.cs" />
-    <Compile Include="Metadata\Descriptors\ReductionDescriptor.cs" />
     <Compile Include="Metadata\ReductionMetadata.cs" />
     <Compile Include="Model.Setup\AlgoSetupProxy.cs" />
     <Compile Include="Model.Setup\ErrorMsgModel.cs" />
@@ -325,7 +319,6 @@
     <Compile Include="Repository\MappingCollection.cs" />
     <Compile Include="Repository\Mappings\QuoteToBarMapping.cs" />
     <Compile Include="Repository\Mappings\QuoteToDoubleMapping.cs" />
-    <Compile Include="Repository\PackageIdentity.cs" />
     <Compile Include="Repository\PackageWatcher.cs" />
     <Compile Include="Repository\PackageRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

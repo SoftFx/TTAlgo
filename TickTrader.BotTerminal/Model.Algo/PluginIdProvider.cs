@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -26,22 +27,22 @@ namespace TickTrader.BotTerminal
         {
             switch (descriptor.Type)
             {
-                case AlgoTypes.Indicator:
-                case AlgoTypes.Robot:
+                case Metadata.Types.PluginType.Indicator:
+                case Metadata.Types.PluginType.TradeBot:
                     return GeneratePluginId(descriptor.DisplayName);
                 default:
                     return GenerateId(descriptor.DisplayName);
             }
         }
 
-        public bool IsValidPluginId(AlgoTypes pluginType, string pluginId)
+        public bool IsValidPluginId(Metadata.Types.PluginType pluginType, string pluginId)
         {
             if (!_pluginsIdHelper.Validate(pluginId))
             {
                 return false;
             }
 
-            return pluginType == AlgoTypes.Indicator || pluginType == AlgoTypes.Robot ? !_plugins.ContainsKey(pluginId) : true;
+            return pluginType == Metadata.Types.PluginType.Indicator || pluginType == Metadata.Types.PluginType.TradeBot ? !_plugins.ContainsKey(pluginId) : true;
         }
 
         public void RegisterPluginId(string pluginId)

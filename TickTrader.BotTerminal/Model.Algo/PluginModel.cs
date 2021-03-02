@@ -12,7 +12,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
-    internal class PluginModel : Algo.Core.Lib.CrossDomainObject, IPluginModel
+    internal class PluginModel : IPluginModel
     {
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 

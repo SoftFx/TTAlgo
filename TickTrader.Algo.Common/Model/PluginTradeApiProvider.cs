@@ -81,7 +81,7 @@ namespace TickTrader.Algo.Common.Model
             OnExclusiveReport?.Invoke(rep);
         }
 
-        public class Handler : CrossDomainObject, ITradeExecutor
+        public class Handler : ITradeExecutor
         {
             private Ref<PluginTradeApiProvider> _ref;
 

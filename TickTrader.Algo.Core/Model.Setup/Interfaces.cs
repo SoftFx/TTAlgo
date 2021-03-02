@@ -39,7 +39,7 @@ namespace TickTrader.Algo.Common.Model.Setup
     {
         string GeneratePluginId(PluginDescriptor descriptor);
 
-        bool IsValidPluginId(AlgoTypes pluginType, string pluginId);
+        bool IsValidPluginId(Domain.Metadata.Types.PluginType pluginType, string pluginId);
 
         void RegisterPluginId(string pluginId);
     }

@@ -375,7 +375,7 @@ namespace TickTrader.BotAgent.BA.Models
             }
 
             _ref = _packageRepo.Library.GetPluginRef(pluginKey);
-            if (_ref == null || _ref.Metadata.Descriptor.Type != AlgoTypes.Robot)
+            if (_ref == null || _ref.Metadata.Descriptor.Type != Metadata.Types.PluginType.TradeBot)
             {
                 BreakBot($"Trade bot {pluginKey.DescriptorId} is missing in package {pluginKey.Package.Name} at {pluginKey.Package.Location}!");
                 return;

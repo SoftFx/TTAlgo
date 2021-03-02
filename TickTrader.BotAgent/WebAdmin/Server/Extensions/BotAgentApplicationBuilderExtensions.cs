@@ -6,6 +6,7 @@ using System;
 using TickTrader.BotAgent.WebAdmin.Server.Hubs;
 using TickTrader.Algo.Common.Info;
 using Microsoft.AspNetCore.SignalR;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
 {

@@ -24,15 +24,15 @@ namespace TickTrader.Algo.Common.Info
 
         public static PackageInfo ToInfo(this AlgoPackageRef packageRef)
         {
-            return new PackageInfo
+            var package= new PackageInfo
             {
                 Key = new PackageKey(packageRef.Name, packageRef.Location),
                 Identity = packageRef.Identity,
                 IsValid = packageRef.IsValid,
-                Plugins = packageRef.GetPluginRefs().Select(r => r.ToInfo(packageRef)).ToList(),
                 IsLocked = packageRef.IsLocked,
-                IsObsolete = packageRef.IsObsolete,
             };
+            package.Plugins.AddRange(packageRef.GetPluginRefs().Select(r => r.ToInfo(packageRef)));
+            return package;
         }
 
         public static PluginInfo ToInfo(this AlgoPluginRef pluginRef, AlgoPackageRef packageRef)
@@ -40,7 +40,7 @@ namespace TickTrader.Algo.Common.Info
             return new PluginInfo
             {
                 Key = pluginRef.GetKey(packageRef),
-                Descriptor = pluginRef.Metadata.Descriptor,
+                Descriptor_ = pluginRef.Metadata.Descriptor,
             };
         }
 
@@ -49,7 +49,7 @@ namespace TickTrader.Algo.Common.Info
             return new PluginInfo
             {
                 Key = pluginRef.GetKey(packageKey),
-                Descriptor = pluginRef.Metadata.Descriptor,
+                Descriptor_ = pluginRef.Metadata.Descriptor,
             };
         }
 

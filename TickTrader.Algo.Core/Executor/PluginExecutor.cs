@@ -672,7 +672,7 @@ namespace TickTrader.Algo.Core
 
         #region Emulator Support
 
-        internal EmulationControlFixture InitEmulation(IBacktesterSettings settings, AlgoTypes pluginType, FeedEmulator emulator = null, FeedStrategy fStrategy = null)
+        internal EmulationControlFixture InitEmulation(IBacktesterSettings settings, Domain.Metadata.Types.PluginType pluginType, FeedEmulator emulator = null, FeedStrategy fStrategy = null)
         {
             var fixture = new EmulationControlFixture(settings, this, _calcFixture, emulator);
             InvokeStrategy = fixture.InvokeEmulator;

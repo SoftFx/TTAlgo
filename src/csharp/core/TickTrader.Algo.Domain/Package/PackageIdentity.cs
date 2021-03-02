@@ -1,30 +1,19 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace TickTrader.Algo.Core.Repository
+namespace TickTrader.Algo.Domain
 {
-    public class PackageIdentity
+    public partial class PackageIdentity
     {
-        public string FileName { get; set; }
-
-        public string FilePath { get; set; }
-
-        public DateTime CreatedUtc { get; set; }
-
-        public DateTime LastModifiedUtc { get; set; }
-
-        public long Size { get; set; }
-
-        public string Hash { get; set; }
-
-        public bool IsValid => Hash.Length == 64;
-
-
-        public PackageIdentity() { }
-
         public PackageIdentity(string fileName, string filePath, DateTime createdUtc, DateTime lastModifiedUtc, long size, string hash)
+            : this(fileName, filePath, createdUtc.ToTimestamp(), lastModifiedUtc.ToTimestamp(), size, hash)
+        {
+        }
+
+        public PackageIdentity(string fileName, string filePath, Timestamp createdUtc, Timestamp lastModifiedUtc, long size, string hash)
         {
             FileName = fileName;
             FilePath = filePath;

@@ -70,12 +70,12 @@ namespace TickTrader.BotTerminal
 
             _outputModels = CreateOutputModels(Model).ToList();
 
-            _outputModels.Where(o => o.Descriptor.Target == OutputTargets.Overlay).Foreach(_overlayOutputs.Add);
+            _outputModels.Where(o => o.Descriptor.Target == Metadata.Types.OutputTarget.Overlay).Foreach(_overlayOutputs.Add);
             _overlayOutputs.Values.Foreach(o => _overlaySeries.Add(SeriesViewModel.FromOutputSeries(o)));
 
-            foreach (OutputTargets target in Enum.GetValues(typeof(OutputTargets)))
+            foreach (Metadata.Types.OutputTarget target in Enum.GetValues(typeof(Metadata.Types.OutputTarget)))
             {
-                if (target != OutputTargets.Overlay)
+                if (target != Metadata.Types.OutputTarget.Overlay)
                 {
                     if (_outputModels.Any(o => o.Descriptor.Target == target))
                     {

@@ -53,7 +53,7 @@ namespace TickTrader.BotTerminal
             SaveProps(file, StatProperties.Value);
         }
 
-        public static void SaveAsText(Stream file, AlgoTypes pluginType, TestingStatistics stats)
+        public static void SaveAsText(Stream file, Metadata.Types.PluginType pluginType, TestingStatistics stats)
         {
             var props = FormatStats(pluginType, stats);
             SaveProps(file, props);
@@ -130,7 +130,7 @@ namespace TickTrader.BotTerminal
 
             _statProperties.Value = FormatStats(pluginType, newStats);
 
-            if (pluginType == AlgoTypes.Robot)
+            if (pluginType == Metadata.Types.PluginType.TradeBot)
             {
                 SmallCharts.Add(new BacktesterStatChartViewModel("Profits and losses by hours", ReportDiagramTypes.CategoryHistogram)
                     .AddStackedColumns(newStats.ProfitByHours, ReportSeriesStyles.ProfitColumns, false)
@@ -142,7 +142,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private static Dictionary<string, string> FormatStats(AlgoTypes pluginType, TestingStatistics stats)
+        private static Dictionary<string, string> FormatStats(Metadata.Types.PluginType pluginType, TestingStatistics stats)
         {
             var props = new Dictionary<string, string>();
             var balanceNumbersFormat = FormatExtentions.CreateTradeFormatInfo(stats.AccBalanceDigits);
@@ -150,7 +150,7 @@ namespace TickTrader.BotTerminal
             props.Add("Bars", stats.BarsCount.ToString());
             props.Add("Ticks", stats.TicksCount.ToString());
 
-            if (pluginType == AlgoTypes.Robot)
+            if (pluginType == Metadata.Types.PluginType.TradeBot)
             {
                 props.Add("Initial deposit", stats.InitialBalance.FormatPlain(balanceNumbersFormat));
                 props.Add("Final equity", stats.FinalBalance.FormatPlain(balanceNumbersFormat));
@@ -169,7 +169,7 @@ namespace TickTrader.BotTerminal
 
             props.Add("Testing speed (tps)", tickPerSecond);
 
-            if (pluginType == AlgoTypes.Robot)
+            if (pluginType == Metadata.Types.PluginType.TradeBot)
             {
                 props.Add("Orders opened", stats.OrdersOpened.ToString());
                 props.Add("Orders rejected", stats.OrdersRejected.ToString());

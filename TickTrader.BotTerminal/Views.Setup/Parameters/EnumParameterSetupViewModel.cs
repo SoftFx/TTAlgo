@@ -32,7 +32,7 @@ namespace TickTrader.BotTerminal
         public EnumParamSetupViewModel(ParameterDescriptor descriptor)
             : base(descriptor)
         {
-            EnumValues = descriptor.EnumValues;
+            EnumValues = descriptor.EnumValues.ToList();
             if (descriptor.DefaultValue != null && descriptor.DefaultValue is string)
                 DefaultValue = (string)descriptor.DefaultValue;
             if (DefaultValue == null)
