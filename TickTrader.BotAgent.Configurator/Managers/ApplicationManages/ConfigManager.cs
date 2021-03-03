@@ -77,8 +77,8 @@ namespace TickTrader.BotAgent.Configurator
     public class ConfigurationProperies
     {
         private const string AppSettings = "WebAdmin\\appsettings.json";
-        private const string ApplicationName = "TickTrader.BotAgent";
-        private const string RegistryAppName = "TickTrader\\BotAgent";
+        private const string ApplicationName = "TickTrader.AlgoServer";
+        private const string RegistryAppName = "TickTrader\\AlgoServer";
 
         private readonly Dictionary<string, string> _systemProperties;
 

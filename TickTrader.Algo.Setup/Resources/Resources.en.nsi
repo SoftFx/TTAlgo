@@ -3,17 +3,17 @@
 LangString InstallationCanceledMessage  ${LANG_ENGLISH} "Installation cancelled."
 LangString InstallationAbortedMessage   ${LANG_ENGLISH} "Installation aborted. Error code:"
 
-LangString UninstallUnknownPathMessage  ${LANG_ENGLISH} "Provided path is not registered as BotTerminal or BotAgent installation."
+LangString UninstallUnknownPathMessage  ${LANG_ENGLISH} "Provided path is not registered as AlgoTerminal or AlgoServer installation."
 LangString UninstallCanceledMessage     ${LANG_ENGLISH} "Uninstallation cancelled."
 LangString UninstallBrokenMessage       ${LANG_ENGLISH} "Unable to find uninstall.exe of previous version"
 
-LangString UninstallPrevTerminal        ${LANG_ENGLISH} "Previous installed TickTrader BotTerminal will be uninstalled. Continue?"
-LangString UninstallPrevAgent           ${LANG_ENGLISH} "Previous installed TickTrader BotAgent will be uninstalled. Continue?"
+LangString UninstallPrevTerminal        ${LANG_ENGLISH} "Previous installed TickTrader AlgoTerminal will be uninstalled. Continue?"
+LangString UninstallPrevAlgoServer           ${LANG_ENGLISH} "Previous installed TickTrader AlgoServer will be uninstalled. Continue?"
 
 LangString CopyLegacyInstallConfig      ${LANG_ENGLISH} "Copy configuration from old installation directory?"
 
-LangString TerminalIsRunningInstall     ${LANG_ENGLISH} "TickTrader BotTerminal is running. Close it and press Retry to continue or press Cancel to skip BotTerminal installation."
-LangString TerminalIsRunningUninstall   ${LANG_ENGLISH} "TickTrader BotTerminal is running. Close it and press Retry to continue or press Cancel to stop BotTerminal uninstallation."
+LangString TerminalIsRunningInstall     ${LANG_ENGLISH} "TickTrader AlgoTerminal is running. Close it and press Retry to continue or press Cancel to skip AlgoTerminal installation."
+LangString TerminalIsRunningUninstall   ${LANG_ENGLISH} "TickTrader AlgoTerminal is running. Close it and press Retry to continue or press Cancel to stop AlgoTerminal uninstallation."
 
 LangString ServiceInstallFailMessage    ${LANG_ENGLISH} "Failed to install service. Error code:"
 LangString ServiceStartFailMessage      ${LANG_ENGLISH} "Failed to start service. Error code:"
@@ -21,24 +21,24 @@ LangString ServiceStopFailMessage       ${LANG_ENGLISH} "Failed to stop service.
 LangString ServiceUninstallFailMessage  ${LANG_ENGLISH} "Failed to uninstall service. Error code:"
 LangString ServiceConfigFailMessage     ${LANG_ENGLISH} "Failed to configure service. Error code:"
 
-LangString TerminalSection1Description  ${LANG_ENGLISH} "BotTerminal core files"
-LangString TerminalSection2Description  ${LANG_ENGLISH} "Desktop shortcut for BotTerminal"
-LangString TerminalSection3Description  ${LANG_ENGLISH} "StartMenu shortcut for BotTerminal"
+LangString TerminalSection1Description  ${LANG_ENGLISH} "AlgoTerminal core files"
+LangString TerminalSection2Description  ${LANG_ENGLISH} "Desktop shortcut for AlgoTerminal"
+LangString TerminalSection3Description  ${LANG_ENGLISH} "StartMenu shortcut for AlgoTerminal"
 LangString TerminalSection4Description  ${LANG_ENGLISH} "Bots and indicators for testing several aspects of Algo API"
 
-LangString AgentSection1Description     ${LANG_ENGLISH} "BotAgent core files and windows service"
+LangString AlgoServerSection1Description     ${LANG_ENGLISH} "AlgoServer core files and windows service"
 
-LangString ConfiguratorSection1Description  ${LANG_ENGLISH} "BotAgent config tool core files"
-LangString ConfiguratorSection2Description  ${LANG_ENGLISH} "Desktop shortcut for BotAgent config tool"
-LangString ConfiguratorSection3Description  ${LANG_ENGLISH} "StartMenu shortcut for BotAgent config tool"
+LangString ConfiguratorSection1Description  ${LANG_ENGLISH} "AlgoServer config tool core files"
+LangString ConfiguratorSection2Description  ${LANG_ENGLISH} "Desktop shortcut for AlgoServer config tool"
+LangString ConfiguratorSection3Description  ${LANG_ENGLISH} "StartMenu shortcut for AlgoServer config tool"
 
-LangString ConfiguratorIsRunningInstall     ${LANG_ENGLISH} "BotAgent config tool is running. Close it and press Retry to continue or press Cancel to skip BotAgent installation."
-LangString ConfiguratorIsRunningUninstall   ${LANG_ENGLISH} "BotAgent config tool is running. Close it and press Retry to continue or press Cancel to stop BotAgent uninstallation."
+LangString ConfiguratorIsRunningInstall     ${LANG_ENGLISH} "AlgoServer config tool is running. Close it and press Retry to continue or press Cancel to skip AlgoServer installation."
+LangString ConfiguratorIsRunningUninstall   ${LANG_ENGLISH} "AlgoServer config tool is running. Close it and press Retry to continue or press Cancel to stop AlgoServer uninstallation."
 
 LangString StandardInstallText          ${LANG_ENGLISH} "Standard installation"
 LangString MinimalInstallText           ${LANG_ENGLISH} "Minimal installation"
-LangString TerminalInstallText          ${LANG_ENGLISH} "Only BotTerminal"
-LangString AgentInstallText             ${LANG_ENGLISH} "Only BotAgent"
+LangString TerminalInstallText          ${LANG_ENGLISH} "Only AlgoTerminal"
+LangString AlgoServerInstallText             ${LANG_ENGLISH} "Only AlgoServer"
 LangString FullInstallText              ${LANG_ENGLISH} "Full installation"
 
 LangString FinishPageTitle              ${LANG_ENGLISH} "Completing TickTrader Algo Setup"

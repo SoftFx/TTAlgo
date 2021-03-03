@@ -1,10 +1,10 @@
 ;--------------------------
 ; Parameters
 
-!define TERMINAL_NAME "BotTerminal"
+!define TERMINAL_NAME "AlgoTerminal"
 !define TERMINAL_DISPLAY_NAME "${BASE_NAME} ${TERMINAL_NAME}"
 !define TERMINAL_BINDIR "..\TickTrader.BotTerminal\bin\Release\"
-!define TERMINAL_EXE "TickTrader.BotTerminal.exe"
+!define TERMINAL_EXE "TickTrader.AlgoTerminal.exe"
 !define TERMINAL_LOCK_FILE "applock"
 
 !define REPOSITORY_DIR "AlgoRepository"
@@ -57,7 +57,7 @@ var TestCollection_Selected
 
 !macro _UnpackTerminal
 
-    ${Log} "Unpacking BotTerminal files to $Terminal_InstDir"
+    ${Log} "Unpacking AlgoTerminal files to $Terminal_InstDir"
     SetOutPath $Terminal_InstDir
 !ifdef DEBUG
     Sleep 3000
@@ -71,7 +71,7 @@ var TestCollection_Selected
 
 !macro _DeleteTerminalFiles
 
-    ${Log} "Removing BotTerminal files to $Terminal_InstDir"
+    ${Log} "Removing AlgoTerminal files to $Terminal_InstDir"
     StrCpy $INSTDIR $Terminal_InstDir
 !ifdef DEBUG
     Delete "$INSTDIR\${TERMINAL_EXE}"
@@ -128,7 +128,7 @@ var TestCollection_Selected
 
 !macro _DeleteTerminalShortcuts
 
-    ${Log} "Deleting BotTerminal shortcuts with name: $Terminal_ShortcutName"
+    ${Log} "Deleting AlgoTerminal shortcuts with name: $Terminal_ShortcutName"
     Delete "$DESKTOP\$Terminal_ShortcutName.lnk"
     Delete "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\$Terminal_Id\$Terminal_ShortcutName.lnk"
     RMDir "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\$Terminal_Id\"
@@ -210,10 +210,10 @@ var TestCollection_Selected
         ${If} ${Mode} == "Install"
             ${CreateAppId} $Terminal_Id
             ${Terminal_InitRegKeys}
-            ${Log} "Created BotTerminal Id: $Terminal_Id"
+            ${Log} "Created AlgoTerminal Id: $Terminal_Id"
         ${EndIf}
     ${Else}
-        ${Log} "Found BotTerminal Id: $Terminal_Id"
+        ${Log} "Found AlgoTerminal Id: $Terminal_Id"
         ${Terminal_InitRegKeys}
         ${Terminal_RegRead}
     ${EndIf}
@@ -232,7 +232,7 @@ var TestCollection_Selected
     ${If} ${FileExists} "$Terminal_InstDir\*"
         ${GetFileLock} $3 "$Terminal_InstDir\${TERMINAL_LOCK_FILE}"
         ${IF} $3 == ${FILE_LOCKED}
-            ${Log} "BotTerminal is running ($Terminal_InstDir)"
+            ${Log} "AlgoTerminal is running ($Terminal_InstDir)"
             MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION ${Msg} IDRETRY ${Retry} IDCANCEL ${Cancel}
         ${EndIf}
     ${EndIf}

@@ -17,7 +17,7 @@
 ; Parameters
 
 !ifndef PRODUCT_NAME
-    !define PRODUCT_NAME "TickTrader Algo"
+    !define PRODUCT_NAME "TickTrader Algo Studio"
 !endif
 
 !ifndef PRODUCT_PUBLISHER
@@ -37,7 +37,7 @@
 !endif
 
 !ifndef SETUP_FILENAME
-    !define SETUP_FILENAME "Algo ${PRODUCT_BUILD}.Setup.exe"
+    !define SETUP_FILENAME "Algo Studio ${PRODUCT_BUILD}.Setup.exe"
 !endif
 
 !define BASE_NAME "TickTrader"
@@ -67,7 +67,7 @@ var OffsetY
 ; Components definition
 
 !include "Algo.Terminal.nsh"
-!include "Algo.Agent.nsh"
+!include "Algo.Server.nsh"
 ;!include "Algo.Configurator.nsh"
 
 
@@ -75,7 +75,7 @@ var OffsetY
 ; Directory page
 
 Var Terminal_DirText
-Var Agent_DirText
+Var AlgoServer_DirText
 
 Function DirectoryPageCreate
 
@@ -121,19 +121,19 @@ Function DirectoryPageCreate
 
     ${EndIf}
 
-    ${If} $Agent_CoreSelected == ${TRUE}
+    ${If} $AlgoServer_CoreSelected == ${TRUE}
 
-        ${NSD_CreateGroupBox} 0 "$OffsetYu" 100% 36u "${AGENT_NAME} Folder"
+        ${NSD_CreateGroupBox} 0 "$OffsetYu" 100% 36u "${ALGOSERVER_NAME} Folder"
         Pop $Void
 
         IntOp $OffsetY $OffsetY + 14
 
-        ${NSD_CreateDirRequest} 3% "$OffsetYu" 71% 13u "$Agent_InstDir"
-        Pop $Agent_DirText
+        ${NSD_CreateDirRequest} 3% "$OffsetYu" 71% 13u "$AlgoServer_InstDir"
+        Pop $AlgoServer_DirText
 
         ${NSD_CreateBrowseButton} 77% "$OffsetYu" 20% 14u "Browse..."
         Pop $Void
-        ${NSD_OnClick} $Void Agent_OnDirBrowse
+        ${NSD_OnClick} $Void AlgoServer_OnDirBrowse
 
     ${EndIf}
 
@@ -157,7 +157,7 @@ FunctionEnd
 !macroend
 
 !insertmacro DirBrowse Terminal_OnDirBrowse ${TERMINAL_NAME} $Terminal_DirText
-!insertmacro DirBrowse Agent_OnDirBrowse ${AGENT_NAME} $Agent_DirText
+!insertmacro DirBrowse AlgoServer_OnDirBrowse ${ALGOSERVER_NAME} $AlgoServer_DirText
 
 Function DirectoryPageLeave
 
@@ -168,11 +168,11 @@ Function DirectoryPageLeave
 
     ${EndIf}
 
-    ${If} $Agent_CoreSelected == ${TRUE}
+    ${If} $AlgoServer_CoreSelected == ${TRUE}
 
-        ${NSD_GetText} $Agent_DirText $Agent_InstDir
-        ${Agent_InitId} "Install"
-        StrCpy $Configurator_InstDir "$Agent_InstDir\${CONFIGURATOR_NAME}"
+        ${NSD_GetText} $AlgoServer_DirText $AlgoServer_InstDir
+        ${AlgoServer_InitId} "Install"
+        StrCpy $Configurator_InstDir "$AlgoServer_InstDir\${CONFIGURATOR_NAME}"
 
     ${EndIf}
 
@@ -335,15 +335,15 @@ Function FinishPageCreate
 
             ${EndIf}
 
-            ${If} $Agent_ServiceCreated == ${TRUE}
+            ${If} $AlgoServer_ServiceCreated == ${TRUE}
             ${AndIf} $Configurator_Installed == ${TRUE}
 
                 ${NSD_CreateCheckBox} 120u "$OffsetYu" -130u 12u "Run ${CONFIGURATOR_DISPLAY_NAME}"
                 Pop $Configurator_RunCheckBox
                 SetCtlColors $Configurator_RunCheckBox "" "ffffff"
 
-                ${If} $Agent_ServiceFailed == ${FALSE}
-                ${AndIf} $Agent_LaunchService == ${TRUE}
+                ${If} $AlgoServer_ServiceFailed == ${FALSE}
+                ${AndIf} $AlgoServer_LaunchService == ${TRUE}
                     ; no need to run configurator if update went fine
                 ${Else}
                     ${NSD_Check} $Configurator_RunCheckBox
@@ -353,9 +353,9 @@ Function FinishPageCreate
 
             ${EndIf}
 
-            ${If} $Agent_ServiceError != ${NO_ERR_MSG}
+            ${If} $AlgoServer_ServiceError != ${NO_ERR_MSG}
 
-                ${NSD_CreateLabel} 120u "$OffsetYu" -130u -100u $Agent_ServiceError
+                ${NSD_CreateLabel} 120u "$OffsetYu" -130u -100u $AlgoServer_ServiceError
                 Pop $Void
                 SetCtlColors $Void "ff0000" "ffffff"
 

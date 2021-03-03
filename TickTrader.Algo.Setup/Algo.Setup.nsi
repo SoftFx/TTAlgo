@@ -56,19 +56,19 @@ Page custom FinishPageCreate FinishPageLeave
 InstType Standard
 InstType Minimal
 InstType Terminal
-InstType Agent
+InstType AlgoServer
 InstType Full
 
 !define StandardInstall 0
 !define MinimalInstall 1
 !define TerminalInstall 2
-!define AgentInstall 3
+!define AlgoServerInstall 3
 !define FullInstall 4
 
 !define StandardInstallBitFlag 1
 !define MinimalInstallBitFlag 2
 !define TerminalInstallBitFlag 4
-!define AgentInstallBitFlag 8
+!define AlgoServerInstallBitFlag 8
 !define FullInstallBitFlag 16
 
 ;--------------------------
@@ -88,14 +88,14 @@ Function .onInit
     InstTypeSetText ${StandardInstall} $(StandardInstallText)
     InstTypeSetText ${MinimalInstall} $(MinimalInstallText)
     InstTypeSetText ${TerminalInstall} $(TerminalInstallText)
-    InstTypeSetText ${AgentInstall} $(AgentInstallText)
+    InstTypeSetText ${AlgoServerInstall} $(AlgoServerInstallText)
     InstTypeSetText ${FullInstall} $(FullInstallText)
 
     Call ConfigureComponents
     Call ConfigureInstallTypes
 
     ${Terminal_Init}
-    ${Agent_Init}
+    ${AlgoServer_Init}
 
     StrCpy $Framework_Checked ${FALSE}
 
@@ -114,7 +114,7 @@ FunctionEnd
 ;--------------------------
 ; Components
 
-SectionGroup "Install BotTerminal" TerminalGroup
+SectionGroup "Install AlgoTerminal" TerminalGroup
 
 Section "Core files" TerminalCore
 
@@ -126,8 +126,8 @@ Section "Core files" TerminalCore
     ${Framework_Check}
     ${Framework_Install}
 
-    ${Print} "Installing BotTerminal"
-    ${Log} "BotTerminal Id: $Terminal_Id"
+    ${Print} "Installing AlgoTerminal"
+    ${Log} "AlgoTerminal Id: $Terminal_Id"
 
     ReadRegStr $3 HKLM "$Terminal_RegKey" "${REG_PATH_KEY}"
     ${If} $Terminal_InstDir == $3
@@ -151,10 +151,10 @@ UninstallTerminalLabel:
 
     StrCpy $Terminal_Installed ${TRUE}
 
-    ${Log} "Finished BotTerminal installation"
+    ${Log} "Finished AlgoTerminal installation"
     Goto TerminalInstallEnd
 SkipTerminalLabel:
-    ${Print} "Skipped BotTerminal installation"
+    ${Print} "Skipped AlgoTerminal installation"
 TerminalInstallEnd:
 
     Pop $3
@@ -179,81 +179,81 @@ SectionEnd
 SectionGroupEnd
 
 
-SectionGroup "Install BotAgent" AgentGroup
+SectionGroup "Install AlgoServer" AlgoServerGroup
 
-Section "Core files" AgentCore
+Section "Core files" AlgoServerCore
 
     Push $3
 
-    CreateDirectory $Agent_InstDir
-    ${SetLogFile} "$Agent_InstDir\install.log"
+    CreateDirectory $AlgoServer_InstDir
+    ${SetLogFile} "$AlgoServer_InstDir\install.log"
 
     ${Framework_Check}
     ${Framework_Install}
 
-    ${Print} "Installing BotAgent"
-    ${Log} "BotAgent Id: $Agent_Id"
+    ${Print} "Installing AlgoServer"
+    ${Log} "AlgoServer Id: $AlgoServer_Id"
 
-    ReadRegStr $3 HKLM "$Agent_RegKey" "${REG_PATH_KEY}"
-    ${If} $Agent_InstDir == $3
+    ReadRegStr $3 HKLM "$AlgoServer_RegKey" "${REG_PATH_KEY}"
+    ${If} $AlgoServer_InstDir == $3
         ${Log} "Previous installation found"
-        ${If} ${FileExists} "$Agent_InstDir\uninstall.exe"
-            ${Agent_RememberServiceState}
-            MessageBox MB_YESNO|MB_ICONQUESTION "$(UninstallPrevAgent)" IDYES UninstallAgentLabel IDNO SkipAgentLabel
-UninstallAgentLabel:
-            ${Configurator_CheckLock} $(ConfiguratorIsRunningInstall) UninstallAgentLabel SkipAgentLabel
-            ${Agent_StopService} UninstallAgentLabel SkipAgentLabel
-            ${UninstallApp} $Agent_InstDir
+        ${If} ${FileExists} "$AlgoServer_InstDir\uninstall.exe"
+            ${AlgoServer_RememberServiceState}
+            MessageBox MB_YESNO|MB_ICONQUESTION "$(UninstallPrevAlgoServer)" IDYES UninstallAlgoServerLabel IDNO SkipAlgoServerLabel
+UninstallAlgoServerLabel:
+            ${Configurator_CheckLock} $(ConfiguratorIsRunningInstall) UninstallAlgoServerLabel SkipAlgoServerLabel
+            ${AlgoServer_StopService} UninstallAlgoServerLabel SkipAlgoServerLabel
+            ${UninstallApp} $AlgoServer_InstDir
         ${Else}
             ${Log} "Unable to find uninstall.exe for previous installation"
             MessageBox MB_OK|MB_ICONEXCLAMATION "$(UninstallBrokenMessage)"
-            Goto SkipAgentLabel
+            Goto SkipAlgoServerLabel
         ${EndIf}
     ${Else}
         SetRegView 32
-        ReadRegStr $3 HKLM "${AGENT_LEGACY_REG_KEY}" ""
+        ReadRegStr $3 HKLM "${ALGOSERVER_LEGACY_REG_KEY}" ""
         ${If} $3 != ""
             ${Log} "Legacy installation found"
             ${If} ${FileExists} "$3\uninstall.exe"
-                MessageBox MB_YESNO|MB_ICONQUESTION "$(UninstallPrevAgent)" IDYES UninstallLegacyAgentLabel IDNO SkipAgentLabel
-UninstallLegacyAgentLabel:
-                ${Agent_StopLegacyService} UninstallLegacyAgentLabel SkipAgentLabel
+                MessageBox MB_YESNO|MB_ICONQUESTION "$(UninstallPrevAlgoServer)" IDYES UninstallLegacyAlgoServerLabel IDNO SkipAlgoServerLabel
+UninstallLegacyAlgoServerLabel:
+                ${AlgoServer_StopLegacyService} UninstallLegacyAlgoServerLabel SkipAlgoServerLabel
                 ${UninstallApp} $3
-                ${If} $Agent_InstDir != $3
+                ${If} $AlgoServer_InstDir != $3
                     MessageBox MB_YESNO|MB_ICONQUESTION "$(CopyLegacyInstallConfig)" IDYES CopyFilesFromLegacyVersion IDNO IgnoreFilesFromLegacyVersion
 CopyFilesFromLegacyVersion:
-                    ${Agent_CopyConfig} $3 $Agent_InstDir
+                    ${AlgoServer_CopyConfig} $3 $AlgoServer_InstDir
 IgnoreFilesFromLegacyVersion:
                 ${EndIf}
             ${Else}
                 ${Log} "Unable to find uninstall.exe for legacy installation"
                 MessageBox MB_OK|MB_ICONEXCLAMATION "$(UninstallBrokenMessage)"
-                Goto SkipAgentLabel
+                Goto SkipAlgoServerLabel
             ${EndIf}
         ${EndIf}
         SetRegView 64
     ${EndIf}
 
-    ${Agent_Unpack}
-    ${Agent_RegWrite}
+    ${AlgoServer_Unpack}
+    ${AlgoServer_RegWrite}
     ${Configurator_CreateShortcuts}
-    WriteUninstaller "$Agent_InstDir\uninstall.exe"
+    WriteUninstaller "$AlgoServer_InstDir\uninstall.exe"
 
     StrCpy $Configurator_Installed ${TRUE}
 
-    ${Agent_CreateService}
-    ${If} $Agent_ServiceCreated == ${TRUE}
-        StrCpy $Agent_Installed ${TRUE}
-        ${If} $Agent_LaunchService == ${TRUE}
-            ${Agent_StartService}
+    ${AlgoServer_CreateService}
+    ${If} $AlgoServer_ServiceCreated == ${TRUE}
+        StrCpy $AlgoServer_Installed ${TRUE}
+        ${If} $AlgoServer_LaunchService == ${TRUE}
+            ${AlgoServer_StartService}
         ${EndIf}
     ${EndIf}
 
-    ${Log} "Finished BotAgent installation"
-    Goto AgentInstallEnd
-SkipAgentLabel:
-    ${Print} "Skipped BotAgent installation"
-AgentInstallEnd:
+    ${Log} "Finished AlgoServer installation"
+    Goto AlgoServerInstallEnd
+SkipAlgoServerLabel:
+    ${Print} "Skipped AlgoServer installation"
+AlgoServerInstallEnd:
 
     Pop $3
 
@@ -289,7 +289,7 @@ Section Uninstall
     ${Terminal_InitId} "Uninstall"
     ${If} $Terminal_Id != ${EMPTY_APPID}
 
-        ${Log} "Uninstalling BotTerminal from $INSTDIR"
+        ${Log} "Uninstalling AlgoTerminal from $INSTDIR"
     RetryUninstallTerminal:
         ${Terminal_CheckLock} $(TerminalIsRunningUninstall) RetryUninstallTerminal SkipUninstallTerminal
 
@@ -302,50 +302,50 @@ Section Uninstall
         ; Remove registry entries
         ${Terminal_RegDelete}
 
-        ${Log} "Finished BotTerminal uninstallation"
+        ${Log} "Finished AlgoTerminal uninstallation"
         Goto TerminalUninstallEnd
     SkipUninstallTerminal:
-        ${Log} "Skipped BotTerminal uninstallation"
+        ${Log} "Skipped AlgoTerminal uninstallation"
         Abort $(UninstallCanceledMessage)
     TerminalUninstallEnd:
 
     ${EndIf}
 
-    StrCpy $Agent_InstDir $INSTDIR
-    ${Agent_InitId} "Uninstall"
-    ${If} $Agent_Id != ${EMPTY_APPID}
+    StrCpy $AlgoServer_InstDir $INSTDIR
+    ${AlgoServer_InitId} "Uninstall"
+    ${If} $AlgoServer_Id != ${EMPTY_APPID}
         
-        ${Log} "Uninstalling BotAgent from $INSTDIR"
-    RetryUninstallAgent:
-        ${Configurator_CheckLock} $(ConfiguratorIsRunningUninstall) RetryUninstallAgent SkipUninstallAgent
-        ${Agent_StopService} RetryUninstallAgent SkipUninstallAgent
-        ${Agent_DeleteService}
+        ${Log} "Uninstalling AlgoServer from $INSTDIR"
+    RetryUninstallAlgoServer:
+        ${Configurator_CheckLock} $(ConfiguratorIsRunningUninstall) RetryUninstallAlgoServer SkipUninstallAlgoServer
+        ${AlgoServer_StopService} RetryUninstallAlgoServer SkipUninstallAlgoServer
+        ${AlgoServer_DeleteService}
 
-        ${If} $Agent_ServiceError != ${NO_ERR_MSG}
-            Abort $Agent_ServiceError
+        ${If} $AlgoServer_ServiceError != ${NO_ERR_MSG}
+            Abort $AlgoServer_ServiceError
         ${EndIf}
 
         ${Configurator_DeleteShortcuts}
-        ${Agent_DeleteFiles}
+        ${AlgoServer_DeleteFiles}
 
         ; Delete self
         Delete "$INSTDIR\uninstall.exe"
 
         ; Remove registry entries
-        ${Agent_RegDelete}
+        ${AlgoServer_RegDelete}
 
-        ${Log} "Finished BotAgent uninstallation"
-        Goto AgentUninstallEnd
-    SkipUninstallAgent:
-        ${Log} "Skipped BotAgent uninstallation"
+        ${Log} "Finished AlgoServer uninstallation"
+        Goto AlgoServerUninstallEnd
+    SkipUninstallAlgoServer:
+        ${Log} "Skipped AlgoServer uninstallation"
         Abort $(UninstallCanceledMessage)
-    AgentUninstallEnd:
+    AlgoServerUninstallEnd:
 
     ${EndIf}
 
     ${If} $Terminal_Id == ${EMPTY_APPID}
-    ${AndIf} $Agent_Id == ${EMPTY_APPID}
-        ${Log} "No valid installation of BotTerminal or BotAgent was found"
+    ${AndIf} $AlgoServer_Id == ${EMPTY_APPID}
+        ${Log} "No valid installation of AlgoTerminal or AlgoServer was found"
         Abort $(UninstallUnknownPathMessage)
     ${EndIf}
 
@@ -362,8 +362,8 @@ SectionEnd
     !insertmacro MUI_DESCRIPTION_TEXT ${TerminalStartMenu} $(TerminalSection3Description)
     !insertmacro MUI_DESCRIPTION_TEXT ${TerminalTestCollection} $(TerminalSection4Description)
 
-    !insertmacro MUI_DESCRIPTION_TEXT ${AgentGroup} $(AgentSection1Description)
-    !insertmacro MUI_DESCRIPTION_TEXT ${AgentCore} $(AgentSection1Description)
+    !insertmacro MUI_DESCRIPTION_TEXT ${AlgoServerGroup} $(AlgoServerSection1Description)
+    !insertmacro MUI_DESCRIPTION_TEXT ${AlgoServerCore} $(AlgoServerSection1Description)
 
     !insertmacro MUI_DESCRIPTION_TEXT ${ConfiguratorGroup} $(ConfiguratorSection1Description)
     !insertmacro MUI_DESCRIPTION_TEXT ${ConfiguratorCore} $(ConfiguratorSection1Description)
@@ -379,18 +379,18 @@ Function ConfigureComponents
     ${BeginSectionManagement}
 
         ${ReadOnlySection} ${TerminalCore}
-        ${ReadOnlySection} ${AgentCore}
+        ${ReadOnlySection} ${AlgoServerCore}
         ${ReadOnlySection} ${ConfiguratorCore}
-        ${ReadOnlySection} ${ConfiguratorGroup} ; configurator is always installed with agent
+        ${ReadOnlySection} ${ConfiguratorGroup} ; configurator is always installed with AlgoServer
 
         ${ExpandSection} ${TerminalGroup}
-        ${ExpandSection} ${AgentGroup}
+        ${ExpandSection} ${AlgoServerGroup}
         ${ExpandSection} ${ConfiguratorGroup}
 
     ${EndSectionManagement}
 
     SectionGetSize ${TerminalCore} $Terminal_Size
-    SectionGetSize ${AgentCore} $Agent_Size
+    SectionGetSize ${AlgoServerCore} $AlgoServer_Size
 
 FunctionEnd
 
@@ -413,9 +413,9 @@ Function ConfigureInstallTypes
     SectionSetInstTypes ${TerminalCore} $0
 
     IntOp $0 $0 ^ ${TerminalInstallBitFlag}
-    IntOp $0 $0 | ${AgentInstallBitFlag}
+    IntOp $0 $0 | ${AlgoServerInstallBitFlag}
     ; 011011b
-    SectionSetInstTypes ${AgentCore} $0
+    SectionSetInstTypes ${AlgoServerCore} $0
     SectionSetInstTypes ${ConfiguratorCore} $0
 
     IntOp $0 $0 ^ ${MinimalInstallBitFlag}
@@ -451,12 +451,12 @@ FunctionEnd
     ${EnableSection} ${ConfiguratorStartMenu}
 !macroend
 
-!macro DisableAgentSections
+!macro DisableAlgoServerSections
     ; ${ReadOnlySection} ${ConfiguratorGroup}
     !insertmacro DisableConfiguratorSections
 !macroend
 
-!macro EnableAgentSections
+!macro EnableAlgoServerSections
     ; ${EnableSection} ${ConfiguratorGroup}
     !insertmacro EnableConfiguratorSections
 !macroend
@@ -476,16 +476,16 @@ Function .onSelChange
             ${EndIf}
         ${EndIf}
 
-        ${if} $0 == ${AgentGroup}
-            ; MessageBox MB_OK "Agent Group"
-            ${If} ${SectionIsSelected} ${AgentCore}
-                ${UnselectSection} ${AgentCore}
+        ${if} $0 == ${AlgoServerGroup}
+            ; MessageBox MB_OK "AlgoServer Group"
+            ${If} ${SectionIsSelected} ${AlgoServerCore}
+                ${UnselectSection} ${AlgoServerCore}
                 ${UnselectSection} ${ConfiguratorCore}
-                !insertmacro DisableAgentSections
+                !insertmacro DisableAlgoServerSections
             ${Else}
-                ${SelectSection} ${AgentCore}
+                ${SelectSection} ${AlgoServerCore}
                 ${SelectSection} ${ConfiguratorCore}
-                !insertmacro EnableAgentSections
+                !insertmacro EnableAlgoServerSections
             ${EndIf}
         ${EndIf}
 
@@ -507,10 +507,10 @@ Function .onSelChange
             ${Else}
                 !insertmacro DisableTerminalSections
             ${EndIf}
-            ${If} ${SectionIsSelected} ${AgentCore}
-                !insertmacro EnableAgentSections
+            ${If} ${SectionIsSelected} ${AlgoServerCore}
+                !insertmacro EnableAlgoServerSections
             ${Else}
-                !insertmacro DisableAgentSections
+                !insertmacro DisableAlgoServerSections
             ${EndIf}
             ${If} ${SectionIsSelected} ${ConfiguratorCore}
                 !insertmacro EnableConfiguratorSections
@@ -553,10 +553,10 @@ Function ComponentsOnLeave
         StrCpy $TestCollection_Selected ${FALSE}
     ${EndIf}
 
-    ${If} ${SectionIsSelected} ${AgentCore}
-        StrCpy $Agent_CoreSelected ${TRUE}
+    ${If} ${SectionIsSelected} ${AlgoServerCore}
+        StrCpy $AlgoServer_CoreSelected ${TRUE}
     ${Else}
-        StrCpy $Agent_CoreSelected ${FALSE}
+        StrCpy $AlgoServer_CoreSelected ${FALSE}
     ${EndIf}
 
     ${If} ${SectionIsSelected} ${ConfiguratorCore}

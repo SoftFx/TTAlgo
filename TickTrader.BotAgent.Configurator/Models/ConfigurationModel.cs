@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace TickTrader.BotAgent.Configurator
 {
@@ -76,10 +77,10 @@ namespace TickTrader.BotAgent.Configurator
             SaveChanges();
         }
 
-        public void StartAgent()
+        public async Task StartAgent()
         {
             RegisterAgentInFirewall();
-            ServiceManager.ServiceStart(ProtocolManager.ProtocolModel.ListeningPort.Value);
+            await ServiceManager.ServiceStart(ProtocolManager.ProtocolModel.ListeningPort.Value);
         }
 
         public void StopAgent()
