@@ -252,7 +252,10 @@ namespace TickTrader.BotAgent.Configurator
         public DelegateCommand OpenLogsFolder => _openLogsFolder ?? (
             _openLogsFolder = new DelegateCommand(obj =>
             {
-                Process.Start(Path.GetDirectoryName(_model.Logs.LogsFilePath));
+                if (File.Exists(_model.Logs.LogsFilePath))
+                    Process.Start(Path.GetDirectoryName(_model.Logs.LogsFilePath));
+                else
+                    MessageBoxManager.OkError($"{_model.Logs.LogsFilePath} log file not found");
             }));
 
         public void RefreshModels()
