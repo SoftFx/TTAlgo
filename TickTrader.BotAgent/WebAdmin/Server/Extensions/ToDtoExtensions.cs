@@ -101,21 +101,22 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             {
                 Name = package.Key.Name,
                 DisplayName = package.Identity.FileName,
-                Created = package.Identity.LastModifiedUtc.ToLocalTime(),
-                Plugins = package.Plugins.Where(p => p.Descriptor.Type == AlgoTypes.Robot).Select(p => p.ToPluginDto()).ToArray(),
+                Created = package.Identity.LastModifiedUtc.ToDateTime().ToLocalTime(),
+                Plugins = package.Plugins.Where(p => p.Descriptor_.Type == Metadata.Types.PluginType.TradeBot).Select(p => p.ToPluginDto()).ToArray(),
                 IsValid = package.IsValid
             };
         }
 
         public static PluginDto ToPluginDto(this PluginInfo plugin)
         {
+            var descriptor = plugin.Descriptor_;
             return new PluginDto()
             {
-                Id = plugin.Descriptor.Id,
-                DisplayName = plugin.Descriptor.UiDisplayName,
-                UserDisplayName = plugin.Descriptor.DisplayName,
-                Type = plugin.Descriptor.Type.ToString(),
-                Parameters = plugin.Descriptor.Parameters.Select(p => p.ToDto())
+                Id = descriptor.Id,
+                DisplayName = descriptor.UiDisplayName,
+                UserDisplayName = descriptor.DisplayName,
+                Type = descriptor.Type.ToString(),
+                Parameters = descriptor.Parameters.Select(p => p.ToDto())
             };
         }
 
@@ -156,7 +157,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                 DisplayName = parameter.DisplayName,
                 DataType = GetDataType(parameter),
                 DefaultValue = ConvertDefaultValue(parameter),
-                EnumValues = parameter.EnumValues,
+                EnumValues = parameter.EnumValues.ToList(),
                 IsEnum = parameter.IsEnum,
                 IsRequired = parameter.IsRequired,
                 FileFilter = string.Join("|", parameter.FileFilters.Select(f => f.FileMask))

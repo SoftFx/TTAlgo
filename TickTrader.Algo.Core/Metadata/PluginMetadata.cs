@@ -4,15 +4,13 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Metadata
 {
-    [Serializable]
     public class PluginMetadata : IDeserializationCallback
     {
-        [NonSerialized]
         private Type _reflectionInfo;
-        [NonSerialized]
         private Version _apiVersion;
         private List<PropertyMetadataBase> _allProperties = new List<PropertyMetadataBase>();
         private List<ParameterMetadata> _parameters = new List<ParameterMetadata>();
@@ -49,18 +47,18 @@ namespace TickTrader.Algo.Core.Metadata
 
             if (typeof(Indicator).IsAssignableFrom(reflectionInfo))
             {
-                Descriptor.Type = AlgoTypes.Indicator;
+                Descriptor.Type = Domain.Metadata.Types.PluginType.Indicator;
                 InspectIndicatorAttr(reflectionInfo);
             }
             else if (typeof(TradeBot).IsAssignableFrom(reflectionInfo))
             {
-                Descriptor.Type = AlgoTypes.Robot;
+                Descriptor.Type = Domain.Metadata.Types.PluginType.TradeBot;
                 InspectBotAttr(reflectionInfo);
             }
             else
             {
-                Descriptor.Type = AlgoTypes.Unknown;
-                SetError(AlgoMetadataErrors.UnknownBaseType);
+                Descriptor.Type = Domain.Metadata.Types.PluginType.UnknownPluginType;
+                SetError(Domain.Metadata.Types.MetadataErrorCode.UnknownBaseType);
                 return;
             }
 
@@ -68,18 +66,18 @@ namespace TickTrader.Algo.Core.Metadata
             InspectProperties(reflectionInfo);
 
             if (_allProperties.Any(p => !p.IsValid))
-                SetError(AlgoMetadataErrors.HasInvalidProperties);
+                SetError(Domain.Metadata.Types.MetadataErrorCode.HasInvalidProperties);
 
             var currentApiVersion = typeof(Indicator).Assembly.GetName().Version;
 
             if (_apiVersion > currentApiVersion)
-                SetError(AlgoMetadataErrors.IncompatibleApiVersion);
+                SetError(Domain.Metadata.Types.MetadataErrorCode.IncompatibleApiVersion);
         }
 
 
         public void Validate()
         {
-            if (Descriptor.Error != AlgoMetadataErrors.None)
+            if (Descriptor.Error != Domain.Metadata.Types.MetadataErrorCode.NoMetadataError)
                 throw new AlgoMetadataException(Descriptor.Error, _allProperties.Where(p => !p.IsValid));
         }
 
@@ -92,7 +90,7 @@ namespace TickTrader.Algo.Core.Metadata
         }
 
 
-        private void SetError(AlgoMetadataErrors error)
+        private void SetError(Domain.Metadata.Types.MetadataErrorCode error)
         {
             if (Descriptor.IsValid)
                 Descriptor.Error = error;
@@ -110,7 +108,7 @@ namespace TickTrader.Algo.Core.Metadata
             var indicatorAttr = algoCustomType.GetCustomAttribute<IndicatorAttribute>(false);
             if (indicatorAttr != null)
             {
-                InspectAlgoPluginAttr(algoCustomType, indicatorAttr);
+                InspectAlgoPluginAttr(indicatorAttr);
             }
         }
 
@@ -119,11 +117,11 @@ namespace TickTrader.Algo.Core.Metadata
             var botAttr = algoCustomType.GetCustomAttribute<TradeBotAttribute>(false);
             if (botAttr != null)
             {
-                InspectAlgoPluginAttr(algoCustomType, botAttr);
+                InspectAlgoPluginAttr(botAttr);
             }
         }
 
-        private void InspectAlgoPluginAttr(Type algoCustomType, AlgoPluginAttribute pluginAttr)
+        private void InspectAlgoPluginAttr(AlgoPluginAttribute pluginAttr)
         {
             if (pluginAttr != null)
             {
@@ -160,7 +158,7 @@ namespace TickTrader.Algo.Core.Metadata
                 return null;
 
             if (algoAttributes.Count > 1)
-                return new PropertyMetadata(property, AlgoPropertyErrors.MultipleAttributes);
+                return new PropertyMetadata(property, Domain.Metadata.Types.PropertyErrorCode.MultipleAttributes);
 
             var algoAttribute = algoAttributes[0];
 

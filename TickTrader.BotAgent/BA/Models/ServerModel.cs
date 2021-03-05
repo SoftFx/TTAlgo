@@ -5,7 +5,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Xml;
 using TickTrader.BotAgent.BA.Repository;
-using TickTrader.Algo.Core.Metadata;
 using TickTrader.BotAgent.BA.Exceptions;
 using System.Threading.Tasks;
 using TickTrader.BotAgent.Infrastructure;
@@ -91,7 +90,7 @@ namespace TickTrader.BotAgent.BA.Models
             public Task RemovePackage(string package) => CallActorAsync(a => a.RemovePackage(package));
             public Task RemovePackage(PackageKey package) => CallActorAsync(a => a.RemovePackage(package));
             public Task<List<PluginInfo>> GetAllPlugins() => CallActorAsync(a => a.GetAllPlugins());
-            public Task<List<PluginInfo>> GetPluginsByType(AlgoTypes type) => CallActorAsync(a => a.GetPluginsByType(type));
+            public Task<List<PluginInfo>> GetPluginsByType(Metadata.Types.PluginType type) => CallActorAsync(a => a.GetPluginsByType(type));
             public Task<MappingCollectionInfo> GetMappingsInfo() => CallActorAsync(a => a.GetMappingsInfo());
             public Task<string> GetPackageReadPath(PackageKey package) => CallActorAsync(a => a.GetPackageReadPath(package));
             public Task<string> GetPackageWritePath(PackageKey package) => CallActorAsync(a => a.GetPackageWritePath(package));
@@ -504,7 +503,7 @@ namespace TickTrader.BotAgent.BA.Models
             return _packageStorage.Library.GetPlugins().ToList();
         }
 
-        private List<PluginInfo> GetPluginsByType(AlgoTypes type)
+        private List<PluginInfo> GetPluginsByType(Metadata.Types.PluginType type)
         {
             return _packageStorage.Library.GetPlugins(type).ToList();
         }

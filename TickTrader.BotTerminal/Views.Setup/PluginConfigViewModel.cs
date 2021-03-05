@@ -151,9 +151,9 @@ namespace TickTrader.BotTerminal
 
         public bool IsEditMode => Mode == PluginSetupMode.Edit;
 
-        public bool CanBeSkipped => IsEmpty && Descriptor.IsValid && Descriptor.Type != AlgoTypes.Robot;
+        public bool CanBeSkipped => IsEmpty && Descriptor.IsValid && Descriptor.Type != Metadata.Types.PluginType.TradeBot;
 
-        public bool IsBot => Descriptor.Type == AlgoTypes.Robot;
+        public bool IsBot => Descriptor.Type == Metadata.Types.PluginType.TradeBot;
 
         public string InstanceId
         {
@@ -220,7 +220,7 @@ namespace TickTrader.BotTerminal
         public PluginConfigViewModel(PluginInfo plugin, SetupMetadata setupMetadata, IPluginIdProvider idProvider, PluginSetupMode mode)
         {
             Plugin = plugin;
-            Descriptor = plugin.Descriptor;
+            Descriptor = plugin.Descriptor_;
             SetupMetadata = setupMetadata;
             _idProvider = idProvider;
             Mode = mode;
@@ -306,7 +306,7 @@ namespace TickTrader.BotTerminal
         public IEnumerable<IResult> SaveParams()
         {
             var dialog = new SaveFileDialog();
-            dialog.FileName = Plugin.Descriptor.DisplayName + ".apr";
+            dialog.FileName = Descriptor.DisplayName + ".apr";
             dialog.Filter = ParamsFileFilter;
 
             var showAction = VmActions.ShowWin32Dialog(dialog);
@@ -391,7 +391,7 @@ namespace TickTrader.BotTerminal
 
         private bool CheckValidity()
         {
-            return Descriptor.Error == AlgoMetadataErrors.None && _allProperties.All(p => !p.HasError) && IsInstanceIdValid;
+            return Descriptor.Error == Metadata.Types.MetadataErrorCode.NoMetadataError && _allProperties.All(p => !p.HasError) && IsInstanceIdValid;
         }
 
         private void Init()

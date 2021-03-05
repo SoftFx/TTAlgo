@@ -1,5 +1,4 @@
-﻿using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Metadata;
+﻿using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model.Setup
@@ -19,7 +18,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         {
             base.Reset();
 
-            LineStyle = Metadata.Descriptor.DefaultLineStyle.ToDomainEnum();
+            LineStyle = Metadata.Descriptor.DefaultLineStyle;
         }
 
         public override void Load(IPropertyConfig srcProperty)

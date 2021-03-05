@@ -2,10 +2,10 @@
 using System.Linq;
 using System.Reflection;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Metadata
 {
-    [Serializable]
     public class ParameterMetadata : PropertyMetadataBase
     {
         private bool _isDefaultValueDirectlyAssignable;
@@ -16,7 +16,7 @@ namespace TickTrader.Algo.Core.Metadata
         public object DefaultValue { get; }
 
 
-        protected override PropertyDescriptor PropDescriptor => Descriptor;
+        protected override IPropertyDescriptor PropDescriptor => Descriptor;
 
 
         public ParameterMetadata(PropertyInfo reflectionInfo, ParameterAttribute attribute)
@@ -43,7 +43,7 @@ namespace TickTrader.Algo.Core.Metadata
                 Descriptor.EnumValues.AddRange(Enum.GetValues(reflectionInfo.PropertyType).Cast<object>().Select(o => o.ToString()));
 
                 if (Descriptor.EnumValues.Count == 0)
-                    SetError(AlgoPropertyErrors.EmptyEnum);
+                    SetError(Domain.Metadata.Types.PropertyErrorCode.EmptyEnum);
 
                 //we can't pass custom enums between domains
                 if (attribute.DefaultValue != null && attribute.DefaultValue.GetType() == reflectionInfo.PropertyType)

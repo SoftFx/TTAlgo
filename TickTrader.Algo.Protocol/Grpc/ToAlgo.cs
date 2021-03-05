@@ -1,12 +1,9 @@
 ﻿using Google.Protobuf;
-using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Linq;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Protocol.Grpc
@@ -75,37 +72,37 @@ namespace TickTrader.Algo.Protocol.Grpc
             }
         }
 
-        public static PlotType Convert(this Lib.ApiDescriptor.Types.PlotType type)
+        public static Metadata.Types.PlotType Convert(this Lib.ApiDescriptor.Types.PlotType type)
         {
             switch (type)
             {
                 case Lib.ApiDescriptor.Types.PlotType.Line:
-                    return PlotType.Line;
+                    return Metadata.Types.PlotType.Line;
                 case Lib.ApiDescriptor.Types.PlotType.Histogram:
-                    return PlotType.Histogram;
+                    return Metadata.Types.PlotType.Histogram;
                 case Lib.ApiDescriptor.Types.PlotType.Points:
-                    return PlotType.Points;
+                    return Metadata.Types.PlotType.Points;
                 case Lib.ApiDescriptor.Types.PlotType.DiscontinuousLine:
-                    return PlotType.DiscontinuousLine;
+                    return Metadata.Types.PlotType.DiscontinuousLine;
                 default:
                     throw new ArgumentException();
             }
         }
 
-        public static OutputTargets Convert(this Lib.ApiDescriptor.Types.OutputTarget target)
+        public static Metadata.Types.OutputTarget Convert(this Lib.ApiDescriptor.Types.OutputTarget target)
         {
             switch (target)
             {
                 case Lib.ApiDescriptor.Types.OutputTarget.Overlay:
-                    return OutputTargets.Overlay;
+                    return Metadata.Types.OutputTarget.Overlay;
                 case Lib.ApiDescriptor.Types.OutputTarget.Window1:
-                    return OutputTargets.Window1;
+                    return Metadata.Types.OutputTarget.Window1;
                 case Lib.ApiDescriptor.Types.OutputTarget.Window2:
-                    return OutputTargets.Window2;
+                    return Metadata.Types.OutputTarget.Window2;
                 case Lib.ApiDescriptor.Types.OutputTarget.Window3:
-                    return OutputTargets.Window3;
+                    return Metadata.Types.OutputTarget.Window3;
                 case Lib.ApiDescriptor.Types.OutputTarget.Window4:
-                    return OutputTargets.Window4;
+                    return Metadata.Types.OutputTarget.Window4;
                 default:
                     throw new ArgumentException();
             }
@@ -126,51 +123,34 @@ namespace TickTrader.Algo.Protocol.Grpc
             }
         }
 
-        public static AlgoPropertyTypes Convert(this Lib.PropertyDescriptor.Types.AlgoPropertyType type)
-        {
-            switch (type)
-            {
-                case Lib.PropertyDescriptor.Types.AlgoPropertyType.UnknownPropertyType:
-                    return AlgoPropertyTypes.Unknown;
-                case Lib.PropertyDescriptor.Types.AlgoPropertyType.Parameter:
-                    return AlgoPropertyTypes.Parameter;
-                case Lib.PropertyDescriptor.Types.AlgoPropertyType.InputSeries:
-                    return AlgoPropertyTypes.InputSeries;
-                case Lib.PropertyDescriptor.Types.AlgoPropertyType.OutputSeries:
-                    return AlgoPropertyTypes.OutputSeries;
-                default:
-                    throw new ArgumentException();
-            }
-        }
-
-        public static AlgoPropertyErrors Convert(this Lib.PropertyDescriptor.Types.AlgoPropertyError error)
+        public static Metadata.Types.PropertyErrorCode Convert(this Lib.PropertyDescriptor.Types.AlgoPropertyError error)
         {
             switch (error)
             {
                 case Lib.PropertyDescriptor.Types.AlgoPropertyError.None:
-                    return AlgoPropertyErrors.None;
+                    return Metadata.Types.PropertyErrorCode.NoPropertyError;
                 case Lib.PropertyDescriptor.Types.AlgoPropertyError.UnknownPropertyError:
-                    return AlgoPropertyErrors.Unknown;
+                    return Metadata.Types.PropertyErrorCode.UnknownPropertyError;
                 case Lib.PropertyDescriptor.Types.AlgoPropertyError.SetIsNotPublic:
-                    return AlgoPropertyErrors.SetIsNotPublic;
+                    return Metadata.Types.PropertyErrorCode.SetIsNotPublic;
                 case Lib.PropertyDescriptor.Types.AlgoPropertyError.GetIsNotPublic:
-                    return AlgoPropertyErrors.GetIsNotPublic;
+                    return Metadata.Types.PropertyErrorCode.GetIsNotPublic;
                 case Lib.PropertyDescriptor.Types.AlgoPropertyError.MultipleAttributes:
-                    return AlgoPropertyErrors.MultipleAttributes;
+                    return Metadata.Types.PropertyErrorCode.MultipleAttributes;
                 case Lib.PropertyDescriptor.Types.AlgoPropertyError.InputIsNotDataSeries:
-                    return AlgoPropertyErrors.InputIsNotDataSeries;
+                    return Metadata.Types.PropertyErrorCode.InputIsNotDataSeries;
                 case Lib.PropertyDescriptor.Types.AlgoPropertyError.OutputIsNotDataSeries:
-                    return AlgoPropertyErrors.OutputIsNotDataSeries;
+                    return Metadata.Types.PropertyErrorCode.OutputIsNotDataSeries;
                 case Lib.PropertyDescriptor.Types.AlgoPropertyError.EmptyEnum:
-                    return AlgoPropertyErrors.EmptyEnum;
+                    return Metadata.Types.PropertyErrorCode.EmptyEnum;
                 default:
                     throw new ArgumentException();
             }
         }
 
-        public static PropertyDescriptor Convert(this Lib.PropertyDescriptor descriptor)
+        public static IPropertyDescriptor Convert(this Lib.PropertyDescriptor descriptor)
         {
-            PropertyDescriptor res = null;
+            IPropertyDescriptor res = null;
             switch (descriptor.PropertyType)
             {
                 case Lib.PropertyDescriptor.Types.AlgoPropertyType.UnknownPropertyType:
@@ -190,7 +170,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             }
             res.Id = descriptor.Id;
             res.DisplayName = descriptor.DisplayName;
-            res.Error = descriptor.Error.Convert();
+            res.ErrorCode = descriptor.Error.Convert();
             return res;
         }
 
@@ -227,7 +207,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = (OutputDescriptor)output.PropertyHeader.Convert();
             res.DataSeriesBaseTypeFullName = output.DataSeriesBaseTypeFullName;
             res.DefaultThickness = output.DefaultThickness;
-            res.DefaultColor = (Colors)output.DefaultColor;
+            res.DefaultColorArgb = (uint)output.DefaultColor;
             //res.DefaultLineStyle = (LineStyles)output.DefaultLineStyle.Convert();
             res.PlotType = output.PlotType.Convert();
             res.Target = output.Target.Convert();
@@ -237,35 +217,35 @@ namespace TickTrader.Algo.Protocol.Grpc
             return res;
         }
 
-        public static AlgoTypes Convert(this Lib.PluginDescriptor.Types.AlgoType type)
+        public static Metadata.Types.PluginType Convert(this Lib.PluginDescriptor.Types.AlgoType type)
         {
             switch (type)
             {
                 case Lib.PluginDescriptor.Types.AlgoType.UnknownPluginType:
-                    return AlgoTypes.Unknown;
+                    return Metadata.Types.PluginType.UnknownPluginType;
                 case Lib.PluginDescriptor.Types.AlgoType.Indicator:
-                    return AlgoTypes.Indicator;
+                    return Metadata.Types.PluginType.Indicator;
                 case Lib.PluginDescriptor.Types.AlgoType.Robot:
-                    return AlgoTypes.Robot;
+                    return Metadata.Types.PluginType.TradeBot;
                 default:
                     throw new ArgumentException();
             }
         }
 
-        public static AlgoMetadataErrors Convert(this Lib.PluginDescriptor.Types.AlgoMetadataError error)
+        public static Metadata.Types.MetadataErrorCode Convert(this Lib.PluginDescriptor.Types.AlgoMetadataError error)
         {
             switch (error)
             {
                 case Lib.PluginDescriptor.Types.AlgoMetadataError.None:
-                    return AlgoMetadataErrors.None;
+                    return Metadata.Types.MetadataErrorCode.NoMetadataError;
                 case Lib.PluginDescriptor.Types.AlgoMetadataError.UnknownMetadataError:
-                    return AlgoMetadataErrors.Unknown;
+                    return Metadata.Types.MetadataErrorCode.UnknownMetadataError;
                 case Lib.PluginDescriptor.Types.AlgoMetadataError.HasInvalidProperties:
-                    return AlgoMetadataErrors.HasInvalidProperties;
+                    return Metadata.Types.MetadataErrorCode.HasInvalidProperties;
                 case Lib.PluginDescriptor.Types.AlgoMetadataError.UnknownBaseType:
-                    return AlgoMetadataErrors.UnknownBaseType;
+                    return Metadata.Types.MetadataErrorCode.UnknownBaseType;
                 case Lib.PluginDescriptor.Types.AlgoMetadataError.IncompatibleApiVersion:
-                    return AlgoMetadataErrors.IncompatibleApiVersion;
+                    return Metadata.Types.MetadataErrorCode.IncompatibleApiVersion;
                 default:
                     throw new ArgumentException();
             }
@@ -299,22 +279,22 @@ namespace TickTrader.Algo.Protocol.Grpc
             return res;
         }
 
-        public static ReductionType Convert(this Lib.ReductionDescriptor.Types.ReductionType type)
+        public static Metadata.Types.ReductionType Convert(this Lib.ReductionDescriptor.Types.ReductionType type)
         {
             switch (type)
             {
                 case Lib.ReductionDescriptor.Types.ReductionType.UnknownReductionType:
-                    return ReductionType.Unknown;
+                    return Metadata.Types.ReductionType.UnknownReductionType;
                 case Lib.ReductionDescriptor.Types.ReductionType.BarToDouble:
-                    return ReductionType.BarToDouble;
+                    return Metadata.Types.ReductionType.BarToDouble;
                 case Lib.ReductionDescriptor.Types.ReductionType.FullBarToDouble:
-                    return ReductionType.FullBarToDouble;
+                    return Metadata.Types.ReductionType.FullBarToDouble;
                 case Lib.ReductionDescriptor.Types.ReductionType.FullBarToBar:
-                    return ReductionType.FullBarToBar;
+                    return Metadata.Types.ReductionType.FullBarToBar;
                 case Lib.ReductionDescriptor.Types.ReductionType.QuoteToDouble:
-                    return ReductionType.QuoteToDouble;
+                    return Metadata.Types.ReductionType.QuoteToDouble;
                 case Lib.ReductionDescriptor.Types.ReductionType.QuoteToBar:
-                    return ReductionType.QuoteToBar;
+                    return Metadata.Types.ReductionType.QuoteToBar;
                 default:
                     throw new ArgumentException();
             }
@@ -699,7 +679,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             return new PluginInfo
             {
                 Key = plugin.Key.Convert(),
-                Descriptor = plugin.Descriptor_.Convert(),
+                Descriptor_ = plugin.Descriptor_.Convert(),
             };
         }
 
@@ -709,8 +689,8 @@ namespace TickTrader.Algo.Protocol.Grpc
             {
                 FileName = identity.FileName,
                 FilePath = identity.FilePath,
-                CreatedUtc = identity.CreatedUtc.ToDateTime(),
-                LastModifiedUtc = identity.LastModifiedUtc.ToDateTime(),
+                CreatedUtc = identity.CreatedUtc,
+                LastModifiedUtc = identity.LastModifiedUtc,
                 Size = identity.Size,
                 Hash = identity.Hash,
             };
@@ -723,7 +703,6 @@ namespace TickTrader.Algo.Protocol.Grpc
                 Key = package.Key.Convert(),
                 IsValid = package.IsValid,
                 IsLocked = package.IsLocked,
-                IsObsolete = package.IsObsolete,
             };
             return res;
         }

@@ -270,5 +270,32 @@ namespace TickTrader.Algo.Core
                 default: throw new ArgumentException($"Unsupported line style {line}");
             }
         }
+
+        public static Domain.Metadata.Types.PlotType ToDomainEnum(this PlotType type)
+        {
+            switch (type)
+            {
+                case PlotType.Line: return Domain.Metadata.Types.PlotType.Line;
+                case PlotType.DiscontinuousLine: return Domain.Metadata.Types.PlotType.DiscontinuousLine;
+                case PlotType.Points: return Domain.Metadata.Types.PlotType.Points;
+                case PlotType.Histogram: return Domain.Metadata.Types.PlotType.Histogram;
+
+                default: throw new ArgumentException($"Unsupported plot type {type}");
+            }
+        }
+
+        public static Domain.Metadata.Types.OutputTarget ToDomainEnum(this OutputTargets target)
+        {
+            switch (target)
+            {
+                case OutputTargets.Overlay: return Domain.Metadata.Types.OutputTarget.Overlay;
+                case OutputTargets.Window1: return Domain.Metadata.Types.OutputTarget.Window1;
+                case OutputTargets.Window2: return Domain.Metadata.Types.OutputTarget.Window2;
+                case OutputTargets.Window3: return Domain.Metadata.Types.OutputTarget.Window3;
+                case OutputTargets.Window4: return Domain.Metadata.Types.OutputTarget.Window4;
+
+                default: throw new ArgumentException($"Unsupported output target {target}");
+            }
+        }
     }
 }

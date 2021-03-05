@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Core
 {
@@ -81,7 +80,7 @@ namespace TickTrader.Algo.Core.Metadata
     [Serializable]
     public class AlgoMetadataException : AlgoException
     {
-        public AlgoMetadataException(AlgoMetadataErrors errorCode, IEnumerable<PropertyMetadataBase> invalidProperties = null)
+        public AlgoMetadataException(Domain.Metadata.Types.MetadataErrorCode errorCode, IEnumerable<PropertyMetadataBase> invalidProperties = null)
             : base(CreateMessageDescription(errorCode, invalidProperties))
         {
             this.ErrorCode = errorCode;
@@ -92,11 +91,11 @@ namespace TickTrader.Algo.Core.Metadata
                 this.InvalidProperties = new PropertyMetadataBase[0];
         }
 
-        private static string CreateMessageDescription(AlgoMetadataErrors errorCode, IEnumerable<PropertyMetadataBase> invalidProperties)
+        private static string CreateMessageDescription(Domain.Metadata.Types.MetadataErrorCode errorCode, IEnumerable<PropertyMetadataBase> invalidProperties)
         {
             switch (errorCode)
             {
-                case AlgoMetadataErrors.HasInvalidProperties:
+                case Domain.Metadata.Types.MetadataErrorCode.HasInvalidProperties:
                     StringBuilder builder = new StringBuilder();
                     builder.Append("Plugin error: invalid properties.");
                     if (invalidProperties != null)
@@ -105,16 +104,16 @@ namespace TickTrader.Algo.Core.Metadata
                             builder.Append("\tproperty ").Append(property.Id).Append(" - ").Append(property.Error);
                     }
                     return builder.ToString();
-                case AlgoMetadataErrors.UnknownBaseType:
+                case Domain.Metadata.Types.MetadataErrorCode.UnknownBaseType:
                     return "Plugin error: Invalid base class. Your plugin must be derived from Indicator or TradeBot API classes.";
-                case AlgoMetadataErrors.IncompatibleApiVersion:
+                case Domain.Metadata.Types.MetadataErrorCode.IncompatibleApiVersion:
                     return "Plugin error: Incompatible api version. This client can't support newer api versions. Please update your client.";
                 default:
                     return "Plugin error: unknown error!";
             }
         }
 
-        public AlgoMetadataErrors ErrorCode { get; private set; }
+        public Domain.Metadata.Types.MetadataErrorCode ErrorCode { get; private set; }
         public PropertyMetadataBase[] InvalidProperties { get; private set; }
     }
 }

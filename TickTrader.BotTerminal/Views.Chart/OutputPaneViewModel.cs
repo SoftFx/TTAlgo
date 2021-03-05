@@ -47,7 +47,7 @@ namespace TickTrader.BotTerminal
         public BoolVar IsCrosshairEnabled { get; }
 
         public OutputPaneViewModel(IPluginModel plugin, IEnumerable<OutputSeriesModel> ouputModels, string windowId, IPluginDataChartModel chart,
-            SymbolInfo symbol, OutputTargets target, BoolVar isCrosshairEnabled)
+            SymbolInfo symbol, Metadata.Types.OutputTarget target, BoolVar isCrosshairEnabled)
         {
             Model = plugin;
             ChartWindowId = windowId;

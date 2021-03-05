@@ -246,7 +246,10 @@ namespace TickTrader.BotTerminal
                 packages.ForEach(package =>
                 {
                     _packages.Add(package.Key, package);
-                    package.Plugins.ForEach(plugin => _plugins.Add(plugin.Key, plugin));
+                    foreach(var plugin in package.Plugins)
+                    {
+                        _plugins.Add(plugin.Key, plugin);
+                    }
                 });
             });
         }
@@ -368,7 +371,6 @@ namespace TickTrader.BotTerminal
                 if (_packages.TryGetValue(package.Key, out var packageModel))
                 {
                     packageModel.IsValid = package.IsValid;
-                    packageModel.IsObsolete = package.IsObsolete;
                     packageModel.IsLocked = package.IsLocked;
                     PackageStateChanged(packageModel);
                 }

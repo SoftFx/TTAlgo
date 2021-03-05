@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core
 {
@@ -17,14 +11,16 @@ namespace TickTrader.Algo.Core
         private IFixtureContext _context;
         private TimeKeyGenerator _keyGen = new TimeKeyGenerator();
         //private Task _batchLinkTask;
-        private AlgoTypes _type;
+        private Domain.Metadata.Types.PluginType _type;
+        private bool _isTradeBot;
         private string _indicatorPrefix;
 
-        internal LogFixture(IFixtureContext context, AlgoTypes type)
+        internal LogFixture(IFixtureContext context, Domain.Metadata.Types.PluginType type)
         {
             _context = context;
             _type = type;
-            if (_type == AlgoTypes.Indicator)
+            _isTradeBot = type == Domain.Metadata.Types.PluginType.TradeBot;
+            if (!_isTradeBot)
                 _indicatorPrefix = $"{context.InstanceId} ({context.MainSymbolCode}, {context.TimeFrame})";
         }
 
@@ -151,7 +147,7 @@ namespace TickTrader.Algo.Core
 
         public void OnInitialized()
         {
-            if (_type == AlgoTypes.Robot)
+            if (_isTradeBot)
             {
                 AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Info, $"Bot initialized");
                 AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Info, $"Plugin version = {_context.Builder.Metadata.Descriptor.Version}");
@@ -160,14 +156,14 @@ namespace TickTrader.Algo.Core
 
         public void OnStart()
         {
-            if (_type == AlgoTypes.Robot)
+            if (_isTradeBot)
                 AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Info, $"Bot started");
             else AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Info, $"{_indicatorPrefix}: Indicator started");
         }
 
         public void OnStop()
         {
-            if (_type == AlgoTypes.Robot)
+            if (_isTradeBot)
             {
                 AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Info, $"Bot stopped");
                 AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Info, $"Plugin version = {_context.Builder.Metadata.Descriptor.Version}");
@@ -177,13 +173,13 @@ namespace TickTrader.Algo.Core
 
         public void OnExit()
         {
-            if (_type == AlgoTypes.Robot)
+            if (_isTradeBot)
                 AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Info, $"Bot exited");
         }
 
         public void OnAbort()
         {
-            if (_type == AlgoTypes.Robot)
+            if (_isTradeBot)
             {
                 AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Info, $"Bot aborted");
                 AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Info, $"Plugin version = {_context.Builder.Metadata.Descriptor.Version}");
@@ -192,25 +188,25 @@ namespace TickTrader.Algo.Core
 
         public void OnConnected()
         {
-            if (_type == AlgoTypes.Robot)
+            if (_isTradeBot)
                 AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Info, "Connection restored.");
         }
 
         public void OnDisconnected()
         {
-            if (_type == AlgoTypes.Robot)
+            if (_isTradeBot)
                 AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Error, "Connection lost!");
         }
 
         public void OnConnectionInfo(string connectionInfo)
         {
-            if (_type == AlgoTypes.Robot)
+            if (_isTradeBot)
                 AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.Info, $"Connected to {connectionInfo}");
         }
 
         public void UpdateStatus(string status)
         {
-            if (_type == AlgoTypes.Robot)
+            if (_isTradeBot)
                 AddLogRecord(Domain.UnitLogRecord.Types.LogSeverity.CustomStatus, status);
         }
 

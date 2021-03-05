@@ -69,7 +69,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public bool IsInstanceIdValid => _selectedAgent != null && !string.IsNullOrEmpty(InstanceId) && _selectedAgent.Model.IdProvider.IsValidPluginId(AlgoTypes.Robot, InstanceId);
+        public bool IsInstanceIdValid => _selectedAgent != null && !string.IsNullOrEmpty(InstanceId) && _selectedAgent.Model.IdProvider.IsValidPluginId(Metadata.Types.PluginType.TradeBot, InstanceId);
 
         public bool HasPendingRequest
         {

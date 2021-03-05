@@ -51,9 +51,9 @@ namespace TickTrader.BotTerminal
             return _plugins.Values.ToList();
         }
 
-        public IEnumerable<PluginInfo> GetPlugins(AlgoTypes type)
+        public IEnumerable<PluginInfo> GetPlugins(Metadata.Types.PluginType type)
         {
-            return _plugins.Values.Where(p => p.Descriptor.Type == type).ToList();
+            return _plugins.Values.Where(p => p.Descriptor_.Type == type).ToList();
         }
 
         public PluginInfo GetPlugin(PluginKey key)
@@ -118,7 +118,6 @@ namespace TickTrader.BotTerminal
                 if (_packages.TryGetValue(package.Key, out var packageModel))
                 {
                     packageModel.IsValid = package.IsValid;
-                    packageModel.IsObsolete = package.IsObsolete;
                     packageModel.IsLocked = package.IsLocked;
                     OnPackageStateChanged(packageModel);
                 }

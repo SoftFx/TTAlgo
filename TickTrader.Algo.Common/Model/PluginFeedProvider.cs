@@ -11,7 +11,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class PluginFeedProvider : CrossDomainObject, IFeedProvider, IFeedHistoryProvider, IPluginMetadata
+    public class PluginFeedProvider : IFeedProvider, IFeedHistoryProvider, IPluginMetadata
     {
         private IFeedSubscription subscription;
         private IVarSet<string, SymbolInfo> symbols;

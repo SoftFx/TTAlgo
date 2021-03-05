@@ -59,9 +59,9 @@ namespace TickTrader.Algo.Common.Model
             return _plugins.Values.ToList();
         }
 
-        public IEnumerable<PluginInfo> GetPlugins(AlgoTypes type)
+        public IEnumerable<PluginInfo> GetPlugins(Metadata.Types.PluginType type)
         {
-            return _plugins.Values.Where(p => p.Descriptor.Type == type).ToList();
+            return _plugins.Values.Where(p => p.Descriptor_.Type == type).ToList();
         }
 
         public PluginInfo GetPlugin(PluginKey key)
@@ -196,13 +196,11 @@ namespace TickTrader.Algo.Common.Model
         private void InitPackageRef(AlgoPackageRef packageRef)
         {
             packageRef.IsLockedChanged += PackageRefOnLockedChanged;
-            packageRef.IsObsoleteChanged += PackageRefOnObsoleteChanged;
         }
 
         private void DeinitPackageRef(AlgoPackageRef packageRef)
         {
             packageRef.IsLockedChanged -= PackageRefOnLockedChanged;
-            packageRef.IsObsoleteChanged -= PackageRefOnObsoleteChanged;
         }
 
         private void PackageRefOnLockedChanged(AlgoPackageRef packageRef)
@@ -212,18 +210,6 @@ namespace TickTrader.Algo.Common.Model
                 if (_packages.TryGetValue(packageRef.GetKey(), out var package))
                 {
                     package.IsLocked = packageRef.IsLocked;
-                    OnPackageStateChanged(package);
-                }
-            }
-        }
-
-        private void PackageRefOnObsoleteChanged(AlgoPackageRef packageRef)
-        {
-            lock (_updateLock)
-            {
-                if (_packages.TryGetValue(packageRef.GetKey(), out var package))
-                {
-                    package.IsObsolete = packageRef.IsObsolete;
                     OnPackageStateChanged(package);
                 }
             }

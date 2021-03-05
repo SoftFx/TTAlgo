@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Threading;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Ext;
 
@@ -63,13 +62,13 @@ namespace TickTrader.Algo.Core.Metadata
                 if (indicatorAttr != null)
                 {
                     var metadata = GetPlugin(t);
-                    if (metadata.Descriptor.Type == AlgoTypes.Indicator)
+                    if (metadata.Descriptor.Type == Domain.Metadata.Types.PluginType.Indicator)
                         plugins.Add(metadata);
                 }
                 else if (botAttr != null)
                 {
                     var metadata = GetPlugin(t);
-                    if (metadata.Descriptor.Type == AlgoTypes.Robot)
+                    if (metadata.Descriptor.Type == Domain.Metadata.Types.PluginType.TradeBot)
                         plugins.Add(metadata);
                 }
             }

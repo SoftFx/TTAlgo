@@ -31,7 +31,7 @@ namespace TickTrader.Algo.Core
         private bool _sendReports;
 
         public TradeEmulator(IFixtureContext context, IBacktesterSettings settings, CalculatorFixture calc, InvokeEmulator scheduler, BacktesterCollector collector,
-            TradeHistoryEmulator history, AlgoTypes pluginType)
+            TradeHistoryEmulator history, Domain.Metadata.Types.PluginType pluginType)
         {
             _context = context;
             _activator = new ActivationEmulator(_context.MarketData);
@@ -44,7 +44,7 @@ namespace TickTrader.Algo.Core
 
             _sendReports = settings.StreamExecReports;
 
-            if (pluginType == AlgoTypes.Robot)
+            if (pluginType == Domain.Metadata.Types.PluginType.TradeBot)
             {
                 if (_settings.CommonSettings.AccountType == AccountInfo.Types.Type.Net || _settings.CommonSettings.AccountType == AccountInfo.Types.Type.Gross)
                     _scheduler.Scheduler.AddDailyJob(b => Rollover(), 0, 0);
@@ -91,8 +91,8 @@ namespace TickTrader.Algo.Core
             {
                 //var currencies = _context.Builder.Currencies.ToDictionary(c => c.Name);
 
-                foreach (var asset in _settings.CommonSettings.InitialAssets)
-                    _acc.Assets.Update(new AssetInfo(asset.Value, asset.Key), out _);
+                foreach (var asset in _settings.CommonSettings.InitialAssets.Values)
+                    _acc.Assets.Update(asset, out _);
             }
         }
 

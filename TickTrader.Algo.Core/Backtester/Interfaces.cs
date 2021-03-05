@@ -29,7 +29,7 @@ namespace TickTrader.Algo.Core
         public int Leverage { get; set; } = 100;
         public double InitialBalance { get; set; } = 10000;
         public TimeSpan ServerPing { get; set; }
-        public Dictionary<string, double> InitialAssets { get; } = new Dictionary<string, double>();
+        public Dictionary<string, Domain.AssetInfo> InitialAssets { get; } = new Dictionary<string, Domain.AssetInfo>();
         public Dictionary<string, Domain.SymbolInfo> Symbols { get; } = new Dictionary<string, Domain.SymbolInfo>();
         public Dictionary<string, Domain.CurrencyInfo> Currencies { get; } = new Dictionary<string, Domain.CurrencyInfo>();
         public Feed.Types.Timeframe MainTimeframe { get; set; }

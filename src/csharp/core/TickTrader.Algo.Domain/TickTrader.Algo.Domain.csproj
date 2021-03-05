@@ -10,11 +10,14 @@
     <Protobuf Include="..\..\..\protobuf\common.proto">
       <Link>protos\common.proto</Link>
     </Protobuf>
-    <Protobuf Include="..\..\..\protobuf\runtime.api.proto">
-      <Link>protos\runtime.api.proto</Link>
-    </Protobuf>
     <Protobuf Include="..\..\..\protobuf\runtime.feed.proto">
       <Link>protos\runtime.feed.proto</Link>
+    </Protobuf>
+    <Protobuf Include="..\..\..\protobuf\runtime.package.proto">
+      <Link>protos\runtime.package.proto</Link>
+    </Protobuf>
+    <Protobuf Include="..\..\..\protobuf\runtime.plugin.proto">
+      <Link>protos\runtime.plugin.proto</Link>
     </Protobuf>
     <Protobuf Include="..\..\..\protobuf\runtime.proto">
       <Link>protos\runtime.proto</Link>

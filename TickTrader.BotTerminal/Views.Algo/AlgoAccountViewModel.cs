@@ -132,14 +132,14 @@ namespace TickTrader.BotTerminal
             var algoBot = o as AlgoPluginViewModel;
             if (algoBot != null)
             {
-                Agent.OpenBotSetup(Info.Key, algoBot.PluginInfo.Key);
+                Agent.OpenBotSetup(Info.Key, algoBot.Key);
             }
         }
 
         public bool CanDrop(object o)
         {
             var algoBot = o as AlgoPluginViewModel;
-            if (algoBot != null && algoBot.Agent.Name == Agent.Name && algoBot.Type == AlgoTypes.Robot)
+            if (algoBot != null && algoBot.Agent.Name == Agent.Name && algoBot.Type == Metadata.Types.PluginType.TradeBot)
             {
                 return true;
             }

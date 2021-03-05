@@ -84,13 +84,11 @@
     <Compile Include="Info\Setup\SetupMetadata.cs" />
     <Compile Include="Info\UpdateInfo.cs" />
     <Compile Include="Info\InfoExtensions.cs" />
-    <Compile Include="Info\Metadata\PackageInfo.cs" />
     <Compile Include="Info\Setup\AccountMetadataInfo.cs" />
     <Compile Include="Info\Setup\ApiMetadataInfo.cs" />
     <Compile Include="Info\Keys\AccountKey.cs" />
     <Compile Include="Info\Setup\MappingCollectionInfo.cs" />
     <Compile Include="Info\Setup\MappingInfo.cs" />
-    <Compile Include="Info\Metadata\PluginInfo.cs" />
     <Compile Include="Info\Setup\SetupContextInfo.cs" />
     <Compile Include="Lib\AsyncEvent.cs" />
     <Compile Include="Lib\BotIdHelper.cs" />

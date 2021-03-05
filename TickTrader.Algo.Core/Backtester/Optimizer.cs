@@ -304,7 +304,7 @@ namespace TickTrader.Algo.Core
                 executor.Metadata = this;
                 executor.OnUpdate = o => { };
 
-                var emFixture = executor.InitEmulation(this, Metadata.AlgoTypes.Robot, feedClone, fStrategyClone);
+                var emFixture = executor.InitEmulation(this, Domain.Metadata.Types.PluginType.TradeBot, feedClone, fStrategyClone);
 
                 executor.InitSlidingBuffering(4000);
 

@@ -46,11 +46,11 @@ namespace TickTrader.Algo.Core.Repository
         {
             switch (metadata.Descriptor.Type)
             {
-                case ReductionType.BarToDouble: _barToDouble.Add(key, metadata); break;
-                case ReductionType.FullBarToDouble: _fullbarToDouble.Add(key, metadata); break;
-                case ReductionType.FullBarToBar: _fullbarToBar.Add(key, metadata); break;
-                case ReductionType.QuoteToDouble: _quoteToDouble.Add(key, metadata); break;
-                case ReductionType.QuoteToBar: _quoteToBar.Add(key, metadata); break;
+                case Domain.Metadata.Types.ReductionType.BarToDouble: _barToDouble.Add(key, metadata); break;
+                case Domain.Metadata.Types.ReductionType.FullBarToDouble: _fullbarToDouble.Add(key, metadata); break;
+                case Domain.Metadata.Types.ReductionType.FullBarToBar: _fullbarToBar.Add(key, metadata); break;
+                case Domain.Metadata.Types.ReductionType.QuoteToDouble: _quoteToDouble.Add(key, metadata); break;
+                case Domain.Metadata.Types.ReductionType.QuoteToBar: _quoteToBar.Add(key, metadata); break;
             }
         }
 

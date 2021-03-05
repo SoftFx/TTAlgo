@@ -174,7 +174,7 @@ namespace TickTrader.BotTerminal
             SetupPage.InitToken();
 
             //var packageRef = _env.LocalAgent.Library.GetPackageRef(SelectedPlugin.Value.Info.Key.GetPackageKey());
-            var pluginRef = _env.LocalAgent.Library.GetPluginRef(SetupPage.SelectedPlugin.Value.PluginInfo.Key);
+            var pluginRef = _env.LocalAgent.Library.GetPluginRef(SetupPage.SelectedPlugin.Value.Key);
             //var pluginSetupModel = new PluginSetupModel(pluginRef, this, this);
 
             _descriptorCache = pluginRef.Metadata.Descriptor;
@@ -427,7 +427,7 @@ namespace TickTrader.BotTerminal
             //observer.SetMessage("Loading feed chart data ...");
             //var feedChartData = await LoadBarSeriesAsync(tester.GetMainSymbolHistory(timeFrame), observer, timeFrame, count);
 
-            if (backtester.PluginInfo.Type == AlgoTypes.Robot)
+            if (backtester.PluginInfo.Type == Metadata.Types.PluginType.TradeBot)
             {
                 observer.SetMessage("Loading equity chart data...");
                 var equityChartData = await LoadBarSeriesAsync(backtester.GetEquityHistory(timeFrame), observer, timeFrame, count);
@@ -615,7 +615,7 @@ namespace TickTrader.BotTerminal
                     using (var entryStream = setupEntry.Open())
                         await Task.Run(() => SetupPage.SaveTestSetupAsText(pluginSetup, entryStream, _emulteFrom, _emulateTo));
 
-                    if (pluginSetup.Metadata.Descriptor.Type == AlgoTypes.Robot)
+                    if (pluginSetup.Metadata.Descriptor.Type == Metadata.Types.PluginType.TradeBot)
                     {
                         var equityEntry = archive.CreateEntry("equity.csv", CompressionLevel.Optimal);
                         using (var entryStream = equityEntry.Open())

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -104,7 +105,7 @@ namespace TickTrader.BotTerminal
 
             //var canOptimize = false;
 
-            if (descriptor.Type == AlgoTypes.Robot)
+            if (descriptor.Type == Metadata.Types.PluginType.TradeBot)
             {
                 foreach (var p in descriptor.Parameters)
                 {

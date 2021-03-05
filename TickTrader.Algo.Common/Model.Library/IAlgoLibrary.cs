@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Common.Model
 
         IEnumerable<PluginInfo> GetPlugins();
 
-        IEnumerable<PluginInfo> GetPlugins(AlgoTypes type);
+        IEnumerable<PluginInfo> GetPlugins(Metadata.Types.PluginType type);
 
         PluginInfo GetPlugin(PluginKey key);
 

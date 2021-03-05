@@ -40,7 +40,7 @@ namespace TickTrader.BotTerminal
 
         public abstract void Reset();
 
-        internal void SetMetadata(PropertyDescriptor descriptor)
+        internal void SetMetadata(IPropertyDescriptor descriptor)
         {
             Id = descriptor.Id;
             DisplayName = descriptor.DisplayName;

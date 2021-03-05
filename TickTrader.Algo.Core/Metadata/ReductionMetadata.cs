@@ -2,15 +2,13 @@
 using System.Linq;
 using System.Runtime.Serialization;
 using TickTrader.Algo.Api.Ext;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Metadata
 {
-    [Serializable]
     public class ReductionMetadata : IDeserializationCallback
     {
-        [NonSerialized]
         private Version _apiVersion;
-        [NonSerialized]
         private Type _reflectionInfo;
 
 
@@ -40,17 +38,17 @@ namespace TickTrader.Algo.Core.Metadata
             _apiVersion = apiref?.Version;
             Descriptor.ApiVersionStr = _apiVersion?.ToString();
 
-            var type = ReductionType.Unknown;
+            var type = Domain.Metadata.Types.ReductionType.UnknownReductionType;
             if (typeof(BarToDoubleReduction).IsAssignableFrom(reflectionInfo))
-                type = ReductionType.BarToDouble;
+                type = Domain.Metadata.Types.ReductionType.BarToDouble;
             else if (typeof(FullBarToDoubleReduction).IsAssignableFrom(reflectionInfo))
-                type = ReductionType.FullBarToDouble;
+                type = Domain.Metadata.Types.ReductionType.FullBarToDouble;
             else if (typeof(FullBarToBarReduction).IsAssignableFrom(reflectionInfo))
-                type = ReductionType.FullBarToBar;
+                type = Domain.Metadata.Types.ReductionType.FullBarToBar;
             else if (typeof(QuoteToDoubleReduction).IsAssignableFrom(reflectionInfo))
-                type = ReductionType.QuoteToDouble;
+                type = Domain.Metadata.Types.ReductionType.QuoteToDouble;
             else if (typeof(QuoteToBarReduction).IsAssignableFrom(reflectionInfo))
-                type = ReductionType.QuoteToBar;
+                type = Domain.Metadata.Types.ReductionType.QuoteToBar;
             Descriptor.Type = type;
         }
 

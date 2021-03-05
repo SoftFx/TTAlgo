@@ -95,7 +95,7 @@ namespace TickTrader.BotTerminal
 
         private void InitColor()
         {
-            LineColor = Descriptor.DefaultColor.ToArgb(ApiColorConverter.GreenColor).ToWindowsColor();
+            LineColor = (Descriptor.DefaultColorArgb ?? ApiColorConverter.GreenColor).ToWindowsColor();
         }
 
         private void InitThickness()
@@ -115,7 +115,7 @@ namespace TickTrader.BotTerminal
                 : base(descriptor)
             {
                 if (error == null)
-                    Error = new ErrorMsgModel(descriptor.Error);
+                    Error = new ErrorMsgModel(descriptor.ErrorCode);
                 else
                     Error = new ErrorMsgModel(error);
             }
