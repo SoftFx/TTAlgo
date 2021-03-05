@@ -962,6 +962,8 @@ namespace TickTrader.Algo.Common.Model
                                 return Domain.OrderExecReport.Types.CmdResultCode.IncorrectType;
                             else if (message.EndsWith("Remove OCO relation first."))
                                 return Domain.OrderExecReport.Types.CmdResultCode.OcoAlreadyExists;
+                            else if (message.StartsWith("No Dealer"))
+                                return Domain.OrderExecReport.Types.CmdResultCode.DealerReject;
                         }
                         break;
                     }
