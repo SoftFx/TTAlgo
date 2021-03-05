@@ -19,7 +19,7 @@ namespace TickTrader.BotAgent.Configurator
 
         private List<IWorkingManager> _workingModels;
 
-        public RegistryNode CurrentAgent => RegistryManager?.CurrentAgent;
+        public RegistryNode CurrentAgent => RegistryManager?.CurrentServer;
 
         public RegistryManager RegistryManager { get; }
 
@@ -43,13 +43,17 @@ namespace TickTrader.BotAgent.Configurator
 
         //public CacheManager CacheManager { get; private set; }
 
+        public ServerBotSettingsManager BotSettingsManager { get; private set; }
+
+
         public ConfigurationModel()
         {
             _configManager = new ConfigManager();
 
             Settings = _configManager.Properties;
             Prompts = new PrompterManager();
-            RegistryManager = new RegistryManager(Settings[AppProperties.RegistryAppName], Settings[AppProperties.AppSettings], Settings.IsDeveloper, Settings[AppProperties.ApplicationName]);
+            RegistryManager = new RegistryManager(Settings.RegistryApplicationNames, Settings[AppProperties.AppSettings], Settings.IsDeveloper);
+            BotSettingsManager = new ServerBotSettingsManager(RegistryManager);
 
             RefreshModel();
         }
@@ -61,7 +65,7 @@ namespace TickTrader.BotAgent.Configurator
             ServiceManager = new ServiceManager(CurrentAgent.ServiceId);
             //CacheManager = new CacheManager(CurrentAgent);
 
-            _portsManager = new PortsManager(RegistryManager.CurrentAgent, ServiceManager);
+            _portsManager = new PortsManager(RegistryManager.CurrentServer, ServiceManager);
             _configurationObject = null;
 
             CredentialsManager = new CredentialsManager(SectionNames.Credentials);
@@ -69,7 +73,7 @@ namespace TickTrader.BotAgent.Configurator
             ProtocolManager = new ProtocolManager(SectionNames.Protocol, _portsManager);
             FdkManager = new FdkManager(SectionNames.Fdk);
             ServerManager = new ServerManager(_portsManager);
-            Logs = new LogsManager(CurrentAgent.Path, Settings[AppProperties.LogsPath]);
+            Logs = new LogsManager(CurrentAgent.FolderPath, Settings[AppProperties.LogsPath]);
 
             _workingModels = new List<IWorkingManager>() { CredentialsManager, SslManager, ProtocolManager, ServerManager, FdkManager };
 
@@ -142,7 +146,7 @@ namespace TickTrader.BotAgent.Configurator
         {
             string ports = $"{string.Join(",", ServerManager.ServerModel.Urls.Select(u => u.Port.ToString()))},{ProtocolManager.ProtocolModel.ListeningPort}";
 
-            _portsManager.RegisterRuleInFirewall(Settings[AppProperties.ApplicationName], Path.Combine(CurrentAgent.Path, $"{Settings[AppProperties.ApplicationName]}.exe"), ports);
+            _portsManager.RegisterRuleInFirewall(ports);
         }
     }
 

@@ -14,33 +14,38 @@ namespace TickTrader.BotAgent.Configurator
 
         public const string AgentPathNameProperty = "AgentConfigurationPaths";
 
-        public List<RegistryNode> AgentNodes { get; }
+        public List<RegistryNode> ServerNodes { get; }
 
-        public RegistryNode CurrentAgent { get; private set; }
+        public RegistryNode CurrentServer { get; private set; }
 
-        public RegistryNode OldAgent { get; private set; }
+        public RegistryNode OldServer { get; private set; }
 
-        public RegistryManager(string registryApplicationName, string appSettings, bool developer, string exeName)
+
+        public RegistryManager(List<string> registryApplicationNames, string appSettings, bool developer)
         {
-            AgentNodes = new List<RegistryNode>();
+            ServerNodes = new List<RegistryNode>();
 
-            var agentFolder = _base64.OpenSubKey(Path.Combine("SOFTWARE", registryApplicationName));
-            var agentPath = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory).Parent.FullName;
+            var serverPath = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory).Parent.FullName;
 
-            foreach (var agentName in agentFolder.GetSubKeyNames())
+            foreach (var registryName in registryApplicationNames)
             {
-                var node = new RegistryNode(agentFolder.OpenSubKey(agentName), appSettings, developer, exeName);
+                var agentFolder = _base64.OpenSubKey(Path.Combine("SOFTWARE", "TickTrader", registryName));
 
-                if (agentPath == node.Path)
-                    CurrentAgent = node;
+                foreach (var agentName in agentFolder.GetSubKeyNames())
+                {
+                    var node = new RegistryNode(agentFolder.OpenSubKey(agentName), appSettings, developer, registryName);
 
-                AgentNodes.Add(node);
+                    if (serverPath == node.FolderPath)
+                        CurrentServer = node;
+
+                    ServerNodes.Add(node);
+                }
             }
 
-            if (CurrentAgent == null)
-                CurrentAgent = AgentNodes.Count > 0 ? AgentNodes[0] : throw new Exception(Resources.AgentNotFoundEx);
+            if (CurrentServer == null)
+                CurrentServer = ServerNodes.Count > 0 ? ServerNodes[0] : throw new Exception(Resources.AgentNotFoundEx);
 
-            OldAgent = CurrentAgent;
+            OldServer = CurrentServer;
         }
 
         public void ChangeCurrentAgent(string path)
@@ -48,8 +53,8 @@ namespace TickTrader.BotAgent.Configurator
             if (path == null)
                 return;
 
-            CurrentAgent = AgentNodes.Find(n => n.Path == path);
-            OldAgent = CurrentAgent;
+            CurrentServer = ServerNodes.Find(n => n.FolderPath == path);
+            OldServer = CurrentServer;
         }
     }
 
@@ -63,7 +68,9 @@ namespace TickTrader.BotAgent.Configurator
 
         public string AppSettingPath { get; }
 
-        public string Path { get; }
+        public string FolderPath { get; }
+
+        public string NodeName { get; }
 
         public string ServiceId { get; }
 
@@ -76,22 +83,22 @@ namespace TickTrader.BotAgent.Configurator
         public string BuildDate { get; private set; } = DateTime.MinValue.ToString("yyyy.MM.dd");
 
 
-        public RegistryNode(RegistryKey key, string appSetting, bool developer, string exeName)
+        public RegistryNode(RegistryKey key, string appSetting, bool developer, string typeName)
         {
-            Path = key.GetValue(nameof(Path)).ToString();
+            NodeName = typeName;
+            FolderPath = key.GetValue("Path").ToString();
             ServiceId = key.GetValue(nameof(ServiceId)).ToString();
             Version = key.GetValue(nameof(Version)).ToString();
             IsDeveloper = developer;
 
-            AppSettingPath = System.IO.Path.Combine(Path, appSetting);
+            AppSettingPath = Path.Combine(FolderPath, appSetting);
+            ExePath = Path.Combine(FolderPath, $"TickTrader.{NodeName}.exe");
 
-            GetBuildDate(exeName);
+            GetBuildDate(typeName);
         }
 
         private void GetBuildDate(string exeName)
         {
-            ExePath = System.IO.Path.Combine(Path, $"{exeName}.exe");
-
             try
             {
                 var assemblyName = AssemblyName.GetAssemblyName(ExePath);

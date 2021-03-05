@@ -9,6 +9,11 @@ namespace TickTrader.BotAgent.Configurator
             MessageBox.Show(Application.Current.MainWindow, message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
+        public static void OkInfo(string message)
+        {
+            MessageBox.Show(Application.Current.MainWindow, message, "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
         public static bool YesNoBoxError(string message)
         {
             var result = MessageBox.Show(Application.Current.MainWindow, message, "Error", MessageBoxButton.YesNo, MessageBoxImage.Error);

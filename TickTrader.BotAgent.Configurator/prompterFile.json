@@ -14,13 +14,14 @@
   },
   "Protocol": {
     "ListeningPort": "Port that is used for AlgoTerminal connection. It should be different from web server ports.",
-    "LogDirectoryName": "Directory where BotTermianl connection logs will be stored.",
+    "LogDirectoryName": "Directory where AlgoTermianl connection logs will be stored.",
     "LogMessages": "Enables writing messages sent over AlgoTerminal connection to logs. Only for troubleshooting, has severe impact on performance."
   },
   "Fdk": {
     "EnableLogs": "Enables writing messages sent over trade server connection to logs. Only for troubleshooting, has severe impact on performance."
   },
   "MultipleAgentProvider": {
-    "AgentConfigurationPaths": "Agent installation folder."
+    "AgentConfigurationPaths": "Selected AlgoServer installation folder.",
+    "ManagingBotSettingsOnServer": "Allows you to transfer bot and account settings between servers"
   }
 }

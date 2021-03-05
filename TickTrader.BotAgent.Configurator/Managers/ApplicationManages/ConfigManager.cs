@@ -5,7 +5,7 @@ using System.IO;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public enum AppProperties { AppSettings, ApplicationName, RegistryAppName, LogsPath, DeveloperVersion };
+    public enum AppProperties { AppSettings, /*ApplicationName,*/ RegistryAppName, LogsPath, DeveloperVersion };
 
     public class ConfigManager
     {
@@ -77,10 +77,12 @@ namespace TickTrader.BotAgent.Configurator
     public class ConfigurationProperies
     {
         private const string AppSettings = "WebAdmin\\appsettings.json";
-        private const string ApplicationName = "TickTrader.AlgoServer";
-        private const string RegistryAppName = "TickTrader\\AlgoServer";
+        //private const string ApplicationName = "TickTrader.AlgoServer";
+        //private const string RegistryAppName = "TickTrader\\AlgoServer";
 
         private readonly Dictionary<string, string> _systemProperties;
+
+        public readonly List<string> RegistryApplicationNames = new List<string> { "AlgoServer", "BotAgent" };
 
         public Dictionary<string, string> CustomProperties;
 
@@ -115,9 +117,9 @@ namespace TickTrader.BotAgent.Configurator
 
             _systemProperties = new Dictionary<string, string>()
             {
-                { nameof(AppSettings), AppSettings },
-                { nameof(ApplicationName), ApplicationName },
-                { nameof(RegistryAppName), RegistryAppName }
+                { nameof(AppProperties.AppSettings), AppSettings },
+                //{ nameof(AppProperties.ApplicationName), ApplicationName },
+                { nameof(AppProperties.RegistryAppName), RegistryApplicationNames[0] }
             };
         }
 

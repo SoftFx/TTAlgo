@@ -74,6 +74,9 @@
       <EmbedInteropTypes>True</EmbedInteropTypes>
       <HintPath>.\Interop.NetFwTypeLib.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Xaml.Behaviors, Version=1.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Xaml.Behaviors.Wpf.1.1.31\lib\net45\Microsoft.Xaml.Behaviors.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -84,6 +87,7 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Management" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
@@ -107,12 +111,16 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Controls\Panels\ServerBotSettingsPanel.xaml.cs">
+      <DependentUpon>ServerBotSettingsPanel.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Helpers\Instance\AppInstanceRestrictor.cs" />
     <Compile Include="Helpers\Instance\IPHelper.cs" />
     <Compile Include="Helpers\Static\UriChecker.cs" />
     <Compile Include="Infrastructure\Commands\AsyncCommand.cs" />
     <Compile Include="Helpers\Static\IoHelper.cs" />
     <Compile Include="Managers\ApplicationManages\CacheManager.cs" />
+    <Compile Include="Managers\ApplicationManages\ServerBotSettingsManager.cs" />
     <Compile Include="ViewModels\InfrastructureViewModels\ModelErrorCounter.cs" />
     <Compile Include="Helpers\Static\CryptoManager.cs" />
     <Compile Include="Managers\ApplicationManages\LogsManager.cs" />
@@ -164,6 +172,7 @@
     <Compile Include="ViewModels\InfrastructureViewModels\RefreshCounter.cs" />
     <Compile Include="ViewModels\InstanceViewModels\BaseViewModel.cs" />
     <Compile Include="ViewModels\InstanceViewModels\LogsViewModel.cs" />
+    <Compile Include="ViewModels\InstanceViewModels\ServerBotSettingsViewModel.cs" />
     <Compile Include="ViewModels\InstanceViewModels\UriViewModel.cs" />
     <Compile Include="Windows\NewUrlWindow.xaml.cs">
       <DependentUpon>NewUrlWindow.xaml</DependentUpon>
@@ -192,6 +201,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\Panels\ServerPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\Panels\ServerBotSettingsPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

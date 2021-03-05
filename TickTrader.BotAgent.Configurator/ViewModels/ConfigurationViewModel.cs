@@ -58,6 +58,8 @@ namespace TickTrader.BotAgent.Configurator
 
         public ServerViewModel ServerModel { get; set; }
 
+        public ServerBotSettingsViewModel ServerBotSettingsModel { get; set; }
+
         public StateServiceViewModel StateServiceModel { get; set; }
 
         public FdkViewModel FdkModel { get; set; }
@@ -70,9 +72,11 @@ namespace TickTrader.BotAgent.Configurator
 
         public SpinnerViewModel Spinner { get; }
 
+
         public bool WasUpdate => RefreshCounter.Update;
 
         public bool IsDeveloperVersion => _model.Settings.IsDeveloper;
+
 
         public ConfigurationViewModel()
         {
@@ -148,6 +152,11 @@ namespace TickTrader.BotAgent.Configurator
             AdvancedModel = new AdvancedViewModel(_model.RegistryManager, RefreshCounter)
             {
                 ModelDescription = _model.Prompts.GetPrompt(SectionNames.MultipleAgentProvider, RegistryManager.AgentPathNameProperty),
+            };
+
+            ServerBotSettingsModel = new ServerBotSettingsViewModel(_model.BotSettingsManager)
+            {
+                ModelDescription = _model.Prompts.GetPrompt(SectionNames.MultipleAgentProvider, ServerBotSettingsManager.ServerBotSettingsProperty),
             };
 
             _viewModels = new List<BaseContentViewModel>() { AdminModel, DealerModel, ViewerModel, ProtocolModel, ServerModel, FdkModel, AdvancedModel };

@@ -12,7 +12,7 @@ namespace TickTrader.BotAgent.Configurator
 
         private RegistryManager _registry;
 
-        public IEnumerable<string> AgentPaths => _registry.AgentNodes.Select(n => n.Path);
+        public IEnumerable<string> AgentPaths => _registry.ServerNodes.Select(n => n.FolderPath);
 
         public bool NewCurrentAgent { get; private set; } = false;
 
@@ -20,7 +20,7 @@ namespace TickTrader.BotAgent.Configurator
         {
             _registry = registry;
             _refreshManager = refManager;
-            _selectPath = registry.CurrentAgent.Path;
+            _selectPath = registry.CurrentServer.FolderPath;
 
             _keyPath = $"{nameof(AdvancedViewModel)} {nameof(SelectPath)}";
         }
@@ -33,7 +33,7 @@ namespace TickTrader.BotAgent.Configurator
             {
                 _selectPath = value;
 
-                NewCurrentAgent = _registry.OldAgent.Path != value;
+                NewCurrentAgent = _registry.OldServer.FolderPath != value;
                 OnPropertyChanged(nameof(NewCurrentAgent));
             }
         }
