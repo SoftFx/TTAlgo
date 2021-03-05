@@ -35,7 +35,7 @@ namespace TickTrader.BotTerminal
         public static readonly DependencyProperty FilterProperty = DependencyProperty.Register("Filter", typeof(string), typeof(SaveFileDialogBeahvior),
             new FrameworkPropertyMetadata()
             {
-                DefaultValue = PackageWatcher.GetPackageExtensions,
+                DefaultValue = PackageHelper.GetPackageExtensions,
             });
 
         public SaveFileDialogBeahvior()

@@ -120,7 +120,7 @@ namespace TickTrader.Algo.Core
                 //_executor.Core.Start();
 
 
-                if (PluginInfo.Type == Domain.Metadata.Types.PluginType.TradeBot)
+                if (PluginInfo.IsTradeBot)
                     _control.EmulateExecution(CommonSettings.WarmupSize, CommonSettings.WarmupUnits);
                 else // no warm-up for indicators
                     _control.EmulateExecution(0, WarmupUnitTypes.Bars);

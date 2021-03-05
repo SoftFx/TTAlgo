@@ -119,6 +119,8 @@ namespace TickTrader.Algo.Core
                 return StartExecutorRequestHandler(payload);
             else if (payload.Is(StopExecutorRequest.Descriptor))
                 return StopExecutorRequestHandler(payload);
+            else if (payload.Is(PackageInfoRequest.Descriptor))
+                return PackageInfoRequestHandler();
             else if (_knownProxies.TryGetValue(proxyId, out var proxy))
                 proxy.HandleRequest(proxyId, callId, payload);
 
@@ -150,6 +152,12 @@ namespace TickTrader.Algo.Core
             var request = payload.Unpack<StopExecutorRequest>();
             await _runtime.StopExecutor(request.ExecutorId);
             return VoidResponse;
+        }
+
+        private async Task<Any> PackageInfoRequestHandler()
+        {
+            var info = await _runtime.GetPackageInfo();
+            return Any.Pack(info);
         }
 
         private bool AttachRuntimeResponseHandler(TaskCompletionSource<bool> taskSrc, Any payload)

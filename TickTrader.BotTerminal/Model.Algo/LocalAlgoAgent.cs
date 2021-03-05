@@ -107,7 +107,7 @@ namespace TickTrader.BotTerminal
 
             _reductions = new ReductionCollection(new AlgoLogAdapter("Extensions"));
             IdProvider = new PluginIdProvider();
-            Library = new LocalAlgoLibrary(new AlgoLogAdapter("AlgoRepository"));
+            Library = new LocalAlgoLibrary(new AlgoLogAdapter("AlgoRepository"), AlgoServer);
             _botsWarden = new BotsWarden(this);
             _syncContext = new DispatcherSync();
             _packages = new VarDictionary<PackageKey, PackageInfo>();

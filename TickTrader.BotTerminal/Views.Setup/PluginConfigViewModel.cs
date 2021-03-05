@@ -151,9 +151,9 @@ namespace TickTrader.BotTerminal
 
         public bool IsEditMode => Mode == PluginSetupMode.Edit;
 
-        public bool CanBeSkipped => IsEmpty && Descriptor.IsValid && Descriptor.Type != Metadata.Types.PluginType.TradeBot;
+        public bool CanBeSkipped => IsEmpty && Descriptor.IsValid && !Descriptor.IsTradeBot;
 
-        public bool IsBot => Descriptor.Type == Metadata.Types.PluginType.TradeBot;
+        public bool IsBot => Descriptor.IsTradeBot;
 
         public string InstanceId
         {

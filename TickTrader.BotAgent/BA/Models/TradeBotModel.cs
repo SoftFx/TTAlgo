@@ -31,7 +31,7 @@ namespace TickTrader.BotAgent.BA.Models
         private ExecutorModel executor;
         private BotLog.ControlHandler _botLog;
         private AlgoData.ControlHandler _algoData;
-        private AlgoPluginRef _ref;
+        private PluginInfo _info;
         private BotListenerProxy _botListener;
         private PackageStorage _packageRepo;
         private TaskCompletionSource<object> _startedEvent;
@@ -65,7 +65,7 @@ namespace TickTrader.BotAgent.BA.Models
         public string FaultMessage { get; private set; }
         public AccountKey Account => _client.GetKey();
         public Ref<BotLog> LogRef => _botLog.Ref;
-        public AlgoPluginRef AlgoRef => _ref;
+        public PluginInfo Info => _info;
 
         public Ref<AlgoData> AlgoDataRef => _algoData.Ref;
 
@@ -261,7 +261,7 @@ namespace TickTrader.BotAgent.BA.Models
                 if (executor != null)
                     throw new InvalidOperationException("Cannot start executor: old executor instance is not disposed!");
 
-                executor = await _server.CreateExecutor(_ref, Config, _client.Id);
+                executor = await _server.CreateExecutor(Config, _client.Id);
                 executor.Config.WorkingDirectory = await _algoData.GetFolder();
                 //executor.SetConnectionInfo(GetConnectionInfo());
 
@@ -374,8 +374,8 @@ namespace TickTrader.BotAgent.BA.Models
                 return;
             }
 
-            _ref = _packageRepo.Library.GetPluginRef(pluginKey);
-            if (_ref == null || _ref.Metadata.Descriptor.Type != Metadata.Types.PluginType.TradeBot)
+            _info = _packageRepo.Library.GetPlugin(pluginKey);
+            if (_info == null || !_info.Descriptor_.IsTradeBot)
             {
                 BreakBot($"Trade bot {pluginKey.DescriptorId} is missing in package {pluginKey.Package.Name} at {pluginKey.Package.Location}!");
                 return;

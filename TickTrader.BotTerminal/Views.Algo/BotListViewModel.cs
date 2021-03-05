@@ -53,7 +53,7 @@ namespace TickTrader.BotTerminal
         public bool CanDrop(object o)
         {
             var algoBot = o as AlgoPluginViewModel;
-            if (algoBot != null && algoBot.Agent.Name == _algoEnv.LocalAgentVM.Name && algoBot.Type == Metadata.Types.PluginType.TradeBot)
+            if (algoBot != null && algoBot.Agent.Name == _algoEnv.LocalAgentVM.Name && algoBot.IsTradeBot)
             {
                 return true;
             }

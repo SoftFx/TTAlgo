@@ -79,7 +79,7 @@ namespace TickTrader.BotTerminal
 
             SelectedPlugin = new Property<AlgoPluginViewModel>();
             IsPluginSelected = SelectedPlugin.Var.IsNotNull();
-            IsTradeBotSelected = SelectedPlugin.Var.Check(p => p != null && p.Descriptor.Type == Metadata.Types.PluginType.TradeBot);
+            IsTradeBotSelected = SelectedPlugin.Var.Check(p => p != null && p.Descriptor.IsTradeBot);
             //IsRunning = ActionOverlay.IsRunning;
             //IsStopping = ActionOverlay.IsCancelling;
             _isPluginValid = PluginErrorProp.Var.IsNull();
@@ -124,10 +124,11 @@ namespace TickTrader.BotTerminal
             {
                 if (a.New != null)
                 {
-                    var pluginRef = env.LocalAgent.Library.GetPluginRef(a.New.Key);
-                    UpdateOptimizationState(pluginRef.Metadata.Descriptor);
-                    UpdatePluginState(pluginRef.Metadata.Descriptor);
-                    PluginSetup = new PluginSetupModel(pluginRef, this, this);
+                    var plugin = env.LocalAgent.Library.GetPlugin(a.New.Key);
+                    UpdateOptimizationState(plugin.Descriptor_);
+                    UpdatePluginState(plugin.Descriptor_);
+                    PluginSetup = null;
+                    //PluginSetup = new PluginSetupModel(pluginRef, this, this);
                     PluginSelected?.Invoke();
                 }
                 else
@@ -286,9 +287,9 @@ namespace TickTrader.BotTerminal
             var writer = new StringBuilder();
             var dPlugin = setup.Metadata.Descriptor;
 
-            if (dPlugin.Type == Metadata.Types.PluginType.Indicator)
+            if (dPlugin.IsIndicator)
                 writer.AppendFormat("Indicator: {0} v{1}", dPlugin.DisplayName, dPlugin.Version).AppendLine();
-            else if (dPlugin.Type == Metadata.Types.PluginType.TradeBot)
+            else if (dPlugin.IsTradeBot)
                 writer.AppendFormat("Trade Bot: {0} v{1}", dPlugin.DisplayName, dPlugin.Version).AppendLine();
 
             int count = 0;
@@ -474,7 +475,7 @@ namespace TickTrader.BotTerminal
 
         private void UpdateOptimizationState(PluginDescriptor descriptor)
         {
-            _optModeItem.IsEnabled = descriptor.Type == Metadata.Types.PluginType.TradeBot;
+            _optModeItem.IsEnabled = descriptor.IsTradeBot;
             if (ModeProp.Value == _optModeItem)
                 ModeProp.Value = Modes[0];
         }

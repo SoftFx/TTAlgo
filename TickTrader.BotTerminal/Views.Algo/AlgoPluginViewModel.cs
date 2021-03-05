@@ -60,9 +60,9 @@ namespace TickTrader.BotTerminal
 
         public bool IsLocal => !Agent.Model.IsRemote;
 
-        public bool IsTradeBot => Descriptor.Type == Metadata.Types.PluginType.TradeBot;
+        public bool IsTradeBot => Descriptor.IsTradeBot;
 
-        public bool IsIndicator => Descriptor.Type == Metadata.Types.PluginType.Indicator;
+        public bool IsIndicator => Descriptor.IsIndicator;
 
         public AlgoPluginViewModel(PluginInfo info, AlgoAgentViewModel agent)
         {

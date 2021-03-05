@@ -102,7 +102,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                 Name = package.Key.Name,
                 DisplayName = package.Identity.FileName,
                 Created = package.Identity.LastModifiedUtc.ToDateTime().ToLocalTime(),
-                Plugins = package.Plugins.Where(p => p.Descriptor_.Type == Metadata.Types.PluginType.TradeBot).Select(p => p.ToPluginDto()).ToArray(),
+                Plugins = package.Plugins.Where(p => p.Descriptor_.IsTradeBot).Select(p => p.ToPluginDto()).ToArray(),
                 IsValid = package.IsValid
             };
         }

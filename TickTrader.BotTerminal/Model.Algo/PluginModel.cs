@@ -25,8 +25,6 @@ namespace TickTrader.BotTerminal
 
         public AlgoPackageRef PackageRef { get; private set; }
 
-        public AlgoPluginRef PluginRef { get; private set; }
-
         public PluginSetupModel Setup { get; private set; }
 
         public string FaultMessage { get; private set; }
@@ -78,8 +76,8 @@ namespace TickTrader.BotTerminal
                 ChangeState(PluginStates.Starting);
 
                 LockResources();
-                Setup = new PluginSetupModel(PluginRef, Agent, SetupContext, Config.MainSymbol);
-                Setup.Load(Config);
+                //Setup = new PluginSetupModel(PluginRef, Agent, SetupContext, Config.MainSymbol);
+                //Setup.Load(Config);
 
                 _executor = await CreateExecutor();
                 //Setup.SetWorkingFolder(_executor.Config.WorkingFolder);
@@ -132,7 +130,7 @@ namespace TickTrader.BotTerminal
 
         protected virtual async Task<ExecutorModel> CreateExecutor()
         {
-            var runtime = await Agent.AlgoServer.CreateExecutor(PluginRef, Config, Agent.ClientModel.Id);
+            var runtime = await Agent.AlgoServer.CreateExecutor(Config, Agent.ClientModel.Id);
 
             runtime.ErrorOccurred += Executor_OnRuntimeError;
 
@@ -188,16 +186,15 @@ namespace TickTrader.BotTerminal
                 ChangeState(PluginStates.Broken, $"Package {package.Name} at {package.Location} is not found!");
                 return;
             }
-            var pluginRef = Agent.Library.GetPluginRef(Config.Key);
-            if (pluginRef == null)
+            var plugin = Agent.Library.GetPlugin(Config.Key);
+            if (plugin == null)
             {
                 ChangeState(PluginStates.Broken, $"Plugin {Config.Key.DescriptorId} is missing in package {package.Name} at {package.Location}!");
                 return;
             }
 
             PackageRef = packageRef;
-            PluginRef = pluginRef;
-            Descriptor = pluginRef.Metadata.Descriptor;
+            Descriptor = plugin.Descriptor_;
             ChangeState(PluginStates.Stopped);
             OnRefsUpdated();
         }

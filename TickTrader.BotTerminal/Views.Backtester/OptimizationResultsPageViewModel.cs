@@ -152,7 +152,7 @@ namespace TickTrader.BotTerminal
 
                         var summaryEntry = archive.CreateEntry(repFolder + "report.txt", CompressionLevel.Optimal);
                         using (var entryStream = summaryEntry.Open())
-                            BacktesterReportViewModel.SaveAsText(entryStream, dPlugin.Type, rep.Stats);
+                            BacktesterReportViewModel.SaveAsText(entryStream, dPlugin.IsTradeBot, rep.Stats);
 
                         observer.SetProgress(repNo++);
                     }

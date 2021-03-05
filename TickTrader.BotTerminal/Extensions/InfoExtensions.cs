@@ -30,7 +30,7 @@ namespace TickTrader.BotTerminal
             {
                 Account = null,
                 Config = tradeBot.Config,
-                Descriptor = tradeBot.PluginRef?.Metadata.Descriptor,
+                Descriptor = tradeBot.Descriptor,
                 FaultMessage = "",
                 InstanceId = tradeBot.InstanceId,
                 State = tradeBot.State,

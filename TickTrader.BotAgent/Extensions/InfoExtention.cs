@@ -38,7 +38,7 @@ namespace TickTrader.BotAgent.Extensions
                 State = model.State,
                 FaultMessage = model.FaultMessage,
                 Config = model.Config,
-                Descriptor = model.AlgoRef?.Metadata.Descriptor,
+                Descriptor = model.Info?.Descriptor_,
             };
         }
 

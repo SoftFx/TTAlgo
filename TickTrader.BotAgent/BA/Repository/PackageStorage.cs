@@ -32,13 +32,13 @@ namespace TickTrader.BotAgent.BA.Repository
         public event Action<PackageInfo> PackageStateChanged;
 
 
-        public PackageStorage()
+        public PackageStorage(AlgoServer algoServer)
         {
             _storageDir = GetFullPathToStorage("AlgoRepository");
 
             EnsureStorageDirectoryCreated();
 
-            Library = new LocalAlgoLibrary(CoreLoggerFactory.GetLogger("AlgoRepository"));
+            Library = new LocalAlgoLibrary(CoreLoggerFactory.GetLogger("AlgoRepository"), algoServer);
             Library.RegisterRepositoryLocation(RepositoryLocation.LocalRepository, _storageDir, true);
             Library.PackageUpdated += LibraryOnPackageUpdated;
             Library.PackageStateChanged += LibraryOnPackageStateChanged;

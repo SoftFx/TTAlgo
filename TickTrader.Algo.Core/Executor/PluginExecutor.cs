@@ -1,8 +1,6 @@
 ﻿using Google.Protobuf;
-using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Calc;
@@ -622,7 +620,7 @@ namespace TickTrader.Algo.Core
             {
                 ThrowIfRunning();
                 if (_pluginLoggerFixture == null)
-                    _pluginLoggerFixture = new LogFixture(this, GetDescriptor().Type);
+                    _pluginLoggerFixture = new LogFixture(this, GetDescriptor().IsTradeBot);
                 _pluginLogger = _pluginLoggerFixture;
                 return _pluginLoggerFixture;
             }

@@ -11,15 +11,13 @@ namespace TickTrader.Algo.Core
         private IFixtureContext _context;
         private TimeKeyGenerator _keyGen = new TimeKeyGenerator();
         //private Task _batchLinkTask;
-        private Domain.Metadata.Types.PluginType _type;
         private bool _isTradeBot;
         private string _indicatorPrefix;
 
-        internal LogFixture(IFixtureContext context, Domain.Metadata.Types.PluginType type)
+        internal LogFixture(IFixtureContext context, bool isTradeBot)
         {
             _context = context;
-            _type = type;
-            _isTradeBot = type == Domain.Metadata.Types.PluginType.TradeBot;
+            _isTradeBot = isTradeBot;
             if (!_isTradeBot)
                 _indicatorPrefix = $"{context.InstanceId} ({context.MainSymbolCode}, {context.TimeFrame})";
         }

@@ -148,6 +148,8 @@ message PackagePathResponse {
     string path = 1;
 }
 
+message PackageInfoRequest { } // PackageInfo
+
 message ConnectionInfoRequest { }
 
 message ConnectionInfoResponse {

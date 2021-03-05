@@ -1,221 +1,183 @@
-﻿using Machinarium.State;
-using Machinarium.Qnil;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Util;
 
 namespace TickTrader.Algo.Core.Repository
 {
+    internal enum UpdateAction { Upsert, Remove }
+
+    internal struct PackageFileUpdate
+    {
+        internal string PackageId { get; }
+
+        internal PackageKey PackageKey { get; }
+
+        internal UpdateAction Action { get; }
+
+        internal string FilePath { get; }
+
+
+        public PackageFileUpdate(string packageId, PackageKey packageKey, UpdateAction action, string filePath)
+        {
+            PackageId = packageId;
+            PackageKey = packageKey;
+            Action = action;
+            FilePath = filePath;
+        }
+    }
+
+
     public class PackageRepository : IDisposable
     {
-        public enum States { Created, Scanning, Waiting, Watching, Closing, Closed }
-
-        public enum Events { Start, DoneScanning, ScanFailed, NextAttempt, CloseRequested, DoneClosing, WatcherFail }
-
-
-        private StateMachine<States> _stateControl = new StateMachine<States>();
         private object _scanUpdateLockObj = new object();
-        private object _globalLockObj = new object();
         private FileSystemWatcher _watcher;
         private Task _scanTask;
-        private Dictionary<string, PackageWatcher> _packages = new Dictionary<string, PackageWatcher>();
         private string _repPath;
         private RepositoryLocation _location;
         private IAlgoCoreLogger _logger;
-        private bool _isolation;
+        private bool _isolated;
+        private readonly IAsyncChannel<PackageFileUpdate> _updateChannel;
+        private bool _enabled;
 
 
-        public event Action<AlgoPackageRef> Added;
-        public event Action<AlgoPackageRef> Updated;
-        public event Action<AlgoPackageRef> Removed;
-
-
-        public IReadOnlyDictionary<string, PackageWatcher> Packages => _packages;
-
-
-        public PackageRepository(string repPath, RepositoryLocation location, IAlgoCoreLogger logger = null, bool isolation = true)
+        internal PackageRepository(string repPath, RepositoryLocation location, IAsyncChannel<PackageFileUpdate> updateChannel, IAlgoCoreLogger logger = null, bool isolated = true)
         {
             _repPath = repPath;
             _location = location;
+            _updateChannel = updateChannel;
             _logger = logger;
-            _isolation = isolation;
-
-            _stateControl.AddTransition(States.Created, Events.Start, States.Scanning);
-            _stateControl.AddTransition(States.Scanning, Events.DoneScanning, States.Watching);
-            _stateControl.AddTransition(States.Scanning, Events.CloseRequested, States.Closing);
-            _stateControl.AddTransition(States.Scanning, Events.ScanFailed, States.Waiting);
-            _stateControl.AddTransition(States.Waiting, Events.NextAttempt, States.Scanning);
-            _stateControl.AddTransition(States.Waiting, Events.CloseRequested, States.Closing);
-            _stateControl.AddTransition(States.Watching, Events.CloseRequested, States.Closing);
-            _stateControl.AddTransition(States.Watching, Events.WatcherFail, States.Scanning);
-
-            _stateControl.AddTransition(States.Closing, Events.DoneClosing, States.Closed);
-
-            _stateControl.AddScheduledEvent(States.Waiting, Events.NextAttempt, 1000);
-
-            _stateControl.OnEnter(States.Scanning, () => _scanTask = Task.Factory.StartNew(Scan));
+            _isolated = isolated;
         }
+
 
         public void Start()
         {
-            _stateControl.PushEvent(Events.Start);
+            _enabled = true;
+            _scanTask = Task.Factory.StartNew(Scan);
         }
 
-        public Task Stop()
+        public async Task Stop()
         {
-            return _stateControl.PushEventAndWait(Events.CloseRequested, States.Closed);
-        }
+            _enabled = false;
+            try
+            {
+                await _scanTask;
+            }
+            catch (Exception) { }
+            DeinitWatcher();
 
-        public async Task WaitInit()
-        {
-            await _stateControl.AsyncWait(States.Watching);
-            await Task.WhenAll(_packages.Values.Select(a => a.WaitReady()));
         }
 
         public void Dispose()
         {
-            lock (_scanUpdateLockObj)
-            {
-                foreach (var package in _packages.Values)
-                {
-                    package.Dispose();
-                }
-            }
+            DeinitWatcher();
         }
 
 
+        private void InitWatcher()
+        {
+            _watcher = new FileSystemWatcher()
+            {
+                Path = _repPath,
+                IncludeSubdirectories = false
+            };
+
+            _watcher.Changed += WatcherOnChanged;
+            _watcher.Created += WatcherOnChanged;
+            _watcher.Deleted += WatcherOnDeleted;
+            _watcher.Renamed += WatcherOnRenamed;
+            _watcher.Error += WatcherOnError;
+        }
+
+        private void DeinitWatcher()
+        {
+            if (_watcher == null)
+                return;
+
+            _watcher.Dispose();
+            _watcher.Changed -= WatcherOnChanged;
+            _watcher.Created -= WatcherOnChanged;
+            _watcher.Deleted -= WatcherOnDeleted;
+            _watcher.Renamed -= WatcherOnRenamed;
+            _watcher.Error -= WatcherOnError;
+
+            _watcher = null;
+        }
+
         private void Scan()
         {
-            try
+            lock (_scanUpdateLockObj)
             {
-                if (_watcher != null)
+                if (!_enabled)
+                    return;
+
+                try
                 {
-                    _watcher.Dispose();
-                    _watcher.Changed -= WatcherOnChanged;
-                    _watcher.Created -= WatcherOnChanged;
-                    _watcher.Deleted -= WatcherOnDeleted;
-                    _watcher.Renamed -= WatcherOnRenamed;
-                    _watcher.Error -= WatcherOnError;
-                }
+                    DeinitWatcher();
 
-                _watcher = new FileSystemWatcher(_repPath);
-                _watcher.Path = _repPath;
-                _watcher.IncludeSubdirectories = false;
+                    InitWatcher();
 
-                _watcher.Changed += WatcherOnChanged;
-                _watcher.Created += WatcherOnChanged;
-                _watcher.Deleted += WatcherOnDeleted;
-                _watcher.Renamed += WatcherOnRenamed;
-                _watcher.Error += WatcherOnError;
-
-                lock (_scanUpdateLockObj)
-                {
                     _watcher.EnableRaisingEvents = true;
 
                     var fileList = Directory.GetFiles(_repPath);
                     foreach (var file in fileList)
                     {
-                        if (_stateControl.Current == States.Closing)
-                            break;
-
-                        if (!PackageWatcher.IsFileSupported(file))
+                        if (!PackageHelper.IsFileSupported(file))
                             continue;
 
-                        if (!_packages.TryGetValue(file, out var item))
-                            UpsertPackage(file);
-                        else
-                            item.CheckForChanges();
+                        UpsertPackage(file);
                     }
                 }
-
-                _stateControl.PushEvent(Events.DoneScanning);
-            }
-            catch (Exception ex)
-            {
-                _logger?.Error($"Failed to scan {_repPath}", ex);
-                _stateControl.PushEvent(Events.ScanFailed);
+                catch (Exception ex)
+                {
+                    _logger?.Error($"Failed to scan {_repPath}", ex);
+                }
             }
         }
 
         private void WatcherOnError(object sender, ErrorEventArgs e)
         {
-            _stateControl.PushEvent(Events.WatcherFail);
+            Task.Factory.StartNew(Scan);
         }
 
         private void WatcherOnRenamed(object sender, RenamedEventArgs e)
         {
-            var oldFileSupported = PackageWatcher.IsFileSupported(e.OldFullPath);
-            var newFileSupported = PackageWatcher.IsFileSupported(e.FullPath);
+            if (PackageHelper.IsFileSupported(e.OldFullPath))
+                RemovePackage(e.OldFullPath);
 
-            if (!oldFileSupported && !newFileSupported)
-                return;
+            if (PackageHelper.IsFileSupported(e.FullPath))
+                UpsertPackage(e.FullPath);
 
-            lock (_scanUpdateLockObj)
-            {
-                if (oldFileSupported)
-                    RemovePackage(e.OldFullPath);
-
-                if (newFileSupported)
-                    UpsertPackage(e.FullPath);
-            }
         }
 
         private void WatcherOnChanged(object sender, FileSystemEventArgs e)
         {
-            if (!PackageWatcher.IsFileSupported(e.FullPath))
-                return;
-
-            lock (_scanUpdateLockObj)
-            {
+            if (PackageHelper.IsFileSupported(e.FullPath))
                 UpsertPackage(e.FullPath);
-            }
         }
 
         private void WatcherOnDeleted(object sender, FileSystemEventArgs e)
         {
-            if (!PackageWatcher.IsFileSupported(e.FullPath))
-                return;
-
-            lock (_scanUpdateLockObj)
-            {
+            if (PackageHelper.IsFileSupported(e.FullPath))
                 RemovePackage(e.FullPath);
-            }
         }
 
         private void UpsertPackage(string path)
         {
-            if (_packages.TryGetValue(path, out var package))
-            {
-                package.CheckForChanges();
-            }
-            else
-            {
-                package = new PackageWatcher(path, _location, _logger, _isolation);
-                _packages.Add(path, package);
-                package.Updated += PackageWatcherOnUpdated;
-                Added?.Invoke(package.PackageRef);
-                package.Start();
-            }
+            var key = PackageHelper.GetPackageKey(_location, path);
+            var id = PackageHelper.GetPackageId(key);
+            //var id = PackageHelper.GetPackageId(_location, path);
+            _updateChannel.AddAsync(new PackageFileUpdate(id, key, UpdateAction.Upsert, path));
         }
 
         private void RemovePackage(string path)
         {
-            if (_packages.TryGetValue(path, out var package))
-            {
-                _packages.Remove(path);
-                package.Updated -= PackageWatcherOnUpdated;
-                Removed?.Invoke(package.PackageRef);
-                package.Dispose();
-            }
-        }
-
-        private void PackageWatcherOnUpdated(AlgoPackageRef packageRef)
-        {
-            Updated?.Invoke(packageRef);
+            var key = PackageHelper.GetPackageKey(_location, path);
+            var id = PackageHelper.GetPackageId(key);
+            //var id = PackageHelper.GetPackageId(_location, path);
+            _updateChannel.AddAsync(new PackageFileUpdate(id, key, UpdateAction.Remove, path));
         }
     }
 }

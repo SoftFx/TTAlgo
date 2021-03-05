@@ -13,6 +13,8 @@ namespace TickTrader.Algo.Core
         Task StartExecutor(string executorId);
 
         Task StopExecutor(string executorId);
+
+        Task<PackageInfo> GetPackageInfo();
     }
 
 
@@ -52,6 +54,13 @@ namespace TickTrader.Algo.Core
         {
             var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(new StopExecutorRequest { ExecutorId = executorId }), context);
+            return context.TaskSrc.Task;
+        }
+
+        public Task<PackageInfo> GetPackageInfo()
+        {
+            var context = new RpcResponseTaskContext<PackageInfo>(RpcHandler.SingleReponseHandler);
+            _session.Ask(RpcMessage.Request(new PackageInfoRequest()), context);
             return context.TaskSrc.Task;
         }
     }

@@ -174,7 +174,8 @@ namespace TickTrader.BotTerminal
             SetupPage.InitToken();
 
             //var packageRef = _env.LocalAgent.Library.GetPackageRef(SelectedPlugin.Value.Info.Key.GetPackageKey());
-            var pluginRef = _env.LocalAgent.Library.GetPluginRef(SetupPage.SelectedPlugin.Value.Key);
+            //var pluginRef = _env.LocalAgent.Library.GetPluginRef(SetupPage.SelectedPlugin.Value.Key);
+            AlgoPluginRef pluginRef = null;
             //var pluginSetupModel = new PluginSetupModel(pluginRef, this, this);
 
             _descriptorCache = pluginRef.Metadata.Descriptor;
@@ -297,7 +298,7 @@ namespace TickTrader.BotTerminal
                         // setup params
                         OptimizationPage.Apply(optimizer);
 
-                        FireOnStart(pluginRef, optimizer);
+                        FireOnStart(optimizer);
 
                         _hasDataToSave.Set();
 
@@ -381,7 +382,7 @@ namespace TickTrader.BotTerminal
                 TradesPage.Stop(tester);
         }
 
-        private void FireOnStart(AlgoPluginRef pluginRef, Optimizer tester)
+        private void FireOnStart(Optimizer tester)
         {
             JournalPage.IsVisible = false;
             ChartPage.IsVisible = false;
@@ -427,7 +428,7 @@ namespace TickTrader.BotTerminal
             //observer.SetMessage("Loading feed chart data ...");
             //var feedChartData = await LoadBarSeriesAsync(tester.GetMainSymbolHistory(timeFrame), observer, timeFrame, count);
 
-            if (backtester.PluginInfo.Type == Metadata.Types.PluginType.TradeBot)
+            if (backtester.PluginInfo.IsTradeBot)
             {
                 observer.SetMessage("Loading equity chart data...");
                 var equityChartData = await LoadBarSeriesAsync(backtester.GetEquityHistory(timeFrame), observer, timeFrame, count);
@@ -615,7 +616,7 @@ namespace TickTrader.BotTerminal
                     using (var entryStream = setupEntry.Open())
                         await Task.Run(() => SetupPage.SaveTestSetupAsText(pluginSetup, entryStream, _emulteFrom, _emulateTo));
 
-                    if (pluginSetup.Metadata.Descriptor.Type == Metadata.Types.PluginType.TradeBot)
+                    if (pluginSetup.Metadata.Descriptor.IsTradeBot)
                     {
                         var equityEntry = archive.CreateEntry("equity.csv", CompressionLevel.Optimal);
                         using (var entryStream = equityEntry.Open())

@@ -106,10 +106,7 @@
       <RuntimeV1Binaries Include="$(ProjectDir)..\src\csharp\sandbox\TickTrader.Algo.RuntimeV1\bin\$(Configuration)\*.*" />
     </ItemGroup>
 
-    <Copy
-      SourceFiles="@(RuntimeV1Binaries)"
-      DestinationFolder="$(TargetDir)AlgoRuntime\"
-      SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(TargetDir)AlgoRuntime\" SkipUnchangedFiles="true" />
   </Target>
 
   <ItemGroup>

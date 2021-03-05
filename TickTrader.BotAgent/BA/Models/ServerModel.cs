@@ -52,7 +52,7 @@ namespace TickTrader.BotAgent.BA.Models
 
             _botIdHelper = new BotIdHelper();
             _allBots = new Dictionary<string, TradeBotModel>();
-            _packageStorage = new PackageStorage();
+            _packageStorage = new PackageStorage(_algoServer);
             _alertStorage = new AlertStorage();
             _threadPoolManager = new ThreadPoolManager();
             _fdkOptionsProvider = fdkOptionsProvider;

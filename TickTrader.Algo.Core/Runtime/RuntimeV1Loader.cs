@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -27,6 +28,7 @@ namespace TickTrader.Algo.Core
         private AlgoSandbox _sandbox;
         private Dictionary<string, PluginExecutorCore> _executorsMap;
         private MappingCollection _mappings;
+        private PackageInfo _packageInfo;
 
 
         public RuntimeV1Loader()
@@ -66,14 +68,23 @@ namespace TickTrader.Algo.Core
             var reductions = new ReductionCollection(CoreLoggerFactory.GetLogger("Extensions"));
             _mappings = new MappingCollection(reductions);
 
-            if (_runtimeConfig.PackagePath.EndsWith("TickTrader.Algo.Indicators.dll", StringComparison.OrdinalIgnoreCase))
+            var packagePath = _runtimeConfig.PackagePath;
+            var info = new FileInfo(packagePath);
+            var hash = FileHelper.CalculateSha256Hash(info);
+            var identity = PackageIdentity.Create(info, hash);
+
+            var plugins = Enumerable.Empty<PluginMetadata>();
+            if (packagePath.EndsWith("TickTrader.Algo.Indicators.dll", StringComparison.OrdinalIgnoreCase))
             {
-                AlgoAssemblyInspector.FindPlugins(Assembly.Load("TickTrader.Algo.Indicators"));
+                plugins = AlgoAssemblyInspector.FindPlugins(Assembly.Load("TickTrader.Algo.Indicators"));
             }
             else
             {
                 _sandbox = new AlgoSandbox(_runtimeConfig.PackagePath, false);
+                plugins = _sandbox.AlgoMetadata;
             }
+
+            _packageInfo = PackageHelper.GetInfo(PackageHelper.GetPackageKey(RepositoryLocation.LocalRepository, packagePath), identity, plugins);
 
             //var package = config.Key.Package;
             //var path = string.Empty;
@@ -120,6 +131,11 @@ namespace TickTrader.Algo.Core
             {
                 _finishTaskSrc?.TrySetResult(false);
             }
+        }
+
+        public Task<PackageInfo> GetPackageInfo()
+        {
+            return Task.FromResult(_packageInfo);
         }
 
         public async Task StartExecutor(string executorId)

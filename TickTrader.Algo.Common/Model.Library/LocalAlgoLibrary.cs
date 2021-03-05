@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 
@@ -16,11 +14,11 @@ namespace TickTrader.Algo.Common.Model
     {
         private Dictionary<RepositoryLocation, PackageRepository> _repositories;
         private Dictionary<PackageKey, AlgoPackageRef> _packageRefs;
-        private Dictionary<PluginKey, AlgoPluginRef> _pluginRefs;
         private Dictionary<PackageKey, PackageInfo> _packages;
         private Dictionary<PluginKey, PluginInfo> _plugins;
         private IAlgoCoreLogger _logger;
         private object _updateLock = new object();
+        private AlgoServer _server;
 
 
         public event Action<UpdateInfo<PackageInfo>> PackageUpdated;
@@ -32,13 +30,15 @@ namespace TickTrader.Algo.Common.Model
         public event Action<PackageInfo> PackageStateChanged;
 
 
-        public LocalAlgoLibrary(IAlgoCoreLogger logger)
+        public LocalAlgoLibrary(IAlgoCoreLogger logger, AlgoServer server)
         {
             _logger = logger;
+            _server = server;
+
+            _server.PackageUpdated += OnPackageUpdated;
 
             _repositories = new Dictionary<RepositoryLocation, PackageRepository>();
             _packageRefs = new Dictionary<PackageKey, AlgoPackageRef>();
-            _pluginRefs = new Dictionary<PluginKey, AlgoPluginRef>();
             _packages = new Dictionary<PackageKey, PackageInfo>();
             _plugins = new Dictionary<PluginKey, PluginInfo>();
         }
@@ -74,47 +74,53 @@ namespace TickTrader.Algo.Common.Model
             return _packageRefs.ContainsKey(key) ? _packageRefs[key] : null;
         }
 
-        public AlgoPluginRef GetPluginRef(PluginKey key)
-        {
-            return _pluginRefs.ContainsKey(key) ? _pluginRefs[key] : null;
-        }
-
         public void RegisterRepositoryLocation(RepositoryLocation location, string repoPath, bool isolation)
         {
-            if (_repositories.ContainsKey(location))
-                throw new ArgumentException($"Cannot register multiple paths for location '{location}'");
-
-            var repo = new PackageRepository(repoPath, location, _logger, isolation);
-            _repositories.Add(location, repo);
-
-            repo.Added += RepositoryOnAdded;
-            repo.Updated += RepositoryOnUpdated;
-            repo.Removed += RepositoryOnRemoved;
-
-            repo.Start();
+            _server.RegisterPackageRepository(location, repoPath);
         }
 
         public void AddAssemblyAsPackage(Assembly assembly)
         {
-            var location = assembly.Location;
+            //var location = assembly.Location;
 
-            var packageRef = new AlgoPackageRef(Path.GetFileName(assembly.Location).ToLowerInvariant(), RepositoryLocation.Embedded,
-                PackageIdentity.Create(new FileInfo(assembly.Location)), AlgoAssemblyInspector.FindPlugins(assembly).Select(m => new AlgoPluginRef(m, assembly.Location)));
+            //var packageRef = new AlgoPackageRef(Path.GetFileName(assembly.Location).ToLowerInvariant(), RepositoryLocation.Embedded,
+            //    PackageIdentity.Create(new FileInfo(assembly.Location)), AlgoAssemblyInspector.FindPlugins(assembly).Select(m => new AlgoPluginRef(m, assembly.Location)));
 
-            RepositoryOnAdded(packageRef);
+            //RepositoryOnAdded(packageRef);
         }
 
         public Task WaitInit()
         {
-            return Task.WhenAll(_repositories.Values.Select(r => r.WaitInit()));
+            return Task.CompletedTask;
+            //return Task.WhenAll(_repositories.Values.Select(r => r.WaitInit()));
         }
 
+
+        private void OnPackageUpdated(PackageUpdate update)
+        {
+            switch (update.Action)
+            {
+                case Domain.Package.Types.UpdateAction.Upsert:
+                    _server.TryGetPackage(update.Id, out var packageRef);
+                    if (_packageRefs.ContainsKey(update.Package.Key))
+                    {
+                        RepositoryOnUpdated(packageRef);
+                    }
+                    else
+                    {
+                        RepositoryOnAdded(packageRef);
+                    }
+                    break;
+                case Domain.Package.Types.UpdateAction.Removed:
+                    break;
+            }
+        }
 
         private void RepositoryOnAdded(AlgoPackageRef packageRef)
         {
             lock (_updateLock)
             {
-                var package = packageRef.ToInfo();
+                var package = packageRef.PackageInfo;
 
                 _packageRefs.Add(package.Key, packageRef);
                 InitPackageRef(packageRef);
@@ -122,7 +128,7 @@ namespace TickTrader.Algo.Common.Model
                 _packages.Add(package.Key, package);
                 OnPackageAdded(package);
 
-                MergePlugins(package, packageRef);
+                MergePlugins(package);
             }
         }
 
@@ -130,7 +136,7 @@ namespace TickTrader.Algo.Common.Model
         {
             lock (_updateLock)
             {
-                var package = packageRef.ToInfo();
+                var package = packageRef.PackageInfo;
 
                 DeinitPackageRef(_packageRefs[package.Key]);
                 _packageRefs[package.Key] = packageRef;
@@ -139,7 +145,7 @@ namespace TickTrader.Algo.Common.Model
                 _packages[package.Key] = package;
                 OnPackageReplaced(package);
 
-                MergePlugins(package, packageRef);
+                MergePlugins(package);
             }
         }
 
@@ -147,7 +153,7 @@ namespace TickTrader.Algo.Common.Model
         {
             lock (_updateLock)
             {
-                var packageKey = packageRef.GetKey();
+                var packageKey = packageRef.PackageInfo.Key;
                 if (_packages.TryGetValue(packageKey, out var package))
                 {
                     DeinitPackageRef(_packageRefs[package.Key]);
@@ -156,12 +162,12 @@ namespace TickTrader.Algo.Common.Model
                     _packages.Remove(packageKey);
                     OnPackageRemoved(package);
 
-                    MergePlugins(new PackageInfo { Key = packageKey }, null);
+                    MergePlugins(new PackageInfo { Key = packageKey });
                 }
             }
         }
 
-        private void MergePlugins(PackageInfo package, AlgoPackageRef packageRef)
+        private void MergePlugins(PackageInfo package)
         {
             // upsert
             foreach (var plugin in package.Plugins)
@@ -169,13 +175,11 @@ namespace TickTrader.Algo.Common.Model
                 if (!_plugins.ContainsKey(plugin.Key))
                 {
                     _plugins.Add(plugin.Key, plugin);
-                    _pluginRefs.Add(plugin.Key, packageRef.GetPluginRef(plugin.Key.DescriptorId));
                     OnPluginAdded(plugin);
                 }
                 else
                 {
                     _plugins[plugin.Key] = plugin;
-                    _pluginRefs[plugin.Key] = packageRef.GetPluginRef(plugin.Key.DescriptorId);
                     OnPluginReplaced(plugin);
                 }
             }
@@ -187,7 +191,6 @@ namespace TickTrader.Algo.Common.Model
                 if (!newPluginsLookup.ContainsKey(plugin.Key))
                 {
                     _plugins.Remove(plugin.Key);
-                    _pluginRefs.Remove(plugin.Key);
                     OnPluginRemoved(plugin);
                 }
             }
@@ -207,7 +210,7 @@ namespace TickTrader.Algo.Common.Model
         {
             lock (_updateLock)
             {
-                if (_packages.TryGetValue(packageRef.GetKey(), out var package))
+                if (_packages.TryGetValue(packageRef.PackageInfo.Key, out var package))
                 {
                     package.IsLocked = packageRef.IsLocked;
                     OnPackageStateChanged(package);
