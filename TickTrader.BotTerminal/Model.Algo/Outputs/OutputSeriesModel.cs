@@ -23,17 +23,18 @@ namespace TickTrader.BotTerminal
 
         public string PluginId { get; private set; }
 
-        public OutputSetupModel Setup { get; private set; }
+        public IOutputConfig Config { get; private set; }
 
         public abstract IXyDataSeries SeriesData { get; }
 
-        protected void Init(IPluginModel plugin, OutputSetupModel setup)
+        protected void Init(IPluginModel plugin, IOutputConfig config, OutputDescriptor descriptor)
         {
-            Id = setup.Metadata.Id;
-            DisplayName = setup.Metadata.DisplayName;
-            Descriptor = setup.Metadata.Descriptor;
+            Config = config;
+            Descriptor = descriptor;
+
+            Id = descriptor.Id;
+            DisplayName = descriptor.DisplayName;
             PluginId = plugin.InstanceId;
-            Setup = setup;
         }
 
         public abstract void Dispose();
@@ -45,12 +46,12 @@ namespace TickTrader.BotTerminal
         private IOutputCollector _collector;
         private OutputSynchronizer<T> _synchronizer;
 
-        public OutputSeriesModel(IOutputCollector collector, IPluginDataChartModel host, bool isEnabled)
+        public OutputSeriesModel(IOutputCollector collector, IPluginDataChartModel host)
         {
             _collector = collector;
             _host = host;
 
-            if (!isEnabled)
+            if (!collector.OutputConfig.IsEnabled)
                 return;
 
             _host.StartEvent += Start;

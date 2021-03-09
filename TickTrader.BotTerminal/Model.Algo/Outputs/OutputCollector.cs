@@ -14,7 +14,8 @@ namespace TickTrader.BotTerminal
     internal interface IOutputCollector : IDisposable
     {
         bool IsNotSyncrhonized { get; }
-        OutputSetupModel OutputConfig { get; }
+        IOutputConfig OutputConfig { get; }
+        OutputDescriptor OutputDescriptor { get; }
 
         IList<OutputPoint> Cache { get; }
 
@@ -29,18 +30,20 @@ namespace TickTrader.BotTerminal
         private readonly ExecutorModel _executor;
         private readonly string _outputId;
 
-        public OutputCollector(OutputSetupModel setup, ExecutorModel executor)
+        public OutputCollector(ExecutorModel executor, IOutputConfig config, OutputDescriptor descriptor)
         {
-            OutputConfig = setup;
             _executor = executor;
-            _outputId = setup.Id;
+            _outputId = config.PropertyId;
+            OutputConfig = config;
+            OutputDescriptor = descriptor;
 
             executor.OutputUpdate += Executor_OutputUpdate;
         }
 
         public virtual bool IsNotSyncrhonized => false;
         public virtual IList<OutputPoint> Cache => null;
-        public OutputSetupModel OutputConfig { get; }
+        public IOutputConfig OutputConfig { get; }
+        public OutputDescriptor OutputDescriptor { get; }
 
         public event Action<OutputPoint> Appended;
         public event Action<OutputPoint> Updated;
@@ -100,7 +103,7 @@ namespace TickTrader.BotTerminal
     {
         private CircularList<OutputPoint> _cache = new CircularList<OutputPoint>();
 
-        public CachingOutputCollector(OutputSetupModel setup, ExecutorModel executor) : base(setup, executor)
+        public CachingOutputCollector(ExecutorModel executor, IOutputConfig config, OutputDescriptor descriptor) : base(executor, config, descriptor)
         {
         }
 

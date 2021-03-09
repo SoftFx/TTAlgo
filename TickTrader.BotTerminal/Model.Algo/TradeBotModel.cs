@@ -159,9 +159,9 @@ namespace TickTrader.BotTerminal
             Updated?.Invoke(this);
         }
 
-        protected override IOutputCollector CreateOutputCollector<T>(ExecutorModel executor, OutputSetupModel outputSetup)
+        protected override IOutputCollector CreateOutputCollector<T>(ExecutorModel executor, IOutputConfig config, OutputDescriptor descriptor)
         {
-            return new CachingOutputCollector<T>(outputSetup, executor);
+            return new CachingOutputCollector<T>(executor, config, descriptor);
         }
 
         private void Host_Connected()

@@ -103,6 +103,8 @@ namespace TickTrader.Algo.Rpc.OverTcp
             {
                 var res = await pipeReader.ReadAsync().ConfigureAwait(false);
                 var buffer = res.Buffer;
+                if (res.IsCompleted || res.IsCanceled)
+                    return;
 
                 while (true)
                 {

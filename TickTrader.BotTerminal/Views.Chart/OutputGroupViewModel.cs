@@ -100,12 +100,12 @@ namespace TickTrader.BotTerminal
         {
             foreach (var outputCollector in plugin.Outputs.Values)
             {
-                var outputSetup = outputCollector.OutputConfig;
+                var config = outputCollector.OutputConfig;
 
-                if (outputSetup is ColoredLineOutputSetupModel)
-                    yield return new DoubleSeriesModel(plugin, _chart, outputCollector, (ColoredLineOutputSetupModel)outputSetup);
-                else if (outputSetup is MarkerSeriesOutputSetupModel)
-                    yield return new MarkerSeriesModel(plugin, _chart, outputCollector, (MarkerSeriesOutputSetupModel)outputSetup);
+                if (config is ColoredLineOutputConfig)
+                    yield return new DoubleSeriesModel(plugin, _chart, outputCollector);
+                else if (config is MarkerSeriesOutputConfig)
+                    yield return new MarkerSeriesModel(plugin, _chart, outputCollector);
             }
         }
 

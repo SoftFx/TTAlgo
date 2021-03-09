@@ -9,6 +9,7 @@ using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Domain;
+using System.Linq;
 
 namespace TickTrader.BotTerminal
 {
@@ -24,8 +25,6 @@ namespace TickTrader.BotTerminal
         public string InstanceId { get; }
 
         public AlgoPackageRef PackageRef { get; private set; }
-
-        public PluginSetupModel Setup { get; private set; }
 
         public string FaultMessage { get; private set; }
 
@@ -216,12 +215,15 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                foreach (var outputSetup in Setup.Outputs)
+                var descriptorLookup = Descriptor.Outputs.ToDictionary(d => d.Id);
+                var properties = Config.UnpackProperties();
+                foreach (IOutputConfig config in properties.Where(p => p is IOutputConfig))
                 {
-                    if (outputSetup is ColoredLineOutputSetupModel)
-                        CreateOuput<double>(executor, outputSetup);
-                    else if (outputSetup is MarkerSeriesOutputSetupModel)
-                        CreateOuput<Marker>(executor, outputSetup);
+                    var descriptor = descriptorLookup[config.PropertyId];
+                    if (config is ColoredLineOutputConfig)
+                        CreateOuput<double>(executor, config, descriptor);
+                    else if (config is MarkerSeriesOutputConfig)
+                        CreateOuput<Marker>(executor, config, descriptor);
                 }
                 OutputsChanged?.Invoke();
             }
@@ -231,16 +233,16 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void CreateOuput<T>(ExecutorModel executor, OutputSetupModel setup)
+        private void CreateOuput<T>(ExecutorModel executor, IOutputConfig config, OutputDescriptor descriptor)
         {
             //executor.Config.SetupOutput<T>(setup.Id);
-            var collector = CreateOutputCollector<T>(executor, setup);
-            _outputs.Add(setup.Id, collector);
+            var collector = CreateOutputCollector<T>(executor, config, descriptor);
+            _outputs.Add(config.PropertyId, collector);
         }
 
-        protected virtual IOutputCollector CreateOutputCollector<T>(ExecutorModel executor, OutputSetupModel setup)
+        protected virtual IOutputCollector CreateOutputCollector<T>(ExecutorModel executor, IOutputConfig config, OutputDescriptor descriptor)
         {
-            return new OutputCollector<T>(setup, executor);
+            return new OutputCollector<T>(executor, config, descriptor);
         }
 
         private void ClearOutputs()

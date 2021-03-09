@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -18,14 +19,15 @@ namespace TickTrader.BotTerminal
         public override IXyDataSeries SeriesData => _seriesData;
         protected override double NanValue => double.NaN;
 
-        public DoubleSeriesModel(IPluginModel plugin, IPluginDataChartModel outputHost, IOutputCollector collector, ColoredLineOutputSetupModel setup)
-            : base(collector, outputHost, setup.IsEnabled)
+        public DoubleSeriesModel(IPluginModel plugin, IPluginDataChartModel outputHost, IOutputCollector collector)
+            : base(collector, outputHost)
         {
             _seriesData = new XyDataSeries<DateTime, double>();
 
-            Init(plugin, setup);
+            var config = collector.OutputConfig;
+            Init(plugin, config, collector.OutputDescriptor);
 
-            if (setup.IsEnabled)
+            if (config.IsEnabled)
             {
                 _seriesData.SeriesName = DisplayName;
                 Enable();

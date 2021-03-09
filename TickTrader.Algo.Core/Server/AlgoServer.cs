@@ -99,6 +99,13 @@ namespace TickTrader.Algo.Core
             repo.Start();
         }
 
+        public void AddAssemblyAsPackage(string assemblyPath)
+        {
+            var key = PackageHelper.GetPackageKey(RepositoryLocation.Embedded, assemblyPath);
+            var id = PackageHelper.GetPackageId(key);
+            _packageProcessor.Add(new PackageFileUpdate(id, key, Repository.UpdateAction.Upsert, assemblyPath));
+        }
+
 
         internal bool TryGetRuntime(string runtimeId, out RuntimeModel runtime)
         {
