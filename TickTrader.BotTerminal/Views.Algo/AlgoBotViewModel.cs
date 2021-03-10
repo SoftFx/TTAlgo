@@ -18,11 +18,11 @@ namespace TickTrader.BotTerminal
 
         public AccountKey Account => Model.Account;
 
-        public PluginStates State => Model.State;
+        public PluginModelInfo.Types.PluginState State => Model.State;
 
         public PluginKey Plugin => Model.Config.Key;
 
-        public bool IsRunning => PluginStateHelper.IsRunning(Model.State) || Agent.Model.IsRemote && Model.State == PluginStates.Starting;
+        public bool IsRunning => PluginStateHelper.IsRunning(Model.State) || Agent.Model.IsRemote && Model.State == PluginModelInfo.Types.PluginState.Starting;
 
         public bool IsStopped => PluginStateHelper.IsStopped(Model.State);
 
@@ -38,9 +38,10 @@ namespace TickTrader.BotTerminal
 
         public string Status => Model.Status;
 
-        public bool CanBrowse => !Model.IsRemote || Agent.Model.AccessManager.CanGetBotFolderInfo(BotFolderId.BotLogs);
+        public bool CanBrowse => !Model.IsRemote || Agent.Model.AccessManager.CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId.BotLogs);
 
-        public bool CanCopyTo => Agent.Model.AccessManager.CanDownloadPackage() && Agent.Model.AccessManager.CanGetBotFolderInfo(BotFolderId.AlgoData) && Agent.Model.AccessManager.CanDownloadBotFile(BotFolderId.AlgoData);
+        public bool CanCopyTo => Agent.Model.AccessManager.CanDownloadPackage() && Agent.Model.AccessManager.CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId.AlgoData) 
+            && Agent.Model.AccessManager.CanDownloadBotFile(PluginFolderInfo.Types.PluginFolderId.AlgoData);
 
         public bool CanAddBot => Agent.Model.AccessManager.CanAddBot();
 
@@ -98,7 +99,7 @@ namespace TickTrader.BotTerminal
         {
             if (Model.IsRemote)
             {
-                Agent.OpenManageBotFilesDialog(InstanceId, BotFolderId.BotLogs);
+                Agent.OpenManageBotFilesDialog(InstanceId, PluginFolderInfo.Types.PluginFolderId.BotLogs);
             }
             else
             {

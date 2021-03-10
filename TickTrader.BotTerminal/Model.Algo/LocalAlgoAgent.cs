@@ -274,36 +274,36 @@ namespace TickTrader.BotTerminal
             return Task.FromResult(new byte[0]);
         }
 
-        public Task<BotFolderInfo> GetBotFolderInfo(string botId, BotFolderId folderId)
+        public Task<PluginFolderInfo> GetBotFolderInfo(string botId, PluginFolderInfo.Types.PluginFolderId folderId)
         {
             var path = GetBotFolderPath(botId, folderId);
-            var res = new BotFolderInfo
+            var res = new PluginFolderInfo
             {
                 BotId = botId,
                 FolderId = folderId,
                 Path = path,
             };
             if (Directory.Exists(path))
-                res.Files = new DirectoryInfo(path).GetFiles().Select(f => new BotFileInfo { Name = f.Name, Size = f.Length }).ToList();
+                res.Files.AddRange(new DirectoryInfo(path).GetFiles().Select(f => new PluginFileInfo { Name = f.Name, Size = f.Length }));
             return Task.FromResult(res);
         }
 
-        public Task ClearBotFolder(string botId, BotFolderId folderId)
+        public Task ClearBotFolder(string botId, PluginFolderInfo.Types.PluginFolderId folderId)
         {
             throw new NotSupportedException();
         }
 
-        public Task DeleteBotFile(string botId, BotFolderId folderId, string fileName)
+        public Task DeleteBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName)
         {
             throw new NotSupportedException();
         }
 
-        public Task DownloadBotFile(string botId, BotFolderId folderId, string fileName, string dstPath, IFileProgressListener progressListener)
+        public Task DownloadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string dstPath, IFileProgressListener progressListener)
         {
             throw new NotSupportedException();
         }
 
-        public Task UploadBotFile(string botId, BotFolderId folderId, string fileName, string srcPath, IFileProgressListener progressListener)
+        public Task UploadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string srcPath, IFileProgressListener progressListener)
         {
             //throw new NotSupportedException();
             // used in bot setup
@@ -410,13 +410,13 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        private string GetBotFolderPath(string botId, BotFolderId folderId)
+        private string GetBotFolderPath(string botId, PluginFolderInfo.Types.PluginFolderId folderId)
         {
             switch (folderId)
             {
-                case BotFolderId.AlgoData:
+                case PluginFolderInfo.Types.PluginFolderId.AlgoData:
                     return Path.Combine(EnvService.Instance.AlgoWorkingFolder, PathHelper.GetSafeFileName(botId));
-                case BotFolderId.BotLogs:
+                case PluginFolderInfo.Types.PluginFolderId.BotLogs:
                     return Path.Combine(EnvService.Instance.AlgoWorkingFolder, PathHelper.GetSafeFileName(botId));
                 default:
                     throw new ArgumentException("Unknown bot folder id");
@@ -430,7 +430,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                await Task.WhenAll(_bots.Values.Where(b => b.State == PluginStates.Running).Select(b => b.Stop()));
+                await Task.WhenAll(_bots.Values.Where(b => b.State == PluginModelInfo.Types.PluginState.Running).Select(b => b.Stop()));
             }
             catch(AggregateException agEx)
             {
@@ -527,7 +527,7 @@ namespace TickTrader.BotTerminal
 
         private void StopRunningBotsOnBlockedAccount()
         {
-            if (ClientModel.Connection.LastError?.Code == ConnectionErrorCodes.BlockedAccount)
+            if (ClientModel.Connection.LastError?.Code == ConnectionErrorInfo.Types.ErrorCode.BlockedAccount)
                 _bots.Snapshot.Values.Where(b => PluginStateHelper.IsRunning(b.State)).Foreach(b => b.Stop().Forget());
         }
 

@@ -199,27 +199,27 @@ namespace TickTrader.BotTerminal
             await Task.Run(() => _protocolClient.DownloadPackage(package, dstFilePath, DefaultChunkSize, 0, progressListener));
         }
 
-        public Task<BotFolderInfo> GetBotFolderInfo(string botId, BotFolderId folderId)
+        public Task<PluginFolderInfo> GetBotFolderInfo(string botId, PluginFolderInfo.Types.PluginFolderId folderId)
         {
             return _protocolClient.GetBotFolderInfo(botId, folderId);
         }
 
-        public Task ClearBotFolder(string botId, BotFolderId folderId)
+        public Task ClearBotFolder(string botId, PluginFolderInfo.Types.PluginFolderId folderId)
         {
             return _protocolClient.ClearBotFolder(botId, folderId);
         }
 
-        public Task DeleteBotFile(string botId, BotFolderId folderId, string fileName)
+        public Task DeleteBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName)
         {
             return _protocolClient.DeleteBotFile(botId, folderId, fileName);
         }
 
-        public async Task DownloadBotFile(string botId, BotFolderId folderId, string fileName, string dstPath, IFileProgressListener progressListener)
+        public async Task DownloadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string dstPath, IFileProgressListener progressListener)
         {
             await Task.Run(() => _protocolClient.DownloadBotFile(botId, folderId, fileName, dstPath, DefaultChunkSize, 0, progressListener));
         }
 
-        public async Task UploadBotFile(string botId, BotFolderId folderId, string fileName, string srcPath, IFileProgressListener progressListener)
+        public async Task UploadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string srcPath, IFileProgressListener progressListener)
         {
             await Task.Run(() => _protocolClient.UploadBotFile(botId, folderId, fileName, srcPath, DefaultChunkSize, 0, progressListener));
         }
@@ -266,7 +266,7 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IBotAgentClient.InitBotList(List<BotModelInfo> bots)
+        void IBotAgentClient.InitBotList(List<PluginModelInfo> bots)
         {
             _syncContext.Invoke(() =>
             {
@@ -322,7 +322,7 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IBotAgentClient.UpdateBot(UpdateInfo<BotModelInfo> update)
+        void IBotAgentClient.UpdateBot(UpdateInfo<PluginModelInfo> update)
         {
             _syncContext.Invoke(() =>
             {
@@ -391,7 +391,7 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IBotAgentClient.UpdateBotState(UpdateInfo<BotModelInfo> update)
+        void IBotAgentClient.UpdateBotState(UpdateInfo<PluginModelInfo> update)
         {
             _syncContext.Invoke(() =>
             {

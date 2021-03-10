@@ -224,7 +224,7 @@ namespace TickTrader.BotTerminal
             SetupMetadata = setupMetadata;
             _idProvider = idProvider;
             Mode = mode;
-            MainSymbol = setupMetadata.DefaultSymbol;
+            MainSymbol = setupMetadata.DefaultSymbol.ToKey();
             Visible = true;
             RunBot = true;
 
@@ -240,7 +240,7 @@ namespace TickTrader.BotTerminal
         {
             SelectedTimeFrame = cfg.Timeframe;
             SelectedModel.Value = cfg.ModelTimeframe;
-            MainSymbol = AvailableSymbols.GetSymbolOrDefault(cfg.MainSymbol) ?? AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol);
+            MainSymbol = AvailableSymbols.GetSymbolOrDefault(cfg.MainSymbol.ToKey()) ?? AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol.ToKey());
 
             if (!IsEmulation)
             {
@@ -278,7 +278,7 @@ namespace TickTrader.BotTerminal
         {
             SelectedModel.Value = Feed.Types.Timeframe.Ticks;
             SelectedTimeFrame = SetupMetadata.Context.DefaultTimeFrame;
-            MainSymbol = AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol);
+            MainSymbol = AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol.ToKey());
             SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(SetupMetadata.Context.DefaultMapping);
             InstanceId = _idProvider.GeneratePluginId(Descriptor);
 
@@ -397,7 +397,7 @@ namespace TickTrader.BotTerminal
         private void Init()
         {
             AvailableTimeFrames = SetupMetadata.Api.TimeFrames.Where(t => t != Feed.Types.Timeframe.Ticks);
-            AvailableSymbols = SetupMetadata.Account.GetAvaliableSymbols(SetupMetadata.Context.DefaultSymbol).Where(u => u.Origin != SymbolConfig.Types.SymbolOrigin.Token).ToList();
+            AvailableSymbols = SetupMetadata.Account.GetAvaliableSymbols(SetupMetadata.Context.DefaultSymbol.ToKey()).Where(u => u.Origin != SymbolConfig.Types.SymbolOrigin.Token).ToList();
             AvailableMappings = SetupMetadata.Mappings.BarToBarMappings;
 
 

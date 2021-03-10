@@ -21,7 +21,7 @@ namespace TickTrader.Algo.Core
 
 
         private readonly RpcClient _client;
-        private readonly UnitRuntimeV1Handler _handler;
+        private readonly PluginRuntimeV1Handler _handler;
         private IAlgoCoreLogger _logger;
         private TaskCompletionSource<bool> _finishTaskSrc;
         private RuntimeConfig _runtimeConfig;
@@ -34,7 +34,7 @@ namespace TickTrader.Algo.Core
         public RuntimeV1Loader()
         {
             _client = new RpcClient(new TcpFactory(), this, new ProtocolSpec { Url = KnownProtocolUrls.RuntimeV1, MajorVerion = 1, MinorVerion = 0 });
-            _handler = new UnitRuntimeV1Handler(this);
+            _handler = new PluginRuntimeV1Handler(this);
 
             _executorsMap = new Dictionary<string, PluginExecutorCore>();
         }

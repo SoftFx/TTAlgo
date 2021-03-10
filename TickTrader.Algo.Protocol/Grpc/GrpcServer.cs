@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Google.Protobuf;
 using Grpc.Core;
 using NLog;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Domain;
 using GrpcCore = Grpc.Core;
 
@@ -1485,14 +1484,14 @@ namespace TickTrader.Algo.Protocol.Grpc
             SendUpdate(new UpdateInfo<AccountModelInfo> { Type = UpdateType.Replaced, Value = account }.ConvertStateUpdate());
         }
 
-        private void OnBotUpdate(UpdateInfo<BotModelInfo> update)
+        private void OnBotUpdate(UpdateInfo<PluginModelInfo> update)
         {
             SendUpdate(update.Convert(_version));
         }
 
-        private void OnBotStateUpdate(BotModelInfo bot)
+        private void OnBotStateUpdate(PluginModelInfo bot)
         {
-            SendUpdate(new UpdateInfo<BotModelInfo> { Type = UpdateType.Replaced, Value = bot }.ConvertStateUpdate());
+            SendUpdate(new UpdateInfo<PluginModelInfo> { Type = UpdateType.Replaced, Value = bot }.ConvertStateUpdate());
         }
 
         private void SendUpdate(Lib.UpdateInfo update)

@@ -4,7 +4,6 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Protocol
@@ -263,7 +262,7 @@ namespace TickTrader.Algo.Protocol
 
         public abstract Task<AccountMetadataInfo> GetAccountMetadata(AccountKey account);
 
-        public abstract Task<List<BotModelInfo>> GetBotList();
+        public abstract Task<List<PluginModelInfo>> GetBotList();
 
         public abstract Task AddBot(AccountKey account, PluginConfig config);
 
@@ -301,15 +300,15 @@ namespace TickTrader.Algo.Protocol
 
         public abstract Task<AlertRecordInfo[]> GetAlerts(Timestamp lastLogTimeUtc, int maxCount);
 
-        public abstract Task<BotFolderInfo> GetBotFolderInfo(string botId, BotFolderId folderId);
+        public abstract Task<PluginFolderInfo> GetBotFolderInfo(string botId, PluginFolderInfo.Types.PluginFolderId folderId);
 
-        public abstract Task ClearBotFolder(string botId, BotFolderId folderId);
+        public abstract Task ClearBotFolder(string botId, PluginFolderInfo.Types.PluginFolderId folderId);
 
-        public abstract Task DeleteBotFile(string botId, BotFolderId folderId, string fileName);
+        public abstract Task DeleteBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName);
 
-        public abstract Task DownloadBotFile(string botId, BotFolderId folderId, string fileName, string dstPath, int chunkSize, int offset, IFileProgressListener progressListener);
+        public abstract Task DownloadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string dstPath, int chunkSize, int offset, IFileProgressListener progressListener);
 
-        public abstract Task UploadBotFile(string botId, BotFolderId folderId, string fileName, string srcPath, int chunkSize, int offset, IFileProgressListener progressListener);
+        public abstract Task UploadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string srcPath, int chunkSize, int offset, IFileProgressListener progressListener);
 
         #endregion Requests
     }

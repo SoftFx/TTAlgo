@@ -7,7 +7,7 @@ namespace TickTrader.Algo.Common.Model
 {
     public interface IBotWriter
     {
-        void LogMesssage(Domain.UnitLogRecord record);
+        void LogMesssage(Domain.PluginLogRecord record);
 
         void UpdateStatus(string status);
 
@@ -71,9 +71,9 @@ namespace TickTrader.Algo.Common.Model
         }
 
 
-        private void Executor_LogUpdated(Domain.UnitLogRecord record)
+        private void Executor_LogUpdated(Domain.PluginLogRecord record)
         {
-            if (record.Severity != Domain.UnitLogRecord.Types.LogSeverity.CustomStatus)
+            if (record.Severity != Domain.PluginLogRecord.Types.LogSeverity.CustomStatus)
                 _writer.LogMesssage(record);
             else
             {

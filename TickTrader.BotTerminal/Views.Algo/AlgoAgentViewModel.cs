@@ -267,7 +267,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void OpenManageBotFilesDialog(string botId, BotFolderId folderId)
+        public void OpenManageBotFilesDialog(string botId, PluginFolderInfo.Types.PluginFolderId folderId)
         {
             try
             {

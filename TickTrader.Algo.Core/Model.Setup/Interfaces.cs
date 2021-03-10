@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 

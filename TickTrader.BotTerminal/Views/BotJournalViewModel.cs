@@ -8,6 +8,7 @@ using System.Linq;
 using System.Windows.Data;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -62,7 +63,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public bool CanBrowse => !_bot.Model.IsRemote || _bot.Agent.Model.AccessManager.CanGetBotFolderInfo(BotFolderId.BotLogs);
+        public bool CanBrowse => !_bot.Model.IsRemote || _bot.Agent.Model.AccessManager.CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId.BotLogs);
 
         public bool IsRemote => _bot.Model.IsRemote;
 

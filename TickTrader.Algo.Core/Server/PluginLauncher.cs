@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Core
 
         public PluginExecutorCore Core { get; private set; }
 
-        internal UnitRuntimeV1Handler Handler { get; private set; }
+        internal PluginRuntimeV1Handler Handler { get; private set; }
 
 
         public PluginLauncher()
@@ -38,7 +38,7 @@ namespace TickTrader.Algo.Core
         public PluginExecutorCore CreateExecutor(string pluginId)
         {
             Core = new PluginExecutorCore(pluginId);
-            //Handler = new UnitRuntimeV1Handler(Core);
+            //Handler = new PluginRuntimeV1Handler(Core);
             return Core;
         }
 

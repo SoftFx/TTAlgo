@@ -27,9 +27,9 @@ namespace TickTrader.BotTerminal
         {
             get
             {
-                if (Info.LastError.Code == ConnectionErrorCodes.None)
+                if (Info.LastError.IsOk)
                     return $"{Info.ConnectionState}";
-                if (Info.LastError.Code == ConnectionErrorCodes.Unknown)
+                if (Info.LastError.Code == ConnectionErrorInfo.Types.ErrorCode.UnknownConnectionError)
                     return $"{Info.ConnectionState} - {Info.LastError.TextMessage}";
                 return $"{Info.ConnectionState} - {Info.LastError.Code}";
             }
@@ -47,7 +47,7 @@ namespace TickTrader.BotTerminal
 
         public bool CanAddBot => Agent.Model.AccessManager.CanAddBot();
 
-        public bool CanManageFiles => Agent.Model.AccessManager.CanGetBotFolderInfo(BotFolderId.BotLogs);
+        public bool CanManageFiles => Agent.Model.AccessManager.CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId.BotLogs);
 
         public bool HasRunningBots => Bots.Any(b => b.IsRunning);
 

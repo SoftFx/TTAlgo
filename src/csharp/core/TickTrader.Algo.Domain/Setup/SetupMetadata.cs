@@ -1,7 +1,6 @@
 ﻿using System.Linq;
-using TickTrader.Algo.Common.Info;
 
-namespace TickTrader.Algo.Common.Model.Setup
+namespace TickTrader.Algo.Domain
 {
     public class SetupMetadata
     {
@@ -13,7 +12,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public SetupContextInfo Context { get; }
 
-        public SymbolKey DefaultSymbol { get; }
+        public SymbolConfig DefaultSymbol { get; }
 
 
         public SetupMetadata(ApiMetadataInfo api, MappingCollectionInfo mappings, AccountMetadataInfo account, SetupContextInfo context)

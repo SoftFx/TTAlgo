@@ -498,7 +498,7 @@ namespace TickTrader.Algo.Core
 
             try
             {
-                OnNotification(new Domain.UnitStopped());
+                OnNotification(new Domain.PluginStopped());
                 Stopped?.Invoke(this);
             }
             catch (Exception ex)
@@ -764,7 +764,7 @@ namespace TickTrader.Algo.Core
 
         private void OnInternalException(Exception ex)
         {
-            var error = new Domain.UnitError(ex);
+            var error = new Domain.PluginError(ex);
             OnNotification(error);
         }
 

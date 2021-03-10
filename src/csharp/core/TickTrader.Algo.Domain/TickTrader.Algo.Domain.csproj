@@ -25,6 +25,12 @@
     <Protobuf Include="..\..\..\protobuf\runtime.trade.proto">
       <Link>protos\runtime.trade.proto</Link>
     </Protobuf>
+    <Protobuf Include="..\..\..\protobuf\server.data.proto">
+      <Link>protos\server.data.proto</Link>
+    </Protobuf>
+    <Protobuf Include="..\..\..\protobuf\server.protocol.proto">
+      <Link>protos\server.protocol.proto</Link>
+    </Protobuf>
   </ItemGroup>
 
   <ItemGroup>

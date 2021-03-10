@@ -9,12 +9,11 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model.Interop;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 using TickTrader.FDK.Common;
 using SFX = TickTrader.FDK.Common;
 
@@ -122,17 +121,17 @@ namespace TickTrader.Algo.Common.Model
                 }
                 if (ex is ConnectException)
                 {
-                    return new ConnectionErrorInfo(ConnectionErrorCodes.NetworkError, ex.Message);
+                    return new ConnectionErrorInfo(ConnectionErrorInfo.Types.ErrorCode.NetworkError, ex.Message);
                 }
 
-                return new ConnectionErrorInfo(ConnectionErrorCodes.Unknown, ex.Message);
+                return new ConnectionErrorInfo(ConnectionErrorInfo.Types.ErrorCode.UnknownConnectionError, ex.Message);
             }
             catch (Exception ex)
             {
-                return new ConnectionErrorInfo(ConnectionErrorCodes.Unknown, ex.Message);
+                return new ConnectionErrorInfo(ConnectionErrorInfo.Types.ErrorCode.UnknownConnectionError, ex.Message);
             }
 
-            return new ConnectionErrorInfo(ConnectionErrorCodes.None);
+            return ConnectionErrorInfo.Ok;
         }
 
         private async Task ConnectFeed(string address, string login, string password)
@@ -187,7 +186,7 @@ namespace TickTrader.Algo.Common.Model
 
         private void OnDisconnect(string text)
         {
-            Disconnected?.Invoke(this, new ConnectionErrorInfo(ConnectionErrorCodes.Unknown, text));
+            Disconnected?.Invoke(this, new ConnectionErrorInfo(ConnectionErrorInfo.Types.ErrorCode.UnknownConnectionError, text));
         }
 
         public Task Disconnect()
@@ -343,7 +342,7 @@ namespace TickTrader.Algo.Common.Model
             }
             catch (Exception ex)
             {
-                throw new InteropException(ex.Message, ConnectionErrorCodes.NetworkError);
+                throw new InteropException(ex.Message, ConnectionErrorInfo.Types.ErrorCode.NetworkError);
             }
         }
 
@@ -384,7 +383,7 @@ namespace TickTrader.Algo.Common.Model
             }
             catch (Exception ex)
             {
-                throw new InteropException(ex.Message, ConnectionErrorCodes.NetworkError);
+                throw new InteropException(ex.Message, ConnectionErrorInfo.Types.ErrorCode.NetworkError);
             }
         }
 
@@ -507,7 +506,7 @@ namespace TickTrader.Algo.Common.Model
             {
                 return new OrderInteropResult(Domain.OrderExecReport.Types.CmdResultCode.ConnectionError);
             }
-            catch (InteropException ex) when (ex.ErrorCode == ConnectionErrorCodes.RejectedByServer)
+            catch (InteropException ex) when (ex.ErrorCode == ConnectionErrorInfo.Types.ErrorCode.RejectedByServer)
             {
                 // workaround for inconsistent server logic
                 return new OrderInteropResult(Convert(RejectReason.Other, ex.Message));
@@ -1266,18 +1265,18 @@ namespace TickTrader.Algo.Common.Model
             throw new NotImplementedException("Unsupported market side: " + marketSide);
         }
 
-        private static ConnectionErrorCodes Convert(LogoutReason fdkCode)
+        private static ConnectionErrorInfo.Types.ErrorCode Convert(LogoutReason fdkCode)
         {
             switch (fdkCode)
             {
-                case LogoutReason.BlockedAccount: return ConnectionErrorCodes.BlockedAccount;
-                case LogoutReason.InvalidCredentials: return ConnectionErrorCodes.InvalidCredentials;
-                case LogoutReason.NetworkError: return ConnectionErrorCodes.NetworkError;
-                case LogoutReason.ServerError: return ConnectionErrorCodes.ServerError;
-                case LogoutReason.ServerLogout: return ConnectionErrorCodes.ServerLogout;
-                case LogoutReason.SlowConnection: return ConnectionErrorCodes.SlowConnection;
-                case LogoutReason.LoginDeleted: return ConnectionErrorCodes.LoginDeleted;
-                default: return ConnectionErrorCodes.Unknown;
+                case LogoutReason.BlockedAccount: return ConnectionErrorInfo.Types.ErrorCode.BlockedAccount;
+                case LogoutReason.InvalidCredentials: return ConnectionErrorInfo.Types.ErrorCode.InvalidCredentials;
+                case LogoutReason.NetworkError: return ConnectionErrorInfo.Types.ErrorCode.NetworkError;
+                case LogoutReason.ServerError: return ConnectionErrorInfo.Types.ErrorCode.ServerError;
+                case LogoutReason.ServerLogout: return ConnectionErrorInfo.Types.ErrorCode.ServerLogout;
+                case LogoutReason.SlowConnection: return ConnectionErrorInfo.Types.ErrorCode.SlowConnection;
+                case LogoutReason.LoginDeleted: return ConnectionErrorInfo.Types.ErrorCode.LoginDeleted;
+                default: return ConnectionErrorInfo.Types.ErrorCode.UnknownConnectionError;
             }
         }
 

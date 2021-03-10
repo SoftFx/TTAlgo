@@ -23,7 +23,7 @@ namespace TickTrader.BotTerminal
 
         PluginConfig Config { get; }
 
-        PluginStates State { get; }
+        PluginModelInfo.Types.PluginState State { get; }
 
         string FaultMessage { get; }
 
@@ -74,7 +74,7 @@ namespace TickTrader.BotTerminal
 
         internal void Abort()
         {
-            if (State == PluginStates.Stopping)
+            if (State == PluginModelInfo.Types.PluginState.Stopping)
                 AbortExecutor();
         }
 
@@ -86,7 +86,7 @@ namespace TickTrader.BotTerminal
             if (await StartExcecutor())
             {
                 _botListener?.Start();
-                ChangeState(PluginStates.Running);
+                ChangeState(PluginModelInfo.Types.PluginState.Running);
             }
         }
 
@@ -98,7 +98,7 @@ namespace TickTrader.BotTerminal
             if (await StopExecutor())
             {
                 _botListener?.Stop();
-                ChangeState(PluginStates.Stopped);
+                ChangeState(PluginModelInfo.Types.PluginState.Stopped);
             }
         }
 
@@ -115,7 +115,7 @@ namespace TickTrader.BotTerminal
 
         internal override void Configurate(PluginConfig config)
         {
-            if (State == PluginStates.Broken)
+            if (State == PluginModelInfo.Types.PluginState.Broken)
                 return;
 
             if (PluginStateHelper.IsStopped(State))
@@ -128,7 +128,7 @@ namespace TickTrader.BotTerminal
                 throw new InvalidOperationException("Make sure that the bot is stopped before setting a new configuration");
         }
 
-        protected override void ChangeState(PluginStates state, string faultMessage = null)
+        protected override void ChangeState(PluginModelInfo.Types.PluginState state, string faultMessage = null)
         {
             base.ChangeState(state, faultMessage);
             StateChanged(this);
@@ -166,23 +166,23 @@ namespace TickTrader.BotTerminal
 
         private void Host_Connected()
         {
-            if (State == PluginStates.Reconnecting)
+            if (State == PluginModelInfo.Types.PluginState.Reconnecting)
             {
                 HandleReconnect();
-                ChangeState(PluginStates.Running);
+                ChangeState(PluginModelInfo.Types.PluginState.Running);
             }
         }
 
         private void Host_Disconnected()
         {
-            if (State == PluginStates.Running)
+            if (State == PluginModelInfo.Types.PluginState.Running)
             {
                 HandleDisconnect();
-                ChangeState(PluginStates.Reconnecting);
+                ChangeState(PluginModelInfo.Types.PluginState.Reconnecting);
             }
         }
 
-        private BotMessage Convert(UnitLogRecord record)
+        private BotMessage Convert(PluginLogRecord record)
         {
             return BotMessage.Create(record, InstanceId);
         }
@@ -191,9 +191,9 @@ namespace TickTrader.BotTerminal
         {
             Execute.OnUIThread(() =>
             {
-                if (State == PluginStates.Running)
+                if (State == PluginModelInfo.Types.PluginState.Running)
                 {
-                    ChangeState(PluginStates.Stopped);
+                    ChangeState(PluginModelInfo.Types.PluginState.Stopped);
                     UnlockResources();
                 }
             });
@@ -217,11 +217,11 @@ namespace TickTrader.BotTerminal
 
         #region IBotWriter implementation
 
-        void IBotWriter.LogMesssage(UnitLogRecord rec)
+        void IBotWriter.LogMesssage(PluginLogRecord rec)
         {
             Journal.Add(Convert(rec));
 
-            if (rec.Severity == UnitLogRecord.Types.LogSeverity.Alert)
+            if (rec.Severity == PluginLogRecord.Types.LogSeverity.Alert)
                 AlertModel.AddAlert(InstanceId, rec);
         }
 

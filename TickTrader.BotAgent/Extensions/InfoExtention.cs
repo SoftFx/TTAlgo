@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Protocol;
 using TickTrader.BotAgent.BA.Models;
 
 namespace TickTrader.BotAgent.Extensions
@@ -24,21 +24,21 @@ namespace TickTrader.BotAgent.Extensions
             return accList.Select(GetInfoCopy).ToList();
         }
 
-        public static List<BotModelInfo> GetInfoCopy(this IEnumerable<TradeBotModel> botList)
+        public static List<PluginModelInfo> GetInfoCopy(this IEnumerable<TradeBotModel> botList)
         {
             return botList.Select(GetInfoCopy).ToList();
         }
 
-        public static BotModelInfo GetInfoCopy(this TradeBotModel model)
+        public static PluginModelInfo GetInfoCopy(this TradeBotModel model)
         {
-            return new BotModelInfo()
+            return new PluginModelInfo()
             {
                 InstanceId = model.Id,
                 Account = model.Account,
                 State = model.State,
                 FaultMessage = model.FaultMessage,
                 Config = model.Config,
-                Descriptor = model.Info?.Descriptor_,
+                Descriptor_ = model.Info?.Descriptor_,
             };
         }
 

@@ -21,7 +21,7 @@ namespace TickTrader.BotTerminal
             executor.LogUpdated += Executor_LogUpdated;
         }
 
-        private void Executor_LogUpdated(UnitLogRecord record)
+        private void Executor_LogUpdated(PluginLogRecord record)
         {
             _writer.LogMessage(record);
         }

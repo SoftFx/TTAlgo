@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -20,16 +20,16 @@ namespace TickTrader.BotAgent.BA.Models
             _botAgent.BotStateChanged += BotStateChanged;
         }
 
-        private void BotStateChanged(BotModelInfo bot)
+        private void BotStateChanged(PluginModelInfo bot)
         {
-            if (bot.State == PluginStates.Stopping)
+            if (bot.State == PluginModelInfo.Types.PluginState.Stopping)
             {
                 var tokenSource = new CancellationTokenSource();
                 _abortTasks.Add(bot.InstanceId, tokenSource);
 
                 AbortBotAfter(bot.InstanceId, _delayPunishment, tokenSource.Token).Forget();
             }
-            else if (bot.State == PluginStates.Stopped)
+            else if (bot.State == PluginModelInfo.Types.PluginState.Stopped)
             {
                 СancelAbortTask(bot.InstanceId);
             }

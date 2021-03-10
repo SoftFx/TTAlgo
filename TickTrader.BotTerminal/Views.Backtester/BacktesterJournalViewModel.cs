@@ -23,14 +23,14 @@ namespace TickTrader.BotTerminal
             DisplayName = "Journal";
         }
 
-        public ObservableCollection<UnitLogRecord> JournalRecords { get; } = new ObservableCollection<UnitLogRecord>();
+        public ObservableCollection<PluginLogRecord> JournalRecords { get; } = new ObservableCollection<PluginLogRecord>();
 
         //public void SetData(List<BotLogRecord> records)
         //{
         //    _journalContent.Value = records;
         //}
 
-        public void Append(UnitLogRecord record)
+        public void Append(PluginLogRecord record)
         {
             JournalRecords.Add(record);
         }
@@ -82,11 +82,11 @@ namespace TickTrader.BotTerminal
             observer.StartProgress(0, records.Count);
         }
 
-        private string TxtFormat(UnitLogRecord.Types.LogSeverity severity)
+        private string TxtFormat(PluginLogRecord.Types.LogSeverity severity)
         {
             switch (severity)
             {
-                case UnitLogRecord.Types.LogSeverity.TradeSuccess: return "Trade";
+                case PluginLogRecord.Types.LogSeverity.TradeSuccess: return "Trade";
                 default: return severity.ToString();
             }
         }

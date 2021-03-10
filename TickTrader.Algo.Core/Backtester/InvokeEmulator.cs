@@ -176,7 +176,7 @@ namespace TickTrader.Algo.Core
                 if (!WarmUp(warmupValue, warmupUnits))
                 {
                     var msg = "There is no enough data for warm-up!";
-                    _collector.AddEvent(Domain.UnitLogRecord.Types.LogSeverity.Error, msg);
+                    _collector.AddEvent(Domain.PluginLogRecord.Types.LogSeverity.Error, msg);
                     throw new NotEnoughDataException(msg);
                 }
                 _exStartAction();
@@ -187,7 +187,7 @@ namespace TickTrader.Algo.Core
             }
             catch (OperationCanceledException)
             {
-                _collector.AddEvent(Domain.UnitLogRecord.Types.LogSeverity.Error, "Testing canceled!");
+                _collector.AddEvent(Domain.PluginLogRecord.Types.LogSeverity.Error, "Testing canceled!");
                 StopFeedRead();
                 if (wasStarted)
                     EmulateStop();
@@ -374,17 +374,17 @@ namespace TickTrader.Algo.Core
 
         private void LogWarmupStart()
         {
-            _collector.AddEvent(Domain.UnitLogRecord.Types.LogSeverity.Info, "Start warmup");
+            _collector.AddEvent(Domain.PluginLogRecord.Types.LogSeverity.Info, "Start warmup");
         }
 
         private void LogWarmupFail(int ticksCount, int barCount)
         {
-            _collector.AddEvent(Domain.UnitLogRecord.Types.LogSeverity.Error, string.Format("Not enough data for warmup! Loaded {0} bars ({1} quotes) during warmup attempt.", barCount, ticksCount));
+            _collector.AddEvent(Domain.PluginLogRecord.Types.LogSeverity.Error, string.Format("Not enough data for warmup! Loaded {0} bars ({1} quotes) during warmup attempt.", barCount, ticksCount));
         }
 
         private void LogWarmupEnd(int tickCount, int barCount)
         {
-            _collector.AddEvent(Domain.UnitLogRecord.Types.LogSeverity.Info, string.Format("Warmup completed. Loaded {0} bars ({1} quotes) during warmup.", barCount, tickCount));
+            _collector.AddEvent(Domain.PluginLogRecord.Types.LogSeverity.Info, string.Format("Warmup completed. Loaded {0} bars ({1} quotes) during warmup.", barCount, tickCount));
         }
 
         #endregion

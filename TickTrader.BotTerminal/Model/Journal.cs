@@ -82,17 +82,17 @@ namespace TickTrader.BotTerminal
             return Message;
         }
 
-        internal static JournalMessageType Convert(UnitLogRecord.Types.LogSeverity severity)
+        internal static JournalMessageType Convert(PluginLogRecord.Types.LogSeverity severity)
         {
             switch (severity)
             {
-                case UnitLogRecord.Types.LogSeverity.Info: return JournalMessageType.Info;
-                case UnitLogRecord.Types.LogSeverity.Error: return JournalMessageType.Error;
-                case UnitLogRecord.Types.LogSeverity.Custom: return JournalMessageType.Custom;
-                case UnitLogRecord.Types.LogSeverity.Trade: return JournalMessageType.Trading;
-                case UnitLogRecord.Types.LogSeverity.TradeSuccess: return JournalMessageType.TradingSuccess;
-                case UnitLogRecord.Types.LogSeverity.TradeFail: return JournalMessageType.TradingFail;
-                case UnitLogRecord.Types.LogSeverity.Alert: return JournalMessageType.Alert;
+                case PluginLogRecord.Types.LogSeverity.Info: return JournalMessageType.Info;
+                case PluginLogRecord.Types.LogSeverity.Error: return JournalMessageType.Error;
+                case PluginLogRecord.Types.LogSeverity.Custom: return JournalMessageType.Custom;
+                case PluginLogRecord.Types.LogSeverity.Trade: return JournalMessageType.Trading;
+                case PluginLogRecord.Types.LogSeverity.TradeSuccess: return JournalMessageType.TradingSuccess;
+                case PluginLogRecord.Types.LogSeverity.TradeFail: return JournalMessageType.TradingFail;
+                case PluginLogRecord.Types.LogSeverity.Alert: return JournalMessageType.Alert;
                 default: return JournalMessageType.Info;
             }
         }

@@ -8,7 +8,7 @@ using TickTrader.Algo.Rpc;
 
 namespace TickTrader.Algo.Core
 {
-    internal class UnitRuntimeV1Handler : IRpcHandler
+    internal class PluginRuntimeV1Handler : IRpcHandler
     {
         private static readonly Any VoidResponse = Any.Pack(new VoidResponse());
 
@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Core
         private RpcSession _session;
 
 
-        public UnitRuntimeV1Handler(IRuntimeProxy runtime)
+        public PluginRuntimeV1Handler(IRuntimeProxy runtime)
         {
             _runtime = runtime;
             _knownProxies = new Dictionary<string, IRpcHandler>();

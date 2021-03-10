@@ -7,9 +7,9 @@ using System;
 using TickTrader.BotAgent.BA.Exceptions;
 using NLog;
 using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Protocol;
 
 namespace TickTrader.BotAgent.BA.Repository
 {

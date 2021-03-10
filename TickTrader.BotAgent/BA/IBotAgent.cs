@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Domain;
 using TickTrader.BotAgent.BA.Models;
@@ -44,11 +43,11 @@ namespace TickTrader.BotAgent.BA
 
         // -------- Bot Management --------
 
-        Task<List<BotModelInfo>> GetBots();
-        Task<BotModelInfo> GetBotInfo(string botId);
+        Task<List<PluginModelInfo>> GetBots();
+        Task<PluginModelInfo> GetBotInfo(string botId);
         Task<IBotFolder> GetAlgoData(string botId);
         Task<string> GenerateBotId(string botDisplayName);
-        Task<BotModelInfo> AddBot(AccountKey accountId, PluginConfig config);
+        Task<PluginModelInfo> AddBot(AccountKey accountId, PluginConfig config);
         Task RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false);
         Task ChangeBotConfig(string botId, PluginConfig newConfig);
         Task StartBot(string botId);
@@ -58,8 +57,8 @@ namespace TickTrader.BotAgent.BA
 
         Task<IAlertStorage> GetAlertStorage();
 
-        event Action<BotModelInfo, ChangeAction> BotChanged;
-        event Action<BotModelInfo> BotStateChanged;
+        event Action<PluginModelInfo, ChangeAction> BotChanged;
+        event Action<PluginModelInfo> BotStateChanged;
 
         // -------- Server Management --------
 
@@ -85,7 +84,7 @@ namespace TickTrader.BotAgent.BA
     public interface ILogEntry
     {
         Timestamp TimeUtc { get; }
-        UnitLogRecord.Types.LogSeverity Severity { get; }
+        PluginLogRecord.Types.LogSeverity Severity { get; }
         string Message { get; }
     }
 

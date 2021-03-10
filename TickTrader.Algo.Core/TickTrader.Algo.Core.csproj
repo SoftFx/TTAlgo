@@ -342,7 +342,7 @@
     <Compile Include="Server\PluginLauncher.cs" />
     <Compile Include="Server\RuntimeInfoProvider.cs" />
     <Compile Include="Server\ServerRuntimeV1Handler.cs" />
-    <Compile Include="Server\UnitRuntimeV1Handler.cs" />
+    <Compile Include="Server\PluginRuntimeV1Handler.cs" />
     <Compile Include="TickTraderToAlgo.cs" />
     <Compile Include="Backtester\Trade\TradeOperationSummary.cs" />
     <Compile Include="Math\TimeVectorBase.cs" />

@@ -10,6 +10,7 @@ using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Domain;
 using System.Linq;
+using TickTrader.Algo.Protocol;
 
 namespace TickTrader.BotTerminal
 {
@@ -32,7 +33,7 @@ namespace TickTrader.BotTerminal
 
         public IAlgoPluginHost Host { get; }
 
-        public PluginStates State { get; protected set; }
+        public PluginModelInfo.Types.PluginState State { get; protected set; }
 
         public IDictionary<string, IOutputCollector> Outputs => _outputs;
 
@@ -67,12 +68,12 @@ namespace TickTrader.BotTerminal
         {
             if (PackageRef?.IsObsolete ?? true)
                 UpdateRefs();
-            if (State == PluginStates.Broken)
+            if (State == PluginModelInfo.Types.PluginState.Broken)
                 return false;
 
             try
             {
-                ChangeState(PluginStates.Starting);
+                ChangeState(PluginModelInfo.Types.PluginState.Starting);
 
                 LockResources();
                 //Setup = new PluginSetupModel(PluginRef, Agent, SetupContext, Config.MainSymbol);
@@ -90,7 +91,7 @@ namespace TickTrader.BotTerminal
             catch (Exception ex)
             {
                 _logger.Error(ex, "StartExcecutor() failed!");
-                ChangeState(PluginStates.Faulted, ex.Message);
+                ChangeState(PluginModelInfo.Types.PluginState.Faulted, ex.Message);
                 UnlockResources();
 
                 return false;
@@ -104,7 +105,7 @@ namespace TickTrader.BotTerminal
 
         protected async Task<bool> StopExecutor()
         {
-            ChangeState(PluginStates.Stopping);
+            ChangeState(PluginModelInfo.Types.PluginState.Stopping);
 
             try
             {
@@ -116,7 +117,7 @@ namespace TickTrader.BotTerminal
             catch (Exception ex)
             {
                 _logger.Error(ex, "StopExcecutor() failed!");
-                ChangeState(PluginStates.Faulted, ex.Message);
+                ChangeState(PluginModelInfo.Types.PluginState.Faulted, ex.Message);
                 UnlockResources();
                 return false;
             }
@@ -152,7 +153,7 @@ namespace TickTrader.BotTerminal
             //_executor.NotifyDisconnectNotification();
         }
 
-        protected virtual void ChangeState(PluginStates state, string faultMessage = null)
+        protected virtual void ChangeState(PluginModelInfo.Types.PluginState state, string faultMessage = null)
         {
             State = state;
             FaultMessage = faultMessage;
@@ -182,19 +183,19 @@ namespace TickTrader.BotTerminal
             var packageRef = Agent.Library.GetPackageRef(package);
             if (packageRef == null)
             {
-                ChangeState(PluginStates.Broken, $"Package {package.Name} at {package.Location} is not found!");
+                ChangeState(PluginModelInfo.Types.PluginState.Broken, $"Package {package.Name} at {package.Location} is not found!");
                 return;
             }
             var plugin = Agent.Library.GetPlugin(Config.Key);
             if (plugin == null)
             {
-                ChangeState(PluginStates.Broken, $"Plugin {Config.Key.DescriptorId} is missing in package {package.Name} at {package.Location}!");
+                ChangeState(PluginModelInfo.Types.PluginState.Broken, $"Plugin {Config.Key.DescriptorId} is missing in package {package.Name} at {package.Location}!");
                 return;
             }
 
             PackageRef = packageRef;
             Descriptor = plugin.Descriptor_;
-            ChangeState(PluginStates.Stopped);
+            ChangeState(PluginModelInfo.Types.PluginState.Stopped);
             OnRefsUpdated();
         }
 

@@ -11,7 +11,7 @@ namespace TickTrader.BotTerminal
     {
         public static IReadOnlyList<SymbolKey> GetAvaliableSymbols(this AccountMetadataInfo metadata, SymbolKey defaultSymbol)
         {
-            var symbols = metadata?.Symbols.OrderBy(u => u.Name).ToList();
+            var symbols = metadata?.Symbols.OrderBy(u => u.Name).Select(c => new SymbolKey(c.Name, c.Origin)).ToList();
             if ((symbols?.Count ?? 0) == 0)
                 symbols = new List<SymbolKey> { defaultSymbol };
 
@@ -21,7 +21,7 @@ namespace TickTrader.BotTerminal
             return symbols;
         }
 
-        public static SymbolKey GetSymbolOrDefault(this IReadOnlyList<SymbolKey> availableSymbols, SymbolConfig config)
+        public static SymbolKey GetSymbolOrDefault(this IReadOnlyList<SymbolKey> availableSymbols, SymbolKey config)
         {
             if (config != null)
                 return availableSymbols.FirstOrDefault(s => s.Origin == config.Origin && s.Name == config.Name);
@@ -102,7 +102,7 @@ namespace TickTrader.BotTerminal
     {
         public static SetupContextInfo GetSetupContextInfo(this IAlgoSetupContext setupContext)
         {
-            return new SetupContextInfo(setupContext.DefaultTimeFrame, setupContext.DefaultSymbol.ToInfo(), setupContext.DefaultMapping);
+            return new SetupContextInfo(setupContext.DefaultTimeFrame, setupContext.DefaultSymbol.ToConfig(), setupContext.DefaultMapping);
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model.Interop
 {
@@ -9,16 +9,16 @@ namespace TickTrader.Algo.Common.Model.Interop
     {
         public InteropException()
         {
-            ErrorCode = ConnectionErrorCodes.Unknown;
+            ErrorCode = ConnectionErrorInfo.Types.ErrorCode.UnknownConnectionError;
         }
 
         public InteropException(string message)
             : base(message)
         {
-            ErrorCode = ConnectionErrorCodes.Unknown;
+            ErrorCode = ConnectionErrorInfo.Types.ErrorCode.UnknownConnectionError;
         }
 
-        public InteropException(string message, ConnectionErrorCodes errorCode) : base(message)
+        public InteropException(string message, ConnectionErrorInfo.Types.ErrorCode errorCode) : base(message)
         {
             ErrorCode = errorCode;
         }
@@ -26,10 +26,10 @@ namespace TickTrader.Algo.Common.Model.Interop
         protected InteropException(SerializationInfo info, StreamingContext context)
             : base(info.GetString(nameof(Message)))
         {
-            ErrorCode = (ConnectionErrorCodes)info.GetInt32(nameof(ErrorCode));
+            ErrorCode = (ConnectionErrorInfo.Types.ErrorCode)info.GetInt32(nameof(ErrorCode));
         }
 
-        public ConnectionErrorCodes ErrorCode { get; }
+        public ConnectionErrorInfo.Types.ErrorCode ErrorCode { get; }
 
         void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
         {

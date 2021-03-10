@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using TickTrader.BotAgent.BA.Models;
 using System;
 using TickTrader.BotAgent.WebAdmin.Server.Hubs;
-using TickTrader.Algo.Common.Info;
 using Microsoft.AspNetCore.SignalR;
 using TickTrader.Algo.Domain;
 
@@ -52,7 +51,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             return app;
         }
 
-        private static void OnBotChaged(BotModelInfo bot, ChangeAction action)
+        private static void OnBotChaged(PluginModelInfo bot, ChangeAction action)
         {
             switch (action)
             {
@@ -68,7 +67,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             }
         }
 
-        private static void OnBotStateChanged(BotModelInfo bot)
+        private static void OnBotStateChanged(PluginModelInfo bot)
         {
             Hub.Clients.All.ChangeBotState(bot.ToBotStateDto());
         }

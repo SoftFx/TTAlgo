@@ -60,7 +60,7 @@ namespace TickTrader.BotTerminal
             Type = type;
         }
 
-        public static EventMessage Create(UnitLogRecord record)
+        public static EventMessage Create(PluginLogRecord record)
         {
             return new EventMessage(record.TimeUtc, record.Message, Convert(record.Severity));
         }

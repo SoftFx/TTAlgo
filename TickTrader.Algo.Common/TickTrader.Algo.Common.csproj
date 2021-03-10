@@ -75,21 +75,7 @@
   <ItemGroup>
     <Compile Include="Entities\EntityUpdate.cs" />
     <Compile Include="Entities\Slice.cs" />
-    <Compile Include="Info\AccountModelInfo.cs" />
-    <Compile Include="Info\BotFileInfo.cs" />
-    <Compile Include="Info\BotFolderInfo.cs" />
-    <Compile Include="Info\BotModelInfo.cs" />
-    <Compile Include="Info\ConnectionErrorInfo.cs" />
-    <Compile Include="Info\LogRecordInfo.cs" />
-    <Compile Include="Info\Setup\SetupMetadata.cs" />
-    <Compile Include="Info\UpdateInfo.cs" />
     <Compile Include="Info\InfoExtensions.cs" />
-    <Compile Include="Info\Setup\AccountMetadataInfo.cs" />
-    <Compile Include="Info\Setup\ApiMetadataInfo.cs" />
-    <Compile Include="Info\Keys\AccountKey.cs" />
-    <Compile Include="Info\Setup\MappingCollectionInfo.cs" />
-    <Compile Include="Info\Setup\MappingInfo.cs" />
-    <Compile Include="Info\Setup\SetupContextInfo.cs" />
     <Compile Include="Lib\AsyncEvent.cs" />
     <Compile Include="Lib\BotIdHelper.cs" />
     <Compile Include="Lib\CollectionsExt.cs" />
@@ -201,6 +187,10 @@
     <ProjectReference Include="..\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj">
       <Project>{8bab901c-10bb-4eb7-b81e-716fa05b6957}</Project>
       <Name>TickTrader.Algo.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TickTrader.Algo.Protocol\TickTrader.Algo.Protocol.csproj">
+      <Project>{7ae78bd0-33fd-421e-a16f-37adea680870}</Project>
+      <Name>TickTrader.Algo.Protocol</Name>
     </ProjectReference>
     <ProjectReference Include="..\TickTrader.SeriesStorage.LevelDb\TickTrader.SeriesStorage.LevelDb.csproj">
       <Project>{cb30b69a-de4d-4819-8e83-cf5dd80cd060}</Project>

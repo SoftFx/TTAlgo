@@ -2,9 +2,9 @@
 
 namespace TickTrader.Algo.Domain
 {
-    public partial class UnitLogRecord
+    public partial class PluginLogRecord
     {
-        public UnitLogRecord(Timestamp timeUtc, Types.LogSeverity severity, string msg, string details)
+        public PluginLogRecord(Timestamp timeUtc, Types.LogSeverity severity, string msg, string details)
         {
             TimeUtc = timeUtc;
             Severity = severity;

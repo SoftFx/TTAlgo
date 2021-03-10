@@ -107,7 +107,7 @@ namespace TickTrader.Algo.Core
             {
                 if (!_control.OnStart())
                 {
-                    _control.Collector.AddEvent(Domain.UnitLogRecord.Types.LogSeverity.Error, "No data for requested period!");
+                    _control.Collector.AddEvent(Domain.PluginLogRecord.Types.LogSeverity.Error, "No data for requested period!");
                     return;
                 }
 

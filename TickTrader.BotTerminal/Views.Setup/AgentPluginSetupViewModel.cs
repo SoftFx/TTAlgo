@@ -409,7 +409,7 @@ namespace TickTrader.BotTerminal
                         var fileInfo = new System.IO.FileInfo(path);
                         FileProgress.SetMessage($"Uploading {fileInfo.Name} to AlgoData...");
                         var fileProgressListener = new FileProgressListenerAdapter(FileProgress, fileInfo.Length);
-                        await SelectedAgent.Model.UploadBotFile(config.InstanceId, BotFolderId.AlgoData, fileInfo.Name, path, fileProgressListener);
+                        await SelectedAgent.Model.UploadBotFile(config.InstanceId, PluginFolderInfo.Types.PluginFolderId.AlgoData, fileInfo.Name, path, fileProgressListener);
                     }
                 }
             }

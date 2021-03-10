@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Data;
 using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Domain;
 using TickTrader.Algo.Protocol;
 
 namespace TickTrader.BotTerminal
@@ -18,7 +19,7 @@ namespace TickTrader.BotTerminal
         private AlgoEnvironment _algoEnv;
         private AlgoAgentViewModel _selectedAgent;
         private AlgoBotViewModel _selectedBot;
-        private BotFolderId _selectedFolderId;
+        private PluginFolderInfo.Types.PluginFolderId _selectedFolderId;
         private bool _isEnabled;
         private string _path;
         private VarList<BotFileViewModel> _botFiles;
@@ -72,9 +73,9 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public BotFolderId[] AvailableFolderIds { get; }
+        public PluginFolderInfo.Types.PluginFolderId[] AvailableFolderIds { get; }
 
-        public BotFolderId SelectedFolderId
+        public PluginFolderInfo.Types.PluginFolderId SelectedFolderId
         {
             get { return _selectedFolderId; }
             set
@@ -135,7 +136,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public bool CanUploadFile => SelectedBot != null && SelectedFolderId == BotFolderId.AlgoData && SelectedAgent.Model.AccessManager.CanUploadBotFile();
+        public bool CanUploadFile => SelectedBot != null && SelectedFolderId == PluginFolderInfo.Types.PluginFolderId.AlgoData && SelectedAgent.Model.AccessManager.CanUploadBotFile();
 
         public bool CanDownloadFile => SelectedBotFile != null && SelectedAgent.Model.AccessManager.CanDownloadBotFile(SelectedFolderId);
 
@@ -269,8 +270,8 @@ namespace TickTrader.BotTerminal
             BotFiles = CollectionViewSource.GetDefaultView(_botFiles.AsObservable());
             BotFiles.SortDescriptions.Add(new SortDescription { PropertyName = "Name", Direction = ListSortDirection.Ascending });
 
-            AvailableFolderIds = Enum.GetValues(typeof(BotFolderId)).Cast<BotFolderId>().ToArray();
-            SelectedFolderId = BotFolderId.BotLogs;
+            AvailableFolderIds = Enum.GetValues(typeof(PluginFolderInfo.Types.PluginFolderId)).Cast<PluginFolderInfo.Types.PluginFolderId>().ToArray();
+            SelectedFolderId = PluginFolderInfo.Types.PluginFolderId.BotLogs;
             IsEnabled = true;
         }
 
@@ -280,7 +281,7 @@ namespace TickTrader.BotTerminal
             SelectedAgent = Agents.FirstOrDefault(a => a.Name == agentName);
         }
 
-        public BotFolderViewModel(AlgoEnvironment algoEnv, string agentName, string botId, BotFolderId folderId)
+        public BotFolderViewModel(AlgoEnvironment algoEnv, string agentName, string botId, PluginFolderInfo.Types.PluginFolderId folderId)
             : this(algoEnv, agentName)
         {
             _selectedFolderId = folderId;
@@ -521,7 +522,7 @@ namespace TickTrader.BotTerminal
         private BotFolderViewModel _botFolder;
 
 
-        public BotFileInfo Info { get; }
+        public PluginFileInfo Info { get; }
 
         public string Name => Info.Name;
 
@@ -530,7 +531,7 @@ namespace TickTrader.BotTerminal
         public string SizeText => MakeSizeText(Info.Size);
 
 
-        public BotFileViewModel(BotFileInfo info, BotFolderViewModel botFolder)
+        public BotFileViewModel(PluginFileInfo info, BotFolderViewModel botFolder)
         {
             Info = info;
             _botFolder = botFolder;

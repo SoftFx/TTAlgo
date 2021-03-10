@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Protocol
@@ -28,7 +27,7 @@ namespace TickTrader.Algo.Protocol
 
         Task<List<AccountModelInfo>> GetAccountList();
 
-        Task<List<BotModelInfo>> GetBotList();
+        Task<List<PluginModelInfo>> GetBotList();
 
         #endregion Initialization
 
@@ -39,11 +38,11 @@ namespace TickTrader.Algo.Protocol
 
         event Action<UpdateInfo<AccountModelInfo>> AccountUpdated;
 
-        event Action<UpdateInfo<BotModelInfo>> BotUpdated;
+        event Action<UpdateInfo<PluginModelInfo>> BotUpdated;
 
         event Action<PackageInfo> PackageStateUpdated;
 
-        event Action<BotModelInfo> BotStateUpdated;
+        event Action<PluginModelInfo> BotStateUpdated;
 
         event Action<AccountModelInfo> AccountStateUpdated;
 
@@ -92,15 +91,15 @@ namespace TickTrader.Algo.Protocol
 
         Task<LogRecordInfo[]> GetBotLogsAsync(string botId, Timestamp lastLogTimeUtc, int maxCount);
 
-        Task<BotFolderInfo> GetBotFolderInfo(string botId, BotFolderId folderId);
+        Task<PluginFolderInfo> GetBotFolderInfo(string botId, PluginFolderInfo.Types.PluginFolderId folderId);
 
-        Task ClearBotFolder(string botId, BotFolderId folderId);
+        Task ClearBotFolder(string botId, PluginFolderInfo.Types.PluginFolderId folderId);
 
-        Task DeleteBotFile(string botId, BotFolderId folderId, string fileName);
+        Task DeleteBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName);
 
-        Task<string> GetBotFileReadPath(string botId, BotFolderId folderId, string fileName);
+        Task<string> GetBotFileReadPath(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName);
 
-        Task<string> GetBotFileWritePath(string botId, BotFolderId folderId, string fileName);
+        Task<string> GetBotFileWritePath(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName);
 
         #endregion Requests
     }

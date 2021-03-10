@@ -75,15 +75,15 @@ namespace TickTrader.BotTerminal
 
         Task DownloadPackage(PackageKey package, string dstFilePath, IFileProgressListener progressListener);
 
-        Task<BotFolderInfo> GetBotFolderInfo(string botId, BotFolderId folderId);
+        Task<PluginFolderInfo> GetBotFolderInfo(string botId, PluginFolderInfo.Types.PluginFolderId folderId);
 
-        Task ClearBotFolder(string botId, BotFolderId folderId);
+        Task ClearBotFolder(string botId, PluginFolderInfo.Types.PluginFolderId folderId);
 
-        Task DeleteBotFile(string botId, BotFolderId folderId, string fileName);
+        Task DeleteBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName);
 
-        Task DownloadBotFile(string botId, BotFolderId folderId, string fileName, string dstPath, IFileProgressListener progressListener);
+        Task DownloadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string dstPath, IFileProgressListener progressListener);
 
-        Task UploadBotFile(string botId, BotFolderId folderId, string fileName, string srcPath, IFileProgressListener progressListener);
+        Task UploadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string srcPath, IFileProgressListener progressListener);
     }
 
     internal interface IExecStateObservable
