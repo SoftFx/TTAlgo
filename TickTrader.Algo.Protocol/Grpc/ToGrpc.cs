@@ -224,7 +224,7 @@ namespace TickTrader.Algo.Protocol.Grpc
                 PropertyHeader = output.GetPropertyHeader(),
                 DataSeriesBaseTypeFullName = Convert(output.DataSeriesBaseTypeFullName),
                 DefaultThickness = output.DefaultThickness,
-                DefaultColor = (int)output.DefaultColorArgb,
+                DefaultColor = (int)(output.DefaultColorArgb ?? 0x00008000),
                 //DefaultLineStyle = output.DefaultLineStyle.Convert(),
                 PlotType = output.PlotType.Convert(),
                 Target = output.Target.Convert(),
