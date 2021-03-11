@@ -143,7 +143,7 @@ namespace TickTrader.BotAgent.BA.Models
         }
 
         public AlertStorage AlertStorage { get; }
-        public ConnectionStates ConnectionState { get; private set; }
+        public AccountModelInfo.Types.ConnectionState ConnectionState { get; private set; }
         public ConnectionErrorInfo LastError => _lastError;
         public PluginFeedProvider PluginFeedAdapter { get; private set; }
         public PluginTradeApiProvider.Handler PluginTradeApi { get; private set; }
@@ -154,7 +154,7 @@ namespace TickTrader.BotAgent.BA.Models
         public int TotalBotsCount => _bots.Count;
         public int RunningBotsCount => _startedBotsCount;
         public bool HasRunningBots => _startedBotsCount > 0;
-        public bool HasError => _lastError != null && _lastError.Code != ConnectionErrorCodes.None;
+        public bool HasError => _lastError != null && !_lastError.IsOk;
         public string ErrorText => _lastError?.TextMessage ?? _lastError?.Code.ToString();
 
         public event Action<ClientModel> StateChanged;
@@ -176,7 +176,7 @@ namespace TickTrader.BotAgent.BA.Models
         {
             using (await _requestGate.Enter())
             {
-                if (_lastError.Code != ConnectionErrorCodes.None)
+                if (!_lastError.IsOk)
                     throw new CommunicationException("Connection error! Code: " + _lastError.Code, _lastError.Code);
 
                 var symbols = await _core.GetSymbols();
@@ -239,7 +239,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         private void ManageConnection()
         {
-            if (ConnectionState == ConnectionStates.Offline)
+            if (ConnectionState == AccountModelInfo.Types.ConnectionState.Offline)
             {
                 var forcedConnect = (_startedBotsCount > 0 && _credsChanged) || _requestGate.WatingCount > 0;
                 var scheduledConnect = _startedBotsCount > 0 && _pendingReconnect < DateTime.UtcNow;
@@ -247,7 +247,7 @@ namespace TickTrader.BotAgent.BA.Models
                 if (forcedConnect || scheduledConnect)
                     Connect();
             }
-            else if (ConnectionState == ConnectionStates.Online)
+            else if (ConnectionState == AccountModelInfo.Types.ConnectionState.Online)
             {
                 var forcedDisconnect = _credsChanged || _lostConnection || _shutdownRequested;
                 var scheduledDisconnect = _startedBotsCount == 0 && _pendingDisconnect < DateTime.UtcNow;
@@ -285,7 +285,7 @@ namespace TickTrader.BotAgent.BA.Models
                     _log.Error("Failed to shutdown bots", ex);
                 }
 
-                if (ConnectionState == ConnectionStates.Offline)
+                if (ConnectionState == AccountModelInfo.Types.ConnectionState.Offline)
                     _shutdownCompletedSrc.TrySetResult(null);
                 else
                     ManageConnection();
@@ -300,7 +300,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         private async void Disconnect()
         {
-            ChangeState(ConnectionStates.Disconnecting);
+            ChangeState(AccountModelInfo.Types.ConnectionState.Disconnecting);
 
             _log.Debug("Closing gate...");
 
@@ -312,7 +312,7 @@ namespace TickTrader.BotAgent.BA.Models
 
             _lostConnection = false;
             ScheduleReconnect(false);
-            ChangeState(ConnectionStates.Offline);
+            ChangeState(AccountModelInfo.Types.ConnectionState.Offline);
 
             _log.Debug("Offline!");
 
@@ -321,14 +321,14 @@ namespace TickTrader.BotAgent.BA.Models
             ManageConnection();
         }
 
-        private void ChangeState(ConnectionStates newState)
+        private void ChangeState(AccountModelInfo.Types.ConnectionState newState)
         {
             LogConnectionState(ConnectionState, newState);
             ConnectionState = newState;
             StateChanged?.Invoke(this);
         }
 
-        private void LogConnectionState(ConnectionStates oldState, ConnectionStates newState)
+        private void LogConnectionState(AccountModelInfo.Types.ConnectionState oldState, AccountModelInfo.Types.ConnectionState newState)
         {
             if (IsConnected(oldState, newState))
                 _log.Info("{0}: login on {1}", Username, Address);
@@ -340,40 +340,40 @@ namespace TickTrader.BotAgent.BA.Models
                 _log.Info("{0}: connection to {1} lost [{2}]", Username, Address, _lastError?.Code);
         }
 
-        private bool IsConnected(ConnectionStates from, ConnectionStates to)
+        private bool IsConnected(AccountModelInfo.Types.ConnectionState from, AccountModelInfo.Types.ConnectionState to)
         {
-            return to == ConnectionStates.Online;
+            return to == AccountModelInfo.Types.ConnectionState.Online;
         }
 
-        private bool IsUnexpectedDisconnect(ConnectionStates from, ConnectionStates to)
+        private bool IsUnexpectedDisconnect(AccountModelInfo.Types.ConnectionState from, AccountModelInfo.Types.ConnectionState to)
         {
-            return HasError && from == ConnectionStates.Online && (to == ConnectionStates.Offline || to == ConnectionStates.Disconnecting);
+            return HasError && from == AccountModelInfo.Types.ConnectionState.Online && (to == AccountModelInfo.Types.ConnectionState.Offline || to == AccountModelInfo.Types.ConnectionState.Disconnecting);
         }
 
-        private bool IsFailedConnection(ConnectionStates from, ConnectionStates to)
+        private bool IsFailedConnection(AccountModelInfo.Types.ConnectionState from, AccountModelInfo.Types.ConnectionState to)
         {
-            return from == ConnectionStates.Connecting && to == ConnectionStates.Offline && HasError;
+            return from == AccountModelInfo.Types.ConnectionState.Connecting && to == AccountModelInfo.Types.ConnectionState.Offline && HasError;
         }
 
-        private bool IsUsualDisconnect(ConnectionStates from, ConnectionStates to)
+        private bool IsUsualDisconnect(AccountModelInfo.Types.ConnectionState from, AccountModelInfo.Types.ConnectionState to)
         {
-            return from == ConnectionStates.Disconnecting && to == ConnectionStates.Offline && !HasError;
+            return from == AccountModelInfo.Types.ConnectionState.Disconnecting && to == AccountModelInfo.Types.ConnectionState.Offline && !HasError;
         }
 
         private async void Connect()
         {
-            ChangeState(ConnectionStates.Connecting);
+            ChangeState(AccountModelInfo.Types.ConnectionState.Connecting);
             _credsChanged = false;
 
             _connectCancellation = new CancellationTokenSource();
 
             _lastError = await _core.Connection.Connect(Username, Password, Address, _connectCancellation.Token);
 
-            if (_lastError.Code == ConnectionErrorCodes.None)
+            if (_lastError.Code == ConnectionErrorInfo.Types.ErrorCode.NoConnectionError)
             {
                 _lostConnection = false;
                 KeepAlive();
-                ChangeState(ConnectionStates.Online);
+                ChangeState(AccountModelInfo.Types.ConnectionState.Online);
 
                 _requestGate.Open();
             }
@@ -381,8 +381,8 @@ namespace TickTrader.BotAgent.BA.Models
             {
                 await _requestGate.ExecQueuedRequests();
 
-                ScheduleReconnect(_lastError.Code == ConnectionErrorCodes.BlockedAccount || _lastError.Code == ConnectionErrorCodes.InvalidCredentials);
-                ChangeState(ConnectionStates.Offline);
+                ScheduleReconnect(_lastError.Code == ConnectionErrorInfo.Types.ErrorCode.BlockedAccount || _lastError.Code == ConnectionErrorInfo.Types.ErrorCode.InvalidCredentials);
+                ChangeState(AccountModelInfo.Types.ConnectionState.Offline);
             }
         }
 

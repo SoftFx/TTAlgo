@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Protocol.Grpc
@@ -266,10 +265,10 @@ namespace TickTrader.Algo.Protocol.Grpc
                             AgentClient.UpdateAccountState((UpdateInfo<AccountModelInfo>)update.Convert(VersionSpec));
                             break;
                         case Lib.UpdateInfo.UpdateInfoOneofCase.Bot:
-                            AgentClient.UpdateBot((UpdateInfo<BotModelInfo>)update.Convert(VersionSpec));
+                            AgentClient.UpdateBot((UpdateInfo<PluginModelInfo>)update.Convert(VersionSpec));
                             break;
                         case Lib.UpdateInfo.UpdateInfoOneofCase.BotState:
-                            AgentClient.UpdateBotState((UpdateInfo<BotModelInfo>)update.Convert(VersionSpec));
+                            AgentClient.UpdateBotState((UpdateInfo<PluginModelInfo>)update.Convert(VersionSpec));
                             break;
                         default:
                             throw new ArgumentException();
@@ -628,7 +627,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             return response.AccountMetadata.Convert();
         }
 
-        public override async Task<List<BotModelInfo>> GetBotList()
+        public override async Task<List<PluginModelInfo>> GetBotList()
         {
             var response = await ExecuteUnaryRequestAuthorized(GetBotListInternal, new Lib.BotListRequest());
             FailForNonSuccess(response.ExecResult);
@@ -856,26 +855,26 @@ namespace TickTrader.Algo.Protocol.Grpc
             return response.Logs.Select(ToAlgo.Convert).ToArray();
         }
 
-        public override async Task<BotFolderInfo> GetBotFolderInfo(string botId, BotFolderId folderId)
+        public override async Task<PluginFolderInfo> GetBotFolderInfo(string botId, PluginFolderInfo.Types.PluginFolderId folderId)
         {
             var response = await ExecuteUnaryRequestAuthorized(GetBotFolderInfoInternal, new Lib.BotFolderInfoRequest { BotId = ToGrpc.Convert(botId), FolderId = folderId.Convert() });
             FailForNonSuccess(response.ExecResult);
             return response.FolderInfo.Convert();
         }
 
-        public override async Task ClearBotFolder(string botId, BotFolderId folderId)
+        public override async Task ClearBotFolder(string botId, PluginFolderInfo.Types.PluginFolderId folderId)
         {
             var response = await ExecuteUnaryRequestAuthorized(ClearBotFolderInternal, new Lib.ClearBotFolderRequest { BotId = ToGrpc.Convert(botId), FolderId = folderId.Convert() });
             FailForNonSuccess(response.ExecResult);
         }
 
-        public override async Task DeleteBotFile(string botId, BotFolderId folderId, string fileName)
+        public override async Task DeleteBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName)
         {
             var response = await ExecuteUnaryRequestAuthorized(DeleteBotFileInternal, new Lib.DeleteBotFileRequest { BotId = ToGrpc.Convert(botId), FolderId = folderId.Convert(), FileName = ToGrpc.Convert(fileName) });
             FailForNonSuccess(response.ExecResult);
         }
 
-        public override async Task DownloadBotFile(string botId, BotFolderId folderId, string fileName, string dstPath, int chunkSize, int offset, IFileProgressListener progressListener)
+        public override async Task DownloadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string dstPath, int chunkSize, int offset, IFileProgressListener progressListener)
         {
             progressListener.Init((long)offset * chunkSize);
 
@@ -945,7 +944,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             }
         }
 
-        public override async Task UploadBotFile(string botId, BotFolderId folderId, string fileName, string srcPath, int chunkSize, int offset, IFileProgressListener progressListener)
+        public override async Task UploadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string srcPath, int chunkSize, int offset, IFileProgressListener progressListener)
         {
             progressListener.Init((long)offset * chunkSize);
 

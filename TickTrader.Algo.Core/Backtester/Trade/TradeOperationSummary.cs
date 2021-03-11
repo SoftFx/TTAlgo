@@ -46,13 +46,13 @@ namespace TickTrader.Algo.Core
         }
 
         public NumberFormatInfo AccountCurrencyFormat { get; set; }
-        public Domain.UnitLogRecord.Types.LogSeverity Severity { get; private set; }
+        public Domain.PluginLogRecord.Types.LogSeverity Severity { get; private set; }
         public bool IsEmpty => _builder.Length == 0;
 
         public void Clear()
         {
             _builder.Clear();
-            Severity = Domain.UnitLogRecord.Types.LogSeverity.TradeSuccess;
+            Severity = Domain.PluginLogRecord.Types.LogSeverity.TradeSuccess;
         }
 
         public string GetJournalRecord()
@@ -198,13 +198,13 @@ namespace TickTrader.Algo.Core
 
         private void SetTradeFaileSeverity()
         {
-            if (Severity == Domain.UnitLogRecord.Types.LogSeverity.Trade || Severity == Domain.UnitLogRecord.Types.LogSeverity.TradeSuccess)
-                Severity = Domain.UnitLogRecord.Types.LogSeverity.TradeFail;
+            if (Severity == Domain.PluginLogRecord.Types.LogSeverity.Trade || Severity == Domain.PluginLogRecord.Types.LogSeverity.TradeSuccess)
+                Severity = Domain.PluginLogRecord.Types.LogSeverity.TradeFail;
         }
 
         private void SetErrorSeverity()
         {
-            Severity = Domain.UnitLogRecord.Types.LogSeverity.Error;
+            Severity = Domain.PluginLogRecord.Types.LogSeverity.Error;
         }
 
         #region print methods

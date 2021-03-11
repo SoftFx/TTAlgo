@@ -35,14 +35,14 @@ namespace TickTrader.BotTerminal
         {
             Host.StartEvent -= Host_StartEvent;
             Host.StopEvent -= Host_StopEvent;
-            if (State == PluginStates.Running)
+            if (State == PluginModelInfo.Types.PluginState.Running)
                 StopIndicator().ContinueWith(t => { /* TO DO: log errors */ });
         }
 
 
         protected override async void OnPluginUpdated()
         {
-            if (State == PluginStates.Running)
+            if (State == PluginModelInfo.Types.PluginState.Running)
             {
                 await StopIndicator();
                 UpdateRefs();
@@ -64,18 +64,18 @@ namespace TickTrader.BotTerminal
         {
             if (PluginStateHelper.CanStart(State))
             {
-                _host.EnqueueStartAction(() => StartExcecutor().ContinueWith(t => { if (t.Result) ChangeState(PluginStates.Running); }));
+                _host.EnqueueStartAction(() => StartExcecutor().ContinueWith(t => { if (t.Result) ChangeState(PluginModelInfo.Types.PluginState.Running); }));
                 //if (StartExcecutor())
-                //    ChangeState(PluginStates.Running);
+                //    ChangeState(PluginModelInfo.Types.PluginState.Running);
             }
         }
 
         private async Task StopIndicator()
         {
-            if (State == PluginStates.Running)
+            if (State == PluginModelInfo.Types.PluginState.Running)
             {
                 if (await StopExecutor())
-                    ChangeState(PluginStates.Stopped);
+                    ChangeState(PluginModelInfo.Types.PluginState.Stopped);
             }
         }
 
@@ -89,16 +89,16 @@ namespace TickTrader.BotTerminal
             return StopIndicator();
         }
 
-        void IIndicatorWriter.LogMessage(UnitLogRecord record)
+        void IIndicatorWriter.LogMessage(PluginLogRecord record)
         {
             switch (record.Severity)
             {
-                case UnitLogRecord.Types.LogSeverity.Info:
-                case UnitLogRecord.Types.LogSeverity.Error:
-                case UnitLogRecord.Types.LogSeverity.Custom:
+                case PluginLogRecord.Types.LogSeverity.Info:
+                case PluginLogRecord.Types.LogSeverity.Error:
+                case PluginLogRecord.Types.LogSeverity.Custom:
                     _journal.Add(EventMessage.Create(record));
                     break;
-                case UnitLogRecord.Types.LogSeverity.Alert:
+                case PluginLogRecord.Types.LogSeverity.Alert:
                     AlertModel.AddAlert(InstanceId, record);
                     break;
                 default:
@@ -109,6 +109,6 @@ namespace TickTrader.BotTerminal
 
     public interface IIndicatorWriter
     {
-        void LogMessage(UnitLogRecord record);
+        void LogMessage(PluginLogRecord record);
     }
 }

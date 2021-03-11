@@ -16,7 +16,8 @@ namespace TickTrader.BotTerminal
 
         public TesterOutputCollector(OutputSetupModel setup, PluginExecutor executor)
         {
-            OutputConfig = setup ?? throw new ArgumentNullException("setup");
+            //OutputConfig = setup ?? throw new ArgumentNullException("setup");
+            OutputDescriptor = setup.Metadata.Descriptor;
             _outputId = setup.Id ?? throw new ArgumentNullException("setup.Id");
             _executor = executor ?? throw new ArgumentNullException("executor");
 
@@ -39,7 +40,8 @@ namespace TickTrader.BotTerminal
         }
 
         public bool IsNotSyncrhonized => false;
-        public OutputSetupModel OutputConfig { get; }
+        public IOutputConfig OutputConfig { get; }
+        public OutputDescriptor OutputDescriptor { get; }
         public IList<OutputPoint> Cache => null;
 
         public event Action<OutputPoint> Appended;

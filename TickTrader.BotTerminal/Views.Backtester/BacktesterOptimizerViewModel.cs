@@ -105,7 +105,7 @@ namespace TickTrader.BotTerminal
 
             //var canOptimize = false;
 
-            if (descriptor.Type == Metadata.Types.PluginType.TradeBot)
+            if (descriptor.IsTradeBot)
             {
                 foreach (var p in descriptor.Parameters)
                 {

@@ -72,11 +72,11 @@ namespace TickTrader.Algo.Core
         }
     }
 
-    public class AlgoUnitException : Exception
+    public class AlgoPluginException : Exception
     {
-        private readonly Domain.UnitError _error;
+        private readonly Domain.PluginError _error;
 
-        public AlgoUnitException(Domain.UnitError error) : base()
+        public AlgoPluginException(Domain.PluginError error) : base()
         {
             _error = error;
         }

@@ -1,4 +1,4 @@
-﻿namespace TickTrader.Algo.Common.Info
+﻿namespace TickTrader.Algo.Protocol
 {
     public enum UpdateType
     {

@@ -20,6 +20,11 @@ namespace TickTrader.Algo.Common.Model.Setup
         {
             return new SymbolKey(info.Name, SymbolConfig.Types.SymbolOrigin.Online);
         }
+
+        public static SymbolKey ToKey(this SymbolConfig info)
+        {
+            return new SymbolKey(info.Name, SymbolConfig.Types.SymbolOrigin.Online);
+        }
     }
 
 

@@ -1,15 +1,15 @@
-﻿using TickTrader.Algo.Common.Info;
+﻿using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotAgent.BA.Exceptions
 {
     public class CommunicationException : BAException
     {
-        public CommunicationException(string message, ConnectionErrorCodes fdkErrorCode) : base(message)
+        public CommunicationException(string message, ConnectionErrorInfo.Types.ErrorCode fdkErrorCode) : base(message)
         {
             Code = ExceptionCodes.CommunicationError;
             FdkCode = fdkErrorCode;
         }
 
-        public ConnectionErrorCodes FdkCode { get; }
+        public ConnectionErrorInfo.Types.ErrorCode FdkCode { get; }
     }
 }

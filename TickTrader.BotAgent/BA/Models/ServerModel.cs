@@ -52,7 +52,7 @@ namespace TickTrader.BotAgent.BA.Models
 
             _botIdHelper = new BotIdHelper();
             _allBots = new Dictionary<string, TradeBotModel>();
-            _packageStorage = new PackageStorage();
+            _packageStorage = new PackageStorage(_algoServer);
             _alertStorage = new AlertStorage();
             _threadPoolManager = new ThreadPoolManager();
             _fdkOptionsProvider = fdkOptionsProvider;
@@ -140,14 +140,14 @@ namespace TickTrader.BotAgent.BA.Models
             #region Bot Management
             public Task<IAlertStorage> GetAlertStorage() => CallActorAsync(a => a.GetAlertsStorage());
             public Task<string> GenerateBotId(string botDisplayName) => CallActorAsync(a => a.AutogenerateBotId(botDisplayName));
-            public Task<BotModelInfo> AddBot(AccountKey accountId, PluginConfig config) => CallActorAsync(a => a.AddBot(accountId, config));
+            public Task<PluginModelInfo> AddBot(AccountKey accountId, PluginConfig config) => CallActorAsync(a => a.AddBot(accountId, config));
             public Task ChangeBotConfig(string botId, PluginConfig config) => CallActorAsync(a => a.GetBotOrThrow(botId).ChangeBotConfig(config));
             public Task RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false) => CallActorAsync(a => a.RemoveBot(botId, cleanLog, cleanAlgoData));
             public Task StartBot(string botId) => CallActorAsync(a => a.GetBotOrThrow(botId).Start());
             public Task StopBotAsync(string botId) => CallActorFlattenAsync(a => a.GetBotOrThrow(botId).StopAsync());
             public void AbortBot(string botId) => ActorSend(a => a.GetBotOrThrow(botId).Abort());
-            public Task<BotModelInfo> GetBotInfo(string botId) => CallActorAsync(a => a.GetBotOrThrow(botId).GetInfoCopy());
-            public Task<List<BotModelInfo>> GetBots() => CallActorAsync(a => a._allBots.Values.GetInfoCopy());
+            public Task<PluginModelInfo> GetBotInfo(string botId) => CallActorAsync(a => a.GetBotOrThrow(botId).GetInfoCopy());
+            public Task<List<PluginModelInfo>> GetBots() => CallActorAsync(a => a._allBots.Values.GetInfoCopy());
             public async Task<IBotFolder> GetAlgoData(string botId)
             {
                 var algoDataRef = await CallActorAsync(a => a.GetBotOrThrow(botId).AlgoDataRef);
@@ -162,14 +162,14 @@ namespace TickTrader.BotAgent.BA.Models
 
             public Task<Tuple<ConnectionErrorInfo, AccountMetadataInfo>> GetAccountMetadata(AccountKey key) => CallActorFlattenAsync(a => a.GetAccountMetadata(key));
 
-            public event Action<BotModelInfo, ChangeAction> BotChanged
+            public event Action<PluginModelInfo, ChangeAction> BotChanged
             {
                 // Warning! This violates actor model rules! Deadlocks are possible!
                 add => CallActorFlatten(a => a.BotChanged += value);
                 remove => CallActorFlatten(a => a.BotChanged -= value);
             }
 
-            public event Action<BotModelInfo> BotStateChanged
+            public event Action<PluginModelInfo> BotStateChanged
             {
                 // Warning! This violates actor model rules! Deadlocks are possible!
                 add => CallActorFlatten(a => a.BotStateChanged += value);
@@ -369,10 +369,10 @@ namespace TickTrader.BotAgent.BA.Models
 
         #region Bot management
 
-        private event Action<BotModelInfo, ChangeAction> BotChanged;
-        private event Action<BotModelInfo> BotStateChanged;
+        private event Action<PluginModelInfo, ChangeAction> BotChanged;
+        private event Action<PluginModelInfo> BotStateChanged;
 
-        private BotModelInfo AddBot(AccountKey account, PluginConfig config)
+        private PluginModelInfo AddBot(AccountKey account, PluginConfig config)
         {
             var bot = GetAccountOrThrow(account).AddBot(config);
             return bot.GetInfoCopy();

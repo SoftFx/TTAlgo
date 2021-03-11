@@ -1,4 +1,4 @@
-﻿using TickTrader.Algo.Common.Info;
+﻿using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Protocol
 {
@@ -82,11 +82,11 @@ namespace TickTrader.Algo.Protocol
 
         public bool CanGetAlerts() => HasViewerAccess;
 
-        public bool CanGetBotFolderInfo(BotFolderId folderId)
+        public bool CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId folderId)
         {
             switch (folderId)
             {
-                case BotFolderId.BotLogs:
+                case PluginFolderInfo.Types.PluginFolderId.BotLogs:
                     return HasViewerAccess;
                 default:
                     return HasAdminAccess;
@@ -99,11 +99,11 @@ namespace TickTrader.Algo.Protocol
 
         public bool CanUploadBotFile() => HasAdminAccess;
 
-        public bool CanDownloadBotFile(BotFolderId folderId)
+        public bool CanDownloadBotFile(PluginFolderInfo.Types.PluginFolderId folderId)
         {
             switch (folderId)
             {
-                case BotFolderId.BotLogs:
+                case PluginFolderInfo.Types.PluginFolderId.BotLogs:
                     return HasViewerAccess;
                 default:
                     return HasAdminAccess;

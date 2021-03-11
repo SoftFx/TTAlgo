@@ -227,7 +227,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                if (item.Descriptor.Type == Metadata.Types.PluginType.TradeBot)
+                if (item.Descriptor.IsTradeBot)
                 {
                     _algoEnv.LocalAgentVM.OpenBotSetup(item.PluginInfo, Chart.GetSetupContextInfo());
                     return;
@@ -404,9 +404,9 @@ namespace TickTrader.BotTerminal
             if (plugin != null && plugin.Agent.Name == _algoEnv.LocalAgentVM.Name)
             {
                 //if (plugin.Type == AlgoTypes.Indicator)
-                if (plugin.Type == Metadata.Types.PluginType.Indicator && Chart.TimeFrame != Feed.Types.Timeframe.Ticks)
+                if (plugin.IsIndicator && Chart.TimeFrame != Feed.Types.Timeframe.Ticks)
                     return true;
-                if (plugin.Type == Metadata.Types.PluginType.TradeBot && Chart.TimeFrame != Feed.Types.Timeframe.Ticks)
+                if (plugin.IsTradeBot && Chart.TimeFrame != Feed.Types.Timeframe.Ticks)
                     return true;
             }
             return false;

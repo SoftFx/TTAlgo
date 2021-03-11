@@ -35,12 +35,12 @@ namespace TickTrader.Algo.Core
 
         public void HandleNotification(string proxyId, string callId, Any payload)
         {
-            if (payload.Is(UnitLogRecord.Descriptor))
-                UnitLogRecordHandler(proxyId, payload);
-            else if (payload.Is(UnitError.Descriptor))
-                UnitErrorHandler(proxyId, payload);
-            else if (payload.Is(UnitStopped.Descriptor))
-                UnitStoppedHandler(proxyId);
+            if (payload.Is(PluginLogRecord.Descriptor))
+                PluginLogRecordHandler(proxyId, payload);
+            else if (payload.Is(PluginError.Descriptor))
+                PluginErrorHandler(proxyId, payload);
+            else if (payload.Is(PluginStopped.Descriptor))
+                PluginStoppedHandler(proxyId);
             else if (payload.Is(DataSeriesUpdate.Descriptor))
                 DataSeriesUpdateHandler(proxyId, payload);
 
@@ -283,25 +283,25 @@ namespace TickTrader.Algo.Core
             return Task.FromResult(VoidResponse);
         }
 
-        private void UnitLogRecordHandler(string executorId, Any payload)
+        private void PluginLogRecordHandler(string executorId, Any payload)
         {
             if (!_server.TryGetExecutor(executorId, out var executor))
                 return;
 
-            var record = payload.Unpack<UnitLogRecord>();
+            var record = payload.Unpack<PluginLogRecord>();
             executor.OnLogUpdated(record);
         }
 
-        private void UnitErrorHandler(string executorId, Any payload)
+        private void PluginErrorHandler(string executorId, Any payload)
         {
             if (!_server.TryGetExecutor(executorId, out var executor))
                 return;
 
-            var error = payload.Unpack<UnitError>();
-            executor.OnErrorOccured(new AlgoUnitException(error));
+            var error = payload.Unpack<PluginError>();
+            executor.OnErrorOccured(new AlgoPluginException(error));
         }
 
-        private void UnitStoppedHandler(string executorId)
+        private void PluginStoppedHandler(string executorId)
         {
             if (!_server.TryGetExecutor(executorId, out var executor))
                 return;

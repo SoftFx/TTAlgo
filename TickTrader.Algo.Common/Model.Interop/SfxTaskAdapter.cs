@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Interop;
+using TickTrader.Algo.Domain;
 using TickTrader.FDK.Common;
 using FDK2 = TickTrader.FDK.Common;
 
@@ -54,9 +54,9 @@ namespace TickTrader.Algo.Common.Model
         internal static Exception Convert(Exception ex)
         {
             if (ex is RejectException)
-                return new InteropException(ex.Message, ConnectionErrorCodes.RejectedByServer);
+                return new InteropException(ex.Message, ConnectionErrorInfo.Types.ErrorCode.RejectedByServer);
             if (ex is FDK2.TimeoutException)
-                return new InteropException(ex.Message, ConnectionErrorCodes.Timeout);
+                return new InteropException(ex.Message, ConnectionErrorInfo.Types.ErrorCode.Timeout);
             return ex;
         }
 
@@ -74,7 +74,7 @@ namespace TickTrader.Algo.Common.Model
                         }
                         else
                         {
-                            taskSrc.SetException(new InteropException("Request timed out.", ConnectionErrorCodes.Timeout));
+                            taskSrc.SetException(new InteropException("Request timed out.", ConnectionErrorInfo.Types.ErrorCode.Timeout));
                         }
                     }
                     finally

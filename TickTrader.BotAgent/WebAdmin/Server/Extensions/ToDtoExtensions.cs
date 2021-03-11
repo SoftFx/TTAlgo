@@ -1,12 +1,10 @@
 ﻿using System.Linq;
-using TickTrader.Algo.Core.Metadata;
 using TickTrader.BotAgent.BA;
 using TickTrader.BotAgent.WebAdmin.Server.Dto;
 using TickTrader.BotAgent.BA.Models;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
 using System.Reflection;
 using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Domain;
 using System.Threading.Tasks;
 
@@ -31,7 +29,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             };
         }
 
-        public static TradeBotDto ToDto(this BotModelInfo bot)
+        public static TradeBotDto ToDto(this PluginModelInfo bot)
         {
             return new TradeBotDto()
             {
@@ -39,7 +37,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                 Account = bot.Account.ToDto(),
                 State = bot.State.ToString(),
                 PackageName = bot.Config.Key.Package.Name,
-                BotName = bot.Descriptor?.UiDisplayName,
+                BotName = bot.Descriptor_?.UiDisplayName,
                 FaultMessage = bot.FaultMessage,
                 Config = bot.ToConfigDto(),
                 Permissions = bot.Config.Permissions.ToDto(),
@@ -79,7 +77,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             };
         }
 
-        public static TradeBotConfigDto ToConfigDto(this BotModelInfo bot)
+        public static TradeBotConfigDto ToConfigDto(this PluginModelInfo bot)
         {
             var config = new TradeBotConfigDto()
             {
@@ -89,7 +87,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                      {
                          Id = p.PropertyId,
                          Value = ((IParameterConfig)p).ValObj,
-                         Descriptor = bot.Descriptor?.Parameters.FirstOrDefault(dp => dp.Id == p.PropertyId)?.ToDto()
+                         Descriptor = bot.Descriptor_?.Parameters.FirstOrDefault(dp => dp.Id == p.PropertyId)?.ToDto()
                      }).ToArray()
             };
             return config;
@@ -102,7 +100,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                 Name = package.Key.Name,
                 DisplayName = package.Identity.FileName,
                 Created = package.Identity.LastModifiedUtc.ToDateTime().ToLocalTime(),
-                Plugins = package.Plugins.Where(p => p.Descriptor_.Type == Metadata.Types.PluginType.TradeBot).Select(p => p.ToPluginDto()).ToArray(),
+                Plugins = package.Plugins.Where(p => p.Descriptor_.IsTradeBot).Select(p => p.ToPluginDto()).ToArray(),
                 IsValid = package.IsValid
             };
         }
@@ -120,7 +118,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             };
         }
 
-        public static BotStateDto ToBotStateDto(this BotModelInfo bot)
+        public static BotStateDto ToBotStateDto(this PluginModelInfo bot)
         {
             return new BotStateDto
             {
@@ -145,7 +143,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             {
                 Server = account.Key.Server,
                 Login = account.Key.Login,
-                LastConnectionStatus = ConnectionErrorCodes.None,
+                LastConnectionStatus = ConnectionErrorInfo.Types.ErrorCode.NoConnectionError,
             };
         }
 

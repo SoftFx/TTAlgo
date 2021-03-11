@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
 
@@ -13,7 +12,7 @@ namespace TickTrader.Algo.Core
 
 
         private readonly AlgoServer _server;
-        private readonly AlgoPluginRef _pluginRef;
+        private readonly string _packagePath;
         private readonly IRuntimeHostProxy _runtimeHost;
         private readonly Dictionary<string, AttachedAccount> _attachedAccounts;
 
@@ -29,13 +28,13 @@ namespace TickTrader.Algo.Core
         public RuntimeConfig Config { get; } = new RuntimeConfig();
 
 
-        internal RuntimeModel(AlgoServer server, string id, AlgoPluginRef pluginRef)
+        internal RuntimeModel(AlgoServer server, string id, string packagePath)
         {
             _server = server;
             Id = id;
-            _pluginRef = pluginRef;
+            _packagePath = packagePath;
 
-            Config.PackagePath = pluginRef.PackagePath;
+            Config.PackagePath = packagePath;
             _attachedAccounts = new Dictionary<string, AttachedAccount>();
 
             _launchTask = new TaskCompletionSource<bool>();
@@ -65,6 +64,11 @@ namespace TickTrader.Algo.Core
             return _launchTask.Task;
         }
 
+        public Task<PackageInfo> GetPackageInfo()
+        {
+            return _proxy.GetPackageInfo();
+        }
+
 
         internal void OnAttached(Action<RpcMessage> onNotification, IRuntimeProxy proxy)
         {
@@ -82,7 +86,7 @@ namespace TickTrader.Algo.Core
 
         internal string GetPackagePath()
         {
-            return _pluginRef.PackagePath;
+            return _packagePath;
         }
 
         internal ExecutorModel CreateExecutor(PluginConfig config, string accountId)

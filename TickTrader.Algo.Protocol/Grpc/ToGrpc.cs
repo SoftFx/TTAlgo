@@ -2,12 +2,6 @@
 using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Linq;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Protocol.Grpc
@@ -478,19 +472,19 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         public static Lib.SymbolConfig Convert(this SymbolConfig config, VersionSpec version, string mainSymbol = "")
         {
-            var name = config.Name;
+            //var name = config.Name;
 
-            if (config.Origin == SymbolConfig.Types.SymbolOrigin.Token)
-            {
-                if (version != null && version.SupportMainToken)
-                    name = mainSymbol;
-                else
-                    throw new UnsupportedException($"\"{SpecialSymbols.MainSymbol}\" token not supported by current Algo server version");
-            }
+            //if (config.Origin == SymbolConfig.Types.SymbolOrigin.Token)
+            //{
+            //    if (version != null && version.SupportMainToken)
+            //        name = mainSymbol;
+            //    else
+            //        throw new UnsupportedException($"\"{SpecialSymbols.MainSymbol}\" token not supported by current Algo server  version");
+            //}
 
             return new Lib.SymbolConfig
             {
-                Name = Convert(name),
+                Name = Convert(config.Name),
                 Origin = config.Origin.Convert(),
             };
         }
@@ -758,7 +752,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             return res;
         }
 
-        public static Lib.SymbolInfo Convert(this SymbolKey symbol)
+        public static Lib.SymbolInfo Convert(this SymbolConfig symbol)
         {
             return new Lib.SymbolInfo
             {
@@ -824,35 +818,35 @@ namespace TickTrader.Algo.Protocol.Grpc
             };
         }
 
-        public static Lib.ConnectionErrorInfo.Types.ConnectionErrorCode Convert(this ConnectionErrorCodes code)
+        public static Lib.ConnectionErrorInfo.Types.ConnectionErrorCode Convert(this ConnectionErrorInfo.Types.ErrorCode code)
         {
             switch (code)
             {
-                case ConnectionErrorCodes.None:
+                case ConnectionErrorInfo.Types.ErrorCode.NoConnectionError:
                     return Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.None;
-                case ConnectionErrorCodes.Unknown:
+                case ConnectionErrorInfo.Types.ErrorCode.UnknownConnectionError:
                     return Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.UnknownConnnectionError;
-                case ConnectionErrorCodes.NetworkError:
+                case ConnectionErrorInfo.Types.ErrorCode.NetworkError:
                     return Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.NetworkError;
-                case ConnectionErrorCodes.Timeout:
+                case ConnectionErrorInfo.Types.ErrorCode.Timeout:
                     return Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.Timeout;
-                case ConnectionErrorCodes.BlockedAccount:
+                case ConnectionErrorInfo.Types.ErrorCode.BlockedAccount:
                     return Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.BlockedAccount;
-                case ConnectionErrorCodes.ClientInitiated:
+                case ConnectionErrorInfo.Types.ErrorCode.ClientInitiated:
                     return Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.ClientInitiated;
-                case ConnectionErrorCodes.InvalidCredentials:
+                case ConnectionErrorInfo.Types.ErrorCode.InvalidCredentials:
                     return Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.InvalidCredentials;
-                case ConnectionErrorCodes.SlowConnection:
+                case ConnectionErrorInfo.Types.ErrorCode.SlowConnection:
                     return Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.SlowConnection;
-                case ConnectionErrorCodes.ServerError:
+                case ConnectionErrorInfo.Types.ErrorCode.ServerError:
                     return Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.ServerError;
-                case ConnectionErrorCodes.LoginDeleted:
+                case ConnectionErrorInfo.Types.ErrorCode.LoginDeleted:
                     return Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.LoginDeleted;
-                case ConnectionErrorCodes.ServerLogout:
+                case ConnectionErrorInfo.Types.ErrorCode.ServerLogout:
                     return Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.ServerLogout;
-                case ConnectionErrorCodes.Canceled:
+                case ConnectionErrorInfo.Types.ErrorCode.Canceled:
                     return Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.Canceled;
-                case ConnectionErrorCodes.RejectedByServer:
+                case ConnectionErrorInfo.Types.ErrorCode.RejectedByServer:
                     return Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.RejectedByServer;
                 default:
                     throw new ArgumentException();
@@ -868,17 +862,17 @@ namespace TickTrader.Algo.Protocol.Grpc
             };
         }
 
-        public static Lib.AccountModelInfo.Types.ConnectionState Convert(this ConnectionStates state)
+        public static Lib.AccountModelInfo.Types.ConnectionState Convert(this AccountModelInfo.Types.ConnectionState state)
         {
             switch (state)
             {
-                case ConnectionStates.Offline:
+                case AccountModelInfo.Types.ConnectionState.Offline:
                     return Lib.AccountModelInfo.Types.ConnectionState.Offline;
-                case ConnectionStates.Connecting:
+                case AccountModelInfo.Types.ConnectionState.Connecting:
                     return Lib.AccountModelInfo.Types.ConnectionState.Connecting;
-                case ConnectionStates.Online:
+                case AccountModelInfo.Types.ConnectionState.Online:
                     return Lib.AccountModelInfo.Types.ConnectionState.Online;
-                case ConnectionStates.Disconnecting:
+                case AccountModelInfo.Types.ConnectionState.Disconnecting:
                     return Lib.AccountModelInfo.Types.ConnectionState.Disconnecting;
                 default:
                     throw new ArgumentException();
@@ -896,30 +890,30 @@ namespace TickTrader.Algo.Protocol.Grpc
             };
         }
 
-        public static Lib.BotModelInfo.Types.PluginState Convert(this PluginStates state)
+        public static Lib.BotModelInfo.Types.PluginState Convert(this PluginModelInfo.Types.PluginState state)
         {
             switch (state)
             {
-                case PluginStates.Stopped:
+                case PluginModelInfo.Types.PluginState.Stopped:
                     return Lib.BotModelInfo.Types.PluginState.Stopped;
-                case PluginStates.Starting:
+                case PluginModelInfo.Types.PluginState.Starting:
                     return Lib.BotModelInfo.Types.PluginState.Starting;
-                case PluginStates.Faulted:
+                case PluginModelInfo.Types.PluginState.Faulted:
                     return Lib.BotModelInfo.Types.PluginState.Faulted;
-                case PluginStates.Running:
+                case PluginModelInfo.Types.PluginState.Running:
                     return Lib.BotModelInfo.Types.PluginState.Running;
-                case PluginStates.Stopping:
+                case PluginModelInfo.Types.PluginState.Stopping:
                     return Lib.BotModelInfo.Types.PluginState.Stopping;
-                case PluginStates.Broken:
+                case PluginModelInfo.Types.PluginState.Broken:
                     return Lib.BotModelInfo.Types.PluginState.Broken;
-                case PluginStates.Reconnecting:
+                case PluginModelInfo.Types.PluginState.Reconnecting:
                     return Lib.BotModelInfo.Types.PluginState.Reconnecting;
                 default:
                     throw new ArgumentException();
             }
         }
 
-        public static Lib.BotModelInfo ConvertLight(this BotModelInfo bot)
+        public static Lib.BotModelInfo ConvertLight(this PluginModelInfo bot)
         {
             return new Lib.BotModelInfo
             {
@@ -930,31 +924,31 @@ namespace TickTrader.Algo.Protocol.Grpc
             };
         }
 
-        public static Lib.BotModelInfo Convert(this BotModelInfo bot, VersionSpec version = null)
+        public static Lib.BotModelInfo Convert(this PluginModelInfo bot, VersionSpec version = null)
         {
             var res = bot.ConvertLight();
             res.Config = bot.Config.Convert(version);
-            res.Descriptor_ = bot.Descriptor?.ConvertLight();
+            res.Descriptor_ = bot.Descriptor_?.ConvertLight();
             return res;
         }
 
-        public static Lib.LogRecordInfo.Types.LogSeverity Convert(this UnitLogRecord.Types.LogSeverity type)
+        public static Lib.LogRecordInfo.Types.LogSeverity Convert(this PluginLogRecord.Types.LogSeverity type)
         {
             switch (type)
             {
-                case UnitLogRecord.Types.LogSeverity.Info:
+                case PluginLogRecord.Types.LogSeverity.Info:
                     return Lib.LogRecordInfo.Types.LogSeverity.Info;
-                case UnitLogRecord.Types.LogSeverity.Error:
+                case PluginLogRecord.Types.LogSeverity.Error:
                     return Lib.LogRecordInfo.Types.LogSeverity.Error;
-                case UnitLogRecord.Types.LogSeverity.Trade:
+                case PluginLogRecord.Types.LogSeverity.Trade:
                     return Lib.LogRecordInfo.Types.LogSeverity.Trade;
-                case UnitLogRecord.Types.LogSeverity.TradeSuccess:
+                case PluginLogRecord.Types.LogSeverity.TradeSuccess:
                     return Lib.LogRecordInfo.Types.LogSeverity.TradeSuccess;
-                case UnitLogRecord.Types.LogSeverity.TradeFail:
+                case PluginLogRecord.Types.LogSeverity.TradeFail:
                     return Lib.LogRecordInfo.Types.LogSeverity.TradeFail;
-                case UnitLogRecord.Types.LogSeverity.Custom:
+                case PluginLogRecord.Types.LogSeverity.Custom:
                     return Lib.LogRecordInfo.Types.LogSeverity.Custom;
-                case UnitLogRecord.Types.LogSeverity.Alert:
+                case PluginLogRecord.Types.LogSeverity.Alert:
                     return Lib.LogRecordInfo.Types.LogSeverity.Alert;
                 default:
                     throw new ArgumentException();
@@ -979,11 +973,11 @@ namespace TickTrader.Algo.Protocol.Grpc
                 TimeUtc = alertRecord.TimeUtc,
                 //TimeShit = alertRecord.TimeUtc.Shift,
                 Message = Convert(alertRecord.Message),
-                BotId = Convert(alertRecord.BotId),
+                BotId = Convert(alertRecord.PluginId),
             };
         }
 
-        public static Lib.BotFileInfo Convert(this BotFileInfo botFile)
+        public static Lib.BotFileInfo Convert(this PluginFileInfo botFile)
         {
             return new Lib.BotFileInfo
             {
@@ -992,20 +986,20 @@ namespace TickTrader.Algo.Protocol.Grpc
             };
         }
 
-        public static Lib.BotFolderInfo.Types.BotFolderId Convert(this BotFolderId type)
+        public static Lib.BotFolderInfo.Types.BotFolderId Convert(this PluginFolderInfo.Types.PluginFolderId type)
         {
             switch (type)
             {
-                case BotFolderId.AlgoData:
+                case PluginFolderInfo.Types.PluginFolderId.AlgoData:
                     return Lib.BotFolderInfo.Types.BotFolderId.AlgoData;
-                case BotFolderId.BotLogs:
+                case PluginFolderInfo.Types.PluginFolderId.BotLogs:
                     return Lib.BotFolderInfo.Types.BotFolderId.BotLogs;
                 default:
                     throw new ArgumentException();
             }
         }
 
-        public static Lib.BotFolderInfo Convert(this BotFolderInfo botFolder)
+        public static Lib.BotFolderInfo Convert(this PluginFolderInfo botFolder)
         {
             var res = new Lib.BotFolderInfo
             {
@@ -1083,14 +1077,14 @@ namespace TickTrader.Algo.Protocol.Grpc
             return res;
         }
 
-        public static Lib.UpdateInfo Convert(this UpdateInfo<BotModelInfo> update, VersionSpec version = null)
+        public static Lib.UpdateInfo Convert(this UpdateInfo<PluginModelInfo> update, VersionSpec version = null)
         {
             var res = ((UpdateInfo)update).Convert();
             res.Bot = new Lib.BotUpdateInfo { Bot = update.Value.Convert(version) };
             return res;
         }
 
-        public static Lib.UpdateInfo ConvertStateUpdate(this UpdateInfo<BotModelInfo> update)
+        public static Lib.UpdateInfo ConvertStateUpdate(this UpdateInfo<PluginModelInfo> update)
         {
             var res = ((UpdateInfo)update).Convert();
             res.BotState = new Lib.BotStateUpdateInfo { Bot = update.Value.ConvertLight() };

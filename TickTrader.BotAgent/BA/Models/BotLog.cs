@@ -93,23 +93,23 @@ namespace TickTrader.BotAgent.BA.Models
 
         //public event Action<string> StatusUpdated;
 
-        private void WriteLog(UnitLogRecord record)
+        private void WriteLog(PluginLogRecord record)
         {
             var msg = new LogEntry(record);
 
             switch (record.Severity)
             {
-                case UnitLogRecord.Types.LogSeverity.Custom:
-                case UnitLogRecord.Types.LogSeverity.Info:
-                case UnitLogRecord.Types.LogSeverity.Trade:
-                case UnitLogRecord.Types.LogSeverity.TradeSuccess:
-                case UnitLogRecord.Types.LogSeverity.TradeFail:
+                case PluginLogRecord.Types.LogSeverity.Custom:
+                case PluginLogRecord.Types.LogSeverity.Info:
+                case PluginLogRecord.Types.LogSeverity.Trade:
+                case PluginLogRecord.Types.LogSeverity.TradeSuccess:
+                case PluginLogRecord.Types.LogSeverity.TradeFail:
                     _logger.Info(msg.ToString());
                     break;
-                case UnitLogRecord.Types.LogSeverity.Alert:
+                case PluginLogRecord.Types.LogSeverity.Alert:
                     _logger.Warn(msg.ToString());
                     break;
-                case UnitLogRecord.Types.LogSeverity.Error:
+                case PluginLogRecord.Types.LogSeverity.Error:
                     _logger.Error(msg.ToString());
                     if (!string.IsNullOrEmpty(record.Details))
                         _logger.Error(record.Details);
@@ -121,7 +121,7 @@ namespace TickTrader.BotAgent.BA.Models
 
             _logMessages.Add(msg);
 
-            if (record.Severity == UnitLogRecord.Types.LogSeverity.Alert)
+            if (record.Severity == PluginLogRecord.Types.LogSeverity.Alert)
                 _alertStorage.AddAlert(msg, _name);
         }
 
@@ -278,7 +278,7 @@ namespace TickTrader.BotAgent.BA.Models
                 var t = ReadLoop();
             }
 
-            public void LogMesssage(UnitLogRecord record)
+            public void LogMesssage(PluginLogRecord record)
             {
                 _channel.Writer.TryWrite(a => a.WriteLog(record));
             }

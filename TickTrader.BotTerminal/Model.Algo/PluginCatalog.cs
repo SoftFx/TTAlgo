@@ -52,8 +52,8 @@ namespace TickTrader.BotTerminal
             _algoAgent = algoAgent;
 
             PluginList = algoAgent.Plugins.OrderBy((k, p) => p.Descriptor_.UiDisplayName).Select(info => new PluginCatalogItem(_algoAgent, info));
-            Indicators = PluginList.Where(i => i.Descriptor.Type == Metadata.Types.PluginType.Indicator);
-            BotTraders = PluginList.Where(i => i.Descriptor.Type == Metadata.Types.PluginType.TradeBot);
+            Indicators = PluginList.Where(i => i.Descriptor.IsIndicator);
+            BotTraders = PluginList.Where(i => i.Descriptor.IsTradeBot);
         }
     }
 }

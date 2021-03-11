@@ -57,28 +57,31 @@ namespace TickTrader.BotTerminal
 
         public static IRenderableSeriesViewModel FromOutputSeries(OutputSeriesModel outputModel)
         {
-            if (outputModel.Setup is ColoredLineOutputSetupModel)
-                return CreateOutputSeries(outputModel.SeriesData, (ColoredLineOutputSetupModel)outputModel.Setup);
-            else if (outputModel.Setup is MarkerSeriesOutputSetupModel)
-                return CreateOutputSeries(outputModel.SeriesData, (MarkerSeriesOutputSetupModel)outputModel.Setup);
+            if (outputModel is DoubleSeriesModel)
+                return CreateOutputSeries((DoubleSeriesModel)outputModel);
+            else if (outputModel is MarkerSeriesModel)
+                return CreateOutputSeries((MarkerSeriesModel)outputModel);
 
             return null;
         }
 
-        private static IRenderableSeriesViewModel CreateOutputSeries(IXyDataSeries seriesData, ColoredLineOutputSetupModel outputSetup)
+        private static IRenderableSeriesViewModel CreateOutputSeries(DoubleSeriesModel seriesModel)
         {
-            var plotType = outputSetup.Metadata.Descriptor.PlotType;
+            var seriesData = seriesModel.SeriesData;
+            var config = (ColoredLineOutputConfig)seriesModel.Config;
+            var descriptor = seriesModel.Descriptor;
+
+            var plotType = descriptor.PlotType;
 
             if (plotType == Metadata.Types.PlotType.Line || plotType == Metadata.Types.PlotType.DiscontinuousLine)
             {
                 var viewModel = new LineRenderableSeriesViewModel();
                 viewModel.DataSeries = seriesData;
-                viewModel.DrawNaNAs = outputSetup.Metadata.Descriptor.PlotType == Metadata.Types.PlotType.DiscontinuousLine ?
-                     LineDrawMode.Gaps : LineDrawMode.ClosedLines;
-                viewModel.Stroke = outputSetup.LineColorArgb.ToWindowsColor();
-                viewModel.StrokeThickness = outputSetup.LineThickness;
-                viewModel.IsVisible = outputSetup.IsEnabled && outputSetup.IsValid;
-                viewModel.StrokeDashArray = outputSetup.LineStyle.ToStrokeDashArray();
+                viewModel.DrawNaNAs = plotType == Metadata.Types.PlotType.DiscontinuousLine ? LineDrawMode.Gaps : LineDrawMode.ClosedLines;
+                viewModel.Stroke = config.LineColorArgb.ToWindowsColor();
+                viewModel.StrokeThickness = config.LineThickness;
+                viewModel.IsVisible = config.IsEnabled && descriptor.IsValid;
+                viewModel.StrokeDashArray = config.LineStyle.ToStrokeDashArray();
                 viewModel.StyleKey = "IndicatorSeriesStyle_Line";
 
                 return viewModel;
@@ -87,16 +90,16 @@ namespace TickTrader.BotTerminal
             {
                 var viewModel = new LineRenderableSeriesViewModel();
                 viewModel.DataSeries = seriesData;
-                viewModel.Stroke = outputSetup.LineColorArgb.ToWindowsColor();
+                viewModel.Stroke = config.LineColorArgb.ToWindowsColor();
                 viewModel.StrokeThickness = 0;
                 viewModel.PointMarker = new EllipsePointMarker()
                 {
                     Height = 4,
                     Width = 4,
-                    Fill = outputSetup.LineColorArgb.ToWindowsColor(),
-                    StrokeThickness = outputSetup.LineThickness / 2
+                    Fill = config.LineColorArgb.ToWindowsColor(),
+                    StrokeThickness = config.LineThickness / 2
                 };
-                viewModel.IsVisible = outputSetup.IsEnabled && outputSetup.IsValid;
+                viewModel.IsVisible = config.IsEnabled && descriptor.IsValid;
                 viewModel.StyleKey = "IndicatorSeriesStyle_Dots";
 
                 return viewModel;
@@ -105,13 +108,12 @@ namespace TickTrader.BotTerminal
             {
                 var viewModel = new ColumnRenderableSeriesViewModel();
                 viewModel.DataSeries = seriesData;
-                viewModel.DrawNaNAs = outputSetup.Metadata.Descriptor.PlotType == Metadata.Types.PlotType.DiscontinuousLine ?
-                     LineDrawMode.Gaps : LineDrawMode.ClosedLines;
-                viewModel.Stroke = outputSetup.LineColorArgb.ToWindowsColor();
-                viewModel.Fill = new SolidColorBrush(outputSetup.LineColorArgb.ToWindowsColor());
-                viewModel.StrokeThickness = outputSetup.LineThickness;
-                viewModel.ZeroLineY = outputSetup.Metadata.Descriptor.ZeroLine;
-                viewModel.IsVisible = outputSetup.IsEnabled && outputSetup.IsValid;
+                viewModel.DrawNaNAs = plotType == Metadata.Types.PlotType.DiscontinuousLine ? LineDrawMode.Gaps : LineDrawMode.ClosedLines;
+                viewModel.Stroke = config.LineColorArgb.ToWindowsColor();
+                viewModel.Fill = new SolidColorBrush(config.LineColorArgb.ToWindowsColor());
+                viewModel.StrokeThickness = config.LineThickness;
+                viewModel.ZeroLineY = descriptor.ZeroLine;
+                viewModel.IsVisible = config.IsEnabled && descriptor.IsValid;
                 viewModel.StyleKey = "IndicatorSeriesStyle_Histogram";
 
                 return viewModel;
@@ -120,20 +122,24 @@ namespace TickTrader.BotTerminal
             throw new NotImplementedException("Unsupported plot type: " + plotType);
         }
 
-        private static IRenderableSeriesViewModel CreateOutputSeries(IXyDataSeries seriesData, MarkerSeriesOutputSetupModel outputSetup)
+        private static IRenderableSeriesViewModel CreateOutputSeries(MarkerSeriesModel seriesModel)
         {
+            var seriesData = seriesModel.SeriesData;
+            var config = (MarkerSeriesOutputConfig)seriesModel.Config;
+            var descriptor = seriesModel.Descriptor;
+
             var viewModel = new LineRenderableSeriesViewModel();
             viewModel.DataSeries = seriesData;
             viewModel.DrawNaNAs = LineDrawMode.Gaps;
             viewModel.StrokeThickness = 0;
-            viewModel.IsVisible = outputSetup.IsEnabled && outputSetup.IsValid;
+            viewModel.IsVisible = config.IsEnabled && descriptor.IsValid;
             viewModel.StyleKey = "MarkerSeries_Style";
             var markerTool = new AlgoPointMarker()
             {
-                Stroke = outputSetup.LineColorArgb.ToWindowsColor(),
-                StrokeThickness = outputSetup.LineThickness
+                Stroke = config.LineColorArgb.ToWindowsColor(),
+                StrokeThickness = config.LineThickness
             };
-            switch (outputSetup.MarkerSize)
+            switch (config.MarkerSize)
             {
                 case Metadata.Types.MarkerSize.Large: markerTool.Width = 10; markerTool.Height = 20; break;
                 case Metadata.Types.MarkerSize.Small: markerTool.Width = 6; markerTool.Height = 12; break;

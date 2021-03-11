@@ -15,16 +15,16 @@ namespace TickTrader.BotTerminal
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            var level = (UnitLogRecord.Types.LogSeverity)value;
+            var level = (PluginLogRecord.Types.LogSeverity)value;
             switch (level)
             {
-                case UnitLogRecord.Types.LogSeverity.Info: return new SolidColorBrush(Colors.Gray);
-                case UnitLogRecord.Types.LogSeverity.Trade: return new SolidColorBrush(Colors.SkyBlue);
-                case UnitLogRecord.Types.LogSeverity.TradeSuccess: return new SolidColorBrush(Colors.Green);
-                case UnitLogRecord.Types.LogSeverity.TradeFail: return new SolidColorBrush(Colors.DarkOrange);
-                case UnitLogRecord.Types.LogSeverity.Error: return new SolidColorBrush(Colors.Red);
-                case UnitLogRecord.Types.LogSeverity.Custom: return new SolidColorBrush(Colors.Violet);
-                case UnitLogRecord.Types.LogSeverity.Alert: return new SolidColorBrush(Colors.Khaki);
+                case PluginLogRecord.Types.LogSeverity.Info: return new SolidColorBrush(Colors.Gray);
+                case PluginLogRecord.Types.LogSeverity.Trade: return new SolidColorBrush(Colors.SkyBlue);
+                case PluginLogRecord.Types.LogSeverity.TradeSuccess: return new SolidColorBrush(Colors.Green);
+                case PluginLogRecord.Types.LogSeverity.TradeFail: return new SolidColorBrush(Colors.DarkOrange);
+                case PluginLogRecord.Types.LogSeverity.Error: return new SolidColorBrush(Colors.Red);
+                case PluginLogRecord.Types.LogSeverity.Custom: return new SolidColorBrush(Colors.Violet);
+                case PluginLogRecord.Types.LogSeverity.Alert: return new SolidColorBrush(Colors.Khaki);
                 default: return null;
             }
         }

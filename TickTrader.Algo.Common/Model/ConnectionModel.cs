@@ -1,19 +1,14 @@
 ﻿using ActorSharp;
 using ActorSharp.Lib;
 using Machinarium.State;
-//using SoftFX.Extended;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model.Interop;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -45,15 +40,15 @@ namespace TickTrader.Algo.Common.Model
             _options = options;
 
             Func<bool> canRecconect = () => _options.AutoReconnect && wasConnected
-                && LastErrorCode != ConnectionErrorCodes.BlockedAccount
-                && LastErrorCode != ConnectionErrorCodes.InvalidCredentials;
+                && LastErrorCode != ConnectionErrorInfo.Types.ErrorCode.BlockedAccount
+                && LastErrorCode != ConnectionErrorInfo.Types.ErrorCode.InvalidCredentials;
 
             _stateControl = new StateMachine<States>(this);
             _stateControl.AddTransition(States.Offline, () => connectRequest != null, States.Connecting);
             _stateControl.AddTransition(States.OfflineRetry, Events.OnRetry, canRecconect, States.Connecting);
             _stateControl.AddTransition(States.OfflineRetry, Events.StopRetryRequested, States.Offline);
             _stateControl.AddTransition(States.Connecting, Events.Connected,
-                () => disconnectRequest != null || connectRequest != null || LastErrorCode != ConnectionErrorCodes.None, States.Disconnecting);
+                () => disconnectRequest != null || connectRequest != null || LastErrorCode != ConnectionErrorInfo.Types.ErrorCode.NoConnectionError, States.Disconnecting);
             _stateControl.AddTransition(States.Connecting, Events.Connected, States.Online);
             _stateControl.AddTransition(States.Connecting, Events.ConnectFailed, canRecconect, States.OfflineRetry);
             _stateControl.AddTransition(States.Connecting, Events.ConnectFailed, States.Offline);
@@ -97,8 +92,8 @@ namespace TickTrader.Algo.Common.Model
         internal IFeedServerApi FeedProxy => _interop.FeedApi;
         internal ITradeServerApi TradeProxy => _interop.TradeApi;
         public ConnectionErrorInfo LastError { get; private set; }
-        public ConnectionErrorCodes LastErrorCode => LastError?.Code ?? ConnectionErrorCodes.None;
-        public bool HasError { get { return LastErrorCode != ConnectionErrorCodes.None; } }
+        public ConnectionErrorInfo.Types.ErrorCode LastErrorCode => LastError?.Code ?? ConnectionErrorInfo.Types.ErrorCode.NoConnectionError;
+        public bool HasError { get { return LastErrorCode != ConnectionErrorInfo.Types.ErrorCode.NoConnectionError; } }
         public string CurrentLogin { get; private set; }
         public string CurrentServer { get; private set; }
         public string CurrentProtocol { get; private set; }
@@ -147,11 +142,11 @@ namespace TickTrader.Algo.Common.Model
                 wasConnected = false;
 
                 if (State == States.Offline)
-                    completion = Task.FromResult(ConnectionErrorCodes.None);
+                    completion = Task.FromResult(ConnectionErrorInfo.Types.ErrorCode.NoConnectionError);
                 else if (State == States.OfflineRetry)
                 {
                     _stateControl.PushEvent(Events.StopRetryRequested);
-                    completion = Task.FromResult(ConnectionErrorCodes.None);
+                    completion = Task.FromResult(ConnectionErrorInfo.Types.ErrorCode.NoConnectionError);
                 }
                 else
                 {
@@ -226,7 +221,7 @@ namespace TickTrader.Algo.Common.Model
                 InitProxies?.Invoke();
 
                 var result = await _interop.Connect(request.Address, request.Usermame, request.Password, connectCancelSrc.Token);
-                if (result.Code != ConnectionErrorCodes.None)
+                if (result.Code != ConnectionErrorInfo.Types.ErrorCode.NoConnectionError)
                 {
                     await Deinitialize();
                     OnFailedConnect(request, result);
@@ -257,7 +252,7 @@ namespace TickTrader.Algo.Common.Model
 
                     logger.Info("Connection sequence failed: " + rex.Message);
                     await Deinitialize();
-                    OnFailedConnect(request, new ConnectionErrorInfo(ConnectionErrorCodes.RejectedByServer, rex.Message));
+                    OnFailedConnect(request, new ConnectionErrorInfo(ConnectionErrorInfo.Types.ErrorCode.RejectedByServer, rex.Message));
                 }
                 else if (fex is SoftFX.Net.Core.DisconnectedException)
                 {
@@ -265,7 +260,7 @@ namespace TickTrader.Algo.Common.Model
 
                     logger.Info("Connection sequence failed: " + dex.Message);
                     await Deinitialize();
-                    OnFailedConnect(request, new ConnectionErrorInfo(ConnectionErrorCodes.NetworkError, dex.Message));
+                    OnFailedConnect(request, new ConnectionErrorInfo(ConnectionErrorInfo.Types.ErrorCode.NetworkError, dex.Message));
                 }
                 else
                 {
@@ -377,8 +372,8 @@ namespace TickTrader.Algo.Common.Model
             public bool IsOnline => State == States.Online;
             public bool IsOffline => State == States.Offline || State == States.OfflineRetry;
             public ConnectionErrorInfo LastError { get; private set; }
-            public ConnectionErrorCodes LastErrorCode => LastError?.Code ?? ConnectionErrorCodes.None;
-            public bool HasError { get { return LastErrorCode != ConnectionErrorCodes.None; } }
+            public ConnectionErrorInfo.Types.ErrorCode LastErrorCode => LastError?.Code ?? ConnectionErrorInfo.Types.ErrorCode.NoConnectionError;
+            public bool HasError { get { return LastErrorCode != ConnectionErrorInfo.Types.ErrorCode.NoConnectionError; } }
             public bool IsReconnecting { get; private set; }
             public string CurrentLogin { get; private set; }
             public string CurrentServer { get; private set; }

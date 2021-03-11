@@ -49,7 +49,7 @@ namespace TickTrader.Algo.Core
         public ITradeExecutor TradeExecutor { get; set; }
         public PluginExecutorConfig Config { get; } = new PluginExecutorConfig();
 
-        public event Action<Domain.UnitLogRecord> LogUpdated;
+        public event Action<Domain.PluginLogRecord> LogUpdated;
         public event Action<TesterTradeTransaction> TradesUpdated;
         public event Action<Domain.TradeReportInfo> TradeHistoryUpdated;
         public event Action<Domain.IRateInfo> SymbolRateUpdated;
@@ -61,7 +61,7 @@ namespace TickTrader.Algo.Core
 
         public event Action<PluginExecutor> Stopped;
 
-        internal void OnLogUpdated(Domain.UnitLogRecord record)
+        internal void OnLogUpdated(Domain.PluginLogRecord record)
         {
             LogUpdated?.Invoke(record);
         }

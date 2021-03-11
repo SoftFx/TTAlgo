@@ -46,7 +46,7 @@ namespace TickTrader.BotTerminal
         public AlgoBotViewModel Bot { get; private set; }
         public bool IsRunning => Bot?.IsRunning ?? false;
         public bool CanStartStop => Bot?.CanStartStop ?? false;
-        public bool CanBrowse => !(Bot?.Model.IsRemote ?? true) || Bot.Agent.Model.AccessManager.CanGetBotFolderInfo(BotFolderId.BotLogs);
+        public bool CanBrowse => !(Bot?.Model.IsRemote ?? true) || Bot.Agent.Model.AccessManager.CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId.BotLogs);
         public string ExecStatus { get; private set; }
         public string BotInfo => string.Join(Environment.NewLine, GetBotInfo());
         public int ErrorsCount => Bot?.Model.Journal.MessageCount[JournalMessageType.Error] ?? 0;
@@ -169,13 +169,13 @@ namespace TickTrader.BotTerminal
         {
             switch (bot.State)
             {
-                case PluginStates.Stopping: ExecStatus = "Stopping..."; break;
-                case PluginStates.Stopped: ExecStatus = "Stopped"; break;
-                case PluginStates.Running: ExecStatus = "Running"; break;
-                case PluginStates.Starting: ExecStatus = "Starting..."; break;
-                case PluginStates.Faulted: ExecStatus = "Faulted"; break;
-                case PluginStates.Broken: ExecStatus = "Broken"; break;
-                case PluginStates.Reconnecting: ExecStatus = "Reconnecting..."; break;
+                case PluginModelInfo.Types.PluginState.Stopping: ExecStatus = "Stopping..."; break;
+                case PluginModelInfo.Types.PluginState.Stopped: ExecStatus = "Stopped"; break;
+                case PluginModelInfo.Types.PluginState.Running: ExecStatus = "Running"; break;
+                case PluginModelInfo.Types.PluginState.Starting: ExecStatus = "Starting..."; break;
+                case PluginModelInfo.Types.PluginState.Faulted: ExecStatus = "Faulted"; break;
+                case PluginModelInfo.Types.PluginState.Broken: ExecStatus = "Broken"; break;
+                case PluginModelInfo.Types.PluginState.Reconnecting: ExecStatus = "Reconnecting..."; break;
             }
 
             NotifyOfPropertyChange(nameof(ExecStatus));

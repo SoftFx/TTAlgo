@@ -1,8 +1,6 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System;
 using System.IO;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace TickTrader.Algo.Domain
 {
@@ -24,19 +22,9 @@ namespace TickTrader.Algo.Domain
         }
 
 
-        public static PackageIdentity Create(FileInfo info)
+        public static PackageIdentity Create(FileInfo info, string hash)
         {
-            byte[] hashBytes;
-            using (var file = info.Open(FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                hashBytes = SHA256.Create().ComputeHash(file);
-            }
-            var sb = new StringBuilder();
-            foreach (var b in hashBytes)
-            {
-                sb.AppendFormat("{0:x2}", b);
-            }
-            return new PackageIdentity(info.Name, info.FullName, info.CreationTimeUtc, info.LastWriteTimeUtc, info.Length, sb.ToString());
+            return new PackageIdentity(info.Name, info.FullName, info.CreationTimeUtc, info.LastWriteTimeUtc, info.Length, hash);
         }
 
         public static PackageIdentity CreateInvalid(FileInfo info)

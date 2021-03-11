@@ -26,7 +26,7 @@ namespace TickTrader.BotTerminal
         private Timestamp _lastLogTimeUtc;
 
 
-        public BotModelInfo Info { get; private set; }
+        public PluginModelInfo Info { get; private set; }
 
 
         public bool IsRemote => true;
@@ -35,11 +35,11 @@ namespace TickTrader.BotTerminal
 
         public PluginConfig Config => Info.Config;
 
-        public PluginStates State => Info.State;
+        public PluginModelInfo.Types.PluginState State => Info.State;
 
         public string FaultMessage => Info.FaultMessage;
 
-        public PluginDescriptor Descriptor => Info.Descriptor;
+        public PluginDescriptor Descriptor => Info.Descriptor_;
 
         public string Status { get; private set; }
 
@@ -53,7 +53,7 @@ namespace TickTrader.BotTerminal
         public event Action<ITradeBot> StatusChanged;
 
 
-        public RemoteTradeBot(BotModelInfo info, RemoteAlgoAgent agent)
+        public RemoteTradeBot(PluginModelInfo info, RemoteAlgoAgent agent)
         {
             Info = info;
             _agent = agent;
@@ -65,13 +65,13 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public void Update(BotModelInfo info)
+        public void Update(PluginModelInfo info)
         {
             Info = info;
             Updated?.Invoke(this);
         }
 
-        public void UpdateState(BotModelInfo info)
+        public void UpdateState(PluginModelInfo info)
         {
             Info.State = info.State;
             Info.FaultMessage = info.FaultMessage;
@@ -200,17 +200,17 @@ namespace TickTrader.BotTerminal
             return new BotMessage(record.TimeUtc, InstanceId, record.Message, Convert(record.Severity));
         }
 
-        private JournalMessageType Convert(UnitLogRecord.Types.LogSeverity severity)
+        private JournalMessageType Convert(PluginLogRecord.Types.LogSeverity severity)
         {
             switch (severity)
             {
-                case UnitLogRecord.Types.LogSeverity.Info: return JournalMessageType.Info;
-                case UnitLogRecord.Types.LogSeverity.Error: return JournalMessageType.Error;
-                case UnitLogRecord.Types.LogSeverity.Custom: return JournalMessageType.Custom;
-                case UnitLogRecord.Types.LogSeverity.Trade: return JournalMessageType.Trading;
-                case UnitLogRecord.Types.LogSeverity.TradeSuccess: return JournalMessageType.TradingSuccess;
-                case UnitLogRecord.Types.LogSeverity.TradeFail: return JournalMessageType.TradingFail;
-                case UnitLogRecord.Types.LogSeverity.Alert: return JournalMessageType.Alert;
+                case PluginLogRecord.Types.LogSeverity.Info: return JournalMessageType.Info;
+                case PluginLogRecord.Types.LogSeverity.Error: return JournalMessageType.Error;
+                case PluginLogRecord.Types.LogSeverity.Custom: return JournalMessageType.Custom;
+                case PluginLogRecord.Types.LogSeverity.Trade: return JournalMessageType.Trading;
+                case PluginLogRecord.Types.LogSeverity.TradeSuccess: return JournalMessageType.TradingSuccess;
+                case PluginLogRecord.Types.LogSeverity.TradeFail: return JournalMessageType.TradingFail;
+                case PluginLogRecord.Types.LogSeverity.Alert: return JournalMessageType.Alert;
                 default: return JournalMessageType.Info;
             }
         }

@@ -42,7 +42,7 @@ namespace TickTrader.BotTerminal
         {
             base.Reset();
 
-            SelectedSymbol = SetupMetadata.DefaultSymbol; // Quote inputs does not support Main Symbol token
+            SelectedSymbol = SetupMetadata.DefaultSymbol.ToKey(); // Quote inputs does not support Main Symbol token
         }
 
         protected override MappingInfo GetMapping(MappingKey mappingKey)

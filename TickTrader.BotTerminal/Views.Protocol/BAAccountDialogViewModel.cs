@@ -259,7 +259,7 @@ namespace TickTrader.BotTerminal
             try
             {
                 var error = await SelectedAgent.Model.TestAccountCreds(new AccountKey(Server, Login), Password);
-                if (error.Code == ConnectionErrorCodes.None)
+                if (error.IsOk)
                     Success = "Successfully connected";
                 else Error = string.IsNullOrEmpty(error.TextMessage) ? $"{error.Code}" : $"{error.Code} - {error.TextMessage}";
             }

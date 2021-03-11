@@ -2,9 +2,9 @@
 
 namespace TickTrader.Algo.Domain
 {
-    public partial class UnitError
+    public partial class PluginError
     {
-        public UnitError(Exception ex)
+        public PluginError(Exception ex)
         {
             Message = ex.Message;
             Stacktrace = ex.StackTrace;

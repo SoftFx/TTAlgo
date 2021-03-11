@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model.Interop;
 using TickTrader.Algo.Core;
 using ActorSharp;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Domain;
 using Google.Protobuf.WellKnownTypes;
 

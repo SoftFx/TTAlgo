@@ -69,6 +69,9 @@
       <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.5.3\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Threading.Channels, Version=5.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Threading.Channels.5.0.0\lib\net461\System.Threading.Channels.dll</HintPath>
+    </Reference>
     <Reference Include="System.Threading.Tasks.Dataflow, Version=4.6.5.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Threading.Tasks.Dataflow.4.11.1\lib\net461\System.Threading.Tasks.Dataflow.dll</HintPath>
     </Reference>
@@ -246,6 +249,7 @@
     <Compile Include="Lib\CrossDomainCallback.cs" />
     <Compile Include="Lib\CrossDomainEnumerator.cs" />
     <Compile Include="Lib\CrossDomainTask.cs" />
+    <Compile Include="Lib\FileHelper.cs" />
     <Compile Include="Lib\FlipGate.cs" />
     <Compile Include="Lib\FormatExtentions.cs" />
     <Compile Include="Lib\HashCode.cs" />
@@ -319,6 +323,7 @@
     <Compile Include="Repository\MappingCollection.cs" />
     <Compile Include="Repository\Mappings\QuoteToBarMapping.cs" />
     <Compile Include="Repository\Mappings\QuoteToDoubleMapping.cs" />
+    <Compile Include="Repository\PackageHelper.cs" />
     <Compile Include="Repository\PackageWatcher.cs" />
     <Compile Include="Repository\PackageRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -337,7 +342,7 @@
     <Compile Include="Server\PluginLauncher.cs" />
     <Compile Include="Server\RuntimeInfoProvider.cs" />
     <Compile Include="Server\ServerRuntimeV1Handler.cs" />
-    <Compile Include="Server\UnitRuntimeV1Handler.cs" />
+    <Compile Include="Server\PluginRuntimeV1Handler.cs" />
     <Compile Include="TickTraderToAlgo.cs" />
     <Compile Include="Backtester\Trade\TradeOperationSummary.cs" />
     <Compile Include="Math\TimeVectorBase.cs" />

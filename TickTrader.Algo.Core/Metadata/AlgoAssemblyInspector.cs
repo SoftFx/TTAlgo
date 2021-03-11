@@ -62,13 +62,13 @@ namespace TickTrader.Algo.Core.Metadata
                 if (indicatorAttr != null)
                 {
                     var metadata = GetPlugin(t);
-                    if (metadata.Descriptor.Type == Domain.Metadata.Types.PluginType.Indicator)
+                    if (metadata.Descriptor.IsIndicator)
                         plugins.Add(metadata);
                 }
                 else if (botAttr != null)
                 {
                     var metadata = GetPlugin(t);
-                    if (metadata.Descriptor.Type == Domain.Metadata.Types.PluginType.TradeBot)
+                    if (metadata.Descriptor.IsTradeBot)
                         plugins.Add(metadata);
                 }
             }

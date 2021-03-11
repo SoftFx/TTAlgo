@@ -1,8 +1,6 @@
 ﻿using Google.Protobuf;
-using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Calc;
@@ -500,7 +498,7 @@ namespace TickTrader.Algo.Core
 
             try
             {
-                OnNotification(new Domain.UnitStopped());
+                OnNotification(new Domain.PluginStopped());
                 Stopped?.Invoke(this);
             }
             catch (Exception ex)
@@ -622,7 +620,7 @@ namespace TickTrader.Algo.Core
             {
                 ThrowIfRunning();
                 if (_pluginLoggerFixture == null)
-                    _pluginLoggerFixture = new LogFixture(this, GetDescriptor().Type);
+                    _pluginLoggerFixture = new LogFixture(this, GetDescriptor().IsTradeBot);
                 _pluginLogger = _pluginLoggerFixture;
                 return _pluginLoggerFixture;
             }
@@ -766,7 +764,7 @@ namespace TickTrader.Algo.Core
 
         private void OnInternalException(Exception ex)
         {
-            var error = new Domain.UnitError(ex);
+            var error = new Domain.PluginError(ex);
             OnNotification(error);
         }
 

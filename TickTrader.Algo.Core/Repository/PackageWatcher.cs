@@ -42,7 +42,7 @@ namespace TickTrader.Algo.Core.Repository
             _logger = logger;
             _isolation = isolation;
 
-            PackageRef = new AlgoPackageRef(FileName, Location, PackageIdentity.CreateInvalid(FileName, FilePath), null);
+            //PackageRef = new AlgoPackageRef(FileName, Location, PackageIdentity.CreateInvalid(FileName, FilePath), null);
 
             _stateControl = new StateMachine<States>();
 
@@ -126,8 +126,8 @@ namespace TickTrader.Algo.Core.Repository
                     {
                         PackageRef?.SetObsolete(); // mark old package obsolete, so it is disposed after all running plugins are gracefully stopped
                         var container = LoadContainer(filePath, out retry);
-                        var identity = CreateIdentity(info, out retry);
-                        PackageRef = new IsolatedAlgoPackageRef(FileName, Location, identity, container);
+                        var identity = CreateIdentity(info, stream, out retry);
+                        //PackageRef = new IsolatedAlgoPackageRef(FileName, Location, identity, container);
                         _currentFileInfo = info;
                         _logger.Info("Loaded Algo package " + FileName);
                     }
@@ -148,7 +148,7 @@ namespace TickTrader.Algo.Core.Repository
             catch (Exception ex)
             {
                 _logger?.Error($"Failed to update Algo package {FileName} at {Location}", ex);
-                PackageRef = new AlgoPackageRef(FileName, Location, PackageIdentity.CreateInvalid(FileName, FilePath), null);
+                //PackageRef = new AlgoPackageRef(FileName, Location, PackageIdentity.CreateInvalid(FileName, FilePath), null);
             }
 
             if (!retry && !_isRescanRequested)
@@ -194,12 +194,13 @@ namespace TickTrader.Algo.Core.Repository
             }
         }
 
-        private PackageIdentity CreateIdentity(FileInfo info, out bool retry)
+        private PackageIdentity CreateIdentity(FileInfo info, FileStream stream, out bool retry)
         {
             retry = false;
             try
             {
-                return PackageIdentity.Create(info);
+                var hash = FileHelper.CalculateSha256Hash(stream);
+                return PackageIdentity.Create(info, hash);
             }
             catch (IOException ioEx)
             {

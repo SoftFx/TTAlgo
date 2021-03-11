@@ -42,7 +42,7 @@ namespace TickTrader.BotTerminal
 
         public ITradeBot Bot { get; private set; }
 
-        public bool PluginIsStopped => Bot == null ? true : Bot.State == PluginStates.Stopped;
+        public bool PluginIsStopped => Bot == null ? true : Bot.State == PluginModelInfo.Types.PluginState.Stopped;
 
         public bool CanOk => (Setup?.IsValid ?? false) && PluginIsStopped;
 

@@ -105,7 +105,7 @@ namespace TickTrader.BotTerminal
         public bool CanOk => !_hasPendingRequest && _isValid
             && _selectedAgent.Model.AccessManager.CanUploadPackage()
             && _selectedAgent.Model.AccessManager.CanAddBot()
-            && _selectedAgent.Model.AccessManager.CanGetBotFolderInfo(BotFolderId.AlgoData)
+            && _selectedAgent.Model.AccessManager.CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId.AlgoData)
             && _selectedAgent.Model.AccessManager.CanUploadBotFile();
 
         public bool HasError => !string.IsNullOrEmpty(_error);
@@ -321,8 +321,8 @@ namespace TickTrader.BotTerminal
 
         private async Task ResolveBotFiles(ITradeBot srcBot, PluginConfig dstConfig)
         {
-            var srcAlgoDataDir = await _fromAgent.Model.GetBotFolderInfo(srcBot.InstanceId, BotFolderId.AlgoData);
-            var dstAlgoDataDir = await _selectedAgent.Model.GetBotFolderInfo(dstConfig.InstanceId, BotFolderId.AlgoData);
+            var srcAlgoDataDir = await _fromAgent.Model.GetBotFolderInfo(srcBot.InstanceId, PluginFolderInfo.Types.PluginFolderId.AlgoData);
+            var dstAlgoDataDir = await _selectedAgent.Model.GetBotFolderInfo(dstConfig.InstanceId, PluginFolderInfo.Types.PluginFolderId.AlgoData);
             foreach (var prop in dstConfig.Properties.Where(p => p.Is(FileParameterConfig.Descriptor)))
             {
                 var fileParam = prop.Unpack<FileParameterConfig>();
@@ -342,7 +342,7 @@ namespace TickTrader.BotTerminal
                     srcPath = Path.GetTempFileName();
                     CopyProgress.SetMessage($"Downloading bot file {fileName} from {_fromAgent.Name}");
                     var progressListener = new FileProgressListenerAdapter(CopyProgress, srcAlgoDataDir.Files.First(f => f.Name == fileName).Size);
-                    await _fromAgent.Model.DownloadBotFile(srcBot.InstanceId, BotFolderId.AlgoData, fileName, srcPath, progressListener);
+                    await _fromAgent.Model.DownloadBotFile(srcBot.InstanceId, PluginFolderInfo.Types.PluginFolderId.AlgoData, fileName, srcPath, progressListener);
                     _logger.Info($"Downloaded bot file to: {srcPath}");
                 }
 
@@ -366,7 +366,7 @@ namespace TickTrader.BotTerminal
                     var fileInfo = new FileInfo(srcPath);
                     CopyProgress.SetMessage($"Uploading bot file {fileName} to {_selectedAgent.Model.Name}");
                     var progressListener = new FileProgressListenerAdapter(CopyProgress, fileInfo.Length);
-                    await _selectedAgent.Model.UploadBotFile(dstConfig.InstanceId, BotFolderId.AlgoData, fileName, srcPath, progressListener);
+                    await _selectedAgent.Model.UploadBotFile(dstConfig.InstanceId, PluginFolderInfo.Types.PluginFolderId.AlgoData, fileName, srcPath, progressListener);
                     _logger.Info($"Downloaded bot file {fileName} to {_selectedAgent.Model.Name}");
                 }
 

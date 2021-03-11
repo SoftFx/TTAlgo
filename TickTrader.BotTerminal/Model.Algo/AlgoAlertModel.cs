@@ -42,7 +42,7 @@ namespace TickTrader.BotTerminal
 
         public event Action<IEnumerable<IAlertUpdateEventArgs>> AlertUpdateEvent;
 
-        public void AddAlert(string instanceId, UnitLogRecord record)
+        public void AddAlert(string instanceId, PluginLogRecord record)
         {
             lock (_locker)
             {
@@ -112,7 +112,7 @@ namespace TickTrader.BotTerminal
             _alertTimer?.Change(AlertsUpdateTimeout, -1);
         }
 
-        private AlertUpdateEventArgsImpl Convert(AlertRecordInfo rec) => new AlertUpdateEventArgsImpl(rec.BotId, Name, rec.TimeUtc, rec.Message, _remoteAgent != null);
+        private AlertUpdateEventArgsImpl Convert(AlertRecordInfo rec) => new AlertUpdateEventArgsImpl(rec.PluginId, Name, rec.TimeUtc, rec.Message, _remoteAgent != null);
 
         public void Dispose() //add dispose storage to remote agent
         {
@@ -130,7 +130,7 @@ namespace TickTrader.BotTerminal
 
         event Action<IEnumerable<IAlertUpdateEventArgs>> AlertUpdateEvent;
 
-        void AddAlert(string instanceId, UnitLogRecord record);
+        void AddAlert(string instanceId, PluginLogRecord record);
 
         void AddAlerts(List<IAlertUpdateEventArgs> records);
     }

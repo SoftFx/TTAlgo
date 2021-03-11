@@ -9,6 +9,8 @@ using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Domain;
+using System.Linq;
+using TickTrader.Algo.Protocol;
 
 namespace TickTrader.BotTerminal
 {
@@ -25,17 +27,13 @@ namespace TickTrader.BotTerminal
 
         public AlgoPackageRef PackageRef { get; private set; }
 
-        public AlgoPluginRef PluginRef { get; private set; }
-
-        public PluginSetupModel Setup { get; private set; }
-
         public string FaultMessage { get; private set; }
 
         public PluginDescriptor Descriptor { get; private set; }
 
         public IAlgoPluginHost Host { get; }
 
-        public PluginStates State { get; protected set; }
+        public PluginModelInfo.Types.PluginState State { get; protected set; }
 
         public IDictionary<string, IOutputCollector> Outputs => _outputs;
 
@@ -70,16 +68,16 @@ namespace TickTrader.BotTerminal
         {
             if (PackageRef?.IsObsolete ?? true)
                 UpdateRefs();
-            if (State == PluginStates.Broken)
+            if (State == PluginModelInfo.Types.PluginState.Broken)
                 return false;
 
             try
             {
-                ChangeState(PluginStates.Starting);
+                ChangeState(PluginModelInfo.Types.PluginState.Starting);
 
                 LockResources();
-                Setup = new PluginSetupModel(PluginRef, Agent, SetupContext, Config.MainSymbol);
-                Setup.Load(Config);
+                //Setup = new PluginSetupModel(PluginRef, Agent, SetupContext, Config.MainSymbol);
+                //Setup.Load(Config);
 
                 _executor = await CreateExecutor();
                 //Setup.SetWorkingFolder(_executor.Config.WorkingFolder);
@@ -93,7 +91,7 @@ namespace TickTrader.BotTerminal
             catch (Exception ex)
             {
                 _logger.Error(ex, "StartExcecutor() failed!");
-                ChangeState(PluginStates.Faulted, ex.Message);
+                ChangeState(PluginModelInfo.Types.PluginState.Faulted, ex.Message);
                 UnlockResources();
 
                 return false;
@@ -107,7 +105,7 @@ namespace TickTrader.BotTerminal
 
         protected async Task<bool> StopExecutor()
         {
-            ChangeState(PluginStates.Stopping);
+            ChangeState(PluginModelInfo.Types.PluginState.Stopping);
 
             try
             {
@@ -119,7 +117,7 @@ namespace TickTrader.BotTerminal
             catch (Exception ex)
             {
                 _logger.Error(ex, "StopExcecutor() failed!");
-                ChangeState(PluginStates.Faulted, ex.Message);
+                ChangeState(PluginModelInfo.Types.PluginState.Faulted, ex.Message);
                 UnlockResources();
                 return false;
             }
@@ -132,7 +130,7 @@ namespace TickTrader.BotTerminal
 
         protected virtual async Task<ExecutorModel> CreateExecutor()
         {
-            var runtime = await Agent.AlgoServer.CreateExecutor(PluginRef, Config, Agent.ClientModel.Id);
+            var runtime = await Agent.AlgoServer.CreateExecutor(Config, Agent.ClientModel.Id);
 
             runtime.ErrorOccurred += Executor_OnRuntimeError;
 
@@ -155,7 +153,7 @@ namespace TickTrader.BotTerminal
             //_executor.NotifyDisconnectNotification();
         }
 
-        protected virtual void ChangeState(PluginStates state, string faultMessage = null)
+        protected virtual void ChangeState(PluginModelInfo.Types.PluginState state, string faultMessage = null)
         {
             State = state;
             FaultMessage = faultMessage;
@@ -185,20 +183,19 @@ namespace TickTrader.BotTerminal
             var packageRef = Agent.Library.GetPackageRef(package);
             if (packageRef == null)
             {
-                ChangeState(PluginStates.Broken, $"Algo package {package.Name} at {package.Location} is not found!");
+                ChangeState(PluginModelInfo.Types.PluginState.Broken, $"Algo Package {package.Name} at {package.Location} is not found!");
                 return;
             }
-            var pluginRef = Agent.Library.GetPluginRef(Config.Key);
-            if (pluginRef == null)
+            var plugin = Agent.Library.GetPlugin(Config.Key);
+            if (plugin == null)
             {
-                ChangeState(PluginStates.Broken, $"Plugin {Config.Key.DescriptorId} is missing in Algo package {package.Name} at {package.Location}!");
+                ChangeState(PluginModelInfo.Types.PluginState.Broken, $"Plugin {Config.Key.DescriptorId} is missing in Algo package {package.Name} at {package.Location}!");
                 return;
             }
 
             PackageRef = packageRef;
-            PluginRef = pluginRef;
-            Descriptor = pluginRef.Metadata.Descriptor;
-            ChangeState(PluginStates.Stopped);
+            Descriptor = plugin.Descriptor_;
+            ChangeState(PluginModelInfo.Types.PluginState.Stopped);
             OnRefsUpdated();
         }
 
@@ -219,12 +216,15 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                foreach (var outputSetup in Setup.Outputs)
+                var descriptorLookup = Descriptor.Outputs.ToDictionary(d => d.Id);
+                var properties = Config.UnpackProperties();
+                foreach (IOutputConfig config in properties.Where(p => p is IOutputConfig))
                 {
-                    if (outputSetup is ColoredLineOutputSetupModel)
-                        CreateOuput<double>(executor, outputSetup);
-                    else if (outputSetup is MarkerSeriesOutputSetupModel)
-                        CreateOuput<Marker>(executor, outputSetup);
+                    var descriptor = descriptorLookup[config.PropertyId];
+                    if (config is ColoredLineOutputConfig)
+                        CreateOuput<double>(executor, config, descriptor);
+                    else if (config is MarkerSeriesOutputConfig)
+                        CreateOuput<Marker>(executor, config, descriptor);
                 }
                 OutputsChanged?.Invoke();
             }
@@ -234,16 +234,16 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void CreateOuput<T>(ExecutorModel executor, OutputSetupModel setup)
+        private void CreateOuput<T>(ExecutorModel executor, IOutputConfig config, OutputDescriptor descriptor)
         {
             //executor.Config.SetupOutput<T>(setup.Id);
-            var collector = CreateOutputCollector<T>(executor, setup);
-            _outputs.Add(setup.Id, collector);
+            var collector = CreateOutputCollector<T>(executor, config, descriptor);
+            _outputs.Add(config.PropertyId, collector);
         }
 
-        protected virtual IOutputCollector CreateOutputCollector<T>(ExecutorModel executor, OutputSetupModel setup)
+        protected virtual IOutputCollector CreateOutputCollector<T>(ExecutorModel executor, IOutputConfig config, OutputDescriptor descriptor)
         {
-            return new OutputCollector<T>(setup, executor);
+            return new OutputCollector<T>(executor, config, descriptor);
         }
 
         private void ClearOutputs()

@@ -7,7 +7,6 @@ using TickTrader.BotAgent.WebAdmin.Server.Dto;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using System.Net;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Domain;
 using System.Threading.Tasks;
 
@@ -42,7 +41,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
                 var connError = res.Item1;
                 var info = res.Item2;
 
-                if (connError.Code == ConnectionErrorCodes.None)
+                if (connError.IsOk)
                 {
                     return Ok(info.ToDto());
                 }

@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Core
         public Feed.Types.Timeframe Timeframe { get; private set; }
 
 
-        public event Action<UnitLogRecord> LogUpdated;
+        public event Action<PluginLogRecord> LogUpdated;
         public event Action<DataSeriesUpdate> OutputUpdate;
         public event Action<Exception> ErrorOccurred;
         public event Action<ExecutorModel> Stopped;
@@ -50,7 +50,7 @@ namespace TickTrader.Algo.Core
         }
 
 
-        internal void OnLogUpdated(UnitLogRecord record)
+        internal void OnLogUpdated(PluginLogRecord record)
         {
             LogUpdated?.Invoke(record);
         }

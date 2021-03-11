@@ -107,7 +107,7 @@ namespace TickTrader.Algo.Core
             {
                 if (!_control.OnStart())
                 {
-                    _control.Collector.AddEvent(Domain.UnitLogRecord.Types.LogSeverity.Error, "No data for requested period!");
+                    _control.Collector.AddEvent(Domain.PluginLogRecord.Types.LogSeverity.Error, "No data for requested period!");
                     return;
                 }
 
@@ -120,7 +120,7 @@ namespace TickTrader.Algo.Core
                 //_executor.Core.Start();
 
 
-                if (PluginInfo.Type == Domain.Metadata.Types.PluginType.TradeBot)
+                if (PluginInfo.IsTradeBot)
                     _control.EmulateExecution(CommonSettings.WarmupSize, CommonSettings.WarmupUnits);
                 else // no warm-up for indicators
                     _control.EmulateExecution(0, WarmupUnitTypes.Bars);

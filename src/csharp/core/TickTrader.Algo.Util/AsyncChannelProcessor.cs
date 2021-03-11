@@ -7,7 +7,17 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Util
 {
-    public class AsyncChannelProcessor<T>
+    public interface IAsyncChannel<T>
+    {
+        ValueTask AddAsync(T item);
+
+        ValueTask AddAsync(T[] items);
+
+        ValueTask AddAsync(IList<T> items);
+    }
+
+
+    public class AsyncChannelProcessor<T> : IAsyncChannel<T>
     {
         private readonly Channel<T> _channel;
         private int _cnt;
@@ -46,7 +56,7 @@ namespace TickTrader.Algo.Util
             var options = new UnboundedChannelOptions
             {
                 AllowSynchronousContinuations = false,
-                SingleReader = true,
+                SingleReader = singleReader,
                 SingleWriter = false,
             };
             return new AsyncChannelProcessor<T>(Channel.CreateUnbounded<T>(options), name);
@@ -118,7 +128,7 @@ namespace TickTrader.Algo.Util
                         return;
         }
 
-        public async ValueTask EnqueueAsync(IList<T> items)
+        public async ValueTask AddAsync(IList<T> items)
         {
             var writer = _channel.Writer;
 
@@ -154,7 +164,8 @@ namespace TickTrader.Algo.Util
             var reader = _channel.Reader;
             while (_doProcessing && await reader.WaitToReadAsync())
             {
-                for (var i = 0; i < BatchSize; i++)
+                var i = 0;
+                for (; i < BatchSize; i++)
                 {
                     if (!DequeueInternal(reader, out var item))
                         break;
@@ -165,6 +176,9 @@ namespace TickTrader.Algo.Util
                     }
                     catch (Exception) { }
                 }
+
+                if (i == BatchSize)
+                    await Task.Yield(); // break sync processing
             }
         }
     }

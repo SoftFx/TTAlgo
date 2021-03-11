@@ -5,14 +5,14 @@ namespace TickTrader.BotAgent.BA.Models
 {
     public class LogEntry : ILogEntry
     {
-        private readonly UnitLogRecord _record;
+        private readonly PluginLogRecord _record;
 
-        public LogEntry(UnitLogRecord record)
+        public LogEntry(PluginLogRecord record)
         {
             _record = record;
         }
 
-        public UnitLogRecord.Types.LogSeverity Severity => _record.Severity;
+        public PluginLogRecord.Types.LogSeverity Severity => _record.Severity;
 
         public string Message => _record.Message;
 
