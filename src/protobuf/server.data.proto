@@ -14,7 +14,7 @@ import "runtime.proto";
 message MappingInfo
 {
     MappingKey key = 1;
-    string display_name = 2;
+    google.protobuf.StringValue display_name = 2;
 }
 
 message MappingCollectionInfo {
@@ -98,7 +98,7 @@ message PluginModelInfo {
     string instance_id = 1;
     AccountKey account = 2;
     PluginState state = 3;
-    string fault_message = 4;
+    google.protobuf.StringValue fault_message = 4;
     PluginConfig config = 5;
     PluginDescriptor descriptor = 6;
 }
@@ -128,6 +128,6 @@ message PluginFolderInfo {
 
     string bot_id = 1;
     PluginFolderId folder_id = 2;
-    string path = 3;
+    google.protobuf.StringValue path = 3;
     repeated PluginFileInfo files = 4;
 }
