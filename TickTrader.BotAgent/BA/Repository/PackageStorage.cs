@@ -9,7 +9,7 @@ using NLog;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
-using TickTrader.Algo.Protocol;
+using TickTrader.Algo.Domain.ServerControl;
 
 namespace TickTrader.BotAgent.BA.Repository
 {

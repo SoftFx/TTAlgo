@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="certs\bot-agent.crt" />
+    <None Remove="certs\bot-agent.key" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="certs\bot-agent.crt" />
+    <EmbeddedResource Include="certs\bot-agent.key" />
+  </ItemGroup>
+
+</Project>

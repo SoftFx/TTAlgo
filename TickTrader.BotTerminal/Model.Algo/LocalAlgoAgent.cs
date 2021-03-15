@@ -19,7 +19,8 @@ using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
-using TickTrader.Algo.Protocol;
+using TickTrader.Algo.Domain.ServerControl;
+using TickTrader.Algo.ServerControl;
 using TickTrader.BotTerminal.Lib;
 using File = System.IO.File;
 
@@ -368,13 +369,13 @@ namespace TickTrader.BotTerminal
                 var package = update.Value;
                 switch (update.Type)
                 {
-                    case UpdateType.Added:
+                    case UpdateInfo.Types.UpdateType.Added:
                         _packages.Add(package.Key, package);
                         break;
-                    case UpdateType.Replaced:
+                    case UpdateInfo.Types.UpdateType.Replaced:
                         _packages[package.Key] = package;
                         break;
-                    case UpdateType.Removed:
+                    case UpdateInfo.Types.UpdateType.Removed:
                         _packages.Remove(package.Key);
                         break;
                 }
@@ -388,13 +389,13 @@ namespace TickTrader.BotTerminal
                 var plugin = update.Value;
                 switch (update.Type)
                 {
-                    case UpdateType.Added:
+                    case UpdateInfo.Types.UpdateType.Added:
                         _plugins.Add(plugin.Key, plugin);
                         break;
-                    case UpdateType.Replaced:
+                    case UpdateInfo.Types.UpdateType.Replaced:
                         _plugins[plugin.Key] = plugin;
                         break;
-                    case UpdateType.Removed:
+                    case UpdateInfo.Types.UpdateType.Removed:
                         _plugins.Remove(plugin.Key);
                         break;
                 }

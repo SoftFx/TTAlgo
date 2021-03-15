@@ -12,6 +12,8 @@ using System.IO;
 using System.Text;
 using System.Windows;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Server;
+using TickTrader.Algo.ServerControl;
 
 namespace TickTrader.BotTerminal
 {
@@ -280,6 +282,8 @@ namespace TickTrader.BotTerminal
                 Application.Current.Shutdown();
             else
             {
+                CertificateProvider.InitServer(SslImport.LoadServerCertificate(), SslImport.LoadServerPrivateKey());
+
                 var connectionOptions = new ConnectionOptions()
                 {
                     AutoReconnect = true,

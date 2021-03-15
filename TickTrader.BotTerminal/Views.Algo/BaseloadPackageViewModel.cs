@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
-using TickTrader.Algo.Protocol;
+using TickTrader.Algo.ServerControl;
 
 namespace TickTrader.BotTerminal
 {

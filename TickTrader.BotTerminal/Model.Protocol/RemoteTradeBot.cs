@@ -6,7 +6,7 @@ using System.Threading;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Domain;
-using TickTrader.Algo.Protocol;
+using TickTrader.Algo.ServerControl;
 
 namespace TickTrader.BotTerminal
 {
@@ -159,7 +159,7 @@ namespace TickTrader.BotTerminal
                     StatusChanged?.Invoke(this);
                 }
             }
-            catch(BAException baex)
+            catch(Algo.ServerControl.AlgoException baex)
             {
                 _logger.Error($"Failed to get bot status {InstanceId} at {_agent.Name}: {baex.Message}");
             }
@@ -180,10 +180,10 @@ namespace TickTrader.BotTerminal
                 {
                     _lastLogTimeUtc = logs.Max(l => l.TimeUtc);
 
-                    Journal.Add(logs.Select(Convert).ToList());
+                    Journal.Add(logs.Select(this.Convert).ToList());
                 }
             }
-            catch (BAException baex)
+            catch (Algo.ServerControl.AlgoException baex)
             {
                 _logger.Error($"Failed to get bot logs {InstanceId} at {_agent.Name}: {baex.Message}");
             }

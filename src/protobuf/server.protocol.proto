@@ -1,6 +1,0 @@
-syntax = "proto3";
-
-package ticktrader.algo.domain;
-
-option csharp_namespace = "TickTrader.Algo.Domain";
-

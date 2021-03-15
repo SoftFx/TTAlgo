@@ -1265,6 +1265,14 @@
       <Project>{6c7fc318-5848-4206-8431-3695c70143fa}</Project>
       <Name>TickTrader.Algo.Domain</Name>
     </ProjectReference>
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.ServerControl\TickTrader.Algo.ServerControl.csproj">
+      <Project>{d250f528-cfeb-4a68-9817-a99a92e0a4e4}</Project>
+      <Name>TickTrader.Algo.ServerControl</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server\TickTrader.Algo.Server.csproj">
+      <Project>{80bbd05a-f622-49d5-badd-e35b81d15d00}</Project>
+      <Name>TickTrader.Algo.Server</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
       <Project>{8901c84d-fb62-433c-a25f-4d24255b9453}</Project>
       <Name>TickTrader.Algo.Api</Name>
@@ -1284,10 +1292,6 @@
     <ProjectReference Include="..\TickTrader.Algo.Indicators\TickTrader.Algo.Indicators.csproj">
       <Project>{127406a9-5d62-4fe7-9680-1d2deed7564f}</Project>
       <Name>TickTrader.Algo.Indicators</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TickTrader.Algo.Protocol\TickTrader.Algo.Protocol.csproj">
-      <Project>{7ae78bd0-33fd-421e-a16f-37adea680870}</Project>
-      <Name>TickTrader.Algo.Protocol</Name>
     </ProjectReference>
     <ProjectReference Include="..\TickTrader.SeriesStorage.LevelDb\TickTrader.SeriesStorage.LevelDb.csproj">
       <Project>{cb30b69a-de4d-4819-8e83-cf5dd80cd060}</Project>

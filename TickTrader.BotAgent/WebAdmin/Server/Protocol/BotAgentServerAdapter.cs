@@ -3,18 +3,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
-using TickTrader.Algo.Protocol;
+using TickTrader.Algo.Domain.ServerControl;
+using TickTrader.Algo.ServerControl;
 using TickTrader.BotAgent.BA;
 using TickTrader.BotAgent.BA.Models;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
 {
-    public class BotAgentServerAdapter : IBotAgentServer
+    public class BotAgentServerAdapter : IAlgoServerProvider
     {
         private static IAlgoCoreLogger _logger = CoreLoggerFactory.GetLogger<BotAgentServerAdapter>();
         private static readonly SetupContext _agentContext = new SetupContext();
@@ -244,16 +244,16 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         }
 
 
-        private UpdateType Convert(ChangeAction action)
+        private UpdateInfo.Types.UpdateType Convert(ChangeAction action)
         {
             switch (action)
             {
                 case ChangeAction.Added:
-                    return UpdateType.Added;
+                    return UpdateInfo.Types.UpdateType.Added;
                 case ChangeAction.Modified:
-                    return UpdateType.Replaced;
+                    return UpdateInfo.Types.UpdateType.Replaced;
                 case ChangeAction.Removed:
-                    return UpdateType.Removed;
+                    return UpdateInfo.Types.UpdateType.Removed;
                 default:
                     throw new ArgumentException();
             }
@@ -278,11 +278,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         {
             try
             {
-                AccountUpdated(new UpdateInfo<AccountModelInfo>
-                {
-                    Type = Convert(action),
-                    Value = account,
-                });
+                AccountUpdated(new UpdateInfo<AccountModelInfo>(Convert(action), account));
             }
             catch (Exception ex)
             {
@@ -294,11 +290,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         {
             try
             {
-                BotUpdated(new UpdateInfo<PluginModelInfo>
-                {
-                    Type = Convert(action),
-                    Value = bot,
-                });
+                BotUpdated(new UpdateInfo<PluginModelInfo>(Convert(action), bot));
             }
             catch (Exception ex)
             {
@@ -310,11 +302,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         {
             try
             {
-                PackageUpdated(new UpdateInfo<PackageInfo>
-                {
-                    Type = Convert(action),
-                    Value = package,
-                });
+                PackageUpdated(new UpdateInfo<PackageInfo>(Convert(action), package));
             }
             catch (Exception ex)
             {

@@ -12,11 +12,12 @@ using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
-using TickTrader.Algo.Protocol;
+using TickTrader.Algo.Domain.ServerControl;
+using TickTrader.Algo.ServerControl;
 
 namespace TickTrader.BotTerminal
 {
-    internal class RemoteAlgoAgent : IAlgoAgent, IBotAgentClient
+    internal class RemoteAlgoAgent : IAlgoAgent, IAlgoServerClient
     {
         private const int DefaultChunkSize = 512 * 1024;
 
@@ -227,9 +228,9 @@ namespace TickTrader.BotTerminal
         #endregion
 
 
-        #region IBotAgentClient implementation
+        #region IAlgoServerClient implementation
 
-        void IBotAgentClient.AccessLevelChanged()
+        void IAlgoServerClient.AccessLevelChanged()
         {
             _syncContext.Invoke(() =>
             {
@@ -237,7 +238,7 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IBotAgentClient.InitPackageList(List<PackageInfo> packages)
+        void IAlgoServerClient.InitPackageList(List<PackageInfo> packages)
         {
             _syncContext.Invoke(() =>
             {
@@ -254,7 +255,7 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IBotAgentClient.InitAccountList(List<AccountModelInfo> accounts)
+        void IAlgoServerClient.InitAccountList(List<AccountModelInfo> accounts)
         {
             _syncContext.Invoke(() =>
             {
@@ -266,7 +267,7 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IBotAgentClient.InitBotList(List<PluginModelInfo> bots)
+        void IAlgoServerClient.InitBotList(List<PluginModelInfo> bots)
         {
             _syncContext.Invoke(() =>
             {
@@ -280,22 +281,21 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IBotAgentClient.UpdatePackage(UpdateInfo<PackageInfo> update)
+        void IAlgoServerClient.UpdatePackage(UpdateInfo.Types.UpdateType updateType, PackageInfo package)
         {
             _syncContext.Invoke(() =>
             {
-                var package = update.Value;
-                switch (update.Type)
+                switch (updateType)
                 {
-                    case UpdateType.Added:
+                    case UpdateInfo.Types.UpdateType.Added:
                         _packages.Add(package.Key, package);
                         MergePlugins(package);
                         break;
-                    case UpdateType.Replaced:
+                    case UpdateInfo.Types.UpdateType.Replaced:
                         _packages[package.Key] = package;
                         MergePlugins(package);
                         break;
-                    case UpdateType.Removed:
+                    case UpdateInfo.Types.UpdateType.Removed:
                         _packages.Remove(package.Key);
                         MergePlugins(new PackageInfo { Key = package.Key });
                         break;
@@ -303,18 +303,17 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IBotAgentClient.UpdateAccount(UpdateInfo<AccountModelInfo> update)
+        void IAlgoServerClient.UpdateAccount(UpdateInfo.Types.UpdateType updateType, AccountModelInfo acc)
         {
             _syncContext.Invoke(() =>
             {
-                var acc = update.Value;
-                switch (update.Type)
+                switch (updateType)
                 {
-                    case UpdateType.Added:
-                    case UpdateType.Replaced:
+                    case UpdateInfo.Types.UpdateType.Added:
+                    case UpdateInfo.Types.UpdateType.Replaced:
                         _accounts[acc.Key] = acc;
                         break;
-                    case UpdateType.Removed:
+                    case UpdateInfo.Types.UpdateType.Removed:
                         if (_accounts.ContainsKey(acc.Key))
                             _accounts.Remove(acc.Key);
                         break;
@@ -322,22 +321,21 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IBotAgentClient.UpdateBot(UpdateInfo<PluginModelInfo> update)
+        void IAlgoServerClient.UpdateBot(UpdateInfo.Types.UpdateType updateType, PluginModelInfo bot)
         {
             _syncContext.Invoke(() =>
             {
-                var bot = update.Value;
-                switch (update.Type)
+                switch (updateType)
                 {
-                    case UpdateType.Added:
+                    case UpdateInfo.Types.UpdateType.Added:
                         _idProvider.RegisterPluginId(bot.InstanceId);
                         _bots.Add(bot.InstanceId, new RemoteTradeBot(bot, this));
                         break;
-                    case UpdateType.Replaced:
+                    case UpdateInfo.Types.UpdateType.Replaced:
                         _bots[bot.InstanceId].Update(bot);
                         BotUpdated(_bots[bot.InstanceId]);
                         break;
-                    case UpdateType.Removed:
+                    case UpdateInfo.Types.UpdateType.Removed:
                         if (_bots.ContainsKey(bot.InstanceId))
                         {
                             _idProvider.UnregisterPlugin(bot.InstanceId);
@@ -348,26 +346,25 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IBotAgentClient.SetApiMetadata(ApiMetadataInfo apiMetadata)
+        void IAlgoServerClient.SetApiMetadata(ApiMetadataInfo apiMetadata)
         {
             _apiMetadata = apiMetadata;
         }
 
-        void IBotAgentClient.SetMappingsInfo(MappingCollectionInfo mappings)
+        void IAlgoServerClient.SetMappingsInfo(MappingCollectionInfo mappings)
         {
             _mappings = mappings;
         }
 
-        void IBotAgentClient.SetSetupContext(SetupContextInfo setupContext)
+        void IAlgoServerClient.SetSetupContext(SetupContextInfo setupContext)
         {
             _setupContext = setupContext;
         }
 
-        void IBotAgentClient.UpdatePackageState(UpdateInfo<PackageInfo> update)
+        void IAlgoServerClient.UpdatePackageState(PackageInfo package)
         {
             _syncContext.Invoke(() =>
             {
-                var package = update.Value;
                 if (_packages.TryGetValue(package.Key, out var packageModel))
                 {
                     packageModel.IsValid = package.IsValid;
@@ -377,11 +374,10 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IBotAgentClient.UpdateAccountState(UpdateInfo<AccountModelInfo> update)
+        void IAlgoServerClient.UpdateAccountState(AccountModelInfo account)
         {
             _syncContext.Invoke(() =>
             {
-                var account = update.Value;
                 if (_accounts.TryGetValue(account.Key, out var accountModel))
                 {
                     accountModel.ConnectionState = account.ConnectionState;
@@ -391,11 +387,10 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IBotAgentClient.UpdateBotState(UpdateInfo<PluginModelInfo> update)
+        void IAlgoServerClient.UpdateBotState(PluginModelInfo bot)
         {
             _syncContext.Invoke(() =>
             {
-                var bot = update.Value;
                 if (_bots.TryGetValue(bot.InstanceId, out var botModel))
                 {
                     botModel.UpdateState(bot);

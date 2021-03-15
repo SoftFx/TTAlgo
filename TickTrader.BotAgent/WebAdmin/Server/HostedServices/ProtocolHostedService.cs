@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using TickTrader.Algo.Protocol;
+using TickTrader.Algo.ServerControl;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.HostedServices
 {

@@ -1,4 +1,4 @@
-﻿using TickTrader.Algo.Protocol;
+﻿using TickTrader.Algo.ServerControl;
 using TickTrader.BotAgent.WebAdmin.Server.Core.Auth;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Protocol

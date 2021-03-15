@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Domain;
-using TickTrader.Algo.Protocol;
+using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.BotAgent.BA.Models;
 
 namespace TickTrader.BotAgent.Extensions
@@ -42,15 +42,15 @@ namespace TickTrader.BotAgent.Extensions
             };
         }
 
-        public static ChangeAction Convert(this UpdateType updateType)
+        public static ChangeAction Convert(this UpdateInfo.Types.UpdateType updateType)
         {
             switch (updateType)
             {
-                case UpdateType.Added:
+                case UpdateInfo.Types.UpdateType.Added:
                     return ChangeAction.Added;
-                case UpdateType.Replaced:
+                case UpdateInfo.Types.UpdateType.Replaced:
                     return ChangeAction.Modified;
-                case UpdateType.Removed:
+                case UpdateInfo.Types.UpdateType.Removed:
                     return ChangeAction.Removed;
                 default:
                     throw new ArgumentException();

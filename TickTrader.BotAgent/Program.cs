@@ -17,6 +17,8 @@ using NLog.Web;
 using NLog.Extensions.Logging;
 using System.Collections.Generic;
 using TickTrader.BotAgent.Hosting;
+using TickTrader.Algo.Server;
+using TickTrader.Algo.ServerControl;
 
 namespace TickTrader.BotAgent
 {
@@ -45,6 +47,8 @@ namespace TickTrader.BotAgent
 
             try
             {
+                CertificateProvider.InitServer(SslImport.LoadServerCertificate(), SslImport.LoadServerPrivateKey());
+
                 var hostBuilder = CreateWebHostBuilder(args);
 
                 var host = hostBuilder

@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using TickTrader.Algo.Protocol;
-using TickTrader.Algo.Protocol.Grpc;
+using TickTrader.Algo.ServerControl;
+using TickTrader.Algo.ServerControl.Grpc;
 using TickTrader.BotAgent.BA;
 using TickTrader.BotAgent.BA.Models;
 using TickTrader.BotAgent.WebAdmin.Server.HostedServices;
@@ -28,7 +28,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             {
                 services.AddSingleton<IServerSettings>(s => s.GetRequiredService<IConfiguration>().GetProtocolServerSettings());
                 services.AddSingleton<IJwtProvider, JwtProviderAdapter>();
-                services.AddSingleton<IBotAgentServer, BotAgentServerAdapter>();
+                services.AddSingleton<IAlgoServerProvider, BotAgentServerAdapter>();
                 services.AddSingleton<IProtocolServer, GrpcServer>();
                 services.AddHostedService<ProtocolHostedService>();
             });

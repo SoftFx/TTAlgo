@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
-using TickTrader.Algo.Protocol;
 
 namespace TickTrader.BotTerminal
 {
@@ -100,7 +99,7 @@ namespace TickTrader.BotTerminal
                     AddAlerts(alerts.Select(Convert).ToList<IAlertUpdateEventArgs>());
                 }
             }
-            catch (BAException baex)
+            catch (AlgoException baex)
             {
                 _logger.Error($"Failed to get alerts at {Name}: {baex.Message}");
             }

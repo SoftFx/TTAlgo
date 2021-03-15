@@ -3,7 +3,6 @@ using Machinarium.Qnil;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Domain;
-using TickTrader.Algo.Protocol;
 
 namespace TickTrader.BotTerminal
 {

@@ -10,7 +10,7 @@ using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Domain;
 using System.Linq;
-using TickTrader.Algo.Protocol;
+using TickTrader.Algo.Domain.ServerControl;
 
 namespace TickTrader.BotTerminal
 {
@@ -206,7 +206,7 @@ namespace TickTrader.BotTerminal
 
         private void Library_PluginUpdated(UpdateInfo<PluginInfo> update)
         {
-            if (update.Type != UpdateType.Removed && update.Value.Key.Equals(Config.Key))
+            if (update.Type != UpdateInfo.Types.UpdateType.Removed && update.Value.Key.Equals(Config.Key))
             {
                 OnPluginUpdated();
             }
