@@ -71,10 +71,10 @@ namespace TickTrader.BotTerminal
             Updated?.Invoke(this);
         }
 
-        public void UpdateState(PluginModelInfo info)
+        public void UpdateState(PluginStateUpdate update)
         {
-            Info.State = info.State;
-            Info.FaultMessage = info.FaultMessage;
+            Info.State = update.State;
+            Info.FaultMessage = update.FaultMessage;
             StateChanged?.Invoke(this);
         }
 

@@ -280,7 +280,7 @@ namespace TickTrader.BotTerminal
             var path = GetBotFolderPath(botId, folderId);
             var res = new PluginFolderInfo
             {
-                BotId = botId,
+                PluginId = botId,
                 FolderId = folderId,
                 Path = path,
             };

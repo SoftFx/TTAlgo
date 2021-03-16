@@ -41,11 +41,11 @@ namespace TickTrader.Algo.ServerControl
 
         event Action<UpdateInfo<PluginModelInfo>> BotUpdated;
 
-        event Action<PackageInfo> PackageStateUpdated;
+        event Action<PackageStateUpdate> PackageStateUpdated;
 
-        event Action<PluginModelInfo> BotStateUpdated;
+        event Action<PluginStateUpdate> BotStateUpdated;
 
-        event Action<AccountModelInfo> AccountStateUpdated;
+        event Action<AccountStateUpdate> AccountStateUpdated;
 
         #endregion Updates
 

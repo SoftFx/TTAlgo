@@ -20,18 +20,18 @@ namespace TickTrader.BotAgent.BA.Models
             _botAgent.BotStateChanged += BotStateChanged;
         }
 
-        private void BotStateChanged(PluginModelInfo bot)
+        private void BotStateChanged(PluginStateUpdate bot)
         {
             if (bot.State == PluginModelInfo.Types.PluginState.Stopping)
             {
                 var tokenSource = new CancellationTokenSource();
-                _abortTasks.Add(bot.InstanceId, tokenSource);
+                _abortTasks.Add(bot.PluginId, tokenSource);
 
-                AbortBotAfter(bot.InstanceId, _delayPunishment, tokenSource.Token).Forget();
+                AbortBotAfter(bot.PluginId, _delayPunishment, tokenSource.Token).Forget();
             }
             else if (bot.State == PluginModelInfo.Types.PluginState.Stopped)
             {
-                СancelAbortTask(bot.InstanceId);
+                СancelAbortTask(bot.PluginId);
             }
         }
 

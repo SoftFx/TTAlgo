@@ -67,7 +67,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             }
         }
 
-        private static void OnBotStateChanged(PluginModelInfo bot)
+        private static void OnBotStateChanged(PluginStateUpdate bot)
         {
             Hub.Clients.All.ChangeBotState(bot.ToBotStateDto());
         }

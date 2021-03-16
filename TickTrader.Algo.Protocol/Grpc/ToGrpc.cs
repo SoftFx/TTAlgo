@@ -1003,7 +1003,7 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             var res = new Lib.BotFolderInfo
             {
-                BotId = Convert(botFolder.BotId),
+                BotId = Convert(botFolder.PluginId),
                 FolderId = botFolder.FolderId.Convert(),
                 Path = Convert(botFolder.Path),
             };

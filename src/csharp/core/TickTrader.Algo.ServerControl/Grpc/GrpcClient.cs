@@ -254,18 +254,18 @@ namespace TickTrader.Algo.ServerControl.Grpc
                     if (update.TryUnpack(out var updateInfo))
                     {
                         _messageFormatter.LogClientUpdate(Logger, updateInfo);
-                        if (updateInfo is UpdateInfo<PackageUpdateInfo>)
-                            AlgoClient.UpdatePackage(updateInfo.Type, ((UpdateInfo<PackageUpdateInfo>)updateInfo).Value.Package);
-                        else if (updateInfo is UpdateInfo<PackageStateUpdateInfo>)
-                            AlgoClient.UpdatePackageState(((UpdateInfo<PackageStateUpdateInfo>)updateInfo).Value.Package);
-                        else if (updateInfo is UpdateInfo<AccountUpdateInfo>)
-                            AlgoClient.UpdateAccount(updateInfo.Type, ((UpdateInfo<AccountUpdateInfo>)updateInfo).Value.Account);
-                        else if (updateInfo is UpdateInfo<AccountStateUpdateInfo>)
-                            AlgoClient.UpdateAccountState(((UpdateInfo<AccountStateUpdateInfo>)updateInfo).Value.Account);
-                        else if (updateInfo is UpdateInfo<PluginUpdateInfo>)
-                            AlgoClient.UpdateBot(updateInfo.Type, ((UpdateInfo<PluginUpdateInfo>)updateInfo).Value.Plugin);
-                        else if (updateInfo is UpdateInfo<PluginStateUpdateInfo>)
-                            AlgoClient.UpdateBotState(((UpdateInfo<PluginStateUpdateInfo>)updateInfo).Value.Plugin);
+                        if (updateInfo is UpdateInfo<PackageInfo>)
+                            AlgoClient.UpdatePackage(updateInfo.Type, ((UpdateInfo<PackageInfo>)updateInfo).Value);
+                        else if (updateInfo is UpdateInfo<PackageStateUpdate>)
+                            AlgoClient.UpdatePackageState(((UpdateInfo<PackageStateUpdate>)updateInfo).Value);
+                        else if (updateInfo is UpdateInfo<AccountModelInfo>)
+                            AlgoClient.UpdateAccount(updateInfo.Type, ((UpdateInfo<AccountModelInfo>)updateInfo).Value);
+                        else if (updateInfo is UpdateInfo<AccountStateUpdate>)
+                            AlgoClient.UpdateAccountState(((UpdateInfo<AccountStateUpdate>)updateInfo).Value);
+                        else if (updateInfo is UpdateInfo<PluginModelInfo>)
+                            AlgoClient.UpdateBot(updateInfo.Type, ((UpdateInfo<PluginModelInfo>)updateInfo).Value);
+                        else if (updateInfo is UpdateInfo<PluginStateUpdate>)
+                            AlgoClient.UpdateBotState(((UpdateInfo<PluginStateUpdate>)updateInfo).Value);
                         else Logger.Error($"Failed to dispatch update of type: {update.Payload.TypeUrl}");
                     }
                     else 

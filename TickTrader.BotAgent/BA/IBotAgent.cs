@@ -25,7 +25,7 @@ namespace TickTrader.BotAgent.BA
         Task<string> GetPackageWritePath(PackageKey package);
 
         event Action<PackageInfo, ChangeAction> PackageChanged;
-        event Action<PackageInfo> PackageStateChanged;
+        event Action<PackageStateUpdate> PackageStateChanged;
         
         // -------- Account Management --------
 
@@ -39,7 +39,7 @@ namespace TickTrader.BotAgent.BA
         Task<ConnectionErrorInfo> TestCreds(AccountKey accountId, string password);
 
         event Action<AccountModelInfo, ChangeAction> AccountChanged;
-        event Action<AccountModelInfo> AccountStateChanged;
+        event Action<AccountStateUpdate> AccountStateChanged;
 
         // -------- Bot Management --------
 
@@ -58,7 +58,7 @@ namespace TickTrader.BotAgent.BA
         Task<IAlertStorage> GetAlertStorage();
 
         event Action<PluginModelInfo, ChangeAction> BotChanged;
-        event Action<PluginModelInfo> BotStateChanged;
+        event Action<PluginStateUpdate> BotStateChanged;
 
         // -------- Server Management --------
 

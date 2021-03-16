@@ -31,9 +31,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         public event Action<UpdateInfo<PackageInfo>> PackageUpdated = delegate { };
         public event Action<UpdateInfo<AccountModelInfo>> AccountUpdated = delegate { };
         public event Action<UpdateInfo<PluginModelInfo>> BotUpdated = delegate { };
-        public event Action<PackageInfo> PackageStateUpdated = delegate { };
-        public event Action<PluginModelInfo> BotStateUpdated = delegate { };
-        public event Action<AccountModelInfo> AccountStateUpdated = delegate { };
+        public event Action<PackageStateUpdate> PackageStateUpdated = delegate { };
+        public event Action<PluginStateUpdate> BotStateUpdated = delegate { };
+        public event Action<AccountStateUpdate> AccountStateUpdated = delegate { };
 
 
         public BotAgentServerAdapter(IBotAgent botAgent, IAuthManager authManager)
@@ -207,7 +207,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
 
             var res = new PluginFolderInfo
             {
-                BotId = botId,
+                PluginId = botId,
                 FolderId = folderId,
                 Path = await botFolder.GetFolder(),
             };
@@ -310,7 +310,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }
         }
 
-        private void OnBotStateChanged(PluginModelInfo bot)
+        private void OnBotStateChanged(PluginStateUpdate bot)
         {
             try
             {
@@ -322,7 +322,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }
         }
 
-        private void OnAccountStateChanged(AccountModelInfo account)
+        private void OnAccountStateChanged(AccountStateUpdate account)
         {
             try
             {
@@ -334,7 +334,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }
         }
 
-        private void OnPackageStateChanged(PackageInfo package)
+        private void OnPackageStateChanged(PackageStateUpdate package)
         {
             try
             {

@@ -33,11 +33,11 @@ namespace TickTrader.Algo.ServerControl
 
         void UpdateBot(UpdateInfo.Types.UpdateType updateType, PluginModelInfo plugin);
 
-        void UpdatePackageState(PackageInfo packageState);
+        void UpdatePackageState(PackageStateUpdate packageState);
 
-        void UpdateAccountState(AccountModelInfo accountState);
+        void UpdateAccountState(AccountStateUpdate accountState);
 
-        void UpdateBotState(PluginModelInfo pluginState);
+        void UpdateBotState(PluginStateUpdate pluginState);
 
         #endregion Updates
     }

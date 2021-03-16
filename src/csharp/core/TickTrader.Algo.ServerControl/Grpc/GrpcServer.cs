@@ -1458,34 +1458,34 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
         #region Updates
 
-        private void OnPackageUpdate(UpdateInfo<PackageInfo> update)
+        private void OnPackageUpdate(UpdateInfo<PackageInfo> packageUpdate)
         {
-            SendUpdate(new UpdateInfo<PackageUpdateInfo>(update.Type, new PackageUpdateInfo { Package = update.Value }));
+            SendUpdate(packageUpdate);
         }
 
-        private void OnPackageStateUpdate(PackageInfo package)
+        private void OnPackageStateUpdate(PackageStateUpdate stateUpdate)
         {
-            SendUpdate(new UpdateInfo<PackageStateUpdateInfo>(UpdateInfo.Types.UpdateType.Replaced, new PackageStateUpdateInfo { Package = package }));
+            SendUpdate(new UpdateInfo<PackageStateUpdate>(UpdateInfo.Types.UpdateType.Replaced, stateUpdate));
         }
 
-        private void OnAccountUpdate(UpdateInfo<AccountModelInfo> update)
+        private void OnAccountUpdate(UpdateInfo<AccountModelInfo> accountUpdate)
         {
-            SendUpdate(new UpdateInfo<AccountUpdateInfo>(update.Type, new AccountUpdateInfo { Account = update.Value }));
+            SendUpdate(accountUpdate);
         }
 
-        private void OnAccountStateUpdate(AccountModelInfo account)
+        private void OnAccountStateUpdate(AccountStateUpdate stateUpdate)
         {
-            SendUpdate(new UpdateInfo<AccountStateUpdateInfo>(UpdateInfo.Types.UpdateType.Replaced, new AccountStateUpdateInfo { Account = account }));
+            SendUpdate(new UpdateInfo<AccountStateUpdate>(UpdateInfo.Types.UpdateType.Replaced, stateUpdate));
         }
 
         private void OnBotUpdate(UpdateInfo<PluginModelInfo> update)
         {
-            SendUpdate(new UpdateInfo<PluginUpdateInfo>(update.Type, new PluginUpdateInfo { Plugin = update.Value }));
+            SendUpdate(update);
         }
 
-        private void OnBotStateUpdate(PluginModelInfo bot)
+        private void OnBotStateUpdate(PluginStateUpdate stateUpdate)
         {
-            SendUpdate(new UpdateInfo<PluginStateUpdateInfo>(UpdateInfo.Types.UpdateType.Replaced, new PluginStateUpdateInfo { Plugin = bot }));
+            SendUpdate(new UpdateInfo<PluginStateUpdate>(UpdateInfo.Types.UpdateType.Replaced, stateUpdate));
         }
 
         private void SendUpdate(IUpdateInfo update)

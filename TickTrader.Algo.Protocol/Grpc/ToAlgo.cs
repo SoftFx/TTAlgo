@@ -952,7 +952,7 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             var res = new PluginFolderInfo
             {
-                BotId = botFolder.BotId,
+                PluginId = botFolder.BotId,
                 FolderId = botFolder.FolderId.Convert(),
                 Path = botFolder.Path,
             };

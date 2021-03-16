@@ -11,18 +11,18 @@ namespace TickTrader.Algo.Domain.ServerControl
 
             var payload = Payload;
 
-            if (payload.Is(PackageUpdateInfo.Descriptor))
-                update = UpdateInfo<PackageUpdateInfo>.Unpack(this);
-            else if (payload.Is(PackageStateUpdateInfo.Descriptor))
-                update = UpdateInfo<PackageStateUpdateInfo>.Unpack(this);
-            else if (payload.Is(AccountUpdateInfo.Descriptor))
-                update = UpdateInfo<AccountUpdateInfo>.Unpack(this);
-            else if (payload.Is(AccountStateUpdateInfo.Descriptor))
-                update = UpdateInfo<AccountStateUpdateInfo>.Unpack(this);
-            else if (payload.Is(PluginUpdateInfo.Descriptor))
-                update = UpdateInfo<PluginUpdateInfo>.Unpack(this);
-            else if (payload.Is(PluginStateUpdateInfo.Descriptor))
-                update = UpdateInfo<PluginStateUpdateInfo>.Unpack(this);
+            if (payload.Is(PackageInfo.Descriptor))
+                update = UpdateInfo<PackageInfo>.Unpack(this);
+            else if (payload.Is(PackageStateUpdate.Descriptor))
+                update = UpdateInfo<PackageStateUpdate>.Unpack(this);
+            else if (payload.Is(AccountModelInfo.Descriptor))
+                update = UpdateInfo<AccountModelInfo>.Unpack(this);
+            else if (payload.Is(AccountStateUpdate.Descriptor))
+                update = UpdateInfo<AccountStateUpdate>.Unpack(this);
+            else if (payload.Is(PluginModelInfo.Descriptor))
+                update = UpdateInfo<PluginModelInfo>.Unpack(this);
+            else if (payload.Is(PluginStateUpdate.Descriptor))
+                update = UpdateInfo<PluginStateUpdate>.Unpack(this);
 
             return update != null;
         }

@@ -19,6 +19,16 @@ namespace TickTrader.BotAgent.Extensions
             };
         }
 
+        public static AccountStateUpdate GetStateUpdate(this ClientModel acc)
+        {
+            return new AccountStateUpdate
+            {
+                AccountId = new AccountKey(acc.Address, acc.Username),
+                ConnectionState = acc.ConnectionState,
+                LastError = acc.LastError ?? ConnectionErrorInfo.Ok,
+            };
+        }
+
         public static List<AccountModelInfo> GetInfoCopy(this IEnumerable<ClientModel> accList)
         {
             return accList.Select(GetInfoCopy).ToList();
@@ -39,6 +49,16 @@ namespace TickTrader.BotAgent.Extensions
                 FaultMessage = model.FaultMessage,
                 Config = model.Config,
                 Descriptor_ = model.Info?.Descriptor_,
+            };
+        }
+
+        public static PluginStateUpdate GetStateUpdate(this TradeBotModel model)
+        {
+            return new PluginStateUpdate
+            {
+                PluginId = model.Id,
+                State = model.State,
+                FaultMessage = model.FaultMessage,
             };
         }
 

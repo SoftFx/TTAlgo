@@ -60,7 +60,7 @@ namespace TickTrader.BotAgent.BA.Models
             await _packageStorage.Library.WaitInit();
 
             _packageStorage.PackageChanged += (p, a) => PackageChanged?.Invoke(p, a);
-            _packageStorage.PackageStateChanged += p => PackageStateChanged?.Invoke(p);
+            _packageStorage.PackageStateChanged += p => PackageStateChanged?.Invoke(new PackageStateUpdate { PackageId = p.Key, IsLocked = p.IsLocked, IsValid = p.IsValid });
 
             _threadPoolManager.Start(GetBotsCnt());
 
@@ -102,7 +102,7 @@ namespace TickTrader.BotAgent.BA.Models
                 remove => CallActorFlatten(a => a.PackageChanged -= value);
             }
 
-            public event Action<PackageInfo> PackageStateChanged
+            public event Action<PackageStateUpdate> PackageStateChanged
             {
                 // Warning! This violates actor model rules! Deadlocks are possible!
                 add => CallActorFlatten(a => a.PackageStateChanged += value);
@@ -128,7 +128,7 @@ namespace TickTrader.BotAgent.BA.Models
                 remove => CallActorFlatten(a => a.AccountChanged -= value);
             }
 
-            public event Action<AccountModelInfo> AccountStateChanged
+            public event Action<AccountStateUpdate> AccountStateChanged
             {
                 // Warning! This violates actor model rules! Deadlocks are possible!
                 add => CallActorFlatten(a => a.AccountStateChanged += value);
@@ -169,7 +169,7 @@ namespace TickTrader.BotAgent.BA.Models
                 remove => CallActorFlatten(a => a.BotChanged -= value);
             }
 
-            public event Action<PluginModelInfo> BotStateChanged
+            public event Action<PluginStateUpdate> BotStateChanged
             {
                 // Warning! This violates actor model rules! Deadlocks are possible!
                 add => CallActorFlatten(a => a.BotStateChanged += value);
@@ -186,7 +186,7 @@ namespace TickTrader.BotAgent.BA.Models
         #region Account management
 
         public event Action<AccountModelInfo, ChangeAction> AccountChanged;
-        public event Action<AccountModelInfo> AccountStateChanged;
+        public event Action<AccountStateUpdate> AccountStateChanged;
 
         public async Task<ConnectionErrorInfo> TestCreds(AccountKey accountId, string password)
         {
@@ -311,7 +311,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         private void OnBotStateChanged(TradeBotModel bot)
         {
-            BotStateChanged?.Invoke(bot.GetInfoCopy());
+            BotStateChanged?.Invoke(bot.GetStateUpdate());
         }
 
         private void DisposeAccount(ClientModel acc)
@@ -332,7 +332,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         private void OnAccountStateChanged(ClientModel acc)
         {
-            AccountStateChanged?.Invoke(acc.GetInfoCopy());
+            AccountStateChanged?.Invoke(acc.GetStateUpdate());
         }
 
         private void OnBotChanged(TradeBotModel bot, ChangeAction changeAction)
@@ -370,7 +370,7 @@ namespace TickTrader.BotAgent.BA.Models
         #region Bot management
 
         private event Action<PluginModelInfo, ChangeAction> BotChanged;
-        private event Action<PluginModelInfo> BotStateChanged;
+        private event Action<PluginStateUpdate> BotStateChanged;
 
         private PluginModelInfo AddBot(AccountKey account, PluginConfig config)
         {
@@ -452,7 +452,7 @@ namespace TickTrader.BotAgent.BA.Models
         private PackageStorage _packageStorage;
 
         private event Action<PackageInfo, ChangeAction> PackageChanged;
-        private event Action<PackageInfo> PackageStateChanged;
+        private event Action<PackageStateUpdate> PackageStateChanged;
 
         private List<PackageInfo> GetPackages()
         {

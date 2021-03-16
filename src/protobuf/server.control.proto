@@ -123,36 +123,6 @@ message UpdateInfo
     google.protobuf.Any payload = 2;
 }
 
-message PackageUpdateInfo
-{
-    PackageInfo package = 1;
-}
-
-message PackageStateUpdateInfo
-{
-    PackageInfo package = 1;
-}
-
-message AccountUpdateInfo
-{
-    AccountModelInfo account = 1;
-}
-
-message AccountStateUpdateInfo
-{
-    AccountModelInfo account = 1;
-}
-
-message PluginUpdateInfo
-{
-    PluginModelInfo plugin = 1;
-}
-
-message PluginStateUpdateInfo
-{
-    PluginModelInfo plugin = 1;
-}
-
 
 message ApiMetadataRequest
 {

@@ -118,11 +118,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             };
         }
 
-        public static BotStateDto ToBotStateDto(this PluginModelInfo bot)
+        public static BotStateDto ToBotStateDto(this PluginStateUpdate bot)
         {
             return new BotStateDto
             {
-                Id = bot.InstanceId,
+                Id = bot.PluginId,
                 State = bot.State.ToString(),
                 FaultMessage = bot.FaultMessage
             };

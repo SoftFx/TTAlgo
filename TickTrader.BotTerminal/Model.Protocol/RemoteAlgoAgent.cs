@@ -361,39 +361,39 @@ namespace TickTrader.BotTerminal
             _setupContext = setupContext;
         }
 
-        void IAlgoServerClient.UpdatePackageState(PackageInfo package)
+        void IAlgoServerClient.UpdatePackageState(PackageStateUpdate update)
         {
             _syncContext.Invoke(() =>
             {
-                if (_packages.TryGetValue(package.Key, out var packageModel))
+                if (_packages.TryGetValue(update.PackageId, out var packageModel))
                 {
-                    packageModel.IsValid = package.IsValid;
-                    packageModel.IsLocked = package.IsLocked;
+                    packageModel.IsValid = update.IsValid;
+                    packageModel.IsLocked = update.IsLocked;
                     PackageStateChanged(packageModel);
                 }
             });
         }
 
-        void IAlgoServerClient.UpdateAccountState(AccountModelInfo account)
+        void IAlgoServerClient.UpdateAccountState(AccountStateUpdate update)
         {
             _syncContext.Invoke(() =>
             {
-                if (_accounts.TryGetValue(account.Key, out var accountModel))
+                if (_accounts.TryGetValue(update.AccountId, out var accountModel))
                 {
-                    accountModel.ConnectionState = account.ConnectionState;
-                    accountModel.LastError = account.LastError;
+                    accountModel.ConnectionState = update.ConnectionState;
+                    accountModel.LastError = update.LastError;
                     AccountStateChanged(accountModel);
                 }
             });
         }
 
-        void IAlgoServerClient.UpdateBotState(PluginModelInfo bot)
+        void IAlgoServerClient.UpdateBotState(PluginStateUpdate update)
         {
             _syncContext.Invoke(() =>
             {
-                if (_bots.TryGetValue(bot.InstanceId, out var botModel))
+                if (_bots.TryGetValue(update.PluginId, out var botModel))
                 {
-                    botModel.UpdateState(bot);
+                    botModel.UpdateState(update);
                     BotStateChanged(botModel);
                 }
             });

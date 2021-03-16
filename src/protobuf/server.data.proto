@@ -79,9 +79,8 @@ message AccountModelInfo {
     }
 
     AccountKey key = 1;
-    bool use_new_protocol = 2;
-    ConnectionState connection_state = 3;
-    ConnectionErrorInfo last_error = 4;
+    ConnectionState connection_state = 2;
+    ConnectionErrorInfo last_error = 3;
 }
 
 message PluginModelInfo {
@@ -126,8 +125,26 @@ message PluginFolderInfo {
         BOT_LOGS = 1;
     }
 
-    string bot_id = 1;
+    string plugin_id = 1;
     PluginFolderId folder_id = 2;
     google.protobuf.StringValue path = 3;
     repeated PluginFileInfo files = 4;
+}
+
+message PackageStateUpdate {
+    PackageKey package_id = 1;
+    bool is_locked = 2;
+    bool is_valid = 3;
+}
+
+message AccountStateUpdate {
+    AccountKey account_id = 1;
+    AccountModelInfo.ConnectionState connection_state = 2;
+    ConnectionErrorInfo last_error = 3;
+}
+
+message PluginStateUpdate {
+    string plugin_id = 1;
+    PluginModelInfo.PluginState state = 2;
+    google.protobuf.StringValue fault_message = 3;
 }
