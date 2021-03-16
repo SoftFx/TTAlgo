@@ -1,9 +1,5 @@
 ﻿import { PackageModel, AccountModel, TradeBotStateModel, TradeBotModel } from './ba-models';
 
-export interface FeedSignalR extends SignalR {
-    bAFeed: FeedProxy;
-}
-
 export interface FeedProxy {
     client: FeedClient;
     server: FeedServer;
