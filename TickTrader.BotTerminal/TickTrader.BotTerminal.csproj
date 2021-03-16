@@ -1387,6 +1387,9 @@
     </ItemGroup>
     <Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(TargetDir)AlgoRuntime\" SkipUnchangedFiles="true" />
   </Target>
+  <Target Name="RemoveLinuxLibs" AfterTargets="Build">
+    <Delete Files="$(TargetDir)\libgrpc_csharp_ext.x64.dylib;$(TargetDir)\libgrpc_csharp_ext.x64.so" />
+  </Target>
   <Import Project="..\packages\Grpc.Core.2.36.1\build\net45\Grpc.Core.targets" Condition="Exists('..\packages\Grpc.Core.2.36.1\build\net45\Grpc.Core.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

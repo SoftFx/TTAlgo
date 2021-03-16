@@ -31,6 +31,11 @@
   <property name="TerminalZipFile"     value="${OutputFolder}AlgoTerminal ${Build}.zip" />
   <property name="AlgoServerZipFile"        value="${OutputFolder}AlgoServer ${Build}.x64.zip" />
 
+  <property name="ServerControlSrcDir"        value="${SourcesDir}\src\csharp\core\TickTrader.Algo.ServerControl\" />
+  <property name="ServerControlProject"        value="${ServerControlSrcDir}TickTrader.Algo.ServerControl.csproj" />
+  <property name="ServerControlBinDir"        value="${ServerControlSrcDir}\bin\${Configuration}\netstandard2.0\publish" />
+  <property name="ServerControlZipFile"     value="${OutputFolder}ServerControl ${Build}.zip" />
+
   <property name="SetupDir"            value="${SourcesDir}TickTrader.Algo.Setup" />
   <property name="SetupUtilName"       value="TickTrader.Algo.SetupUtil" />
   <property name="SetupUtilExe"        value="${SourcesDir}${SetupUtilName}\bin\${Configuration}\${SetupUtilName}.exe" />
@@ -51,6 +56,7 @@
 
     <call target="BuildSolution" />
     <call target="PublishAlgoServer" />
+    <call target="PublishServerControl" />
     <if test="${EnableClickOnce=='true'}">
       <call target="PublishTerminal" />
     </if>
@@ -139,6 +145,20 @@
     <property name="MSBuild.Target" value="Publish" />
     <property name="MSBuild.TargetFile" value="${AlgoServerProject}" />
     <call target="RunMSBuildProject" />
+
+  </target>
+
+  <target name="PublishServerControl">
+
+    <property name="MSBuild.Target" value="Publish" />
+    <property name="MSBuild.TargetFile" value="${ServerControlProject}" />
+    <call target="RunMSBuildProject" />
+
+    <copy todir="${ServerControlBinDir}">
+      <fileset basedir="${TerminalBinDir}">
+        <include name="grpc_csharp_ext.*.dll" />
+      </fileset>
+    </copy>
 
   </target>
 
@@ -260,6 +280,11 @@
     <property name="Zip.SrcDir" value="${AlgoServerBinDir}" />
     <property name="Zip.DstFile" value="${AlgoServerZipFile}" />
     <call target="ZipDirectory" />
+
+    <property name="Zip.SrcDir" value="${ServerControlBinDir}" />
+    <property name="Zip.DstFile" value="${ServerControlZipFile}" />
+    <call target="ZipDirectory" />
+
   
   </target>
 
