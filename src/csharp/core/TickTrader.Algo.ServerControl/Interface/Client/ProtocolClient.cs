@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Domain.ServerControl;
 
 namespace TickTrader.Algo.ServerControl
 {
@@ -26,7 +27,7 @@ namespace TickTrader.Algo.ServerControl
         protected IAlgoServerClient AlgoClient { get; }
 
 
-        public IClientSessionSettings SessionSettings { get; protected set; }
+        public ClientSessionSettings SessionSettings { get; protected set; }
 
         public ClientStates State => StateMachine.Current;
 
@@ -48,7 +49,7 @@ namespace TickTrader.Algo.ServerControl
             AlgoClient = algoClient;
 
             VersionSpec = new VersionSpec();
-            AccessManager = new AccessManager(AccessLevels.Anonymous);
+            AccessManager = new AccessManager(ClientClaims.Types.AccessLevel.Anonymous);
 
             StateMachine = new StateMachine<ClientStates>(ClientStates.Offline);
 
@@ -87,7 +88,13 @@ namespace TickTrader.Algo.ServerControl
         }
 
 
-        public void TriggerConnect(IClientSessionSettings settings)
+        public static ProtocolClient Create(IAlgoServerClient client)
+        {
+            return new Grpc.GrpcClient(client);
+        }
+
+
+        public void TriggerConnect(ClientSessionSettings settings)
         {
             StateMachine.SyncContext.Synchronized(() =>
             {
@@ -100,7 +107,7 @@ namespace TickTrader.Algo.ServerControl
             });
         }
 
-        public Task Connect(IClientSessionSettings settings)
+        public Task Connect(ClientSessionSettings settings)
         {
             TriggerConnect(settings);
             return StateMachine.AsyncWait(s => s == ClientStates.Online || s == ClientStates.Offline);
@@ -147,7 +154,7 @@ namespace TickTrader.Algo.ServerControl
             StateMachine.PushEvent(ClientEvents.ConnectionError);
         }
 
-        protected void OnLogin(int serverMajorVersion, int serverMinorVersion, AccessLevels accessLevel)
+        protected void OnLogin(int serverMajorVersion, int serverMinorVersion, ClientClaims.Types.AccessLevel accessLevel)
         {
             VersionSpec = new VersionSpec(serverMinorVersion);
             AccessManager = new AccessManager(accessLevel);
@@ -166,7 +173,7 @@ namespace TickTrader.Algo.ServerControl
         protected void OnLogout(string reason)
         {
             //LastError = reason;
-            AccessManager = new AccessManager(AccessLevels.Anonymous);
+            AccessManager = new AccessManager(ClientClaims.Types.AccessLevel.Anonymous);
             AlgoClient.AccessLevelChanged();
             StateMachine.PushEvent(ClientEvents.LoggedOut);
         }
@@ -181,7 +188,7 @@ namespace TickTrader.Algo.ServerControl
 
         private void StartConnecting()
         {
-            Logger = LoggerHelper.GetLogger(GetType().Name, System.IO.Path.Combine(SessionSettings.ProtocolSettings.LogDirectoryName, GetType().Name), SessionSettings.ServerAddress);
+            Logger = LoggerHelper.GetLogger(GetType().Name, System.IO.Path.Combine(SessionSettings.LogDirectory, GetType().Name), SessionSettings.ServerAddress);
 
             LastError = null;
 

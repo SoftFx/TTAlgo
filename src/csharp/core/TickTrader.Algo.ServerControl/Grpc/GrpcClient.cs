@@ -41,9 +41,9 @@ namespace TickTrader.Algo.ServerControl.Grpc
             GrpcEnvironment.SetLogger(new GrpcLoggerAdapter(Logger));
             var creds = new SslCredentials(CertificateProvider.RootCertificate); //, new KeyCertificatePair(CertificateProvider.ClientCertificate, CertificateProvider.ClientKey));
             var options = new[] { new ChannelOption(ChannelOptions.SslTargetNameOverride, "bot-agent.soft-fx.lv"), };
-            _channel = new Channel(SessionSettings.ServerAddress, SessionSettings.ProtocolSettings.ListeningPort, creds, options);
+            _channel = new Channel(SessionSettings.ServerAddress, SessionSettings.ServerPort, creds, options);
             _accessToken = "";
-            _messageFormatter.LogMessages = SessionSettings.ProtocolSettings.LogMessages;
+            _messageFormatter.LogMessages = SessionSettings.LogMessages;
 
             _client = new AlgoServerPublic.AlgoServerPublicClient(_channel);
 
@@ -95,7 +95,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                         {
                             _accessToken = taskResult.AccessToken;
                             Logger.Info($"Server session id: {taskResult.SessionId}");
-                            OnLogin(taskResult.MajorVersion, taskResult.MinorVersion, taskResult.AccessLevel.Convert());
+                            OnLogin(taskResult.MajorVersion, taskResult.MinorVersion, taskResult.AccessLevel);
                             _heartbeatTimer = new Timer(HeartbeatTimerCallback, null, HeartbeatTimeout, -1);
                         }
                         else

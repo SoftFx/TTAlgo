@@ -1,4 +1,5 @@
 ﻿using System.Runtime.Serialization;
+using TickTrader.Algo.ServerControl;
 
 namespace TickTrader.BotTerminal
 {
@@ -46,9 +47,9 @@ namespace TickTrader.BotTerminal
             return new BotAgentStorageEntry(Name, Login, Password, ServerAddress, Port) { Connect = Connect };
         }
 
-        public ProtocolClientSettings ToClientSettings()
+        public ClientSessionSettings ToClientSettings()
         {
-            return new ProtocolClientSettings { Login = Login, Password = Password, Port = Port, ServerAddress = ServerAddress };
+            return new ClientSessionSettings(ServerAddress, Port, Login, Password, ProtocolSettings.LogDirectoryName, ProtocolSettings.LogMessages);
         }
 
         // Compatibility with previous versions

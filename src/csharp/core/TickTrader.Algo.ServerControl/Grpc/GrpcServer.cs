@@ -18,7 +18,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
         private Server _server;
 
 
-        public GrpcServer(IAlgoServerProvider agentServer, IServerSettings settings, IJwtProvider jwtProvider) : base(agentServer, settings)
+        public GrpcServer(IAlgoServerProvider agentServer, ServerSettings settings, IJwtProvider jwtProvider) : base(agentServer, settings)
         {
             _jwtProvider = jwtProvider;
         }
@@ -27,12 +27,12 @@ namespace TickTrader.Algo.ServerControl.Grpc
         protected override Task StartServer()
         {
             GrpcEnvironment.SetLogger(new GrpcLoggerAdapter(Logger));
-            _impl = new BotAgentServerImpl(AlgoSrv, _jwtProvider, Logger, Settings.ProtocolSettings.LogMessages, VersionSpec);
+            _impl = new BotAgentServerImpl(AlgoSrv, _jwtProvider, Logger, Settings.LogMessages, VersionSpec);
             var creds = new SslServerCredentials(new[] { new KeyCertificatePair(CertificateProvider.ServerCertificate, CertificateProvider.ServerKey), }); //,CertificateProvider.RootCertificate, true);
             _server = new Server
             {
                 Services = { AlgoServerPublic.BindService(_impl) },
-                Ports = { new ServerPort("0.0.0.0", Settings.ProtocolSettings.ListeningPort, creds) },
+                Ports = { new ServerPort("0.0.0.0", Settings.ServerPort, creds) },
             };
             _server.Start();
 
@@ -316,7 +316,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
         #region Credentials handlers
 
-        private void DisconnectAllClients(AccessLevels accessLevel)
+        private void DisconnectAllClients(ClientClaims.Types.AccessLevel accessLevel)
         {
             lock (_sessions)
             {
@@ -331,17 +331,17 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
         private void OnAdminCredsChanged()
         {
-            DisconnectAllClients(AccessLevels.Admin);
+            DisconnectAllClients(ClientClaims.Types.AccessLevel.Admin);
         }
 
         private void OnDealerCredsChanged()
         {
-            DisconnectAllClients(AccessLevels.Dealer);
+            DisconnectAllClients(ClientClaims.Types.AccessLevel.Dealer);
         }
 
         private void OnViewerCredsChanged()
         {
-            DisconnectAllClients(AccessLevels.Viewer);
+            DisconnectAllClients(ClientClaims.Types.AccessLevel.Viewer);
         }
 
         #endregion
@@ -532,7 +532,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 else
                 {
                     var accessLevel = _algoServer.ValidateCreds(request.Login, request.Password);
-                    if (accessLevel == AccessLevels.Anonymous)
+                    if (accessLevel == ClientClaims.Types.AccessLevel.Anonymous)
                     {
                         res.ExecResult = CreateRejectResult();
                         res.Error = LoginResponse.Types.LoginError.InvalidCredentials;
@@ -551,7 +551,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                             };
                             res.SessionId = session.SessionId;
                             res.AccessToken = _jwtProvider.CreateToken(payload);
-                            res.AccessLevel = session.AccessManager.Level.Convert();
+                            res.AccessLevel = session.AccessManager.Level;
                         }
                         catch (Exception ex)
                         {

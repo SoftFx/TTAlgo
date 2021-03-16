@@ -1,17 +1,13 @@
-﻿using TickTrader.Algo.ServerControl;
-
-namespace TickTrader.BotTerminal
+﻿namespace TickTrader.BotTerminal
 {
-    internal class ProtocolSettings : IProtocolSettings
+    internal static class ProtocolSettings
     {
-        public int ListeningPort { get; set; }
+        public static string LogDirectoryName { get; private set; }
 
-        public string LogDirectoryName { get; set; }
-
-        public bool LogMessages { get; set; }
+        public static bool LogMessages { get; private set; }
 
 
-        public ProtocolSettings()
+        static ProtocolSettings()
         {
             var cfgSection = ProtocolConfigSection.GetCfgSection();
             var logsConfig = cfgSection.Logs;

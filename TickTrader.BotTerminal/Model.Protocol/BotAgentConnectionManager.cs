@@ -3,6 +3,7 @@ using NLog;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.ServerControl;
 using TickTrader.BotTerminal.Lib;
 
@@ -24,7 +25,7 @@ namespace TickTrader.BotTerminal
         private bool _needReconnect;
 
 
-        public AccessLevels AccessLevel => _protocolClient.AccessManager.Level;
+        public ClientClaims.Types.AccessLevel AccessLevel => _protocolClient.AccessManager.Level;
 
         public States State => _stateControl.Current;
 
@@ -47,7 +48,7 @@ namespace TickTrader.BotTerminal
             Creds = botAgentCreds;
 
             RemoteAgent = new RemoteAlgoAgent(Creds.Name);
-            _protocolClient = new Algo.ServerControl.Grpc.GrpcClient(RemoteAgent);
+            _protocolClient = ProtocolClient.Create(RemoteAgent);
             RemoteAgent.SetProtocolClient(_protocolClient);
 
             _protocolClient.Connected += ClientOnConnected;

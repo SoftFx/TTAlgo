@@ -3,52 +3,9 @@ using TickTrader.Algo.Domain.ServerControl;
 
 namespace TickTrader.Algo.ServerControl
 {
-    public enum AccessLevels
-    {
-        Anonymous = 0,
-        Viewer = 1,
-        Dealer = 2,
-        Admin = 3,
-    }
-
-
-    public static class AccessLevelHelpers
-    {
-        public static AccessLevels Convert(this LoginResponse.Types.AccessLevel accessLevel)
-        {
-            switch (accessLevel)
-            {
-                case LoginResponse.Types.AccessLevel.Viewer:
-                    return AccessLevels.Viewer;
-                case LoginResponse.Types.AccessLevel.Dealer:
-                    return AccessLevels.Dealer;
-                case LoginResponse.Types.AccessLevel.Admin:
-                    return AccessLevels.Admin;
-                default:
-                    return AccessLevels.Anonymous;
-            }
-        }
-
-        public static LoginResponse.Types.AccessLevel Convert(this AccessLevels accessLevel)
-        {
-            switch (accessLevel)
-            {
-                case AccessLevels.Viewer:
-                    return LoginResponse.Types.AccessLevel.Viewer;
-                case AccessLevels.Dealer:
-                    return LoginResponse.Types.AccessLevel.Dealer;
-                case AccessLevels.Admin:
-                    return LoginResponse.Types.AccessLevel.Admin;
-                default:
-                    return (LoginResponse.Types.AccessLevel)(-1);
-            }
-        }
-    }
-
-
     public class AccessManager
     {
-        public AccessLevels Level { get; }
+        public ClientClaims.Types.AccessLevel Level { get; }
 
         public bool HasViewerAccess { get; }
 
@@ -57,13 +14,13 @@ namespace TickTrader.Algo.ServerControl
         public bool HasAdminAccess { get; }
 
 
-        public AccessManager(AccessLevels level)
+        public AccessManager(ClientClaims.Types.AccessLevel level)
         {
             Level = level;
 
-            HasViewerAccess = Level == AccessLevels.Viewer || Level == AccessLevels.Dealer || Level == AccessLevels.Admin;
-            HasDealerAccess = Level == AccessLevels.Dealer || Level == AccessLevels.Admin;
-            HasAdminAccess = Level == AccessLevels.Admin;
+            HasViewerAccess = Level == ClientClaims.Types.AccessLevel.Viewer || Level == ClientClaims.Types.AccessLevel.Dealer || Level == ClientClaims.Types.AccessLevel.Admin;
+            HasDealerAccess = Level == ClientClaims.Types.AccessLevel.Dealer || Level == ClientClaims.Types.AccessLevel.Admin;
+            HasAdminAccess = Level == ClientClaims.Types.AccessLevel.Admin;
         }
 
 

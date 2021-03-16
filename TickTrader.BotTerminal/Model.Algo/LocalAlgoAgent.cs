@@ -136,7 +136,7 @@ namespace TickTrader.BotTerminal
             Mappings = new MappingCollection(_reductions);
             _mappingsInfo = Mappings.ToInfo();
             Catalog = new PluginCatalog(this);
-            AccessManager = new AccessManager(AccessLevels.Admin);
+            AccessManager = new AccessManager(ClientClaims.Types.AccessLevel.Admin);
         }
 
 

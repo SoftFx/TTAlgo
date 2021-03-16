@@ -27,19 +27,25 @@ namespace TickTrader.Algo.ServerControl
 
         public IAlgoServerProvider AlgoSrv { get; }
 
-        public IServerSettings Settings { get; }
+        public ServerSettings Settings { get; }
 
         public VersionSpec VersionSpec { get; private set; }
 
 
-        public ProtocolServer(IAlgoServerProvider algoServer, IServerSettings settings)
+        public ProtocolServer(IAlgoServerProvider algoServer, ServerSettings settings)
         {
             AlgoSrv = algoServer;
             Settings = settings;
 
-            Logger = LoggerHelper.GetLogger(GetType().Name, Settings.ProtocolSettings.LogDirectoryName, GetType().Name);
+            Logger = LoggerHelper.GetLogger(GetType().Name, Settings.LogDirectory, GetType().Name);
 
             State = ServerStates.Stopped;
+        }
+
+
+        public static ProtocolServer Create(IAlgoServerProvider algoServer, ServerSettings settings, IJwtProvider jwtProvider)
+        {
+            return new Grpc.GrpcServer(algoServer, settings, jwtProvider);
         }
 
 

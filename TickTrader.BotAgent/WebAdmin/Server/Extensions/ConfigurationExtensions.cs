@@ -3,7 +3,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
-using TickTrader.BotAgent.Extensions;
+using TickTrader.Algo.ServerControl;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
@@ -72,7 +72,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             //return new X509Certificate2(pfxFile, sslConf.Password);
         }
 
-        public static ProtocolServerSettings GetProtocolServerSettings(this IConfiguration config)
+        public static ServerSettings GetProtocolServerSettings(this IConfiguration config)
         {
             var protocolConfig = config.GetProtocolSettings();
 
@@ -82,14 +82,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             if (protocolConfig.ListeningPort < 0 || protocolConfig.ListeningPort > 65535)
                 throw new ArgumentException("Invalid port number");
 
-            protocolConfig.LogDirectoryName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, protocolConfig.LogDirectoryName);
+            var logDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, protocolConfig.LogDirectoryName);
 
-            var serverSettings = new ProtocolServerSettings
-            {
-                ServerName = "AlgoServer",
-                Certificate = _cert,
-                ProtocolSettings = protocolConfig,
-            };
+            var serverSettings = new ServerSettings("AlgoServer", protocolConfig.ListeningPort, logDirectory, protocolConfig.LogMessages);
 
             return serverSettings;
         }

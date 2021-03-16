@@ -1,4 +1,6 @@
-﻿namespace TickTrader.Algo.ServerControl
+﻿using TickTrader.Algo.Domain.ServerControl;
+
+namespace TickTrader.Algo.ServerControl
 {
     public class JwtPayload
     {
@@ -8,7 +10,7 @@
 
         public int MinorVersion { get; set; }
 
-        public AccessLevels AccessLevel { get; set; }
+        public ClientClaims.Types.AccessLevel AccessLevel { get; set; }
     }
 
 

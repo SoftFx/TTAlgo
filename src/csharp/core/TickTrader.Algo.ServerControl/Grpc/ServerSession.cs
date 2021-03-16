@@ -48,7 +48,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
             public bool IsFaulted { get; private set; }
 
 
-            public Handler(string sessionId, string username, int clientMinorVersion, LogFactory logFactory, MessageFormatter messageFormatter, AccessLevels accessLevel)
+            public Handler(string sessionId, string username, int clientMinorVersion, LogFactory logFactory, MessageFormatter messageFormatter, ClientClaims.Types.AccessLevel accessLevel)
                 : base(SpawnLocal<ServerSession>(null, $"ServerSession: {sessionId}"))
             {
                 SessionId = sessionId;

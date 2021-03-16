@@ -54,16 +54,16 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         }
 
 
-        public AccessLevels ValidateCreds(string login, string password)
+        public ClientClaims.Types.AccessLevel ValidateCreds(string login, string password)
         {
             if (_authManager.ValidViewerCreds(login, password))
-                return AccessLevels.Viewer;
+                return ClientClaims.Types.AccessLevel.Viewer;
             if (_authManager.ValidDealerCreds(login, password))
-                return AccessLevels.Dealer;
+                return ClientClaims.Types.AccessLevel.Dealer;
             if (_authManager.ValidAdminCreds(login, password))
-                return AccessLevels.Admin;
+                return ClientClaims.Types.AccessLevel.Admin;
 
-            return AccessLevels.Anonymous;
+            return ClientClaims.Types.AccessLevel.Anonymous;
         }
 
         public Task<List<AccountModelInfo>> GetAccountList()

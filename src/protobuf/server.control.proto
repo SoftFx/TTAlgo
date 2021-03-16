@@ -27,6 +27,15 @@ message RequestResult
     string message = 2;
 }
 
+message ClientClaims {
+    enum AccessLevel {
+        ANONYMOUS = 0;
+        VIEWER = 1;
+        DEALER = 2;
+        ADMIN = 3;
+    }
+}
+
 message LoginRequest
 {
     google.protobuf.StringValue login = 1;
@@ -44,19 +53,12 @@ message LoginResponse
         VERSION_MISMATCH = 2;
     }
 
-    enum AccessLevel
-    {
-        VIEWER = 0;
-        DEALER = 1;
-        ADMIN = 2;
-    }
-
     LoginError error = 1;
     int32 major_version = 2; // server version
     int32 minor_version = 3; // server version
     google.protobuf.StringValue session_id = 4;
     google.protobuf.StringValue access_token = 5;
-    AccessLevel access_level = 6;
+    ClientClaims.AccessLevel access_level = 6;
 
     RequestResult exec_result = 101;
 }
