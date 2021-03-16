@@ -20,9 +20,9 @@ namespace TickTrader.Algo.Domain.ServerControl
             else if (payload.Is(AccountStateUpdateInfo.Descriptor))
                 update = UpdateInfo<AccountStateUpdateInfo>.Unpack(this);
             else if (payload.Is(PluginUpdateInfo.Descriptor))
-                update = UpdateInfo<PluginModelInfo>.Unpack(this);
+                update = UpdateInfo<PluginUpdateInfo>.Unpack(this);
             else if (payload.Is(PluginStateUpdateInfo.Descriptor))
-                update = UpdateInfo<PluginModelInfo>.Unpack(this);
+                update = UpdateInfo<PluginStateUpdateInfo>.Unpack(this);
 
             return update != null;
         }
@@ -34,6 +34,9 @@ namespace TickTrader.Algo.Domain.ServerControl
         UpdateInfo.Types.UpdateType Type { get; }
 
         IMessage ValueMsg { get; }
+
+
+        UpdateInfo Pack();
     }
 
 
@@ -75,6 +78,11 @@ namespace TickTrader.Algo.Domain.ServerControl
             return new UpdateInfo<T>(update.Type, value) { _packedValue = payload };
         }
 
+
+        public override string ToString()
+        {
+            return $"{{ Type = {Type}, ValueType = {Value.Descriptor.Name}, Value = {ValueMsg} }}";
+        }
 
         public UpdateInfo Pack()
         {

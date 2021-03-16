@@ -22,7 +22,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
         public MessageFormatter()
         {
-            _formatter = new JsonFormatter(new JsonFormatter.Settings(true));
+            _formatter = new JsonFormatter(new JsonFormatter.Settings(true, TypeRegistry.FromFiles(AlgoServerReflection.Descriptor)));
         }
 
 
@@ -51,7 +51,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
         {
             if (LogMessages && logger != null)
             {
-                logger.Info($"client < {updateInfo.ValueMsg.Descriptor.Name}: {Format(updateInfo.ValueMsg)}");
+                logger.Info($"client < {updateInfo.ValueMsg.Descriptor.Name}: {{ Type = {updateInfo.Type}, Value = {Format(updateInfo.ValueMsg)} }}");
             }
         }
 
@@ -75,7 +75,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
         {
             if (LogMessages && logger != null)
             {
-                logger.Info($"server > {updateInfo.ValueMsg.Descriptor.Name}: {Format(updateInfo.ValueMsg)}");
+                logger.Info($"server > {updateInfo.ValueMsg.Descriptor.Name}: {{ Type = {updateInfo.Type}, Value = {Format(updateInfo.ValueMsg)} }}");
             }
         }
 

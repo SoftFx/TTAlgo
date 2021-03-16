@@ -253,7 +253,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                     var update = updateStream.Current;
                     if (update.TryUnpack(out var updateInfo))
                     {
-                        _messageFormatter.LogServerResponse(Logger, update);
+                        _messageFormatter.LogClientUpdate(Logger, updateInfo);
                         if (updateInfo is UpdateInfo<PackageUpdateInfo>)
                             AlgoClient.UpdatePackage(updateInfo.Type, ((UpdateInfo<PackageUpdateInfo>)updateInfo).Value.Package);
                         else if (updateInfo is UpdateInfo<PackageStateUpdateInfo>)
@@ -265,12 +265,11 @@ namespace TickTrader.Algo.ServerControl.Grpc
                         else if (updateInfo is UpdateInfo<PluginUpdateInfo>)
                             AlgoClient.UpdateBot(updateInfo.Type, ((UpdateInfo<PluginUpdateInfo>)updateInfo).Value.Plugin);
                         else if (updateInfo is UpdateInfo<PluginStateUpdateInfo>)
-                            AlgoClient.UpdateBot(updateInfo.Type, ((UpdateInfo<PluginStateUpdateInfo>)updateInfo).Value.Plugin);
+                            AlgoClient.UpdateBotState(((UpdateInfo<PluginStateUpdateInfo>)updateInfo).Value.Plugin);
                         else Logger.Error($"Failed to dispatch update of type: {update.Payload.TypeUrl}");
                     }
                     else 
                     {
-                        _messageFormatter.LogServerResponse(Logger, update);
                         Logger.Error($"Failed to unpack update of type: {update.Payload.TypeUrl}");
                     }
                 }

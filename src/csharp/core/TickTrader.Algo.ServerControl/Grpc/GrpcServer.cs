@@ -1460,35 +1460,35 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
         private void OnPackageUpdate(UpdateInfo<PackageInfo> update)
         {
-            SendUpdate(new UpdateInfo<PackageUpdateInfo>(update.Type, new PackageUpdateInfo { Package = update.Value }).Pack());
+            SendUpdate(new UpdateInfo<PackageUpdateInfo>(update.Type, new PackageUpdateInfo { Package = update.Value }));
         }
 
         private void OnPackageStateUpdate(PackageInfo package)
         {
-            SendUpdate(new UpdateInfo<PackageStateUpdateInfo>(UpdateInfo.Types.UpdateType.Replaced, new PackageStateUpdateInfo { Package = package }).Pack());
+            SendUpdate(new UpdateInfo<PackageStateUpdateInfo>(UpdateInfo.Types.UpdateType.Replaced, new PackageStateUpdateInfo { Package = package }));
         }
 
         private void OnAccountUpdate(UpdateInfo<AccountModelInfo> update)
         {
-            SendUpdate(new UpdateInfo<AccountUpdateInfo>(update.Type, new AccountUpdateInfo { Account = update.Value }).Pack());
+            SendUpdate(new UpdateInfo<AccountUpdateInfo>(update.Type, new AccountUpdateInfo { Account = update.Value }));
         }
 
         private void OnAccountStateUpdate(AccountModelInfo account)
         {
-            SendUpdate(new UpdateInfo<AccountStateUpdateInfo>(UpdateInfo.Types.UpdateType.Replaced, new AccountStateUpdateInfo { Account = account }).Pack());
+            SendUpdate(new UpdateInfo<AccountStateUpdateInfo>(UpdateInfo.Types.UpdateType.Replaced, new AccountStateUpdateInfo { Account = account }));
         }
 
         private void OnBotUpdate(UpdateInfo<PluginModelInfo> update)
         {
-            SendUpdate(new UpdateInfo<PluginUpdateInfo>(update.Type, new PluginUpdateInfo { Plugin = update.Value }).Pack());
+            SendUpdate(new UpdateInfo<PluginUpdateInfo>(update.Type, new PluginUpdateInfo { Plugin = update.Value }));
         }
 
         private void OnBotStateUpdate(PluginModelInfo bot)
         {
-            SendUpdate(new UpdateInfo<PluginStateUpdateInfo>(UpdateInfo.Types.UpdateType.Replaced, new PluginStateUpdateInfo { Plugin = bot }).Pack());
+            SendUpdate(new UpdateInfo<PluginStateUpdateInfo>(UpdateInfo.Types.UpdateType.Replaced, new PluginStateUpdateInfo { Plugin = bot }));
         }
 
-        private void SendUpdate(UpdateInfo update)
+        private void SendUpdate(IUpdateInfo update)
         {
             lock (_sessions)
             {
@@ -1510,7 +1510,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error(ex, $"Failed to multicast {_messageFormatter.ToJson(update)}");
+                    _logger.Error(ex, $"Failed to multicast update: {update}");
                 }
             }
         }

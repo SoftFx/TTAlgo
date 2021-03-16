@@ -20,7 +20,7 @@ namespace TickTrader.Algo.Server
         {
             var a = Assembly.GetExecutingAssembly();
 
-            using (var s = a.GetManifestResourceStream("TickTrader.Algo.Server.certs.bot-agent.crt"))
+            using (var s = a.GetManifestResourceStream("TickTrader.Algo.Server.certs.bot-agent.key"))
             using (var r = new StreamReader(s))
             {
                 return r.ReadToEnd();

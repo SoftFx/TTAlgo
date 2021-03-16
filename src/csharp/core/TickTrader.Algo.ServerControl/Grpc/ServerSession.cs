@@ -63,7 +63,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             public Task SetupUpdateStream(IServerStreamWriter<UpdateInfo> updateStream) => CallActorAsync(a => a.SetupUpdateStream(updateStream));
 
-            public void SendUpdate(UpdateInfo update)
+            public void SendUpdate(IUpdateInfo update)
             {
                 if (IsFaulted)
                     return;
@@ -97,19 +97,19 @@ namespace TickTrader.Algo.ServerControl.Grpc
             await _updateStreamTaskSrc.Task;
         }
 
-        private void SendUpdate(UpdateInfo update)
+        private void SendUpdate(IUpdateInfo update)
         {
             if (_updateStreamTaskSrc == null)
                 return;
 
             try
             {
-                _updateStream.WriteAsync(update).Wait();
-                _messageFormatter.LogClientResponse(_logger, update);
+                _updateStream.WriteAsync(update.Pack()).Wait();
+                _messageFormatter.LogServerUpdate(_logger, update);
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Failed to send update: {_messageFormatter.ToJson(update)}");
+                _logger.Error(ex, $"Failed to send update: {update}");
                 _isFaulted = true;
             }
         }
