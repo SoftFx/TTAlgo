@@ -626,38 +626,38 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return response.AccountMetadata;
         }
 
-        public override async Task<List<PluginModelInfo>> GetBotList()
+        public override async Task<List<PluginModelInfo>> GetPluginList()
         {
             var response = await ExecuteUnaryRequestAuthorized(GetBotListInternal, new PluginListRequest());
             FailForNonSuccess(response.ExecResult);
             return response.Plugins.ToList();
         }
 
-        public override async Task AddBot(AccountKey account, PluginConfig config)
+        public override async Task AddPlugin(AccountKey account, PluginConfig config)
         {
             var response = await ExecuteUnaryRequestAuthorized(AddBotInternal, new AddPluginRequest { Account = account, Config = config });
             FailForNonSuccess(response.ExecResult);
         }
 
-        public override async Task RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false)
+        public override async Task RemovePlugin(string botId, bool cleanLog = false, bool cleanAlgoData = false)
         {
             var response = await ExecuteUnaryRequestAuthorized(RemoveBotInternal, new RemovePluginRequest { PluginId = botId, CleanLog = cleanLog, CleanAlgoData = cleanAlgoData });
             FailForNonSuccess(response.ExecResult);
         }
 
-        public override async Task StartBot(string botId)
+        public override async Task StartPlugin(string botId)
         {
             var response = await ExecuteUnaryRequestAuthorized(StartBotInternal, new StartPluginRequest { PluginId = botId });
             FailForNonSuccess(response.ExecResult);
         }
 
-        public override async Task StopBot(string botId)
+        public override async Task StopPlugin(string botId)
         {
             var response = await ExecuteUnaryRequestAuthorized(StopBotInternal, new StopPluginRequest { PluginId = botId });
             FailForNonSuccess(response.ExecResult);
         }
 
-        public override async Task ChangeBotConfig(string botId, PluginConfig newConfig)
+        public override async Task ChangePluginConfig(string botId, PluginConfig newConfig)
         {
             var response = await ExecuteUnaryRequestAuthorized(ChangeBotConfigInternal, new ChangePluginConfigRequest { PluginId = botId, NewConfig = newConfig });
             FailForNonSuccess(response.ExecResult);
@@ -831,14 +831,14 @@ namespace TickTrader.Algo.ServerControl.Grpc
             }
         }
 
-        public override async Task<string> GetBotStatus(string botId)
+        public override async Task<string> GetPluginStatus(string botId)
         {
             var response = await ExecuteUnaryRequestAuthorized(GetBotStatusInternal, new PluginStatusRequest { PluginId = botId });
             FailForNonSuccess(response.ExecResult);
             return response.Status;
         }
 
-        public override async Task<LogRecordInfo[]> GetBotLogs(string botId, Timestamp lastLogTimeUtc, int maxCount)
+        public override async Task<LogRecordInfo[]> GetPluginLogs(string botId, Timestamp lastLogTimeUtc, int maxCount)
         {
             var response = await ExecuteUnaryRequestAuthorized(GetBotLogsInternal, new PluginLogsRequest { PluginId = botId, LastLogTimeUtc = lastLogTimeUtc, MaxCount = maxCount });
             FailForNonSuccess(response.ExecResult);
@@ -854,26 +854,26 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return response.Alerts.ToArray();
         }
 
-        public override async Task<PluginFolderInfo> GetBotFolderInfo(string botId, PluginFolderInfo.Types.PluginFolderId folderId)
+        public override async Task<PluginFolderInfo> GetPluginFolderInfo(string botId, PluginFolderInfo.Types.PluginFolderId folderId)
         {
             var response = await ExecuteUnaryRequestAuthorized(GetBotFolderInfoInternal, new PluginFolderInfoRequest { PluginId = botId, FolderId = folderId });
             FailForNonSuccess(response.ExecResult);
             return response.FolderInfo;
         }
 
-        public override async Task ClearBotFolder(string botId, PluginFolderInfo.Types.PluginFolderId folderId)
+        public override async Task ClearPluginFolder(string botId, PluginFolderInfo.Types.PluginFolderId folderId)
         {
             var response = await ExecuteUnaryRequestAuthorized(ClearBotFolderInternal, new ClearPluginFolderRequest { PluginId = botId, FolderId = folderId });
             FailForNonSuccess(response.ExecResult);
         }
 
-        public override async Task DeleteBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName)
+        public override async Task DeletePluginFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName)
         {
             var response = await ExecuteUnaryRequestAuthorized(DeleteBotFileInternal, new DeletePluginFileRequest { PluginId = botId, FolderId = folderId, FileName = fileName });
             FailForNonSuccess(response.ExecResult);
         }
 
-        public override async Task DownloadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string dstPath, int chunkSize, int offset, IFileProgressListener progressListener)
+        public override async Task DownloadPluginFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string dstPath, int chunkSize, int offset, IFileProgressListener progressListener)
         {
             progressListener.Init((long)offset * chunkSize);
 
@@ -943,7 +943,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
             }
         }
 
-        public override async Task UploadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string srcPath, int chunkSize, int offset, IFileProgressListener progressListener)
+        public override async Task UploadPluginFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string srcPath, int chunkSize, int offset, IFileProgressListener progressListener)
         {
             progressListener.Init((long)offset * chunkSize);
 

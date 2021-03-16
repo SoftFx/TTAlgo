@@ -269,17 +269,17 @@ namespace TickTrader.Algo.ServerControl
 
         public abstract Task<AccountMetadataInfo> GetAccountMetadata(AccountKey account);
 
-        public abstract Task<List<PluginModelInfo>> GetBotList();
+        public abstract Task<List<PluginModelInfo>> GetPluginList();
 
-        public abstract Task AddBot(AccountKey account, PluginConfig config);
+        public abstract Task AddPlugin(AccountKey account, PluginConfig config);
 
-        public abstract Task RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false);
+        public abstract Task RemovePlugin(string pluginId, bool cleanLog = false, bool cleanAlgoData = false);
 
-        public abstract Task StartBot(string botId);
+        public abstract Task StartPlugin(string pluginId);
 
-        public abstract Task StopBot(string botId);
+        public abstract Task StopPlugin(string pluginId);
 
-        public abstract Task ChangeBotConfig(string botId, PluginConfig newConfig);
+        public abstract Task ChangePluginConfig(string pluginId, PluginConfig newConfig);
 
         public abstract Task<List<AccountModelInfo>> GetAccountList();
 
@@ -301,21 +301,21 @@ namespace TickTrader.Algo.ServerControl
 
         public abstract Task DownloadPackage(PackageKey package, string dstPath, int chunkSize, int offset, IFileProgressListener progressListener);
 
-        public abstract Task<string> GetBotStatus(string botId);
+        public abstract Task<string> GetPluginStatus(string pluginId);
 
-        public abstract Task<LogRecordInfo[]> GetBotLogs(string botId, Timestamp lastLogTimeUtc, int maxCount);
+        public abstract Task<LogRecordInfo[]> GetPluginLogs(string pluginId, Timestamp lastLogTimeUtc, int maxCount);
 
         public abstract Task<AlertRecordInfo[]> GetAlerts(Timestamp lastLogTimeUtc, int maxCount);
 
-        public abstract Task<PluginFolderInfo> GetBotFolderInfo(string botId, PluginFolderInfo.Types.PluginFolderId folderId);
+        public abstract Task<PluginFolderInfo> GetPluginFolderInfo(string pluginId, PluginFolderInfo.Types.PluginFolderId folderId);
 
-        public abstract Task ClearBotFolder(string botId, PluginFolderInfo.Types.PluginFolderId folderId);
+        public abstract Task ClearPluginFolder(string pluginId, PluginFolderInfo.Types.PluginFolderId folderId);
 
-        public abstract Task DeleteBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName);
+        public abstract Task DeletePluginFile(string pluginId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName);
 
-        public abstract Task DownloadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string dstPath, int chunkSize, int offset, IFileProgressListener progressListener);
+        public abstract Task DownloadPluginFile(string pluginId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string dstPath, int chunkSize, int offset, IFileProgressListener progressListener);
 
-        public abstract Task UploadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string srcPath, int chunkSize, int offset, IFileProgressListener progressListener);
+        public abstract Task UploadPluginFile(string pluginId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string srcPath, int chunkSize, int offset, IFileProgressListener progressListener);
 
         #endregion Requests
     }
