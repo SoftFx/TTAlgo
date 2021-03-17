@@ -8,8 +8,8 @@
     "build_dev_vendor": "SET NODE_ENV=development&& webpack --config WebAdmin/webpack.config.vendor.js",
     "build_dev_main": "SET NODE_ENV=development&& webpack --config WebAdmin/webpack.config.js",
     "build_dev": "npm run fix_angular2_polyfill && npm run build_dev_vendor && npm run build_dev_main",
-    "build_prod_vendor": "SET NODE_ENV=production&& webpack -p --color --config WebAdmin/webpack.config.vendor.js",
-    "build_prod_main": "SET NODE_ENV=production&& webpack -p --color --config WebAdmin/webpack.config.js",
+    "build_prod_vendor": "SET NODE_ENV=production&& webpack --mode production --color --config WebAdmin/webpack.config.vendor.js",
+    "build_prod_main": "SET NODE_ENV=production&& webpack --mode production --color --config WebAdmin/webpack.config.js",
     "build_prod": "npm run fix_angular2_polyfill && npm run build_prod_vendor && npm run build_prod_main"
   },
   "dependencies": {
