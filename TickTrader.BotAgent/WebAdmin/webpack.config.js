@@ -3,25 +3,56 @@ var isDevBuild = environment === "development";
 
 var path = require('path');
 var webpack = require('webpack');
-var nodeExternals = require('webpack-node-externals');
+//var nodeExternals = require('webpack-node-externals');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
 var merge = require('webpack-merge');
 var allFilenamesExceptJavaScript = /\.(?!js(\?|$))([^.]+(\?|$))/;
 
 // Configuration in common to both client-side and server-side bundles
 var sharedConfig = {
-    resolve: { extensions: ['', '.js', '.ts'] },
+    resolve:
+    { 
+        extensions: ['*', '.js', '.ts', '.tsx'],
+        fallback: {
+            "crypto": false,
+            "timers": false
+        }
+    },
     output: {
         filename: '[name].js',
         publicPath: '/dist/' // Webpack dev middleware, if enabled, handles requests for this URL prefix
     },
     module: {
-        loaders: [
-             { test: require.resolve('jquery'), loader: 'expose?jQuery!expose?$' },
-            { test: /\.ts$/, include: /Client/, loader: 'ts', query: { silent: true } },
-            { test: /\.html$/, loader: 'raw' },
-            { test: /\.css$/, loader: 'css-to-string!css' },
-            { test: /\.(png|jpg|jpeg|gif|svg)$/, loader: 'url', query: { limit: 25000 } }
+        rules: [
+            {
+                test: require.resolve("jquery"),
+                loader: "expose-loader",
+                options: {
+                    exposes: ["$", "jQuery"],
+                },
+            },
+            { 
+                test: /\.ts$/, 
+                include: /Client/, 
+                use: ['ts-loader'], 
+                //query: { silent: true } 
+            },
+            { 
+                test: /\.html$/, 
+                use: ['raw-loader'] 
+            },
+            { 
+                test: /\.css$/, 
+                //loader: 'css-to-string!css'
+                use: ["to-string-loader", "css-loader"],
+            },
+            { 
+                test: /\.(png|jpg|jpeg|gif|svg)$/, 
+                use: ['url-loader'], 
+                // query: { 
+                //     limit: 25000 
+                // } 
+            }
         ]
     }
 };
@@ -36,9 +67,20 @@ var clientBundleConfig = merge(sharedConfig, {
             context: __dirname,
             manifest: require('./wwwroot/dist/vendor-manifest.json')
         }),
-        new CopyWebpackPlugin([
-             { context: path.join(__dirname, '/Assets'), from: 'img/**', to: path.join(__dirname, '/wwwroot/assets/') },
-             { context: path.join(__dirname, '/Assets'), from: 'js/**', to: path.join(__dirname, '/wwwroot/assets/') }]),
+        new CopyWebpackPlugin({
+            patterns: [
+                { 
+                    context: path.join(__dirname, '/Assets'), 
+                    from: 'img/**', 
+                    to: path.join(__dirname, '/wwwroot/assets/') 
+                },
+                { 
+                    context: path.join(__dirname, '/Assets'), 
+                    from: 'js/**', 
+                    to: path.join(__dirname, '/wwwroot/assets/') 
+                }
+            ]
+        }),
         new webpack.ProvidePlugin({
             $: "jquery",
             jQuery: "jquery"
