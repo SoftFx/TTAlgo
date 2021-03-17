@@ -3,17 +3,34 @@ var isDevBuild = environment === "development";
 
 var path = require('path');
 var webpack = require('webpack');
-var ExtractTextPlugin = require('extract-text-webpack-plugin');
-var extractCSS = new ExtractTextPlugin('vendor.css');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
+//var ExtractTextPlugin = require('extract-text-webpack-plugin');
+//var extractCSS = new ExtractTextPlugin('vendor.css');
 
 module.exports = {
     resolve: {
-        extensions: ['', '.js']
+        extensions: ['*', '.js'],
+        fallback: {
+            "crypto": false
+        }
     },
     module: {
-        loaders: [
-            { test: /\.(png|woff|woff2|eot|ttf|svg)(\?|$)/, loader: 'url-loader?limit=100000' },
-            { test: /\.css(\?|$)/, loader: extractCSS.extract(['css']) }
+        rules: [
+            { 
+                test: /\.(png|woff|woff2|eot|ttf|svg)(\?|$)/,
+                type: 'asset/inline'
+                // use: [{
+                //     loader: 'url-loader',
+                //     options: {
+                //         limit: 10000,
+                //     },
+                // },], 
+            },
+            { 
+                test: /\.css(\?|$)/, 
+                use: [MiniCssExtractPlugin.loader, 'css-loader'], 
+            }
         ]
     },
     entry: {
@@ -50,14 +67,17 @@ module.exports = {
         library: '[name]_[hash]',
     },
     plugins: [
-        extractCSS,
+        //extractCSS,
+        new MiniCssExtractPlugin({
+            filename: 'vendor.css',
+        }),
         new webpack.ProvidePlugin({ $: 'jquery', jQuery: 'jquery' }), // Maps these identifiers to the jQuery package (because Bootstrap expects it to be a global variable)
-        new webpack.optimize.OccurenceOrderPlugin(),
+        // new webpack.optimize.OccurrenceOrderPlugin(),
         new webpack.DllPlugin({
             path: path.join(__dirname, 'wwwroot', 'dist', '[name]-manifest.json'),
             name: '[name]_[hash]'
         })
     ].concat(isDevBuild ? [] : [
-        new webpack.optimize.UglifyJsPlugin({ compress: { warnings: false } })
+        new UglifyJsPlugin(),
     ])
 };
