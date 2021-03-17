@@ -5,6 +5,7 @@ var path = require('path');
 var webpack = require('webpack');
 //var nodeExternals = require('webpack-node-externals');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 var merge = require('webpack-merge');
 var allFilenamesExceptJavaScript = /\.(?!js(\?|$))([^.]+(\?|$))/;
 
@@ -61,7 +62,7 @@ var sharedConfig = {
 var clientBundleConfig = merge(sharedConfig, {
     entry: { 'main': path.join(__dirname, '/Client/boot-client.ts') },
     output: { path: path.join(__dirname, '/wwwroot/dist') },
-    devtool: isDevBuild ? 'source-map' : null,
+    devtool: isDevBuild ? 'source-map' : false,
     plugins: [
         new webpack.DllReferencePlugin({
             context: __dirname,
@@ -87,8 +88,8 @@ var clientBundleConfig = merge(sharedConfig, {
         })
     ].concat(isDevBuild ? [] : [
         // Plugins that apply in production builds only
-        new webpack.optimize.OccurenceOrderPlugin(),
-        new webpack.optimize.UglifyJsPlugin()
+        //new webpack.optimize.OccurrenceOrderPlugin(),
+        new UglifyJsPlugin(),
     ])
 });
 
