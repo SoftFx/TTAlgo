@@ -41,7 +41,7 @@
   "devDependencies": {
     "@angular/platform-server": "2.0.0",
     "@types/core-js": "^0.9.34",
-    "@types/jquery": "^3.3.31",
+    "@types/jquery": "3.3.31",
     "@types/node": "^6.0.62",
     "@types/signalr": "^2.2.35",
     "angular2-platform-node": "~2.0.10",
