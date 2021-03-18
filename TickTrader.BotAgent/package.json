@@ -3,7 +3,8 @@
   "version": "1.0.1",
   "private": true,
   "scripts": {
-    "clean_dist": "npm run rimraf --WebAdmin/wwwroot/dist",
+    "clean_nodes": "rimraf node_modules",
+    "clean_dist": "rimraf --WebAdmin/wwwroot/dist",
     "fix_angular2_polyfill": "xcopy node_modules\\reflect-metadata node_modules\\angular2-universal-polyfills\\node_modules\\reflect-metadata /E/H/C/I/Y",
     "build_dev_vendor": "SET NODE_ENV=development&& webpack --config WebAdmin/webpack.config.vendor.js",
     "build_dev_main": "SET NODE_ENV=development&& webpack --config WebAdmin/webpack.config.js",
@@ -22,7 +23,7 @@
     "@angular/platform-browser-dynamic": "~2.2.2",
     "@angular/router": "~3.2.2",
     "@angular/upgrade": "~2.2.2",
-    "@aspnet/signalr": "1.1.4",
+    "@aspnet/signalr": "1.0.26",
     "angular-in-memory-web-api": "^0.2.0",
     "angular2-jwt": "0.1.28",
     "angular2-masonry": "0.4.0",
