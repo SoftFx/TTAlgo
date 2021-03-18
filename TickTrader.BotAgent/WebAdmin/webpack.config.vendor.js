@@ -19,13 +19,7 @@ module.exports = {
         rules: [
             { 
                 test: /\.(png|woff|woff2|eot|ttf|svg)(\?|$)/,
-                type: 'asset/inline'
-                // use: [{
-                //     loader: 'url-loader',
-                //     options: {
-                //         limit: 10000,
-                //     },
-                // },], 
+                type: 'asset'
             },
             { 
                 test: /\.css(\?|$)/, 
