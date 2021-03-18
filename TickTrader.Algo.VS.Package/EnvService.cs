@@ -18,7 +18,7 @@ namespace TickTrader.Algo.VS.Package
             get
             {
                 string docFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                return Path.Combine(docFolder, "BotTrader");
+                return Path.Combine(docFolder, "AlgoTerminal");
             }
         }
 
