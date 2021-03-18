@@ -55,11 +55,11 @@ namespace TickTrader.BotTerminal
         {
             base.OnViewLoaded(view);
 
-            StopBots();
+            Task.Run(() => StopBots());
         }
 
 
-        private async void StopBots()
+        private async Task StopBots()
         {
             var shutdownTask = _algoAgent.Shutdown();
 

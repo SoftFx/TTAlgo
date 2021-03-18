@@ -108,21 +108,21 @@ namespace TickTrader.BotTerminal
 
         internal Task<string> GetBotStatus(string botId)
         {
-            if (_protocolClient.State == ClientStates.Online)
+            if (_protocolClient != null && _protocolClient.State == ClientStates.Online)
                 return _protocolClient.GetPluginStatus(botId);
             return Task.FromResult("Disconnected!");
         }
 
         internal Task<LogRecordInfo[]> GetBotLogs(string botId, Timestamp lastLogTimeUtc, int maxCount = 1000)
         {
-            if (_protocolClient.State == ClientStates.Online)
+            if (_protocolClient != null && _protocolClient.State == ClientStates.Online)
                 return _protocolClient.GetPluginLogs(botId, lastLogTimeUtc, maxCount);
             return Task.FromResult(new LogRecordInfo[0]);
         }
 
         internal Task<AlertRecordInfo[]> GetAlerts(Timestamp lastLogTimeUtc, int maxCount = 1000)
         {
-            if (_protocolClient.State == ClientStates.Online)
+            if (_protocolClient != null && _protocolClient.State == ClientStates.Online)
                 return _protocolClient.GetAlerts(lastLogTimeUtc, maxCount);
             return Task.FromResult(new AlertRecordInfo[0]);
         }

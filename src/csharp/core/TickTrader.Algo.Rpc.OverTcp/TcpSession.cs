@@ -134,9 +134,9 @@ namespace TickTrader.Algo.Rpc.OverTcp
             //Func<IAsyncResult, int> socketEndReceive = _socket.EndReceive;
 
             var pipeWriter = _listenPipe.Writer;
-            while (!cancelToken.IsCancellationRequested)
+            try
             {
-                try
+                while (!cancelToken.IsCancellationRequested)
                 {
                     var read = await _socket.ReceiveAsync(new ArraySegment<byte>(_recieveBuffer, 0, _socket.ReceiveBufferSize), SocketFlags.None);
                     //var read = await Task.Factory.FromAsync(socketBeginReceive, socketEndReceive, _recieveBuffer, null).ConfigureAwait(false);
@@ -150,12 +150,10 @@ namespace TickTrader.Algo.Rpc.OverTcp
                     pipeWriter.Advance(read);
                     await pipeWriter.FlushAsync().ConfigureAwait(false);
                 }
-                catch (Exception)
-                {
-                    pipeWriter.Complete();
-                    return;
-                }
             }
+            catch (Exception) { }
+
+            pipeWriter.Complete();
         }
 
         private async Task SendLoop(CancellationToken cancelToken)

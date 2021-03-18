@@ -163,7 +163,6 @@ namespace TickTrader.Algo.Core
         private async Task HandlePackageUpdate(PackageFileUpdate update)
         {
             var packageId = update.PackageId;
-            var hasPackageRef = _packagesMap.TryGetValue(packageId, out var packageRef);
 
             switch (update.Action)
             {
@@ -172,31 +171,42 @@ namespace TickTrader.Algo.Core
                     var runtime = new RuntimeModel(this, runtimeId, update.FilePath);
                     _runtimesMap[runtimeId] = runtime;
 
-                    await runtime.Start(Address, BoundPort);
-
-                    var package = await runtime.GetPackageInfo();
-                    package.Key.Location = update.PackageKey.Location; // temp fix
-                    foreach (var p in package.Plugins) p.Key.Package.Location = update.PackageKey.Location;
-
-                    if (!hasPackageRef)
-                    {
-                        packageRef = new AlgoPackageRef(package);
-                        _packagesMap[packageId] = packageRef;
-                    }
-                    packageRef.Update(runtime, package);
-
-                    PackageUpdated?.Invoke(PackageUpdate.Upsert(packageId, package));
+                    var _ = LoadPackageInfo(packageId, update, runtime);
 
                     break;
                 case Repository.UpdateAction.Remove:
-                    if (hasPackageRef)
+                    lock (_packagesMap)
                     {
-                        //activeRuntime.MarkObsolete();
-                        _packagesMap.Remove(packageId);
-                        PackageUpdated?.Invoke(PackageUpdate.Remove(packageId));
+                        if (_packagesMap.ContainsKey(packageId))
+                        {
+                            //activeRuntime.MarkObsolete();
+                            _packagesMap.Remove(packageId);
+                            PackageUpdated?.Invoke(PackageUpdate.Remove(packageId));
+                        }
                     }
                     break;
             }
+        }
+
+        private async Task LoadPackageInfo(string packageId, PackageFileUpdate update, RuntimeModel runtime)
+        {
+            await runtime.Start(Address, BoundPort);
+
+            var package = await runtime.GetPackageInfo();
+            package.Key.Location = update.PackageKey.Location; // temp fix
+            foreach (var p in package.Plugins) p.Key.Package.Location = update.PackageKey.Location;
+
+            lock (_packagesMap)
+            {
+                if (!_packagesMap.TryGetValue(packageId, out var packageRef))
+                {
+                    packageRef = new AlgoPackageRef(package);
+                    _packagesMap[packageId] = packageRef;
+                }
+                packageRef.Update(runtime, package);
+            }
+
+            PackageUpdated?.Invoke(PackageUpdate.Upsert(packageId, package));
         }
 
         public bool TryGetPackage(string packageId, out AlgoPackageRef packageRef)

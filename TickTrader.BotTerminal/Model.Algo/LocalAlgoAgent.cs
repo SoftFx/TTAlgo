@@ -101,7 +101,7 @@ namespace TickTrader.BotTerminal
             _preferences = storage.PreferencesStorage.StorageModel;
 
             AlgoServer = new AlgoServer();
-            AlgoServer.Start().GetAwaiter().GetResult();
+            Task.Factory.StartNew(() => AlgoServer.Start());//.GetAwaiter().GetResult();
             _logger.Info($"Started AlgoServer on port {AlgoServer.BoundPort}");
 
             AlgoServer.RegisterAccountProxy(ClientModel.GetAccountProxy());
