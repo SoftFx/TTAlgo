@@ -86,7 +86,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public Dictionary<string, string> CustomProperties;
 
-        public bool IsDeveloper => CustomProperties.ContainsKey(AppProperties.DeveloperVersion.ToString()) ? bool.Parse(this[AppProperties.DeveloperVersion]) : false;
+        public bool IsDeveloper => CustomProperties.ContainsKey(nameof(AppProperties.DeveloperVersion)) ? bool.Parse(this[AppProperties.DeveloperVersion]) : false;
 
         public string this[string key]
         {

@@ -31,15 +31,16 @@ namespace TickTrader.BotAgent.Configurator
             {
                 var agentFolder = _base64.OpenSubKey(Path.Combine("SOFTWARE", "TickTrader", registryName));
 
-                foreach (var agentName in agentFolder.GetSubKeyNames())
-                {
-                    var node = new RegistryNode(agentFolder.OpenSubKey(agentName), appSettings, developer, registryName);
+                if (agentFolder != null)
+                    foreach (var agentName in agentFolder.GetSubKeyNames())
+                    {
+                        var node = new RegistryNode(agentFolder.OpenSubKey(agentName), appSettings, developer, registryName);
 
-                    if (serverPath == node.FolderPath)
-                        CurrentServer = node;
+                        if (serverPath == node.FolderPath)
+                            CurrentServer = node;
 
-                    ServerNodes.Add(node);
-                }
+                        ServerNodes.Add(node);
+                    }
             }
 
             if (CurrentServer == null)
