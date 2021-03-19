@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf;
 using Google.Protobuf.Reflection;
+using Google.Protobuf.WellKnownTypes;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -110,7 +111,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 else if (ExcludedFields.Any(f => field.Name.ToLower().Contains(f)))
                 {
                     escapedFields.Add(field.Accessor, field.Accessor.GetValue(msg));
-                    field.Accessor.SetValue(msg, GetDefaultValue(field.FieldType));
+                    field.Accessor.SetValue(msg, GetDefaultValue(field));
                 }
             }
         }
@@ -119,7 +120,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
         {
             foreach (var field in escapedFields)
             {
-                if (field.Key.Descriptor.FieldType == FieldType.Message)
+                if (field.Value is Dictionary<IFieldAccessor, object>)
                 {
                     var innerMsg = (IMessage)field.Key.GetValue(msg);
                     if (innerMsg != null)
@@ -132,9 +133,12 @@ namespace TickTrader.Algo.ServerControl.Grpc
             }
         }
 
-        private object GetDefaultValue(FieldType type)
+        private object GetDefaultValue(FieldDescriptor field)
         {
-            switch (type)
+            if (field.FieldType == FieldType.Message && field.MessageType.ClrType == typeof(StringValue))
+                return "***";
+
+            switch (field.FieldType)
             {
                 case FieldType.String:
                     return "***";
