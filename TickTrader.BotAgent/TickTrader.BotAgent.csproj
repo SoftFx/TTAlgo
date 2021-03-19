@@ -47,6 +47,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Grpc.Core" Version="2.36.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.HttpsPolicy" Version="2.2.0" />
@@ -108,6 +109,22 @@
     </ItemGroup>
 
     <Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(TargetDir)AlgoRuntime\" SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="CopyBinariesForPublish" AfterTargets="AfterPublish">
+    <ItemGroup>
+      <RuntimeV1Binaries Include="$(ProjectDir)..\src\csharp\sandbox\TickTrader.Algo.RuntimeV1\bin\$(Configuration)\*.*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(PublishDir)\AlgoRuntime\" SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="RemoveLinuxLibs" AfterTargets="Build">
+    <Delete Files="$(TargetDir)\libgrpc_csharp_ext.x64.dylib;$(TargetDir)\libgrpc_csharp_ext.x64.so" />
+  </Target>
+
+  <Target Name="RemoveLinuxLibsForPublish" AfterTargets="AfterPublish">
+    <Delete Files="$(PublishDir)\libgrpc_csharp_ext.x64.dylib;$(PublishDir)\libgrpc_csharp_ext.x64.so" />
   </Target>
 
   <ItemGroup>
