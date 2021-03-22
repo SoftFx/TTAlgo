@@ -1,24 +1,29 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using Grpc.Core;
+﻿using Grpc.Core;
 using System.Threading.Tasks;
-using System.Threading;
 using System;
 using Google.Protobuf;
+using System.Threading.Channels;
 
 namespace TickTrader.Algo.Rpc.OverGrpc
 {
     public class GrpcSession : ITransportProxy
     {
+        private const int MessagePageSize = 8;
+
+
         private readonly IAsyncStreamReader<MessagePage> _reader;
         private readonly IAsyncStreamWriter<MessagePage> _writer;
-        private readonly AutoResetEvent _resetEvent;
         private readonly TaskCompletionSource<bool> _taskSrc;
+        private readonly Channel<RpcMessage> _readChannel, _writeChannel;
 
-        private IObserver<RpcMessage> _msgListener;
-        private Task _listenTask;
+        private Task _listenTask, _sendTask;
 
 
         public Task<bool> Completion => _taskSrc.Task;
+
+        public ChannelReader<RpcMessage> ReadChannel { get; }
+
+        public ChannelWriter<RpcMessage> WriteChannel { get; }
 
 
         public GrpcSession(IAsyncStreamReader<MessagePage> reader, IAsyncStreamWriter<MessagePage> writer)
@@ -26,44 +31,56 @@ namespace TickTrader.Algo.Rpc.OverGrpc
             _reader = reader;
             _writer = writer;
 
-            _resetEvent = new AutoResetEvent(true);
             _taskSrc = new TaskCompletionSource<bool>();
-        }
 
+            _readChannel = System.Threading.Channels.Channel.CreateUnbounded<RpcMessage>(new UnboundedChannelOptions { AllowSynchronousContinuations = false, SingleWriter = true });
+            _writeChannel = System.Threading.Channels.Channel.CreateUnbounded<RpcMessage>(new UnboundedChannelOptions { AllowSynchronousContinuations = false, SingleReader = true });
 
-        public void AttachListener(IObserver<RpcMessage> msgListener)
-        {
-            if (_msgListener != null)
-                throw RpcStateException.AnotherTransportListener();
+            ReadChannel = _readChannel.Reader;
+            WriteChannel = _writeChannel.Writer;
 
-            _msgListener = msgListener;
             _listenTask = ListenRequests();
-        }
+            _sendTask = SendRequests();
 
-        public async Task SendResponse(MessagePage response)
-        {
-            _resetEvent.WaitOne();
-            await _writer.WriteAsync(response).ConfigureAwait(false);
-            _resetEvent.Set();
-        }
-
-        public async void SendMessage(RpcMessage message)
-        {
-            var page = new MessagePage();
-            page.Messages.Add(message.ToByteString());
-            await SendResponse(page);
         }
 
         public async Task Close()
         {
             _taskSrc.TrySetResult(true);
-            if (_listenTask != null)
-                await _listenTask;
+            await _listenTask;
+            await _sendTask;
         }
 
 
+        private async Task SendRequests()
+        {
+            var reader = _writeChannel.Reader;
+
+            try
+            {
+                while (!Completion.IsCompleted)
+                {
+                    var canRead = await reader.WaitToReadAsync().ConfigureAwait(false);
+                    if (!canRead)
+                        break;
+
+                    var page = new MessagePage();
+                    for (var cnt = 0; reader.TryRead(out var msg) && cnt < MessagePageSize; cnt++) page.Messages.Add(msg.ToByteString());
+
+                    await _writer.WriteAsync(page).ConfigureAwait(false);
+                }
+            }
+            catch(Exception ex)
+            {
+                _taskSrc.TrySetResult(false);
+                //_msgListener.OnError(ex);
+            }
+        }
+
         private async Task ListenRequests()
         {
+            var writer = _readChannel.Writer;
+
             try
             {
                 while (!Completion.IsCompleted)
@@ -74,13 +91,13 @@ namespace TickTrader.Algo.Rpc.OverGrpc
                         foreach (var msg in _reader.Current.Messages)
                         {
                             var m = RpcMessage.Parser.ParseFrom(msg);
-                            _msgListener.OnNext(m);
+                            writer.TryWrite(m);
                         }
                     }
                     else
                     {
                         _taskSrc.TrySetResult(false);
-                        _msgListener.OnCompleted();
+                        //_msgListener.OnCompleted();
                         return;
                     }
                 }
@@ -88,7 +105,7 @@ namespace TickTrader.Algo.Rpc.OverGrpc
             catch (Exception ex)
             {
                 _taskSrc.TrySetResult(false);
-                _msgListener.OnError(ex);
+                //_msgListener.OnError(ex);
             }
         }
     }

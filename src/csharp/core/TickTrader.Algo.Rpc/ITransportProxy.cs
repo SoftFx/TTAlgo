@@ -1,13 +1,15 @@
 ﻿using System;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Rpc
 {
     public interface ITransportProxy
     {
-        void AttachListener(IObserver<RpcMessage> msgListener);
+        ChannelReader<RpcMessage> ReadChannel { get; }
 
-        void SendMessage(RpcMessage payload);
+        ChannelWriter<RpcMessage> WriteChannel { get; }
+
 
         Task Close();
     }

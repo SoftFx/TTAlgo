@@ -25,23 +25,10 @@ namespace TickTrader.Algo.Rpc.OverTcp
             return MemoryMarshal.Cast<byte, int>(res)[0];
         }
 
-        public static void ReadBytes(this ReadOnlySequence<byte> sequence, Span<byte> dst, int count)
+        public static void WriteInt32(this Span<byte> span, int val)
         {
-            foreach(var segment in sequence)
-            {
-                var len = segment.Length;
-                if (len < count)
-                {
-                    segment.Span.CopyTo(dst);
-                    dst = dst.Slice(len);
-                    count -= len;
-                }
-                else
-                {
-                    segment.Span.Slice(0, count).CopyTo(dst);
-                    return;
-                }
-            }
+            var intSpan = MemoryMarshal.Cast<byte, int>(span);
+            intSpan[0] = val;
         }
     }
 }

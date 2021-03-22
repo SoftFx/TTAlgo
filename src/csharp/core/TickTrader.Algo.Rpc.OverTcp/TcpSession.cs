@@ -4,20 +4,29 @@ using System.Buffers;
 using System.IO.Pipelines;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Rpc.OverTcp
 {
     public class TcpSession : ITransportProxy
     {
+        private const int MsgLengthPrefixSize = 4;
+        private const int WriteBatchSize = 8;
+
+
         private readonly Socket _socket;
         private readonly Pipe _listenPipe, _sendPipe;
         private readonly byte[] _recieveBuffer;
+        private readonly Channel<RpcMessage> _readChannel, _writeChannel;
 
-        private Task _listenTask, _sendTask, _readTask;
+        private Task _listenTask, _sendTask, _readTask, _writeTask;
         private CancellationTokenSource _cancelTokenSrc;
-        private IObserver<RpcMessage> _msgListener;
-        private object _lock = new object();
+
+
+        public ChannelReader<RpcMessage> ReadChannel { get; }
+
+        public ChannelWriter<RpcMessage> WriteChannel { get; }
 
 
         public TcpSession(Socket socket)
@@ -27,6 +36,12 @@ namespace TickTrader.Algo.Rpc.OverTcp
             _listenPipe = new Pipe(options);
             _sendPipe = new Pipe(options);
 
+            _readChannel = Channel.CreateUnbounded<RpcMessage>(new UnboundedChannelOptions { AllowSynchronousContinuations = false, SingleWriter = true });
+            _writeChannel = Channel.CreateUnbounded<RpcMessage>(new UnboundedChannelOptions { AllowSynchronousContinuations = false, SingleReader = true });
+
+            ReadChannel = _readChannel.Reader;
+            WriteChannel = _writeChannel.Writer;
+
             _recieveBuffer = new byte[socket.ReceiveBufferSize];
         }
 
@@ -35,8 +50,10 @@ namespace TickTrader.Algo.Rpc.OverTcp
             _cancelTokenSrc = new CancellationTokenSource();
             var cancelToken = _cancelTokenSrc.Token;
 
-            _listenTask = await Task.Factory.StartNew(() => ListenLoop(cancelToken));
-            _sendTask = await Task.Factory.StartNew(() => SendLoop(cancelToken));
+            _listenTask = await Task.Factory.StartNew(() => ListenLoop(cancelToken), TaskCreationOptions.PreferFairness);
+            _sendTask = await Task.Factory.StartNew(() => SendLoop(cancelToken), TaskCreationOptions.PreferFairness);
+            _readTask = await Task.Factory.StartNew(() => ReadLoop(cancelToken), TaskCreationOptions.PreferFairness);
+            _writeTask = await Task.Factory.StartNew(() => WriteLoop(cancelToken), TaskCreationOptions.PreferFairness);
         }
 
         public async Task Stop()
@@ -45,48 +62,10 @@ namespace TickTrader.Algo.Rpc.OverTcp
 
             await _listenTask;
             await _sendTask;
-            if (_readTask != null)
-                await _readTask;
+            await _readTask;
+            await _writeTask;
 
             _socket.Close();
-        }
-
-        public void AttachListener(IObserver<RpcMessage> msgListener)
-        {
-            if (_msgListener != null)
-                throw RpcStateException.AnotherTransportListener();
-
-            _msgListener = msgListener;
-            Task.Factory.StartNew(() => ReadLoop(_cancelTokenSrc.Token))
-                .ContinueWith(t => _readTask = t.Result);
-        }
-
-        public void SendMessage(RpcMessage msg)
-        {
-            //var sw = System.Diagnostics.Stopwatch.StartNew();
-
-            var msgSize = msg.CalculateSize();
-            var len = msgSize + 4;
-            var buffer = ArrayPool<byte>.Shared.Rent(msgSize + 4);
-            var codedStream = new CodedOutputStream(buffer);
-            codedStream.WriteFixed32((uint)msgSize);
-            msg.WriteTo(codedStream);
-
-            var pipeWriter = _sendPipe.Writer;
-            lock (_lock)
-            {
-                var memory = pipeWriter.GetMemory(len);
-                buffer.AsSpan(0, len).CopyTo(memory.Span);
-                ArrayPool<byte>.Shared.Return(buffer);
-
-                pipeWriter.Advance(len);
-                pipeWriter.FlushAsync();
-            }
-            //pipeWriter.FlushAsync().AsTask().ContinueWith(t =>
-            //{
-            //    sw.Stop();
-            //    System.Diagnostics.Debug.WriteLine($"Tcp.SendMessage: {sw.ElapsedMilliseconds} ms");
-            //});
         }
 
         public Task Close()
@@ -94,38 +73,85 @@ namespace TickTrader.Algo.Rpc.OverTcp
             return Stop();
         }
 
+
         private async Task ReadLoop(CancellationToken cancelToken)
         {
-            const int int32Size = 4;
-
             var pipeReader = _listenPipe.Reader;
-            while (!cancelToken.IsCancellationRequested)
+            var writer = _readChannel.Writer;
+
+            try
             {
-                var res = await pipeReader.ReadAsync().ConfigureAwait(false);
-                var buffer = res.Buffer;
-                if (res.IsCompleted || res.IsCanceled)
-                    return;
-
-                while (true)
+                while (!cancelToken.IsCancellationRequested)
                 {
-                    if (buffer.Length < int32Size)
+                    var res = await pipeReader.ReadAsync().ConfigureAwait(false);
+                    var buffer = res.Buffer;
+                    if (res.IsCompleted || res.IsCanceled)
                         break;
 
-                    var msgSize = buffer.ReadInt32();
-                    if (buffer.Length < msgSize + int32Size)
-                        break;
+                    while (!cancelToken.IsCancellationRequested)
+                    {
+                        if (buffer.Length < MsgLengthPrefixSize)
+                            break;
 
-                    var bytes = ArrayPool<byte>.Shared.Rent(msgSize);
-                    buffer.Slice(int32Size).ReadBytes(bytes, msgSize);
-                    var msg = RpcMessage.Parser.ParseFrom(bytes, 0, msgSize);
-                    ArrayPool<byte>.Shared.Return(bytes);
-                    buffer = buffer.Slice(msgSize + int32Size);
+                        var msgSize = buffer.ReadInt32();
+                        if (buffer.Length < msgSize + MsgLengthPrefixSize)
+                            break;
 
-                    _msgListener.OnNext(msg);
+                        var msg = RpcMessage.Parser.ParseFrom(buffer.Slice(MsgLengthPrefixSize, msgSize));
+                        if (!writer.TryWrite(msg))
+                        {
+                            var canWrite = await writer.WaitToWriteAsync(cancelToken).ConfigureAwait(false);
+                            if (!canWrite)
+                                return;
+
+                            if (!writer.TryWrite(msg))
+                                break;
+                        }
+
+                        buffer = buffer.Slice(msgSize + MsgLengthPrefixSize);
+                    }
+
+                    pipeReader.AdvanceTo(buffer.Start, buffer.End);
                 }
-
-                pipeReader.AdvanceTo(buffer.Start, buffer.End);
             }
+            catch (Exception) { }
+
+            pipeReader.Complete();
+            writer.Complete();
+        }
+
+        private async Task WriteLoop(CancellationToken cancelToken)
+        {
+            var pipeWriter = _sendPipe.Writer;
+            var reader = _writeChannel.Reader;
+
+            try
+            {
+                while (!cancelToken.IsCancellationRequested)
+                {
+                    var canRead = await reader.WaitToReadAsync(cancelToken).ConfigureAwait(false);
+                    if (!canRead)
+                        return;
+
+                    for (var cnt = 0; reader.TryRead(out var msg) && cnt < WriteBatchSize; cnt++)
+                    {
+                        var msgSize = msg.CalculateSize();
+                        var len = msgSize + MsgLengthPrefixSize;
+                        var mem = pipeWriter.GetMemory(len);
+
+                        mem.Span.WriteInt32(msgSize);
+                        msg.WriteTo(mem.Span.Slice(MsgLengthPrefixSize, msgSize));
+
+                        pipeWriter.Advance(len);
+                    }
+
+                    await pipeWriter.FlushAsync(cancelToken).ConfigureAwait(false);
+                }
+            }
+            catch (Exception) { }
+
+            pipeWriter.Complete();
+            _writeChannel.Writer.Complete();
         }
 
         private async Task ListenLoop(CancellationToken cancelToken)
@@ -138,13 +164,11 @@ namespace TickTrader.Algo.Rpc.OverTcp
             {
                 while (!cancelToken.IsCancellationRequested)
                 {
-                    var read = await _socket.ReceiveAsync(new ArraySegment<byte>(_recieveBuffer, 0, _socket.ReceiveBufferSize), SocketFlags.None);
+                    var read = await _socket.ReceiveAsync(new ArraySegment<byte>(_recieveBuffer, 0, _socket.ReceiveBufferSize), SocketFlags.None).ConfigureAwait(false);
                     //var read = await Task.Factory.FromAsync(socketBeginReceive, socketEndReceive, _recieveBuffer, null).ConfigureAwait(false);
                     if (read == 0)
-                    {
-                        pipeWriter.Complete();
-                        return;
-                    }
+                        break;
+
                     var buffer = pipeWriter.GetMemory(read);
                     _recieveBuffer.AsSpan(0, read).CopyTo(buffer.Span);
                     pipeWriter.Advance(read);
@@ -161,10 +185,10 @@ namespace TickTrader.Algo.Rpc.OverTcp
             //Func<byte[], int, AsyncCallback, object, IAsyncResult> socketBeginSend = (buffer, len, callback, state) => _socket.BeginSend(buffer, 0, len, SocketFlags.None, callback, state);
             //Func<IAsyncResult, int> socketEndSend = _socket.EndSend;
 
-            var reader = _sendPipe.Reader;
+            var pipeReader = _sendPipe.Reader;
             while (!cancelToken.IsCancellationRequested)
             {
-                var res = await reader.ReadAsync().ConfigureAwait(false);
+                var res = await pipeReader.ReadAsync().ConfigureAwait(false);
                 if (res.IsCanceled || res.IsCompleted)
                 {
                     return;
@@ -184,7 +208,6 @@ namespace TickTrader.Algo.Rpc.OverTcp
                             await _socket.SendAsync(new ArraySegment<byte>(buffer, 0, len), SocketFlags.None).ConfigureAwait(false);
                             //await Task.Factory.FromAsync(socketBeginSend, socketEndSend, buffer, len, null).ConfigureAwait(false);
                         }
-                        catch (Exception) { }
                         finally
                         {
                             ArrayPool<byte>.Shared.Return(buffer);
@@ -193,9 +216,10 @@ namespace TickTrader.Algo.Rpc.OverTcp
                 }
                 catch (Exception)
                 {
+                    _sendPipe.Writer.Complete();
                     return;
                 }
-                reader.AdvanceTo(res.Buffer.End);
+                pipeReader.AdvanceTo(res.Buffer.End);
             }
         }
 

@@ -65,16 +65,17 @@ namespace TickTrader.Algo.Rpc
             _rpcHost = rpcHost;
 
             _initTaskSrc = new TaskCompletionSource<bool>();
-            _transport.AttachListener(this);
+            var _ = HandleMessages();
         }
 
 
         public Task Connect(ProtocolSpec protocol = null)
         {
+            _initTaskSrc.TrySetResult(true);
+
             if (State != RpcSessionState.Disconnected)
                 return _connectTaskSrc?.Task ?? Task.CompletedTask;
 
-            _initTaskSrc.TrySetResult(true);
             _connectTaskSrc = new TaskCompletionSource<bool>();
 
             if (protocol != null)
@@ -139,7 +140,7 @@ namespace TickTrader.Algo.Rpc
         {
             //Debug.WriteLine($"RPC < {AppDomain.CurrentDomain.Id}: {msg}");
             //Debug.WriteLine($"RPC < {AppDomain.CurrentDomain.Id}: msg type - {msg.Payload.TypeUrl}");
-            _transport.SendMessage(msg);
+            _transport.WriteChannel.TryWrite(msg);
         }
 
         internal Task Close()
@@ -151,6 +152,26 @@ namespace TickTrader.Algo.Rpc
         }
 
 
+        private async Task HandleMessages()
+        {
+            await Task.Yield();
+
+            var readChannel = _transport.ReadChannel;
+
+            while (!readChannel.Completion.IsCompleted)
+            {
+                var canRead = await readChannel.WaitToReadAsync().ConfigureAwait(false);
+                if (!canRead)
+                {
+                    OnDisconnected(false);
+                    break;
+                }
+
+                if (readChannel.TryRead(out var msg))
+                    HandleMessage(msg);
+            }
+        }
+        
         private void ChangeState(RpcSessionState newState)
         {
             var changeArgs = new RpcSessionStateChangedArgs(this, State, newState);
