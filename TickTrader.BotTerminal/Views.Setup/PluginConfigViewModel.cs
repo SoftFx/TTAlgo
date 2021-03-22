@@ -231,7 +231,7 @@ namespace TickTrader.BotTerminal
             _paramsFileHistory.SetContext(plugin.ToString());
 
             AvailableModels = _var.AddProperty<List<Feed.Types.Timeframe>>();
-            SelectedModel = _var.AddProperty<Feed.Types.Timeframe>(Feed.Types.Timeframe.M1);
+            SelectedModel = _var.AddProperty(Feed.Types.Timeframe.M1);
 
             Init();
         }

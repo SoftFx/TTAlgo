@@ -357,7 +357,7 @@
   <data name="Tab_Bots" xml:space="preserve">
     <value>##Tab_Bots##</value>
   </data>
-  <data name="PluginError_None" xml:space="preserve">
+  <data name="PluginError_NoMetadataError" xml:space="preserve">
     <value />
   </data>
   <data name="Order_OpenPrice" xml:space="preserve">

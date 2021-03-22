@@ -675,9 +675,9 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         /// <summary>
         ///   Looks up a localized string similar to .
         /// </summary>
-        internal static string PluginError_None {
+        internal static string PluginError_NoMetadataError {
             get {
-                return ResourceManager.GetString("PluginError_None", resourceCulture);
+                return ResourceManager.GetString("PluginError_NoMetadataError", resourceCulture);
             }
         }
         

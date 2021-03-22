@@ -634,7 +634,7 @@
             </StackPanel>
         </Grid>
         <ControlTemplate.Triggers>
-            <DataTrigger Binding="{Binding Descriptor.Error}" Value="None">
+            <DataTrigger Binding="{Binding Descriptor.Error}" Value="NoMetadataError">
                 <Setter TargetName="ErrorText" Property="Visibility" Value="Collapsed"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding HasOutputs}" Value="False">
