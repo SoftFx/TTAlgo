@@ -12,10 +12,8 @@ import "runtime.package.proto";
 import "runtime.plugin.proto";
 import "server.data.proto";
 
-message RequestResult
-{
-    enum RequestStatus
-    {
+message RequestResult {
+    enum RequestStatus {
         SUCCESS = 0;
         INTERNAL_SERVER_ERROR = 1;
         UNAUTHORIZED = 2;
@@ -36,18 +34,15 @@ message ClientClaims {
     }
 }
 
-message LoginRequest
-{
+message LoginRequest {
     google.protobuf.StringValue login = 1;
     google.protobuf.StringValue password = 2;
     int32 major_version = 3; // client version
     int32 minor_version = 4; // client version
 }
 
-message LoginResponse
-{
-    enum LoginError
-    {
+message LoginResponse {
+    enum LoginError {
         NONE = 0;
         INVALID_CREDENTIALS = 1;
         VERSION_MISMATCH = 2;
@@ -63,14 +58,10 @@ message LoginResponse
     RequestResult exec_result = 101;
 }
 
-message LogoutRequest
-{
-}
+message LogoutRequest { }
 
-message LogoutResponse
-{
-    enum LogoutReason
-    {
+message LogoutResponse {
+    enum LogoutReason {
         CLIENT_REQUEST = 0;
         SERVER_LOGOUT = 1;
     }
@@ -81,21 +72,15 @@ message LogoutResponse
     RequestResult exec_result = 101;
 }
 
-message HeartbeatRequest
-{
-}
+message HeartbeatRequest { }
 
-message HeartbeatResponse
-{
+message HeartbeatResponse {
     RequestResult exec_result = 101;
 }
 
-message SnapshotRequest
-{
-}
+message SnapshotRequest { }
 
-message SnapshotResponse
-{
+message SnapshotResponse {
     ApiMetadataResponse api_metadata = 1;
     MappingsInfoResponse mappings_info = 2;
     SetupContextResponse setup_context = 3;
@@ -106,14 +91,10 @@ message SnapshotResponse
     RequestResult exec_result = 101;
 }
 
-message SubscribeToUpdatesRequest
-{
-}
+message SubscribeToUpdatesRequest { }
 
-message UpdateInfo
-{
-    enum UpdateType
-    {
+message UpdateInfo {
+    enum UpdateType {
         ADDED = 0;
         REPLACED = 1;
         REMOVED = 2;
@@ -124,46 +105,35 @@ message UpdateInfo
 }
 
 
-message ApiMetadataRequest
-{
-}
+message ApiMetadataRequest { }
 
-message ApiMetadataResponse
-{
+message ApiMetadataResponse {
     ApiMetadataInfo api_metadata = 1;
 
     RequestResult exec_result = 101;
 }
 
-message MappingsInfoRequest
-{
-}
+message MappingsInfoRequest { }
 
-message MappingsInfoResponse
-{
+message MappingsInfoResponse {
     MappingCollectionInfo mappings = 1;
 
     RequestResult exec_result = 101;
 }
 
-message SetupContextRequest
-{
-}
+message SetupContextRequest { }
 
-message SetupContextResponse
-{
+message SetupContextResponse {
     SetupContextInfo setup_context = 1;
 
     RequestResult exec_result = 101;
 }
 
-message AccountMetadataRequest
-{
+message AccountMetadataRequest {
     AccountKey account = 1;
 }
 
-message AccountMetadataResponse
-{
+message AccountMetadataResponse {
     ConnectionErrorInfo error_info = 1;
     AccountMetadataInfo account_metadata = 2;
 
@@ -171,317 +141,260 @@ message AccountMetadataResponse
 }
 
 
-message PluginListRequest
-{
-}
+message PluginListRequest { }
 
-message PluginListResponse
-{
+message PluginListResponse {
     repeated PluginModelInfo plugins = 1;
 
     RequestResult exec_result = 101;
 }
 
-message AddPluginRequest
-{
+message AddPluginRequest {
     AccountKey account = 1;
     PluginConfig config = 2;
 }
 
-message AddPluginResponse
-{
+message AddPluginResponse {
     RequestResult exec_result = 101;
 }
 
-message RemovePluginRequest
-{
+message RemovePluginRequest {
     google.protobuf.StringValue plugin_id = 1;
     bool clean_log = 2;
     bool clean_algo_data = 3;
 }
 
-message RemovePluginResponse
-{
+message RemovePluginResponse {
     RequestResult exec_result = 101;
 }
 
-message StartPluginRequest
-{
+message StartPluginRequest {
     google.protobuf.StringValue plugin_id = 1;
 }
 
-message StartPluginResponse
-{
+message StartPluginResponse {
     RequestResult exec_result = 101;
 }
 
-message StopPluginRequest
-{
+message StopPluginRequest {
     google.protobuf.StringValue plugin_id = 1;
 }
 
-message StopPluginResponse
-{
+message StopPluginResponse {
     RequestResult exec_result = 101;
 }
 
-message ChangePluginConfigRequest
-{
+message ChangePluginConfigRequest {
     google.protobuf.StringValue plugin_id = 1;
     PluginConfig new_config = 2;
 }
 
-message ChangePluginConfigResponse
-{
+message ChangePluginConfigResponse {
     RequestResult exec_result = 101;
 }
 
 
-message AccountListRequest
-{
-}
+message AccountListRequest { }
 
-message AccountListResponse
-{
+message AccountListResponse {
     repeated AccountModelInfo accounts = 1;
 
     RequestResult exec_result = 101;
 }
 
-message AddAccountRequest
-{
+message AddAccountRequest {
     AccountKey account = 1;
     google.protobuf.StringValue password = 2;
     bool use_new_protocol = 3;
 }
 
-message AddAccountResponse
-{
+message AddAccountResponse {
     RequestResult exec_result = 101;
 }
 
-message RemoveAccountRequest
-{
+message RemoveAccountRequest {
     AccountKey account = 1;
 }
 
-message RemoveAccountResponse
-{
+message RemoveAccountResponse {
     RequestResult exec_result = 101;
 }
 
-message ChangeAccountRequest
-{
+message ChangeAccountRequest {
     AccountKey account = 1;
     google.protobuf.StringValue password = 2;
     bool use_new_protocol = 3;
 }
 
-message ChangeAccountResponse
-{
+message ChangeAccountResponse {
     RequestResult exec_result = 101;
 }
 
-message TestAccountRequest
-{
+message TestAccountRequest {
     AccountKey account = 1;
 }
 
-message TestAccountResponse
-{
+message TestAccountResponse {
     ConnectionErrorInfo error_info = 1;
 
     RequestResult exec_result = 101;
 }
 
-message TestAccountCredsRequest
-{
+message TestAccountCredsRequest {
     AccountKey account = 1;
     google.protobuf.StringValue password = 2;
     bool use_new_protocol = 3;
 }
 
-message TestAccountCredsResponse
-{
+message TestAccountCredsResponse {
     ConnectionErrorInfo error_info = 1;
 
     RequestResult exec_result = 101;
 }
 
 
-message PackageListRequest
-{
-}
+message PackageListRequest { }
 
-message PackageListResponse
-{
+message PackageListResponse {
     repeated PackageInfo packages = 1;
 
     RequestResult exec_result = 101;
 }
 
-message FileChunkSettings
-{
+message FileChunkSettings {
     int32 size = 1;
     int32 offset = 2;
 }
 
-message FileChunk
-{
+message FileChunk {
     int32 id = 1;
     bytes binary = 2;
     bool is_final = 3;
 }
 
-message PackageDetails
-{
-    PackageKey key = 1;
+message PackageDetails {
+    string package_id = 1;
     FileChunkSettings chunk_settings = 2;
 }
 
-message UploadPackageRequest
-{
-    oneof value
-    {
+message UploadPackageRequest {
+    oneof value {
         PackageDetails package = 10;
         FileChunk chunk = 11;
     }
 }
 
-message UploadPackageResponse
-{
+message UploadPackageResponse {
     RequestResult exec_result = 101;
 }
 
-message RemovePackageRequest
-{
-    PackageKey package = 1;
+message RemovePackageRequest {
+    string package_id = 1;
 }
 
-message RemovePackageResponse
-{
+message RemovePackageResponse {
     RequestResult exec_result = 101;
 }
 
-message DownloadPackageRequest
-{
+message DownloadPackageRequest {
     PackageDetails package = 1;
 }
 
-message DownloadPackageResponse
-{
+message DownloadPackageResponse {
     FileChunk chunk = 1;
 
     RequestResult exec_result = 101;
 }
 
-message PluginStatusRequest
-{
+message PluginStatusRequest {
     google.protobuf.StringValue plugin_id = 1;
 }
 
-message PluginStatusResponse
-{
+message PluginStatusResponse {
     google.protobuf.StringValue plugin_id = 1;
     google.protobuf.StringValue status = 2;
 
     RequestResult exec_result = 101;
 }
 
-message PluginLogsRequest
-{
+message PluginLogsRequest {
     google.protobuf.StringValue plugin_id = 1;
     google.protobuf.Timestamp last_log_time_utc = 2;
     int32 max_count = 3;
 }
 
-message PluginLogsResponse
-{
+message PluginLogsResponse {
     google.protobuf.StringValue plugin_id = 1;
     repeated LogRecordInfo logs = 2;
 
     RequestResult exec_result = 101;
 }
 
-message PluginAlertsRequest
-{
+message PluginAlertsRequest {
     google.protobuf.Timestamp last_log_time_utc = 1;
     int32 max_count = 2;
 }
 
-message PluginAlertsResponse
-{
+message PluginAlertsResponse {
     repeated AlertRecordInfo alerts = 1;
 
     RequestResult exec_result = 101;
 }
 
-message PluginFolderInfoRequest
-{
+message PluginFolderInfoRequest {
     google.protobuf.StringValue plugin_id = 1;
     PluginFolderInfo.PluginFolderId folder_id = 2;
 }
 
-message PluginFolderInfoResponse
-{
+message PluginFolderInfoResponse {
     PluginFolderInfo folder_info = 1;
 
     RequestResult exec_result = 101;
 }
 
-message ClearPluginFolderRequest
-{
+message ClearPluginFolderRequest {
     google.protobuf.StringValue plugin_id = 1;
     PluginFolderInfo.PluginFolderId folder_id = 2;
 }
 
-message ClearPluginFolderResponse
-{
+message ClearPluginFolderResponse {
     RequestResult exec_result = 101;
 }
 
-message DeletePluginFileRequest
-{
+message DeletePluginFileRequest {
     google.protobuf.StringValue plugin_id = 1;
     PluginFolderInfo.PluginFolderId folder_id = 2;
     google.protobuf.StringValue file_name = 3;
 }
 
-message DeletePluginFileResponse
-{
+message DeletePluginFileResponse {
     RequestResult exec_result = 101;
 }
 
-message PluginFileDetails
-{
+message PluginFileDetails {
     google.protobuf.StringValue plugin_id = 1;
     PluginFolderInfo.PluginFolderId folder_id = 2;
     google.protobuf.StringValue file_name = 3;
     FileChunkSettings chunk_settings = 4;
 }
 
-message DownloadPluginFileRequest
-{
+message DownloadPluginFileRequest {
     PluginFileDetails file = 1;
 }
 
-message DownloadPluginFileResponse
-{
+message DownloadPluginFileResponse {
     FileChunk chunk = 1;
 
     RequestResult exec_result = 101;
 }
 
-message UploadPluginFileRequest
-{
-    oneof value
-    {
+message UploadPluginFileRequest {
+    oneof value {
         PluginFileDetails file = 10;
         FileChunk chunk = 11;
     }
 }
 
-message UploadPluginFileResponse
-{
+message UploadPluginFileResponse {
     RequestResult exec_result = 101;
 }

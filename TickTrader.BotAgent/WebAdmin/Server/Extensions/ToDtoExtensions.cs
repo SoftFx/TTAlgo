@@ -36,7 +36,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                 Id = bot.InstanceId,
                 Account = bot.Account.ToDto(),
                 State = bot.State.ToString(),
-                PackageName = bot.Config.Key.Package.Name,
+                PackageName = bot.Config.Key.PackageId,
                 BotName = bot.Descriptor_?.UiDisplayName,
                 FaultMessage = bot.FaultMessage,
                 Config = bot.ToConfigDto(),
@@ -97,7 +97,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
         {
             return new PackageDto()
             {
-                Name = package.Key.Name,
+                Name = package.Identity.FileName.ToLower(),
                 DisplayName = package.Identity.FileName,
                 Created = package.Identity.LastModifiedUtc.ToDateTime().ToLocalTime(),
                 Plugins = package.Plugins.Where(p => p.Descriptor_.IsTradeBot).Select(p => p.ToPluginDto()).ToArray(),

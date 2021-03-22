@@ -1,14 +1,11 @@
 ﻿using System;
 using System.IO;
 using Caliburn.Micro;
-using Machinarium.Qnil;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Core.Repository;
-using TickTrader.Algo.Core.Metadata;
 using System.Diagnostics;
 using System.Windows;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.BotTerminal
 {
@@ -72,11 +69,12 @@ namespace TickTrader.BotTerminal
             Key = info.Key;
             Descriptor = info.Descriptor_;
 
-            PackageName = Key.Package.Name;
+            PackageHelper.UnpackPackageId(Key.PackageId, out var localtionId, out var packageName);
+            PackageName = packageName;
             PackageDirectory = UnknownPath;
             CurrentGroup = (GroupType)Type;
 
-            if (Agent.Model.Packages.Snapshot.TryGetValue(info.Key.Package, out var packageInfo))
+            if (Agent.Model.Packages.Snapshot.TryGetValue(info.Key.PackageId, out var packageInfo))
             {
                 PackageInfo = packageInfo;
 
@@ -89,13 +87,12 @@ namespace TickTrader.BotTerminal
                 Description = string.Join(Environment.NewLine, Descriptor.Description, string.Empty, $"Algo Package {PackageName} at {PackageDirectory}").Trim();
             }
 
-            switch (Key.Package.Location)
+            switch (localtionId)
             {
-                case RepositoryLocation.LocalRepository:
-                case RepositoryLocation.LocalExtensions:
+                case PackageHelper.LocalRepositoryId:
                     Folder = FolderType.Local;
                     break;
-                case RepositoryLocation.Embedded:
+                case PackageHelper.EmbeddedRepositoryId:
                     Folder = FolderType.Embedded;
                     break;
                 default:
@@ -106,17 +103,17 @@ namespace TickTrader.BotTerminal
 
         public void RemovePackage()
         {
-            Agent.RemovePackage(PackageInfo.Key).Forget();
+            Agent.RemovePackage(PackageInfo.PackageId).Forget();
         }
 
         public void UploadPackage()
         {
-            Agent.OpenUploadPackageDialog(PackageInfo.Key);
+            Agent.OpenUploadPackageDialog(PackageInfo.PackageId);
         }
 
         public void DownloadPackage()
         {
-            Agent.OpenDownloadPackageDialog(PackageInfo.Key);
+            Agent.OpenDownloadPackageDialog(PackageInfo.PackageId);
         }
 
         public void OpenFolder()

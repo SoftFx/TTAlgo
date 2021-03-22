@@ -80,11 +80,11 @@ namespace TickTrader.Algo.ServerControl
 
         Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password);
 
-        Task RemovePackage(PackageKey package);
+        Task RemovePackage(string packageId);
 
-        Task<string> GetPackageReadPath(PackageKey package);
+        Task<string> GetPackageReadPath(string packageId);
 
-        Task<string> GetPackageWritePath(PackageKey package);
+        Task<string> GetPackageWritePath(string packageId);
 
         Task<string> GetBotStatusAsync(string botId);
 

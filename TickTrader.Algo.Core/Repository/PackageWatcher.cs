@@ -26,7 +26,7 @@ namespace TickTrader.Algo.Core.Repository
 
         public string FileName { get; }
 
-        public RepositoryLocation Location { get; }
+        public string LocationId { get; }
 
         public AlgoPackageRef PackageRef { get; private set; }
 
@@ -34,11 +34,11 @@ namespace TickTrader.Algo.Core.Repository
         public event Action<AlgoPackageRef> Updated;
 
 
-        public PackageWatcher(string filePath, RepositoryLocation location, IAlgoCoreLogger logger, bool isolation)
+        public PackageWatcher(string filePath, string locationId, IAlgoCoreLogger logger, bool isolation)
         {
             FilePath = filePath;
             FileName = Path.GetFileName(filePath);
-            Location = location;
+            LocationId = locationId;
             _logger = logger;
             _isolation = isolation;
 
@@ -96,7 +96,7 @@ namespace TickTrader.Algo.Core.Repository
         {
             if (!_isolation)
             {
-                _logger.Info($"Isolation is disabled. Skipping check for changes in Algo package {FileName} at {Location}");
+                _logger.Info($"Isolation is disabled. Skipping check for changes in Algo package {FileName} at {LocationId}");
                 return;
             }
 
@@ -137,17 +137,17 @@ namespace TickTrader.Algo.Core.Repository
             {
                 if (ioEx.IsLockExcpetion())
                 {
-                    _logger?.Debug($"Algo package {FileName} at {Location} is locked");
+                    _logger?.Debug($"Algo package {FileName} at {LocationId} is locked");
                     retry = true; // File is in use. We should retry loading.
                 }
                 else
                 {
-                    _logger?.Info($"Cannot open Algo package {FileName} at {Location}: {ioEx.Message}"); // other errors
+                    _logger?.Info($"Cannot open Algo package {FileName} at {LocationId}: {ioEx.Message}"); // other errors
                 }
             }
             catch (Exception ex)
             {
-                _logger?.Error($"Failed to update Algo package {FileName} at {Location}", ex);
+                _logger?.Error($"Failed to update Algo package {FileName} at {LocationId}", ex);
                 //PackageRef = new AlgoPackageRef(FileName, Location, PackageIdentity.CreateInvalid(FileName, FilePath), null);
             }
 
@@ -190,7 +190,7 @@ namespace TickTrader.Algo.Core.Repository
             }
             catch (Exception ex)
             {
-                _logger?.Error($"Failed to send update events for Algo package {FileName} at {Location}", ex);
+                _logger?.Error($"Failed to send update events for Algo package {FileName} at {LocationId}", ex);
             }
         }
 

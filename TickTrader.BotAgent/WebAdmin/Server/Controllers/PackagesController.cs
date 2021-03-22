@@ -9,6 +9,7 @@ using System.Net;
 using System.Threading.Tasks;
 using TickTrader.BotAgent.BA;
 using TickTrader.BotAgent.BA.Exceptions;
+using TickTrader.BotAgent.BA.Repository;
 using TickTrader.BotAgent.WebAdmin.Server.Dto;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 
@@ -77,7 +78,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                await _botAgent.RemovePackage(WebUtility.UrlDecode(name));
+                await _botAgent.RemovePackage(PackageStorage.GetPackageId(WebUtility.UrlDecode(name)));
             }
             catch (BAException dsex)
             {

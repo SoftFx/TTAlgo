@@ -54,7 +54,7 @@ namespace TickTrader.Algo.Core.Repository
             }
         }
 
-        public void LoadReductions(string path, RepositoryLocation location)
+        public void LoadReductions(string path, string locationId)
         {
             return; // We should support loading custom reductions in separate app domains before allowing this
 
@@ -107,10 +107,10 @@ namespace TickTrader.Algo.Core.Repository
         {
             try
             {
-                var packageKey = new PackageKey(Path.GetFileName(extAssembly.Location).ToLowerInvariant(), RepositoryLocation.Embedded);
+                var packageId = PackageHelper.GetPackageIdFromPath(string.Empty, Path.GetFileName(extAssembly.Location).ToLowerInvariant());
                 var reductions = AlgoAssemblyInspector.FindReductions(extAssembly);
                 foreach (var r in reductions)
-                    Add(new ReductionKey(packageKey, r.Id), r);
+                    Add(new ReductionKey(packageId, r.Id), r);
 
                 _logger.Info($"Loaded extensions from {extAssembly.FullName}");
             }

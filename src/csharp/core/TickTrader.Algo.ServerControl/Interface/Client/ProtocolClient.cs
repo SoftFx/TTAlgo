@@ -295,11 +295,11 @@ namespace TickTrader.Algo.ServerControl
 
         public abstract Task<List<PackageInfo>> GetPackageList();
 
-        public abstract Task UploadPackage(PackageKey package, string srcPath, int chunkSize, int offset, IFileProgressListener progressListener);
+        public abstract Task UploadPackage(string packageId, string srcPath, int chunkSize, int offset, IFileProgressListener progressListener);
 
-        public abstract Task RemovePackage(PackageKey package);
+        public abstract Task RemovePackage(string packageId);
 
-        public abstract Task DownloadPackage(PackageKey package, string dstPath, int chunkSize, int offset, IFileProgressListener progressListener);
+        public abstract Task DownloadPackage(string packageId, string dstPath, int chunkSize, int offset, IFileProgressListener progressListener);
 
         public abstract Task<string> GetPluginStatus(string pluginId);
 

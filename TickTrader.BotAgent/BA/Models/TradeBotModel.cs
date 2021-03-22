@@ -55,7 +55,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         public string Id => Config.InstanceId;
         public PluginPermissions Permissions => Config.Permissions;
-        public PackageKey PackageKey { get; private set; }
+        public string PackageId { get; private set; }
         public PluginModelInfo.Types.PluginState State { get; private set; }
         public AlgoPackageRef Package { get; private set; }
         public Exception Fault { get; private set; }
@@ -362,19 +362,19 @@ namespace TickTrader.BotAgent.BA.Models
         private void UpdatePackage()
         {
             var pluginKey = Config.Key;
-            PackageKey = pluginKey.Package;
-            Package = _packageRepo.GetPackageRef(PackageKey);
+            PackageId = pluginKey.PackageId;
+            Package = _packageRepo.GetPackageRef(PackageId);
 
             if (Package == null)
             {
-                BreakBot($"Algo package {PackageKey.Name} at {PackageKey.Location} is not found!");
+                BreakBot($"Algo package {PackageId} is not found!");
                 return;
             }
 
             _info = _packageRepo.Library.GetPlugin(pluginKey);
             if (_info == null || !_info.Descriptor_.IsTradeBot)
             {
-                BreakBot($"Trade bot {pluginKey.DescriptorId} is missing in Algo package {pluginKey.Package.Name} at {pluginKey.Package.Location}!");
+                BreakBot($"Trade bot {pluginKey.DescriptorId} is missing in Algo package {PackageId}!");
                 return;
             }
 

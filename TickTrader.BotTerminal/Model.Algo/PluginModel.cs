@@ -179,17 +179,17 @@ namespace TickTrader.BotTerminal
 
         protected void UpdateRefs()
         {
-            var package = Config.Key.Package;
-            var packageRef = Agent.Library.GetPackageRef(package);
+            var packageId = Config.Key.PackageId;
+            var packageRef = Agent.Library.GetPackageRef(packageId);
             if (packageRef == null)
             {
-                ChangeState(PluginModelInfo.Types.PluginState.Broken, $"Algo Package {package.Name} at {package.Location} is not found!");
+                ChangeState(PluginModelInfo.Types.PluginState.Broken, $"Algo Package {packageId} is not found!");
                 return;
             }
             var plugin = Agent.Library.GetPlugin(Config.Key);
             if (plugin == null)
             {
-                ChangeState(PluginModelInfo.Types.PluginState.Broken, $"Plugin {Config.Key.DescriptorId} is missing in Algo package {package.Name} at {package.Location}!");
+                ChangeState(PluginModelInfo.Types.PluginState.Broken, $"Plugin {Config.Key.DescriptorId} is missing in Algo package {packageId}!");
                 return;
             }
 

@@ -132,7 +132,7 @@ message PluginFolderInfo {
 }
 
 message PackageStateUpdate {
-    PackageKey package_id = 1;
+    string package_id = 1;
     bool is_locked = 2;
     bool is_valid = 3;
 }

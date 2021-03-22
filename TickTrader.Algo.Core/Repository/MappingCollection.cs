@@ -13,13 +13,13 @@ namespace TickTrader.Algo.Core.Repository
         private Dictionary<MappingKey, Mapping> _quoteToDoubleMappings;
 
 
-        public static ReductionKey BidBarReduction = new ReductionKey("ticktrader.algo.ext.dll", RepositoryLocation.Embedded, "TickTrader.Algo.Ext.BidBarReduction");
-        public static ReductionKey AskBarReduction = new ReductionKey("ticktrader.algo.ext.dll", RepositoryLocation.Embedded, "TickTrader.Algo.Ext.AskBarReduction");
+        public static ReductionKey BidBarReduction = new ReductionKey("ticktrader.algo.ext.dll", "TickTrader.Algo.Ext.BidBarReduction");
+        public static ReductionKey AskBarReduction = new ReductionKey("ticktrader.algo.ext.dll", "TickTrader.Algo.Ext.AskBarReduction");
         public static ReductionKey DefaultFullBarToBarReduction = BidBarReduction;
-        public static ReductionKey DefaultBarToDoubleReduction = new ReductionKey("ticktrader.algo.ext.dll", RepositoryLocation.Embedded, "TickTrader.Algo.Ext.BarCloseReduction");
-        public static ReductionKey DefaultFullBarToDoubleReduction = new ReductionKey("ticktrader.algo.ext.dll", RepositoryLocation.Embedded, "TickTrader.Algo.Ext.FullBarToBidCloseReduction");
-        public static ReductionKey DefaultQuoteToBarReduction = new ReductionKey("ticktrader.algo.ext.dll", RepositoryLocation.Embedded, "TickTrader.Algo.Ext.QuoteBidBarReduction");
-        public static ReductionKey DefaultQuoteToDoubleReduction = new ReductionKey("ticktrader.algo.ext.dll", RepositoryLocation.Embedded, "TickTrader.Algo.Ext.QuoteBestBidReduction");
+        public static ReductionKey DefaultBarToDoubleReduction = new ReductionKey("ticktrader.algo.ext.dll", "TickTrader.Algo.Ext.BarCloseReduction");
+        public static ReductionKey DefaultFullBarToDoubleReduction = new ReductionKey("ticktrader.algo.ext.dll", "TickTrader.Algo.Ext.FullBarToBidCloseReduction");
+        public static ReductionKey DefaultQuoteToBarReduction = new ReductionKey("ticktrader.algo.ext.dll", "TickTrader.Algo.Ext.QuoteBidBarReduction");
+        public static ReductionKey DefaultQuoteToDoubleReduction = new ReductionKey("ticktrader.algo.ext.dll", "TickTrader.Algo.Ext.QuoteBestBidReduction");
 
 
         public IReadOnlyDictionary<MappingKey, Mapping> BarToBarMappings => _barToBarMappings;

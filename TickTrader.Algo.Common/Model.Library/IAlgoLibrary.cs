@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Common.Model
 
         IEnumerable<PackageInfo> GetPackages();
 
-        PackageInfo GetPackage(PackageKey key);
+        PackageInfo GetPackage(string packageId);
 
         IEnumerable<PluginInfo> GetPlugins();
 
@@ -27,6 +27,6 @@ namespace TickTrader.Algo.Common.Model
 
         PluginInfo GetPlugin(PluginKey key);
 
-        AlgoPackageRef GetPackageRef(PackageKey key);
+        AlgoPackageRef GetPackageRef(string packageId);
     }
 }

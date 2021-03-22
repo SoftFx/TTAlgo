@@ -4,21 +4,16 @@ namespace TickTrader.Algo.Domain
 {
     public partial class ReductionKey : IComparable<ReductionKey>
     {
-        public ReductionKey(PackageKey packageKey, string descriptorId)
+        public ReductionKey(string packageId, string descriptorId)
         {
-            Package = packageKey;
+            PackageId = packageId;
             DescriptorId = descriptorId;
-        }
-
-        public ReductionKey(string packageName, RepositoryLocation packageLocation, string descriptorId)
-            : this(new PackageKey(packageName, packageLocation), descriptorId)
-        {
         }
 
 
         public int CompareTo(ReductionKey other)
         {
-            var res = Package.CompareTo(other.Package);
+            var res = PackageId.CompareTo(other.PackageId);
             if (res == 0)
                 return DescriptorId.CompareTo(DescriptorId);
             return res;

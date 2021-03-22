@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
@@ -13,7 +11,7 @@ namespace TickTrader.BotTerminal
 {
     internal class RemoteAlgoLibrary : IAlgoLibrary
     {
-        private Dictionary<PackageKey, PackageInfo> _packages;
+        private Dictionary<string, PackageInfo> _packages;
         private Dictionary<PluginKey, PluginInfo> _plugins;
         private IAlgoCoreLogger _logger;
         private object _updateLock = new object();
@@ -32,7 +30,7 @@ namespace TickTrader.BotTerminal
         {
             _logger = logger;
 
-            _packages = new Dictionary<PackageKey, PackageInfo>();
+            _packages = new Dictionary<string, PackageInfo>();
             _plugins = new Dictionary<PluginKey, PluginInfo>();
         }
 
@@ -42,9 +40,9 @@ namespace TickTrader.BotTerminal
             return _packages.Values.ToList();
         }
 
-        public PackageInfo GetPackage(PackageKey key)
+        public PackageInfo GetPackage(string packageId)
         {
-            return _packages.ContainsKey(key) ? _packages[key] : null;
+            return _packages.ContainsKey(packageId) ? _packages[packageId] : null;
         }
 
         public IEnumerable<PluginInfo> GetPlugins()
@@ -62,7 +60,7 @@ namespace TickTrader.BotTerminal
             return _plugins.ContainsKey(key) ? _plugins[key] : null;
         }
 
-        public AlgoPackageRef GetPackageRef(PackageKey key)
+        public AlgoPackageRef GetPackageRef(string packageId)
         {
             throw new NotSupportedException();
         }
@@ -116,7 +114,7 @@ namespace TickTrader.BotTerminal
             lock (_updateLock)
             {
                 var package = update.Value;
-                if (_packages.TryGetValue(package.Key, out var packageModel))
+                if (_packages.TryGetValue(package.PackageId, out var packageModel))
                 {
                     packageModel.IsValid = package.IsValid;
                     packageModel.IsLocked = package.IsLocked;
@@ -130,7 +128,7 @@ namespace TickTrader.BotTerminal
         {
             lock (_updateLock)
             {
-                _packages.Add(package.Key, package);
+                _packages.Add(package.PackageId, package);
                 OnPackageAdded(package);
                 MergePlugins(package);
             }
@@ -140,7 +138,7 @@ namespace TickTrader.BotTerminal
         {
             lock (_updateLock)
             {
-                _packages[package.Key] = package;
+                _packages[package.PackageId] = package;
                 OnPackageReplaced(package);
                 MergePlugins(package);
             }
@@ -150,11 +148,12 @@ namespace TickTrader.BotTerminal
         {
             lock (_updateLock)
             {
-                if (_packages.ContainsKey(package.Key))
+                var packageId = package.PackageId;
+                if (_packages.ContainsKey(packageId))
                 {
-                    _packages.Remove(package.Key);
+                    _packages.Remove(packageId);
                     OnPackageRemoved(package);
-                    MergePlugins(new PackageInfo { Key = package.Key });
+                    MergePlugins(new PackageInfo { PackageId = packageId });
                 }
             }
         }
@@ -178,7 +177,7 @@ namespace TickTrader.BotTerminal
 
             // remove
             var newPluginsLookup = package.Plugins.ToDictionary(p => p.Key);
-            foreach (var plugin in _plugins.Values.Where(p => p.Key.Package.Equals(package.Key)).ToList())
+            foreach (var plugin in _plugins.Values.Where(p => p.Key.PackageId == package.PackageId).ToList())
             {
                 if (!newPluginsLookup.ContainsKey(plugin.Key))
                 {

@@ -709,7 +709,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return response.Packages.ToList();
         }
 
-        public override async Task UploadPackage(PackageKey package, string srcPath, int chunkSize, int offset, IFileProgressListener progressListener)
+        public override async Task UploadPackage(string packageId, string srcPath, int chunkSize, int offset, IFileProgressListener progressListener)
         {
             if (_client == null || _channel.State == ChannelState.Shutdown)
                 throw new ConnectionFailedException("Connection failed");
@@ -720,7 +720,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
             {
                 Package = new PackageDetails
                 {
-                    Key = package,
+                    PackageId = packageId,
                     ChunkSettings = new FileChunkSettings { Size = chunkSize, Offset = offset },
                 }
             };
@@ -757,13 +757,13 @@ namespace TickTrader.Algo.ServerControl.Grpc
             FailForNonSuccess(response.ExecResult);
         }
 
-        public override async Task RemovePackage(PackageKey package)
+        public override async Task RemovePackage(string packageId)
         {
-            var response = await ExecuteUnaryRequestAuthorized(RemovePackageInternal, new RemovePackageRequest { Package = package });
+            var response = await ExecuteUnaryRequestAuthorized(RemovePackageInternal, new RemovePackageRequest { PackageId = packageId });
             FailForNonSuccess(response.ExecResult);
         }
 
-        public override async Task DownloadPackage(PackageKey package, string dstPath, int chunkSize, int offset, IFileProgressListener progressListener)
+        public override async Task DownloadPackage(string packageId, string dstPath, int chunkSize, int offset, IFileProgressListener progressListener)
         {
             progressListener.Init((long)offset * chunkSize);
 
@@ -802,7 +802,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 {
                     Package = new PackageDetails
                     {
-                        Key = package,
+                        PackageId = packageId,
                         ChunkSettings = new FileChunkSettings { Size = chunkSize, Offset = offset },
                     }
                 });

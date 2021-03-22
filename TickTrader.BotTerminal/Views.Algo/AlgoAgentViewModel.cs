@@ -147,7 +147,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public async Task RemovePackage(PackageKey package)
+        public async Task RemovePackage(string packageId)
         {
             try
             {
@@ -156,7 +156,7 @@ namespace TickTrader.BotTerminal
                 if (result != DialogResult.OK)
                     return;
 
-                var bots = Bots.Where(u => u.Plugin.Package.Equals(package)).AsObservable();
+                var bots = Bots.Where(u => u.Plugin.PackageId == packageId).AsObservable();
 
                 if (bots.Any(u => u.IsRunning))
                 {
@@ -167,7 +167,7 @@ namespace TickTrader.BotTerminal
                 foreach (var id in bots.Select(u => u.InstanceId).ToList())
                     RemoveBot(id, showDialog: false).Forget();
 
-                await _agentModel.RemovePackage(package);
+                await _agentModel.RemovePackage(packageId);
             }
             catch (Exception ex)
             {
@@ -228,11 +228,11 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void OpenUploadPackageDialog(PackageKey package = null, string agentName = null)
+        public void OpenUploadPackageDialog(string packageId = null, string agentName = null)
         {
             try
             {
-                var model = new UploadPackageViewModel(_algoEnv, agentName ?? Name, package);
+                var model = new UploadPackageViewModel(_algoEnv, agentName ?? Name, packageId);
                 _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoUploadPackageWindow", model);
             }
             catch (Exception ex)
@@ -241,11 +241,11 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void OpenDownloadPackageDialog(PackageKey packageKey = null)
+        public void OpenDownloadPackageDialog(string packageId = null)
         {
             try
             {
-                var model = new DownloadPackageViewModel(_algoEnv, Name, packageKey);
+                var model = new DownloadPackageViewModel(_algoEnv, Name, packageId);
                 _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoDownloadPackageWindow", model);
             }
             catch (Exception ex)

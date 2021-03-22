@@ -80,11 +80,11 @@ namespace TickTrader.Algo.Core
             }
             else
             {
-                _sandbox = new AlgoSandbox(_runtimeConfig.PackagePath, false);
+                _sandbox = new AlgoSandbox(packagePath, false);
                 plugins = _sandbox.AlgoMetadata;
             }
 
-            _packageInfo = PackageHelper.GetInfo(PackageHelper.GetPackageKey(RepositoryLocation.LocalRepository, packagePath), identity, plugins);
+            _packageInfo = PackageHelper.GetInfo(_runtimeConfig.PackageId, identity, plugins);
 
             //var package = config.Key.Package;
             //var path = string.Empty;

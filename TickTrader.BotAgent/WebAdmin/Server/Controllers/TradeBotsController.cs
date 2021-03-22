@@ -11,6 +11,7 @@ using TickTrader.BotAgent.BA.Models;
 using System.Net;
 using TickTrader.Algo.Domain;
 using System.Threading.Tasks;
+using TickTrader.BotAgent.BA.Repository;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 {
@@ -201,7 +202,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
                 var pluginCfg = setup.Parse();
                 var accountKey = new AccountKey(setup.Account.Server, setup.Account.Login);
 
-                pluginCfg.Key = new PluginKey(setup.PackageName.ToLowerInvariant(), RepositoryLocation.LocalRepository, setup.PluginId);
+                pluginCfg.Key = new PluginKey(PackageStorage.GetPackageId(setup.PackageName), setup.PluginId);
 
                 var tradeBot = await _botAgent.AddBot(accountKey, pluginCfg);
                 setup.EnsureFiles(ServerModel.GetWorkingFolderFor(tradeBot.InstanceId));

@@ -210,9 +210,7 @@ namespace TickTrader.BotTerminal
             if (Bot.Model.Config != null)
             {
                 var config = Bot.Model.Config;
-                var package = config.Key.Package;
-                res.Add($"Algo Package Name: {package.Name}");
-                res.Add($"Algo Package Location: {package.Location}");
+                res.Add($"Algo Package Id: {config.Key.PackageId}");
                 res.Add($"Symbol: {config.MainSymbol.Name}");
                 res.Add($"Timeframe: {config.Timeframe}");
                 res.Add($"Model: {config.ModelTimeframe}");

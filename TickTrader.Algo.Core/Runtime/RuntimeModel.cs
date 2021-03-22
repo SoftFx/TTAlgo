@@ -28,13 +28,14 @@ namespace TickTrader.Algo.Core
         public RuntimeConfig Config { get; } = new RuntimeConfig();
 
 
-        internal RuntimeModel(AlgoServer server, string id, string packagePath)
+        internal RuntimeModel(AlgoServer server, string id, string packageId, string packagePath)
         {
             _server = server;
             Id = id;
             _packagePath = packagePath;
 
             Config.PackagePath = packagePath;
+            Config.PackageId = packageId;
             _attachedAccounts = new Dictionary<string, AttachedAccount>();
 
             _launchTask = new TaskCompletionSource<bool>();

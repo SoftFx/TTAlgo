@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Core
         private readonly Dictionary<string, IAccountProxy> _accountsMap;
         private readonly RpcServer _rpcServer;
         private readonly AsyncChannelProcessor<PackageFileUpdate> _packageProcessor;
-        private Dictionary<RepositoryLocation, PackageRepository> _repositories;
+        private Dictionary<string, PackageRepository> _repositories;
 
 
         public string Address { get; } = "127.0.0.1";
@@ -39,7 +39,7 @@ namespace TickTrader.Algo.Core
             _accountsMap = new Dictionary<string, IAccountProxy>();
 
             _packageProcessor = AsyncChannelProcessor<PackageFileUpdate>.CreateUnbounded($"{nameof(AlgoServer)} package loop", true);
-            _repositories = new Dictionary<RepositoryLocation, PackageRepository>();
+            _repositories = new Dictionary<string, PackageRepository>();
 
             _rpcServer = new RpcServer(new TcpFactory(), this);
         }
@@ -59,20 +59,12 @@ namespace TickTrader.Algo.Core
             await _rpcServer.Stop();
         }
 
-        public RuntimeModel CreateRuntime(AlgoPluginRef pluginRef, ISyncContext updatesSync)
-        {
-            var id = Guid.NewGuid().ToString("N");
-            var runtime = new RuntimeModel(this, id, pluginRef.PackagePath);
-            _runtimesMap.Add(id, runtime);
-            return runtime;
-        }
-
         public async Task<ExecutorModel> CreateExecutor(PluginConfig config, string accountId)
         {
             if (_executorsMap.ContainsKey(config.InstanceId))
                 throw new ArgumentException("Duplicate instance id");
 
-            var packageId = PackageHelper.GetPackageId(config.Key.Package);
+            var packageId = config.Key.PackageId;
 
             var runtime = await GetActiveRuntime(packageId);
             var executor = runtime.CreateExecutor(config, accountId);
@@ -89,21 +81,20 @@ namespace TickTrader.Algo.Core
             return true;
         }
 
-        public void RegisterPackageRepository(RepositoryLocation location, string path)
+        public void RegisterPackageRepository(string locationId, string path)
         {
-            if (_repositories.ContainsKey(location))
-                throw new ArgumentException($"Cannot register multiple paths for location '{location}'");
+            if (_repositories.ContainsKey(locationId))
+                throw new ArgumentException($"Cannot register multiple paths for location '{locationId}'");
 
-            var repo = new PackageRepository(path, location, _packageProcessor, CoreLoggerFactory.GetLogger<PackageRepository>(), true);
-            _repositories.Add(location, repo);
+            var repo = new PackageRepository(path, locationId, _packageProcessor, CoreLoggerFactory.GetLogger<PackageRepository>(), true);
+            _repositories.Add(locationId, repo);
             repo.Start();
         }
 
         public void AddAssemblyAsPackage(string assemblyPath)
         {
-            var key = PackageHelper.GetPackageKey(RepositoryLocation.Embedded, assemblyPath);
-            var id = PackageHelper.GetPackageId(key);
-            _packageProcessor.Add(new PackageFileUpdate(id, key, Repository.UpdateAction.Upsert, assemblyPath));
+            var id = PackageHelper.GetPackageIdFromPath(string.Empty, assemblyPath);
+            _packageProcessor.Add(new PackageFileUpdate(id, Repository.UpdateAction.Upsert, assemblyPath));
         }
 
 
@@ -168,7 +159,7 @@ namespace TickTrader.Algo.Core
             {
                 case Repository.UpdateAction.Upsert:
                     var runtimeId = GenerateRuntimeId(packageId);
-                    var runtime = new RuntimeModel(this, runtimeId, update.FilePath);
+                    var runtime = new RuntimeModel(this, runtimeId, packageId, update.FilePath);
                     _runtimesMap[runtimeId] = runtime;
 
                     var _ = LoadPackageInfo(packageId, update, runtime);
@@ -193,8 +184,6 @@ namespace TickTrader.Algo.Core
             await runtime.Start(Address, BoundPort);
 
             var package = await runtime.GetPackageInfo();
-            package.Key.Location = update.PackageKey.Location; // temp fix
-            foreach (var p in package.Plugins) p.Key.Package.Location = update.PackageKey.Location;
 
             lock (_packagesMap)
             {

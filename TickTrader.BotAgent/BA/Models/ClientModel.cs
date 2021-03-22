@@ -423,10 +423,10 @@ namespace TickTrader.BotAgent.BA.Models
 
             var algoKey = config.Key;
 
-            var package = _packageProvider.GetPackageRef(algoKey.Package.Name);
+            var package = _packageProvider.GetPackageRef(algoKey.PackageId);
 
             if (package == null)
-                throw new PackageNotFoundException($"Algo Package {algoKey.Package.Name} at {algoKey.Package.Location} cannot be found!");
+                throw new PackageNotFoundException($"Algo Package {algoKey.PackageId} cannot be found!");
 
             var newBot = new TradeBotModel(config);
             BotValidation?.Invoke(newBot);

@@ -2,14 +2,10 @@
 using Machinarium.Qnil;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
@@ -22,7 +18,7 @@ namespace TickTrader.BotTerminal
         private const int DefaultChunkSize = 512 * 1024;
 
         private ISyncContext _syncContext;
-        private VarDictionary<PackageKey, PackageInfo> _packages;
+        private VarDictionary<string, PackageInfo> _packages;
         private VarDictionary<PluginKey, PluginInfo> _plugins;
         private VarDictionary<AccountKey, AccountModelInfo> _accounts;
         private VarDictionary<string, RemoteTradeBot> _bots;
@@ -37,7 +33,7 @@ namespace TickTrader.BotTerminal
 
         public bool IsRemote => true;
 
-        public IVarSet<PackageKey, PackageInfo> Packages => _packages;
+        public IVarSet<string, PackageInfo> Packages => _packages;
 
         public IVarSet<PluginKey, PluginInfo> Plugins => _plugins;
 
@@ -72,7 +68,7 @@ namespace TickTrader.BotTerminal
 
             _syncContext = new DispatcherSync();
 
-            _packages = new VarDictionary<PackageKey, PackageInfo>();
+            _packages = new VarDictionary<string, PackageInfo>();
             _plugins = new VarDictionary<PluginKey, PluginInfo>();
             _accounts = new VarDictionary<AccountKey, AccountModelInfo>();
             _bots = new VarDictionary<string, RemoteTradeBot>();
@@ -187,17 +183,17 @@ namespace TickTrader.BotTerminal
 
         public async Task UploadPackage(string fileName, string srcFilePath, IFileProgressListener progressListener)
         {
-            await Task.Run(() => _protocolClient.UploadPackage(new PackageKey(fileName, RepositoryLocation.LocalRepository), srcFilePath, DefaultChunkSize, 0, progressListener));
+            await Task.Run(() => _protocolClient.UploadPackage(PackageHelper.GetPackageIdFromName(PackageHelper.LocalRepositoryId, fileName.ToLower()), srcFilePath, DefaultChunkSize, 0, progressListener));
         }
 
-        public Task RemovePackage(PackageKey package)
+        public Task RemovePackage(string packageId)
         {
-            return _protocolClient.RemovePackage(package);
+            return _protocolClient.RemovePackage(packageId);
         }
 
-        public async Task DownloadPackage(PackageKey package, string dstFilePath, IFileProgressListener progressListener)
+        public async Task DownloadPackage(string packageId, string dstFilePath, IFileProgressListener progressListener)
         {
-            await Task.Run(() => _protocolClient.DownloadPackage(package, dstFilePath, DefaultChunkSize, 0, progressListener));
+            await Task.Run(() => _protocolClient.DownloadPackage(packageId, dstFilePath, DefaultChunkSize, 0, progressListener));
         }
 
         public Task<PluginFolderInfo> GetBotFolderInfo(string botId, PluginFolderInfo.Types.PluginFolderId folderId)
@@ -246,8 +242,8 @@ namespace TickTrader.BotTerminal
                 _plugins.Clear();
                 packages.ForEach(package =>
                 {
-                    _packages.Add(package.Key, package);
-                    foreach(var plugin in package.Plugins)
+                    _packages.Add(package.PackageId, package);
+                    foreach (var plugin in package.Plugins)
                     {
                         _plugins.Add(plugin.Key, plugin);
                     }
@@ -288,16 +284,16 @@ namespace TickTrader.BotTerminal
                 switch (updateType)
                 {
                     case UpdateInfo.Types.UpdateType.Added:
-                        _packages.Add(package.Key, package);
+                        _packages.Add(package.PackageId, package);
                         MergePlugins(package);
                         break;
                     case UpdateInfo.Types.UpdateType.Replaced:
-                        _packages[package.Key] = package;
+                        _packages[package.PackageId] = package;
                         MergePlugins(package);
                         break;
                     case UpdateInfo.Types.UpdateType.Removed:
-                        _packages.Remove(package.Key);
-                        MergePlugins(new PackageInfo { Key = package.Key });
+                        _packages.Remove(package.PackageId);
+                        MergePlugins(new PackageInfo { PackageId = package.PackageId });
                         break;
                 }
             });
@@ -417,7 +413,7 @@ namespace TickTrader.BotTerminal
 
             // remove
             var newPluginsLookup = package.Plugins.ToDictionary(p => p.Key);
-            foreach (var plugin in _plugins.Values.Where(p => p.Key.Package.Equals(package.Key)).ToList())
+            foreach (var plugin in _plugins.Values.Where(p => p.Key.PackageId == package.PackageId).ToList())
             {
                 if (!newPluginsLookup.ContainsKey(plugin.Key))
                 {

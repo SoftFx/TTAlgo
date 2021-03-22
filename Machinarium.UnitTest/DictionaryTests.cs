@@ -181,20 +181,20 @@ namespace Machinarium.UnitTest
         {
             var src = new VarDictionary<PluginKey, TestNode>();
 
-            src.Add(new PluginKey("33", RepositoryLocation.LocalRepository, "aaa"), new TestNode("aaa", "Local"));
-            src.Add(new PluginKey("33", RepositoryLocation.LocalRepository, "bbb"), new TestNode("bbb", "Local"));
-            src.Add(new PluginKey("33", RepositoryLocation.CommonRepository, "aaa"), new TestNode("aaa", "Common"));
-            src.Add(new PluginKey("33", RepositoryLocation.CommonRepository, "bbb"), new TestNode("bbb", "Common"));
+            src.Add(new PluginKey("local/33", "aaa"), new TestNode("aaa", "Local"));
+            src.Add(new PluginKey("local/33", "bbb"), new TestNode("bbb", "Local"));
+            src.Add(new PluginKey("common/33", "aaa"), new TestNode("aaa", "Common"));
+            src.Add(new PluginKey("common/33", "bbb"), new TestNode("bbb", "Common"));
 
             var sortedSrc = src.OrderBy((k, v) => v.DisplayName).Select(u => u.FullName);
 
-            src.Remove(new PluginKey("33", RepositoryLocation.LocalRepository, "aaa"));
-            src.Remove(new PluginKey("33", RepositoryLocation.LocalRepository, "bbb"));
+            src.Remove(new PluginKey("local/33", "aaa"));
+            src.Remove(new PluginKey("local/33", "bbb"));
 
             var checkPluginList = new List<PluginKey>()
                {
-                   new PluginKey("33", RepositoryLocation.CommonRepository, "aaa"),
-                   new PluginKey("33", RepositoryLocation.CommonRepository, "bbb"),
+                   new PluginKey("common/33", "aaa"),
+                   new PluginKey("common/33", "bbb"),
                };
 
             var checkNameList = new List<string>()

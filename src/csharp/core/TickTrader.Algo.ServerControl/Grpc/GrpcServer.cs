@@ -1071,7 +1071,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
             {
                 var chunkSize = request.Package.ChunkSettings.Size;
                 var buffer = new byte[chunkSize];
-                var packagePath = await _algoServer.GetPackageWritePath(request.Package.Key);
+                var packagePath = await _algoServer.GetPackageWritePath(request.Package.PackageId);
                 string oldPackagePath = null;
                 if (File.Exists(packagePath))
                 {
@@ -1136,7 +1136,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                await _algoServer.RemovePackage(request.Package);
+                await _algoServer.RemovePackage(request.PackageId);
             }
             catch (Exception ex)
             {
@@ -1169,7 +1169,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
             {
                 var chunkSize = request.Package.ChunkSettings.Size;
                 var buffer = new byte[chunkSize];
-                var packagePath = await _algoServer.GetPackageReadPath(request.Package.Key);
+                var packagePath = await _algoServer.GetPackageReadPath(request.Package.PackageId);
                 using (var stream = File.Open(packagePath, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     stream.Seek((long)chunkSize * request.Package.ChunkSettings.Offset, SeekOrigin.Begin);

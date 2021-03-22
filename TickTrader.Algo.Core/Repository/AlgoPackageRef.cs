@@ -9,7 +9,7 @@ namespace TickTrader.Algo.Core.Repository
         private int _refCount;
 
 
-        public string Name => PackageInfo.Key.Name;
+        public string Id => PackageInfo.PackageId;
 
         public PackageIdentity Identity { get; private set; }
 

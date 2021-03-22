@@ -5,10 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Core.Repository;
-using TickTrader.Algo.Domain;
 using TickTrader.Algo.ServerControl;
 
 namespace TickTrader.BotTerminal
@@ -38,7 +34,7 @@ namespace TickTrader.BotTerminal
 
         public AlgoAgentViewModel SelectedBotAgent { get; }
 
-        public IEnumerable<PackageIdentity> Packages { get; protected set; }
+        public IEnumerable<AlgoPackageViewModel> Packages { get; protected set; }
 
 
         public string SelectedFolder
@@ -146,7 +142,7 @@ namespace TickTrader.BotTerminal
                 ProgressModel.SetMessage(message);
 
                 var selectPackageInfo = Packages.FirstOrDefault(u => u.FileName == FileNameSource);
-                var progressListener = new FileProgressListenerAdapter(ProgressModel, selectPackageInfo.Size);
+                var progressListener = new FileProgressListenerAdapter(ProgressModel, selectPackageInfo.Identity.Size);
 
                 if (_mode == LoadPackageMode.Upload)
                     await SelectedBotAgent.Model.UploadPackage(FileNameTarget, FullSelectePackagePath(FileNameSource), progressListener);
@@ -191,11 +187,11 @@ namespace TickTrader.BotTerminal
             base.OnDeactivate(close);
         }
 
-        protected void SetDefaultFileSource(PackageKey key, out PackageIdentity identity)
+        protected void SetDefaultFileSource(string packageId, out AlgoPackageViewModel package)
         {
-            identity = Packages?.FirstOrDefault(u => GetDefaultPath(u, key));
+            package = Packages?.FirstOrDefault(u => u.Key == packageId);
 
-            FileNameSource = identity?.FileName ?? Packages.FirstOrDefault()?.FileName;
+            FileNameSource = package?.FileName ?? Packages.FirstOrDefault()?.FileName;
         }
 
         protected void RefreshTargetName() => FileNameTarget = GenerateTargetFileName(FileNameSource);
@@ -247,7 +243,5 @@ namespace TickTrader.BotTerminal
         }
 
         private string FullSelectePackagePath(string fileName) => Path.Combine(SelectedFolder, fileName);
-
-        private bool GetDefaultPath(PackageIdentity identity, PackageKey key) => key != null ? identity.FileName.ToLowerInvariant() == key.Name.ToLowerInvariant() : true;
     }
 }

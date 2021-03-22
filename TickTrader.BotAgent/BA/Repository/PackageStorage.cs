@@ -39,7 +39,7 @@ namespace TickTrader.BotAgent.BA.Repository
             EnsureStorageDirectoryCreated();
 
             Library = new LocalAlgoLibrary(CoreLoggerFactory.GetLogger("AlgoRepository"), algoServer);
-            Library.RegisterRepositoryLocation(RepositoryLocation.LocalRepository, _storageDir, true);
+            Library.RegisterRepositoryLocation(PackageHelper.LocalRepositoryId, _storageDir, true);
             Library.PackageUpdated += LibraryOnPackageUpdated;
             Library.PackageStateChanged += LibraryOnPackageStateChanged;
 
@@ -48,9 +48,9 @@ namespace TickTrader.BotAgent.BA.Repository
         }
 
 
-        public static PackageKey GetPackageKey(string packageName)
+        public static string GetPackageId(string packageName)
         {
-            return new PackageKey(packageName.ToLower(), RepositoryLocation.LocalRepository);
+            return PackageHelper.GetPackageIdFromName(PackageHelper.LocalRepositoryId, packageName.ToLowerInvariant());
         }
 
 
@@ -58,7 +58,7 @@ namespace TickTrader.BotAgent.BA.Repository
         {
             EnsureStorageDirectoryCreated();
 
-            var packageRef = Library.GetPackageRef(GetPackageKey(packageName));
+            var packageRef = Library.GetPackageRef(GetPackageId(packageName));
             if (packageRef != null)
             {
                 if (packageRef.IsLocked)
@@ -70,63 +70,53 @@ namespace TickTrader.BotAgent.BA.Repository
             SavePackage(packageName, packageContent);
         }
 
-        public byte[] GetPackageBinary(PackageKey package)
+        public byte[] GetPackageBinary(string packageId)
         {
-            var packageRef = Library.GetPackageRef(package);
+            var packageRef = Library.GetPackageRef(packageId);
             if (packageRef == null)
                 throw new ArgumentException("Algo package not found");
 
             return File.ReadAllBytes(packageRef.Identity.FilePath);
         }
 
-        public AlgoPackageRef GetPackageRef(string packageName)
+        public AlgoPackageRef GetPackageRef(string packageId)
         {
-            return GetPackageRef(GetPackageKey(packageName));
+            return Library.GetPackageRef(packageId);
         }
 
-        public AlgoPackageRef GetPackageRef(PackageKey packageKey)
+        public void Remove(string packageId)
         {
-            return Library.GetPackageRef(packageKey);
-        }
-
-        public void Remove(string packageName)
-        {
-            Remove(GetPackageKey(packageName));
-        }
-
-        public void Remove(PackageKey packageKey)
-        {
-            var packageRef = Library.GetPackageRef(packageKey);
+            var packageRef = Library.GetPackageRef(packageId);
             if (packageRef != null)
             {
                 RemovePackage(packageRef);
             }
         }
 
-        public string GetPackageReadPath(PackageKey package)
+        public string GetPackageReadPath(string packageId)
         {
-            var packageRef = Library.GetPackageRef(package);
+            var packageRef = Library.GetPackageRef(packageId);
             if (packageRef == null)
                 throw new ArgumentException("Algo package not found");
 
             return packageRef.Identity.FilePath;
         }
 
-        public string GetPackageWritePath(PackageKey package)
+        public string GetPackageWritePath(string packageId)
         {
-            if (package.Location != RepositoryLocation.LocalRepository)
-                throw new ArgumentException($"Algo package location '{package.Location}' is not defined");
+            if (!packageId.StartsWith(PackageHelper.LocalRepositoryId))
+                throw new ArgumentException($"Algo package {packageId}: location is not defined");
 
             EnsureStorageDirectoryCreated();
 
-            var packageRef = Library.GetPackageRef(GetPackageKey(package.Name));
+            var packageRef = Library.GetPackageRef(packageId);
             if (packageRef != null)
             {
                 if (packageRef.IsLocked)
-                    throw new PackageLockedException($"Cannot update Algo package '{package.Name}': one or more trade bots from this package is being executed! Please stop all bots and try again!");
+                    throw new PackageLockedException($"Cannot update Algo package '{packageId}': one or more trade bots from this package is being executed! Please stop all bots and try again!");
             }
 
-            return GetFullPathToPackage(package.Name);
+            return packageRef.Identity.FilePath;
         }
 
 
@@ -144,11 +134,11 @@ namespace TickTrader.BotAgent.BA.Repository
 
             try
             {
-                File.Delete(Path.Combine(_storageDir, package.Name));
+                File.Delete(package.Identity.FilePath);
             }
             catch
             {
-                _logger.Warn($"Error deleting file Algo package '{package.Name}'");
+                _logger.Warn($"Error deleting file Algo package '{package.Id}'");
                 throw;
             }
         }

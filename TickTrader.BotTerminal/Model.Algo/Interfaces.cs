@@ -3,11 +3,7 @@ using System;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.BotTerminal.Lib;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.ServerControl;
-using TickTrader.Algo.Core.Repository;
 using System.Collections.Generic;
 using SciChart.Charting.Visuals.Axes;
 using TickTrader.Algo.Common.Lib;
@@ -21,7 +17,7 @@ namespace TickTrader.BotTerminal
 
         bool IsRemote { get; }
 
-        IVarSet<PackageKey, PackageInfo> Packages { get; }
+        IVarSet<string, PackageInfo> Packages { get; }
 
         IVarSet<PluginKey, PluginInfo> Plugins { get; }
 
@@ -71,9 +67,9 @@ namespace TickTrader.BotTerminal
 
         Task UploadPackage(string fileName, string srcFilePath, IFileProgressListener progressListener);
 
-        Task RemovePackage(PackageKey package);
+        Task RemovePackage(string packageId);
 
-        Task DownloadPackage(PackageKey package, string dstFilePath, IFileProgressListener progressListener);
+        Task DownloadPackage(string packageId, string dstFilePath, IFileProgressListener progressListener);
 
         Task<PluginFolderInfo> GetBotFolderInfo(string botId, PluginFolderInfo.Types.PluginFolderId folderId);
 

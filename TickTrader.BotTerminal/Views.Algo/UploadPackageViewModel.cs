@@ -1,11 +1,7 @@
-﻿using Caliburn.Micro;
-using Machinarium.Qnil;
-using NLog;
+﻿using Machinarium.Qnil;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 
@@ -13,14 +9,14 @@ namespace TickTrader.BotTerminal
 {
     internal class UploadPackageViewModel : BaseloadPackageViewModel
     {
-        public UploadPackageViewModel(AlgoEnvironment algoEnv, string agentName, PackageKey package = null) : base(algoEnv, agentName, LoadPackageMode.Upload)
+        public UploadPackageViewModel(AlgoEnvironment algoEnv, string agentName, string packageId = null) : base(algoEnv, agentName, LoadPackageMode.Upload)
         {
             _logger = NLog.LogManager.GetCurrentClassLogger();
 
-            Packages = _algoEnv.LocalAgentVM.Packages.Where(u => IsDefaultFolder(u.Location)).Select(u => u.Identity).AsObservable();
+            Packages = _algoEnv.LocalAgentVM.Packages.Where(u => IsDefaultFolder(u.Location)).AsObservable();
 
-            SetDefaultFileSource(package, out PackageIdentity identity);
-            SelectedFolder = identity != null ? Path.GetDirectoryName(identity.FilePath) : EnvService.Instance.AlgoRepositoryFolder;
+            SetDefaultFileSource(packageId, out var package);
+            SelectedFolder = package != null ? Path.GetDirectoryName(package.Identity.FilePath) : EnvService.Instance.AlgoRepositoryFolder;
         }
 
         protected override void UpdateAgentPackage(ListUpdateArgs<AlgoPackageViewModel> args) => RefreshTargetName();
@@ -40,7 +36,9 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                Packages = Directory.GetFiles(SelectedFolder, FileNameWatcherTemplate).Select(u => PackageIdentity.CreateInvalid(new FileInfo(u)));
+                Packages = Directory.GetFiles(SelectedFolder, FileNameWatcherTemplate).Select(u => PackageIdentity.CreateInvalid(new FileInfo(u)))
+                    .Select(i => new PackageInfo {PackageId = PackageHelper.GetPackageIdFromPath("custom", i.FilePath), Identity = i, IsValid = true })
+                    .Select(info => new AlgoPackageViewModel(info, _algoEnv.LocalAgentVM, false));
                 NotifyOfPropertyChange(nameof(Packages));
             }
             catch (Exception ex)
@@ -49,6 +47,6 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private bool IsDefaultFolder(RepositoryLocation path) => path == RepositoryLocation.LocalRepository || path == RepositoryLocation.CommonRepository;
+        private bool IsDefaultFolder(string location) => location == PackageHelper.LocalRepositoryId || location == PackageHelper.CommonRepositoryId;
     }
 }

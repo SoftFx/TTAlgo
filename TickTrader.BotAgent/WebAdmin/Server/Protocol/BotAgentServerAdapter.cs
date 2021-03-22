@@ -154,19 +154,19 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return _botAgent.TestCreds(account, password);
         }
 
-        public Task RemovePackage(PackageKey package)
+        public Task RemovePackage(string packageId)
         {
-            return _botAgent.RemovePackage(package);
+            return _botAgent.RemovePackage(packageId);
         }
 
-        public Task<string> GetPackageReadPath(PackageKey package)
+        public Task<string> GetPackageReadPath(string packageId)
         {
-            return _botAgent.GetPackageReadPath(package);
+            return _botAgent.GetPackageReadPath(packageId);
         }
 
-        public Task<string> GetPackageWritePath(PackageKey package)
+        public Task<string> GetPackageWritePath(string packageId)
         {
-            return _botAgent.GetPackageWritePath(package);
+            return _botAgent.GetPackageWritePath(packageId);
         }
 
         public async Task<string> GetBotStatusAsync(string botId)

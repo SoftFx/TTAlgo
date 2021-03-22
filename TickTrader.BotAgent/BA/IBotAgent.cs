@@ -15,14 +15,13 @@ namespace TickTrader.BotAgent.BA
         Task<List<PackageInfo>> GetPackages();
         Task<PackageInfo> GetPackage(string package);
         Task UpdatePackage(byte[] fileContent, string fileName);
-        Task<byte[]> DownloadPackage(PackageKey package);
-        Task RemovePackage(string package);
-        Task RemovePackage(PackageKey package);
+        Task<byte[]> DownloadPackage(string packageId);
+        Task RemovePackage(string packageId);
         Task<List<PluginInfo>> GetAllPlugins();
         Task<List<PluginInfo>> GetPluginsByType(Metadata.Types.PluginType type);
         Task<MappingCollectionInfo> GetMappingsInfo();
-        Task<string> GetPackageReadPath(PackageKey package);
-        Task<string> GetPackageWritePath(PackageKey package);
+        Task<string> GetPackageReadPath(string packageId);
+        Task<string> GetPackageWritePath(string packageId);
 
         event Action<PackageInfo, ChangeAction> PackageChanged;
         event Action<PackageStateUpdate> PackageStateChanged;

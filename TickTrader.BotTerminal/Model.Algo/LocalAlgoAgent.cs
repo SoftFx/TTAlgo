@@ -9,8 +9,6 @@ using System.Threading.Tasks;
 using Machinarium.Qnil;
 using NLog;
 using SciChart.Charting.Visuals.Axes;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model;
@@ -21,7 +19,6 @@ using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.ServerControl;
-using TickTrader.BotTerminal.Lib;
 using File = System.IO.File;
 
 namespace TickTrader.BotTerminal
@@ -37,7 +34,7 @@ namespace TickTrader.BotTerminal
         private readonly ReductionCollection _reductions;
         private readonly MappingCollectionInfo _mappingsInfo;
         private ISyncContext _syncContext;
-        private VarDictionary<PackageKey, PackageInfo> _packages;
+        private VarDictionary<string, PackageInfo> _packages;
         private VarDictionary<PluginKey, PluginInfo> _plugins;
         private VarDictionary<AccountKey, AccountModelInfo> _accounts;
         private BotsWarden _botsWarden;
@@ -48,7 +45,7 @@ namespace TickTrader.BotTerminal
 
         public bool IsRemote => false;
 
-        public IVarSet<PackageKey, PackageInfo> Packages => _packages;
+        public IVarSet<string, PackageInfo> Packages => _packages;
 
         public IVarSet<PluginKey, PluginInfo> Plugins => _plugins;
 
@@ -111,7 +108,7 @@ namespace TickTrader.BotTerminal
             Library = new LocalAlgoLibrary(new AlgoLogAdapter("AlgoRepository"), AlgoServer);
             _botsWarden = new BotsWarden(this);
             _syncContext = new DispatcherSync();
-            _packages = new VarDictionary<PackageKey, PackageInfo>();
+            _packages = new VarDictionary<string, PackageInfo>();
             _plugins = new VarDictionary<PluginKey, PluginInfo>();
             _accounts = new VarDictionary<AccountKey, AccountModelInfo>();
             _bots = new VarDictionary<string, TradeBotModel>();
@@ -127,11 +124,11 @@ namespace TickTrader.BotTerminal
             ClientModel.Connection.StateChanged += ClientConnectionOnStateChanged;
 
             Library.AddAssemblyAsPackage(Assembly.Load("TickTrader.Algo.Indicators"));
-            Library.RegisterRepositoryLocation(RepositoryLocation.LocalRepository, EnvService.Instance.AlgoRepositoryFolder, Properties.Settings.Default.EnablePluginIsolation);
+            Library.RegisterRepositoryLocation(PackageHelper.LocalRepositoryId, EnvService.Instance.AlgoRepositoryFolder, Properties.Settings.Default.EnablePluginIsolation);
             if (EnvService.Instance.AlgoCommonRepositoryFolder != null)
-                Library.RegisterRepositoryLocation(RepositoryLocation.CommonRepository, EnvService.Instance.AlgoCommonRepositoryFolder, Properties.Settings.Default.EnablePluginIsolation);
+                Library.RegisterRepositoryLocation(PackageHelper.CommonRepositoryId, EnvService.Instance.AlgoCommonRepositoryFolder, Properties.Settings.Default.EnablePluginIsolation);
 
-            _reductions.LoadReductions(EnvService.Instance.AlgoExtFolder, RepositoryLocation.LocalExtensions);
+            _reductions.LoadReductions(EnvService.Instance.AlgoExtFolder, PackageHelper.LocalRepositoryId);
 
             Mappings = new MappingCollection(_reductions);
             _mappingsInfo = Mappings.ToInfo();
@@ -231,44 +228,21 @@ namespace TickTrader.BotTerminal
             return Task.FromResult(this);
         }
 
-        public Task RemovePackage(PackageKey package)
+        public Task RemovePackage(string packageId)
         {
-            string filePath = null;
-            switch (package.Location)
-            {
-                case RepositoryLocation.LocalRepository:
-                    filePath = Path.Combine(EnvService.Instance.AlgoRepositoryFolder, package.Name);
-                    break;
-                case RepositoryLocation.LocalExtensions:
-                    filePath = Path.Combine(EnvService.Instance.AlgoExtFolder, package.Name);
-                    break;
-                case RepositoryLocation.CommonRepository:
-                    filePath = Path.Combine(EnvService.Instance.AlgoCommonRepositoryFolder, package.Name);
-                    break;
-                default:
-                    throw new ArgumentException("Can't resolve path to Algo package location");
-            }
-            File.Delete(filePath);
-            return Task.FromResult(this);
+            if (!_packages.TryGetValue(packageId, out var package))
+                throw new ArgumentException("Can't resolve path to Algo package location");
+
+            File.Delete(package.Identity.FilePath);
+            return Task.CompletedTask;
         }
 
-        public Task DownloadPackage(PackageKey package, string dstFilePath, IFileProgressListener progressListener)
+        public Task DownloadPackage(string packageId, string dstFilePath, IFileProgressListener progressListener)
         {
-            string srcFilePath = null;
-            switch (package.Location)
-            {
-                case RepositoryLocation.LocalRepository:
-                    srcFilePath = Path.Combine(EnvService.Instance.AlgoRepositoryFolder, package.Name);
-                    break;
-                case RepositoryLocation.LocalExtensions:
-                    srcFilePath = Path.Combine(EnvService.Instance.AlgoExtFolder, package.Name);
-                    break;
-                case RepositoryLocation.CommonRepository:
-                    srcFilePath = Path.Combine(EnvService.Instance.AlgoCommonRepositoryFolder, package.Name);
-                    break;
-                default:
-                    throw new ArgumentException("Can't resolve path to Algo package location");
-            }
+            if (!_packages.TryGetValue(packageId, out var package))
+                throw new ArgumentException("Can't resolve path to Algo package location");
+
+            var srcFilePath = package.Identity.FilePath;
             progressListener.Init(0);
             File.Copy(srcFilePath, dstFilePath, true);
             progressListener.IncrementProgress(new FileInfo(dstFilePath).Length);
@@ -370,13 +344,13 @@ namespace TickTrader.BotTerminal
                 switch (update.Type)
                 {
                     case UpdateInfo.Types.UpdateType.Added:
-                        _packages.Add(package.Key, package);
+                        _packages.Add(package.PackageId, package);
                         break;
                     case UpdateInfo.Types.UpdateType.Replaced:
-                        _packages[package.Key] = package;
+                        _packages[package.PackageId] = package;
                         break;
                     case UpdateInfo.Types.UpdateType.Removed:
-                        _packages.Remove(package.Key);
+                        _packages.Remove(package.PackageId);
                         break;
                 }
             });

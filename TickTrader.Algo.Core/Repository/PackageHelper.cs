@@ -9,6 +9,12 @@ namespace TickTrader.Algo.Core.Repository
 {
     public static class PackageHelper
     {
+        public const char PackageIdSeparator = '/';
+        public const string EmbeddedRepositoryId = "";
+        public const string LocalRepositoryId = "local";
+        public const string CommonRepositoryId = "common";
+
+
         public static string GetPackageExtensions => "Packages|*.ttalgo";
 
         public static string GetPackageAndAllExtensions => "Packages|*.ttalgo|All Files|*.*";
@@ -19,38 +25,50 @@ namespace TickTrader.Algo.Core.Repository
             return ext == ".ttalgo" || ext == ".dll";
         }
 
-        public static string GetPackageId(RepositoryLocation location, string path)
+        public static string GetPackageIdFromPath(string locationId, string path)
         {
             var name = Environment.OSVersion.Platform == PlatformID.MacOSX || Environment.OSVersion.Platform == PlatformID.Unix
                 ? Path.GetFileName(path) : Path.GetFileName(path).ToLowerInvariant();
-            return $"{location}/{name}";
+            return GetPackageIdFromName(locationId, name);
         }
 
-        public static string GetPackageId(PackageKey packageKey)
+        public static string GetPackageIdFromName(string locationId, string name)
         {
-            return $"{packageKey.Location}/{packageKey.Name}";
+            return string.IsNullOrEmpty(locationId) ? name : $"{locationId}{PackageIdSeparator}{name}";
         }
 
-        public static PackageKey GetPackageKey(RepositoryLocation location, string path)
+        public static void UnpackPackageId(string packageId, out string locationId, out string packageName)
         {
-            var name = Environment.OSVersion.Platform == PlatformID.MacOSX || Environment.OSVersion.Platform == PlatformID.Unix
-                ? Path.GetFileName(path) : Path.GetFileName(path).ToLowerInvariant();
-            return new PackageKey(name, location);
+            var parts = packageId.Split(PackageIdSeparator);
+
+            if (parts.Length > 2)
+                throw new ArgumentException("Invalid package id");
+
+            locationId = string.Empty;
+            if (parts.Length == 1)
+            {
+                packageName = parts[0];
+                return;
+            }
+
+            locationId = parts[0];
+            packageName = parts[1];
+
         }
 
-        public static PackageInfo GetInfo(PackageKey key, PackageIdentity identity, IEnumerable<PluginMetadata> plugins)
+        public static PackageInfo GetInfo(string packageId, PackageIdentity identity, IEnumerable<PluginMetadata> plugins)
         {
             var res = new PackageInfo
             {
-                Key = key,
+                PackageId = packageId,
                 Identity = identity,
 
             };
-            res.Plugins.AddRange(plugins.Select(p => GetInfo(res.Key, p)));
+            res.Plugins.AddRange(plugins.Select(p => GetInfo(res.PackageId, p)));
             return res;
         }
 
-        public static PluginInfo GetInfo(PackageKey packageId, PluginMetadata plugin)
+        public static PluginInfo GetInfo(string packageId, PluginMetadata plugin)
         {
             return new PluginInfo
             {

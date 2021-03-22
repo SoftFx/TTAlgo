@@ -60,7 +60,7 @@ namespace TickTrader.BotAgent.BA.Models
             await _packageStorage.Library.WaitInit();
 
             _packageStorage.PackageChanged += (p, a) => PackageChanged?.Invoke(p, a);
-            _packageStorage.PackageStateChanged += p => PackageStateChanged?.Invoke(new PackageStateUpdate { PackageId = p.Key, IsLocked = p.IsLocked, IsValid = p.IsValid });
+            _packageStorage.PackageStateChanged += p => PackageStateChanged?.Invoke(new PackageStateUpdate { PackageId = p.PackageId, IsLocked = p.IsLocked, IsValid = p.IsValid });
 
             _threadPoolManager.Start(GetBotsCnt());
 
@@ -86,14 +86,13 @@ namespace TickTrader.BotAgent.BA.Models
             public Task<List<PackageInfo>> GetPackages() => CallActorAsync(a => a.GetPackages());
             public Task<PackageInfo> GetPackage(string package) => CallActorAsync(a => a.GetPackage(package));
             public Task UpdatePackage(byte[] fileContent, string fileName) => CallActorAsync(a => a.UpdatePackage(fileContent, fileName));
-            public Task<byte[]> DownloadPackage(PackageKey package) => CallActorAsync(a => a.DownloadPackage(package));
-            public Task RemovePackage(string package) => CallActorAsync(a => a.RemovePackage(package));
-            public Task RemovePackage(PackageKey package) => CallActorAsync(a => a.RemovePackage(package));
+            public Task<byte[]> DownloadPackage(string packageId) => CallActorAsync(a => a.DownloadPackage(packageId));
+            public Task RemovePackage(string packageId) => CallActorAsync(a => a.RemovePackage(packageId));
             public Task<List<PluginInfo>> GetAllPlugins() => CallActorAsync(a => a.GetAllPlugins());
             public Task<List<PluginInfo>> GetPluginsByType(Metadata.Types.PluginType type) => CallActorAsync(a => a.GetPluginsByType(type));
             public Task<MappingCollectionInfo> GetMappingsInfo() => CallActorAsync(a => a.GetMappingsInfo());
-            public Task<string> GetPackageReadPath(PackageKey package) => CallActorAsync(a => a.GetPackageReadPath(package));
-            public Task<string> GetPackageWritePath(PackageKey package) => CallActorAsync(a => a.GetPackageWritePath(package));
+            public Task<string> GetPackageReadPath(string packageId) => CallActorAsync(a => a.GetPackageReadPath(packageId));
+            public Task<string> GetPackageWritePath(string packageId) => CallActorAsync(a => a.GetPackageWritePath(packageId));
 
             public event Action<PackageInfo, ChangeAction> PackageChanged
             {
@@ -461,7 +460,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         private PackageInfo GetPackage(string packageName)
         {
-            return _packageStorage.Library.GetPackage(PackageStorage.GetPackageKey(packageName));
+            return _packageStorage.Library.GetPackage(PackageStorage.GetPackageId(packageName));
         }
 
         private void UpdatePackage(byte[] fileContent, string fileName)
@@ -469,19 +468,14 @@ namespace TickTrader.BotAgent.BA.Models
             _packageStorage.Update(fileContent, fileName);
         }
 
-        private byte[] DownloadPackage(PackageKey package)
+        private byte[] DownloadPackage(string packageId)
         {
-            return _packageStorage.GetPackageBinary(package);
+            return _packageStorage.GetPackageBinary(packageId);
         }
 
-        private void RemovePackage(string package)
+        private void RemovePackage(string packageId)
         {
-            RemovePackage(PackageStorage.GetPackageKey(package));
-        }
-
-        private void RemovePackage(PackageKey package)
-        {
-            var dPackage = _packageStorage.GetPackageRef(package);
+            var dPackage = _packageStorage.GetPackageRef(packageId);
             if (dPackage != null)
             {
                 if (dPackage.IsLocked)
@@ -492,7 +486,7 @@ namespace TickTrader.BotAgent.BA.Models
                 foreach (var bot in botsToDelete)
                     bot.Remove();
 
-                _packageStorage.Remove(package);
+                _packageStorage.Remove(packageId);
             }
         }
 
@@ -513,14 +507,14 @@ namespace TickTrader.BotAgent.BA.Models
             return _packageStorage.Mappings.ToInfo();
         }
 
-        private string GetPackageReadPath(PackageKey package)
+        private string GetPackageReadPath(string packageId)
         {
-            return _packageStorage.GetPackageReadPath(package);
+            return _packageStorage.GetPackageReadPath(packageId);
         }
 
-        private string GetPackageWritePath(PackageKey package)
+        private string GetPackageWritePath(string packageId)
         {
-            return _packageStorage.GetPackageWritePath(package);
+            return _packageStorage.GetPackageWritePath(packageId);
         }
 
         #endregion

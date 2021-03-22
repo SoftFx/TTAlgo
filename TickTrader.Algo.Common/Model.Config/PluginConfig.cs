@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Common.Model.Config
 {
@@ -99,19 +100,36 @@ namespace TickTrader.Algo.Common.Model.Config
 
     internal static class ConfigExtensions
     {
-        public static PackageKey Convert(this Domain.PackageKey package)
+        public static PackageKey ParsePackageKey(this string packageId)
         {
-            return new PackageKey { Name = package.Name, Location = (RepositoryLocation)package.Location };
+            PackageHelper.UnpackPackageId(packageId, out var locationId, out var packageName);
+
+            RepositoryLocation location;
+            switch (locationId)
+            {
+                case PackageHelper.EmbeddedRepositoryId:
+                    location = RepositoryLocation.Embedded;
+                    break;
+                case PackageHelper.LocalRepositoryId:
+                    location = RepositoryLocation.LocalRepository;
+                    break;
+                case PackageHelper.CommonRepositoryId:
+                    location = RepositoryLocation.CommonRepository;
+                    break;
+                default:
+                    throw new ArgumentException("Invalid location id");
+            }
+            return new PackageKey { Location = location, Name = packageName };
         }
 
-        public static PluginKey Convert(this Domain.PluginKey reduction)
+        public static PluginKey Convert(this Domain.PluginKey plugin)
         {
-            return new PluginKey(reduction.Package.Convert(), reduction.DescriptorId);
+            return new PluginKey(plugin.PackageId.ParsePackageKey(), plugin.DescriptorId);
         }
 
         public static ReductionKey Convert(this Domain.ReductionKey reduction)
         {
-            return new ReductionKey(reduction.Package.Convert(), reduction.DescriptorId);
+            return new ReductionKey(reduction.PackageId.ParsePackageKey(), reduction.DescriptorId);
         }
 
         public static MappingKey Convert(this Domain.MappingKey mapping)
@@ -183,19 +201,31 @@ namespace TickTrader.Algo.Common.Model.Config
             }
         }
 
-        public static Domain.PackageKey Convert(this PackageKey package)
+        public static string Convert(this PackageKey package)
         {
-            return new Domain.PackageKey { Name = package.Name, Location = (Domain.RepositoryLocation)package.Location };
+            var locationId = string.Empty;
+            switch(package.Location)
+            {
+                case RepositoryLocation.LocalRepository:
+                case RepositoryLocation.LocalExtensions:
+                    locationId = PackageHelper.LocalRepositoryId;
+                    break;
+                case RepositoryLocation.CommonRepository:
+                case RepositoryLocation.CommonExtensions:
+                    locationId = PackageHelper.CommonRepositoryId;
+                    break;
+            }
+            return PackageHelper.GetPackageIdFromName(locationId, package.Name);
         }
 
-        public static Domain.PluginKey Convert(this PluginKey reduction)
+        public static Domain.PluginKey Convert(this PluginKey plugin)
         {
-            return new Domain.PluginKey(reduction.PackageName, (Domain.RepositoryLocation)reduction.PackageLocation, reduction.DescriptorId);
+            return new Domain.PluginKey(plugin.GetPackageKey().Convert(), plugin.DescriptorId);
         }
 
         public static Domain.ReductionKey Convert(this ReductionKey reduction)
         {
-            return new Domain.ReductionKey(reduction.PackageName, (Domain.RepositoryLocation)reduction.PackageLocation, reduction.DescriptorId);
+            return new Domain.ReductionKey(reduction.GetPackageKey().Convert(), reduction.DescriptorId);
         }
 
         public static Domain.MappingKey Convert(this MappingKey mapping)

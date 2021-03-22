@@ -12,17 +12,14 @@ namespace TickTrader.Algo.Core.Repository
     {
         internal string PackageId { get; }
 
-        internal PackageKey PackageKey { get; }
-
         internal UpdateAction Action { get; }
 
         internal string FilePath { get; }
 
 
-        public PackageFileUpdate(string packageId, PackageKey packageKey, UpdateAction action, string filePath)
+        public PackageFileUpdate(string packageId, UpdateAction action, string filePath)
         {
             PackageId = packageId;
-            PackageKey = packageKey;
             Action = action;
             FilePath = filePath;
         }
@@ -35,17 +32,17 @@ namespace TickTrader.Algo.Core.Repository
         private FileSystemWatcher _watcher;
         private Task _scanTask;
         private string _repPath;
-        private RepositoryLocation _location;
+        private string _location;
         private IAlgoCoreLogger _logger;
         private bool _isolated;
         private readonly IAsyncChannel<PackageFileUpdate> _updateChannel;
         private bool _enabled;
 
 
-        internal PackageRepository(string repPath, RepositoryLocation location, IAsyncChannel<PackageFileUpdate> updateChannel, IAlgoCoreLogger logger = null, bool isolated = true)
+        internal PackageRepository(string repPath, string locationId, IAsyncChannel<PackageFileUpdate> updateChannel, IAlgoCoreLogger logger = null, bool isolated = true)
         {
             _repPath = repPath;
-            _location = location;
+            _location = locationId;
             _updateChannel = updateChannel;
             _logger = logger;
             _isolated = isolated;
@@ -166,18 +163,14 @@ namespace TickTrader.Algo.Core.Repository
 
         private void UpsertPackage(string path)
         {
-            var key = PackageHelper.GetPackageKey(_location, path);
-            var id = PackageHelper.GetPackageId(key);
-            //var id = PackageHelper.GetPackageId(_location, path);
-            _updateChannel.AddAsync(new PackageFileUpdate(id, key, UpdateAction.Upsert, path));
+            var id = PackageHelper.GetPackageIdFromPath(_location, path);
+            _updateChannel.AddAsync(new PackageFileUpdate(id, UpdateAction.Upsert, path));
         }
 
         private void RemovePackage(string path)
         {
-            var key = PackageHelper.GetPackageKey(_location, path);
-            var id = PackageHelper.GetPackageId(key);
-            //var id = PackageHelper.GetPackageId(_location, path);
-            _updateChannel.AddAsync(new PackageFileUpdate(id, key, UpdateAction.Remove, path));
+            var id = PackageHelper.GetPackageIdFromPath(_location, path);
+            _updateChannel.AddAsync(new PackageFileUpdate(id, UpdateAction.Remove, path));
         }
     }
 }

@@ -94,7 +94,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                     Hub.Clients.All.AddOrUpdatePackage(package.ToDto());
                     break;
                 case ChangeAction.Removed:
-                    Hub.Clients.All.DeletePackage(package.Key.Name);
+                    Hub.Clients.All.DeletePackage(package.PackageId);
                     break;
             }
         }

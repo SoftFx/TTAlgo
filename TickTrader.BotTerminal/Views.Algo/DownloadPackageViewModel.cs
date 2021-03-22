@@ -1,13 +1,9 @@
-﻿using Caliburn.Micro;
-using Machinarium.Qnil;
-using NLog;
+﻿using Machinarium.Qnil;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Repository;
-using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -15,13 +11,13 @@ namespace TickTrader.BotTerminal
     {
         private SortedSet<string> _filesInFolder;
 
-        public DownloadPackageViewModel(AlgoEnvironment algoEnv, string agentName, PackageKey package) : base(algoEnv, agentName, LoadPackageMode.Download)
+        public DownloadPackageViewModel(AlgoEnvironment algoEnv, string agentName, string packageId) : base(algoEnv, agentName, LoadPackageMode.Download)
         {
             _filesInFolder = new SortedSet<string>();
             _logger = NLog.LogManager.GetCurrentClassLogger();
 
             UpdatePackageSource();
-            SetDefaultFileSource(package, out _);
+            SetDefaultFileSource(packageId, out _);
             SelectedFolder = EnvService.Instance.AlgoCommonRepositoryFolder;
         }
 
@@ -44,6 +40,6 @@ namespace TickTrader.BotTerminal
 
         protected override bool CheckFileNameTarget(string name) => !_filesInFolder.Contains(name);
 
-        private void UpdatePackageSource() => Packages = SelectedBotAgent.Packages.Where(p => p.Location == RepositoryLocation.LocalRepository).Select(u => u.Identity).AsObservable();
+        private void UpdatePackageSource() => Packages = SelectedBotAgent.Packages.Where(p => p.Location == PackageHelper.LocalRepositoryId).AsObservable();
     }
 }
