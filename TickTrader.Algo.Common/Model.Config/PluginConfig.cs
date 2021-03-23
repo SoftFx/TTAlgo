@@ -72,11 +72,13 @@ namespace TickTrader.Algo.Common.Model.Config
             {
                 Key = Key.Convert(),
                 Timeframe = TimeFrame.ToDomainEnum(),
+                ModelTimeframe = ModelTimeFrame.ToDomainEnum(),
                 MainSymbol = MainSymbol.Convert(),
                 SelectedMapping = SelectedMapping.Convert(),
                 InstanceId = InstanceId,
                 Permissions = Permissions.Convert(),
             };
+            res.PackProperties(Properties.Select(p => p.Convert()));
 
             return res;
         }
@@ -87,11 +89,13 @@ namespace TickTrader.Algo.Common.Model.Config
             {
                 Key = config.Key.Convert(),
                 TimeFrame = config.Timeframe.ToApiEnum(),
+                ModelTimeFrame = config.ModelTimeframe.ToApiEnum(),
                 MainSymbol = config.MainSymbol.Convert(),
                 SelectedMapping = config.SelectedMapping.Convert(),
                 InstanceId = config.InstanceId,
                 Permissions = config.Permissions.Convert(),
             };
+            res.Properties.AddRange(config.UnpackProperties().Select(p => p.Convert()));
 
             return res;
         }
@@ -159,7 +163,7 @@ namespace TickTrader.Algo.Common.Model.Config
             }
         }
 
-        public static Property Config(this Domain.IPropertyConfig property)
+        public static Property Convert(this Domain.IPropertyConfig property)
         {
             switch (property)
             {
@@ -255,7 +259,7 @@ namespace TickTrader.Algo.Common.Model.Config
             }
         }
 
-        public static Domain.IPropertyConfig Config(this Property property)
+        public static Domain.IPropertyConfig Convert(this Property property)
         {
             switch (property)
             {
