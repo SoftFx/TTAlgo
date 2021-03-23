@@ -194,7 +194,7 @@ namespace TickTrader.BotTerminal
                 return Enumerable.Empty<string>();
 
             var res = new List<string>();
-            res.Add($"Agent: {Bot.Agent.Name}");
+            res.Add($"AlgoServer: {Bot.Agent.Name}");
             if (Bot.Agent.Model.Accounts.Snapshot.TryGetValue(Bot.Account, out var acc))
                 res.Add($"Account: {acc.Key.Server} - {acc.Key.Login}");
             else res.Add($"Account: {Bot.Account.Server} - {Bot.Account.Login}");
