@@ -175,7 +175,7 @@
             </Grid>
         </Grid>
         <ControlTemplate.Triggers>
-            <DataTrigger Binding="{Binding Type}" Value="Robot">
+            <DataTrigger Binding="{Binding Type}" Value="TradeBot">
                 <Setter TargetName="LaunchTargetGroup" Property="Visibility" Value="Visible"/>
             </DataTrigger>
         </ControlTemplate.Triggers>

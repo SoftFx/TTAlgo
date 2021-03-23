@@ -11,9 +11,7 @@ namespace TickTrader.BotTerminal
     {
         public const int Delay = 500;
 
-
         public static readonly TimeSpan WaitTimeout = TimeSpan.FromSeconds(120);
-
 
         private LocalAlgoAgent _algoAgent;
         private int _totalBots;
