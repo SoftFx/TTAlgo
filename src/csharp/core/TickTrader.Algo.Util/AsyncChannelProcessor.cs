@@ -19,7 +19,8 @@ namespace TickTrader.Algo.Util
 
     public class AsyncChannelProcessor<T> : IAsyncChannel<T>
     {
-        private readonly Channel<T> _channel;
+        private readonly ChannelOptions _options;
+        private Channel<T> _channel;
         private int _cnt;
         private bool _isStarted, _isStopPending, _doProcessing;
         private Task[] _workers;
@@ -34,22 +35,15 @@ namespace TickTrader.Algo.Util
         public int BatchSize { get; set; } = 1;
 
 
-        public AsyncChannelProcessor(Channel<T> channel, string name)
+        public AsyncChannelProcessor(ChannelOptions options, string name)
         {
-            _channel = channel;
+            _options = options;
             Name = name;
 
             _cnt = 0;
+            Reset();
         }
 
-
-        public static AsyncChannelProcessor<T> Create(ChannelOptions options, string name)
-        {
-            var channel = options is BoundedChannelOptions
-                ? Channel.CreateBounded<T>((BoundedChannelOptions)options)
-                : Channel.CreateUnbounded<T>((UnboundedChannelOptions)options);
-            return new AsyncChannelProcessor<T>(channel, name);
-        }
 
         public static AsyncChannelProcessor<T> CreateUnbounded(string name, bool singleReader = false)
         {
@@ -59,7 +53,7 @@ namespace TickTrader.Algo.Util
                 SingleReader = singleReader,
                 SingleWriter = false,
             };
-            return new AsyncChannelProcessor<T>(Channel.CreateUnbounded<T>(options), name);
+            return new AsyncChannelProcessor<T>(options, name);
         }
 
 
@@ -100,6 +94,8 @@ namespace TickTrader.Algo.Util
             {
                 _isStopPending = false;
                 _isStarted = false;
+                _doProcessing = false;
+                Reset();
             }
         }
 
@@ -114,7 +110,7 @@ namespace TickTrader.Algo.Util
         {
             var writer = _channel.Writer;
             while (!EnqueueInternal(writer, item))
-                if (!await writer.WaitToWriteAsync())
+                if (_isStopPending || !await writer.WaitToWriteAsync())
                     return;
         }
 
@@ -124,7 +120,7 @@ namespace TickTrader.Algo.Util
 
             for (var i = 0; i < items.Length; i++)
                 while (!EnqueueInternal(writer, items[i]))
-                    if (!await writer.WaitToWriteAsync())
+                    if (_isStopPending || !await writer.WaitToWriteAsync())
                         return;
         }
 
@@ -134,10 +130,22 @@ namespace TickTrader.Algo.Util
 
             for (var i = 0; i < items.Count; i++)
                 while (!EnqueueInternal(writer, items[i]))
-                    if (!await writer.WaitToWriteAsync())
+                    if (_isStopPending || !await writer.WaitToWriteAsync())
                         return;
         }
 
+
+        private void Reset()
+        {
+            lock(_options)
+            {
+                _cnt = 0;
+                var options = _options;
+                _channel = options is BoundedChannelOptions
+                    ? Channel.CreateBounded<T>((BoundedChannelOptions)options)
+                    : Channel.CreateUnbounded<T>((UnboundedChannelOptions)options);
+            }
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool EnqueueInternal(ChannelWriter<T> writer, T item)
