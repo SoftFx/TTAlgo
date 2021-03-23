@@ -184,6 +184,7 @@ SectionGroup "Install AlgoServer" AlgoServerGroup
 Section "Core files" AlgoServerCore
 
     Push $3
+    Push $4
 
     CreateDirectory $AlgoServer_InstDir
     ${SetLogFile} "$AlgoServer_InstDir\install.log"
@@ -195,20 +196,23 @@ Section "Core files" AlgoServerCore
     ${Log} "AlgoServer Id: $AlgoServer_Id"
 
     ReadRegStr $3 HKLM "$AlgoServer_RegKey" "${REG_PATH_KEY}"
+    ReadRegStr $4 HKLM "$AlgoServer_LegacyRegKey" "${REG_PATH_KEY}"
+
     ${If} $AlgoServer_InstDir == $3
-        ${Log} "Previous installation found"
-        ${If} ${FileExists} "$AlgoServer_InstDir\uninstall.exe"
-            ${AlgoServer_RememberServiceState}
-            MessageBox MB_YESNO|MB_ICONQUESTION "$(UninstallPrevAlgoServer)" IDYES UninstallAlgoServerLabel IDNO SkipAlgoServerLabel
-UninstallAlgoServerLabel:
-            ${Configurator_CheckLock} $(ConfiguratorIsRunningInstall) UninstallAlgoServerLabel SkipAlgoServerLabel
-            ${AlgoServer_StopService} UninstallAlgoServerLabel SkipAlgoServerLabel
-            ${UninstallApp} $AlgoServer_InstDir
-        ${Else}
-            ${Log} "Unable to find uninstall.exe for previous installation"
-            MessageBox MB_OK|MB_ICONEXCLAMATION "$(UninstallBrokenMessage)"
-            Goto SkipAlgoServerLabel
-        ${EndIf}
+        ${OrIf} $AlgoServer_InstDir == $4
+            ${Log} "Previous installation found"
+            ${If} ${FileExists} "$AlgoServer_InstDir\uninstall.exe"
+                ${AlgoServer_RememberServiceState}
+                MessageBox MB_YESNO|MB_ICONQUESTION "$(UninstallPrevAlgoServer)" IDYES UninstallAlgoServerLabel IDNO SkipAlgoServerLabel
+    UninstallAlgoServerLabel:
+                ${Configurator_CheckLock} $(ConfiguratorIsRunningInstall) UninstallAlgoServerLabel SkipAlgoServerLabel
+                ${AlgoServer_StopService} UninstallAlgoServerLabel SkipAlgoServerLabel
+                ${UninstallApp} $AlgoServer_InstDir
+            ${Else}
+                ${Log} "Unable to find uninstall.exe for previous installation"
+                MessageBox MB_OK|MB_ICONEXCLAMATION "$(UninstallBrokenMessage)"
+                Goto SkipAlgoServerLabel
+    ${EndIf}
     ${Else}
         SetRegView 32
         ReadRegStr $3 HKLM "${ALGOSERVER_LEGACY_REG_KEY}" ""
@@ -255,6 +259,7 @@ SkipAlgoServerLabel:
     ${Print} "Skipped AlgoServer installation"
 AlgoServerInstallEnd:
 
+    Pop $4
     Pop $3
 
 SectionEnd
@@ -295,10 +300,10 @@ Section Uninstall
 
         ${Terminal_DeleteShortcuts}
         ${Terminal_DeleteFiles}
-        
+
         ; Delete self
         Delete "$INSTDIR\uninstall.exe"
-        
+
         ; Remove registry entries
         ${Terminal_RegDelete}
 
@@ -314,7 +319,7 @@ Section Uninstall
     StrCpy $AlgoServer_InstDir $INSTDIR
     ${AlgoServer_InitId} "Uninstall"
     ${If} $AlgoServer_Id != ${EMPTY_APPID}
-        
+
         ${Log} "Uninstalling AlgoServer from $INSTDIR"
     RetryUninstallAlgoServer:
         ${Configurator_CheckLock} $(ConfiguratorIsRunningUninstall) RetryUninstallAlgoServer SkipUninstallAlgoServer
@@ -462,7 +467,7 @@ FunctionEnd
 !macroend
 
 Function .onSelChange
-    
+
     ${BeginSectionManagement}
 
         ${if} $0 == ${TerminalGroup}

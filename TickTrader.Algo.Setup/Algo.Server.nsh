@@ -16,7 +16,7 @@
 
 !define ALGOSERVER_LEGACY_REG_KEY "Software\TickTrader Bot Agent"
 !define ALGOSERVER_LEGACY_SERVICE_NAME "_sfxBotAgent"
-
+!define ALGOSERVER_LEGACY_NAME "BotAgent"
 
 ;--------------------------
 ; Variables
@@ -27,6 +27,7 @@ var AlgoServer_Size
 var AlgoServer_CoreSelected
 var AlgoServer_InstDir
 var AlgoServer_RegKey
+var AlgoServer_LegacyRegKey
 var AlgoServer_UninstallRegKey
 var AlgoServer_Installed
 var AlgoServer_LaunchService
@@ -50,6 +51,7 @@ var Configurator_Installed
     StrCpy $AlgoServer_InstDir "${BASE_INSTDIR}\${ALGOSERVER_NAME}"
 
     StrCpy $AlgoServer_RegKey "${REG_KEY_BASE}\${ALGOSERVER_NAME}"
+    StrCpy $AlgoServer_LegacyRegKey "${REG_KEY_BASE}\${ALGOSERVER_LEGACY_NAME}"
     StrCpy $AlgoServer_UninstallRegKey "${REG_UNINSTALL_KEY_BASE}\${BASE_NAME} ${ALGOSERVER_NAME}"
 
     StrCpy $AlgoServer_Id ${EMPTY_APPID}
@@ -140,7 +142,7 @@ var Configurator_Installed
 !macroend
 
 !macro _DeleteConfiguratorShortcuts
-    
+
     ${Log} "Deleting Configurator shortcuts with name: $Configurator_ShortcutName"
     Delete "$DESKTOP\$Configurator_ShortcutName.lnk"
     Delete "$SMPROGRAMS\${BASE_NAME}\${ALGOSERVER_NAME}\$AlgoServer_Id\$Configurator_ShortcutName.lnk"
@@ -161,6 +163,8 @@ var Configurator_Installed
 !macro _InitAlgoServerRegKeys
 
     StrCpy $AlgoServer_RegKey "${REG_KEY_BASE}\${ALGOSERVER_NAME}\$AlgoServer_Id"
+    StrCpy $AlgoServer_LegacyRegKey "${REG_KEY_BASE}\${ALGOSERVER_LEGACY_NAME}\$AlgoServer_Id"
+
     StrCpy $AlgoServer_UninstallRegKey "${REG_UNINSTALL_KEY_BASE}\${BASE_NAME} ${ALGOSERVER_NAME} $AlgoServer_Id"
 
 !macroend
@@ -221,6 +225,10 @@ var Configurator_Installed
     ${FindAppIdByPath} algoServer_id $AlgoServer_Id "${REG_KEY_BASE}\${ALGOSERVER_NAME}" ${REG_PATH_KEY} $AlgoServer_InstDir
 
     ${If} $AlgoServer_Id == ${EMPTY_APPID}
+        ${FindAppIdByPath} algoServer_legacy_id $AlgoServer_Id "${REG_KEY_BASE}\${ALGOSERVER_LEGACY_NAME}" ${REG_PATH_KEY} $AlgoServer_InstDir
+    ${EndIf}
+
+    ${If} $AlgoServer_Id == ${EMPTY_APPID}
         ${If} ${Mode} == "Install"
             ${CreateAppId} $AlgoServer_Id
             ${AlgoServer_InitRegKeys}
@@ -231,7 +239,7 @@ var Configurator_Installed
         ${AlgoServer_InitRegKeys}
         ${AlgoServer_RegRead}
     ${EndIf}
-    
+
     StrCpy $AlgoServer_ServiceId "${SERVICE_NAME_BASE}_$AlgoServer_Id"
 
 !macroend
