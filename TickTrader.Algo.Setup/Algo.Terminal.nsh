@@ -9,6 +9,7 @@
 
 !define REPOSITORY_DIR "AlgoRepository"
 
+!define TERMINAL_LEGACY_NAME "BotTerminal"
 
 ;--------------------------
 ; Variables
@@ -21,6 +22,7 @@ var Terminal_StartMenuSelected
 var Terminal_InstDir
 var Terminal_ShortcutName
 var Terminal_RegKey
+var Terminal_LegacyRegKey
 var Terminal_UninstallRegKey
 var Terminal_Installed
 
@@ -36,6 +38,7 @@ var TestCollection_Selected
     StrCpy $Terminal_ShortcutName "${TERMINAL_DISPLAY_NAME}"
 
     StrCpy $Terminal_RegKey "${REG_KEY_BASE}\${TERMINAL_NAME}"
+    StrCpy $Terminal_LegacyRegKey "${REG_KEY_BASE}\${TERMINAL_LEGACY_NAME}"
     StrCpy $Terminal_UninstallRegKey "${REG_UNINSTALL_KEY_BASE}\${BASE_NAME} ${TERMINAL_NAME}"
 
     StrCpy $Terminal_Id ${EMPTY_APPID}
@@ -89,7 +92,7 @@ var TestCollection_Selected
     SetOutPath "$Terminal_InstDir\${REPOSITORY_DIR}"
     File "${OUTPUT_DIR}\TickTrader.Algo.TestCollection.ttalgo"
     File "${OUTPUT_DIR}\TickTrader.Algo.VersionTest.ttalgo"
-    
+
 !macroend
 
 !macro _DeleteTestCollectionFiles
@@ -148,6 +151,7 @@ var TestCollection_Selected
 !macro _InitTerminalRegKeys
 
     StrCpy $Terminal_RegKey "${REG_KEY_BASE}\${TERMINAL_NAME}\$Terminal_Id"
+    StrCpy $Terminal_LegacyRegKey "${REG_KEY_BASE}\${TERMINAL_LEGACY_NAME}\$Terminal_Id"
     StrCpy $Terminal_UninstallRegKey "${REG_UNINSTALL_KEY_BASE}\${BASE_NAME} ${TERMINAL_NAME} $Terminal_Id"
 
 !macroend
@@ -205,6 +209,10 @@ var TestCollection_Selected
 !macro _InitTerminalId Mode
 
     ${FindAppIdByPath} terminal_id $Terminal_Id "${REG_KEY_BASE}\${TERMINAL_NAME}" ${REG_PATH_KEY} $Terminal_InstDir
+
+    ${If} $Terminal_Id == ${EMPTY_APPID}
+        ${FindAppIdByPath} terminal_legacy_id $Terminal_Id "${REG_KEY_BASE}\${TERMINAL_LEGACY_NAME}" ${REG_PATH_KEY} $Terminal_InstDir
+    ${EndIf}
 
     ${If} $Terminal_Id == ${EMPTY_APPID}
         ${If} ${Mode} == "Install"

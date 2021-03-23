@@ -119,6 +119,7 @@ SectionGroup "Install AlgoTerminal" TerminalGroup
 Section "Core files" TerminalCore
 
     Push $3
+    Push $4
 
     CreateDirectory $Terminal_InstDir
     ${SetLogFile} "$Terminal_InstDir\install.log"
@@ -130,18 +131,21 @@ Section "Core files" TerminalCore
     ${Log} "AlgoTerminal Id: $Terminal_Id"
 
     ReadRegStr $3 HKLM "$Terminal_RegKey" "${REG_PATH_KEY}"
+    ReadRegStr $4 HKLM "$Terminal_LegacyRegKey" "${REG_PATH_KEY}"
+
     ${If} $Terminal_InstDir == $3
-        ${If} ${FileExists} "$Terminal_InstDir\uninstall.exe"
-            ${Log} "Previous installation found"
-            MessageBox MB_YESNO|MB_ICONQUESTION "$(UninstallPrevTerminal)" IDYES UninstallTerminalLabel IDNO SkipTerminalLabel
-UninstallTerminalLabel:
-            ${Terminal_CheckLock} $(TerminalIsRunningInstall) UninstallTerminalLabel SkipTerminalLabel
-            ${UninstallApp} $Terminal_InstDir
-        ${Else}
-            ${Log} "Unable to find uninstall.exe for previous installation"
-            MessageBox MB_OK|MB_ICONEXCLAMATION "$(UninstallBrokenMessage)"
-            Goto SkipTerminalLabel
-        ${EndIf}
+        ${OrIf} $Terminal_InstDir == $4
+            ${If} ${FileExists} "$Terminal_InstDir\uninstall.exe"
+                ${Log} "Previous installation found"
+                MessageBox MB_YESNO|MB_ICONQUESTION "$(UninstallPrevTerminal)" IDYES UninstallTerminalLabel IDNO SkipTerminalLabel
+    UninstallTerminalLabel:
+                ${Terminal_CheckLock} $(TerminalIsRunningInstall) UninstallTerminalLabel SkipTerminalLabel
+                ${UninstallApp} $Terminal_InstDir
+            ${Else}
+                ${Log} "Unable to find uninstall.exe for previous installation"
+                MessageBox MB_OK|MB_ICONEXCLAMATION "$(UninstallBrokenMessage)"
+                Goto SkipTerminalLabel
+            ${EndIf}
     ${EndIf}
 
     ${Terminal_Unpack}
@@ -157,6 +161,7 @@ SkipTerminalLabel:
     ${Print} "Skipped AlgoTerminal installation"
 TerminalInstallEnd:
 
+    Pop $4
     Pop $3
 
 SectionEnd
@@ -195,8 +200,8 @@ Section "Core files" AlgoServerCore
     ${Print} "Installing AlgoServer"
     ${Log} "AlgoServer Id: $AlgoServer_Id"
 
-    ReadRegStr $3 HKLM "$AlgoServer_RegKey" "${REG_PATH_KEY}"
-    ReadRegStr $4 HKLM "$AlgoServer_LegacyRegKey" "${REG_PATH_KEY}"
+    ReadRegStr $3 HKLM "$AlgoServer_RegKey" "${REG_PATH_KEY}" ; for AlgoServer key
+    ReadRegStr $4 HKLM "$AlgoServer_LegacyRegKey" "${REG_PATH_KEY}" ; for BotAgent key
 
     ${If} $AlgoServer_InstDir == $3
         ${OrIf} $AlgoServer_InstDir == $4
