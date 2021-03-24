@@ -160,6 +160,13 @@ var TestCollection_Selected
 
     ReadRegStr $Terminal_ShortcutName HKLM "$Terminal_RegKey" "${REG_SHORTCUT_NAME}"
 
+    ${Log} "Terminal Icon Name $Terminal_ShortcutName"
+
+    ${If} $Terminal_ShortcutName == ""
+         ReadRegStr $Terminal_ShortcutName HKLM "$Terminal_LegacyRegKey" "${REG_SHORTCUT_NAME}"
+         ${Log} "Terminal Icon Name Legacy $Terminal_ShortcutName"
+    ${EndIf}
+
 !macroend
 
 !macro _RegWriteTerminal

@@ -173,6 +173,13 @@ var Configurator_Installed
 
     ReadRegStr $Configurator_ShortcutName HKLM "$AlgoServer_RegKey" "${REG_SHORTCUT_NAME}"
 
+    ${Log} "Configurator Icon Name $Configurator_ShortcutName"
+
+    ${If} $Configurator_ShortcutName == ""
+        ReadRegStr $Configurator_ShortcutName HKLM "$AlgoServer_LegacyRegKey" "${REG_SHORTCUT_NAME}"
+        ${Log} "Configurator Icon Name Legacy $Configurator_ShortcutName"
+    ${EndIf}
+
 !macroend
 
 !macro _RegWriteAlgoServer
