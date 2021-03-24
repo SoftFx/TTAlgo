@@ -217,30 +217,7 @@ Section "Core files" AlgoServerCore
                 ${Log} "Unable to find uninstall.exe for previous installation"
                 MessageBox MB_OK|MB_ICONEXCLAMATION "$(UninstallBrokenMessage)"
                 Goto SkipAlgoServerLabel
-    ${EndIf}
-    ${Else}
-        SetRegView 32
-        ReadRegStr $3 HKLM "${ALGOSERVER_LEGACY_REG_KEY}" ""
-        ${If} $3 != ""
-            ${Log} "Legacy installation found"
-            ${If} ${FileExists} "$3\uninstall.exe"
-                MessageBox MB_YESNO|MB_ICONQUESTION "$(UninstallPrevAlgoServer)" IDYES UninstallLegacyAlgoServerLabel IDNO SkipAlgoServerLabel
-UninstallLegacyAlgoServerLabel:
-                ${AlgoServer_StopLegacyService} UninstallLegacyAlgoServerLabel SkipAlgoServerLabel
-                ${UninstallApp} $3
-                ${If} $AlgoServer_InstDir != $3
-                    MessageBox MB_YESNO|MB_ICONQUESTION "$(CopyLegacyInstallConfig)" IDYES CopyFilesFromLegacyVersion IDNO IgnoreFilesFromLegacyVersion
-CopyFilesFromLegacyVersion:
-                    ${AlgoServer_CopyConfig} $3 $AlgoServer_InstDir
-IgnoreFilesFromLegacyVersion:
-                ${EndIf}
-            ${Else}
-                ${Log} "Unable to find uninstall.exe for legacy installation"
-                MessageBox MB_OK|MB_ICONEXCLAMATION "$(UninstallBrokenMessage)"
-                Goto SkipAlgoServerLabel
             ${EndIf}
-        ${EndIf}
-        SetRegView 64
     ${EndIf}
 
     ${AlgoServer_Unpack}

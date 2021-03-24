@@ -14,8 +14,6 @@
 !define CONFIGURATOR_EXE "TickTrader.AlgoServer.Configurator.exe"
 !define CONFIGURATOR_LOCK_FILE "applock"
 
-!define ALGOSERVER_LEGACY_REG_KEY "Software\TickTrader Bot Agent"
-!define ALGOSERVER_LEGACY_SERVICE_NAME "_sfxBotAgent"
 !define ALGOSERVER_LEGACY_NAME "BotAgent"
 
 ;--------------------------
@@ -330,27 +328,11 @@ var Configurator_Installed
 
 !macroend
 
-!macro _StopLegacyAlgoServerService Retry Cancel
-
-    DetailPrint "Stopping AlgoServer service"
-    ${Log} "Stopping legacy AlgoServer service ${ALGOSERVER_LEGACY_SERVICE_NAME}"
-    ${StopService} ${ALGOSERVER_LEGACY_SERVICE_NAME} 80 $AlgoServer_ServiceError
-    ${If} $AlgoServer_ServiceError != ${NO_ERR_MSG}
-        ${Log} $AlgoServer_ServiceError
-        MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION $AlgoServer_ServiceError IDRETRY ${Retry} IDCANCEL ${Cancel}
-    ${Else}
-        ${Log} "Stopped legacy AlgoServer service $AlgoServer_ServiceId"
-    ${EndIf}
-
-!macroend
-
-
 !define AlgoServer_CreateService '!insertmacro _CreateAlgoServerService'
 !define AlgoServer_StartService '!insertmacro _StartAlgoServerService'
 !define AlgoServer_StopService '!insertmacro _StopAlgoServerService'
 !define AlgoServer_DeleteService '!insertmacro _DeleteAlgoServerService'
 !define AlgoServer_RememberServiceState '!insertmacro _RememberAlgoServerServiceState'
-!define AlgoServer_StopLegacyService '!insertmacro _StopLegacyAlgoServerService'
 
 
 ;--------------------------

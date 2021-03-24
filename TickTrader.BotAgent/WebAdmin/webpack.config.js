@@ -19,7 +19,7 @@ var config = {
         extensions: ['*', '.js', '.ts', '.tsx'],
         fallback: {
             "crypto": false,
-            "timers": false
+            "timers": require.resolve("timers-browserify"),
         }
     },
     module: {
