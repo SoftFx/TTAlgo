@@ -5,8 +5,6 @@ var path = require('path');
 var webpack = require('webpack');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
-//var ExtractTextPlugin = require('extract-text-webpack-plugin');
-//var extractCSS = new ExtractTextPlugin('vendor.css');
 
 module.exports = {
     resolve: {
@@ -17,13 +15,13 @@ module.exports = {
     },
     module: {
         rules: [
-            { 
+            {
                 test: /\.(png|woff|woff2|eot|ttf|svg)(\?|$)/,
                 type: 'asset'
             },
-            { 
-                test: /\.css(\?|$)/, 
-                use: [MiniCssExtractPlugin.loader, 'css-loader'], 
+            {
+                test: /\.css(\?|$)/,
+                use: [MiniCssExtractPlugin.loader, 'css-loader'],
             }
         ]
     },
@@ -50,6 +48,7 @@ module.exports = {
             'reflect-metadata',
             'zone.js',
             'rxjs',
+            'rxjs-compat',
             'font-awesome/css/font-awesome.css',
             './WebAdmin/assets/css/light-bootstrap.css',
             'string-format',
@@ -61,12 +60,10 @@ module.exports = {
         library: '[name]_[hash]',
     },
     plugins: [
-        //extractCSS,
         new MiniCssExtractPlugin({
             filename: 'vendor.css',
         }),
         new webpack.ProvidePlugin({ $: 'jquery', jQuery: 'jquery' }), // Maps these identifiers to the jQuery package (because Bootstrap expects it to be a global variable)
-        // new webpack.optimize.OccurrenceOrderPlugin(),
         new webpack.DllPlugin({
             path: path.join(__dirname, 'wwwroot', 'dist', '[name]-manifest.json'),
             name: '[name]_[hash]'
