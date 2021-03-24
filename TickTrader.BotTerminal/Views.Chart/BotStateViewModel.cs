@@ -200,7 +200,7 @@ namespace TickTrader.BotTerminal
             else res.Add($"Account: {Bot.Account.Server} - {Bot.Account.Login}");
             res.Add($"Instance Id: {Bot.InstanceId}");
             res.Add("------------ Permissions ------------");
-            res.Add(Bot.Model.Config.Permissions.ToString());
+            res.Add(Bot.Model.Config.Permissions.ToPermissionsList());
             if (Bot.Model.Descriptor != null)
             {
                 res.Add("------------ Plugin Info ------------");
@@ -210,6 +210,7 @@ namespace TickTrader.BotTerminal
             if (Bot.Model.Config != null)
             {
                 var config = Bot.Model.Config;
+                res.Add("------------ Plugin Config ------------");
                 res.Add($"Algo Package Id: {config.Key.PackageId}");
                 res.Add($"Symbol: {config.MainSymbol.Name}");
                 res.Add($"Timeframe: {config.Timeframe}");

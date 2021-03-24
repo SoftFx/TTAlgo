@@ -32,6 +32,8 @@ namespace TickTrader.Algo.Domain
                 parameter = payload.Unpack<StringParameterConfig>();
             else if (payload.Is(EnumParameterConfig.Descriptor))
                 parameter = payload.Unpack<EnumParameterConfig>();
+            else if (payload.Is(FileParameterConfig.Descriptor))
+                parameter = payload.Unpack<FileParameterConfig>();
 
             return parameter != null;
         }
