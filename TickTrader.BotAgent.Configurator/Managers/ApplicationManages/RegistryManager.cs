@@ -21,20 +21,20 @@ namespace TickTrader.BotAgent.Configurator
         public RegistryNode OldServer { get; private set; }
 
 
-        public RegistryManager(List<string> registryApplicationNames, string appSettings, bool developer)
+        public RegistryManager()
         {
             ServerNodes = new List<RegistryNode>();
 
             var serverPath = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory).Parent.FullName;
 
-            foreach (var registryName in registryApplicationNames)
+            foreach (var pair in ConfigurationProperies.RegistryApplicationNames)
             {
-                var agentFolder = _base64.OpenSubKey(Path.Combine("SOFTWARE", "TickTrader", registryName));
+                var agentFolder = _base64.OpenSubKey(Path.Combine("SOFTWARE", "TickTrader", pair.Type));
 
                 if (agentFolder != null)
                     foreach (var agentName in agentFolder.GetSubKeyNames())
                     {
-                        var node = new RegistryNode(agentFolder.OpenSubKey(agentName), appSettings, developer, registryName);
+                        var node = new RegistryNode(agentFolder.OpenSubKey(agentName), ConfigurationProperies.AppSettings, pair);
 
                         if (serverPath == node.FolderPath)
                             CurrentServer = node;
@@ -65,17 +65,15 @@ namespace TickTrader.BotAgent.Configurator
 
         public string FullVersion => $"{Version} ({BuildDate})";
 
-        public string FullVersionWithDeveloper => IsDeveloper ? $"{FullVersion} Developer Version" : FullVersion;
-
         public string AppSettingPath { get; }
+
+        public string LogsFilePath { get; }
 
         public string FolderPath { get; }
 
         public string NodeName { get; }
 
         public string ServiceId { get; }
-
-        public bool IsDeveloper { get; }
 
         public string Version { get; private set; }
 
@@ -84,24 +82,21 @@ namespace TickTrader.BotAgent.Configurator
         public string BuildDate { get; private set; } = DateTime.MinValue.ToString("yyyy.MM.dd");
 
 
-        public RegistryNode(RegistryKey key, string appSetting, bool developer, string typeName)
-        {
-            NodeName = typeName;
-            FolderPath = key.GetValue("Path").ToString();
-            ServiceId = key.GetValue(nameof(ServiceId)).ToString();
-            Version = key.GetValue(nameof(Version)).ToString();
-            IsDeveloper = developer;
-
-            AppSettingPath = Path.Combine(FolderPath, appSetting);
-            ExePath = Path.Combine(FolderPath, $"TickTrader.{NodeName}.exe");
-
-            GetBuildDate(typeName);
-        }
-
-        private void GetBuildDate(string exeName)
+        public RegistryNode(RegistryKey key, string appSetting, (string Name, string LogFile) settings)
         {
             try
             {
+                NodeName = settings.Name;
+
+                FolderPath = key.GetValue("Path").ToString();
+                LogsFilePath = Path.Combine(FolderPath, "Logs", settings.LogFile);
+
+                ServiceId = key.GetValue(nameof(ServiceId)).ToString();
+                Version = key.GetValue(nameof(Version)).ToString();
+
+                AppSettingPath = Path.Combine(FolderPath, appSetting);
+                ExePath = Path.Combine(FolderPath, $"TickTrader.{NodeName}.exe");
+
                 var assemblyName = AssemblyName.GetAssemblyName(ExePath);
                 Version = assemblyName.Version.ToString();
                 BuildDate = assemblyName.GetLinkerTime().ToString("yyyy.MM.dd");

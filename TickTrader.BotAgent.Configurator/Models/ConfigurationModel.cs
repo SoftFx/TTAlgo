@@ -13,7 +13,6 @@ namespace TickTrader.BotAgent.Configurator
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private ConfigManager _configManager;
         private PortsManager _portsManager;
         private JObject _configurationObject;
 
@@ -24,8 +23,6 @@ namespace TickTrader.BotAgent.Configurator
         public RegistryManager RegistryManager { get; }
 
         public PrompterManager Prompts { get; }
-
-        public ConfigurationProperies Settings { get; }
 
         public ServiceManager ServiceManager { get; private set; }
 
@@ -48,11 +45,8 @@ namespace TickTrader.BotAgent.Configurator
 
         public ConfigurationModel()
         {
-            _configManager = new ConfigManager();
-
-            Settings = _configManager.Properties;
             Prompts = new PrompterManager();
-            RegistryManager = new RegistryManager(Settings.RegistryApplicationNames, Settings[AppProperties.AppSettings], Settings.IsDeveloper);
+            RegistryManager = new RegistryManager();
             BotSettingsManager = new ServerBotSettingsManager(RegistryManager);
 
             RefreshModel();
@@ -73,7 +67,7 @@ namespace TickTrader.BotAgent.Configurator
             ProtocolManager = new ProtocolManager(SectionNames.Protocol, _portsManager);
             FdkManager = new FdkManager(SectionNames.Fdk);
             ServerManager = new ServerManager(_portsManager);
-            Logs = new LogsManager(CurrentAgent.FolderPath, Settings[AppProperties.LogsPath]);
+            Logs = new LogsManager(CurrentAgent.LogsFilePath);
 
             _workingModels = new List<IWorkingManager>() { CredentialsManager, SslManager, ProtocolManager, ServerManager, FdkManager };
 

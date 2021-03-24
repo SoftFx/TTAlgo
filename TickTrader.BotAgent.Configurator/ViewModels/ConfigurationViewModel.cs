@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Threading;
 using TickTrader.BotAgent.Configurator.Properties;
 
 namespace TickTrader.BotAgent.Configurator
@@ -75,8 +73,6 @@ namespace TickTrader.BotAgent.Configurator
 
         public bool WasUpdate => RefreshCounter.Update;
 
-        public bool IsDeveloperVersion => _model.Settings.IsDeveloper;
-
 
         public ConfigurationViewModel()
         {
@@ -88,7 +84,7 @@ namespace TickTrader.BotAgent.Configurator
                 _mainWindow = Application.Current.MainWindow;
                 _model = new ConfigurationModel();
 
-                Title = _model.CurrentAgent.FullVersionWithDeveloper;
+                Title = _model.CurrentAgent.FullVersion;
 
                 RefreshCounter = new RefreshCounter();
                 StateServiceModel = new StateServiceViewModel(RefreshCounter);
@@ -261,10 +257,12 @@ namespace TickTrader.BotAgent.Configurator
         public DelegateCommand OpenLogsFolder => _openLogsFolder ?? (
             _openLogsFolder = new DelegateCommand(obj =>
             {
-                if (File.Exists(_model.Logs.LogsFilePath))
-                    Process.Start(Path.GetDirectoryName(_model.Logs.LogsFilePath));
+                string path = Path.GetDirectoryName(_model.Logs.LogsFilePath);
+
+                if (Directory.Exists(path))
+                    Process.Start(path);
                 else
-                    MessageBoxManager.OkError($"{_model.Logs.LogsFilePath} log file not found");
+                    MessageBoxManager.OkError($"{path} folder path not found");
             }));
 
         public void RefreshModels()

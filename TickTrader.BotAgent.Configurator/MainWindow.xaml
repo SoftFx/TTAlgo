@@ -52,7 +52,7 @@
             </ToolBar>
         </ToolBarTray>
 
-        <!--<fa:ImageAwesome x:Name="startAgentSpinner" Grid.Row="1" Style="{StaticResource AgentSpinner}" Visibility="{Binding Spinner.Run, Converter={StaticResource boolToVis}}"/>-->
+        <fa:ImageAwesome x:Name="startAgentSpinner" Grid.Row="1" Style="{StaticResource AgentSpinner}" Visibility="{Binding Spinner.Run, Converter={StaticResource boolToVis}}"/>
 
         <TabControl Grid.Row="1" Style="{StaticResource MainTabControl}">
             <TabControl.Resources>
@@ -139,7 +139,7 @@
                             </Style>
                         </DockPanel.Resources>
                         <StackPanel>
-                            <c:AdvancedPanel Style="{StaticResource AdvancedControlPanel}" Visibility="{Binding IsDeveloperVersion, Converter={StaticResource boolToVis}}"/>
+                            <c:AdvancedPanel Style="{StaticResource AdvancedControlPanel}"/>
                             <c:FdkPanel DataContext="{Binding FdkModel}" Style="{StaticResource FdkControlPanel}"/>
                             <c:ServerBotSettingsPanel DataContext="{Binding ServerBotSettingsModel}" Style="{StaticResource ServerBotSettingsControlPanel}"/>
                         </StackPanel>

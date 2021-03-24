@@ -16,16 +16,16 @@ namespace TickTrader.BotAgent.Configurator
         private readonly string[] _separators = new string[] { Environment.NewLine };
 
         private long _lastSize;
-        private LinkedList<string> _messages;
+        private readonly LinkedList<string> _messages;
 
         public string LogsStr => string.Join("", _messages);
 
         public string LogsFilePath { get; }
 
-        public LogsManager(string path, string folder)
+        public LogsManager(string path)
         {
             _messages = new LinkedList<string>();
-            LogsFilePath = Path.Combine(path, folder);
+            LogsFilePath = path;
 
             LoadLog();
         }
