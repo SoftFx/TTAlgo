@@ -62,7 +62,7 @@ namespace TickTrader.Algo.Core.Repository
             {
                 PackageId = packageId,
                 Identity = identity,
-
+                IsValid = true,
             };
             res.Plugins.AddRange(plugins.Select(p => GetInfo(res.PackageId, p)));
             return res;
