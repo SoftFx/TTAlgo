@@ -187,11 +187,12 @@ namespace TickTrader.BotTerminal
             base.OnDeactivate(close);
         }
 
-        protected void SetDefaultFileSource(string packageId, out AlgoPackageViewModel package)
+        protected void SetDefaultFileSource(string packageId, IObservableList<AlgoPackageViewModel> packages, out AlgoPackageViewModel package)
         {
-            package = Packages?.FirstOrDefault(u => u.Key == packageId);
+            //if packageId != null - trying to find a similar package on the local server (a specific package from a Remote AlgoServer)
+            package = packages?.FirstOrDefault(u => u.Key == packageId) ?? packages.FirstOrDefault();
 
-            FileNameSource = package?.FileName ?? Packages.FirstOrDefault()?.FileName;
+            FileNameSource = package?.FileName;
         }
 
         protected void RefreshTargetName() => FileNameTarget = GenerateTargetFileName(FileNameSource);

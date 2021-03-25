@@ -17,7 +17,7 @@ namespace TickTrader.BotTerminal
             _logger = NLog.LogManager.GetCurrentClassLogger();
 
             UpdatePackageSource();
-            SetDefaultFileSource(packageId, out _);
+            SetDefaultFileSource(packageId, Packages as IObservableList<AlgoPackageViewModel>, out _);
             SelectedFolder = EnvService.Instance.AlgoCommonRepositoryFolder;
         }
 
