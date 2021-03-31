@@ -1,60 +1,50 @@
-﻿using Machinarium.Qnil;
-using System;
+﻿using Machinarium.Var;
+using System.Collections;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using TickTrader.Algo.Core.Repository;
-using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
     internal sealed class UploadPackageViewModel : BaseloadPackageViewModel
     {
-        public UploadPackageViewModel(AlgoEnvironment algoEnv, string agentName, string packageId = null) : base(algoEnv, agentName, LoadPackageMode.Upload)
+        public override IProperty<string> SourcePackageName => LocalPackageName;
+
+        public override IProperty<string> TargetPackageName => AlgoServerPackageName;
+
+        protected override ICollection SourceCollection => _localPackages;
+
+
+        public UploadPackageViewModel(AlgoAgentViewModel algoServer, string packageId = null) : base(algoServer, LoadPackageMode.Upload)
         {
-            _logger = NLog.LogManager.GetCurrentClassLogger();
-
-            SetDefaultFileSource(packageId, _algoEnv.LocalAgentVM.Packages.AsObservable(), out var package);
-
-            if (package != null)
+            SourcePackageCollectionView.SortDescriptions.Add(new SortDescription
             {
-                Packages = _algoEnv.LocalAgentVM.Packages.Where(u => u.Location == package.Location).AsObservable();
-                SelectedFolder = Path.GetDirectoryName(package.Identity.FilePath);
-            }
-            else
-            {
-                Packages = _algoEnv.LocalAgentVM.Packages.Where(u => IsDefaultFolder(u.Location)).AsObservable();
-                SelectedFolder = EnvService.Instance.AlgoRepositoryFolder;
-            }
+                Direction = ListSortDirection.Ascending
+            });
+
+            if (packageId != null)
+                PackageHelper.UnpackPackageId(packageId, out _, out packageId);
+
+            SetStartLocation(packageId);
         }
 
-        protected override void UpdateAgentPackage(ListUpdateArgs<AlgoPackageViewModel> args) => RefreshTargetName();
-
-        protected override bool CheckFileNameTarget(string name) => !SelectedBotAgent.PackageList.Any(p => p.Identity.FileName == name);
-
-        protected override void WatcherEventHandling(object o, object e)
+        protected override async Task RunLoadPackageProgress()
         {
-            var selectedFile = FileNameSource; //Restore previous value after Algo package upload
+            _progressModel.SetMessage($"Uploading Algo Package {LocalPackageName.DisplayValue} to {SelectedAlgoServer.Name}");
 
-            UploadSelectedSource();
+            var selectedPackagePath = FullPackagePath(LocalPackageName.Value);
+            var progressListener = new FileProgressListenerAdapter(_progressModel, new FileInfo(selectedPackagePath).Length);
 
-            FileNameSource = Packages.Any(u => u.FileName == selectedFile) ? selectedFile : Packages.FirstOrDefault()?.FileName;
+            await SelectedAlgoServer.Model.UploadPackage(AlgoServerPackageName.Value, selectedPackagePath, progressListener);
         }
 
-        protected override void UploadSelectedSource()
-        {
-            try
-            {
-                Packages = Directory.GetFiles(SelectedFolder, FileNameWatcherTemplate).Select(u => PackageIdentity.CreateInvalid(new FileInfo(u)))
-                    .Select(i => new PackageInfo { PackageId = PackageHelper.GetPackageIdFromPath("custom", i.FilePath), Identity = i, IsValid = true })
-                    .Select(info => new AlgoPackageViewModel(info, _algoEnv.LocalAgentVM, false));
-                NotifyOfPropertyChange(nameof(Packages));
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex);
-            }
-        }
 
-        private static bool IsDefaultFolder(string location) => location == PackageHelper.LocalRepositoryId || location == PackageHelper.CommonRepositoryId;
+        protected override string GetTargetPackageName(string packageName) => GetAlgoServerPackageName(packageName);
+
+        protected override string GetSourcePackageName(string packageName) => GetLocalPackageName(packageName);
+
+        protected override string GetFirstSourcePackageName() => _localPackages.FirstOrDefault();
     }
 }

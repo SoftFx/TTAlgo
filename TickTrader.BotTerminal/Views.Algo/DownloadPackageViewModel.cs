@@ -1,45 +1,47 @@
-﻿using Machinarium.Qnil;
+﻿using Machinarium.Var;
 using System;
-using System.Collections.Generic;
-using System.IO;
+using System.Collections;
 using System.Linq;
-using TickTrader.Algo.Core.Repository;
+using System.Threading.Tasks;
 
 namespace TickTrader.BotTerminal
 {
-    internal class DownloadPackageViewModel : BaseloadPackageViewModel
+    internal sealed class DownloadPackageViewModel : BaseloadPackageViewModel
     {
-        private SortedSet<string> _filesInFolder;
+        public override IProperty<string> SourcePackageName => AlgoServerPackageName;
 
-        public DownloadPackageViewModel(AlgoEnvironment algoEnv, string agentName, string packageId) : base(algoEnv, agentName, LoadPackageMode.Download)
+        public override IProperty<string> TargetPackageName => LocalPackageName;
+
+        protected override ICollection SourceCollection => SelectedAlgoServer.PackageList;
+
+
+        public DownloadPackageViewModel(AlgoAgentViewModel algoServer, string packageId) : base(algoServer, LoadPackageMode.Download)
         {
-            _filesInFolder = new SortedSet<string>();
-            _logger = NLog.LogManager.GetCurrentClassLogger();
+            if (packageId != null)
+                packageId = SelectedAlgoServer.PackageList.FirstOrDefault(u => u.Key == packageId)?.FileName;
 
-            UpdatePackageSource();
-            SetDefaultFileSource(packageId, Packages as IObservableList<AlgoPackageViewModel>, out _);
-            SelectedFolder = EnvService.Instance.AlgoCommonRepositoryFolder;
+            SetStartLocation(packageId);
         }
 
-        protected override void UpdateAgentPackage(ListUpdateArgs<AlgoPackageViewModel> args)
+        protected override async Task RunLoadPackageProgress()
         {
-            var selectedFile = FileNameSource; //Restore previous value after package upload
+            _progressModel.SetMessage($"Downloading Algo Package {AlgoServerPackageName.DisplayValue} from {SelectedAlgoServer.Name} to {SelectedFolder}");
 
-            UpdatePackageSource();
+            var selectedAlgoPackage = SelectedAlgoServer.PackageList.FirstOrDefault(u => u.FileName == AlgoServerPackageName.Value);
 
-            FileNameSource = Packages.Any(u => u.FileName == selectedFile) ? selectedFile : Packages.FirstOrDefault()?.FileName;
+            if (selectedAlgoPackage != null)
+            {
+                var progressListener = new FileProgressListenerAdapter(_progressModel, selectedAlgoPackage.Identity.Size);
+
+                await SelectedAlgoServer.Model.DownloadPackage(selectedAlgoPackage.Key, FullPackagePath(TargetPackageName.Value), progressListener);
+            }
         }
 
-        protected override void WatcherEventHandling(object o, object e) => UploadSelectedSource();
 
-        protected override void UploadSelectedSource()
-        {
-            _filesInFolder = new SortedSet<string>(Directory.GetFiles(SelectedFolder, FileNameWatcherTemplate).Select(u => Path.GetFileName(u)));
-            RefreshTargetName();
-        }
+        protected override string GetTargetPackageName(string packageName) => GetLocalPackageName(packageName);
 
-        protected override bool CheckFileNameTarget(string name) => !_filesInFolder.Contains(name);
+        protected override string GetSourcePackageName(string packageName) => GetAlgoServerPackageName(packageName);
 
-        private void UpdatePackageSource() => Packages = SelectedBotAgent.Packages.Where(p => p.Location == PackageHelper.LocalRepositoryId).AsObservable();
+        protected override string GetFirstSourcePackageName() => SelectedAlgoServer.PackageList.FirstOrDefault()?.FileName;
     }
 }
