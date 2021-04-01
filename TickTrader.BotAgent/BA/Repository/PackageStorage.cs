@@ -114,9 +114,15 @@ namespace TickTrader.BotAgent.BA.Repository
             {
                 if (packageRef.IsLocked)
                     throw new PackageLockedException($"Cannot update Algo package '{packageId}': one or more trade bots from this package is being executed! Please stop all bots and try again!");
-            }
 
-            return packageRef.Identity.FilePath;
+                return packageRef?.Identity.FilePath;
+            }
+            else
+            {
+                PackageHelper.UnpackPackageId(packageId, out _, out var packageName);
+
+                return GetFullPathToPackage(packageName);
+            }
         }
 
 

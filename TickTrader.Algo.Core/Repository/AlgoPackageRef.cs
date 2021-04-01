@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Core.Repository
 
         public bool IsValid => ActiveRuntime != null;
 
-        public bool IsLocked => true;
+        public bool IsLocked => _refCount > 0;
 
         public bool IsObsolete { get; private set; }
 
