@@ -31,7 +31,7 @@
                     </Grid.ColumnDefinitions>
 
                     <Label Content="Algo Server:"/>
-                    <Label Grid.Column="1" Content="{Binding SelectedBotAgent.Name}"/>
+                    <Label Grid.Column="1" Content="{Binding SelectedAlgoServer.Name}"/>
                 </Grid>
 
                 <Label Grid.Row="2" Content="Algo package:" VerticalAlignment="Bottom"/>
@@ -41,12 +41,12 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <ComboBox Text="{Binding FileNameSource}" 
+                    <ComboBox Text="{Binding SourcePackageName.DisplayValue, Mode=OneWay}"
+                              SelectedItem="{Binding SourcePackageName.Value}"
                               HorizontalAlignment="Stretch" 
                               Margin="5 0 0 0"
                               Foreground="{DynamicResource Shell_PrimaryForeground}" 
-                              ItemsSource="{Binding Packages}" 
-                              DisplayMemberPath="FileName"  
+                              ItemsSource="{Binding SourcePackageCollectionView}"
                               ToolTip="{Binding SelectedFolder}"/>
 
                     <l:FlatButton Grid.Column="1" 
@@ -54,7 +54,7 @@
                                   Style="{DynamicResource ParamUtilityButtonStyle}" 
                                   Padding="3 0 3 0">
                         <i:Interaction.Behaviors>
-                            <l:OpenFileDialogBehavior FilePath="{Binding SelectedFolder}" FileName="{Binding FileNameSource}"/>
+                            <l:OpenFileDialogBehavior FilePath="{Binding SelectedFolder}" FileName="{Binding SourcePackageName.Value}"/>
                         </i:Interaction.Behaviors>
                     </l:FlatButton>
                 </Grid>
@@ -66,22 +66,22 @@
                     </Grid.ColumnDefinitions>
 
                     <Label Content="File Name:"/>
-                    <Label Grid.Column="1" Content="{Binding FileNameTarget}" />
+                    <Label Grid.Column="1" Content="{Binding TargetPackageName.DisplayValue, Mode=OneWay}" />
                 </Grid>
 
                 <TextBlock Grid.Row="6"
                            HorizontalAlignment="Stretch"
                            VerticalAlignment="Bottom"
-                           Text="{Binding Error}"
+                           Text="{Binding Error.DisplayValue}"
                            TextWrapping="Wrap"
                            TextTrimming="CharacterEllipsis"
                            Foreground="{DynamicResource Shell_WarningForeground}"
                            Margin="10 5"
-                           Visibility="{Binding HasError, Converter={StaticResource BoolToVis}}"/>
+                           Visibility="{Binding Error.HasValue, Converter={StaticResource BoolToVis}}"/>
 
                 <ContentControl Grid.Row="7"
                                 cal:View.Model="{Binding UploadProgress}"
-                                Visibility="{Binding IsEnabled, Converter={StaticResource BoolToVisInv}}"/>
+                                Visibility="{Binding IsEnabled.Value, Converter={StaticResource BoolToVisInv}}"/>
 
                 <Grid Grid.Row="8">
                     <Grid.ColumnDefinitions>
@@ -92,7 +92,7 @@
                                   cal:Message.Attach="Ok" Content="Ok"
                                   Background="{DynamicResource Dialog_OkButtonBackground}"
                                   HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}"
-                                  IsEnabled="{Binding IsEnabled}"/>
+                                  IsEnabled="{Binding IsEnabled.Value}"/>
                     <l:FlatButton Grid.Column="1" Margin="8 0"
                                   cal:Message.Attach="Cancel" Content="Cancel" 
                                   Background="{DynamicResource Dialog_ButtonBackground}"

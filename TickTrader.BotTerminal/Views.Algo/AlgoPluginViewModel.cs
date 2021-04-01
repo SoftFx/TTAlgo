@@ -83,7 +83,7 @@ namespace TickTrader.BotTerminal
 
                 PackageDirectory = Path.GetDirectoryName(FullPackagePath);
 
-                DisplayPackagePath = $"Full path: {FullPackagePath}{Environment.NewLine}Last modified: {PackageInfo.Identity.LastModifiedUtc} (UTC)";
+                DisplayPackagePath = $"Full path: {FullPackagePath}{Environment.NewLine}Last modified: {PackageInfo.Identity.LastModifiedUtc.ToDateTime()} (UTC)";
                 Description = string.Join(Environment.NewLine, Descriptor.Description, string.Empty, $"Algo Package {PackageName} at {PackageDirectory}").Trim();
             }
 

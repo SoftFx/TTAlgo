@@ -1,10 +1,15 @@
 ﻿using Caliburn.Micro;
+using Machinarium.ObservableCollections;
 using Machinarium.Qnil;
+using Machinarium.Var;
 using NLog;
 using System;
-using System.Collections.Generic;
+using System.Collections;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Windows.Data;
 using TickTrader.Algo.ServerControl;
 
 namespace TickTrader.BotTerminal
@@ -21,23 +26,46 @@ namespace TickTrader.BotTerminal
 
         protected const string FileNameWatcherTemplate = "*.ttalgo";
 
-        protected readonly AlgoEnvironment _algoEnv;
+        protected readonly ObservableRangeCollection<string> _localPackages;
+        protected readonly ProgressViewModel _progressModel;
+
+        protected readonly VarContext _varContext = new VarContext();
 
         private readonly LoadPackageMode _mode;
 
         private FileSystemWatcher _watcher;
-        private string _selectedFolder, _fileNameSource, _fileNameTarget, _error;
-        private bool _isEnabled = true;
+        private string _selectedFolder;
+
+        public AlgoAgentViewModel SelectedAlgoServer { get; }
+
+        public ICollectionView SourcePackageCollectionView { get; }
+
+        public Property<string> AlgoServerPackageName { get; }
+
+        public Property<string> LocalPackageName { get; }
+
+        public Property<string> Error { get; }
+
+        public BoolProperty IsEnabled { get; }
 
 
-        public ProgressViewModel ProgressModel { get; }
+        public abstract IProperty<string> SourcePackageName { get; }
 
-        public AlgoAgentViewModel SelectedBotAgent { get; }
+        public abstract IProperty<string> TargetPackageName { get; }
 
-        public IEnumerable<AlgoPackageViewModel> Packages { get; protected set; }
+        protected abstract ICollection SourceCollection { get; }
 
 
-        public string SelectedFolder
+        protected abstract Task RunLoadPackageProgress();
+
+        protected abstract string GetFirstSourcePackageName();
+
+        protected abstract string GetTargetPackageName(string packageId);
+
+        protected abstract string GetSourcePackageName(string packageId);
+
+
+        public string SelectedFolder //TODO add postTrigger and preTrigger to the PropertyClass
         {
             get => _selectedFolder;
             set
@@ -50,156 +78,146 @@ namespace TickTrader.BotTerminal
                 _selectedFolder = value;
 
                 InitWatcher();
-                UploadSelectedSource();
 
                 NotifyOfPropertyChange(nameof(SelectedFolder));
             }
         }
 
-        public string FileNameSource
+
+        public BaseloadPackageViewModel(AlgoAgentViewModel algoServer, LoadPackageMode mode)
         {
-            get => _fileNameSource;
-            set
-            {
-                if (_fileNameSource == value)
-                    return;
-
-                _fileNameSource = value;
-                FileNameTarget = GenerateTargetFileName(value);
-
-                NotifyOfPropertyChange(nameof(FileNameSource));
-            }
-        }
-
-        public string FileNameTarget
-        {
-            get => _fileNameTarget;
-            set
-            {
-                if (_fileNameTarget == value)
-                    return;
-
-                _fileNameTarget = value;
-
-                NotifyOfPropertyChange(nameof(FileNameTarget));
-            }
-        }
-
-        public bool IsEnabled
-        {
-            get => _isEnabled;
-            set
-            {
-                if (_isEnabled == value)
-                    return;
-
-                _isEnabled = value;
-                NotifyOfPropertyChange(nameof(IsEnabled));
-            }
-        }
-
-        public string Error
-        {
-            get => _error;
-            set
-            {
-                if (_error == value)
-                    return;
-
-                _error = value;
-                NotifyOfPropertyChange(nameof(Error));
-                NotifyOfPropertyChange(nameof(HasError));
-            }
-        }
-
-        public bool HasError => !string.IsNullOrEmpty(_error);
-
-
-        public BaseloadPackageViewModel(AlgoEnvironment algoEnv, string agentName, LoadPackageMode mode)
-        {
-            _algoEnv = algoEnv;
             _mode = mode;
-            //_selectedFolder = EnvService.Instance.AlgoRepositoryFolder;
 
+            _progressModel = new ProgressViewModel();
+            _localPackages = new ObservableRangeCollection<string>();
+
+            SelectedAlgoServer = algoServer;
             DisplayName = $"{mode} Algo package";
-            ProgressModel = new ProgressViewModel();
+            SourcePackageCollectionView = CollectionViewSource.GetDefaultView(SourceCollection);
 
-            SelectedBotAgent = _algoEnv.BotAgents.Where(b => b.Agent.Name == agentName).AsObservable().FirstOrDefault()?.Agent;
-            SelectedBotAgent.Packages.Updated += UpdateAgentPackage;
+            Error = _varContext.AddProperty<string>();
+            IsEnabled = _varContext.AddBoolProperty(true);
+            LocalPackageName = _varContext.AddProperty<string>();
+            AlgoServerPackageName = _varContext.AddProperty<string>();
+
+            _varContext.TriggerOnChange(LocalPackageName.Var, (args) =>
+            {
+                if (_mode == LoadPackageMode.Upload)
+                    RefreshTargetName();
+            });
+
+            _varContext.TriggerOnChange(AlgoServerPackageName.Var, (args) =>
+            {
+                if (_mode == LoadPackageMode.Download)
+                    RefreshTargetName();
+            });
+
+            SelectedAlgoServer.Packages.Updated += UpdateAgentPackage;
         }
+
 
         public async void Ok()
         {
-            IsEnabled = false;
-
             try
             {
-                if (FileNameSource == null)
+                IsEnabled.Value = false;
+
+                if (!LocalPackageName.HasValue || !AlgoServerPackageName.HasValue)
                     throw new Exception("Please select a Algo package.");
 
-                var message = $"{_mode}ing Algo package {FileNameTarget} {(_mode == LoadPackageMode.Upload ? $"to {SelectedBotAgent.Name}" : $"from {SelectedBotAgent.Name} to {SelectedFolder}")}";
-
-                ProgressModel.SetMessage(message);
-
-                var selectPackageInfo = Packages.FirstOrDefault(u => u.FileName == FileNameSource);
-                var progressListener = new FileProgressListenerAdapter(ProgressModel, selectPackageInfo.Identity.Size);
-
-                if (_mode == LoadPackageMode.Upload)
-                    await SelectedBotAgent.Model.UploadPackage(FileNameTarget, FullSelectePackagePath(FileNameSource), progressListener);
-                else
-                {
-                    var package = SelectedBotAgent.PackageList.FirstOrDefault(u => u.DisplayName == FileNameSource).Key;
-                    await SelectedBotAgent.Model.DownloadPackage(package, FullSelectePackagePath(FileNameTarget), progressListener);
-                }
+                await RunLoadPackageProgress();
 
                 TryClose();
             }
             catch (ConnectionFailedException ex)
             {
-                Error = $"Error connecting to agent: {SelectedBotAgent.Name}";
-                _logger.Error(ex, Error);
+                Error.Value = $"Error connecting to agent: {SelectedAlgoServer.Name}";
+                _logger.Error(ex, Error.DisplayValue);
             }
             catch (Exception ex)
             {
-                Error = $"{ex.Message} Failed to {_mode} Algo package";
-                _logger.Error(ex, Error);
+                Error.Value = $"{ex.Message} Failed to {_mode} Algo package";
+                _logger.Error(ex, Error.DisplayValue);
             }
 
-            IsEnabled = true;
+            IsEnabled.Value = true;
         }
 
-        public void Cancel() => TryClose();
+        public void Cancel() => TryClose(); // using on UI
 
 
-        protected virtual void UploadSelectedSource() { }
-
-        protected virtual void WatcherEventHandling(object o, object e) { }
-
-        protected virtual void UpdateAgentPackage(ListUpdateArgs<AlgoPackageViewModel> args) { }
-
-        protected virtual bool CheckFileNameTarget(string name) => true;
-
-        protected override void OnDeactivate(bool close)
+        protected void SetStartLocation(string packageName)
         {
-            DeinitWatcher();
-            SelectedBotAgent.Packages.Updated -= UpdateAgentPackage;
+            var result = TrySetStartLocation(EnvService.Instance.AlgoRepositoryFolder, packageName) ||
+                         TrySetStartLocation(EnvService.Instance.AlgoCommonRepositoryFolder, packageName);
 
-            base.OnDeactivate(close);
+            SourcePackageName.Value = !result || string.IsNullOrEmpty(packageName) ? GetFirstSourcePackageName() : GetSourcePackageName(packageName);
         }
 
-        protected void SetDefaultFileSource(string packageId, out AlgoPackageViewModel package)
+        private void InitWatcher()
         {
-            package = Packages?.FirstOrDefault(u => u.Key == packageId);
+            _watcher = new FileSystemWatcher(SelectedFolder, FileNameWatcherTemplate)
+            {
+                EnableRaisingEvents = true,
+                IncludeSubdirectories = false,
+            };
 
-            FileNameSource = package?.FileName ?? Packages.FirstOrDefault()?.FileName;
+            _watcher.Created += AddNewPacakgeEventHandling;
+            _watcher.Deleted += RemovePackageEventHandling;
+            _watcher.Renamed += RenamePackageEventHandling;
+
+            _localPackages.AddRange(Directory.GetFiles(SelectedFolder, FileNameWatcherTemplate).Select(u => Path.GetFileName(u)));
         }
 
-        protected void RefreshTargetName() => FileNameTarget = GenerateTargetFileName(FileNameSource);
+        private void DeinitWatcher()
+        {
+            if (_watcher == null)
+                return;
 
+            _watcher.Created -= AddNewPacakgeEventHandling;
+            _watcher.Deleted -= RemovePackageEventHandling;
+            _watcher.Renamed -= RenamePackageEventHandling;
+            _watcher.Dispose();
+
+            _localPackages.Clear();
+        }
+
+        private void AddNewPacakgeEventHandling(object sender, FileSystemEventArgs e) => RunLocalPackageEventHandling(() => _localPackages.Add(e.Name));
+
+        private void RemovePackageEventHandling(object sender, FileSystemEventArgs e) => RunLocalPackageEventHandling(() => _localPackages.Remove(e.Name));
+
+        private void RenamePackageEventHandling(object sender, RenamedEventArgs e) => RunLocalPackageEventHandling(() =>
+        {
+            var isSelectedName = e.OldName == LocalPackageName.Value;
+
+            _localPackages.Remove(e.OldName);
+            _localPackages.Add(e.Name);
+
+            if (isSelectedName)
+                LocalPackageName.Value = e.Name;
+        });
+
+
+        private void RunLocalPackageEventHandling(System.Action handling)
+        {
+            OnUIThread(() =>
+            {
+                handling();
+
+                if (_mode == LoadPackageMode.Download)
+                    RefreshTargetName();
+            });
+        }
+
+        private void RefreshTargetName()
+        {
+            TargetPackageName.Value = GenerateTargetFileName(SourcePackageName.Value);
+            IsEnabled.Value = SourcePackageName.HasValue;
+        }
 
         private string GenerateTargetFileName(string name) //File name generation as in Windows (a.ttalgo, a - Copy.ttalgo, a - Copy (2).ttalgo)
         {
-            if (name == null)
+            if (string.IsNullOrEmpty(name))
                 return null;
 
             var ext = Path.GetExtension(name);
@@ -210,7 +228,7 @@ namespace TickTrader.BotTerminal
             {
                 var fileName = $"{name}{(step > 0 ? " - Copy" : "")}{(step > 1 ? $" ({step})" : "")}{ext}";
 
-                if (CheckFileNameTarget(fileName))
+                if (string.IsNullOrEmpty(GetTargetPackageName(fileName)))
                     return fileName;
             }
             while (++step < int.MaxValue);
@@ -218,30 +236,29 @@ namespace TickTrader.BotTerminal
             return $"{name} - Copy ({DateTime.Now.Ticks}){ext}";
         }
 
-        private void InitWatcher()
+        private bool TrySetStartLocation(string folder, string packageName)
         {
-            _watcher = new FileSystemWatcher(SelectedFolder, FileNameWatcherTemplate)
-            {
-                EnableRaisingEvents = true,
-                IncludeSubdirectories = false
-            };
+            SelectedFolder = folder;
 
-            _watcher.Created += WatcherEventHandling;
-            _watcher.Deleted += WatcherEventHandling;
-            _watcher.Renamed += WatcherEventHandling;
+            return string.IsNullOrEmpty(packageName) ? _localPackages.Count > 0 : !string.IsNullOrEmpty(GetLocalPackageName(packageName));
         }
 
-        private void DeinitWatcher()
+        protected override void OnDeactivate(bool close)
         {
-            if (_watcher == null)
-                return;
+            DeinitWatcher();
+            SelectedAlgoServer.Packages.Updated -= UpdateAgentPackage;
 
-            _watcher.Created -= WatcherEventHandling;
-            _watcher.Deleted -= WatcherEventHandling;
-            _watcher.Renamed -= WatcherEventHandling;
-            _watcher.Dispose();
+            base.OnDeactivate(close);
         }
 
-        private string FullSelectePackagePath(string fileName) => Path.Combine(SelectedFolder, fileName);
+
+        protected string FullPackagePath(string fileName, string folder = null) => Path.Combine(folder ?? SelectedFolder, fileName);
+
+        protected string GetAlgoServerPackageName(string packageId) => SelectedAlgoServer.PackageList.FirstOrDefault(p => p.FileName == packageId)?.FileName;
+
+        protected string GetLocalPackageName(string packageId) => _localPackages.FirstOrDefault(u => u.Equals(packageId, StringComparison.InvariantCultureIgnoreCase));
+
+
+        private void UpdateAgentPackage(ListUpdateArgs<AlgoPackageViewModel> args) => RefreshTargetName();
     }
 }

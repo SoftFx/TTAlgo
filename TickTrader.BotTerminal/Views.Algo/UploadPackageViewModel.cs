@@ -1,52 +1,50 @@
-﻿using Machinarium.Qnil;
-using System;
+﻿using Machinarium.Var;
+using System.Collections;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using TickTrader.Algo.Core.Repository;
-using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
-    internal class UploadPackageViewModel : BaseloadPackageViewModel
+    internal sealed class UploadPackageViewModel : BaseloadPackageViewModel
     {
-        public UploadPackageViewModel(AlgoEnvironment algoEnv, string agentName, string packageId = null) : base(algoEnv, agentName, LoadPackageMode.Upload)
+        public override IProperty<string> SourcePackageName => LocalPackageName;
+
+        public override IProperty<string> TargetPackageName => AlgoServerPackageName;
+
+        protected override ICollection SourceCollection => _localPackages;
+
+
+        public UploadPackageViewModel(AlgoAgentViewModel algoServer, string packageId = null) : base(algoServer, LoadPackageMode.Upload)
         {
-            _logger = NLog.LogManager.GetCurrentClassLogger();
-
-            Packages = _algoEnv.LocalAgentVM.Packages.Where(u => IsDefaultFolder(u.Location)).AsObservable();
-
-            SetDefaultFileSource(packageId, out var package);
-            SelectedFolder = package != null ? Path.GetDirectoryName(package.Identity.FilePath) : EnvService.Instance.AlgoRepositoryFolder;
-        }
-
-        protected override void UpdateAgentPackage(ListUpdateArgs<AlgoPackageViewModel> args) => RefreshTargetName();
-
-        protected override bool CheckFileNameTarget(string name) => !SelectedBotAgent.PackageList.Any(p => p.Identity.FileName == name);
-
-        protected override void WatcherEventHandling(object o, object e)
-        {
-            var selectedFile = FileNameSource; //Restore previous value after Algo package upload
-
-            UploadSelectedSource();
-
-            FileNameSource = Packages.Any(u => u.FileName == selectedFile) ? selectedFile : Packages.FirstOrDefault()?.FileName;
-        }
-
-        protected override void UploadSelectedSource()
-        {
-            try
+            SourcePackageCollectionView.SortDescriptions.Add(new SortDescription
             {
-                Packages = Directory.GetFiles(SelectedFolder, FileNameWatcherTemplate).Select(u => PackageIdentity.CreateInvalid(new FileInfo(u)))
-                    .Select(i => new PackageInfo {PackageId = PackageHelper.GetPackageIdFromPath("custom", i.FilePath), Identity = i, IsValid = true })
-                    .Select(info => new AlgoPackageViewModel(info, _algoEnv.LocalAgentVM, false));
-                NotifyOfPropertyChange(nameof(Packages));
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex);
-            }
+                Direction = ListSortDirection.Ascending
+            });
+
+            if (packageId != null)
+                PackageHelper.UnpackPackageId(packageId, out _, out packageId);
+
+            SetStartLocation(packageId);
         }
 
-        private bool IsDefaultFolder(string location) => location == PackageHelper.LocalRepositoryId || location == PackageHelper.CommonRepositoryId;
+        protected override async Task RunLoadPackageProgress()
+        {
+            _progressModel.SetMessage($"Uploading Algo Package {LocalPackageName.DisplayValue} to {SelectedAlgoServer.Name}");
+
+            var selectedPackagePath = FullPackagePath(LocalPackageName.Value);
+            var progressListener = new FileProgressListenerAdapter(_progressModel, new FileInfo(selectedPackagePath).Length);
+
+            await SelectedAlgoServer.Model.UploadPackage(AlgoServerPackageName.Value, selectedPackagePath, progressListener);
+        }
+
+
+        protected override string GetTargetPackageName(string packageName) => GetAlgoServerPackageName(packageName);
+
+        protected override string GetSourcePackageName(string packageName) => GetLocalPackageName(packageName);
+
+        protected override string GetFirstSourcePackageName() => _localPackages.FirstOrDefault();
     }
 }

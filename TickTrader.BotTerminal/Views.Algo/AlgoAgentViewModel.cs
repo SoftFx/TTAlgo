@@ -4,15 +4,9 @@ using NLog;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
-using Xceed.Wpf.AvalonDock.Layout;
 
 namespace TickTrader.BotTerminal
 {
@@ -229,11 +223,11 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void OpenUploadPackageDialog(string packageId = null, string agentName = null)
+        public void OpenUploadPackageDialog(string packageId = null, AlgoAgentViewModel selectedAlgoServer = null)
         {
             try
             {
-                var model = new UploadPackageViewModel(_algoEnv, agentName ?? Name, packageId);
+                var model = new UploadPackageViewModel(selectedAlgoServer ?? this, packageId);
                 _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoUploadPackageWindow", model);
             }
             catch (Exception ex)
@@ -246,7 +240,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                var model = new DownloadPackageViewModel(_algoEnv, Name, packageId);
+                var model = new DownloadPackageViewModel(this, packageId);
                 _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoDownloadPackageWindow", model);
             }
             catch (Exception ex)

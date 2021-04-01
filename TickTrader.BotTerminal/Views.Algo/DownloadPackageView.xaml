@@ -27,47 +27,48 @@
                     </Grid.ColumnDefinitions>
 
                     <Label Content="Algo Server:"/>
-                    <Label Grid.Column="1" Content="{Binding SelectedBotAgent.Name}"/>
+                    <Label Grid.Column="1" Content="{Binding SelectedAlgoServer.Name}"/>
                 </Grid>
 
                 <Label Grid.Row="2" Content="Algo package:"/>
-                <ComboBox Grid.Row="3" IsEnabled="{Binding IsEnabled}"
+                <ComboBox Grid.Row="3"
                           Margin="5 0 0 0"
-                          ItemsSource="{Binding Packages}"
+                          ItemsSource="{Binding SourcePackageCollectionView}"
                           DisplayMemberPath="FileName"
-                          Text="{Binding FileNameSource}" />
+                          SelectedValuePath="FileName"
+                          SelectedValue="{Binding SourcePackageName.Value}"/>
 
                 <Grid Grid.Row="4" Margin="0 5">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="80" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="20" />
                     </Grid.ColumnDefinitions>
                     <Label Grid.Column="0" Content="File Name:"/>
                     <Label Grid.Column="1"
-                             HorizontalAlignment="Stretch"
-                             VerticalAlignment="Center"
-                             Content="{Binding FileNameTarget}"/>
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            Content="{Binding TargetPackageName.DisplayValue}"
+                            ToolTip="{Binding TargetPackageName.DisplayValue}"/>
                     <l:FlatButton Grid.Column="2" 
                                   Content="..." 
                                   Style="{DynamicResource ParamUtilityButtonStyle}" 
                                   Padding="3 0 3 0"
                                   Height="22">
                         <i:Interaction.Behaviors>
-                            <l:SaveFileDialogBeahvior FilePath="{Binding SelectedFolder}" FileName="{Binding FileNameTarget}"/>
+                            <l:SaveFileDialogBeahvior FilePath="{Binding SelectedFolder}" FileName="{Binding TargetPackageName.Value}"/>
                         </i:Interaction.Behaviors>
                     </l:FlatButton>
                 </Grid>
 
                 <TextBlock Grid.Row="6" HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
-                           Text="{Binding Error}" 
+                           Text="{Binding Error.DisplayValue}" 
                            TextWrapping="Wrap" 
                            TextTrimming="CharacterEllipsis"
                            Foreground="{DynamicResource Shell_WarningForeground}" 
-                           Visibility="{Binding HasError, Converter={StaticResource BoolToVis}}"/>
+                           Visibility="{Binding NotifyOnValidationError.HasValue, Converter={StaticResource BoolToVis}}"/>
 
-                <ContentControl Grid.Row="7" cal:View.Model="{Binding DownloadProgress}" Visibility="{Binding IsEnabled, Converter={StaticResource BoolToVisInv}}" />
+                <ContentControl Grid.Row="7" cal:View.Model="{Binding DownloadProgress}" Visibility="{Binding IsEnabled.Value, Converter={StaticResource BoolToVisInv}}" />
 
                 <Grid Grid.Row="8">
                     <Grid.ColumnDefinitions>
@@ -78,7 +79,7 @@
                                   cal:Message.Attach="Ok" Content="Ok"
                                   Background="{DynamicResource Dialog_OkButtonBackground}"
                                   HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}"
-                                  IsEnabled="{Binding IsEnabled}"/>
+                                  IsEnabled="{Binding IsEnabled.Value}"/>
                     <l:FlatButton Grid.Column="1" Margin="4,8,8,8"
                                   cal:Message.Attach="Cancel" Content="Cancel" 
                                   Background="{DynamicResource Dialog_ButtonBackground}"

@@ -98,17 +98,23 @@ namespace TickTrader.Algo.Common.Model
             switch (update.Action)
             {
                 case Domain.Package.Types.UpdateAction.Upsert:
-                    _server.TryGetPackage(update.Id, out var packageRef);
-                    if (_packageRefs.ContainsKey(update.Package.PackageId))
+                    if (_server.TryGetPackage(update.Id, out var packageRef)) // ???
                     {
-                        RepositoryOnUpdated(packageRef);
-                    }
-                    else
-                    {
-                        RepositoryOnAdded(packageRef);
+                        if (_packageRefs.ContainsKey(update.Package.PackageId))
+                        {
+                            RepositoryOnUpdated(packageRef);
+                        }
+                        else
+                        {
+                            RepositoryOnAdded(packageRef);
+                        }
                     }
                     break;
                 case Domain.Package.Types.UpdateAction.Removed:
+                    if (_packageRefs.TryGetValue(update.Id, out var packageOldRef))
+                        RepositoryOnRemoved(packageOldRef);
+                    break;
+                default:
                     break;
             }
         }

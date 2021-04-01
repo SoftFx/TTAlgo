@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace Machinarium.Var
@@ -6,7 +7,10 @@ namespace Machinarium.Var
     public interface IProperty<T>
     {
         Var<T> Var { get; }
+
         T Value { get; set; }
+
+        bool HasValue { get; }
     }
 
     public class PropertyBase<TVar, T> : IProperty<T>, INotifyPropertyChanged, IDisposable
@@ -45,6 +49,8 @@ namespace Machinarium.Var
 
         public string DisplayValue => ConvertValueTo(Value);
 
+        public bool HasValue => !EqualityComparer<T>.Default.Equals(Value, default);
+
         Var<T> IProperty<T>.Var => Var;
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -60,17 +66,18 @@ namespace Machinarium.Var
         {
             try
             {
-                return DisplayConverter != null ? DisplayConverter.Convert(value) : value.ToString();
+                return DisplayConverter != null ? DisplayConverter.Convert(value) : value?.ToString();
             }
             catch
             {
-                return value.ToString();
+                return value?.ToString();
             }
         }
 
         private void NotificationCall()
         {
             NotifyPropertyChange(nameof(Value));
+            NotifyPropertyChange(nameof(HasValue));
             NotifyPropertyChange(nameof(DisplayValue));
         }
     }

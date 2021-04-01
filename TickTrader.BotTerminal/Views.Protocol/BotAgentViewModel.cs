@@ -49,30 +49,21 @@ namespace TickTrader.BotTerminal
 
         public void Drop(object o)
         {
-            var algoBot = o as AlgoPluginViewModel;
-            if (algoBot != null)
-            {
+            if (o is AlgoPluginViewModel algoBot)
                 Agent.OpenBotSetup(null, algoBot.Key);
-            }
-            var algoPackage = o as AlgoPackageViewModel;
-            if (algoPackage != null)
-            {
-                Agent.OpenUploadPackageDialog(algoPackage.Key, Agent.Name);
-            }
+
+            if (o is AlgoPackageViewModel algoPackage)
+                Agent.OpenUploadPackageDialog(algoPackage.Key, Agent);
         }
 
         public bool CanDrop(object o)
         {
-            var algoBot = o as AlgoPluginViewModel;
-            if (algoBot != null && algoBot.Agent.Name == Agent.Name && algoBot.IsTradeBot)
-            {
+            if (o is AlgoPluginViewModel algoBot && algoBot.Agent.Name == Agent.Name && algoBot.IsTradeBot)
                 return true;
-            }
-            var algoPackage = o as AlgoPackageViewModel;
-            if (algoPackage != null && algoPackage.CanUploadPackage && CanUploadPackage)
-            {
+
+            if (o is AlgoPackageViewModel algoPackage && algoPackage.CanUploadPackage && CanUploadPackage)
                 return true;
-            }
+
             return false;
         }
 
