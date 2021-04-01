@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.BotAgent.BA.Models;
 
 namespace TickTrader.BotAgent.BA
@@ -29,13 +30,12 @@ namespace TickTrader.BotAgent.BA
         // -------- Account Management --------
 
         Task<List<AccountModelInfo>> GetAccounts();
-        Task AddAccount(AccountKey key, string password);
-        Task RemoveAccount(AccountKey key);
-        Task ChangeAccount(AccountKey key, string password);
-        Task ChangeAccountPassword(AccountKey key, string password);
-        Task<Tuple<ConnectionErrorInfo, AccountMetadataInfo>> GetAccountMetadata(AccountKey key);
-        Task<ConnectionErrorInfo> TestAccount(AccountKey accountId);
-        Task<ConnectionErrorInfo> TestCreds(AccountKey accountId, string password);
+        Task AddAccount(AddAccountRequest request);
+        Task RemoveAccount(RemoveAccountRequest request);
+        Task ChangeAccount(ChangeAccountRequest request);
+        Task<Tuple<ConnectionErrorInfo, AccountMetadataInfo>> GetAccountMetadata(string accountId);
+        Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request);
+        Task<ConnectionErrorInfo> TestCreds(TestAccountCredsRequest request);
 
         event Action<AccountModelInfo, ChangeAction> AccountChanged;
         event Action<AccountStateUpdate> AccountStateChanged;
@@ -46,7 +46,7 @@ namespace TickTrader.BotAgent.BA
         Task<PluginModelInfo> GetBotInfo(string botId);
         Task<IBotFolder> GetAlgoData(string botId);
         Task<string> GenerateBotId(string botDisplayName);
-        Task<PluginModelInfo> AddBot(AccountKey accountId, PluginConfig config);
+        Task<PluginModelInfo> AddBot(string accountId, PluginConfig config);
         Task RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false);
         Task ChangeBotConfig(string botId, PluginConfig newConfig);
         Task StartBot(string botId);

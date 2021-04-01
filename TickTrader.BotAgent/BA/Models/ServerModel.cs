@@ -15,6 +15,7 @@ using NLog;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Domain.ServerControl;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -112,13 +113,12 @@ namespace TickTrader.BotAgent.BA.Models
 
             #region Account Management
 
-            public Task AddAccount(AccountKey key, string password) => CallActorFlattenAsync(a => a.AddAccount(key, password));
-            public Task ChangeAccount(AccountKey key, string password) => CallActorAsync(a => a.ChangeAccount(key, password));
-            public Task ChangeAccountPassword(AccountKey key, string password) => CallActorAsync(a => a.ChangeAccountPassword(key, password));
+            public Task AddAccount(AddAccountRequest request) => CallActorFlattenAsync(a => a.AddAccount(request));
+            public Task ChangeAccount(ChangeAccountRequest request) => CallActorAsync(a => a.ChangeAccount(request));
             public Task<List<AccountModelInfo>> GetAccounts() => CallActorAsync(a => a._accounts.GetInfoCopy());
-            public Task RemoveAccount(AccountKey key) => CallActorFlattenAsync(a => a.RemoveAccount(key));
-            public Task<ConnectionErrorInfo> TestAccount(AccountKey accountId) => CallActorFlattenAsync(a => a.GetAccountOrThrow(accountId).TestConnection());
-            public Task<ConnectionErrorInfo> TestCreds(AccountKey accountId, string password) => CallActorFlattenAsync(a => a.TestCreds(accountId, password));
+            public Task RemoveAccount(RemoveAccountRequest request) => CallActorFlattenAsync(a => a.RemoveAccount(request));
+            public Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request) => CallActorFlattenAsync(a => a.GetAccountOrThrow(request.AccountId).TestConnection());
+            public Task<ConnectionErrorInfo> TestCreds(TestAccountCredsRequest request) => CallActorFlattenAsync(a => a.TestCreds(request));
 
             public event Action<AccountModelInfo, ChangeAction> AccountChanged
             {
@@ -139,7 +139,7 @@ namespace TickTrader.BotAgent.BA.Models
             #region Bot Management
             public Task<IAlertStorage> GetAlertStorage() => CallActorAsync(a => a.GetAlertsStorage());
             public Task<string> GenerateBotId(string botDisplayName) => CallActorAsync(a => a.AutogenerateBotId(botDisplayName));
-            public Task<PluginModelInfo> AddBot(AccountKey accountId, PluginConfig config) => CallActorAsync(a => a.AddBot(accountId, config));
+            public Task<PluginModelInfo> AddBot(string accountId, PluginConfig config) => CallActorAsync(a => a.AddBot(accountId, config));
             public Task ChangeBotConfig(string botId, PluginConfig config) => CallActorAsync(a => a.GetBotOrThrow(botId).ChangeBotConfig(config));
             public Task RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false) => CallActorAsync(a => a.RemoveBot(botId, cleanLog, cleanAlgoData));
             public Task StartBot(string botId) => CallActorAsync(a => a.GetBotOrThrow(botId).Start());
@@ -159,7 +159,7 @@ namespace TickTrader.BotAgent.BA.Models
                 return new BotLog.Handler(logRef);
             }
 
-            public Task<Tuple<ConnectionErrorInfo, AccountMetadataInfo>> GetAccountMetadata(AccountKey key) => CallActorFlattenAsync(a => a.GetAccountMetadata(key));
+            public Task<Tuple<ConnectionErrorInfo, AccountMetadataInfo>> GetAccountMetadata(string accountId) => CallActorFlattenAsync(a => a.GetAccountMetadata(accountId));
 
             public event Action<PluginModelInfo, ChangeAction> BotChanged
             {
@@ -187,26 +187,32 @@ namespace TickTrader.BotAgent.BA.Models
         public event Action<AccountModelInfo, ChangeAction> AccountChanged;
         public event Action<AccountStateUpdate> AccountStateChanged;
 
-        public async Task<ConnectionErrorInfo> TestCreds(AccountKey accountId, string password)
+        public async Task<ConnectionErrorInfo> TestCreds(TestAccountCredsRequest request)
         {
-            var acc = new ClientModel(accountId.Server, accountId.Login, password);
+            var server = request.Server;
+            var userId = request.UserId;
+            var creds = request.Creds;
+
+            Validate(server, userId, creds);
+
+            var acc = new ClientModel(server, userId, creds);
             await acc.Init(_packageStorage, _fdkOptionsProvider, _alertStorage, _algoServer);
 
             var testResult = await acc.TestConnection();
 
             if (!await acc.ShutdownAsync().WaitAsync(5000))
             {
-                _logger.Error($"Can't stop test connection to {accountId.Server} - {accountId.Login}");
+                _logger.Error($"Can't stop test connection to {server} - {userId}");
             }
 
             return testResult;
         }
 
-        private async Task<Tuple<ConnectionErrorInfo, AccountMetadataInfo>> GetAccountMetadata(AccountKey key)
+        private async Task<Tuple<ConnectionErrorInfo, AccountMetadataInfo>> GetAccountMetadata(string accountId)
         {
             try
             {
-                var metadata = await GetAccountOrThrow(key).GetMetadata();
+                var metadata = await GetAccountOrThrow(accountId).GetMetadata();
                 return Tuple.Create(ConnectionErrorInfo.Ok, metadata);
             }
             catch (CommunicationException ex)
@@ -215,16 +221,21 @@ namespace TickTrader.BotAgent.BA.Models
             }
         }
 
-        public async Task AddAccount(AccountKey accountId, string password)
+        public async Task AddAccount(AddAccountRequest request)
         {
-            Validate(accountId.Login, accountId.Server, password);
+            var server = request.Server;
+            var userId = request.UserId;
+            var creds = request.Creds;
 
+            Validate(server, userId, creds);
+
+            var accountId = AccountId.Pack(server, userId);
             var existing = FindAccount(accountId);
             if (existing != null)
-                throw new DuplicateAccountException($"Account '{accountId.Login}:{accountId.Server}' already exists");
+                throw new DuplicateAccountException($"Account '{accountId}' already exists");
             else
             {
-                var newAcc = new ClientModel(accountId.Server, accountId.Login, password);
+                var newAcc = new ClientModel(server, userId, creds, request.DisplayName);
                 _accounts.Add(newAcc);
                 AccountChanged?.Invoke(newAcc.GetInfoCopy(), ChangeAction.Added);
 
@@ -234,17 +245,26 @@ namespace TickTrader.BotAgent.BA.Models
             }
         }
 
-        private void Validate(string login, string server, string password)
+        private void Validate(string server, string userId, AccountCreds creds)
         {
-            if (string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(server) || string.IsNullOrWhiteSpace(password))
+            if (string.IsNullOrWhiteSpace(server))
+                throw new InvalidAccountException("Server is required");
+            if (string.IsNullOrWhiteSpace(userId))
+                throw new InvalidAccountException("UserId is required");
+            switch(creds.AuthScheme)
             {
-                throw new InvalidAccountException("Login, password and server are required");
+                case AccountCreds.SimpleAuthSchemeId:
+                    if (string.IsNullOrWhiteSpace(creds.GetPassword()))
+                        throw new InvalidAccountException("Password is required");
+                    break;
+                default:
+                    throw new InvalidAccountException("Creds.AuthScheme is not supported");
             }
         }
 
-        public async Task RemoveAccount(AccountKey accountId)
+        public async Task RemoveAccount(RemoveAccountRequest request)
         {
-            ClientModel acc = FindAccount(accountId);
+            ClientModel acc = FindAccount(request.AccountId);
 
             if (acc == null)
                 return;
@@ -264,18 +284,10 @@ namespace TickTrader.BotAgent.BA.Models
                 throw new BAException($"Can't stop connection to {acc.Address} - {acc.Username}");
         }
 
-        public void ChangeAccount(AccountKey key, string password)
+        public void ChangeAccount(ChangeAccountRequest request)
         {
-            var acc = GetAccountOrThrow(key);
-            acc.ChangeConnectionSettings(password);
-        }
-
-        public void ChangeAccountPassword(AccountKey key, string password)
-        {
-            Validate(key.Login, key.Server, password);
-
-            var acc = GetAccountOrThrow(key);
-            acc.ChangePassword(password);
+            var acc = GetAccountOrThrow(request.AccountId);
+            acc.Change(request);
         }
 
         private ClientModel FindAccount(string login, string server)
@@ -283,16 +295,16 @@ namespace TickTrader.BotAgent.BA.Models
             return _accounts.FirstOrDefault(a => a.Username == login && a.Address == server);
         }
 
-        private ClientModel FindAccount(AccountKey key)
+        private ClientModel FindAccount(string accountId)
         {
-            return _accounts.FirstOrDefault(a => a.Username == key.Login && a.Address == key.Server);
+            return _accounts.FirstOrDefault(a => a.AccountId == accountId);
         }
 
-        private ClientModel GetAccountOrThrow(AccountKey key)
+        private ClientModel GetAccountOrThrow(string accountId)
         {
-            var acc = FindAccount(key);
+            var acc = FindAccount(accountId);
             if (acc == null)
-                throw new AccountNotFoundException("Account with login '" + key.Login + "' and server address '" + key.Server + "' does not exist!");
+                throw new AccountNotFoundException($"Account with id '{accountId}' does not exist!");
             return acc;
         }
 
@@ -371,9 +383,9 @@ namespace TickTrader.BotAgent.BA.Models
         private event Action<PluginModelInfo, ChangeAction> BotChanged;
         private event Action<PluginStateUpdate> BotStateChanged;
 
-        private PluginModelInfo AddBot(AccountKey account, PluginConfig config)
+        private PluginModelInfo AddBot(string accountId, PluginConfig config)
         {
-            var bot = GetAccountOrThrow(account).AddBot(config);
+            var bot = GetAccountOrThrow(accountId).AddBot(config);
             return bot.GetInfoCopy();
         }
 

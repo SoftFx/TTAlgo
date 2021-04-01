@@ -44,7 +44,7 @@ message SetupContextInfo {
 }
 
 message AccountMetadataInfo {
-    AccountKey key = 1;
+    string account_id = 1;
     repeated SymbolConfig symbols = 2;
     SymbolConfig default_symbol = 3;
 }
@@ -70,6 +70,11 @@ message ConnectionErrorInfo {
     google.protobuf.StringValue text_message = 2;
 }
 
+message AccountCreds {
+    string auth_scheme = 1;
+    map<string, google.protobuf.StringValue> secret = 2;
+}
+
 message AccountModelInfo {
     enum ConnectionState {
         OFFLINE = 0;
@@ -78,9 +83,10 @@ message AccountModelInfo {
         DISCONNECTING = 3;
     }
 
-    AccountKey key = 1;
+    string account_id = 1;
     ConnectionState connection_state = 2;
     ConnectionErrorInfo last_error = 3;
+    google.protobuf.StringValue display_name = 4;
 }
 
 message PluginModelInfo {
@@ -95,7 +101,7 @@ message PluginModelInfo {
     }
 
     string instance_id = 1;
-    AccountKey account = 2;
+    string account_id = 2;
     PluginState state = 3;
     google.protobuf.StringValue fault_message = 4;
     PluginConfig config = 5;
@@ -138,7 +144,7 @@ message PackageStateUpdate {
 }
 
 message AccountStateUpdate {
-    AccountKey account_id = 1;
+    string account_id = 1;
     AccountModelInfo.ConnectionState connection_state = 2;
     ConnectionErrorInfo last_error = 3;
 }

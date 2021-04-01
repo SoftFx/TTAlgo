@@ -96,11 +96,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return Task.FromResult(new SetupContextInfo(_agentContext.DefaultTimeFrame, _agentContext.DefaultSymbol.ToConfig(), _agentContext.DefaultMapping));
         }
 
-        public async Task<AccountMetadataInfo> GetAccountMetadata(AccountKey account)
+        public async Task<AccountMetadataInfo> GetAccountMetadata(string accountId)
         {
-            var (error, accMetadata) = await _botAgent.GetAccountMetadata(account);
+            var (error, accMetadata) = await _botAgent.GetAccountMetadata(accountId);
             if (!error.IsOk)
-                throw new Exception($"Account {account.Login} at {account.Server} failed to connect");
+                throw new Exception($"Account '{accountId}' failed to connect");
             return accMetadata;
         }
 
@@ -114,9 +114,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return _botAgent.StopBotAsync(botId);
         }
 
-        public Task AddBot(AccountKey account, PluginConfig config)
+        public Task AddBot(string accountId, PluginConfig config)
         {
-            return _botAgent.AddBot(account, config);
+            return _botAgent.AddBot(accountId, config);
         }
 
         public Task RemoveBot(string botId, bool cleanLog, bool cleanAlgoData)
@@ -129,29 +129,29 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return _botAgent.ChangeBotConfig(botId, newConfig);
         }
 
-        public Task AddAccount(AccountKey account, string password)
+        public Task AddAccount(AddAccountRequest request)
         {
-            return _botAgent.AddAccount(account, password);
+            return _botAgent.AddAccount(request);
         }
 
-        public Task RemoveAccount(AccountKey account)
+        public Task RemoveAccount(RemoveAccountRequest request)
         {
-            return _botAgent.RemoveAccount(account);
+            return _botAgent.RemoveAccount(request);
         }
 
-        public Task ChangeAccount(AccountKey account, string password)
+        public Task ChangeAccount(ChangeAccountRequest request)
         {
-            return _botAgent.ChangeAccount(account, password);
+            return _botAgent.ChangeAccount(request);
         }
 
-        public Task<ConnectionErrorInfo> TestAccount(AccountKey account)
+        public Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request)
         {
-            return _botAgent.TestAccount(account);
+            return _botAgent.TestAccount(request);
         }
 
-        public Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password)
+        public Task<ConnectionErrorInfo> TestAccountCreds(TestAccountCredsRequest request)
         {
-            return _botAgent.TestCreds(account, password);
+            return _botAgent.TestCreds(request);
         }
 
         public Task RemovePackage(string packageId)

@@ -268,7 +268,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                             AlgoClient.UpdateBotState(((UpdateInfo<PluginStateUpdate>)updateInfo).Value);
                         else Logger.Error($"Failed to dispatch update of type: {update.Payload.TypeUrl}");
                     }
-                    else 
+                    else
                     {
                         Logger.Error($"Failed to unpack update of type: {update.Payload.TypeUrl}");
                     }
@@ -619,9 +619,9 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return response.SetupContext;
         }
 
-        public override async Task<AccountMetadataInfo> GetAccountMetadata(AccountKey account)
+        public override async Task<AccountMetadataInfo> GetAccountMetadata(string accountId)
         {
-            var response = await ExecuteUnaryRequestAuthorized(GetAccountMetadataInternal, new AccountMetadataRequest { Account = account });
+            var response = await ExecuteUnaryRequestAuthorized(GetAccountMetadataInternal, new AccountMetadataRequest { AccountId = accountId });
             FailForNonSuccess(response.ExecResult);
             return response.AccountMetadata;
         }
@@ -633,9 +633,9 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return response.Plugins.ToList();
         }
 
-        public override async Task AddPlugin(AccountKey account, PluginConfig config)
+        public override async Task AddPlugin(string accountId, PluginConfig config)
         {
-            var response = await ExecuteUnaryRequestAuthorized(AddBotInternal, new AddPluginRequest { Account = account, Config = config });
+            var response = await ExecuteUnaryRequestAuthorized(AddBotInternal, new AddPluginRequest { AccountId = accountId, Config = config });
             FailForNonSuccess(response.ExecResult);
         }
 
@@ -670,34 +670,34 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return response.Accounts.ToList();
         }
 
-        public override async Task AddAccount(AccountKey account, string password)
+        public override async Task AddAccount(AddAccountRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(AddAccountInternal, new AddAccountRequest { Account = account, Password = password, UseNewProtocol = true });
+            var response = await ExecuteUnaryRequestAuthorized(AddAccountInternal, request);
             FailForNonSuccess(response.ExecResult);
         }
 
-        public override async Task RemoveAccount(AccountKey account)
+        public override async Task RemoveAccount(RemoveAccountRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(RemoveAccountInternal, new RemoveAccountRequest { Account = account });
+            var response = await ExecuteUnaryRequestAuthorized(RemoveAccountInternal, request);
             FailForNonSuccess(response.ExecResult);
         }
 
-        public override async Task ChangeAccount(AccountKey account, string password)
+        public override async Task ChangeAccount(ChangeAccountRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(ChangeAccountInternal, new ChangeAccountRequest { Account = account, Password = password, UseNewProtocol = true });
+            var response = await ExecuteUnaryRequestAuthorized(ChangeAccountInternal, request);
             FailForNonSuccess(response.ExecResult);
         }
 
-        public override async Task<ConnectionErrorInfo> TestAccount(AccountKey account)
+        public override async Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(TestAccountInternal, new TestAccountRequest { Account = account });
+            var response = await ExecuteUnaryRequestAuthorized(TestAccountInternal, request);
             FailForNonSuccess(response.ExecResult);
             return response.ErrorInfo;
         }
 
-        public override async Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password)
+        public override async Task<ConnectionErrorInfo> TestAccountCreds(TestAccountCredsRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(TestAccountCredsInternal, new TestAccountCredsRequest { Account = account, Password = password, UseNewProtocol = true });
+            var response = await ExecuteUnaryRequestAuthorized(TestAccountCredsInternal, request);
             FailForNonSuccess(response.ExecResult);
             return response.ErrorInfo;
         }

@@ -13,9 +13,10 @@ namespace TickTrader.BotAgent.Extensions
         {
             return new AccountModelInfo
             {
-                Key = new AccountKey(acc.Address, acc.Username),
+                AccountId = acc.AccountId,
                 ConnectionState = acc.ConnectionState,
                 LastError = acc.LastError ?? ConnectionErrorInfo.Ok,
+                DisplayName = acc.DisplayName,
             };
         }
 
@@ -23,7 +24,7 @@ namespace TickTrader.BotAgent.Extensions
         {
             return new AccountStateUpdate
             {
-                AccountId = new AccountKey(acc.Address, acc.Username),
+                AccountId = acc.AccountId,
                 ConnectionState = acc.ConnectionState,
                 LastError = acc.LastError ?? ConnectionErrorInfo.Ok,
             };
@@ -44,7 +45,7 @@ namespace TickTrader.BotAgent.Extensions
             return new PluginModelInfo()
             {
                 InstanceId = model.Id,
-                Account = model.Account,
+                AccountId = model.AccountId,
                 State = model.State,
                 FaultMessage = model.FaultMessage,
                 Config = model.Config,

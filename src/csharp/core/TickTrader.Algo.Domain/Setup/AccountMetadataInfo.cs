@@ -4,9 +4,9 @@ namespace TickTrader.Algo.Domain
 {
     public partial class AccountMetadataInfo
     {
-        public AccountMetadataInfo(AccountKey account, List<SymbolConfig> symbols, SymbolConfig defaultSymbol)
+        public AccountMetadataInfo(string accountId, List<SymbolConfig> symbols, SymbolConfig defaultSymbol)
         {
-            Key = account;
+            AccountId = accountId;
             Symbols.AddRange(symbols);
             DefaultSymbol = defaultSymbol;
         }

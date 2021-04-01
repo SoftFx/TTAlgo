@@ -16,7 +16,7 @@ namespace TickTrader.BotTerminal
 
         public string InstanceId => Model.InstanceId;
 
-        public AccountKey Account => Model.Account;
+        public string AccountId => Model.AccountId;
 
         public PluginModelInfo.Types.PluginState State => Model.State;
 
@@ -118,7 +118,7 @@ namespace TickTrader.BotTerminal
 
         public void AddBot()
         {
-            Agent.OpenBotSetup(Model.Account, Model.Config.Key);
+            Agent.OpenBotSetup(Model.AccountId, Model.Config.Key);
         }
 
 

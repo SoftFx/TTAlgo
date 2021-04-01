@@ -267,11 +267,11 @@ namespace TickTrader.Algo.ServerControl
 
         public abstract Task<SetupContextInfo> GetSetupContext();
 
-        public abstract Task<AccountMetadataInfo> GetAccountMetadata(AccountKey account);
+        public abstract Task<AccountMetadataInfo> GetAccountMetadata(string accountId);
 
         public abstract Task<List<PluginModelInfo>> GetPluginList();
 
-        public abstract Task AddPlugin(AccountKey account, PluginConfig config);
+        public abstract Task AddPlugin(string accountId, PluginConfig config);
 
         public abstract Task RemovePlugin(string pluginId, bool cleanLog = false, bool cleanAlgoData = false);
 
@@ -283,15 +283,15 @@ namespace TickTrader.Algo.ServerControl
 
         public abstract Task<List<AccountModelInfo>> GetAccountList();
 
-        public abstract Task AddAccount(AccountKey account, string password);
+        public abstract Task AddAccount(AddAccountRequest request);
 
-        public abstract Task RemoveAccount(AccountKey account);
+        public abstract Task RemoveAccount(RemoveAccountRequest request);
 
-        public abstract Task ChangeAccount(AccountKey account, string password);
+        public abstract Task ChangeAccount(ChangeAccountRequest request);
 
-        public abstract Task<ConnectionErrorInfo> TestAccount(AccountKey account);
+        public abstract Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request);
 
-        public abstract Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password);
+        public abstract Task<ConnectionErrorInfo> TestAccountCreds(TestAccountCredsRequest request);
 
         public abstract Task<List<PackageInfo>> GetPackageList();
 

@@ -34,7 +34,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             return new TradeBotDto()
             {
                 Id = bot.InstanceId,
-                Account = bot.Account.ToDto(),
+                Account = bot.AccountId.ToAccountDto(),
                 State = bot.State.ToString(),
                 PackageName = bot.Config.Key.PackageId,
                 BotName = bot.Descriptor_?.UiDisplayName,
@@ -128,21 +128,23 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             };
         }
 
-        public static AccountDto ToDto(this AccountKey account)
+        public static AccountDto ToAccountDto(this string accountId)
         {
+            AccountId.Unpack(accountId, out var server, out var userId);
             return new AccountDto()
             {
-                Server = account.Server,
-                Login = account.Login,
+                Server = server,
+                Login = userId,
             };
         }
 
         public static AccountDto ToDto(this AccountModelInfo account)
         {
+            AccountId.Unpack(account.AccountId, out var server, out var userId);
             return new AccountDto()
             {
-                Server = account.Key.Server,
-                Login = account.Key.Login,
+                Server = server,
+                Login = userId,
                 LastConnectionStatus = ConnectionErrorInfo.Types.ErrorCode.NoConnectionError,
             };
         }

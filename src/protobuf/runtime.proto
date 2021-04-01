@@ -168,8 +168,3 @@ message AttachAccountRequest { // void response
 message DetachAccountRequest { // void response
     string account_id = 1;
 }
-
-message AccountKey {
-    string server = 1;
-    string login = 2;
-}

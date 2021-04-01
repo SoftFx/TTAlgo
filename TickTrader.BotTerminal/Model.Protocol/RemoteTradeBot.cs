@@ -45,7 +45,7 @@ namespace TickTrader.BotTerminal
 
         public BotJournal Journal { get; }
 
-        public AccountKey Account => Info.Account;
+        public string AccountId => Info.AccountId;
 
 
         public event Action<ITradeBot> Updated;

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Net;
 using TickTrader.Algo.Domain;
 using System.Threading.Tasks;
+using TickTrader.Algo.Domain.ServerControl;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 {
@@ -37,7 +38,8 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                var res = await _botAgent.GetAccountMetadata(new AccountKey(WebUtility.UrlDecode(server), WebUtility.UrlDecode(login)));
+                var accId = AccountId.Pack(WebUtility.UrlDecode(server), WebUtility.UrlDecode(login));
+                var res = await _botAgent.GetAccountMetadata(accId);
                 var connError = res.Item1;
                 var info = res.Item2;
 
@@ -66,7 +68,8 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                await _botAgent.AddAccount(new AccountKey(account.Server, account.Login), account.Password);
+                var request = new AddAccountRequest { Server = account.Server, UserId = account.Login, Creds = new AccountCreds(account.Password) };
+                await _botAgent.AddAccount(request);
             }
             catch (BAException dsex)
             {
@@ -82,7 +85,8 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                await _botAgent.RemoveAccount(new AccountKey(server ?? "", login ?? ""));
+                var accId = AccountId.Pack(server, login);
+                await _botAgent.RemoveAccount(new RemoveAccountRequest { AccountId = accId });
             }
             catch (BAException dsex)
             {
@@ -98,7 +102,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                await _botAgent.ChangeAccountPassword(new AccountKey(account.Server, account.Login), account.Password);
+                var accId = AccountId.Pack(account.Server, account.Login);
+                var request = new ChangeAccountRequest { AccountId = accId, Creds = new AccountCreds(account.Password) };
+                await _botAgent.ChangeAccount(request);
             }
             catch (BAException dsex)
             {
@@ -115,8 +121,8 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             try
             {
                 var testResult = string.IsNullOrWhiteSpace(password) ?
-                    _botAgent.TestAccount(new AccountKey(server, login)) :
-                    _botAgent.TestCreds(new AccountKey(server, login), password);
+                    _botAgent.TestAccount(new TestAccountRequest { AccountId = AccountId.Pack(server, login) }) :
+                    _botAgent.TestCreds(new TestAccountCredsRequest { Server = server, UserId = login, Creds = new AccountCreds(password) });
 
                 return Ok(await testResult);
             }

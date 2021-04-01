@@ -169,7 +169,7 @@ namespace TickTrader.BotTerminal
                 }
 
                 dstConfig.InstanceId = InstanceId;
-                await _selectedAgent.Model.AddBot(_selectedAccount.Key, dstConfig);
+                await _selectedAgent.Model.AddBot(_selectedAccount.AccountId, dstConfig);
                 _logger.Info($"Created bot {dstConfig.InstanceId} on {_selectedAgent.Name}");
 
                 await ResolveBotFiles(srcBot, dstConfig);

@@ -733,7 +733,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                res.AccountMetadata = await _algoServer.GetAccountMetadata(request.Account);
+                res.AccountMetadata = await _algoServer.GetAccountMetadata(request.AccountId);
             }
             catch (Exception ex)
             {
@@ -780,7 +780,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                _algoServer.AddBot(request.Account, request.Config);
+                _algoServer.AddBot(request.AccountId, request.Config);
             }
             catch (Exception ex)
             {
@@ -922,7 +922,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                _algoServer.AddAccount(request.Account, request.Password);
+                _algoServer.AddAccount(request);
             }
             catch (Exception ex)
             {
@@ -945,7 +945,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                _algoServer.RemoveAccount(request.Account);
+                _algoServer.RemoveAccount(request);
             }
             catch (Exception ex)
             {
@@ -968,7 +968,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                _algoServer.ChangeAccount(request.Account, request.Password);
+                _algoServer.ChangeAccount(request);
             }
             catch (Exception ex)
             {
@@ -991,7 +991,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                res.ErrorInfo = await _algoServer.TestAccount(request.Account);
+                res.ErrorInfo = await _algoServer.TestAccount(request);
             }
             catch (Exception ex)
             {
@@ -1014,7 +1014,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                res.ErrorInfo = await _algoServer.TestAccountCreds(request.Account, request.Password);
+                res.ErrorInfo = await _algoServer.TestAccountCreds(request);
             }
             catch (Exception ex)
             {

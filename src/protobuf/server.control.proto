@@ -7,7 +7,6 @@ option csharp_namespace = "TickTrader.Algo.Domain.ServerControl";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/any.proto";
 import "google/protobuf/wrappers.proto";
-import "runtime.proto";
 import "runtime.package.proto";
 import "runtime.plugin.proto";
 import "server.data.proto";
@@ -130,7 +129,7 @@ message SetupContextResponse {
 }
 
 message AccountMetadataRequest {
-    AccountKey account = 1;
+    string account_id = 1;
 }
 
 message AccountMetadataResponse {
@@ -150,7 +149,7 @@ message PluginListResponse {
 }
 
 message AddPluginRequest {
-    AccountKey account = 1;
+    string account_id = 1;
     PluginConfig config = 2;
 }
 
@@ -203,9 +202,10 @@ message AccountListResponse {
 }
 
 message AddAccountRequest {
-    AccountKey account = 1;
-    google.protobuf.StringValue password = 2;
-    bool use_new_protocol = 3;
+    string server = 1;
+    string user_id = 2;
+    AccountCreds creds = 3;
+    google.protobuf.StringValue display_name = 4;
 }
 
 message AddAccountResponse {
@@ -213,7 +213,7 @@ message AddAccountResponse {
 }
 
 message RemoveAccountRequest {
-    AccountKey account = 1;
+    string account_id = 1;
 }
 
 message RemoveAccountResponse {
@@ -221,9 +221,9 @@ message RemoveAccountResponse {
 }
 
 message ChangeAccountRequest {
-    AccountKey account = 1;
-    google.protobuf.StringValue password = 2;
-    bool use_new_protocol = 3;
+    string account_id = 1;
+    AccountCreds creds = 2;
+    google.protobuf.StringValue display_name = 3;
 }
 
 message ChangeAccountResponse {
@@ -231,7 +231,7 @@ message ChangeAccountResponse {
 }
 
 message TestAccountRequest {
-    AccountKey account = 1;
+    string account_id = 1;
 }
 
 message TestAccountResponse {
@@ -241,9 +241,9 @@ message TestAccountResponse {
 }
 
 message TestAccountCredsRequest {
-    AccountKey account = 1;
-    google.protobuf.StringValue password = 2;
-    bool use_new_protocol = 3;
+    string server = 1;
+    string user_id = 2;
+    AccountCreds creds = 3;
 }
 
 message TestAccountCredsResponse {

@@ -1,5 +1,4 @@
 ﻿using System;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Domain;
 
@@ -29,7 +28,7 @@ namespace TickTrader.BotTerminal
         {
             return new PluginModelInfo
             {
-                Account = null,
+                AccountId = null,
                 Config = tradeBot.Config,
                 Descriptor_ = tradeBot.Descriptor,
                 FaultMessage = "",

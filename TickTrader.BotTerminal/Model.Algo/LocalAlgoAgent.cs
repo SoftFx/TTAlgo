@@ -36,7 +36,7 @@ namespace TickTrader.BotTerminal
         private ISyncContext _syncContext;
         private VarDictionary<string, PackageInfo> _packages;
         private VarDictionary<PluginKey, PluginInfo> _plugins;
-        private VarDictionary<AccountKey, AccountModelInfo> _accounts;
+        private VarDictionary<string, AccountModelInfo> _accounts;
         private BotsWarden _botsWarden;
         private VarDictionary<string, TradeBotModel> _bots;
         private PreferencesStorageModel _preferences;
@@ -49,7 +49,7 @@ namespace TickTrader.BotTerminal
 
         public IVarSet<PluginKey, PluginInfo> Plugins => _plugins;
 
-        public IVarSet<AccountKey, AccountModelInfo> Accounts => _accounts;
+        public IVarSet<string, AccountModelInfo> Accounts => _accounts;
 
         public IVarSet<string, ITradeBot> Bots { get; }
 
@@ -110,7 +110,7 @@ namespace TickTrader.BotTerminal
             _syncContext = new DispatcherSync();
             _packages = new VarDictionary<string, PackageInfo>();
             _plugins = new VarDictionary<PluginKey, PluginInfo>();
-            _accounts = new VarDictionary<AccountKey, AccountModelInfo>();
+            _accounts = new VarDictionary<string, AccountModelInfo>();
             _bots = new VarDictionary<string, TradeBotModel>();
             AlertModel = new AlgoAlertModel(Name);
             Bots = _bots.Select((k, v) => (ITradeBot)v);
@@ -137,9 +137,9 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public Task<SetupMetadata> GetSetupMetadata(AccountKey account, SetupContextInfo setupContext)
+        public Task<SetupMetadata> GetSetupMetadata(string accountId, SetupContextInfo setupContext)
         {
-            var accountMetadata = new AccountMetadataInfo(new AccountKey(ClientModel.Connection.CurrentServer, ClientModel.Connection.CurrentLogin),
+            var accountMetadata = new AccountMetadataInfo(AccountId.Pack(ClientModel.Connection.CurrentServer, ClientModel.Connection.CurrentLogin),
                 ClientModel.SortedSymbols.Select(s => s.ToInfo()).ToList(), ClientModel.Cache.GetDefaultSymbol().ToInfo());
             var res = new SetupMetadata(_apiMetadata, _mappingsInfo, accountMetadata, setupContext ?? this.GetSetupContextInfo());
             return Task.FromResult(res);
@@ -163,9 +163,9 @@ namespace TickTrader.BotTerminal
             return Task.FromResult(this);
         }
 
-        public Task AddBot(AccountKey account, PluginConfig config)
+        public Task AddBot(string accountId, PluginConfig config)
         {
-            var bot = new TradeBotModel(config, this, this, this, Accounts.Snapshot.Values.First().Key);
+            var bot = new TradeBotModel(config, this, this, this, Accounts.Snapshot.Values.First().AccountId);
             IdProvider.RegisterPluginId(bot.InstanceId);
             _bots.Add(bot.InstanceId, bot);
             bot.StateChanged += OnBotStateChanged;
@@ -194,27 +194,27 @@ namespace TickTrader.BotTerminal
             return Task.FromResult(this);
         }
 
-        public Task AddAccount(AccountKey account, string password)
+        public Task AddAccount(AddAccountRequest request)
         {
             throw new NotSupportedException();
         }
 
-        public Task RemoveAccount(AccountKey account)
+        public Task RemoveAccount(RemoveAccountRequest request)
         {
             throw new NotSupportedException();
         }
 
-        public Task ChangeAccount(AccountKey account, string password)
+        public Task ChangeAccount(ChangeAccountRequest request)
         {
             throw new NotSupportedException();
         }
 
-        public Task<ConnectionErrorInfo> TestAccount(AccountKey account)
+        public Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request)
         {
             throw new NotSupportedException();
         }
 
-        public Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password)
+        public Task<ConnectionErrorInfo> TestAccountCreds(TestAccountCredsRequest request)
         {
             throw new NotSupportedException();
         }
@@ -314,8 +314,11 @@ namespace TickTrader.BotTerminal
 
         private void ClientConnectionOnStateChanged(ConnectionModel.States oldState, ConnectionModel.States newState)
         {
-            var accountKey = new AccountKey(ClientModel.Connection.CurrentServer, ClientModel.Connection.CurrentLogin);
-            if (_accounts.TryGetValue(accountKey, out var account))
+            var server = ClientModel.Connection.CurrentServer;
+            var userId = ClientModel.Connection.CurrentLogin;
+
+            var accountId = AccountId.Pack(server, userId);
+            if (_accounts.TryGetValue(accountId, out var account))
             {
                 account.ConnectionState = ClientModel.Connection.State.ToInfo();
                 account.LastError = ClientModel.Connection.LastError;
@@ -326,11 +329,12 @@ namespace TickTrader.BotTerminal
                 _accounts.Clear();
                 account = new AccountModelInfo
                 {
-                    Key = accountKey,
+                    AccountId = accountId,
                     ConnectionState = ClientModel.Connection.State.ToInfo(),
                     LastError = ClientModel.Connection.LastError,
+                    DisplayName = $"{server} - {userId}"
                 };
-                _accounts.Add(accountKey, account);
+                _accounts.Add(accountId, account);
             }
 
             StopRunningBotsOnBlockedAccount();

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using SciChart.Charting.Visuals.Axes;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Domain.ServerControl;
 
 namespace TickTrader.BotTerminal
 {
@@ -21,7 +22,7 @@ namespace TickTrader.BotTerminal
 
         IVarSet<PluginKey, PluginInfo> Plugins { get; }
 
-        IVarSet<AccountKey, AccountModelInfo> Accounts { get; }
+        IVarSet<string, AccountModelInfo> Accounts { get; }
 
         IVarSet<string, ITradeBot> Bots { get; }
 
@@ -43,27 +44,27 @@ namespace TickTrader.BotTerminal
         event Action AccessLevelChanged;
 
 
-        Task<SetupMetadata> GetSetupMetadata(AccountKey account, SetupContextInfo setupContext);
+        Task<SetupMetadata> GetSetupMetadata(string accountId, SetupContextInfo setupContext);
 
         Task StartBot(string botId);
 
         Task StopBot(string botId);
 
-        Task AddBot(AccountKey account, PluginConfig config);
+        Task AddBot(string accountId, PluginConfig config);
 
         Task RemoveBot(string botId, bool cleanLog, bool cleanAlgoData);
 
         Task ChangeBotConfig(string botId, PluginConfig newConfig);
 
-        Task AddAccount(AccountKey account, string password);
+        Task AddAccount(AddAccountRequest request);
 
-        Task RemoveAccount(AccountKey account);
+        Task RemoveAccount(RemoveAccountRequest request);
 
-        Task ChangeAccount(AccountKey account, string password);
+        Task ChangeAccount(ChangeAccountRequest request);
 
-        Task<ConnectionErrorInfo> TestAccount(AccountKey account);
+        Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request);
 
-        Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password);
+        Task<ConnectionErrorInfo> TestAccountCreds(TestAccountCredsRequest request);
 
         Task UploadPackage(string fileName, string srcFilePath, IFileProgressListener progressListener);
 

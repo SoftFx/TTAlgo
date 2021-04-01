@@ -11,6 +11,7 @@ using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Domain.ServerControl;
 using Xceed.Wpf.AvalonDock.Layout;
 
 namespace TickTrader.BotTerminal
@@ -84,11 +85,11 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public async Task AddBot(AccountKey account, PluginConfig config)
+        public async Task AddBot(string accountId, PluginConfig config)
         {
             try
             {
-                await _agentModel.AddBot(account, config);
+                await _agentModel.AddBot(accountId, config);
                 OpenBotState(config.InstanceId);
             }
             catch (Exception ex)
@@ -118,7 +119,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public async Task RemoveAccount(AccountKey account)
+        public async Task RemoveAccount(string accountId)
         {
             try
             {
@@ -127,7 +128,7 @@ namespace TickTrader.BotTerminal
                 if (result != DialogResult.OK)
                     return;
 
-                await _agentModel.RemoveAccount(account);
+                await _agentModel.RemoveAccount(new RemoveAccountRequest { AccountId = accountId });
             }
             catch (Exception ex)
             {
@@ -135,11 +136,11 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public async Task TestAccount(AccountKey account)
+        public async Task TestAccount(string accountId)
         {
             try
             {
-                await _agentModel.TestAccount(account);
+                await _agentModel.TestAccount(new TestAccountRequest { AccountId = accountId });
             }
             catch (Exception ex)
             {
@@ -215,11 +216,11 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void OpenBotSetup(AccountKey account = null, PluginKey pluginKey = null)
+        public void OpenBotSetup(string accountId = null, PluginKey pluginKey = null)
         {
             try
             {
-                var model = new AgentPluginSetupViewModel(_algoEnv, Name, account, pluginKey, Metadata.Types.PluginType.TradeBot, null);
+                var model = new AgentPluginSetupViewModel(_algoEnv, Name, accountId, pluginKey, Metadata.Types.PluginType.TradeBot, null);
                 _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
             }
             catch (Exception ex)

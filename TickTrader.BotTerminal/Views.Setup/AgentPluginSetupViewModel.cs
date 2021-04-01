@@ -164,7 +164,7 @@ namespace TickTrader.BotTerminal
 
         public ProgressViewModel FileProgress { get; }
 
-        private AgentPluginSetupViewModel(AlgoEnvironment algoEnv, string agentName, AccountKey accountKey, PluginKey pluginKey, Metadata.Types.PluginType type, SetupContextInfo setupContext, PluginSetupMode mode)
+        private AgentPluginSetupViewModel(AlgoEnvironment algoEnv, string agentName, string accountId, PluginKey pluginKey, Metadata.Types.PluginType type, SetupContextInfo setupContext, PluginSetupMode mode)
         {
             _algoEnv = algoEnv;
             Mode = mode;
@@ -173,7 +173,7 @@ namespace TickTrader.BotTerminal
 
             Agents = algoEnv.Agents.AsObservable();
             SelectedAgent = Agents.FirstOrDefault(a => a.Name == agentName) ?? (Agents.Any() ? Agents.First() : null);
-            SelectedAccount = Accounts.FirstOrDefault(a => a.Key.Equals(accountKey)) ?? (Accounts.Any() ? Accounts.First() : null);
+            SelectedAccount = Accounts.FirstOrDefault(a => a.AccountId.Equals(accountId)) ?? (Accounts.Any() ? Accounts.First() : null);
             SelectedPlugin = Plugins.FirstOrDefault(i => i.Key.Equals(pluginKey)) ?? (Plugins.Any() ? Plugins.First() : null);
             PluginType = GetPluginTypeDisplayName(Type);
 
@@ -181,14 +181,14 @@ namespace TickTrader.BotTerminal
             FileProgress = new ProgressViewModel();
         }
 
-        public AgentPluginSetupViewModel(AlgoEnvironment algoEnv, string agentName, AccountKey accountKey, PluginKey pluginKey, Metadata.Types.PluginType type, SetupContextInfo setupContext)
-            : this(algoEnv, agentName, accountKey, pluginKey, type, setupContext, PluginSetupMode.New)
+        public AgentPluginSetupViewModel(AlgoEnvironment algoEnv, string agentName, string accountId, PluginKey pluginKey, Metadata.Types.PluginType type, SetupContextInfo setupContext)
+            : this(algoEnv, agentName, accountId, pluginKey, type, setupContext, PluginSetupMode.New)
         {
             DisplayName = Type == Metadata.Types.PluginType.TradeBot ? $"New Bot Instance" : $"Setting New {PluginType}";
         }
 
         public AgentPluginSetupViewModel(AlgoEnvironment algoEnv, string agentName, ITradeBot bot)
-            : this(algoEnv, agentName, bot.Account, bot.Config.Key, Metadata.Types.PluginType.TradeBot, null, PluginSetupMode.Edit)
+            : this(algoEnv, agentName, bot.AccountId, bot.Config.Key, Metadata.Types.PluginType.TradeBot, null, PluginSetupMode.Edit)
         {
             Bot = bot;
             UpdateSetup();
@@ -217,7 +217,7 @@ namespace TickTrader.BotTerminal
                 if (Type == Metadata.Types.PluginType.TradeBot && Mode == PluginSetupMode.New)
                 {
                     if (!SelectedAgent.Model.Bots.Snapshot.ContainsKey(config.InstanceId))
-                        await SelectedAgent.Model.AddBot(SelectedAccount.Key, config);
+                        await SelectedAgent.Model.AddBot(SelectedAccount.AccountId, config);
                     else await SelectedAgent.Model.ChangeBotConfig(config.InstanceId, config);
                     await UploadBotFiles(config);
                     SelectedAgent.OpenBotState(config.InstanceId);
@@ -348,7 +348,7 @@ namespace TickTrader.BotTerminal
                 var tcs = new TaskCompletionSource<SetupMetadata>();
                 _updateSetupMetadataTaskSrc = tcs;
 
-                var metadata = await SelectedAgent.Model.GetSetupMetadata(SelectedAccount.Key, SetupContext);
+                var metadata = await SelectedAgent.Model.GetSetupMetadata(SelectedAccount.AccountId, SetupContext);
 
                 if (_updateSetupMetadataSrc.IsCancellationRequested)
                 {

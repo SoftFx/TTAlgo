@@ -60,7 +60,7 @@ namespace TickTrader.BotAgent.BA.Models
         public AlgoPackageRef Package { get; private set; }
         public Exception Fault { get; private set; }
         public string FaultMessage { get; private set; }
-        public AccountKey Account => _client.GetKey();
+        public string AccountId => _client.AccountId;
         public Ref<BotLog> LogRef => _botLog.Ref;
         public PluginInfo Info => _info;
 

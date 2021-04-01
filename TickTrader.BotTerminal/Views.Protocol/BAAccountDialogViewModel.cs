@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Domain.ServerControl;
 
 namespace TickTrader.BotTerminal
 {
@@ -222,8 +223,9 @@ namespace TickTrader.BotTerminal
                 IsNewMode = false;
                 DisplayName = "Edit account";
 
-                Login = _account.Key.Login;
-                Server = _account.Key.Server;
+                AccountId.Unpack(_account.AccountId, out var server, out var userId);
+                _login = userId;
+                _server = server;
             }
         }
 
@@ -235,8 +237,15 @@ namespace TickTrader.BotTerminal
             try
             {
                 if (_account == null)
-                    await SelectedAgent.Model.AddAccount(new AccountKey(Server, Login), Password);
-                else await SelectedAgent.Model.ChangeAccount(_account.Key, Password);
+                    await SelectedAgent.Model.AddAccount(new AddAccountRequest { Server = Server, UserId = Login, Creds = new AccountCreds(Password) });
+                else
+                {
+                    var request = new ChangeAccountRequest { AccountId = _account.AccountId };
+                    if (Password != null)
+                        request.Creds = new AccountCreds(Password);
+
+                    await SelectedAgent.Model.ChangeAccount(request);
+                }
 
                 if (_selectedPlugin != null && _selectedPlugin.SelectedAgent.Name == SelectedAgent.Name)
                 {
@@ -258,7 +267,7 @@ namespace TickTrader.BotTerminal
             Error = null;
             try
             {
-                var error = await SelectedAgent.Model.TestAccountCreds(new AccountKey(Server, Login), Password);
+                var error = await SelectedAgent.Model.TestAccountCreds(new TestAccountCredsRequest { Server = Server, UserId = Login, Creds = new AccountCreds(Password) });
                 if (error.IsOk)
                     Success = "Successfully connected";
                 else Error = string.IsNullOrEmpty(error.TextMessage) ? $"{error.Code}" : $"{error.Code} - {error.TextMessage}";

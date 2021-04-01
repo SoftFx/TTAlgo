@@ -200,11 +200,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             try
             {
                 var pluginCfg = setup.Parse();
-                var accountKey = new AccountKey(setup.Account.Server, setup.Account.Login);
+                var accountId = AccountId.Pack(setup.Account.Server, setup.Account.Login);
 
                 pluginCfg.Key = new PluginKey(PackageStorage.GetPackageId(setup.PackageName), setup.PluginId);
 
-                var tradeBot = await _botAgent.AddBot(accountKey, pluginCfg);
+                var tradeBot = await _botAgent.AddBot(accountId, pluginCfg);
                 setup.EnsureFiles(ServerModel.GetWorkingFolderFor(tradeBot.InstanceId));
 
                 return Ok(tradeBot.ToDto());

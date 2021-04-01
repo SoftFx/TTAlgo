@@ -3,19 +3,9 @@ using Machinarium.Qnil;
 using NLog;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Data;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Domain;
-using Xceed.Wpf.AvalonDock.Controls;
-using Xceed.Wpf.AvalonDock.Layout;
 
 namespace TickTrader.BotTerminal
 {
@@ -195,9 +185,9 @@ namespace TickTrader.BotTerminal
 
             var res = new List<string>();
             res.Add($"AlgoServer: {Bot.Agent.Name}");
-            if (Bot.Agent.Model.Accounts.Snapshot.TryGetValue(Bot.Account, out var acc))
-                res.Add($"Account: {acc.Key.Server} - {acc.Key.Login}");
-            else res.Add($"Account: {Bot.Account.Server} - {Bot.Account.Login}");
+            if (Bot.Agent.Model.Accounts.Snapshot.TryGetValue(Bot.AccountId, out var acc))
+                res.Add($"Account: {acc.DisplayName}");
+            else res.Add($"Account Id: {Bot.AccountId}");
             res.Add($"Instance Id: {Bot.InstanceId}");
             res.Add("------------ Permissions ------------");
             res.Add(Bot.Model.Config.Permissions.ToPermissionsList());

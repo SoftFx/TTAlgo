@@ -58,27 +58,27 @@ namespace TickTrader.Algo.ServerControl
 
         Task<SetupContextInfo> GetSetupContext();
 
-        Task<AccountMetadataInfo> GetAccountMetadata(AccountKey account);
+        Task<AccountMetadataInfo> GetAccountMetadata(string accountId);
 
         Task StartBot(string botId);
 
         Task StopBot(string botId);
 
-        Task AddBot(AccountKey account, PluginConfig config);
+        Task AddBot(string accountId, PluginConfig config);
 
         Task RemoveBot(string botId, bool cleanLog, bool cleanAlgoData);
 
         Task ChangeBotConfig(string botId, PluginConfig newConfig);
 
-        Task AddAccount(AccountKey account, string password);
+        Task AddAccount(AddAccountRequest request);
 
-        Task RemoveAccount(AccountKey account);
+        Task RemoveAccount(RemoveAccountRequest request);
 
-        Task ChangeAccount(AccountKey account, string password);
+        Task ChangeAccount(ChangeAccountRequest request);
 
-        Task<ConnectionErrorInfo> TestAccount(AccountKey account);
+        Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request);
 
-        Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password);
+        Task<ConnectionErrorInfo> TestAccountCreds(TestAccountCredsRequest request);
 
         Task RemovePackage(string packageId);
 

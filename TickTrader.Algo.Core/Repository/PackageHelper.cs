@@ -34,25 +34,13 @@ namespace TickTrader.Algo.Core.Repository
 
         public static string GetPackageIdFromName(string locationId, string name)
         {
-            return string.IsNullOrEmpty(locationId) ? name : $"{locationId}{PackageIdSeparator}{name}";
+            return PackageId.Pack(locationId, name);
         }
 
         public static void UnpackPackageId(string packageId, out string locationId, out string packageName)
         {
-            var parts = packageId.Split(PackageIdSeparator);
-
-            if (parts.Length > 2)
+            if (!PackageId.TryUnpack(packageId, out locationId, out packageName))
                 throw new ArgumentException("Invalid package id");
-
-            locationId = string.Empty;
-            if (parts.Length == 1)
-            {
-                packageName = parts[0];
-                return;
-            }
-
-            locationId = parts[0];
-            packageName = parts[1];
 
         }
 

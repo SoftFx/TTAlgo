@@ -13,6 +13,7 @@ using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Domain.ServerControl;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -48,11 +49,16 @@ namespace TickTrader.BotAgent.BA.Models
         private int _startedBotsCount;
         private bool _shutdownRequested => _shutdownCompletedSrc != null;
 
-        public ClientModel(string address, string username, string password)
+        private AccountCreds _creds;
+
+        public ClientModel(string server, string userId, AccountCreds creds, string displayName = null)
         {
-            Address = address;
-            Username = username;
-            Password = password;
+            Address = server;
+            Username = userId;
+            AccountId = Algo.Domain.AccountId.Pack(server, userId);
+            _creds = creds;
+            Password = creds.GetPassword();
+            DisplayName = displayName ?? $"{server} - {userId}";
         }
 
         public async Task Init(PackageStorage packageProvider, IFdkOptionsProvider fdkOptionsProvider, AlertStorage storage, AlgoServer server)
@@ -62,6 +68,14 @@ namespace TickTrader.BotAgent.BA.Models
 
             try
             {
+                if (_creds == null)
+                {
+                    _creds = new AccountCreds(Password);
+                    AccountId = Algo.Domain.AccountId.Pack(Address, Username);
+                    if (string.IsNullOrEmpty(DisplayName))
+                        DisplayName = $"{Address} - {Username}";
+                }
+
                 _packageProvider = packageProvider;
                 _alertStorage = storage;
                 _server = server;
@@ -171,6 +185,10 @@ namespace TickTrader.BotAgent.BA.Models
         public string Username { get; private set; }
         [DataMember(Name = "password")]
         public string Password { get; private set; }
+        [DataMember(Name = "displayName")]
+        public string DisplayName { get; private set; }
+
+        public string AccountId { get; private set; }
 
         public async Task<AccountMetadataInfo> GetMetadata()
         {
@@ -181,7 +199,7 @@ namespace TickTrader.BotAgent.BA.Models
 
                 var symbols = await _core.GetSymbols();
                 var defaultSymbol = await _core.GetDefaultSymbol();
-                return new AccountMetadataInfo(GetKey(), symbols.Select(s => s.ToInfo()).ToList(), defaultSymbol.ToInfo());
+                return new AccountMetadataInfo(AccountId, symbols.Select(s => s.ToInfo()).ToList(), defaultSymbol.ToInfo());
             }
 
             //if (ConnectionState == ConnectionStates.Online)
@@ -196,11 +214,6 @@ namespace TickTrader.BotAgent.BA.Models
             //            return GetMetadataInfo();
             //        }));
             //}
-        }
-
-        public AccountKey GetKey()
-        {
-            return new AccountKey(Address, Username);
         }
 
         public PluginFeedProvider CreatePluginFeedAdapter()
@@ -280,7 +293,7 @@ namespace TickTrader.BotAgent.BA.Models
                 {
                     await Task.WhenAll(stopBots);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     _log.Error("Failed to shutdown bots", ex);
                 }
@@ -386,30 +399,30 @@ namespace TickTrader.BotAgent.BA.Models
             }
         }
 
-        public void ChangePassword(string password)
+        public void Change(ChangeAccountRequest request)
         {
-            Password = password;
-            OnCredsChanged();
-        }
+            var changed = false;
 
-        public void ChangeConnectionSettings(string password)
-        {
-            var updated = false;
-            if (!string.IsNullOrEmpty(password))
+            if (!string.IsNullOrEmpty(request.DisplayName))
             {
-                Password = password;
-                updated = true;
+                DisplayName = DisplayName;
+                changed = true;
+            }
+            if (request.Creds != null && _creds.Merge(request.Creds))
+            {
+                Password = _creds.GetPassword();
+                changed = true; // needed to trigger ServerModel.Save(). Consider refactoring
+                OnCredsChanged();
             }
 
-            if (updated)
-                OnCredsChanged();
+            if (changed)
+                Changed?.Invoke(this);
         }
 
         private void OnCredsChanged()
         {
             _credsChanged = true;
             _connectCancellation?.Cancel();
-            Changed?.Invoke(this);
             ManageConnection();
         }
 

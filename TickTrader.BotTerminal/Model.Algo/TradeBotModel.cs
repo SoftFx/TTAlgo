@@ -33,7 +33,7 @@ namespace TickTrader.BotTerminal
 
         BotJournal Journal { get; }
 
-        AccountKey Account { get; }
+        string AccountId { get; }
 
 
         event Action<ITradeBot> Updated;
@@ -57,16 +57,16 @@ namespace TickTrader.BotTerminal
         public bool IsRemote => false;
         public string Status { get; private set; }
         public BotJournal Journal { get; }
-        public AccountKey Account { get; }
+        public string AccountId { get; }
 
         public event Action<ITradeBot> StatusChanged = delegate { };
         public event Action<ITradeBot> StateChanged = delegate { };
         public event Action<ITradeBot> Updated = delegate { };
 
-        public TradeBotModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext, AccountKey account)
+        public TradeBotModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext, string accountId)
             : base(config, agent, host, setupContext)
         {
-            Account = account;
+            AccountId = accountId;
             Journal = new BotJournal(InstanceId, true);
             host.Connected += Host_Connected;
             host.Disconnected += Host_Disconnected;

@@ -20,7 +20,7 @@ namespace TickTrader.BotTerminal
         private ISyncContext _syncContext;
         private VarDictionary<string, PackageInfo> _packages;
         private VarDictionary<PluginKey, PluginInfo> _plugins;
-        private VarDictionary<AccountKey, AccountModelInfo> _accounts;
+        private VarDictionary<string, AccountModelInfo> _accounts;
         private VarDictionary<string, RemoteTradeBot> _bots;
         private PluginIdProvider _idProvider;
         private ProtocolClient _protocolClient;
@@ -37,7 +37,7 @@ namespace TickTrader.BotTerminal
 
         public IVarSet<PluginKey, PluginInfo> Plugins => _plugins;
 
-        public IVarSet<AccountKey, AccountModelInfo> Accounts => _accounts;
+        public IVarSet<string, AccountModelInfo> Accounts => _accounts;
 
         public IVarSet<string, ITradeBot> Bots { get; }
 
@@ -70,7 +70,7 @@ namespace TickTrader.BotTerminal
 
             _packages = new VarDictionary<string, PackageInfo>();
             _plugins = new VarDictionary<PluginKey, PluginInfo>();
-            _accounts = new VarDictionary<AccountKey, AccountModelInfo>();
+            _accounts = new VarDictionary<string, AccountModelInfo>();
             _bots = new VarDictionary<string, RemoteTradeBot>();
 
             Bots = _bots.Select((k, v) => (ITradeBot)v);
@@ -125,9 +125,9 @@ namespace TickTrader.BotTerminal
 
         #region IAlgoAgent implementation
 
-        public async Task<SetupMetadata> GetSetupMetadata(AccountKey account, SetupContextInfo setupContext)
+        public async Task<SetupMetadata> GetSetupMetadata(string accountId, SetupContextInfo setupContext)
         {
-            var accountMetadata = await _protocolClient.GetAccountMetadata(account);
+            var accountMetadata = await _protocolClient.GetAccountMetadata(accountId);
             return new SetupMetadata(_apiMetadata, _mappings, accountMetadata, setupContext ?? _setupContext);
         }
 
@@ -141,9 +141,9 @@ namespace TickTrader.BotTerminal
             return _protocolClient.StopPlugin(instanceId);
         }
 
-        public Task AddBot(AccountKey account, PluginConfig config)
+        public Task AddBot(string accountId, PluginConfig config)
         {
-            return _protocolClient.AddPlugin(account, config);
+            return _protocolClient.AddPlugin(accountId, config);
         }
 
         public Task RemoveBot(string instanceId, bool cleanLog = false, bool cleanAlgoData = false)
@@ -156,29 +156,29 @@ namespace TickTrader.BotTerminal
             return _protocolClient.ChangePluginConfig(instanceId, newConfig);
         }
 
-        public Task AddAccount(AccountKey account, string password)
+        public Task AddAccount(AddAccountRequest request)
         {
-            return _protocolClient.AddAccount(account, password);
+            return _protocolClient.AddAccount(request);
         }
 
-        public Task RemoveAccount(AccountKey account)
+        public Task RemoveAccount(RemoveAccountRequest request)
         {
-            return _protocolClient.RemoveAccount(account);
+            return _protocolClient.RemoveAccount(request);
         }
 
-        public Task ChangeAccount(AccountKey account, string password)
+        public Task ChangeAccount(ChangeAccountRequest request)
         {
-            return _protocolClient.ChangeAccount(account, password);
+            return _protocolClient.ChangeAccount(request);
         }
 
-        public Task<ConnectionErrorInfo> TestAccount(AccountKey account)
+        public Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request)
         {
-            return _protocolClient.TestAccount(account);
+            return _protocolClient.TestAccount(request);
         }
 
-        public Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password)
+        public Task<ConnectionErrorInfo> TestAccountCreds(TestAccountCredsRequest request)
         {
-            return _protocolClient.TestAccountCreds(account, password);
+            return _protocolClient.TestAccountCreds(request);
         }
 
         public async Task UploadPackage(string fileName, string srcFilePath, IFileProgressListener progressListener)
@@ -258,7 +258,7 @@ namespace TickTrader.BotTerminal
                 _accounts.Clear();
                 foreach (var acc in accounts)
                 {
-                    _accounts.Add(acc.Key, acc);
+                    _accounts.Add(acc.AccountId, acc);
                 }
             });
         }
@@ -307,11 +307,11 @@ namespace TickTrader.BotTerminal
                 {
                     case UpdateInfo.Types.UpdateType.Added:
                     case UpdateInfo.Types.UpdateType.Replaced:
-                        _accounts[acc.Key] = acc;
+                        _accounts[acc.AccountId] = acc;
                         break;
                     case UpdateInfo.Types.UpdateType.Removed:
-                        if (_accounts.ContainsKey(acc.Key))
-                            _accounts.Remove(acc.Key);
+                        if (_accounts.ContainsKey(acc.AccountId))
+                            _accounts.Remove(acc.AccountId);
                         break;
                 }
             });
