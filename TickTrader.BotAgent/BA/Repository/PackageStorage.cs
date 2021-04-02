@@ -1,15 +1,15 @@
-﻿using System.IO;
-using System.Reflection;
-using TickTrader.Algo.Core;
-using TickTrader.BotAgent.Extensions;
-using TickTrader.BotAgent.BA.Models;
+﻿using NLog;
 using System;
-using TickTrader.BotAgent.BA.Exceptions;
-using NLog;
+using System.IO;
+using System.Reflection;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
+using TickTrader.BotAgent.BA.Exceptions;
+using TickTrader.BotAgent.BA.Models;
+using TickTrader.BotAgent.Extensions;
 
 namespace TickTrader.BotAgent.BA.Repository
 {
@@ -104,8 +104,8 @@ namespace TickTrader.BotAgent.BA.Repository
 
         public string GetPackageWritePath(string packageId)
         {
-            if (!packageId.StartsWith(PackageHelper.LocalRepositoryId))
-                throw new ArgumentException($"Algo package {packageId}: location is not defined");
+            //    if (!packageId.StartsWith(PackageHelper.LocalRepositoryId))
+            //        throw new ArgumentException($"Algo package {packageId}: location is not defined");
 
             EnsureStorageDirectoryCreated();
 
