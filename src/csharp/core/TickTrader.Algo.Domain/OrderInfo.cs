@@ -81,7 +81,7 @@ namespace TickTrader.Algo.Domain
             var oldCommission = Commission;
             var oldIsHidden = IsHidden;
 
-            Id = info.Id;
+            Id = info.Id ?? string.Empty; //rejected order doesn't have ID (TradeNotAllowed, server don't send order ID)
 
             Symbol = info.Symbol;
             RequestedAmount = info.RequestedAmount;

@@ -394,7 +394,7 @@ namespace TickTrader.Algo.Common.Model
 
         public OrderInfo UpdateOrderCollection(Domain.OrderExecReport.Types.EntityAction entityAction, IOrderUpdateInfo report)
         {
-            var order = Orders.GetOrDefault(report.Id) ?? new OrderInfo(_symbols.GetOrDefault(report.Symbol), report);
+            var order = Orders.GetOrDefault(report?.Id) ?? new OrderInfo(_symbols.GetOrDefault(report.Symbol), report);
 
             switch (entityAction)
             {

@@ -256,8 +256,11 @@ namespace Machinarium.Qnil
 
         public static TValue GetOrDefault<Tkey, TValue>(this IVarSet<Tkey, TValue> set, Tkey key)
         {
-            TValue val;
-            set.Snapshot.TryGetValue(key, out val);
+            if (key == null)
+                return default;
+
+            set.Snapshot.TryGetValue(key, out TValue val);
+
             return val;
         }
     }

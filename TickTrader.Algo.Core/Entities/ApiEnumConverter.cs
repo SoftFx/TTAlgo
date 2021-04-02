@@ -116,6 +116,12 @@ namespace TickTrader.Algo.Core
                 case Domain.OrderExecReport.Types.CmdResultCode.MaxVisibleVolumeNotSupported: return OrderCmdResultCodes.MaxVisibleVolumeNotSupported;
                 case Domain.OrderExecReport.Types.CmdResultCode.ReadOnlyAccount: return OrderCmdResultCodes.ReadOnlyAccount;
                 case Domain.OrderExecReport.Types.CmdResultCode.IncorrectSlippage: return OrderCmdResultCodes.IncorrectSlippage;
+                case Domain.OrderExecReport.Types.CmdResultCode.IncorrectType: return OrderCmdResultCodes.IncorrectType;
+                case Domain.OrderExecReport.Types.CmdResultCode.ThrottlingError: return OrderCmdResultCodes.ThrottlingError;
+                case Domain.OrderExecReport.Types.CmdResultCode.OcoRelatedIdNotFound: return OrderCmdResultCodes.OCORelatedIdNotFound;
+                case Domain.OrderExecReport.Types.CmdResultCode.OcoRelatedOrderAlreadyExists: return OrderCmdResultCodes.OCORelatedOrderAlreadyExists;
+                case Domain.OrderExecReport.Types.CmdResultCode.IncorrectSymbol: return OrderCmdResultCodes.IncorrectSymbol;
+                case Domain.OrderExecReport.Types.CmdResultCode.OcoAlreadyExists: return OrderCmdResultCodes.OCOAlreadyExists;
 
                 default: throw new ArgumentException($"Unsupported code {code}");
             }
