@@ -252,9 +252,9 @@ namespace TickTrader.BotTerminal
         }
 
 
-        protected string FullPackagePath(string fileName, string folder = null) => Path.Combine(folder ?? SelectedFolder, fileName);
+        protected string FullPackagePath(string fileName) => Path.Combine(SelectedFolder, fileName);
 
-        protected string GetAlgoServerPackageName(string packageId) => SelectedAlgoServer.PackageList.FirstOrDefault(p => p.FileName == packageId)?.FileName;
+        protected string GetAlgoServerPackageName(string packageId) => SelectedAlgoServer.PackageList.FirstOrDefault(p => string.Equals(p.FileName, packageId, StringComparison.InvariantCultureIgnoreCase))?.FileName;
 
         protected string GetLocalPackageName(string packageId) => _localPackages.FirstOrDefault(u => u.Equals(packageId, StringComparison.InvariantCultureIgnoreCase));
 

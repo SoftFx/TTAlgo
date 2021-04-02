@@ -89,7 +89,6 @@ namespace TickTrader.Algo.Core
             _dataProvider.PositionUpdated += DataProvider_PositionUpdated;
 
             currencies = builder.Currencies.Values.Select(u => u.Info).ToDictionary(c => c.Name);
-
             builder.Account.Init(_dataProvider, currencies);
 
             _connected = true;

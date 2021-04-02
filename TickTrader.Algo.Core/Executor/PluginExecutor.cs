@@ -310,7 +310,7 @@ namespace TickTrader.Algo.Core
                     _builder.Diagnostics = this;
                     _builder.Logger = _pluginLogger;
                     _builder.OnAsyncAction = OnAsyncAction;
-                    _builder.OnExit = OnExit;
+                    _builder.OnExit = () => OnStopExecutorRequest?.Invoke(this);
                     _builder.OnInitFailed = OnInitFailed;
                     _builder.OnInputResize = OnInputResize;
                     //builder.OnException = OnException;
@@ -840,6 +840,7 @@ namespace TickTrader.Algo.Core
         internal Action<object> MarshalUpdate { get; set; }
         internal Action<object> OnUpdate { get; set; }
         internal Action<IMessage> OnNotification { get; set; }
+        internal Action<PluginExecutorCore> OnStopExecutorRequest { get; set; }
 
         internal void StartUpdateMarshalling()
         {

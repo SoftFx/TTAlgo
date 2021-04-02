@@ -177,7 +177,7 @@ namespace TickTrader.Algo.Core
 
             executorCore = new PluginExecutorCore(config.Key.DescriptorId);
             executorCore.OnNotification += msg => _handler.SendNotification(executorId, msg);
-
+            executorCore.OnStopExecutorRequest += executor => Task.Run(() => StopExecutor(executor));
             executorCore.IsGlobalMarshalingEnabled = true;
             executorCore.IsBunchingRequired = true;
 
@@ -212,7 +212,7 @@ namespace TickTrader.Algo.Core
                 executorCore.Start();
                 executorCore.Stopped += OnExecutorStopped;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.Error(ex, $"Failed to start executor '{executorCore.InstanceId}'");
                 _executorsMap.Remove(executorCore.InstanceId);
@@ -223,13 +223,17 @@ namespace TickTrader.Algo.Core
         private async Task StopExecutor(PluginExecutorCore executorCore)
         {
             var stopTask = executorCore.Stop();
+
             var delayTask = Task.Delay(AbortTimeout);
+
             var t = await Task.WhenAny(stopTask, delayTask);
+
             if (t == delayTask)
             {
                 executorCore.Abort();
             }
-            else if (stopTask.IsFaulted)
+            else
+            if (stopTask.IsFaulted)
             {
                 _logger.Error(stopTask.Exception, $"Failed to stop executor '{executorCore.InstanceId}'");
                 if (_executorsMap.ContainsKey(executorCore.InstanceId))
