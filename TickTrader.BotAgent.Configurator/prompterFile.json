@@ -6,7 +6,7 @@
   "Credentials": {
     "Admin": "Has full rights to modify AlgoServer state. Available both in browser and AlgoTerminal.",
     "Dealer": "Has the same access as Viewer, but can start and stop bots. Available only in AlgoTerminal.",
-    "Viewer": "Has readonly access to AlgoServer state. A user can download logs and see packages, accounts, logs, bots and their status. A user can’t see AlgoData and downloaded packages. Available only in AlgoTerminal."
+    "Viewer": "Has readonly access to AlgoServer state. A user can download logs and see packages, accounts, logs, bots and their status. A user cant see AlgoData and downloaded packages. Available only in AlgoTerminal."
   },
   "Ssl": {
     "File": "PKCS#12 file containing private and public keys for web server certificate, that are protected by password. Since we don't have own certificate authority server, this feature is disabled now.",
