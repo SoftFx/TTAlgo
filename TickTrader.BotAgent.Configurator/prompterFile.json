@@ -1,12 +1,12 @@
 {
   "Server": {
-    "server.urls": "Web server will listen to certain ports and protocols. Server has auto https redirect so setting both http(ex. 80) and https(ex. 443) ports is recomended for easier browser access.",
-    "SecretKey": "Secret key is used for singing auth tokens. Changing it makes all existing tokens invalid, all users will have relogin. It is not recomended to change it unless it becomes compromised."
+    "server.urls": "Web server will listen to certain ports and protocols. Server has auto https redirect so http(ex.80) and https(ex.443) port setting are recommended for easier browser access.",
+    "SecretKey": "Secret key is used for signing auth tokens. Its changing makes all existing tokens invalid, all users will have to relogin. It is not recommended to change the secret key unless it becomes compromised."
   },
   "Credentials": {
-    "Admin": "User that has full rights to modify AlgoServer state. Avaliable both in browser and AlgoTerminal.",
-    "Dealer": "User that has same access as viewer, but can start and stop bots. Available only in AlgoTerminal.",
-    "Viewer": "User that has readonly access to AlgoServer state. He can see packages, accounts, bots, their status, logs. But he can't see AlgoData and download packages. Also viewer can download logs. Available only in AlgoTerminal."
+    "Admin": "Has full rights to modify AlgoServer state. Available both in browser and AlgoTerminal.",
+    "Dealer": "Has the same access as Viewer, but can start and stop bots. Available only in AlgoTerminal.",
+    "Viewer": "Has readonly access to AlgoServer state. A user can download logs and see packages, accounts, logs, bots and their status. A user can’t see AlgoData and downloaded packages. Available only in AlgoTerminal."
   },
   "Ssl": {
     "File": "PKCS#12 file containing private and public keys for web server certificate, that are protected by password. Since we don't have own certificate authority server, this feature is disabled now.",
