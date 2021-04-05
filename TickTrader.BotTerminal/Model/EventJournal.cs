@@ -1,6 +1,5 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using NLog;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
@@ -9,7 +8,6 @@ namespace TickTrader.BotTerminal
     {
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public EventJournal() : this(500) { }
         public EventJournal(int journalSize) : base(journalSize) { }
 
         public void Info(string message)

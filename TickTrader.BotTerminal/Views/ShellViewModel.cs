@@ -52,7 +52,7 @@ namespace TickTrader.BotTerminal
             wndManager = new WindowManager(this);
 
             cManager = new ConnectionManager(commonClient, storage, eventJournal);
-            clientModel = new TraderClientModel(commonClient, eventJournal);
+            clientModel = new TraderClientModel(commonClient);
 
             Agent = new LocalAlgoAgent(this, clientModel, storage);
 
@@ -199,7 +199,7 @@ namespace TickTrader.BotTerminal
                 isConfirmed = exit.DialogResult == DialogResult.OK;
 
                 if (isConfirmed)
-                    StopTerminal();
+                    StopTerminal(false);
             }
         }
 
@@ -213,16 +213,16 @@ namespace TickTrader.BotTerminal
             var isConfirmed = exit.DialogResult == DialogResult.OK;
 
             if (isConfirmed)
-                StopTerminal();
+                StopTerminal(true);
 
             callback(isConfirmed);
         }
 
-        private void StopTerminal()
+        private void StopTerminal(bool stopAlgoServer)
         {
             storage.ProfileManager.Stop();
 
-            var shutdown = new ShutdownDialogViewModel(algoEnv.LocalAgent);
+            var shutdown = new ShutdownDialogViewModel(algoEnv.LocalAgent, stopAlgoServer);
             wndManager.ShowDialog(shutdown, this);
         }
 

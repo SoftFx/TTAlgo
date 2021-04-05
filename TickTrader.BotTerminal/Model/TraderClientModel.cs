@@ -23,11 +23,9 @@ namespace TickTrader.BotTerminal
         private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
         private ClientModel.Data _core;
 
-        private AccountModel _accountInfo;
-        private EventJournal _journal;
         private BoolProperty _isConnected;
 
-        public TraderClientModel(ClientModel.Data client, EventJournal journal)
+        public TraderClientModel(ClientModel.Data client)
         {
             _core = client;
             Connection = client.Connection;
@@ -46,9 +44,6 @@ namespace TickTrader.BotTerminal
             SortedCurrencies = orderedCurrencies.AsObservable();
             SortedCurrenciesNames = orderedCurrencies.Select(c => c.Name).AsObservable();
             //this.History = new FeedHistoryProviderModel(connection, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy);
-
-            _accountInfo = Account;
-            _journal = journal;
         }
 
         public IAccountProxy GetAccountProxy()
@@ -132,60 +127,6 @@ namespace TickTrader.BotTerminal
                 logger.Error(ex, "Connection_Deinitalizing() failed.");
             }
         }
-
-        private void Account_BalanceUpdated(Algo.Domain.BalanceOperation report)
-        {
-            string action = report.Type == Algo.Domain.BalanceOperation.Types.Type.Dividend ? "Devidend" : report.TransactionAmount > 0 ? "Deposit" : "Withdrawal";
-            _journal.Trading($"{action} {report.TransactionAmount} {report.Currency}. Balance: {report.Balance} {report.Currency}");
-        }
-
-        //private void Account_OrderUpdated(OrderUpdateInfo updateInfo)
-        //{
-        //    var order = updateInfo.Order;
-
-        //    switch(updateInfo.ExecAction)
-        //    {
-        //        case Algo.Domain.OrderExecReport.Types.ExecAction.Opened:
-        //            switch (order.OrderType)
-        //            {
-        //                case Algo.Domain.OrderInfo.Types.Type.Position:
-        //                    _journal.Trading($"Order #{order.Id} was opened: {order.Side} {order.Symbol} {order.RemainingAmountLots} lots at {order.Price}");
-        //                    break;
-        //                case Algo.Domain.OrderInfo.Types.Type.Limit:
-        //                case Algo.Domain.OrderInfo.Types.Type.Stop:
-        //                    _journal.Trading($"Order #{order.Id} was placed: {order.Side} {order.OrderType} {order.Symbol} {order.RemainingAmountLots} lots at {order.Price}");
-        //                    break;
-        //            }
-        //            break;
-        //        case Algo.Domain.OrderExecReport.Types.ExecAction.Modified:
-        //            switch (order.OrderType)
-        //            {
-        //                case Algo.Domain.OrderInfo.Types.Type.Position:
-        //                    _journal.Trading($"Order #{order.Id} was modified: {order.Side} {order.Symbol} {order.RemainingAmountLots} lots at {order.Price}");
-        //                    break;
-        //                case Algo.Domain.OrderInfo.Types.Type.Limit:
-        //                case Algo.Domain.OrderInfo.Types.Type.Stop:
-        //                    _journal.Trading($"Order #{order.Id} was modified: {order.Side} {order.OrderType} {order.Symbol} {order.RemainingAmountLots} lots at {order.Price}");
-        //                    break;
-        //            }
-        //            break;
-        //        case Algo.Domain.OrderExecReport.Types.ExecAction.Closed:
-        //            if (order.OrderType == Algo.Domain.OrderInfo.Types.Type.Position)
-        //            {
-        //                _journal.Trading($"Order #{order.Id} was closed: {order.Side} {order.Symbol} {order.LastFillAmountLots} lots at {order.LastFillPrice}");
-        //            }
-        //            break;
-        //        case Algo.Domain.OrderExecReport.Types.ExecAction.Canceled:
-        //            _journal.Trading($"Order #{order.Id} was canceled: {order.Side} {order.OrderType} {order.Symbol} {order.RemainingAmountLots} lots at {order.Price}");
-        //            break;
-        //        case Algo.Domain.OrderExecReport.Types.ExecAction.Expired:
-        //            _journal.Trading($"Order #{order.Id} has expired: {order.Side} {order.OrderType} {order.Symbol} {order.RemainingAmountLots} lots at {order.Price}");
-        //            break;
-        //        case Algo.Domain.OrderExecReport.Types.ExecAction.Filled:
-        //            _journal.Trading($"Order #{order.Id} was filled: {order.Side} {order.OrderType} {order.Symbol} {order.LastFillAmountLots} lots at {order.LastFillPrice}");
-        //            break;
-        //    }
-        //}
 
         public bool IsConnecting { get; private set; }
         public BoolVar IsConnected => _isConnected.Var;

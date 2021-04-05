@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Machinarium.Qnil;
+using NLog;
+using SciChart.Charting.Visuals.Axes;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -6,9 +9,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Machinarium.Qnil;
-using NLog;
-using SciChart.Charting.Visuals.Axes;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model;
@@ -405,32 +405,33 @@ namespace TickTrader.BotTerminal
 
         #region Local bots management
 
-        public async Task Shutdown()
+        public async Task Shutdown(bool stopAlgoServer = true)
         {
             try
             {
                 await Task.WhenAll(_bots.Values.Where(b => b.State == PluginModelInfo.Types.PluginState.Running).Select(b => b.Stop()));
             }
-            catch(AggregateException agEx)
+            catch (AggregateException agEx)
             {
                 foreach (var e in agEx.InnerExceptions)
                 {
                     _logger.Error(e, "Failed to stop bots");
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to stop bots");
             }
 
-            try
-            {
-                await AlgoServer.Stop();
-            }
-            catch(Exception ex)
-            {
-                _logger.Error(ex, "Failed to stop AlgoServer");
-            }
+            if (stopAlgoServer)
+                try
+                {
+                    await AlgoServer.Stop();
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, "Failed to stop AlgoServer");
+                }
         }
 
         public void RemoveAllBots(CancellationToken token)

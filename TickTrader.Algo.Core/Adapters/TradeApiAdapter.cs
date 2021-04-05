@@ -833,6 +833,12 @@ namespace TickTrader.Algo.Core
         {
             var quote = symbol.LastQuote;
 
+            if (quote == null)
+            {
+                code = OrderCmdResultCodes.OffQuotes;
+                return false;
+            }
+
             if (_account.Type != AccountInfo.Types.Type.Cash && (!quote.HasBid || !quote.HasAsk))
             {
                 code = OrderCmdResultCodes.OffQuotes;

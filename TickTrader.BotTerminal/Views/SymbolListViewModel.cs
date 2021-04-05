@@ -23,7 +23,7 @@ namespace TickTrader.BotTerminal
             Symbols = symbolCollection.Select((k, v) => new SymbolViewModel(v, distributor)).OrderBy((k, v) => k).AsObservable();
         }
 
-        public void OpenNewChart()
+        public void OpenNewChart() //using on UI
         {
             if (SelectedSymbol.HasValue)
                 _shell?.OpenChart(SelectedSymbol?.Value?.SymbolName);
