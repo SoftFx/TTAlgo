@@ -1,9 +1,5 @@
-﻿using Caliburn.Micro;
-using Google.Protobuf.WellKnownTypes;
-using Machinarium.Var;
+﻿using Machinarium.Var;
 using System;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Infrastructure;
 using TickTrader.Algo.Domain;
 using TickTrader.BotTerminal.Converters;
@@ -20,14 +16,14 @@ namespace TickTrader.BotTerminal
     internal sealed class SymbolViewModel
     {
         private readonly VarContext _varContext = new VarContext();
-        private readonly PricePrecisionConverter<double?> _symbolPrecision;
+        private readonly PricePrecisionConverter<double> _symbolPrecision;
 
         private readonly SymbolInfo _model;
 
         public SymbolViewModel(SymbolInfo model, QuoteDistributor distributor)
         {
             _model = model;
-            _symbolPrecision = new PricePrecisionConverter<double?>(model?.Digits ?? 2);
+            _symbolPrecision = new PricePrecisionConverter<double>(model?.Digits ?? 2);
 
             distributor.AddSubscription(OnRateUpdate, model.Name);
 
@@ -57,19 +53,19 @@ namespace TickTrader.BotTerminal
         {
             private readonly VarContext _varContext = new VarContext();
 
-            public Property<double?> Rate { get; }
+            public Property<double> Rate { get; }
 
             public Property<RateChangeDirections> Direction { get; }
 
-            internal RateViewModel(IDisplayValueConverter<double?> precisionConverter)
+            internal RateViewModel(IDisplayValueConverter<double> precisionConverter)
             {
                 Rate = _varContext.AddProperty(displayConverter: precisionConverter);
                 Direction = _varContext.AddProperty(default(RateChangeDirections));
             }
 
-            public void RateUpdate(double? rate)
+            public void RateUpdate(double rate)
             {
-                if (rate == null)
+                if (double.IsNaN(rate))
                     Direction.Value = RateChangeDirections.Unknown;
                 else if (Rate.Value < rate)
                     Direction.Value = RateChangeDirections.Up;

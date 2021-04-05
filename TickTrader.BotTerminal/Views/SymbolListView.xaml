@@ -99,20 +99,21 @@
     </Style>
 
     <ControlTemplate x:Key="SymbolListView.Classic">
-        <DataGrid x:Name="SmbNameW" FrozenColumnCount="1" ItemsSource="{Binding Symbols}" Style="{DynamicResource DataGrid_Style}" CellStyle="{StaticResource DataGridCell.Classic}"
-                  cal:Message.Attach="[Event MouseDoubleClick] = [Action OpenChart($originalsourcecontext)]">
+        <DataGrid FrozenColumnCount="1" ItemsSource="{Binding Symbols}" Style="{DynamicResource DataGrid_Style}" CellStyle="{StaticResource DataGridCell.Classic}"
+                  cal:Message.Attach="[Event MouseDoubleClick] = [Action OpenNewChart()]" SelectedItem="{Binding SelectedSymbol.Value}">
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding SymbolName}" Header="Symbol" Width="Auto" ElementStyle="{StaticResource DataGridCell.SymbolName.Classic}" CanUserResize="False" />
                 <DataGridTextColumn Header="Bid" Width="Auto" Binding="{Binding Bid.Rate.DisplayValue}" ElementStyle="{StaticResource BidTextStyle.Classic}" CanUserResize="False"/>
                 <DataGridTextColumn Header="Ask" Width="Auto" Binding="{Binding Ask.Rate.DisplayValue}" ElementStyle="{StaticResource AskTextStyle.Classic}" CanUserResize="False"/>
                 <DataGridTextColumn Header="Time" Binding="{Binding QuoteTime.Value, Converter={StaticResource UtcExtDateTimeFormat}}" Width="Auto" ElementStyle="{StaticResource DataGridCell.Text.Classic}" CanUserResize="False"/>
             </DataGrid.Columns>
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="{l:Resx ContextMenu_NewChart}" cal:Message.Attach="[Event Click] = [Action OpenNewChart()]"/>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
         </DataGrid>
     </ControlTemplate>
-
-    <ContextMenu x:Key="RowContextMenu.Classic">
-        <MenuItem Header="{l:Resx ContextMenu_NewChart}" cal:Message.Attach="OpenChart"/>
-    </ContextMenu>
 
     <Style x:Key="SymbolListViewStyle" TargetType="UserControl">
         <Setter Property="Template" Value="{StaticResource SymbolListView.Old}"/>
@@ -120,11 +121,5 @@
 
     <Style x:Key="SymbolListViewStyle.Classic" TargetType="UserControl">
         <Setter Property="Template" Value="{StaticResource SymbolListView.Classic}"/>
-        <Style.Resources>
-            <!--<Style TargetType="{x:Type DataGridRow}">
-                <Setter Property="ContextMenu" Value="{StaticResource RowContextMenu.Classic}"/>
-            </Style>-->
-        </Style.Resources>
     </Style>
-
 </ResourceDictionary>

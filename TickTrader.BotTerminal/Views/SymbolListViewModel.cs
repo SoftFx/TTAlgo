@@ -1,7 +1,5 @@
 ﻿using Machinarium.Qnil;
 using Machinarium.Var;
-using System;
-using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core.Infrastructure;
 using TickTrader.Algo.Domain;
 
@@ -11,19 +9,24 @@ namespace TickTrader.BotTerminal
     {
         private readonly IShell _shell;
 
+
+        public Property<SymbolViewModel> SelectedSymbol { get; }
+
+        public IObservableList<SymbolViewModel> Symbols { get; }
+
+
         public SymbolListViewModel(IVarSet<string, SymbolInfo> symbolCollection, QuoteDistributor distributor, IShell shell)
         {
             _shell = shell;
 
+            SelectedSymbol = AddProperty<SymbolViewModel>();
             Symbols = symbolCollection.Select((k, v) => new SymbolViewModel(v, distributor)).OrderBy((k, v) => k).AsObservable();
         }
 
-        public IObservableList<SymbolViewModel> Symbols { get; }
-
-        public void OpenChart(object o)
+        public void OpenNewChart()
         {
-            if (o is SymbolViewModel model)
-                _shell?.OpenChart(model?.SymbolName);
+            if (SelectedSymbol.HasValue)
+                _shell?.OpenChart(SelectedSymbol?.Value?.SymbolName);
         }
     }
 }
