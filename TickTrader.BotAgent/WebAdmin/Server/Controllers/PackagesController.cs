@@ -39,7 +39,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         [HttpHead("{name}")]
         public async Task<IActionResult> Head(string name)
         {
-            var package = await _botAgent.GetPackage(name);
+            var package = await _botAgent.GetPackage(name.ToLowerInvariant());
 
             if (package != null)
                 return Ok();
@@ -60,7 +60,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
                     var fileContent = binaryReader.ReadBytes((int)file.Length);
                     try
                     {
-                        await _botAgent.UpdatePackage(fileContent, file.FileName);
+                        await _botAgent.UpdatePackage(fileContent, file.FileName.ToLowerInvariant());
                     }
                     catch (BAException dsex)
                     {
