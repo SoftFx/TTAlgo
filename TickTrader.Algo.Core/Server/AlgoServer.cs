@@ -118,6 +118,11 @@ namespace TickTrader.Algo.Core
             _executorsMap.Remove(executorId);
         }
 
+        internal void OnRuntimeStopped(string runtimeId)
+        {
+            _runtimesMap.Remove(runtimeId);
+        }
+
 
         private string GenerateRuntimeId(string packageId)
         {
@@ -168,9 +173,9 @@ namespace TickTrader.Algo.Core
                 case Repository.UpdateAction.Remove:
                     lock (_packagesMap)
                     {
-                        if (_packagesMap.ContainsKey(packageId))
+                        if (_packagesMap.TryGetValue(packageId, out var packageRef))
                         {
-                            //activeRuntime.MarkObsolete();
+                            packageRef.ActiveRuntime.SetShutdown();
                             _packagesMap.Remove(packageId);
                             PackageUpdated?.Invoke(PackageUpdate.Remove(packageId));
                         }

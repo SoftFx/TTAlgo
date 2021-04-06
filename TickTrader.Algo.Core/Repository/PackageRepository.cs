@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using TickTrader.Algo.Domain;
 using TickTrader.Algo.Util;
 
 namespace TickTrader.Algo.Core.Repository
@@ -136,11 +135,15 @@ namespace TickTrader.Algo.Core.Repository
 
         private void WatcherOnError(object sender, ErrorEventArgs e)
         {
+            _logger.Error($"Location = {_location}: Watcher error", e.GetException());
+
             Task.Factory.StartNew(Scan);
         }
 
         private void WatcherOnRenamed(object sender, RenamedEventArgs e)
         {
+            _logger.Debug($"Location = {_location}: Watcher renamed '{e.OldFullPath}' into '{e.FullPath}' ({e.ChangeType})");
+
             if (PackageHelper.IsFileSupported(e.OldFullPath))
                 RemovePackage(e.OldFullPath);
 
@@ -151,24 +154,33 @@ namespace TickTrader.Algo.Core.Repository
 
         private void WatcherOnChanged(object sender, FileSystemEventArgs e)
         {
+            _logger.Debug($"Location = {_location}: Watcher changed '{e.FullPath}' ({e.ChangeType})");
+
             if (PackageHelper.IsFileSupported(e.FullPath))
                 UpsertPackage(e.FullPath);
         }
 
         private void WatcherOnDeleted(object sender, FileSystemEventArgs e)
         {
+            _logger.Debug($"Location = {_location}: Watcher deleted '{e.FullPath}' ({e.ChangeType})");
+
             if (PackageHelper.IsFileSupported(e.FullPath))
                 RemovePackage(e.FullPath);
         }
 
         private void UpsertPackage(string path)
         {
+
+            _logger.Debug($"Location = {_location}: Upsert package '{path}'");
+
             var id = PackageHelper.GetPackageIdFromPath(_location, path);
             _updateChannel.AddAsync(new PackageFileUpdate(id, UpdateAction.Upsert, path));
         }
 
         private void RemovePackage(string path)
         {
+            _logger.Debug($"Location = {_location}: Remove package '{path}'");
+
             var id = PackageHelper.GetPackageIdFromPath(_location, path);
             _updateChannel.AddAsync(new PackageFileUpdate(id, UpdateAction.Remove, path));
         }

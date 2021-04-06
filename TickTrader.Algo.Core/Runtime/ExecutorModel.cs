@@ -41,7 +41,12 @@ namespace TickTrader.Algo.Core
 
         public Task Start()
         {
-            return _host.Proxy.StartExecutor(Id);
+            return _host.Proxy.StartExecutor(Id)
+                .ContinueWith(t =>
+                {
+                    if (t.IsCompleted)
+                        _host.OnExecutorStarted(Id);
+                });
         }
 
         public Task Stop()

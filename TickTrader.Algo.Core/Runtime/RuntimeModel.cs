@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
@@ -11,6 +12,7 @@ namespace TickTrader.Algo.Core
         public const int ShutdownTimeout = 25000;
 
 
+        private readonly IAlgoCoreLogger _logger;
         private readonly AlgoServer _server;
         private readonly string _packagePath;
         private readonly IRuntimeHostProxy _runtimeHost;
@@ -19,6 +21,8 @@ namespace TickTrader.Algo.Core
         private Action<RpcMessage> _onNotification;
         private IRuntimeProxy _proxy;
         private TaskCompletionSource<bool> _attachTask, _launchTask;
+        private int _startedExecutorsCnt;
+        private bool _shutdownWhenIdle;
 
 
         public string Id { get; }
@@ -34,6 +38,8 @@ namespace TickTrader.Algo.Core
             Id = id;
             _packagePath = packagePath;
 
+            _logger = CoreLoggerFactory.GetLogger($"{nameof(RuntimeModel)}({id})");
+
             Config.PackagePath = packagePath;
             Config.PackageId = packageId;
             _attachedAccounts = new Dictionary<string, AttachedAccount>();
@@ -46,18 +52,42 @@ namespace TickTrader.Algo.Core
 
         public async Task Start(string address, int port)
         {
-            _attachTask = new TaskCompletionSource<bool>();
-            await _runtimeHost.Start(address, port, Id);
-            await _attachTask.Task;
-            await _proxy.Launch();
-            _launchTask.TrySetResult(true);
+            _logger.Debug("Starting...");
+
+            try
+            {
+                _attachTask = new TaskCompletionSource<bool>();
+                await _runtimeHost.Start(address, port, Id);
+                await _attachTask.Task;
+                await _proxy.Launch();
+                _launchTask.TrySetResult(true);
+
+                _logger.Debug("Started");
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("Failed to start", ex);
+            }
         }
 
         public async Task Stop()
         {
-            await Task.WhenAny(_proxy.Stop(), Task.Delay(ShutdownTimeout));
-            OnDetached();
-            await _runtimeHost.Stop();
+            _logger.Debug("Stopping...");
+
+            try
+            {
+                await Task.WhenAny(_proxy.Stop(), Task.Delay(ShutdownTimeout));
+                OnDetached();
+                await _runtimeHost.Stop();
+
+                _logger.Debug("Stopped");
+
+                _server.OnRuntimeStopped(Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("Failed to stop", ex);
+            }
         }
 
         public Task WaitForLaunch()
@@ -68,6 +98,14 @@ namespace TickTrader.Algo.Core
         public Task<PackageInfo> GetPackageInfo()
         {
             return _proxy.GetPackageInfo();
+        }
+
+        public void SetShutdown()
+        {
+            _shutdownWhenIdle = true;
+            _logger.Debug("Marked for shutdown");
+            if (_startedExecutorsCnt == 0)
+                Task.Factory.StartNew(ShutdownInternal);
         }
 
 
@@ -97,30 +135,80 @@ namespace TickTrader.Algo.Core
 
         internal void AttachAccount(string accountId)
         {
-            if (!_attachedAccounts.TryGetValue(accountId, out var account))
-            {
-                if (!_server.TryGetAccount(accountId, out var accountProxy))
-                    throw new ArgumentException("Unknown account id");
+            _logger.Debug($"Attaching account {accountId}...");
 
-                account = new AttachedAccount(this, accountProxy);
-                _attachedAccounts.Add(accountId, account);
+            try
+            {
+                if (!_attachedAccounts.TryGetValue(accountId, out var account))
+                {
+                    if (!_server.TryGetAccount(accountId, out var accountProxy))
+                        throw new ArgumentException("Unknown account id");
+
+                    account = new AttachedAccount(this, accountProxy);
+                    _attachedAccounts.Add(accountId, account);
+                }
+                var refCnt = account.AddRef();
+                _logger.Debug($"Attached account {accountId}. Have {refCnt} active refs");
             }
-            account.AddRef();
+            catch (Exception ex)
+            {
+                _logger.Error($"Failed to attach account {accountId}", ex);
+                throw;
+            }
         }
 
         internal void DetachAccount(string accountId)
         {
-            if (!_attachedAccounts.TryGetValue(accountId, out var account))
+            _logger.Debug($"Detaching account {accountId}...");
+
+            try
+            {
+                if (!_attachedAccounts.TryGetValue(accountId, out var account))
                     throw new ArgumentException("Unknown account id");
 
-            var refCnt = account.RemoveRef();
-            if (refCnt == 0)
-                _attachedAccounts.Remove(accountId);
+                var refCnt = account.RemoveRef();
+                _logger.Debug($"Detached account {accountId}. Have {refCnt} active refs");
+                if (refCnt == 0)
+                    _attachedAccounts.Remove(accountId);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Failed to detach account {accountId}", ex);
+                throw;
+            }
+        }
+
+        internal void OnExecutorStarted(string executorId)
+        {
+            var cnt = Interlocked.Increment(ref _startedExecutorsCnt);
+
+            _logger.Debug($"Executor {executorId} started. Have {cnt} active executors");
         }
 
         internal void OnExecutorStopped(string executorId)
         {
+            var cnt = Interlocked.Decrement(ref _startedExecutorsCnt);
+
+            _logger.Debug($"Executor {executorId} stopped. Have {cnt} active executors");
+
             _server.OnExecutorStopped(executorId);
+
+            if (cnt == 0 && _shutdownWhenIdle)
+                Task.Factory.StartNew(ShutdownInternal);
+        }
+
+
+        private async Task ShutdownInternal()
+        {
+            _logger.Debug($"Shutdown initiated");
+            try
+            {
+                await Stop();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Failed to shutdown", ex);
+            }
         }
 
 

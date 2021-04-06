@@ -77,6 +77,7 @@ namespace TickTrader.Algo.Core.Repository
 
         internal void Update(RuntimeModel activeRuntime, PackageInfo packageInfo)
         {
+            ActiveRuntime?.SetShutdown();
             ActiveRuntime = activeRuntime;
             PackageInfo = packageInfo;
         }
