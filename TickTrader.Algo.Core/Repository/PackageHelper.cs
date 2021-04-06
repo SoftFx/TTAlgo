@@ -9,12 +9,6 @@ namespace TickTrader.Algo.Core.Repository
 {
     public static class PackageHelper
     {
-        public const char PackageIdSeparator = '/';
-        public const string EmbeddedRepositoryId = "";
-        public const string LocalRepositoryId = "local";
-        public const string CommonRepositoryId = "common";
-
-
         public static string GetPackageExtensions => "Packages|*.ttalgo";
 
         public static string GetPackageAndAllExtensions => "Packages|*.ttalgo|All Files|*.*";
@@ -27,21 +21,7 @@ namespace TickTrader.Algo.Core.Repository
 
         public static string GetPackageIdFromPath(string locationId, string path)
         {
-            var name = Environment.OSVersion.Platform == PlatformID.MacOSX || Environment.OSVersion.Platform == PlatformID.Unix
-                ? Path.GetFileName(path) : Path.GetFileName(path).ToLowerInvariant();
-            return GetPackageIdFromName(locationId, name);
-        }
-
-        public static string GetPackageIdFromName(string locationId, string name)
-        {
-            return PackageId.Pack(locationId, name);
-        }
-
-        public static void UnpackPackageId(string packageId, out string locationId, out string packageName)
-        {
-            if (!PackageId.TryUnpack(packageId, out locationId, out packageName))
-                throw new ArgumentException("Invalid package id");
-
+            return PackageId.Pack(locationId, Path.GetFileName(path));
         }
 
         public static PackageInfo GetInfo(string packageId, PackageIdentity identity, IEnumerable<PluginMetadata> plugins)

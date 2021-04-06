@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Core.Repository
         private Dictionary<MappingKey, Mapping> _quoteToDoubleMappings;
 
 
-        public static string DefaultExtPackageId = PackageId.Pack(string.Empty, "ticktrader.algo.ext.dll");
+        public static string DefaultExtPackageId = PackageId.Pack(SharedConstants.EmbeddedRepositoryId, "ticktrader.algo.ext.dll");
         public static ReductionKey BidBarReduction = new ReductionKey(DefaultExtPackageId, "TickTrader.Algo.Ext.BidBarReduction");
         public static ReductionKey AskBarReduction = new ReductionKey(DefaultExtPackageId, "TickTrader.Algo.Ext.AskBarReduction");
         public static ReductionKey DefaultFullBarToBarReduction = BidBarReduction;

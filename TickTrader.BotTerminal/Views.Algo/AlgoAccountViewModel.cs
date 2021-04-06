@@ -59,9 +59,9 @@ namespace TickTrader.BotTerminal
             Info = info;
             Agent = agent;
 
-            Algo.Domain.AccountId.Unpack(info.AccountId, out var server, out var userId);
-            Server = server;
-            Login = userId;
+            Algo.Domain.AccountId.Unpack(info.AccountId, out var accId);
+            Server = accId.Server;
+            Login = accId.UserId;
 
             DisplayName = $"{Info.DisplayName}";
             Bots = Agent.Bots.Where(b => BotIsAttachedToAccount(b)).AsObservable();

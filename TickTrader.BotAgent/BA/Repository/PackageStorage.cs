@@ -39,7 +39,7 @@ namespace TickTrader.BotAgent.BA.Repository
             EnsureStorageDirectoryCreated();
 
             Library = new LocalAlgoLibrary(CoreLoggerFactory.GetLogger("AlgoRepository"), algoServer);
-            Library.RegisterRepositoryLocation(PackageHelper.LocalRepositoryId, _storageDir, true);
+            Library.RegisterRepositoryLocation(SharedConstants.LocalRepositoryId, _storageDir, true);
             Library.PackageUpdated += LibraryOnPackageUpdated;
             Library.PackageStateChanged += LibraryOnPackageStateChanged;
 
@@ -50,7 +50,7 @@ namespace TickTrader.BotAgent.BA.Repository
 
         public static string GetPackageId(string packageName)
         {
-            return PackageHelper.GetPackageIdFromName(PackageHelper.LocalRepositoryId, packageName.ToLowerInvariant());
+            return PackageId.Pack(SharedConstants.LocalRepositoryId, packageName);
         }
 
 
@@ -104,8 +104,10 @@ namespace TickTrader.BotAgent.BA.Repository
 
         public string GetPackageWritePath(string packageId)
         {
-            //    if (!packageId.StartsWith(PackageHelper.LocalRepositoryId))
-            //        throw new ArgumentException($"Algo package {packageId}: location is not defined");
+            PackageId.Unpack(packageId, out var pkgId);
+
+            if (pkgId.LocationId != SharedConstants.LocalRepositoryId)
+                throw new ArgumentException($"Algo package {packageId}: location is not defined");
 
             EnsureStorageDirectoryCreated();
 
@@ -119,9 +121,7 @@ namespace TickTrader.BotAgent.BA.Repository
             }
             else
             {
-                PackageHelper.UnpackPackageId(packageId, out _, out var packageName);
-
-                return GetFullPathToPackage(packageName);
+                return GetFullPathToPackage(pkgId.PackageName);
             }
         }
 

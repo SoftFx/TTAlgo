@@ -2,46 +2,89 @@
 
 namespace TickTrader.Algo.Domain
 {
-    public static class PackageId
+    public class PackageId : IEquatable<PackageId>, IComparable<PackageId>
     {
+        public string PackedStr { get; }
+
+        public string LocationId { get; }
+
+        public string PackageName { get; }
+
+
+        public PackageId(string locationId, string pkgName)
+            : this(Pack(locationId, pkgName), locationId, pkgName)
+        {
+        }
+
+        private PackageId(string packedStr, string locationId, string pkgName)
+        {
+            PackedStr = packedStr;
+            LocationId = locationId;
+            PackageName = pkgName;
+        }
+
+
         public static string Pack(string locationId, string pkgName)
         {
+            if (string.IsNullOrWhiteSpace(locationId))
+                throw new ArgumentException($"'{nameof(locationId)}' can't be empty string");
             if (string.IsNullOrWhiteSpace(pkgName))
                 throw new ArgumentException($"'{nameof(pkgName)}' can't be empty string");
 
-            return string.IsNullOrWhiteSpace(locationId)
-                ? string.Join(SharedConstants.IdSeparatorStr, SharedConstants.PackageIdPrefix, pkgName)
-                : string.Join(SharedConstants.IdSeparatorStr, SharedConstants.PackageIdPrefix, locationId, pkgName);
+            return string.Join(SharedConstants.IdSeparatorStr, SharedConstants.PackageIdPrefix, locationId, pkgName.ToLowerInvariant());
         }
 
-        public static bool TryUnpack(string pkgId, out string locationId, out string pkgName)
+        public static bool TryUnpack(string packedId, out PackageId pkgId)
         {
-            locationId = SharedConstants.InvalidIdPart;
-            pkgName = SharedConstants.InvalidIdPart;
+            pkgId = new PackageId(packedId, SharedConstants.InvalidIdPart, SharedConstants.InvalidIdPart);
 
-            var parts = pkgId.Split(SharedConstants.IdSeparator);
+            var parts = packedId.Split(SharedConstants.IdSeparator);
 
-            if ((parts.Length != 2 && parts.Length != 3) || parts[0] != SharedConstants.PackageIdPrefix)
+            if (parts.Length != 3 || parts[0] != SharedConstants.PackageIdPrefix)
                 return false;
 
-            if (parts.Length == 2)
-            {
-                locationId = string.Empty;
-                pkgName = parts[1];
-            }
-            else
-            {
-                locationId = parts[1];
-                pkgName = parts[2];
-            }
+            pkgId = new PackageId(packedId, parts[1], parts[2]);
 
             return true;
         }
 
-        public static void Unpack(string pkgId, out string locationId, out string pkgName)
+        public static void Unpack(string packedId, out PackageId pkgId)
         {
-            if (!TryUnpack(pkgId, out locationId, out pkgName))
+            if (!TryUnpack(packedId, out pkgId))
                 throw new ArgumentException("Invalid package id");
+        }
+
+
+        public override int GetHashCode()
+        {
+            return PackedStr.GetHashCode();
+        }
+
+        public override bool Equals(object other)
+        {
+            return Equals(other as PackageId);
+        }
+
+        public bool Equals(PackageId other)
+        {
+            if (other == null)
+                return false;
+
+            if (ReferenceEquals(this, other))
+                return true;
+
+            return PackedStr == other.PackedStr;
+        }
+
+        public int CompareTo(PackageId other)
+        {
+            if (other == null)
+                return 1;
+
+            if (ReferenceEquals(this, other))
+                return 0;
+
+            return StringComparer.Ordinal.Compare(PackedStr, other.PackedStr);
         }
     }
 }

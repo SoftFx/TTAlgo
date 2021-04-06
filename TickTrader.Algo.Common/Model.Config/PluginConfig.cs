@@ -4,7 +4,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model.Config
 {
@@ -106,24 +106,24 @@ namespace TickTrader.Algo.Common.Model.Config
     {
         public static PackageKey ParsePackageKey(this string packageId)
         {
-            PackageHelper.UnpackPackageId(packageId, out var locationId, out var packageName);
+            PackageId.Unpack(packageId, out var pkgId);
 
             RepositoryLocation location;
-            switch (locationId)
+            switch (pkgId.LocationId)
             {
-                case PackageHelper.EmbeddedRepositoryId:
+                case SharedConstants.EmbeddedRepositoryId:
                     location = RepositoryLocation.Embedded;
                     break;
-                case PackageHelper.LocalRepositoryId:
+                case SharedConstants.LocalRepositoryId:
                     location = RepositoryLocation.LocalRepository;
                     break;
-                case PackageHelper.CommonRepositoryId:
+                case SharedConstants.CommonRepositoryId:
                     location = RepositoryLocation.CommonRepository;
                     break;
                 default:
                     throw new ArgumentException("Invalid location id");
             }
-            return new PackageKey { Location = location, Name = packageName };
+            return new PackageKey { Location = location, Name = pkgId.PackageName };
         }
 
         public static PluginKey Convert(this Domain.PluginKey plugin)
@@ -207,19 +207,19 @@ namespace TickTrader.Algo.Common.Model.Config
 
         public static string Convert(this PackageKey package)
         {
-            var locationId = string.Empty;
+            var locationId = SharedConstants.EmbeddedRepositoryId;
             switch(package.Location)
             {
                 case RepositoryLocation.LocalRepository:
                 case RepositoryLocation.LocalExtensions:
-                    locationId = PackageHelper.LocalRepositoryId;
+                    locationId = SharedConstants.LocalRepositoryId;
                     break;
                 case RepositoryLocation.CommonRepository:
                 case RepositoryLocation.CommonExtensions:
-                    locationId = PackageHelper.CommonRepositoryId;
+                    locationId = SharedConstants.CommonRepositoryId;
                     break;
             }
-            return PackageHelper.GetPackageIdFromName(locationId, package.Name);
+            return PackageId.Pack(locationId, package.Name);
         }
 
         public static Domain.PluginKey Convert(this PluginKey plugin)

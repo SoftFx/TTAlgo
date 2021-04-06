@@ -130,21 +130,21 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
 
         public static AccountDto ToAccountDto(this string accountId)
         {
-            AccountId.Unpack(accountId, out var server, out var userId);
+            AccountId.Unpack(accountId, out var accId);
             return new AccountDto()
             {
-                Server = server,
-                Login = userId,
+                Server = accId.Server,
+                Login = accId.UserId,
             };
         }
 
         public static AccountDto ToDto(this AccountModelInfo account)
         {
-            AccountId.Unpack(account.AccountId, out var server, out var userId);
+            AccountId.Unpack(account.AccountId, out var accId);
             return new AccountDto()
             {
-                Server = server,
-                Login = userId,
+                Server = accId.Server,
+                Login = accId.UserId,
                 LastConnectionStatus = ConnectionErrorInfo.Types.ErrorCode.NoConnectionError,
             };
         }

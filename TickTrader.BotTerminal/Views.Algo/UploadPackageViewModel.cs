@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -24,10 +24,11 @@ namespace TickTrader.BotTerminal
                 Direction = ListSortDirection.Ascending
             });
 
+            PackageId pkgId = null;
             if (packageId != null)
-                PackageHelper.UnpackPackageId(packageId, out _, out packageId);
+                PackageId.Unpack(packageId, out pkgId);
 
-            SetStartLocation(packageId);
+            SetStartLocation(pkgId?.PackageName);
         }
 
         protected override async Task RunLoadPackageProgress()

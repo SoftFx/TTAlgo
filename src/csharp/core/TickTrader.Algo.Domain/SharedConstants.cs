@@ -7,7 +7,7 @@
         public const string InvalidIdPart = "<invalid>";
 
         public const string PackageIdPrefix = "pkg";
-        public const string EmbeddedRepositoryId = "";
+        public const string EmbeddedRepositoryId = "bin";
         public const string LocalRepositoryId = "local";
         public const string CommonRepositoryId = "common";
 

@@ -19,8 +19,6 @@ namespace TickTrader.BotTerminal
         public const string BotLevelHeader = nameof(DisplayName);
 
 
-        public enum FolderType { Common, Local, Embedded }
-
         public enum GroupType { Unknown, Indicators, Bots }
 
         public PluginInfo PluginInfo { get; }
@@ -45,8 +43,6 @@ namespace TickTrader.BotTerminal
 
         public Metadata.Types.PluginType Type => Descriptor.Type;
 
-        public FolderType Folder { get; }
-
         public string Description { get; }
 
         public GroupType CurrentGroup { get; }
@@ -69,8 +65,8 @@ namespace TickTrader.BotTerminal
             Key = info.Key;
             Descriptor = info.Descriptor_;
 
-            PackageHelper.UnpackPackageId(Key.PackageId, out var localtionId, out var packageName);
-            PackageName = packageName;
+            PackageId.Unpack(Key.PackageId, out var pkgId);
+            PackageName = pkgId.PackageName;
             PackageDirectory = UnknownPath;
             CurrentGroup = (GroupType)Type;
 
@@ -85,19 +81,6 @@ namespace TickTrader.BotTerminal
 
                 DisplayPackagePath = $"Full path: {FullPackagePath}{Environment.NewLine}Last modified: {PackageInfo.Identity.LastModifiedUtc.ToDateTime()} (UTC)";
                 Description = string.Join(Environment.NewLine, Descriptor.Description, string.Empty, $"Algo Package {PackageName} at {PackageDirectory}").Trim();
-            }
-
-            switch (localtionId)
-            {
-                case PackageHelper.LocalRepositoryId:
-                    Folder = FolderType.Local;
-                    break;
-                case PackageHelper.EmbeddedRepositoryId:
-                    Folder = FolderType.Embedded;
-                    break;
-                default:
-                    Folder = FolderType.Common;
-                    break;
             }
         }
 

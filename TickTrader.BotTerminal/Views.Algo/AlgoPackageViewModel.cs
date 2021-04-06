@@ -48,9 +48,9 @@ namespace TickTrader.BotTerminal
             Info = info;
             Agent = agent;
 
-            PackageHelper.UnpackPackageId(info.PackageId, out var locationId, out var packageName);
-            Location = locationId;
-            Name = packageName;
+            PackageId.Unpack(info.PackageId, out var pkgId);
+            Location = pkgId.LocationId;
+            Name = pkgId.PackageName;
 
             Plugins = Agent.Plugins.Where(p => PluginIsFromPackage(p)).AsObservable();
             Description = $"Server {Agent.Name}. Path {Info.Identity.FilePath}";

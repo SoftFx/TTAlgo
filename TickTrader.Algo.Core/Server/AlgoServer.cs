@@ -93,7 +93,7 @@ namespace TickTrader.Algo.Core
 
         public void AddAssemblyAsPackage(string assemblyPath)
         {
-            var id = PackageHelper.GetPackageIdFromPath(string.Empty, assemblyPath);
+            var id = PackageHelper.GetPackageIdFromPath(SharedConstants.EmbeddedRepositoryId, assemblyPath);
             _packageProcessor.Add(new PackageFileUpdate(id, Repository.UpdateAction.Upsert, assemblyPath));
         }
 

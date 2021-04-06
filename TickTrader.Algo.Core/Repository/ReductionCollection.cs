@@ -107,7 +107,7 @@ namespace TickTrader.Algo.Core.Repository
         {
             try
             {
-                var packageId = PackageHelper.GetPackageIdFromPath(string.Empty, Path.GetFileName(extAssembly.Location).ToLowerInvariant());
+                var packageId = PackageHelper.GetPackageIdFromPath(SharedConstants.EmbeddedRepositoryId, Path.GetFileName(extAssembly.Location).ToLowerInvariant());
                 var reductions = AlgoAssemblyInspector.FindReductions(extAssembly);
                 foreach (var r in reductions)
                     Add(new ReductionKey(packageId, r.Id), r);

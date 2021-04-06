@@ -124,11 +124,11 @@ namespace TickTrader.BotTerminal
             ClientModel.Connection.StateChanged += ClientConnectionOnStateChanged;
 
             Library.AddAssemblyAsPackage(Assembly.Load("TickTrader.Algo.Indicators"));
-            Library.RegisterRepositoryLocation(PackageHelper.LocalRepositoryId, EnvService.Instance.AlgoRepositoryFolder, Properties.Settings.Default.EnablePluginIsolation);
+            Library.RegisterRepositoryLocation(SharedConstants.LocalRepositoryId, EnvService.Instance.AlgoRepositoryFolder, Properties.Settings.Default.EnablePluginIsolation);
             if (EnvService.Instance.AlgoCommonRepositoryFolder != null)
-                Library.RegisterRepositoryLocation(PackageHelper.CommonRepositoryId, EnvService.Instance.AlgoCommonRepositoryFolder, Properties.Settings.Default.EnablePluginIsolation);
+                Library.RegisterRepositoryLocation(SharedConstants.CommonRepositoryId, EnvService.Instance.AlgoCommonRepositoryFolder, Properties.Settings.Default.EnablePluginIsolation);
 
-            _reductions.LoadReductions(EnvService.Instance.AlgoExtFolder, PackageHelper.LocalRepositoryId);
+            _reductions.LoadReductions(EnvService.Instance.AlgoExtFolder, SharedConstants.LocalRepositoryId);
 
             Mappings = new MappingCollection(_reductions);
             _mappingsInfo = Mappings.ToInfo();

@@ -258,8 +258,8 @@ namespace TickTrader.BotTerminal
                 throw new ArgumentException("Can't find bot Algo package");
 
             var uploadSrcPackage = false;
-            PackageHelper.UnpackPackageId(dstConfig.Key.PackageId, out var dstLocation, out var dstPackageName);
-            var dstPackageId = PackageHelper.GetPackageIdFromName(PackageHelper.LocalRepositoryId, dstPackageName);// remote algo servers have only local Algo package locations
+            PackageId.Unpack(dstConfig.Key.PackageId, out var dstPkgId);
+            var dstPackageId = PackageId.Pack(SharedConstants.LocalRepositoryId, dstPkgId.PackageName);// remote algo servers have only local Algo package locations
             var dstPackage = _selectedAgent.Model.Packages.Snapshot.Values.Where(p => p.Identity.Size == srcPackage.Identity.Size && p.Identity.Hash == srcPackage.Identity.Hash)
                 .OrderBy(p => p.PackageId == dstPackageId ? 0 : 1).FirstOrDefault();
             if (dstPackage != null)
@@ -278,6 +278,7 @@ namespace TickTrader.BotTerminal
             {
                 var progressListener = new FileProgressListenerAdapter(CopyProgress, srcPackage.Identity.Size);
 
+                var dstPackageFileName = srcPackage.Identity.FileName;
                 var srcPath = "";
                 if (!_fromAgent.Model.IsRemote)
                 {
@@ -293,15 +294,16 @@ namespace TickTrader.BotTerminal
                 }
                 if (_selectedAgent.Model.Packages.Snapshot.ContainsKey(dstPackageId))
                 {
-                    dstPackageName = Path.GetFileNameWithoutExtension(dstPackageName);
+                    var srcPackageName = Path.GetFileNameWithoutExtension(srcPackage.Identity.FileName);
                     for (var i = 1; _selectedAgent.Model.Packages.Snapshot.ContainsKey(dstPackageId); i++)
                     {
-                        dstPackageName = $"{dstPackageName} ({i}).ttalgo";
+                        dstPackageFileName = $"{srcPackageName} ({i}).ttalgo";
+                        dstPkgId = new PackageId(SharedConstants.LocalRepositoryId, $"{srcPackageName} ({i}).ttalgo");// remote algo servers have only local Algo package locations
+                        dstPackageId = dstPkgId.PackedStr;
                     }
-                    dstPackageId = PackageHelper.GetPackageIdFromName(PackageHelper.LocalRepositoryId, dstPackageName);// remote algo servers have only local Algo package locations
                 }
                 CopyProgress.SetMessage($"Uploading Algo package {dstPackageId} to {_selectedAgent.Name}");
-                await _selectedAgent.Model.UploadPackage(dstPackageName, srcPath, progressListener);
+                await _selectedAgent.Model.UploadPackage(dstPackageFileName, srcPath, progressListener);
                 _logger.Info($"Uploaded remote Algo package to as {dstPackageId} to {_selectedAgent.Name}");
                 if (_fromAgent.Model.IsRemote)
                     File.Delete(srcPath);

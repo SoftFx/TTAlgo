@@ -223,9 +223,9 @@ namespace TickTrader.BotTerminal
                 IsNewMode = false;
                 DisplayName = "Edit account";
 
-                AccountId.Unpack(_account.AccountId, out var server, out var userId);
-                _login = userId;
-                _server = server;
+                AccountId.Unpack(_account.AccountId, out var accId);
+                _login = accId.UserId;
+                _server = accId.Server;
             }
         }
 
