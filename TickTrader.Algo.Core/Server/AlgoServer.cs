@@ -55,7 +55,12 @@ namespace TickTrader.Algo.Core
         {
             await _packageProcessor.Stop(false);
             await Task.WhenAll(_repositories.Values.Select(r => r.Stop()));
-            await Task.WhenAll(_runtimesMap.Values.Select(r => StopRuntime(r)));
+            Task[] stopRuntimeTasks;
+            lock (_runtimesMap)
+            {
+                stopRuntimeTasks = _runtimesMap.Values.Select(r => StopRuntime(r)).ToArray();
+            }
+            await Task.WhenAll(stopRuntimeTasks);
             await _rpcServer.Stop();
         }
 
@@ -120,7 +125,10 @@ namespace TickTrader.Algo.Core
 
         internal void OnRuntimeStopped(string runtimeId)
         {
-            _runtimesMap.Remove(runtimeId);
+            lock (_runtimesMap)
+            {
+                _runtimesMap.Remove(runtimeId);
+            }
         }
 
 
@@ -165,7 +173,11 @@ namespace TickTrader.Algo.Core
                 case Repository.UpdateAction.Upsert:
                     var runtimeId = GenerateRuntimeId(packageId);
                     var runtime = new RuntimeModel(this, runtimeId, packageId, update.FilePath);
-                    _runtimesMap[runtimeId] = runtime;
+
+                    lock (_runtimesMap)
+                    {
+                        _runtimesMap[runtimeId] = runtime;
+                    }
 
                     var _ = LoadPackageInfo(packageId, update, runtime);
 
