@@ -48,9 +48,9 @@ namespace TickTrader.Algo.Domain
 
         double IMarginProfitCalc.Price => Price ?? 0;
 
-        double? IOrderLogDetailsInfo.Amount => IsImmediateOrCancel ? LastFillAmount : RemainingAmount;
+        double? IOrderLogDetailsInfo.Amount => RemainingAmount;
 
-        double? IOrderLogDetailsInfo.Price => IsImmediateOrCancel ? LastFillPrice : Price;
+        double? IOrderLogDetailsInfo.Price => Price;
 
         string IOrderLogDetailsInfo.OrderId => Id;
 

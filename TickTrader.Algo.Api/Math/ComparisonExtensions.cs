@@ -49,5 +49,14 @@
         {
             return a > b - Epsilon;
         }
+
+        /// <summary>
+        /// Determines if a in (-Epsilon; Epsilon). Equivalent of a equal to 0.0
+        /// </summary>
+        /// <returns>true if a is in expected range, false otherwise</returns>
+        public static bool IsZero(this double a)
+        {
+            return a < Epsilon && a > -Epsilon;
+        }
     }
 }

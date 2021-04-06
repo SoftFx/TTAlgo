@@ -70,9 +70,7 @@ namespace TickTrader.Algo.Core
 
         #region Trade Log Builder methods
 
-        public void LogOrderValidationSuccess(ITradeRequest request, OrderAction action, double lotSize = 1) => PrintTrade($"[Out] {SetEnding(action.ToString(), "ing")} {(action != OrderAction.Open && action != OrderAction.Modify ? $"#{request.OrderId} order" : GetOrderDetails((IOrderLogDetailsInfo)request, lotSize, "to "))} {request.LogDetails}");
-
-        private static string SetEnding(string str, string newEnd) => $"{str.TrimEnd('e')}{newEnd}";
+        public void LogOrderValidationSuccess(ITradeRequest request, OrderAction action, double lotSize = 1) => PrintTrade($"[Out] {ChangeEnding(action, "ing")} {(action != OrderAction.Open && action != OrderAction.Modify ? $"#{request.OrderId} order" : GetOrderDetails((IOrderLogDetailsInfo)request, lotSize, "to "))} {request.LogDetails}");
 
         public void LogRequestResults(ITradeRequest request, OrderResultEntity result, OrderAction action)
         {
@@ -80,19 +78,40 @@ namespace TickTrader.Algo.Core
             string prefix = result.IsServerResponse ? "[In]" : "[Self]";
             string suffix = null;
 
+            switch (action)
+            {
+                case OrderAction.Open:
+                    suffix = $"{GetOrderDetails(order, order?.SymbolInfo.LotSize)}";
+                    break;
+                case OrderAction.Modify:
+                    suffix = $"{GetOrderDetails(order, order?.SymbolInfo.LotSize, "to ")}";
+                    break;
+                case OrderAction.Close:
+                    if (order?.RemainingAmount.IsZero() == false)
+                        suffix = $", remaining volume={result.ResultingOrder.RemainingVolume}";
+                    break;
+                default:
+                    break;
+            }
+
             bool a = action == OrderAction.Open || action == OrderAction.Modify;
 
-            if (a)
-                suffix = $"{GetOrderDetails(order, order?.SymbolInfo.LotSize, "to ")}";
-
-            if (action == OrderAction.Close && order?.RemainingAmount != 0)
-                suffix = $", remaining volume={result.ResultingOrder.RemainingVolume}";
-
             if (result.IsCompleted)
-                PrintTradeSuccess($"{prefix} SUCCESS: Order {(!a ? $"#{order.Id} " : "")}{SetEnding(action.ToString(), "ed")}{suffix ?? request.LogDetails}");
+                PrintTradeSuccess($"{prefix} SUCCESS: Order {(!a ? $"#{order.Id} " : "")}{ChangeEnding(action, "ed")} {suffix ?? request.LogDetails}");
             else
-                PrintTradeFail($"{prefix} FAILED {SetEnding(action.ToString(), "ing")} {(request.OrderId != null ? $"order #{request.OrderId}" : "Null")} {suffix ?? request.LogDetails} error={result.ResultCode}");
+            {
+                string orderInformation = result.ResultingOrder is NullOrder ? string.Empty : $"order #{request?.OrderId} {suffix ?? request.LogDetails}";
+
+                PrintFailMessage(prefix, action, orderInformation, result.ResultCode);
+            }
         }
+
+        private void PrintFailMessage(string prefix, OrderAction action, string orderInformation, OrderCmdResultCodes errorCode)
+        {
+            PrintTradeFail($"{prefix} FAILED {ChangeEnding(action, "ing")}{orderInformation} error={errorCode}");
+        }
+
+        private static string ChangeEnding(OrderAction action, string newEnd) => $"{action.ToString().TrimEnd('e')}{newEnd}";
 
         #endregion
 
@@ -185,7 +204,7 @@ namespace TickTrader.Algo.Core
 
         private static void AppendExstraParams(StringBuilder str, double? value, string name, NumberFormatInfo format = null)
         {
-            if (value == null || double.IsNaN(value.Value) || value.Value.Lt(1e-9))
+            if (value == null || double.IsNaN(value.Value) || value.Value.IsZero())
                 return;
 
             str.Append(str.Length == 0 ? " (" : ", ").Append($"{name}:");
