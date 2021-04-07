@@ -99,6 +99,12 @@ message SymbolListResponse {
     repeated SymbolInfo symbols = 1;
 }
 
+message LastQuoteListRequest { }
+
+message LastQuoteListResponse {
+    repeated FullQuoteInfo quotes = 1;
+}
+
 message FullQuoteInfo {
     string symbol = 1;
     QuoteData data = 2;

@@ -85,6 +85,8 @@ namespace TickTrader.Algo.Core
                 return CurrencyListRequestHandler(proxyId);
             else if (payload.Is(SymbolListRequest.Descriptor))
                 return SymbolListRequestHandler(proxyId);
+            else if (payload.Is(LastQuoteListRequest.Descriptor))
+                return LastQuoteListRequestHandler(proxyId);
             else if (payload.Is(AccountInfoRequest.Descriptor))
                 return AccountInfoRequestHandler(proxyId);
             else if (payload.Is(OrderListRequest.Descriptor))
@@ -178,6 +180,16 @@ namespace TickTrader.Algo.Core
 
             var response = new SymbolListResponse();
             response.Symbols.Add(account.Metadata.GetSymbolMetadata());
+            return Task.FromResult(Any.Pack(response));
+        }
+
+        private Task<Any> LastQuoteListRequestHandler(string accountId)
+        {
+            if (!_server.TryGetAccount(accountId, out var account))
+                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown account" }));
+
+            var response = new LastQuoteListResponse();
+            response.Quotes.Add(account.Metadata.GetLastQuoteMetadata());
             return Task.FromResult(Any.Pack(response));
         }
 

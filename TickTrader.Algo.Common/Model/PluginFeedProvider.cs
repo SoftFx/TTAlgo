@@ -131,12 +131,17 @@ namespace TickTrader.Algo.Common.Model
 
         public IEnumerable<Domain.SymbolInfo> GetSymbolMetadata()
         {
-            return symbols.Snapshot.Select(m => m.Value).ToList();
+            return symbols.Snapshot.Values.ToList();
         }
 
         public IEnumerable<CurrencyInfo> GetCurrencyMetadata()
         {
             return currencies.Values.ToList();
+        }
+
+        public IEnumerable<FullQuoteInfo> GetLastQuoteMetadata()
+        {
+            return symbols.Snapshot.Values.Where(u => u.LastQuote != null).Select(u => (u.LastQuote as QuoteInfo)?.GetFullQuote()).ToList();
         }
 
         #endregion

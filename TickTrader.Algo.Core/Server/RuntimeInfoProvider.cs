@@ -2,6 +2,7 @@
 using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
@@ -19,6 +20,7 @@ namespace TickTrader.Algo.Core
 
         private List<CurrencyInfo> _currencies;
         private List<SymbolInfo> _symbols;
+        private List<FullQuoteInfo> _quotes;
         private AccountInfo _accInfo;
         private List<OrderInfo> _orders;
         private List<PositionInfo> _positions;
@@ -44,12 +46,22 @@ namespace TickTrader.Algo.Core
         {
             _currencies = await _account.GetCurrencyListAsync();
             _symbols = await _account.GetSymbolListAsync();
+            _quotes = await _account.GetLastQuotesListAsync();
 
             _accInfo = await _account.GetAccountInfoAsync();
             _orders = await _account.GetOrderListAsync();
             _positions = await _account.GetPositionListAsync();
+
+            ApplyLastQuoteListToSymbols();
         }
 
+        private void ApplyLastQuoteListToSymbols()
+        {
+            var symbolDict = _symbols.ToDictionary(k => k.Name, v => v);
+
+            foreach (var quote in _quotes)
+                symbolDict[quote.Symbol].UpdateRate(new QuoteInfo(quote));
+        }
 
         #region IPluginMetadata
 
@@ -61,6 +73,11 @@ namespace TickTrader.Algo.Core
         public IEnumerable<SymbolInfo> GetSymbolMetadata()
         {
             return _symbols;
+        }
+
+        public IEnumerable<FullQuoteInfo> GetLastQuoteMetadata()
+        {
+            return _quotes;
         }
 
         #endregion IPluginMetadata

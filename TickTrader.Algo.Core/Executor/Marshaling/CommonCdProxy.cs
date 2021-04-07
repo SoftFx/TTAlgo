@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
@@ -53,6 +49,11 @@ namespace TickTrader.Algo.Core
         public IEnumerable<Domain.SymbolInfo> GetSymbolMetadata()
         {
             return _meta.GetSymbolMetadata();
+        }
+
+        public IEnumerable<Domain.FullQuoteInfo> GetLastQuoteMetadata()
+        {
+            return _meta.GetLastQuoteMetadata();
         }
 
         #endregion

@@ -178,6 +178,14 @@ namespace TickTrader.Algo.Core
             return res.Symbols.ToList();
         }
 
+        internal async Task<List<FullQuoteInfo>> GetLastQuotesListAsync()
+        {
+            var context = new RpcResponseTaskContext<LastQuoteListResponse>(RpcHandler.SingleReponseHandler);
+            _session.Ask(RpcMessage.Request(Id, new LastQuoteListRequest()), context);
+            var res = await context.TaskSrc.Task;
+            return res.Quotes.ToList();
+        }
+
         internal AccountInfo GetAccountInfo()
         {
             return GetAccountInfoAsync().GetAwaiter().GetResult();
