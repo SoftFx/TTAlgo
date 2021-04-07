@@ -8,6 +8,6 @@ namespace TickTrader.Algo.Rpc
         public const string SystemUri = "system";
 
         public static readonly TimeSpan ConnectTimeout = TimeSpan.FromSeconds(10);
-        public static readonly TimeSpan HeartbeatTimeout = /*TimeSpan.FromSeconds(10);*/ TimeSpan.FromSeconds(5000); //debug
+        public static readonly TimeSpan HeartbeatTimeout = TimeSpan.FromSeconds(10); /*TimeSpan.FromSeconds(5000);*/ //debug
     }
 }
