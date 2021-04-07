@@ -39,13 +39,11 @@ namespace TickTrader.Algo.Core
 
         public OrderAccessor Remove(OrderInfo info, bool update = false)
         {
-            _entities.TryRemove(info.Id, out var order);
-
-            if (!update)
-                order?.Info.Update(info);
-
-            if (order != null)
+            if (_entities.TryRemove(info.Id, out var order))
             {
+                if (update)
+                    order?.Info.Update(info);
+
                 info.SetSymbol(order.SymbolInfo);
                 Removed?.Invoke(order);
                 RemovedInfo?.Invoke(info);

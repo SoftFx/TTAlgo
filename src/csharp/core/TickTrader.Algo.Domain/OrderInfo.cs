@@ -48,7 +48,7 @@ namespace TickTrader.Algo.Domain
 
         double IMarginProfitCalc.Price => Price ?? 0;
 
-        double? IOrderLogDetailsInfo.Amount => RemainingAmount;
+        double? IOrderLogDetailsInfo.Amount => Type == Types.Type.Market ? LastFillAmount : RemainingAmount;
 
         double? IOrderLogDetailsInfo.Price => Price;
 

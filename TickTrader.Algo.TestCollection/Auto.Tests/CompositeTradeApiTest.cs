@@ -100,8 +100,8 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             {
                 await PerfomOpenModifyTests(GenerateTemplate(test));
 
-                if (test.Async && test.Type != OrderType.Market) //incorrect for Gross Market
-                    await ModifyCancelTest(GenerateTemplate(test));
+                //if (test.Async && test.Type != OrderType.Market) //incorrect for Gross Market
+                //    await ModifyCancelTest(GenerateTemplate(test));
             }
 
             await PerformExecutionTests(test);
@@ -646,10 +646,10 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
             var argsObj = await eventTask;
 
-            if (argsObj is TArgs)
+            if (argsObj is TArgs args)
             {
                 PrintLog($"Event received: {argsObj.GetType().Name}");
-                return (TArgs)argsObj;
+                return args;
             }
 
             throw new Exception($"Unexpected event: Received {argsObj.GetType().Name} while expecting {typeof(TArgs).Name}");

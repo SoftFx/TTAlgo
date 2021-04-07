@@ -638,7 +638,6 @@
     </Compile>
     <Compile Include="Views.TradeInfo\OrderListViewModel.cs" />
     <Compile Include="Views.TradeInfo\PositionListViewModel.cs" />
-    <Compile Include="Views\NotificationsViewModel.cs" />
     <Compile Include="Views.ActionDisplay\ProgressViewModel.cs" />
     <Compile Include="Views\ShellViewModel.cs" />
     <Compile Include="Views\ShutdownDialogView.xaml.cs">

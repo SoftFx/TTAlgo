@@ -70,7 +70,25 @@ namespace TickTrader.Algo.Core
 
         #region Trade Log Builder methods
 
-        public void LogOrderValidationSuccess(ITradeRequest request, OrderAction action, double lotSize = 1) => PrintTrade($"[Out] {ChangeEnding(action, "ing")} {(action != OrderAction.Open && action != OrderAction.Modify ? $"#{request.OrderId} order" : GetOrderDetails((IOrderLogDetailsInfo)request, lotSize, "to "))} {request.LogDetails}");
+        public void LogOrderValidationSuccess(ITradeRequest request, OrderAction action, double lotSize = 1)
+        {
+            string suffix;
+
+            switch (action)
+            {
+                case OrderAction.Open:
+                    suffix = GetOrderDetails((IOrderLogDetailsInfo)request, lotSize);
+                    break;
+                case OrderAction.Modify:
+                    suffix = GetOrderDetails((IOrderLogDetailsInfo)request, lotSize, "to ");
+                    break;
+                default:
+                    suffix = $"#{request.OrderId} order";
+                    break;
+            }
+
+            PrintTrade($"[Out] {ChangeEnding(action, "ing")} {suffix} {request.LogDetails}");
+        }
 
         public void LogRequestResults(ITradeRequest request, OrderResultEntity result, OrderAction action)
         {
@@ -78,13 +96,15 @@ namespace TickTrader.Algo.Core
             string prefix = result.IsServerResponse ? "[In]" : "[Self]";
             string suffix = null;
 
+            bool a = action == OrderAction.Open || action == OrderAction.Modify;
+
             switch (action)
             {
                 case OrderAction.Open:
-                    suffix = $"{GetOrderDetails(order, order?.SymbolInfo.LotSize)}";
+                    suffix = GetOrderDetails(order, order?.SymbolInfo.LotSize);
                     break;
                 case OrderAction.Modify:
-                    suffix = $"{GetOrderDetails(order, order?.SymbolInfo.LotSize, "to ")}";
+                    suffix = GetOrderDetails(order, order?.SymbolInfo.LotSize, "to ");
                     break;
                 case OrderAction.Close:
                     if (order?.RemainingAmount.IsZero() == false)
@@ -94,13 +114,11 @@ namespace TickTrader.Algo.Core
                     break;
             }
 
-            bool a = action == OrderAction.Open || action == OrderAction.Modify;
-
             if (result.IsCompleted)
-                PrintTradeSuccess($"{prefix} SUCCESS: Order {(!a ? $"#{order.Id} " : "")}{ChangeEnding(action, "ed")} {suffix ?? request.LogDetails}");
+                PrintTradeSuccess($"{prefix} SUCCESS: {(!a ? $"Order #{order.Id} " : "")}{ChangeEnding(action, "ed")} {suffix ?? request.LogDetails}");
             else
             {
-                string orderInformation = result.ResultingOrder is NullOrder ? string.Empty : $"order #{request?.OrderId} {suffix ?? request.LogDetails}";
+                string orderInformation = result.ResultingOrder is NullOrder ? string.Empty : suffix ?? request.LogDetails;
 
                 PrintFailMessage(prefix, action, orderInformation, result.ResultCode);
             }
@@ -132,8 +150,8 @@ namespace TickTrader.Algo.Core
                     break;
                 case ExecAction.Filled:
                 case ExecAction.Closed:
-                    builder.Append($"Order #{order.Id} {action} by ").AppendNumber(order.LastFillAmount ?? double.NaN);
-                    builder.Append(" at price ").AppendNumber(order.LastFillPrice ?? double.NaN, GetFormat(order.SymbolInfo.Digits));
+                    AppendFilledCloseOrderInfo(builder, order, action, order.IsStopOrder ? order.StopPrice : order.Price,
+                                               order.IsImmediateOrCancel ? order.LastFillAmount : order.ExecAmount); //Remaning Amount
                     goto case ExecAction.Activated;
                 case ExecAction.Activated:
                     if (action == ExecAction.Activated)
@@ -146,6 +164,12 @@ namespace TickTrader.Algo.Core
             }
 
             Logger.OnPrintTrade(builder.ToString());
+        }
+
+        private static void AppendFilledCloseOrderInfo(StringBuilder builder, OrderInfo order, ExecAction action, double? price, double? amount)
+        {
+            builder.Append($"Order #{order.Id} {action} by ").AppendNumber((amount ?? double.NaN) / order.SymbolInfo.LotSize);
+            builder.Append(" at price ").AppendNumber(price ?? double.NaN, GetFormat(order.SymbolInfo.Digits));
         }
 
         public void NotifyPositionSplitting(NetPosition position) => Logger.OnPrintTrade($"Position #{position.Id} was splitted to {position.Side} {position.Volume:F3} {position.Symbol} at price {position.Price}");
@@ -171,7 +195,7 @@ namespace TickTrader.Algo.Core
 
             var builder = new StringBuilder(1 << 8);
 
-            if (info.OrderId != null)
+            if (!string.IsNullOrEmpty(info.OrderId))
                 builder.Append($"#{info.OrderId} ");
 
             builder.Append($"{info.Type} {suffix}{info.Side} ");
@@ -188,12 +212,12 @@ namespace TickTrader.Algo.Core
 
             builder.Append(extraParams);
 
-            if (!double.IsNaN(info.Price ?? 0))
+            if (info.Price.HasValue && !info.Price.Value.IsZero())
                 builder.Append(" at price ").AppendNumber(info.Price ?? 0, DefaultPriceFormat);
 
-            if (info.StopPrice != null)
+            if (info.StopPrice.HasValue && !info.StopPrice.Value.IsZero())
             {
-                if (info.Price != null)
+                if (info.Price.HasValue && !info.Price.Value.IsZero())
                     builder.Append(", stop price ").AppendNumber(info.StopPrice.Value, DefaultPriceFormat);
                 else
                     builder.Append(" at stop price ").AppendNumber(info.StopPrice.Value, DefaultPriceFormat);
