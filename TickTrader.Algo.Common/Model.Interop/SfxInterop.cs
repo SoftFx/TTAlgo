@@ -865,6 +865,7 @@ namespace TickTrader.Algo.Common.Model
                 ImmediateOrCancel = report.ImmediateOrCancelFlag,
                 MarketWithSlippage = report.MarketWithSlippage,
                 TradePrice = report.TradePrice ?? 0,
+                RequestedOpenPrice = report.InitialPrice,
                 Assets = report.Assets.Select(Convert).ToArray(),
                 StopPrice = report.StopPrice,
                 AveragePrice = report.AveragePrice,

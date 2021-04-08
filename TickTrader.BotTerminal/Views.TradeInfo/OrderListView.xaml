@@ -38,7 +38,7 @@
                                 <StackPanel Orientation="Vertical">
                                     <StackPanel Orientation="Horizontal" Visibility="{Binding InstanceId.Value, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Instance ID: " VerticalAlignment="Center" />
-                                        <TextBlock Text="{Binding InstanceId.Value}" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding InstanceId.DisplayValue}" VerticalAlignment="Center" />
                                     </StackPanel>
 
                                     <StackPanel Orientation="Horizontal" Visibility="{Binding LimitPrice.Value, Converter={StaticResource NullOrEmptyToVis}}">
@@ -58,21 +58,21 @@
 
                                     <StackPanel Orientation="Horizontal" Visibility="{Binding Expiration.Value, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Expiration: " VerticalAlignment="Center" />
-                                        <TextBlock Text="{Binding Expiration.Value, Converter={StaticResource FullDateTimeFormat}}" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Expiration.DisplayValue, Converter={StaticResource FullDateTimeFormat}}" VerticalAlignment="Center" />
                                     </StackPanel>
 
                                     <StackPanel Orientation="Horizontal" Visibility="{Binding OrderExecutionOptions.Value, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Options: " VerticalAlignment="Center" />
-                                        <TextBlock Text="{Binding OrderExecutionOptions.Value}" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding OrderExecutionOptions.DisplayValue}" VerticalAlignment="Center" />
                                     </StackPanel>
 
                                     <StackPanel Orientation="Horizontal" Visibility="{Binding Slippage.Value, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Slippage: " VerticalAlignment="Center" />
-                                        <TextBlock Text="{Binding Slippage.Value, Converter={StaticResource Round}}" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Slippage.DisplayValue, Converter={StaticResource Round}}" VerticalAlignment="Center" />
                                     </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Visibility="{Binding Order.OCORelatedOrderId, Converter={StaticResource NullOrEmptyToVis}}">
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding RelatedOrderId.Value, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Related Order Id: " VerticalAlignment="Center" />
-                                        <TextBlock Text="{Binding Order.OCORelatedOrderId}" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding RelatedOrderId.DisplayValue}" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </StackPanel>
                             </Setter.Value>

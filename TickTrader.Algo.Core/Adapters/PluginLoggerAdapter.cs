@@ -181,11 +181,10 @@ namespace TickTrader.Algo.Core
             if (smbInfo == null)
                 return;
 
-            var priceFomat = FormatExtentions.CreateTradeFormatInfo(5);
             var rate = smbInfo.LastQuote;
 
-            builder.Append(", currentRate={").AppendNumber(rate.Bid, priceFomat);
-            builder.Append('/').AppendNumber(rate.Ask, priceFomat).Append('}');
+            builder.Append(", currentRate={").AppendNumber(rate.Bid, DefaultPriceFormat);
+            builder.Append('/').AppendNumber(rate.Ask, DefaultPriceFormat).Append('}');
         }
 
         private static string GetOrderDetails(IOrderLogDetailsInfo info, double? lotSize, string suffix = "")

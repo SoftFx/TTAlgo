@@ -32,6 +32,7 @@ namespace TickTrader.BotTerminal
             Tag = _varContext.AddProperty(order.UserTag);
             ParentOrderId = _varContext.AddProperty(order.ParentOrderId);
             InstanceId = _varContext.AddProperty(order.InstanceId);
+            RelatedOrderId = _varContext.AddProperty(order.OcoRelatedOrderId);
             OrderExecutionOptions = _varContext.AddProperty(order.Options.GetString());
 
             TakeProfit = _varContext.AddProperty(order.TakeProfit);
@@ -64,6 +65,7 @@ namespace TickTrader.BotTerminal
         public Property<string> OrderExecutionOptions { get; }
         public Property<string> ParentOrderId { get; }
         public Property<string> InstanceId { get; }
+        public Property<string> RelatedOrderId { get; }
 
         public Property<double?> TakeProfit { get; }
         public Property<double?> StopLoss { get; }
@@ -74,7 +76,7 @@ namespace TickTrader.BotTerminal
         {
             Price.Value = _order.Type == OrderInfo.Types.Type.Stop || _order.Type == OrderInfo.Types.Type.StopLimit ? _order.StopPrice : _order.Price;
             StopPrice.Value = _order.StopPrice;
-            LimitPrice.Value = _order.Type == OrderInfo.Types.Type.Limit || _order.Type == OrderInfo.Types.Type.StopLimit ? _order.Price : 0;
+            LimitPrice.Value = _order.Type == OrderInfo.Types.Type.Limit || _order.Type == OrderInfo.Types.Type.StopLimit ? _order.Price : null;
             ReqOpenPrice.Value = _order.RequestedOpenPrice;
 
             Volume.Value = _order.RequestedAmount;
@@ -94,8 +96,9 @@ namespace TickTrader.BotTerminal
             Modified.Value = _order.Modified?.ToDateTime();
 
             Comment.Value = _order.Comment;
-            OrderExecutionOptions.Value = _order.Options.ToString();
+            OrderExecutionOptions.Value = _order.Options.GetString();
             ParentOrderId.Value = _order.ParentOrderId;
+            RelatedOrderId.Value = _order.OcoRelatedOrderId;
 
             if (CompositeTag.TryParse(_order.UserTag, out CompositeTag compositeTag))
             {
@@ -105,7 +108,7 @@ namespace TickTrader.BotTerminal
             else
             {
                 Tag.Value = _order.UserTag;
-                InstanceId.Value = "";
+                InstanceId.Value = _order.InstanceId;
             }
 
             TakeProfit.Value = _order.TakeProfit;

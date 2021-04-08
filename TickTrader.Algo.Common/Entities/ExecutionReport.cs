@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System;
+using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model
@@ -54,7 +55,7 @@ namespace TickTrader.Algo.Common.Model
 
         public double RequestedAmount => InitialVolume ?? 0;
 
-        public bool IsHidden => MaxVisibleAmount.HasValue && MaxVisibleAmount.Value < 1e-9;
+        public bool IsHidden => MaxVisibleAmount.HasValue && !MaxVisibleAmount.Value.IsZero();
 
         decimal IMarginProfitCalc.RemainingAmount => (decimal)LeavesVolume;
 
@@ -85,8 +86,14 @@ namespace TickTrader.Algo.Common.Model
             if (ImmediateOrCancel)
                 options |= Domain.OrderOptions.ImmediateOrCancel;
 
+            if (MarketWithSlippage)
+                options |= Domain.OrderOptions.MarketWithSlippage;
+
             if (IsHidden)
                 options |= Domain.OrderOptions.HiddenIceberg;
+
+            if (IsOneCancelsTheOther)
+                options |= Domain.OrderOptions.OneCancelsTheOther;
 
             return options;
         }
