@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 
@@ -361,12 +356,12 @@ namespace TickTrader.BotTerminal
 
         protected virtual string GetOrderExecutionOption(TradeReportInfo transaction)
         {
-            return transaction.OrderOptions.ToString();
+            return transaction.OrderOptions.GetString();
         }
 
         protected virtual OrderType? GetInitialOrderType(TradeReportInfo transaction)
         {
-            return IsBalanceTransaction ? null : (OrderType?)transaction.RequestedOrderType;
+            return IsBalanceTransaction ? null : (OrderType?)transaction.RequestedOrderType.ToApiEnum();
         }
 
         protected virtual double? GetReqOpenPrice(TradeReportInfo transaction)
