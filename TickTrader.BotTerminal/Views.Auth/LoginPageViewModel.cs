@@ -88,7 +88,7 @@ namespace TickTrader.BotTerminal
         }
 
         public ObservableCollection<ServerAuthEntry> Servers { get { return cManager.Servers; } }
-        public IEnumerable<AccountAuthEntry> Accounts => cManager.Accounts.Where(u => u.Server.Address == ResolveServerAddress()).OrderBy(u => long.Parse(u.Login));
+        public IEnumerable<AccountAuthEntry> Accounts => cManager.Accounts.Where(u => u.Server.Address == ResolveServerAddress()).OrderBy(u => u.Login.Length).ThenBy(u => u.Login);
 
         public bool SavePassword
         {
