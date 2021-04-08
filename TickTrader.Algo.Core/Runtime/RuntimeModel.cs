@@ -76,6 +76,7 @@ namespace TickTrader.Algo.Core
 
             try
             {
+                await _launchTask.Task;
                 await Task.WhenAny(_proxy.Stop(), Task.Delay(ShutdownTimeout));
                 OnDetached();
                 await _runtimeHost.Stop();
