@@ -162,7 +162,7 @@ namespace TickTrader.BotTerminal
                 IncludeSubdirectories = false,
             };
 
-            _watcher.Created += AddNewPacakgeEventHandling;
+            _watcher.Created += AddNewPackageEventHandling;
             _watcher.Deleted += RemovePackageEventHandling;
             _watcher.Renamed += RenamePackageEventHandling;
 
@@ -174,7 +174,7 @@ namespace TickTrader.BotTerminal
             if (_watcher == null)
                 return;
 
-            _watcher.Created -= AddNewPacakgeEventHandling;
+            _watcher.Created -= AddNewPackageEventHandling;
             _watcher.Deleted -= RemovePackageEventHandling;
             _watcher.Renamed -= RenamePackageEventHandling;
             _watcher.Dispose();
@@ -182,7 +182,13 @@ namespace TickTrader.BotTerminal
             _localPackages.Clear();
         }
 
-        private void AddNewPacakgeEventHandling(object sender, FileSystemEventArgs e) => RunLocalPackageEventHandling(() => _localPackages.Add(e.Name));
+        private void AddNewPackageEventHandling(object sender, FileSystemEventArgs e) => RunLocalPackageEventHandling(() =>
+        {
+            _localPackages.Add(e.Name);
+
+            if (SourceCollection.Count == 1)
+                LocalPackageName.Value = e.Name;
+        });
 
         private void RemovePackageEventHandling(object sender, FileSystemEventArgs e) => RunLocalPackageEventHandling(() => _localPackages.Remove(e.Name));
 
@@ -197,6 +203,13 @@ namespace TickTrader.BotTerminal
                 LocalPackageName.Value = e.Name;
         });
 
+        private void UpdateAgentPackage(ListUpdateArgs<AlgoPackageViewModel> args)
+        {
+            RefreshTargetName();
+
+            if (args.Action != DLinqAction.Remove && SourceCollection.Count == 1)
+                AlgoServerPackageName.Value = args.NewItem.FileName;
+        }
 
         private void RunLocalPackageEventHandling(System.Action handling)
         {
@@ -257,8 +270,5 @@ namespace TickTrader.BotTerminal
         protected string GetAlgoServerPackageName(string packageId) => SelectedAlgoServer.PackageList.FirstOrDefault(p => string.Equals(p.FileName, packageId, StringComparison.InvariantCultureIgnoreCase))?.FileName;
 
         protected string GetLocalPackageName(string packageId) => _localPackages.FirstOrDefault(u => u.Equals(packageId, StringComparison.InvariantCultureIgnoreCase));
-
-
-        private void UpdateAgentPackage(ListUpdateArgs<AlgoPackageViewModel> args) => RefreshTargetName();
     }
 }
