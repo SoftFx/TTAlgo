@@ -1,10 +1,9 @@
 ﻿using Google.Protobuf;
-using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Reactive.Subjects;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Rpc
@@ -15,6 +14,16 @@ namespace TickTrader.Algo.Rpc
         Connecting = 1,
         Connected = 2,
         Disconnecting = 3,
+    }
+
+    internal enum RpcSessionEvent
+    {
+        ConnectionRequest = 0,
+        ConnectionSuccess = 1,
+        ConnectionError = 2,
+        HeartbeatMismatch = 3,
+        DisconnectRequest = 4,
+        DisconnectNotification = 5,
     }
 
 
@@ -36,7 +45,7 @@ namespace TickTrader.Algo.Rpc
     }
 
 
-    public class RpcSession : IObserver<RpcMessage>
+    public class RpcSession
     {
         private static readonly RpcMessage HeartbeatMessage = RpcMessage.Notification(new Heartbeat());
 
@@ -44,14 +53,17 @@ namespace TickTrader.Algo.Rpc
         private readonly IRpcHost _rpcHost;
         private readonly ConcurrentDictionary<string, IRpcResponseContext> _pendingRequests = new ConcurrentDictionary<string, IRpcResponseContext>();
         private readonly Subject<RpcSessionStateChangedArgs> _sessionStateSubject = new Subject<RpcSessionStateChangedArgs>();
+        private readonly Channel<RpcSessionEvent> _eventBus = Channel.CreateUnbounded<RpcSessionEvent>();
 
         private IRpcHandler _rpcHandler;
         private Task _heartbeatTask;
         private CancellationTokenSource _heartbeatCancelTokenSrc;
         private int _inHeartbeatCnt, _outHeartbeatCnt;
-        private TaskCompletionSource<bool> _initTaskSrc;
+        //private TaskCompletionSource<bool> _initTaskSrc;
         private TaskCompletionSource<bool> _connectTaskSrc;
         private TaskCompletionSource<bool> _disconnectTaskSrc;
+        private ProtocolSpec _protocol;
+        private string _disconnectReason;
 
 
         public RpcSessionState State { get; private set; }
@@ -64,25 +76,19 @@ namespace TickTrader.Algo.Rpc
             _transport = transport;
             _rpcHost = rpcHost;
 
-            _initTaskSrc = new TaskCompletionSource<bool>();
-            var _ = HandleMessages();
+            var _ = HandleEvents();
         }
 
 
         public Task Connect(ProtocolSpec protocol = null)
         {
-            _initTaskSrc.TrySetResult(true);
-
             if (State != RpcSessionState.Disconnected)
                 return _connectTaskSrc?.Task ?? Task.CompletedTask;
 
+            _protocol = protocol;
             _connectTaskSrc = new TaskCompletionSource<bool>();
 
-            if (protocol != null)
-            {
-                ChangeState(RpcSessionState.Connecting);
-                SendMessage(RpcMessage.Request(new ConnectRequest { Protocol = protocol }));
-            }
+            PushEvent(RpcSessionEvent.ConnectionRequest);
 
             return _connectTaskSrc.Task;
         }
@@ -93,7 +99,10 @@ namespace TickTrader.Algo.Rpc
                 return _disconnectTaskSrc?.Task ?? Task.CompletedTask;
 
             _disconnectTaskSrc = new TaskCompletionSource<bool>();
-            SendDisconnect(reason);
+
+            _disconnectReason = reason;
+            PushEvent(RpcSessionEvent.DisconnectRequest);
+
             return _disconnectTaskSrc.Task;
         }
 
@@ -117,25 +126,6 @@ namespace TickTrader.Algo.Rpc
         }
 
 
-        #region IObsever<RpcMessage> implementation
-
-        void IObserver<RpcMessage>.OnNext(RpcMessage msg)
-        {
-            HandleMessage(msg);
-        }
-
-        void IObserver<RpcMessage>.OnCompleted()
-        {
-            OnDisconnected(false);
-        }
-
-        void IObserver<RpcMessage>.OnError(Exception error)
-        {
-            OnDisconnected(false);
-        }
-
-        #endregion IObsever<RpcMessage> implementation
-
         internal void SendMessage(RpcMessage msg)
         {
             //Debug.WriteLine($"RPC < {AppDomain.CurrentDomain.Id}: {msg}");
@@ -152,6 +142,73 @@ namespace TickTrader.Algo.Rpc
         }
 
 
+        private async Task HandleEvents()
+        {
+            await Task.Yield();
+
+            var reader = _eventBus.Reader;
+
+            while(!reader.Completion.IsCompleted)
+            {
+                var canRead = await reader.WaitToReadAsync().ConfigureAwait(false);
+                if (!canRead)
+                    return;
+
+                while (reader.TryRead(out var sessionEvent))
+                    await HandleEvent(sessionEvent);
+            }
+        }
+
+        private async Task HandleEvent(RpcSessionEvent sessionEvent)
+        {
+            if (State == RpcSessionState.Disconnected && sessionEvent == RpcSessionEvent.ConnectionRequest)
+            {
+                ChangeState(RpcSessionState.Connecting);
+
+                var _ = HandleMessages();
+
+                if (_protocol != null)
+                {
+                    SendMessage(RpcMessage.Request(new ConnectRequest { Protocol = _protocol }));
+                }
+            }
+            else if (State == RpcSessionState.Connecting && sessionEvent == RpcSessionEvent.ConnectionSuccess)
+            {
+                ChangeState(RpcSessionState.Connected);
+                _connectTaskSrc.TrySetResult(true);
+                _heartbeatCancelTokenSrc = new CancellationTokenSource();
+                _heartbeatTask = HeartbeatLoop(_heartbeatCancelTokenSrc.Token);
+            }
+            else if (State == RpcSessionState.Connecting && sessionEvent == RpcSessionEvent.ConnectionError)
+            {
+                ChangeState(RpcSessionState.Disconnected);
+                _connectTaskSrc.TrySetResult(false);
+            }
+            else if (State == RpcSessionState.Connected && sessionEvent == RpcSessionEvent.ConnectionError)
+            {
+                await DisconnectRoutine(false, true);
+            }
+            else if (State == RpcSessionState.Connected && sessionEvent == RpcSessionEvent.HeartbeatMismatch)
+            {
+                SendMessage(RpcMessage.Notification(new DisconnectMsg { Reason = _disconnectReason }));
+                await DisconnectRoutine(false, true);
+            }
+            else if (State == RpcSessionState.Connected && sessionEvent == RpcSessionEvent.DisconnectRequest)
+            {
+                SendMessage(RpcMessage.Notification(new DisconnectMsg { Reason = _disconnectReason }));
+                await DisconnectRoutine(true, false);
+            }
+            else if (State == RpcSessionState.Connected && sessionEvent == RpcSessionEvent.DisconnectNotification)
+            {
+                await DisconnectRoutine(true, false);
+            }
+        }
+
+        private void PushEvent(RpcSessionEvent sessionEvent)
+        {
+            _eventBus.Writer.TryWrite(sessionEvent);
+        }
+        
         private async Task HandleMessages()
         {
             await Task.Yield();
@@ -162,25 +219,18 @@ namespace TickTrader.Algo.Rpc
             {
                 var canRead = await readChannel.WaitToReadAsync().ConfigureAwait(false);
                 if (!canRead)
-                {
-                    OnDisconnected(false);
                     break;
-                }
 
-                if (readChannel.TryRead(out var msg))
+                while (readChannel.TryRead(out var msg))
                     HandleMessage(msg);
             }
+            PushEvent(RpcSessionEvent.ConnectionError);
         }
         
         private void ChangeState(RpcSessionState newState)
         {
             var changeArgs = new RpcSessionStateChangedArgs(this, State, newState);
             State = newState;
-            if (newState == RpcSessionState.Connected)
-            {
-                _heartbeatCancelTokenSrc = new CancellationTokenSource();
-                _heartbeatTask = HeartbeatLoop(_heartbeatCancelTokenSrc.Token);
-            }
             _sessionStateSubject.OnNext(changeArgs);
         }
 
@@ -193,41 +243,27 @@ namespace TickTrader.Algo.Rpc
         //    SendMessage(RpcMessage.Request(new ConnectRequest { Protocol = protocol }));
         //}
 
-        private void SendDisconnect(string reason)
+        private async Task DisconnectRoutine(bool isExpected, bool fast)
         {
-            if (State != RpcSessionState.Connected)
-                return;
-
             ChangeState(RpcSessionState.Disconnecting);
-            _heartbeatCancelTokenSrc.Cancel();
-            SendMessage(RpcMessage.Request(new DisconnectRequest { Reason = reason }));
-        }
-
-        private void OnDisconnected(bool isExpected)
-        {
-            if (State == RpcSessionState.Disconnected)
-                return;
-
             if (_heartbeatTask != null)
             {
                 _heartbeatCancelTokenSrc?.Cancel();
-                _heartbeatTask?.GetAwaiter().GetResult();
+                await _heartbeatTask;
             }
-            _transport.Close();
+            await _transport.Close();
             _disconnectTaskSrc?.TrySetResult(isExpected);
             ChangeState(RpcSessionState.Disconnected);
         }
 
         private void ConnectRequestHandler(RpcMessage msg)
         {
-            if (State != RpcSessionState.Disconnected)
-                return;
-
             var connectSuссessful = false;
 
             try
             {
-                ChangeState(RpcSessionState.Connecting);
+                if (State != RpcSessionState.Connecting)
+                    throw new RpcStateException($"Session in '{State}' state");
 
                 var request = msg.Payload.Unpack<ConnectRequest>();
                 var response = ExecuteConnectRequest(request.Protocol);
@@ -246,9 +282,7 @@ namespace TickTrader.Algo.Rpc
             }
             finally
             {
-                ChangeState(connectSuссessful ? RpcSessionState.Connected : RpcSessionState.Disconnected);
-                _initTaskSrc.Task.GetAwaiter().GetResult();
-                _connectTaskSrc.TrySetResult(connectSuссessful);
+                PushEvent(connectSuссessful ? RpcSessionEvent.ConnectionSuccess : RpcSessionEvent.ConnectionError);
             }
         }
 
@@ -268,7 +302,6 @@ namespace TickTrader.Algo.Rpc
             if (initError != null)
                 return initError;
 
-
             return new ConnectResponse { Protocol = protocol };
         }
 
@@ -283,8 +316,7 @@ namespace TickTrader.Algo.Rpc
                 return;
             }
 
-            ChangeState(RpcSessionState.Connected);
-            _connectTaskSrc.TrySetResult(true);
+            PushEvent(RpcSessionEvent.ConnectionSuccess);
         }
 
         private ErrorResponse InitRpcHandler(ProtocolSpec protocol)
@@ -314,20 +346,6 @@ namespace TickTrader.Algo.Rpc
             return null;
         }
 
-        private void DisconnectRequestHandler(RpcMessage msg)
-        {
-            if (State != RpcSessionState.Connected)
-                return;
-
-            //var request = payload.Unpack<DisconnectRequest>();
-            ChangeState(RpcSessionState.Disconnecting);
-            _heartbeatCancelTokenSrc.Cancel();
-            _heartbeatTask.GetAwaiter().GetResult();
-            SendMessage(RpcMessage.Response(msg.CallId, new DisconnectResponse()));
-            _transport.Close();
-            ChangeState(RpcSessionState.Disconnected);
-        }
-
         private async Task HeartbeatLoop(CancellationToken cancelToken)
         {
             try
@@ -338,9 +356,8 @@ namespace TickTrader.Algo.Rpc
                     SendMessage(HeartbeatMessage);
                     if (Math.Abs(_inHeartbeatCnt - _outHeartbeatCnt) > RpcConstants.HeartbeatCntThreshold)
                     {
-                        var error = new ErrorResponse { Message = "Heartbeat count mismatch. Connection is out of sync", Details = $"In: {_inHeartbeatCnt} / Out: {_outHeartbeatCnt}" };
-                        SendMessage(RpcMessage.Notification(error));
-                        await _transport.Close();
+                        _disconnectReason = $"Heartbeat count mismatch. Connection is out of sync (In: {_inHeartbeatCnt} / Out: {_outHeartbeatCnt}).";
+                        PushEvent(RpcSessionEvent.HeartbeatMismatch);
                         return;
                     }
                     await Task.Delay(RpcConstants.HeartbeatTimeout, cancelToken).ConfigureAwait(false);
@@ -366,13 +383,10 @@ namespace TickTrader.Algo.Rpc
                 var response = msg.Payload.Unpack<ConnectResponse>();
                 ConnectResponseHandler(response.Protocol);
             }
-            else if (msg.Payload.Is(DisconnectRequest.Descriptor))
+            else if (msg.Payload.Is(DisconnectMsg.Descriptor))
             {
-                DisconnectRequestHandler(msg);
-            }
-            else if (msg.Payload.Is(DisconnectResponse.Descriptor))
-            {
-                OnDisconnected(true);
+                _disconnectReason = msg.Payload.Unpack<DisconnectMsg>().Reason;
+                PushEvent(RpcSessionEvent.DisconnectNotification);
             }
             else
             {

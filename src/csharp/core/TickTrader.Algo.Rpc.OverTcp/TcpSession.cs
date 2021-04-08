@@ -58,14 +58,17 @@ namespace TickTrader.Algo.Rpc.OverTcp
 
         public async Task Stop()
         {
-            _cancelTokenSrc.Cancel();
+            //_cancelTokenSrc.Cancel();
+            _readChannel.Writer.TryComplete();
+            _writeChannel.Writer.TryComplete();
 
-            await _listenTask;
-            await _sendTask;
-            await _readTask;
             await _writeTask;
+            await _sendTask;
 
             _socket.Close();
+
+            await _listenTask;
+            await _readTask;
         }
 
         public Task Close()
@@ -79,6 +82,7 @@ namespace TickTrader.Algo.Rpc.OverTcp
             var pipeReader = _listenPipe.Reader;
             var writer = _readChannel.Writer;
 
+            var msgChannelCompleted = false;
             try
             {
                 while (!cancelToken.IsCancellationRequested)
@@ -100,9 +104,12 @@ namespace TickTrader.Algo.Rpc.OverTcp
                         var msg = RpcMessage.Parser.ParseFrom(buffer.Slice(MsgLengthPrefixSize, msgSize));
                         if (!writer.TryWrite(msg))
                         {
-                            var canWrite = await writer.WaitToWriteAsync(cancelToken).ConfigureAwait(false);
+                            var canWrite = await writer.WaitToWriteAsync().ConfigureAwait(false);
                             if (!canWrite)
-                                return;
+                            {
+                                msgChannelCompleted = true;
+                                break;
+                            }
 
                             if (!writer.TryWrite(msg))
                                 break;
@@ -111,13 +118,16 @@ namespace TickTrader.Algo.Rpc.OverTcp
                         buffer = buffer.Slice(msgSize + MsgLengthPrefixSize);
                     }
 
+                    if (msgChannelCompleted)
+                        break;
+
                     pipeReader.AdvanceTo(buffer.Start, buffer.End);
                 }
             }
             catch (Exception) { }
 
             pipeReader.Complete();
-            writer.Complete();
+            writer.TryComplete();
         }
 
         private async Task WriteLoop(CancellationToken cancelToken)
@@ -129,9 +139,9 @@ namespace TickTrader.Algo.Rpc.OverTcp
             {
                 while (!cancelToken.IsCancellationRequested)
                 {
-                    var canRead = await reader.WaitToReadAsync(cancelToken).ConfigureAwait(false);
+                    var canRead = await reader.WaitToReadAsync().ConfigureAwait(false);
                     if (!canRead)
-                        return;
+                        break;
 
                     for (var cnt = 0; reader.TryRead(out var msg) && cnt < WriteBatchSize; cnt++)
                     {
@@ -145,13 +155,13 @@ namespace TickTrader.Algo.Rpc.OverTcp
                         pipeWriter.Advance(len);
                     }
 
-                    await pipeWriter.FlushAsync(cancelToken).ConfigureAwait(false);
+                    await pipeWriter.FlushAsync().ConfigureAwait(false);
                 }
             }
             catch (Exception) { }
 
             pipeWriter.Complete();
-            _writeChannel.Writer.Complete();
+            _writeChannel.Writer.TryComplete();
         }
 
         private async Task ListenLoop(CancellationToken cancelToken)
@@ -186,20 +196,16 @@ namespace TickTrader.Algo.Rpc.OverTcp
             //Func<IAsyncResult, int> socketEndSend = _socket.EndSend;
 
             var pipeReader = _sendPipe.Reader;
-            while (!cancelToken.IsCancellationRequested)
+            try
             {
-                var res = await pipeReader.ReadAsync().ConfigureAwait(false);
-                if (res.IsCanceled || res.IsCompleted)
+                while (!cancelToken.IsCancellationRequested)
                 {
-                    return;
-                }
-                try
-                {
+                    var res = await pipeReader.ReadAsync().ConfigureAwait(false);
+                    if (res.IsCanceled || res.IsCompleted)
+                        break;
+
                     foreach (var segment in res.Buffer)
                     {
-                        if (cancelToken.IsCancellationRequested)
-                            return;
-
                         var len = segment.Length;
                         var buffer = ArrayPool<byte>.Shared.Rent(len);
                         try
@@ -213,14 +219,12 @@ namespace TickTrader.Algo.Rpc.OverTcp
                             ArrayPool<byte>.Shared.Return(buffer);
                         }
                     }
+                    pipeReader.AdvanceTo(res.Buffer.End);
                 }
-                catch (Exception)
-                {
-                    _sendPipe.Writer.Complete();
-                    return;
-                }
-                pipeReader.AdvanceTo(res.Buffer.End);
             }
+            catch (Exception) { }
+
+            pipeReader.Complete();
         }
 
         #region NetCore draft

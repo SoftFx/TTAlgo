@@ -42,11 +42,9 @@ message ConnectResponse {
     ProtocolSpec protocol = 1;
 }
 
-message DisconnectRequest {
+message DisconnectMsg {
     string reason = 1;
 }
-
-message DisconnectResponse { }
 
 message ShutdownRequest {
     string reason = 1;

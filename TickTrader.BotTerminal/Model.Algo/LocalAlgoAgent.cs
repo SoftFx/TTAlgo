@@ -426,7 +426,7 @@ namespace TickTrader.BotTerminal
             if (stopAlgoServer)
                 try
                 {
-                    await AlgoServer.Stop();
+                    await Task.Run(() => AlgoServer.Stop());
                 }
                 catch (Exception ex)
                 {
