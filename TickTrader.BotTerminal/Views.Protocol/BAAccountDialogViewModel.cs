@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 

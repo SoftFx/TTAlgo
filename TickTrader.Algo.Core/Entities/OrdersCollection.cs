@@ -8,7 +8,7 @@ namespace TickTrader.Algo.Core
     {
         internal OrdersCollection(PluginBuilder builder) : base(builder) { }
 
-        public Order this[string id] => !_entities.TryGetValue(id, out OrderAccessor entity) ? entity : Null.Order;
+        public Order this[string id] => _entities.TryGetValue(id, out OrderAccessor entity) ? entity : Null.Order;
 
         internal OrderAccessor Add(OrderAccessor order)
         {
