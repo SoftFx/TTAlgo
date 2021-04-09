@@ -12,6 +12,7 @@ using System.Net;
 using TickTrader.Algo.Domain;
 using System.Threading.Tasks;
 using TickTrader.BotAgent.BA.Repository;
+using TickTrader.Algo.Domain.ServerControl;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 {
@@ -204,7 +205,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 
                 pluginCfg.Key = new PluginKey(PackageStorage.GetPackageId(setup.PackageName), setup.PluginId);
 
-                var tradeBot = await _botAgent.AddBot(accountId, pluginCfg);
+                var tradeBot = await _botAgent.AddBot(new AddPluginRequest { AccountId = accountId, Config = pluginCfg });
                 setup.EnsureFiles(ServerModel.GetWorkingFolderFor(tradeBot.InstanceId));
 
                 return Ok(tradeBot.ToDto());
@@ -226,7 +227,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
                 var pluginCfg = setup.Parse();
                 pluginCfg.InstanceId = botId;
 
-                await _botAgent.ChangeBotConfig(botId, pluginCfg);
+                await _botAgent.ChangeBotConfig(new ChangePluginConfigRequest { PluginId = botId, NewConfig = pluginCfg });
                 setup.EnsureFiles(ServerModel.GetWorkingFolderFor(botId));
 
                 return Ok();
@@ -243,7 +244,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                await _botAgent.RemoveBot(WebUtility.UrlDecode(id), clean_log, clean_algodata);
+                await _botAgent.RemoveBot(new RemovePluginRequest { PluginId = WebUtility.UrlDecode(id), CleanLog = clean_log, CleanAlgoData = clean_algodata });
 
                 return Ok();
             }
@@ -259,7 +260,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                await _botAgent.StartBot(WebUtility.UrlDecode(id));
+                await _botAgent.StartBot(new StartPluginRequest { PluginId = WebUtility.UrlDecode(id) });
 
                 return Ok();
             }
@@ -275,7 +276,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                _botAgent.StopBotAsync(WebUtility.UrlDecode(id));
+                _botAgent.StopBotAsync(new StopPluginRequest { PluginId = WebUtility.UrlDecode(id) });
 
                 return Ok();
             }

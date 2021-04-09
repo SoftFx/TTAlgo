@@ -733,7 +733,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                res.AccountMetadata = await _algoServer.GetAccountMetadata(request.AccountId);
+                res.AccountMetadata = await _algoServer.GetAccountMetadata(request);
             }
             catch (Exception ex)
             {
@@ -780,7 +780,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                _algoServer.AddBot(request.AccountId, request.Config);
+                _algoServer.AddBot(request);
             }
             catch (Exception ex)
             {
@@ -804,7 +804,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                _algoServer.RemoveBot(request.PluginId, request.CleanLog, request.CleanAlgoData);
+                _algoServer.RemoveBot(request);
             }
             catch (Exception ex)
             {
@@ -828,7 +828,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                _algoServer.StartBot(request.PluginId);
+                _algoServer.StartBot(request);
             }
             catch (Exception ex)
             {
@@ -851,7 +851,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                _algoServer.StopBot(request.PluginId);
+                _algoServer.StopBot(request);
             }
             catch (Exception ex)
             {
@@ -874,7 +874,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                _algoServer.ChangeBotConfig(request.PluginId, request.NewConfig);
+                _algoServer.ChangeBotConfig(request);
             }
             catch (Exception ex)
             {
@@ -1136,7 +1136,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                await _algoServer.RemovePackage(request.PackageId);
+                await _algoServer.RemovePackage(request);
             }
             catch (Exception ex)
             {
@@ -1205,7 +1205,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                res.Status = await _algoServer.GetBotStatusAsync(request.PluginId);
+                res.Status = await _algoServer.GetBotStatusAsync(request);
             }
             catch (Exception ex)
             {
@@ -1228,7 +1228,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                var entries = await _algoServer.GetBotLogsAsync(request.PluginId, request.LastLogTimeUtc, request.MaxCount);
+                var entries = await _algoServer.GetBotLogsAsync(request);
                 res.Logs.AddRange(entries);
             }
             catch (Exception ex)
@@ -1252,7 +1252,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                var entries = await _algoServer.GetAlertsAsync(request.LastLogTimeUtc, request.MaxCount);
+                var entries = await _algoServer.GetAlertsAsync(request);
                 res.Alerts.AddRange(entries);
             }
             catch (Exception ex)
@@ -1276,7 +1276,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                res.FolderInfo = (await _algoServer.GetBotFolderInfo(request.PluginId, request.FolderId));
+                res.FolderInfo = (await _algoServer.GetBotFolderInfo(request));
             }
             catch (Exception ex)
             {
@@ -1299,7 +1299,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                _algoServer.ClearBotFolder(request.PluginId, request.FolderId);
+                _algoServer.ClearBotFolder(request);
             }
             catch (Exception ex)
             {
@@ -1322,7 +1322,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                _algoServer.DeleteBotFile(request.PluginId, request.FolderId, request.FileName);
+                _algoServer.DeleteBotFile(request);
             }
             catch (Exception ex)
             {

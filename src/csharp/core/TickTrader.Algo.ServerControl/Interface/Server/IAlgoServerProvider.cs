@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
@@ -58,17 +57,17 @@ namespace TickTrader.Algo.ServerControl
 
         Task<SetupContextInfo> GetSetupContext();
 
-        Task<AccountMetadataInfo> GetAccountMetadata(string accountId);
+        Task<AccountMetadataInfo> GetAccountMetadata(AccountMetadataRequest request);
 
-        Task StartBot(string botId);
+        Task StartBot(StartPluginRequest request);
 
-        Task StopBot(string botId);
+        Task StopBot(StopPluginRequest request);
 
-        Task AddBot(string accountId, PluginConfig config);
+        Task AddBot(AddPluginRequest request);
 
-        Task RemoveBot(string botId, bool cleanLog, bool cleanAlgoData);
+        Task RemoveBot(RemovePluginRequest request);
 
-        Task ChangeBotConfig(string botId, PluginConfig newConfig);
+        Task ChangeBotConfig(ChangePluginConfigRequest request);
 
         Task AddAccount(AddAccountRequest request);
 
@@ -80,23 +79,23 @@ namespace TickTrader.Algo.ServerControl
 
         Task<ConnectionErrorInfo> TestAccountCreds(TestAccountCredsRequest request);
 
-        Task RemovePackage(string packageId);
+        Task RemovePackage(RemovePackageRequest request);
 
         Task<string> GetPackageReadPath(string packageId);
 
         Task<string> GetPackageWritePath(string packageId);
 
-        Task<string> GetBotStatusAsync(string botId);
+        Task<string> GetBotStatusAsync(PluginStatusRequest request);
 
-        Task<AlertRecordInfo[]> GetAlertsAsync(Timestamp lastLogTimeUtc, int maxCount);
+        Task<AlertRecordInfo[]> GetAlertsAsync(PluginAlertsRequest request);
 
-        Task<LogRecordInfo[]> GetBotLogsAsync(string botId, Timestamp lastLogTimeUtc, int maxCount);
+        Task<LogRecordInfo[]> GetBotLogsAsync(PluginLogsRequest request);
 
-        Task<PluginFolderInfo> GetBotFolderInfo(string botId, PluginFolderInfo.Types.PluginFolderId folderId);
+        Task<PluginFolderInfo> GetBotFolderInfo(PluginFolderInfoRequest request);
 
-        Task ClearBotFolder(string botId, PluginFolderInfo.Types.PluginFolderId folderId);
+        Task ClearBotFolder(ClearPluginFolderRequest request);
 
-        Task DeleteBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName);
+        Task DeleteBotFile(DeletePluginFileRequest request);
 
         Task<string> GetBotFileReadPath(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName);
 

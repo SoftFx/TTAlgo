@@ -96,37 +96,39 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return Task.FromResult(new SetupContextInfo(_agentContext.DefaultTimeFrame, _agentContext.DefaultSymbol.ToConfig(), _agentContext.DefaultMapping));
         }
 
-        public async Task<AccountMetadataInfo> GetAccountMetadata(string accountId)
+        public async Task<AccountMetadataInfo> GetAccountMetadata(AccountMetadataRequest request)
         {
+            var accountId = request.AccountId;
+
             var (error, accMetadata) = await _botAgent.GetAccountMetadata(accountId);
             if (!error.IsOk)
                 throw new Exception($"Account '{accountId}' failed to connect");
             return accMetadata;
         }
 
-        public Task StartBot(string botId)
+        public Task StartBot(StartPluginRequest request)
         {
-            return _botAgent.StartBot(botId);
+            return _botAgent.StartBot(request);
         }
 
-        public Task StopBot(string botId)
+        public Task StopBot(StopPluginRequest request)
         {
-            return _botAgent.StopBotAsync(botId);
+            return _botAgent.StopBotAsync(request);
         }
 
-        public Task AddBot(string accountId, PluginConfig config)
+        public Task AddBot(AddPluginRequest request)
         {
-            return _botAgent.AddBot(accountId, config);
+            return _botAgent.AddBot(request);
         }
 
-        public Task RemoveBot(string botId, bool cleanLog, bool cleanAlgoData)
+        public Task RemoveBot(RemovePluginRequest request)
         {
-            return _botAgent.RemoveBot(botId, cleanLog, cleanAlgoData);
+            return _botAgent.RemoveBot(request);
         }
 
-        public Task ChangeBotConfig(string botId, PluginConfig newConfig)
+        public Task ChangeBotConfig(ChangePluginConfigRequest request)
         {
-            return _botAgent.ChangeBotConfig(botId, newConfig);
+            return _botAgent.ChangeBotConfig(request);
         }
 
         public Task AddAccount(AddAccountRequest request)
@@ -154,9 +156,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return _botAgent.TestCreds(request);
         }
 
-        public Task RemovePackage(string packageId)
+        public Task RemovePackage(RemovePackageRequest request)
         {
-            return _botAgent.RemovePackage(packageId);
+            return _botAgent.RemovePackage(request);
         }
 
         public Task<string> GetPackageReadPath(string packageId)
@@ -169,16 +171,16 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return _botAgent.GetPackageWritePath(packageId);
         }
 
-        public async Task<string> GetBotStatusAsync(string botId)
+        public async Task<string> GetBotStatusAsync(PluginStatusRequest request)
         {
-            var log = await _botAgent.GetBotLog(botId);
+            var log = await _botAgent.GetBotLog(request.PluginId);
             return await log.GetStatusAsync();
         }
 
-        public async Task<LogRecordInfo[]> GetBotLogsAsync(string botId, Timestamp lastLogTimeUtc, int maxCount)
+        public async Task<LogRecordInfo[]> GetBotLogsAsync(PluginLogsRequest request)
         {
-            var log = await _botAgent.GetBotLog(botId);
-            var msgs = await log.QueryMessagesAsync(lastLogTimeUtc, maxCount);
+            var log = await _botAgent.GetBotLog(request.PluginId);
+            var msgs = await log.QueryMessagesAsync(request.LastLogTimeUtc, request.MaxCount);
 
             return msgs.Select(e => new LogRecordInfo
             {
@@ -188,10 +190,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }).ToArray();
         }
 
-        public async Task<AlertRecordInfo[]> GetAlertsAsync(Timestamp lastLogTimeUtc, int maxCount)
+        public async Task<AlertRecordInfo[]> GetAlertsAsync(PluginAlertsRequest request)
         {
             var storage = await _botAgent.GetAlertStorage();
-            var alerts = await storage.QueryAlertsAsync(lastLogTimeUtc, maxCount);
+            var alerts = await storage.QueryAlertsAsync(request.LastLogTimeUtc, request.MaxCount);
 
             return alerts.Select(e => new AlertRecordInfo
             {
@@ -201,8 +203,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }).ToArray();
         }
 
-        public async Task<PluginFolderInfo> GetBotFolderInfo(string botId, PluginFolderInfo.Types.PluginFolderId folderId)
+        public async Task<PluginFolderInfo> GetBotFolderInfo(PluginFolderInfoRequest request)
         {
+            var botId = request.PluginId;
+            var folderId = request.FolderId;
+
             var botFolder = await GetBotFolder(botId, folderId);
 
             var res = new PluginFolderInfo
@@ -215,18 +220,18 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return res;
         }
 
-        public async Task ClearBotFolder(string botId, PluginFolderInfo.Types.PluginFolderId folderId)
+        public async Task ClearBotFolder(ClearPluginFolderRequest request)
         {
-            var botFolder = await GetBotFolder(botId, folderId);
+            var botFolder = await GetBotFolder(request.PluginId, request.FolderId);
 
             await botFolder.Clear();
         }
 
-        public async Task DeleteBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName)
+        public async Task DeleteBotFile(DeletePluginFileRequest request)
         {
-            var botFolder = await GetBotFolder(botId, folderId);
+            var botFolder = await GetBotFolder(request.PluginId, request.FolderId);
 
-            await botFolder.DeleteFile(fileName);
+            await botFolder.DeleteFile(request.FileName);
         }
 
         public async Task<string> GetBotFileReadPath(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName)

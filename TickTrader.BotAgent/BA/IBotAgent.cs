@@ -17,7 +17,7 @@ namespace TickTrader.BotAgent.BA
         Task<PackageInfo> GetPackage(string package);
         Task UpdatePackage(byte[] fileContent, string fileName);
         Task<byte[]> DownloadPackage(string packageId);
-        Task RemovePackage(string packageId);
+        Task RemovePackage(RemovePackageRequest request);
         Task<List<PluginInfo>> GetAllPlugins();
         Task<List<PluginInfo>> GetPluginsByType(Metadata.Types.PluginType type);
         Task<MappingCollectionInfo> GetMappingsInfo();
@@ -46,11 +46,11 @@ namespace TickTrader.BotAgent.BA
         Task<PluginModelInfo> GetBotInfo(string botId);
         Task<IBotFolder> GetAlgoData(string botId);
         Task<string> GenerateBotId(string botDisplayName);
-        Task<PluginModelInfo> AddBot(string accountId, PluginConfig config);
-        Task RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false);
-        Task ChangeBotConfig(string botId, PluginConfig newConfig);
-        Task StartBot(string botId);
-        Task StopBotAsync(string botId);
+        Task<PluginModelInfo> AddBot(AddPluginRequest request);
+        Task RemoveBot(RemovePluginRequest request);
+        Task ChangeBotConfig(ChangePluginConfigRequest request);
+        Task StartBot(StartPluginRequest request);
+        Task StopBotAsync(StopPluginRequest request);
         void AbortBot(string botId);
         Task<IBotLog> GetBotLog(string botId);
 

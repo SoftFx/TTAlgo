@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using Machinarium.State;
+﻿using Machinarium.State;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -271,15 +270,15 @@ namespace TickTrader.Algo.ServerControl
 
         public abstract Task<List<PluginModelInfo>> GetPluginList();
 
-        public abstract Task AddPlugin(string accountId, PluginConfig config);
+        public abstract Task AddPlugin(AddPluginRequest request);
 
-        public abstract Task RemovePlugin(string pluginId, bool cleanLog = false, bool cleanAlgoData = false);
+        public abstract Task RemovePlugin(RemovePluginRequest request);
 
-        public abstract Task StartPlugin(string pluginId);
+        public abstract Task StartPlugin(StartPluginRequest request);
 
-        public abstract Task StopPlugin(string pluginId);
+        public abstract Task StopPlugin(StopPluginRequest request);
 
-        public abstract Task ChangePluginConfig(string pluginId, PluginConfig newConfig);
+        public abstract Task ChangePluginConfig(ChangePluginConfigRequest request);
 
         public abstract Task<List<AccountModelInfo>> GetAccountList();
 
@@ -297,21 +296,21 @@ namespace TickTrader.Algo.ServerControl
 
         public abstract Task UploadPackage(string packageId, string srcPath, int chunkSize, int offset, IFileProgressListener progressListener);
 
-        public abstract Task RemovePackage(string packageId);
+        public abstract Task RemovePackage(RemovePackageRequest request);
 
         public abstract Task DownloadPackage(string packageId, string dstPath, int chunkSize, int offset, IFileProgressListener progressListener);
 
-        public abstract Task<string> GetPluginStatus(string pluginId);
+        public abstract Task<string> GetPluginStatus(PluginStatusRequest request);
 
-        public abstract Task<LogRecordInfo[]> GetPluginLogs(string pluginId, Timestamp lastLogTimeUtc, int maxCount);
+        public abstract Task<LogRecordInfo[]> GetPluginLogs(PluginLogsRequest request);
 
-        public abstract Task<AlertRecordInfo[]> GetAlerts(Timestamp lastLogTimeUtc, int maxCount);
+        public abstract Task<AlertRecordInfo[]> GetAlerts(PluginAlertsRequest request);
 
-        public abstract Task<PluginFolderInfo> GetPluginFolderInfo(string pluginId, PluginFolderInfo.Types.PluginFolderId folderId);
+        public abstract Task<PluginFolderInfo> GetPluginFolderInfo(PluginFolderInfoRequest request);
 
-        public abstract Task ClearPluginFolder(string pluginId, PluginFolderInfo.Types.PluginFolderId folderId);
+        public abstract Task ClearPluginFolder(ClearPluginFolderRequest request);
 
-        public abstract Task DeletePluginFile(string pluginId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName);
+        public abstract Task DeletePluginFile(DeletePluginFileRequest request);
 
         public abstract Task DownloadPluginFile(string pluginId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string dstPath, int chunkSize, int offset, IFileProgressListener progressListener);
 

@@ -105,21 +105,21 @@ namespace TickTrader.BotTerminal
         internal Task<string> GetBotStatus(string botId)
         {
             if (_protocolClient != null && _protocolClient.State == ClientStates.Online)
-                return _protocolClient.GetPluginStatus(botId);
+                return _protocolClient.GetPluginStatus(new PluginStatusRequest { PluginId = botId });
             return Task.FromResult("Disconnected!");
         }
 
         internal Task<LogRecordInfo[]> GetBotLogs(string botId, Timestamp lastLogTimeUtc, int maxCount = 1000)
         {
             if (_protocolClient != null && _protocolClient.State == ClientStates.Online)
-                return _protocolClient.GetPluginLogs(botId, lastLogTimeUtc, maxCount);
+                return _protocolClient.GetPluginLogs(new PluginLogsRequest { PluginId = botId, LastLogTimeUtc = lastLogTimeUtc, MaxCount = maxCount });
             return Task.FromResult(new LogRecordInfo[0]);
         }
 
         internal Task<AlertRecordInfo[]> GetAlerts(Timestamp lastLogTimeUtc, int maxCount = 1000)
         {
             if (_protocolClient != null && _protocolClient.State == ClientStates.Online)
-                return _protocolClient.GetAlerts(lastLogTimeUtc, maxCount);
+                return _protocolClient.GetAlerts(new PluginAlertsRequest { LastLogTimeUtc = lastLogTimeUtc, MaxCount = maxCount });
             return Task.FromResult(new AlertRecordInfo[0]);
         }
 
@@ -133,27 +133,27 @@ namespace TickTrader.BotTerminal
 
         public Task StartBot(string instanceId)
         {
-            return _protocolClient.StartPlugin(instanceId);
+            return _protocolClient.StartPlugin(new StartPluginRequest { PluginId = instanceId });
         }
 
         public Task StopBot(string instanceId)
         {
-            return _protocolClient.StopPlugin(instanceId);
+            return _protocolClient.StopPlugin(new StopPluginRequest { PluginId = instanceId });
         }
 
         public Task AddBot(string accountId, PluginConfig config)
         {
-            return _protocolClient.AddPlugin(accountId, config);
+            return _protocolClient.AddPlugin(new AddPluginRequest { AccountId = accountId, Config = config });
         }
 
         public Task RemoveBot(string instanceId, bool cleanLog = false, bool cleanAlgoData = false)
         {
-            return _protocolClient.RemovePlugin(instanceId, cleanLog, cleanAlgoData);
+            return _protocolClient.RemovePlugin(new RemovePluginRequest { PluginId = instanceId, CleanLog = cleanLog, CleanAlgoData = cleanAlgoData });
         }
 
         public Task ChangeBotConfig(string instanceId, PluginConfig newConfig)
         {
-            return _protocolClient.ChangePluginConfig(instanceId, newConfig);
+            return _protocolClient.ChangePluginConfig(new ChangePluginConfigRequest { PluginId = instanceId, NewConfig = newConfig });
         }
 
         public Task AddAccount(AddAccountRequest request)
@@ -188,7 +188,7 @@ namespace TickTrader.BotTerminal
 
         public Task RemovePackage(string packageId)
         {
-            return _protocolClient.RemovePackage(packageId);
+            return _protocolClient.RemovePackage(new RemovePackageRequest { PackageId = packageId });
         }
 
         public async Task DownloadPackage(string packageId, string dstFilePath, IFileProgressListener progressListener)
@@ -198,17 +198,17 @@ namespace TickTrader.BotTerminal
 
         public Task<PluginFolderInfo> GetBotFolderInfo(string botId, PluginFolderInfo.Types.PluginFolderId folderId)
         {
-            return _protocolClient.GetPluginFolderInfo(botId, folderId);
+            return _protocolClient.GetPluginFolderInfo(new PluginFolderInfoRequest { PluginId = botId, FolderId = folderId });
         }
 
         public Task ClearBotFolder(string botId, PluginFolderInfo.Types.PluginFolderId folderId)
         {
-            return _protocolClient.ClearPluginFolder(botId, folderId);
+            return _protocolClient.ClearPluginFolder(new ClearPluginFolderRequest { PluginId = botId, FolderId = folderId });
         }
 
         public Task DeleteBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName)
         {
-            return _protocolClient.DeletePluginFile(botId, folderId, fileName);
+            return _protocolClient.DeletePluginFile(new DeletePluginFileRequest { PluginId = botId, FolderId = folderId, FileName = fileName });
         }
 
         public async Task DownloadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string dstPath, IFileProgressListener progressListener)

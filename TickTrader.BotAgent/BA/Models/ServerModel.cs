@@ -88,7 +88,7 @@ namespace TickTrader.BotAgent.BA.Models
             public Task<PackageInfo> GetPackage(string package) => CallActorAsync(a => a.GetPackage(package));
             public Task UpdatePackage(byte[] fileContent, string fileName) => CallActorAsync(a => a.UpdatePackage(fileContent, fileName));
             public Task<byte[]> DownloadPackage(string packageId) => CallActorAsync(a => a.DownloadPackage(packageId));
-            public Task RemovePackage(string packageId) => CallActorAsync(a => a.RemovePackage(packageId));
+            public Task RemovePackage(RemovePackageRequest request) => CallActorAsync(a => a.RemovePackage(request));
             public Task<List<PluginInfo>> GetAllPlugins() => CallActorAsync(a => a.GetAllPlugins());
             public Task<List<PluginInfo>> GetPluginsByType(Metadata.Types.PluginType type) => CallActorAsync(a => a.GetPluginsByType(type));
             public Task<MappingCollectionInfo> GetMappingsInfo() => CallActorAsync(a => a.GetMappingsInfo());
@@ -139,11 +139,11 @@ namespace TickTrader.BotAgent.BA.Models
             #region Bot Management
             public Task<IAlertStorage> GetAlertStorage() => CallActorAsync(a => a.GetAlertsStorage());
             public Task<string> GenerateBotId(string botDisplayName) => CallActorAsync(a => a.AutogenerateBotId(botDisplayName));
-            public Task<PluginModelInfo> AddBot(string accountId, PluginConfig config) => CallActorAsync(a => a.AddBot(accountId, config));
-            public Task ChangeBotConfig(string botId, PluginConfig config) => CallActorAsync(a => a.GetBotOrThrow(botId).ChangeBotConfig(config));
-            public Task RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false) => CallActorAsync(a => a.RemoveBot(botId, cleanLog, cleanAlgoData));
-            public Task StartBot(string botId) => CallActorAsync(a => a.GetBotOrThrow(botId).Start());
-            public Task StopBotAsync(string botId) => CallActorFlattenAsync(a => a.GetBotOrThrow(botId).StopAsync());
+            public Task<PluginModelInfo> AddBot(AddPluginRequest request) => CallActorAsync(a => a.AddBot(request));
+            public Task ChangeBotConfig(ChangePluginConfigRequest request) => CallActorAsync(a => a.ChangeBotConfig(request));
+            public Task RemoveBot(RemovePluginRequest request) => CallActorAsync(a => a.RemoveBot(request));
+            public Task StartBot(StartPluginRequest request) => CallActorAsync(a => a.GetBotOrThrow(request.PluginId).Start());
+            public Task StopBotAsync(StopPluginRequest request) => CallActorFlattenAsync(a => a.GetBotOrThrow(request.PluginId).StopAsync());
             public void AbortBot(string botId) => ActorSend(a => a.GetBotOrThrow(botId).Abort());
             public Task<PluginModelInfo> GetBotInfo(string botId) => CallActorAsync(a => a.GetBotOrThrow(botId).GetInfoCopy());
             public Task<List<PluginModelInfo>> GetBots() => CallActorAsync(a => a._allBots.Values.GetInfoCopy());
@@ -383,15 +383,20 @@ namespace TickTrader.BotAgent.BA.Models
         private event Action<PluginModelInfo, ChangeAction> BotChanged;
         private event Action<PluginStateUpdate> BotStateChanged;
 
-        private PluginModelInfo AddBot(string accountId, PluginConfig config)
+        private PluginModelInfo AddBot(AddPluginRequest request)
         {
-            var bot = GetAccountOrThrow(accountId).AddBot(config);
+            var bot = GetAccountOrThrow(request.AccountId).AddBot(request.Config);
             return bot.GetInfoCopy();
         }
 
-        public void RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false)
+        private void ChangeBotConfig(ChangePluginConfigRequest request)
         {
-            _allBots.GetOrDefault(botId)?.Remove(cleanLog, cleanAlgoData);
+            GetBotOrThrow(request.PluginId).ChangeBotConfig(request.NewConfig);
+        }
+
+        public void RemoveBot(RemovePluginRequest request)
+        {
+            _allBots.GetOrDefault(request.PluginId)?.Remove(request.CleanLog, request.CleanAlgoData);
         }
 
         private string AutogenerateBotId(string botDescriptorName)
@@ -485,8 +490,10 @@ namespace TickTrader.BotAgent.BA.Models
             return _packageStorage.GetPackageBinary(packageId);
         }
 
-        private void RemovePackage(string packageId)
+        private void RemovePackage(RemovePackageRequest request)
         {
+            var packageId = request.PackageId;
+
             var dPackage = _packageStorage.GetPackageRef(packageId);
             if (dPackage != null)
             {

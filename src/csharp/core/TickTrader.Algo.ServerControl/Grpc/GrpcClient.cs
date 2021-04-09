@@ -633,33 +633,33 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return response.Plugins.ToList();
         }
 
-        public override async Task AddPlugin(string accountId, PluginConfig config)
+        public override async Task AddPlugin(AddPluginRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(AddBotInternal, new AddPluginRequest { AccountId = accountId, Config = config });
+            var response = await ExecuteUnaryRequestAuthorized(AddBotInternal, request);
             FailForNonSuccess(response.ExecResult);
         }
 
-        public override async Task RemovePlugin(string botId, bool cleanLog = false, bool cleanAlgoData = false)
+        public override async Task RemovePlugin(RemovePluginRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(RemoveBotInternal, new RemovePluginRequest { PluginId = botId, CleanLog = cleanLog, CleanAlgoData = cleanAlgoData });
+            var response = await ExecuteUnaryRequestAuthorized(RemoveBotInternal, request);
             FailForNonSuccess(response.ExecResult);
         }
 
-        public override async Task StartPlugin(string botId)
+        public override async Task StartPlugin(StartPluginRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(StartBotInternal, new StartPluginRequest { PluginId = botId });
+            var response = await ExecuteUnaryRequestAuthorized(StartBotInternal, request);
             FailForNonSuccess(response.ExecResult);
         }
 
-        public override async Task StopPlugin(string botId)
+        public override async Task StopPlugin(StopPluginRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(StopBotInternal, new StopPluginRequest { PluginId = botId });
+            var response = await ExecuteUnaryRequestAuthorized(StopBotInternal, request);
             FailForNonSuccess(response.ExecResult);
         }
 
-        public override async Task ChangePluginConfig(string botId, PluginConfig newConfig)
+        public override async Task ChangePluginConfig(ChangePluginConfigRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(ChangeBotConfigInternal, new ChangePluginConfigRequest { PluginId = botId, NewConfig = newConfig });
+            var response = await ExecuteUnaryRequestAuthorized(ChangeBotConfigInternal, request);
             FailForNonSuccess(response.ExecResult);
         }
 
@@ -757,9 +757,9 @@ namespace TickTrader.Algo.ServerControl.Grpc
             FailForNonSuccess(response.ExecResult);
         }
 
-        public override async Task RemovePackage(string packageId)
+        public override async Task RemovePackage(RemovePackageRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(RemovePackageInternal, new RemovePackageRequest { PackageId = packageId });
+            var response = await ExecuteUnaryRequestAuthorized(RemovePackageInternal, request);
             FailForNonSuccess(response.ExecResult);
         }
 
@@ -831,45 +831,45 @@ namespace TickTrader.Algo.ServerControl.Grpc
             }
         }
 
-        public override async Task<string> GetPluginStatus(string botId)
+        public override async Task<string> GetPluginStatus(PluginStatusRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(GetBotStatusInternal, new PluginStatusRequest { PluginId = botId });
+            var response = await ExecuteUnaryRequestAuthorized(GetBotStatusInternal, request);
             FailForNonSuccess(response.ExecResult);
             return response.Status;
         }
 
-        public override async Task<LogRecordInfo[]> GetPluginLogs(string botId, Timestamp lastLogTimeUtc, int maxCount)
+        public override async Task<LogRecordInfo[]> GetPluginLogs(PluginLogsRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(GetBotLogsInternal, new PluginLogsRequest { PluginId = botId, LastLogTimeUtc = lastLogTimeUtc, MaxCount = maxCount });
+            var response = await ExecuteUnaryRequestAuthorized(GetBotLogsInternal, request);
             FailForNonSuccess(response.ExecResult);
             return response.Logs.ToArray();
         }
 
-        public override async Task<AlertRecordInfo[]> GetAlerts(Timestamp lastLogTimeUtc, int maxCount)
+        public override async Task<AlertRecordInfo[]> GetAlerts(PluginAlertsRequest request)
         {
             if (!VersionSpec.SupportAlerts)
                 return new AlertRecordInfo[0];
-            var response = await ExecuteUnaryRequestAuthorized(GetAlertsInternal, new PluginAlertsRequest { LastLogTimeUtc = lastLogTimeUtc, MaxCount = maxCount });
+            var response = await ExecuteUnaryRequestAuthorized(GetAlertsInternal, request);
             FailForNonSuccess(response.ExecResult);
             return response.Alerts.ToArray();
         }
 
-        public override async Task<PluginFolderInfo> GetPluginFolderInfo(string botId, PluginFolderInfo.Types.PluginFolderId folderId)
+        public override async Task<PluginFolderInfo> GetPluginFolderInfo(PluginFolderInfoRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(GetBotFolderInfoInternal, new PluginFolderInfoRequest { PluginId = botId, FolderId = folderId });
+            var response = await ExecuteUnaryRequestAuthorized(GetBotFolderInfoInternal, request);
             FailForNonSuccess(response.ExecResult);
             return response.FolderInfo;
         }
 
-        public override async Task ClearPluginFolder(string botId, PluginFolderInfo.Types.PluginFolderId folderId)
+        public override async Task ClearPluginFolder(ClearPluginFolderRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(ClearBotFolderInternal, new ClearPluginFolderRequest { PluginId = botId, FolderId = folderId });
+            var response = await ExecuteUnaryRequestAuthorized(ClearBotFolderInternal, request);
             FailForNonSuccess(response.ExecResult);
         }
 
-        public override async Task DeletePluginFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName)
+        public override async Task DeletePluginFile(DeletePluginFileRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(DeleteBotFileInternal, new DeletePluginFileRequest { PluginId = botId, FolderId = folderId, FileName = fileName });
+            var response = await ExecuteUnaryRequestAuthorized(DeleteBotFileInternal, request);
             FailForNonSuccess(response.ExecResult);
         }
 
