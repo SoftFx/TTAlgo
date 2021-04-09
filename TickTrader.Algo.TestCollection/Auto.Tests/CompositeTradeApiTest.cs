@@ -37,6 +37,9 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         [Parameter]
         public bool IncludeADCases { get; set; }
 
+        [Parameter]
+        public bool LoadAllHistory { get; set; }
+
         [Parameter(DefaultValue = 3)]
         public int TestCaseAttempts { get; set; }
 
@@ -490,7 +493,9 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         private async Task FullHistoryTestRun()
         {
-            ReportsIteratorTest();
+            if (LoadAllHistory)
+                ReportsIteratorTest();
+
             await DoQueryTests(false);
             await DoQueryTests(true);
         }
