@@ -266,7 +266,7 @@ namespace TickTrader.Algo.ServerControl
 
         public abstract Task<SetupContextInfo> GetSetupContext();
 
-        public abstract Task<AccountMetadataInfo> GetAccountMetadata(string accountId);
+        public abstract Task<AccountMetadataInfo> GetAccountMetadata(AccountMetadataRequest request);
 
         public abstract Task<List<PluginModelInfo>> GetPluginList();
 

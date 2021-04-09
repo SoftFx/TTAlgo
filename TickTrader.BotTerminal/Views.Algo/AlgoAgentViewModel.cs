@@ -122,7 +122,7 @@ namespace TickTrader.BotTerminal
                 if (result != DialogResult.OK)
                     return;
 
-                await _agentModel.RemoveAccount(new RemoveAccountRequest { AccountId = accountId });
+                await _agentModel.RemoveAccount(new RemoveAccountRequest(accountId));
             }
             catch (Exception ex)
             {
@@ -134,7 +134,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                await _agentModel.TestAccount(new TestAccountRequest { AccountId = accountId });
+                await _agentModel.TestAccount(new TestAccountRequest(accountId));
             }
             catch (Exception ex)
             {

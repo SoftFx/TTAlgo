@@ -236,10 +236,10 @@ namespace TickTrader.BotTerminal
             try
             {
                 if (_account == null)
-                    await SelectedAgent.Model.AddAccount(new AddAccountRequest { Server = Server, UserId = Login, Creds = new AccountCreds(Password) });
+                    await SelectedAgent.Model.AddAccount(new AddAccountRequest(Server, Login, new AccountCreds(Password)));
                 else
                 {
-                    var request = new ChangeAccountRequest { AccountId = _account.AccountId };
+                    var request = new ChangeAccountRequest(_account.AccountId, null);
                     if (Password != null)
                         request.Creds = new AccountCreds(Password);
 
@@ -266,7 +266,7 @@ namespace TickTrader.BotTerminal
             Error = null;
             try
             {
-                var error = await SelectedAgent.Model.TestAccountCreds(new TestAccountCredsRequest { Server = Server, UserId = Login, Creds = new AccountCreds(Password) });
+                var error = await SelectedAgent.Model.TestAccountCreds(new TestAccountCredsRequest(Server, Login, new AccountCreds(Password)));
                 if (error.IsOk)
                     Success = "Successfully connected";
                 else Error = string.IsNullOrEmpty(error.TextMessage) ? $"{error.Code}" : $"{error.Code} - {error.TextMessage}";

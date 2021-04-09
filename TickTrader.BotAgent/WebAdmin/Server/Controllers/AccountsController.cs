@@ -68,7 +68,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                var request = new AddAccountRequest { Server = account.Server, UserId = account.Login, Creds = new AccountCreds(account.Password) };
+                var request = new AddAccountRequest(account.Server, account.Login, new AccountCreds(account.Password));
                 await _botAgent.AddAccount(request);
             }
             catch (BAException dsex)
@@ -86,7 +86,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             try
             {
                 var accId = AccountId.Pack(server, login);
-                await _botAgent.RemoveAccount(new RemoveAccountRequest { AccountId = accId });
+                await _botAgent.RemoveAccount(new RemoveAccountRequest(accId));
             }
             catch (BAException dsex)
             {
@@ -103,7 +103,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             try
             {
                 var accId = AccountId.Pack(account.Server, account.Login);
-                var request = new ChangeAccountRequest { AccountId = accId, Creds = new AccountCreds(account.Password) };
+                var request = new ChangeAccountRequest(accId, new AccountCreds(account.Password));
                 await _botAgent.ChangeAccount(request);
             }
             catch (BAException dsex)
@@ -121,8 +121,8 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             try
             {
                 var testResult = string.IsNullOrWhiteSpace(password) ?
-                    _botAgent.TestAccount(new TestAccountRequest { AccountId = AccountId.Pack(server, login) }) :
-                    _botAgent.TestCreds(new TestAccountCredsRequest { Server = server, UserId = login, Creds = new AccountCreds(password) });
+                    _botAgent.TestAccount(new TestAccountRequest(AccountId.Pack(server, login))) :
+                    _botAgent.TestCreds(new TestAccountCredsRequest(server, login, new AccountCreds(password)));
 
                 return Ok(await testResult);
             }

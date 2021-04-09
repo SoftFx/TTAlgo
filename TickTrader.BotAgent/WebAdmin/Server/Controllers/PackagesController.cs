@@ -79,7 +79,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                await _botAgent.RemovePackage(new RemovePackageRequest { PackageId = PackageStorage.GetPackageId(WebUtility.UrlDecode(name)) });
+                await _botAgent.RemovePackage(new RemovePackageRequest(PackageStorage.GetPackageId(WebUtility.UrlDecode(name))));
             }
             catch (BAException dsex)
             {

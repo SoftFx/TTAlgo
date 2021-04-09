@@ -619,9 +619,9 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return response.SetupContext;
         }
 
-        public override async Task<AccountMetadataInfo> GetAccountMetadata(string accountId)
+        public override async Task<AccountMetadataInfo> GetAccountMetadata(AccountMetadataRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(GetAccountMetadataInternal, new AccountMetadataRequest { AccountId = accountId });
+            var response = await ExecuteUnaryRequestAuthorized(GetAccountMetadataInternal, request);
             FailForNonSuccess(response.ExecResult);
             return response.AccountMetadata;
         }
