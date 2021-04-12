@@ -36,9 +36,9 @@ service AlgoServerPublic
     rpc TestAccountCreds(TestAccountCredsRequest) returns (TestAccountCredsResponse);
 
     rpc GetPackageList(PackageListRequest) returns (PackageListResponse);
-    rpc UploadPackage(stream UploadPackageRequest) returns (UploadPackageResponse);
+    rpc UploadPackage(stream FileTransferMsg) returns (UploadPackageResponse);
     rpc RemovePackage(RemovePackageRequest) returns (RemovePackageResponse);
-    rpc DownloadPackage(DownloadPackageRequest) returns (stream DownloadPackageResponse);
+    rpc DownloadPackage(DownloadPackageRequest) returns (stream FileTransferMsg);
 
     rpc GetPluginStatus(PluginStatusRequest) returns (PluginStatusResponse);
     rpc GetPluginLogs(PluginLogsRequest) returns (PluginLogsResponse);
@@ -47,7 +47,7 @@ service AlgoServerPublic
     rpc GetPluginFolderInfo(PluginFolderInfoRequest) returns (PluginFolderInfoResponse);
     rpc ClearPluginFolder(ClearPluginFolderRequest) returns (ClearPluginFolderResponse);
     rpc DeletePluginFile(DeletePluginFileRequest) returns (DeletePluginFileResponse);
-    rpc DownloadPluginFile(DownloadPluginFileRequest) returns (stream DownloadPluginFileResponse);
-    rpc UploadPluginFile(stream UploadPluginFileRequest) returns (UploadPluginFileResponse);
+    rpc DownloadPluginFile(DownloadPluginFileRequest) returns (stream FileTransferMsg);
+    rpc UploadPluginFile(stream FileTransferMsg) returns (UploadPluginFileResponse);
 }
 

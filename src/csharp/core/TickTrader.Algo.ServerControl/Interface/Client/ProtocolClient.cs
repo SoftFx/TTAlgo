@@ -294,11 +294,11 @@ namespace TickTrader.Algo.ServerControl
 
         public abstract Task<List<PackageInfo>> GetPackageList();
 
-        public abstract Task UploadPackage(string packageId, string srcPath, int chunkSize, int offset, IFileProgressListener progressListener);
+        public abstract Task UploadPackage(UploadPackageRequest request, string srcPath, IFileProgressListener progressListener);
 
         public abstract Task RemovePackage(RemovePackageRequest request);
 
-        public abstract Task DownloadPackage(string packageId, string dstPath, int chunkSize, int offset, IFileProgressListener progressListener);
+        public abstract Task DownloadPackage(DownloadPackageRequest request, string dstPath, IFileProgressListener progressListener);
 
         public abstract Task<string> GetPluginStatus(PluginStatusRequest request);
 
@@ -312,9 +312,9 @@ namespace TickTrader.Algo.ServerControl
 
         public abstract Task DeletePluginFile(DeletePluginFileRequest request);
 
-        public abstract Task DownloadPluginFile(string pluginId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string dstPath, int chunkSize, int offset, IFileProgressListener progressListener);
+        public abstract Task DownloadPluginFile(DownloadPluginFileRequest request, string dstPath, IFileProgressListener progressListener);
 
-        public abstract Task UploadPluginFile(string pluginId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string srcPath, int chunkSize, int offset, IFileProgressListener progressListener);
+        public abstract Task UploadPluginFile(UploadPluginFileRequest request, string srcPath, IFileProgressListener progressListener);
 
         #endregion Requests
     }

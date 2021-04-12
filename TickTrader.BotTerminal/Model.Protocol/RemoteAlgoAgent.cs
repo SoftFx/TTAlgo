@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.ServerControl;
@@ -15,7 +14,6 @@ namespace TickTrader.BotTerminal
 {
     internal class RemoteAlgoAgent : IAlgoAgent, IAlgoServerClient
     {
-        private const int DefaultChunkSize = 512 * 1024;
 
         private ISyncContext _syncContext;
         private VarDictionary<string, PackageInfo> _packages;
@@ -183,7 +181,7 @@ namespace TickTrader.BotTerminal
 
         public async Task UploadPackage(string fileName, string srcFilePath, IFileProgressListener progressListener)
         {
-            await Task.Run(() => _protocolClient.UploadPackage(PackageId.Pack(SharedConstants.LocalRepositoryId, fileName), srcFilePath, DefaultChunkSize, 0, progressListener));
+            await Task.Run(() => _protocolClient.UploadPackage(new UploadPackageRequest(PackageId.Pack(SharedConstants.LocalRepositoryId, fileName), null), srcFilePath, progressListener));
         }
 
         public Task RemovePackage(string packageId)
@@ -193,7 +191,7 @@ namespace TickTrader.BotTerminal
 
         public async Task DownloadPackage(string packageId, string dstFilePath, IFileProgressListener progressListener)
         {
-            await Task.Run(() => _protocolClient.DownloadPackage(packageId, dstFilePath, DefaultChunkSize, 0, progressListener));
+            await Task.Run(() => _protocolClient.DownloadPackage(new DownloadPackageRequest(packageId), dstFilePath, progressListener));
         }
 
         public Task<PluginFolderInfo> GetBotFolderInfo(string botId, PluginFolderInfo.Types.PluginFolderId folderId)
@@ -213,12 +211,12 @@ namespace TickTrader.BotTerminal
 
         public async Task DownloadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string dstPath, IFileProgressListener progressListener)
         {
-            await Task.Run(() => _protocolClient.DownloadPluginFile(botId, folderId, fileName, dstPath, DefaultChunkSize, 0, progressListener));
+            await Task.Run(() => _protocolClient.DownloadPluginFile(new DownloadPluginFileRequest(botId, folderId, fileName), dstPath, progressListener));
         }
 
         public async Task UploadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string srcPath, IFileProgressListener progressListener)
         {
-            await Task.Run(() => _protocolClient.UploadPluginFile(botId, folderId, fileName, srcPath, DefaultChunkSize, 0, progressListener));
+            await Task.Run(() => _protocolClient.UploadPluginFile(new UploadPluginFileRequest(botId, folderId, fileName), srcPath, progressListener));
         }
 
         #endregion

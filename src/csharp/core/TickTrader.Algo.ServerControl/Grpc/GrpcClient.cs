@@ -534,7 +534,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return _client.GetPackageListAsync(request, options).ResponseAsync;
         }
 
-        private async Task<AsyncClientStreamingCall<UploadPackageRequest, UploadPackageResponse>> UploadPackageInternal(UploadPackageRequest request, CallOptions options)
+        private async Task<AsyncClientStreamingCall<FileTransferMsg, UploadPackageResponse>> UploadPackageInternal(FileTransferMsg request, CallOptions options)
         {
             var call = _client.UploadPackage(options);
             await call.RequestStream.WriteAsync(request);
@@ -546,7 +546,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return _client.RemovePackageAsync(request, options).ResponseAsync;
         }
 
-        private Task<AsyncServerStreamingCall<DownloadPackageResponse>> DownloadPackageInternal(DownloadPackageRequest request, CallOptions options)
+        private Task<AsyncServerStreamingCall<FileTransferMsg>> DownloadPackageInternal(DownloadPackageRequest request, CallOptions options)
         {
             return Task.FromResult(_client.DownloadPackage(request, options));
         }
@@ -581,12 +581,12 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return _client.DeletePluginFileAsync(request, options).ResponseAsync;
         }
 
-        private Task<AsyncServerStreamingCall<DownloadPluginFileResponse>> DownloadBotFileInternal(DownloadPluginFileRequest request, CallOptions options)
+        private Task<AsyncServerStreamingCall<FileTransferMsg>> DownloadBotFileInternal(DownloadPluginFileRequest request, CallOptions options)
         {
             return Task.FromResult(_client.DownloadPluginFile(request, options));
         }
 
-        private async Task<AsyncClientStreamingCall<UploadPluginFileRequest, UploadPluginFileResponse>> UploadBotFileInternal(UploadPluginFileRequest request, CallOptions options)
+        private async Task<AsyncClientStreamingCall<FileTransferMsg, UploadPluginFileResponse>> UploadBotFileInternal(FileTransferMsg request, CallOptions options)
         {
             var call = _client.UploadPluginFile(options);
             await call.RequestStream.WriteAsync(request);
@@ -709,48 +709,42 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return response.Packages.ToList();
         }
 
-        public override async Task UploadPackage(string packageId, string srcPath, int chunkSize, int offset, IFileProgressListener progressListener)
+        public override async Task UploadPackage(UploadPackageRequest request, string srcPath, IFileProgressListener progressListener)
         {
             if (_client == null || _channel.State == ChannelState.Shutdown)
                 throw new ConnectionFailedException("Connection failed");
 
-            progressListener.Init((long)offset * chunkSize);
+            var chunkOffset = request.TransferSettings.ChunkOffset;
+            var chunkSize = request.TransferSettings.ChunkSize;
 
-            var request = new UploadPackageRequest
-            {
-                Package = new PackageDetails
-                {
-                    PackageId = packageId,
-                    ChunkSettings = new FileChunkSettings { Size = chunkSize, Offset = offset },
-                }
-            };
+            progressListener.Init((long)chunkOffset * chunkSize);
 
-            var clientStream = await ExecuteClientStreamingRequestAuthorized(UploadPackageInternal, request);
+            var transferMsg = new FileTransferMsg { Header = Any.Pack(request) };
+            var clientStream = await ExecuteClientStreamingRequestAuthorized(UploadPackageInternal, transferMsg);
 
-            request.Chunk = new FileChunk { Id = offset, IsFinal = false };
+            transferMsg.Header = null;
+            transferMsg.Data = new FileChunk(chunkOffset);
             var buffer = new byte[chunkSize];
             try
             {
                 using (var stream = File.Open(srcPath, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
-                    stream.Seek((long)chunkSize * offset, SeekOrigin.Begin);
+                    stream.Seek((long)chunkSize * chunkOffset, SeekOrigin.Begin);
                     for (var cnt = stream.Read(buffer, 0, chunkSize); cnt > 0; cnt = stream.Read(buffer, 0, chunkSize))
                     {
-                        request.Chunk.Binary = ByteString.CopyFrom(buffer, 0, cnt);
-                        _messageFormatter.LogClientRequest(Logger, request);
-                        await clientStream.RequestStream.WriteAsync(request);
+                        transferMsg.Data.Binary = ByteString.CopyFrom(buffer, 0, cnt);
+                        _messageFormatter.LogClientRequest(Logger, transferMsg);
+                        await clientStream.RequestStream.WriteAsync(transferMsg);
                         progressListener.IncrementProgress(cnt);
-                        request.Chunk.Id++;
+                        transferMsg.Data.Id++;
                     }
                 }
             }
             finally
             {
-                request.Chunk.Binary = ByteString.Empty;
-                request.Chunk.IsFinal = true;
-                request.Chunk.Id = -1;
-                _messageFormatter.LogClientRequest(Logger, request);
-                await clientStream.RequestStream.WriteAsync(request);
+                transferMsg.Data = FileChunk.FinalChunk;
+                _messageFormatter.LogClientRequest(Logger, transferMsg);
+                await clientStream.RequestStream.WriteAsync(transferMsg);
             }
 
             var response = await clientStream.ResponseAsync;
@@ -763,8 +757,11 @@ namespace TickTrader.Algo.ServerControl.Grpc
             FailForNonSuccess(response.ExecResult);
         }
 
-        public override async Task DownloadPackage(string packageId, string dstPath, int chunkSize, int offset, IFileProgressListener progressListener)
+        public override async Task DownloadPackage(DownloadPackageRequest request, string dstPath, IFileProgressListener progressListener)
         {
+            var offset = request.TransferSettings.ChunkOffset;
+            var chunkSize = request.TransferSettings.ChunkSize;
+
             progressListener.Init((long)offset * chunkSize);
 
             var buffer = new byte[chunkSize];
@@ -797,32 +794,36 @@ namespace TickTrader.Algo.ServerControl.Grpc
                     }
                 }
 
-                var serverCall = await ExecuteServerStreamingRequestAuthorized(DownloadPackageInternal,
-                new DownloadPackageRequest
-                {
-                    Package = new PackageDetails
-                    {
-                        PackageId = packageId,
-                        ChunkSettings = new FileChunkSettings { Size = chunkSize, Offset = offset },
-                    }
-                });
+                var serverCall = await ExecuteServerStreamingRequestAuthorized(DownloadPackageInternal, request);
                 var fileReader = serverCall.ResponseStream;
                 try
                 {
-                    while (await fileReader.MoveNext())
+                    if (!await fileReader.MoveNext())
+                        throw new AlgoException("Empty download response");
+
+                    do
                     {
-                        var response = fileReader.Current;
-                        _messageFormatter.LogServerResponse(Logger, response);
-                        FailForNonSuccess(response.ExecResult);
-                        if (!response.Chunk.Binary.IsEmpty)
+                        var transferMsg = fileReader.Current;
+                        _messageFormatter.LogServerResponse(Logger, transferMsg);
+
+                        if (transferMsg.Header != null)
                         {
-                            response.Chunk.Binary.CopyTo(buffer, 0);
-                            progressListener.IncrementProgress(response.Chunk.Binary.Length);
-                            stream.Write(buffer, 0, response.Chunk.Binary.Length);
+                            var response = transferMsg.Header.Unpack<DownloadPackageResponse>();
+                            _messageFormatter.LogServerResponse(Logger, response);
+                            FailForNonSuccess(response.ExecResult);
                         }
-                        if (response.Chunk.IsFinal)
+
+                        var data = transferMsg.Data;
+                        if (!data.Binary.IsEmpty)
+                        {
+                            data.Binary.CopyTo(buffer, 0);
+                            progressListener.IncrementProgress(data.Binary.Length);
+                            stream.Write(buffer, 0, data.Binary.Length);
+                        }
+                        if (data.IsFinal)
                             break;
                     }
+                    while (await fileReader.MoveNext());
                 }
                 finally
                 {
@@ -873,8 +874,11 @@ namespace TickTrader.Algo.ServerControl.Grpc
             FailForNonSuccess(response.ExecResult);
         }
 
-        public override async Task DownloadPluginFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string dstPath, int chunkSize, int offset, IFileProgressListener progressListener)
+        public override async Task DownloadPluginFile(DownloadPluginFileRequest request, string dstPath, IFileProgressListener progressListener)
         {
+            var offset = request.TransferSettings.ChunkOffset;
+            var chunkSize = request.TransferSettings.ChunkSize;
+
             progressListener.Init((long)offset * chunkSize);
 
             var buffer = new byte[chunkSize];
@@ -907,34 +911,36 @@ namespace TickTrader.Algo.ServerControl.Grpc
                     }
                 }
 
-                var serverCall = await ExecuteServerStreamingRequestAuthorized(DownloadBotFileInternal,
-                new DownloadPluginFileRequest
-                {
-                    File = new PluginFileDetails
-                    {
-                        PluginId = botId,
-                        FolderId = folderId,
-                        FileName = fileName,
-                        ChunkSettings = new FileChunkSettings { Size = chunkSize, Offset = offset },
-                    }
-                });
+                var serverCall = await ExecuteServerStreamingRequestAuthorized(DownloadBotFileInternal, request);
                 var fileReader = serverCall.ResponseStream;
                 try
                 {
-                    while (await fileReader.MoveNext())
+                    if (!await fileReader.MoveNext())
+                        throw new AlgoException("Empty download response");
+
+                    do
                     {
-                        var response = fileReader.Current;
-                        _messageFormatter.LogServerResponse(Logger, response);
-                        FailForNonSuccess(response.ExecResult);
-                        if (!response.Chunk.Binary.IsEmpty)
+                        var transferMsg = fileReader.Current;
+                        _messageFormatter.LogServerResponse(Logger, transferMsg);
+
+                        if (transferMsg.Header != null)
                         {
-                            response.Chunk.Binary.CopyTo(buffer, 0);
-                            progressListener.IncrementProgress(response.Chunk.Binary.Length);
-                            stream.Write(buffer, 0, response.Chunk.Binary.Length);
+                            var response = transferMsg.Header.Unpack<DownloadPluginFileResponse>();
+                            _messageFormatter.LogServerResponse(Logger, response);
+                            FailForNonSuccess(response.ExecResult);
                         }
-                        if (response.Chunk.IsFinal)
+
+                        var data = transferMsg.Data;
+                        if (!data.Binary.IsEmpty)
+                        {
+                            data.Binary.CopyTo(buffer, 0);
+                            progressListener.IncrementProgress(data.Binary.Length);
+                            stream.Write(buffer, 0, data.Binary.Length);
+                        }
+                        if (data.IsFinal)
                             break;
                     }
+                    while (await fileReader.MoveNext());
                 }
                 finally
                 {
@@ -943,47 +949,39 @@ namespace TickTrader.Algo.ServerControl.Grpc
             }
         }
 
-        public override async Task UploadPluginFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string srcPath, int chunkSize, int offset, IFileProgressListener progressListener)
+        public override async Task UploadPluginFile(UploadPluginFileRequest request, string srcPath, IFileProgressListener progressListener)
         {
-            progressListener.Init((long)offset * chunkSize);
+            var chunkOffset = request.TransferSettings.ChunkOffset;
+            var chunkSize = request.TransferSettings.ChunkSize;
 
-            var request = new UploadPluginFileRequest
-            {
-                File = new PluginFileDetails
-                {
-                    PluginId = botId,
-                    FolderId = folderId,
-                    FileName = fileName,
-                    ChunkSettings = new FileChunkSettings { Size = chunkSize, Offset = offset },
-                }
-            };
+            progressListener.Init((long)chunkOffset * chunkSize);
 
-            var clientStream = await ExecuteClientStreamingRequestAuthorized(UploadBotFileInternal, request);
+            var transferMsg = new FileTransferMsg { Header = Any.Pack(request) };
+            var clientStream = await ExecuteClientStreamingRequestAuthorized(UploadBotFileInternal, transferMsg);
 
-            request.Chunk = new FileChunk { Id = offset, IsFinal = false };
+            transferMsg.Header = null;
+            transferMsg.Data = new FileChunk(chunkOffset);
             var buffer = new byte[chunkSize];
             try
             {
                 using (var stream = File.Open(srcPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
-                    stream.Seek((long)chunkSize * offset, SeekOrigin.Begin);
+                    stream.Seek((long)chunkSize * chunkOffset, SeekOrigin.Begin);
                     for (var cnt = stream.Read(buffer, 0, chunkSize); cnt > 0; cnt = stream.Read(buffer, 0, chunkSize))
                     {
-                        request.Chunk.Binary = ByteString.CopyFrom(buffer, 0, cnt);
-                        _messageFormatter.LogClientRequest(Logger, request);
-                        await clientStream.RequestStream.WriteAsync(request);
+                        transferMsg.Data.Binary = ByteString.CopyFrom(buffer, 0, cnt);
+                        _messageFormatter.LogClientRequest(Logger, transferMsg);
+                        await clientStream.RequestStream.WriteAsync(transferMsg);
                         progressListener.IncrementProgress(cnt);
-                        request.Chunk.Id++;
+                        transferMsg.Data.Id++;
                     }
                 }
             }
             finally
             {
-                request.Chunk.Binary = ByteString.Empty;
-                request.Chunk.IsFinal = true;
-                request.Chunk.Id = -1;
+                transferMsg.Data = FileChunk.FinalChunk;
                 _messageFormatter.LogClientRequest(Logger, request);
-                await clientStream.RequestStream.WriteAsync(request);
+                await clientStream.RequestStream.WriteAsync(transferMsg);
             }
 
             var response = await clientStream.ResponseAsync;

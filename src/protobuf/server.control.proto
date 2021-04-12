@@ -261,9 +261,9 @@ message PackageListResponse {
     RequestResult exec_result = 101;
 }
 
-message FileChunkSettings {
-    int32 size = 1;
-    int32 offset = 2;
+message FileTransferSettings {
+    int32 chunk_size = 1;
+    int32 chunk_offset = 2;
 }
 
 message FileChunk {
@@ -272,16 +272,15 @@ message FileChunk {
     bool is_final = 3;
 }
 
-message PackageDetails {
-    string package_id = 1;
-    FileChunkSettings chunk_settings = 2;
+message FileTransferMsg {
+    google.protobuf.Any header = 1;
+    FileChunk data = 2;
 }
 
 message UploadPackageRequest {
-    oneof value {
-        PackageDetails package = 10;
-        FileChunk chunk = 11;
-    }
+    google.protobuf.StringValue package_id = 1;
+    google.protobuf.StringValue filename = 2;
+    FileTransferSettings transfer_settings = 3;
 }
 
 message UploadPackageResponse {
@@ -297,12 +296,11 @@ message RemovePackageResponse {
 }
 
 message DownloadPackageRequest {
-    PackageDetails package = 1;
+    string package_id = 1;
+    FileTransferSettings transfer_settings = 2;
 }
 
 message DownloadPackageResponse {
-    FileChunk chunk = 1;
-
     RequestResult exec_result = 101;
 }
 
@@ -375,24 +373,25 @@ message PluginFileDetails {
     google.protobuf.StringValue plugin_id = 1;
     PluginFolderInfo.PluginFolderId folder_id = 2;
     google.protobuf.StringValue file_name = 3;
-    FileChunkSettings chunk_settings = 4;
+    FileTransferSettings transfer_settings = 4;
 }
 
 message DownloadPluginFileRequest {
-    PluginFileDetails file = 1;
+    google.protobuf.StringValue plugin_id = 1;
+    PluginFolderInfo.PluginFolderId folder_id = 2;
+    google.protobuf.StringValue file_name = 3;
+    FileTransferSettings transfer_settings = 4;
 }
 
 message DownloadPluginFileResponse {
-    FileChunk chunk = 1;
-
     RequestResult exec_result = 101;
 }
 
 message UploadPluginFileRequest {
-    oneof value {
-        PluginFileDetails file = 10;
-        FileChunk chunk = 11;
-    }
+    google.protobuf.StringValue plugin_id = 1;
+    PluginFolderInfo.PluginFolderId folder_id = 2;
+    google.protobuf.StringValue file_name = 3;
+    FileTransferSettings transfer_settings = 4;
 }
 
 message UploadPluginFileResponse {
