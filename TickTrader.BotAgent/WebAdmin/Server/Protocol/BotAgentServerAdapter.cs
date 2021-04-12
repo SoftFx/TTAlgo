@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -161,14 +160,14 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return _botAgent.RemovePackage(request);
         }
 
-        public Task<string> GetPackageReadPath(string packageId)
+        public Task<string> GetPackageReadPath(DownloadPackageRequest request)
         {
-            return _botAgent.GetPackageReadPath(packageId);
+            return _botAgent.GetPackageReadPath(request);
         }
 
-        public Task<string> GetPackageWritePath(string packageId)
+        public Task<string> GetPackageWritePath(UploadPackageRequest request)
         {
-            return _botAgent.GetPackageWritePath(packageId);
+            return _botAgent.GetPackageWritePath(request);
         }
 
         public async Task<string> GetBotStatusAsync(PluginStatusRequest request)
@@ -234,18 +233,18 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             await botFolder.DeleteFile(request.FileName);
         }
 
-        public async Task<string> GetBotFileReadPath(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName)
+        public async Task<string> GetBotFileReadPath(DownloadPluginFileRequest request)
         {
-            var botFolder = await GetBotFolder(botId, folderId);
+            var botFolder = await GetBotFolder(request.PluginId, request.FolderId);
 
-            return await botFolder.GetFileReadPath(fileName);
+            return await botFolder.GetFileReadPath(request.FileName);
         }
 
-        public async Task<string> GetBotFileWritePath(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName)
+        public async Task<string> GetBotFileWritePath(UploadPluginFileRequest request)
         {
-            var botFolder = await GetBotFolder(botId, folderId);
+            var botFolder = await GetBotFolder(request.PluginId, request.FolderId);
 
-            return await botFolder.GetFileWritePath(fileName);
+            return await botFolder.GetFileWritePath(request.FileName);
         }
 
 

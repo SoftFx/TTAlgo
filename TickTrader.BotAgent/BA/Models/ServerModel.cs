@@ -92,8 +92,8 @@ namespace TickTrader.BotAgent.BA.Models
             public Task<List<PluginInfo>> GetAllPlugins() => CallActorAsync(a => a.GetAllPlugins());
             public Task<List<PluginInfo>> GetPluginsByType(Metadata.Types.PluginType type) => CallActorAsync(a => a.GetPluginsByType(type));
             public Task<MappingCollectionInfo> GetMappingsInfo() => CallActorAsync(a => a.GetMappingsInfo());
-            public Task<string> GetPackageReadPath(string packageId) => CallActorAsync(a => a.GetPackageReadPath(packageId));
-            public Task<string> GetPackageWritePath(string packageId) => CallActorAsync(a => a.GetPackageWritePath(packageId));
+            public Task<string> GetPackageReadPath(DownloadPackageRequest request) => CallActorAsync(a => a.GetPackageReadPath(request));
+            public Task<string> GetPackageWritePath(UploadPackageRequest request) => CallActorAsync(a => a.GetPackageWritePath(request));
 
             public event Action<PackageInfo, ChangeAction> PackageChanged
             {
@@ -526,14 +526,14 @@ namespace TickTrader.BotAgent.BA.Models
             return _packageStorage.Mappings.ToInfo();
         }
 
-        private string GetPackageReadPath(string packageId)
+        private string GetPackageReadPath(DownloadPackageRequest request)
         {
-            return _packageStorage.GetPackageReadPath(packageId);
+            return _packageStorage.GetPackageReadPath(request);
         }
 
-        private string GetPackageWritePath(string packageId)
+        private string GetPackageWritePath(UploadPackageRequest request)
         {
-            return _packageStorage.GetPackageWritePath(packageId);
+            return _packageStorage.GetPackageWritePath(request);
         }
 
         #endregion

@@ -93,36 +93,52 @@ namespace TickTrader.BotAgent.BA.Repository
             }
         }
 
-        public string GetPackageReadPath(string packageId)
+        public string GetPackageReadPath(DownloadPackageRequest request)
         {
-            var packageRef = Library.GetPackageRef(packageId);
+            var packageRef = Library.GetPackageRef(request.PackageId);
             if (packageRef == null)
                 throw new ArgumentException("Algo package not found");
 
             return packageRef.Identity.FilePath;
         }
 
-        public string GetPackageWritePath(string packageId)
+        public string GetPackageWritePath(UploadPackageRequest request)
         {
-            PackageId.Unpack(packageId, out var pkgId);
-
-            if (pkgId.LocationId != SharedConstants.LocalRepositoryId)
-                throw new ArgumentException($"Algo package {packageId}: location is not defined");
+            if (!string.IsNullOrEmpty(request.PackageId) && !string.IsNullOrEmpty(request.Filename))
+                throw new ArgumentException($"Both {nameof(request.PackageId)} and {nameof(request.Filename)} can't be specified");
 
             EnsureStorageDirectoryCreated();
 
-            var packageRef = Library.GetPackageRef(packageId);
-            if (packageRef != null)
+            if (!string.IsNullOrEmpty(request.PackageId)) // update package
             {
+                var packageId = request.PackageId;
+                var packageRef = Library.GetPackageRef(packageId);
+
+                if (packageRef == null)
+                    throw new ArgumentException($"Package '{packageId}' doesn't exist");
                 if (packageRef.IsLocked)
                     throw new PackageLockedException($"Cannot update Algo package '{packageId}': one or more trade bots from this package is being executed! Please stop all bots and try again!");
 
                 return packageRef?.Identity.FilePath;
             }
-            else
+
+            if (!string.IsNullOrEmpty(request.Filename))
             {
-                return GetFullPathToPackage(pkgId.PackageName);
+                var packageId = PackageId.Pack(SharedConstants.LocalRepositoryId, request.Filename);
+                var packageRef = Library.GetPackageRef(packageId);
+
+                if (packageRef != null)
+                {
+                    if (packageRef.IsLocked)
+                        throw new PackageLockedException($"Cannot update Algo package '{packageId}': one or more trade bots from this package is being executed! Please stop all bots and try again!");
+
+                    return packageRef.Identity.FilePath; // update package
+                }
+
+                return GetFullPathToPackage(request.Filename); // add packa
             }
+
+            throw new ArgumentException($"{nameof(request.PackageId)} or {nameof(request.Filename)} should be specified");
         }
 
 

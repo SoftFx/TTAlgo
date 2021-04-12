@@ -181,7 +181,7 @@ namespace TickTrader.BotTerminal
 
         public async Task UploadPackage(string fileName, string srcFilePath, IFileProgressListener progressListener)
         {
-            await Task.Run(() => _protocolClient.UploadPackage(new UploadPackageRequest(PackageId.Pack(SharedConstants.LocalRepositoryId, fileName), null), srcFilePath, progressListener));
+            await Task.Run(() => _protocolClient.UploadPackage(new UploadPackageRequest(null, fileName), srcFilePath, progressListener));
         }
 
         public Task RemovePackage(string packageId)

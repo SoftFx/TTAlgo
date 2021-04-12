@@ -81,9 +81,9 @@ namespace TickTrader.Algo.ServerControl
 
         Task RemovePackage(RemovePackageRequest request);
 
-        Task<string> GetPackageReadPath(string packageId);
+        Task<string> GetPackageReadPath(DownloadPackageRequest request);
 
-        Task<string> GetPackageWritePath(string packageId);
+        Task<string> GetPackageWritePath(UploadPackageRequest request);
 
         Task<string> GetBotStatusAsync(PluginStatusRequest request);
 
@@ -97,9 +97,9 @@ namespace TickTrader.Algo.ServerControl
 
         Task DeleteBotFile(DeletePluginFileRequest request);
 
-        Task<string> GetBotFileReadPath(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName);
+        Task<string> GetBotFileReadPath(DownloadPluginFileRequest request);
 
-        Task<string> GetBotFileWritePath(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName);
+        Task<string> GetBotFileWritePath(UploadPluginFileRequest request);
 
         #endregion Requests
     }

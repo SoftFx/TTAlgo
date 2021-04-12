@@ -21,8 +21,8 @@ namespace TickTrader.BotAgent.BA
         Task<List<PluginInfo>> GetAllPlugins();
         Task<List<PluginInfo>> GetPluginsByType(Metadata.Types.PluginType type);
         Task<MappingCollectionInfo> GetMappingsInfo();
-        Task<string> GetPackageReadPath(string packageId);
-        Task<string> GetPackageWritePath(string packageId);
+        Task<string> GetPackageReadPath(DownloadPackageRequest request);
+        Task<string> GetPackageWritePath(UploadPackageRequest request);
 
         event Action<PackageInfo, ChangeAction> PackageChanged;
         event Action<PackageStateUpdate> PackageStateChanged;

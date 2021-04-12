@@ -1081,7 +1081,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 var chunkSize = request.TransferSettings.ChunkSize;
 
                 var buffer = new byte[chunkSize];
-                var packagePath = await _algoServer.GetPackageWritePath(request.PackageId);
+                var packagePath = await _algoServer.GetPackageWritePath(request);
                 string oldPackagePath = null;
                 if (File.Exists(packagePath))
                 {
@@ -1182,7 +1182,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
             try
             {
                 var buffer = new byte[chunkSize];
-                var packagePath = await _algoServer.GetPackageReadPath(request.PackageId);
+                var packagePath = await _algoServer.GetPackageReadPath(request);
                 using (var stream = File.Open(packagePath, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     stream.Seek((long)chunkSize * chunkOffset, SeekOrigin.Begin);
@@ -1370,7 +1370,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
             try
             {
                 var buffer = new byte[chunkSize];
-                var packagePath = await _algoServer.GetBotFileReadPath(request.PluginId, request.FolderId, request.FileName);
+                var packagePath = await _algoServer.GetBotFileReadPath(request);
                 using (var stream = File.Open(packagePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
                     stream.Seek((long)chunkSize * chunkOffset, SeekOrigin.Begin);
@@ -1424,7 +1424,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 var chunkSize = request.TransferSettings.ChunkSize;
 
                 var buffer = new byte[chunkSize];
-                var filePath = await _algoServer.GetBotFileWritePath(request.PluginId, request.FolderId, request.FileName);
+                var filePath = await _algoServer.GetBotFileWritePath(request);
                 string oldFilePath = null;
                 if (File.Exists(filePath))
                 {
