@@ -13,12 +13,6 @@
 
         public string CurrentVersionStr => $"{MajorVersion}.{CurrentVersion}";
 
-        public bool SupportAlerts => CurrentVersion > 0;
-
-        public bool SupportMainToken => CurrentVersion > 0;
-
-        public bool SupportModelTimeframe => CurrentVersion > 1;
-
         internal VersionSpec()
         {
             CurrentVersion = MinorVersion;

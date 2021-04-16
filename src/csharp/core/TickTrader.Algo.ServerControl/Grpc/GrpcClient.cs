@@ -848,8 +848,6 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
         public override async Task<AlertRecordInfo[]> GetAlerts(PluginAlertsRequest request)
         {
-            if (!VersionSpec.SupportAlerts)
-                return new AlertRecordInfo[0];
             var response = await ExecuteUnaryRequestAuthorized(GetAlertsInternal, request);
             FailForNonSuccess(response.ExecResult);
             return response.Alerts.ToArray();
