@@ -16,6 +16,7 @@ namespace Machinarium.Var
     public class PropertyBase<TVar, T> : IProperty<T>, INotifyPropertyChanged, IDisposable
         where TVar : Var<T>, new()
     {
+        private List<Action<T>> _preChangeTriggers, _postChangeTriggers;
         private readonly TVar _var;
 
         internal PropertyBase()
@@ -44,7 +45,36 @@ namespace Machinarium.Var
         public T Value
         {
             get => _var.Value;
-            set => _var.Value = value;
+            set
+            {
+                _preChangeTriggers?.ForEach(u => u?.Invoke(_var.Value));
+
+                _var.Value = value;
+
+                _postChangeTriggers?.ForEach(u => u?.Invoke(value));
+            }
+        }
+
+        protected PropertyBase<TVar, T> AddPreTrigger(Action<T> trigger)
+        {
+            if (_preChangeTriggers == null)
+                _preChangeTriggers = new List<Action<T>>(1);
+
+            _preChangeTriggers.Add(trigger);
+
+            return this;
+        }
+
+        protected PropertyBase<TVar, T> AddPostTrigger(Action<T> trigger)
+        {
+            if (_postChangeTriggers == null)
+                _postChangeTriggers = new List<Action<T>>(1);
+
+            _postChangeTriggers.Add(trigger);
+
+            trigger?.Invoke(Value);
+
+            return this;
         }
 
         public string DisplayValue => ConvertValueTo(Value);
@@ -74,7 +104,7 @@ namespace Machinarium.Var
             }
         }
 
-        private void NotificationCall()
+        protected void NotificationCall()
         {
             NotifyPropertyChange(nameof(Value));
             NotifyPropertyChange(nameof(HasValue));
@@ -82,7 +112,13 @@ namespace Machinarium.Var
         }
     }
 
-    public class Property<T> : PropertyBase<Var<T>, T> { }
+    public class Property<T> : PropertyBase<Var<T>, T>
+    {
+        public new Property<T> AddPreTrigger(Action<T> trigger) => (Property<T>)base.AddPreTrigger(trigger);
+
+        public new Property<T> AddPostTrigger(Action<T> trigger) => (Property<T>)base.AddPostTrigger(trigger);
+    }
+
     public class IntProperty : PropertyBase<IntVar, int> { }
     public class BoolProperty : PropertyBase<BoolVar, bool> { }
     public class DoubleProperty : PropertyBase<DoubleVar, double> { }

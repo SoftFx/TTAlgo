@@ -54,6 +54,14 @@ namespace TickTrader.Algo.Domain
                 throw new ArgumentException("Invalid account id");
         }
 
+        public static void Unpack(string accountId, out string login, out string server)
+        {
+            if (!TryUnpack(accountId, out var accId))
+                throw new ArgumentException("Invalid account id");
+
+            login = accId?.UserId;
+            server = accId?.Server;
+        }
 
         public override int GetHashCode()
         {

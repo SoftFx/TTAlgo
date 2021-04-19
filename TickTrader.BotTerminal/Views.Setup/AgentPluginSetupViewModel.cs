@@ -198,7 +198,7 @@ namespace TickTrader.BotTerminal
 
         public bool IsNotTerminal => Mode == PluginSetupMode.New && SelectedAgent.Name != LocalAlgoAgent.LocalAgentName;
 
-        public void AddNewAccount() => SelectedAgent.OpenAccountSetup(null, this, false);
+        public void AddNewAccount() => SelectedAgent.UpdatePluginAccountSettings(this);
 
         public void UploadNewPlugin() => SelectedAgent.OpenUploadPackageDialog(SelectedPlugin.Key.PackageId);
 
@@ -254,6 +254,11 @@ namespace TickTrader.BotTerminal
             var res = Setup.Save();
             res.Key = SelectedPlugin.Key;
             return res;
+        }
+
+        public void SetNewAccount(string login)
+        {
+            SelectedAccount = Accounts.FirstOrDefault(u => u.Login == login) ?? Accounts.FirstOrDefault();
         }
 
         private void BotStateChanged(ITradeBot bot)

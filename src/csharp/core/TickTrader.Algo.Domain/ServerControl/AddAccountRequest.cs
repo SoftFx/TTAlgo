@@ -9,5 +9,11 @@
             Creds = creds;
             DisplayName = displayName;
         }
+
+        public AddAccountRequest(string server, string userId, string password, string displayName = null) :
+            this(server, userId, new AccountCreds(password), displayName)
+        {
+
+        }
     }
 }

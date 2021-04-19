@@ -56,7 +56,7 @@
                                   Padding="3 0 3 0"
                                   Height="22">
                         <i:Interaction.Behaviors>
-                            <l:SaveFileDialogBeahvior FilePath="{Binding SelectedFolder}" FileName="{Binding TargetPackageName.Value}"/>
+                            <l:SaveFileDialogBeahvior FilePath="{Binding SelectedFolder.Value}" FileName="{Binding TargetPackageName.Value}"/>
                         </i:Interaction.Behaviors>
                     </l:FlatButton>
                 </Grid>

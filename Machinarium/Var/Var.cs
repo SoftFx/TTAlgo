@@ -73,6 +73,8 @@ namespace Machinarium.Var
         private T _val;
         private IDisposable _srcOperator;
 
+        public Action<T> ChangeEvent;
+
         public Var()
         {
         }
@@ -176,6 +178,8 @@ namespace Machinarium.Var
             if (!Equals(_val, value))
             {
                 _val = value;
+
+                ChangeEvent?.Invoke(value);
                 OnChanged();
             }
         }

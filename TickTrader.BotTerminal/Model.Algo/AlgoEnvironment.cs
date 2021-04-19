@@ -29,6 +29,7 @@ namespace TickTrader.BotTerminal
 
         public IVarList<AlgoAgentViewModel> Agents { get; }
 
+        public IObservableList<AlgoAgentViewModel> AgentsList { get; }
 
         public AlgoEnvironment(IShell shell, LocalAlgoAgent localAgent, BotAgentManager botAgentManager)
         {
@@ -43,6 +44,7 @@ namespace TickTrader.BotTerminal
             _localAgentStub.Add(LocalAgentVM);
             BotAgents = BotAgentManager.BotAgents.OrderBy((k, v) => k).Select(v => new BotAgentViewModel(v, this));
             Agents = VarCollection.CombineChained(_localAgentStub, BotAgents.Select(b => b.Agent));
+            AgentsList = Agents.AsObservable();
         }
     }
 }

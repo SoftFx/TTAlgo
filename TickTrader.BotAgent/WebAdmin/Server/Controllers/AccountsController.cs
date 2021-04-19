@@ -68,7 +68,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                var request = new AddAccountRequest(account.Server, account.Login, new AccountCreds(account.Password));
+                var request = new AddAccountRequest(account.Server, account.Login, account.Password);
                 await _botAgent.AddAccount(request);
             }
             catch (BAException dsex)

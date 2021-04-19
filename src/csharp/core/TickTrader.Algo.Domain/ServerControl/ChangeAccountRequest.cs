@@ -8,5 +8,11 @@
             Creds = creds;
             DisplayName = displayName;
         }
+
+        public ChangeAccountRequest(string accountId, string password, string displayName = null) :
+            this(accountId, string.IsNullOrEmpty(password) ? null : new AccountCreds(password), displayName)
+        {
+
+        }
     }
 }

@@ -1,96 +1,93 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Machinarium.Var
 {
     public class ValidableBase<TVar, T> : PropertyBase<TVar, T>, IValidable<T>, IDataErrorInfo
         where TVar : Var<T>, new()
     {
-        private Var<string> _errorVar;
-        private List<Rule> _rules = new List<Rule>();
+        private readonly List<Rule> _rules = new List<Rule>();
 
         internal ValidableBase()
         {
-            _errorVar = new Var<string>();
-            _errorVar.SetContext(this);
+            ErrorVar = new Var<string>();
+            ErrorVar.SetContext(this);
 
-            Var.Changed += () => ApplyValidationRules();
-            _errorVar.Changed += () => NotifyPropertyChange(nameof(Error));
+            HasError = new BoolVar();
+
+            Var.Changed += () => Validate();
+            ErrorVar.Changed += () => NotifyPropertyChange(nameof(Error));
         }
 
-        private void ApplyValidationRules()
+        public void Validate() // TODO: add after post Trigger Event
         {
             foreach (var rule in _rules)
-            {
                 if (!rule.Condition(Value))
                 {
-                    _errorVar.Value = rule.MessageFactory();
+                    ErrorVar.Value = rule.MessageFactory();
+                    HasError.Value = true;
+                    NotificationCall(); //crutch IDataErrorInfo.this[string columnName] call before this function. Error template don't update
                     return;
                 }
-            }
 
-            _errorVar.Value = null;
+            ErrorVar.Value = null;
+            HasError.Value = false;
+            NotificationCall(); //crutch IDataErrorInfo.this[string columnName] call before this function. Error template don't update
         }
 
-        public Var<string> ErrorVar => _errorVar;
-        public string Error => _errorVar.Value;
+        public Var<string> ErrorVar { get; private set; }
 
-        string IDataErrorInfo.Error => null;
-        string IDataErrorInfo.this[string columnName]
-        {
-            get
-            {
-                if (columnName == nameof(Value))
-                    return (string)Error;
-                return null;
-            }
-        }
+        public string Error => ErrorVar.Value;
+
+        string IDataErrorInfo.Error => Error;
+
+        public BoolVar HasError { get; }
+
+        string IDataErrorInfo.this[string columnName] => columnName == nameof(Value) ? Error : string.Empty;
 
         public void AddValidationRule(Predicate<T> condition, Func<string> errorFunc)
         {
             _rules.Add(new Rule { Condition = condition, MessageFactory = errorFunc });
-            ApplyValidationRules();
+            Validate();
         }
 
         public void AddValidationRule(Predicate<T> condition, string msg)
         {
             _rules.Add(new Rule { Condition = condition, MessageFactory = () => msg });
-            ApplyValidationRules();
-        }
-
-        public void Validate()
-        {
-            ApplyValidationRules();
-        }
-
-        public override void Dispose()
-        {
-            base.Dispose();
+            Validate();
         }
 
         private struct Rule
         {
             public Predicate<T> Condition { get; set; }
+
             public Func<string> MessageFactory { get; set; }
         }
     }
 
-    public class Validable<T> : ValidableBase<Var<T>, T> { }
+    public class Validable<T> : ValidableBase<Var<T>, T>
+    {
+        public new Validable<T> AddPreTrigger(Action<T> trigger) => (Validable<T>)base.AddPreTrigger(trigger);
+
+        public new Validable<T> AddPostTrigger(Action<T> trigger) => (Validable<T>)base.AddPostTrigger(trigger);
+    }
+
     public class IntValidable : ValidableBase<IntVar, int> { }
+
     public class BoolValidable : ValidableBase<BoolVar, bool> { }
+
     public class DoubleValidable : ValidableBase<DoubleVar, double> { }
 
     public interface IValidable<T> : IProperty<T>, IValidable { }
 
-    public interface IValidable
+    public interface IValidable : IDisposable
     {
         Var<string> ErrorVar { get; }
 
         string Error { get; }
+
+        BoolVar HasError { get; }
 
         void Validate();
     }

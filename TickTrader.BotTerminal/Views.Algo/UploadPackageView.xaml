@@ -47,14 +47,14 @@
                               Margin="5 0 0 0"
                               Foreground="{DynamicResource Shell_PrimaryForeground}" 
                               ItemsSource="{Binding SourcePackageCollectionView}"
-                              ToolTip="{Binding SelectedFolder}"/>
+                              ToolTip="{Binding SelectedFolder.Value}"/>
 
                     <l:FlatButton Grid.Column="1" 
                                   Content="..." 
                                   Style="{DynamicResource ParamUtilityButtonStyle}" 
                                   Padding="3 0 3 0">
                         <i:Interaction.Behaviors>
-                            <l:OpenFileDialogBehavior FilePath="{Binding SelectedFolder}" FileName="{Binding SourcePackageName.Value}"/>
+                            <l:OpenFileDialogBehavior FilePath="{Binding SelectedFolder.Value}" FileName="{Binding SourcePackageName.Value}"/>
                         </i:Interaction.Behaviors>
                     </l:FlatButton>
                 </Grid>

@@ -214,6 +214,9 @@
     <Content Include="Resx\Sounds\Negative1.wav" />
     <Resource Include="terminal.ico" />
     <None Include="bot-terminal-sign.pfx" />
+    <Resource Include="Resx\Fonts\password.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
     <None Include="Resx\Sounds\Woosh.wav" />
     <None Include="Resx\Sounds\SharpEcho.wav" />
     <None Include="Resx\Sounds\Save.wav" />

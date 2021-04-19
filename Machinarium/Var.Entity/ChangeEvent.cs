@@ -6,27 +6,29 @@ using System.Threading.Tasks;
 
 namespace Machinarium.Var
 {
-    internal class ChangeEvent<T> : IDisposable
+    internal sealed class ChangeEvent<T> : IDisposable
     {
-        private Var<T> _var;
-        private Action<VarChangeEventArgs<T>> _handler;
-        private T _valCahche;
+        private readonly Var<T> _var;
+        private readonly Action<VarChangeEventArgs<T>> _handler;
+        private T _valCache;
 
         public ChangeEvent(Var<T> var, Action<VarChangeEventArgs<T>> handler)
         {
             _var = var;
             _handler = handler;
 
-            _valCahche = _var.Value;
+            _valCache = _var.Value;
             _var.Changed += VarChanged;
+
             VarChanged();
         }
 
         private void VarChanged()
         {
-            var oldVal = _valCahche;
-            _valCahche = _var.Value;
-            _handler(new VarChangeEventArgs<T>(oldVal, _valCahche));
+            var oldVal = _valCache;
+            _valCache = _var.Value;
+
+            _handler(new VarChangeEventArgs<T>(oldVal, _valCache));
         }
 
         public void Dispose()

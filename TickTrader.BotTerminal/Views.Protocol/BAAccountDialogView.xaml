@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:cal="http://www.caliburnproject.org"
         xmlns:l="clr-namespace:TickTrader.BotTerminal"
         mc:Ignorable="d"
         Icon="{StaticResource MainAppIcon}"
@@ -11,7 +12,6 @@
         Background="{DynamicResource Dialog_Background}">
 
     <Window.Resources>
-
         <Style TargetType="TextBlock">
             <Setter Property="OverridesDefaultStyle" Value="True"/>
             <Setter Property="SnapsToDevicePixels" Value="False"/>
@@ -19,12 +19,13 @@
             <Setter Property="Margin" Value="5,4,5,1" />
             <Setter Property="Padding" Value="0"/>
         </Style>
-
     </Window.Resources>
 
-    <Grid Margin="5">
+    <Grid Margin="5" IsEnabled="{Binding IsEnabled.Value}">
         <Grid.RowDefinitions>
             <RowDefinition Height="50"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -38,29 +39,36 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
+
         <Label Grid.Row="0" Content="{Binding DisplayName}" FontSize="26" VerticalAlignment="Center" Style="{DynamicResource DialogPageTitleLabelStyle}"/>
         <Label Grid.Row="1" Content="Algo Server"/>
-        <ComboBox Grid.Row="2" DisplayMemberPath="Name"
-                  ItemsSource="{Binding Agents}" SelectedItem="{Binding SelectedAgent}"
-                  IsEnabled="{Binding CanChangeAgentKey}"/>
+
+        <ComboBox Grid.Row="2" SelectedItem="{Binding AlgoServer.Value}" ItemsSource="{Binding AlgoServersList}" DisplayMemberPath="Name" IsEnabled="{Binding IsNewAccountMode}"/>
+
         <Label Grid.Row="3" Content="Server"/>
-        <ComboBox Grid.Row="4" Name="Servers" Text="{Binding Server, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource TrimValue}}"
-                  ItemsSource="{Binding Servers}" SelectedItem="{Binding SelectedServer}" TextSearch.TextPath="Address"
-                  IsEditable="True" DisplayMemberPath="Name" IsEnabled="{Binding CanChangeAccountKey}"/>
+        <ComboBox Grid.Row="4" Text="{l:ValidationBinding TTServerName.Value, Converter={StaticResource TrimValue}}"
+                  ItemsSource="{Binding TTServersList}" TextSearch.TextPath="Address" IsEditable="True" DisplayMemberPath="Name" IsEnabled="{Binding IsNewAccountMode}"/>
+
         <Label Grid.Row="5" Content="Account"/>
-        <ComboBox Grid.Row="6" Text="{Binding Login, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource TrimValue}}"
-                  ItemsSource="{Binding Accounts}" SelectedItem="{Binding SelectedAccount}"
-                  ItemTemplate="{DynamicResource AccountAuthInfoTemplate}" TextSearch.TextPath="Login"
-                  IsEditable="True" IsEnabled="{Binding CanChangeAccountKey}"/>
-        <Label Grid.Row="7" Content="Password"/>
-        <PasswordBox Grid.Row="8" Name="PasswordInput" IsEnabled="{Binding IsEditable}" />
-        <TextBlock Grid.Row="11" HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
-                   Text="{Binding Error}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
-                   Foreground="{DynamicResource Shell_WarningForeground}" Visibility="{Binding HasError, Converter={StaticResource BoolToVis}}"/>
-        <TextBlock Grid.Row="11" HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
-                   Text="{Binding Success}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
-                   Foreground="{DynamicResource Shell_SuccessForeground}" Visibility="{Binding HasSuccess, Converter={StaticResource BoolToVis}}"/>
-        <Grid Grid.Row="12">
+        <ComboBox Grid.Row="6" Text="{l:ValidationBinding Login.Value, Converter={StaticResource TrimValue}}"
+                  ItemsSource="{Binding Accounts}" ItemTemplate="{DynamicResource AccountAuthInfoTemplate}" TextSearch.TextPath="Login"
+                  IsEditable="True" IsEnabled="{Binding IsNewAccountMode}"/>
+
+        <Label Grid.Row="7" Content="Display Name"/>
+        <TextBox Grid.Row="8" Text="{l:ValidationBinding DisplayAccountName.Value, Converter={StaticResource TrimValue}}"/>
+
+        <Label Grid.Row="9" Content="Password"/>
+        <TextBox Grid.Row="10" Style="{DynamicResource PasswordTextBox}" Text="{l:ValidationBinding Password.Value}"/>
+
+        <TextBlock Grid.Row="13" HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
+                   Text="{Binding Error.Value}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
+                   Foreground="{DynamicResource Shell_WarningForeground}" Visibility="{Binding Error.HasValue, Converter={StaticResource BoolToVis}}"/>
+
+        <TextBlock Grid.Row="13" HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
+                   Text="Successfully connected" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
+                   Foreground="{DynamicResource Shell_SuccessForeground}" Visibility="{Binding SuccessConnect.Value, Converter={StaticResource BoolToVis}}"/>
+
+        <Grid Grid.Row="15">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -70,18 +78,17 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <l:FlatButton Grid.Row="0" Grid.ColumnSpan="2" Margin="8,8,8,4"
-                      x:Name="Test" Content="Test" 
+                      x:Name="Test" Content="Test" IsEnabled="{Binding CanTest.Value}"
                       Background="{DynamicResource Dialog_ButtonBackground}"
                       HighlightBackground="{DynamicResource Dialog_ButtonHighlightBackground}"/>
             <l:FlatButton Grid.Row="1" Grid.Column="0" Margin="8,4,4,8"
-                      x:Name="Ok" Content="Ok" 
+                      x:Name="Ok" Content="Ok" IsEnabled="{Binding CanOk.Value}"
                       Background="{DynamicResource Dialog_OkButtonBackground}"
                       HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}"/>
-            <l:FlatButton Grid.Row="1" Grid.Column="1" Margin="4,4,8,8"
-                      x:Name="Cancel" Content="Cancel" 
+            <l:FlatButton Grid.Row="1" Grid.Column="1" Margin="4,4,8,8" Content="Cancel"
+                      cal:Message.Attach="[Event Click] = [Action TryClose(false)]"
                       Background="{DynamicResource Dialog_ButtonBackground}"
                       HighlightBackground="{DynamicResource Dialog_ButtonHighlightBackground}"/>
         </Grid>
-        
     </Grid>
 </Window>

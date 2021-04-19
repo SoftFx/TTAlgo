@@ -115,6 +115,9 @@ namespace TickTrader.BotTerminal
                 wnd.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                 wnd.Owner = (Window)parent.GetView();
             }
+            else
+                wnd.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+
             return wnd.ShowDialog();
         }
 

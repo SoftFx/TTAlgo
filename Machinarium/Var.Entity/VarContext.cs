@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Machinarium.Var
 {
@@ -37,7 +33,7 @@ namespace Machinarium.Var
 
         public new Validable<T> AddValidable<T>(T initialValue = default(T), string notifyName = null)
         {
-            return base.AddValidable<T>(initialValue, notifyName);
+            return base.AddValidable(initialValue, notifyName);
         }
 
         public new IntValidable AddIntValidable(int initialValue = 0, string notifyName = null)

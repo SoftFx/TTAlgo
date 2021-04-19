@@ -1,5 +1,4 @@
-﻿using Caliburn.Micro;
-using Machinarium.Qnil;
+﻿using Machinarium.Qnil;
 using NLog;
 using System;
 using System.Linq;
@@ -10,7 +9,7 @@ using TickTrader.Algo.Domain.ServerControl;
 
 namespace TickTrader.BotTerminal
 {
-    internal class AlgoAgentViewModel : PropertyChangedBase
+    internal class AlgoAgentViewModel
     {
         private static readonly ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -171,12 +170,28 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public void OpenAccountSetup(AccountModelInfo account, AgentPluginSetupViewModel selectedPlugin = null, bool allowedChangeAgentKey = true)
+        public void OpenAccountSetup(AccountModelInfo account)
         {
             try
             {
-                var model = new BAAccountDialogViewModel(_algoEnv, account, Name, selectedPlugin, allowedChangeAgentKey);
-                _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AccountSetupWindow", model);
+                var model = new BAAccountDialogViewModel(_algoEnv, account, this);
+
+                _algoEnv.Shell.ToolWndManager.ShowDialog(model, _algoEnv.Shell);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to open account setup");
+            }
+        }
+
+        public void UpdatePluginAccountSettings(AgentPluginSetupViewModel plugin)
+        {
+            try
+            {
+                var model = new BAAccountDialogViewModel(_algoEnv, null, this);
+
+                if (_algoEnv.Shell.ToolWndManager.ShowDialog(model, plugin) == true && plugin.SelectedAgent == model.AlgoServer.Value)
+                    plugin.SetNewAccount(model.Login.Value);
             }
             catch (Exception ex)
             {
@@ -315,5 +330,9 @@ namespace TickTrader.BotTerminal
                 _logger.Error(ex, "Failed to open copy bot instance dialog");
             }
         }
+
+        public override bool Equals(object obj) => obj is AlgoAgentViewModel second ? Name == second.Name : base.Equals(obj);
+
+        public override int GetHashCode() => Name.GetHashCode();
     }
 }

@@ -14,7 +14,7 @@ namespace TickTrader.BotTerminal
         void ReloadProfile(CancellationToken token);
     }
 
-    internal interface IShell : IWindowModel
+    internal interface IShell : IViewAware, IWindowModel
     {
         void OpenChart(string smb);
         void ShowChart(string smb, ChartPeriods period);

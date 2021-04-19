@@ -7,8 +7,7 @@ using System.Threading.Tasks;
 
 namespace Machinarium.Var
 {
-    public static class VarOperator
-    {
+    public static class VarOperator{
         public static IntVar Convert<T>(this Var<T> src, Func<T, int> operatorDef)
         {
             return IntVar.Operator<IntVar>(() => operatorDef(src.Value), src);

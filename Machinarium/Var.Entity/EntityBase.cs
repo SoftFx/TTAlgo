@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Machinarium.Var
 {
@@ -12,22 +8,11 @@ namespace Machinarium.Var
         private List<IDisposable> _disposableChildren;
         private List<IValidable> _validableChildren;
 
-        public virtual void Dispose()
+        public BoolVar HasError { get; private set; }
+
+        public EntityBase()
         {
-            _validableChildren?.Clear();
-
-            if (_disposableChildren != null)
-            {
-                foreach (var c in _disposableChildren)
-                    c.Dispose();
-            }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            HasError = new BoolVar();
         }
 
         public BoolVar GetValidationModelResult()
@@ -35,7 +20,7 @@ namespace Machinarium.Var
             BoolVar result = new BoolVar(true);
 
             foreach (var v in _validableChildren)
-                result = result & v.ErrorVar.IsEmpty();
+                result &= v.ErrorVar.IsEmpty();
 
             return result;
         }
@@ -53,6 +38,8 @@ namespace Machinarium.Var
                     _validableChildren = new List<IValidable>();
 
                 _validableChildren.Add(valid);
+
+                HasError |= valid.HasError;
             }
         }
 
@@ -64,6 +51,7 @@ namespace Machinarium.Var
                 Name = notifyName,
                 DisplayConverter = displayConverter,
             };
+
             AddChild(property);
             return property;
         }
@@ -97,9 +85,12 @@ namespace Machinarium.Var
 
         protected Validable<T> AddValidable<T>(T initialValue = default(T), string notifyName = null)
         {
-            var property = new Validable<T>();
-            property.Value = initialValue;
-            property.Name = notifyName;
+            var property = new Validable<T>
+            {
+                Value = initialValue,
+                Name = notifyName
+            };
+
             AddChild(property);
             return property;
         }
@@ -115,9 +106,12 @@ namespace Machinarium.Var
 
         protected DoubleValidable AddDoubleValidable(double initialValue = 0, string notifyName = null)
         {
-            var property = new DoubleValidable();
-            property.Value = initialValue;
-            property.Name = notifyName;
+            var property = new DoubleValidable
+            {
+                Value = initialValue,
+                Name = notifyName
+            };
+
             AddChild(property);
             return property;
         }
@@ -138,11 +132,11 @@ namespace Machinarium.Var
             return converter;
         }
 
-        private void RegisterPropertyNotification<T>(Property<T> property, string name)
-        {
-            if (!string.IsNullOrWhiteSpace(name))
-                property.PropertyChanged += (s, a) => OnPropertyChanged(name);
-        }
+        //private void RegisterPropertyNotification<T>(Property<T> property, string name)
+        //{
+        //    if (!string.IsNullOrWhiteSpace(name))
+        //        property.PropertyChanged += (s, a) => OnPropertyChanged(name);
+        //}
 
         protected IDisposable TriggerOn(BoolVar condition, Action action)
         {
@@ -168,6 +162,12 @@ namespace Machinarium.Var
             var trigger = new ChangeEvent<T>(property.Var, changeHandler);
             AddChild(trigger);
             return trigger;
+        }
+
+        public virtual void Dispose()
+        {
+            _validableChildren?.ForEach(u => u.Dispose());
+            _disposableChildren?.ForEach(u => u.Dispose());
         }
     }
 }

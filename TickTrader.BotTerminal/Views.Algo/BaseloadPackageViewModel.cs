@@ -34,11 +34,12 @@ namespace TickTrader.BotTerminal
         private readonly LoadPackageMode _mode;
 
         private FileSystemWatcher _watcher;
-        private string _selectedFolder;
 
         public AlgoAgentViewModel SelectedAlgoServer { get; }
 
         public ICollectionView SourcePackageCollectionView { get; }
+
+        public Property<string> SelectedFolder { get; }
 
         public Property<string> AlgoServerPackageName { get; }
 
@@ -65,25 +66,6 @@ namespace TickTrader.BotTerminal
         protected abstract string GetSourcePackageName(string packageId);
 
 
-        public string SelectedFolder //TODO add postTrigger and preTrigger to the PropertyClass
-        {
-            get => _selectedFolder;
-            set
-            {
-                if (_selectedFolder == value)
-                    return;
-
-                DeinitWatcher();
-
-                _selectedFolder = value;
-
-                InitWatcher();
-
-                NotifyOfPropertyChange(nameof(SelectedFolder));
-            }
-        }
-
-
         public BaseloadPackageViewModel(AlgoAgentViewModel algoServer, LoadPackageMode mode)
         {
             _mode = mode;
@@ -99,6 +81,7 @@ namespace TickTrader.BotTerminal
             IsEnabled = _varContext.AddBoolProperty(true);
             LocalPackageName = _varContext.AddProperty<string>();
             AlgoServerPackageName = _varContext.AddProperty<string>();
+            SelectedFolder = _varContext.AddProperty<string>().AddPreTrigger(DeinitWatcher).AddPostTrigger(InitWatcher);
 
             _varContext.TriggerOnChange(LocalPackageName.Var, (args) =>
             {
@@ -154,9 +137,12 @@ namespace TickTrader.BotTerminal
             SourcePackageName.Value = !result || string.IsNullOrEmpty(packageName) ? GetFirstSourcePackageName() : GetSourcePackageName(packageName);
         }
 
-        private void InitWatcher()
+        private void InitWatcher(string folder)
         {
-            _watcher = new FileSystemWatcher(SelectedFolder, FileNameWatcherTemplate)
+            if (string.IsNullOrEmpty(folder))
+                return;
+
+            _watcher = new FileSystemWatcher(folder, FileNameWatcherTemplate)
             {
                 EnableRaisingEvents = true,
                 IncludeSubdirectories = false,
@@ -166,10 +152,10 @@ namespace TickTrader.BotTerminal
             _watcher.Deleted += RemovePackageEventHandling;
             _watcher.Renamed += RenamePackageEventHandling;
 
-            _localPackages.AddRange(Directory.GetFiles(SelectedFolder, FileNameWatcherTemplate).Select(u => Path.GetFileName(u)));
+            _localPackages.AddRange(Directory.GetFiles(folder, FileNameWatcherTemplate).Select(u => Path.GetFileName(u)));
         }
 
-        private void DeinitWatcher()
+        private void DeinitWatcher(string folder = null)
         {
             if (_watcher == null)
                 return;
@@ -186,7 +172,7 @@ namespace TickTrader.BotTerminal
         {
             _localPackages.Add(e.Name);
 
-            if (SourceCollection.Count == 1)
+            if (!LocalPackageName.HasValue && SourceCollection.Count > 0)
                 LocalPackageName.Value = e.Name;
         });
 
@@ -251,7 +237,7 @@ namespace TickTrader.BotTerminal
 
         private bool TrySetStartLocation(string folder, string packageName)
         {
-            SelectedFolder = folder;
+            SelectedFolder.Value = folder;
 
             return string.IsNullOrEmpty(packageName) ? _localPackages.Count > 0 : !string.IsNullOrEmpty(GetLocalPackageName(packageName));
         }
@@ -265,7 +251,7 @@ namespace TickTrader.BotTerminal
         }
 
 
-        protected string FullPackagePath(string fileName) => Path.Combine(SelectedFolder, fileName);
+        protected string FullPackagePath(string fileName) => Path.Combine(SelectedFolder.Value, fileName);
 
         protected string GetAlgoServerPackageName(string packageId) => SelectedAlgoServer.PackageList.FirstOrDefault(p => string.Equals(p.FileName, packageId, StringComparison.InvariantCultureIgnoreCase))?.FileName;
 
