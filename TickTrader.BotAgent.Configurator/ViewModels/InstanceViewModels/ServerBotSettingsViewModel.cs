@@ -1,5 +1,7 @@
 ﻿using Microsoft.Win32;
-using System.IO;
+using System;
+using System.Threading;
+using System.Windows;
 
 namespace TickTrader.BotAgent.Configurator
 {
@@ -9,9 +11,16 @@ namespace TickTrader.BotAgent.Configurator
         private const string DefaultFileDialogExt = ".zip";
 
         private readonly ServerBotSettingsManager _manager;
+        private readonly SpinnerViewModel _spinner;
 
         private DelegateCommand _saveCurrentBotSettingsCommand;
         private DelegateCommand _loadCurrentBotSettingsCommand;
+
+        public ServerBotSettingsViewModel(ServerBotSettingsManager manager, SpinnerViewModel spinner) : base(nameof(ServerBotSettingsViewModel))
+        {
+            _manager = manager;
+            _spinner = spinner;
+        }
 
         public DelegateCommand SaveCurrentBotSettingsCommand => _saveCurrentBotSettingsCommand ?? (
             _saveCurrentBotSettingsCommand = new DelegateCommand(obj =>
@@ -25,12 +34,7 @@ namespace TickTrader.BotAgent.Configurator
                 };
 
                 if (dialog.ShowDialog() == true)
-                {
-                    if (_manager.CreateAlgoServerBotSettingZip(dialog.FileName))
-                        MessageBoxManager.OkInfo($"{dialog.SafeFileName} save was successfully");
-                    else
-                        MessageBoxManager.OkError($"{dialog.SafeFileName} save has failed");
-                }
+                    ThreadPool.QueueUserWorkItem(RunArchiveBuildProcess, dialog);
             }));
 
         public DelegateCommand LoadCurrentBotSettingsCommand => _loadCurrentBotSettingsCommand ?? (
@@ -45,17 +49,25 @@ namespace TickTrader.BotAgent.Configurator
                 };
 
                 if (dialog.ShowDialog() == true)
-                {
-                    if (_manager.LoadAlgoServerBotSettingZip(dialog.FileName))
-                        MessageBoxManager.OkInfo($"{dialog.SafeFileName} load was successfully");
-                    else
-                        MessageBoxManager.OkError($"{dialog.SafeFileName} load has failed");
-                }
+                    ThreadPool.QueueUserWorkItem(RunArchiveBuildProcess, dialog);
             }));
 
-        public ServerBotSettingsViewModel(ServerBotSettingsManager manager) : base(nameof(ServerBotSettingsViewModel))
+        private void RunArchiveBuildProcess(object o)
         {
-            _manager = manager;
+            _spinner.Start();
+
+            var isSaveProcess = o is SaveFileDialog;
+            var path = isSaveProcess ? ((SaveFileDialog)o).FileName : ((OpenFileDialog)o).FileName;
+            var messagePath = isSaveProcess ? path : ((OpenFileDialog)o).SafeFileName;
+
+            var result = isSaveProcess ? _manager.CreateAlgoServerBotSettingZip(path) : _manager.LoadAlgoServerBotSettingZip(path);
+
+            _spinner.Stop();
+
+            if (result)
+                Application.Current.Dispatcher.BeginInvoke(new Action<string>(MessageBoxManager.OkInfo), $"{messagePath} {(isSaveProcess ? "save" : "load")} was successfully");
+            else
+                Application.Current.Dispatcher.BeginInvoke(new Action<string>(MessageBoxManager.OkError), $"{messagePath} {(isSaveProcess ? "save" : "load")} has failed");
         }
     }
 }

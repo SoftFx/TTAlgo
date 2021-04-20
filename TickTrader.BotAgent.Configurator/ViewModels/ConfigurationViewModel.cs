@@ -150,7 +150,7 @@ namespace TickTrader.BotAgent.Configurator
                 ModelDescription = _model.Prompts.GetPrompt(SectionNames.MultipleAgentProvider, RegistryManager.AgentPathNameProperty),
             };
 
-            ServerBotSettingsModel = new ServerBotSettingsViewModel(_model.BotSettingsManager)
+            ServerBotSettingsModel = new ServerBotSettingsViewModel(_model.BotSettingsManager, Spinner)
             {
                 ModelDescription = _model.Prompts.GetPrompt(SectionNames.MultipleAgentProvider, ServerBotSettingsManager.ServerBotSettingsProperty),
             };

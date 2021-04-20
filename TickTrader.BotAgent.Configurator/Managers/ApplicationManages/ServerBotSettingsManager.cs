@@ -54,7 +54,7 @@ namespace TickTrader.BotAgent.Configurator
 
                 if (Directory.Exists(archiveBotPath))
                 {
-                    EmptyAndRestoreFolder(serverBotPath);
+                    ClearOrRestoreFolder(serverBotPath);
 
                     foreach (var archiveSubFolder in new DirectoryInfo(archiveBotPath).GetDirectories())
                         CopyAll(archiveSubFolder, InitEmptyDirectory(Path.Combine(serverBotPath, archiveSubFolder.Name)));
@@ -68,7 +68,7 @@ namespace TickTrader.BotAgent.Configurator
         {
             try
             {
-                EmptyAndRestoreFolder(RawArchivePath, true);
+                ClearOrRestoreFolder(RawArchivePath, true);
 
                 archiveAction();
             }
@@ -80,7 +80,7 @@ namespace TickTrader.BotAgent.Configurator
             }
             finally
             {
-                EmptyAndRestoreFolder(RawArchivePath);
+                ClearOrRestoreFolder(RawArchivePath);
             }
 
             return true;
@@ -103,7 +103,7 @@ namespace TickTrader.BotAgent.Configurator
 
         private static DirectoryInfo InitEmptyDirectory(string path)
         {
-            EmptyAndRestoreFolder(path, true);
+            ClearOrRestoreFolder(path, true);
 
             return new DirectoryInfo(path);
         }
@@ -114,10 +114,11 @@ namespace TickTrader.BotAgent.Configurator
                 File.Delete(filePath);
         }
 
-        private static void EmptyAndRestoreFolder(string directoryPath, bool restore = false)
+        private static void ClearOrRestoreFolder(string directoryPath, bool restore = false)
         {
             if (Directory.Exists(directoryPath))
-                Directory.Delete(directoryPath, true);
+                //sometimes Directory.Delete behaves incorretly. Throws a folder delete error
+                ForceCleanFolder(new DirectoryInfo(directoryPath));
 
             if (restore)
                 Directory.CreateDirectory(directoryPath);
@@ -133,6 +134,18 @@ namespace TickTrader.BotAgent.Configurator
 
             if (target.GetFiles().Length + target.GetDirectories().Length == 0)
                 Directory.Delete(target.FullName);
+        }
+
+        private static void ForceCleanFolder(DirectoryInfo directoryInfo)
+        {
+            foreach (var file in directoryInfo.GetFiles())
+                file.Delete();
+
+            foreach (var subDirectory in directoryInfo.GetDirectories())
+            {
+                ForceCleanFolder(subDirectory);
+                subDirectory.Delete(true);
+            }
         }
     }
 }
