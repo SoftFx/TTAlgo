@@ -16,7 +16,7 @@ namespace TickTrader.Algo.Rpc.OverTcp
         private Task _acceptTask;
 
 
-        public IObservable<ITransportProxy> ObserveNewConnentions => _newConnectionSubject;
+        public IObservable<ITransportProxy> ObserveNewConnections => _newConnectionSubject;
 
         public int BoundPort { get; private set; }
 

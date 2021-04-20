@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using TickTrader.Algo.Util;
 
 namespace TickTrader.Algo.Rpc
 {
     public class RpcServer
     {
+        private readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<RpcServer>();
+
         private readonly ITransportFactory _transportFactory;
         private readonly IRpcHost _rpcHost;
         private readonly object _lock = new object();
@@ -28,7 +31,7 @@ namespace TickTrader.Algo.Rpc
         public Task Start(string address, int port)
         {
             _transportServer = _transportFactory.CreateServer();
-            _newConnectionSubscription = _transportServer.ObserveNewConnentions.Subscribe(OnNewConnection);
+            _newConnectionSubscription = _transportServer.ObserveNewConnections.Subscribe(OnNewConnection);
             return _transportServer.Start(address, port);
         }
 
@@ -69,17 +72,26 @@ namespace TickTrader.Algo.Rpc
         {
             var session = new RpcSession(transport, _rpcHost);
 
+            _logger.Debug("OnNewConnection connect");
+
             session.Connect().ContinueWith(t =>
             {
                 if (t.IsCompleted && session.State == RpcSessionState.Connected)
+                {
+                    _logger.Debug("OnNewConnection success");
                     AddSession(session);
+                }
                 else
+                {
+                    _logger.Debug("OnNewConnection failure");
                     session.Close();
+                }
             });
         }
 
         private void AddSession(RpcSession session)
         {
+            _logger.Debug("Session adding...");
             lock (_lock)
             {
                 _sessions.Add(session);
@@ -89,14 +101,17 @@ namespace TickTrader.Algo.Rpc
                         RemoveSession(args.Session);
                 });
             }
+            _logger.Debug("Session added");
         }
 
         private void RemoveSession(RpcSession session)
         {
+            _logger.Debug("Session removing...");
             lock (_lock)
             {
                 _sessions.Remove(session);
             }
+            _logger.Debug("Session removed");
         }
     }
 }

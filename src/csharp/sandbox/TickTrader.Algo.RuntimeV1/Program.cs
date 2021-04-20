@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Util;
 
 namespace TickTrader.Algo.RuntimeV1
 {
@@ -27,6 +28,7 @@ namespace TickTrader.Algo.RuntimeV1
             }
 
             CoreLoggerFactory.Init(n => new RuntimeLogAdapter(n));
+            AlgoLoggerFactory.Init(n => new RuntimeLogAdapter(n));
             var logger = LogManager.GetLogger("MainLoop");
 
             logger.Info("Starting runtime with id {runtimeId} at server {address}:{port}", args[2], args[0], args[1]);
@@ -68,12 +70,12 @@ namespace TickTrader.Algo.RuntimeV1
             const string _fileExtension = ".log";
             const string _archiveExtension = ".zip";
 
-            var _logDirectory = Path.Combine(Directory.GetCurrentDirectory(), "RuntimeLogs", runtimeId);
+            var _logDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Logs", "Runtimes", runtimeId);
 
             var logFile = new FileTarget("runtime-all")
             {
                 FileName = Layout.FromString(Path.Combine(_logDirectory, $"${{shortdate}}-log{_fileExtension}")),
-                Layout = Layout.FromString("${longdate} | ${logger} | ${message} | ${all-event-properties} ${exception:format=tostring}"),
+                Layout = Layout.FromString("${longdate} | ${level} | ${logger} | ${message} | ${all-event-properties} ${exception:format=tostring}"),
                 Encoding = Encoding.UTF8,
                 ArchiveEvery = FileArchivePeriod.Day,
                 ArchiveFileName = Layout.FromString(Path.Combine(_logDirectory, $"{{#}}-log{_archiveExtension}")),
@@ -102,7 +104,7 @@ namespace TickTrader.Algo.RuntimeV1
         }
 
 
-        internal class RuntimeLogAdapter : IAlgoCoreLogger
+        internal class RuntimeLogAdapter : IAlgoCoreLogger, IAlgoLogger
         {
             private readonly Logger _logger;
 
@@ -131,9 +133,14 @@ namespace TickTrader.Algo.RuntimeV1
                 _logger.Error(ex);
             }
 
-            public void Error(string msg, Exception ex)
+            public void Error(Exception ex, string msg)
             {
                 _logger.Error(ex, msg);
+            }
+
+            public void Error(string msg, Exception ex)
+            {
+                Error(ex, msg);
             }
 
             public void Error(Exception ex, string msgFormat, params object[] msgParams)

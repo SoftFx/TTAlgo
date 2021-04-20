@@ -5,6 +5,7 @@ using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using TickTrader.Algo.Util;
 
 namespace TickTrader.Algo.Rpc
 {
@@ -48,6 +49,7 @@ namespace TickTrader.Algo.Rpc
     public class RpcSession
     {
         private static readonly RpcMessage HeartbeatMessage = RpcMessage.Notification(new Heartbeat());
+        private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<RpcSession>();
 
         private readonly ITransportProxy _transport;
         private readonly IRpcHost _rpcHost;
@@ -128,8 +130,7 @@ namespace TickTrader.Algo.Rpc
 
         internal void SendMessage(RpcMessage msg)
         {
-            //Debug.WriteLine($"RPC < {AppDomain.CurrentDomain.Id}: {msg}");
-            //Debug.WriteLine($"RPC < {AppDomain.CurrentDomain.Id}: msg type - {msg.Payload.TypeUrl}");
+            //_logger.Debug($"Send msg: {msg}");
             _transport.WriteChannel.TryWrite(msg);
         }
 
@@ -274,6 +275,8 @@ namespace TickTrader.Algo.Rpc
             }
             catch (Exception ex)
             {
+                _logger.Error(ex, $"ConnectRequest failed");
+
                 SendMessage(RpcMessage.Response(msg.CallId, new ErrorResponse
                 {
                     Message = "Internal error: Failed to process ConnectRequest",
@@ -291,6 +294,8 @@ namespace TickTrader.Algo.Rpc
             protocol = _rpcHost.Resolve(protocol, out var resolveError);
             if (!string.IsNullOrEmpty(resolveError))
             {
+                _logger.Error($"Failed to resolve protocol for spec '{protocol}': {resolveError}");
+
                 return new ErrorResponse
                 {
                     Message = $"Failed to resolve protocol. Url={protocol.Url}, Version={protocol.MajorVerion}.{protocol.MinorVerion}",
@@ -328,6 +333,8 @@ namespace TickTrader.Algo.Rpc
             }
             catch (Exception ex)
             {
+                _logger.Error(ex, $"Failed to get protocol handler for spec '{protocol}'");
+
                 return new ErrorResponse
                 {
                     Message = $"Failed to get handler for protocol. Url={protocol.Url}, Version={protocol.MajorVerion}.{protocol.MinorVerion}",
@@ -337,6 +344,8 @@ namespace TickTrader.Algo.Rpc
 
             if (_rpcHandler == null)
             {
+                _logger.Error($"Rpc handler not found for spec '{protocol}'");
+
                 return new ErrorResponse
                 {
                     Message = $"Internal error: Protocol handler not found. Url={protocol.Url}, Version={protocol.MajorVerion}.{protocol.MinorVerion}",
@@ -368,7 +377,7 @@ namespace TickTrader.Algo.Rpc
 
         private void HandleMessage(RpcMessage msg)
         {
-            //Debug.WriteLine($"RPC > {AppDomain.CurrentDomain.Id}: {msg}");
+            //_logger.Debug($"Handle msg {msg}");
 
             if (msg.Payload.Is(Heartbeat.Descriptor))
             {
@@ -415,6 +424,8 @@ namespace TickTrader.Algo.Rpc
                                         SendMessage(RpcMessage.Response(msg.CallId, msg.ProxyId, response));
                                     break;
                                 case TaskStatus.Faulted:
+                                    _logger.Error(t.Exception, $"Failed to process request: {msg}");
+
                                     SendMessage(RpcMessage.Response(msg.CallId, msg.ProxyId, new ErrorResponse
                                     {
                                         Message = "Internal error: Failed to process request",
@@ -435,7 +446,8 @@ namespace TickTrader.Algo.Rpc
                 {
                     if (msg.Payload.Is(ErrorResponse.Descriptor))
                     {
-                        // TODO: Log fatal protocol error
+                        var error = msg.Payload.Unpack<ErrorResponse>();
+                        _logger.Error($"Rpc error notification: {error}");
                     }
                     else
                     {
@@ -445,7 +457,7 @@ namespace TickTrader.Algo.Rpc
                         }
                         catch (Exception ex)
                         {
-                            // TODO: Log failed to handle notification
+                            _logger.Error(ex, $"Failed to process notification: {msg}");
                         }
                     }
                 }

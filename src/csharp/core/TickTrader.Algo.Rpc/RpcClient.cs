@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Rpc
 {

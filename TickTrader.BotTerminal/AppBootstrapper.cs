@@ -14,6 +14,7 @@ using System.Windows;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Server;
 using TickTrader.Algo.ServerControl;
+using TickTrader.Algo.Util;
 
 namespace TickTrader.BotTerminal
 {
@@ -127,7 +128,7 @@ namespace TickTrader.BotTerminal
 
             var logTarget = new FileTarget()
             {
-                Layout = "${longdate} | ${logger} -> ${message} ${exception:format=tostring}",
+                Layout = "${longdate} | ${level} | ${logger} -> ${message} ${exception:format=tostring}",
                 FileName = Path.Combine(EnvService.Instance.LogFolder, "terminal.log"),
                 Encoding = Encoding.UTF8,
                 ArchiveFileName = Path.Combine(EnvService.Instance.LogFolder, "Archives", "terminal-{#}.zip"),
@@ -246,6 +247,7 @@ namespace TickTrader.BotTerminal
             NLog.LogManager.Configuration = config;
 
             Algo.Core.CoreLoggerFactory.Init(s => new AlgoLogAdapter(s));
+            AlgoLoggerFactory.Init(s => new AlgoLogAdapter(s));
         }
 
         protected override void OnExit(object sender, EventArgs e)

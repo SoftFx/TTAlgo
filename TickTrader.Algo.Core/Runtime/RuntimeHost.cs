@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Util;
 
 namespace TickTrader.Algo.Core
 {
@@ -81,12 +82,15 @@ namespace TickTrader.Algo.Core
 
     public class ChildProcessRuntimeHost : IRuntimeHostProxy
     {
+        private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<ChildProcessRuntimeHost>();
+
         private const int AbortTimeout = 5000;
 
         private static readonly string _filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "AlgoRuntime", "TickTrader.Algo.RuntimeV1.exe");
 
         private Process _process;
         private TaskCompletionSource<bool> _stopTaskSrc;
+        private string _proxyId;
 
 
         public Task Start(string address, int port, string proxyId)
@@ -94,7 +98,6 @@ namespace TickTrader.Algo.Core
             var startInfo = new ProcessStartInfo(_filePath)
             {
                 UseShellExecute = false,
-                RedirectStandardInput = true,
                 CreateNoWindow = true,
                 Arguments = string.Join(" ", address, port.ToString(), $"\"{proxyId}\""),
                 WorkingDirectory = Path.Combine(Directory.GetCurrentDirectory(), ".."),
@@ -102,6 +105,10 @@ namespace TickTrader.Algo.Core
             _process = Process.Start(startInfo);
             _process.EnableRaisingEvents = true;
             _process.Exited += OnExited;
+
+            _proxyId = proxyId;
+            _logger.Info($"{proxyId} host running in process {_process.Id}");
+
             return Task.CompletedTask;
         }
 
@@ -112,12 +119,17 @@ namespace TickTrader.Algo.Core
             var hasStopped = await _stopTaskSrc.Task.ConfigureAwait(false);
             _process.Exited -= OnExited;
             if (!hasStopped)
+            {
+                _logger.Info($"{_proxyId} host didn't stop within timeout. Killing process {_process.Id}...");
                 _process.Kill();
+            }
+            _logger.Info($"{_proxyId} host stopped");
         }
 
 
         private void OnExited(object sender, EventArgs args)
         {
+            _logger.Info($"{_proxyId} host exited with code {_process.ExitCode}");
             _stopTaskSrc?.TrySetResult(true);
         }
 
@@ -128,6 +140,7 @@ namespace TickTrader.Algo.Core
                 _stopTaskSrc.TrySetResult(true);
                 return;
             }
+            _logger.Info($"{_proxyId} wating for stop...");
             await Task.Delay(AbortTimeout).ConfigureAwait(false);
             _stopTaskSrc.TrySetResult(_process.HasExited);
         }

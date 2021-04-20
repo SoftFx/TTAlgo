@@ -16,7 +16,7 @@ namespace TickTrader.Algo.Rpc
 
     public interface ITransportServer
     {
-        IObservable<ITransportProxy> ObserveNewConnentions { get; }
+        IObservable<ITransportProxy> ObserveNewConnections { get; }
 
         int BoundPort { get; }
 

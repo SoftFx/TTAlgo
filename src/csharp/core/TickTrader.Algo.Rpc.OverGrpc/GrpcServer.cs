@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Rpc.OverGrpc
         private bool _acceptNewRequests;
 
 
-        public IObservable<ITransportProxy> ObserveNewConnentions => _newConnectionSubject;
+        public IObservable<ITransportProxy> ObserveNewConnections => _newConnectionSubject;
 
         public int BoundPort { get; private set; }
 

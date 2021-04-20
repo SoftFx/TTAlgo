@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using TickTrader.Algo.Util;
 
 namespace TickTrader.Algo.Core
 {
@@ -43,7 +40,7 @@ namespace TickTrader.Algo.Core
         }
     }
 
-    public class DebugLogger : IAlgoCoreLogger
+    public class DebugLogger : IAlgoCoreLogger, IAlgoLogger
     {
         private readonly string _loggerName;
 
@@ -74,6 +71,11 @@ namespace TickTrader.Algo.Core
         }
 
         public void Error(string msg, Exception ex)
+        {
+            Error(ex, msg);
+        }
+
+        public void Error(Exception ex, string msg)
         {
             System.Diagnostics.Debug.WriteLine($"{_loggerName} -> {msg} | {ex.Message}");
         }

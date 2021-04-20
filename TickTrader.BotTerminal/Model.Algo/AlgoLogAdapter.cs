@@ -1,14 +1,11 @@
 ﻿using NLog;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Util;
 
 namespace TickTrader.BotTerminal
 {
-    internal class AlgoLogAdapter : IAlgoCoreLogger
+    internal class AlgoLogAdapter : IAlgoCoreLogger, IAlgoLogger
     {
         private readonly Logger logger;
 
@@ -37,9 +34,14 @@ namespace TickTrader.BotTerminal
             logger.Error(ex);
         }
 
-        public void Error(string msg, Exception ex)
+        public void Error(Exception ex, string msg)
         {
             logger.Error(ex, msg);
+        }
+
+        public void Error(string msg, Exception ex)
+        {
+            Error(ex, msg);
         }
 
         public void Error(Exception ex, string msgFormat, params object[] msgParams)

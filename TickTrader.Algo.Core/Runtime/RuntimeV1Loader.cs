@@ -12,6 +12,7 @@ using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
 using TickTrader.Algo.Rpc.OverTcp;
+using TickTrader.Algo.Util;
 
 namespace TickTrader.Algo.Core
 {
@@ -202,6 +203,7 @@ namespace TickTrader.Algo.Core
         internal void InitDebugLogger()
         {
             CoreLoggerFactory.Init(n => new DebugLogger(n));
+            AlgoLoggerFactory.Init(n => new DebugLogger(n));
         }
 
 

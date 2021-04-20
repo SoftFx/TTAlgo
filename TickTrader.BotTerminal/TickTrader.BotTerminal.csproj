@@ -1281,6 +1281,10 @@
       <Project>{80bbd05a-f622-49d5-badd-e35b81d15d00}</Project>
       <Name>TickTrader.Algo.Server</Name>
     </ProjectReference>
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Util\TickTrader.Algo.Util.csproj">
+      <Project>{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B}</Project>
+      <Name>TickTrader.Algo.Util</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
       <Project>{8901c84d-fb62-433c-a25f-4d24255b9453}</Project>
       <Name>TickTrader.Algo.Api</Name>

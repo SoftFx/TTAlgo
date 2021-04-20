@@ -64,6 +64,10 @@
       <Project>{8bab901c-10bb-4eb7-b81e-716fa05b6957}</Project>
       <Name>TickTrader.Algo.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\core\TickTrader.Algo.Util\TickTrader.Algo.Util.csproj">
+      <Project>{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B}</Project>
+      <Name>TickTrader.Algo.Util</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
