@@ -1,8 +1,10 @@
 ﻿using Machinarium.Qnil;
 using NLog;
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Data;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
@@ -36,6 +38,8 @@ namespace TickTrader.BotTerminal
 
         public IObservableList<AlgoAccountViewModel> AccountList { get; }
 
+        public ICollectionView ServerViews { get; }
+
 
         public AlgoAgentViewModel(IAlgoAgent agentModel, AlgoEnvironment algoEnv)
         {
@@ -51,6 +55,9 @@ namespace TickTrader.BotTerminal
             PackageList = Packages.AsObservable();
             BotList = Bots.AsObservable();
             AccountList = Accounts.AsObservable();
+
+            ServerViews = CollectionViewSource.GetDefaultView(AccountList);
+            ServerViews.GroupDescriptions.Add(new PropertyGroupDescription(AlgoAccountViewModel.ServerLevelHeader));
         }
 
 

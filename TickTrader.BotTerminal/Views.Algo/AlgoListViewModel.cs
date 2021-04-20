@@ -1,15 +1,9 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Data;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {

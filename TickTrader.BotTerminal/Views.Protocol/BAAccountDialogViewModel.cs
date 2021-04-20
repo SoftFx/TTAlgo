@@ -50,7 +50,7 @@ namespace TickTrader.BotTerminal
         public bool IsNewAccountMode { get; }
 
 
-        public BAAccountDialogViewModel(AlgoEnvironment algoEnv, AccountModelInfo account, AlgoAgentViewModel algoServer, AgentPluginSetupViewModel plugin = null)
+        public BAAccountDialogViewModel(AlgoEnvironment algoEnv, AccountModelInfo account, AlgoAgentViewModel algoServer)
         {
             _algoEnv = algoEnv;
             _account = account;
