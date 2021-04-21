@@ -58,7 +58,7 @@ namespace TickTrader.BotAgent.BA.Models
             AccountId = Algo.Domain.AccountId.Pack(server, userId);
             _creds = creds;
             Password = creds.GetPassword();
-            DisplayName = displayName ?? $"{server} - {userId}";
+            DisplayName = string.IsNullOrEmpty(displayName) ? $"{server} - {userId}" : displayName;
         }
 
         public async Task Init(PackageStorage packageProvider, IFdkOptionsProvider fdkOptionsProvider, AlertStorage storage, AlgoServer server)
