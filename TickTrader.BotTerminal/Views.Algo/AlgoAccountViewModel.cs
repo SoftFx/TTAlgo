@@ -41,7 +41,7 @@ namespace TickTrader.BotTerminal
 
         public bool CanChangeAccount => Agent.Model.AccessManager.CanChangeAccount();
 
-        public bool CanRemoveAccount => /*!HasRunningBots &&*/ Agent.Model.AccessManager.CanRemoveAccount();
+        public bool CanRemoveAccount => !HasRunningBots && Agent.Model.AccessManager.CanRemoveAccount();
 
         public bool CanTestAccount => Agent.Model.AccessManager.CanTestAccount();
 
