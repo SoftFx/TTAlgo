@@ -177,11 +177,11 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public void OpenAccountSetup(AccountModelInfo account)
+        public void OpenAccountSetup(AccountModelInfo account, string serverName = null)
         {
             try
             {
-                var model = new BAAccountDialogViewModel(_algoEnv, account, this);
+                var model = new BAAccountDialogViewModel(_algoEnv, account, this, serverName);
 
                 _algoEnv.Shell.ToolWndManager.ShowDialog(model, _algoEnv.Shell);
             }

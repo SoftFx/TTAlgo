@@ -50,7 +50,7 @@ namespace TickTrader.BotTerminal
         public bool IsNewAccountMode { get; }
 
 
-        public BAAccountDialogViewModel(AlgoEnvironment algoEnv, AccountModelInfo account, AlgoAgentViewModel algoServer)
+        public BAAccountDialogViewModel(AlgoEnvironment algoEnv, AccountModelInfo account, AlgoAgentViewModel algoServer, string serverName = null)
         {
             _algoEnv = algoEnv;
             _account = account;
@@ -65,7 +65,7 @@ namespace TickTrader.BotTerminal
             AlgoServersList = algoEnv.BotAgents.Select(u => u.Agent).AsObservable();
 
             var login = LocalAccounts.FirstOrDefault()?.Login;
-            var server = TTServersList.FirstOrDefault()?.Address;
+            var server = serverName ?? TTServersList.FirstOrDefault()?.Address;
 
             if (!IsNewAccountMode)
                 AccountId.Unpack(_account.AccountId, out login, out server);
