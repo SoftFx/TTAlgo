@@ -405,7 +405,7 @@ namespace TickTrader.BotAgent.BA.Models
 
             if (!string.IsNullOrEmpty(request.DisplayName))
             {
-                DisplayName = DisplayName;
+                DisplayName = request.DisplayName;
                 changed = true;
             }
             if (request.Creds != null && _creds.Merge(request.Creds))

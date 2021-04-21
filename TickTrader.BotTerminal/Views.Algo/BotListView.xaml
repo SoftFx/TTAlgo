@@ -9,6 +9,10 @@
         <Setter Property="IsExpanded" Value="True" />
     </Style>
 
+    <ContextMenu x:Key="ServerContextMenu">
+        <MenuItem Header="Add account..." IsEnabled="False"/>
+    </ContextMenu>
+
     <ContextMenu x:Key="BotContextMenu">
         <MenuItem cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
                   cal:Message.Attach="StartStop">
@@ -185,8 +189,8 @@
 
                             <HierarchicalDataTemplate.ItemContainerStyle>
                                 <Style TargetType="TreeViewItem" BasedOn="{StaticResource ExpandedTreeViewItem}">
-                                    <Setter Property="ContextMenu" Value="{StaticResource RemoteAccountContextMenu}" />
-                                    <Setter Property="l:StyleInteraction.Behaviors" Value="{StaticResource TreeViewItemBehaviors}" />
+                                    <Setter Property="ContextMenu" Value="{StaticResource ServerContextMenu}"/>
+                                    <!--<Setter Property="cal:Bind.ModelWithoutContext" Value="{Binding Path=DataContext, RelativeSource={RelativeSource Self}, Mode=OneTime}"/>-->
                                 </Style>
                             </HierarchicalDataTemplate.ItemContainerStyle>
 
@@ -196,6 +200,14 @@
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="{Binding Name}"/>
                                     </StackPanel>
+
+                                    <HierarchicalDataTemplate.ItemContainerStyle>
+                                        <Style TargetType="TreeViewItem" BasedOn="{StaticResource ExpandedTreeViewItem}">
+                                            <Setter Property="ToolTip" Value="{Binding AccountTooltip}"/>
+                                            <Setter Property="ContextMenu" Value="{StaticResource RemoteAccountContextMenu}" />
+                                            <Setter Property="l:StyleInteraction.Behaviors" Value="{StaticResource TreeViewItemBehaviors}" />
+                                        </Style>
+                                    </HierarchicalDataTemplate.ItemContainerStyle>
 
                                     <HierarchicalDataTemplate.ItemTemplate>
                                         <HierarchicalDataTemplate ItemsSource="{Binding Bots}">

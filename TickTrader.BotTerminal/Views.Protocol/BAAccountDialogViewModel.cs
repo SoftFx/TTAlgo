@@ -21,7 +21,7 @@ namespace TickTrader.BotTerminal
 
         public IObservableList<AlgoAgentViewModel> AlgoServersList { get; }
 
-        public IEnumerable<AccountAuthEntry> Accounts => _algoEnv.Shell.ConnectionManager.Accounts.Where(u => u.Server.Address == TTServerName?.Value)?.OrderBy(u => u.Login.Length).ThenBy(u => u.Login);
+        public IEnumerable<AccountAuthEntry> LocalAccounts => _algoEnv.Shell.ConnectionManager.Accounts.Where(u => u.Server.Address == TTServerName?.Value)?.OrderBy(u => u.Login.Length).ThenBy(u => u.Login);
 
         public ObservableCollection<ServerAuthEntry> TTServersList => _algoEnv.Shell.ConnectionManager.Servers;
 
@@ -64,17 +64,17 @@ namespace TickTrader.BotTerminal
 
             AlgoServersList = algoEnv.BotAgents.Select(u => u.Agent).AsObservable();
 
-            var login = Accounts.FirstOrDefault()?.Login;
+            var login = LocalAccounts.FirstOrDefault()?.Login;
             var server = TTServersList.FirstOrDefault()?.Address;
 
             if (!IsNewAccountMode)
                 AccountId.Unpack(_account.AccountId, out login, out server);
 
             AlgoServer = _context.AddProperty(algoServer).AddPreTrigger(DeinitAlgoAgent);
-            TTServerName = _context.AddProperty(server);
-            Login = _context.AddValidable(login).MustBeNotEmpty();
+            TTServerName = _context.AddProperty(server).AddPostTrigger(InitTTServerTrigger);
+            Login = _context.AddValidable(login).AddPostTrigger(InitLoginTrigger).MustBeNotEmpty();
+            DisplayAccountName = _context.AddProperty(_account?.DisplayName ?? login);
             Password = _context.AddValidable<string>().MustBeNotEmpty();
-            DisplayAccountName = _context.AddProperty(login);
             Error = _context.AddProperty<string>();
 
             IsEnabled = new BoolVar(true);
@@ -83,24 +83,12 @@ namespace TickTrader.BotTerminal
             CanTest = IsEnabled & !_context.HasError & _canTestAccountCreds;
             CanOk = IsEnabled & !_context.HasError & (IsNewAccountMode ? _canAddAccount : _canChangeAccount);
 
-            AlgoServer.AddPostTrigger(InitAlgoAgent);
-
-            TTServerName.AddPostTrigger(_ =>
-           {
-               Login.Value = Accounts.FirstOrDefault()?.Login;
-               NotifyOfPropertyChange(nameof(Accounts));
-           });
-
-            Login.AddPostTrigger((newLogin) =>
-            {
-                DisplayAccountName.Value = newLogin;
-                Password.Value = Accounts.FirstOrDefault(u => u.Login == newLogin && u.Server.Address == TTServerName.Value)?.Password;
-            });
+            AlgoServer.AddPostTrigger(InitAlgoAgent); //should be after AlgoServer initialization
         }
 
         public async void Ok() => await TryToRunConnectionRequest(async () =>
             {
-                if (_account == null)
+                if (IsNewAccountMode)
                     await AlgoServer.Value.Model.AddAccount(new AddAccountRequest(TTServerName.Value, Login.Value, Password.Value, DisplayAccountName.Value));
                 else
                     await AlgoServer.Value.Model.ChangeAccount(new ChangeAccountRequest(_account.AccountId, Password.Value, DisplayAccountName.Value));
@@ -130,7 +118,7 @@ namespace TickTrader.BotTerminal
 
             IsEnabled.Value = true;
 
-            if (!Error.HasValue && closeWindow && IsActive)
+            if (!Error.HasValue && closeWindow)
                 TryClose(true);
         }
 
@@ -148,11 +136,29 @@ namespace TickTrader.BotTerminal
                 model.Model.AccessLevelChanged -= OnAccessLevelChanged;
         }
 
+        private void InitTTServerTrigger(string newTTServer)
+        {
+            SetProperty(Login, LocalAccounts.FirstOrDefault()?.Login);
+            NotifyOfPropertyChange(nameof(LocalAccounts));
+        }
+
+        private void InitLoginTrigger(string newLogin)
+        {
+            SetProperty(DisplayAccountName, newLogin);
+            SetProperty(Password, LocalAccounts.FirstOrDefault(u => u.Login == newLogin)?.Password);
+        }
+
         private void OnAccessLevelChanged()
         {
-            _canAddAccount.Value = AlgoServer.Value?.Model.AccessManager.CanAddAccount() ?? false;
-            _canChangeAccount.Value = AlgoServer.Value?.Model.AccessManager.CanChangeAccount() ?? false;
-            _canTestAccountCreds.Value = AlgoServer.Value?.Model.AccessManager.CanTestAccountCreds() ?? false;
+            _canAddAccount.Value = AlgoServer?.Value?.Model.AccessManager.CanAddAccount() ?? false;
+            _canChangeAccount.Value = AlgoServer?.Value?.Model.AccessManager.CanChangeAccount() ?? false;
+            _canTestAccountCreds.Value = AlgoServer?.Value?.Model.AccessManager.CanTestAccountCreds() ?? false;
+        }
+
+        private static void SetProperty<T>(IProperty<T> prop, T value)
+        {
+            if (prop != null)
+                prop.Value = value;
         }
     }
 }

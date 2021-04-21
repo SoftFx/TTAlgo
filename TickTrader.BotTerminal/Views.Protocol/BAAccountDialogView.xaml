@@ -51,7 +51,7 @@
 
         <Label Grid.Row="5" Content="Account"/>
         <ComboBox Grid.Row="6" Text="{l:ValidationBinding Login.Value, Converter={StaticResource TrimValue}}"
-                  ItemsSource="{Binding Accounts}" ItemTemplate="{DynamicResource AccountAuthInfoTemplate}" TextSearch.TextPath="Login"
+                  ItemsSource="{Binding LocalAccounts}" ItemTemplate="{DynamicResource AccountAuthInfoTemplate}" TextSearch.TextPath="Login"
                   IsEditable="True" IsEnabled="{Binding IsNewAccountMode}"/>
 
         <Label Grid.Row="7" Content="Display Name"/>

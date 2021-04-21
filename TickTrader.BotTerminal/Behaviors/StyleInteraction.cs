@@ -46,7 +46,7 @@ namespace TickTrader.BotTerminal
         {
             var behaviors = Interaction.GetBehaviors(d);
             foreach (var behavior in e.NewValue as Behaviors)
-                behaviors.Add(behavior);
+               behaviors.Add(behavior);
         }
 
         private static void OnPropertyTriggersChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
