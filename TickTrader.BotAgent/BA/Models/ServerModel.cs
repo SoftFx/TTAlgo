@@ -226,13 +226,15 @@ namespace TickTrader.BotAgent.BA.Models
             var server = request.Server;
             var userId = request.UserId;
             var creds = request.Creds;
+            var displayName = request.DisplayName;
 
             Validate(server, userId, creds);
 
             var accountId = AccountId.Pack(server, userId);
-            var existing = FindAccount(accountId);
-            if (existing != null)
+            if (FindAccount(accountId) != null)
                 throw new DuplicateAccountException($"Account '{accountId}' already exists");
+            if (FindAccount(server, displayName) != null)
+                throw new DuplicateAccountException($"Account with displayName '{displayName}' already exists on '{server}'");
             else
             {
                 var newAcc = new ClientModel(server, userId, creds, request.DisplayName);
@@ -290,9 +292,9 @@ namespace TickTrader.BotAgent.BA.Models
             acc.Change(request);
         }
 
-        private ClientModel FindAccount(string login, string server)
+        private ClientModel FindAccount(string server, string displayName)
         {
-            return _accounts.FirstOrDefault(a => a.Username == login && a.Address == server);
+            return _accounts.FirstOrDefault(a => a.Address == server && a.DisplayName == displayName);
         }
 
         private ClientModel FindAccount(string accountId)

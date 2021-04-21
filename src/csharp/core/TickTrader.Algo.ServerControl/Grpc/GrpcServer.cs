@@ -768,121 +768,121 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return res;
         }
 
-        private Task<AddPluginResponse> AddBotInternal(AddPluginRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        private async Task<AddPluginResponse> AddBotInternal(AddPluginRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
         {
             var res = new AddPluginResponse { ExecResult = execResult };
             if (session == null)
-                return Task.FromResult(res);
+                return res;
             if (!session.AccessManager.CanAddBot())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return Task.FromResult(res);
+                return res;
             }
 
             try
             {
-                _algoServer.AddBot(request);
+                await _algoServer.AddBot(request);
             }
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to add bot");
                 res.ExecResult = CreateErrorResult(ex);
             }
-            return Task.FromResult(res);
+            return res;
 
         }
 
-        private Task<RemovePluginResponse> RemoveBotInternal(RemovePluginRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        private async Task<RemovePluginResponse> RemoveBotInternal(RemovePluginRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
         {
             var res = new RemovePluginResponse { ExecResult = execResult };
             if (session == null)
-                return Task.FromResult(res);
+                return res;
             if (!session.AccessManager.CanRemoveBot())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return Task.FromResult(res);
+                return res;
             }
 
             try
             {
-                _algoServer.RemoveBot(request);
+                await _algoServer.RemoveBot(request);
             }
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to add bot");
                 res.ExecResult = CreateErrorResult(ex);
             }
-            return Task.FromResult(res);
+            return res;
 
         }
 
-        private Task<StartPluginResponse> StartBotInternal(StartPluginRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        private async Task<StartPluginResponse> StartBotInternal(StartPluginRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
         {
             var res = new StartPluginResponse { ExecResult = execResult };
             if (session == null)
-                return Task.FromResult(res);
+                return res;
             if (!session.AccessManager.CanStartBot())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return Task.FromResult(res);
+                return res;
             }
 
             try
             {
-                _algoServer.StartBot(request);
+                await _algoServer.StartBot(request);
             }
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to start bot");
                 res.ExecResult = CreateErrorResult(ex);
             }
-            return Task.FromResult(res);
+            return res;
         }
 
-        private Task<StopPluginResponse> StopBotInternal(StopPluginRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        private async Task<StopPluginResponse> StopBotInternal(StopPluginRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
         {
             var res = new StopPluginResponse { ExecResult = execResult };
             if (session == null)
-                return Task.FromResult(res);
+                return res;
             if (!session.AccessManager.CanStopBot())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return Task.FromResult(res);
+                return res;
             }
 
             try
             {
-                _algoServer.StopBot(request);
+                await _algoServer.StopBot(request);
             }
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to stop bot");
                 res.ExecResult = CreateErrorResult(ex);
             }
-            return Task.FromResult(res);
+            return res;
         }
 
-        private Task<ChangePluginConfigResponse> ChangeBotConfigInternal(ChangePluginConfigRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        private async Task<ChangePluginConfigResponse> ChangeBotConfigInternal(ChangePluginConfigRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
         {
             var res = new ChangePluginConfigResponse { ExecResult = execResult };
             if (session == null)
-                return Task.FromResult(res);
+                return res;
             if (!session.AccessManager.CanChangeBotConfig())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return Task.FromResult(res);
+                return res;
             }
 
             try
             {
-                _algoServer.ChangeBotConfig(request);
+                await _algoServer.ChangeBotConfig(request);
             }
             catch (Exception ex)
             {
-                session.Logger.Error(ex, "Failed to add bot");
+                session.Logger.Error(ex, "Failed to change bot config");
                 res.ExecResult = CreateErrorResult(ex);
             }
-            return Task.FromResult(res);
+            return res;
 
         }
 
@@ -910,73 +910,73 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return res;
         }
 
-        private Task<AddAccountResponse> AddAccountInternal(AddAccountRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        private async Task<AddAccountResponse> AddAccountInternal(AddAccountRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
         {
             var res = new AddAccountResponse { ExecResult = execResult };
             if (session == null)
-                return Task.FromResult(res);
+                return res;
             if (!session.AccessManager.CanAddAccount())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return Task.FromResult(res);
+                return res;
             }
 
             try
             {
-                _algoServer.AddAccount(request);
+                await _algoServer.AddAccount(request);
             }
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to add account");
                 res.ExecResult = CreateErrorResult(ex);
             }
-            return Task.FromResult(res);
+            return res;
         }
 
-        private Task<RemoveAccountResponse> RemoveAccountInternal(RemoveAccountRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        private async Task<RemoveAccountResponse> RemoveAccountInternal(RemoveAccountRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
         {
             var res = new RemoveAccountResponse { ExecResult = execResult };
             if (session == null)
-                return Task.FromResult(res);
+                return res;
             if (!session.AccessManager.CanRemoveAccount())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return Task.FromResult(res);
+                return res;
             }
 
             try
             {
-                _algoServer.RemoveAccount(request);
+                await _algoServer.RemoveAccount(request);
             }
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to remove account");
                 res.ExecResult = CreateErrorResult(ex);
             }
-            return Task.FromResult(res);
+            return res;
         }
 
-        private Task<ChangeAccountResponse> ChangeAccountInternal(ChangeAccountRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        private async Task<ChangeAccountResponse> ChangeAccountInternal(ChangeAccountRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
         {
             var res = new ChangeAccountResponse { ExecResult = execResult };
             if (session == null)
-                return Task.FromResult(res);
+                return res;
             if (!session.AccessManager.CanChangeAccount())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return Task.FromResult(res);
+                return res;
             }
 
             try
             {
-                _algoServer.ChangeAccount(request);
+                await _algoServer.ChangeAccount(request);
             }
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to change account");
                 res.ExecResult = CreateErrorResult(ex);
             }
-            return Task.FromResult(res);
+            return res;
         }
 
         private async Task<TestAccountResponse> TestAccountInternal(TestAccountRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
@@ -1298,50 +1298,50 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return res;
         }
 
-        private Task<ClearPluginFolderResponse> ClearBotFolderInternal(ClearPluginFolderRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        private async Task<ClearPluginFolderResponse> ClearBotFolderInternal(ClearPluginFolderRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
         {
             var res = new ClearPluginFolderResponse { ExecResult = execResult };
             if (session == null)
-                return Task.FromResult(res);
+                return res;
             if (!session.AccessManager.CanClearBotFolder())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return Task.FromResult(res);
+                return res;
             }
 
             try
             {
-                _algoServer.ClearBotFolder(request);
+                await _algoServer.ClearBotFolder(request);
             }
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to clear bot folder");
                 res.ExecResult = CreateErrorResult(ex);
             }
-            return Task.FromResult(res);
+            return res;
         }
 
-        private Task<DeletePluginFileResponse> DeleteBotFileInternal(DeletePluginFileRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        private async Task<DeletePluginFileResponse> DeleteBotFileInternal(DeletePluginFileRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
         {
             var res = new DeletePluginFileResponse { ExecResult = execResult };
             if (session == null)
-                return Task.FromResult(res);
+                return res;
             if (!session.AccessManager.CanDeleteBotFile())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return Task.FromResult(res);
+                return res;
             }
 
             try
             {
-                _algoServer.DeleteBotFile(request);
+                await _algoServer.DeleteBotFile(request);
             }
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to delete bot file");
                 res.ExecResult = CreateErrorResult(ex);
             }
-            return Task.FromResult(res);
+            return res;
         }
 
         private async Task DownloadBotFileInternal(DownloadPluginFileRequest request, IServerStreamWriter<FileTransferMsg> responseStream, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
