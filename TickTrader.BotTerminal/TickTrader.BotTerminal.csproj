@@ -323,6 +323,7 @@
     <Compile Include="Converters\GetFileNameFromPath.cs" />
     <Compile Include="Converters\LogSeverityToBrushConverter.cs" />
     <Compile Include="Converters\Machinarium.Converters\AmountToLotsConverter.cs" />
+    <Compile Include="Converters\Machinarium.Converters\DateTimeToUtc.cs" />
     <Compile Include="Converters\Machinarium.Converters\PricePrecisionConverter.cs" />
     <Compile Include="Converters\MessageTypeToBrushConverter.cs" />
     <Compile Include="Converters\ColorRef.cs" />

@@ -1,5 +1,4 @@
 ﻿using Machinarium.Var;
-using System;
 using System.Globalization;
 
 namespace TickTrader.BotTerminal.Converters

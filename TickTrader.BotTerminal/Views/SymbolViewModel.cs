@@ -3,6 +3,7 @@ using System;
 using TickTrader.Algo.Core.Infrastructure;
 using TickTrader.Algo.Domain;
 using TickTrader.BotTerminal.Converters;
+using TickTrader.BotTerminal.Converters.Machinarium.Converters;
 
 namespace TickTrader.BotTerminal
 {
@@ -30,7 +31,7 @@ namespace TickTrader.BotTerminal
             Bid = new RateViewModel(_symbolPrecision);
             Ask = new RateViewModel(_symbolPrecision);
 
-            QuoteTime = _varContext.AddProperty(default(DateTime?));
+            QuoteTime = _varContext.AddProperty(default, new DateTimeToUtc());
         }
 
         public string SymbolName => _model.Name;
