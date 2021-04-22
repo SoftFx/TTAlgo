@@ -202,6 +202,7 @@
                                         <Style TargetType="TreeViewItem" BasedOn="{StaticResource ExpandedTreeViewItem}">
                                             <Setter Property="ToolTip" Value="{Binding AccountTooltip}"/>
                                             <Setter Property="ContextMenu" Value="{StaticResource RemoteAccountContextMenu}" />
+                                            <Setter Property="l:StyleInteraction.Behaviors" Value="{StaticResource TreeViewItemBehaviors}" />
                                         </Style>
                                     </HierarchicalDataTemplate.ItemContainerStyle>
 
