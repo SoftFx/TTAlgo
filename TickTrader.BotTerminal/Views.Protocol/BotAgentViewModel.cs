@@ -18,9 +18,9 @@ namespace TickTrader.BotTerminal
         public AlgoAgentViewModel Agent { get; }
 
         public string DisplayName =>
-            Connection.State == BotAgentConnectionManager.States.Online
-            ? $"{Connection.Creds.Name} - {Connection.AccessLevel} ({Connection.Creds.ServerAddress}:{Connection.Creds.Port})"
-            : $"{Connection.Creds.Name} ({Connection.Creds.ServerAddress}:{Connection.Creds.Port})";
+            Connection.State == BotAgentConnectionManager.States.Online ? $"{Connection.Creds.Name} - {Connection.AccessLevel}" : $"{Connection.Creds.Name}";
+
+        public string ToolTipInformation => $"{Connection.Creds.ServerAddress}:{Connection.Creds.Port} = {Status}";
 
         public bool CanConnectBotAgent => Connection.State == BotAgentConnectionManager.States.Offline || Connection.State == BotAgentConnectionManager.States.WaitReconnect;
 
@@ -128,6 +128,7 @@ namespace TickTrader.BotTerminal
                 || Connection.State == BotAgentConnectionManager.States.Offline
                 || Connection.State == BotAgentConnectionManager.States.Connecting)
                 NotifyOfPropertyChange(nameof(DisplayName));
+            NotifyOfPropertyChange(nameof(ToolTipInformation));
         }
 
         private void OnAccessLevelChanged()

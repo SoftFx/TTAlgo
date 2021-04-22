@@ -180,7 +180,7 @@
 
                             <StackPanel Orientation="Horizontal">
                                 <Ellipse Style="{DynamicResource BotAgentStatusEllipseStyle}" />
-                                <TextBlock Text="{Binding DisplayName}" ToolTip="{Binding Status}"/>
+                                <TextBlock Text="{Binding DisplayName}" ToolTip="{Binding ToolTipInformation}"/>
                             </StackPanel>
 
                             <HierarchicalDataTemplate.ItemTemplate>
