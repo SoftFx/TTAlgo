@@ -19,23 +19,27 @@ namespace TickTrader.BotTerminal
 
         private readonly BoolVar _canAddAccount, _canChangeAccount, _canTestAccountCreds;
 
+
         public IObservableList<AlgoAgentViewModel> AlgoServersList { get; }
 
         public IEnumerable<AccountAuthEntry> LocalAccounts => _algoEnv.Shell.ConnectionManager.Accounts.Where(u => u.Server.Address == TTServerName?.Value)?.OrderBy(u => u.Login.Length).ThenBy(u => u.Login);
 
+        public IEnumerable<AlgoAccountViewModel> ServerAccounts => AlgoServer?.Value?.AccountList.Where(u => u.Server == TTServerName?.Value);
+
         public ObservableCollection<ServerAuthEntry> TTServersList => _algoEnv.Shell.ConnectionManager.Servers;
+
 
         public Property<AlgoAgentViewModel> AlgoServer { get; }
 
         public Property<string> TTServerName { get; }
-
-        public Property<string> DisplayAccountName { get; }
 
         public Property<string> Error { get; }
 
         public Validable<string> Login { get; }
 
         public Validable<string> Password { get; }
+
+        public Validable<string> DisplayAccountName { get; }
 
 
         public BoolVar CanOk { get; }
@@ -73,7 +77,7 @@ namespace TickTrader.BotTerminal
             AlgoServer = _context.AddProperty(algoServer).AddPreTrigger(DeinitAlgoAgent);
             TTServerName = _context.AddProperty(server).AddPostTrigger(InitTTServerTrigger);
             Login = _context.AddValidable(login).AddPostTrigger(InitLoginTrigger).MustBeNotEmpty();
-            DisplayAccountName = _context.AddProperty(_account?.DisplayName ?? login);
+            DisplayAccountName = _context.AddValidable(_account?.DisplayName ?? login);
             Password = _context.AddValidable<string>().MustBeNotEmpty();
             Error = _context.AddProperty<string>();
 
@@ -84,6 +88,8 @@ namespace TickTrader.BotTerminal
             CanOk = IsEnabled & !_context.HasError & (IsNewAccountMode ? _canAddAccount : _canChangeAccount);
 
             AlgoServer.AddPostTrigger(InitAlgoAgent); //should be after AlgoServer initialization
+            Login.AddValidationRule((newLogin) => !ServerAccounts?.Any(u => u.Login == newLogin) ?? false, "This value is already in use");
+            DisplayAccountName.AddValidationRule((newName) => !ServerAccounts?.Any(u => u.DisplayName == newName) ?? false, "This value is already in use");
         }
 
         public async void Ok() => await TryToRunConnectionRequest(async () =>
