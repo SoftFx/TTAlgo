@@ -155,15 +155,16 @@ namespace TickTrader.BotTerminal
             _localPackages.AddRange(Directory.GetFiles(folder, FileNameWatcherTemplate).Select(u => Path.GetFileName(u)));
         }
 
-        private void DeinitWatcher(string folder = null)
+        private void DeinitWatcher(string folder)
         {
             if (_watcher == null)
                 return;
 
+            _watcher.EnableRaisingEvents = false;
             _watcher.Created -= AddNewPackageEventHandling;
             _watcher.Deleted -= RemovePackageEventHandling;
             _watcher.Renamed -= RenamePackageEventHandling;
-            _watcher.Dispose();
+            //_watcher.Dispose();
 
             _localPackages.Clear();
         }
@@ -244,8 +245,9 @@ namespace TickTrader.BotTerminal
 
         protected override void OnDeactivate(bool close)
         {
-            DeinitWatcher();
+            DeinitWatcher(null);
             SelectedAlgoServer.Packages.Updated -= UpdateAgentPackage;
+            _watcher.Dispose();
 
             base.OnDeactivate(close);
         }
