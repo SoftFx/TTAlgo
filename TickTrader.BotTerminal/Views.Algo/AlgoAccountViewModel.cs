@@ -55,7 +55,7 @@ namespace TickTrader.BotTerminal
 
         public string DisplayNameWithAgent => $"{AgentName} - {DisplayName}";
 
-        public string AccountTooltip => $"Status: {Status} login: {Login}";
+        public string AccountTooltip => $"Status: {Status}, login: {Login}";
 
 
         public AlgoAccountViewModel(AccountModelInfo info, AlgoAgentViewModel agent)
@@ -112,6 +112,7 @@ namespace TickTrader.BotTerminal
             if (Info.AccountId.Equals(account.AccountId))
             {
                 NotifyOfPropertyChange(nameof(Status));
+                NotifyOfPropertyChange(nameof(AccountTooltip));
             }
         }
 

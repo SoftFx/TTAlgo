@@ -66,7 +66,7 @@
                                     SortDirection="Descending" Header="Time" Width="auto" MinWidth="130"/>
                     <DataGridTextColumn x:Name="AgentColumn" SortMemberPath="AgentName" 
                                     Binding="{Binding AgentName}"
-                                    Header="Agent" MinWidth="80" Width="auto"/>
+                                    Header="AlgoServer" MinWidth="80" Width="auto"/>
                     <DataGridTextColumn x:Name="BotIdColumn" SortMemberPath="InstanceId" 
                                     Binding="{Binding InstanceId}"
                                     Header="Instance" MinWidth="130" Width="auto"/>
