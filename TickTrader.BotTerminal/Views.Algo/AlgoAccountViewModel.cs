@@ -55,7 +55,7 @@ namespace TickTrader.BotTerminal
 
         public string DisplayNameWithAgent => $"{AgentName} - {DisplayName}";
 
-        public string AccountTooltip => $"{Server} - {Login} = {Status}";
+        public string AccountTooltip => $"{Server} - {Login}, status = {Status}";
 
 
         public AlgoAccountViewModel(AccountModelInfo info, AlgoAgentViewModel agent)

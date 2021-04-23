@@ -29,6 +29,8 @@ namespace TickTrader.BotTerminal
 
             Swap.Value = _position.Swap;
             Commission.Value = _position.Commission;
+
+            RateUpdate(_symbol);
         }
     }
 }

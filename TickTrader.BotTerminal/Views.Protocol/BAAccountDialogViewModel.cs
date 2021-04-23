@@ -24,7 +24,7 @@ namespace TickTrader.BotTerminal
 
         public IEnumerable<AccountAuthEntry> LocalAccounts => _algoEnv.Shell.ConnectionManager.Accounts.Where(u => u.Server.Address == TTServerName?.Value)?.OrderBy(u => u.Login.Length).ThenBy(u => u.Login);
 
-        public IEnumerable<AlgoAccountViewModel> ServerAccounts => AlgoServer?.Value?.AccountList.Where(u => u.Server == TTServerName?.Value);
+        public IEnumerable<AlgoAccountViewModel> ServerAccounts => AlgoServer?.Value?.AccountList.Where(u => u.Server == TTServerName?.Value && u.Info != _account);
 
         public ObservableCollection<ServerAuthEntry> TTServersList => _algoEnv.Shell.ConnectionManager.Servers;
 

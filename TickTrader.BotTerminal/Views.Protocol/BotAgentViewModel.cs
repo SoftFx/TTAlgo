@@ -20,7 +20,7 @@ namespace TickTrader.BotTerminal
         public string DisplayName =>
             Connection.State == BotAgentConnectionManager.States.Online ? $"{Connection.Creds.Name} - {Connection.AccessLevel}" : $"{Connection.Creds.Name}";
 
-        public string ToolTipInformation => $"{Connection.Creds.ServerAddress}:{Connection.Creds.Port} = {Status}";
+        public string ToolTipInformation => $"{Connection.Creds.ServerAddress}:{Connection.Creds.Port}, status = {Status}";
 
         public bool CanConnectBotAgent => Connection.State == BotAgentConnectionManager.States.Offline || Connection.State == BotAgentConnectionManager.States.WaitReconnect;
 

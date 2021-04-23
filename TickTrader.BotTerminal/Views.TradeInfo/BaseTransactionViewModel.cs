@@ -1,8 +1,5 @@
 ﻿using Machinarium.Var;
 using System;
-using TickTrader.Algo.Common;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 using TickTrader.BotTerminal.Converters;
 
@@ -41,10 +38,7 @@ namespace TickTrader.BotTerminal
             NetProfit = _varContext.AddProperty(displayConverter: _profitPrecision);
 
             if (symbol != null) // server misconfiguration can cause unexisting symbols
-            {
                 symbol.RateUpdated += RateUpdate;
-                RateUpdate(_symbol);
-            }
         }
 
         public abstract string Id { get; }
@@ -74,7 +68,7 @@ namespace TickTrader.BotTerminal
         public Property<double> Commission { get; }
         public Property<double> NetProfit { get; }
 
-        private void RateUpdate(ISymbolInfo symbols)
+        protected void RateUpdate(ISymbolInfo symbols)
         {
             CurrentPrice.Value = IsPosition ? IsBuy ? _symbol?.Ask : _symbol?.Bid : IsBuy ? _symbol?.Bid : _symbol?.Ask;
             DeviationPrice.Value = IsBuy ? CurrentPrice.Value - Price.Value : Price.Value - CurrentPrice.Value;

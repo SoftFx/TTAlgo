@@ -175,7 +175,7 @@ namespace TickTrader.BotTerminal
 
             if (!LocalPackageName.HasValue && SourceCollection.Count > 0)
                 LocalPackageName.Value = e.Name;
-        });
+        }, false);
 
         private void RemovePackageEventHandling(object sender, FileSystemEventArgs e) => RunLocalPackageEventHandling(() => _localPackages.Remove(e.Name));
 
@@ -198,13 +198,13 @@ namespace TickTrader.BotTerminal
                 AlgoServerPackageName.Value = args.NewItem.FileName;
         }
 
-        private void RunLocalPackageEventHandling(System.Action handling)
+        private void RunLocalPackageEventHandling(System.Action handling, bool isRefreshName = true)
         {
             OnUIThread(() =>
             {
                 handling();
 
-                if (_mode == LoadPackageMode.Download)
+                if (_mode == LoadPackageMode.Download && isRefreshName)
                     RefreshTargetName();
             });
         }

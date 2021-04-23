@@ -1,7 +1,6 @@
 ﻿using Machinarium.Var;
 using System;
 using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
@@ -114,6 +113,8 @@ namespace TickTrader.BotTerminal
             TakeProfit.Value = _order.TakeProfit;
             StopLoss.Value = _order.StopLoss;
             Slippage.Value = _order.Slippage;
+
+            RateUpdate(_symbol);
         }
     }
 }
