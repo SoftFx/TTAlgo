@@ -109,6 +109,7 @@ namespace TickTrader.Algo.Domain
             ExecAmount = info.ExecAmount;
             LastFillPrice = info.LastFillPrice;
             LastFillAmount = info.LastFillAmount;
+            OcoRelatedOrderId = info.OcoRelatedOrderId;
 
             if (CompositeTag.TryParse(info.UserTag, out CompositeTag compositeTag))
             {
@@ -189,6 +190,7 @@ namespace TickTrader.Algo.Domain
         double? ExecAmount { get; }
         double? LastFillPrice { get; }
         double? LastFillAmount { get; }
+        string OcoRelatedOrderId { get; }
     }
 
     public interface IOrderCommonInfo : IMarginProfitCalc

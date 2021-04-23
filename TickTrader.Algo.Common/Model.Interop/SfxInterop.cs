@@ -887,7 +887,7 @@ namespace TickTrader.Algo.Common.Model
                 Price = report.Price,
                 Balance = report.Balance ?? double.NaN,
                 IsOneCancelsTheOther = report.OneCancelsTheOtherFlag,
-                OCORelatedOrderId = report.RelatedOrderId?.ToString(),
+                OcoRelatedOrderId = report.RelatedOrderId?.ToString(),
             };
         }
 

@@ -100,7 +100,7 @@ namespace TickTrader.Algo.Common.Model
 
         public bool IsOneCancelsTheOther { get; set; }
 
-        public string OCORelatedOrderId { get; set; }
+        public string OcoRelatedOrderId { get; set; }
     }
 
     public enum ExecutionType
