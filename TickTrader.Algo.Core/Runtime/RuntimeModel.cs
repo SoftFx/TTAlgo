@@ -20,6 +20,7 @@ namespace TickTrader.Algo.Core
 
         private Action<RpcMessage> _onNotification;
         private IRuntimeProxy _proxy;
+        private RpcSession _session;
         private TaskCompletionSource<bool> _attachTask, _launchTask;
         private int _startedExecutorsCnt;
         private bool _shutdownWhenIdle;
@@ -70,14 +71,21 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public async Task Stop()
+        public async Task Stop(string reason)
         {
-            _logger.Debug("Stopping...");
+            _logger.Debug($"Stopping. Reason: {reason}");
 
             try
             {
                 await _launchTask.Task;
-                await Task.WhenAny(_proxy.Stop(), Task.Delay(ShutdownTimeout));
+                var t1 = _proxy.Stop();
+                var t2 = Task.Delay(ShutdownTimeout);
+                var t = await Task.WhenAny(t1, t2);
+                if (t == t2)
+                {
+                    _logger.Error("No response for stop request. Considering process hanged");
+                }
+                await _session.Disconnect(reason);
                 OnDetached();
                 await _runtimeHost.Stop();
 
@@ -110,10 +118,11 @@ namespace TickTrader.Algo.Core
         }
 
 
-        internal void OnAttached(Action<RpcMessage> onNotification, IRuntimeProxy proxy)
+        internal void OnAttached(RpcSession session)
         {
-            _onNotification = onNotification;
-            _proxy = proxy;
+            _onNotification = session.Tell;
+            _proxy = new RuntimeProxy(session);
+            _session = session;
 
             _attachTask?.TrySetResult(true);
         }
@@ -122,6 +131,7 @@ namespace TickTrader.Algo.Core
         {
             _onNotification = null;
             _proxy = null;
+            _session = null;
         }
 
         internal string GetPackagePath()
@@ -204,7 +214,7 @@ namespace TickTrader.Algo.Core
             _logger.Debug($"Shutdown initiated");
             try
             {
-                await Stop();
+                await Stop("Idle shutdown");
             }
             catch (Exception ex)
             {

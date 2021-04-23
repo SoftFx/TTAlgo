@@ -59,8 +59,7 @@ namespace TickTrader.Algo.Core
                 {
                     _runtime = runtime;
 
-                    var proxy = new RuntimeProxy(_session);
-                    _runtime.OnAttached(r => _session.Tell(r), proxy);
+                    _runtime.OnAttached(_session);
 
                     return Task.FromResult(Any.Pack(new AttachRuntimeResponse { Success = true }));
                 }

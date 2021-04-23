@@ -15,12 +15,15 @@ namespace TickTrader.Algo.Core
         private readonly IRuntimeProxy _runtime;
         private readonly Dictionary<string, IRpcHandler> _knownProxies;
         private RpcSession _session;
+        private TaskCompletionSource<bool> _disconnectedTask;
+        private IDisposable _rpcStateSub;
 
 
         public PluginRuntimeV1Handler(IRuntimeProxy runtime)
         {
             _runtime = runtime;
             _knownProxies = new Dictionary<string, IRpcHandler>();
+            _disconnectedTask = new TaskCompletionSource<bool>();
         }
 
 
@@ -93,6 +96,11 @@ namespace TickTrader.Algo.Core
             _session.Tell(RpcMessage.Notification(proxyId, msg));
         }
 
+        public Task WhenDisconnected()
+        {
+            return _disconnectedTask.Task;
+        }
+
 
         public void SetSession(RpcSession session)
         {
@@ -101,6 +109,7 @@ namespace TickTrader.Algo.Core
             {
                 proxy.SetSession(_session);
             }
+            _rpcStateSub = session.ObserveStates.Subscribe(OnStateChange);
         }
 
         public void HandleNotification(string proxyId, string callId, Any payload)
@@ -125,6 +134,16 @@ namespace TickTrader.Algo.Core
                 proxy.HandleRequest(proxyId, callId, payload);
 
             return Task.FromResult(default(Any));
+        }
+
+
+        private void OnStateChange(RpcSessionStateChangedArgs args)
+        {
+            if (args.NewState == RpcSessionState.Disconnected)
+            {
+                _disconnectedTask.TrySetResult(true);
+                _rpcStateSub.Dispose();
+            }
         }
 
 

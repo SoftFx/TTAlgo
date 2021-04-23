@@ -53,15 +53,26 @@ namespace TickTrader.Algo.Core
 
         public async Task Stop()
         {
+            _logger.Debug("Stopping...");
+
             await _packageProcessor.Stop(false);
+            _logger.Debug("Package processor stopped");
+
             await Task.WhenAll(_repositories.Values.Select(r => r.Stop()));
+            _logger.Debug("Package repositories stopped");
+
             Task[] stopRuntimeTasks;
             lock (_runtimesMap)
             {
                 stopRuntimeTasks = _runtimesMap.Values.Select(r => StopRuntime(r)).ToArray();
             }
+            _logger.Debug("Runtimes stopping...");
             await Task.WhenAll(stopRuntimeTasks);
+            _logger.Debug("Runtimes stopped");
+
             await _rpcServer.Stop();
+
+            _logger.Debug("Stopped");
         }
 
         public async Task<ExecutorModel> CreateExecutor(PluginConfig config, string accountId)
@@ -156,7 +167,7 @@ namespace TickTrader.Algo.Core
         {
             try
             {
-                await runtime.Stop();
+                await runtime.Stop("Server shutdown");
             }
             catch (Exception ex)
             {

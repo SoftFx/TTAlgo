@@ -46,6 +46,9 @@ namespace TickTrader.Algo.Rpc.OverGrpc
 
         public async Task Close()
         {
+            _readChannel.Writer.TryComplete();
+            _writeChannel.Writer.TryComplete();
+
             _taskSrc.TrySetResult(true);
             await _listenTask;
             await _sendTask;

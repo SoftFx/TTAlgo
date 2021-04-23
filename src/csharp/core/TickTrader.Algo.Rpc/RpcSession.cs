@@ -130,7 +130,7 @@ namespace TickTrader.Algo.Rpc
 
         internal void SendMessage(RpcMessage msg)
         {
-            //_logger.Debug($"Send msg: {msg}");
+            //_logger.Debug("Send msg: {msg}", new { msg.Flags, msg.CallId, msg.ProxyId, Payload = new { msg.Payload.TypeUrl, msg.Payload.Value } });
             _transport.WriteChannel.TryWrite(msg);
         }
 
@@ -377,7 +377,7 @@ namespace TickTrader.Algo.Rpc
 
         private void HandleMessage(RpcMessage msg)
         {
-            //_logger.Debug($"Handle msg {msg}");
+            //_logger.Debug("Handle msg: {msg}", new { msg.Flags, msg.CallId, msg.ProxyId, Payload = new { msg.Payload.TypeUrl, msg.Payload.Value } });
 
             if (msg.Payload.Is(Heartbeat.Descriptor))
             {

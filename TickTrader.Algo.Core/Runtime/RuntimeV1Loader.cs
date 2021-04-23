@@ -56,10 +56,11 @@ namespace TickTrader.Algo.Core
 
         public Task WhenFinished()
         {
-            if (_finishTaskSrc == null)
-                _finishTaskSrc = new TaskCompletionSource<bool>();
+            //if (_finishTaskSrc == null)
+            //    _finishTaskSrc = new TaskCompletionSource<bool>();
 
-            return _finishTaskSrc.Task;
+            //return _finishTaskSrc.Task;
+            return _handler.WhenDisconnected();
         }
 
         public async Task Launch()

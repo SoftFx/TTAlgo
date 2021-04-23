@@ -120,7 +120,7 @@ namespace TickTrader.Algo.Core
             _process.Exited -= OnExited;
             if (!hasStopped)
             {
-                _logger.Info($"{_proxyId} host didn't stop within timeout. Killing process {_process.Id}...");
+                _logger.Error($"{_proxyId} host didn't stop within timeout. Killing process {_process.Id}...");
                 _process.Kill();
             }
             _logger.Info($"{_proxyId} host stopped");

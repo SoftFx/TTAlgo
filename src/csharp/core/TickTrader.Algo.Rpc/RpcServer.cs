@@ -16,6 +16,7 @@ namespace TickTrader.Algo.Rpc
         private readonly List<RpcSession> _sessions = new List<RpcSession>();
         private ITransportServer _transportServer;
         private IDisposable _newConnectionSubscription;
+        private bool _serverStopping;
 
 
         public int BoundPort => _transportServer?.BoundPort ?? -1;
@@ -37,10 +38,15 @@ namespace TickTrader.Algo.Rpc
 
         public async Task Stop()
         {
+            _logger.Debug("Stopping listening to new connections...");
             await _transportServer.StopNewConnections();
+            _logger.Debug("Stopped listening to new connections");
 
             _newConnectionSubscription?.Dispose();
             _newConnectionSubscription = null;
+
+            _serverStopping = true;
+            _logger.Debug("Disconnecting all clients...");
             Task[] tasks;
             lock (_lock)
             {
@@ -52,6 +58,9 @@ namespace TickTrader.Algo.Rpc
                 }
             }
             await Task.WhenAll(tasks);
+            _logger.Debug("Disconnected all clients");
+
+            _logger.Debug("Closing all clients...");
             lock (_lock)
             {
                 var cnt = _sessions.Count;
@@ -62,9 +71,13 @@ namespace TickTrader.Algo.Rpc
                 }
                 _sessions.Clear();
             }
+            await Task.WhenAll(tasks);
+            _logger.Debug("Closed all clients");
 
+            _logger.Debug("Transport server stopping...");
             await _transportServer.Stop();
             _transportServer = null;
+            _logger.Debug("Transport server stopped");
         }
 
 
@@ -106,6 +119,9 @@ namespace TickTrader.Algo.Rpc
 
         private void RemoveSession(RpcSession session)
         {
+            if (_serverStopping)
+                return;
+
             _logger.Debug("Session removing...");
             lock (_lock)
             {
