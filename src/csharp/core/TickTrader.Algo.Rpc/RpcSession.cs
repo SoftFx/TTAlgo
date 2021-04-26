@@ -66,6 +66,7 @@ namespace TickTrader.Algo.Rpc
         private TaskCompletionSource<bool> _disconnectTaskSrc;
         private ProtocolSpec _protocol;
         private string _disconnectReason;
+        private string _sessionId;
 
 
         public RpcSessionState State { get; private set; }
@@ -89,6 +90,7 @@ namespace TickTrader.Algo.Rpc
 
             _protocol = protocol;
             _connectTaskSrc = new TaskCompletionSource<bool>();
+            _sessionId = Guid.NewGuid().ToString("N");
 
             PushEvent(RpcSessionEvent.ConnectionRequest);
 
@@ -170,7 +172,7 @@ namespace TickTrader.Algo.Rpc
 
                 if (_protocol != null)
                 {
-                    SendMessage(RpcMessage.Request(new ConnectRequest { Protocol = _protocol }));
+                    SendMessage(RpcMessage.Request(_sessionId, new ConnectRequest { Protocol = _protocol }));
                 }
             }
             else if (State == RpcSessionState.Connecting && sessionEvent == RpcSessionEvent.ConnectionSuccess)
@@ -191,12 +193,12 @@ namespace TickTrader.Algo.Rpc
             }
             else if (State == RpcSessionState.Connected && sessionEvent == RpcSessionEvent.HeartbeatMismatch)
             {
-                SendMessage(RpcMessage.Notification(new DisconnectMsg { Reason = _disconnectReason }));
+                SendMessage(RpcMessage.Notification(_sessionId, new DisconnectMsg { Reason = _disconnectReason }));
                 await DisconnectRoutine(false, true);
             }
             else if (State == RpcSessionState.Connected && sessionEvent == RpcSessionEvent.DisconnectRequest)
             {
-                SendMessage(RpcMessage.Notification(new DisconnectMsg { Reason = _disconnectReason }));
+                SendMessage(RpcMessage.Notification(_sessionId, new DisconnectMsg { Reason = _disconnectReason }));
                 await DisconnectRoutine(true, false);
             }
             else if (State == RpcSessionState.Connected && sessionEvent == RpcSessionEvent.DisconnectNotification)
@@ -266,6 +268,7 @@ namespace TickTrader.Algo.Rpc
                 if (State != RpcSessionState.Connecting)
                     throw new RpcStateException($"Session in '{State}' state");
 
+                _sessionId = msg.ProxyId;
                 var request = msg.Payload.Unpack<ConnectRequest>();
                 var response = ExecuteConnectRequest(request.Protocol);
 

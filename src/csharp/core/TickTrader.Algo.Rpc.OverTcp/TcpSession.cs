@@ -65,7 +65,8 @@ namespace TickTrader.Algo.Rpc.OverTcp
             await _writeTask;
             await _sendTask;
 
-            _socket.Close();
+            _socket.Disconnect(false);
+            _socket.Dispose();
 
             await _listenTask;
             await _readTask;
