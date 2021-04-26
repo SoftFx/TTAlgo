@@ -133,6 +133,8 @@ namespace TickTrader.BotTerminal
             if (model != null)
                 model.Model.AccessLevelChanged += OnAccessLevelChanged;
 
+            Login?.Validate();
+            DisplayAccountName?.Validate();
             OnAccessLevelChanged();
         }
 

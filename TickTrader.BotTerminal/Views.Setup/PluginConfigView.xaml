@@ -378,8 +378,9 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Label Grid.Column="0" Content="Isolate bot" />
-                <CheckBox Grid.Column="1" IsChecked="{Binding Isolated}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+                <Label Grid.Column="0" Content="Isolate bot" Visibility="{Binding IsBot, Converter={StaticResource BoolToVis}}"/>
+                <CheckBox Grid.Column="1" IsChecked="{Binding Isolated}" Foreground="{DynamicResource Shell_PrimaryForeground}" 
+                          Visibility="{Binding IsBot, Converter={StaticResource BoolToVis}}"/>
                 <Label Grid.Column="2" Content="AllowTrade" Visibility="{Binding IsBot, Converter={StaticResource BoolToVis}}"/>
                 <CheckBox Grid.Column="3" IsChecked="{Binding AllowTrade}" Foreground="{DynamicResource Shell_PrimaryForeground}" Visibility="{Binding IsBot, Converter={StaticResource BoolToVis}}"/>
 
