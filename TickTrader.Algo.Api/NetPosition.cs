@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Api
 {
@@ -29,14 +26,11 @@ namespace TickTrader.Algo.Api
         event Action<NetPositionSplittedEventArgs> Splitted;
     }
 
-    public interface NetPositionModifiedEventArgs
-    {
-        NetPosition OldPosition { get; }
-        NetPosition NewPosition { get; }
-        bool IsClosed { get; }
-    }
+    public interface NetPositionModifiedEventArgs : DoublePositionEventArgs { }
 
-    public interface NetPositionSplittedEventArgs
+    public interface NetPositionSplittedEventArgs : DoublePositionEventArgs { }
+
+    public interface DoublePositionEventArgs
     {
         NetPosition OldPosition { get; }
         NetPosition NewPosition { get; }

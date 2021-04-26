@@ -48,6 +48,8 @@
   <ItemGroup>
     <Compile Include="AccountDataProvider.cs" />
     <Compile Include="AlgoPlugin.cs" />
+    <Compile Include="ApiTradeEntityRequests\CloseRequests\BaseCloseRequest.cs" />
+    <Compile Include="ApiTradeEntityRequests\CloseRequests\CloseNetPositionRequest.cs" />
     <Compile Include="Asset.cs" />
     <Compile Include="Attributes.cs" />
     <Compile Include="BalanceDividend.cs" />
@@ -106,9 +108,9 @@
     <Compile Include="Indicators\Volumes\IVolumes.cs" />
     <Compile Include="Math\ComparisonExtensions.cs" />
     <Compile Include="Math\RoundingExtensions.cs" />
-    <Compile Include="OrderRequests\CloseOrderRequest.cs" />
-    <Compile Include="OrderRequests\ModifyOrderRequest.cs" />
-    <Compile Include="OrderRequests\OpenOrderRequest.cs" />
+    <Compile Include="ApiTradeEntityRequests\CloseRequests\CloseOrderRequest.cs" />
+    <Compile Include="ApiTradeEntityRequests\ModifyOrderRequest.cs" />
+    <Compile Include="ApiTradeEntityRequests\OpenOrderRequest.cs" />
     <Compile Include="OutputTargets.cs" />
     <Compile Include="RateUpdate.cs" />
     <Compile Include="StatusApi.cs" />

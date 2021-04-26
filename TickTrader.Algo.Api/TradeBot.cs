@@ -133,6 +133,16 @@ namespace TickTrader.Algo.Api
             return context.TradeApi.OpenOrder(true, request);
         }
 
+        public OrderCmdResult CloseNetPosition(CloseNetPositionRequest request)
+        {
+            return context.TradeApi.CloseNetPosition(false, request).Result;
+        }
+
+        public Task<OrderCmdResult> CloseNetPositionAsync(CloseNetPositionRequest request)
+        {
+            return context.TradeApi.CloseNetPosition(true, request);
+        }
+
         public OrderCmdResult CloseOrder(CloseOrderRequest request)
         {
             return context.TradeApi.CloseOrder(false, request).Result;

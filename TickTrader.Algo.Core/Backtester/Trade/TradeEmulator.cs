@@ -312,6 +312,11 @@ namespace TickTrader.Algo.Core
             return CloseOrder(isAysnc, req);
         }
 
+        Task<OrderCmdResult> TradeCommands.CloseNetPosition(bool isAsync, Api.CloseNetPositionRequest request)
+        {
+            throw new NotImplementedException();
+        }
+
         Task<OrderCmdResult> TradeCommands.CloseOrderBy(bool isAysnc, string orderId, string byOrderId)
         {
             var req = new Domain.CloseOrderRequest

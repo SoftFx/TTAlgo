@@ -161,6 +161,45 @@ namespace TickTrader.Algo.Core
             return resultEntity;
         }
 
+        public async Task<OrderCmdResult> CloseNetPosition(bool isAsync, Api.CloseNetPositionRequest request)
+        {
+            OrderResultEntity resultEntity;
+            var code = OrderCmdResultCodes.Ok;
+            var requestContext = new Domain.CloseOrderRequest
+            {
+                OrderId = request.Symbol,
+                Amount = request.Volume,
+                Slippage = request.Slippage
+            };
+
+            PreprocessAndValidateClosePositionRequest(requestContext, out var position, out var smbMetadata, ref code);
+
+            if (code == OrderCmdResultCodes.Ok)
+            {
+                requestContext.OrderId = position.Id;
+
+                _logger.LogOrderValidationSuccess(requestContext, OrderAction.Close, smbMetadata.LotSize);
+
+                var orderResp = await _api.CloseOrder(isAsync, requestContext);
+                var resCode = orderResp.ResultCode.ToApiEnum();
+
+                if (resCode == OrderCmdResultCodes.Ok)
+                    resultEntity = new OrderResultEntity(resCode, new OrderAccessor(smbMetadata, orderResp.ResultingOrder), orderResp.TransactionTime);
+                else
+                    resultEntity = new OrderResultEntity(resCode, Null.Order, orderResp.TransactionTime);
+            }
+            else
+            {
+                if (isAsync)
+                    await LeavePluginThread(code == OrderCmdResultCodes.OffQuotes);
+
+                resultEntity = new OrderResultEntity(code, Null.Order, null) { IsServerResponse = false };
+            }
+
+            _logger.LogRequestResults(requestContext, resultEntity, OrderAction.Close);
+            return resultEntity;
+        }
+
         public async Task<OrderCmdResult> CloseOrderBy(bool isAsync, string orderId, string byOrderId)
         {
             OrderResultEntity resultEntity;
@@ -352,6 +391,31 @@ namespace TickTrader.Algo.Core
                 return;
         }
 
+        private void PreprocessAndValidateClosePositionRequest(Domain.CloseOrderRequest request, out NetPosition position, out SymbolInfo smbMetadata, ref OrderCmdResultCodes code)
+        {
+            smbMetadata = null;
+            position = null;
+
+            if (!ValidateTradePersmission(ref code))
+                return;
+            if (!TryGetNetPosition(request.OrderId, out position, ref code))
+                return;
+            if (!TryGetSymbol(position.Symbol, out smbMetadata, ref code))
+                return;
+            if (!ValidateTradeEnabled(smbMetadata, ref code))
+                return;
+            if (!ValidateQuotes(smbMetadata, position.Side.ToCoreEnum().Revert(), ref code))
+                return;
+
+            if (!ValidateVolumeLots(request.Amount, smbMetadata, ref code))
+                return;
+            request.Amount = RoundVolume(request.Amount, smbMetadata);
+            request.Amount = ConvertNullableVolume(request.Amount, smbMetadata);
+
+            if (!ValidateVolume(request.Amount, ref code))
+                return;
+        }
+
         private void PreprocessAndValidateCloseOrderByRequest(Domain.CloseOrderRequest request, out Order orderToClose, ref OrderCmdResultCodes code)
         {
             orderToClose = null;
@@ -501,6 +565,18 @@ namespace TickTrader.Algo.Core
             if (order == null)
             {
                 code = OrderCmdResultCodes.OrderNotFound;
+                return false;
+            }
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool TryGetNetPosition(string symbol, out NetPosition position, ref OrderCmdResultCodes code)
+        {
+            position = _account.NetPositions.GetOrNull(symbol);
+            if (position == null)
+            {
+                code = OrderCmdResultCodes.PositionNotFound;
                 return false;
             }
             return true;
