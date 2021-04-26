@@ -63,7 +63,7 @@ namespace TickTrader.Algo.Core
             request.Confirm();
         }
 
-        public void ConfirmPositionClose(ClosePositionRequest request)
+        public void ConfirmPositionClose(Api.Ext.ClosePositionRequest request)
         {
             request.Confirm();
         }

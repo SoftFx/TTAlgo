@@ -11,6 +11,7 @@ namespace TickTrader.Algo.Api
         Task<OrderCmdResult> ModifyOrder(bool isAsync, ModifyOrderRequest request);
         Task<OrderCmdResult> CloseOrder(bool isAsync, CloseOrderRequest request);
         Task<OrderCmdResult> CloseOrderBy(bool isAsync, string orderId, string byOrderId);
+        Task<OrderCmdResult> CloseNetPosition(bool isAsync, CloseNetPositionRequest request);
     }
 
     public interface OrderCmdResult
@@ -80,5 +81,6 @@ namespace TickTrader.Algo.Api
         OCORelatedOrderAlreadyExists = 129,
         IncorrectSymbol = 130,
         OCOAlreadyExists = 131,
+        PositionNotFound = 132,
     }
 }

@@ -4,12 +4,17 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Close Positions Script", Version = "1.4", Category = "Test Orders",
-        SetupMainSymbol = false, Description = "Closes all positions for gross accounts")]
+    public enum RequestType { CloseRequest, AsMarket }
+
+    [TradeBot(DisplayName = "[T] Close Positions Script", Version = "1.5", Category = "Test Orders",
+        SetupMainSymbol = false, Description = "Closes all positions for margin accounts")]
     public class CloseAll : TradeBot
     {
         [Parameter]
         public string PositionId { get; set; }
+
+        [Parameter]
+        public RequestType RequestType { get; set; }
 
         [Parameter(DisplayName = "Target Instance Id", DefaultValue = "")]
         public string TargetInstanceId { get; set; }
@@ -42,13 +47,13 @@ namespace TickTrader.Algo.TestCollection.Bots
             else if (Account.Type == AccountTypes.Net)
             {
                 foreach (var position in Account.NetPositions)
-                    if (!string.IsNullOrEmpty(PositionId))
+                    if (string.IsNullOrEmpty(PositionId) || position.Id == PositionId)
                     {
-                        if (position.Id == PositionId)
-                            await OpenOrderAsync(position.Symbol, OrderType.Market, Invert(position.Side), Volume ?? position.Volume, null, 1, null);
+                        if (RequestType == RequestType.CloseRequest)
+                            await ClosePosition(position);
+                        else
+                            await ClosePositionAsMarket(position);
                     }
-                    else
-                        await OpenOrderAsync(position.Symbol, OrderType.Market, Invert(position.Side), Volume ?? position.Volume, null, 1, null);
             }
             else
                 Print("This script works only for Net or Gross accounts!");
@@ -56,12 +61,26 @@ namespace TickTrader.Algo.TestCollection.Bots
             Exit();
         }
 
-        private static OrderSide Invert(OrderSide side)
+        private async Task ClosePosition(NetPosition position)
         {
-            if (side == OrderSide.Buy)
-                return OrderSide.Sell;
-            else
-                return OrderSide.Buy;
+            await CloseNetPositionAsync(CloseNetPositionRequest.Template.Create()
+                 .WithSymbol(position.Symbol)
+                 .WithVolume(Volume ?? position.Volume)
+                 .WithSlippage(Slippage)
+                 .MakeRequest());
         }
+
+        private async Task ClosePositionAsMarket(NetPosition position)
+        {
+            await OpenOrderAsync(OpenOrderRequest.Template.Create()
+                .WithType(OrderType.Market)
+                .WithSymbol(position.Symbol)
+                .WithSide(Invert(position.Side))
+                .WithVolume(Volume ?? position.Volume)
+                .WithSlippage(Slippage)
+                .MakeRequest());
+        }
+
+        private static OrderSide Invert(OrderSide side) => side == OrderSide.Buy ? OrderSide.Sell : OrderSide.Buy;
     }
 }

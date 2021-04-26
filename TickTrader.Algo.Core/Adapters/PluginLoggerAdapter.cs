@@ -82,6 +82,9 @@ namespace TickTrader.Algo.Core
                 case OrderAction.Modify:
                     suffix = GetOrderDetails((IOrderLogDetailsInfo)request, lotSize, "to ");
                     break;
+                case OrderAction.Close:
+                    suffix = $"#{request.OrderId} position";
+                    break;
                 default:
                     suffix = $"#{request.OrderId} order";
                     break;
@@ -93,20 +96,22 @@ namespace TickTrader.Algo.Core
         public void LogRequestResults(ITradeRequest request, OrderResultEntity result, OrderAction action)
         {
             var order = (result.ResultingOrder as OrderAccessor)?.Info;
-            string prefix = result.IsServerResponse ? "[In]" : "[Self]";
+            string location = result.IsServerResponse ? "[In]" : "[Self]";
+            string prefix = string.Empty;
             string suffix = null;
-
-            bool a = action == OrderAction.Open || action == OrderAction.Modify;
 
             switch (action)
             {
                 case OrderAction.Open:
+                    prefix = $"Order #{order.Id} ";
                     suffix = GetOrderDetails(order, order?.SymbolInfo.LotSize);
                     break;
                 case OrderAction.Modify:
+                    prefix = $"Order #{order.Id} ";
                     suffix = GetOrderDetails(order, order?.SymbolInfo.LotSize, "to ");
                     break;
                 case OrderAction.Close:
+                    prefix = $"Position {order.Symbol} #{order.Id} ";
                     if (order?.RemainingAmount.IsZero() == false)
                         suffix = $", remaining volume={result.ResultingOrder.RemainingVolume}";
                     break;
@@ -115,12 +120,12 @@ namespace TickTrader.Algo.Core
             }
 
             if (result.IsCompleted)
-                PrintTradeSuccess($"{prefix} SUCCESS: {(!a ? $"Order #{order.Id} " : "")}{ChangeEnding(action, "ed")} {suffix ?? request.LogDetails}");
+                PrintTradeSuccess($"{location} SUCCESS: {prefix}{ChangeEnding(action, "ed")} {suffix ?? request.LogDetails}");
             else
             {
                 string orderInformation = result.ResultingOrder is NullOrder ? string.Empty : suffix ?? request.LogDetails;
 
-                PrintFailMessage(prefix, action, orderInformation, result.ResultCode);
+                PrintFailMessage(location, action, orderInformation, result.ResultCode);
             }
         }
 
