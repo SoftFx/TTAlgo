@@ -103,15 +103,15 @@ namespace TickTrader.Algo.Core
             switch (action)
             {
                 case OrderAction.Open:
-                    prefix = $"Order #{order.Id} ";
+                    prefix = $"Order #{order?.Id} ";
                     suffix = GetOrderDetails(order, order?.SymbolInfo.LotSize);
                     break;
                 case OrderAction.Modify:
-                    prefix = $"Order #{order.Id} ";
+                    prefix = $"Order #{order?.Id} ";
                     suffix = GetOrderDetails(order, order?.SymbolInfo.LotSize, "to ");
                     break;
                 case OrderAction.Close:
-                    prefix = $"Position {order.Symbol} #{order.Id} ";
+                    prefix = $"Position {order.Symbol} #{order?.Id} ";
                     if (order?.RemainingAmount.IsZero() == false)
                         suffix = $", remaining volume={result.ResultingOrder.RemainingVolume}";
                     break;

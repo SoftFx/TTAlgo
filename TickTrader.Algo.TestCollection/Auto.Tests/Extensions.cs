@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
 
@@ -16,10 +12,10 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
                 throw new Exception($"Failed to {action} order - {result.ResultCode}");
         }
 
-        public static bool EI(this double a, double? b) => b.HasValue ? a.E(b.Value) : true;
+        public static bool EI(this double a, double? b) => !b.HasValue || a.E(b.Value);
 
-        public static bool GteI(this double a, double? b) => b.HasValue ? a.Gte(b.Value) : true;
+        public static bool GteI(this double a, double? b) => !b.HasValue || a.Gte(b.Value);
 
-        public static bool LteI(this double a, double? b) => b.HasValue ? a.Lte(b.Value) : true;
+        public static bool LteI(this double a, double? b) => !b.HasValue || a.Lte(b.Value);
     }
 }
