@@ -254,7 +254,14 @@ namespace TickTrader.Algo.Rpc
                 _heartbeatCancelTokenSrc?.Cancel();
                 await _heartbeatTask;
             }
-            await _transport.Close();
+            try
+            {
+                await _transport.Close();
+            }
+            catch(Exception ex)
+            {
+                _logger.Error(ex, "Failed to close transport");
+            }
             _disconnectTaskSrc?.TrySetResult(isExpected);
             ChangeState(RpcSessionState.Disconnected);
         }

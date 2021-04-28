@@ -1,4 +1,6 @@
-﻿using System.Net;
+﻿using ActorSharp;
+using System;
+using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
@@ -7,6 +9,7 @@ namespace TickTrader.Algo.Rpc.OverTcp
     public class TcpClient : ITransportClient
     {
         private TcpSession _session;
+        private readonly Ref<TcpContext> _context;
 
 
         public ITransportProxy Transport => _session;
@@ -14,6 +17,7 @@ namespace TickTrader.Algo.Rpc.OverTcp
 
         public TcpClient()
         {
+            _context = Actor.SpawnLocal<TcpContext>(null, $"TcpClient {Guid.NewGuid().ToString("N")}");
         }
 
 
@@ -26,7 +30,7 @@ namespace TickTrader.Algo.Rpc.OverTcp
 
             await socket.ConnectAsync(ip, port).ConfigureAwait(false);
 
-            _session = new TcpSession(socket);
+            _session = new TcpSession(socket, _context);
             await _session.Start();
         }
 

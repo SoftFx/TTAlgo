@@ -1,4 +1,5 @@
-﻿using Google.Protobuf;
+﻿using ActorSharp;
+using Google.Protobuf;
 using System;
 using System.Buffers;
 using System.IO.Pipelines;
@@ -6,6 +7,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using STC = System.Threading.Channels;
 
 namespace TickTrader.Algo.Rpc.OverTcp
 {
@@ -16,9 +18,10 @@ namespace TickTrader.Algo.Rpc.OverTcp
 
 
         private readonly Socket _socket;
+        private readonly Ref<TcpContext> _tcpContext;
         private readonly Pipe _listenPipe, _sendPipe;
         private readonly byte[] _recieveBuffer;
-        private readonly Channel<RpcMessage> _readChannel, _writeChannel;
+        private readonly STC.Channel<RpcMessage> _readChannel, _writeChannel;
 
         private Task _listenTask, _sendTask, _readTask, _writeTask;
         private CancellationTokenSource _cancelTokenSrc;
@@ -29,15 +32,16 @@ namespace TickTrader.Algo.Rpc.OverTcp
         public ChannelWriter<RpcMessage> WriteChannel { get; }
 
 
-        public TcpSession(Socket socket)
+        public TcpSession(Socket socket, Ref<TcpContext> context)
         {
             _socket = socket;
+            _tcpContext = context;
             var options = new PipeOptions(null, null, null, 4 * 1024 * 1024, 1024 * 1024);
             _listenPipe = new Pipe(options);
             _sendPipe = new Pipe(options);
 
-            _readChannel = Channel.CreateUnbounded<RpcMessage>(new UnboundedChannelOptions { AllowSynchronousContinuations = false, SingleWriter = true });
-            _writeChannel = Channel.CreateUnbounded<RpcMessage>(new UnboundedChannelOptions { AllowSynchronousContinuations = false, SingleReader = true });
+            _readChannel = STC.Channel.CreateUnbounded<RpcMessage>(new UnboundedChannelOptions { AllowSynchronousContinuations = false, SingleWriter = true });
+            _writeChannel = STC.Channel.CreateUnbounded<RpcMessage>(new UnboundedChannelOptions { AllowSynchronousContinuations = false, SingleReader = true });
 
             ReadChannel = _readChannel.Reader;
             WriteChannel = _writeChannel.Writer;
@@ -65,8 +69,13 @@ namespace TickTrader.Algo.Rpc.OverTcp
             await _writeTask;
             await _sendTask;
 
-            _socket.Disconnect(false);
-            _socket.Dispose();
+            await _tcpContext.Call(_ =>
+            {
+                //_socket.Close();
+                _socket.Disconnect(false);
+                _socket.Dispose();
+            });
+            
 
             await _listenTask;
             await _readTask;

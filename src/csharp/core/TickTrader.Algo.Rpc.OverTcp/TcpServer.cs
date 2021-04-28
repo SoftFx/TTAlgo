@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ActorSharp;
+using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Reactive.Subjects;
@@ -7,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Rpc.OverTcp
 {
+    public class TcpContext : Actor { }
+
+
     public class TcpServer : ITransportServer
     {
         private readonly Subject<ITransportProxy> _newConnectionSubject;
@@ -14,6 +18,7 @@ namespace TickTrader.Algo.Rpc.OverTcp
         private Socket _listenSocket;
         private CancellationTokenSource _cancelTokenSrc;
         private Task _acceptTask;
+        private readonly Ref<TcpContext> _context;
 
 
         public IObservable<ITransportProxy> ObserveNewConnections => _newConnectionSubject;
@@ -25,6 +30,7 @@ namespace TickTrader.Algo.Rpc.OverTcp
         {
             _newConnectionSubject = new Subject<ITransportProxy>();
             BoundPort = -1;
+            _context = Actor.SpawnLocal<TcpContext>(null, $"TcpServer {Guid.NewGuid().ToString("N")}");
         }
 
 
@@ -72,7 +78,7 @@ namespace TickTrader.Algo.Rpc.OverTcp
             {
                 var clientSocket = await listenSocket.AcceptAsync().ConfigureAwait(false);
 
-                var session = new TcpSession(clientSocket);
+                var session = new TcpSession(clientSocket, _context);
                 await session.Start();
                 _newConnectionSubject.OnNext(session);
             }
