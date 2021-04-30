@@ -59,7 +59,7 @@
     <DeployExtension>False</DeployExtension>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\TickTrader.Algo.Core\Lib\IoHelper.cs">
+    <Compile Include="..\src\csharp\core\TickTrader.Algo.Core.Lib\IoHelper.cs">
       <Link>Algo.Core.Copy\IoHelper.cs</Link>
     </Compile>
     <Compile Include="..\TickTrader.Algo.Core\Package\Package.cs">
