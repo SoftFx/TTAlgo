@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Util;
 
 namespace TickTrader.Algo.Core.Repository
@@ -32,13 +33,13 @@ namespace TickTrader.Algo.Core.Repository
         private Task _scanTask;
         private string _repPath;
         private string _location;
-        private IAlgoCoreLogger _logger;
+        private IAlgoLogger _logger;
         private bool _isolated;
         private readonly IAsyncChannel<PackageFileUpdate> _updateChannel;
         private bool _enabled;
 
 
-        internal PackageRepository(string repPath, string locationId, IAsyncChannel<PackageFileUpdate> updateChannel, IAlgoCoreLogger logger = null, bool isolated = true)
+        internal PackageRepository(string repPath, string locationId, IAsyncChannel<PackageFileUpdate> updateChannel, IAlgoLogger logger = null, bool isolated = true)
         {
             _repPath = repPath;
             _location = locationId;
@@ -128,14 +129,14 @@ namespace TickTrader.Algo.Core.Repository
                 }
                 catch (Exception ex)
                 {
-                    _logger?.Error($"Failed to scan {_repPath}", ex);
+                    _logger?.Error(ex, $"Failed to scan {_repPath}");
                 }
             }
         }
 
         private void WatcherOnError(object sender, ErrorEventArgs e)
         {
-            _logger.Error($"Location = {_location}: Watcher error", e.GetException());
+            _logger.Error(e.GetException(), $"Location = {_location}: Watcher error");
 
             Task.Factory.StartNew(Scan);
         }

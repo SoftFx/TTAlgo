@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System.Security.Cryptography;
-using TickTrader.Algo.Util;
 
 namespace TickTrader.Algo.Core.Lib
 {

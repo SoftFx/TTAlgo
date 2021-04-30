@@ -3,31 +3,28 @@ using NLog.Config;
 using NLog.Layouts;
 using NLog.Targets;
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Util;
+using TickTrader.Algo.Core.Lib;
 
-namespace TickTrader.Algo.RuntimeV1
+namespace TickTrader.Algo.RuntimeV1Host.NetFx
 {
     class Program
     {
         static void Main(string[] args)
         {
-            if (Debugger.IsAttached)
-            {
-                ConfigureNLog(Guid.NewGuid().ToString());
-            }
-            else
-            {
-                if (args.Length < 3)
-                    Environment.FailFast(string.Join(", ", args));
+            if (args.Length < 3)
+                Environment.FailFast(string.Join(", ", args));
 
-                ConfigureNLog(args[2]);
-            }
+            ConfigureNLog(args[2]);
 
-            CoreLoggerFactory.Init(n => new RuntimeLogAdapter(n));
+            RunRuntime(args).Wait();
+        }
+
+        private static async Task RunRuntime(string[] args)
+        {
             AlgoLoggerFactory.Init(n => new RuntimeLogAdapter(n));
             var logger = LogManager.GetLogger("MainLoop");
 
@@ -50,7 +47,7 @@ namespace TickTrader.Algo.RuntimeV1
             if (loader == null || isFailed)
                 Environment.FailFast("Invalid start");
 
-            loader.WhenFinished().Wait();
+            await loader.WhenFinished();
             logger.Info("Runtime finished.");
 
             try
@@ -63,7 +60,6 @@ namespace TickTrader.Algo.RuntimeV1
                 Environment.FailFast("Failed to deinit runtime.");
             }
         }
-
 
         private static void ConfigureNLog(string runtimeId)
         {
@@ -104,7 +100,7 @@ namespace TickTrader.Algo.RuntimeV1
         }
 
 
-        internal class RuntimeLogAdapter : IAlgoCoreLogger, IAlgoLogger
+        internal class RuntimeLogAdapter : IAlgoLogger
         {
             private readonly Logger _logger;
 
@@ -136,11 +132,6 @@ namespace TickTrader.Algo.RuntimeV1
             public void Error(Exception ex, string msg)
             {
                 _logger.Error(ex, msg);
-            }
-
-            public void Error(string msg, Exception ex)
-            {
-                Error(ex, msg);
             }
 
             public void Error(Exception ex, string msgFormat, params object[] msgParams)

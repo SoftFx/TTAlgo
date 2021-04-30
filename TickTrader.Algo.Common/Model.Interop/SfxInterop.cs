@@ -26,7 +26,7 @@ namespace TickTrader.Algo.Common.Model
         private const int DisconnectTimeoutMs = 60 * 1000;
         private const int DownloadTimeoutMs = 120 * 1000;
 
-        private IAlgoCoreLogger logger;
+        private IAlgoLogger logger;
 
         public IFeedServerApi FeedApi => this;
         public ITradeServerApi TradeApi => this;
@@ -50,7 +50,7 @@ namespace TickTrader.Algo.Common.Model
 
         public SfxInterop(ConnectionOptions options, int loggerId)
         {
-            logger = CoreLoggerFactory.GetLogger<SfxInterop>(loggerId);
+            logger = AlgoLoggerFactory.GetLogger<SfxInterop>(loggerId);
 
             const int connectInterval = 10000;
 #if DEBUG

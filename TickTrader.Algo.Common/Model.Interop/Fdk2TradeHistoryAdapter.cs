@@ -1,7 +1,7 @@
 ﻿using ActorSharp;
 using System;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.FDK.Common;
 
 namespace TickTrader.Algo.Common.Model.Interop
@@ -9,10 +9,10 @@ namespace TickTrader.Algo.Common.Model.Interop
     public class Fdk2TradeHistoryAdapter
     {
         private readonly FDK.Client.TradeCapture _tradeCapture;
-        private readonly IAlgoCoreLogger _logger;
+        private readonly IAlgoLogger _logger;
 
 
-        public Fdk2TradeHistoryAdapter(FDK.Client.TradeCapture tradeCapture, IAlgoCoreLogger logger)
+        public Fdk2TradeHistoryAdapter(FDK.Client.TradeCapture tradeCapture, IAlgoLogger logger)
         {
             _tradeCapture = tradeCapture;
             _logger = logger;

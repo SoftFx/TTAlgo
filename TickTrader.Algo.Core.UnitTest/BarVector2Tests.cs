@@ -1,5 +1,4 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 

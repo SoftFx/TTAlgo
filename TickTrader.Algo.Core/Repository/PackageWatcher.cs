@@ -18,7 +18,7 @@ namespace TickTrader.Algo.Core.Repository
         private FileInfo _currentFileInfo;
         private bool _isRescanRequested;
         private Task _scanTask;
-        private IAlgoCoreLogger _logger;
+        private IAlgoLogger _logger;
         private bool _isolation;
 
 
@@ -34,7 +34,7 @@ namespace TickTrader.Algo.Core.Repository
         public event Action<AlgoPackageRef> Updated;
 
 
-        public PackageWatcher(string filePath, string locationId, IAlgoCoreLogger logger, bool isolation)
+        public PackageWatcher(string filePath, string locationId, IAlgoLogger logger, bool isolation)
         {
             FilePath = filePath;
             FileName = Path.GetFileName(filePath);
@@ -147,7 +147,7 @@ namespace TickTrader.Algo.Core.Repository
             }
             catch (Exception ex)
             {
-                _logger?.Error($"Failed to update Algo package {FileName} at {LocationId}", ex);
+                _logger?.Error(ex, $"Failed to update Algo package {FileName} at {LocationId}");
                 //PackageRef = new AlgoPackageRef(FileName, Location, PackageIdentity.CreateInvalid(FileName, FilePath), null);
             }
 
@@ -190,7 +190,7 @@ namespace TickTrader.Algo.Core.Repository
             }
             catch (Exception ex)
             {
-                _logger?.Error($"Failed to send update events for Algo package {FileName} at {LocationId}", ex);
+                _logger?.Error(ex, $"Failed to send update events for Algo package {FileName} at {LocationId}");
             }
         }
 

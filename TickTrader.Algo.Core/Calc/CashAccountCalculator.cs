@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
@@ -11,7 +10,7 @@ namespace TickTrader.Algo.Core.Calc
         private readonly ICashAccountInfo2 account;
         private readonly Dictionary<string, IAssetInfo> assets = new Dictionary<string, IAssetInfo>();
         private MarketStateBase market;
-        private Action<string, Exception> _onLogError;
+        private Action<Exception, string> _onLogError;
 
         public MarketStateBase Market
         {
@@ -28,7 +27,7 @@ namespace TickTrader.Algo.Core.Calc
             }
         }
 
-        public CashAccountCalculator(ICashAccountInfo2 infoProvider, MarketStateBase market, Action<string, Exception> onLogError)
+        public CashAccountCalculator(ICashAccountInfo2 infoProvider, MarketStateBase market, Action<Exception, string> onLogError)
         {
             if (infoProvider == null)
                 throw new ArgumentNullException("infoProvider");
@@ -155,7 +154,7 @@ namespace TickTrader.Algo.Core.Calc
                 var symbol = order.SymbolInfo;
                 if (symbol == null) //can be caused by server misconfiguration
                 {
-                    _onLogError?.Invoke($"{nameof(CashAccountCalculator)} failed to add order: symbol not found. {order?.GetSnapshotString()}", null);
+                    _onLogError?.Invoke(null, $"{nameof(CashAccountCalculator)} failed to add order: symbol not found. {order?.GetSnapshotString()}");
                     return;
                 }
 
@@ -172,7 +171,7 @@ namespace TickTrader.Algo.Core.Calc
             }
             catch (Exception ex)
             {
-                _onLogError?.Invoke($"{nameof(CashAccountCalculator)} failed to add order. {order?.GetSnapshotString()}", ex);
+                _onLogError?.Invoke(ex, $"{nameof(CashAccountCalculator)} failed to add order. {order?.GetSnapshotString()}");
             }
         }
 
@@ -185,7 +184,7 @@ namespace TickTrader.Algo.Core.Calc
                 if (symbol == null)
                 {
                     // theoretically impossible
-                    _onLogError?.Invoke($"{nameof(CashAccountCalculator)} failed to handle order update: symbol not found. {order?.GetSnapshotString()}", null);
+                    _onLogError?.Invoke(null, $"{nameof(CashAccountCalculator)} failed to handle order update: symbol not found. {order?.GetSnapshotString()}");
                     order.EssentialsChanged -= OnOrderChanged;
                     return;
                 }
@@ -207,7 +206,7 @@ namespace TickTrader.Algo.Core.Calc
             }
             catch (Exception ex)
             {
-                _onLogError?.Invoke($"{nameof(CashAccountCalculator)} failed to handle order update. {args.Order?.GetSnapshotString()}", ex);
+                _onLogError?.Invoke(ex, $"{nameof(CashAccountCalculator)} failed to handle order update. {args.Order?.GetSnapshotString()}");
             }
         }
 
@@ -226,7 +225,7 @@ namespace TickTrader.Algo.Core.Calc
                 var symbol = order.SymbolInfo;
                 if (symbol == null) //can be caused by server misconfiguration
                 {
-                    _onLogError?.Invoke($"{nameof(CashAccountCalculator)} failed to remove order: symbol not found. {order?.GetSnapshotString()}", null);
+                    _onLogError?.Invoke(null, $"{nameof(CashAccountCalculator)} failed to remove order: symbol not found. {order?.GetSnapshotString()}");
                     return;
                 }
 
@@ -238,7 +237,7 @@ namespace TickTrader.Algo.Core.Calc
             }
             catch (Exception ex)
             {
-                _onLogError?.Invoke($"{nameof(CashAccountCalculator)} failed to remove order. {order?.GetSnapshotString()}", ex);
+                _onLogError?.Invoke(ex, $"{nameof(CashAccountCalculator)} failed to remove order. {order?.GetSnapshotString()}");
             }
         }
 

@@ -12,7 +12,6 @@ using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
 using TickTrader.Algo.Rpc.OverTcp;
-using TickTrader.Algo.Util;
 
 namespace TickTrader.Algo.Core
 {
@@ -23,7 +22,7 @@ namespace TickTrader.Algo.Core
 
         private readonly RpcClient _client;
         private readonly PluginRuntimeV1Handler _handler;
-        private IAlgoCoreLogger _logger;
+        private IAlgoLogger _logger;
         private TaskCompletionSource<bool> _finishTaskSrc;
         private RuntimeConfig _runtimeConfig;
         private AlgoSandbox _sandbox;
@@ -43,7 +42,7 @@ namespace TickTrader.Algo.Core
 
         public async void Init(string address, int port, string proxyId)
         {
-            _logger = CoreLoggerFactory.GetLogger<RuntimeV1Loader>();
+            _logger = AlgoLoggerFactory.GetLogger<RuntimeV1Loader>();
 
             await _client.Connect(address, port).ConfigureAwait(false);
             await _handler.AttachRuntime(proxyId).ConfigureAwait(false);
@@ -67,7 +66,7 @@ namespace TickTrader.Algo.Core
         {
             _runtimeConfig = await _handler.GetRuntimeConfig().ConfigureAwait(false);
 
-            var reductions = new ReductionCollection(CoreLoggerFactory.GetLogger("Extensions"));
+            var reductions = new ReductionCollection(AlgoLoggerFactory.GetLogger("Extensions"));
             _mappings = new MappingCollection(reductions);
 
             var packagePath = _runtimeConfig.PackagePath;
@@ -203,8 +202,7 @@ namespace TickTrader.Algo.Core
 
         internal void InitDebugLogger()
         {
-            CoreLoggerFactory.Init(n => new DebugLogger(n));
-            AlgoLoggerFactory.Init(n => new DebugLogger(n));
+            AlgoLoggerFactory.InitDebugLogger();
         }
 
 

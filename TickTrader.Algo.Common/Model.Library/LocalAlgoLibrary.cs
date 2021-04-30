@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
@@ -15,7 +16,7 @@ namespace TickTrader.Algo.Common.Model
         private Dictionary<string, AlgoPackageRef> _packageRefs;
         private Dictionary<string, PackageInfo> _packages;
         private Dictionary<PluginKey, PluginInfo> _plugins;
-        private IAlgoCoreLogger _logger;
+        private IAlgoLogger _logger;
         private object _updateLock = new object();
         private AlgoServer _server;
 
@@ -29,7 +30,7 @@ namespace TickTrader.Algo.Common.Model
         public event Action<PackageInfo> PackageStateChanged;
 
 
-        public LocalAlgoLibrary(IAlgoCoreLogger logger, AlgoServer server)
+        public LocalAlgoLibrary(IAlgoLogger logger, AlgoServer server)
         {
             _logger = logger;
             _server = server;

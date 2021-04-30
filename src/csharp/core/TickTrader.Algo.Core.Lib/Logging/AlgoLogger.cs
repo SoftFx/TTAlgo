@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TickTrader.Algo.Util
+namespace TickTrader.Algo.Core.Lib
 {
     public interface IAlgoLogger
     {
@@ -9,6 +9,7 @@ namespace TickTrader.Algo.Util
         void Info(string msg);
         void Info(string msgFormat, params object[] msgParams);
         void Error(string msg);
+        void Error(Exception ex);
         void Error(Exception ex, string msg);
         void Error(Exception ex, string msgFormat, params object[] msgParams);
     }
@@ -24,6 +25,11 @@ namespace TickTrader.Algo.Util
             _factoryFunc = factoryFunc;
         }
 
+        public static void InitDebugLogger()
+        {
+            _factoryFunc = n => new DebugLoggerAdapter(n);
+        }
+
         public static IAlgoLogger GetLogger(string loggerName)
         {
             return _factoryFunc(loggerName);
@@ -32,6 +38,16 @@ namespace TickTrader.Algo.Util
         public static IAlgoLogger GetLogger<T>()
         {
             return _factoryFunc(typeof(T).Name);
+        }
+
+        public static IAlgoLogger GetLogger<T>(int loggerId)
+        {
+            return _factoryFunc($"{typeof(T).Name} {loggerId}");
+        }
+
+        public static IAlgoLogger GetLogger<T>(string loggerSuffix)
+        {
+            return _factoryFunc($"{typeof(T).Name} {loggerSuffix}");
         }
     }
 }

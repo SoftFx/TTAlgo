@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.ServerControl;
@@ -15,7 +15,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
 {
     public class BotAgentServerAdapter : IAlgoServerProvider
     {
-        private static IAlgoCoreLogger _logger = CoreLoggerFactory.GetLogger<BotAgentServerAdapter>();
+        private static IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<BotAgentServerAdapter>();
         private static readonly SetupContext _agentContext = new SetupContext();
 
 
@@ -286,7 +286,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }
             catch (Exception ex)
             {
-                _logger.Error($"Failed to send update: {ex.Message}", ex);
+                _logger.Error(ex, $"Failed to send update: {ex.Message}");
             }
         }
 
@@ -298,7 +298,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }
             catch (Exception ex)
             {
-                _logger.Error($"Failed to send update: {ex.Message}", ex);
+                _logger.Error(ex, $"Failed to send update: {ex.Message}");
             }
         }
 
@@ -310,7 +310,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }
             catch (Exception ex)
             {
-                _logger.Error($"Failed to send update: {ex.Message}", ex);
+                _logger.Error(ex, $"Failed to send update: {ex.Message}");
             }
         }
 
@@ -322,7 +322,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }
             catch (Exception ex)
             {
-                _logger.Error($"Failed to send update: {ex.Message}", ex);
+                _logger.Error(ex, $"Failed to send update: {ex.Message}");
             }
         }
 
@@ -334,7 +334,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }
             catch (Exception ex)
             {
-                _logger.Error($"Failed to send update: {ex.Message}", ex);
+                _logger.Error(ex, $"Failed to send update: {ex.Message}");
             }
         }
 
@@ -346,7 +346,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }
             catch (Exception ex)
             {
-                _logger.Error($"Failed to send update: {ex.Message}", ex);
+                _logger.Error(ex, $"Failed to send update: {ex.Message}");
             }
         }
 

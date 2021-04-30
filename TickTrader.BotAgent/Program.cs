@@ -5,7 +5,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using TickTrader.BotAgent.BA;
-using TickTrader.Algo.Core;
 using System.Diagnostics;
 using Newtonsoft.Json;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
@@ -19,7 +18,7 @@ using System.Collections.Generic;
 using TickTrader.BotAgent.Hosting;
 using TickTrader.Algo.Server;
 using TickTrader.Algo.ServerControl;
-using TickTrader.Algo.Util;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotAgent
 {
@@ -40,7 +39,6 @@ namespace TickTrader.BotAgent
 
             NonBlockingFileCompressor.Setup();
 
-            CoreLoggerFactory.Init(cn => new LoggerAdapter(LogManager.GetLogger(cn)));
             AlgoLoggerFactory.Init(cn => new LoggerAdapter(LogManager.GetLogger(cn)));
 
             var logger = LogManager.GetLogger(nameof(Program));

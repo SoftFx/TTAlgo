@@ -2,11 +2,7 @@
 using ActorSharp.Lib;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 
@@ -14,7 +10,7 @@ namespace TickTrader.Algo.Common.Model
 {
     public class TradeHistoryProvider : ActorPart
     {
-        private IAlgoCoreLogger logger;
+        private IAlgoLogger logger;
 
         private ConnectionModel _connection;
         private AsyncLock _updateLock = new AsyncLock();
@@ -24,7 +20,7 @@ namespace TickTrader.Algo.Common.Model
 
         public TradeHistoryProvider(ConnectionModel connection, int loggerId)
         {
-            logger = CoreLoggerFactory.GetLogger<TradeHistoryProvider>(loggerId);
+            logger = AlgoLoggerFactory.GetLogger<TradeHistoryProvider>(loggerId);
 
             _connection = connection;
             _connection.InitProxies += () =>

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Ext;
@@ -13,7 +14,7 @@ namespace TickTrader.Algo.Core.Repository
         public const string EmbeddedReductionsAssemblyName = "TickTrader.Algo.Ext";
 
 
-        private IAlgoCoreLogger _logger;
+        private IAlgoLogger _logger;
         private Dictionary<ReductionKey, ReductionMetadata> _barToDouble;
         private Dictionary<ReductionKey, ReductionMetadata> _fullbarToDouble;
         private Dictionary<ReductionKey, ReductionMetadata> _fullbarToBar;
@@ -28,7 +29,7 @@ namespace TickTrader.Algo.Core.Repository
         public IReadOnlyDictionary<ReductionKey, ReductionMetadata> QuoteToBarReductions => _quoteToBar;
 
 
-        public ReductionCollection(IAlgoCoreLogger logger)
+        public ReductionCollection(IAlgoLogger logger)
         {
             _logger = logger;
 
@@ -99,7 +100,7 @@ namespace TickTrader.Algo.Core.Repository
             }
             catch (Exception ex)
             {
-                _logger.Error($"Cannot load extensions from {extAssemblyName}!", ex);
+                _logger.Error(ex, $"Cannot load extensions from {extAssemblyName}!");
             }
         }
 
@@ -116,7 +117,7 @@ namespace TickTrader.Algo.Core.Repository
             }
             catch (Exception ex)
             {
-                _logger.Error($"Cannot load extensions from {extAssembly.FullName}!", ex);
+                _logger.Error(ex, $"Cannot load extensions from {extAssembly.FullName}!");
             }
         }
     }

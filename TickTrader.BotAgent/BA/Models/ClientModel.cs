@@ -14,13 +14,14 @@ using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotAgent.BA.Models
 {
     [DataContract(Name = "account", Namespace = "")]
     public class ClientModel
     {
-        private IAlgoCoreLogger _log;
+        private IAlgoLogger _log;
         private int _loggerId;
         private static int LoggerNameIdSeed = 0;
 
@@ -64,7 +65,7 @@ namespace TickTrader.BotAgent.BA.Models
         public async Task Init(PackageStorage packageProvider, IFdkOptionsProvider fdkOptionsProvider, AlertStorage storage, AlgoServer server)
         {
             _loggerId = Interlocked.Increment(ref LoggerNameIdSeed);
-            _log = CoreLoggerFactory.GetLogger<ClientModel>(_loggerId);
+            _log = AlgoLoggerFactory.GetLogger<ClientModel>(_loggerId);
 
             try
             {
@@ -295,7 +296,7 @@ namespace TickTrader.BotAgent.BA.Models
                 }
                 catch (Exception ex)
                 {
-                    _log.Error("Failed to shutdown bots", ex);
+                    _log.Error(ex, "Failed to shutdown bots");
                 }
 
                 if (ConnectionState == AccountModelInfo.Types.ConnectionState.Offline)

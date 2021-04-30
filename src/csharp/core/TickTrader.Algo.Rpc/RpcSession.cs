@@ -5,7 +5,7 @@ using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-using TickTrader.Algo.Util;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Rpc
 {
@@ -136,12 +136,19 @@ namespace TickTrader.Algo.Rpc
             _transport.WriteChannel.TryWrite(msg);
         }
 
-        internal Task Close()
+        internal async Task Close()
         {
             ChangeState(RpcSessionState.Disconnected);
             _sessionStateSubject.OnCompleted();
             _sessionStateSubject.Dispose();
-            return _transport.Close();
+            try
+            {
+                await _transport.Close();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to close transport");
+            }
         }
 
 

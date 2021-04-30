@@ -1,5 +1,4 @@
 ﻿using ActorSharp;
-using ActorSharp.Lib;
 using Machinarium.Qnil;
 using System;
 using System.Collections.Generic;
@@ -17,7 +16,7 @@ namespace TickTrader.Algo.Common.Model
 {
     public class ClientModel : Actor, IFeedSubscription
     {
-        private IAlgoCoreLogger logger;
+        private IAlgoLogger logger;
 
         private static int ActorNameIdSeed = 0;
 
@@ -44,7 +43,7 @@ namespace TickTrader.Algo.Common.Model
 
         private void Init(ConnectionOptions connectionOptions, string historyFolder, FeedHistoryFolderOptions historyOptions, int loggerId)
         {
-            logger = CoreLoggerFactory.GetLogger<ClientModel>(loggerId);
+            logger = AlgoLoggerFactory.GetLogger<ClientModel>(loggerId);
 
             _connection = new ConnectionModel(connectionOptions, loggerId);
             _feedHistory = new FeedHistoryProviderModel.ControlHandler(_connection, historyFolder, historyOptions, loggerId);

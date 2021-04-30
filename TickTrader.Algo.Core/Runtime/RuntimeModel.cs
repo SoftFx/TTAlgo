@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
 
@@ -12,7 +13,7 @@ namespace TickTrader.Algo.Core
         public const int ShutdownTimeout = 25000;
 
 
-        private readonly IAlgoCoreLogger _logger;
+        private readonly IAlgoLogger _logger;
         private readonly AlgoServer _server;
         private readonly string _packagePath;
         private readonly IRuntimeHostProxy _runtimeHost;
@@ -39,7 +40,7 @@ namespace TickTrader.Algo.Core
             Id = id;
             _packagePath = packagePath;
 
-            _logger = CoreLoggerFactory.GetLogger($"{nameof(RuntimeModel)}({id})");
+            _logger = AlgoLoggerFactory.GetLogger($"{nameof(RuntimeModel)}({id})");
 
             Config.PackagePath = packagePath;
             Config.PackageId = packageId;
@@ -67,7 +68,7 @@ namespace TickTrader.Algo.Core
             }
             catch (Exception ex)
             {
-                _logger.Error("Failed to start", ex);
+                _logger.Error(ex, "Failed to start");
             }
         }
 
@@ -95,7 +96,7 @@ namespace TickTrader.Algo.Core
             }
             catch (Exception ex)
             {
-                _logger.Error("Failed to stop", ex);
+                _logger.Error(ex, "Failed to stop");
             }
         }
 
@@ -163,7 +164,7 @@ namespace TickTrader.Algo.Core
             }
             catch (Exception ex)
             {
-                _logger.Error($"Failed to attach account {accountId}", ex);
+                _logger.Error(ex, $"Failed to attach account {accountId}");
                 throw;
             }
         }
@@ -184,7 +185,7 @@ namespace TickTrader.Algo.Core
             }
             catch (Exception ex)
             {
-                _logger.Error($"Failed to detach account {accountId}", ex);
+                _logger.Error(ex, $"Failed to detach account {accountId}");
                 throw;
             }
         }
@@ -218,7 +219,7 @@ namespace TickTrader.Algo.Core
             }
             catch (Exception ex)
             {
-                _logger.Error($"Failed to shutdown", ex);
+                _logger.Error(ex, $"Failed to shutdown");
             }
         }
 

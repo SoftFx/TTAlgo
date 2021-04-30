@@ -90,7 +90,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        private void OnCalculatorError(string msg, Exception ex)
+        private void OnCalculatorError(Exception ex, string msg)
         {
             if (ex != null)
             {

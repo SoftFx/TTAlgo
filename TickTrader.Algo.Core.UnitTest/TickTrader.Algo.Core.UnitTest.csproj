@@ -85,6 +85,10 @@
     <Compile Include="BarSamplerTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Core.Lib\TickTrader.Algo.Core.Lib.csproj">
+      <Project>{e854f964-4355-477e-ac02-1e38923a9a46}</Project>
+      <Name>TickTrader.Algo.Core.Lib</Name>
+    </ProjectReference>
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Domain\TickTrader.Algo.Domain.csproj">
       <Project>{6C7FC318-5848-4206-8431-3695C70143FA}</Project>
       <Name>TickTrader.Algo.Domain</Name>

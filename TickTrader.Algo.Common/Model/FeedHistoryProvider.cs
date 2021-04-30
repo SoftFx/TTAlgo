@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Lib;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
@@ -14,7 +13,7 @@ namespace TickTrader.Algo.Common.Model
 {
     public class FeedHistoryProviderModel : Actor
     {
-        private IAlgoCoreLogger logger;
+        private IAlgoLogger logger;
 
         private const int SliceMaxSize = 4000;
         private string _dataFolder;
@@ -24,7 +23,7 @@ namespace TickTrader.Algo.Common.Model
 
         private void Init(string onlieDataFolder, FeedHistoryFolderOptions folderOptions, int loggerId)
         {
-            logger = CoreLoggerFactory.GetLogger<FeedHistoryProviderModel>(loggerId);
+            logger = AlgoLoggerFactory.GetLogger<FeedHistoryProviderModel>(loggerId);
             _dataFolder = onlieDataFolder;
             _folderOptions = folderOptions;
         }

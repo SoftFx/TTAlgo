@@ -172,6 +172,10 @@
       <Project>{ec1a8251-119a-44be-8a8c-bc7823876763}</Project>
       <Name>Standard</Name>
     </ProjectReference>
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Core.Lib\TickTrader.Algo.Core.Lib.csproj">
+      <Project>{E854F964-4355-477E-AC02-1E38923A9A46}</Project>
+      <Name>TickTrader.Algo.Core.Lib</Name>
+    </ProjectReference>
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Domain\TickTrader.Algo.Domain.csproj">
       <Project>{6c7fc318-5848-4206-8431-3695c70143fa}</Project>
       <Name>TickTrader.Algo.Domain</Name>

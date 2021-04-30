@@ -1270,6 +1270,10 @@
       <Project>{df05b4cc-200a-436b-91cc-bebe7d89b8ad}</Project>
       <Name>Machinarium</Name>
     </ProjectReference>
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Core.Lib\TickTrader.Algo.Core.Lib.csproj">
+      <Project>{e854f964-4355-477e-ac02-1e38923a9a46}</Project>
+      <Name>TickTrader.Algo.Core.Lib</Name>
+    </ProjectReference>
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Domain\TickTrader.Algo.Domain.csproj">
       <Project>{6c7fc318-5848-4206-8431-3695c70143fa}</Project>
       <Name>TickTrader.Algo.Domain</Name>
@@ -1389,7 +1393,7 @@
   </Target>
   <Target Name="CopyBinaries" AfterTargets="Build">
     <ItemGroup>
-      <RuntimeV1Binaries Include="$(ProjectDir)..\src\csharp\sandbox\TickTrader.Algo.RuntimeV1\bin\$(Configuration)\*.*" />
+      <RuntimeV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.RuntimeV1Host.NetFx\bin\$(Configuration)\*.*" />
     </ItemGroup>
     <Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(TargetDir)AlgoRuntime\" SkipUnchangedFiles="true" />
   </Target>

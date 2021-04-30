@@ -72,8 +72,13 @@ namespace TickTrader.Algo.Rpc.OverTcp
             await _tcpContext.Call(_ =>
             {
                 //_socket.Close();
-                _socket.Disconnect(false);
-                _socket.Dispose();
+                try
+                {
+                    // socket can already be in invalid state
+                    _socket.Disconnect(false);
+                    _socket.Dispose();
+                }
+                catch (Exception) { }
             });
             
 

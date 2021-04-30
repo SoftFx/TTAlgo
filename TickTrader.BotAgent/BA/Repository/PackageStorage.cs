@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
@@ -38,12 +39,12 @@ namespace TickTrader.BotAgent.BA.Repository
 
             EnsureStorageDirectoryCreated();
 
-            Library = new LocalAlgoLibrary(CoreLoggerFactory.GetLogger("AlgoRepository"), algoServer);
+            Library = new LocalAlgoLibrary(AlgoLoggerFactory.GetLogger("AlgoRepository"), algoServer);
             Library.RegisterRepositoryLocation(SharedConstants.LocalRepositoryId, _storageDir, true);
             Library.PackageUpdated += LibraryOnPackageUpdated;
             Library.PackageStateChanged += LibraryOnPackageStateChanged;
 
-            _reductions = new ReductionCollection(CoreLoggerFactory.GetLogger("Extensions"));
+            _reductions = new ReductionCollection(AlgoLoggerFactory.GetLogger("Extensions"));
             Mappings = new MappingCollection(_reductions);
         }
 

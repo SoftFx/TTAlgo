@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
@@ -13,7 +13,7 @@ namespace TickTrader.BotTerminal
     {
         private Dictionary<string, PackageInfo> _packages;
         private Dictionary<PluginKey, PluginInfo> _plugins;
-        private IAlgoCoreLogger _logger;
+        private IAlgoLogger _logger;
         private object _updateLock = new object();
 
 
@@ -26,7 +26,7 @@ namespace TickTrader.BotTerminal
         public event Action<PackageInfo> PackageStateChanged;
 
 
-        public RemoteAlgoLibrary(IAlgoCoreLogger logger)
+        public RemoteAlgoLibrary(IAlgoLogger logger)
         {
             _logger = logger;
 

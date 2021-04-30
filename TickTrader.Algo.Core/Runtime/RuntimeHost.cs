@@ -86,7 +86,7 @@ namespace TickTrader.Algo.Core
 
         private const int AbortTimeout = 5000;
 
-        private static readonly string _filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "AlgoRuntime", "TickTrader.Algo.RuntimeV1.exe");
+        private static readonly string _filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "AlgoRuntime", "TickTrader.Algo.RuntimeV1Host.NetFx.exe");
 
         private Process _process;
         private TaskCompletionSource<bool> _stopTaskSrc;

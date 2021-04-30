@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.FDK.Common;
 using FDK2 = TickTrader.FDK.Common;
 
@@ -8,9 +9,9 @@ namespace TickTrader.Algo.Common.Model.Interop
     public class Fdk2FeedAdapter
     {
         private readonly FDK.Client.QuoteFeed _feedProxy;
-        private readonly IAlgoCoreLogger _logger;
+        private readonly IAlgoLogger _logger;
 
-        public Fdk2FeedAdapter(FDK.Client.QuoteFeed feedProxy, IAlgoCoreLogger logger)
+        public Fdk2FeedAdapter(FDK.Client.QuoteFeed feedProxy, IAlgoLogger logger)
         {
             _feedProxy = feedProxy;
             _logger = logger;

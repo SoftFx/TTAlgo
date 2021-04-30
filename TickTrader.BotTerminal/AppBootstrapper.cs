@@ -2,7 +2,6 @@
 using Caliburn.Micro;
 using NLog;
 using NLog.Config;
-using NLog.Filters;
 using NLog.Targets;
 using NLog.Targets.Wrappers;
 using System;
@@ -12,9 +11,9 @@ using System.IO;
 using System.Text;
 using System.Windows;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Server;
 using TickTrader.Algo.ServerControl;
-using TickTrader.Algo.Util;
 
 namespace TickTrader.BotTerminal
 {
@@ -246,7 +245,6 @@ namespace TickTrader.BotTerminal
 
             NLog.LogManager.Configuration = config;
 
-            Algo.Core.CoreLoggerFactory.Init(s => new AlgoLogAdapter(s));
             AlgoLoggerFactory.Init(s => new AlgoLogAdapter(s));
         }
 

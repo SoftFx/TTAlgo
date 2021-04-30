@@ -12,7 +12,7 @@ namespace TickTrader.Algo.Common.Model
 {
     public class AccountModel : IOrderDependenciesResolver, IMarginAccountInfo2, ICashAccountInfo2
     {
-        private IAlgoCoreLogger _logger;
+        private IAlgoLogger _logger;
 
         private readonly VarDictionary<string, PositionInfo> _positions = new VarDictionary<string, PositionInfo>();
         private readonly VarDictionary<string, AssetInfo> _assets = new VarDictionary<string, AssetInfo>();
@@ -31,7 +31,7 @@ namespace TickTrader.Algo.Common.Model
 
         public AccountModel(IVarSet<string, CurrencyInfo> currecnies, IVarSet<string, SymbolInfo> symbols)
         {
-            _logger = CoreLoggerFactory.GetLogger<AccountModel>();
+            _logger = AlgoLoggerFactory.GetLogger<AccountModel>();
 
             _currencies = currecnies.Snapshot;
             _symbols = symbols.Snapshot;

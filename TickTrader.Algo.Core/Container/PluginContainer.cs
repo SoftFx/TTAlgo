@@ -12,12 +12,12 @@ namespace TickTrader.Algo.Core
         protected AlgoSandbox _sandbox;
 
 
-        protected IAlgoCoreLogger Logger { get; }
+        protected IAlgoLogger Logger { get; }
 
         public IEnumerable<AlgoPluginRef> Plugins { get; protected set; }
 
 
-        private PluginContainer(IAlgoCoreLogger logger = null)
+        private PluginContainer(IAlgoLogger logger = null)
         {
             Logger = logger;
         }
@@ -50,7 +50,7 @@ namespace TickTrader.Algo.Core
         }
 
 
-        public static PluginContainer Load(string filePath, bool isolate, IAlgoCoreLogger logger = null)
+        public static PluginContainer Load(string filePath, bool isolate, IAlgoLogger logger = null)
         {
             PluginContainer container;
 
@@ -80,7 +80,7 @@ namespace TickTrader.Algo.Core
 
             private Isolated<ChildDomainProxy> _subDomain;
 
-            public IsolatedContainer(IAlgoCoreLogger logger = null)
+            public IsolatedContainer(IAlgoLogger logger = null)
                 : base(logger)
             {
             }

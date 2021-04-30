@@ -14,11 +14,11 @@ namespace TickTrader.Algo.Core.Calc
         private decimal _swap;
         private double _dblCms;
         private double _dblSwap;
-        private Action<string, Exception> _onLogError;
+        private Action<Exception, string> _onLogError;
 
         public event Action<MarginAccountCalculator> Updated;
 
-        public MarginAccountCalculator(IMarginAccountInfo2 accInfo, MarketStateBase market, Action<string, Exception> onLogError, bool autoUpdate = false)
+        public MarginAccountCalculator(IMarginAccountInfo2 accInfo, MarketStateBase market, Action<Exception, string> onLogError, bool autoUpdate = false)
         {
             Info = accInfo;
             _market = market;
@@ -201,11 +201,11 @@ namespace TickTrader.Algo.Core.Calc
             }
             catch (SymbolNotFoundException snfex)
             {
-                _onLogError?.Invoke($"{nameof(MarginAccountCalculator)} failed to add order: {snfex.Message}. {order?.GetSnapshotString()}", null);
+                _onLogError?.Invoke(null, $"{nameof(MarginAccountCalculator)} failed to add order: {snfex.Message}. {order?.GetSnapshotString()}");
             }
             catch (Exception ex)
             {
-                _onLogError?.Invoke($"{nameof(MarginAccountCalculator)} failed to add order. {order?.GetSnapshotString()}", ex);
+                _onLogError?.Invoke(ex, $"{nameof(MarginAccountCalculator)} failed to add order. {order?.GetSnapshotString()}");
             }
         }
 
@@ -218,11 +218,11 @@ namespace TickTrader.Algo.Core.Calc
             }
             catch (SymbolNotFoundException snfex)
             {
-                _onLogError?.Invoke($"{nameof(MarginAccountCalculator)} failed to add order without calculation: {snfex.Message}. {order?.GetSnapshotString()}", null);
+                _onLogError?.Invoke(null, $"{nameof(MarginAccountCalculator)} failed to add order without calculation: {snfex.Message}. {order?.GetSnapshotString()}");
             }
             catch (Exception ex)
             {
-                _onLogError?.Invoke($"{nameof(MarginAccountCalculator)} failed to add order without calculation. {order?.GetSnapshotString()}", ex);
+                _onLogError?.Invoke(ex, $"{nameof(MarginAccountCalculator)} failed to add order without calculation. {order?.GetSnapshotString()}");
             }
         }
 
@@ -257,11 +257,11 @@ namespace TickTrader.Algo.Core.Calc
             }
             catch (SymbolNotFoundException snfex)
             {
-                _onLogError?.Invoke($"{nameof(MarginAccountCalculator)} failed to remove order: {snfex.Message}. {order?.GetSnapshotString()}", null);
+                _onLogError?.Invoke(null, $"{nameof(MarginAccountCalculator)} failed to remove order: {snfex.Message}. {order?.GetSnapshotString()}");
             }
             catch (Exception ex)
             {
-                _onLogError?.Invoke($"{nameof(MarginAccountCalculator)} failed to remove order. {order?.GetSnapshotString()}", ex);
+                _onLogError?.Invoke(ex, $"{nameof(MarginAccountCalculator)} failed to remove order. {order?.GetSnapshotString()}");
             }
         }
 
@@ -289,11 +289,11 @@ namespace TickTrader.Algo.Core.Calc
             }
             catch(SymbolNotFoundException snfex)
             {
-                _onLogError?.Invoke($"{nameof(MarginAccountCalculator)} failed to update net position: {snfex.Message}. {position?.GetSnapshotString()}", null);
+                _onLogError?.Invoke(null, $"{nameof(MarginAccountCalculator)} failed to update net position: {snfex.Message}. {position?.GetSnapshotString()}");
             }
             catch (Exception ex)
             {
-                _onLogError?.Invoke($"{nameof(MarginAccountCalculator)} failed to update net position. {position?.GetSnapshotString()}", ex);
+                _onLogError?.Invoke(ex, $"{nameof(MarginAccountCalculator)} failed to update net position. {position?.GetSnapshotString()}");
             }
         }
 

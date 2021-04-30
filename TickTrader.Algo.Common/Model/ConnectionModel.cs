@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model.Interop;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model
@@ -15,7 +15,7 @@ namespace TickTrader.Algo.Common.Model
     public class ConnectionModel : ActorPart, IStateMachineSync
     {
         private StateMachine<States> _stateControl;
-        private IAlgoCoreLogger logger;
+        private IAlgoLogger logger;
         private readonly int _loggerId;
         public enum States { Offline, Connecting, Online, Disconnecting, OfflineRetry }
         public enum Events { LostConnection, ConnectFailed, Connected, DoneDisconnecting, OnRequest, OnRetry, StopRetryRequested }
@@ -36,7 +36,7 @@ namespace TickTrader.Algo.Common.Model
         public ConnectionModel(ConnectionOptions options, int loggerId)
         {
             _loggerId = loggerId;
-            logger = CoreLoggerFactory.GetLogger<ConnectionModel>(loggerId);
+            logger = AlgoLoggerFactory.GetLogger<ConnectionModel>(loggerId);
             _options = options;
 
             Func<bool> canRecconect = () => _options.AutoReconnect && wasConnected

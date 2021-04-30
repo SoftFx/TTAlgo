@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Core
 {
     public class AlgoServer : IRpcHost
     {
-        private static readonly IAlgoCoreLogger _logger = CoreLoggerFactory.GetLogger<AlgoServer>();
+        private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<AlgoServer>();
 
         private readonly Dictionary<string, int> _packageVersions;
         private readonly Dictionary<string, AlgoPackageRef> _packagesMap;
@@ -102,7 +102,7 @@ namespace TickTrader.Algo.Core
             if (_repositories.ContainsKey(locationId))
                 throw new ArgumentException($"Cannot register multiple paths for location '{locationId}'");
 
-            var repo = new PackageRepository(path, locationId, _packageProcessor, CoreLoggerFactory.GetLogger<PackageRepository>(), true);
+            var repo = new PackageRepository(path, locationId, _packageProcessor, AlgoLoggerFactory.GetLogger<PackageRepository>(), true);
             _repositories.Add(locationId, repo);
             repo.Start();
         }
@@ -171,7 +171,7 @@ namespace TickTrader.Algo.Core
             }
             catch (Exception ex)
             {
-                _logger.Error($"Failed to stop runtime {runtime.Id}", ex);
+                _logger.Error(ex, $"Failed to stop runtime {runtime.Id}");
             }
         }
 

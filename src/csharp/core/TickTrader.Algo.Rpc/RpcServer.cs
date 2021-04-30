@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using TickTrader.Algo.Util;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Rpc
 {

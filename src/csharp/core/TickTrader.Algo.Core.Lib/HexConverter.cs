@@ -2,7 +2,7 @@
 using System.Buffers;
 using System.Runtime.CompilerServices;
 
-namespace TickTrader.Algo.Util
+namespace TickTrader.Algo.Core.Lib
 {
     public class HexConverter
     {

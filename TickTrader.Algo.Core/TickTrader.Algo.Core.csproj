@@ -249,19 +249,11 @@
     <Compile Include="Lib\CrossDomainCallback.cs" />
     <Compile Include="Lib\CrossDomainEnumerator.cs" />
     <Compile Include="Lib\CrossDomainTask.cs" />
-    <Compile Include="Lib\FileHelper.cs" />
     <Compile Include="Lib\FlipGate.cs" />
-    <Compile Include="Lib\FormatExtentions.cs" />
-    <Compile Include="Lib\HashCode.cs" />
-    <Compile Include="Lib\IoHelper.cs" />
     <Compile Include="Lib\LinqExtentions.cs" />
     <Compile Include="Lib\PagedGate.cs" />
     <Compile Include="Lib\QueueGate.cs" />
     <Compile Include="Lib\Ref.cs" />
-    <Compile Include="Lib\SyncContext.cs" />
-    <Compile Include="Lib\TaskExtensions.cs" />
-    <Compile Include="Lib\TimestampHelper.cs" />
-    <Compile Include="Logger.cs" />
     <Compile Include="Math\BarExtentions.cs" />
     <Compile Include="Math\BarSequenceBuilder.cs" />
     <Compile Include="Math\BarVector.cs" />
@@ -333,7 +325,6 @@
     <Compile Include="Runtime\AccountProxy.cs" />
     <Compile Include="Runtime\ExecutorModel.cs" />
     <Compile Include="Runtime\RuntimeHost.cs" />
-    <Compile Include="Runtime\RuntimeLoggerAdapter.cs" />
     <Compile Include="Runtime\RuntimeModel.cs" />
     <Compile Include="Runtime\RuntimeProxy.cs" />
     <Compile Include="Runtime\RuntimeV1Loader.cs" />
@@ -355,6 +346,10 @@
     <ProjectReference Include="..\Machinarium\Machinarium.csproj">
       <Project>{df05b4cc-200a-436b-91cc-bebe7d89b8ad}</Project>
       <Name>Machinarium</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Core.Lib\TickTrader.Algo.Core.Lib.csproj">
+      <Project>{e854f964-4355-477e-ac02-1e38923a9a46}</Project>
+      <Name>TickTrader.Algo.Core.Lib</Name>
     </ProjectReference>
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Domain\TickTrader.Algo.Domain.csproj">
       <Project>{6c7fc318-5848-4206-8431-3695c70143fa}</Project>
