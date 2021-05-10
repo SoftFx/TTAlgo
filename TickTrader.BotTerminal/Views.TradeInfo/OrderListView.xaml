@@ -58,7 +58,7 @@
 
                                     <StackPanel Orientation="Horizontal" Visibility="{Binding Expiration.Value, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Expiration: " VerticalAlignment="Center" />
-                                        <TextBlock Text="{Binding Expiration.DisplayValue, Converter={StaticResource FullDateTimeFormat}}" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Expiration.Value, Converter={StaticResource FullDateTimeFormat}}" VerticalAlignment="Center" />
                                     </StackPanel>
 
                                     <StackPanel Orientation="Horizontal" Visibility="{Binding OrderExecutionOptions.Value, Converter={StaticResource NullOrEmptyToVis}}">
