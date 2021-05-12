@@ -3,7 +3,7 @@ using System.Reflection;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.Core.Metadata
+namespace TickTrader.Algo.CoreV1.Metadata
 {
     public class InputMetadata : PropertyMetadataBase
     {

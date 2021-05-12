@@ -153,7 +153,7 @@ namespace TickTrader.Algo.Core
 
         public void BindInput<T>(InputMetadata d)
         {
-            var input = d.CreateInput2<T>();
+            var input = CreateInput2<T>(d);
             input.Buffer = new EmptyBuffer<T>();
             d.Set(plugin, input);
             inputs.Add(d.Id, input);
@@ -161,10 +161,36 @@ namespace TickTrader.Algo.Core
 
         public void BindOutput<T>(OutputMetadata d)
         {
-            var output = d.CreateOutput2<T>();
+            var output = CreateOutput2<T>(d);
             output.Buffer = OutputBuffer<T>.Create(Coordinator, d.IsHiddenEntity);
             d.Set(plugin, output);
             outputs.Add(d.Id, output);
+        }
+
+        private DataSeriesImpl<T> CreateInput2<T>(InputMetadata input)
+        {
+            var isShortDef = input.IsShortDefinition;
+            if (typeof(T) == typeof(double) && isShortDef)
+                return (DataSeriesImpl<T>)(object)new DataSeriesProxy();
+            else if (typeof(T) == typeof(DateTime) && isShortDef)
+                return (DataSeriesImpl<T>)(object)new TimeSeriesProxy();
+            else if (typeof(T) == typeof(Bar) && isShortDef)
+                return (DataSeriesImpl<T>)(object)new BarSeriesProxy();
+            else if (typeof(T) == typeof(Quote) && isShortDef)
+                return (DataSeriesImpl<T>)(object)new QuoteSeriesProxy();
+            else
+                return new DataSeriesImpl<T>();
+        }
+
+        internal DataSeriesImpl<T> CreateOutput2<T>(OutputMetadata output)
+        {
+            var isShortDef = output.IsShortDefinition;
+            if (typeof(T) == typeof(double) && isShortDef)
+                return (DataSeriesImpl<T>)(object)new DataSeriesProxy();
+            else if (typeof(T) == typeof(Marker) && isShortDef)
+                return (DataSeriesImpl<T>)(object)new MarkerSeriesProxy();
+            else
+                return new DataSeriesImpl<T>();
         }
 
         private void ReflectGenericMethod(Type genericType, string methodName, params object[] parameters)

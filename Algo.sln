@@ -146,7 +146,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.RuntimeV1Ho
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Apps", "Apps", "{D4DDCC9E-81DB-4294-9060-A8C1AB363672}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.Core.Lib", "src\csharp\core\TickTrader.Algo.Core.Lib\TickTrader.Algo.Core.Lib.csproj", "{E854F964-4355-477E-AC02-1E38923A9A46}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.Core.Lib", "src\csharp\core\TickTrader.Algo.Core.Lib\TickTrader.Algo.Core.Lib.csproj", "{E854F964-4355-477E-AC02-1E38923A9A46}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.CoreV1", "src\csharp\core\TickTrader.Algo.CoreV1\TickTrader.Algo.CoreV1.csproj", "{41075E45-640E-449C-8A38-B1CBEC48766F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -767,6 +769,18 @@ Global
 		{E854F964-4355-477E-AC02-1E38923A9A46}.Release|x64.Build.0 = Release|Any CPU
 		{E854F964-4355-477E-AC02-1E38923A9A46}.Release|x86.ActiveCfg = Release|Any CPU
 		{E854F964-4355-477E-AC02-1E38923A9A46}.Release|x86.Build.0 = Release|Any CPU
+		{41075E45-640E-449C-8A38-B1CBEC48766F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{41075E45-640E-449C-8A38-B1CBEC48766F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{41075E45-640E-449C-8A38-B1CBEC48766F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{41075E45-640E-449C-8A38-B1CBEC48766F}.Debug|x64.Build.0 = Debug|Any CPU
+		{41075E45-640E-449C-8A38-B1CBEC48766F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{41075E45-640E-449C-8A38-B1CBEC48766F}.Debug|x86.Build.0 = Debug|Any CPU
+		{41075E45-640E-449C-8A38-B1CBEC48766F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{41075E45-640E-449C-8A38-B1CBEC48766F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{41075E45-640E-449C-8A38-B1CBEC48766F}.Release|x64.ActiveCfg = Release|Any CPU
+		{41075E45-640E-449C-8A38-B1CBEC48766F}.Release|x64.Build.0 = Release|Any CPU
+		{41075E45-640E-449C-8A38-B1CBEC48766F}.Release|x86.ActiveCfg = Release|Any CPU
+		{41075E45-640E-449C-8A38-B1CBEC48766F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -825,6 +839,7 @@ Global
 		{1708335C-CCAD-49EC-8DE7-E5053C16BFA4} = {C5AE642C-4A61-47BD-9272-69909998B71D}
 		{641642C7-87EA-4AE7-830A-A8A0610F374F} = {D4DDCC9E-81DB-4294-9060-A8C1AB363672}
 		{E854F964-4355-477E-AC02-1E38923A9A46} = {C5AE642C-4A61-47BD-9272-69909998B71D}
+		{41075E45-640E-449C-8A38-B1CBEC48766F} = {C5AE642C-4A61-47BD-9272-69909998B71D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {676AD27B-E03C-4277-A423-E2533F837976}

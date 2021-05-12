@@ -1,33 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    [Serializable]
     public class MisconfigException : AlgoException
     {
         public MisconfigException(string message) : base(message)
         {
         }
-
-        protected MisconfigException(SerializationInfo info, StreamingContext context)
-           : base(info, context)
-        {
-        }
     }
 
-    [Serializable]
     public class StopOutException : AlgoException
     {
         public StopOutException(string message) : base(message)
-        {
-        }
-
-        protected StopOutException(SerializationInfo info, StreamingContext context)
-           : base(info, context)
         {
         }
     }
@@ -59,16 +47,6 @@ namespace TickTrader.Algo.Core
 
 namespace TickTrader.Algo.Core.Metadata
 {
-    [Serializable]
-    public class AlgoException : Exception
-    {
-        public AlgoException(string msg)
-            : base(msg)
-        {
-        }
-    }
-
-    [Serializable]
     public class InvalidPluginType : AlgoException
     {
         public InvalidPluginType(string msg)
@@ -77,7 +55,6 @@ namespace TickTrader.Algo.Core.Metadata
         }
     }
 
-    [Serializable]
     public class AlgoMetadataException : AlgoException
     {
         public AlgoMetadataException(Domain.Metadata.Types.MetadataErrorCode errorCode, IEnumerable<PropertyMetadataBase> invalidProperties = null)
