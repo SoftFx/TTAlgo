@@ -2,7 +2,7 @@
 using System.Linq;
 using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.Core.Repository
+namespace TickTrader.Algo.Package.Repository
 {
     public class MappingCollection
     {
@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Core.Repository
         private List<MappingInfo> _quoteToDoubleMappings;
 
 
-        public static string DefaultExtPackageId = PackageId.FromPath(SharedConstants.EmbeddedRepositoryId, typeof(Ext.BarCloseReduction).Assembly.Location);
+        public static string DefaultExtPackageId = PackageId.Pack(SharedConstants.EmbeddedRepositoryId, typeof(Ext.BarCloseReduction).Assembly.Location);
         public static ReductionKey BidBarReduction = new ReductionKey(DefaultExtPackageId, typeof(Ext.BidBarReduction).FullName);
         public static ReductionKey AskBarReduction = new ReductionKey(DefaultExtPackageId, typeof(Ext.AskBarReduction).FullName);
         public static ReductionKey DefaultFullBarToBarReduction = BidBarReduction;

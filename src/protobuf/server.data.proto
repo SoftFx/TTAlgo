@@ -23,11 +23,10 @@ message MappingCollectionInfo {
     repeated MappingInfo quote_to_bar_mappings = 3;
     repeated MappingInfo quote_to_double_mappings = 4;
 
-    ReductionKey default_full_bar_to_bar_reduction = 5;
-    ReductionKey default_full_bar_to_double_reduction = 6;
-    ReductionKey default_bar_to_double_reduction = 7;
-    ReductionKey default_quote_to_bar_reduction = 8;
-    ReductionKey default_quote_to_double_reduction = 9;
+    MappingKey default_bar_to_bar_mapping = 5;
+    MappingKey default_bar_to_double_mapping = 6;
+    MappingKey default_quote_to_bar_mapping = 7;
+    MappingKey default_quote_to_double_mapping = 8;
 }
 
 message ApiMetadataInfo {

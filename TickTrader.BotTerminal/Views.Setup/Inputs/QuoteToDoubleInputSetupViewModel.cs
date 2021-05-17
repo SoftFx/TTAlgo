@@ -1,7 +1,4 @@
-﻿using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Core.Repository;
+﻿using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
@@ -17,7 +14,7 @@ namespace TickTrader.BotTerminal
         public QuoteToDoubleInputSetupViewModel(InputDescriptor descriptor, SetupMetadata setupMetadata)
             : base(descriptor, setupMetadata)
         {
-            _defaultMapping = new MappingKey(setupMetadata.Mappings.DefaultQuoteToDoubleReduction);
+            _defaultMapping = setupMetadata.Mappings.DefaultQuoteToDoubleMapping;
             AvailableMappings = setupMetadata.Mappings.QuoteToDoubleMappings;
         }
 

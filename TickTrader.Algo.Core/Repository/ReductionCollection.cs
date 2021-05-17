@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
@@ -15,29 +14,29 @@ namespace TickTrader.Algo.Core.Repository
 
 
         private IAlgoLogger _logger;
-        private Dictionary<ReductionKey, ReductionMetadata> _barToDouble;
-        private Dictionary<ReductionKey, ReductionMetadata> _fullbarToDouble;
-        private Dictionary<ReductionKey, ReductionMetadata> _fullbarToBar;
-        private Dictionary<ReductionKey, ReductionMetadata> _quoteToDouble;
-        private Dictionary<ReductionKey, ReductionMetadata> _quoteToBar;
+        private List<ReductionInfo> _barToDouble;
+        private List<ReductionInfo> _fullbarToDouble;
+        private List<ReductionInfo> _fullbarToBar;
+        private List<ReductionInfo> _quoteToDouble;
+        private List<ReductionInfo> _quoteToBar;
 
 
-        public IReadOnlyDictionary<ReductionKey, ReductionMetadata> BarToDoubleReductions => _barToDouble;
-        public IReadOnlyDictionary<ReductionKey, ReductionMetadata> FullBarToDoubleReductions => _fullbarToDouble;
-        public IReadOnlyDictionary<ReductionKey, ReductionMetadata> FullBarToBarReductions => _fullbarToBar;
-        public IReadOnlyDictionary<ReductionKey, ReductionMetadata> QuoteToDoubleReductions => _quoteToDouble;
-        public IReadOnlyDictionary<ReductionKey, ReductionMetadata> QuoteToBarReductions => _quoteToBar;
+        public IReadOnlyList<ReductionInfo> BarToDoubleReductions => _barToDouble;
+        public IReadOnlyList<ReductionInfo> FullBarToDoubleReductions => _fullbarToDouble;
+        public IReadOnlyList<ReductionInfo> FullBarToBarReductions => _fullbarToBar;
+        public IReadOnlyList<ReductionInfo> QuoteToDoubleReductions => _quoteToDouble;
+        public IReadOnlyList<ReductionInfo> QuoteToBarReductions => _quoteToBar;
 
 
         public ReductionCollection(IAlgoLogger logger)
         {
             _logger = logger;
 
-            _barToDouble = new Dictionary<ReductionKey, ReductionMetadata>();
-            _fullbarToDouble = new Dictionary<ReductionKey, ReductionMetadata>();
-            _fullbarToBar = new Dictionary<ReductionKey, ReductionMetadata>();
-            _quoteToDouble = new Dictionary<ReductionKey, ReductionMetadata>();
-            _quoteToBar = new Dictionary<ReductionKey, ReductionMetadata>();
+            _barToDouble = new List<ReductionInfo>();
+            _fullbarToDouble = new List<ReductionInfo>();
+            _fullbarToBar = new List<ReductionInfo>();
+            _quoteToDouble = new List<ReductionInfo>();
+            _quoteToBar = new List<ReductionInfo>();
 
             AddAssembly(typeof(BarOpenReduction).Assembly);
         }
@@ -45,13 +44,14 @@ namespace TickTrader.Algo.Core.Repository
 
         public void Add(ReductionKey key, ReductionMetadata metadata)
         {
+            var reduction = new ReductionInfo { Key = key, Descriptor_ = metadata.Descriptor };
             switch (metadata.Descriptor.Type)
             {
-                case Domain.Metadata.Types.ReductionType.BarToDouble: _barToDouble.Add(key, metadata); break;
-                case Domain.Metadata.Types.ReductionType.FullBarToDouble: _fullbarToDouble.Add(key, metadata); break;
-                case Domain.Metadata.Types.ReductionType.FullBarToBar: _fullbarToBar.Add(key, metadata); break;
-                case Domain.Metadata.Types.ReductionType.QuoteToDouble: _quoteToDouble.Add(key, metadata); break;
-                case Domain.Metadata.Types.ReductionType.QuoteToBar: _quoteToBar.Add(key, metadata); break;
+                case Domain.Metadata.Types.ReductionType.BarToDouble: _barToDouble.Add(reduction); break;
+                case Domain.Metadata.Types.ReductionType.FullBarToDouble: _fullbarToDouble.Add(reduction); break;
+                case Domain.Metadata.Types.ReductionType.FullBarToBar: _fullbarToBar.Add(reduction); break;
+                case Domain.Metadata.Types.ReductionType.QuoteToDouble: _quoteToDouble.Add(reduction); break;
+                case Domain.Metadata.Types.ReductionType.QuoteToBar: _quoteToBar.Add(reduction); break;
             }
         }
 
@@ -108,7 +108,7 @@ namespace TickTrader.Algo.Core.Repository
         {
             try
             {
-                var packageId = PackageHelper.GetPackageIdFromPath(SharedConstants.EmbeddedRepositoryId, Path.GetFileName(extAssembly.Location).ToLowerInvariant());
+                var packageId = PackageHelper.GetPackageIdFromPath(SharedConstants.EmbeddedRepositoryId, extAssembly.Location);
                 var reductions = AlgoAssemblyInspector.FindReductions(extAssembly);
                 foreach (var r in reductions)
                     Add(new ReductionKey(packageId, r.Id), r);

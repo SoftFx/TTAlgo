@@ -34,5 +34,18 @@ namespace TickTrader.Algo.Domain
                 return SecondaryReduction.CompareTo(other.SecondaryReduction);
             return res;
         }
+
+        public bool RecursiveEquals(MappingKey other)
+        {
+            if (other is null)
+                return false;
+            if (ReferenceEquals(other, this))
+                return true;
+
+            if (!PrimaryReduction?.Equals(other.PrimaryReduction) ?? other.PrimaryReduction != null) return false;
+            if (!SecondaryReduction?.Equals(other.SecondaryReduction) ?? other.SecondaryReduction != null) return false;
+
+            return true;
+        }
     }
 }

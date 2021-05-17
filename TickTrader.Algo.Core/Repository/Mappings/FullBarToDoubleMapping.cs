@@ -5,48 +5,45 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Repository
 {
-    [Serializable]
-    public class FullBarToDoubleMapping : Mapping
+    internal class FullBarToDoubleMapping
     {
-        internal FullBarToDoubleMapping(ReductionKey barReductionKey, string barReductionDisplayName)
-            : base(barReductionKey, barReductionDisplayName)
-        {
-        }
-
-        internal FullBarToDoubleMapping(ReductionKey barReductionKey, string barReductionDisplayName, ReductionKey doubleReductionKey, string doubleReductionDisplayName)
-            : base(barReductionKey, barReductionDisplayName, doubleReductionKey, doubleReductionDisplayName)
-        {
-        }
+        private readonly FullBarToBarReduction _barReductionInstance;
+        private readonly BarToDoubleReduction _doubleReductionInstance;
+        private readonly FullBarToDoubleReduction _fullDoubleReductionInstance;
 
 
-        public override void MapInput(IPluginSetupTarget target, string inputName, string symbol)
+        public Func<BarData, BarData, double> MapValue { get; }
+
+
+        public FullBarToDoubleMapping(ReductionKey barReductionKey, ReductionKey doubleReductionKey)
         {
-            var barReduction = AlgoAssemblyInspector.GetReduction(Key.PrimaryReduction.DescriptorId);
-            var doubleReduction = AlgoAssemblyInspector.GetReduction(Key.SecondaryReduction.DescriptorId);
-            if (doubleReduction == null)
+            if (doubleReductionKey == null)
             {
-                var doubleReductionInstance = barReduction.CreateInstance<FullBarToDoubleReduction>();
-                target.GetFeedStrategy<BarStrategy>().MapInput(inputName, symbol, (bidBar, askBar) => MapValueStraight(doubleReductionInstance, bidBar, askBar));
+                var fullDoubleReduction = AlgoAssemblyInspector.GetReduction(barReductionKey.DescriptorId);
+                _fullDoubleReductionInstance = fullDoubleReduction.CreateInstance<FullBarToDoubleReduction>();
+                MapValue = MapValueStraight;
             }
             else
             {
-                var barReductionInstance = barReduction.CreateInstance<FullBarToBarReduction>();
-                var doubleReductionInstance = doubleReduction.CreateInstance<BarToDoubleReduction>();
-                target.GetFeedStrategy<BarStrategy>().MapInput(inputName, symbol, (bidBar, askBar) => MapValueComposite(barReductionInstance, doubleReductionInstance, bidBar, askBar));
+                var barReduction = AlgoAssemblyInspector.GetReduction(barReductionKey.DescriptorId);
+                var doubleReduction = AlgoAssemblyInspector.GetReduction(doubleReductionKey.DescriptorId);
+                _barReductionInstance = barReduction.CreateInstance<FullBarToBarReduction>();
+                _doubleReductionInstance = doubleReduction.CreateInstance<BarToDoubleReduction>();
+                MapValue = MapValueComposite;
             }
         }
 
 
-        private double MapValueStraight(FullBarToDoubleReduction reductionInstance, BarData bidBar, BarData askBar)
+        private double MapValueStraight(BarData bidBar, BarData askBar)
         {
-            return reductionInstance.Reduce(new BarEntity(bidBar), new BarEntity(askBar));
+            return _fullDoubleReductionInstance.Reduce(new BarEntity(bidBar), new BarEntity(askBar));
         }
 
-        private double MapValueComposite(FullBarToBarReduction barReductionInstance, BarToDoubleReduction doubleReductionInstance, BarData bidBar, BarData askBar)
+        private double MapValueComposite(BarData bidBar, BarData askBar)
         {
             var bar = new BarEntity(BarData.CreateBlank(bidBar.OpenTime, bidBar.CloseTime));
-            barReductionInstance.Reduce(new BarEntity(bidBar), new BarEntity(askBar), bar);
-            return doubleReductionInstance.Reduce(bar);
+            _barReductionInstance.Reduce(new BarEntity(bidBar), new BarEntity(askBar), bar);
+            return _doubleReductionInstance.Reduce(bar);
         }
     }
 }

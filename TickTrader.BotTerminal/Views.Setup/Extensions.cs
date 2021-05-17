@@ -2,7 +2,6 @@
 using System.Linq;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
@@ -54,46 +53,26 @@ namespace TickTrader.BotTerminal
     {
         public static MappingInfo GetBarToBarMappingOrDefault(this MappingCollectionInfo mappingCollection, MappingKey mappingKey)
         {
-            var mapping = mappingCollection.BarToBarMappings.FirstOrDefault(m => m.Key.Equals(mappingKey));
-            if (mapping == null)
-            {
-                var defaultMappingKey = new MappingKey(mappingCollection.DefaultFullBarToBarReduction);
-                mapping = mappingCollection.BarToBarMappings.First(m => m.Key.Equals(defaultMappingKey));
-            }
-            return mapping;
+            return mappingCollection.BarToBarMappings.FirstOrDefault(m => m.Key.RecursiveEquals(mappingKey))
+                ?? mappingCollection.BarToBarMappings.First(m => m.Key.RecursiveEquals(mappingCollection.DefaultBarToBarMapping));
         }
 
         public static MappingInfo GetBarToDoubleMappingOrDefault(this MappingCollectionInfo mappingCollection, MappingKey mappingKey)
         {
-            var mapping = mappingCollection.BarToDoubleMappings.FirstOrDefault(m => m.Key.Equals(mappingKey));
-            if (mapping == null)
-            {
-                var defaultMappingKey = new MappingKey(mappingCollection.DefaultFullBarToBarReduction, mappingCollection.DefaultBarToDoubleReduction);
-                mapping = mappingCollection.BarToDoubleMappings.First(m => m.Key.Equals(defaultMappingKey));
-            }
-            return mapping;
+            return mappingCollection.BarToDoubleMappings.FirstOrDefault(m => m.Key.RecursiveEquals(mappingKey))
+                ?? mappingCollection.BarToDoubleMappings.First(m => m.Key.RecursiveEquals(mappingCollection.DefaultBarToDoubleMapping));
         }
 
         public static MappingInfo GetQuoteToBarMappingOrDefault(this MappingCollectionInfo mappingCollection, MappingKey mappingKey)
         {
-            var mapping = mappingCollection.QuoteToBarMappings.FirstOrDefault(m => m.Key.Equals(mappingKey));
-            if (mapping == null)
-            {
-                var defaultMappingKey = new MappingKey(mappingCollection.DefaultQuoteToBarReduction);
-                mapping = mappingCollection.QuoteToBarMappings.First(m => m.Key.Equals(defaultMappingKey));
-            }
-            return mapping;
+            return mappingCollection.QuoteToBarMappings.FirstOrDefault(m => m.Key.RecursiveEquals(mappingKey))
+                ?? mappingCollection.QuoteToBarMappings.First(m => m.Key.RecursiveEquals(mappingCollection.DefaultQuoteToBarMapping));
         }
 
         public static MappingInfo GetQuoteToDoubleMappingOrDefault(this MappingCollectionInfo mappingCollection, MappingKey mappingKey)
         {
-            var mapping = mappingCollection.QuoteToDoubleMappings.FirstOrDefault(m => m.Key.Equals(mappingKey));
-            if (mapping == null)
-            {
-                var defaultMappingKey = new MappingKey(mappingCollection.DefaultQuoteToBarReduction, mappingCollection.DefaultBarToDoubleReduction);
-                mapping = mappingCollection.QuoteToDoubleMappings.First(m => m.Key.Equals(defaultMappingKey));
-            }
-            return mapping;
+            return mappingCollection.QuoteToDoubleMappings.FirstOrDefault(m => m.Key.RecursiveEquals(mappingKey))
+             ?? mappingCollection.QuoteToDoubleMappings.First(m => m.Key.RecursiveEquals(mappingCollection.DefaultQuoteToDoubleMapping));
         }
     }
 

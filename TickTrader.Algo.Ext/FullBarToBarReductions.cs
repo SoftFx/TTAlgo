@@ -4,7 +4,7 @@ using TickTrader.Algo.Api.Ext;
 namespace TickTrader.Algo.Ext
 {
     // Implemented internally
-    //[Reduction("Bid")]
+    [Reduction("Bid")]
     public class BidBarReduction : FullBarToBarReduction
     {
         public void Reduce(Bar bidBar, Bar askBar, IBarWriter result)
@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Ext
 
 
     // Implemented internally
-    //[Reduction("Ask")]
+    [Reduction("Ask")]
     public class AskBarReduction : FullBarToBarReduction
     {
         public void Reduce(Bar bidBar, Bar askBar, IBarWriter result)

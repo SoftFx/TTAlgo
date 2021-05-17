@@ -27,7 +27,6 @@ namespace TickTrader.Algo.Core
         private RuntimeConfig _runtimeConfig;
         private AlgoSandbox _sandbox;
         private Dictionary<string, PluginExecutorCore> _executorsMap;
-        private MappingCollection _mappings;
         private PackageInfo _packageInfo;
 
 
@@ -67,7 +66,6 @@ namespace TickTrader.Algo.Core
             _runtimeConfig = await _handler.GetRuntimeConfig().ConfigureAwait(false);
 
             var reductions = new ReductionCollection(AlgoLoggerFactory.GetLogger("Extensions"));
-            _mappings = new MappingCollection(reductions);
 
             var packagePath = _runtimeConfig.PackagePath;
             var info = new FileInfo(packagePath);
@@ -153,29 +151,6 @@ namespace TickTrader.Algo.Core
 
             var accountProxy = await _handler.AttachAccount(executorConfig.AccountId);
 
-            var setupMetadata = new AlgoSetupMetadata(accountProxy.Metadata.GetSymbolMetadata(), _mappings);
-            var setupContext = new AlgoSetupContext(config.Timeframe, config.MainSymbol);
-
-            var setup = new PluginSetupModel(algoRef, setupMetadata, setupContext, config.MainSymbol);
-            setup.Load(config);
-            setup.SetWorkingFolder(executorConfig.WorkingDirectory);
-
-            var coreExecutorConfig = new PluginExecutorConfig();
-            coreExecutorConfig.LoadFrom(executorConfig, config);
-            setup.Apply(coreExecutorConfig);
-            foreach (var outputSetup in setup.Outputs)
-            {
-                if (outputSetup is ColoredLineOutputSetupModel)
-                    coreExecutorConfig.SetupOutput<double>(outputSetup.Id);
-                else if (outputSetup is MarkerSeriesOutputSetupModel)
-                    coreExecutorConfig.SetupOutput<Api.Marker>(outputSetup.Id);
-            }
-            if (executorConfig.MainSeries?.Is(BarChunk.Descriptor) ?? false)
-            {
-                var bars = executorConfig.MainSeries.Unpack<BarChunk>();
-                coreExecutorConfig.GetFeedStrategy<BarStrategy>().SetMainSeries(bars.Bars.ToList());
-            }
-
             executorCore = new PluginExecutorCore(config.Key.DescriptorId);
             executorCore.OnNotification += msg => _handler.SendNotification(executorId, msg);
             executorCore.OnStopExecutorRequest += executor => Task.Run(() => StopExecutor(executor));
@@ -184,7 +159,7 @@ namespace TickTrader.Algo.Core
 
             executorCore.AccountId = executorConfig.AccountId;
 
-            executorCore.ApplyConfig(coreExecutorConfig, accountProxy);
+            executorCore.ApplyConfig(executorConfig, config, accountProxy);
 
             _executorsMap.Add(executorId, executorCore);
 

@@ -148,7 +148,6 @@ namespace TickTrader.Algo.Core
 
         public void SetParameter(string id, object value) => SetupParamSeek(id, new ConstParam(value));
         public T GetFeedStrategy<T>() where T : FeedStrategy => _core.GetFeedStrategy<T>();
-        public void MapInput(string inputName, string symbolCode, Mapping mapping) => _core.MapInput(inputName, symbolCode, mapping);
 
         #endregion IPluginSetupTarget
 
@@ -391,12 +390,6 @@ namespace TickTrader.Algo.Core
             public T GetFeedStrategy<T>() where T : FeedStrategy
             {
                 return (T)FStrategy;
-            }
-
-            public void MapInput(string inputName, string symbolCode, Mapping mapping)
-            {
-                // hook to appear in plugin domain
-                mapping?.MapInput(this, inputName, symbolCode);
             }
 
             #endregion

@@ -1,6 +1,8 @@
 ﻿using Google.Protobuf;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Calc;
@@ -39,7 +41,7 @@ namespace TickTrader.Algo.Core
         private Feed.Types.Timeframe _timeframe;
         private Feed.Types.Timeframe _modelTimeframe;
         private List<Action> setupActions = new List<Action>();
-        private readonly PluginMetadata descriptor;
+        private readonly PluginMetadata _metadata;
         private Dictionary<string, IOutputFixture> outputFixtures = new Dictionary<string, IOutputFixture>();
         private Task stopTask;
         private string workingFolder;
@@ -54,7 +56,7 @@ namespace TickTrader.Algo.Core
 
         public PluginExecutorCore(string pluginId)
         {
-            descriptor = AlgoAssemblyInspector.GetPlugin(pluginId);
+            _metadata = AlgoAssemblyInspector.GetPlugin(pluginId);
             _statusFixture = new StatusFixture(this);
             _calcFixture = new CalculatorFixture(this);
             _marketFixture = new MarketStateFixture(this);
@@ -296,7 +298,7 @@ namespace TickTrader.Algo.Core
 
                     // Setup builder
 
-                    _builder = _builderFactory(descriptor);
+                    _builder = _builderFactory(_metadata);
                     _builder.MainSymbol = MainSymbolCode;
                     _builder.TimeFrame = TimeFrame;
                     InitMetadata();
@@ -544,12 +546,6 @@ namespace TickTrader.Algo.Core
             return (T)_fStrategy;
         }
 
-        public void MapInput(string inputName, string symbolCode, Mapping mapping)
-        {
-            // hook to appear in plugin domain
-            mapping?.MapInput(this, inputName, symbolCode);
-        }
-
         public BarStrategy InitBarStrategy(Feed.Types.MarketSide marketSide)
         {
             lock (_sync)
@@ -626,46 +622,190 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        internal void ApplyConfig(PluginExecutorConfig config, IAccountInfoProvider accProvider, IPluginMetadata metaProvider, ITradeHistoryProvider tradeHistory,
-            IFeedProvider feed, IFeedHistoryProvider feedHistory, ITradeExecutor tradeApi)
+        internal void ApplyConfig(ExecutorConfig config, PluginConfig pluginConfig, IAccountProxy account)
         {
-            InstanceId = config.InstanceId;
-            MainSymbolCode = config.MainSymbolCode;
-            TimeFrame = config.TimeFrame;
-            ModelTimeFrame = config.ModelTimeFrame;
-
-            Permissions = config.Permissions;
-
-            BotWorkingFolder = config.BotWorkingFolder;
-            WorkingFolder = config.WorkingFolder;
-
-            _fStrategy = config.FeedStrategy;
-            InvokeStrategy = config.InvokeStrategy;
-            _bStrategy = config.BufferStartegy;
-
-            AccInfoProvider = accProvider;
-            Metadata = metaProvider;
-            TradeHistoryProvider = tradeHistory;
-            Feed = feed;
-            FeedHistory = feedHistory;
-            TradeExecutor = tradeApi;
-
-            foreach (var record in config.PluginParams)
-                SetParameter(record.Key, record.Value);
+            WorkingFolder = config.WorkingDirectory;
+            BotWorkingFolder = config.WorkingDirectory;
 
             if (config.IsLoggingEnabled)
                 InitLogging();
 
-            foreach (var record in config.Outputs)
-                outputFixtures[record.Key] = record.Value.Create(this);
+            InstanceId = pluginConfig.InstanceId;
+            MainSymbolCode = pluginConfig.MainSymbol.Name;
+            TimeFrame = pluginConfig.Timeframe;
+            ModelTimeFrame = pluginConfig.ModelTimeframe;
 
-            foreach (var record in config.Mappings)
-                record.Value.MapInput(this, record.Key.Item1, record.Key.Item2);
+            Permissions = pluginConfig.Permissions;
+
+            if (config.FeedStrategyConfig.TryUnpack<BarStratefyConfig>(out var barStrategyConfig))
+                InitBarStrategy(barStrategyConfig.MarketSide);
+            else if (config.FeedStrategyConfig.TryUnpack<QuoteStrategyConfig>(out var quoteStrategyConfig))
+                InitQuoteStrategy();
+
+            if (config.BufferStrategyConfig.TryUnpack<SlidingBufferStrategyConfig>(out var slidingbufferConfig))
+                InitSlidingBuffering(slidingbufferConfig.Size);
+            else if (config.BufferStrategyConfig.TryUnpack<TimeSpanStrategyConfig>(out var timeSpanConfig))
+                InitTimeSpanBuffering(timeSpanConfig.From.ToDateTime(), timeSpanConfig.To.ToDateTime());
+
+            if (config.InvokeStrategyConfig.TryUnpack<PriorityInvokeStrategyConfig>(out var priorityStrategyConfig))
+                InvokeStrategy = new PriorityInvokeStartegy();
+
+            AccInfoProvider = account.AccInfoProvider;
+            Metadata = account.Metadata;
+            TradeHistoryProvider = account.TradeHistoryProvider;
+            Feed = account.Feed;
+            FeedHistory = account.FeedHistory;
+            TradeExecutor = account.TradeExecutor;
+
+            var propertyMap = pluginConfig.UnpackProperties().ToDictionary(p => p.PropertyId);
+
+            foreach (var param in _metadata.Parameters)
+                SetParameter(param.Id, GetParameterValue(param, propertyMap));
+
+            foreach (var output in _metadata.Outputs)
+                outputFixtures[output.Id] = CreateOutput(output, propertyMap);
+
+            foreach (var input in _metadata.Inputs)
+                MapInput(input, propertyMap);
         }
 
-        internal void ApplyConfig(PluginExecutorConfig config, IAccountProxy account)
+        private object GetParameterValue(ParameterMetadata param, Dictionary<string, IPropertyConfig> propertyMap)
         {
-            ApplyConfig(config, account.AccInfoProvider, account.Metadata, account.TradeHistoryProvider, account.Feed, account.FeedHistory, account.TradeExecutor);
+            var paramValue = param.DefaultValue;
+            if (propertyMap.TryGetValue(param.Id, out var propConfig))
+            {
+                if (propConfig is FileParameterConfig fileParam)
+                {
+                    var filePath = fileParam.FileName;
+                    if (Path.GetFullPath(filePath) != filePath)
+                        filePath = Path.Combine(workingFolder, fileParam.FileName);
+                    paramValue = filePath;
+                }
+                else if (propConfig is IParameterConfig paramConfig)
+                    paramValue = paramConfig.ValObj;
+            }
+            return paramValue;
+        }
+
+        private IOutputFixture CreateOutput(OutputMetadata output, Dictionary<string, IPropertyConfig> propertyMap)
+        {
+            var enabled = false;
+            if (propertyMap.TryGetValue(output.Id, out var propConfig))
+            {
+                if (propConfig is IOutputConfig outputConfig)
+                    enabled = outputConfig.IsEnabled;
+            }
+            switch (output.Descriptor.DataSeriesBaseTypeFullName)
+            {
+                case "System.Double": return new OutputFixtureFactory<double>(output.Id).Create(this, enabled);
+                case "TickTrader.Algo.Api.Marker": return new OutputFixtureFactory<Marker>(output.Id).Create(this, enabled);
+                default: throw new AlgoException("Unknown output base type");
+            }
+        }
+
+        private void MapInput(InputMetadata input, Dictionary<string, IPropertyConfig> propertyMap)
+        {
+            var id = input.Id;
+            var symbol = MainSymbolCode;
+            MappingKey mapping = null;
+
+            if (propertyMap.TryGetValue(id, out var propConfig))
+            {
+                // Only available token now is MainSymbol
+                // Custom and online symbols are currently not available at the same time
+                if (propConfig is IInputConfig inputConfig && inputConfig.SelectedSymbol.Origin != SymbolConfig.Types.SymbolOrigin.Token)
+                    symbol = inputConfig.SelectedSymbol.Name;
+
+                if (propConfig is IMappedInputConfig mappedInputConfig)
+                    mapping = mappedInputConfig.SelectedMapping;
+            }
+
+            if (_fStrategy is BarStrategy barStrategy)
+            {
+                switch (input.Descriptor.DataSeriesBaseTypeFullName)
+                {
+                    case "System.Double": MapBarToDoubleInput(barStrategy, id, symbol, mapping); return;
+                    case "TickTrader.Algo.Api.Bar": MapBarToBarInput(barStrategy, id, symbol, mapping); return;
+                    default: throw new AlgoException("Unknown input base type");
+                }
+            }
+            else if (_fStrategy is QuoteStrategy quoteStrategy)
+            {
+                switch (input.Descriptor.DataSeriesBaseTypeFullName)
+                {
+                    case "System.Double": MapQuoteToDoubleInput(quoteStrategy, id, symbol, mapping); return;
+                    case "TickTrader.Algo.Api.Bar": MapQuoteToBarInput(quoteStrategy, id, symbol, mapping); return;
+                    case "TickTrader.Algo.Api.Quote": MapQuoteInput(quoteStrategy, id, symbol); return;
+                    default: throw new AlgoException("Unknown input base type");
+                }
+            }
+
+            throw new AlgoException("Unknown FeedStrategy type");
+        }
+
+        private void MapBarToBarInput(BarStrategy barStrategy, string inputId, string symbolCode, MappingKey mappingKey)
+        {
+            var reduction = mappingKey?.PrimaryReduction ?? MappingCollection.DefaultFullBarToBarReduction;
+
+            var marketSide = GetMarketSideForBarReduction(reduction);
+            if (marketSide != null)
+            {
+                barStrategy.MapInput(inputId, symbolCode, marketSide.Value);
+            }
+            else
+            {
+                var mapping = new FullBarToBarMapping(reduction);
+                barStrategy.MapInput<Bar>(inputId, symbolCode, mapping.MapValue);
+            }
+        }
+
+        private void MapBarToDoubleInput(BarStrategy barStrategy, string inputId, string symbolCode, MappingKey mappingKey)
+        {
+            var primaryReduction = mappingKey?.PrimaryReduction ?? MappingCollection.DefaultFullBarToBarReduction;
+            var secondaryReduction = mappingKey?.SecondaryReduction ?? MappingCollection.DefaultBarToDoubleReduction;
+
+            var marketSide = GetMarketSideForBarReduction(primaryReduction);
+            if (marketSide != null)
+            {
+                var mapping = new BarToDoubleMapping(secondaryReduction);
+                barStrategy.MapInput(inputId, symbolCode, marketSide.Value, mapping.MapValue);
+            }
+            else
+            {
+                var mapping = new FullBarToDoubleMapping(primaryReduction, secondaryReduction);
+                barStrategy.MapInput(inputId, symbolCode, mapping.MapValue);
+            }
+        }
+
+        private Feed.Types.MarketSide? GetMarketSideForBarReduction(ReductionKey reduction)
+        {
+            if (reduction == MappingCollection.BidBarReduction)
+                return Domain.Feed.Types.MarketSide.Bid;
+            else if (reduction == MappingCollection.AskBarReduction)
+                return Domain.Feed.Types.MarketSide.Ask;
+
+            return null;
+        }
+
+        private void MapQuoteToDoubleInput(QuoteStrategy quoteStrategy, string inputId, string symbolCode, MappingKey mappingKey)
+        {
+            var reduction = mappingKey?.PrimaryReduction ?? MappingCollection.DefaultQuoteToDoubleReduction;
+
+            var mapping = new QuoteToDoubleMapping(reduction);
+            quoteStrategy.MapInput(inputId, symbolCode, mapping.MapValue);
+        }
+
+        private void MapQuoteToBarInput(QuoteStrategy quoteStrategy, string inputId, string symbolCode, MappingKey mappingKey)
+        {
+            var reduction = mappingKey?.PrimaryReduction ?? MappingCollection.DefaultQuoteToBarReduction;
+
+            var mapping = new QuoteToBarMapping(reduction);
+            quoteStrategy.MapInput<Bar>(inputId, symbolCode, mapping.MapValue);
+        }
+
+        private void MapQuoteInput(QuoteStrategy quoteStrategy, string inputId, string symbolCode)
+        {
+            quoteStrategy.MapInput<Quote>(inputId, symbolCode, q => new QuoteEntity(q));
         }
 
         #region Emulator Support
@@ -690,7 +830,7 @@ namespace TickTrader.Algo.Core
         }
 
         internal PluginBuilder GetBuilder() => _builder;
-        internal PluginDescriptor GetDescriptor() => descriptor.Descriptor;
+        internal PluginDescriptor GetDescriptor() => _metadata.Descriptor;
         internal IExecutorFixture GetTradeFixute() => accFixture;
 
         internal void EmulateStop()

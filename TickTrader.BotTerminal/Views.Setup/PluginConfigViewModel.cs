@@ -406,7 +406,8 @@ namespace TickTrader.BotTerminal
             _tickBasedInputs = Descriptor.Inputs.Select(CreateTickBasedInput).ToList();
             _outputs = Descriptor.Outputs.Select(CreateOutput).ToList();
 
-            _allProperties = _parameters.Concat<PropertySetupViewModel>(_barBasedInputs).Concat(_tickBasedInputs).Concat(_outputs).ToList();
+            //_allProperties = _parameters.Concat<PropertySetupViewModel>(_barBasedInputs).Concat(_tickBasedInputs).Concat(_outputs).ToList();
+            _allProperties = _parameters.Concat<PropertySetupViewModel>(_barBasedInputs).Concat(_outputs).ToList();
             _allProperties.ForEach(p => p.ErrorChanged += s => Validate());
 
             IsEmpty = _allProperties.Count == 0 && !Descriptor.SetupMainSymbol;

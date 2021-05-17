@@ -1,34 +1,23 @@
-﻿using System.Linq;
-using TickTrader.Algo.Core.Repository;
+﻿using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Info
 {
     public static class InfoExtensions
     {
-        public static MappingInfo ToInfo(this Mapping mapping)
-        {
-            return new MappingInfo
-            {
-                Key = mapping.Key,
-                DisplayName = mapping.DisplayName,
-            };
-        }
-
         public static MappingCollectionInfo ToInfo(this MappingCollection mappings)
         {
             var res = new MappingCollectionInfo
             {
-                DefaultFullBarToBarReduction = MappingCollection.DefaultFullBarToBarReduction,
-                DefaultBarToDoubleReduction = MappingCollection.DefaultBarToDoubleReduction,
-                DefaultFullBarToDoubleReduction = MappingCollection.DefaultFullBarToDoubleReduction,
-                DefaultQuoteToBarReduction = MappingCollection.DefaultQuoteToBarReduction,
-                DefaultQuoteToDoubleReduction = MappingCollection.DefaultQuoteToDoubleReduction,
+                DefaultBarToBarMapping = MappingCollection.DefaultBarToBarMapping.Key,
+                DefaultBarToDoubleMapping = MappingCollection.DefaultBarToDoubleMapping.Key,
+                DefaultQuoteToBarMapping = MappingCollection.DefaultQuoteToBarMapping.Key,
+                DefaultQuoteToDoubleMapping = MappingCollection.DefaultQuoteToDoubleMapping.Key,
             };
-            res.BarToBarMappings.AddRange(mappings.BarToBarMappings.Values.Select(ToInfo));
-            res.BarToDoubleMappings.AddRange(mappings.BarToDoubleMappings.Values.Select(ToInfo));
-            res.QuoteToBarMappings.AddRange(mappings.QuoteToBarMappings.Values.Select(ToInfo));
-            res.QuoteToDoubleMappings.AddRange(mappings.QuoteToDoubleMappings.Values.Select(ToInfo));
+            res.BarToBarMappings.AddRange(mappings.BarToBarMappings);
+            res.BarToDoubleMappings.AddRange(mappings.BarToDoubleMappings);
+            res.QuoteToBarMappings.AddRange(mappings.QuoteToBarMappings);
+            res.QuoteToDoubleMappings.AddRange(mappings.QuoteToDoubleMappings);
             return res;
         }
 

@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Core
         internal FeedStrategy FeedStrategy { get; private set; }
         internal Dictionary<string, object> PluginParams { get; } = new Dictionary<string, object>();
         internal Dictionary<string, IOutputFixtureFactory> Outputs { get; } = new Dictionary<string, IOutputFixtureFactory>();
-        internal Dictionary<Tuple<string, string>, Mapping> Mappings { get; } = new Dictionary<Tuple<string, string>, Mapping>();
+        internal Dictionary<Tuple<string, string>, MappingInfo> Mappings { get; } = new Dictionary<Tuple<string, string>, MappingInfo>();
 
         public void SetParameter(string id, object value)
         {
@@ -33,13 +33,6 @@ namespace TickTrader.Algo.Core
            where T : FeedStrategy
         {
             return (T)FeedStrategy;
-        }
-
-        public void MapInput(string inputName, string symbolCode, Mapping mapping)
-        {
-            // hook to appear in plugin domain
-            //mapping?.MapInput(this, inputName, symbolCode);
-            Mappings[new Tuple<string, string>(inputName, symbolCode)] = mapping;
         }
 
         public BarStrategy InitBarStrategy(Feed.Types.MarketSide marketSide)

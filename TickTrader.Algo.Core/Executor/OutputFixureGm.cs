@@ -7,7 +7,7 @@ namespace TickTrader.Algo.Core
     internal interface IOutputFixtureFactory
     {
         string OutputId { get; }
-        IOutputFixture Create(IFixtureContext context);
+        IOutputFixture Create(IFixtureContext context, bool sendUpdates);
     }
 
     [Serializable]
@@ -20,9 +20,9 @@ namespace TickTrader.Algo.Core
 
         public string OutputId { get; }
 
-        public IOutputFixture Create(IFixtureContext context)
+        public IOutputFixture Create(IFixtureContext context, bool sendUpdates)
         {
-            return new OutputFixureGm<T>(OutputId, context);
+            return new OutputFixureGm<T>(OutputId, context, sendUpdates);
         }
     }
 
@@ -35,12 +35,14 @@ namespace TickTrader.Algo.Core
         private readonly string _outputId;
         private readonly OutputPointFactory<T> _pointFactory;
         private int _truncatedBy;
+        private readonly bool _sendUpdates;
 
-        internal OutputFixureGm(string outputId, IFixtureContext context)
+        internal OutputFixureGm(string outputId, IFixtureContext context, bool sendUpdates)
         {
             _context = context ?? throw new ArgumentNullException("context");
             _outputId = outputId;
             _pointFactory = OutputPointFactory.Get<T>();
+            _sendUpdates = sendUpdates;
         }
 
         public void BindTo(IReaonlyDataBuffer buffer, ITimeRef timeRef)
@@ -94,7 +96,7 @@ namespace TickTrader.Algo.Core
 
         private void OnAppend(int index, T data)
         {
-            if (!_isBatch)
+            if (!_isBatch && _sendUpdates)
             {
                 var timeCoordinate = _timeRef[index];
                 SendUpdate(new OutputPoint(timeCoordinate, index, _pointFactory.PackValue(data)), DataSeriesUpdate.Types.UpdateAction.Append);
@@ -103,7 +105,7 @@ namespace TickTrader.Algo.Core
 
         private void OnUpdate(int index, T data)
         {
-            if (!_isBatch)
+            if (!_isBatch && _sendUpdates)
             {
                 var timeCoordinate = _timeRef[index];
                 SendUpdate(new OutputPoint(timeCoordinate, index, _pointFactory.PackValue(data)), DataSeriesUpdate.Types.UpdateAction.Update);
@@ -112,17 +114,20 @@ namespace TickTrader.Algo.Core
 
         private void OnRangeAppend()
         {
-            var count = _buffer.Count;
-
-            var range = new OutputPointRange();
-            range.Points.Capacity = count;
-
-            for (var i = 0; i < count; i++)
+            if (_sendUpdates)
             {
-                range.Points.Add(new OutputPoint(_timeRef[i], i, _pointFactory.PackValue(_buffer[i])));
-            }
+                var count = _buffer.Count;
 
-            SendUpdate(range, DataSeriesUpdate.Types.UpdateAction.Append);
+                var range = new OutputPointRange();
+                range.Points.Capacity = count;
+
+                for (var i = 0; i < count; i++)
+                {
+                    range.Points.Add(new OutputPoint(_timeRef[i], i, _pointFactory.PackValue(_buffer[i])));
+                }
+
+                SendUpdate(range, DataSeriesUpdate.Types.UpdateAction.Append);
+            }
         }
 
         private void OnTruncate(int truncateSize)

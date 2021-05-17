@@ -306,12 +306,9 @@
     <Compile Include="Metadata\InputMetadata.cs" />
     <Compile Include="Metadata\OutputMetadata.cs" />
     <Compile Include="Metadata\ParameterMetadata.cs" />
-    <Compile Include="Repository\Mappings\AskBarMappings.cs" />
-    <Compile Include="Repository\Mappings\BidBarMappings.cs" />
-    <Compile Include="Repository\Mappings\DefaultReductions.cs" />
+    <Compile Include="Repository\Mappings\BarToDoubleMapping.cs" />
     <Compile Include="Repository\Mappings\FullBarToBarMapping.cs" />
     <Compile Include="Repository\Mappings\FullBarToDoubleMapping.cs" />
-    <Compile Include="Repository\Mappings\Mapping.cs" />
     <Compile Include="Repository\MappingCollection.cs" />
     <Compile Include="Repository\Mappings\QuoteToBarMapping.cs" />
     <Compile Include="Repository\Mappings\QuoteToDoubleMapping.cs" />

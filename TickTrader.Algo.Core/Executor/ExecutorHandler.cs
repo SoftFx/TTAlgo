@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
@@ -98,54 +97,6 @@ namespace TickTrader.Algo.Core
                 OutputUpdate?.Invoke(update);
         }
 
-        #region Excec control
-
-        public void Launch(string address, int port)
-        {
-            Launcher.Launch(address, port, _id);
-        }
-
-        internal void Start()
-        {
-            ConfigurateCore();
-            Launcher.ConfigureRuntime();
-            Core.Start();
-        }
-
-        public void Stop()
-        {
-            Core.Stop()?.Wait();
-        }
-
-        public Task StopAsync()
-        {
-            var taskSrc = new CrossDomainTaskProxy();
-            Core.StopAsync(taskSrc);
-            return taskSrc.Task;
-        }
-
-        public void Abort()
-        {
-            Core.Abort();
-        }
-
-        public void HandleDisconnect()
-        {
-            Core.HandleDisconnect();
-        }
-
-        public void HandleReconnect()
-        {
-            Core.HandleReconnect();
-        }
-
-        public void WriteConnectionInfo(string connectionInfo)
-        {
-            Core.WriteConnectionInfo(connectionInfo);
-        }
-
-        #endregion
-
         public override void Dispose()
         {
             DisposeProxies();
@@ -163,42 +114,6 @@ namespace TickTrader.Algo.Core
             _tProxy = null;
         }
 
-        //public override void Dispose()
-        //{
-        //}
-
-        private void ConfigurateCore()
-        {
-            DisposeProxies();
-
-            if (AccInfoProvider == null)
-                throw new ExecutorException("AccInfoProvider is not set!");
-
-            if (Metadata == null)
-                throw new ExecutorException("Metadata is not set!");
-
-            if (TradeHistoryProvider == null)
-                throw new ExecutorException("TradeHistoryProvider is not set!");
-
-            if (Feed == null)
-                throw new ExecutorException("Feed is not set!");
-
-            if (FeedHistory == null)
-                throw new ExecutorException("FeedHistory is not set!");
-
-            if (IsIsolated)
-            {
-                _cProxy = new CommonCdProxy(AccInfoProvider, Metadata, TradeHistoryProvider);
-                _fProxy = new FeedCdProxy(Feed, FeedHistory);
-
-                if (TradeExecutor != null)
-                    _tProxy = new TradeApiProxy(TradeExecutor);
-
-                Core.ApplyConfig(Config, _cProxy, _cProxy, _cProxy, _fProxy, _fProxy, _tProxy);
-            }
-            else
-                Core.ApplyConfig(Config, AccInfoProvider, Metadata, TradeHistoryProvider, Feed, FeedHistory, TradeExecutor);
-        }
 
         #region Update Marshalling 
 
@@ -258,6 +173,7 @@ namespace TickTrader.Algo.Core
             //    ErrorOccurred?.Invoke((Exception)update);
 
             #endregion
+
         }
     }
 }

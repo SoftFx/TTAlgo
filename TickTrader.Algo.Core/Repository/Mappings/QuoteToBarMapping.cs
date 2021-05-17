@@ -1,37 +1,25 @@
-﻿using System;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Api.Ext;
+﻿using TickTrader.Algo.Api.Ext;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Repository
 {
-    [Serializable]
-    public class QuoteToBarMapping : Mapping
+    internal class QuoteToBarMapping
     {
-        internal QuoteToBarMapping()
-        {
-            Key = new MappingKey(MappingCollection.DefaultQuoteToBarReduction);
-            DisplayName = "Bid";
-        }
+        private readonly QuoteToBarReduction _barReductionInstance;
 
-        internal QuoteToBarMapping(ReductionKey barReductionKey, string barReductionDisplayName)
-            : base(barReductionKey, barReductionDisplayName)
-        {
-        }
 
-        public override void MapInput(IPluginSetupTarget target, string inputName, string symbol)
+        public QuoteToBarMapping(ReductionKey barReductionKey)
         {
-            var barReduction = AlgoAssemblyInspector.GetReduction(Key.PrimaryReduction.DescriptorId);
-            var barReductionInstance = barReduction?.CreateInstance<QuoteToBarReduction>() ?? new QuoteToBidBarReduction();
-            target.GetFeedStrategy<QuoteStrategy>().MapInput<Bar>(inputName, symbol, q => MapValue(barReductionInstance, q));
+            var barReduction = AlgoAssemblyInspector.GetReduction(barReductionKey.DescriptorId);
+            _barReductionInstance = barReduction.CreateInstance<QuoteToBarReduction>();
         }
 
 
-        private BarEntity MapValue(QuoteToBarReduction reductionInstance, QuoteInfo quote)
+        public BarEntity MapValue(QuoteInfo quote)
         {
             var res = new BarEntity(BarData.CreateBlank(quote.Timestamp, quote.Timestamp));
-            reductionInstance.Reduce(new QuoteEntity(quote), res);
+            _barReductionInstance.Reduce(new QuoteEntity(quote), res);
             return res;
         }
     }

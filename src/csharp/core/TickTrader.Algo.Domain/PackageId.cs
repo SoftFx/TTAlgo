@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace TickTrader.Algo.Domain
 {
@@ -32,6 +33,11 @@ namespace TickTrader.Algo.Domain
                 throw new ArgumentException($"'{nameof(pkgName)}' can't be empty string");
 
             return string.Join(SharedConstants.IdSeparatorStr, SharedConstants.PackageIdPrefix, locationId, pkgName.ToLowerInvariant());
+        }
+
+        public static string FromPath(string locationId, string pkgPath)
+        {
+            return Pack(locationId, Path.GetFileName(pkgPath));
         }
 
         public static bool TryUnpack(string packedId, out PackageId pkgId)

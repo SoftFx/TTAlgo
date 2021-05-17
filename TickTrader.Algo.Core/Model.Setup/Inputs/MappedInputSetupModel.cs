@@ -1,13 +1,12 @@
 ﻿using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
     public abstract class MappedInputSetupModel : InputSetupModel
     {
-        public Mapping SelectedMapping { get; protected set; }
+        public MappingInfo SelectedMapping { get; protected set; }
 
         public abstract string EntityPrefix { get; }
 
@@ -20,7 +19,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public override void Apply(IPluginSetupTarget target)
         {
-            target.MapInput(Metadata.Id, SelectedSymbol.Id, SelectedMapping);
+            //target.MapInput(Metadata.Id, SelectedSymbol.Id, SelectedMapping);
         }
 
         public override void Reset()
@@ -30,7 +29,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             SelectedMapping = GetMapping(SetupContext.DefaultMapping);
         }
 
-        protected abstract Mapping GetMapping(MappingKey mappingKey);
+        protected abstract MappingInfo GetMapping(MappingKey mappingKey);
 
         protected override void LoadConfig(IInputConfig input)
         {

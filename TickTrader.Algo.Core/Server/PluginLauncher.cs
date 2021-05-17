@@ -42,17 +42,6 @@ namespace TickTrader.Algo.Core
             return Core;
         }
 
-        public void ConfigureRuntime()
-        {
-            //var provider = new RuntimeInfoProvider(Handler);
-            //Core.Metadata = provider;
-            //Core.AccInfoProvider = provider;
-            //Core.TradeExecutor = provider;
-            //Core.TradeHistoryProvider = provider;
-            //Core.Feed = provider;
-            //Core.FeedHistory = provider;
-        }
-
 
         #region IRpcHost implementation
 

@@ -23,7 +23,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public ISetupSymbolInfo MainSymbol { get; private set; }
 
-        public Mapping SelectedMapping { get; private set; }
+        public MappingInfo SelectedMapping { get; private set; }
 
         public IEnumerable<ParameterSetupModel> Parameters => _parameters;
 

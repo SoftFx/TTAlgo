@@ -8,7 +8,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1.Metadata
 {
-    public class PackageMetadataCache
+    public static class PackageMetadataCache
     {
         private static ConcurrentDictionary<string, PackageMetadata> _packageCacheById = new ConcurrentDictionary<string, PackageMetadata>();
 
@@ -26,7 +26,7 @@ namespace TickTrader.Algo.CoreV1.Metadata
         }
 
 
-        public static PackageMetadata InspectAssembly(Assembly targetAssembly, string packageId)
+        public static PackageMetadata ExamineAssembly(string packageId, Assembly targetAssembly)
         {
             if (_packageCacheById.ContainsKey(packageId))
                 throw new AlgoException($"Package '{packageId}' has been already cached");
@@ -39,7 +39,8 @@ namespace TickTrader.Algo.CoreV1.Metadata
             return metadata;
         }
         
-        public static List<PluginMetadata> FindPlugins(Assembly targetAssembly)
+
+        private static List<PluginMetadata> FindPlugins(Assembly targetAssembly)
         {
             var plugins = new List<PluginMetadata>();
 
@@ -58,7 +59,7 @@ namespace TickTrader.Algo.CoreV1.Metadata
             return plugins;
         }
 
-        public static List<ReductionMetadata> FindReductions(Assembly targetAssembly)
+        private static List<ReductionMetadata> FindReductions(Assembly targetAssembly)
         {
             var reductions = new List<ReductionMetadata>();
 

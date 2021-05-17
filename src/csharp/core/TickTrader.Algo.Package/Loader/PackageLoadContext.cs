@@ -8,20 +8,15 @@ namespace TickTrader.Algo.Package
 {
     public interface IPackageLoadContext : IDisposable
     {
-        // GetPackage
-        // GetPlugin
-        // GetReduction
-
-
         /// <summary>
         /// Load package assemblies for exeution
         /// </summary>
-        Task<PackageInfo> Load(string packagePath);
+        Task<PackageInfo> Load(string packageId, string packagePath);
 
         /// <summary>
         /// Generate metadata for already loaded assemblies
         /// </summary>
-        Task<PackageInfo> InpectAssembly(Assembly assembly);
+        Task<PackageInfo> ExamineAssembly(string packageId, Assembly assembly);
     }
 
     public static class PackageLoadContext
@@ -29,12 +24,7 @@ namespace TickTrader.Algo.Package
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger(nameof(PackageLoadContext));
 
         private static Func<bool, IPackageLoadContext> _factory;
-
-
-        /// <summary>
-        /// Not isolated load context. Used for loading assemlies for execution. Loaded assemblies cannot be removed from process
-        /// </summary>
-        public static IPackageLoadContext Default { get; private set; }
+        private static IPackageLoadContext _default;
 
 
         public static void Init(Func<bool, IPackageLoadContext> factory)
@@ -43,24 +33,24 @@ namespace TickTrader.Algo.Package
                 throw new InvalidOperationException("Already initialized");
 
             _factory = factory;
-            Default = factory(false);
+            _default = factory(false); // Not isolated load context. Used for loading assemlies for execution. Loaded assemblies cannot be removed from process
         }
 
 
         /// <summary>
         /// Load package into default load context. Loaded assemblies cannot be removed from process
         /// </summary>
-        public static Task<PackageInfo> Load(string packagePath)
+        public static Task<PackageInfo> Load(string packageId, string packagePath)
         {
-            return Default.Load(packagePath);
+            return _default.Load(packageId, packagePath);
         }
 
         /// <summary>
         /// Generates metadata of a dependent assembly already loaded other ways
         /// </summary>
-        public static Task<PackageInfo> InspectAssembly(Assembly assembly)
+        public static Task<PackageInfo> ExamineAssembly(string packageId, Assembly assembly)
         {
-            return Default.InpectAssembly(assembly);
+            return _default.ExamineAssembly(packageId, assembly);
         }
 
         /// <summary>
@@ -73,7 +63,7 @@ namespace TickTrader.Algo.Package
             {
                 using (var loadContext = _factory(true))
                 {
-                    res = await loadContext.Load(packagePath);
+                    res = await loadContext.Load("reflection-only", packagePath);
                 }
             }
             catch (Exception ex)
