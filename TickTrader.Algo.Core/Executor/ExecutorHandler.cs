@@ -46,7 +46,6 @@ namespace TickTrader.Algo.Core
         public IFeedProvider Feed { get; set; }
         public IFeedHistoryProvider FeedHistory { get; set; }
         public ITradeExecutor TradeExecutor { get; set; }
-        public PluginExecutorConfig Config { get; } = new PluginExecutorConfig();
 
         public event Action<Domain.PluginLogRecord> LogUpdated;
         public event Action<TesterTradeTransaction> TradesUpdated;

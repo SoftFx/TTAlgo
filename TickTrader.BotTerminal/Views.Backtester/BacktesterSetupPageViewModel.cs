@@ -88,7 +88,7 @@ namespace TickTrader.BotTerminal
             //CanStop = ActionOverlay.CanCancel;
             //CanSave = !IsRunning & _hasDataToSave.Var;
             //IsVisualizationEnabled = _var.AddBoolProperty();
-            
+
 
             Plugins = env.LocalAgentVM.PluginList;
 
@@ -127,12 +127,11 @@ namespace TickTrader.BotTerminal
                     var plugin = env.LocalAgent.Library.GetPlugin(a.New.Key);
                     UpdateOptimizationState(plugin.Descriptor_);
                     UpdatePluginState(plugin.Descriptor_);
-                    PluginSetup = null;
-                    //PluginSetup = new PluginSetupModel(pluginRef, this, this);
+                    PluginConfig = null;
                     PluginSelected?.Invoke();
                 }
                 else
-                    PluginSetup = null;
+                    PluginConfig = null;
             });
 
             _var.TriggerOnChange(MainSymbolSetup.SelectedTimeframe, a =>
@@ -178,7 +177,7 @@ namespace TickTrader.BotTerminal
         public Property<Feed.Types.Timeframe> MainTimeFrame { get; private set; }
         public BacktesterSymbolSetupViewModel MainSymbolSetup { get; private set; }
         public BacktesterSymbolSetupViewModel MainSymbolShadowSetup { get; private set; }
-        public PluginSetupModel PluginSetup { get; private set; }
+        public PluginConfig PluginConfig { get; private set; }
         //public PluginConfig PluginConfig { get; private set; }
         public Property<string> TradeSettingsSummary { get; private set; }
         //public BoolProperty IsVisualizationEnabled { get; }
@@ -249,19 +248,17 @@ namespace TickTrader.BotTerminal
 
         #region Saving Results
 
-        public void SaveTestSetupAsText(PluginSetupModel setup, System.IO.Stream stream, DateTime from, DateTime to)
+        public void SaveTestSetupAsText(AlgoPluginRef pluginRef, PluginConfig config, System.IO.Stream stream, DateTime from, DateTime to)
         {
-            var dPlugin = setup.Metadata.Descriptor;
-
             using (var writer = new System.IO.StreamWriter(stream))
             {
-                writer.WriteLine(FeedSetupToText(setup, from, to));
+                writer.WriteLine(FeedSetupToText(from, to));
                 writer.WriteLine(TradeSetupToText());
-                writer.WriteLine(PluginSetupToText(setup, false));
+                writer.WriteLine(PluginSetupToText(pluginRef, config, false));
             }
         }
 
-        private string FeedSetupToText(PluginSetupModel setup, DateTime from, DateTime to)
+        private string FeedSetupToText(DateTime from, DateTime to)
         {
             var writer = new StringBuilder();
 
@@ -282,35 +279,35 @@ namespace TickTrader.BotTerminal
             return Settings.ToText(false);
         }
 
-        private string PluginSetupToText(PluginSetupModel setup, bool compact)
+        private string PluginSetupToText(AlgoPluginRef pluginRef, PluginConfig config, bool compact)
         {
             var writer = new StringBuilder();
-            var dPlugin = setup.Metadata.Descriptor;
+            var dPlugin = pluginRef.Metadata.Descriptor;
 
             if (dPlugin.IsIndicator)
                 writer.AppendFormat("Indicator: {0} v{1}", dPlugin.DisplayName, dPlugin.Version).AppendLine();
             else if (dPlugin.IsTradeBot)
                 writer.AppendFormat("Trade Bot: {0} v{1}", dPlugin.DisplayName, dPlugin.Version).AppendLine();
 
-            int count = 0;
-            foreach (var param in setup.Parameters)
-            {
-                if (compact && count > 0)
-                    writer.Append(", ");
-                writer.AppendFormat("{0}={1}", param.DisplayName, param.GetQuotedValue());
-                if (!compact)
-                    writer.AppendLine();
-                count++;
-            }
+            //int count = 0;
+            //foreach (var param in setup.Parameters)
+            //{
+            //    if (compact && count > 0)
+            //        writer.Append(", ");
+            //    writer.AppendFormat("{0}={1}", param.DisplayName, param.GetQuotedValue());
+            //    if (!compact)
+            //        writer.AppendLine();
+            //    count++;
+            //}
 
-            foreach (var input in setup.Inputs)
-            {
-                if (compact)
-                    writer.Append(' ');
-                writer.AppendFormat("{0} = {1}", input.DisplayName, input.ValueAsText);
-                if (!compact)
-                    writer.AppendLine();
-            }
+            //foreach (var input in setup.Inputs)
+            //{
+            //    if (compact)
+            //        writer.Append(' ');
+            //    writer.AppendFormat("{0} = {1}", input.DisplayName, input.ValueAsText);
+            //    if (!compact)
+            //        writer.AppendLine();
+            //}
 
             return writer.ToString();
         }
@@ -331,9 +328,9 @@ namespace TickTrader.BotTerminal
         {
             _localWnd.OpenOrActivateWindow(SetupWndKey, () =>
             {
-                _openedPluginSetup = PluginSetup == null
+                _openedPluginSetup = PluginConfig == null
                     ? new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.PluginInfo, this, this.GetSetupContextInfo())
-                    : new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.PluginInfo, this, this.GetSetupContextInfo(), PluginSetup.Save());
+                    : new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.PluginInfo, this, this.GetSetupContextInfo(), PluginConfig);
                 //_localWnd.OpenMdiWindow(wndKey, _openedPluginSetup);
                 _openedPluginSetup.Setup.MainSymbol = MainSymbolSetup.SelectedSymbol.Value.ToSymbolToken();
                 _openedPluginSetup.Setup.SelectedTimeFrame = MainSymbolSetup.SelectedTimeframe.Value;
@@ -351,7 +348,7 @@ namespace TickTrader.BotTerminal
         private void PluginSetupClosed(BacktesterPluginSetupViewModel setup, bool dlgResult)
         {
             if (dlgResult)
-                PluginSetup.Load(setup.GetConfig());
+                PluginConfig = setup.GetConfig();
 
             setup.Closed -= PluginSetupClosed;
             setup.Setup.ConfigLoaded -= Setup_ConfigLoaded;

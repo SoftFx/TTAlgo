@@ -56,7 +56,6 @@ namespace TickTrader.Algo.Core
             _lastStatus = null;
 
             InitChartDataCollection(settings, feed);
-            InitOutputCollection(settings);
         }
 
         public void OnStop(IBacktesterSettings settings, AccountAccessor acc, FeedEmulator feed)
@@ -120,29 +119,11 @@ namespace TickTrader.Algo.Core
             _marginCollector = new ChartDataCollector(settings.MarginDataMode, DataSeriesUpdate.Types.Type.NamedStream, MarginStreamName, _executor.OnUpdate, mainVector.Ref);
         }
 
-        private void InitOutputCollection(IBacktesterSettings settings)
+        internal void SetupOutput<T>(string outputId, TestDataSeriesFlags flags)
         {
-            var pDescriptor = _executor.GetDescriptor();
-
-            foreach (var outputDescripot in pDescriptor.Outputs)
-                SetupOutput(outputDescripot, settings.OutputDataMode);
-        }
-
-        private void SetupOutput(OutputDescriptor descriptor, TestDataSeriesFlags flags)
-        {
-            switch (descriptor.DataSeriesBaseTypeFullName)
-            {
-                case "System.Double": SetupOutput<double>(descriptor, flags); break;
-                case "TickTrader.Algo.Api.Marker": SetupOutput<Marker>(descriptor, flags); break;
-                default: throw new NotImplementedException("Type " + descriptor.DataSeriesBaseTypeFullName + " is not supported as series base type!");
-            }
-        }
-
-        private void SetupOutput<T>(OutputDescriptor descriptor, TestDataSeriesFlags flags)
-        {
-            var fixture = _executor.GetOutput<T>(descriptor.Id);
-            var collector = new OutputCollector<T>(descriptor.Id, fixture, _executor.OnUpdate, flags);
-            _outputCollectors.Add(descriptor.Id, collector);
+            var fixture = _executor.GetOutput<T>(outputId);
+            var collector = new OutputCollector<T>(outputId, fixture, _executor.OnUpdate, flags);
+            _outputCollectors.Add(outputId, collector);
         }
 
         private void StopOutputCollectors()

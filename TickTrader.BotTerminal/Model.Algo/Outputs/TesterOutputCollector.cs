@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 
@@ -14,11 +10,11 @@ namespace TickTrader.BotTerminal
         private string _outputId;
         private PluginExecutor _executor;
 
-        public TesterOutputCollector(OutputSetupModel setup, PluginExecutor executor)
+        public TesterOutputCollector(string outputId, PluginExecutor executor)
         {
             //OutputConfig = setup ?? throw new ArgumentNullException("setup");
-            OutputDescriptor = setup.Metadata.Descriptor;
-            _outputId = setup.Id ?? throw new ArgumentNullException("setup.Id");
+            //OutputDescriptor = setup.Metadata.Descriptor;
+            _outputId = outputId ?? throw new ArgumentNullException("setup.Id");
             _executor = executor ?? throw new ArgumentNullException("executor");
 
             executor.OutputUpdate += Executor_OutputUpdate;

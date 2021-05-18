@@ -148,6 +148,7 @@ namespace TickTrader.Algo.Core
 
         public void SetParameter(string id, object value) => SetupParamSeek(id, new ConstParam(value));
         public T GetFeedStrategy<T>() where T : FeedStrategy => _core.GetFeedStrategy<T>();
+        void IPluginSetupTarget.SetupOutput<T>(string id, bool enabled) => _core.SetupOutput<T>(id, enabled);
 
         #endregion IPluginSetupTarget
 
@@ -390,6 +391,11 @@ namespace TickTrader.Algo.Core
             public T GetFeedStrategy<T>() where T : FeedStrategy
             {
                 return (T)FStrategy;
+            }
+
+            public void SetupOutput<T>(string id, bool enabled)
+            {
+
             }
 
             #endregion

@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -13,26 +10,29 @@ namespace TickTrader.BotTerminal
     {
         private Dictionary<string, IOutputCollector> _outputs = new Dictionary<string, IOutputCollector>();
 
-        public BacktesterAdapter(PluginSetupModel setup, Backtester backtester)
+        public BacktesterAdapter(PluginConfig config, Backtester backtester)
         {
-            InitOutputs(setup, backtester);
+            InitOutputs(config, backtester);
         }
 
-        private void InitOutputs(PluginSetupModel setup, Backtester backtester)
+        private void InitOutputs(PluginConfig config, Backtester backtester)
         {
-            foreach (var outputSetup in setup.Outputs)
+            foreach (var property in config.UnpackProperties())
             {
-                if (outputSetup is ColoredLineOutputSetupModel)
-                    CreateOuput<double>(backtester, outputSetup);
-                else if (outputSetup is MarkerSeriesOutputSetupModel)
-                    CreateOuput<Marker>(backtester, outputSetup);
+                if (property is IOutputConfig output)
+                {
+                    if (output is ColoredLineOutputConfig)
+                        CreateOuput<double>(backtester, output);
+                    else if (output is MarkerSeriesOutputConfig)
+                        CreateOuput<Marker>(backtester, output);
+                }
             }
         }
 
-        private void CreateOuput<T>(Backtester backtester, OutputSetupModel setup)
+        private void CreateOuput<T>(Backtester backtester, IOutputConfig output)
         {
-            var id = setup.Id;
-            var adapter = new TesterOutputCollector<T>(setup, backtester.Executor);
+            var id = output.PropertyId;
+            var adapter = new TesterOutputCollector<T>(id, backtester.Executor);
             _outputs.Add(id, adapter);
         }
 

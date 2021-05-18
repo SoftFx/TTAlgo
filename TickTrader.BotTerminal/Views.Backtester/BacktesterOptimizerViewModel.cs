@@ -97,7 +97,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void SetPluign(PluginDescriptor descriptor, PluginSetupModel setup)
+        public void SetPluign(PluginDescriptor descriptor, PluginConfig config)
         {
             _descriptor = descriptor;
 
@@ -107,9 +107,10 @@ namespace TickTrader.BotTerminal
 
             if (descriptor.IsTradeBot)
             {
+                var properties = config.UnpackProperties();
                 foreach (var p in descriptor.Parameters)
                 {
-                    var pSetup = setup.Parameters.FirstOrDefault(ps => ps.Id == p.Id);
+                    var pSetup = properties.FirstOrDefault(ps => ps.PropertyId == p.Id) as IParameterConfig;
                     var model = ParamSeekSetModel.Create(p);
                     if (model != null)
                         Parameters.Add(new ParamSeekSetupModel(this, model, p, pSetup));
@@ -154,13 +155,13 @@ namespace TickTrader.BotTerminal
         {
             private BacktesterOptimizerViewModel _parent;
             private Property<ParamSeekSetModel> _modelProp;
-            private ParameterSetupModel _setup;
+            private IParameterConfig _config;
             private Property<string> _descriptionProp;
 
-            public ParamSeekSetupModel(BacktesterOptimizerViewModel parent, ParamSeekSetModel model, ParameterDescriptor descriptor, ParameterSetupModel setup)
+            public ParamSeekSetupModel(BacktesterOptimizerViewModel parent, ParamSeekSetModel model, ParameterDescriptor descriptor, IParameterConfig config)
             {
                 _parent = parent;
-                _setup = setup;
+                _config = config;
                 Descriptor = descriptor;
                 _modelProp = AddProperty(model);
                 _descriptionProp = AddProperty<string>();
@@ -206,7 +207,7 @@ namespace TickTrader.BotTerminal
                 }
                 else
                 {
-                    _descriptionProp.Value = _setup?.ValueAsText;
+                    _descriptionProp.Value = _config.ValObj?.ToString();
                     CaseCountProp.Value = 1;
                 }
             }

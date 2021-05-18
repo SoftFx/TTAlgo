@@ -62,7 +62,7 @@ namespace TickTrader.BotTerminal
 
         public AlgoChartViewModel ChartControlModel { get; }
 
-        public void OnStart(bool visualizing, SymbolInfo mainSymbol, PluginSetupModel setup, Backtester backtester, IEnumerable<SymbolInfo> symbols)
+        public void OnStart(bool visualizing, SymbolInfo mainSymbol, PluginConfig config, Backtester backtester, IEnumerable<SymbolInfo> symbols)
         {
             _visualizing = visualizing;
             _acctype = backtester.CommonSettings.AccountType;
@@ -92,7 +92,7 @@ namespace TickTrader.BotTerminal
                 backtester.OnChartUpdate += Backtester_OnChartUpdate;
             }
             
-            var adapter = new BacktesterAdapter(setup, backtester);
+            var adapter = new BacktesterAdapter(config, backtester);
             var outputGroup = new OutputGroupViewModel(adapter, ChartControlModel.ChartWindowId.Value, this, mainSymbol,
                 ChartControlModel.IsCrosshairEnabled.Var);
             ChartControlModel.OutputGroups.Add(outputGroup);

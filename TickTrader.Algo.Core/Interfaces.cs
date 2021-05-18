@@ -20,6 +20,7 @@ namespace TickTrader.Algo.Core
     {
         void SetParameter(string id, object value);
         T GetFeedStrategy<T>() where T : FeedStrategy;
+        void SetupOutput<T>(string id, bool enabled);
     }
 
     public interface ITradeApi

@@ -12,6 +12,7 @@ using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
@@ -112,14 +113,14 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public Task SaveReportAsync(PluginSetupModel pluginSetup, IActionObserver observer)
+        public Task SaveReportAsync(AlgoPluginRef pluginRef, IActionObserver observer)
         {
-            return Task.Run(() => SaveReport(pluginSetup, observer));
+            return Task.Run(() => SaveReport(pluginRef, observer));
         }
 
-        private void SaveReport(PluginSetupModel pluginSetup, IActionObserver observer)
+        private void SaveReport(AlgoPluginRef pluginRef, IActionObserver observer)
         {
-            var dPlugin = pluginSetup.PluginRef.Metadata.Descriptor;
+            var dPlugin = pluginRef.Metadata.Descriptor;
             var fileName = "Optimization of " + dPlugin.DisplayName + " " + DateTime.Now.ToString("yyyy-dd-M HH-mm-ss") + ".zip";
             var filePath = System.IO.Path.Combine(EnvService.Instance.BacktestResultsFolder, fileName);
 

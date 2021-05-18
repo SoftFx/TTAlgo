@@ -206,6 +206,11 @@ namespace TickTrader.Algo.Core
             return _executor.Core.GetFeedStrategy<T>();
         }
 
+        void IPluginSetupTarget.SetupOutput<T>(string id, bool enabled)
+        {
+            _control.Collector.SetupOutput<T>(id, OutputDataMode);
+        }
+
         #endregion
 
         #region IPluginMetadata

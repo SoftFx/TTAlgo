@@ -1,29 +1,18 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
 using Machinarium.Var;
-using Microsoft.Win32;
 using NLog;
 using SciChart.Charting.Model.DataSeries;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.IO.Compression;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Threading;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
-using LB = TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Core.Lib;
 using System.Globalization;
@@ -80,7 +69,7 @@ namespace TickTrader.BotTerminal
 
             SetupPage.PluginSelected += () =>
             {
-                OptimizationPage.SetPluign(SetupPage.SelectedPlugin.Value.Descriptor, SetupPage.PluginSetup);
+                OptimizationPage.SetPluign(SetupPage.SelectedPlugin.Value.Descriptor, SetupPage.PluginConfig);
             };
 
             OptimizationResultsPage.ShowDetailsRequested += r =>
@@ -188,12 +177,12 @@ namespace TickTrader.BotTerminal
             //packageRef.DecrementRef();
 
             if (SetupPage.Mode == TesterModes.Optimization)
-                await DoOptimization(observer, cToken, pluginRef, SetupPage.PluginSetup, chartSymbol, chartTimeframe, chartPriceLayer);
+                await DoOptimization(observer, cToken, pluginRef, SetupPage.PluginConfig, chartSymbol, chartTimeframe, chartPriceLayer);
             else
-                await DoBacktesting(observer, cToken, pluginRef, SetupPage.PluginSetup, chartSymbol, chartTimeframe, chartPriceLayer);
+                await DoBacktesting(observer, cToken, pluginRef, SetupPage.PluginConfig, chartSymbol, chartTimeframe, chartPriceLayer);
         }
 
-        private async Task DoBacktesting(IActionObserver observer, CancellationToken cToken, AlgoPluginRef pluginRef, PluginSetupModel pluginSetupModel,
+        private async Task DoBacktesting(IActionObserver observer, CancellationToken cToken, AlgoPluginRef pluginRef, Algo.Domain.PluginConfig pluginConfig,
             SymbolData chartSymbol, Feed.Types.Timeframe chartTimeframe, Feed.Types.MarketSide chartPriceLayer)
         {
             var progressMin = _emulteFrom.GetAbsoluteDay();
@@ -207,7 +196,7 @@ namespace TickTrader.BotTerminal
 
                 try
                 {
-                    pluginSetupModel.Apply(backtester);
+                    PluginConfigLoader.ApplyConfig(backtester, pluginConfig, backtester.CommonSettings.MainSymbol, EnvService.Instance.AlgoWorkingFolder);
 
                     backtester.Executor.LogUpdated += JournalPage.Append;
                     backtester.Executor.TradeHistoryUpdated += Executor_TradeHistoryUpdated;
@@ -234,7 +223,7 @@ namespace TickTrader.BotTerminal
 
                             _testingSymbols = backtester.CommonSettings.Symbols;
 
-                            FireOnStart(chartSymbol, pluginSetupModel, backtester);
+                            FireOnStart(chartSymbol, pluginConfig, backtester);
 
                             _hasDataToSave.Set();
 
@@ -254,7 +243,7 @@ namespace TickTrader.BotTerminal
                     await LoadChartData(backtester, observer);
 
                     if (SetupPage.SaveResultsToFile.Value)
-                        await SaveResults(pluginSetupModel, observer);
+                        await SaveResults(pluginRef, pluginConfig, observer);
 
                     if (execError != null)
                     {
@@ -274,7 +263,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private async Task DoOptimization(IActionObserver observer, CancellationToken cToken, AlgoPluginRef pluginRef, PluginSetupModel pluginSetupModel,
+        private async Task DoOptimization(IActionObserver observer, CancellationToken cToken, AlgoPluginRef pluginRef, PluginConfig pluginConfig,
             SymbolData chartSymbol, Feed.Types.Timeframe chartTimeframe, Feed.Types.MarketSide chartPriceLayer)
         {
             using (var optimizer = new Optimizer(pluginRef, new DispatcherSync()))
@@ -283,7 +272,7 @@ namespace TickTrader.BotTerminal
 
                 try
                 {
-                    pluginSetupModel.Apply(optimizer);
+                    PluginConfigLoader.ApplyConfig(optimizer, pluginConfig, optimizer.CommonSettings.MainSymbol, EnvService.Instance.AlgoWorkingFolder);
 
                     Exception execError = null;
 
@@ -334,7 +323,7 @@ namespace TickTrader.BotTerminal
                     FireOnStop(optimizer);
 
                     if (SetupPage.SaveResultsToFile.Value)
-                        await OptimizationResultsPage.SaveReportAsync(pluginSetupModel, observer);
+                        await OptimizationResultsPage.SaveReportAsync(pluginRef, observer);
 
                     if (execError != null)
                     {
@@ -353,7 +342,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void FireOnStart(SymbolData mainSymbol, PluginSetupModel setup, Backtester tester)
+        private void FireOnStart(SymbolData mainSymbol, Algo.Domain.PluginConfig config, Backtester tester)
         {
             var symbols = SetupPage.FeedSymbols.Select(ss => ss.SelectedSymbol.Value.InfoEntity).ToList();
             var currecnies = _client.Currencies.Snapshot.Values.ToList();
@@ -363,7 +352,7 @@ namespace TickTrader.BotTerminal
             TradeHistoryPage.IsVisible = true;
             ResultsPage.IsVisible = true;
 
-            ChartPage.OnStart(IsVisualizing.Value, mainSymbol.InfoEntity, setup, tester, symbols);
+            ChartPage.OnStart(IsVisualizing.Value, mainSymbol.InfoEntity, config, tester, symbols);
             if (IsVisualizing.Value)
             {
                 TradesPage.IsVisible = true;
@@ -587,9 +576,9 @@ namespace TickTrader.BotTerminal
 
         #region Results saving
 
-        private async Task SaveResults(PluginSetupModel pluginSetup, IActionObserver observer)
+        private async Task SaveResults(AlgoPluginRef pluginRef, PluginConfig pluginConfig, IActionObserver observer)
         {
-            var dPlugin = pluginSetup.PluginRef.Metadata.Descriptor;
+            var dPlugin = pluginRef.Metadata.Descriptor;
             var fileName = dPlugin.DisplayName + " " + DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss", CultureInfo.InvariantCulture) + ".zip";
             var filePath = System.IO.Path.Combine(EnvService.Instance.BacktestResultsFolder, fileName);
 
@@ -614,9 +603,9 @@ namespace TickTrader.BotTerminal
 
                     var setupEntry = archive.CreateEntry("setup.txt", CompressionLevel.Optimal);
                     using (var entryStream = setupEntry.Open())
-                        await Task.Run(() => SetupPage.SaveTestSetupAsText(pluginSetup, entryStream, _emulteFrom, _emulateTo));
+                        await Task.Run(() => SetupPage.SaveTestSetupAsText(pluginRef, pluginConfig, entryStream, _emulteFrom, _emulateTo));
 
-                    if (pluginSetup.Metadata.Descriptor.IsTradeBot)
+                    if (dPlugin.IsTradeBot)
                     {
                         var equityEntry = archive.CreateEntry("equity.csv", CompressionLevel.Optimal);
                         using (var entryStream = equityEntry.Open())
