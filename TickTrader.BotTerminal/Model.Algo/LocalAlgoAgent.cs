@@ -63,7 +63,7 @@ namespace TickTrader.BotTerminal
 
         public PluginIdProvider IdProvider { get; }
 
-        public MappingCollection Mappings { get; }
+        public MappingCollectionInfo Mappings { get; }
 
         public LocalAlgoLibrary Library { get; }
 
@@ -130,8 +130,7 @@ namespace TickTrader.BotTerminal
 
             _reductions.LoadReductions(EnvService.Instance.AlgoExtFolder, SharedConstants.LocalRepositoryId);
 
-            Mappings = new MappingCollection(_reductions);
-            _mappingsInfo = Mappings.ToInfo();
+            Mappings = _reductions.CreateMappings();
             Catalog = new PluginCatalog(this);
             AccessManager = new AccessManager(ClientClaims.Types.AccessLevel.Admin);
         }
@@ -141,7 +140,7 @@ namespace TickTrader.BotTerminal
         {
             var accountMetadata = new AccountMetadataInfo(AccountId.Pack(ClientModel.Connection.CurrentServer, ClientModel.Connection.CurrentLogin),
                 ClientModel.SortedSymbols.Select(s => s.ToInfo()).ToList(), ClientModel.Cache.GetDefaultSymbol().ToInfo());
-            var res = new SetupMetadata(_apiMetadata, _mappingsInfo, accountMetadata, setupContext ?? this.GetSetupContextInfo());
+            var res = new SetupMetadata(_apiMetadata, Mappings, accountMetadata, setupContext ?? this.GetSetupContextInfo());
             return Task.FromResult(res);
         }
 
@@ -529,7 +528,7 @@ namespace TickTrader.BotTerminal
 
         ISetupSymbolInfo IAlgoSetupContext.DefaultSymbol => _defaultSymbol;
 
-        MappingKey IAlgoSetupContext.DefaultMapping => new MappingKey(MappingCollection.DefaultFullBarToBarReduction);
+        MappingKey IAlgoSetupContext.DefaultMapping => MappingDefaults.DefaultBarToBarMapping.Key;
 
         #endregion
 

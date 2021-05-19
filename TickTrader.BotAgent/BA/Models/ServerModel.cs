@@ -12,7 +12,6 @@ using TickTrader.BotAgent.Extensions;
 using TickTrader.Algo.Common.Lib;
 using ActorSharp;
 using NLog;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
@@ -525,7 +524,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         private MappingCollectionInfo GetMappingsInfo()
         {
-            return _packageStorage.Mappings.ToInfo();
+            return _packageStorage.Mappings;
         }
 
         private string GetPackageReadPath(DownloadPackageRequest request)

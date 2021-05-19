@@ -40,7 +40,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             {
                 Timeframe = Feed.Types.Timeframe.M1,
                 MainSymbol = new SymbolConfig { Name = setup.Symbol, Origin = SymbolConfig.Types.SymbolOrigin.Online },
-                SelectedMapping = new MappingKey(MappingCollection.DefaultFullBarToBarReduction),
+                SelectedMapping = MappingDefaults.DefaultBarToBarMapping.Key,
                 InstanceId = setup.InstanceId,
                 Permissions = setup.Permissions.Parse(),
             };

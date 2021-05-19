@@ -107,7 +107,7 @@ namespace TickTrader.Algo.Core
 
         private static void MapBarToBarInput(BarStrategy barStrategy, string inputId, string symbolCode, MappingKey mappingKey)
         {
-            var reduction = mappingKey?.PrimaryReduction ?? MappingCollection.DefaultFullBarToBarReduction;
+            var reduction = mappingKey?.PrimaryReduction ?? MappingDefaults.DefaultFullBarToBarReduction;
 
             var marketSide = GetMarketSideForBarReduction(reduction);
             if (marketSide != null)
@@ -123,8 +123,8 @@ namespace TickTrader.Algo.Core
 
         private static void MapBarToDoubleInput(BarStrategy barStrategy, string inputId, string symbolCode, MappingKey mappingKey)
         {
-            var primaryReduction = mappingKey?.PrimaryReduction ?? MappingCollection.DefaultFullBarToBarReduction;
-            var secondaryReduction = mappingKey?.SecondaryReduction ?? MappingCollection.DefaultBarToDoubleReduction;
+            var primaryReduction = mappingKey?.PrimaryReduction ?? MappingDefaults.DefaultFullBarToBarReduction;
+            var secondaryReduction = mappingKey?.SecondaryReduction ?? MappingDefaults.DefaultBarToDoubleReduction;
 
             var marketSide = GetMarketSideForBarReduction(primaryReduction);
             if (marketSide != null)
@@ -141,9 +141,9 @@ namespace TickTrader.Algo.Core
 
         private static Feed.Types.MarketSide? GetMarketSideForBarReduction(ReductionKey reduction)
         {
-            if (reduction == MappingCollection.BidBarReduction)
+            if (reduction == MappingDefaults.BidBarReduction)
                 return Feed.Types.MarketSide.Bid;
-            else if (reduction == MappingCollection.AskBarReduction)
+            else if (reduction == MappingDefaults.AskBarReduction)
                 return Feed.Types.MarketSide.Ask;
 
             return null;
@@ -151,7 +151,7 @@ namespace TickTrader.Algo.Core
 
         private static void MapQuoteToDoubleInput(QuoteStrategy quoteStrategy, string inputId, string symbolCode, MappingKey mappingKey)
         {
-            var reduction = mappingKey?.PrimaryReduction ?? MappingCollection.DefaultQuoteToDoubleReduction;
+            var reduction = mappingKey?.PrimaryReduction ?? MappingDefaults.DefaultQuoteToDoubleReduction;
 
             var mapping = new QuoteToDoubleMapping(reduction);
             quoteStrategy.MapInput(inputId, symbolCode, mapping.MapValue);
@@ -159,7 +159,7 @@ namespace TickTrader.Algo.Core
 
         private static void MapQuoteToBarInput(QuoteStrategy quoteStrategy, string inputId, string symbolCode, MappingKey mappingKey)
         {
-            var reduction = mappingKey?.PrimaryReduction ?? MappingCollection.DefaultQuoteToBarReduction;
+            var reduction = mappingKey?.PrimaryReduction ?? MappingDefaults.DefaultQuoteToBarReduction;
 
             var mapping = new QuoteToBarMapping(reduction);
             quoteStrategy.MapInput<Bar>(inputId, symbolCode, mapping.MapValue);

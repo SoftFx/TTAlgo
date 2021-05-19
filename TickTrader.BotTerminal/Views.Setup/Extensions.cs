@@ -49,34 +49,6 @@ namespace TickTrader.BotTerminal
     }
 
 
-    public static class MappingCollectionInfoExtensions
-    {
-        public static MappingInfo GetBarToBarMappingOrDefault(this MappingCollectionInfo mappingCollection, MappingKey mappingKey)
-        {
-            return mappingCollection.BarToBarMappings.FirstOrDefault(m => m.Key.RecursiveEquals(mappingKey))
-                ?? mappingCollection.BarToBarMappings.First(m => m.Key.RecursiveEquals(mappingCollection.DefaultBarToBarMapping));
-        }
-
-        public static MappingInfo GetBarToDoubleMappingOrDefault(this MappingCollectionInfo mappingCollection, MappingKey mappingKey)
-        {
-            return mappingCollection.BarToDoubleMappings.FirstOrDefault(m => m.Key.RecursiveEquals(mappingKey))
-                ?? mappingCollection.BarToDoubleMappings.First(m => m.Key.RecursiveEquals(mappingCollection.DefaultBarToDoubleMapping));
-        }
-
-        public static MappingInfo GetQuoteToBarMappingOrDefault(this MappingCollectionInfo mappingCollection, MappingKey mappingKey)
-        {
-            return mappingCollection.QuoteToBarMappings.FirstOrDefault(m => m.Key.RecursiveEquals(mappingKey))
-                ?? mappingCollection.QuoteToBarMappings.First(m => m.Key.RecursiveEquals(mappingCollection.DefaultQuoteToBarMapping));
-        }
-
-        public static MappingInfo GetQuoteToDoubleMappingOrDefault(this MappingCollectionInfo mappingCollection, MappingKey mappingKey)
-        {
-            return mappingCollection.QuoteToDoubleMappings.FirstOrDefault(m => m.Key.RecursiveEquals(mappingKey))
-             ?? mappingCollection.QuoteToDoubleMappings.First(m => m.Key.RecursiveEquals(mappingCollection.DefaultQuoteToDoubleMapping));
-        }
-    }
-
-
     public static class SetupContextExtensions
     {
         public static SetupContextInfo GetSetupContextInfo(this IAlgoSetupContext setupContext)

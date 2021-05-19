@@ -1,4 +1,5 @@
-﻿using TickTrader.Algo.Domain;
+﻿using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -13,7 +14,7 @@ namespace TickTrader.BotTerminal
         public QuoteToBarInputSetupViewModel(InputDescriptor descriptor, SetupMetadata setupMetadata)
             : base(descriptor, setupMetadata)
         {
-            _defaultMapping = setupMetadata.Mappings.DefaultQuoteToBarMapping;
+            _defaultMapping = setupMetadata.Mappings.DefaultQuoteToBarMapping.Key;
             AvailableMappings = setupMetadata.Mappings.QuoteToBarMappings;
         }
 

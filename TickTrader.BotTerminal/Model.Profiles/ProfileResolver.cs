@@ -1,9 +1,4 @@
 ﻿using NLog;
-using System;
-using System.IO;
-using System.Runtime.Serialization;
-using System.Xml;
-using TickTrader.Algo.Core.Repository;
 //using Ver1 = TickTrader.BotTerminal.Model.Profiles.Version1;
 
 namespace TickTrader.BotTerminal
@@ -11,9 +6,6 @@ namespace TickTrader.BotTerminal
     internal static partial class ProfileResolver
     {
         private static ILogger _logger = LogManager.GetCurrentClassLogger();
-
-
-        public static MappingCollection Mappings;
 
 
         public static bool TryResolveProfile(string filePath)

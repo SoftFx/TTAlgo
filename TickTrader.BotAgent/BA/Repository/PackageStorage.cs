@@ -26,7 +26,7 @@ namespace TickTrader.BotAgent.BA.Repository
 
         public LocalAlgoLibrary Library { get; }
 
-        public MappingCollection Mappings { get; }
+        public MappingCollectionInfo Mappings { get; }
 
 
         public event Action<PackageInfo, ChangeAction> PackageChanged;
@@ -45,7 +45,7 @@ namespace TickTrader.BotAgent.BA.Repository
             Library.PackageStateChanged += LibraryOnPackageStateChanged;
 
             _reductions = new ReductionCollection(AlgoLoggerFactory.GetLogger("Extensions"));
-            Mappings = new MappingCollection(_reductions);
+            Mappings = _reductions.CreateMappings();
         }
 
 

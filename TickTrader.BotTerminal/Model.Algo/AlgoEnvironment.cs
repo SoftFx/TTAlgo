@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Core.Repository;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Core.Metadata;
+﻿using System.Linq;
 using Machinarium.Qnil;
 
 namespace TickTrader.BotTerminal
@@ -36,8 +27,6 @@ namespace TickTrader.BotTerminal
             Shell = shell;
             LocalAgent = localAgent;
             BotAgentManager = botAgentManager;
-
-            ProfileResolver.Mappings = LocalAgent.Mappings;
 
             LocalAgentVM = new AlgoAgentViewModel(LocalAgent, this);
             _localAgentStub = new VarList<AlgoAgentViewModel>();

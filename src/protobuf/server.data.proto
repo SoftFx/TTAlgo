@@ -23,10 +23,10 @@ message MappingCollectionInfo {
     repeated MappingInfo quote_to_bar_mappings = 3;
     repeated MappingInfo quote_to_double_mappings = 4;
 
-    MappingKey default_bar_to_bar_mapping = 5;
-    MappingKey default_bar_to_double_mapping = 6;
-    MappingKey default_quote_to_bar_mapping = 7;
-    MappingKey default_quote_to_double_mapping = 8;
+    MappingInfo default_bar_to_bar_mapping = 5;
+    MappingInfo default_bar_to_double_mapping = 6;
+    MappingInfo default_quote_to_bar_mapping = 7;
+    MappingInfo default_quote_to_double_mapping = 8;
 }
 
 message ApiMetadataInfo {

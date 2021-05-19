@@ -1,5 +1,4 @@
-﻿using Caliburn.Micro;
-using Machinarium.Qnil;
+﻿using Machinarium.Qnil;
 using Machinarium.Var;
 using System;
 using System.Collections.Generic;
@@ -10,12 +9,10 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 
@@ -490,7 +487,7 @@ namespace TickTrader.BotTerminal
 
         IReadOnlyList<ISetupSymbolInfo> IAlgoSetupMetadata.Symbols => _observableSymbolTokens;
 
-        MappingCollection IAlgoSetupMetadata.Mappings => _env.LocalAgent.Mappings;
+        MappingCollectionInfo IAlgoSetupMetadata.Mappings => _env.LocalAgent.Mappings;
 
         IPluginIdProvider IAlgoSetupMetadata.IdProvider => this;
 
@@ -521,7 +518,7 @@ namespace TickTrader.BotTerminal
 
         ISetupSymbolInfo IAlgoSetupContext.DefaultSymbol => _mainSymbolToken;
 
-        MappingKey IAlgoSetupContext.DefaultMapping => new MappingKey(MappingCollection.DefaultFullBarToBarReduction);
+        MappingKey IAlgoSetupContext.DefaultMapping => MappingDefaults.DefaultBarToBarMapping.Key;
 
         #endregion IAlgoSetupContext
     }

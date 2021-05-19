@@ -286,7 +286,7 @@
     <Compile Include="Repository\Mappings\BarToDoubleMapping.cs" />
     <Compile Include="Repository\Mappings\FullBarToBarMapping.cs" />
     <Compile Include="Repository\Mappings\FullBarToDoubleMapping.cs" />
-    <Compile Include="Repository\MappingCollection.cs" />
+    <Compile Include="Repository\MappingCollectionExtensions.cs" />
     <Compile Include="Repository\Mappings\QuoteToBarMapping.cs" />
     <Compile Include="Repository\Mappings\QuoteToDoubleMapping.cs" />
     <Compile Include="Repository\PackageHelper.cs" />
