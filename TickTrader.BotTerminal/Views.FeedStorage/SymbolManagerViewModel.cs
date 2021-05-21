@@ -3,16 +3,12 @@ using Machinarium.Qnil;
 using Machinarium.Var;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
@@ -321,7 +317,7 @@ namespace TickTrader.BotTerminal
         {
             DiskSize = null;
             NotifyOfPropertyChange(nameof(DiskSize));
-            Series.Foreach(s => s.ResetSize());
+            Series.ForEach(s => s.ResetSize());
         }
 
         public void Download()

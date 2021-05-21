@@ -1,14 +1,9 @@
 ﻿using SciChart.Charting.Visuals.PointMarkers;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using SciChart.Drawing.Common;
 using System.Windows;
 using SciChart.Charting.Model.DataSeries;
 using System.ComponentModel;
-using TickTrader.Algo.Api;
 using System.Windows.Media;
 using NLog;
 using TickTrader.Algo.Domain;

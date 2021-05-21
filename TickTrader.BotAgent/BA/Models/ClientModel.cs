@@ -10,11 +10,12 @@ using TickTrader.BotAgent.BA.Exceptions;
 using Machinarium.Qnil;
 using ActorSharp.Lib;
 using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Server;
+using TickTrader.Algo.Package;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -42,7 +43,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         [DataMember(Name = "bots")]
         private List<TradeBotModel> _bots = new List<TradeBotModel>();
-        private PackageStorage _packageProvider;
+        private Repository.PackageStorage _packageProvider;
 
         private bool _isInitialized;
         private bool _credsChanged;
@@ -62,7 +63,7 @@ namespace TickTrader.BotAgent.BA.Models
             DisplayName = string.IsNullOrEmpty(displayName) ? $"{server} - {userId}" : displayName;
         }
 
-        public async Task Init(PackageStorage packageProvider, IFdkOptionsProvider fdkOptionsProvider, AlertStorage storage, AlgoServer server)
+        public async Task Init(Repository.PackageStorage packageProvider, IFdkOptionsProvider fdkOptionsProvider, AlertStorage storage, AlgoServer server)
         {
             _loggerId = Interlocked.Increment(ref LoggerNameIdSeed);
             _log = AlgoLoggerFactory.GetLogger<ClientModel>(_loggerId);

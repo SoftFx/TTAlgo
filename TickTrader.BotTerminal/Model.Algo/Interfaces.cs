@@ -9,6 +9,7 @@ using SciChart.Charting.Visuals.Axes;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
+using TickTrader.Algo.Server;
 
 namespace TickTrader.BotTerminal
 {

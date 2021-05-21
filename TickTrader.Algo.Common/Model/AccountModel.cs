@@ -6,6 +6,7 @@ using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Calc;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model

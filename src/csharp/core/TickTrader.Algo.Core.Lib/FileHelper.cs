@@ -16,7 +16,7 @@ namespace TickTrader.Algo.Core.Lib
             return HexConverter.BytesToString(hashBytes);
         }
 
-        public static string CalculateSha256Hash(FileStream stream)
+        public static string CalculateSha256Hash(Stream stream)
         {
             byte[] hashBytes;
             using (var hashAlgo = SHA256.Create())

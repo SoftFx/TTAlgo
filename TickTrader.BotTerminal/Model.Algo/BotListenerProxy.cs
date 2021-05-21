@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Threading;
 using System.Windows.Threading;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Server;
 
 namespace TickTrader.BotTerminal
 {

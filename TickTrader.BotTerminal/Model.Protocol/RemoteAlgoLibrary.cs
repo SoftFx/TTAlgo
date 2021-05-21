@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
+using TickTrader.Algo.Package;
 
 namespace TickTrader.BotTerminal
 {
@@ -61,11 +61,6 @@ namespace TickTrader.BotTerminal
         }
 
         public AlgoPackageRef GetPackageRef(string packageId)
-        {
-            throw new NotSupportedException();
-        }
-
-        public AlgoPluginRef GetPluginRef(PluginKey key)
         {
             throw new NotSupportedException();
         }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Indicators.UTest.Utility;
 
@@ -45,7 +44,7 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
         protected virtual void Setup()
         {
             ReadQuotes();
-            Builder = new IndicatorBuilder(AlgoAssemblyInspector.GetPlugin(IndicatorType))
+            Builder = new IndicatorBuilder(new CoreV1.Metadata.PluginMetadata(IndicatorType))
             {
                 MainSymbol = Symbol
             };

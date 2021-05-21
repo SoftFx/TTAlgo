@@ -1,22 +1,13 @@
 ﻿using SciChart.Charting.Model.DataSeries;
-using SciChart.Charting.Visuals.PointMarkers;
-using SciChart.Charting.Visuals.RenderableSeries;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Media;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Core.Repository;
-using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using SciChart.Charting.Model.ChartSeries;
-using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Domain;
 using Google.Protobuf.WellKnownTypes;
+using TickTrader.Algo.Server;
 
 namespace TickTrader.BotTerminal
 {

@@ -12,9 +12,9 @@ using TickTrader.BotAgent.Extensions;
 using TickTrader.Algo.Common.Lib;
 using ActorSharp;
 using NLog;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
+using TickTrader.Algo.Server;
 
 namespace TickTrader.BotAgent.BA.Models
 {

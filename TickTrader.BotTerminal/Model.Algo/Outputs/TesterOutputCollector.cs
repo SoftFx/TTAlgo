@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.Backtester;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
@@ -8,9 +8,9 @@ namespace TickTrader.BotTerminal
     internal class TesterOutputCollector<T> : IOutputCollector
     {
         private string _outputId;
-        private PluginExecutor _executor;
+        private BacktesterMarshaller _executor;
 
-        public TesterOutputCollector(string outputId, PluginExecutor executor)
+        public TesterOutputCollector(string outputId, BacktesterMarshaller executor)
         {
             //OutputConfig = setup ?? throw new ArgumentNullException("setup");
             //OutputDescriptor = setup.Metadata.Descriptor;

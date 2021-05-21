@@ -1,6 +1,6 @@
 ﻿using Machinarium.Var;
 using System.Reflection;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.Backtester;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal

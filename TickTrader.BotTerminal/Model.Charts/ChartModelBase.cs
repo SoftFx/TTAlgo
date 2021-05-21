@@ -1,36 +1,27 @@
 ﻿using Caliburn.Micro;
-using Machinarium.State;
 using Machinarium.Qnil;
 using NLog;
-using SciChart.Charting.Model.DataSeries;
 using SciChart.Charting.Visuals.Axes;
-using SciChart.Charting.Visuals.RenderableSeries;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Data;
-using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.BotTerminal.Lib;
-using Api = TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using SciChart.Charting.Model.ChartSeries;
 using TickTrader.Algo.Common.Model;
 using System.Collections.Specialized;
 using TickTrader.Algo.Common.Model.Interop;
-using TickTrader.Algo.Common.Info;
 using Machinarium.Var;
 using SM = Machinarium.State;
-using TickTrader.Algo.Common.Lib;
-using TickTrader.Algo.Core.Infrastructure;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
-using Google.Protobuf.WellKnownTypes;
+using TickTrader.Algo.Server;
+using TickTrader.Algo.Package;
+using TickTrader.Algo.Common.Lib;
 
 namespace TickTrader.BotTerminal
 {

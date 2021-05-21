@@ -3,10 +3,7 @@ using NLog;
 using System;
 using System.Linq;
 using System.Threading;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Domain;
-using TickTrader.Algo.ServerControl;
 
 namespace TickTrader.BotTerminal
 {

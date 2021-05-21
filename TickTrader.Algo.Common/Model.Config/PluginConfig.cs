@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model.Config

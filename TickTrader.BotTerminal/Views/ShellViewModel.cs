@@ -1,20 +1,14 @@
 ﻿using ActorSharp;
 using Caliburn.Micro;
 using Machinarium.Qnil;
-using Machinarium.Var;
 using NLog;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
-using System.Windows.Controls;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.BotTerminal
 {

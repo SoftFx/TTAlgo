@@ -2,20 +2,16 @@
 using Google.Protobuf.WellKnownTypes;
 using Machinarium.Qnil;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Backtester;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
-using TickTrader.BotTerminal.Lib;
 using TickTrader.SeriesStorage;
 
 namespace TickTrader.BotTerminal

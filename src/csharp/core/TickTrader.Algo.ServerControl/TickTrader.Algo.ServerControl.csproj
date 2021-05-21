@@ -23,8 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\ActorSharp\ActorSharp.csproj" />
-    <ProjectReference Include="..\..\..\..\Machinarium\Machinarium.csproj" />
+    <ProjectReference Include="..\..\lib\ActorSharp\ActorSharp.csproj" />
+    <ProjectReference Include="..\..\lib\Machinarium\Machinarium.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Domain\TickTrader.Algo.Domain.csproj" />
   </ItemGroup>
 

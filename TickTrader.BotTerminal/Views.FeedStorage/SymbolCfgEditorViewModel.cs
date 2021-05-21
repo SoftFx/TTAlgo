@@ -1,13 +1,11 @@
 ﻿using Caliburn.Micro;
+using Machinarium.Qnil;
 using Machinarium.Var;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model;
-using Machinarium.Qnil;
-using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotTerminal
 {

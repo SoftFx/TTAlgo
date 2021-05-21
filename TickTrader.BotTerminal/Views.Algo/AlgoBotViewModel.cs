@@ -1,9 +1,7 @@
 ﻿using Caliburn.Micro;
 using System.Diagnostics;
 using System.IO;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal

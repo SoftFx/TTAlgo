@@ -1,5 +1,4 @@
 ﻿using Caliburn.Micro;
-using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using Machinarium.Qnil;
 using Machinarium.Var;
@@ -8,12 +7,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal

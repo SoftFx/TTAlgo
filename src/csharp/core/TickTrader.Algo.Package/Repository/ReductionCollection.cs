@@ -4,7 +4,7 @@ using System.Reflection;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.Package.Repository
+namespace TickTrader.Algo.Package
 {
     public class ReductionCollection
     {
@@ -48,7 +48,7 @@ namespace TickTrader.Algo.Package.Repository
             try
             {
                 var packageId = PackageId.FromPath(SharedConstants.EmbeddedRepositoryId, extAssembly.Location);
-                var pkg = PackageExplorer.ExamineAssembly(packageId, extAssembly);
+                var pkg = PackageExplorer.ScanAssembly(packageId, extAssembly);
                 
                 AddReductionsInternal(pkg);
 

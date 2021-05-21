@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
@@ -190,7 +191,7 @@ namespace TickTrader.BotTerminal
             else res.Add($"Account Id: {Bot.AccountId}");
             res.Add($"Instance Id: {Bot.InstanceId}");
             res.Add("------------ Permissions ------------");
-            res.Add(Bot.Model.Config.Permissions.ToPermissionsList());
+            Bot.Model.Config.Permissions.ToPermissionsList().ForEach(p => res.Add(p));
             if (Bot.Model.Descriptor != null)
             {
                 res.Add("------------ Plugin Info ------------");

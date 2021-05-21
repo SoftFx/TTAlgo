@@ -9,12 +9,13 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TickTrader.Algo.Backtester;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Package;
 
 namespace TickTrader.BotTerminal
 {
@@ -157,7 +158,7 @@ namespace TickTrader.BotTerminal
 
             client.Connected += () =>
             {
-                FeedSymbols.Foreach(s => s.Reset());
+                FeedSymbols.ForEach(s => s.Reset());
             };
 
             UpdateTradeSummary();
@@ -245,13 +246,13 @@ namespace TickTrader.BotTerminal
 
         #region Saving Results
 
-        public void SaveTestSetupAsText(AlgoPluginRef pluginRef, PluginConfig config, System.IO.Stream stream, DateTime from, DateTime to)
+        public void SaveTestSetupAsText(PluginDescriptor pDescriptor, PluginConfig config, System.IO.Stream stream, DateTime from, DateTime to)
         {
             using (var writer = new System.IO.StreamWriter(stream))
             {
                 writer.WriteLine(FeedSetupToText(from, to));
                 writer.WriteLine(TradeSetupToText());
-                writer.WriteLine(PluginSetupToText(pluginRef, config, false));
+                writer.WriteLine(PluginSetupToText(pDescriptor, config, false));
             }
         }
 
@@ -276,15 +277,14 @@ namespace TickTrader.BotTerminal
             return Settings.ToText(false);
         }
 
-        private string PluginSetupToText(AlgoPluginRef pluginRef, PluginConfig config, bool compact)
+        private string PluginSetupToText(PluginDescriptor pDescriptor, PluginConfig config, bool compact)
         {
             var writer = new StringBuilder();
-            var dPlugin = pluginRef.Metadata.Descriptor;
 
-            if (dPlugin.IsIndicator)
-                writer.AppendFormat("Indicator: {0} v{1}", dPlugin.DisplayName, dPlugin.Version).AppendLine();
-            else if (dPlugin.IsTradeBot)
-                writer.AppendFormat("Trade Bot: {0} v{1}", dPlugin.DisplayName, dPlugin.Version).AppendLine();
+            if (pDescriptor.IsIndicator)
+                writer.AppendFormat("Indicator: {0} v{1}", pDescriptor.DisplayName, pDescriptor.Version).AppendLine();
+            else if (pDescriptor.IsTradeBot)
+                writer.AppendFormat("Trade Bot: {0} v{1}", pDescriptor.DisplayName, pDescriptor.Version).AppendLine();
 
             //int count = 0;
             //foreach (var param in setup.Parameters)

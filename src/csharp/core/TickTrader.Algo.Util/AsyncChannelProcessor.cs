@@ -77,6 +77,20 @@ namespace TickTrader.Algo.Util
                 _workers[i] = ProcessItems(itemAction);
         }
 
+        public void Start(Action<T> itemAction)
+        {
+            if (itemAction == null)
+                throw new ArgumentNullException(nameof(itemAction));
+            if (_isStarted)
+                throw new Exception($"{Name} already started!");
+
+            _isStarted = true;
+            _doProcessing = true;
+            _workers = new Task[WorkersCnt];
+            for (var i = 0; i < _workers.Length; i++)
+                _workers[i] = ProcessItems(itemAction);
+        }
+
         public async Task Stop(bool finish = true)
         {
             if (!_isStarted)
@@ -181,6 +195,31 @@ namespace TickTrader.Algo.Util
                     try
                     {
                         await itemAction.Invoke(item);
+                    }
+                    catch (Exception) { }
+                }
+
+                if (i == BatchSize)
+                    await Task.Yield(); // break sync processing
+            }
+        }
+
+        private async Task ProcessItems(Action<T> itemAction)
+        {
+            await Task.Yield();
+
+            var reader = _channel.Reader;
+            while (_doProcessing && await reader.WaitToReadAsync())
+            {
+                var i = 0;
+                for (; i < BatchSize; i++)
+                {
+                    if (!DequeueInternal(reader, out var item))
+                        break;
+
+                    try
+                    {
+                        itemAction.Invoke(item);
                     }
                     catch (Exception) { }
                 }

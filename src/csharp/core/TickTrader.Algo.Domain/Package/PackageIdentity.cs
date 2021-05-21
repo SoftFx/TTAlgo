@@ -6,6 +6,9 @@ namespace TickTrader.Algo.Domain
 {
     public partial class PackageIdentity
     {
+        public bool IsValid => string.IsNullOrEmpty(Hash);
+
+
         public PackageIdentity(string fileName, string filePath, DateTime createdUtc, DateTime lastModifiedUtc, long size, string hash)
             : this(fileName, filePath, createdUtc.ToTimestamp(), lastModifiedUtc.ToTimestamp(), size, hash)
         {
@@ -32,9 +35,9 @@ namespace TickTrader.Algo.Domain
             return new PackageIdentity(info.Name, info.FullName, info.CreationTimeUtc, info.LastWriteTimeUtc, info.Length, "");
         }
 
-        public static PackageIdentity CreateInvalid(string fileName, string filePath)
+        public static PackageIdentity CreateInvalid(string filePath)
         {
-            return new PackageIdentity(fileName, filePath, DateTime.UtcNow, DateTime.UtcNow, -1, "");
+            return new PackageIdentity(Path.GetFileName(filePath), filePath, DateTime.UtcNow, DateTime.UtcNow, -1, "");
         }
     }
 }

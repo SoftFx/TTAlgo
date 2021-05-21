@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Calc;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.CoreV1;
+using TickTrader.Algo.CoreV1.Metadata;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.UnitTest
@@ -65,7 +67,7 @@ namespace TickTrader.Algo.Core.UnitTest
 
             _marketState = new MarketStateFixture(this);
             dispenser = new SubscriptionFixtureManager(this, _marketState);
-            Builder = new PluginBuilder(new Metadata.PluginMetadata(typeof(MockBot)));
+            Builder = new PluginBuilder(new PluginMetadata(typeof(MockBot)));
             Builder.Logger = new NullLogger();
             bStrategy = new TimeSpanStrategy(TimePeriodStart.ToDateTime(), TimePeriodEnd.ToDateTime());
         }

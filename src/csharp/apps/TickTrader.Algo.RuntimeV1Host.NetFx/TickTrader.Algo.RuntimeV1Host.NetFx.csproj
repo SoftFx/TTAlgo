@@ -62,13 +62,25 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj">
-      <Project>{8BAB901C-10BB-4EB7-B81E-716FA05B6957}</Project>
-      <Name>TickTrader.Algo.Core</Name>
+    <ProjectReference Include="..\..\api\TickTrader.Algo.CoreV1\TickTrader.Algo.CoreV1.csproj">
+      <Project>{42B014C3-EC56-458F-8071-65B61A1F7146}</Project>
+      <Name>TickTrader.Algo.CoreV1</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\core\TickTrader.Algo.Core.Lib\TickTrader.Algo.Core.Lib.csproj">
       <Project>{E854F964-4355-477E-AC02-1E38923A9A46}</Project>
       <Name>TickTrader.Algo.Core.Lib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\core\TickTrader.Algo.Isolation.NetFx\TickTrader.Algo.Isolation.NetFx.csproj">
+      <Project>{6C6D0FE1-83DE-4E8D-9A0B-92FFAB5735A2}</Project>
+      <Name>TickTrader.Algo.Isolation.NetFx</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\core\TickTrader.Algo.Package\TickTrader.Algo.Package.csproj">
+      <Project>{1708335C-CCAD-49EC-8DE7-E5053C16BFA4}</Project>
+      <Name>TickTrader.Algo.Package</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\core\TickTrader.Algo.Runtime\TickTrader.Algo.Runtime.csproj">
+      <Project>{04A6E5E1-6878-451B-8BE6-CDAB06255531}</Project>
+      <Name>TickTrader.Algo.Runtime</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\core\TickTrader.Algo.Util\TickTrader.Algo.Util.csproj">
       <Project>{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B}</Project>

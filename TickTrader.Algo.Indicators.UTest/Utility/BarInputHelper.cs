@@ -1,5 +1,5 @@
 ﻿using TickTrader.Algo.Api.Indicators;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.CoreV1;
 
 namespace TickTrader.Algo.Indicators.UTest.Utility
 {

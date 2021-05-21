@@ -5,10 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj" />
-    <ProjectReference Include="..\..\..\..\TickTrader.Algo.Ext\TickTrader.Algo.Ext.csproj" />
+    <ProjectReference Include="..\..\api\TickTrader.Algo.Ext\TickTrader.Algo.Ext.csproj" />
+    <ProjectReference Include="..\..\lib\ActorSharp\ActorSharp.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Core.Lib\TickTrader.Algo.Core.Lib.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Domain\TickTrader.Algo.Domain.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.Util\TickTrader.Algo.Util.csproj" />
   </ItemGroup>
 
 </Project>

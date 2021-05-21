@@ -209,12 +209,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
-      <Project>{8901C84D-FB62-433C-A25F-4D24255B9453}</Project>
-      <Name>TickTrader.Algo.Api</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
-    </ProjectReference>
     <ProjectReference Include="..\TickTrader.Algo.VS.Templates\TickTrader.Algo.VS.Templates.csproj">
       <Project>{38B2D38C-9B81-4B12-8E0F-B3DA9538C77F}</Project>
       <Name>TickTrader.Algo.VS.Templates</Name>

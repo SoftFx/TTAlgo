@@ -5,7 +5,7 @@ namespace TickTrader.Algo.Package
 {
     public interface IPackageExplorer
     {
-        PackageInfo ExamineAssembly(string packageId, Assembly assembly);
+        PackageInfo ScanAssembly(string packageId, Assembly assembly);
     }
 
 
@@ -20,9 +20,9 @@ namespace TickTrader.Algo.Package
         }
 
 
-        public static PackageInfo ExamineAssembly(string packageId, Assembly assembly)
+        public static PackageInfo ScanAssembly(string packageId, Assembly assembly)
         {
-            return _explorer.ExamineAssembly(packageId, assembly);
+            return _explorer.ScanAssembly(packageId, assembly);
         }
     }
 }

@@ -2,6 +2,7 @@
 using NLog;
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace TickTrader.BotTerminal
 {

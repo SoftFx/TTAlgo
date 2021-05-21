@@ -1,18 +1,15 @@
-﻿using Caliburn.Micro;
-using Machinarium.Var;
+﻿using Machinarium.Var;
 using SciChart.Charting.Model.DataSeries;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Backtester;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
+using TickTrader.Algo.Package;
 
 namespace TickTrader.Algo.Common.Model
 {

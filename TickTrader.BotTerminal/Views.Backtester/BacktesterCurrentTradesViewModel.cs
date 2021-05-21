@@ -1,14 +1,6 @@
-﻿using Caliburn.Micro;
-using Machinarium.Qnil;
-using Machinarium.Var;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Common.Lib;
+﻿using System.Collections.Generic;
+using TickTrader.Algo.Backtester;
 using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal

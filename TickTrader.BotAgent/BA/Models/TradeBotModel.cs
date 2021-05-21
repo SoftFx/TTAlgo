@@ -4,12 +4,11 @@ using System;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Package;
+using TickTrader.Algo.Server;
 using TickTrader.BotAgent.BA.Exceptions;
-using TickTrader.BotAgent.BA.Repository;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -30,7 +29,7 @@ namespace TickTrader.BotAgent.BA.Models
         private AlgoData.ControlHandler _algoData;
         private PluginInfo _info;
         private BotListenerProxy _botListener;
-        private PackageStorage _packageRepo;
+        private Repository.PackageStorage _packageRepo;
         private TaskCompletionSource<object> _startedEvent;
         private bool _closed;
 
@@ -86,7 +85,7 @@ namespace TickTrader.BotAgent.BA.Models
             return false;
         }
         
-        public bool Init(AlgoServer server, ClientModel client, PackageStorage packageRepo, string workingFolder, AlertStorage storage)
+        public bool Init(AlgoServer server, ClientModel client, Repository.PackageStorage packageRepo, string workingFolder, AlertStorage storage)
         {
             try
             {

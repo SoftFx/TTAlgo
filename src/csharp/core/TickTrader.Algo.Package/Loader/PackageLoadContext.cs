@@ -9,14 +9,19 @@ namespace TickTrader.Algo.Package
     public interface IPackageLoadContext : IDisposable
     {
         /// <summary>
-        /// Load package assemblies for exeution
+        /// Load package assemblies for execution
         /// </summary>
-        Task<PackageInfo> Load(string packageId, string packagePath);
+        PackageInfo Load(string packageId, string packagePath);
+
+        /// <summary>
+        /// Load package assemblies for execution
+        /// </summary>
+        Task<PackageInfo> LoadAsync(string packageId, string packagePath);
 
         /// <summary>
         /// Generate metadata for already loaded assemblies
         /// </summary>
-        Task<PackageInfo> ExamineAssembly(string packageId, Assembly assembly);
+        PackageInfo ScanAssembly(string packageId, Assembly assembly);
     }
 
     public static class PackageLoadContext
@@ -40,30 +45,38 @@ namespace TickTrader.Algo.Package
         /// <summary>
         /// Load package into default load context. Loaded assemblies cannot be removed from process
         /// </summary>
-        public static Task<PackageInfo> Load(string packageId, string packagePath)
+        public static PackageInfo Load(string packageId, string packagePath)
         {
             return _default.Load(packageId, packagePath);
         }
 
         /// <summary>
+        /// Load package into default load context. Loaded assemblies cannot be removed from process
+        /// </summary>
+        public static Task<PackageInfo> LoadAsync(string packageId, string packagePath)
+        {
+            return _default.LoadAsync(packageId, packagePath);
+        }
+
+        /// <summary>
         /// Generates metadata of a dependent assembly already loaded other ways
         /// </summary>
-        public static Task<PackageInfo> ExamineAssembly(string packageId, Assembly assembly)
+        public static PackageInfo ScanAssembly(string packageId, Assembly assembly)
         {
-            return _default.ExamineAssembly(packageId, assembly);
+            return _default.ScanAssembly(packageId, assembly);
         }
 
         /// <summary>
         /// Loads package into isolated load context to extract PackageInfo. Isolated context is disposed after that
         /// </summary>
-        public static async Task<PackageInfo> ReflectionOnlyLoad(string packagePath)
+        public static PackageInfo ReflectionOnlyLoad(string packageId, string packagePath)
         {
             PackageInfo res = null;
             try
             {
                 using (var loadContext = _factory(true))
                 {
-                    res = await loadContext.Load("reflection-only", packagePath);
+                    res = loadContext.Load(packageId, packagePath);
                 }
             }
             catch (Exception ex)

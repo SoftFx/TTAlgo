@@ -1,6 +1,6 @@
 ﻿using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Package;
 
 namespace TickTrader.BotTerminal
 {

@@ -1,19 +1,12 @@
-﻿using Caliburn.Micro;
-using Google.Protobuf.WellKnownTypes;
+﻿using Google.Protobuf.WellKnownTypes;
 using Machinarium.Qnil;
 using SciChart.Charting.Model.ChartSeries;
-using SciChart.Charting.Model.DataSeries;
 using SciChart.Charting.Visuals.Axes;
-using SciChart.Data.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
+using TickTrader.Algo.Backtester;
 using TickTrader.Algo.Common.Lib;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
@@ -109,9 +102,9 @@ namespace TickTrader.BotTerminal
             backtester.Executor.TradesUpdated -= Executor_TradesUpdated;
         }
 
-        private void Backtester_OnChartUpdate(BarData bar, string symbol, Algo.Domain.DataSeriesUpdate.Types.UpdateAction action)
+        private void Backtester_OnChartUpdate(BarData bar, string symbol, DataSeriesUpdate.Types.UpdateAction action)
         {
-            if (action == Algo.Domain.DataSeriesUpdate.Types.UpdateAction.Append)
+            if (action == DataSeriesUpdate.Types.UpdateAction.Append)
             {
                 _barVector.AppendBarPart(bar);
                 ApplyPostponedMarkers();
@@ -189,10 +182,10 @@ namespace TickTrader.BotTerminal
 
             if (_acctype == AccountInfo.Types.Type.Gross)
             {
-                if (tt.OrderExecAction == Algo.Domain.OrderExecReport.Types.ExecAction.Filled
-                    || (tt.OrderExecAction == Algo.Domain.OrderExecReport.Types.ExecAction.Opened && tt.OrderUpdate.Type == Algo.Domain.OrderInfo.Types.Type.Position))
+                if (tt.OrderExecAction == OrderExecReport.Types.ExecAction.Filled
+                    || (tt.OrderExecAction == OrderExecReport.Types.ExecAction.Opened && tt.OrderUpdate.Type == OrderInfo.Types.Type.Position))
                 {
-                    if (tt.PositionEntityAction == Algo.Domain.OrderExecReport.Types.EntityAction.Added)
+                    if (tt.PositionEntityAction == OrderExecReport.Types.EntityAction.Added)
                     {
                         // partial fill
                         var order = tt.PositionUpdate;
@@ -202,7 +195,7 @@ namespace TickTrader.BotTerminal
                         var openPrice = NumberFormat.FormatPrice(order.Price, digits);
                         var openDescription = $"#{order.Id} {order.Side} (open) {order.RequestedAmount/lotSize} {order.Symbol} at price {openPrice}";
 
-                        AddMarker(new PosMarkerKey(order.Id, "a" + _actionIdSeed), order.Created.ToDateTime(), order.Side == Algo.Domain.OrderInfo.Types.Side.Buy, openDescription);
+                        AddMarker(new PosMarkerKey(order.Id, "a" + _actionIdSeed), order.Created.ToDateTime(), order.Side == OrderInfo.Types.Side.Buy, openDescription);
                     }
                     else
                     {
@@ -214,11 +207,11 @@ namespace TickTrader.BotTerminal
                         var openPrice = NumberFormat.FormatPrice(order.Price, digits);
                         var openDescription = $"#{order.Id} {order.Side} (open) {order.RequestedAmount/lotSize} {order.Symbol} at price {openPrice}";
 
-                        AddMarker(new PosMarkerKey(order.Id, "b" + _actionIdSeed), order.Created.ToDateTime(), order.Side == Algo.Domain.OrderInfo.Types.Side.Buy, openDescription);
+                        AddMarker(new PosMarkerKey(order.Id, "b" + _actionIdSeed), order.Created.ToDateTime(), order.Side == OrderInfo.Types.Side.Buy, openDescription);
                     }
                 }
 
-                if (tt.PositionExecAction == Algo.Domain.OrderExecReport.Types.ExecAction.Closed)
+                if (tt.PositionExecAction == OrderExecReport.Types.ExecAction.Closed)
                 {
                     var order = tt.PositionUpdate;
                     var symbol = _symbolMap.GetOrDefault(order.Symbol);
@@ -227,13 +220,13 @@ namespace TickTrader.BotTerminal
                     var closePrice = NumberFormat.FormatPrice(order.LastFillPrice, digits);
                     var closeDescription = $"#{order.Id} {order.Side.Revert()} (close) {order.LastFillAmount/lotSize} {order.Symbol} at price {closePrice}";
 
-                    AddMarker(new PosMarkerKey(order.Id, "c" + _actionIdSeed), order.Modified.ToDateTime(), order.Side == Algo.Domain.OrderInfo.Types.Side.Sell, closeDescription);
+                    AddMarker(new PosMarkerKey(order.Id, "c" + _actionIdSeed), order.Modified.ToDateTime(), order.Side == OrderInfo.Types.Side.Sell, closeDescription);
                 }
             }
             else if (_acctype == AccountInfo.Types.Type.Net)
             {
-                if (tt.OrderExecAction == Algo.Domain.OrderExecReport.Types.ExecAction.Filled
-                    || (tt.OrderExecAction == Algo.Domain.OrderExecReport.Types.ExecAction.Opened && tt.NetPositionUpdate != null))
+                if (tt.OrderExecAction == OrderExecReport.Types.ExecAction.Filled
+                    || (tt.OrderExecAction == OrderExecReport.Types.ExecAction.Opened && tt.NetPositionUpdate != null))
                 {
                     var order = tt.OrderUpdate;
                     var symbol = _symbolMap.GetOrDefault(order.Symbol);
@@ -241,7 +234,7 @@ namespace TickTrader.BotTerminal
                     var lotSize = symbol?.LotSize ?? 1;
                     var openPrice = NumberFormat.FormatPrice(order.LastFillPrice, digits);
                     var description = $"#{order.Id} {order.Side} {order.LastFillAmount/lotSize} at price {openPrice}";
-                    AddMarker(new PosMarkerKey(order.Id, "f" + _actionIdSeed), order.Modified.ToDateTime(), order.Side == Algo.Domain.OrderInfo.Types.Side.Buy, description);
+                    AddMarker(new PosMarkerKey(order.Id, "f" + _actionIdSeed), order.Modified.ToDateTime(), order.Side == OrderInfo.Types.Side.Buy, description);
                 }
             }
         }

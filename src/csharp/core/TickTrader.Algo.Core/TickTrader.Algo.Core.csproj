@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Lib\Dataflow.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Lib\Dataflow.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\lib\ActorSharp\ActorSharp.csproj" />
+    <ProjectReference Include="..\..\lib\Machinarium\Machinarium.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.Core.Lib\TickTrader.Algo.Core.Lib.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.Domain\TickTrader.Algo.Domain.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.Rpc\TickTrader.Algo.Rpc.csproj" />
+  </ItemGroup>
+
+</Project>

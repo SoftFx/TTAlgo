@@ -1,36 +1,14 @@
 ﻿using Caliburn.Micro;
-using SciChart.Charting.ViewportManagers;
-using SciChart.Charting.Visuals.RenderableSeries;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Data;
-using TickTrader.Algo.Core.Repository;
 using TickTrader.BotTerminal.Lib;
-using SciChart.Charting.Visuals.Axes;
-using SciChart.Data.Model;
-using SciChart.Charting.Services;
-using SciChart.Charting.Model.ChartSeries;
-using SciChart.Charting.Model.DataSeries;
 using NLog;
 using Machinarium.Qnil;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Core.Metadata;
-using System.Windows.Input;
-using TickTrader.Algo.Common.Model;
-using Xceed.Wpf.AvalonDock.Layout;
-using System.Windows.Controls;
-using TickTrader.Algo.Common.Info;
 using Machinarium.Var;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
-using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
@@ -162,7 +140,7 @@ namespace TickTrader.BotTerminal
         {
             base.TryClose(dialogResult);
 
-            Indicators.Foreach(i => _shell.Agent.IdProvider.UnregisterPlugin(i.Model.InstanceId));
+            Indicators.ForEach(i => _shell.Agent.IdProvider.UnregisterPlugin(i.Model.InstanceId));
 
             _algoEnv.LocalAgent.BotUpdated -= BotOnUpdated;
             _algoEnv.LocalAgentVM.Bots.Updated -= BotsOnUpdated;
@@ -415,7 +393,7 @@ namespace TickTrader.BotTerminal
         private void FilterChartBots()
         {
             _chartBots.Clear();
-            _algoEnv.LocalAgentVM.Bots.Where(IsChartBot).Snapshot.Foreach(AddChartBot);
+            _algoEnv.LocalAgentVM.Bots.Where(IsChartBot).Snapshot.ForEach(AddChartBot);
         }
 
         private bool BotBelongsToChart(PluginModel bot)

@@ -5,10 +5,7 @@ using SciChart.Charting.Model.ChartSeries;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
@@ -70,8 +67,8 @@ namespace TickTrader.BotTerminal
 
             _outputModels = CreateOutputModels(Model).ToList();
 
-            _outputModels.Where(o => o.Descriptor.Target == Metadata.Types.OutputTarget.Overlay).Foreach(_overlayOutputs.Add);
-            _overlayOutputs.Values.Foreach(o => _overlaySeries.Add(SeriesViewModel.FromOutputSeries(o)));
+            _outputModels.Where(o => o.Descriptor.Target == Metadata.Types.OutputTarget.Overlay).ForEach(_overlayOutputs.Add);
+            _overlayOutputs.Values.ForEach(o => _overlaySeries.Add(SeriesViewModel.FromOutputSeries(o)));
 
             foreach (Metadata.Types.OutputTarget target in Enum.GetValues(typeof(Metadata.Types.OutputTarget)))
             {

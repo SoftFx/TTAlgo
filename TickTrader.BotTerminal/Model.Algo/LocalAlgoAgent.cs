@@ -15,9 +15,10 @@ using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
+using TickTrader.Algo.Package;
+using TickTrader.Algo.Server;
 using TickTrader.Algo.ServerControl;
 using File = System.IO.File;
 
@@ -103,9 +104,9 @@ namespace TickTrader.BotTerminal
 
             AlgoServer.RegisterAccountProxy(ClientModel.GetAccountProxy());
 
-            _reductions = new ReductionCollection(new AlgoLogAdapter("Extensions"));
+            _reductions = new ReductionCollection();
             IdProvider = new PluginIdProvider();
-            Library = new LocalAlgoLibrary(new AlgoLogAdapter("AlgoRepository"), AlgoServer);
+            Library = new LocalAlgoLibrary(AlgoServer);
             _botsWarden = new BotsWarden(this);
             _syncContext = new DispatcherSync();
             _packages = new VarDictionary<string, PackageInfo>();
@@ -128,7 +129,7 @@ namespace TickTrader.BotTerminal
             if (EnvService.Instance.AlgoCommonRepositoryFolder != null)
                 Library.RegisterRepositoryLocation(SharedConstants.CommonRepositoryId, EnvService.Instance.AlgoCommonRepositoryFolder, Properties.Settings.Default.EnablePluginIsolation);
 
-            _reductions.LoadReductions(EnvService.Instance.AlgoExtFolder, SharedConstants.LocalRepositoryId);
+            //_reductions.LoadReductions(EnvService.Instance.AlgoExtFolder, SharedConstants.LocalRepositoryId);
 
             Mappings = _reductions.CreateMappings();
             Catalog = new PluginCatalog(this);
@@ -507,7 +508,7 @@ namespace TickTrader.BotTerminal
         private void StopRunningBotsOnBlockedAccount()
         {
             if (ClientModel.Connection.LastError?.Code == ConnectionErrorInfo.Types.ErrorCode.BlockedAccount)
-                _bots.Snapshot.Values.Where(b => PluginStateHelper.IsRunning(b.State)).Foreach(b => b.Stop().Forget());
+                _bots.Snapshot.Values.Where(b => PluginStateHelper.IsRunning(b.State)).ForEach(b => b.Stop().Forget());
         }
 
         #endregion

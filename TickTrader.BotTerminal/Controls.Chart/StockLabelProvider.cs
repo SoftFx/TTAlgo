@@ -1,12 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SciChart.Charting.Visuals.Axes;
 using SciChart.Charting.Visuals.Axes.LabelProviders;
-using SciChart.Data.Model;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal

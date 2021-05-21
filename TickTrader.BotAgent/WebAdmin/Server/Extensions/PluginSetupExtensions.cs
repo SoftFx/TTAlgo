@@ -2,9 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Package;
 using TickTrader.BotAgent.WebAdmin.Server.Dto;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
 

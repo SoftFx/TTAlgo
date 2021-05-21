@@ -13,6 +13,7 @@ using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model.Interop;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Domain;
 using TickTrader.FDK.Common;
 using SFX = TickTrader.FDK.Common;
@@ -533,12 +534,12 @@ namespace TickTrader.Algo.Common.Model
 
         private bool? GetIoCReplace(Domain.OrderExecOptions? options)
         {
-            return options?.IsFlagSet(Domain.OrderExecOptions.ImmediateOrCancel);
+            return options?.HasFlag(Domain.OrderExecOptions.ImmediateOrCancel);
         }
 
         private bool? GetOCOReplace(Domain.OrderExecOptions? options)
         {
-            return options?.IsFlagSet(Domain.OrderExecOptions.OneCancelsTheOther);
+            return options?.HasFlag(Domain.OrderExecOptions.OneCancelsTheOther);
         }
 
         private OrderTimeInForce GetTimeInForce(Timestamp expiration)
@@ -548,12 +549,12 @@ namespace TickTrader.Algo.Common.Model
 
         private bool GetIoC(Domain.OrderExecOptions options)
         {
-            return options.IsFlagSet(Domain.OrderExecOptions.ImmediateOrCancel);
+            return options.HasFlag(Domain.OrderExecOptions.ImmediateOrCancel);
         }
 
         private bool GetOCO(Domain.OrderExecOptions options)
         {
-            return options.IsFlagSet(Domain.OrderExecOptions.OneCancelsTheOther);
+            return options.HasFlag(Domain.OrderExecOptions.OneCancelsTheOther);
         }
 
         #endregion

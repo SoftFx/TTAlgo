@@ -1,5 +1,4 @@
 ﻿using System;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal

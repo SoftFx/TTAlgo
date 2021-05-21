@@ -67,10 +67,6 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="TickTrader.Common">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\TickTrader.Common.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entities\EntityUpdate.cs" />
@@ -150,14 +146,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ActorSharp\ActorSharp.csproj">
-      <Project>{7d6b7bba-586c-4a69-a368-6bf9b87026b2}</Project>
-      <Name>ActorSharp</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Machinarium\Machinarium.csproj">
-      <Project>{df05b4cc-200a-436b-91cc-bebe7d89b8ad}</Project>
-      <Name>Machinarium</Name>
-    </ProjectReference>
     <ProjectReference Include="..\modules\FDK2\Client\Client.csproj">
       <Project>{23d9de1a-92c0-42fc-875b-5881ce8433d4}</Project>
       <Name>Client</Name>
@@ -178,29 +166,53 @@
       <Project>{ec1a8251-119a-44be-8a8c-bc7823876763}</Project>
       <Name>Standard</Name>
     </ProjectReference>
+    <ProjectReference Include="..\src\csharp\api\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
+      <Project>{9D9CF1B3-7E57-4971-A479-5803C658A7D0}</Project>
+      <Name>TickTrader.Algo.Api</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\src\csharp\api\TickTrader.Algo.CoreV1\TickTrader.Algo.CoreV1.csproj">
+      <Project>{42B014C3-EC56-458F-8071-65B61A1F7146}</Project>
+      <Name>TickTrader.Algo.CoreV1</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Backtester\TickTrader.Algo.Backtester.csproj">
+      <Project>{AAB1251C-C57F-4D4D-A64B-3966D6643BF5}</Project>
+      <Name>TickTrader.Algo.Backtester</Name>
+    </ProjectReference>
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Core.Lib\TickTrader.Algo.Core.Lib.csproj">
       <Project>{E854F964-4355-477E-AC02-1E38923A9A46}</Project>
       <Name>TickTrader.Algo.Core.Lib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj">
+      <Project>{71E1AE60-7DC9-4AD3-AD38-034B961E17F4}</Project>
+      <Name>TickTrader.Algo.Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Domain\TickTrader.Algo.Domain.csproj">
       <Project>{6c7fc318-5848-4206-8431-3695c70143fa}</Project>
       <Name>TickTrader.Algo.Domain</Name>
     </ProjectReference>
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Package\TickTrader.Algo.Package.csproj">
+      <Project>{1708335C-CCAD-49EC-8DE7-E5053C16BFA4}</Project>
+      <Name>TickTrader.Algo.Package</Name>
+    </ProjectReference>
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.ServerControl\TickTrader.Algo.ServerControl.csproj">
       <Project>{d250f528-cfeb-4a68-9817-a99a92e0a4e4}</Project>
       <Name>TickTrader.Algo.ServerControl</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server\TickTrader.Algo.Server.csproj">
+      <Project>{80BBD05A-F622-49D5-BADD-E35B81D15D00}</Project>
+      <Name>TickTrader.Algo.Server</Name>
     </ProjectReference>
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Util\TickTrader.Algo.Util.csproj">
       <Project>{f6e91df8-4706-4979-af0f-259b5f9e3d0b}</Project>
       <Name>TickTrader.Algo.Util</Name>
     </ProjectReference>
-    <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
-      <Project>{8901c84d-fb62-433c-a25f-4d24255b9453}</Project>
-      <Name>TickTrader.Algo.Api</Name>
+    <ProjectReference Include="..\src\csharp\lib\ActorSharp\ActorSharp.csproj">
+      <Project>{ED842FEA-18A1-4F2B-AB79-3ABC80D1A9AB}</Project>
+      <Name>ActorSharp</Name>
     </ProjectReference>
-    <ProjectReference Include="..\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj">
-      <Project>{8bab901c-10bb-4eb7-b81e-716fa05b6957}</Project>
-      <Name>TickTrader.Algo.Core</Name>
+    <ProjectReference Include="..\src\csharp\lib\Machinarium\Machinarium.csproj">
+      <Project>{647AB10F-3371-49B2-840E-AEE332B11C29}</Project>
+      <Name>Machinarium</Name>
     </ProjectReference>
     <ProjectReference Include="..\TickTrader.SeriesStorage.LevelDb\TickTrader.SeriesStorage.LevelDb.csproj">
       <Project>{cb30b69a-de4d-4819-8e83-cf5dd80cd060}</Project>

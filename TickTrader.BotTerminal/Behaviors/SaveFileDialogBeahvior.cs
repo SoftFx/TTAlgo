@@ -1,15 +1,10 @@
 ﻿using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Interactivity;
-using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Package;
 using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal

@@ -4,10 +4,8 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
@@ -96,7 +94,7 @@ namespace TickTrader.BotTerminal
             {
                 profileStorage.SelectedChart = (SelectedChartProxy as ChartViewModel)?.Symbol;
                 profileStorage.Charts = new List<ChartStorageEntry>();
-                Items.Foreach(i => profileStorage.Charts.Add(i.GetSnapshot()));
+                Items.ForEach(i => profileStorage.Charts.Add(i.GetSnapshot()));
             }
             catch (Exception ex)
             {
@@ -118,7 +116,7 @@ namespace TickTrader.BotTerminal
 
                 _charts.Clear();
 
-                profileStorage.Charts.Where(c => c.Id != null).Foreach(c => _charts[c.Id] = null); // register existing chartIds
+                profileStorage.Charts.Where(c => c.Id != null).ForEach(c => _charts[c.Id] = null); // register existing chartIds
 
                 foreach (var chart in profileStorage.Charts.Where(c => _clientModel.Symbols.GetOrDefault(c.Symbol) != null))
                 {

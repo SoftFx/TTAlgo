@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TickTrader.Algo.Domain;
 using Google.Protobuf.WellKnownTypes;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.CoreV1;
 
 namespace TickTrader.Algo.Core.UnitTest
 {

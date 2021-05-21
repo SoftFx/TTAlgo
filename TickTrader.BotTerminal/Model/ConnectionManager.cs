@@ -1,18 +1,12 @@
 ﻿using Machinarium.Qnil;
-using Machinarium.State;
 using NLog;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model;
-using TickTrader.BotTerminal.Lib;
 using TickTrader.Algo.Common.Lib;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Lib;
 using System.Configuration;
 using TickTrader.Algo.Domain;
@@ -207,7 +201,7 @@ namespace TickTrader.BotTerminal
             foreach (var acc in authStorage.Accounts.Values)
                 Accounts.Add(CreateEntry(acc));
 
-            Accounts.Select(u => u.Server.Address).Distinct().Except(Servers.Select(u => u.Address)).Foreach(u => SaveNewServer(u)); //add cached servers
+            Accounts.Select(u => u.Server.Address).Distinct().Except(Servers.Select(u => u.Address)).ForEach(u => SaveNewServer(u)); //add cached servers
         }
 
         private void SaveLogin(AccountAuthEntry entry)

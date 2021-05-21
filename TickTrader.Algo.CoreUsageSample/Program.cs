@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Linq;
+using System.Reflection;
 using System.Xml.Serialization;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.CoreV1;
+using TickTrader.Algo.CoreV1.Metadata;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreUsageSample
@@ -49,8 +51,9 @@ namespace TickTrader.Algo.CoreUsageSample
             var dataModel = new FeedModel(Feed.Types.Timeframe.M1);
             dataModel.Fill("EURUSD", TTQuoteFileReader.ReadFile("EURUSD-M1-bids.txt"));
 
-            var descriptor = AlgoAssemblyInspector.GetPlugin(typeof(Alligator));
-            var executor = new PluginExecutorCore(descriptor.Id);
+            var pkgId = "bin/sample";
+            var pkg = PackageMetadataCache.ExamineAssembly(pkgId, Assembly.GetExecutingAssembly());
+            var executor = new PluginExecutorCore(new PluginKey (pkgId, typeof(Alligator).FullName));
             executor.MainSymbolCode = "EURUSD";
             executor.InvokeStrategy = new PriorityInvokeStartegy();
             executor.TimeFrame = dataModel.TimeFrame;

@@ -2213,21 +2213,25 @@
     <EmbeddedResource Include="TestsData\VolumesTests\Volumes\Volumes_USDCHF_M30.bin" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\src\csharp\api\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
+      <Project>{9D9CF1B3-7E57-4971-A479-5803C658A7D0}</Project>
+      <Name>TickTrader.Algo.Api</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\src\csharp\api\TickTrader.Algo.CoreV1\TickTrader.Algo.CoreV1.csproj">
+      <Project>{42B014C3-EC56-458F-8071-65B61A1F7146}</Project>
+      <Name>TickTrader.Algo.CoreV1</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\src\csharp\api\TickTrader.Algo.Indicators\TickTrader.Algo.Indicators.csproj">
+      <Project>{be46ac03-e660-4e29-9a39-cc574a2109b9}</Project>
+      <Name>TickTrader.Algo.Indicators</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj">
+      <Project>{71E1AE60-7DC9-4AD3-AD38-034B961E17F4}</Project>
+      <Name>TickTrader.Algo.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Domain\TickTrader.Algo.Domain.csproj">
       <Project>{6c7fc318-5848-4206-8431-3695c70143fa}</Project>
       <Name>TickTrader.Algo.Domain</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
-      <Project>{8901c84d-fb62-433c-a25f-4d24255b9453}</Project>
-      <Name>TickTrader.Algo.Api</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj">
-      <Project>{8bab901c-10bb-4eb7-b81e-716fa05b6957}</Project>
-      <Name>TickTrader.Algo.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TickTrader.Algo.Indicators\TickTrader.Algo.Indicators.csproj">
-      <Project>{127406a9-5d62-4fe7-9680-1d2deed7564f}</Project>
-      <Name>TickTrader.Algo.Indicators</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

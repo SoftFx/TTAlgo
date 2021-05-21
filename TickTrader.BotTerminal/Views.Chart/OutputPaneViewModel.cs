@@ -1,22 +1,12 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
 using Machinarium.Var;
-using SciChart.Charting.Model.ChartData;
 using SciChart.Charting.Model.ChartSeries;
-using SciChart.Charting.Model.DataSeries;
-using SciChart.Charting.Visuals.Annotations;
 using SciChart.Charting.Visuals.Axes;
-using SciChart.Charting.Visuals.RenderableSeries;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
@@ -58,7 +48,7 @@ namespace TickTrader.BotTerminal
             _outputs = new VarList<OutputSeriesModel>();
             Series = _outputs.Select(SeriesViewModel.FromOutputSeries).AsObservable();
 
-            ouputModels.Where(o => o.Descriptor.Target == target).Foreach(_outputs.Add);
+            ouputModels.Where(o => o.Descriptor.Target == target).ForEach(_outputs.Add);
 
             UpdateAxis();
             UpdatePrecision();

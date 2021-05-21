@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.Backtester;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal

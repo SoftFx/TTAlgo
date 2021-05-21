@@ -62,22 +62,23 @@
     <Compile Include="Container\PackageLoadContextProvider.cs" />
     <Compile Include="CrossDomainCallback.cs" />
     <Compile Include="CrossDomainObject.cs" />
+    <Compile Include="CrossDomainRuntimeHost.cs" />
     <Compile Include="CrossDomainTask.cs" />
     <Compile Include="Isolated.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
-      <Project>{8901c84d-fb62-433c-a25f-4d24255b9453}</Project>
+    <ProjectReference Include="..\..\api\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
+      <Project>{9d9cf1b3-7e57-4971-a479-5803c658a7d0}</Project>
       <Name>TickTrader.Algo.Api</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\api\TickTrader.Algo.CoreV1\TickTrader.Algo.CoreV1.csproj">
+      <Project>{42B014C3-EC56-458F-8071-65B61A1F7146}</Project>
+      <Name>TickTrader.Algo.CoreV1</Name>
     </ProjectReference>
     <ProjectReference Include="..\TickTrader.Algo.Core.Lib\TickTrader.Algo.Core.Lib.csproj">
       <Project>{E854F964-4355-477E-AC02-1E38923A9A46}</Project>
       <Name>TickTrader.Algo.Core.Lib</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TickTrader.Algo.CoreV1\TickTrader.Algo.CoreV1.csproj">
-      <Project>{41075e45-640e-449c-8a38-b1cbec48766f}</Project>
-      <Name>TickTrader.Algo.CoreV1</Name>
     </ProjectReference>
     <ProjectReference Include="..\TickTrader.Algo.Domain\TickTrader.Algo.Domain.csproj">
       <Project>{6C7FC318-5848-4206-8431-3695C70143FA}</Project>

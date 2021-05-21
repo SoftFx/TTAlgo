@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Server;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -17,7 +16,7 @@ namespace TickTrader.Algo.Common.Model
     }
 
 
-    public class BotListenerProxy : CrossDomainObject
+    public class BotListenerProxy
     {
         private ExecutorModel _executor;
         private Action _onStopped;
@@ -57,17 +56,12 @@ namespace TickTrader.Algo.Common.Model
         }
 
 
-        protected override void Dispose(bool disposing)
+        public void Dispose()
         {
             _timer?.Dispose();
 
-            if (disposing)
-            {
-                _executor.Stopped -= Executor_Stopped;
-                _executor.LogUpdated -= Executor_LogUpdated;
-            }
-
-            base.Dispose(disposing);
+            _executor.Stopped -= Executor_Stopped;
+            _executor.LogUpdated -= Executor_LogUpdated;
         }
 
 

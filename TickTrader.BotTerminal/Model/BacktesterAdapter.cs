@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.Backtester;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal

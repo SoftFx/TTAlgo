@@ -8,14 +8,10 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Xml;
-using System.Xml.Serialization;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Package;
 
 namespace TickTrader.BotTerminal
 {

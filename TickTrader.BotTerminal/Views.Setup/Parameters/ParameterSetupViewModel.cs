@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reflection;
 using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal

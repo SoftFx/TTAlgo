@@ -1,5 +1,4 @@
 ﻿using ActorSharp;
-using Caliburn.Micro;
 using Machinarium.Qnil;
 using Machinarium.Var;
 using NLog;
@@ -7,14 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Api;
+using TickTrader.Algo.Backtester;
 using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
-using TickTrader.SeriesStorage;
 
 namespace TickTrader.BotTerminal
 {

@@ -6,8 +6,11 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.CoreV1;
+using TickTrader.Algo.Isolation.NetFx;
+using TickTrader.Algo.Package;
+using TickTrader.Algo.Runtime;
 
 namespace TickTrader.Algo.RuntimeV1Host.NetFx
 {
@@ -25,6 +28,9 @@ namespace TickTrader.Algo.RuntimeV1Host.NetFx
 
         private static async Task RunRuntime(string[] args)
         {
+            PackageLoadContext.Init(isolated => PackageLoadContextProvider.Create(isolated));
+            PackageExplorer.Init(new PackageV1Explorer());
+
             AlgoLoggerFactory.Init(n => new RuntimeLogAdapter(n));
             var logger = LogManager.GetLogger("MainLoop");
 

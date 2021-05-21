@@ -1,17 +1,10 @@
 ﻿using Caliburn.Micro;
 using System;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Common.Model.Setup;
 using System.IO;
-using System.Threading.Tasks.Dataflow;
-using System.Linq;
-using System.Collections.Generic;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Server;
 
 namespace TickTrader.BotTerminal
 {

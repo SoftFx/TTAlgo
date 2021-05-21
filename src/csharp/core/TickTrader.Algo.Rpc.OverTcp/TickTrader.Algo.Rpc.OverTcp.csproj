@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\ActorSharp\ActorSharp.csproj" />
+    <ProjectReference Include="..\..\lib\ActorSharp\ActorSharp.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Rpc\TickTrader.Algo.Rpc.csproj" />
   </ItemGroup>
 

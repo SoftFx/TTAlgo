@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model.Interop;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.CoreV1;
 using ActorSharp;
 using TickTrader.Algo.Domain;
 using Google.Protobuf.WellKnownTypes;

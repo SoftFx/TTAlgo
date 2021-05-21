@@ -1,7 +1,6 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal

@@ -1,18 +1,13 @@
-﻿using Caliburn.Micro;
-using Machinarium.Var;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Backtester;
 using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
@@ -113,15 +108,14 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public Task SaveReportAsync(AlgoPluginRef pluginRef, IActionObserver observer)
+        public Task SaveReportAsync(PluginDescriptor pDescriptor, IActionObserver observer)
         {
-            return Task.Run(() => SaveReport(pluginRef, observer));
+            return Task.Run(() => SaveReport(pDescriptor, observer));
         }
 
-        private void SaveReport(AlgoPluginRef pluginRef, IActionObserver observer)
+        private void SaveReport(PluginDescriptor pDescriptor, IActionObserver observer)
         {
-            var dPlugin = pluginRef.Metadata.Descriptor;
-            var fileName = "Optimization of " + dPlugin.DisplayName + " " + DateTime.Now.ToString("yyyy-dd-M HH-mm-ss") + ".zip";
+            var fileName = "Optimization of " + pDescriptor.DisplayName + " " + DateTime.Now.ToString("yyyy-dd-M HH-mm-ss") + ".zip";
             var filePath = System.IO.Path.Combine(EnvService.Instance.BacktestResultsFolder, fileName);
 
             observer.StartIndeterminateProgress();
@@ -153,7 +147,7 @@ namespace TickTrader.BotTerminal
 
                         var summaryEntry = archive.CreateEntry(repFolder + "report.txt", CompressionLevel.Optimal);
                         using (var entryStream = summaryEntry.Open())
-                            BacktesterReportViewModel.SaveAsText(entryStream, dPlugin.IsTradeBot, rep.Stats);
+                            BacktesterReportViewModel.SaveAsText(entryStream, pDescriptor.IsTradeBot, rep.Stats);
 
                         observer.SetProgress(repNo++);
                     }

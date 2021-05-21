@@ -29,14 +29,19 @@ namespace TickTrader.Algo.Isolation.NetFx
             throw new NotSupportedException("Can't unload current load context");
         }
 
-        public Task<PackageInfo> ExamineAssembly(string packageId, Assembly assembly)
+        public PackageInfo Load(string packageId, string packagePath)
         {
-            return Task.Factory.StartNew(() => PackageExplorer.ExamineAssembly(packageId, assembly));
+            return LoadInternal(packageId, packagePath);
         }
 
-        public Task<PackageInfo> Load(string packageId, string packagePath)
+        public Task<PackageInfo> LoadAsync(string packageId, string packagePath)
         {
             return Task.Factory.StartNew(() => LoadInternal(packageId, packagePath));
+        }
+
+        public PackageInfo ScanAssembly(string packageId, Assembly assembly)
+        {
+            return PackageExplorer.ScanAssembly(packageId, assembly);
         }
 
 
@@ -49,7 +54,7 @@ namespace TickTrader.Algo.Isolation.NetFx
                 _loaders.Add(loader);
             }
             var mainAssembly = LoadAssembly(loader, loader.MainAssemblyName);
-            return PackageExplorer.ExamineAssembly(packageId, mainAssembly);
+            return PackageExplorer.ScanAssembly(packageId, mainAssembly);
         }
 
         private Assembly LoadAssembly(IPackageLoader loader, string assemblyFileName)

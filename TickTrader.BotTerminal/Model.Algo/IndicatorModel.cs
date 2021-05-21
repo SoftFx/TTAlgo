@@ -1,13 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Threading;
-using TickTrader.Algo.Core;
-using SciChart.Charting.Model.DataSeries;
 using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Api;
-using System.Linq;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Server;
 
 namespace TickTrader.BotTerminal
 {

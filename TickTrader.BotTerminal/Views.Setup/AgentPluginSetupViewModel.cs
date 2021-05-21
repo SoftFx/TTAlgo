@@ -2,18 +2,9 @@
 using Machinarium.Qnil;
 using NLog;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Core.Repository;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Info;
 using System.Threading;
-using System.Collections.Specialized;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal

@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class PluginTradeInfoProvider : CrossDomainObject, IAccountInfoProvider
+    public class PluginTradeInfoProvider : IAccountInfoProvider
     {
         private EntityCache _cache;
         private event Action<Domain.OrderExecReport> AlgoEvent_OrderUpdated = delegate { };
@@ -69,10 +67,8 @@ namespace TickTrader.Algo.Common.Model
             return report.ClientOrderId;
         }
 
-        public override void Dispose()
+        public void Dispose()
         {
-            base.Dispose();
-
             _cache.Account.OrderUpdate -= Account_OrderUpdate;
             _cache.Account.BalanceOperationUpdate -= Account_BalanceUpdate;
             _cache.Account.PositionUpdate -= Account_PositionUpdate;

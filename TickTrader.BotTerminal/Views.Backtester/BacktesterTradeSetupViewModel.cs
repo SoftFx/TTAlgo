@@ -1,14 +1,12 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
 using Machinarium.Var;
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.Backtester;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
@@ -150,12 +148,12 @@ namespace TickTrader.BotTerminal
 
         private void InitJournalSettings(BacktesterSettings settings)
         {
-            WriteJournal = _proprs.AddBoolProperty(settings.JournalSettings.IsFlagSet(JournalOptions.Enabled));
-            WriteInfo = _proprs.AddBoolProperty(settings.JournalSettings.IsFlagSet(JournalOptions.WriteInfo));
-            WriteCustom = _proprs.AddBoolProperty(settings.JournalSettings.IsFlagSet(JournalOptions.WriteCustom));
-            WriteTrade = _proprs.AddBoolProperty(settings.JournalSettings.IsFlagSet(JournalOptions.WriteTrade));
-            WriteModifications = _proprs.AddBoolProperty(settings.JournalSettings.IsFlagSet(JournalOptions.WriteOrderModifications));
-            WriteAlert = _proprs.AddBoolProperty(settings.JournalSettings.IsFlagSet(JournalOptions.WriteAlert));
+            WriteJournal = _proprs.AddBoolProperty(settings.JournalSettings.HasFlag(JournalOptions.Enabled));
+            WriteInfo = _proprs.AddBoolProperty(settings.JournalSettings.HasFlag(JournalOptions.WriteInfo));
+            WriteCustom = _proprs.AddBoolProperty(settings.JournalSettings.HasFlag(JournalOptions.WriteCustom));
+            WriteTrade = _proprs.AddBoolProperty(settings.JournalSettings.HasFlag(JournalOptions.WriteTrade));
+            WriteModifications = _proprs.AddBoolProperty(settings.JournalSettings.HasFlag(JournalOptions.WriteOrderModifications));
+            WriteAlert = _proprs.AddBoolProperty(settings.JournalSettings.HasFlag(JournalOptions.WriteAlert));
 
             IsJournalEnabled = WriteJournal.Var;
             IsJournaTradeEnabled = WriteJournal.Var & WriteTrade.Var;

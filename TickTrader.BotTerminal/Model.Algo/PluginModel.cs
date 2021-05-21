@@ -5,10 +5,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
+using TickTrader.Algo.Package;
+using TickTrader.Algo.Server;
 
 namespace TickTrader.BotTerminal
 {
@@ -248,7 +249,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                _outputs.Values.Foreach(o => o.Dispose());
+                _outputs.Values.ForEach(o => o.Dispose());
                 _outputs.Clear();
                 OutputsChanged?.Invoke();
             }

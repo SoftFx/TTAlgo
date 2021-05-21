@@ -85,21 +85,25 @@
     <Compile Include="BarSamplerTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\src\csharp\api\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
+      <Project>{9D9CF1B3-7E57-4971-A479-5803C658A7D0}</Project>
+      <Name>TickTrader.Algo.Api</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\src\csharp\api\TickTrader.Algo.CoreV1\TickTrader.Algo.CoreV1.csproj">
+      <Project>{42B014C3-EC56-458F-8071-65B61A1F7146}</Project>
+      <Name>TickTrader.Algo.CoreV1</Name>
+    </ProjectReference>
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Core.Lib\TickTrader.Algo.Core.Lib.csproj">
       <Project>{e854f964-4355-477e-ac02-1e38923a9a46}</Project>
       <Name>TickTrader.Algo.Core.Lib</Name>
     </ProjectReference>
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj">
+      <Project>{71E1AE60-7DC9-4AD3-AD38-034B961E17F4}</Project>
+      <Name>TickTrader.Algo.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Domain\TickTrader.Algo.Domain.csproj">
       <Project>{6C7FC318-5848-4206-8431-3695C70143FA}</Project>
       <Name>TickTrader.Algo.Domain</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
-      <Project>{8901c84d-fb62-433c-a25f-4d24255b9453}</Project>
-      <Name>TickTrader.Algo.Api</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj">
-      <Project>{8bab901c-10bb-4eb7-b81e-716fa05b6957}</Project>
-      <Name>TickTrader.Algo.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

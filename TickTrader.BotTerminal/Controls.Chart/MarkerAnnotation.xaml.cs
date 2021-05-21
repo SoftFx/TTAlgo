@@ -1,21 +1,8 @@
 ﻿using SciChart.Charting.Visuals.Annotations;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
@@ -31,7 +18,7 @@ namespace TickTrader.BotTerminal
 
             this.DataContext = marker;
 
-            CoordinateMode = SciChart.Charting.Visuals.Annotations.AnnotationCoordinateMode.Absolute;
+            CoordinateMode = AnnotationCoordinateMode.Absolute;
             Y1 = marker.Y;
             X1 = x;
             IsHidden = double.IsNaN(marker.Y);

@@ -1,15 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core.Metadata;
 using SciChart.Charting.Model.DataSeries;
-using Caliburn.Micro;
 using TickTrader.Algo.Domain;
 using Google.Protobuf.WellKnownTypes;
 

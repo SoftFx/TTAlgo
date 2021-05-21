@@ -60,17 +60,13 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Machinarium\Machinarium.csproj">
-      <Project>{df05b4cc-200a-436b-91cc-bebe7d89b8ad}</Project>
-      <Name>Machinarium</Name>
-    </ProjectReference>
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Domain\TickTrader.Algo.Domain.csproj">
       <Project>{6C7FC318-5848-4206-8431-3695C70143FA}</Project>
       <Name>TickTrader.Algo.Domain</Name>
     </ProjectReference>
-    <ProjectReference Include="..\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj">
-      <Project>{8BAB901C-10BB-4EB7-B81E-716FA05B6957}</Project>
-      <Name>TickTrader.Algo.Core</Name>
+    <ProjectReference Include="..\src\csharp\lib\Machinarium\Machinarium.csproj">
+      <Project>{647AB10F-3371-49B2-840E-AEE332B11C29}</Project>
+      <Name>Machinarium</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />

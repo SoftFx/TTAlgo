@@ -202,7 +202,7 @@ namespace TickTrader.BotTerminal
                         if (_lockBuffer.Count >= MaxBufferSize)
                             _lockBuffer.RemoveFirst();
 
-                        _lockBuffer.Add(a);
+                        _lockBuffer.AddLast(a);
                     }
                 }
 

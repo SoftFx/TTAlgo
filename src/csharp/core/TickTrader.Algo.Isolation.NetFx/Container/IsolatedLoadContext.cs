@@ -34,18 +34,26 @@ namespace TickTrader.Algo.Isolation.NetFx
             }
         }
 
-        public Task<PackageInfo> ExamineAssembly(string packageId, Assembly assembly)
+        public PackageInfo Load(string packageId, string packagePath)
+        {
+            return LoadInternal(packageId, packagePath);
+        }
+
+        public Task<PackageInfo> LoadAsync(string packageId, string packagePath)
+        {
+            return Task.Factory.StartNew(() => LoadInternal(packageId, packagePath));
+        }
+
+        public PackageInfo ScanAssembly(string packageId, Assembly assembly)
         {
             throw new NotSupportedException("Assembly should be loaded into isolated context explicitly");
         }
 
-        public Task<PackageInfo> Load(string packageId, string packagePath)
+
+        private PackageInfo LoadInternal(string packageId, string packagePath)
         {
-            return Task.Factory.StartNew(() =>
-            {
-                var data = _childDomain.Value.Load(packageId, packagePath);
-                return PackageInfo.Parser.ParseFrom(data);
-            });
+            var data = _childDomain.Value.Load(packageId, packagePath);
+            return PackageInfo.Parser.ParseFrom(data);
         }
 
 
