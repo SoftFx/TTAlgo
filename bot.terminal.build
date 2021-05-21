@@ -40,7 +40,8 @@
   <property name="SetupUtilName"       value="TickTrader.Algo.SetupUtil" />
   <property name="SetupUtilExe"        value="${SourcesDir}${SetupUtilName}\bin\${Configuration}\${SetupUtilName}.exe" />
 
-  <property name="ProjectsToPackage"   value="TickTrader.Algo.Indicators,TickTrader.Algo.TestCollection,TickTrader.Algo.VersionTest,TickTrader.Algo.NewsIndicator" />
+  <property name="ProjectsToPackage"   value="TickTrader.Algo.Indicators" />
+  <property name="ProjectsToPackageOld"   value="TickTrader.Algo.TestCollection,TickTrader.Algo.VersionTest,TickTrader.Algo.NewsIndicator" />
 
 
   <target name="help">
@@ -305,9 +306,32 @@
       <call target="CreateAlgoPackage"/>
     </foreach>
 
+    <foreach item="String" in="${ProjectsToPackageOld}" delim="," property="Package.Name">
+      <call target="CreateAlgoPackageOld"/>
+    </foreach>
+
   </target>
 
   <target name="CreateAlgoPackage">
+
+    <property name="MSBuild.Target" value="Publish" />
+    <property name="MSBuild.TargetFile" value="${SourcesDir}src\csharp\api\${Package.Name}\${Package.Name}.csproj" />
+    <call target="RunMSBuildProject" />
+
+    <exec program="${ToolsFolder}CmdUtil.exe">
+      <arg value="build" />
+      <arg value="path=${SourcesDir}src\csharp\api\${Package.Name}\bin\${Configuration}\netstandard2.0\publish\"/>
+      <arg value="main=${Package.Name}.dll"/>
+      <arg value="runtime=netstandard2.0" />
+      <arg value="ide=VS16.0" />
+      <arg value="project=${SourcesDir}src\csharp\api\${Package.Name}\${Package.Name}.csproj" />
+      <arg value="workspace=${SolutionFile}" />
+      <arg value="output=${OutputFolder}" />
+    </exec>
+
+  </target>
+
+  <target name="CreateAlgoPackageOld">
 
     <exec program="${ToolsFolder}CmdUtil.exe">
       <arg value="build" />
