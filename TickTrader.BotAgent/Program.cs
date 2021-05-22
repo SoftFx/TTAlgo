@@ -19,6 +19,9 @@ using TickTrader.BotAgent.Hosting;
 using TickTrader.Algo.Server;
 using TickTrader.Algo.ServerControl;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Package;
+using TickTrader.Algo.Isolation.NetFx;
+using TickTrader.Algo.CoreV1;
 
 namespace TickTrader.BotAgent
 {
@@ -40,6 +43,9 @@ namespace TickTrader.BotAgent
             NonBlockingFileCompressor.Setup();
 
             AlgoLoggerFactory.Init(cn => new LoggerAdapter(LogManager.GetLogger(cn)));
+
+            PackageLoadContext.Init(isolated => PackageLoadContextProvider.Create(isolated));
+            PackageExplorer.Init(new PackageV1Explorer());
 
             var logger = LogManager.GetLogger(nameof(Program));
 

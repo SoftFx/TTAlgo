@@ -85,6 +85,9 @@
   <PropertyGroup>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
+  <PropertyGroup>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Caliburn.Micro, Version=3.0.3.0, Culture=neutral, PublicKeyToken=8e5891231f2ed21f, processorArchitecture=MSIL">
       <HintPath>..\packages\Caliburn.Micro.Core.3.1.0\lib\net45\Caliburn.Micro.dll</HintPath>
@@ -1282,6 +1285,10 @@
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Domain\TickTrader.Algo.Domain.csproj">
       <Project>{6c7fc318-5848-4206-8431-3695c70143fa}</Project>
       <Name>TickTrader.Algo.Domain</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Isolation.NetFx\TickTrader.Algo.Isolation.NetFx.csproj">
+      <Project>{6C6D0FE1-83DE-4E8D-9A0B-92FFAB5735A2}</Project>
+      <Name>TickTrader.Algo.Isolation.NetFx</Name>
     </ProjectReference>
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Package\TickTrader.Algo.Package.csproj">
       <Project>{1708335C-CCAD-49EC-8DE7-E5053C16BFA4}</Project>

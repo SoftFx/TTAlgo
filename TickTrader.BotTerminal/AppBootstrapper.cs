@@ -12,6 +12,9 @@ using System.Text;
 using System.Windows;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.CoreV1;
+using TickTrader.Algo.Isolation.NetFx;
+using TickTrader.Algo.Package;
 using TickTrader.Algo.Server;
 using TickTrader.Algo.ServerControl;
 
@@ -46,6 +49,9 @@ namespace TickTrader.BotTerminal
                 ConfigureCaliburn();
                 ConfigurateLogger();
                 ConfigureGlobalExceptionHandling();
+
+                PackageLoadContext.Init(isolated => PackageLoadContextProvider.Create(isolated));
+                PackageExplorer.Init(new PackageV1Explorer());
             }
         }
 
