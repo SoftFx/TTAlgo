@@ -101,7 +101,7 @@
 
   <Target Name="CopyBinaries" AfterTargets="Build">
     <ItemGroup>
-      <RuntimeV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.RuntimeV1Host.NetFx\bin\$(Configuration)\*.*" />
+      <RuntimeV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.RuntimeV1Host.NetFx\bin\$(Configuration)\net472\*.*" />
     </ItemGroup>
 
     <Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(TargetDir)AlgoRuntime\" SkipUnchangedFiles="true" />
@@ -109,7 +109,7 @@
 
   <Target Name="CopyBinariesForPublish" AfterTargets="AfterPublish">
     <ItemGroup>
-      <RuntimeV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.RuntimeV1Host.NetFx\bin\$(Configuration)\*.*" />
+      <RuntimeV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.RuntimeV1Host.NetFx\bin\$(Configuration)\net472\*.*" />
     </ItemGroup>
 
     <Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(PublishDir)\AlgoRuntime\" SkipUnchangedFiles="true" />

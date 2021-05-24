@@ -1,8 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,7 +12,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\api\TickTrader.Algo.CoreV1\TickTrader.Algo.CoreV1.csproj" />
     <ProjectReference Include="..\..\core\TickTrader.Algo.Core.Lib\TickTrader.Algo.Core.Lib.csproj" />
-    <ProjectReference Include="..\..\core\TickTrader.Algo.Isolation.NetFx\TickTrader.Algo.Isolation.NetFx.csproj" />
+    <ProjectReference Include="..\..\core\TickTrader.Algo.Isolation.NetCore\TickTrader.Algo.Isolation.NetCore.csproj" />
     <ProjectReference Include="..\..\core\TickTrader.Algo.Package\TickTrader.Algo.Package.csproj" />
     <ProjectReference Include="..\..\core\TickTrader.Algo.Runtime\TickTrader.Algo.Runtime.csproj" />
   </ItemGroup>

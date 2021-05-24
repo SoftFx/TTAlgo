@@ -116,7 +116,11 @@ namespace TickTrader.Algo.Server
         private async Task<RuntimeModel> GetPackageRuntime(string pkgId)
         {
             if (_pkgRuntimeMap.TryGetValue(pkgId, out var runtimeId))
-                return _runtimeMap[runtimeId];
+            {
+                var rt = _runtimeMap[runtimeId];
+                await rt.WaitForLaunch();
+                return rt;
+            }
 
             var pkgRef = await _pkgStorage.GetPackageRef(pkgId);
             if (pkgRef == null)
@@ -147,8 +151,8 @@ namespace TickTrader.Algo.Server
             try
             {
                 runtime = new RuntimeModel(this, runtimeId, pkgRef);
-                await runtime.Start(Address, BoundPort);
                 _runtimeMap[runtimeId] = runtime;
+                await runtime.Start(Address, BoundPort);
                 await runtime.WaitForLaunch();
             }
             catch (Exception ex)
