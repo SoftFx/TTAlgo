@@ -28,13 +28,13 @@ namespace TickTrader.Algo.RuntimeV1Host.NetFx
 
         private static async Task RunRuntime(string[] args)
         {
-            PackageLoadContext.Init(isolated => PackageLoadContextProvider.Create(isolated));
-            PackageExplorer.Init(new PackageV1Explorer());
-
             AlgoLoggerFactory.Init(n => new RuntimeLogAdapter(n));
             var logger = LogManager.GetLogger("MainLoop");
 
             logger.Info("Starting runtime with id {runtimeId} at server {address}:{port}", args[2], args[0], args[1]);
+
+            PackageLoadContext.Init(isolated => PackageLoadContextProvider.Create(isolated));
+            PackageExplorer.Init(new PackageV1Explorer());
 
             RuntimeV1Loader loader = null;
             var isFailed = false;

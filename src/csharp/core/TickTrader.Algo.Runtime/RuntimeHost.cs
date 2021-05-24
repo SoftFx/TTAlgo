@@ -7,6 +7,18 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Runtime
 {
+    public static class RuntimeHost
+    {
+        public static IRuntimeHostProxy Create(bool isolated)
+        {
+            if (isolated)
+                return new ChildProcessRuntimeHost();
+
+            return new TransparentRuntimeHost();
+        }
+    }
+
+
     public class TransparentRuntimeHost : IRuntimeHostProxy
     {
         private RuntimeV1Loader _runtime;

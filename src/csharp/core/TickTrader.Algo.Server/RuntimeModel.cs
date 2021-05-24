@@ -7,6 +7,7 @@ using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.Rpc;
+using TickTrader.Algo.Runtime;
 
 namespace TickTrader.Algo.Server
 {
@@ -50,7 +51,7 @@ namespace TickTrader.Algo.Server
 
             _launchTask = new TaskCompletionSource<bool>();
 
-            _runtimeHost = RuntimeHost.Create(true);// _pluginRef.IsIsolated);
+            _runtimeHost = RuntimeHost.Create(true);
         }
 
 

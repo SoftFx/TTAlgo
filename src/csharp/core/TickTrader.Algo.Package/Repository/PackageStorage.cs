@@ -26,6 +26,8 @@ namespace TickTrader.Algo.Package
             _impl = Actor.SpawnLocal<Impl>(null, nameof(PackageStorage));
 
             _impl.Send(a => a.Init());
+
+            _impl.Send(a => Task.Factory.StartNew(() => SendPackageUpdates(a.PackageUpdates.Reader)));
         }
 
         public Task RegisterRepositoryLocation(string locationId, string path)
@@ -48,6 +50,38 @@ namespace TickTrader.Algo.Package
             return _impl.Call(a => a.Stop());
         }
 
+        public Task WaitLoaded()
+        {
+            var taskSrc = new TaskCompletionSource<object>();
+            _impl.Send(a => a.WhenLoaded(() => taskSrc.TrySetResult(null)));
+            return taskSrc.Task;
+        }
+
+
+        private async Task SendPackageUpdates(System.Threading.Channels.ChannelReader<PackageUpdate> reader)
+        {
+            await Task.Yield();
+
+            while (true)
+            {
+                var hasData = await reader.WaitToReadAsync();
+                if (!hasData)
+                    break;
+
+                for (var i = 0; i < 10 && reader.TryRead(out var update); i++)
+                {
+                    try
+                    {
+                        PackageUpdated?.Invoke(update);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error(ex, $"Failed to dispatch PackageUpdate");
+                    }
+                }
+            }
+        }
+
 
         private class Impl : Actor
         {
@@ -57,21 +91,34 @@ namespace TickTrader.Algo.Package
             private readonly Dictionary<string, AlgoPackageRef> _packageMap = new Dictionary<string, AlgoPackageRef>();
 
 
+            public System.Threading.Channels.Channel<PackageUpdate> PackageUpdates { get; private set; }
+
+
             public void Init()
             {
                 _fileUpdateProcessor.Start(HandlePackageUpdate);
+
+                PackageUpdates = System.Threading.Channels.Channel.CreateUnbounded<PackageUpdate>(new System.Threading.Channels.UnboundedChannelOptions { AllowSynchronousContinuations = false, SingleReader = true, SingleWriter = true });
             }
 
             public async Task Stop()
             {
                 _logger.Debug("Stopping...");
-                
+
                 await _fileUpdateProcessor.Stop(false);
                 _logger.Debug("File update processor stopped");
+                PackageUpdates.Writer.TryComplete();
+                _logger.Debug("Marked update stream complete");
                 await Task.WhenAll(_repositories.Values.Select(r => r.Stop()));
                 _logger.Debug("Package repositories stopped");
 
                 _logger.Debug("Stopped");
+            }
+
+            public void WhenLoaded(Action continuation)
+            {
+                Task.WhenAll(_repositories.Values.Select(r => r.WaitLoaded()))
+                    .ContinueWith(t => continuation());
             }
 
             public void RegisterRepository(string locationId, string path)
@@ -102,7 +149,7 @@ namespace TickTrader.Algo.Package
                     _logger.Error(ex, $"Failed to get assembly file info '{assemblyPath}'");
                 }
 
-                _packageMap.Add(pkgId, new AlgoPackageRef(pkgId, pkgInfo, null));
+                HandlePackageUpdate(new PackageFileUpdate(pkgId, UpdateAction.Upsert, pkgInfo, null));
             }
 
             public AlgoPackageRef GetPackageRef(string pkgId)
@@ -124,9 +171,11 @@ namespace TickTrader.Algo.Package
                     case UpdateAction.Upsert:
                         var refId = GeneratePackageRefId(pkgId);
                         _packageMap[pkgId] = new AlgoPackageRef(refId, update.PkgInfo, update.PkgBytes);
+                        PackageUpdates.Writer.TryWrite(new PackageUpdate { Action = Domain.Package.Types.UpdateAction.Upsert, Id = pkgId, Package = update.PkgInfo, });
                         break;
                     case UpdateAction.Remove:
                         _packageMap.Remove(pkgId);
+                        PackageUpdates.Writer.TryWrite(new PackageUpdate { Action = Domain.Package.Types.UpdateAction.Removed, Id = pkgId, });
                         break;
                 }
             }

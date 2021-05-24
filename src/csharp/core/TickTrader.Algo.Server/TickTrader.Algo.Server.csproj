@@ -19,6 +19,7 @@
     <ProjectReference Include="..\TickTrader.Algo.Package\TickTrader.Algo.Package.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Rpc.OverTcp\TickTrader.Algo.Rpc.OverTcp.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Rpc\TickTrader.Algo.Rpc.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.Runtime\TickTrader.Algo.Runtime.csproj" />
   </ItemGroup>
 
 </Project>

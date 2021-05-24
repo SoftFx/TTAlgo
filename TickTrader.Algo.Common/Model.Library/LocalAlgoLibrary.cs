@@ -82,7 +82,7 @@ namespace TickTrader.Algo.Common.Model
 
         public Task WaitInit()
         {
-            return Task.CompletedTask;
+            return _server.PackageStorage.WaitLoaded();
         }
 
 

@@ -38,7 +38,7 @@ namespace TickTrader.Algo.CoreV1.Metadata
             _packageCacheById.TryAdd(packageId, metadata);
             return metadata;
         }
-        
+
 
         private static List<PluginMetadata> FindPlugins(Assembly targetAssembly)
         {
@@ -50,10 +50,19 @@ namespace TickTrader.Algo.CoreV1.Metadata
                 var botAttr = t.GetCustomAttribute<TradeBotAttribute>(false);
 
                 if (indicatorAttr != null && botAttr != null)
-                    continue;
+                    continue; // can't have both attributes
 
-                var metadata = new PluginMetadata(t);
-                plugins.Add(metadata);
+                if (indicatorAttr != null || botAttr != null)
+                {
+                    var metadata = new PluginMetadata(t);
+                    // Attribute and plugin base class should match
+                    // Descriptor.Type is determined by type base class
+                    if ((indicatorAttr != null && metadata.Descriptor.IsIndicator)
+                        || (botAttr != null && metadata.Descriptor.IsTradeBot))
+                    {
+                        plugins.Add(metadata);
+                    }
+                }
             }
 
             return plugins;

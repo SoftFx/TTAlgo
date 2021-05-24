@@ -59,6 +59,13 @@ namespace TickTrader.Algo.Package
             return _impl.Call(a => a.Stop());
         }
 
+        public Task WaitLoaded()
+        {
+            var taskSrc = new TaskCompletionSource<object>();
+            _impl.Send(a => taskSrc.TrySetResult(null));
+            return taskSrc.Task;
+        }
+
 
         private class Impl : Actor
         {
