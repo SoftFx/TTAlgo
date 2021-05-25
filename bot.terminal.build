@@ -114,13 +114,10 @@
 
   <target name="RestoreNugetPackages">
 
-    <exec program="${ToolsFolder}nuget.exe" workingdir="${SourcesDir}" verbose="true">
+    <exec program="dotnet">
       <arg line="restore" />
       <arg line="${SolutionFile}" />
-      <arg line="-Recursive" />
-      <arg line="-NonInteractive" />
-      <arg line="-Verbosity detailed" />
-      <arg line='-MSBuildPath "${MSBuildDir}."' />
+      <arg line="--verbosity detailed" />
     </exec>
 
   </target>

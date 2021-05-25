@@ -260,12 +260,13 @@ namespace TickTrader.Algo.Package
                 if (_watcher == null)
                     return;
 
-                _watcher.Dispose();
                 _watcher.Changed -= WatcherOnChanged;
                 _watcher.Created -= WatcherOnChanged;
                 _watcher.Deleted -= WatcherOnDeleted;
                 _watcher.Renamed -= WatcherOnRenamed;
                 _watcher.Error -= WatcherOnError;
+
+                _watcher.Dispose();
 
                 _watcher = null;
             }
