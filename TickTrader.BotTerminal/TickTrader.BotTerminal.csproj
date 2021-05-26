@@ -1326,25 +1326,13 @@
       <Project>{647AB10F-3371-49B2-840E-AEE332B11C29}</Project>
       <Name>Machinarium</Name>
     </ProjectReference>
+    <ProjectReference Include="..\src\csharp\lib\TickTrader.SeriesStorage\TickTrader.SeriesStorage.csproj">
+      <Project>{CEBD6F30-CCB7-4417-842C-529B6994E322}</Project>
+      <Name>TickTrader.SeriesStorage</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TickTrader.Algo.Common\TickTrader.Algo.Common.csproj">
       <Project>{bffe802c-bcb0-4376-9551-977fe8c277d2}</Project>
       <Name>TickTrader.Algo.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TickTrader.SeriesStorage.LevelDb\TickTrader.SeriesStorage.LevelDb.csproj">
-      <Project>{cb30b69a-de4d-4819-8e83-cf5dd80cd060}</Project>
-      <Name>TickTrader.SeriesStorage.LevelDb</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TickTrader.SeriesStorage.Lmdb\TickTrader.SeriesStorage.Lmdb.csproj">
-      <Project>{6a279398-a13b-4462-8cb9-f7514b92c584}</Project>
-      <Name>TickTrader.SeriesStorage.Lmdb</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TickTrader.SeriesStorage.Protobuf\TickTrader.SeriesStorage.Protobuf.csproj">
-      <Project>{af05ccd3-0e2f-4f8a-8124-27b16162a0c1}</Project>
-      <Name>TickTrader.SeriesStorage.Protobuf</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TickTrader.SeriesStorage\TickTrader.SeriesStorage.csproj">
-      <Project>{6664e69f-2180-4d7e-b51e-c81c9f5cc47d}</Project>
-      <Name>TickTrader.SeriesStorage</Name>
     </ProjectReference>
     <ProjectReference Include="..\TickTrader.Toaster\TickTrader.Toaster.csproj">
       <Project>{8e54fee6-d903-4e11-a003-cd2af022edd9}</Project>
