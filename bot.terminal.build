@@ -138,6 +138,21 @@
       <arg line="--verbosity detailed" />
     </exec>
 
+    <fileset basedir="${SourcesDir}src/csharp/tests" id="TestProj">
+      <include name="**/*.csproj" />
+    </fileset>
+
+    <foreach item="File" property="TestProjectPath">
+      <in><items refid="TestProj" /></in>
+      <do>
+        <exec program="dotnet">
+          <arg line="restore" />
+          <arg line="${TestProjectPath}" />
+          <arg line="--verbosity detailed" />
+        </exec>
+      </do>
+    </foreach>
+
   </target>
 
   <target name="SetupMSBuild">
