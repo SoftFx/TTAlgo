@@ -1,27 +1,14 @@
-﻿using ActorSharp.Lib;
-using Caliburn.Micro;
+﻿using Caliburn.Micro;
 using Google.Protobuf.WellKnownTypes;
 using Machinarium.Qnil;
 using NLog;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
-using System.Windows;
-using System.Windows.Data;
 using System.Windows.Threading;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
-using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal
 {
