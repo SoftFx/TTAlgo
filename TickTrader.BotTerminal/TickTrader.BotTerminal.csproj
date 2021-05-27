@@ -465,9 +465,9 @@
     <Compile Include="Model\FileHistory.cs" />
     <Compile Include="Model\LoggerHelper.cs" />
     <Compile Include="Model\ModelExtentions.cs" />
-    <Compile Include="Model\NotificationCenter.cs" />
     <Compile Include="Model\NumberFormat.cs" />
     <Compile Include="Model\PathHelper.cs" />
+    <Compile Include="Model\SoundsNotificationCenter.cs" />
     <Compile Include="Views.Algo\BaseloadPackageViewModel.cs" />
     <Compile Include="Views.TradeInfo\BaseTransactionViewModel.cs" />
     <Compile Include="Views.Backtester\OptimizerAlgorithmSetupViewModel.cs" />
@@ -860,10 +860,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Resx\Styles.Classic\ToastStyle.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Resx\Styles.Classic\WaitIndicator.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -987,10 +983,6 @@
     <Page Include="Resx\Styles.Old\TextBox.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Resx\Styles.Old\ToastStyle.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Resx\Styles.Old\ToolBar.xaml">
       <SubType>Designer</SubType>
@@ -1350,10 +1342,6 @@
       <Project>{bffe802c-bcb0-4376-9551-977fe8c277d2}</Project>
       <Name>TickTrader.Algo.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\TickTrader.Toaster\TickTrader.Toaster.csproj">
-      <Project>{8e54fee6-d903-4e11-a003-cd2af022edd9}</Project>
-      <Name>TickTrader.Toaster</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resx\Images\fxopen.ico" />
@@ -1382,9 +1370,6 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resx\Images\softfx.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resx\Images\FxDialogImg.png" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />

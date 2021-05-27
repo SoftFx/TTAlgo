@@ -16,13 +16,14 @@ namespace TickTrader.BotTerminal
     {
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
+        private readonly SoundsNotificationCenter _soundCenter;
+
         private ConnectionManager cManager;
         private TraderClientModel clientModel;
         private WindowManager wndManager;
         private PersistModel storage;
         private EventJournal eventJournal;
         private bool isClosed;
-        private INotificationCenter notificationCenter;
         private AlgoEnvironment algoEnv;
         private SymbolManagerViewModel _smbManager;
         private SymbolCatalog _symbolsData;
@@ -35,9 +36,6 @@ namespace TickTrader.BotTerminal
 
             DisplayName = EnvService.Instance.ApplicationName;
 
-            //var botNameAggregator = new BotNameAggregator();
-
-            notificationCenter = new NotificationCenter(new PopupNotification(), new SoundNotification());
             eventJournal = new EventJournal(1000);
             storage = new PersistModel();
             ThemeSelector.Instance.InitializeSettings(storage);
@@ -47,6 +45,8 @@ namespace TickTrader.BotTerminal
 
             cManager = new ConnectionManager(commonClient, storage, eventJournal);
             clientModel = new TraderClientModel(commonClient);
+
+            _soundCenter = new SoundsNotificationCenter(cManager, storage);
 
             Agent = new LocalAlgoAgent(this, clientModel, storage);
 
@@ -64,8 +64,6 @@ namespace TickTrader.BotTerminal
             _symbolsData = new SymbolCatalog(customFeedStorage, clientModel);
 
             TradeHistory = new TradeHistoryViewModel(clientModel, cManager, storage.ProfileManager);
-
-            //Notifications = new NotificationsViewModel(notificationCenter, clientModel.Account, cManager, storage);
 
             Charts = new ChartCollectionViewModel(clientModel, this, algoEnv);
 

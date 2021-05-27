@@ -26,8 +26,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.CoreUsageSa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoftFx.FxCalendar", "SoftFx.FxCalendar\SoftFx.FxCalendar.csproj", "{546B0A8D-6964-40DF-B539-C988F8241D56}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Toaster", "TickTrader.Toaster\TickTrader.Toaster.csproj", "{8E54FEE6-D903-4E11-A003-CD2AF022EDD9}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.CmdUtil", "TickTrader.Algo.CmdUtil\TickTrader.Algo.CmdUtil.csproj", "{19514472-B817-4447-B155-337661C29440}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.VS.Package", "TickTrader.Algo.VS.Package\TickTrader.Algo.VS.Package.csproj", "{FB93507A-17D8-4C0C-90EB-7F439BF92840}"
@@ -144,13 +142,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.Core.Tests"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.Indicators.Tests", "src\csharp\tests\TickTrader.Algo.Indicators.Tests\TickTrader.Algo.Indicators.Tests.csproj", "{F110A2AF-4D3C-401B-8F8E-2AABE5C73B52}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.SeriesStorage", "src\csharp\lib\TickTrader.SeriesStorage\TickTrader.SeriesStorage.csproj", "{CEBD6F30-CCB7-4417-842C-529B6994E322}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.SeriesStorage", "src\csharp\lib\TickTrader.SeriesStorage\TickTrader.SeriesStorage.csproj", "{CEBD6F30-CCB7-4417-842C-529B6994E322}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.SeriesStorage.Protobuf", "src\csharp\lib\TickTrader.SeriesStorage.Protobuf\TickTrader.SeriesStorage.Protobuf.csproj", "{888FF8E0-A90D-4DBB-A0DC-434901602E01}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.SeriesStorage.Protobuf", "src\csharp\lib\TickTrader.SeriesStorage.Protobuf\TickTrader.SeriesStorage.Protobuf.csproj", "{888FF8E0-A90D-4DBB-A0DC-434901602E01}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.SeriesStorage.Lmdb", "src\csharp\lib\TickTrader.SeriesStorage.Lmdb\TickTrader.SeriesStorage.Lmdb.csproj", "{C0E08388-557E-46B3-AD49-FCB23A9DDFC1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.SeriesStorage.Lmdb", "src\csharp\lib\TickTrader.SeriesStorage.Lmdb\TickTrader.SeriesStorage.Lmdb.csproj", "{C0E08388-557E-46B3-AD49-FCB23A9DDFC1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.SeriesStorage.Tests", "src\csharp\tests\TickTrader.SeriesStorage.Tests\TickTrader.SeriesStorage.Tests.csproj", "{C64DEDD2-FB6B-4770-B1B9-DFCD7BBC5BDF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.SeriesStorage.Tests", "src\csharp\tests\TickTrader.SeriesStorage.Tests\TickTrader.SeriesStorage.Tests.csproj", "{C64DEDD2-FB6B-4770-B1B9-DFCD7BBC5BDF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -210,18 +208,6 @@ Global
 		{546B0A8D-6964-40DF-B539-C988F8241D56}.Release|x64.Build.0 = Release|Any CPU
 		{546B0A8D-6964-40DF-B539-C988F8241D56}.Release|x86.ActiveCfg = Release|Any CPU
 		{546B0A8D-6964-40DF-B539-C988F8241D56}.Release|x86.Build.0 = Release|Any CPU
-		{8E54FEE6-D903-4E11-A003-CD2AF022EDD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8E54FEE6-D903-4E11-A003-CD2AF022EDD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8E54FEE6-D903-4E11-A003-CD2AF022EDD9}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{8E54FEE6-D903-4E11-A003-CD2AF022EDD9}.Debug|x64.Build.0 = Debug|Any CPU
-		{8E54FEE6-D903-4E11-A003-CD2AF022EDD9}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{8E54FEE6-D903-4E11-A003-CD2AF022EDD9}.Debug|x86.Build.0 = Debug|Any CPU
-		{8E54FEE6-D903-4E11-A003-CD2AF022EDD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8E54FEE6-D903-4E11-A003-CD2AF022EDD9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8E54FEE6-D903-4E11-A003-CD2AF022EDD9}.Release|x64.ActiveCfg = Release|Any CPU
-		{8E54FEE6-D903-4E11-A003-CD2AF022EDD9}.Release|x64.Build.0 = Release|Any CPU
-		{8E54FEE6-D903-4E11-A003-CD2AF022EDD9}.Release|x86.ActiveCfg = Release|Any CPU
-		{8E54FEE6-D903-4E11-A003-CD2AF022EDD9}.Release|x86.Build.0 = Release|Any CPU
 		{19514472-B817-4447-B155-337661C29440}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{19514472-B817-4447-B155-337661C29440}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{19514472-B817-4447-B155-337661C29440}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -828,7 +814,6 @@ Global
 		{BD57B7B2-0B30-4616-A656-90BDA6B14EEB} = {51B8AFF5-4AEA-45F9-8126-6D51C2CCAB7B}
 		{5206F70A-4970-4488-982D-C81E42550B07} = {51B8AFF5-4AEA-45F9-8126-6D51C2CCAB7B}
 		{546B0A8D-6964-40DF-B539-C988F8241D56} = {20363DD1-DC16-41EE-AA8A-77306EB75479}
-		{8E54FEE6-D903-4E11-A003-CD2AF022EDD9} = {20363DD1-DC16-41EE-AA8A-77306EB75479}
 		{19514472-B817-4447-B155-337661C29440} = {51B8AFF5-4AEA-45F9-8126-6D51C2CCAB7B}
 		{FB93507A-17D8-4C0C-90EB-7F439BF92840} = {D3EF348C-8ACE-4A5A-BF20-842CD9BE0484}
 		{38B2D38C-9B81-4B12-8E0F-B3DA9538C77F} = {D3EF348C-8ACE-4A5A-BF20-842CD9BE0484}
