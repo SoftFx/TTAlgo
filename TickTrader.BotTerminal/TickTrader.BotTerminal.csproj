@@ -369,7 +369,6 @@
     <Compile Include="Converters\StringFormatConverter.cs" />
     <Compile Include="Converters\TextLengthComparisonConverter.cs" />
     <Compile Include="Extensions\ChartExtensions.cs" />
-    <Compile Include="Extensions\DateTimeExtension.cs" />
     <Compile Include="Extensions\EnumToItemSource.cs" />
     <Compile Include="Extensions\InfoExtensions.cs" />
     <Compile Include="Extensions\LineStyleExtension.cs" />
@@ -432,7 +431,6 @@
     <Compile Include="Model.Algo\PluginIdProvider.cs" />
     <Compile Include="Model.Algo\PluginModel.cs" />
     <Compile Include="Model.Algo\PluginStateHelper.cs" />
-    <Compile Include="Model.Lib\OptionalItem.cs" />
     <Compile Include="Model.Profiles\ProfileResolver.cs" />
     <Compile Include="Model.Profiles\ProfileStorageModel.cs" />
     <None Include="Model.Profiles\Version1\ChartStorageEntry.cs" />
@@ -454,7 +452,6 @@
     <Compile Include="Model.Profiles\ProfileRepository.cs" />
     <None Include="Model.Profiles\Version1\ProfileStorageModel.cs" />
     <Compile Include="Infrustructure\PreferencesStorageModel.cs" />
-    <Compile Include="Model.Lib\FilteredListModel.cs" />
     <Compile Include="Model.Protocol\RemoteAlgoAgent.cs" />
     <Compile Include="Model.Protocol\RemoteAlgoLibrary.cs" />
     <Compile Include="Model.Protocol\RemoteTradeBot.cs" />
@@ -508,14 +505,12 @@
     </Compile>
     <Compile Include="Lib\DispatcherStateMachineSync.cs" />
     <Compile Include="Lib\ObservableDictionary.cs" />
-    <Compile Include="Lib\ObservableSortedList.cs" />
     <Compile Include="Model.Charts\BarChatModel.cs" />
     <Compile Include="Model.Charts\ChartNavigator.cs" />
     <Compile Include="Model.Algo\IndicatorModel.cs" />
     <Compile Include="Model.Charts\TickChartModel.cs" />
     <Compile Include="Model.Charts\TimelineModel.cs" />
     <Compile Include="Model.Algo\Interfaces.cs" />
-    <Compile Include="Model\LocMsg.cs" />
     <Compile Include="Model\TraderClientModel.cs" />
     <Compile Include="Resx\Sounds\Sounds.Designer.cs">
       <AutoGen>True</AutoGen>
