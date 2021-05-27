@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core.Lib;
@@ -313,13 +314,13 @@ namespace TickTrader.BotTerminal
                 _container.Singleton<ShellViewModel>();
 
                 _shell = _container.GetInstance<ShellViewModel>();
-                _shell.Deactivated += Shell_Deactivated;
+                _shell.Deactivated += Shell_Deactivated; ;
 
-                DisplayRootViewFor<ShellViewModel>();
+                await DisplayRootViewFor<ShellViewModel>();
             }
         }
 
-        private async void Shell_Deactivated(object sender, DeactivationEventArgs e)
+        private async Task Shell_Deactivated(object sender, DeactivationEventArgs e)
         {
             if (e.WasClosed)
             {
@@ -328,6 +329,16 @@ namespace TickTrader.BotTerminal
                 App.Current.Shutdown();
             }
         }
+
+        //private async void Shell_Deactivated(object sender, DeactivationEventArgs e)
+        //{
+        //    if (e.WasClosed)
+        //    {
+        //        await _shell.Shutdown();
+        //        _instanceRestrictor.Dispose();
+        //        App.Current.Shutdown();
+        //    }
+        //}
 
         private bool HasWriteAccess()
         {

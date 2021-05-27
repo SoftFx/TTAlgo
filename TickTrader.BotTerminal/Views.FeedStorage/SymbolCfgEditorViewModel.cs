@@ -282,12 +282,12 @@ namespace TickTrader.BotTerminal
 
         public void Ok()
         {
-            TryClose(true);
+            TryCloseAsync(true);
         }
 
         public void Cancel()
         {
-            TryClose(false);
+            TryCloseAsync(false);
         }
 
         private Func<string> GetErrorRangeMessage(ValidationRange range, string prop) => () => $"{prop} must be between in range [{range.MinToErr:R}..{range.MaxtoErr:R}]";

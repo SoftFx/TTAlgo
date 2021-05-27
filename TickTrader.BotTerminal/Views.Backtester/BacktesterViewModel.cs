@@ -72,13 +72,14 @@ namespace TickTrader.BotTerminal
                 OptimizationPage.SetPluign(SetupPage.SelectedPlugin.Value.Descriptor, SetupPage.PluginConfig);
             };
 
-            OptimizationResultsPage.ShowDetailsRequested += r =>
+            OptimizationResultsPage.ShowDetailsRequested += async r =>
             {
                 ResultsPage.Clear();
                 ResultsPage.ShowReport(r.Stats, _descriptorCache, r.Config.Id);
                 ResultsPage.AddEquityChart(Convert(r.Equity));
                 ResultsPage.AddMarginChart(Convert(r.Margin));
-                ActivateItem(ResultsPage);
+                await ActivateItemAsync(ResultsPage);
+                //ActivateItem(ResultsPage);
             };
 
             _var.TriggerOnChange(SetupPage.ModeProp, a =>
@@ -468,17 +469,28 @@ namespace TickTrader.BotTerminal
             return chartData;
         }
 
-        public override void CanClose(Action<bool> callback)
+        public override Task<bool> CanCloseAsync(CancellationToken cancellationToken = default)
         {
-            callback(!_isRunning.Value);
+            return Task.FromResult(!_isRunning.Value);
         }
 
-        public override void TryClose(bool? dialogResult = null)
-        {
-            base.TryClose(dialogResult);
+        //public override void CanClose(Action<bool> callback)
+        //{
+        //    callback(!_isRunning.Value);
+        //}
 
+        public override Task TryCloseAsync(bool? dialogResult = null)
+        {
             _var.Dispose();
+            return base.TryCloseAsync(dialogResult);
         }
+
+        //public override void TryClose(bool? dialogResult = null)
+        //{
+        //    base.TryClose(dialogResult);
+
+        //    _var.Dispose();
+        //}
 
         #region Execution control
 

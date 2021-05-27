@@ -64,13 +64,13 @@ namespace TickTrader.BotTerminal
         public void OK()
         {
             DialogResult = DialogResult.OK;
-            TryClose();
+            TryCloseAsync();
         }
 
         public void Cancel()
         {
             DialogResult = DialogResult.Cancel;
-            TryClose();
+            TryCloseAsync();
         }
     }
 }

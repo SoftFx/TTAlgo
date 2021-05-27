@@ -4,6 +4,7 @@ using NLog;
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
 
@@ -175,7 +176,7 @@ namespace TickTrader.BotTerminal
 
                 _selectedAgent.OpenBotState(dstConfig.InstanceId);
 
-                TryClose();
+                await TryCloseAsync();
             }
             catch (Exception ex)
             {
@@ -187,17 +188,24 @@ namespace TickTrader.BotTerminal
 
         public void Cancel()
         {
-            TryClose();
+            TryCloseAsync();
         }
 
 
-        protected override void OnDeactivate(bool close)
+        protected override Task OnDeactivateAsync(bool close, CancellationToken cancellationToken)
         {
             DeinitAlgoAgent(_selectedAgent);
             _fromAgent.Model.Bots.Updated -= FromAgentOnBotsUpdated;
-
-            base.OnDeactivate(close);
+            return base.OnDeactivateAsync(close, cancellationToken);
         }
+
+        //protected override void OnDeactivate(bool close)
+        //{
+        //    DeinitAlgoAgent(_selectedAgent);
+        //    _fromAgent.Model.Bots.Updated -= FromAgentOnBotsUpdated;
+
+        //    base.OnDeactivate(close);
+        //}
 
 
         private void Validate()

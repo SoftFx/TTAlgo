@@ -9,6 +9,7 @@ using Machinarium.Qnil;
 using Machinarium.Var;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
+using System.Threading.Tasks;
 
 namespace TickTrader.BotTerminal
 {
@@ -80,7 +81,7 @@ namespace TickTrader.BotTerminal
 
             SelectedPeriod = periodActivatos.ContainsKey(period) ? periodActivatos.FirstOrDefault(p => p.Key == period) : periodActivatos.ElementAt(8);
 
-            CloseCommand = new GenericCommand(o => TryClose());
+            CloseCommand = new GenericCommand(o => TryCloseAsync());
 
             ChartControl.Overlay = new BotListOverlayViewModel(Bots);
         }
@@ -136,9 +137,9 @@ namespace TickTrader.BotTerminal
         public string Symbol { get; private set; }
         public UiLock UiLock { get; private set; }
 
-        public override void TryClose(bool? dialogResult = null)
+        public override Task TryCloseAsync(bool? dialogResult = null)
         {
-            base.TryClose(dialogResult);
+            var task = base.TryCloseAsync(dialogResult);
 
             Indicators.ForEach(i => _shell.Agent.IdProvider.UnregisterPlugin(i.Model.InstanceId));
 
@@ -150,7 +151,25 @@ namespace TickTrader.BotTerminal
             ChartControl.Dispose();
             barChart.Dispose();
             tickChart.Dispose();
+
+            return task;
         }
+
+        //public override void TryClose(bool? dialogResult = null)
+        //{
+        //    base.TryClose(dialogResult);
+
+        //    Indicators.ForEach(i => _shell.Agent.IdProvider.UnregisterPlugin(i.Model.InstanceId));
+
+        //    _algoEnv.LocalAgent.BotUpdated -= BotOnUpdated;
+        //    _algoEnv.LocalAgentVM.Bots.Updated -= BotsOnUpdated;
+
+        //    _shell.ToolWndManager.CloseWindowByKey(this);
+
+        //    ChartControl.Dispose();
+        //    barChart.Dispose();
+        //    tickChart.Dispose();
+        //}
 
         public ChartStorageEntry GetSnapshot()
         {

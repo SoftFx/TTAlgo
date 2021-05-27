@@ -31,12 +31,19 @@ namespace TickTrader.BotTerminal
             _dockManagerService = dockManagerService;
         }
 
-        protected override void OnInitialize()
+        protected override Task OnInitializeAsync(CancellationToken cancellationToken)
         {
-            base.OnInitialize();
-
             ApplyProfile();
+
+            return base.OnInitializeAsync(cancellationToken);
         }
+
+        //protected override void OnInitialize()
+        //{
+        //    base.OnInitialize();
+
+        //    ApplyProfile();
+        //}
 
         private async void ApplyProfile()
         {
@@ -58,7 +65,7 @@ namespace TickTrader.BotTerminal
 
                 if (_profileManager.CurrentProfile.Charts == null)
                 {
-                    TryClose();
+                    await TryCloseAsync();
                     return;
                 }
 
@@ -81,7 +88,7 @@ namespace TickTrader.BotTerminal
                 _logger.Error(ex, "Failed to apply profile");
             }
 
-            TryClose();
+            await TryCloseAsync();
         }
     }
 }

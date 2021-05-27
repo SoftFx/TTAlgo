@@ -114,7 +114,7 @@ namespace TickTrader.BotTerminal
                 ((IChangableObject)Value).Changed += SetChanged;
         }
 
-        private void Save()
+        private Task Save()
         {
             if (_isClosed)
                 throw new InvalidOperationException("Controller is closed!");
@@ -122,10 +122,12 @@ namespace TickTrader.BotTerminal
             if (_isSaving)
             {
                 _isChanged = true;
-                return;
+                return Task.CompletedTask;
             }
 
             _backgroundTask = SaveLoop();
+
+            return Task.CompletedTask;
         }
 
         private async Task SaveLoop()
@@ -157,6 +159,8 @@ namespace TickTrader.BotTerminal
                     }
                     else
                         cloneToSave = null;
+
+                    return null;
                 });
             }
             while (cloneToSave != null);

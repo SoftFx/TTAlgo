@@ -141,7 +141,7 @@ namespace TickTrader.BotTerminal
         {
             var model = new SymbolCfgEditorViewModel(null, _clientModel.SortedCurrenciesNames, HasSymbol);
 
-            if (_wndManager.ShowDialog(model, this) == true)
+            if (_wndManager.ShowDialog(model, this).Result == true)
             {
                 var actionModel = new ActionDialogViewModel("Adding symbol...", () => _catalog.AddCustomSymbol(model.GetResultingSymbol()));
                 _wndManager.ShowDialog(actionModel, this);
@@ -152,7 +152,7 @@ namespace TickTrader.BotTerminal
         {
             var model = new SymbolCfgEditorViewModel(((CustomSymbolData)symbol).Entity, _clientModel.SortedCurrenciesNames, HasSymbol);
 
-            if (_wndManager.ShowDialog(model, this) == true)
+            if (_wndManager.ShowDialog(model, this).Result == true)
             {
                 var actionModel = new ActionDialogViewModel("Saving symbol settings...", () => _catalog.Update(model.GetResultingSymbol()));
                 _wndManager.ShowDialog(actionModel, this);
@@ -173,7 +173,7 @@ namespace TickTrader.BotTerminal
 
             var model = new SymbolCfgEditorViewModel(smb, _clientModel.SortedCurrenciesNames, HasSymbol, true);
 
-            if (_wndManager.ShowDialog(model, this) == true)
+            if (_wndManager.ShowDialog(model, this).Result == true)
             {
                 var actionModel = new ActionDialogViewModel("Saving symbol settings...", () => _catalog.AddCustomSymbol(model.GetResultingSymbol()));
                 _wndManager.ShowDialog(actionModel, this);

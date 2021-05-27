@@ -195,7 +195,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public override void CanClose(Action<bool> callback)
+        public override Task<bool> CanCloseAsync(CancellationToken cancellationToken = default)
         {
             bool hasRunningBots = algoEnv.LocalAgent.HasRunningBots;
 
@@ -207,25 +207,41 @@ namespace TickTrader.BotTerminal
             if (isConfirmed)
                 StopTerminal(true);
 
-            callback(isConfirmed);
+            return base.CanCloseAsync(cancellationToken);
         }
 
-        private void StopTerminal(bool stopAlgoServer)
+        //public override void CanClose(Action<bool> callback)
+        //{
+        //    bool hasRunningBots = algoEnv.LocalAgent.HasRunningBots;
+
+        //    var exit = new ConfirmationDialogViewModel(DialogButton.YesNo, hasRunningBots ? DialogMode.Warning : DialogMode.Question, DialogMessages.ExitTitle, DialogMessages.ExitMessage, algoEnv.LocalAgent.HasRunningBots ? DialogMessages.BotsWorkError : null);
+        //    wndManager.ShowDialog(exit, this);
+
+        //    var isConfirmed = exit.DialogResult == DialogResult.OK;
+
+        //    if (isConfirmed)
+        //        StopTerminal(true);
+
+        //    callback(isConfirmed);
+        //}
+
+        private async void StopTerminal(bool stopAlgoServer)
         {
-            storage.ProfileManager.Stop();
+            //await storage.ProfileManager.Stop();
+            await storage.ProfileManager.StopCurrentProfile();
 
             var shutdown = new ShutdownDialogViewModel(algoEnv.LocalAgent, stopAlgoServer);
-            wndManager.ShowDialog(shutdown, this);
+            await wndManager.ShowDialog(shutdown, this);
         }
 
-        public void Connect(AccountAuthEntry creds = null)
+        public async void Connect(AccountAuthEntry creds = null)
         {
             try
             {
                 if (creds == null || !creds.HasPassword)
                 {
                     LoginDialogViewModel model = new LoginDialogViewModel(cManager, creds);
-                    wndManager.ShowDialog(model, this);
+                    await wndManager.ShowDialog(model, this);
                 }
                 else
                     cManager.TriggerConnect(creds);
@@ -244,7 +260,7 @@ namespace TickTrader.BotTerminal
 
         public void Exit()
         {
-            TryClose();
+            TryCloseAsync();
         }
 
         public void OpenChart(string smb)
@@ -410,11 +426,19 @@ namespace TickTrader.BotTerminal
             wndManager.OpenMdiWindow(Backtester);
         }
 
-        private void Backtester_Deactivated(object sender, DeactivationEventArgs e)
+        private Task Backtester_Deactivated(object sender, DeactivationEventArgs e)
         {
             Backtester.Deactivated -= Backtester_Deactivated;
             Backtester = null;
+
+            return Task.CompletedTask;
         }
+
+        //private void Backtester_Deactivated(object sender, DeactivationEventArgs e)
+        //{
+        //    Backtester.Deactivated -= Backtester_Deactivated;
+        //    Backtester = null;
+        //}
 
         public void CloseChart(object chart)
         {

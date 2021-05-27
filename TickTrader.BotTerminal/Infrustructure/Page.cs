@@ -33,7 +33,7 @@ namespace TickTrader.BotTerminal
             if (conductor != null && conductor.ActiveItem == this)
             {
                 var switchToPage = conductor.Items.FirstOrDefault(i => i.IsVisible);
-                conductor.ActivateItem(switchToPage);
+                conductor.ActivateItemAsync(switchToPage);
             }
         }
     }

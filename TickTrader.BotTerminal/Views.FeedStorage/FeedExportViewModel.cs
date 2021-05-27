@@ -121,7 +121,7 @@ namespace TickTrader.BotTerminal
                 await _exportTask;
             }
             else
-                TryClose();
+                await TryCloseAsync();
         }
 
         public void Dispose()
@@ -197,7 +197,7 @@ namespace TickTrader.BotTerminal
                 UpdateState();
             }
 
-            TryClose();
+            await TryCloseAsync();
         }
 
         private async void UpdateAvailableRange()

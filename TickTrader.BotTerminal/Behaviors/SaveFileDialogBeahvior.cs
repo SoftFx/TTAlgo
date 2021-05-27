@@ -1,9 +1,9 @@
 ﻿using Microsoft.Win32;
+using Microsoft.Xaml.Behaviors;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Interactivity;
 using TickTrader.Algo.Package;
 using TickTrader.BotTerminal.Lib;
 

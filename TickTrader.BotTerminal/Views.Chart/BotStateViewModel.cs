@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
@@ -44,11 +46,17 @@ namespace TickTrader.BotTerminal
         public BotJournalViewModel BotJournal { get; private set; }
         public bool IsRemote => Bot?.Model.IsRemote ?? true;
 
-        public override void TryClose(bool? dialogResult = default(bool?))
-        {
-            base.TryClose(dialogResult);
+        //public override void TryClose(bool? dialogResult = default(bool?))
+        //{
+        //    base.TryClose(dialogResult);
 
+        //    Deinit();
+        //}
+
+        public override Task TryCloseAsync(bool? dialogResult = null)
+        {
             Deinit();
+            return base.TryCloseAsync(dialogResult);
         }
 
         public void StartStop()
@@ -71,23 +79,40 @@ namespace TickTrader.BotTerminal
             Bot.Browse();
         }
 
-        protected override void OnActivate()
+        protected override Task OnActivateAsync(CancellationToken cancellationToken)
         {
-            base.OnActivate();
-
             _isActivated = true;
-
             Init();
+
+            return base.OnActivateAsync(cancellationToken);
         }
 
-        protected override void OnDeactivate(bool close)
-        {
-            base.OnDeactivate(close);
+        //protected override void OnActivate()
+        //{
+        //    base.OnActivate();
 
+        //    _isActivated = true;
+
+        //    Init();
+        //}
+
+        protected override Task OnDeactivateAsync(bool close, CancellationToken cancellationToken)
+        {
             _isActivated = false;
 
             Deinit();
+
+            return base.OnDeactivateAsync(close, cancellationToken);
         }
+
+        //protected override void OnDeactivate(bool close)
+        //{
+        //    base.OnDeactivate(close);
+
+        //    _isActivated = false;
+
+        //    Deinit();
+        //}
 
         private bool FindBot()
         {
