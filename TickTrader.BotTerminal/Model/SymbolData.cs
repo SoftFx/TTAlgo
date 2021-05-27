@@ -266,12 +266,12 @@ namespace TickTrader.BotTerminal
             return _storage.RemoveSeries(Key);
         }
 
-        internal Channel<Slice<DateTime, BarData>> IterateBarCache(DateTime from, DateTime to)
+        internal ActorChannel<Slice<DateTime, BarData>> IterateBarCache(DateTime from, DateTime to)
         {
             return _storage.IterateBarCacheAsync(Key, from, to);
         }
 
-        internal Channel<Slice<DateTime, QuoteInfo>> IterateTickCache(DateTime from, DateTime to)
+        internal ActorChannel<Slice<DateTime, QuoteInfo>> IterateTickCache(DateTime from, DateTime to)
         {
             return _storage.IterateTickCacheAsync(Key, from, to);
         }

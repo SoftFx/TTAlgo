@@ -1,29 +1,27 @@
 ﻿using ActorSharp.Lib;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ActorSharp
 {
-    public static class Channel
+    public static class ActorChannel
     {
-        public static Channel<T> NewInput<T>(int pageSize = 10)
+        public static ActorChannel<T> NewInput<T>(int pageSize = 10)
         {
-            return new Channel<T>(ChannelDirections.In, pageSize);
+            return new ActorChannel<T>(ChannelDirections.In, pageSize);
         }
 
-        public static Channel<T> NewOutput<T>(int pageSize = 10)
+        public static ActorChannel<T> NewOutput<T>(int pageSize = 10)
         {
-            return new Channel<T>(ChannelDirections.Out, pageSize);
+            return new ActorChannel<T>(ChannelDirections.Out, pageSize);
         }
 
-        public static Channel<T> NewDuplex<T>(int pageSize = 10)
+        public static ActorChannel<T> NewDuplex<T>(int pageSize = 10)
         {
-            return new Channel<T>(ChannelDirections.Duplex, pageSize);
+            return new ActorChannel<T>(ChannelDirections.Duplex, pageSize);
         }
     }
 
-    public class Channel<T> : IAsyncReader<T>
+    public class ActorChannel<T> : IAsyncReader<T>
     {
         private static readonly IChannelReader<T> NullReader = new NullReader<T>();
         private static readonly IChannelWriter<T> NullWriter = new NullWriter<T>();
@@ -31,7 +29,7 @@ namespace ActorSharp
         private IChannelReader<T> _reader = NullReader;
         private IChannelWriter<T> _writer = NullWriter;
 
-        public Channel(ChannelDirections direction, int pageSize = 10)
+        public ActorChannel(ChannelDirections direction, int pageSize = 10)
         {
             MaxPageSize = pageSize;
             Dicrection = direction;

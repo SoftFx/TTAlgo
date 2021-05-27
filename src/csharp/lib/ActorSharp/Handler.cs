@@ -147,12 +147,12 @@ namespace ActorSharp
             }
         }
 
-        protected BlockingChannel<T> OpenInputChannel<T>(int pageSize, Action<TActor, Channel<T>> actorMethod)
+        protected BlockingChannel<T> OpenInputChannel<T>(int pageSize, Action<TActor, ActorChannel<T>> actorMethod)
         {
             return Actor.OpenBlockingChannel(ChannelDirections.In, pageSize, actorMethod);
         }
 
-        protected BlockingChannel<T> OpenOutputChannel<T>(Action<TActor, Channel<T>> actorMethod)
+        protected BlockingChannel<T> OpenOutputChannel<T>(Action<TActor, ActorChannel<T>> actorMethod)
         {
             return Actor.OpenBlockingChannel(ChannelDirections.Out, 10, actorMethod);
         }

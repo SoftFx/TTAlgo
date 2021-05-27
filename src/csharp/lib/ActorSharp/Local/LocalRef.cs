@@ -63,7 +63,7 @@ namespace ActorSharp
             return src.Task;
         }
 
-        public override void SendChannel<T>(Channel<T> channel, Action<TActor, Channel<T>> actorMethod)
+        public override void SendChannel<T>(ActorChannel<T> channel, Action<TActor, ActorChannel<T>> actorMethod)
         {
             if (channel.Dicrection == ChannelDirections.In)
             {
@@ -72,7 +72,7 @@ namespace ActorSharp
 
                 Action<TActor> task = a =>
                 {
-                    var actorChannel = Channel.NewInput<T>();
+                    var actorChannel = ActorChannel.NewInput<T>();
                     var reader = new LocalChannelReader<T>();
                     reader.Init(writer);
                     writer.Init(reader, channel.MaxPageSize);
@@ -89,7 +89,7 @@ namespace ActorSharp
 
                 Action<TActor> task = a =>
                 {
-                    var actorChannel = Channel.NewInput<T>();
+                    var actorChannel = ActorChannel.NewInput<T>();
                     var writer = new LocalChannelWriter<T>();
                     writer.Init(reader, channel.MaxPageSize);
                     reader.Init(writer);
@@ -103,7 +103,7 @@ namespace ActorSharp
                 throw new NotImplementedException();
         }
 
-        public override Task OpenChannel<T>(Channel<T> channel, Action<TActor, Channel<T>> actorMethod)
+        public override Task OpenChannel<T>(ActorChannel<T> channel, Action<TActor, ActorChannel<T>> actorMethod)
         {
             if (channel.Dicrection == ChannelDirections.In)
             {
@@ -112,7 +112,7 @@ namespace ActorSharp
 
                 var task = new Task(() =>
                 {
-                    var actorChannel = Channel.NewInput<T>();
+                    var actorChannel = ActorChannel.NewInput<T>();
                     var reader = new LocalChannelReader<T>();
                     reader.Init(writer);
                     writer.Init(reader, channel.MaxPageSize);
@@ -130,7 +130,7 @@ namespace ActorSharp
 
                 var task = new Task(() =>
                 {
-                    var actorChannel = Channel.NewInput<T>();
+                    var actorChannel = ActorChannel.NewInput<T>();
                     var writer = new LocalChannelWriter<T>();
                     writer.Init(reader, channel.MaxPageSize);
                     reader.Init(writer);
@@ -145,7 +145,7 @@ namespace ActorSharp
                 throw new NotImplementedException();
         }
 
-        public override Task<TResult> OpenChannel<T, TResult>(Channel<T> channel, Func<TActor, Channel<T>, TResult> actorMethod)
+        public override Task<TResult> OpenChannel<T, TResult>(ActorChannel<T> channel, Func<TActor, ActorChannel<T>, TResult> actorMethod)
         {
             if (channel.Dicrection == ChannelDirections.In)
             {
@@ -154,7 +154,7 @@ namespace ActorSharp
 
                 var task = new Task<TResult>(() =>
                 {
-                    var actorChannel = Channel.NewInput<T>();
+                    var actorChannel = ActorChannel.NewInput<T>();
                     var reader = new LocalChannelReader<T>();
                     reader.Init(writer);
                     writer.Init(reader, channel.MaxPageSize);
@@ -172,7 +172,7 @@ namespace ActorSharp
 
                 var task = new Task<TResult>(() =>
                 {
-                    var actorChannel = Channel.NewInput<T>();
+                    var actorChannel = ActorChannel.NewInput<T>();
                     var writer = new LocalChannelWriter<T>();
                     writer.Init(reader, channel.MaxPageSize);
                     reader.Init(writer);

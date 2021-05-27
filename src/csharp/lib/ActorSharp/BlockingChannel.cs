@@ -21,7 +21,7 @@ namespace ActorSharp
         private bool _isCloseCompleted;
         private ExceptionDispatchInfo _writerError;
 
-        internal BlockingChannel(Channel<T> channel)
+        internal BlockingChannel(ActorChannel<T> channel)
         {
             if (SynchronizationContext.Current == null)
                 throw new Exception("No synchroniztion context! Blocking channel should be constructed under actor context!");

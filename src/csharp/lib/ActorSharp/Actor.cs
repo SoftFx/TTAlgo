@@ -152,7 +152,7 @@ namespace ActorSharp
             return task;
         }
 
-        protected BlockingChannel<T> CreateBlockingChannel<T>(Channel<T> channel)
+        protected BlockingChannel<T> CreateBlockingChannel<T>(ActorChannel<T> channel)
         {
             ContextCheck();
             return new BlockingChannel<T>(channel);

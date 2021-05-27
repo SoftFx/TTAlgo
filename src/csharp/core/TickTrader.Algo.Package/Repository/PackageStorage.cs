@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
@@ -58,7 +59,7 @@ namespace TickTrader.Algo.Package
         }
 
 
-        private async Task SendPackageUpdates(System.Threading.Channels.ChannelReader<PackageUpdate> reader)
+        private async Task SendPackageUpdates(ChannelReader<PackageUpdate> reader)
         {
             await Task.Yield();
 
@@ -91,14 +92,14 @@ namespace TickTrader.Algo.Package
             private readonly Dictionary<string, AlgoPackageRef> _packageMap = new Dictionary<string, AlgoPackageRef>();
 
 
-            public System.Threading.Channels.Channel<PackageUpdate> PackageUpdates { get; private set; }
+            public Channel<PackageUpdate> PackageUpdates { get; private set; }
 
 
             public void Init()
             {
                 _fileUpdateProcessor.Start(HandlePackageUpdate);
 
-                PackageUpdates = System.Threading.Channels.Channel.CreateUnbounded<PackageUpdate>(new System.Threading.Channels.UnboundedChannelOptions { AllowSynchronousContinuations = false, SingleReader = true, SingleWriter = true });
+                PackageUpdates = Channel.CreateUnbounded<PackageUpdate>(new UnboundedChannelOptions { AllowSynchronousContinuations = false, SingleReader = true, SingleWriter = true });
             }
 
             public async Task Stop()
@@ -127,6 +128,7 @@ namespace TickTrader.Algo.Package
                     throw new ArgumentException($"Cannot register multiple paths for location '{locationId}'");
 
                 var repo = new PackageRepository(path, locationId, _fileUpdateProcessor);
+                _repositories[locationId] = repo;
                 repo.Start(); // fire and forget
             }
 

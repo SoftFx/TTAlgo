@@ -81,22 +81,22 @@ namespace TickTrader.Algo.Common.Model
                 return Actor.Call(a => a.GetAvailableRange(symbol, marketSide, timeframe));
             }
 
-            public async Task<Channel<SliceInfo>> DownloadBarSeriesToStorage(string symbol, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide, DateTime from, DateTime to)
+            public async Task<ActorChannel<SliceInfo>> DownloadBarSeriesToStorage(string symbol, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide, DateTime from, DateTime to)
             {
                 if (from.Kind != DateTimeKind.Utc || to.Kind != DateTimeKind.Utc)
                     throw new Exception("FeedHistoryProviderModel accepts only UTC dates!");
 
-                var channel = Channel.NewOutput<SliceInfo>();
+                var channel = ActorChannel.NewOutput<SliceInfo>();
                 await Actor.OpenChannel(channel, (a, c) => a.DownloadBarSeriesToStorage(c, symbol, timeframe, marketSide, Prepare(from), Prepare(to)));
                 return channel;
             }
 
-            public async Task<Channel<SliceInfo>> DownloadTickSeriesToStorage(string symbol, Feed.Types.Timeframe timeframe, DateTime from, DateTime to)
+            public async Task<ActorChannel<SliceInfo>> DownloadTickSeriesToStorage(string symbol, Feed.Types.Timeframe timeframe, DateTime from, DateTime to)
             {
                 if (from.Kind != DateTimeKind.Utc || to.Kind != DateTimeKind.Utc)
                     throw new Exception("FeedHistoryProviderModel accepts only UTC dates!");
 
-                var channel = Channel.NewOutput<SliceInfo>();
+                var channel = ActorChannel.NewOutput<SliceInfo>();
                 await Actor.OpenChannel(channel, (a, c) => a.DownloadTickSeriesToStorage(c, symbol, timeframe, Prepare(from), Prepare(to)));
                 return channel;
             }
@@ -256,12 +256,12 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private void DownloadBarSeriesToStorage(Channel<SliceInfo> stream, string symbol, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide, DateTime from, DateTime to)
+        private void DownloadBarSeriesToStorage(ActorChannel<SliceInfo> stream, string symbol, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide, DateTime from, DateTime to)
         {
             GetSeriesData(stream, symbol, timeframe, marketSide, from, to, GetCacheInfo, DownloadBarsInternal);
         }
 
-        private void DownloadTickSeriesToStorage(Channel<SliceInfo> stream, string symbol, Feed.Types.Timeframe timeframe, DateTime from, DateTime to)
+        private void DownloadTickSeriesToStorage(ActorChannel<SliceInfo> stream, string symbol, Feed.Types.Timeframe timeframe, DateTime from, DateTime to)
         {
             GetSeriesData(stream, symbol, timeframe, null, from, to, GetCacheInfo, DownloadTicksInternal);
         }
@@ -271,19 +271,19 @@ namespace TickTrader.Algo.Common.Model
             return _diskCache.IterateCacheKeys(key, from, to).Select(s => new SliceInfo(s.From, s.To, 0));
         }
 
-        private Task<DateTime> DownloadBarsInternal(Channel<Slice<BarData>> buffer, FeedCacheKey key, DateTime from, DateTime to)
+        private Task<DateTime> DownloadBarsInternal(ActorChannel<Slice<BarData>> buffer, FeedCacheKey key, DateTime from, DateTime to)
         {
             return DownloadBarsInternal(s => buffer.Write(s), key, from, to);
         }
 
-        private Task<DateTime> DownloadBarsInternal(Channel<SliceInfo> buffer, FeedCacheKey key, DateTime from, DateTime to)
+        private Task<DateTime> DownloadBarsInternal(ActorChannel<SliceInfo> buffer, FeedCacheKey key, DateTime from, DateTime to)
         {
             return DownloadBarsInternal(s => buffer.Write(s), key, from, to);
         }
 
         private async Task<DateTime> DownloadBarsInternal(Func<Slice<BarData>, IAwaitable<bool>> outputAction, FeedCacheKey key, DateTime from, DateTime to)
         {
-            var inputStream = Channel.NewInput<BarData>();
+            var inputStream = ActorChannel.NewInput<BarData>();
             var barSlicer = TimeSlicer.GetBarSlicer(SliceMaxSize, from, to);
 
             logger.Debug("start downloading bars (" + from + " - " + to + ")");
@@ -348,12 +348,12 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private Task<DateTime> DownloadTicksInternal(Channel<Slice<QuoteInfo>> buffer, FeedCacheKey key, DateTime from, DateTime to)
+        private Task<DateTime> DownloadTicksInternal(ActorChannel<Slice<QuoteInfo>> buffer, FeedCacheKey key, DateTime from, DateTime to)
         {
             return DownloadTicksInternal(s => buffer.Write(s), key, from, to);
         }
 
-        private Task<DateTime> DownloadTicksInternal(Channel<SliceInfo> buffer, FeedCacheKey key, DateTime from, DateTime to)
+        private Task<DateTime> DownloadTicksInternal(ActorChannel<SliceInfo> buffer, FeedCacheKey key, DateTime from, DateTime to)
         {
             return DownloadTicksInternal(s => buffer.Write(s), key, from, to);
         }
@@ -361,7 +361,7 @@ namespace TickTrader.Algo.Common.Model
         private async Task<DateTime> DownloadTicksInternal(Func<Slice<QuoteInfo>, IAwaitable<bool>> outputAction, FeedCacheKey key, DateTime from, DateTime to)
         {
             var level2 = key.Frame == Feed.Types.Timeframe.TicksLevel2;
-            var inputStream = Channel.NewInput<QuoteInfo>();
+            var inputStream = ActorChannel.NewInput<QuoteInfo>();
             var quoteSlicer = TimeSlicer.GetQuoteSlicer(SliceMaxSize, from, to);
             var hasData = false;
 
@@ -424,10 +424,10 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private async void GetSeriesData<TOut>(Channel<TOut> buffer,
+        private async void GetSeriesData<TOut>(ActorChannel<TOut> buffer,
             string symbol, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide? marketSide, DateTime from, DateTime to,
             Func<FeedCacheKey, DateTime, DateTime, IAsyncReader<TOut>> cacheProvider,
-            Func<Channel<TOut>, FeedCacheKey, DateTime, DateTime, Task<DateTime>> download)
+            Func<ActorChannel<TOut>, FeedCacheKey, DateTime, DateTime, Task<DateTime>> download)
             where TOut : SliceInfo
         {
             try

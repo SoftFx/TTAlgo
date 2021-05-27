@@ -31,11 +31,11 @@ namespace ActorSharp
             return new AsyncSelect<TSrc, TResult>(srcEnumerable, selector);
         }
 
-        public static BlockingChannel<TData> OpenBlockingChannel<TActor, TData>(this Ref<TActor> actor, ChannelDirections direction, int pageSize, Action<TActor, Channel<TData>> actorMethod)
+        public static BlockingChannel<TData> OpenBlockingChannel<TActor, TData>(this Ref<TActor> actor, ChannelDirections direction, int pageSize, Action<TActor, ActorChannel<TData>> actorMethod)
         {
             var callTask = actor.Call(a =>
             {
-                var actorSide = new Channel<TData>(direction, pageSize);
+                var actorSide = new ActorChannel<TData>(direction, pageSize);
                 var handlerSide = new BlockingChannel<TData>(actorSide);
                 actorMethod(a, actorSide);
                 return handlerSide;
@@ -44,7 +44,7 @@ namespace ActorSharp
             return callTask.Result;
         }
 
-        public static async void WriteAll<TData>(this Channel<TData> channel, Func<IEnumerable<TData>> enumerableFactory)
+        public static async void WriteAll<TData>(this ActorChannel<TData> channel, Func<IEnumerable<TData>> enumerableFactory)
         {
             try
             {

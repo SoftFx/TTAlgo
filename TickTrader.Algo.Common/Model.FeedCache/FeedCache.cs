@@ -105,16 +105,16 @@ namespace TickTrader.Algo.Common.Model
             public Task Put(string symbol, Feed.Types.Timeframe frame, Feed.Types.MarketSide marketSide, DateTime from, DateTime to, BarData[] values)
                 => Put(new FeedCacheKey(symbol, frame, marketSide), from, to, values);
 
-            public Channel<Slice<DateTime, BarData>> IterateBarCacheAsync(FeedCacheKey key, DateTime from, DateTime to)
+            public ActorChannel<Slice<DateTime, BarData>> IterateBarCacheAsync(FeedCacheKey key, DateTime from, DateTime to)
             {
-                var channel = new Channel<Slice<DateTime, BarData>>(ChannelDirections.Out, 1);
+                var channel = new ActorChannel<Slice<DateTime, BarData>>(ChannelDirections.Out, 1);
                 _ref.SendChannel(channel, (a, c) => a.IterateBarCache(c, key, from, to));
                 return channel;
             }
 
-            public Channel<Slice<DateTime, QuoteInfo>> IterateTickCacheAsync(FeedCacheKey key, DateTime from, DateTime to)
+            public ActorChannel<Slice<DateTime, QuoteInfo>> IterateTickCacheAsync(FeedCacheKey key, DateTime from, DateTime to)
             {
-                var channel = new Channel<Slice<DateTime, QuoteInfo>>(ChannelDirections.Out, 1);
+                var channel = new ActorChannel<Slice<DateTime, QuoteInfo>>(ChannelDirections.Out, 1);
                 _ref.SendChannel(channel, (a, c) => a.IterateTickCache(c, key, from, to));
                 return channel;
             }
@@ -129,9 +129,9 @@ namespace TickTrader.Algo.Common.Model
                 return _ref.OpenBlockingChannel<FeedCache, Slice<DateTime, QuoteInfo>>(ChannelDirections.Out, 2, (a, c) => a.IterateTickCache(c, key, from, to));
             }
 
-            public Channel<KeyRange<DateTime>> IterateCacheKeys(FeedCacheKey key, DateTime from, DateTime to)
+            public ActorChannel<KeyRange<DateTime>> IterateCacheKeys(FeedCacheKey key, DateTime from, DateTime to)
             {
-                var channel = new Channel<KeyRange<DateTime>> (ChannelDirections.Out, 1);
+                var channel = new ActorChannel<KeyRange<DateTime>> (ChannelDirections.Out, 1);
                 _ref.SendChannel(channel, (a, c) => a.IterateCacheKeys(c, key, from, to));
                 return channel;
             }
@@ -235,7 +235,7 @@ namespace TickTrader.Algo.Common.Model
             return GetSeries(key)?.GetSize();
         }
 
-        private void IterateCacheKeys(Channel<KeyRange<DateTime>> channel, FeedCacheKey key, DateTime from, DateTime to)
+        private void IterateCacheKeys(ActorChannel<KeyRange<DateTime>> channel, FeedCacheKey key, DateTime from, DateTime to)
         {
             channel.WriteAll(() => IterateCacheKeysInternal(key, from, to));
         }
@@ -294,12 +294,12 @@ namespace TickTrader.Algo.Common.Model
             return new List<KeyRange<DateTime>>();
         }
 
-        private void IterateCacheKeysInternal(Channel<KeyRange<DateTime>> channel, FeedCacheKey key, DateTime from, DateTime to)
+        private void IterateCacheKeysInternal(ActorChannel<KeyRange<DateTime>> channel, FeedCacheKey key, DateTime from, DateTime to)
         {
             channel.WriteAll(() => IterateCacheKeysInternal(key, from, to));
         }
 
-        protected void IterateBarCache(Channel<Slice<DateTime, BarData>> channel, FeedCacheKey key, DateTime from, DateTime to)
+        protected void IterateBarCache(ActorChannel<Slice<DateTime, BarData>> channel, FeedCacheKey key, DateTime from, DateTime to)
         {
             channel.WriteAll(() => IterateBarCacheInternal(key, from, to));
         }
@@ -339,7 +339,7 @@ namespace TickTrader.Algo.Common.Model
 
         #region Tick History
 
-        private void IterateTickCache(Channel<Slice<DateTime, QuoteInfo>> channel, FeedCacheKey key, DateTime from, DateTime to)
+        private void IterateTickCache(ActorChannel<Slice<DateTime, QuoteInfo>> channel, FeedCacheKey key, DateTime from, DateTime to)
         {
             channel.WriteAll(() => IterateTickCacheInternal(key, from, to));
         }

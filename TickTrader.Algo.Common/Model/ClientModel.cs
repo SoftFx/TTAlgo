@@ -25,8 +25,8 @@ namespace TickTrader.Algo.Common.Model
         private TradeHistoryProvider _tradeHistory;
         private PluginTradeApiProvider _tradeApi;
         private EntityCache _cache = new EntityCache();
-        private Dictionary<ActorRef, Channel<EntityCacheUpdate>> _tradeListeners = new Dictionary<ActorRef, Channel<EntityCacheUpdate>>();
-        private Dictionary<ActorRef, Channel<QuoteInfo>> _feedListeners = new Dictionary<ActorRef, Channel<QuoteInfo>>();
+        private Dictionary<ActorRef, ActorChannel<EntityCacheUpdate>> _tradeListeners = new Dictionary<ActorRef, ActorChannel<EntityCacheUpdate>>();
+        private Dictionary<ActorRef, ActorChannel<QuoteInfo>> _feedListeners = new Dictionary<ActorRef, ActorChannel<QuoteInfo>>();
         private Ref<ClientModel> _ref;
         private QuoteDistributor _rootDistributor;
         private Dictionary<ActorRef, IFeedSubscription> _feedSubcribers = new Dictionary<ActorRef, IFeedSubscription>();
@@ -215,11 +215,11 @@ namespace TickTrader.Algo.Common.Model
 
                 TradeApi = new PluginTradeApiProvider.Handler(await Actor.Call(a => a._tradeApi.GetRef()));
 
-                var updateStream = Channel.NewOutput<EntityCacheUpdate>(1000);
+                var updateStream = ActorChannel.NewOutput<EntityCacheUpdate>(1000);
                 var snapshot = await Actor.OpenChannel(updateStream, (a, c) => a.AddListener(Ref, c));
                 ApplyUpdates(updateStream);
 
-                var quoteStream = Channel.NewOutput<QuoteInfo>(1000);
+                var quoteStream = ActorChannel.NewOutput<QuoteInfo>(1000);
                 await Actor.OpenChannel(quoteStream, (a, c) => a._feedListeners.Add(Ref, c));
                 ApplyQuotes(quoteStream);
             }
@@ -232,13 +232,13 @@ namespace TickTrader.Algo.Common.Model
                 await Connection.CloseHandler();
             }
 
-            private async void ApplyUpdates(Channel<EntityCacheUpdate> updateStream)
+            private async void ApplyUpdates(ActorChannel<EntityCacheUpdate> updateStream)
             {
                 while (await updateStream.ReadNext())
                     updateStream.Current.Apply(Cache);
             }
 
-            private async void ApplyQuotes(Channel<QuoteInfo> updateStream)
+            private async void ApplyQuotes(ActorChannel<QuoteInfo> updateStream)
             {
                 while (await updateStream.ReadNext())
                 {
@@ -335,7 +335,7 @@ namespace TickTrader.Algo.Common.Model
 
             logger.Debug("Loaded quotes snaphsot.");
 
-            var orderStream = Channel.NewInput<Domain.OrderInfo>();
+            var orderStream = ActorChannel.NewInput<Domain.OrderInfo>();
             tradeApi.GetTradeRecords(CreateBlockingChannel(orderStream));
 
             while (await orderStream.ReadNext())
@@ -397,7 +397,7 @@ namespace TickTrader.Algo.Common.Model
 
         #region Entity cache
 
-        private EntityCacheUpdate AddListener(ActorRef handleRef, Channel<EntityCacheUpdate> channel)
+        private EntityCacheUpdate AddListener(ActorRef handleRef, ActorChannel<EntityCacheUpdate> channel)
         {
             _tradeListeners.Add(handleRef, channel);
             return _cache.GetAccSnapshot();

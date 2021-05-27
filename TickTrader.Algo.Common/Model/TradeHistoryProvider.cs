@@ -15,7 +15,7 @@ namespace TickTrader.Algo.Common.Model
         private ConnectionModel _connection;
         private AsyncLock _updateLock = new AsyncLock();
         private AsyncQueue<Domain.TradeReportInfo> _updateQueue;
-        private Dictionary<Ref<Handler>, Channel<Domain.TradeReportInfo>> _listeners = new Dictionary<Ref<Handler>, Channel<Domain.TradeReportInfo>>();
+        private Dictionary<Ref<Handler>, ActorChannel<Domain.TradeReportInfo>> _listeners = new Dictionary<Ref<Handler>, ActorChannel<Domain.TradeReportInfo>>();
         private bool _isStarted;
 
         public TradeHistoryProvider(ConnectionModel connection, int loggerId)
@@ -44,7 +44,7 @@ namespace TickTrader.Algo.Common.Model
             ContextSend(() => _updateQueue.Enqueue(report));
         }
 
-        private async void GetTradeHistory(Channel<Domain.TradeReportInfo> txChannel, DateTime? from, DateTime? to, bool skipCanceledOrders, bool backwards)
+        private async void GetTradeHistory(ActorChannel<Domain.TradeReportInfo> txChannel, DateTime? from, DateTime? to, bool skipCanceledOrders, bool backwards)
         {
             try
             {
@@ -57,7 +57,7 @@ namespace TickTrader.Algo.Common.Model
                     to = to ?? DateTime.UtcNow + TimeSpan.FromDays(2);
                 }
 
-                var rxChannel = Channel.NewInput<Domain.TradeReportInfo>(1000);
+                var rxChannel = ActorChannel.NewInput<Domain.TradeReportInfo>(1000);
                 _connection.TradeProxy.GetTradeHistory(CreateBlockingChannel(rxChannel), from, to, skipCanceledOrders, backwards);
 
                 while (await rxChannel.ReadNext())
@@ -146,36 +146,36 @@ namespace TickTrader.Algo.Common.Model
             internal async Task Init()
             {
                 AlgoAdapter = new PagedEnumeratorAdapter(Actor);
-                var reportStream = Channel.NewOutput<Domain.TradeReportInfo>(1000);
+                var reportStream = ActorChannel.NewOutput<Domain.TradeReportInfo>(1000);
                 await Actor.OpenChannel(reportStream, (a, c) => a._listeners.Add(_ref, c));
                 ReadUpdatesLoop(reportStream);
             }
 
             public event Action<Domain.TradeReportInfo> OnTradeReport;
 
-            public Channel<Domain.TradeReportInfo> GetTradeHistory(bool skipCancelOrders)
+            public ActorChannel<Domain.TradeReportInfo> GetTradeHistory(bool skipCancelOrders)
             {
                 return GetTradeHistoryInternal(null, null, skipCancelOrders);
             }
 
-            public Channel<Domain.TradeReportInfo> GetTradeHistory(DateTime? from, DateTime? to, bool skipCancelOrders)
+            public ActorChannel<Domain.TradeReportInfo> GetTradeHistory(DateTime? from, DateTime? to, bool skipCancelOrders)
             {
                 return GetTradeHistoryInternal(from, to, skipCancelOrders);
             }
 
-            public Channel<Domain.TradeReportInfo> GetTradeHistory(DateTime to, bool skipCancelOrders)
+            public ActorChannel<Domain.TradeReportInfo> GetTradeHistory(DateTime to, bool skipCancelOrders)
             {
                 return GetTradeHistoryInternal(null, to, skipCancelOrders);
             }
 
-            private Channel<Domain.TradeReportInfo> GetTradeHistoryInternal(DateTime? from, DateTime? to, bool skipCancelOrders)
+            private ActorChannel<Domain.TradeReportInfo> GetTradeHistoryInternal(DateTime? from, DateTime? to, bool skipCancelOrders)
             {
-                var channel = Channel.NewOutput<Domain.TradeReportInfo>(1000);
+                var channel = ActorChannel.NewOutput<Domain.TradeReportInfo>(1000);
                 Actor.OpenChannel(channel, (a, c) => a.GetTradeHistory(c, from, to, skipCancelOrders, true));
                 return channel;
             }
 
-            private async void ReadUpdatesLoop(Channel<Domain.TradeReportInfo> updateStream)
+            private async void ReadUpdatesLoop(ActorChannel<Domain.TradeReportInfo> updateStream)
             {
                 while (await updateStream.ReadNext())
                     OnTradeReport?.Invoke(updateStream.Current);

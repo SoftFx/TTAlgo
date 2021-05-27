@@ -9,7 +9,7 @@ namespace ActorSharp.Sample
     {
         private int _sum;
 
-        private async void AggregateLoop(Channel<int> stream)
+        private async void AggregateLoop(ActorChannel<int> stream)
         {
             while (await stream.ReadNext())
                 _sum += 1;
@@ -21,9 +21,9 @@ namespace ActorSharp.Sample
             {
             }
 
-            public async Task<Channel<int>> BeginAggregate(int pageSize)
+            public async Task<ActorChannel<int>> BeginAggregate(int pageSize)
             {
-                var ch = Channel.NewInput<int>(pageSize);
+                var ch = ActorChannel.NewInput<int>(pageSize);
                 await Actor.OpenChannel(ch, (a, c) => a.AggregateLoop(c));
                 return ch;
             }
