@@ -2,20 +2,14 @@
 
   <property name="MSBuildDir"          value="c:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"      unless="${property::exists('MSBuildDir')}" />
   <property name="NSIS_Path"           value="c:\Program Files (x86)\NSIS\"      unless="${property::exists('NSIS_Path')}" />
-  <property name="WinScpPath"          value="c:\Program Files (x86)\WinSCP\WinSCP.com" unless="${property::exists('WinScpPath')}" />
 
   <property name="Build"               value="0.0.0.0"                              unless="${property::exists('Build')}" />
   <property name="Configuration"       value="Release"                              unless="${property::exists('Configuration')}" />
 
   <property name="SourcesDir"          value=".\"                                   unless="${property::exists('SourcesDir')}" />
-  <property name="SolutionFile"        value="${SourcesDir}Algo.sln"                unless="${property::exists('SolutionFile')}" />
-  
-  <property name="InstallUrl"          value="http://tp.dev.soft-fx.eu/bt.setup/"   unless="${property::exists('InstallUrl')}" />
-  <property name="EnableClickOnce"     value="false"                                unless="${property::exists('EnableClickOnce')}" />
-  
+  <property name="SolutionFile"        value="${SourcesDir}Algo.sln"                unless="${property::exists('SolutionFile')}" />  
 
   <property name="OutputFolder"        value="${SourcesDir}build.ouput\" />
-  <property name="PublishFolder"       value="${SourcesDir}bt.publish\"/>
   <property name="ToolsFolder"         value="${SourcesDir}tools\"  />
 
   <property name="TerminalProject"     value="${SourcesDir}TickTrader.BotTerminal\TickTrader.BotTerminal.csproj" />
@@ -26,7 +20,7 @@
 
   <property name="CoreBinDir"          value="${SourcesDir}TickTrader.Algo.Core\bin\${Configuration}" />
   <property name="VsPackageBinDir"     value="${SourcesDir}TickTrader.Algo.VS.Package\bin\${Configuration}"/>
-  <property name="TerminalBinDir"      value="${SourcesDir}TickTrader.BotTerminal\bin\${Configuration}\" />
+  <property name="TerminalBinDir"      value="${SourcesDir}TickTrader.BotTerminal\bin\${Configuration}\net472\" />
   <property name="AlgoServerBinDir"         value="${SourcesDir}TickTrader.BotAgent\bin\${Configuration}\net472\publish\" />
   <property name="ConfiguratorBinDir"  value="${SourcesDir}TickTrader.BotAgent.Configurator\bin\${Configuration}\" />
 
@@ -61,9 +55,6 @@
     <call target="BuildSolution" />
     <call target="PublishAlgoServer" />
     <call target="PublishServerControl" />
-    <if test="${EnableClickOnce=='true'}">
-      <call target="PublishTerminal" />
-    </if>
 
     <call target="CreatePackages" />
     <call target="CreateZipArtifacts" />
@@ -98,12 +89,6 @@
     <delete>
       <fileset basedir="${OutputFolder}">
         <include name="*.ttalgo" />
-      </fileset>
-    </delete>
-    
-    <delete>
-      <fileset basedir="${PublishFolder}">
-        <include name="**/*" />
       </fileset>
     </delete>
     
@@ -233,52 +218,6 @@
       <arg value="/p:Configuration=${MSBuild.Configuration}" />
       <arg value="/p:Platform=${MSBuild.Platform}" />
       <arg value="/p:SolutionDir=${MSBuild.SolutionDir}" />
-    </exec>
-
-  </target>
-
-  <target name="PublishTerminal">
-
-    <property name="MSBuild.Target" value="Publish" />
-    <property name="MSBuild.TargetFile" value="${TerminalProject}" />
-    <call target="RunMSBuildClickOnce" />
-
-    <copy file="${SourcesDir}ClickOnce\BotTerminal.Setup.html" tofile="${PublishFolder}\setup.html">
-      <filterchain>
-        <replacetokens>
-          <token key="Build.Number" value="${Build}" />
-        </replacetokens>
-      </filterchain>
-    </copy>
-
-    <exec program="${WinScpPath}" verbose="true">
-      <arg value="/command" />
-      <arg value='"open sftp://${Ftp.User}:${Ftp.Pwd}@${Ftp.Host} -certificate=*"' />
-      <arg value='"put ""${PublishFolder}"""' />
-      <arg value='"close"' />
-      <arg value='"exit"' />
-    </exec>
-
-  </target>
-
-  <target name="RunMSBuildClickOnce">
-
-    <property name="MSBuild.Platform" value="AnyCPU" />  
-
-    <exec program="${MSBuildDir}msbuild.exe" >
-      <arg value="${MSBuild.TargetFile}" />
-      <arg value="/t:${MSBuild.Target}" />
-      <arg value="/maxcpucount" />
-      <arg value="/fl" />
-      <arg value="/flp:Verbosity=Normal;LogFile=${MSBuild.Output}" />
-      <arg value="/clp:NoItemAndPropertyList" />
-      <arg value="/verbosity:n" />
-      <arg value="/nologo" />
-      <arg value="/p:Configuration=${MSBuild.Configuration}" />
-      <arg value="/p:Platform=${MSBuild.Platform}" />
-      <arg value="/p:SolutionDir=${MSBuild.SolutionDir}" />
-      <arg value="/p:InstallUrl=${InstallUrl}" />
-      <arg value="/p:ApplicationVersion=${Build}" />
     </exec>
 
   </target>
