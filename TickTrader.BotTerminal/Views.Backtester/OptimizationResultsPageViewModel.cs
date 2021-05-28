@@ -25,7 +25,7 @@ namespace TickTrader.BotTerminal
             DisplayName = "Optimization Results";
             IsVisible = false;
 
-            DataView = Data.AsDataView();
+            //DataView = Data.AsDataView();
         }
 
         public DataTable Data { get; } = new DataTable();

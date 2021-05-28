@@ -72,7 +72,7 @@ namespace TickTrader.BotTerminal
                 StoppedBots = TotalBots - _algoAgent.RunningBotsCnt;
             }
 
-            TryClose();
+            await TryCloseAsync ();
         }
     }
 }

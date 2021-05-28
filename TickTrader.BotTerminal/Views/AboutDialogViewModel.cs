@@ -34,7 +34,7 @@ namespace TickTrader.BotTerminal
 
         public void Ok()
         {
-            TryClose();
+            TryCloseAsync();
         }
     }
 }

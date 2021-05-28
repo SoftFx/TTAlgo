@@ -4,6 +4,7 @@ using Machinarium.Var;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Backtester;
 using TickTrader.Algo.Core.Lib;
@@ -62,16 +63,24 @@ namespace TickTrader.BotTerminal
         {
             AvailableCurrencies.Dispose();
             _proprs.Dispose();
-            TryClose();
+            TryCloseAsync();
         }
 
-        protected override void OnDeactivate(bool close)
+        protected override Task OnDeactivateAsync(bool close, CancellationToken cancellationToken)
         {
-            base.OnDeactivate(close);
-
             if (close)
                 _completedSrc.TrySetResult(false);
+
+            return base.OnDeactivateAsync(close, cancellationToken);
         }
+
+        //protected override void OnDeactivate(bool close)
+        //{
+        //    base.OnDeactivate(close);
+
+        //    if (close)
+        //        _completedSrc.TrySetResult(false);
+        //}
 
         #region Trade Emulator
 

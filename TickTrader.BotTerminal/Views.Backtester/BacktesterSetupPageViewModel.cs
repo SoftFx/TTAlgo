@@ -460,12 +460,18 @@ namespace TickTrader.BotTerminal
                     Settings.InitialBalance, Settings.BalanceCurrency, Settings.Leverage, "Default", Settings.ServerPingMs);
         }
 
-        public override void TryClose(bool? dialogResult = null)
+        public override Task<bool> CanCloseAsync(CancellationToken cancellationToken = default)
         {
-            base.TryClose(dialogResult);
-
             _var.Dispose();
+            return base.CanCloseAsync(cancellationToken);
         }
+
+        //public override void TryClose(bool? dialogResult = null)
+        //{
+        //    base.TryClose(dialogResult);
+
+        //    _var.Dispose();
+        //}
 
         private void UpdateOptimizationState(PluginDescriptor descriptor)
         {

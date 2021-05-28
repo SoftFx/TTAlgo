@@ -84,7 +84,7 @@ namespace TickTrader.BotTerminal
 
                 if (Mode == PluginSetupMode.Edit && _selectedPlugin == null)
                 {
-                    TryClose();
+                    TryCloseAsync();
                     return;
                 }
 
@@ -220,7 +220,8 @@ namespace TickTrader.BotTerminal
                     await SelectedAgent.Model.ChangeBotConfig(Bot.InstanceId, config);
                     await UploadBotFiles(config);
                 }
-                TryClose();
+
+                await TryCloseAsync();
             }
             catch (Exception ex)
             {
@@ -229,16 +230,22 @@ namespace TickTrader.BotTerminal
             HasPendingRequest = false;
         }
 
-        public void Cancel()
+        public async void Cancel()
         {
-            TryClose();
+            await TryCloseAsync();
         }
 
-        public override void CanClose(Action<bool> callback)
+        public override Task<bool> CanCloseAsync(CancellationToken cancellationToken = default)
         {
-            callback(true);
             Dispose();
+            return base.CanCloseAsync(cancellationToken);
         }
+
+        //public override void CanClose(Action<bool> callback)
+        //{
+        //    callback(true);
+        //    Dispose();
+        //}
 
         public PluginConfig GetConfig()
         {
@@ -293,7 +300,7 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(CanOk));
         }
 
-        private void AllPlugins_Updated(ListUpdateArgs<AlgoPluginViewModel> args)
+        private async void AllPlugins_Updated(ListUpdateArgs<AlgoPluginViewModel> args)
         {
             if (SelectedPlugin == null)
                 return;
@@ -308,7 +315,7 @@ namespace TickTrader.BotTerminal
             else if (args.Action == DLinqAction.Remove)
             {
                 if (args.OldItem.Key.Equals(SelectedPlugin.Key))
-                    TryClose();
+                    await TryCloseAsync();
             }
         }
 

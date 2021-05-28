@@ -73,7 +73,7 @@ namespace TickTrader.BotTerminal
             if (IsBusy.Value)
                 DownloadObserver.Cancel();  
             else
-                TryClose();
+                TryCloseAsync();
         }
 
         public void Dispose()
@@ -82,16 +82,27 @@ namespace TickTrader.BotTerminal
             varContext.Dispose();
         }
 
-        public override void TryClose(bool? dialogResult = default(bool?))
+        public override Task TryCloseAsync(bool? dialogResult = null)
         {
-            base.TryClose(dialogResult);
             Dispose();
+            return base.TryCloseAsync(dialogResult);
         }
 
-        public override void CanClose(Action<bool> callback)
+        //public override void TryClose(bool? dialogResult = default(bool?))
+        //{
+        //    base.TryClose(dialogResult);
+        //    Dispose();
+        //}
+
+        public override Task<bool> CanCloseAsync(CancellationToken cancellationToken = default)
         {
-            callback(!IsBusy.Value);
+            return Task.FromResult(!IsBusy.Value);
         }
+
+        //public override void CanClose(Action<bool> callback)
+        //{
+        //    callback(!IsBusy.Value);
+        //}
 
         public void Download()
         {

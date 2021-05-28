@@ -16,13 +16,13 @@ namespace TickTrader.BotTerminal
             DisplayName = "Log In";
 
             LoginPage = new LoginPageViewModel(cManager, creds);
-            LoginPage.Done += () => TryClose();
+            LoginPage.Done += () => TryCloseAsync();
 
             this.Items.Add(LoginPage);
 
             switch (startOptions)
             {
-                case StartPageOptions.LogIn: ActivateItem(LoginPage); break;
+                case StartPageOptions.LogIn: ActivateItemAsync(LoginPage); break;
             }
         }
 
@@ -30,7 +30,7 @@ namespace TickTrader.BotTerminal
 
         public void Connect() => LoginPage.Connect();
 
-        public void Stop() => TryClose();
+        public void Stop() => TryCloseAsync();
     }
 
     internal interface ILoginDialogPage

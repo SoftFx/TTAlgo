@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
@@ -43,16 +44,23 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public override void ActivateItem(ChartViewModel item)
+        public override Task ActivateItemAsync(ChartViewModel item, CancellationToken cancellationToken = default)
         {
-            base.ActivateItem(item);
             _charts[item.ChartWindowId] = item;
             NotifyOfPropertyChange(nameof(SelectedChartProxy));
+            return base.ActivateItemAsync(item, cancellationToken);
         }
+
+        //public override void ActivateItem(ChartViewModel item)
+        //{
+        //    base.ActivateItem(item);
+        //    _charts[item.ChartWindowId] = item;
+        //    NotifyOfPropertyChange(nameof(SelectedChartProxy));
+        //}
 
         public void Open(string symbol, ChartPeriods period = ChartPeriods.M1)
         {
-            ActivateItem(new ChartViewModel(GenerateChartId(), symbol, period, _algoEnv));
+            ActivateItemAsync(new ChartViewModel(GenerateChartId(), symbol, period, _algoEnv));
         }
 
         public void OpenOrActivate(string symbol, ChartPeriods period)
@@ -60,7 +68,7 @@ namespace TickTrader.BotTerminal
             var chart = Items.FirstOrDefault(c => c.Symbol == symbol && c.SelectedPeriod.Key == period);
             if (chart != null)
             {
-                ActivateItem(chart);
+                ActivateItemAsync(chart);
                 return;
             }
             Open(symbol, period);
@@ -68,7 +76,7 @@ namespace TickTrader.BotTerminal
 
         public void CloseItem(ChartViewModel chart)
         {
-            chart.TryClose();
+            chart.TryCloseAsync();
             _charts.Remove(chart.ChartWindowId);
         }
 
@@ -127,14 +135,14 @@ namespace TickTrader.BotTerminal
 
                     var id = chart.Id ?? GenerateChartId(); // generate missing chartIds
                     var item = new ChartViewModel(id, chart.Symbol, chart.SelectedPeriod, _algoEnv);
-                    ActivateItem(item);
+                    ActivateItemAsync(item);
                     item.RestoreFromSnapshot(chart);
                 }
 
                 var selectedItem = Items.FirstOrDefault(c => c.Symbol == profileStorage.SelectedChart);
                 if (selectedItem != null)
                 {
-                    ActivateItem(selectedItem);
+                    ActivateItemAsync(selectedItem);
                 }
             }
             catch (Exception ex)

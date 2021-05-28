@@ -197,7 +197,7 @@ namespace TickTrader.BotTerminal
             {
                 var model = new BAAccountDialogViewModel(_algoEnv, null, this);
 
-                if (_algoEnv.Shell.ToolWndManager.ShowDialog(model, plugin) == true && plugin.SelectedAgent == model.AlgoServer.Value)
+                if (_algoEnv.Shell.ToolWndManager.ShowDialog(model, plugin).Result == true && plugin.SelectedAgent == model.AlgoServer.Value)
                     plugin.SetNewAccount(model.Login.Value);
             }
             catch (Exception ex)

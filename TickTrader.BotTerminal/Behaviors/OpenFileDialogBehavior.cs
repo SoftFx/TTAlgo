@@ -1,11 +1,11 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Interactivity;
 using TickTrader.BotTerminal.Lib;
 using Microsoft.Win32;
 using System.Windows.Data;
 using System.IO;
 using TickTrader.Algo.Package;
+using Microsoft.Xaml.Behaviors;
 
 namespace TickTrader.BotTerminal
 {

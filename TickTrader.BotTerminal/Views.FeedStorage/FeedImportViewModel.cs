@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
@@ -144,13 +145,18 @@ namespace TickTrader.BotTerminal
             if (ActionRunner.IsRunning.Value)
                 ActionRunner.Cancel();
             else
-                TryClose();
+                TryCloseAsync();
         }
 
-        public override void CanClose(Action<bool> callback)
+        public override Task<bool> CanCloseAsync(CancellationToken cancellationToken = default)
         {
-            callback(!ActionRunner.IsRunning.Value);
+            return Task.FromResult(!ActionRunner.IsRunning.Value);
         }
+
+        //public override void CanClose(Action<bool> callback)
+        //{
+        //    callback(!ActionRunner.IsRunning.Value);
+        //}
     }
 
     internal abstract class FeedImporter : EntityBase

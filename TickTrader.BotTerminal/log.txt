@@ -1,0 +1,186 @@
+2021-05-28 13:31:41.696 +03:00 [INF] MSBuild registered from C:\Program Files\dotnet\sdk\5.0.300\
+2021-05-28 13:31:46.456 +03:00 [INF] Initializing upgrade step Select an entrypoint
+2021-05-28 13:31:46.460 +03:00 [INF] Setting entrypoint to user selected project: C:\repos\tt-algo\TickTrader.BotTerminal\TickTrader.BotTerminal.csproj
+2021-05-28 13:31:46.467 +03:00 [INF] Initializing upgrade step Select project to upgrade
+2021-05-28 13:31:47.003 +03:00 [INF] Initializing upgrade step Back up project
+2021-05-28 13:32:31.523 +03:00 [INF] Applying upgrade step Back up project
+2021-05-28 13:32:38.083 +03:00 [INF] Backing up C:\repos\tt-algo\TickTrader.BotTerminal to C:\repos\tt-algo\TickTrader.BotTerminal.backup
+2021-05-28 13:32:38.098 +03:00 [WRN] Could not copy file C:\repos\tt-algo\TickTrader.BotTerminal\log.txt due to 'The process cannot access the file 'C:\repos\tt-algo\TickTrader.BotTerminal\log.txt' because it is being used by another process.'
+2021-05-28 13:32:50.901 +03:00 [INF] Project backed up to C:\repos\tt-algo\TickTrader.BotTerminal.backup
+2021-05-28 13:32:50.902 +03:00 [INF] Upgrade step Back up project applied successfully
+2021-05-28 13:32:50.937 +03:00 [INF] Initializing upgrade step Convert project file to SDK style
+2021-05-28 13:32:53.258 +03:00 [INF] Applying upgrade step Convert project file to SDK style
+2021-05-28 13:32:53.260 +03:00 [INF] Converting project file format with try-convert, version 0.7.226301
+2021-05-28 13:32:53.480 +03:00 [INF] [try-convert] C:\repos\tt-algo\TickTrader.BotTerminal\TickTrader.BotTerminal.csproj contains an App.config file. App.config is replaced by appsettings.json in .NET Core. You will need to delete App.config and migrate to appsettings.json if it's applicable to your project.
+2021-05-28 13:32:54.080 +03:00 [INF] [try-convert] This project has an unrecognized custom import which may need reviewed after conversion: Grpc.Core.targets
+2021-05-28 13:32:54.083 +03:00 [INF] [try-convert] This project has an unrecognized custom import which may need reviewed after conversion: LightningDB.targets
+2021-05-28 13:32:56.837 +03:00 [INF] [try-convert] Conversion complete!
+2021-05-28 13:32:58.858 +03:00 [INF] Project file converted successfully! The project may require additional changes to build successfully against the new .NET target.
+2021-05-28 13:33:05.774 +03:00 [INF] Upgrade step Convert project file to SDK style applied successfully
+2021-05-28 13:33:08.519 +03:00 [INF] Initializing upgrade step Clean up NuGet package references
+2021-05-28 13:33:12.010 +03:00 [INF] Marking package Caliburn.Micro.Core for removal because it appears to be a transitive dependency
+2021-05-28 13:33:12.030 +03:00 [INF] Marking package Google.Protobuf for removal because it appears to be a transitive dependency
+2021-05-28 13:33:12.035 +03:00 [INF] Marking package Grpc for removal because it appears to be a transitive dependency
+2021-05-28 13:33:12.039 +03:00 [INF] Marking package Grpc.Core for removal because it appears to be a transitive dependency
+2021-05-28 13:33:12.042 +03:00 [INF] Marking package Grpc.Core.Api for removal because it appears to be a transitive dependency
+2021-05-28 13:33:12.047 +03:00 [INF] Marking package LightningDB for removal because it appears to be a transitive dependency
+2021-05-28 13:33:12.053 +03:00 [INF] Marking package Newtonsoft.Json for removal because it appears to be a transitive dependency
+2021-05-28 13:33:12.059 +03:00 [INF] Marking package NLog for removal because it appears to be a transitive dependency
+2021-05-28 13:33:12.063 +03:00 [INF] Marking package System.Buffers for removal because it appears to be a transitive dependency
+2021-05-28 13:33:12.079 +03:00 [INF] Marking package System.IO.Pipelines for removal because it appears to be a transitive dependency
+2021-05-28 13:33:12.087 +03:00 [INF] Marking package System.Memory for removal because it appears to be a transitive dependency
+2021-05-28 13:33:12.091 +03:00 [INF] Marking package System.Numerics.Vectors for removal because it appears to be a transitive dependency
+2021-05-28 13:33:12.093 +03:00 [INF] Marking package System.Reactive for removal because it appears to be a transitive dependency
+2021-05-28 13:33:12.103 +03:00 [INF] Marking package System.Runtime.CompilerServices.Unsafe for removal because it appears to be a transitive dependency
+2021-05-28 13:33:12.111 +03:00 [INF] Marking package System.Runtime.Serialization.Primitives for removal because it appears to be a transitive dependency
+2021-05-28 13:33:12.117 +03:00 [INF] Marking package System.Threading.Channels for removal because it appears to be a transitive dependency
+2021-05-28 13:33:12.125 +03:00 [INF] Marking package System.Threading.Tasks.Extensions for removal because it appears to be a transitive dependency
+2021-05-28 13:33:12.130 +03:00 [INF] Marking assembly reference System.Configuration for removal based on package mapping configuration System.Configuration
+2021-05-28 13:33:12.133 +03:00 [INF] Adding package System.Configuration.ConfigurationManager based on package mapping configuration System.Configuration
+2021-05-28 13:33:12.134 +03:00 [INF] Marking assembly reference System.ServiceModel for removal based on package mapping configuration System.ServiceModel
+2021-05-28 13:33:12.135 +03:00 [INF] Adding package System.ServiceModel.Primitives based on package mapping configuration System.ServiceModel
+2021-05-28 13:33:12.136 +03:00 [INF] Adding package System.ServiceModel.Http based on package mapping configuration System.ServiceModel
+2021-05-28 13:33:12.137 +03:00 [INF] Adding package System.ServiceModel.Duplex based on package mapping configuration System.ServiceModel
+2021-05-28 13:33:12.137 +03:00 [INF] Adding package System.ServiceModel.NetTcp based on package mapping configuration System.ServiceModel
+2021-05-28 13:33:12.138 +03:00 [INF] Adding package System.ServiceModel.Security based on package mapping configuration System.ServiceModel
+2021-05-28 13:33:12.140 +03:00 [INF] Adding package System.ServiceModel.Federation based on package mapping configuration System.ServiceModel
+2021-05-28 13:33:17.761 +03:00 [WRN] .NET Upgrade Assistant analyzer NuGet package reference cannot be added because the package cannot be found
+2021-05-28 13:33:17.770 +03:00 [INF] References to be removed: System.Configuration
+System.ServiceModel
+2021-05-28 13:33:17.771 +03:00 [INF] Packages to be removed: Caliburn.Micro.Core, Version=4.0.173
+Google.Protobuf, Version=3.15.5
+Grpc, Version=2.36.1
+Grpc.Core, Version=2.36.1
+Grpc.Core.Api, Version=2.36.1
+LightningDB, Version=0.10.0
+Newtonsoft.Json, Version=13.0.1
+NLog, Version=4.7.7
+System.Buffers, Version=4.5.1
+System.IO.Pipelines, Version=4.7.2
+System.Memory, Version=4.5.4
+System.Numerics.Vectors, Version=4.5.0
+System.Reactive, Version=4.4.1
+System.Runtime.CompilerServices.Unsafe, Version=4.5.3
+System.Runtime.Serialization.Primitives, Version=4.3.0
+System.Threading.Channels, Version=5.0.0
+System.Threading.Tasks.Extensions, Version=4.5.4
+2021-05-28 13:33:17.773 +03:00 [INF] Packages to be added: System.Configuration.ConfigurationManager, Version=5.0.0
+System.ServiceModel.Primitives, Version=4.8.1
+System.ServiceModel.Http, Version=4.8.1
+System.ServiceModel.Duplex, Version=4.8.1
+System.ServiceModel.NetTcp, Version=4.8.1
+System.ServiceModel.Security, Version=4.8.1
+System.ServiceModel.Federation, Version=4.8.1
+2021-05-28 13:33:28.042 +03:00 [INF] Applying upgrade step Clean up NuGet package references
+2021-05-28 13:33:28.046 +03:00 [INF] Removing outdated assembly reference: System.Configuration
+2021-05-28 13:33:28.048 +03:00 [INF] Removing outdated assembly reference: System.ServiceModel
+2021-05-28 13:33:28.049 +03:00 [INF] Removing outdated package reference: Caliburn.Micro.Core, Version=4.0.173
+2021-05-28 13:33:28.050 +03:00 [INF] Removing outdated package reference: Google.Protobuf, Version=3.15.5
+2021-05-28 13:33:28.050 +03:00 [INF] Removing outdated package reference: Grpc, Version=2.36.1
+2021-05-28 13:33:28.051 +03:00 [INF] Removing outdated package reference: Grpc.Core, Version=2.36.1
+2021-05-28 13:33:28.052 +03:00 [INF] Removing outdated package reference: Grpc.Core.Api, Version=2.36.1
+2021-05-28 13:33:28.053 +03:00 [INF] Removing outdated package reference: LightningDB, Version=0.10.0
+2021-05-28 13:33:28.055 +03:00 [INF] Removing outdated package reference: Newtonsoft.Json, Version=13.0.1
+2021-05-28 13:33:28.055 +03:00 [INF] Removing outdated package reference: NLog, Version=4.7.7
+2021-05-28 13:33:28.056 +03:00 [INF] Removing outdated package reference: System.Buffers, Version=4.5.1
+2021-05-28 13:33:28.057 +03:00 [INF] Removing outdated package reference: System.IO.Pipelines, Version=4.7.2
+2021-05-28 13:33:28.058 +03:00 [INF] Removing outdated package reference: System.Memory, Version=4.5.4
+2021-05-28 13:33:28.059 +03:00 [INF] Removing outdated package reference: System.Numerics.Vectors, Version=4.5.0
+2021-05-28 13:33:28.059 +03:00 [INF] Removing outdated package reference: System.Reactive, Version=4.4.1
+2021-05-28 13:33:28.060 +03:00 [INF] Removing outdated package reference: System.Runtime.CompilerServices.Unsafe, Version=4.5.3
+2021-05-28 13:33:28.061 +03:00 [INF] Removing outdated package reference: System.Runtime.Serialization.Primitives, Version=4.3.0
+2021-05-28 13:33:28.061 +03:00 [INF] Removing outdated package reference: System.Threading.Channels, Version=5.0.0
+2021-05-28 13:33:28.062 +03:00 [INF] Removing outdated package reference: System.Threading.Tasks.Extensions, Version=4.5.4
+2021-05-28 13:33:28.064 +03:00 [INF] Adding package reference: System.Configuration.ConfigurationManager, Version=5.0.0
+2021-05-28 13:33:28.064 +03:00 [INF] Adding package reference: System.ServiceModel.Primitives, Version=4.8.1
+2021-05-28 13:33:28.065 +03:00 [INF] Adding package reference: System.ServiceModel.Http, Version=4.8.1
+2021-05-28 13:33:28.066 +03:00 [INF] Adding package reference: System.ServiceModel.Duplex, Version=4.8.1
+2021-05-28 13:33:28.067 +03:00 [INF] Adding package reference: System.ServiceModel.NetTcp, Version=4.8.1
+2021-05-28 13:33:28.068 +03:00 [INF] Adding package reference: System.ServiceModel.Security, Version=4.8.1
+2021-05-28 13:33:28.068 +03:00 [INF] Adding package reference: System.ServiceModel.Federation, Version=4.8.1
+2021-05-28 13:33:35.592 +03:00 [INF] Marking package System.ServiceModel.Primitives for removal because it appears to be a transitive dependency
+2021-05-28 13:33:35.597 +03:00 [INF] Marking package System.ServiceModel.Http for removal because it appears to be a transitive dependency
+2021-05-28 13:33:35.608 +03:00 [INF] Marking package System.ServiceModel.Security for removal because it appears to be a transitive dependency
+2021-05-28 13:33:35.681 +03:00 [WRN] .NET Upgrade Assistant analyzer NuGet package reference cannot be added because the package cannot be found
+2021-05-28 13:33:35.684 +03:00 [INF] Removing outdated package reference: System.ServiceModel.Primitives, Version=4.8.1
+2021-05-28 13:33:35.685 +03:00 [INF] Removing outdated package reference: System.ServiceModel.Http, Version=4.8.1
+2021-05-28 13:33:35.686 +03:00 [INF] Removing outdated package reference: System.ServiceModel.Security, Version=4.8.1
+2021-05-28 13:33:41.117 +03:00 [WRN] .NET Upgrade Assistant analyzer NuGet package reference cannot be added because the package cannot be found
+2021-05-28 13:33:41.124 +03:00 [INF] Upgrade step Clean up NuGet package references applied successfully
+2021-05-28 13:33:48.237 +03:00 [INF] Initializing upgrade step Update TFM
+2021-05-28 13:33:48.845 +03:00 [INF] TFM needs updated to net5.0-windows
+2021-05-28 13:33:52.434 +03:00 [INF] Applying upgrade step Update TFM
+2021-05-28 13:34:02.917 +03:00 [INF] Updated TFM to net5.0-windows
+2021-05-28 13:34:02.919 +03:00 [INF] Upgrade step Update TFM applied successfully
+2021-05-28 13:34:15.772 +03:00 [INF] Initializing upgrade step Update NuGet Packages
+2021-05-28 13:34:19.448 +03:00 [INF] Marking package System.Data.DataSetExtensions for removal because it appears to be a transitive dependency
+2021-05-28 13:34:19.455 +03:00 [INF] Marking package System.Management for removal because it appears to be a transitive dependency
+2021-05-28 13:34:19.459 +03:00 [INF] Marking package System.Configuration.ConfigurationManager for removal because it appears to be a transitive dependency
+2021-05-28 13:34:19.500 +03:00 [INF] Marking package System.Collections for removal because it appears to be a transitive dependency
+2021-05-28 13:34:19.505 +03:00 [INF] Marking package System.Collections.Concurrent for removal because it appears to be a transitive dependency
+2021-05-28 13:34:19.511 +03:00 [INF] Marking package System.Diagnostics.Debug for removal because it appears to be a transitive dependency
+2021-05-28 13:34:19.516 +03:00 [INF] Marking package System.Diagnostics.Tracing for removal because it appears to be a transitive dependency
+2021-05-28 13:34:19.526 +03:00 [INF] Marking package System.Linq for removal because it appears to be a transitive dependency
+2021-05-28 13:34:19.545 +03:00 [INF] Marking package System.Threading for removal because it appears to be a transitive dependency
+2021-05-28 13:34:19.552 +03:00 [INF] Marking package System.Threading.Tasks for removal because it appears to be a transitive dependency
+2021-05-28 13:34:20.502 +03:00 [WRN] No version of AvalonDock found that supports ["net5.0-windows"]; leaving unchanged
+2021-05-28 13:34:21.715 +03:00 [WRN] No version of Extended.Wpf.Toolkit found that supports ["net5.0-windows"]; leaving unchanged
+2021-05-28 13:34:22.673 +03:00 [WRN] No version of FontAwesome.WPF found that supports ["net5.0-windows"]; leaving unchanged
+2021-05-28 13:34:23.192 +03:00 [INF] Marking package System.Resources.ResourceManager, Version=4.0.0 for removal because it doesn't support the target framework but a newer version (4.3.0) does
+2021-05-28 13:34:23.706 +03:00 [INF] Marking package System.Runtime, Version=4.0.0 for removal because it doesn't support the target framework but a newer version (4.3.1) does
+2021-05-28 13:34:24.597 +03:00 [WRN] .NET Upgrade Assistant analyzer NuGet package reference cannot be added because the package cannot be found
+2021-05-28 13:34:24.607 +03:00 [INF] Packages to be removed: System.Data.DataSetExtensions, Version=4.5.0
+System.Management, Version=5.0.0
+System.Configuration.ConfigurationManager, Version=5.0.0
+System.Collections, Version=4.3.0
+System.Collections.Concurrent, Version=4.3.0
+System.Diagnostics.Debug, Version=4.3.0
+System.Diagnostics.Tracing, Version=4.3.0
+System.Linq, Version=4.3.0
+System.Threading, Version=4.3.0
+System.Threading.Tasks, Version=4.3.0
+System.Resources.ResourceManager, Version=4.0.0
+System.Runtime, Version=4.0.0
+2021-05-28 13:34:24.609 +03:00 [INF] Packages to be added: System.Resources.ResourceManager, Version=4.3.0
+System.Runtime, Version=4.3.1
+2021-05-28 13:34:26.682 +03:00 [INF] Applying upgrade step Update NuGet Packages
+2021-05-28 13:34:26.684 +03:00 [INF] Removing outdated package reference: System.Data.DataSetExtensions, Version=4.5.0
+2021-05-28 13:34:26.684 +03:00 [INF] Removing outdated package reference: System.Management, Version=5.0.0
+2021-05-28 13:34:26.685 +03:00 [INF] Removing outdated package reference: System.Configuration.ConfigurationManager, Version=5.0.0
+2021-05-28 13:34:26.686 +03:00 [INF] Removing outdated package reference: System.Collections, Version=4.3.0
+2021-05-28 13:34:26.686 +03:00 [INF] Removing outdated package reference: System.Collections.Concurrent, Version=4.3.0
+2021-05-28 13:34:26.687 +03:00 [INF] Removing outdated package reference: System.Diagnostics.Debug, Version=4.3.0
+2021-05-28 13:34:26.688 +03:00 [INF] Removing outdated package reference: System.Diagnostics.Tracing, Version=4.3.0
+2021-05-28 13:34:26.689 +03:00 [INF] Removing outdated package reference: System.Linq, Version=4.3.0
+2021-05-28 13:34:26.689 +03:00 [INF] Removing outdated package reference: System.Resources.ResourceManager, Version=4.0.0
+2021-05-28 13:34:26.690 +03:00 [INF] Removing outdated package reference: System.Runtime, Version=4.0.0
+2021-05-28 13:34:26.691 +03:00 [INF] Removing outdated package reference: System.Threading, Version=4.3.0
+2021-05-28 13:34:26.692 +03:00 [INF] Removing outdated package reference: System.Threading.Tasks, Version=4.3.0
+2021-05-28 13:34:26.692 +03:00 [INF] Adding package reference: System.Resources.ResourceManager, Version=4.3.0
+2021-05-28 13:34:26.695 +03:00 [INF] Adding package reference: System.Runtime, Version=4.3.1
+2021-05-28 13:34:33.207 +03:00 [INF] Marking package System.Resources.ResourceManager for removal because it appears to be a transitive dependency
+2021-05-28 13:34:33.215 +03:00 [INF] Marking package System.Runtime for removal because it appears to be a transitive dependency
+2021-05-28 13:34:33.257 +03:00 [WRN] No version of AvalonDock found that supports ["net5.0-windows"]; leaving unchanged
+2021-05-28 13:34:33.265 +03:00 [WRN] No version of Extended.Wpf.Toolkit found that supports ["net5.0-windows"]; leaving unchanged
+2021-05-28 13:34:33.271 +03:00 [WRN] No version of FontAwesome.WPF found that supports ["net5.0-windows"]; leaving unchanged
+2021-05-28 13:34:33.278 +03:00 [WRN] .NET Upgrade Assistant analyzer NuGet package reference cannot be added because the package cannot be found
+2021-05-28 13:34:33.286 +03:00 [INF] Removing outdated package reference: System.Resources.ResourceManager, Version=4.3.0
+2021-05-28 13:34:33.287 +03:00 [INF] Removing outdated package reference: System.Runtime, Version=4.3.1
+2021-05-28 13:34:39.104 +03:00 [WRN] No version of AvalonDock found that supports ["net5.0-windows"]; leaving unchanged
+2021-05-28 13:34:39.113 +03:00 [WRN] No version of Extended.Wpf.Toolkit found that supports ["net5.0-windows"]; leaving unchanged
+2021-05-28 13:34:39.119 +03:00 [WRN] No version of FontAwesome.WPF found that supports ["net5.0-windows"]; leaving unchanged
+2021-05-28 13:34:39.126 +03:00 [WRN] .NET Upgrade Assistant analyzer NuGet package reference cannot be added because the package cannot be found
+2021-05-28 13:34:39.135 +03:00 [INF] Upgrade step Update NuGet Packages applied successfully
+2021-05-28 13:34:40.565 +03:00 [INF] Initializing upgrade step Add template files
+2021-05-28 13:34:40.571 +03:00 [INF] 0 expected template items needed
+2021-05-28 13:34:40.573 +03:00 [INF] Initializing upgrade step Upgrade app config files
+2021-05-28 13:34:40.594 +03:00 [INF] Found 0 app settings for upgrade: 
+2021-05-28 13:34:41.011 +03:00 [INF] Initializing upgrade step Update source code
+2021-05-28 13:34:45.168 +03:00 [INF] Initializing upgrade step Move to next project
+2021-05-28 13:34:47.922 +03:00 [INF] Applying upgrade step Move to next project
+2021-05-28 13:34:47.923 +03:00 [INF] Upgrade step Move to next project applied successfully
+2021-05-28 13:34:55.271 +03:00 [INF] Initializing upgrade step Select project to upgrade
+2021-05-28 13:34:55.284 +03:00 [INF] Initializing upgrade step Finalize upgrade
+2021-05-28 13:34:59.746 +03:00 [INF] Applying upgrade step Finalize upgrade
+2021-05-28 13:34:59.747 +03:00 [INF] Upgrade step Finalize upgrade applied successfully
+2021-05-28 13:35:02.835 +03:00 [INF] Upgrade has completed. Please review any changes.

@@ -3,6 +3,8 @@ using Machinarium.Qnil;
 using NLog;
 using System;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
@@ -122,21 +124,29 @@ namespace TickTrader.BotTerminal
         public void Ok()
         {
             _dlgResult = true;
-            TryClose();
+            TryCloseAsync();
         }
 
         public void Cancel()
         {
             _dlgResult = false;
-            TryClose();
+            TryCloseAsync();
         }
 
-        public override void CanClose(Action<bool> callback)
+        public override Task<bool> CanCloseAsync(CancellationToken cancellationToken = default)
         {
-            callback(true);
             Closed(this, _dlgResult);
             Dispose();
+
+            return base.CanCloseAsync(cancellationToken);
         }
+
+        //public override void CanClose(Action<bool> callback)
+        //{
+        //    callback(true);
+        //    Closed(this, _dlgResult);
+        //    Dispose();
+        //}
 
         public PluginConfig GetConfig()
         {
@@ -184,7 +194,7 @@ namespace TickTrader.BotTerminal
             else if (args.Action == DLinqAction.Remove)
             {
                 if (args.OldItem.Key.Equals(SelectedPlugin.Key))
-                    TryClose();
+                    TryCloseAsync();
             }
         }
 

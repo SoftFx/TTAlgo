@@ -188,10 +188,10 @@ namespace TickTrader.BotTerminal
 
         public event System.Action Done = delegate { };
 
-        public override void CanClose(Action<bool> callback)
-        {
-            base.CanClose(callback);
-        }
+        //public override void CanClose(Action<bool> callback)
+        //{
+        //    base.CanClose(callback);
+        //}
 
         public async void Connect()
         {

@@ -125,7 +125,7 @@ namespace TickTrader.BotTerminal
             IsEnabled.Value = true;
 
             if (!Error.HasValue && closeWindow)
-                TryClose(true);
+                await TryCloseAsync(true);
         }
 
         private void InitAlgoAgent(AlgoAgentViewModel model)

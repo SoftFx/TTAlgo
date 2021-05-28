@@ -6,7 +6,6 @@
              xmlns:c="clr-namespace:TickTrader.Algo.Common.Model;assembly=TickTrader.Algo.Common"
              xmlns:l="clr-namespace:TickTrader.BotTerminal"
              xmlns:cal="http://www.caliburnproject.org"
-             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              mc:Ignorable="d" 
              d:DesignWidth="300">
 

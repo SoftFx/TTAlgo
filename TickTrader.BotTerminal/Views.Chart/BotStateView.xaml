@@ -4,7 +4,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:cal="http://www.caliburnproject.org"
     xmlns:s="http://schemas.abtsoftware.co.uk/scichart"
-    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
     <Style x:Key="StatusTextBoxStyle" TargetType="TextBox">
@@ -20,9 +20,9 @@
     <ContextMenu x:Key="StatusTextBoxContextMenu" >
         <MenuItem Header="Copy" Command="ApplicationCommands.Copy" />
         <MenuItem Header="Copy All">
-            <i:Interaction.Behaviors>
+            <!--<i:Interaction.Behaviors>
                 <l:MenuItemCopyTextBehavior Text="{Binding Bot.Status}" />
-            </i:Interaction.Behaviors>
+            </i:Interaction.Behaviors>-->
         </MenuItem>
     </ContextMenu>
 

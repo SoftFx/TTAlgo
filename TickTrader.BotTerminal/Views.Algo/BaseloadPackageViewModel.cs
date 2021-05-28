@@ -8,6 +8,7 @@ using System.Collections;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using TickTrader.Algo.ServerControl;
@@ -109,8 +110,7 @@ namespace TickTrader.BotTerminal
                     throw new Exception("Please select a Algo package.");
 
                 await RunLoadPackageProgress();
-
-                TryClose();
+                await TryCloseAsync();
             }
             catch (ConnectionFailedException ex)
             {
@@ -126,7 +126,7 @@ namespace TickTrader.BotTerminal
             IsEnabled.Value = true;
         }
 
-        public void Cancel() => TryClose(); // using on UI
+        public void Cancel() => TryCloseAsync(); // using on UI
 
 
         protected void SetStartLocation(string packageName)
@@ -243,14 +243,23 @@ namespace TickTrader.BotTerminal
             return string.IsNullOrEmpty(packageName) ? _localPackages.Count > 0 : !string.IsNullOrEmpty(GetLocalPackageName(packageName));
         }
 
-        protected override void OnDeactivate(bool close)
+        protected override Task OnDeactivateAsync(bool close, CancellationToken cancellationToken)
         {
             DeinitWatcher(null);
             SelectedAlgoServer.Packages.Updated -= UpdateAgentPackage;
             _watcher.Dispose();
 
-            base.OnDeactivate(close);
+            return base.OnDeactivateAsync(close, cancellationToken);
         }
+
+        //protected override void OnDeactivate(bool close)
+        //{
+        //    DeinitWatcher(null);
+        //    SelectedAlgoServer.Packages.Updated -= UpdateAgentPackage;
+        //    _watcher.Dispose();
+
+        //    base.OnDeactivate(close);
+        //}
 
 
         protected string FullPackagePath(string fileName) => Path.Combine(SelectedFolder.Value, fileName);

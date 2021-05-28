@@ -65,7 +65,7 @@ namespace TickTrader.BotTerminal
         public ObservableCollection<ParamSeekSetupModel> Parameters { get; } = new ObservableCollection<ParamSeekSetupModel>();
         public IEnumerable<int> AvailableParallelismList { get; }
         public IntProperty ParallelismProp { get; } = new IntProperty();
-        public IEnumerable<OptimizationAlgorithms> AvailableAlgorithms => EnumHelper.AllValues<OptimizationAlgorithms>() ;
+        public IEnumerable<OptimizationAlgorithms> AvailableAlgorithms => EnumHelper.AllValues<OptimizationAlgorithms>();
         public Property<OptimizationAlgorithms> AlgorithmProp { get; } = new Property<OptimizationAlgorithms>();
         public Dictionary<string, MetricProvider> AvailableMetrics => MetricSelectors;
         public Property<KeyValuePair<string, MetricProvider>> SelectedMetric { get; } = new Property<KeyValuePair<string, MetricProvider>>();
@@ -87,9 +87,9 @@ namespace TickTrader.BotTerminal
                 case OptimizationAlgorithms.Genetic:
                     optimizer.SetSeekStrategy(new GeneticStrategy(_genConfig));
                     break;
-                //case OptimizationAlgorithms.Annealing:
-                //    optimizer.SetSeekStrategy(new AnnealingStrategy(_annConfig, _descriptor.Parameters.Count));
-                //    break;
+                    //case OptimizationAlgorithms.Annealing:
+                    //    optimizer.SetSeekStrategy(new AnnealingStrategy(_annConfig, _descriptor.Parameters.Count));
+                    //    break;
             }
         }
 
@@ -142,10 +142,6 @@ namespace TickTrader.BotTerminal
                 setup.UpdateModel(setupWndModel.Model);
         }
 
-        protected override void OnDeactivate(bool close)
-        {
-            base.OnDeactivate(close);
-        }
 
         public class ParamSeekSetupModel : EntityBase
         {

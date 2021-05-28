@@ -156,7 +156,7 @@ namespace TickTrader.BotTerminal
 
         public void Ok()
         {
-            TryClose();
+            TryCloseAsync();
         }
 
         public void UpdateBotAgents(DictionaryUpdateArgs<string, BotAgentConnectionManager> args)
