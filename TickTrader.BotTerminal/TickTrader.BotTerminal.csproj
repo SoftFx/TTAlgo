@@ -18,30 +18,16 @@
     <PackageReference Include="Caliburn.Micro" Version="4.0.173" />
     <PackageReference Include="Extended.Wpf.Toolkit" Version="3.8.1" />
     <PackageReference Include="FontAwesome.WPF" Version="4.7.0.9" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.31" />
     <PackageReference Include="NLog" Version="4.7.7" />
-    <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
-    <PackageReference Include="System.Runtime.Extensions" Version="4.3.1" />
-    <PackageReference Include="System.ServiceModel.Duplex" Version="4.8.1" />
-    <PackageReference Include="System.ServiceModel.NetTcp" Version="4.8.1" />
-    <PackageReference Include="System.ServiceModel.Federation" Version="4.8.1" />
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\src\csharp\api\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj" />
     <ProjectReference Include="..\src\csharp\api\TickTrader.Algo.CoreV1\TickTrader.Algo.CoreV1.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Backtester\TickTrader.Algo.Backtester.csproj" />
-    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Core.Lib\TickTrader.Algo.Core.Lib.csproj" />
-    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj" />
-    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Domain\TickTrader.Algo.Domain.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Isolation.NetFx\TickTrader.Algo.Isolation.NetFx.csproj" />
-    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Package\TickTrader.Algo.Package.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.ServerControl\TickTrader.Algo.ServerControl.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server\TickTrader.Algo.Server.csproj" />
-    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Util\TickTrader.Algo.Util.csproj" />
-    <ProjectReference Include="..\src\csharp\lib\ActorSharp\ActorSharp.csproj" />
-    <ProjectReference Include="..\src\csharp\lib\Machinarium\Machinarium.csproj" />
     <ProjectReference Include="..\src\csharp\lib\TickTrader.SeriesStorage\TickTrader.SeriesStorage.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Common\TickTrader.Algo.Common.csproj" />
   </ItemGroup>
@@ -67,23 +53,12 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\SciChart.Drawing.DirectX.dll</HintPath>
     </Reference>
-    <Reference Include="System.IO.Compression" />
-    <Reference Include="System.Data.SQLite.EF6">
-      <HintPath>..\lib\SQLite\System.Data.SQLite.EF6.dll</HintPath>
-    </Reference>
     <Reference Include="System.Management" />
     <Reference Include="System.Security" />
-    <Reference Include="System.Transactions" />
     <Reference Include="System.Windows" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="..\lib\SQLite\x64\SQLite.Interop.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\lib\SQLite\x86\SQLite.Interop.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="Resx\Sounds\Negative1.wav" />
     <Resource Include="terminal.ico" />
     <Resource Include="Resx\Fonts\password.ttf">
