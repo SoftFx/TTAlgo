@@ -231,7 +231,9 @@ namespace TickTrader.BotTerminal
             await storage.ProfileManager.StopCurrentProfile();
 
             var shutdown = new ShutdownDialogViewModel(algoEnv.LocalAgent, stopAlgoServer);
-            await wndManager.ShowDialog(shutdown, this);
+
+            if (IsActive)
+                await wndManager.ShowDialog(shutdown, this);
         }
 
         public async void Connect(AccountAuthEntry creds = null)
