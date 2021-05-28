@@ -228,7 +228,7 @@ namespace TickTrader.BotTerminal
 
         public override Task DownloadToStorage(IActionObserver observer, bool showStats, CancellationToken cancelToken, Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide priceType, DateTime from, DateTime to)
         {
-            return CompletedTask.Default;
+            return Task.CompletedTask;
         }
 
         public override Task Remove()

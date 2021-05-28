@@ -89,7 +89,7 @@ namespace TickTrader.BotTerminal
             _collector.SnapshotAppended -= _collector_SnapshotAppended;
             _collector.Truncated -= _collector_Truncated;
 
-            return CompletedTask.Default;
+            return Task.CompletedTask;
         }
 
         private void Append(OutputPoint point)

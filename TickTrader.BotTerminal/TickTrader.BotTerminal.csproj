@@ -1,69 +1,52 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <OutputType>WinExe</OutputType>
     <AssemblyName>TickTrader.AlgoTerminal</AssemblyName>
-    <WarningLevel>4</WarningLevel>
-    <IsWebBootstrapper>true</IsWebBootstrapper>
-    <PublishDir>..\bt.publish\</PublishDir>
-    <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Web</InstallFrom>
-    <UpdateEnabled>true</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>1</UpdateInterval>
     <PlatformTarget>x64</PlatformTarget>
-    <UpdateIntervalUnits>Hours</UpdateIntervalUnits>
-    <UpdatePeriodically>true</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <InstallUrl>http://tp.dev.soft-fx.eu/bt.setup/</InstallUrl>
-    <ProductName>Soft-FX Bot Terminal</ProductName>
-    <PublisherName>Soft-FX</PublisherName>
-    <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
-    <WebPage>setup.html</WebPage>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.4.0</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
-    <CreateDesktopShortcut>true</CreateDesktopShortcut>
-    <PublishWizardCompleted>true</PublishWizardCompleted>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <UseWindowsForms>true</UseWindowsForms>
     <UseWPF>true</UseWPF>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <WarningLevel>3</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignManifests>true</SignManifests>
-  </PropertyGroup>
-  <PropertyGroup>
-    <TargetZone>Internet</TargetZone>
-  </PropertyGroup>
-  <PropertyGroup>
-    <GenerateManifests>true</GenerateManifests>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ManifestCertificateThumbprint>7AC3EE63A0853ADFACC4035AE665204FD16EA7DB</ManifestCertificateThumbprint>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ManifestKeyFile>bot-terminal-sign.pfx</ManifestKeyFile>
-  </PropertyGroup>
-  <PropertyGroup>
     <ApplicationIcon>terminal.ico</ApplicationIcon>
   </PropertyGroup>
-  <PropertyGroup>
-    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="ParallelExtensionsExtras">
-      <HintPath>..\lib\ParallelExtensionsExtras.dll</HintPath>
-    </Reference>
+    <PackageReference Include="AvalonDock" Version="2.0.2000" />
+    <PackageReference Include="Caliburn.Micro" Version="4.0.173" />
+    <PackageReference Include="Extended.Wpf.Toolkit" Version="3.8.1" />
+    <PackageReference Include="FontAwesome.WPF" Version="4.7.0.9" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.31" />
+    <PackageReference Include="NLog" Version="4.7.7" />
+    <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.Extensions" Version="4.3.1" />
+    <PackageReference Include="System.ServiceModel.Duplex" Version="4.8.1" />
+    <PackageReference Include="System.ServiceModel.NetTcp" Version="4.8.1" />
+    <PackageReference Include="System.ServiceModel.Federation" Version="4.8.1" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\src\csharp\api\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj" />
+    <ProjectReference Include="..\src\csharp\api\TickTrader.Algo.CoreV1\TickTrader.Algo.CoreV1.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Backtester\TickTrader.Algo.Backtester.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Core.Lib\TickTrader.Algo.Core.Lib.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Domain\TickTrader.Algo.Domain.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Isolation.NetFx\TickTrader.Algo.Isolation.NetFx.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Package\TickTrader.Algo.Package.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.ServerControl\TickTrader.Algo.ServerControl.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server\TickTrader.Algo.Server.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Util\TickTrader.Algo.Util.csproj" />
+    <ProjectReference Include="..\src\csharp\lib\ActorSharp\ActorSharp.csproj" />
+    <ProjectReference Include="..\src\csharp\lib\Machinarium\Machinarium.csproj" />
+    <ProjectReference Include="..\src\csharp\lib\TickTrader.SeriesStorage\TickTrader.SeriesStorage.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.Common\TickTrader.Algo.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="SciChart.Charting">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\SciChart.Charting.dll</HintPath>
@@ -93,6 +76,7 @@
     <Reference Include="System.Transactions" />
     <Reference Include="System.Windows" />
   </ItemGroup>
+
   <ItemGroup>
     <Content Include="..\lib\SQLite\x64\SQLite.Interop.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -105,81 +89,16 @@
     <Resource Include="Resx\Fonts\password.ttf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="Resx\Images\softfx.ico" />
   </ItemGroup>
+
   <ItemGroup>
     <None Include="Model.Profiles\Version1\ChartStorageEntry.cs" />
     <None Include="Model.Profiles\Version1\PluginStorageEntry.cs" />
     <None Include="Model.Profiles\Version1\ProfileResolver.cs" />
     <None Include="Model.Profiles\Version1\ProfileStorageModel.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <AppDesigner Include="Properties\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\src\csharp\api\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj" />
-    <ProjectReference Include="..\src\csharp\api\TickTrader.Algo.CoreV1\TickTrader.Algo.CoreV1.csproj" />
-    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Backtester\TickTrader.Algo.Backtester.csproj" />
-    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Core.Lib\TickTrader.Algo.Core.Lib.csproj" />
-    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj" />
-    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Domain\TickTrader.Algo.Domain.csproj" />
-    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Isolation.NetFx\TickTrader.Algo.Isolation.NetFx.csproj" />
-    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Package\TickTrader.Algo.Package.csproj" />
-    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.ServerControl\TickTrader.Algo.ServerControl.csproj" />
-    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server\TickTrader.Algo.Server.csproj" />
-    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Util\TickTrader.Algo.Util.csproj" />
-    <ProjectReference Include="..\src\csharp\lib\ActorSharp\ActorSharp.csproj" />
-    <ProjectReference Include="..\src\csharp\lib\Machinarium\Machinarium.csproj" />
-    <ProjectReference Include="..\src\csharp\lib\TickTrader.SeriesStorage\TickTrader.SeriesStorage.csproj" />
-    <ProjectReference Include="..\TickTrader.Algo.Common\TickTrader.Algo.Common.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resx\Images\fxopen.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.5.2">
-      <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4.5.2 %28x86 and x64%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Visual.C++.14.0.x64">
-      <Visible>False</Visible>
-      <ProductName>Visual C++ "14" Runtime Libraries %28x64%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Visual.C++.14.0.x86">
-      <Visible>False</Visible>
-      <ProductName>Visual C++ "14" Runtime Libraries %28x86%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resx\Images\softfx.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadata Include="Connected Services\" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="LightningDB" Version="0.10.0" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="System.ServiceModel.Duplex" Version="4.8.1" />
-    <PackageReference Include="System.ServiceModel.NetTcp" Version="4.8.1" />
-    <PackageReference Include="System.ServiceModel.Federation" Version="4.8.1" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="AvalonDock" Version="2.0.2000" />
-    <PackageReference Include="Caliburn.Micro" Version="4.0.173" />
-    <PackageReference Include="Extended.Wpf.Toolkit" Version="3.8.1" />
-    <PackageReference Include="FontAwesome.WPF" Version="4.7.0.9" />
-    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.31" />
-    <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
-    <PackageReference Include="System.Runtime.Extensions" Version="4.3.1" />
-    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="4.11.1" />
-  </ItemGroup>
+
   <ItemGroup>
     <Compile Remove="Model.Profiles\Version1\ChartStorageEntry.cs" />
     <Compile Remove="Model.Profiles\Version1\PluginStorageEntry.cs" />
@@ -197,6 +116,7 @@
     <Page Remove="Resx\Styles.SystemDefault\DataGridRow.xaml" />
     <Page Remove="Resx\Styles.SystemDefault\TextBox.xaml" />
   </ItemGroup>
+
   <ItemGroup>
     <Compile Update="Properties\Settings.Designer.cs">
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
@@ -204,12 +124,14 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
   </ItemGroup>
+
   <ItemGroup>
     <None Update="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
   </ItemGroup>
+
   <Target Name="MoveResources" AfterTargets="Build">
     <ItemGroup>
       <EnGbLocale Include="$(TargetDir)en-gb\*.resources.dll" />
@@ -222,14 +144,17 @@
     <RemoveDir Directories="$(TargetDir)en-gb;$(TargetDir)ru-ru;$(TargetDir)de;$(TargetDir)es;$(TargetDir)fr;$(TargetDir)hu;$(TargetDir)it" />
     <RemoveDir Directories="$(TargetDir)pt-BR;$(TargetDir)ro;$(TargetDir)ru;$(TargetDir)sv;$(TargetDir)zh-Hans;$(TargetDir)cs-CZ" />
   </Target>
+
   <Target Name="CopyBinaries" AfterTargets="Build">
     <ItemGroup>
       <RuntimeV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.RuntimeV1Host.NetFx\bin\$(Configuration)\net472\*.*" />
     </ItemGroup>
     <Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(TargetDir)AlgoRuntime\" SkipUnchangedFiles="true" />
   </Target>
-  <Target Name="RemoveLinuxLibs" AfterTargets="Build">
-    <Delete Files="$(TargetDir)\libgrpc_csharp_ext.x64.dylib;$(TargetDir)\libgrpc_csharp_ext.x64.so" />
+
+  <Target Name="CleanGeneratedFiles" AfterTargets="Clean">
+    <RemoveDir Directories="$(TargetDir)AlgoRuntime\" />
+    <RemoveDir Directories="$(TargetDir)Resources\" />
   </Target>
-  <Import Project="..\packages\Grpc.Core.2.36.1\build\net45\Grpc.Core.targets" Condition="Exists('..\packages\Grpc.Core.2.36.1\build\net45\Grpc.Core.targets')" />
+
 </Project>

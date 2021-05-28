@@ -616,7 +616,7 @@ namespace TickTrader.BotTerminal
 
         public event Action ParamsChanged = delegate { };
         public event Action StartEvent = delegate { };
-        public event AsyncEventHandler StopEvent = delegate { return CompletedTask.Default; };
+        public event AsyncEventHandler StopEvent = delegate { return Task.CompletedTask; };
         public event Action Connected;
         public event Action Disconnected;
 
