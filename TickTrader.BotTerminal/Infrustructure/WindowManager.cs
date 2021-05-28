@@ -85,7 +85,7 @@ namespace TickTrader.BotTerminal
 
         private IScreen GetWindowModel(object key)
         {
-            return _wndModels.GetValueOrDefault(key);
+            return _wndModels.GetOrDefault(key);
         }
 
         private Task WndModel_Deactivated(object sender, DeactivationEventArgs e)

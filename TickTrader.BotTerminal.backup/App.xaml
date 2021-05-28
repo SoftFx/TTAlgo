@@ -1,0 +1,98 @@
+﻿<Application x:Class="TickTrader.BotTerminal.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="clr-namespace:TickTrader.BotTerminal"
+             ShutdownMode="OnExplicitShutdown">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+
+                <!-- Caliburn bootstrapper-->
+                <ResourceDictionary>
+                    <l:AppBootstrapper x:Key="bootstrapper" />
+                </ResourceDictionary>
+
+                <!-- Converters -->
+                <ResourceDictionary Source="Resx/Converters.xaml"/>
+
+                <!-- Images -->
+                <ResourceDictionary Source="Resx/Images/Paths.xaml"/>
+
+                <ResourceDictionary Source="Controls/OverlayPanel.xaml"/>
+                <ResourceDictionary Source="Controls/DropDownMenuButton.xaml"/>
+
+                <!-- Themes -->
+                <l:ThemeSelector>
+                    <l:Theme ThemeName="Classic" StylePrefix="Classic">
+                        <ResourceDictionary Source="Resx/Themes/Classic.xaml"/>
+                    </l:Theme>
+                    <!--<l:Theme ThemeName="Dark">
+                        <ResourceDictionary Source="Resx/Themes/Dark.xaml"/>
+                    </l:Theme>-->
+                    <!--<l:Theme ThemeName="Light">
+                        <ResourceDictionary Source="Resx/Themes/Light.xaml"/>
+                    </l:Theme>-->
+                </l:ThemeSelector>
+
+                <!--<l:AutoDictionary Source="Controls/*.xaml"/>-->
+
+                <!-- Views (temp!) -->
+                <ResourceDictionary Source="Views.ActionDisplay/ProgressView.xaml" />
+                <ResourceDictionary Source="Views.ActionDisplay/DateRangeSelectionView.xaml" />
+                <ResourceDictionary Source="Views.ActionDisplay/ActionDialogView.xaml" />
+                <ResourceDictionary Source="Views.ActionDisplay/ActionView.xaml" />
+                <ResourceDictionary Source="Views.ActionDisplay/ActionOverlayView.xaml" />
+
+                <ResourceDictionary Source="Views/ShellView.xaml" />
+                <ResourceDictionary Source="Views/SymbolListView.xaml" />
+                <ResourceDictionary Source="Views/JournalView.xaml" />
+                <ResourceDictionary Source="Views/BotJournalView.xaml" />
+                <ResourceDictionary Source="Views/AlertView.xaml" />
+
+                <ResourceDictionary Source="Views.Algo/AlgoBotView.xaml" />
+                <ResourceDictionary Source="Views.Algo/AlgoListView.xaml" />
+                <ResourceDictionary Source="Views.Algo/BotListView.xaml" />
+                <ResourceDictionary Source="Views.Algo/UploadPackageView.xaml" />
+                <ResourceDictionary Source="Views.Algo/DownloadPackageView.xaml" />
+                <ResourceDictionary Source="Views.Algo/BotFolderView.xaml" />
+                <ResourceDictionary Source="Views.Algo/CopyBotInstanceView.xaml" />
+
+                <ResourceDictionary Source="Views.Chart/AlgoChartView.xaml" />
+                <ResourceDictionary Source="Views.Chart/ChartView.xaml" />
+                <ResourceDictionary Source="Views.Chart/BotStateView.xaml" />
+                <ResourceDictionary Source="Views.Chart/BotListOverlayView.xaml" />
+
+                <ResourceDictionary Source="Views.Setup/PluginConfigView.xaml" />
+                <ResourceDictionary Source="Views.Setup/AgentPluginSetupView.xaml" />
+                <ResourceDictionary Source="Views.Setup/LocalPluginSetupView.xaml" />
+
+                <ResourceDictionary Source="Views.TradeInfo/TradeHistoryView.xaml" />
+                <ResourceDictionary Source="Views.TradeInfo/TradeHistoryGridView.xaml" />
+
+                <ResourceDictionary Source="Views.Backtester/BacktesterView.xaml" />
+                <ResourceDictionary Source="Views.Backtester/BacktesterSymbolSetupView.xaml" />
+                <ResourceDictionary Source="Views.Backtester/BacktesterChartPage.xaml" />
+                <ResourceDictionary Source="Views.Backtester/BacktesterTradeSetupView.xaml" />
+                <ResourceDictionary Source="Views.Backtester/BacktesterReportView.xaml" />
+                <ResourceDictionary Source="Views.Backtester/BacktesterStatChartView.xaml" />
+                <ResourceDictionary Source="Views.Backtester/BacktesterPluginSetupView.xaml" />
+                <ResourceDictionary Source="Views.Backtester/BacktesterTradeGridView.xaml" />
+                <ResourceDictionary Source="Views.Backtester/BacktesterJournalView.xaml" />
+                <ResourceDictionary Source="Views.Backtester/BacktesterCurrentTradesView.xaml" />
+                <ResourceDictionary Source="Views.Backtester/BacktesterOptimizerView.xaml" />
+                <ResourceDictionary Source="Views.Backtester/OptimizerParamSetupView.xaml" />
+                <ResourceDictionary Source="Views.Backtester/OptimizationResultsPage.xaml" />
+                <ResourceDictionary Source="Views.Backtester/BacktesterSetupPage.xaml"/>
+                <ResourceDictionary Source="Views.Backtester/OptimizerAlgorithmSetupView.xaml"/>
+
+                <ResourceDictionary Source="Views.FeedStorage/SymbolManagerView.xaml" />
+                <ResourceDictionary Source="Views.FeedStorage/FeedDownloadView.xaml" />
+                <ResourceDictionary Source="Views.FeedStorage/FeedImportView.xaml" />
+                <ResourceDictionary Source="Views.FeedStorage/FeedExportView.xaml" />
+                <ResourceDictionary Source="Views.FeedStorage/SymbolCfgEditorView.xaml" />
+
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+
+</Application>

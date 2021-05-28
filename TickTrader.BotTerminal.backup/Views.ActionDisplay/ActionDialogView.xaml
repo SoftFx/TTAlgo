@@ -1,0 +1,28 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:cal="http://www.caliburnproject.org"
+                    xmlns:local="clr-namespace:TickTrader.BotTerminal">
+
+    <ControlTemplate x:Key="ActionDialogView.Template.Common" TargetType="Window">
+        <StackPanel Background="{TemplateBinding Background}">
+            <ContentControl cal:View.Model="{Binding Progress}" />
+            <Button Name="CancelButton" Content="Cancel" Margin="4" Width="75" HorizontalAlignment="Center" cal:Message.Attach="Cancel"/>
+        </StackPanel>
+        <ControlTemplate.Triggers>
+            <DataTrigger Binding="{Binding IsCancellable}" Value="False">
+                <Setter TargetName="CancelButton" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <Style x:Key="ActionDialogStyle.Classic" TargetType="Window">
+        <Setter Property="Template" Value="{StaticResource ActionDialogView.Template.Common}"/>
+        <Setter Property="Background" Value="{DynamicResource Dialog_Background}"/>
+        <Setter Property="WindowStyle" Value="ToolWindow" />
+        <Setter Property="ResizeMode" Value="NoResize" />
+        <Setter Property="Width" Value="270"/>
+        <Setter Property="SizeToContent" Value="Height" />
+        <Setter Property="ShowInTaskbar" Value="False"/>
+    </Style>
+
+</ResourceDictionary>

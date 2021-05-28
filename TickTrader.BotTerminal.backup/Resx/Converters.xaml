@@ -1,0 +1,39 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:l="clr-namespace:TickTrader.BotTerminal"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <l:BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    <l:BooleanToVisibilityConverter x:Key="BoolToVisInv" Invert="True"/>
+    <l:BooleanToVisibilityConverter x:Key="LeastOneBoolToVisible" ConversionMode="LeastOne"/>
+    <l:NullToVisibilityConverter x:Key="NullOrEmptyToVis"/>
+    <l:NullToBoolConverter x:Key="NullOrEmptyToBool"/>
+    <l:ColorRefToBrushConverter x:Key="ColorRefConverter"/>
+    <l:ColorToBrushConverter x:Key="ColorToBrushConverter" />
+    <l:ColorToHexConverter x:Key="ColorToHexConverter" />
+    <l:BoolInverter x:Key="BoolInverter" />
+    <l:DateTimeConverter x:Key="ExtDateTimeFormat" Format="GExt" ConvertToLocal="False"/>
+    <l:DateTimeConverter x:Key="FullDateTimeFormat" Format="GExt" ConvertToLocal="False"/>
+    <l:DateTimeConverter x:Key="ShortDateTimeFormat" Format="g" ConvertToLocal="False"/>
+    <l:DateTimeConverter x:Key="UtcExtDateTimeFormat" Format="GExt" ConvertToLocal="False" />
+    <l:DateTimeConverter x:Key="UtcFullDateTimeFormat" Format="G" ConvertToLocal="False" />
+    <l:DateTimeConverter x:Key="UtcShortDateTimeFormat" Format="g" ConvertToLocal="False" />
+    <l:KindAwareDateTimeConverter x:Key="KindAwareFullDateTime" Format="GExt"/>
+    <l:KindAwareDateTimeConverter x:Key="KindAwareTime"/>
+    <l:FullTimeConverter x:Key="FullTimeFormat" />
+    <l:NumberConverter x:Key="PriceConverter" Type="Price" />
+    <l:NumberConverter x:Key="AmountConverter" Type="Currency" />
+    <l:NumberConverter x:Key="ClipboardNumberConverter" Type="Price" />
+    <l:DoubleRoundConverter x:Key="Round"/>
+    <l:StringFormatConverter x:Key="StringFormat"/>
+    <l:DoubleCmpConverter x:Key="CmpL" Mode="Less"/>
+    <l:DoubleCmpConverter x:Key="CmpLe" Mode="LessOrEqual"/>
+    <l:DoubleCmpConverter x:Key="CmpG" Mode="Greater"/>
+    <l:DoubleCmpConverter x:Key="CmpGe" Mode="LessOrEqual"/>
+    <l:LogSeverityToBrushConverter x:Key="LogSeverityConverter" />
+    <l:MessageTypeToBrushConverter x:Key="MsgTypeToBrush"/>
+    <l:PascalCaseSplitConverter x:Key="PascalSplitString"/>
+    <l:TextLengthComparisonConverter x:Key="TextLengthComparison"/>
+    <l:BackTrimStringConverter x:Key="TrimValue"/>
+    <l:GetFileNameFromPath x:Key="GetFileName"/>
+    <l:CheckValueConverter x:Key="CheckValue"/>
+</ResourceDictionary>

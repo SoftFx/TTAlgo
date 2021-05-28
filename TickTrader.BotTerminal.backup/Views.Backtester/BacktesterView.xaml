@@ -1,0 +1,143 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:cal="http://www.caliburnproject.org"
+                    xmlns:l="clr-namespace:TickTrader.BotTerminal">
+
+    <DataTemplate x:Key="CaliburnViewTemplate">
+        <ContentControl cal:View.Model="{Binding}" />
+    </DataTemplate>
+
+    <DataTemplate x:Key="ModelTemplate">
+        <TextBlock Text="{l:ResxBinding Prefix=FeedEmulationModel_}"/>
+    </DataTemplate>
+
+    <ControlTemplate x:Key="BacktesterViewTemplate.Classic">
+        <!--<l:OverlayPanel OverlayModel="{Binding ActionOverlay.Value}">-->
+        <Grid Background="{TemplateBinding Background}" cal:Bind.Model="{Binding}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <!-- 0 - toolbar -->
+                <RowDefinition/>
+                <!-- 1 - body -->
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <ToolBar Name="toolBar" Grid.Row="0" Grid.Column="2" HorizontalAlignment="Stretch" Focusable="False" Margin="5,5,5,0">
+                <Button Name="startBtn" Content="{DynamicResource PlayToolIcon}" ToolTip="Start" l:Icon.Fill="Green"
+                            Margin="3,0,0,0" Focusable="False" cal:Message.Attach="StartEmulation" IsEnabled="{Binding CanStart.Value}" />
+                <Button Content="{DynamicResource StopToolIcon}" ToolTip="Stop" l:Icon.Fill="Red"
+                            Margin="3,0,0,0" Focusable="False" cal:Message.Attach="Cancel" IsEnabled="{Binding CanCanel.Value}"/>
+                <Separator/>
+                <Button Content="{DynamicResource PauseToolIcon}" ToolTip="Pause" l:Icon.Fill="Green"
+                            Margin="3,0,0,0" Focusable="False" cal:Message.Attach="PauseEmulation" IsEnabled="{Binding CanPause.Value}"/>
+                <!--<Button Content="Resume" Margin="3,0,0,0" Focusable="False" cal:Message.Attach="ResumeEmulation" IsEnabled="{Binding CanResume.Value}"/>-->
+                <Slider Margin="6,0,3,0" Maximum="9" Minimum="0" Value="{Binding SelectedSpeed.Value}" VerticalAlignment="Center" Width="150"
+                            IsEnabled="{Binding CanControlSpeed.Value}"/>
+                <Separator/>
+                <Button Content="{DynamicResource ZoomInToolIcon}" ToolTip="Zoom Chart In" l:Icon.Fill="Black"
+                            Margin="3,0,0,0" cal:Message.Attach="ZoomIn" cal:Action.TargetWithoutContext="{Binding ChartPage.ChartControlModel}" />
+                <Button Content="{DynamicResource ZoomOutToolIcon}" ToolTip="Zoom Chart Out" l:Icon.Fill="Black"
+                            Margin="3,0,0,0" cal:Message.Attach="ZoomOut" cal:Action.TargetWithoutContext="{Binding ChartPage.ChartControlModel}"/>
+                <Separator/>
+                <ToggleButton Content="{DynamicResource CrosshairsToolIcon}" ToolTip="Toggle Crosshairs" l:Icon.Fill="Black"
+                                  Margin="3,0,0,0" IsChecked="{Binding ChartPage.ChartControlModel.IsCrosshairEnabled.Value}"/>
+                <ToggleButton Content="{DynamicResource AutoScrollToolIcon}" ToolTip="Auto-scroll to new data" IsChecked="{Binding ChartPage.ChartControlModel.AutoScroll.Value, Mode=TwoWay}"
+                                  Margin="3,0,0,0" l:Icon.Fill="Black"/>
+            </ToolBar>
+
+            <TabControl Name="Items" Grid.Row="1" Margin="5">
+                <TabControl.ItemContainerStyle>
+                    <Style TargetType="TabItem">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsVisible}" Value="False">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TabControl.ItemContainerStyle>
+            </TabControl>
+
+            <ContentControl Name="progressMonitor" Grid.Row="2" cal:View.Model="{Binding ProgressMonitor}" Visibility="Collapsed"/>
+
+            <!--<Border Name="progressPopup" Grid.Row="1" Padding="8"
+                    VerticalAlignment="Center" Margin="15"
+                    Background="LightGray" Visibility="Collapsed">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <ContentControl cal:View.Model="{Binding ProgressMonitor}" Grid.Column="0" IsEnabled="False"/>
+                    -->
+            <!--<Button cal:Message.Attach="Start" Content="Start"
+                        IsEnabled="{Binding CanStart.Value}" Grid.Column="1" Width="70" VerticalAlignment="Center" Margin="0,0,5,0" />-->
+            <!--
+                    <Button cal:Message.Attach="Stop" Content="Cancel"
+                        IsEnabled="{Binding CanStop.Value}" Grid.Column="2" Width="70" VerticalAlignment="Center" Margin="0,0,5,0" />
+                </Grid>
+            </Border>-->
+
+        </Grid>
+        <!--</l:OverlayPanel>-->
+
+        <ControlTemplate.Triggers>
+            <DataTrigger Binding="{Binding ProgressMonitor.WasFaultedOrCancelled.Value}" Value="True">
+                <Setter TargetName="progressMonitor" Property="Visibility" Value="Visible"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding IsRunning.Value}" Value="True">
+                <Setter TargetName="progressMonitor" Property="Visibility" Value="Visible"/>
+                <Setter TargetName="startBtn" Property="ToolTip" Value="Resume"/>
+                <Setter TargetName="startBtn" Property="cal:Message.Attach" Value="ResumeEmulation"/>
+                <Setter TargetName="startBtn" Property="IsEnabled" Value="{Binding CanResume.Value}"/>
+                <!--<Setter TargetName="tabBody" Property="IsEnabled" Value="False"/>
+                <Setter TargetName="toolBar" Property="IsEnabled" Value="False"/>
+                <Setter TargetName="tabBody" Property="Effect">
+                    <Setter.Value>
+                        <BlurEffect Radius="3"/>
+                    </Setter.Value>
+                </Setter>
+                <Setter TargetName="toolBar" Property="Effect">
+                    <Setter.Value>
+                        <BlurEffect Radius="3"/>
+                    </Setter.Value>
+                </Setter>-->
+            </DataTrigger>
+        </ControlTemplate.Triggers>
+
+        <!--<ControlTemplate.Triggers>
+            <DataTrigger Binding="{Binding IsRunning.Value}" Value="True">
+                <Setter TargetName="progressPopup" Property="Visibility" Value="Visible"/>
+                <Setter TargetName="tabBody" Property="IsEnabled" Value="False"/>
+                <Setter TargetName="toolBar" Property="IsEnabled" Value="False"/>
+                <Setter TargetName="tabBody" Property="Effect">
+                    <Setter.Value>
+                        <BlurEffect Radius="3"/>
+                    </Setter.Value>
+                </Setter>
+                <Setter TargetName="toolBar" Property="Effect">
+                    <Setter.Value>
+                        <BlurEffect Radius="3"/>
+                    </Setter.Value>
+                </Setter>
+            </DataTrigger>
+        </ControlTemplate.Triggers>-->
+        
+    </ControlTemplate>
+
+    <Style x:Key="BacktesterViewStyle.Common" TargetType="Window">
+        <Setter Property="Background" Value="{DynamicResource Dialog_Background}"/>
+        <Setter Property="WindowStyle" Value="ToolWindow" />
+        <Setter Property="ResizeMode" Value="CanResize" />
+        <Setter Property="ShowInTaskbar" Value="True"/>
+        <Setter Property="Width" Value="750"/>
+        <Setter Property="Height" Value="550"/>
+        <Setter Property="MinHeight" Value="330"/>
+        <Setter Property="MinWidth" Value="360"/>
+    </Style>
+
+    <Style x:Key="BacktesterViewStyle.Classic" TargetType="Window" BasedOn="{StaticResource BacktesterViewStyle.Common}">
+        <Setter Property="Template" Value="{StaticResource BacktesterViewTemplate.Classic}"/>
+    </Style>
+
+</ResourceDictionary>

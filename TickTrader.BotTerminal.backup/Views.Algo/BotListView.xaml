@@ -1,0 +1,254 @@
+﻿<ResourceDictionary 
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cal="http://www.caliburnproject.org"
+    xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+    xmlns:l="clr-namespace:TickTrader.BotTerminal">
+
+    <Style x:Key="ExpandedTreeViewItem" TargetType="{x:Type TreeViewItem}">
+        <Setter Property="IsExpanded" Value="True" />
+    </Style>
+
+    <ContextMenu x:Key="BotContextMenu">
+        <MenuItem cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="StartStop">
+            <MenuItem.Style>
+                <Style TargetType="MenuItem">
+                    <Setter Property="Header" Value="Start" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                            <Setter Property="Header" Value="Stop" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </MenuItem.Style>
+        </MenuItem>
+        <MenuItem Header="Status"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="OpenState" />
+        <MenuItem Header="Settings..."
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="OpenSettings" />
+        <MenuItem Header="Open chart"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="OpenChart">
+            <MenuItem.Style>
+                <Style TargetType="MenuItem">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding CanOpenChart}" Value="False">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </MenuItem.Style>
+        </MenuItem>
+        <Separator/>
+        <MenuItem Header="Add Bot Instance..."
+                  cal:Message.Attach="AddBot"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
+        <MenuItem Header="Copy To..."
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="CopyTo" />
+        <MenuItem cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="Browse">
+            <MenuItem.Style>
+                <Style TargetType="MenuItem">
+                    <Setter Property="Header" Value="Show in folder..." />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Model.IsRemote}" Value="True">
+                            <Setter Property="Header" Value="Manage Bot Files..." />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </MenuItem.Style>
+        </MenuItem>
+        <Separator/>
+        <MenuItem Header="Remove"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="Remove" />
+    </ContextMenu>
+
+    <ContextMenu x:Key="BotAgentContextMenu">
+        <MenuItem Header="Connect"
+                  cal:Message.Attach="ConnectBotAgent"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
+        <Separator/>
+        <MenuItem Header="Add Account..."
+                  cal:Message.Attach="AddAccount"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
+        <Separator/>
+        <MenuItem Header="Upload Algo Package..."
+                  cal:Message.Attach="UploadPackage"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
+        <MenuItem Header="Download Algo Package..."
+                  cal:Message.Attach="DownloadPackage"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
+        <Separator/>
+        <MenuItem Header="Add Bot Instance..."
+                  cal:Message.Attach="AddBot"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
+        <MenuItem Header="Manage Bot Files..."
+                  cal:Message.Attach="ManageFiles"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
+        <Separator/>
+        <MenuItem Header="Change connection..."
+                  cal:Message.Attach="ChangeBotAgent"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
+        <MenuItem Header="Remove connection" 
+                  cal:Message.Attach="RemoveBotAgent"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
+        <Separator/>
+        <MenuItem Header="Disconnect"
+                  cal:Message.Attach="DisconnectBotAgent"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
+    </ContextMenu>
+
+    <ContextMenu x:Key="RemoteAccountContextMenu">
+        <MenuItem Header="Add Bot Instance..."
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="AddBot"/>
+        <MenuItem Header="Manage Bot Files..."
+                  cal:Message.Attach="ManageFiles"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
+        <Separator/>
+        <MenuItem Header="Change..."
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="ChangeAccount"/>
+        <MenuItem Header="Remove"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="RemoveAccount"/>
+        <MenuItem Header="Test connection"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="TestAccount"/>
+    </ContextMenu>
+
+    <l:Behaviors x:Key="TreeViewItemBehaviors" x:Shared="false">
+        <l:DropBehavior/>
+    </l:Behaviors>
+
+    <ControlTemplate x:Key="BotListView.Classic">
+        <Border BorderThickness="0">
+            <TreeView BorderThickness="0" ItemContainerStyle="{StaticResource ExpandedTreeViewItem}">
+
+                <TreeView.Resources>
+                    <CollectionViewSource x:Key="LocalBotsViewSrc" Source="{Binding LocalBots}">
+                        <CollectionViewSource.SortDescriptions>
+                            <scm:SortDescription PropertyName="Model.InstanceId" />
+                        </CollectionViewSource.SortDescriptions>
+                    </CollectionViewSource>
+                </TreeView.Resources>
+
+                <TreeViewItem Header="Algo Terminal" ItemsSource="{Binding Source={StaticResource LocalBotsViewSrc}}"
+                              l:StyleInteraction.Behaviors="{StaticResource TreeViewItemBehaviors}">
+                    <TreeViewItem.ItemContainerStyle>
+                        <Style TargetType="{x:Type TreeViewItem}">
+                            <Setter Property="ContextMenu" Value="{StaticResource BotContextMenu}" />
+                            <!--Mode=OneTime is there for a reason. Thanks to virtualization we have {DisconnectedItem} in DataContext during runtime. This work around seems to fix the issue-->
+                            <Setter Property="cal:Bind.ModelWithoutContext" Value="{Binding Path=DataContext, RelativeSource={RelativeSource Self}, Mode=OneTime}" />
+                            <Setter Property="cal:Message.Attach" Value="[Event MouseDoubleClick] = [Action OpenState()]" />
+                        </Style>
+                    </TreeViewItem.ItemContainerStyle>
+
+                    <TreeViewItem.ItemTemplate>
+                        <DataTemplate DataType="{x:Type l:AlgoBotViewModel}">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Style="{DynamicResource BotStateEllipseStyle}" />
+                                <TextBlock Text="{Binding Model.InstanceId}" ToolTip="{Binding State}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </TreeViewItem.ItemTemplate>
+                </TreeViewItem>
+
+                <TreeViewItem Header="Algo Servers" ItemsSource="{Binding BotAgents}">
+
+                    <TreeViewItem.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Register AlgoServer..." cal:Message.Attach="AddBotAgent" />
+                        </ContextMenu>
+                    </TreeViewItem.ContextMenu>
+
+                    <TreeViewItem.ItemContainerStyle>
+                        <Style TargetType="{x:Type TreeViewItem}" BasedOn="{StaticResource ExpandedTreeViewItem}">
+                            <Setter Property="Tag" Value="{Binding DataContext, RelativeSource={RelativeSource AncestorType=TreeViewItem, AncestorLevel=1}}"/>
+                            <Setter Property="ContextMenu" Value="{StaticResource BotAgentContextMenu}" />
+                            <Setter Property="l:StyleInteraction.Behaviors" Value="{StaticResource TreeViewItemBehaviors}" />
+                        </Style>
+                    </TreeViewItem.ItemContainerStyle>
+
+                    <TreeViewItem.ItemTemplate>
+                        <HierarchicalDataTemplate ItemsSource="{Binding Agent.ServerViews.Groups}">
+
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Style="{DynamicResource BotAgentStatusEllipseStyle}" />
+                                <TextBlock Text="{Binding DisplayName}" ToolTip="{Binding ToolTipInformation}"/>
+                            </StackPanel>
+
+                            <HierarchicalDataTemplate.ItemTemplate>
+                                <HierarchicalDataTemplate ItemsSource="{Binding Items}">
+
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Name}"/>
+
+                                        <StackPanel.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="Add account..." 
+                                                    cal:Bind.ModelWithoutContext="{Binding Path=DataContext.Items[0], RelativeSource={RelativeSource Self}}"
+                                                    cal:Message.Attach="AddAccount"/>
+                                            </ContextMenu>
+                                        </StackPanel.ContextMenu>
+                                    </StackPanel>
+
+                                    <HierarchicalDataTemplate.ItemContainerStyle>
+                                        <Style TargetType="TreeViewItem" BasedOn="{StaticResource ExpandedTreeViewItem}">
+                                            <Setter Property="ToolTip" Value="{Binding AccountTooltip}"/>
+                                            <Setter Property="ContextMenu" Value="{StaticResource RemoteAccountContextMenu}" />
+                                            <Setter Property="l:StyleInteraction.Behaviors" Value="{StaticResource TreeViewItemBehaviors}" />
+                                        </Style>
+                                    </HierarchicalDataTemplate.ItemContainerStyle>
+
+                                    <HierarchicalDataTemplate.ItemTemplate>
+                                        <HierarchicalDataTemplate ItemsSource="{Binding Bots}">
+
+                                            <StackPanel Orientation="Horizontal">
+                                                <Ellipse Style="{DynamicResource AccountStatusEllipseStyle}" />
+                                                <TextBlock Text="{Binding DisplayName}"/>
+                                            </StackPanel>
+
+                                            <HierarchicalDataTemplate.ItemContainerStyle>
+                                                <Style TargetType="TreeViewItem">
+                                                    <Setter Property="ContextMenu" Value="{StaticResource BotContextMenu}" />
+                                                    <!--Mode=OneTime is there for a reason. Thanks to virtualization we have {DisconnectedItem} in DataContext during runtime. This work around seems to fix the issue-->
+                                                    <Setter Property="cal:Bind.ModelWithoutContext" Value="{Binding Path=DataContext, RelativeSource={RelativeSource Self}, Mode=OneTime}" />
+                                                    <Setter Property="cal:Message.Attach" Value="[Event MouseDoubleClick] = [Action OpenState()]" />
+                                                </Style>
+                                            </HierarchicalDataTemplate.ItemContainerStyle>
+
+                                            <HierarchicalDataTemplate.ItemTemplate>
+                                                <DataTemplate DataType="{x:Type l:AlgoBotViewModel}">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Ellipse Style="{DynamicResource BotStateEllipseStyle}" />
+                                                        <TextBlock Text="{Binding InstanceId}" ToolTip="{Binding State}" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </HierarchicalDataTemplate.ItemTemplate>
+
+                                        </HierarchicalDataTemplate>
+                                    </HierarchicalDataTemplate.ItemTemplate>
+
+                                </HierarchicalDataTemplate>
+                            </HierarchicalDataTemplate.ItemTemplate>
+
+                        </HierarchicalDataTemplate>
+                    </TreeViewItem.ItemTemplate>
+
+                </TreeViewItem>
+            </TreeView>
+
+        </Border>
+    </ControlTemplate>
+
+    <Style x:Key="BotListViewStyle.Classic" TargetType="UserControl">
+        <Setter Property="Template" Value="{StaticResource BotListView.Classic}"/>
+    </Style>
+
+</ResourceDictionary>

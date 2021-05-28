@@ -1,0 +1,24 @@
+﻿<UserControl x:Class="TickTrader.BotTerminal.TradeInfoView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:l="clr-namespace:TickTrader.BotTerminal"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300"
+             Padding="0">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition MinHeight="50"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition MinHeight="50"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <ContentControl Grid.Row="0" x:Name="Positions"></ContentControl>
+        <ContentControl Grid.Row="0" x:Name="Assets" Visibility="{Binding Assets.IsEnabled, Converter={StaticResource BoolToVis}}"></ContentControl>
+        <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" Height="4" Background="Transparent" />
+        <ContentControl Grid.Row="2" x:Name="Orders" Visibility="{Binding Orders.IsEnabled, Converter={StaticResource BoolToVis}}"/>
+        <ContentControl Grid.Row="3" x:Name="AccountStats" />
+    </Grid>
+</UserControl>

@@ -1,0 +1,50 @@
+﻿<UserControl x:Class="TickTrader.BotTerminal.NetPositionListView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:l="clr-namespace:TickTrader.BotTerminal"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Grid>
+        <DataGrid Name="Positions" Style="{DynamicResource DataGridWithBusyIndicatorStyle}" ClipboardCopyMode="IncludeHeader" SelectionMode="Extended"
+                  l:DataGridExt.AutoSize="{Binding AutoSizeColumns}">
+
+            <DataGrid.Resources>
+                <l:DataGridColumnHide x:Key="CurrectPriceShow" Provider="{Binding StateProvider}" ColumnKey="CurrentPrice"/>
+                <l:DataGridColumnHide x:Key="SwapShow" Provider="{Binding StateProvider}" ColumnKey="Swap"/>
+            </DataGrid.Resources>
+
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="{l:Resx Copy}" Command="ApplicationCommands.Copy"></MenuItem>
+                    <Separator/>
+                    <MenuItem Header="{l:Resx ShowCurrentPrice}" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource CurrectPriceShow}}"/>
+                    <MenuItem Header="{l:Resx ShowSwap}" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource SwapShow}}"/>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="{l:Resx Position_Id}" Width="100" Binding="{Binding Id}"/>
+
+                <DataGridTextColumn Header="{l:Resx Position_Symbol}" Width="100" Binding="{Binding Symbol}"/>
+
+                <DataGridTextColumn Header="{l:Resx Position_ModifiedTime}" Width="100" Binding="{Binding Modified.Value, Converter={StaticResource FullDateTimeFormat}}" SortMemberPath="{Binding SortedNumber}"/>
+
+                <DataGridTextColumn Header="{l:Resx Position_Side}" Width="100" Binding="{Binding Side.Value}"/>
+
+                <DataGridTextColumn Header="{l:Resx Position_Volume}" Width="100" Binding="{Binding Volume.DisplayValue}"/>
+
+                <DataGridTextColumn Header="{l:Resx Position_OpenPrice}" Width="100" Binding="{Binding Price.DisplayValue}"/>
+
+                <DataGridTextColumn Header="{l:Resx Position_CurrentPrice}" Width="100" Binding="{Binding CurrentPrice.DisplayValue}" Visibility="{Binding Visibility, Source={StaticResource CurrectPriceShow}}"/>
+
+                <DataGridTextColumn Header="{l:Resx Position_PriceDeviation}" Width="100" Binding="{Binding DeviationPrice.DisplayValue}"/>
+
+                <DataGridTextColumn Header="{l:Resx Position_Swap}" Width="100" Binding="{Binding Swap.Value}" Visibility="{Binding Visibility, Source={StaticResource SwapShow}}"/>
+
+                <DataGridTextColumn Header="{l:Resx Position_Net_P_L}" Width="100" Binding="{Binding NetProfit.DisplayValue}" ClipboardContentBinding="{Binding NetProfit.DisplayValue}"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

@@ -1,0 +1,110 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:l="clr-namespace:TickTrader.BotTerminal"
+                    xmlns:s="http://schemas.abtsoftware.co.uk/scichart">
+
+    <Style x:Key="AxisBaseStyle" TargetType="s:AxisBase">
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="MajorGridLineStyle">
+            <Setter.Value>
+                <Style TargetType="Line">
+                    <Setter Property="Stroke" Value="YellowGreen"/>
+                    <Setter Property="StrokeThickness" Value="1"/>
+                    <Setter Property="X2" Value="4"/>
+                    <Setter Property="Y2" Value="4"/>
+                </Style>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="GrowBy" Value="0.1, 0.1"/>
+        <Setter Property="DrawMinorGridLines" Value="False"/>
+        <Setter Property="DrawMajorTicks" Value="False"/>
+        <Setter Property="DrawMinorTicks" Value="False"/>
+        <Setter Property="DrawMajorBands" Value="False"/>
+        <Setter Property="MaxAutoTicks" Value="25"/>
+    </Style>
+
+    <ControlTemplate x:Key="SymbolChartCursorTooltip_Template" TargetType="s:CursorLabelControl">
+        <ControlTemplate.Resources>
+            <Style x:Key="ToolTipTextStyle" TargetType="{x:Type TextBlock}">
+                <Setter Property="Margin" Value="3,1,3,1"/>
+                <Setter Property="Foreground" Value="Black"/>
+                <Setter Property="FontSize" Value="12"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+            </Style>
+            <Style x:Key="ToolTipTextStyle_Value" BasedOn="{StaticResource ToolTipTextStyle}" TargetType="{x:Type TextBlock}">
+                <Setter Property="HorizontalAlignment" Value="Right"/>
+            </Style>
+        </ControlTemplate.Resources>
+
+        <Border Background="White" Opacity="0.8" CornerRadius="4" Grid.IsSharedSizeScope="True">
+
+            <StackPanel>
+                <TextBlock Text="{Binding DataContext.XAxisInfo.CursorFormattedDataValue, RelativeSource={RelativeSource TemplatedParent}}"
+                           Style="{StaticResource ToolTipTextStyle}"/>
+                <ItemsControl ItemsSource="{Binding DataContext.SeriesData.SeriesInfo, RelativeSource={RelativeSource TemplatedParent}}">
+                    <ItemsControl.Resources>
+                        <DataTemplate DataType="{x:Type s:XySeriesInfo}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" SharedSizeGroup="NameColumn"/>
+                                    <ColumnDefinition Width="Auto" SharedSizeGroup="StrokeColumn"/>
+                                    <ColumnDefinition Width="Auto" SharedSizeGroup="ValueColumn"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding SeriesName}" Style="{StaticResource ToolTipTextStyle}" Grid.Column="0"/>
+                                <Line X1="0" X2="20" Y1="0" Y2="0" Grid.Column="1"
+                                      VerticalAlignment="Center" HorizontalAlignment="Left"
+                                      Stroke="{Binding RenderableSeries.Stroke, Converter={StaticResource ColorToBrushConverter}}"
+                                      StrokeThickness="{Binding RenderableSeries.StrokeThickness}"
+                                      Margin="1,0,1,0"/>
+                                <TextBlock Text="{Binding FormattedYValue}" HorizontalAlignment="Right" Style="{StaticResource ToolTipTextStyle_Value}"
+                                           Grid.Column="2"/>
+                            </Grid>
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type s:OhlcSeriesInfo}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" SharedSizeGroup="NameColumn"/>
+                                    <ColumnDefinition Width="Auto" SharedSizeGroup="StrokeColumn"/>
+                                    <ColumnDefinition Width="Auto" SharedSizeGroup="ValueColumn"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <TextBlock Text="Open" Grid.Row="0" Grid.Column="0" Style="{StaticResource ToolTipTextStyle}"/>
+                                <TextBlock Text="{Binding OpenValue}" Grid.Row="0" Grid.Column="2" Style="{StaticResource ToolTipTextStyle_Value}"/>
+                                <TextBlock Text="High" Grid.Row="1" Grid.Column="0" Style="{StaticResource ToolTipTextStyle}"/>
+                                <TextBlock Text="{Binding HighValue}" Grid.Row="1" Grid.Column="2" Style="{StaticResource ToolTipTextStyle_Value}"/>
+                                <TextBlock Text="Low" Grid.Row="2" Grid.Column="0" Style="{StaticResource ToolTipTextStyle}"/>
+                                <TextBlock Text="{Binding LowValue}" Grid.Row="2" Grid.Column="2" Style="{StaticResource ToolTipTextStyle_Value}"/>
+                                <TextBlock Text="Close" Grid.Row="3" Grid.Column="0" Style="{StaticResource ToolTipTextStyle}"/>
+                                <TextBlock Text="{Binding CloseValue}" Grid.Row="3" Grid.Column="2" Style="{StaticResource ToolTipTextStyle_Value}"/>
+                            </Grid>
+                            <!--<TextBlock Style="{StaticResource ToolTipTextStyle}">
+                                <TextBlock.Text>
+                                    <MultiBinding StringFormat="O: {0} C: {1} H: {2} L: {3}">
+                                        <Binding Path="CloseValue"/>
+                                        <Binding Path="OpenValue"/>
+                                        <Binding Path="HighValue"/>
+                                        <Binding Path="LowValue"/>
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>-->
+                        </DataTemplate>
+                    </ItemsControl.Resources>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+    </ControlTemplate>
+
+    <Style x:Key="SymbolChartCursorTooltip_Style" TargetType="s:CursorLabelControl">
+        <Setter Property="Template" Value="{StaticResource SymbolChartCursorTooltip_Template}"/>
+    </Style>
+
+    <Style x:Key="MainChartStyle" TargetType="s:SciChartSurface">
+        <Setter Property="Padding" Value="0,0,5,0" />
+    </Style>
+
+</ResourceDictionary>

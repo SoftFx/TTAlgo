@@ -1,0 +1,72 @@
+﻿<UserControl x:Class="TickTrader.BotTerminal.OutputPaneView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:s="http://schemas.abtsoftware.co.uk/scichart"
+             xmlns:l="clr-namespace:TickTrader.BotTerminal"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+
+    <UserControl.Resources>
+        <Style TargetType="s:SciChartSurface">
+            <Setter Property="Background" Value="{DynamicResource ChartBackground}"/>
+            <Setter Property="ChartModifier">
+                <Setter.Value>
+                    <s:ModifierGroup s:MouseManager.MouseEventGroup="{Binding ChartWindowId}">
+                        <s:YAxisDragModifier/>
+                        <s:XAxisDragModifier/>
+                        <s:CursorModifier ShowTooltipOn="Always"
+                                          ShowTooltip="True"
+                                          TooltipContainerStyle="{DynamicResource SymbolChartCursorTooltip_Style}"
+                                          IsEnabled="{Binding IsCrosshairEnabled.Value}"/>
+                        <!--<s:MouseWheelZoomModifier/>-->
+                        <s:ZoomPanModifier ClipModeX="None" XyDirection="XDirection"/>
+                        <s:TooltipModifier ShowTooltipOn="Always"/>
+                    </s:ModifierGroup>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="l:SciChartBehavior.XAxisStyle">
+                <Setter.Value>
+                    <Style TargetType="s:AxisBase">
+                        <Setter Property="DrawMinorGridLines" Value="False"/>
+                        <Setter Property="DrawMajorTicks" Value="False"/>
+                        <Setter Property="DrawMinorTicks" Value="False"/>
+                        <Setter Property="DrawMajorBands" Value="False"/>
+                        <Setter Property="MajorGridLineStyle">
+                            <Setter.Value>
+                                <Style TargetType="Line">
+                                    <Setter Property="Stroke" Value="{DynamicResource ChartGridLinesColor}"/>
+                                    <Setter Property="StrokeThickness" Value="1"/>
+                                </Style>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+    
+    <Grid>
+        <s:SciChartSurface RenderableSeries="{s:SeriesBinding Series}"
+                           l:SciChartBehavior.XAxis="{Binding TimeAxis}"
+                           s:SciChartGroup.VerticalChartGroup="{Binding ChartWindowId}">
+            <s:SciChartSurface.YAxis>
+                <s:NumericAxis AutoRange="Always"
+                               TextFormatting="{Binding YAxisLabelFormat}" CursorTextFormatting="{Binding YAxisLabelFormat}"
+                               DrawMajorBands="False" DrawMajorTicks="False"
+                               DrawMinorTicks="False" DrawMinorGridLines="False">
+                    <s:NumericAxis.MajorGridLineStyle>
+                        <Style TargetType="Line">
+                            <Setter Property="Stroke" Value="{DynamicResource ChartGridLinesColor}"/>
+                            <Setter Property="StrokeThickness" Value="1"/>
+                        </Style>
+                    </s:NumericAxis.MajorGridLineStyle>
+                </s:NumericAxis>
+            </s:SciChartSurface.YAxis>
+            <s:SciChartSurface.Resources>
+                <ResourceDictionary Source="SeriesView.xaml"/>
+            </s:SciChartSurface.Resources>
+        </s:SciChartSurface>
+    </Grid>
+</UserControl>

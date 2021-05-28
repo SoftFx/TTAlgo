@@ -1,0 +1,19 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:s="http://schemas.abtsoftware.co.uk/scichart"
+                    xmlns:cal="http://www.caliburnproject.org"
+                    xmlns:l="clr-namespace:TickTrader.BotTerminal">
+    
+    <!-- View Template -->
+
+    <ControlTemplate x:Key="BacktesterChartPageTemplate.Classic">
+        <ContentControl cal:View.Model="{Binding ChartControlModel}"/>
+    </ControlTemplate>
+
+    <!-- View Style -->
+    
+    <Style x:Key="BacktesterChartPageStyle.Classic" TargetType="UserControl">
+        <Setter Property="Template" Value="{StaticResource BacktesterChartPageTemplate.Classic}"/>
+    </Style>
+
+</ResourceDictionary>

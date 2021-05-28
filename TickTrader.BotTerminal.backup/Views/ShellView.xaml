@@ -1,0 +1,456 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cal="http://www.caliburnproject.org"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:dk="http://schemas.xceed.com/wpf/xaml/avalondock"
+    xmlns:dkctrl="clr-namespace:Xceed.Wpf.AvalonDock.Controls;assembly=Xceed.Wpf.AvalonDock"
+    xmlns:c="clr-namespace:TickTrader.Algo.Common.Model;assembly=TickTrader.Algo.Common"
+    xmlns:l="clr-namespace:TickTrader.BotTerminal">
+
+    <Menu x:Key="ShellMenu" x:Shared="False">
+        <MenuItem Header="{l:Resx Menu_BotTrader}" >
+            <MenuItem Header="{l:Resx Menu_LogIn}" cal:Message.Attach="Connect" />
+            <MenuItem Header="{l:Resx Menu_LogOut}" cal:Message.Attach="Disconnect" />
+            <Separator/>
+            <MenuItem Header="{l:Resx Menu_ExitBotTrader}" cal:Message.Attach="Exit"/>
+        </MenuItem>
+
+        <MenuItem Header="View" DataContext="{Binding DockManagerService}">
+            <MenuItem Header="{l:Resx Tab_Symbols}"
+                      IsCheckable="True" IsChecked="{Binding IsSymbolsOpened}"/>
+            <MenuItem Header="{l:Resx Tab_Bots}" 
+                      IsCheckable="True" IsChecked="{Binding IsBotsOpened}"/>
+            <MenuItem Header="{l:Resx Tab_Algo}" 
+                      IsCheckable="True" IsChecked="{Binding IsAlgoOpened}"/>
+            <MenuItem Header="{l:Resx Tab_Trade}" 
+                      IsCheckable="True" IsChecked="{Binding IsTradeOpened}"/>
+            <MenuItem Header="{l:Resx Tab_History}" 
+                      IsCheckable="True" IsChecked="{Binding IsHistoryOpened}"/>
+            <MenuItem Header="{l:Resx Tab_Journal}" 
+                      IsCheckable="True" IsChecked="{Binding IsJournalOpened}"/>
+            <MenuItem Header="{l:Resx Tab_Alert}" 
+                      IsCheckable="True" IsChecked="{Binding IsAlertOpened}"/>
+        </MenuItem>
+
+        <MenuItem Header="{l:Resx Menu_Preferences}" l:Settings.Provider="{Binding Preferences}">
+            <!--<l:MenuItemSelector Header="{l:Resx Menu_Language}"
+                                        ItemsSource="{Binding Source={x:Static l:LocaleSelector.Instance},  Path=Locales, Mode=OneWay}"
+                                        SelectedItem="{Binding Source={x:Static l:LocaleSelector.Instance}, Path=SelectedLocale, Mode=TwoWay}"/>-->
+            <!--<l:MenuItemSelector Header="{l:Resx Menu_Theme}"
+                                        ItemsSource="{Binding Source={x:Static l:ThemeSelector.Instance}, Path=ThemeNames}"
+                                        SelectedItem="{l:Setting Theme}">
+                <l:MenuItemSelector.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{l:ResxBinding Prefix=Theme_}"/>
+                    </DataTemplate>
+                </l:MenuItemSelector.ItemTemplate>
+            </l:MenuItemSelector>-->
+            <MenuItem Header="Sounds" IsChecked="{l:Setting EnableSounds}" IsCheckable="True"></MenuItem>
+            <!--<MenuItem Header="Notifications" IsChecked="{l:Setting EnableNotifications}" IsCheckable="True"></MenuItem>-->
+            <MenuItem Header="Restart Bots On Startup" IsChecked="{l:Setting RestartBotsOnStartup}" IsCheckable="True"></MenuItem>
+        </MenuItem>
+        <MenuItem Header="{l:Resx Menu_Profile}" DataContext="{Binding ProfileManager}">
+            <MenuItem Header="{l:Resx Menu_LoadProfile}" ItemsSource="{Binding Profiles}"
+                      cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                      cal:Message.Attach="LoadProfile($originalsourcecontext)"/>
+            <MenuItem Header="{l:Resx Menu_SaveProfile}" cal:Message.Attach="SaveProfile"/>
+        </MenuItem>
+        <MenuItem Header="{l:Resx Menu_Tools}">
+            <MenuItem Header="{l:Resx Menu_InstallVSPackage}" cal:Message.Attach="InstallVSPackage"/>
+            <!--<Separator/>
+            <MenuItem Header="Symbol Manager..." cal:Message.Attach="OpenStorageManager"/>
+            <MenuItem Header="Backtester..." cal:Message.Attach="OpenBacktester"/>-->
+        </MenuItem>
+        <MenuItem Header="{l:Resx Menu_Help}">
+            <MenuItem Header="{l:Resx Menu_About}" cal:Message.Attach="About"/>
+        </MenuItem>
+    </Menu>
+
+    <!-- Connection State Indicator (Classsic)-->
+
+    <ControlTemplate x:Key="ConnectionStateIndicator">
+        <StackPanel Name="statePanel" Orientation="Horizontal">
+            <Ellipse x:Name="statusCircle" Width="9" Height="9" Margin="1 1 4 0" VerticalAlignment="Center"/>
+            <TextBlock Text="{Binding CurrentServerName}" />
+        </StackPanel>
+        <ControlTemplate.Triggers>
+            <DataTrigger Binding="{Binding ConnectionState}" Value="{x:Static c:ConnectionModel+States.Connecting}">
+                <Setter TargetName="statusCircle" Property="Fill" Value="Gold"/>
+                <Setter TargetName="statePanel" Property="ToolTip" Value="Connecting..."/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding ConnectionState}" Value="{x:Static c:ConnectionModel+States.Online}">
+                <Setter TargetName="statusCircle" Property="Fill" Value="Green"/>
+                <Setter TargetName="statePanel" Property="ToolTip" Value="Online"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding ConnectionState}" Value="{x:Static c:ConnectionModel+States.Disconnecting}">
+                <Setter TargetName="statusCircle" Property="Fill" Value="Orange"/>
+                <Setter TargetName="statePanel" Property="ToolTip" Value="Disconnecting..."/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding ConnectionState}" Value="{x:Static c:ConnectionModel+States.Offline}">
+                <Setter TargetName="statusCircle" Property="Fill" Value="LightGray"/>
+                <Setter TargetName="statePanel" Property="ToolTip" Value="Offline"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding ConnectionState}" Value="{x:Static c:ConnectionModel+States.OfflineRetry}">
+                <Setter TargetName="statusCircle" Property="Fill" Value="Red"/>
+                <Setter TargetName="statePanel" Property="ToolTip" Value="Lost connection! Wating for reconnect..."/>
+            </DataTrigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <!--Docking panes styles/templates (Classic)-->
+
+    <Style x:Key="LayoutItemDefaultStyle" TargetType="{x:Type dkctrl:LayoutItem}">
+        <Setter Property="Title" Value="{Binding Model.DisplayName}" />
+    </Style>
+
+    <Style x:Key="LayoutItemChartStyle" TargetType="{x:Type dkctrl:LayoutItem}">
+        <Setter Property="Title" Value="{Binding Model.DisplayName}" />
+        <Setter Property="CloseCommand" Value="{Binding Model.CloseCommand}" />
+        <Setter Property="ContentId" Value="{Binding Model.ChartWindowId}"/>
+        <!--<Setter Property="CanClose" Value="{Binding Model.CanClose}" />-->
+    </Style>
+
+    <DataTemplate x:Key="LayoutAnchorHeaderDefaultTemplate">
+        <TextBlock Grid.Column="0" Text="{Binding Title}" Background="Transparent"/>
+    </DataTemplate>
+
+    <ControlTemplate x:Key="HistoryTransactionsCntTemplate">
+        <Border>
+            <TextBlock Margin="5 0" Text="{Binding TradeHistory.GridView.Items.Value.Count}" />
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Background" Value="{DynamicResource Shell_SecondaryForeground}"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding TradeHistory.GridView.Items.Value.Count, Converter={l:NumericalComparative ComparisonOption=AboveZero}}" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource RateUpColor}"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+        </Border>
+    </ControlTemplate>
+
+    <ControlTemplate x:Key="OrdersCntTemplate">
+        <Border>
+            <TextBlock Margin="5 0" Text="{Binding Trade.Orders.Orders.Count}"/>
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Background" Value="{DynamicResource Shell_SecondaryForeground}"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Trade.Orders.Orders.Count, Converter={l:NumericalComparative ComparisonOption=AboveZero}}" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource RateUpColor}"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+        </Border>
+    </ControlTemplate>
+
+    <ControlTemplate x:Key="GrossPositionsCntTemplate">
+        <Border>
+            <TextBlock Margin="5 0" Text="{Binding Trade.Positions.Gross.Positions.Count}" />
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Background" Value="{DynamicResource Shell_SecondaryForeground}"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Trade.Positions.Gross.Positions.Count, Converter={l:NumericalComparative ComparisonOption=AboveZero}}" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource RateUpColor}"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+        </Border>
+    </ControlTemplate>
+
+    <ControlTemplate x:Key="NetPositionsCntTemplate">
+        <Border>
+            <TextBlock Margin="5 0" Text="{Binding Trade.Positions.Net.Positions.Count}" />
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Background" Value="{DynamicResource Shell_SecondaryForeground}"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Trade.Positions.Net.Positions.Count, Converter={l:NumericalComparative ComparisonOption=AboveZero}}" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource RateUpColor}"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+        </Border>
+    </ControlTemplate>
+
+    <DataTemplate x:Key="LayoutAnchorHeaderHistoryTemplate">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="{Binding Title}" Background="Transparent"/>
+            <ContentControl Grid.Column="1" Margin="5 0 0 0" Template="{StaticResource HistoryTransactionsCntTemplate}" DataContext="{Binding Content.DataContext}"/>
+        </Grid>
+    </DataTemplate>
+
+    <DataTemplate x:Key="LayoutAnchorHeaderTradesTemplate">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <ContentControl></ContentControl>
+            <TextBlock Grid.Column="0" Text="{Binding Title}" Background="Transparent"/>
+            <StackPanel Margin="5 0 0 0" Grid.Column="1" Orientation="Horizontal" DataContext="{Binding Content.DataContext}">
+                <ContentControl Margin="0 0 2 0" Template="{StaticResource GrossPositionsCntTemplate}" Visibility="{Binding Trade.Positions.Gross.IsEnabled, Converter={StaticResource BoolToVis}}" />
+                <ContentControl Margin="0 0 2 0" Template="{StaticResource NetPositionsCntTemplate}" Visibility="{Binding Trade.Positions.Net.IsEnabled, Converter={StaticResource BoolToVis}}" />
+                <ContentControl Template="{StaticResource OrdersCntTemplate}" />
+            </StackPanel>
+        </Grid>
+    </DataTemplate>
+
+    <!-- Old Template -->
+
+    <ControlTemplate x:Key="ShellViewTemplate.Old" TargetType="Window">
+        <Grid Background="{TemplateBinding Background}">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="300" MinWidth="250" MaxWidth="400"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="2*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*" MinHeight="150"/>
+            </Grid.RowDefinitions>
+
+            <ContentControl cal:View.Model="{Binding AccountPane}" Grid.Column="0" Grid.Row="1" Margin="5,0,0,0" />
+
+            <l:TabControl x:Name="LeftPanel" Grid.Column="0" Grid.Row="2" Grid.RowSpan="3" Style="{DynamicResource ShellTabControl_Style}" Margin="5,5,0,5">
+                <TabItem Header="{l:Resx Tab_Symbols}">
+                    <ContentControl cal:View.Model="{Binding SymbolList}"/>
+                </TabItem>
+                <TabItem Header="{l:Resx Tab_Algo}">
+                    <ContentControl  cal:View.Model="{Binding AlgoList}"/>
+                </TabItem>
+            </l:TabControl>
+
+            <ContentControl cal:View.Model="{Binding Charts}" Grid.Column="2" Grid.Row="1" Grid.RowSpan="2" Margin="0,0,5,0">
+                <i:Interaction.Behaviors>
+                    <l:DropBehavior/>
+                </i:Interaction.Behaviors>
+            </ContentControl>
+            <GridSplitter Grid.Column="1" Grid.Row="1" Grid.RowSpan="4" Width="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="Transparent"/>
+
+            <ContentControl Content="{StaticResource ShellMenu}"  Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" Margin="3"/>
+
+            <GridSplitter Grid.Column="2" Grid.Row="3" Height="5" Width="Auto" HorizontalAlignment="Stretch" Background="Transparent"/>
+
+            <l:TabControl x:Name="BottomPanel" Grid.Column="2" Grid.Row="4" Style="{DynamicResource ShellTabControl_Style}" Margin="0,0,5,5" SelectedIndex="4">
+                <TabItem Header="{Binding}" Visibility="{Binding Trade.IsEnabled, Converter={StaticResource BoolToVis}}">
+                    <TabItem.HeaderTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"></ColumnDefinition>
+                                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{l:Resx Tab_Trade}"></TextBlock>
+                                <Border Grid.Column="1" Margin="5 0 0 0" CornerRadius="4" Name="PositionCountPane" Background="{DynamicResource ShellPanel_BackgroundBrush}">
+                                    <Grid>
+                                        <TextBlock Margin="5 0" Text="{Binding Trade.Positions.Net.Positions.Count}" Visibility="{Binding Trade.Positions.Net.IsEnabled, Converter={StaticResource BoolToVis}}"/>
+                                        <TextBlock Margin="5 0" Text="{Binding Trade.Positions.Gross.Positions.Count}" Visibility="{Binding Trade.Positions.Gross.IsEnabled, Converter={StaticResource BoolToVis}}"/>
+                                    </Grid>
+                                </Border>
+                                <Border Grid.Column="2" Margin="2 0 0 0" CornerRadius="4" Name="OrderCountPane" Background="{DynamicResource ShellPanel_BackgroundBrush}">
+                                    <TextBlock Margin="5 0" Text="{Binding Trade.Orders.Orders.Count}"/>
+                                </Border>
+                            </Grid>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Value="True">
+                                    <DataTrigger.Binding>
+                                        <MultiBinding Converter="{l:BoolConverter ConversionMode=LeastOne}">
+                                            <Binding Path="Trade.Positions.Net.Positions.Count" Converter="{l:NumericalComparative ComparisonOption=AboveZero}"/>
+                                            <Binding Path="Trade.Positions.Gross.Positions.Count" Converter="{l:NumericalComparative ComparisonOption=AboveZero}"/>
+                                            <Binding Path="Trade.Assets.Assets.Count" Converter="{l:NumericalComparative ComparisonOption=AboveZero}"/>
+                                        </MultiBinding>
+                                    </DataTrigger.Binding>
+                                    <Setter TargetName="PositionCountPane" Property="Background" Value="{DynamicResource RateUpColor}"></Setter>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Trade.Orders.Orders.Count, Converter={l:NumericalComparative ComparisonOption=AboveZero}}" Value="True">
+                                    <Setter TargetName="OrderCountPane" Property="Background" Value="{DynamicResource RateUpColor}"></Setter>
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
+                    </TabItem.HeaderTemplate>
+                    <ContentControl cal:View.Model="{Binding Trade}"/>
+                </TabItem>
+                <TabItem Name="TabHistory" Header="{Binding}">
+                    <TabItem.HeaderTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"></ColumnDefinition>
+                                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{l:Resx Tab_History}"></TextBlock>
+                                <Border Grid.Column="1" Margin="5 0 0 0" CornerRadius="4" Name="TransactionCountPane" Background="{DynamicResource ShellPanel_BackgroundBrush}">
+                                    <TextBlock Margin="5 0" Text="{Binding TradeHistory.GridView.Items.Value.Count}"></TextBlock>
+                                </Border>
+                            </Grid>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding TradeHistory.GridView.Items.Value.Count, Converter={l:NumericalComparative ComparisonOption=AboveZero}}" Value="True">
+                                    <Setter TargetName="TransactionCountPane" Property="Background" Value="{DynamicResource RateUpColor}"></Setter>
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
+                    </TabItem.HeaderTemplate>
+                    <ContentControl cal:View.Model="{Binding TradeHistory}"/>
+                </TabItem>
+                <TabItem Header="{l:Resx Tab_Journal}" IsSelected="True">
+                    <ContentControl  cal:View.Model="{Binding Journal}"/>
+                </TabItem>
+                <!--<TabItem Header="{l:Resx Tab_BotJournal}">
+                    <ContentControl  cal:View.Model="{Binding BotJournal}"/>
+                </TabItem>-->
+            </l:TabControl>
+
+        </Grid>
+    </ControlTemplate>
+
+    <!-- Classic Template -->
+
+    <Grid x:Key="ShellViewTemplate.Classic">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ContentControl Content="{StaticResource ShellMenu}" />
+
+        <l:CustomDockManager x:Name="DockManager" Grid.Row="1" 
+                                    DocumentsSource="{Binding Charts.Items}"
+                                    ActiveContent="{Binding Charts.SelectedChartProxy, Mode=TwoWay}" Margin="5,0,5,4" 
+                                    DockManagerService="{Binding DockManagerService, Mode=TwoWay}">
+
+            <l:CustomDockManager.LayoutItemContainerStyleSelector>
+                <l:AvalonDockStyleSelector DefaultStyle="{StaticResource LayoutItemDefaultStyle}" ChartStyle="{StaticResource LayoutItemChartStyle}" />
+            </l:CustomDockManager.LayoutItemContainerStyleSelector>
+
+            <l:CustomDockManager.LayoutItemTemplateSelector>
+                <l:AvalonDockTemplateSelector>
+                    <l:AvalonDockTemplateSelector.DocumentTemplate>
+                        <DataTemplate>
+                            <ContentControl cal:View.Model="{Binding}" IsTabStop="False"/>
+                        </DataTemplate>
+                    </l:AvalonDockTemplateSelector.DocumentTemplate>
+                </l:AvalonDockTemplateSelector>
+            </l:CustomDockManager.LayoutItemTemplateSelector>
+
+            <l:CustomDockManager.AnchorableHeaderTemplateSelector>
+                <l:AvalonAnchorTemplateSelector DefaultTemplate="{StaticResource LayoutAnchorHeaderDefaultTemplate}"
+                                                HistoryTemplate="{StaticResource LayoutAnchorHeaderHistoryTemplate}"
+                                                TradesTemplate="{StaticResource LayoutAnchorHeaderTradesTemplate}" />
+            </l:CustomDockManager.AnchorableHeaderTemplateSelector>
+
+            <!--<dk:DockingManager.Theme>
+                <dk:AeroTheme/>
+            </dk:DockingManager.Theme>-->
+
+            <dk:LayoutRoot>
+                <dk:LayoutPanel Orientation="Horizontal">
+                    <dk:LayoutPanel DockMinWidth="200" DockWidth="290" Orientation="Vertical">
+                        <dk:LayoutAnchorablePane>
+                            <dk:LayoutAnchorable Title="{l:Resx Tab_Symbols}" CanClose="False" CanHide="True" 
+                                                 ContentId="{x:Static l:DockManagerService.Tab_Symbols}">
+                                <ContentControl cal:View.Model="{Binding SymbolList}" />
+                            </dk:LayoutAnchorable>
+                        </dk:LayoutAnchorablePane>
+                        <dk:LayoutAnchorablePane>
+                            <dk:LayoutAnchorable Title="{l:Resx Tab_Bots}" CanClose="False" CanHide="True" 
+                                                 ContentId="{x:Static l:DockManagerService.Tab_Bots}" >
+                                <ContentControl cal:View.Model="{Binding BotList}" />
+                            </dk:LayoutAnchorable>
+                        </dk:LayoutAnchorablePane>
+                        <dk:LayoutAnchorablePane>
+                            <dk:LayoutAnchorable Title="{l:Resx Tab_Algo}" CanClose="False" CanHide="True" 
+                                                 ContentId="{x:Static l:DockManagerService.Tab_Algo}">
+                                <ContentControl cal:View.Model="{Binding AlgoList}" />
+                            </dk:LayoutAnchorable>
+                        </dk:LayoutAnchorablePane>
+                    </dk:LayoutPanel>
+                    <dk:LayoutPanel Orientation="Vertical">
+                        <dk:LayoutDocumentPaneGroup>
+                            <dk:LayoutDocumentPane/>
+                        </dk:LayoutDocumentPaneGroup>
+                        <dk:LayoutAnchorablePane DockHeight="300" DockMinHeight="150">
+                            <dk:LayoutAnchorable Title="{l:Resx Tab_Trade}" CanClose="False" CanHide="True" 
+                                                 ContentId="{x:Static l:DockManagerService.Tab_Trade}">
+                                <ContentControl cal:View.Model="{Binding Trade}"/>
+                            </dk:LayoutAnchorable>
+                            <dk:LayoutAnchorable Title="{l:Resx Tab_History}" CanClose="False" CanHide="True" 
+                                                 ContentId="{x:Static l:DockManagerService.Tab_History}">
+                                <ContentControl cal:View.Model="{Binding TradeHistory}"/>
+                            </dk:LayoutAnchorable>
+                            <dk:LayoutAnchorable Title="{l:Resx Tab_Journal}" CanClose="False" CanHide="True" 
+                                                 ContentId="{x:Static l:DockManagerService.Tab_Journal}">
+                                <ContentControl cal:View.Model="{Binding Journal}"/>
+                            </dk:LayoutAnchorable>
+                            <!--<dk:LayoutAnchorable Title="{l:Resx Tab_BotJournal}" CanClose="False" CanHide="True" 
+                                                 ContentId="{x:Static l:DockManagerService.Tab_BotJournal}">
+                                <ContentControl cal:View.Model="{Binding BotJournal}"/>
+                            </dk:LayoutAnchorable>-->
+                        </dk:LayoutAnchorablePane>
+                    </dk:LayoutPanel>
+                </dk:LayoutPanel>
+            </dk:LayoutRoot>
+        </l:CustomDockManager>
+
+        <StatusBar Grid.Row="2" Background="Transparent">
+            <StatusBarItem DockPanel.Dock="Right" Width="100"/>
+            <Separator DockPanel.Dock="Right"/>
+            <StatusBarItem DockPanel.Dock="Right">
+                <TextBlock Text="{Binding ProtocolName}"/>
+            </StatusBarItem>
+            <Separator DockPanel.Dock="Right"/>
+            <StatusBarItem DockPanel.Dock="Right">
+                <Control Template="{StaticResource ConnectionStateIndicator}" />
+            </StatusBarItem>
+            <Separator DockPanel.Dock="Right"/>
+            <StatusBarItem/>
+        </StatusBar>
+
+    </Grid>
+
+    <Style x:Key="ShellViewStyle" TargetType="Window">
+        <Setter Property="Template" Value="{StaticResource ShellViewTemplate.Old}"/>
+        <Setter Property="Height" Value="800"/>
+        <Setter Property="Width" Value="1100"/>
+        <Setter Property="MinWidth" Value="500"/>
+        <Setter Property="MinHeight" Value="500"/>
+        <Setter Property="Icon" Value="{StaticResource MainAppIcon}"/>
+        <Setter Property="Background" Value="{DynamicResource Shell_BackgroundBrush}"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+    </Style>
+
+    <Style x:Key="ShellViewStyle.Classic" TargetType="Window">
+        <Setter Property="Height" Value="800"/>
+        <Setter Property="Width" Value="1100"/>
+        <Setter Property="MinWidth" Value="500"/>
+        <Setter Property="MinHeight" Value="500"/>
+        <Setter Property="Icon" Value="{StaticResource MainAppIcon}"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+        <Setter Property="ResizeMode" Value="CanResizeWithGrip"/>
+        <Setter Property="Content">
+            <Setter.Value>
+                <StaticResource ResourceKey="ShellViewTemplate.Classic"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

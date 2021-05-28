@@ -1,0 +1,453 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ChartType_Candle" xml:space="preserve">
+    <value>##Candle##</value>
+  </data>
+  <data name="ChartType_DigitalLine" xml:space="preserve">
+    <value>##Digital Line##</value>
+  </data>
+  <data name="ChartType_DigitalMountain" xml:space="preserve">
+    <value>##Digital Mountain##</value>
+  </data>
+  <data name="ChartType_Line" xml:space="preserve">
+    <value>##Line##</value>
+  </data>
+  <data name="ChartType_Mountain" xml:space="preserve">
+    <value>##Mountain##</value>
+  </data>
+  <data name="ChartType_OHLC" xml:space="preserve">
+    <value>##OHLC##</value>
+  </data>
+  <data name="ChartType_Scatter" xml:space="preserve">
+    <value>##Scatter##</value>
+  </data>
+  <data name="ConnectionErrorCode_BlockedAccount" xml:space="preserve">
+    <value>#EMPTY#</value>
+  </data>
+  <data name="ConnectionErrorCode_InvalidCredentials" xml:space="preserve">
+    <value>#EMPTY#</value>
+  </data>
+  <data name="ConnectionErrorCode_LoginDeleted" xml:space="preserve">
+    <value>#EMPTY#</value>
+  </data>
+  <data name="ConnectionErrorCode_NetworkError" xml:space="preserve">
+    <value>#EMPTY#</value>
+  </data>
+  <data name="ConnectionErrorCode_ServerError" xml:space="preserve">
+    <value>#EMPTY#</value>
+  </data>
+  <data name="ConnectionErrorCode_ServerLogout" xml:space="preserve">
+    <value>#EMPTY#</value>
+  </data>
+  <data name="ConnectionErrorCode_SlowConnection" xml:space="preserve">
+    <value>#EMPTY#</value>
+  </data>
+  <data name="ConnectionErrorCode_Timeout" xml:space="preserve">
+    <value>#EMPTY#</value>
+  </data>
+  <data name="ConnectionErrorCode_Unknown" xml:space="preserve">
+    <value>#EMPTY#</value>
+  </data>
+  <data name="ContextMenu_ChartType" xml:space="preserve">
+    <value>##Chart Type##</value>
+  </data>
+  <data name="ContextMenu_Indicators" xml:space="preserve">
+    <value>##Indicators##</value>
+  </data>
+  <data name="ContextMenu_NewChart" xml:space="preserve">
+    <value>##New Chart##</value>
+  </data>
+  <data name="ContextMenu_OpenOrder" xml:space="preserve">
+    <value>##Open Order##</value>
+  </data>
+  <data name="ContextMenu_Periods" xml:space="preserve">
+    <value>##Periods##</value>
+  </data>
+  <data name="ContextMenu_Timeline" xml:space="preserve">
+    <value>##Timeline##</value>
+  </data>
+  <data name="Journal_Message" xml:space="preserve">
+    <value>#JournalMessage#</value>
+  </data>
+  <data name="Journal_Time" xml:space="preserve">
+    <value>#JournalTime#</value>
+  </data>
+  <data name="Menu_BotTrader" xml:space="preserve">
+    <value>##AlgoTerminal##</value>
+  </data>
+  <data name="Menu_ExitBotTrader" xml:space="preserve">
+    <value>##Exit##</value>
+  </data>
+  <data name="Menu_Language" xml:space="preserve">
+    <value>##Language##</value>
+  </data>
+  <data name="Menu_LogIn" xml:space="preserve">
+    <value>##Log In##</value>
+  </data>
+  <data name="Menu_LogOut" xml:space="preserve">
+    <value>##Log Out##</value>
+  </data>
+  <data name="Menu_ManageAccounts" xml:space="preserve">
+    <value>##Manage accounts##</value>
+  </data>
+  <data name="Menu_NewChart" xml:space="preserve">
+    <value>##New Chart##</value>
+  </data>
+  <data name="Menu_NewOrder" xml:space="preserve">
+    <value>##New Order##</value>
+  </data>
+  <data name="Menu_Preferences" xml:space="preserve">
+    <value>##Preferences##</value>
+  </data>
+  <data name="Menu_Theme" xml:space="preserve">
+    <value>##Theme##</value>
+  </data>
+  <data name="OrderDialog_Title" xml:space="preserve">
+    <value>##Open order##</value>
+  </data>
+  <data name="Order_Amount" xml:space="preserve">
+    <value>##Amount##</value>
+  </data>
+  <data name="Order_OrderType" xml:space="preserve">
+    <value>##Order type##</value>
+  </data>
+  <data name="Order_Price" xml:space="preserve">
+    <value>##Price##</value>
+  </data>
+  <data name="Order_Side" xml:space="preserve">
+    <value>##Side##</value>
+  </data>
+  <data name="Order_Symbol" xml:space="preserve">
+    <value>##Symbol##</value>
+  </data>
+  <data name="Order_Volume" xml:space="preserve">
+    <value>##Volume##</value>
+  </data>
+  <data name="Position_Amount" xml:space="preserve">
+    <value>##Amount##</value>
+  </data>
+  <data name="Position_Side" xml:space="preserve">
+    <value>##Side##</value>
+  </data>
+  <data name="Position_Symbol" xml:space="preserve">
+    <value>##Symbol##</value>
+  </data>
+  <data name="SymbolDetails_Buy" xml:space="preserve">
+    <value>##Buy##</value>
+  </data>
+  <data name="SymbolDetails_Sell" xml:space="preserve">
+    <value>##Sell##</value>
+  </data>
+  <data name="Tab_Algo" xml:space="preserve">
+    <value>##Tab_Algo##</value>
+  </data>
+  <data name="Tab_Assets" xml:space="preserve">
+    <value>##Tab_Assets##</value>
+  </data>
+  <data name="Tab_BotJournal" xml:space="preserve">
+    <value>##Tab_BotJournal##</value>
+  </data>
+  <data name="Tab_History" xml:space="preserve">
+    <value>##Tab_History##</value>
+  </data>
+  <data name="Tab_Journal" xml:space="preserve">
+    <value>##Tab_Journal##</value>
+  </data>
+  <data name="Tab_Orders" xml:space="preserve">
+    <value>##Tab_Orders##</value>
+  </data>
+  <data name="Tab_Positions" xml:space="preserve">
+    <value>##Tab_Positions##</value>
+  </data>
+  <data name="Tab_Symbols" xml:space="preserve">
+    <value>##Tab_Symbols##</value>
+  </data>
+  <data name="Tab_Trade" xml:space="preserve">
+    <value>##Tab_Trade##</value>
+  </data>
+  <data name="Theme_Dark" xml:space="preserve">
+    <value>##Theme_Dark##</value>
+  </data>
+  <data name="Theme_Light" xml:space="preserve">
+    <value>##Theme_Light##</value>
+  </data>
+  <data name="TimelineType_Real" xml:space="preserve">
+    <value>##TimelineType_Real##</value>
+  </data>
+  <data name="TimelineType_Uniform" xml:space="preserve">
+    <value>##TimelineType_Uniform##</value>
+  </data>
+  <data name="TimePeriod_All" xml:space="preserve">
+    <value>##TimePeriod_All##</value>
+  </data>
+  <data name="TimePeriod_CurrentMonth" xml:space="preserve">
+    <value>##TimePeriod_CurrentMonth##</value>
+  </data>
+  <data name="TimePeriod_PreviousMonth" xml:space="preserve">
+    <value>##TimePeriod_PreviousMonth##</value>
+  </data>
+  <data name="TimePeriod_Today" xml:space="preserve">
+    <value>##TimePeriod_Today##</value>
+  </data>
+  <data name="TimePeriod_Yesterday" xml:space="preserve">
+    <value>##TimePeriod_Yesterday##</value>
+  </data>
+  <data name="TimePeriod_Custom" xml:space="preserve">
+    <value>##TradePeriod_Custom##</value>
+  </data>
+  <data name="TimePeriod_LastSixMonths" xml:space="preserve">
+    <value>##TradePeriod_LastSixMonths##</value>
+  </data>
+  <data name="TimePeriod_LastThreeMonths" xml:space="preserve">
+    <value>##TradePeriod_LastThreeMonths##</value>
+  </data>
+  <data name="TimePeriod_LastYear" xml:space="preserve">
+    <value>##TradePeriod_LastYear##</value>
+  </data>
+  <data name="TradeDirection_All" xml:space="preserve">
+    <value>##TradeDirection_All##</value>
+  </data>
+  <data name="TradeDirection_Buy" xml:space="preserve">
+    <value>##TradeDirection_Buy##</value>
+  </data>
+  <data name="TradeDirection_Sell" xml:space="preserve">
+    <value>##TradeDirection_Buy##</value>
+  </data>
+  <data name="DownloadingTradeHistoryError" xml:space="preserve">
+    <value>##DownloadingTradeHistoryError##</value>
+  </data>
+  <data name="TimePeriod_LastHour" xml:space="preserve">
+    <value>##TimePeriod_LastHour##</value>
+  </data>
+  <data name="Menu_About" xml:space="preserve">
+    <value>##About##</value>
+  </data>
+  <data name="Menu_Help" xml:space="preserve">
+    <value>##Help##</value>
+  </data>
+  <data name="Menu_LoadProfile" xml:space="preserve">
+    <value>##LoadProfile##</value>
+  </data>
+  <data name="Menu_SaveProfile" xml:space="preserve">
+    <value>##SaveProfile##</value>
+  </data>
+  <data name="Menu_Profile" xml:space="preserve">
+    <value>##Profile##</value>
+  </data>
+  <data name="Order_StopPrice" xml:space="preserve">
+    <value>##Order_StopPrice##</value>
+  </data>
+  <data name="Tab_Bots" xml:space="preserve">
+    <value>##Tab_Bots##</value>
+  </data>
+  <data name="PluginError_NoMetadataError" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Order_OpenPrice" xml:space="preserve">
+    <value>##Order_OpenPrice##</value>
+  </data>
+  <data name="Assets_AvailableVolume" xml:space="preserve">
+    <value>##AvailableVolume##</value>
+  </data>
+  <data name="Assets_Currency" xml:space="preserve">
+    <value>##Currency##</value>
+  </data>
+  <data name="Assets_LockedVolume" xml:space="preserve">
+    <value>##LockedVolume##</value>
+  </data>
+  <data name="Assets_Volume" xml:space="preserve">
+    <value>##Volume##</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>##Copy##</value>
+  </data>
+  <data name="Order_Comment" xml:space="preserve">
+    <value>##Comment##</value>
+  </data>
+  <data name="Order_Commission" xml:space="preserve">
+    <value>##Commission##</value>
+  </data>
+  <data name="Order_CurrentPrice" xml:space="preserve">
+    <value>##CurrentPrice##</value>
+  </data>
+  <data name="Order_ExecutionTime" xml:space="preserve">
+    <value>##ExecTime##</value>
+  </data>
+  <data name="Order_Id" xml:space="preserve">
+    <value>##Id##</value>
+  </data>
+  <data name="Order_InstanceId" xml:space="preserve">
+    <value>##InstanceId##</value>
+  </data>
+  <data name="Order_Net_P_L" xml:space="preserve">
+    <value>##NetP/L##</value>
+  </data>
+  <data name="Order_P_L" xml:space="preserve">
+    <value>##P/L##</value>
+  </data>
+  <data name="Order_Swap" xml:space="preserve">
+    <value>##Swap##</value>
+  </data>
+  <data name="Order_S_L" xml:space="preserve">
+    <value>##S/L##</value>
+  </data>
+  <data name="Order_Tag" xml:space="preserve">
+    <value>##Tag##</value>
+  </data>
+  <data name="Order_T_P" xml:space="preserve">
+    <value>##T/P##</value>
+  </data>
+  <data name="Position_CurrentPrice" xml:space="preserve">
+    <value>##CurrentPrice##</value>
+  </data>
+  <data name="Position_Id" xml:space="preserve">
+    <value>##Id##</value>
+  </data>
+  <data name="Position_ModifiedTime" xml:space="preserve">
+    <value>##ModifiedTime##</value>
+  </data>
+  <data name="Position_Net_P_L" xml:space="preserve">
+    <value>##NetP/L##</value>
+  </data>
+  <data name="Position_OpenPrPosition_OpenPrice" xml:space="preserve">
+    <value>##OpenPrice##</value>
+  </data>
+  <data name="Position_PriceDeviation" xml:space="preserve">
+    <value>##PriceDeviation##</value>
+  </data>
+  <data name="Position_Swap" xml:space="preserve">
+    <value>##Swap##</value>
+  </data>
+  <data name="Position_Volume" xml:space="preserve">
+    <value>##Volume##</value>
+  </data>
+  <data name="ShowCurrentPrice" xml:space="preserve">
+    <value>##ShowCurrentPrice##</value>
+  </data>
+  <data name="ShowSwap" xml:space="preserve">
+    <value>##ShowSwap##</value>
+  </data>
+  <data name="OptMetric_Custom" xml:space="preserve">
+    <value>##OptMetric_Custom##</value>
+  </data>
+  <data name="OptMetric_Equity" xml:space="preserve">
+    <value>##OptMetric_Equity##</value>
+  </data>
+</root>

@@ -1,0 +1,32 @@
+﻿<Window x:Class="TickTrader.BotTerminal.LoginDialogView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:l="clr-namespace:TickTrader.BotTerminal"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:cal="http://www.caliburnproject.org"
+        mc:Ignorable="d"
+        Height="420" Width="450"
+        ResizeMode="NoResize"
+        Background="{DynamicResource Dialog_Background}">
+
+    <i:Interaction.Triggers>
+        <l:InputBindingTrigger>
+            <l:InputBindingTrigger.InputBinding>
+                <KeyBinding Key="Enter"/>
+            </l:InputBindingTrigger.InputBinding>
+            <cal:ActionMessage MethodName="Connect"/>
+        </l:InputBindingTrigger>
+        <l:InputBindingTrigger>
+            <l:InputBindingTrigger.InputBinding>
+                <KeyBinding Key="Esc"/>
+            </l:InputBindingTrigger.InputBinding>
+            <cal:ActionMessage MethodName="Stop"/>
+        </l:InputBindingTrigger>
+    </i:Interaction.Triggers>
+
+    <Grid>
+        <l:DialogPageControl x:Name="Items" Style="{DynamicResource DialogPageControl_Style}" Margin="5"/>
+    </Grid>
+</Window>

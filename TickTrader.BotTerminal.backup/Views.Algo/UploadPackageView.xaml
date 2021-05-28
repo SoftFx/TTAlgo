@@ -1,0 +1,132 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:cal="http://www.caliburnproject.org"
+                    xmlns:l="clr-namespace:TickTrader.BotTerminal"
+                    xmlns:i="http://schemas.microsoft.com/xaml/behaviors">
+
+    <ControlTemplate x:Key="UploadPackageView.Classic">
+        <Border Background="{TemplateBinding Background}">
+            <Grid Margin="5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Label Grid.Row="0" Content="{Binding DisplayName}" 
+                       FontSize="26"
+                       VerticalAlignment="Center" 
+                       Style="{DynamicResource DialogPageTitleLabelStyle}"/>
+
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+
+                    <Label Content="Algo Server:"/>
+                    <Label Grid.Column="1" Content="{Binding SelectedAlgoServer.Name}"/>
+                </Grid>
+
+                <Label Grid.Row="2" Content="Algo package:" VerticalAlignment="Bottom"/>
+                <Grid Grid.Row="3" IsEnabled="{Binding IsEnabled}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <ComboBox Text="{Binding SourcePackageName.DisplayValue, Mode=OneWay}"
+                              SelectedItem="{Binding SourcePackageName.Value}"
+                              HorizontalAlignment="Stretch" 
+                              Margin="5 0 0 0"
+                              Foreground="{DynamicResource Shell_PrimaryForeground}" 
+                              ItemsSource="{Binding SourcePackageCollectionView}"
+                              ToolTip="{Binding SelectedFolder.Value}"/>
+
+                    <l:FlatButton Grid.Column="1" 
+                                  Content="..." 
+                                  Style="{DynamicResource ParamUtilityButtonStyle}" 
+                                  Padding="3 0 3 0">
+                        <i:Interaction.Behaviors>
+                            <l:OpenFileDialogBehavior FilePath="{Binding SelectedFolder.Value}" FileName="{Binding SourcePackageName.Value}"/>
+                        </i:Interaction.Behaviors>
+                    </l:FlatButton>
+                </Grid>
+
+                <Grid Grid.Row="4" Margin="0 5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+
+                    <Label Content="File Name:"/>
+                    <Label Grid.Column="1" Content="{Binding TargetPackageName.DisplayValue, Mode=OneWay}" />
+                </Grid>
+
+                <TextBlock Grid.Row="6"
+                           HorizontalAlignment="Stretch"
+                           VerticalAlignment="Bottom"
+                           Text="{Binding Error.DisplayValue}"
+                           TextWrapping="Wrap"
+                           TextTrimming="CharacterEllipsis"
+                           Foreground="{DynamicResource Shell_WarningForeground}"
+                           Margin="10 5"
+                           Visibility="{Binding Error.HasValue, Converter={StaticResource BoolToVis}}"/>
+
+                <ContentControl Grid.Row="7"
+                                cal:View.Model="{Binding UploadProgress}"
+                                Visibility="{Binding IsEnabled.Value, Converter={StaticResource BoolToVisInv}}"/>
+
+                <Grid Grid.Row="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <l:FlatButton Grid.Column="0" Margin="8 0"
+                                  cal:Message.Attach="Ok" Content="Ok"
+                                  Background="{DynamicResource Dialog_OkButtonBackground}"
+                                  HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}"
+                                  IsEnabled="{Binding IsEnabled.Value}"/>
+                    <l:FlatButton Grid.Column="1" Margin="8 0"
+                                  cal:Message.Attach="Cancel" Content="Cancel" 
+                                  Background="{DynamicResource Dialog_ButtonBackground}"
+                                  HighlightBackground="{DynamicResource Dialog_ButtonHighlightBackground}"/>
+                </Grid>
+            </Grid>
+        </Border>
+    </ControlTemplate>
+
+
+    <Style x:Key="UploadPackageViewStyle.Common" TargetType="Window">
+        <Setter Property="Background" Value="{DynamicResource Dialog_Background}"/>
+        <Setter Property="WindowStyle" Value="ToolWindow" />
+        <Setter Property="ResizeMode" Value="NoResize" />
+        <Setter Property="Width" Value="300"/>
+        <Setter Property="Height" Value="300"/>
+    </Style>
+
+
+    <Style x:Key="UploadPackageViewStyle.Classic" TargetType="Window" BasedOn="{StaticResource UploadPackageViewStyle.Common}">
+        <Setter Property="Template" Value="{StaticResource UploadPackageView.Classic}"/>
+        <Setter Property="Height" Value="400"/>
+        <Setter Property="Width" Value="380"/>
+        <Setter Property="ResizeMode" Value="NoResize"/>
+        <Style.Resources>
+            <Style TargetType="ComboBox">
+                <Setter Property="Height" Value="22"/>
+            </Style>
+            <Style TargetType="Label">
+                <Setter Property="HorizontalAlignment" Value="Left"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="FontSize" Value="13"/>
+            </Style>
+        </Style.Resources>
+    </Style>
+
+</ResourceDictionary>

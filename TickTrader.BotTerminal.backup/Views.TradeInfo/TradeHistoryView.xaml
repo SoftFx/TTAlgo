@@ -1,0 +1,96 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cal="http://www.caliburnproject.org"
+    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+    xmlns:l="clr-namespace:TickTrader.BotTerminal">
+
+    <!--<l:BindingProxy x:Key="ProxyContext" Data="{Binding}" />-->
+
+       
+    <ControlTemplate x:Key="TradeHistoryView" TargetType="UserControl">
+        <Grid Margin="{TemplateBinding Control.Padding}" Visibility="{Binding GridView.IsAccTypeSet.Value, Converter={StaticResource LeastOneBoolToVisible}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <DockPanel Grid.Row="0" Style="{DynamicResource DockPanelAsToolBarStyle}">
+                <!--Trade direction functionality. Just uncomment and enjoy-->
+                <!--<ComboBox Width="120" Margin="5 0 0 0" SelectedItem="{Binding TradeDirectionFilter,  Delay=200, UpdateSourceTrigger=PropertyChanged}"
+                      ItemsSource="{Binding Source={l:EnumToItemSource {x:Type l:TradeHistoryViewModel+TradeDirection}}}" IsEditable="False">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{l:ResxBinding Prefix=TradeDirection_}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>-->
+                <ComboBox Width="120" Margin="5 0 0 0" SelectedItem="{Binding Period, Delay=200, UpdateSourceTrigger=PropertyChanged}"
+                      ItemsSource="{Binding Source={l:EnumToItemSource {x:Type l:TradeHistoryViewModel+TimePeriod}}}" IsEditable="False">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{l:ResxBinding Prefix=TimePeriod_}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <l:DateTimePicker x:Name="FromPicker" Width="145" SelectedDateTime="{Binding From,  Delay=500, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Margin="5 0 2 0" />
+                <TextBlock x:Name="PickerSeparator" Text="-" Margin="0 3 0 0"/>
+                <l:DateTimePicker x:Name="ToPicker" Width="145" Margin="2 0 0 0" SelectedDateTime="{Binding To, Delay=500, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+                <CheckBox Margin="5 3 0 0" Content="Skip cancel" IsChecked="{Binding SkipCancel}" />
+            </DockPanel>
+
+            <ContentControl Grid.Row="1" cal:View.Model="{Binding GridView}"/>
+            <ContentControl Grid.Row="1" Name="OverlayContent"/>
+        </Grid>
+
+        <ControlTemplate.Triggers>
+            <DataTrigger Binding="{Binding CanEditPeriod}" Value="False">
+                <Setter TargetName="FromPicker" Property="Visibility" Value="Collapsed"/>
+                <Setter TargetName="PickerSeparator" Property="Visibility" Value="Collapsed"/>
+                <Setter TargetName="ToPicker" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding DownloadObserver.IsNotCompleted, Mode=OneWay}" Value="True">
+                <Setter Property="Content" TargetName="OverlayContent">
+                    <Setter.Value>
+                        <l:BusyIndicator/>
+                    </Setter.Value>
+                </Setter>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding DownloadObserver.IsFaulted, Mode=OneWay}" Value="True">
+                <Setter Property="Content" TargetName="OverlayContent">
+                    <Setter.Value>
+                        <TextBlock Text="{l:Resx DownloadingTradeHistoryError}" 
+                                       Foreground="{DynamicResource Shell_WarningForeground}" 
+                                       VerticalAlignment="Center" 
+                                       HorizontalAlignment="Center"/>
+                    </Setter.Value>
+                </Setter>
+            </DataTrigger>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding GridView.Items.Value.IsEmpty, Mode=OneWay}" Value="True"></Condition>
+                    <Condition Binding="{Binding DownloadObserver.IsSuccessfullyCompleted}" Value="True"></Condition>
+                </MultiDataTrigger.Conditions>
+                <Setter Property="Content" TargetName="OverlayContent">
+                    <Setter.Value>
+                        <TextBlock Text="No data" 
+                                       Foreground="{DynamicResource Shell_PrimaryForeground}" 
+                                       VerticalAlignment="Center" 
+                                       HorizontalAlignment="Center"/>
+                    </Setter.Value>
+                </Setter>
+            </MultiDataTrigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <Style x:Key="TradeHistoryViewStyle" TargetType="UserControl">
+        <Setter Property="Template" Value="{StaticResource TradeHistoryView}"/>
+        <Setter Property="Padding" Value="5"/>
+    </Style>
+
+    <Style x:Key="TradeHistoryViewStyle.Classic" TargetType="UserControl">
+        <Setter Property="Template" Value="{StaticResource TradeHistoryView}"/>
+        <Setter Property="Padding" Value="0"/>
+    </Style>
+
+</ResourceDictionary>

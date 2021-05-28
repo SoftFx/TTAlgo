@@ -1,0 +1,109 @@
+﻿using System.Threading.Tasks;
+using System.Threading;
+using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Domain;
+using TickTrader.Algo.Server;
+
+namespace TickTrader.BotTerminal
+{
+    internal class IndicatorModel : PluginModel, IIndicatorWriter
+    {
+        private IndicatorListenerProxy _indicatorListener;
+        private EventJournal _journal;
+        private IAlgoPluginHost _host;
+
+        public IndicatorModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext)
+            : base(config, agent, host, setupContext)
+        {
+            _journal = agent.Shell.EventJournal;
+
+            _host = host;
+            host.StartEvent += Host_StartEvent;
+            host.StopEvent += Host_StopEvent;
+
+            if (host.IsStarted)
+                StartIndicator();
+        }
+
+
+        public void Dispose()
+        {
+            Host.StartEvent -= Host_StartEvent;
+            Host.StopEvent -= Host_StopEvent;
+            if (State == PluginModelInfo.Types.PluginState.Running)
+                StopIndicator().ContinueWith(t => { /* TO DO: log errors */ });
+        }
+
+
+        protected override async void OnPluginUpdated()
+        {
+            if (State == PluginModelInfo.Types.PluginState.Running)
+            {
+                await StopIndicator();
+                UpdateRefs();
+                StartIndicator();
+            }
+        }
+
+        protected override async Task<ExecutorModel> CreateExecutor()
+        {
+            var executor = await base.CreateExecutor();
+
+            executor.Config.IsLoggingEnabled = true;
+            _indicatorListener = new IndicatorListenerProxy(executor, this);
+
+            return executor;
+        }
+
+        private void StartIndicator()
+        {
+            if (PluginStateHelper.CanStart(State))
+            {
+                _host.EnqueueStartAction(() => StartExcecutor().ContinueWith(t => { if (t.Result) ChangeState(PluginModelInfo.Types.PluginState.Running); }));
+                //if (StartExcecutor())
+                //    ChangeState(PluginModelInfo.Types.PluginState.Running);
+            }
+        }
+
+        private async Task StopIndicator()
+        {
+            if (State == PluginModelInfo.Types.PluginState.Running)
+            {
+                if (await StopExecutor())
+                    ChangeState(PluginModelInfo.Types.PluginState.Stopped);
+            }
+        }
+
+        private void Host_StartEvent()
+        {
+            StartIndicator();
+        }
+
+        private Task Host_StopEvent(object sender, CancellationToken cToken)
+        {
+            return StopIndicator();
+        }
+
+        void IIndicatorWriter.LogMessage(PluginLogRecord record)
+        {
+            switch (record.Severity)
+            {
+                case PluginLogRecord.Types.LogSeverity.Info:
+                case PluginLogRecord.Types.LogSeverity.Error:
+                case PluginLogRecord.Types.LogSeverity.Custom:
+                    _journal.Add(EventMessage.Create(record));
+                    break;
+                case PluginLogRecord.Types.LogSeverity.Alert:
+                    AlertModel.AddAlert(InstanceId, record);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    public interface IIndicatorWriter
+    {
+        void LogMessage(PluginLogRecord record);
+    }
+}
