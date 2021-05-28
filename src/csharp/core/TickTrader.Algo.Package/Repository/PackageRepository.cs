@@ -2,7 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using TickTrader.Algo.Async;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Util;
@@ -11,7 +14,7 @@ namespace TickTrader.Algo.Package
 {
     internal enum UpdateAction { Upsert, Remove }
 
-    internal struct PackageFileUpdate
+    internal class PackageFileUpdate
     {
         public string PkgId { get; }
 
@@ -62,20 +65,51 @@ namespace TickTrader.Algo.Package
         public Task WaitLoaded()
         {
             var taskSrc = new TaskCompletionSource<object>();
-            _impl.Send(a => taskSrc.TrySetResult(null));
+            _impl.Send(a => a.WhenIdle(() => taskSrc.TrySetResult(null)));
             return taskSrc.Task;
         }
 
 
         private class Impl : Actor
         {
-            private readonly Dictionary<string, PackageIdentity> _pkgIdentityCache = new Dictionary<string, PackageIdentity>();
+            internal class PackageState
+            {
+                public PackageIdentity Identity { get; set; }
+
+                public bool IsLoading { get; set; }
+
+                public UpdateAction? NextAction { get; set; }
+            }
+
+            internal class PackageLoadRequest
+            {
+                public string Path { get; set; }
+
+                public PackageIdentity CachedIdentity { get; set; }
+
+
+                public PackageLoadRequest(string path, PackageIdentity cachedIdentity)
+                {
+                    Path = path;
+                    CachedIdentity = cachedIdentity;
+                }
+            }
+
+            internal class PackageLoadResult
+            {
+                public string Path { get; set; }
+
+                public PackageFileUpdate FileUpdate { get; set; }
+            }
+
+            private readonly Dictionary<string, PackageState> _pkgStateCache = new Dictionary<string, PackageState>();
 
             private string _repPath;
             private string _location;
             private IAsyncChannel<PackageFileUpdate> _updateChannel;
             private bool enabled;
             private FileSystemWatcher _watcher;
+            private Action _whenIdle;
 
 
             public void Init(string repPath, string location, IAsyncChannel<PackageFileUpdate> updateChannel)
@@ -97,6 +131,12 @@ namespace TickTrader.Algo.Package
             {
                 enabled = false;
                 DeinitWatcher();
+            }
+
+            public void WhenIdle(Action callback)
+            {
+                _whenIdle = callback;
+                CheckIdle();
             }
 
 
@@ -151,93 +191,81 @@ namespace TickTrader.Algo.Package
 
                 _logger?.Debug($"Location = {_location}: Upsert package '{path}'");
 
-                var pkgId = PackageId.FromPath(_location, path);
-                _pkgIdentityCache.TryGetValue(pkgId, out var pkgIdentity);
-                byte[] fileBytes = null;
-                try // loading file in memory
+                _pkgStateCache.TryGetValue(path, out var pkgState);
+                if (pkgState == null)
                 {
-                    using (var stream = File.Open(path, FileMode.Open, FileAccess.Read))
+                    pkgState = new PackageState();
+                    _pkgStateCache[path] = pkgState;
+                }
+
+                if (pkgState.IsLoading)
+                {
+                    pkgState.NextAction = UpdateAction.Upsert;
+                }
+                else
+                {
+                    pkgState.IsLoading = true;
+                    pkgState.NextAction = null;
+                    Task.Factory.StartNew(() => LoadPackage(new PackageLoadRequest(path, pkgState.Identity)),
+                        CancellationToken.None, TaskCreationOptions.None, ParallelTaskScheduler.ShortRunning)
+                        .ContinueWith(t => ContextSend(() => OnPackageLoaded(t.IsCompleted ? t.Result : new PackageLoadResult { Path = path })));
+                }
+            }
+
+            private void OnPackageLoaded(PackageLoadResult loadResult)
+            {
+                var path = loadResult.Path;
+                var fileUpdate = loadResult.FileUpdate;
+
+                _logger?.Debug($"Location = {_location}: Loaded package '{path}'");
+
+                if (fileUpdate != null)
+                    _updateChannel.AddAsync(fileUpdate);
+
+                if (!_pkgStateCache.TryGetValue(path, out var pkgState))
+                    _logger?.Error($"Location = {_location}: Missing package state for '{path}'");
+
+                pkgState.IsLoading = false;
+                if (pkgState.NextAction != null)
+                {
+                    switch (pkgState.NextAction.Value)
                     {
-                        var fileInfo = new FileInfo(path);
-                        var pkgSize = fileInfo.Length;
-
-                        if (pkgSize > MaxPkgSize)
-                        {
-                            _logger?.Error($"Location = {_location}: Algo package size({pkgSize}) exceeds limit '{path}'");
-                            return;
-                        }
-
-                        var skipFileScan = pkgIdentity != null
-                            && pkgSize == pkgIdentity.Size
-                            && fileInfo.CreationTimeUtc == pkgIdentity.CreatedUtc.ToDateTime()
-                            && fileInfo.LastWriteTimeUtc == pkgIdentity.LastModifiedUtc.ToDateTime();
-
-                        // FileSystemWatcher produces many events
-                        // Package scans might take a while
-                        // Therefore we can have many events asking to load this file without real need
-                        if (skipFileScan)
-                        {
-                            _logger?.Debug($"Location = {_location}: Algo package scan skipped at '{path}'");
-                            return;
-                        }
-
-                        fileBytes = new byte[pkgSize];
-                        using (var memStream = new MemoryStream(fileBytes))
-                        {
-                            stream.CopyTo(memStream);
-                        }
-
-                        pkgIdentity = PackageIdentity.Create(fileInfo, string.Empty);
+                        case UpdateAction.Upsert:
+                            UpsertPackage(path);
+                            break;
+                        case UpdateAction.Remove:
+                            RemovePackage(path);
+                            break;
                     }
                 }
-                catch (IOException ioEx)
-                {
-                    if (ioEx.IsLockExcpetion())
-                    {
-                        _logger?.Debug($"Location = {_location}: Algo package is locked at '{path}'");
-                    }
-                    else
-                    {
-                        _logger?.Info($"Location = {_location}: Can't open Algo package at '{path}': {ioEx.Message}"); // other errors
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger?.Error(ex, $"Location = {_location}: Failed to load Algo package at '{path}'");
-                }
 
-                if (fileBytes == null)
-                    return; // load skipped or failed
-
-                var pkgInfo = new PackageInfo { PackageId = pkgId, Identity = pkgIdentity, IsValid = false, };
-                try // scan package
-                {
-                    using (var memStream = new MemoryStream(fileBytes))
-                    {
-                        pkgIdentity.Hash = FileHelper.CalculateSha256Hash(memStream);
-                    }
-
-                    pkgInfo = PackageLoadContext.ReflectionOnlyLoad(pkgId, path);
-                    pkgInfo.Identity = pkgIdentity;
-
-                    pkgInfo.IsValid = true;
-                }
-                catch (Exception ex)
-                {
-                    _logger?.Error(ex, $"Location = {_location}: Failed to scan Algo package at '{path}'");
-                }
-
-                _pkgIdentityCache[pkgId] = pkgIdentity;
-                _updateChannel.AddAsync(new PackageFileUpdate(pkgId, UpdateAction.Upsert, pkgInfo, pkgInfo.IsValid ? fileBytes : null));
+                CheckIdle();
             }
 
             private void RemovePackage(string path)
             {
                 _logger?.Debug($"Location = {_location}: Remove package '{path}'");
 
-                var pkgId = PackageId.FromPath(_location, path);
-                _pkgIdentityCache.Remove(pkgId);
-                _updateChannel.AddAsync(new PackageFileUpdate(pkgId, UpdateAction.Remove, null, null));
+                _pkgStateCache.TryGetValue(path, out var pkgState);
+                if (pkgState?.IsLoading ?? false)
+                {
+                    pkgState.NextAction = UpdateAction.Remove;
+                }
+                else
+                {
+                    _pkgStateCache.Remove(path);
+                    var pkgId = PackageId.FromPath(_location, path);
+                    _updateChannel.AddAsync(new PackageFileUpdate(pkgId, UpdateAction.Remove, null, null));
+                }
+            }
+
+            private void CheckIdle()
+            {
+                if (_whenIdle != null && _pkgStateCache.Values.All(p => !p.IsLoading))
+                {
+                    Task.Factory.StartNew(_whenIdle);
+                    _whenIdle = null;
+                }
             }
 
             private void InitWatcher()
@@ -304,6 +332,94 @@ namespace TickTrader.Algo.Package
 
                 if (PackageHelper.IsFileSupported(e.FullPath))
                     SchedulePackageRemove(e.FullPath);
+            }
+
+
+            private PackageLoadResult LoadPackage(PackageLoadRequest request)
+            {
+                var path = request.Path;
+                var pkgId = PackageId.FromPath(_location, path);
+                var pkgIdentity = request.CachedIdentity;
+
+                _logger?.Debug($"Location = {_location}: Loading package '{path}'");
+
+                var res = new PackageLoadResult { Path = path };
+                byte[] fileBytes = null;
+                try // loading file in memory
+                {
+                    using (var stream = File.Open(path, FileMode.Open, FileAccess.Read))
+                    {
+                        var fileInfo = new FileInfo(path);
+                        var pkgSize = fileInfo.Length;
+
+                        if (pkgSize > MaxPkgSize)
+                        {
+                            _logger?.Error($"Location = {_location}: Algo package size({pkgSize}) exceeds limit '{path}'");
+                            return res;
+                        }
+
+                        var skipFileScan = pkgIdentity != null
+                            && pkgSize == pkgIdentity.Size
+                            && fileInfo.CreationTimeUtc == pkgIdentity.CreatedUtc.ToDateTime()
+                            && fileInfo.LastWriteTimeUtc == pkgIdentity.LastModifiedUtc.ToDateTime();
+
+                        // FileSystemWatcher produces many events
+                        // Package scans might take a while
+                        // Therefore we can have many events asking to load this file without real need
+                        if (skipFileScan)
+                        {
+                            _logger?.Debug($"Location = {_location}: Algo package scan skipped at '{path}'");
+                            return res;
+                        }
+
+                        fileBytes = new byte[pkgSize];
+                        using (var memStream = new MemoryStream(fileBytes))
+                        {
+                            stream.CopyTo(memStream);
+                        }
+
+                        pkgIdentity = PackageIdentity.Create(fileInfo, string.Empty);
+                    }
+                }
+                catch (IOException ioEx)
+                {
+                    if (ioEx.IsLockExcpetion())
+                    {
+                        _logger?.Debug($"Location = {_location}: Algo package is locked at '{path}'");
+                    }
+                    else
+                    {
+                        _logger?.Info($"Location = {_location}: Can't open Algo package at '{path}': {ioEx.Message}"); // other errors
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger?.Error(ex, $"Location = {_location}: Failed to load Algo package at '{path}'");
+                }
+
+                if (fileBytes == null)
+                    return res; // load skipped or failed
+
+                var pkgInfo = new PackageInfo { PackageId = pkgId, Identity = pkgIdentity, IsValid = false, };
+                try // scan package
+                {
+                    using (var memStream = new MemoryStream(fileBytes))
+                    {
+                        pkgIdentity.Hash = FileHelper.CalculateSha256Hash(memStream);
+                    }
+
+                    pkgInfo = PackageLoadContext.ReflectionOnlyLoad(pkgId, path);
+                    pkgInfo.Identity = pkgIdentity;
+
+                    pkgInfo.IsValid = true;
+                }
+                catch (Exception ex)
+                {
+                    _logger?.Error(ex, $"Location = {_location}: Failed to scan Algo package at '{path}'");
+                }
+
+                res.FileUpdate = new PackageFileUpdate(pkgId, UpdateAction.Upsert, pkgInfo, pkgInfo.IsValid ? fileBytes : null);
+                return res;
             }
         }
     }
