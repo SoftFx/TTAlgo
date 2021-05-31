@@ -111,7 +111,7 @@ namespace TickTrader.Algo.CoreV1
                     suffix = GetOrderDetails(order, order?.SymbolInfo.LotSize, "to ");
                     break;
                 case OrderAction.Close:
-                    prefix = $"Position {order.Symbol} #{order?.Id} ";
+                    prefix = $"Position {order?.Symbol} #{order?.Id} ";
                     if (order?.RemainingAmount.IsZero() == false)
                         suffix = $", remaining volume={result.ResultingOrder.RemainingVolume}";
                     break;
