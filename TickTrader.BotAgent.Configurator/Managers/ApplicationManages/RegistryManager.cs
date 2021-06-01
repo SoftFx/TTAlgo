@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using TickTrader.Algo.Common.Lib;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.BotAgent.Configurator.Properties;
 
 namespace TickTrader.BotAgent.Configurator

@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Threading;
-using TickTrader.Algo.Server;
 
-namespace TickTrader.Algo.Common.Model
+namespace TickTrader.Algo.Server
 {
     public interface IBotWriter
     {

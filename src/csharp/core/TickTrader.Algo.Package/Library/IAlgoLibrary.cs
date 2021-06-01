@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
-using TickTrader.Algo.Package;
 
-namespace TickTrader.Algo.Common.Model
+namespace TickTrader.Algo.Package
 {
     public interface IAlgoLibrary
     {

@@ -3,7 +3,6 @@ using NLog;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
 {

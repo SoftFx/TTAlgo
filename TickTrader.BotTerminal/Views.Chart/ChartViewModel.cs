@@ -182,7 +182,7 @@ namespace TickTrader.BotTerminal
                 CrosshairEnabled = ChartControl.IsCrosshairEnabled.Value,
                 Indicators = Indicators.Select(i => new IndicatorStorageEntry
                 {
-                    Config = Algo.Common.Model.Config.PluginConfig.FromDomain(i.Model.Config),
+                    Config = Algo.Core.Config.PluginConfig.FromDomain(i.Model.Config),
                 }).ToList(),
             };
         }

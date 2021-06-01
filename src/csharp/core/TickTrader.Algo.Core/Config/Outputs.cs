@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
-using TickTrader.Algo.Api;
 
-namespace TickTrader.Algo.Common.Model.Config
+namespace TickTrader.Algo.Core.Config
 {
     [DataContract(Name = "Output", Namespace = "TTAlgo.Config.v2")]
     public abstract class Output : Property
@@ -114,6 +113,16 @@ namespace TickTrader.Algo.Common.Model.Config
         }
     }
 
+
+    public enum LineStyles
+    {
+        Solid,
+        Dots,
+        DotsRare,
+        DotsVeryRare,
+        LinesDots,
+        Lines
+    }
 
     [DataContract(Name = "ColoredLineOutput", Namespace = "TTAlgo.Config.v2")]
     public class ColoredLineOutput : Output

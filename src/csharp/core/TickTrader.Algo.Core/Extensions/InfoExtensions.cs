@@ -1,6 +1,6 @@
 ﻿using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.Common.Info
+namespace TickTrader.Algo.Core
 {
     public static class InfoExtensions
     {

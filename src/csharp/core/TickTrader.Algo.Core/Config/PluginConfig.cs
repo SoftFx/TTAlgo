@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.Common.Model.Config
+namespace TickTrader.Algo.Core.Config
 {
     [DataContract(Namespace = "TTAlgo.Config.v2")]
     public class PluginConfig
@@ -71,8 +69,8 @@ namespace TickTrader.Algo.Common.Model.Config
             var res = new Domain.PluginConfig
             {
                 Key = Key.Convert(),
-                Timeframe = TimeFrame.ToDomainEnum(),
-                ModelTimeframe = ModelTimeFrame.ToDomainEnum(),
+                Timeframe = TimeFrame.Convert(),
+                ModelTimeframe = ModelTimeFrame.Convert(),
                 MainSymbol = MainSymbol.Convert(),
                 SelectedMapping = SelectedMapping.Convert(),
                 InstanceId = InstanceId,
@@ -88,8 +86,8 @@ namespace TickTrader.Algo.Common.Model.Config
             var res = new PluginConfig
             {
                 Key = config.Key.Convert(),
-                TimeFrame = config.Timeframe.ToApiEnum(),
-                ModelTimeFrame = config.ModelTimeframe.ToApiEnum(),
+                TimeFrame = config.Timeframe.Convert(),
+                ModelTimeFrame = config.ModelTimeframe.Convert(),
                 MainSymbol = config.MainSymbol.Convert(),
                 SelectedMapping = config.SelectedMapping.Convert(),
                 InstanceId = config.InstanceId,
@@ -99,6 +97,23 @@ namespace TickTrader.Algo.Common.Model.Config
 
             return res;
         }
+    }
+
+    public enum TimeFrames
+    {
+        MN,
+        D,
+        W,
+        H4,
+        H1,
+        M30,
+        M15,
+        M5,
+        M1,
+        S10,
+        S1,
+        Ticks,
+        TicksLevel2
     }
 
 
@@ -151,53 +166,90 @@ namespace TickTrader.Algo.Common.Model.Config
             return new PluginPermissions { Isolated = permissions.Isolated, TradeAllowed = permissions.TradeAllowed };
         }
 
-        public static MarkerSizes Convert(this Domain.Metadata.Types.MarkerSize markerSize)
+        public static TimeFrames Convert(this Feed.Types.Timeframe timeframe)
+        {
+            switch (timeframe)
+            {
+                case Feed.Types.Timeframe.S1: return TimeFrames.S1;
+                case Feed.Types.Timeframe.S10: return TimeFrames.S10;
+                case Feed.Types.Timeframe.M1: return TimeFrames.M1;
+                case Feed.Types.Timeframe.M5: return TimeFrames.M5;
+                case Feed.Types.Timeframe.M15: return TimeFrames.M15;
+                case Feed.Types.Timeframe.M30: return TimeFrames.M30;
+                case Feed.Types.Timeframe.H1: return TimeFrames.H1;
+                case Feed.Types.Timeframe.H4: return TimeFrames.H4;
+                case Feed.Types.Timeframe.D: return TimeFrames.D;
+                case Feed.Types.Timeframe.W: return TimeFrames.W;
+                case Feed.Types.Timeframe.MN: return TimeFrames.MN;
+                case Feed.Types.Timeframe.Ticks: return TimeFrames.Ticks;
+                case Feed.Types.Timeframe.TicksLevel2: return TimeFrames.TicksLevel2;
+
+                default: throw new ArgumentException($"Unsupported timeframe {timeframe}");
+            }
+        }
+
+        public static LineStyles Convert(this Metadata.Types.LineStyle lineStyle)
+        {
+            switch (lineStyle)
+            {
+                case Metadata.Types.LineStyle.Solid: return LineStyles.Solid;
+                case Metadata.Types.LineStyle.Dots: return LineStyles.Dots;
+                case Metadata.Types.LineStyle.DotsRare: return LineStyles.DotsRare;
+                case Metadata.Types.LineStyle.DotsVeryRare: return LineStyles.DotsVeryRare;
+                case Metadata.Types.LineStyle.LinesDots: return LineStyles.LinesDots;
+                case Metadata.Types.LineStyle.Lines: return LineStyles.Lines;
+
+                default: throw new ArgumentException($"Unsupported line style {lineStyle}");
+            }
+        }
+
+        public static MarkerSizes Convert(this Metadata.Types.MarkerSize markerSize)
         {
             switch (markerSize)
             {
-                case Domain.Metadata.Types.MarkerSize.Large: return MarkerSizes.Large;
-                case Domain.Metadata.Types.MarkerSize.Medium: return MarkerSizes.Medium;
-                case Domain.Metadata.Types.MarkerSize.Small: return MarkerSizes.Small;
+                case Metadata.Types.MarkerSize.Large: return MarkerSizes.Large;
+                case Metadata.Types.MarkerSize.Medium: return MarkerSizes.Medium;
+                case Metadata.Types.MarkerSize.Small: return MarkerSizes.Small;
 
                 default: throw new ArgumentException($"Unsupported marker size {markerSize}");
             }
         }
 
-        public static Property Convert(this Domain.IPropertyConfig property)
+        public static Property Convert(this IPropertyConfig property)
         {
             switch (property)
             {
-                case Domain.BoolParameterConfig par:
+                case BoolParameterConfig par:
                     return new BoolParameter { Id = par.PropertyId, Value = par.Value };
-                case Domain.Int32ParameterConfig par:
+                case Int32ParameterConfig par:
                     return new IntParameter { Id = par.PropertyId, Value = par.Value };
-                case Domain.NullableInt32ParameterConfig par:
+                case NullableInt32ParameterConfig par:
                     return new NullableIntParameter { Id = par.PropertyId, Value = par.Value };
-                case Domain.DoubleParameterConfig par:
+                case DoubleParameterConfig par:
                     return new DoubleParameter { Id = par.PropertyId, Value = par.Value };
-                case Domain.NullableDoubleParameterConfig par:
+                case NullableDoubleParameterConfig par:
                     return new NullableDoubleParameter { Id = par.PropertyId, Value = par.Value };
-                case Domain.StringParameterConfig par:
+                case StringParameterConfig par:
                     return new StringParameter { Id = par.PropertyId, Value = par.Value };
-                case Domain.EnumParameterConfig par:
+                case EnumParameterConfig par:
                     return new EnumParameter { Id = par.PropertyId, Value = par.Value };
-                case Domain.FileParameterConfig par:
+                case FileParameterConfig par:
                     return new FileParameter { Id = par.PropertyId, FileName = par.FileName };
 
-                case Domain.QuoteInputConfig input:
+                case QuoteInputConfig input:
                     return new QuoteInput { Id = input.PropertyId, UseL2 = input.UseL2, SelectedSymbol = input.SelectedSymbol.Convert(), };
-                case Domain.QuoteToBarInputConfig input:
+                case QuoteToBarInputConfig input:
                     return new QuoteToBarInput { Id = input.PropertyId, SelectedSymbol = input.SelectedSymbol.Convert(), SelectedMapping = input.SelectedMapping.Convert(), };
-                case Domain.QuoteToDoubleInputConfig input:
+                case QuoteToDoubleInputConfig input:
                     return new QuoteToDoubleInput { Id = input.PropertyId, SelectedSymbol = input.SelectedSymbol.Convert(), SelectedMapping = input.SelectedMapping.Convert(), };
-                case Domain.BarToBarInputConfig input:
+                case BarToBarInputConfig input:
                     return new BarToBarInput { Id = input.PropertyId, SelectedSymbol = input.SelectedSymbol.Convert(), SelectedMapping = input.SelectedMapping.Convert(), };
-                case Domain.BarToDoubleInputConfig input:
+                case BarToDoubleInputConfig input:
                     return new BarToDoubleInput { Id = input.PropertyId, SelectedSymbol = input.SelectedSymbol.Convert(), SelectedMapping = input.SelectedMapping.Convert(), };
 
-                case Domain.ColoredLineOutputConfig output:
-                    return new ColoredLineOutput { Id = output.PropertyId, IsEnabled = output.IsEnabled, LineColor = OutputColor.FromArgb(output.LineColorArgb), LineThickness = output.LineThickness, LineStyle = output.LineStyle.ToApiEnum() };
-                case Domain.MarkerSeriesOutputConfig output:
+                case ColoredLineOutputConfig output:
+                    return new ColoredLineOutput { Id = output.PropertyId, IsEnabled = output.IsEnabled, LineColor = OutputColor.FromArgb(output.LineColorArgb), LineThickness = output.LineThickness, LineStyle = output.LineStyle.Convert() };
+                case MarkerSeriesOutputConfig output:
                     return new MarkerSeriesOutput { Id = output.PropertyId, IsEnabled = output.IsEnabled, LineColor = OutputColor.FromArgb(output.LineColorArgb), LineThickness = output.LineThickness, MarkerSize = output.MarkerSize.Convert() };
 
                 default:
@@ -247,54 +299,91 @@ namespace TickTrader.Algo.Common.Model.Config
             return new Domain.PluginPermissions { Isolated = permissions.Isolated, TradeAllowed = permissions.TradeAllowed };
         }
 
-        public static Domain.Metadata.Types.MarkerSize Convert(this MarkerSizes markerSize)
+        public static Feed.Types.Timeframe Convert(this TimeFrames timeframe)
+        {
+            switch (timeframe)
+            {
+                case TimeFrames.MN: return Feed.Types.Timeframe.MN;
+                case TimeFrames.D: return Feed.Types.Timeframe.D;
+                case TimeFrames.W: return Feed.Types.Timeframe.W;
+                case TimeFrames.H4: return Feed.Types.Timeframe.H4;
+                case TimeFrames.H1: return Feed.Types.Timeframe.H1;
+                case TimeFrames.M30: return Feed.Types.Timeframe.M30;
+                case TimeFrames.M15: return Feed.Types.Timeframe.M15;
+                case TimeFrames.M5: return Feed.Types.Timeframe.M5;
+                case TimeFrames.M1: return Feed.Types.Timeframe.M1;
+                case TimeFrames.S10: return Feed.Types.Timeframe.S10;
+                case TimeFrames.S1: return Feed.Types.Timeframe.S1;
+                case TimeFrames.Ticks: return Feed.Types.Timeframe.Ticks;
+                case TimeFrames.TicksLevel2: return Feed.Types.Timeframe.TicksLevel2;
+
+                default: throw new ArgumentException($"Unsupported timeframe {timeframe}");
+            }
+        }
+
+        public static Metadata.Types.LineStyle Convert(this LineStyles lineStyle)
+        {
+            switch (lineStyle)
+            {
+                case LineStyles.Solid: return Metadata.Types.LineStyle.Solid;
+                case LineStyles.Dots: return Metadata.Types.LineStyle.Dots;
+                case LineStyles.DotsRare: return Metadata.Types.LineStyle.DotsRare;
+                case LineStyles.DotsVeryRare: return Metadata.Types.LineStyle.DotsVeryRare;
+                case LineStyles.LinesDots: return Metadata.Types.LineStyle.LinesDots;
+                case LineStyles.Lines: return Metadata.Types.LineStyle.Lines;
+
+                default: throw new ArgumentException($"Unsupported line style {lineStyle}");
+            }
+        }
+
+        public static Metadata.Types.MarkerSize Convert(this MarkerSizes markerSize)
         {
             switch (markerSize)
             {
-                case MarkerSizes.Large: return Domain.Metadata.Types.MarkerSize.Large;
-                case MarkerSizes.Medium: return Domain.Metadata.Types.MarkerSize.Medium;
-                case MarkerSizes.Small: return Domain.Metadata.Types.MarkerSize.Small;
+                case MarkerSizes.Large: return Metadata.Types.MarkerSize.Large;
+                case MarkerSizes.Medium: return Metadata.Types.MarkerSize.Medium;
+                case MarkerSizes.Small: return Metadata.Types.MarkerSize.Small;
 
                 default: throw new ArgumentException($"Unsupported marker size {markerSize}");
             }
         }
 
-        public static Domain.IPropertyConfig Convert(this Property property)
+        public static IPropertyConfig Convert(this Property property)
         {
             switch (property)
             {
                 case BoolParameter par:
-                    return new Domain.BoolParameterConfig { PropertyId = par.Id, Value = par.Value };
+                    return new BoolParameterConfig { PropertyId = par.Id, Value = par.Value };
                 case IntParameter par:
-                    return new Domain.Int32ParameterConfig { PropertyId = par.Id, Value = par.Value };
+                    return new Int32ParameterConfig { PropertyId = par.Id, Value = par.Value };
                 case NullableIntParameter par:
-                    return new Domain.NullableInt32ParameterConfig { PropertyId = par.Id, Value = par.Value };
+                    return new NullableInt32ParameterConfig { PropertyId = par.Id, Value = par.Value };
                 case DoubleParameter par:
-                    return new Domain.DoubleParameterConfig { PropertyId = par.Id, Value = par.Value };
+                    return new DoubleParameterConfig { PropertyId = par.Id, Value = par.Value };
                 case NullableDoubleParameter par:
-                    return new Domain.NullableDoubleParameterConfig { PropertyId = par.Id, Value = par.Value };
+                    return new NullableDoubleParameterConfig { PropertyId = par.Id, Value = par.Value };
                 case StringParameter par:
-                    return new Domain.StringParameterConfig { PropertyId = par.Id, Value = par.Value };
+                    return new StringParameterConfig { PropertyId = par.Id, Value = par.Value };
                 case EnumParameter par:
-                    return new Domain.EnumParameterConfig { PropertyId = par.Id, Value = par.Value };
+                    return new EnumParameterConfig { PropertyId = par.Id, Value = par.Value };
                 case FileParameter par:
-                    return new Domain.FileParameterConfig { PropertyId = par.Id, FileName = par.FileName };
+                    return new FileParameterConfig { PropertyId = par.Id, FileName = par.FileName };
 
                 case QuoteInput input:
-                    return new Domain.QuoteInputConfig { PropertyId = input.Id, UseL2 = input.UseL2, SelectedSymbol = input.SelectedSymbol.Convert(), };
+                    return new QuoteInputConfig { PropertyId = input.Id, UseL2 = input.UseL2, SelectedSymbol = input.SelectedSymbol.Convert(), };
                 case QuoteToBarInput input:
-                    return new Domain.QuoteToBarInputConfig { PropertyId = input.Id, SelectedSymbol = input.SelectedSymbol.Convert(), SelectedMapping = input.SelectedMapping.Convert(), };
+                    return new QuoteToBarInputConfig { PropertyId = input.Id, SelectedSymbol = input.SelectedSymbol.Convert(), SelectedMapping = input.SelectedMapping.Convert(), };
                 case QuoteToDoubleInput input:
-                    return new Domain.QuoteToDoubleInputConfig { PropertyId = input.Id, SelectedSymbol = input.SelectedSymbol.Convert(), SelectedMapping = input.SelectedMapping.Convert(), };
+                    return new QuoteToDoubleInputConfig { PropertyId = input.Id, SelectedSymbol = input.SelectedSymbol.Convert(), SelectedMapping = input.SelectedMapping.Convert(), };
                 case BarToBarInput input:
-                    return new Domain.BarToBarInputConfig { PropertyId = input.Id, SelectedSymbol = input.SelectedSymbol.Convert(), SelectedMapping = input.SelectedMapping.Convert(), };
+                    return new BarToBarInputConfig { PropertyId = input.Id, SelectedSymbol = input.SelectedSymbol.Convert(), SelectedMapping = input.SelectedMapping.Convert(), };
                 case BarToDoubleInput input:
-                    return new Domain.BarToDoubleInputConfig { PropertyId = input.Id, SelectedSymbol = input.SelectedSymbol.Convert(), SelectedMapping = input.SelectedMapping.Convert(), };
+                    return new BarToDoubleInputConfig { PropertyId = input.Id, SelectedSymbol = input.SelectedSymbol.Convert(), SelectedMapping = input.SelectedMapping.Convert(), };
 
                 case ColoredLineOutput output:
-                    return new Domain.ColoredLineOutputConfig { PropertyId = output.Id, IsEnabled = output.IsEnabled, LineColorArgb = output.LineColor.ToArgb(), LineThickness = output.LineThickness, LineStyle = output.LineStyle.ToDomainEnum() };
+                    return new ColoredLineOutputConfig { PropertyId = output.Id, IsEnabled = output.IsEnabled, LineColorArgb = output.LineColor.ToArgb(), LineThickness = output.LineThickness, LineStyle = output.LineStyle.Convert() };
                 case MarkerSeriesOutput output:
-                    return new Domain.MarkerSeriesOutputConfig { PropertyId = output.Id, IsEnabled = output.IsEnabled, LineColorArgb = output.LineColor.ToArgb(), LineThickness = output.LineThickness, MarkerSize = output.MarkerSize.Convert() };
+                    return new MarkerSeriesOutputConfig { PropertyId = output.Id, IsEnabled = output.IsEnabled, LineColorArgb = output.LineColor.ToArgb(), LineThickness = output.LineThickness, MarkerSize = output.MarkerSize.Convert() };
 
                 default:
                     return null;

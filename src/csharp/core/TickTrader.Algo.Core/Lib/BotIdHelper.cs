@@ -2,7 +2,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace TickTrader.Algo.Common.Lib
+namespace TickTrader.Algo.Core
 {
     public class BotIdHelper
     {

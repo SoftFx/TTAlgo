@@ -6,10 +6,8 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
-using TickTrader.Algo.Package;
-using TickTrader.Algo.Server;
 
-namespace TickTrader.Algo.Common.Model
+namespace TickTrader.Algo.Package
 {
     public class LocalAlgoLibrary : IAlgoLibrary
     {
@@ -18,7 +16,7 @@ namespace TickTrader.Algo.Common.Model
         private Dictionary<string, PackageInfo> _packages = new Dictionary<string, PackageInfo>();
         private Dictionary<PluginKey, PluginInfo> _plugins = new Dictionary<PluginKey, PluginInfo>();
         private object _updateLock = new object();
-        private AlgoServer _server;
+        private PackageStorage _pkgStorage;
 
 
         public event Action<UpdateInfo<PackageInfo>> PackageUpdated;
@@ -30,11 +28,11 @@ namespace TickTrader.Algo.Common.Model
         public event Action<PackageInfo> PackageStateChanged;
 
 
-        public LocalAlgoLibrary(AlgoServer server)
+        public LocalAlgoLibrary(PackageStorage pkgStorage)
         {
-            _server = server;
+            _pkgStorage = pkgStorage;
 
-            _server.PackageStorage.PackageUpdated += OnPackageUpdated;
+            _pkgStorage.PackageUpdated += OnPackageUpdated;
             _packages = new Dictionary<string, PackageInfo>();
             _plugins = new Dictionary<PluginKey, PluginInfo>();
         }
@@ -67,22 +65,22 @@ namespace TickTrader.Algo.Common.Model
 
         public AlgoPackageRef GetPackageRef(string packageId)
         {
-            return _server.PackageStorage.GetPackageRef(packageId).Result;
+            return _pkgStorage.GetPackageRef(packageId).Result;
         }
 
         public void RegisterRepositoryLocation(string locationId, string repoPath, bool isolation)
         {
-            _server.PackageStorage.RegisterRepositoryLocation(locationId, repoPath);
+            _pkgStorage.RegisterRepositoryLocation(locationId, repoPath);
         }
 
         public void AddAssemblyAsPackage(Assembly assembly)
         {
-            _server.PackageStorage.RegisterAssemblyAsPackage(assembly);
+            _pkgStorage.RegisterAssemblyAsPackage(assembly);
         }
 
         public Task WaitInit()
         {
-            return _server.PackageStorage.WaitLoaded();
+            return _pkgStorage.WaitLoaded();
         }
 
 

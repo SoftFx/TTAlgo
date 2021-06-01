@@ -1,7 +1,4 @@
 ﻿using Machinarium.Var;
-using System;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 using TickTrader.BotTerminal.Converters;
 

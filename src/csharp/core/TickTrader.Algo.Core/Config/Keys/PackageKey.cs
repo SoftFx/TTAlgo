@@ -1,8 +1,7 @@
 ﻿using System;
 
-namespace TickTrader.Algo.Common.Model.Config
+namespace TickTrader.Algo.Core.Config
 {
-    [Serializable]
     public class PackageKey : IComparable<PackageKey>
     {
         public string Name { get; set; }

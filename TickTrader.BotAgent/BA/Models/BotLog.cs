@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using NLog;
 using NLog.Targets;
@@ -9,7 +8,6 @@ using NLog.Config;
 using System.IO;
 using TickTrader.BotAgent.Extensions;
 using System.Linq;
-using TickTrader.Algo.Common.Model;
 using ActorSharp;
 using System.Threading.Tasks;
 using System.Text;
@@ -17,6 +15,7 @@ using Google.Protobuf.WellKnownTypes;
 using TickTrader.Algo.Domain;
 using NLog.Targets.Wrappers;
 using System.Threading.Channels;
+using TickTrader.Algo.Server;
 
 namespace TickTrader.BotAgent.BA.Models
 {

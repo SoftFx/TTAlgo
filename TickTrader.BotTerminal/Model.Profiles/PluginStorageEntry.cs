@@ -1,5 +1,5 @@
 ﻿using System.Runtime.Serialization;
-using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Core.Config;
 
 namespace TickTrader.BotTerminal
 {

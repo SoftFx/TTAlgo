@@ -10,12 +10,12 @@ using System.Threading.Tasks;
 using TickTrader.BotAgent.Infrastructure;
 using TickTrader.BotAgent.Extensions;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Common.Lib;
 using ActorSharp;
 using NLog;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Server;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.BotAgent.BA.Models
 {

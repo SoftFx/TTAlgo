@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using TickTrader.BotAgent.BA.Exceptions;
 using Machinarium.Qnil;
 using ActorSharp.Lib;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;

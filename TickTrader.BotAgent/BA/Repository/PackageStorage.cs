@@ -2,8 +2,6 @@
 using System;
 using System.IO;
 using System.Reflection;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Package;
@@ -39,7 +37,7 @@ namespace TickTrader.BotAgent.BA.Repository
 
             EnsureStorageDirectoryCreated();
 
-            Library = new LocalAlgoLibrary(algoServer);
+            Library = new LocalAlgoLibrary(algoServer.PackageStorage);
             Library.RegisterRepositoryLocation(SharedConstants.LocalRepositoryId, _storageDir, true);
             Library.PackageUpdated += LibraryOnPackageUpdated;
             Library.PackageStateChanged += LibraryOnPackageStateChanged;

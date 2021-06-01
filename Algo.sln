@@ -41,8 +41,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.BotAgent", "Tick
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.VersionTest", "TickTrader.Algo.VersionTest\TickTrader.Algo.VersionTest.csproj", "{D1A91113-21C6-4AAE-A2F1-34A7014D468F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.Common", "TickTrader.Algo.Common\TickTrader.Algo.Common.csproj", "{BFFE802C-BCB0-4376-9551-977FE8C277D2}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E68C560F-94C2-4A84-A921-97F40B666DB4}"
 	ProjectSection(SolutionItems) = preProject
 		nuget.config = nuget.config
@@ -146,15 +144,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.SeriesStorage.Te
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.Async", "src\csharp\lib\TickTrader.Algo.Async\TickTrader.Algo.Async.csproj", "{A114EEDC-9A3A-46AE-9233-F66DFCBEF7AD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.Account", "src\csharp\core\TickTrader.Algo.Account\TickTrader.Algo.Account.csproj", "{C2340D2B-4FB2-4380-8CE5-347E2DA4C5AD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.Account", "src\csharp\core\TickTrader.Algo.Account\TickTrader.Algo.Account.csproj", "{C2340D2B-4FB2-4380-8CE5-347E2DA4C5AD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Accounts", "Accounts", "{DA48CCA8-4D53-408C-9915-13D1ED691B8E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FDK2", "FDK2", "{73F5FF85-3ECF-4853-97FE-44799A70C0D6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.Account.Fdk2", "src\csharp\accounts\TickTrader.Algo.Account.Fdk2\TickTrader.Algo.Account.Fdk2.csproj", "{D1EAE917-9851-42E9-A979-A72D69D111B2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.Account.Fdk2", "src\csharp\accounts\TickTrader.Algo.Account.Fdk2\TickTrader.Algo.Account.Fdk2.csproj", "{D1EAE917-9851-42E9-A979-A72D69D111B2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.WpfWindowsSupportLibrary", "TickTrader.WpfWindowsSupportLibrary\TickTrader.WpfWindowsSupportLibrary.csproj", "{F177BCE2-2C70-4FB0-95FF-CE5B343EBBEC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.WpfWindowsSupportLibrary", "TickTrader.WpfWindowsSupportLibrary\TickTrader.WpfWindowsSupportLibrary.csproj", "{F177BCE2-2C70-4FB0-95FF-CE5B343EBBEC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -283,18 +281,6 @@ Global
 		{D1A91113-21C6-4AAE-A2F1-34A7014D468F}.Release|x64.Build.0 = Release|Any CPU
 		{D1A91113-21C6-4AAE-A2F1-34A7014D468F}.Release|x86.ActiveCfg = Release|Any CPU
 		{D1A91113-21C6-4AAE-A2F1-34A7014D468F}.Release|x86.Build.0 = Release|Any CPU
-		{BFFE802C-BCB0-4376-9551-977FE8C277D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BFFE802C-BCB0-4376-9551-977FE8C277D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BFFE802C-BCB0-4376-9551-977FE8C277D2}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{BFFE802C-BCB0-4376-9551-977FE8C277D2}.Debug|x64.Build.0 = Debug|Any CPU
-		{BFFE802C-BCB0-4376-9551-977FE8C277D2}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{BFFE802C-BCB0-4376-9551-977FE8C277D2}.Debug|x86.Build.0 = Debug|Any CPU
-		{BFFE802C-BCB0-4376-9551-977FE8C277D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BFFE802C-BCB0-4376-9551-977FE8C277D2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BFFE802C-BCB0-4376-9551-977FE8C277D2}.Release|x64.ActiveCfg = Release|Any CPU
-		{BFFE802C-BCB0-4376-9551-977FE8C277D2}.Release|x64.Build.0 = Release|Any CPU
-		{BFFE802C-BCB0-4376-9551-977FE8C277D2}.Release|x86.ActiveCfg = Release|Any CPU
-		{BFFE802C-BCB0-4376-9551-977FE8C277D2}.Release|x86.Build.0 = Release|Any CPU
 		{D52DA7C0-3DD2-4E26-BBCE-F9A2DC09AA9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D52DA7C0-3DD2-4E26-BBCE-F9A2DC09AA9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D52DA7C0-3DD2-4E26-BBCE-F9A2DC09AA9D}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -862,7 +848,6 @@ Global
 		{3AE398F5-5506-4375-B29B-DCC43AC58F24} = {51B8AFF5-4AEA-45F9-8126-6D51C2CCAB7B}
 		{3B1B99F1-33CB-40E0-B54C-9CEC9AE86B2C} = {EAFDF5CB-7010-4EA0-8D57-4D5035362975}
 		{D1A91113-21C6-4AAE-A2F1-34A7014D468F} = {51B8AFF5-4AEA-45F9-8126-6D51C2CCAB7B}
-		{BFFE802C-BCB0-4376-9551-977FE8C277D2} = {51B8AFF5-4AEA-45F9-8126-6D51C2CCAB7B}
 		{F174B9A6-C8BD-4525-BC5D-AC1E6ABFBE8F} = {73F5FF85-3ECF-4853-97FE-44799A70C0D6}
 		{D52DA7C0-3DD2-4E26-BBCE-F9A2DC09AA9D} = {73F5FF85-3ECF-4853-97FE-44799A70C0D6}
 		{23D9DE1A-92C0-42FC-875B-5881CE8433D4} = {73F5FF85-3ECF-4853-97FE-44799A70C0D6}

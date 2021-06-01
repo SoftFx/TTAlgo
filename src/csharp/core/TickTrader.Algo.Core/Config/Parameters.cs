@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace TickTrader.Algo.Common.Model.Config
+namespace TickTrader.Algo.Core.Config
 {
     [DataContract(Name = "property", Namespace = "TTAlgo.Config.v2")]
     [KnownType(typeof(BoolParameter))]

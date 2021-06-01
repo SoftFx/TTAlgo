@@ -1,10 +1,8 @@
-﻿using System;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 using System.Text;
 
-namespace TickTrader.Algo.Common.Model.Config
+namespace TickTrader.Algo.Core.Config
 {
-    [Serializable]
     [DataContract(Name = "PluginPermissions", Namespace = "TTAlgo.Config.v2")]
     public class PluginPermissions
     {

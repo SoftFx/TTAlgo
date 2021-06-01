@@ -6,7 +6,6 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Windows.Data;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.ServerControl;
 

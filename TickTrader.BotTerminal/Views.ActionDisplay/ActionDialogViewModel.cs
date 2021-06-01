@@ -2,8 +2,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotTerminal

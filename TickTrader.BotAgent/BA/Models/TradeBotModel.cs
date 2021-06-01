@@ -3,7 +3,6 @@ using NLog;
 using System;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Package;
@@ -19,7 +18,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         private PluginConfig _config;
         [DataMember(Name = "configuration")]
-        private Algo.Common.Model.Config.PluginConfig _configEntry;
+        private Algo.Core.Config.PluginConfig _configEntry;
 
         private AlgoServer _server;
         private ClientModel _client;
@@ -45,7 +44,7 @@ namespace TickTrader.BotAgent.BA.Models
             private set
             {
                 _config = value;
-                _configEntry = Algo.Common.Model.Config.PluginConfig.FromDomain(value);
+                _configEntry = Algo.Core.Config.PluginConfig.FromDomain(value);
             }
         }
         [DataMember(Name = "running")]

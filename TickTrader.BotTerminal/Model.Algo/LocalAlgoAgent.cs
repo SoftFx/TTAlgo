@@ -10,8 +10,6 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Account;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Setup;
@@ -106,7 +104,7 @@ namespace TickTrader.BotTerminal
 
             _reductions = new ReductionCollection();
             IdProvider = new PluginIdProvider();
-            Library = new LocalAlgoLibrary(AlgoServer);
+            Library = new LocalAlgoLibrary(AlgoServer.PackageStorage);
             _botsWarden = new BotsWarden(this);
             _syncContext = new DispatcherSync();
             _packages = new VarDictionary<string, PackageInfo>();
@@ -452,7 +450,7 @@ namespace TickTrader.BotTerminal
                 profileStorage.Bots = _bots.Snapshot.Values.Select(b => new TradeBotStorageEntry
                 {
                     Started = PluginStateHelper.IsRunning(b.State),
-                    Config = Algo.Common.Model.Config.PluginConfig.FromDomain(b.Config),
+                    Config = Algo.Core.Config.PluginConfig.FromDomain(b.Config),
                 }).ToList();
             }
             catch (Exception ex)
