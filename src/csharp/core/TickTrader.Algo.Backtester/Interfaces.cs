@@ -4,22 +4,6 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Backtester
 {
-    public interface IFeedStorage
-    {
-        void Start();
-        void Stop();
-    }
-
-    public interface ITickStorage : IFeedStorage
-    {
-        IEnumerable<QuoteInfo> GetQuoteStream();
-    }
-
-    public interface IBarStorage : IFeedStorage
-    {
-        IEnumerable<BarData> GrtBarStream();
-    }
-
     public class CommonTestSettings
     {
         public string MainSymbol { get; set; }

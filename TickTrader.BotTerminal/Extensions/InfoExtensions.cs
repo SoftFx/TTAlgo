@@ -1,5 +1,5 @@
 ﻿using System;
-using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Account;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal

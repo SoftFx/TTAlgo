@@ -2,14 +2,14 @@
 using System;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.ServerControl;
 using System.Collections.Generic;
 using SciChart.Charting.Visuals.Axes;
-using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Server;
+using TickTrader.Algo.Core.Setup;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotTerminal
 {

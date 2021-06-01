@@ -1,5 +1,4 @@
-﻿using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Setup;
+﻿using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Package;
 

@@ -5,11 +5,10 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core.Lib;
 using System.Configuration;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Account;
 
 namespace TickTrader.BotTerminal
 {

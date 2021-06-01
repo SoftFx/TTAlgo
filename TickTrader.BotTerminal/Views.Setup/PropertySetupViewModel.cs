@@ -1,6 +1,6 @@
 ﻿using Caliburn.Micro;
 using System;
-using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal

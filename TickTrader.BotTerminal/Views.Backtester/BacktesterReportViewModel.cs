@@ -7,8 +7,6 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Backtester;
-using TickTrader.Algo.Common.Lib;
-using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 

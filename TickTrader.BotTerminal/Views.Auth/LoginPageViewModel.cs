@@ -5,13 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using System.Security;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Common.Model.Interop;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal

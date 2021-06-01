@@ -1,6 +1,5 @@
 ﻿using Machinarium.Var;
 using System;
-using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal

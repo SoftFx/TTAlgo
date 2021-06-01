@@ -8,20 +8,18 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Data;
-using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.BotTerminal.Lib;
 using TickTrader.Algo.Core;
 using SciChart.Charting.Model.ChartSeries;
-using TickTrader.Algo.Common.Model;
 using System.Collections.Specialized;
-using TickTrader.Algo.Common.Model.Interop;
 using Machinarium.Var;
 using SM = Machinarium.State;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Server;
 using TickTrader.Algo.Package;
-using TickTrader.Algo.Common.Lib;
+using TickTrader.Algo.Core.Setup;
+using TickTrader.Algo.Account;
 
 namespace TickTrader.BotTerminal
 {

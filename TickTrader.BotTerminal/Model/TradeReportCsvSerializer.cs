@@ -1,13 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal

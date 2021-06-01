@@ -11,7 +11,9 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Account;
+using TickTrader.Algo.Account.Fdk2;
+using TickTrader.Algo.Account.FeedStorage;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Isolation.NetFx;
@@ -299,7 +301,7 @@ namespace TickTrader.BotTerminal
                     Type = AppType.BotTerminal,
                 };
 
-                var clientHandler = new ClientModel.ControlHandler(connectionOptions, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy, 0);
+                var clientHandler = new ClientModel.ControlHandler((options, loggerId) => new SfxInterop(options, loggerId),connectionOptions, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy, 0);
                 var dataHandler = clientHandler.CreateDataHandler();
                 await dataHandler.Init();
 

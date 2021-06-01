@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:c="clr-namespace:TickTrader.Algo.Common.Model;assembly=TickTrader.Algo.Common"
+             xmlns:acc="clr-namespace:TickTrader.Algo.Account;assembly=TickTrader.Algo.Account"
              xmlns:l="clr-namespace:TickTrader.BotTerminal"
              xmlns:cal="http://www.caliburnproject.org"
              mc:Ignorable="d" 
@@ -22,26 +22,26 @@
                 <TextBlock x:Name="txtLogin" Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.DisplayedAccount.Login}" Margin="6,0,3,0" VerticalAlignment="Center" />
             </StackPanel>
             <DataTemplate.Triggers>
-                <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="{x:Static c:ConnectionModel+States.Connecting}">
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="{x:Static acc:ConnectionModel+States.Connecting}">
                     <Setter TargetName="statusCircle" Property="Fill" Value="Yellow"/>
                     <Setter TargetName="serverShortName" Property="Visibility" Value="Collapsed"/>
                     <Setter TargetName="txtReconnect" Property="Visibility" Value="Visible"/>
                     <Setter TargetName="txtDisconnect" Property="Visibility" Value="Collapsed"/>
                     <Setter TargetName="txtLogin" Property="Visibility" Value="Collapsed"/>
                 </DataTrigger>
-                <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="{x:Static c:ConnectionModel+States.Online}">
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="{x:Static acc:ConnectionModel+States.Online}">
                     <Setter TargetName="statusCircle" Property="Fill" Value="Green"/>
                     <Setter TargetName="txtReconnect" Property="Visibility" Value="Collapsed"/>
                     <Setter TargetName="txtDisconnect" Property="Visibility" Value="Collapsed"/>
                 </DataTrigger>
-                <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="{x:Static c:ConnectionModel+States.Disconnecting}">
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="{x:Static acc:ConnectionModel+States.Disconnecting}">
                     <Setter TargetName="statusCircle" Property="Fill" Value="Orange"/>
                     <Setter TargetName="serverShortName" Property="Visibility" Value="Collapsed"/>
                     <Setter TargetName="txtReconnect" Property="Visibility" Value="Collapsed"/>
                     <Setter TargetName="txtDisconnect" Property="Visibility" Value="Visible"/>
                     <Setter TargetName="txtLogin" Property="Visibility" Value="Collapsed"/>
                 </DataTrigger>
-                <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="{x:Static c:ConnectionModel+States.Offline}">
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="{x:Static acc:ConnectionModel+States.Offline}">
                     <Setter TargetName="statusCircle" Property="Fill" Value="Red"/>
                     <Setter TargetName="txtReconnect" Property="Visibility" Value="Collapsed"/>
                     <Setter TargetName="txtDisconnect" Property="Visibility" Value="Collapsed"/>

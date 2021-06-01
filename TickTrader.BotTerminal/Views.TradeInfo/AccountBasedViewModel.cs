@@ -1,11 +1,5 @@
 ﻿using Caliburn.Micro;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Account;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal

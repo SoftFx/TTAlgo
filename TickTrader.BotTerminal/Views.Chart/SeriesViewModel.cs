@@ -1,19 +1,7 @@
 ﻿using SciChart.Charting.Model.ChartSeries;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SciChart.Charting.Model.DataSeries;
-using SciChart.Charting.Visuals.PaletteProviders;
-using SciChart.Data.Numerics;
-using System.ComponentModel;
 using System.Windows.Media;
-using TickTrader.Algo.Core;
-using Caliburn.Micro;
-using TickTrader.Algo.Common.Model.Setup;
 using SciChart.Charting.Visuals.RenderableSeries;
-using TickTrader.Algo.Api;
 using SciChart.Charting.Visuals.PointMarkers;
 using TickTrader.Algo.Domain;
 

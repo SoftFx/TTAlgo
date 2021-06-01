@@ -10,10 +10,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Backtester;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Package;
 

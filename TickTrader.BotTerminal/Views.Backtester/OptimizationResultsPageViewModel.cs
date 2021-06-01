@@ -6,8 +6,8 @@ using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Backtester;
-using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal

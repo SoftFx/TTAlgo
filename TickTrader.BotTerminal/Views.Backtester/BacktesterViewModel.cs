@@ -9,8 +9,6 @@ using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Lib;
-using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using System.Globalization;

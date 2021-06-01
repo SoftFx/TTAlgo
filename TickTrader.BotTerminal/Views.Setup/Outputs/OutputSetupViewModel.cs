@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Windows.Media;
-using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Domain;
 

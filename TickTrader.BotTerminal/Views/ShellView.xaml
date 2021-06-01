@@ -5,7 +5,7 @@
     xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:dk="http://schemas.xceed.com/wpf/xaml/avalondock"
     xmlns:dkctrl="clr-namespace:Xceed.Wpf.AvalonDock.Controls;assembly=Xceed.Wpf.AvalonDock"
-    xmlns:c="clr-namespace:TickTrader.Algo.Common.Model;assembly=TickTrader.Algo.Common"
+    xmlns:acc="clr-namespace:TickTrader.Algo.Account;assembly=TickTrader.Algo.Account"
     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
     <Menu x:Key="ShellMenu" x:Shared="False">
@@ -75,23 +75,23 @@
             <TextBlock Text="{Binding CurrentServerName}" />
         </StackPanel>
         <ControlTemplate.Triggers>
-            <DataTrigger Binding="{Binding ConnectionState}" Value="{x:Static c:ConnectionModel+States.Connecting}">
+            <DataTrigger Binding="{Binding ConnectionState}" Value="{x:Static acc:ConnectionModel+States.Connecting}">
                 <Setter TargetName="statusCircle" Property="Fill" Value="Gold"/>
                 <Setter TargetName="statePanel" Property="ToolTip" Value="Connecting..."/>
             </DataTrigger>
-            <DataTrigger Binding="{Binding ConnectionState}" Value="{x:Static c:ConnectionModel+States.Online}">
+            <DataTrigger Binding="{Binding ConnectionState}" Value="{x:Static acc:ConnectionModel+States.Online}">
                 <Setter TargetName="statusCircle" Property="Fill" Value="Green"/>
                 <Setter TargetName="statePanel" Property="ToolTip" Value="Online"/>
             </DataTrigger>
-            <DataTrigger Binding="{Binding ConnectionState}" Value="{x:Static c:ConnectionModel+States.Disconnecting}">
+            <DataTrigger Binding="{Binding ConnectionState}" Value="{x:Static acc:ConnectionModel+States.Disconnecting}">
                 <Setter TargetName="statusCircle" Property="Fill" Value="Orange"/>
                 <Setter TargetName="statePanel" Property="ToolTip" Value="Disconnecting..."/>
             </DataTrigger>
-            <DataTrigger Binding="{Binding ConnectionState}" Value="{x:Static c:ConnectionModel+States.Offline}">
+            <DataTrigger Binding="{Binding ConnectionState}" Value="{x:Static acc:ConnectionModel+States.Offline}">
                 <Setter TargetName="statusCircle" Property="Fill" Value="LightGray"/>
                 <Setter TargetName="statePanel" Property="ToolTip" Value="Offline"/>
             </DataTrigger>
-            <DataTrigger Binding="{Binding ConnectionState}" Value="{x:Static c:ConnectionModel+States.OfflineRetry}">
+            <DataTrigger Binding="{Binding ConnectionState}" Value="{x:Static acc:ConnectionModel+States.OfflineRetry}">
                 <Setter TargetName="statusCircle" Property="Fill" Value="Red"/>
                 <Setter TargetName="statePanel" Property="ToolTip" Value="Lost connection! Wating for reconnect..."/>
             </DataTrigger>

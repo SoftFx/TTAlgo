@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;

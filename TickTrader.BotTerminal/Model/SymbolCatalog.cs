@@ -2,11 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Account.FeedStorage;
+using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal

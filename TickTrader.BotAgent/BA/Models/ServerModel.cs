@@ -9,6 +9,7 @@ using TickTrader.BotAgent.BA.Exceptions;
 using System.Threading.Tasks;
 using TickTrader.BotAgent.Infrastructure;
 using TickTrader.BotAgent.Extensions;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Common.Lib;
 using ActorSharp;
 using NLog;

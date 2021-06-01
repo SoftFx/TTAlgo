@@ -1,4 +1,4 @@
-﻿using TickTrader.Algo.Common.Model;
+﻿using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.ServerControl;
 
 namespace TickTrader.BotTerminal

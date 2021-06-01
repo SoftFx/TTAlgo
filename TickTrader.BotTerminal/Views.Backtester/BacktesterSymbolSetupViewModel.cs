@@ -8,8 +8,9 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using TickTrader.Algo.Account.FeedStorage;
 using TickTrader.Algo.Backtester;
-using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 

@@ -23,7 +23,9 @@
   </ItemGroup>
   
   <ItemGroup>
+    <ProjectReference Include="..\src\csharp\accounts\TickTrader.Algo.Account.Fdk2\TickTrader.Algo.Account.Fdk2.csproj" />
     <ProjectReference Include="..\src\csharp\api\TickTrader.Algo.CoreV1\TickTrader.Algo.CoreV1.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Account\TickTrader.Algo.Account.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Backtester\TickTrader.Algo.Backtester.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Isolation.NetFx\TickTrader.Algo.Isolation.NetFx.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.ServerControl\TickTrader.Algo.ServerControl.csproj" />

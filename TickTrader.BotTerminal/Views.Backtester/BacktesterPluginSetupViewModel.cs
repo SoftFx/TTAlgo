@@ -5,7 +5,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal

@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Account;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.BotAgent.BA.Models;

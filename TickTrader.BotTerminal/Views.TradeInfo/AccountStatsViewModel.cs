@@ -1,13 +1,6 @@
 ﻿using Caliburn.Micro;
 using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.Account;
 using TickTrader.Algo.Core.Calc;
 using TickTrader.Algo.Domain;
 

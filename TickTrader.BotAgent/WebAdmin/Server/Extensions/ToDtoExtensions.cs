@@ -4,7 +4,7 @@ using TickTrader.BotAgent.WebAdmin.Server.Dto;
 using TickTrader.BotAgent.BA.Models;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
 using System.Reflection;
-using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 using System.Threading.Tasks;
 

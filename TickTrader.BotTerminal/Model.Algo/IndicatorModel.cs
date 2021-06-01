@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
 using System.Threading;
-using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Server;
+using TickTrader.Algo.Core.Setup;
 
 namespace TickTrader.BotTerminal
 {

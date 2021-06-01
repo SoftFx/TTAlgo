@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Backtester
         //private IBarStorage _askStorage;
 
         public BarSeriesReader(string symbol, Feed.Types.Timeframe baseTimeFrame, IBarStorage bidSrc, IBarStorage askSrc)
-            : this(symbol, baseTimeFrame, bidSrc?.GrtBarStream(), askSrc?.GrtBarStream())
+            : this(symbol, baseTimeFrame, bidSrc?.GetBarStream(), askSrc?.GetBarStream())
         {
             //_bidStorage = bidSrc;
             //_askStorage = askSrc;

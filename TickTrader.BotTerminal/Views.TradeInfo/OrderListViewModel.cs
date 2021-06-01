@@ -1,15 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Data;
+﻿using System.Linq;
 using Machinarium.Qnil;
-using Caliburn.Micro;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Api;
+using TickTrader.Algo.Account;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal

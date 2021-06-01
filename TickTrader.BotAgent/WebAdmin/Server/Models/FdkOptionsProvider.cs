@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
-using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Account;
 using TickTrader.BotAgent.BA;
 using TickTrader.BotAgent.BA.Models;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;

@@ -9,7 +9,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;

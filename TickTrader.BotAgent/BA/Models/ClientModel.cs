@@ -4,8 +4,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Model;
-using TickTrader.BotAgent.BA.Repository;
 using TickTrader.BotAgent.BA.Exceptions;
 using Machinarium.Qnil;
 using ActorSharp.Lib;
@@ -16,6 +14,8 @@ using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Server;
 using TickTrader.Algo.Package;
+using TickTrader.Algo.Account;
+using TickTrader.Algo.Account.Fdk2;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -36,7 +36,7 @@ namespace TickTrader.BotAgent.BA.Models
         private CancellationTokenSource _connectCancellation;
         private AsyncGate _requestGate;
         private ConnectionErrorInfo _lastError = ConnectionErrorInfo.Ok;
-        private Algo.Common.Model.ClientModel.ControlHandler2 _core;
+        private Algo.Account.ClientModel.ControlHandler2 _core;
         private TaskCompletionSource<object> _shutdownCompletedSrc;
         private DateTime _pendingDisconnect;
         private DateTime _pendingReconnect;
@@ -119,7 +119,7 @@ namespace TickTrader.BotAgent.BA.Models
 
                 //var options = new ConnectionOptions() { EnableLogs = false, LogsFolder = ServerModel.Environment.LogFolder, Type = AppType.BotAgent };
 
-                _core = new Algo.Common.Model.ClientModel.ControlHandler2(fdkOptionsProvider.GetConnectionOptions(),
+                _core = new Algo.Account.ClientModel.ControlHandler2((options, loggerId) => new SfxInterop(options, loggerId), fdkOptionsProvider.GetConnectionOptions(),
                     ServerModel.Environment.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerClientHierarchy, _loggerId);
 
                 await _core.OpenHandler();

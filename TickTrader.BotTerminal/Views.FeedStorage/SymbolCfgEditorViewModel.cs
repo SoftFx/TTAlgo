@@ -3,8 +3,7 @@ using Machinarium.Qnil;
 using Machinarium.Var;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Account.FeedStorage;
 using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotTerminal
