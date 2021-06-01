@@ -146,7 +146,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.SeriesStorage.Te
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.Async", "src\csharp\lib\TickTrader.Algo.Async\TickTrader.Algo.Async.csproj", "{A114EEDC-9A3A-46AE-9233-F66DFCBEF7AD}"
 EndProject
-<<<<<<< HEAD
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.Account", "src\csharp\core\TickTrader.Algo.Account\TickTrader.Algo.Account.csproj", "{C2340D2B-4FB2-4380-8CE5-347E2DA4C5AD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Accounts", "Accounts", "{DA48CCA8-4D53-408C-9915-13D1ED691B8E}"
@@ -154,9 +153,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FDK2", "FDK2", "{73F5FF85-3ECF-4853-97FE-44799A70C0D6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.Account.Fdk2", "src\csharp\accounts\TickTrader.Algo.Account.Fdk2\TickTrader.Algo.Account.Fdk2.csproj", "{D1EAE917-9851-42E9-A979-A72D69D111B2}"
-=======
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.WpfWindowsSupportLibrary", "TickTrader.WpfWindowsSupportLibrary\TickTrader.WpfWindowsSupportLibrary.csproj", "{F177BCE2-2C70-4FB0-95FF-CE5B343EBBEC}"
->>>>>>> Refactor Configurator and AlgoTerminal
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -813,7 +811,6 @@ Global
 		{A114EEDC-9A3A-46AE-9233-F66DFCBEF7AD}.Release|x64.Build.0 = Release|Any CPU
 		{A114EEDC-9A3A-46AE-9233-F66DFCBEF7AD}.Release|x86.ActiveCfg = Release|Any CPU
 		{A114EEDC-9A3A-46AE-9233-F66DFCBEF7AD}.Release|x86.Build.0 = Release|Any CPU
-<<<<<<< HEAD
 		{C2340D2B-4FB2-4380-8CE5-347E2DA4C5AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C2340D2B-4FB2-4380-8CE5-347E2DA4C5AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C2340D2B-4FB2-4380-8CE5-347E2DA4C5AD}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -838,7 +835,6 @@ Global
 		{D1EAE917-9851-42E9-A979-A72D69D111B2}.Release|x64.Build.0 = Release|Any CPU
 		{D1EAE917-9851-42E9-A979-A72D69D111B2}.Release|x86.ActiveCfg = Release|Any CPU
 		{D1EAE917-9851-42E9-A979-A72D69D111B2}.Release|x86.Build.0 = Release|Any CPU
-=======
 		{F177BCE2-2C70-4FB0-95FF-CE5B343EBBEC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F177BCE2-2C70-4FB0-95FF-CE5B343EBBEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F177BCE2-2C70-4FB0-95FF-CE5B343EBBEC}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -851,7 +847,6 @@ Global
 		{F177BCE2-2C70-4FB0-95FF-CE5B343EBBEC}.Release|x64.Build.0 = Release|Any CPU
 		{F177BCE2-2C70-4FB0-95FF-CE5B343EBBEC}.Release|x86.ActiveCfg = Release|Any CPU
 		{F177BCE2-2C70-4FB0-95FF-CE5B343EBBEC}.Release|x86.Build.0 = Release|Any CPU
->>>>>>> Refactor Configurator and AlgoTerminal
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -912,13 +907,10 @@ Global
 		{C0E08388-557E-46B3-AD49-FCB23A9DDFC1} = {20363DD1-DC16-41EE-AA8A-77306EB75479}
 		{C64DEDD2-FB6B-4770-B1B9-DFCD7BBC5BDF} = {EFB9D6C3-7008-41DF-A75B-6C0E8DEF0CDA}
 		{A114EEDC-9A3A-46AE-9233-F66DFCBEF7AD} = {20363DD1-DC16-41EE-AA8A-77306EB75479}
-<<<<<<< HEAD
 		{C2340D2B-4FB2-4380-8CE5-347E2DA4C5AD} = {C5AE642C-4A61-47BD-9272-69909998B71D}
 		{73F5FF85-3ECF-4853-97FE-44799A70C0D6} = {DA48CCA8-4D53-408C-9915-13D1ED691B8E}
 		{D1EAE917-9851-42E9-A979-A72D69D111B2} = {DA48CCA8-4D53-408C-9915-13D1ED691B8E}
-=======
 		{F177BCE2-2C70-4FB0-95FF-CE5B343EBBEC} = {DFCF5276-C414-4F2F-B664-D3EB3BEAB44E}
->>>>>>> Refactor Configurator and AlgoTerminal
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {676AD27B-E03C-4277-A423-E2533F837976}
