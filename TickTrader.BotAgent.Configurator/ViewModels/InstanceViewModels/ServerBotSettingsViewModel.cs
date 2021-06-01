@@ -2,6 +2,7 @@
 using System;
 using System.Threading;
 using System.Windows;
+using TickTrader.WpfWindowsSupportLibrary;
 
 namespace TickTrader.BotAgent.Configurator
 {

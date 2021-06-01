@@ -112,7 +112,7 @@ namespace TickTrader.Algo.Package.V1
             }
             catch (IOException ex)
             {
-                if (ex.IsLockExcpetion())
+                if (ex.IsLockException())
                 {
                     stream = null;
                     return false;

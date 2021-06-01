@@ -20,6 +20,7 @@ using TickTrader.Algo.Isolation.NetFx;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.Server;
 using TickTrader.Algo.ServerControl;
+using TickTrader.WpfWindowsSupportLibrary;
 
 namespace TickTrader.BotTerminal
 {
@@ -30,7 +31,7 @@ namespace TickTrader.BotTerminal
 
         public static CultureInfo CultureCache { get; private set; }
 
-        private AppInstanceRestrictor _instanceRestrictor = new AppInstanceRestrictor();
+        private AppInstanceRestrictor _instanceRestrictor = new AppInstanceRestrictor(EnvService.Instance.AppLockFilePath);
         private SimpleContainer _container = new SimpleContainer();
         private ShellViewModel _shell;
         private bool _hasWriteAccess;

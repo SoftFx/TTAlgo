@@ -383,7 +383,7 @@ namespace TickTrader.Algo.Package
                 }
                 catch (IOException ioEx)
                 {
-                    if (ioEx.IsLockExcpetion())
+                    if (ioEx.IsLockException())
                     {
                         _logger?.Debug($"Location = {_location}: Algo package is locked at '{path}'");
                     }

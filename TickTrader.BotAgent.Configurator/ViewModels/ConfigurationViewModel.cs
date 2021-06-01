@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using TickTrader.BotAgent.Configurator.Properties;
+using TickTrader.WpfWindowsSupportLibrary;
 
 namespace TickTrader.BotAgent.Configurator
 {
@@ -18,7 +19,7 @@ namespace TickTrader.BotAgent.Configurator
 
         private Window _mainWindow;
         private ConfigurationModel _model;
-        private AppInstanceRestrictor _appRestrictor = new AppInstanceRestrictor();
+        private AppInstanceRestrictor _appRestrictor = new AppInstanceRestrictor(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "applock"));
 
         private bool _runnignApplication;
         private string _title;
@@ -309,7 +310,7 @@ namespace TickTrader.BotAgent.Configurator
             catch (WarningException ex)
             {
                 _logger.Warn(ex);
-                Application.Current.Dispatcher.BeginInvoke(new Action<string>(MessageBoxManager.WarningBox), ex.Message);
+                Application.Current.Dispatcher.BeginInvoke(new Action<string>(MessageBoxManager.OkWarningBox), ex.Message);
             }
             catch (Exception exx)
             {

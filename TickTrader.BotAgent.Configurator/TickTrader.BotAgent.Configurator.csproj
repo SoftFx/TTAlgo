@@ -24,7 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TickTrader.BotAgent.Common\TickTrader.BotAgent.Common.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Core.Lib\TickTrader.Algo.Core.Lib.csproj" />
+    <ProjectReference Include="..\TickTrader.WpfWindowsSupportLibrary\TickTrader.WpfWindowsSupportLibrary.csproj" />
   </ItemGroup>
 
   <ItemGroup>

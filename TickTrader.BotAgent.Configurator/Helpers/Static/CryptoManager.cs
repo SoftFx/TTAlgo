@@ -1,14 +1,12 @@
-using TickTrader.BotAgent.Common;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    static class CryptoManager
+    internal static class CryptoManager
     {
-        private static KeyGenerator _generator = new KeyGenerator();
+        private static readonly KeyGenerator _generator = new KeyGenerator();
 
-        public static string GetNewPassword(int length)
-        {
-            return _generator.GetUniqueKey(length);
-        }
+
+        public static string GetNewPassword(int length) => _generator.GetUniqueKey(length);
     }
 }

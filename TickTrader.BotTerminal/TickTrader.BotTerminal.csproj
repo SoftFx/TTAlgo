@@ -32,6 +32,7 @@
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server\TickTrader.Algo.Server.csproj" />
     <ProjectReference Include="..\src\csharp\lib\TickTrader.SeriesStorage\TickTrader.SeriesStorage.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Common\TickTrader.Algo.Common.csproj" />
+    <ProjectReference Include="..\TickTrader.WpfWindowsSupportLibrary\TickTrader.WpfWindowsSupportLibrary.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,16 +1,18 @@
 ﻿using System;
 using System.IO;
+using TickTrader.Algo.Core.Lib;
 
-namespace TickTrader.BotAgent.Configurator
+namespace TickTrader.WpfWindowsSupportLibrary
 {
     public class AppInstanceRestrictor : IDisposable
     {
         private FileStream _lockFile;
-        private readonly string _appLockFilePath;
+        private readonly string _appLockFilePath, _applicationName;
 
-        public AppInstanceRestrictor()
+        public AppInstanceRestrictor(string appLockPath)
         {
-            _appLockFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "applock");
+            _applicationName = AppDomain.CurrentDomain.SetupInformation.ApplicationName;
+            _appLockFilePath = appLockPath;
         }
 
         public bool EnsureSingleInstace()
@@ -18,23 +20,28 @@ namespace TickTrader.BotAgent.Configurator
             while (!TryLock())
             {
                 var lockId = TryReadProcessId();
+
                 if (lockId != null)
                 {
-                    if (MessageBoxManager.YesNoBoxError("Another instance of AlgoServer Configurator is running. Terminate?"))
+                    if (MessageBoxManager.YesNoBoxWarning($"Another instance of {_applicationName} is running. Terminate?"))
                     {
                         var process = System.Diagnostics.Process.GetProcessById(lockId.Value);
+
                         if (process != null)
                         {
                             process.Kill();
+
                             if (!process.WaitForExit(5000))
                             {
-                                MessageBoxManager.OkError("Failed to terminate another instance of AlgoServer Configurator!");
+                                MessageBoxManager.OkError($"Failed to terminate another instance of {_applicationName}!");
                                 return false;
                             }
+
                             else continue; // go for another try
                         }
                     }
                 }
+
                 return false;
             }
 
@@ -45,17 +52,17 @@ namespace TickTrader.BotAgent.Configurator
         {
             try
             {
-                _lockFile = new FileStream(_appLockFilePath, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
                 var processId = System.Diagnostics.Process.GetCurrentProcess().Id;
+
+                _lockFile = new FileStream(_appLockFilePath, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
                 _lockFile.Write(BitConverter.GetBytes(processId), 0, 4);
                 _lockFile.Flush();
+
                 return true;
             }
             catch (IOException iex)
             {
-                if (iex.IsLockExcpetion())
-                    return false;
-                throw;
+                return iex.IsLockException() ? false : throw iex;
             }
         }
 
