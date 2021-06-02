@@ -14,7 +14,8 @@ namespace TickTrader.Algo.Package
 {
     internal enum UpdateAction { Upsert, Remove }
 
-    internal class PackageFileUpdate
+
+    internal sealed class PackageFileUpdate
     {
         public string PkgId { get; }
 
@@ -25,7 +26,7 @@ namespace TickTrader.Algo.Package
         public byte[] PkgBytes { get; }
 
 
-        public PackageFileUpdate(string pkgId, UpdateAction action, PackageInfo pkgInfo, byte[] pkgBytes)
+        public PackageFileUpdate(string pkgId, UpdateAction action, PackageInfo pkgInfo = null, byte[] pkgBytes = null)
         {
             PkgId = pkgId;
             Action = action;
@@ -35,7 +36,7 @@ namespace TickTrader.Algo.Package
     }
 
 
-    internal class PackageRepository
+    internal sealed class PackageRepository
     {
         public const int MaxPkgSize = 256 * 1024 * 1024;
 
@@ -62,30 +63,33 @@ namespace TickTrader.Algo.Package
             return _impl.Call(a => a.Stop());
         }
 
-        public Task WaitLoaded()
+        public Task<object> WaitLoaded()
         {
             var taskSrc = new TaskCompletionSource<object>();
+
             _impl.Send(a => a.WhenIdle(() => taskSrc.TrySetResult(null)));
+
             return taskSrc.Task;
         }
 
 
-        private class Impl : Actor
+        private sealed class Impl : Actor
         {
-            internal class PackageState
+            internal sealed class PackageState
             {
                 public PackageIdentity Identity { get; set; }
 
-                public bool IsLoading { get; set; }
-
                 public UpdateAction? NextAction { get; set; }
+
+                public bool IsLoading { get; set; }
             }
 
-            internal class PackageLoadRequest
-            {
-                public string Path { get; set; }
 
-                public PackageIdentity CachedIdentity { get; set; }
+            internal sealed class PackageLoadRequest
+            {
+                public string Path { get; }
+
+                public PackageIdentity CachedIdentity { get; }
 
 
                 public PackageLoadRequest(string path, PackageIdentity cachedIdentity)
@@ -93,24 +97,43 @@ namespace TickTrader.Algo.Package
                     Path = path;
                     CachedIdentity = cachedIdentity;
                 }
+
+                public void Deconstruct(out string path, out PackageIdentity identity)
+                {
+                    path = Path;
+                    identity = CachedIdentity;
+                }
             }
 
-            internal class PackageLoadResult
+
+            internal sealed class PackageLoadResult
             {
-                public string Path { get; set; }
+                public string Path { get; }
 
                 public PackageFileUpdate FileUpdate { get; set; }
+
+
+                public PackageLoadResult(string path)
+                {
+                    Path = path;
+                }
+
+                public void Deconstruct(out string path, out PackageFileUpdate update)
+                {
+                    path = Path;
+                    update = FileUpdate;
+                }
             }
 
             private readonly Dictionary<string, PackageState> _pkgStateCache = new Dictionary<string, PackageState>();
 
-            private string _repPath;
-            private string _location;
             private IAsyncChannel<PackageFileUpdate> _updateChannel;
-            private bool enabled;
             private FileSystemWatcher _watcher;
             private Action _whenIdle;
 
+            private string _repPath;
+            private string _location;
+            private bool _enabled;
 
             public void Init(string repPath, string location, IAsyncChannel<PackageFileUpdate> updateChannel)
             {
@@ -123,13 +146,13 @@ namespace TickTrader.Algo.Package
 
             public void Start()
             {
-                enabled = true;
+                _enabled = true;
                 Scan();
             }
 
             public void Stop()
             {
-                enabled = false;
+                _enabled = false;
                 DeinitWatcher();
             }
 
@@ -142,29 +165,25 @@ namespace TickTrader.Algo.Package
 
             private void Scan()
             {
-                if (!enabled)
+                if (!_enabled)
                     return;
 
                 _logger?.Debug($"Location = {_location}: Starting scan at '{_repPath}'");
 
                 try
                 {
-                    DeinitWatcher();
-
-                    InitWatcher();
-
-                    _watcher.EnableRaisingEvents = true;
-
                     var cnt = 0;
                     var fileList = Directory.GetFiles(_repPath);
-                    foreach (var file in fileList)
-                    {
-                        if (!PackageHelper.IsFileSupported(file))
-                            continue;
 
-                        SchedulePackageUpsert(file);
-                        cnt++;
-                    }
+                    DeinitWatcher();
+                    InitWatcher();
+
+                    foreach (var file in fileList)
+                        if (PackageHelper.IsFileSupported(file))
+                        {
+                            SchedulePackageUpsert(file);
+                            cnt++;
+                        }
 
                     _logger?.Debug($"Location = {_location}: Scan finished found {cnt} packages");
                 }
@@ -176,23 +195,24 @@ namespace TickTrader.Algo.Package
 
             private void SchedulePackageUpsert(string path)
             {
-                ContextSend(() => UpsertPackage(path));
+                if (PackageHelper.IsFileSupported(path))
+                    ContextSend(() => UpsertPackage(path));
             }
 
             private void SchedulePackageRemove(string path)
             {
-                ContextSend(() => RemovePackage(path));
+                if (PackageHelper.IsFileSupported(path))
+                    ContextSend(() => RemovePackage(path));
             }
 
             private void UpsertPackage(string path)
             {
-                if (!enabled)
+                if (!_enabled)
                     return;
 
                 _logger?.Debug($"Location = {_location}: Upsert package '{path}'");
 
-                _pkgStateCache.TryGetValue(path, out var pkgState);
-                if (pkgState == null)
+                if (!_pkgStateCache.TryGetValue(path, out var pkgState))
                 {
                     pkgState = new PackageState();
                     _pkgStateCache[path] = pkgState;
@@ -206,16 +226,16 @@ namespace TickTrader.Algo.Package
                 {
                     pkgState.IsLoading = true;
                     pkgState.NextAction = null;
+
                     Task.Factory.StartNew(() => LoadPackage(new PackageLoadRequest(path, pkgState.Identity)),
                         CancellationToken.None, TaskCreationOptions.None, ParallelTaskScheduler.ShortRunning)
-                        .ContinueWith(t => ContextSend(() => OnPackageLoaded(t.IsCompleted ? t.Result : new PackageLoadResult { Path = path })));
+                        .ContinueWith(t => ContextSend(() => OnPackageLoaded(t.IsCompleted ? t.Result : new PackageLoadResult(path))));
                 }
             }
 
             private void OnPackageLoaded(PackageLoadResult loadResult)
             {
-                var path = loadResult.Path;
-                var fileUpdate = loadResult.FileUpdate;
+                (var path, var fileUpdate) = loadResult;
 
                 _logger?.Debug($"Location = {_location}: Loaded package '{path}'");
 
@@ -226,6 +246,8 @@ namespace TickTrader.Algo.Package
                     _logger?.Error($"Location = {_location}: Missing package state for '{path}'");
 
                 pkgState.IsLoading = false;
+                pkgState.Identity = fileUpdate.PkgInfo.Identity;
+
                 if (pkgState.NextAction != null)
                 {
                     switch (pkgState.NextAction.Value)
@@ -247,15 +269,17 @@ namespace TickTrader.Algo.Package
                 _logger?.Debug($"Location = {_location}: Remove package '{path}'");
 
                 _pkgStateCache.TryGetValue(path, out var pkgState);
+
                 if (pkgState?.IsLoading ?? false)
                 {
                     pkgState.NextAction = UpdateAction.Remove;
                 }
                 else
                 {
-                    _pkgStateCache.Remove(path);
                     var pkgId = PackageId.FromPath(_location, path);
-                    _updateChannel.AddAsync(new PackageFileUpdate(pkgId, UpdateAction.Remove, null, null));
+
+                    _pkgStateCache.Remove(path);
+                    _updateChannel.AddAsync(new PackageFileUpdate(pkgId, UpdateAction.Remove));
                 }
             }
 
@@ -273,7 +297,8 @@ namespace TickTrader.Algo.Package
                 _watcher = new FileSystemWatcher()
                 {
                     Path = _repPath,
-                    IncludeSubdirectories = false
+                    IncludeSubdirectories = false,
+                    EnableRaisingEvents = true,
                 };
 
                 _watcher.Changed += WatcherOnChanged;
@@ -310,41 +335,33 @@ namespace TickTrader.Algo.Package
             {
                 _logger?.Debug($"Location = {_location}: Watcher renamed '{e.OldFullPath}' into '{e.FullPath}' ({e.ChangeType})");
 
-                if (PackageHelper.IsFileSupported(e.OldFullPath))
-                    SchedulePackageRemove(e.OldFullPath);
-
-                if (PackageHelper.IsFileSupported(e.FullPath))
-                    SchedulePackageUpsert(e.FullPath);
-
+                SchedulePackageRemove(e.OldFullPath);
+                SchedulePackageUpsert(e.FullPath);
             }
 
             private void WatcherOnChanged(object sender, FileSystemEventArgs e)
             {
                 _logger?.Debug($"Location = {_location}: Watcher changed '{e.FullPath}' ({e.ChangeType})");
 
-                if (PackageHelper.IsFileSupported(e.FullPath))
-                    SchedulePackageUpsert(e.FullPath);
+                SchedulePackageUpsert(e.FullPath);
             }
 
             private void WatcherOnDeleted(object sender, FileSystemEventArgs e)
             {
                 _logger?.Debug($"Location = {_location}: Watcher deleted '{e.FullPath}' ({e.ChangeType})");
 
-                if (PackageHelper.IsFileSupported(e.FullPath))
-                    SchedulePackageRemove(e.FullPath);
+                SchedulePackageRemove(e.FullPath);
             }
-
 
             private PackageLoadResult LoadPackage(PackageLoadRequest request)
             {
-                var path = request.Path;
+                (var path, var pkgIdentity) = request;
+                var res = new PackageLoadResult(path);
                 var pkgId = PackageId.FromPath(_location, path);
-                var pkgIdentity = request.CachedIdentity;
+                byte[] fileBytes = null;
 
                 _logger?.Debug($"Location = {_location}: Loading package '{path}'");
 
-                var res = new PackageLoadResult { Path = path };
-                byte[] fileBytes = null;
                 try // loading file in memory
                 {
                     using (var stream = File.Open(path, FileMode.Open, FileAccess.Read))
@@ -373,6 +390,7 @@ namespace TickTrader.Algo.Package
                         }
 
                         fileBytes = new byte[pkgSize];
+
                         using (var memStream = new MemoryStream(fileBytes))
                         {
                             stream.CopyTo(memStream);
@@ -384,13 +402,9 @@ namespace TickTrader.Algo.Package
                 catch (IOException ioEx)
                 {
                     if (ioEx.IsLockException())
-                    {
                         _logger?.Debug($"Location = {_location}: Algo package is locked at '{path}'");
-                    }
                     else
-                    {
                         _logger?.Info($"Location = {_location}: Can't open Algo package at '{path}': {ioEx.Message}"); // other errors
-                    }
                 }
                 catch (Exception ex)
                 {
@@ -400,7 +414,13 @@ namespace TickTrader.Algo.Package
                 if (fileBytes == null)
                     return res; // load skipped or failed
 
-                var pkgInfo = new PackageInfo { PackageId = pkgId, Identity = pkgIdentity, IsValid = false, };
+                var pkgInfo = new PackageInfo
+                {
+                    PackageId = pkgId,
+                    Identity = pkgIdentity,
+                    IsValid = false,
+                };
+
                 try // scan package
                 {
                     using (var memStream = new MemoryStream(fileBytes))
@@ -410,7 +430,6 @@ namespace TickTrader.Algo.Package
 
                     pkgInfo = PackageLoadContext.ReflectionOnlyLoad(pkgId, path);
                     pkgInfo.Identity = pkgIdentity;
-
                     pkgInfo.IsValid = true;
                 }
                 catch (Exception ex)

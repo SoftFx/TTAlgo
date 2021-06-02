@@ -151,7 +151,7 @@ namespace TickTrader.Algo.Package
                     _logger.Error(ex, $"Failed to get assembly file info '{assemblyPath}'");
                 }
 
-                HandlePackageUpdate(new PackageFileUpdate(pkgId, UpdateAction.Upsert, pkgInfo, null));
+                HandlePackageUpdate(new PackageFileUpdate(pkgId, UpdateAction.Upsert, pkgInfo));
             }
 
             public AlgoPackageRef GetPackageRef(string pkgId)
