@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using TickTrader.Algo.Async;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Util;
@@ -17,18 +18,19 @@ namespace TickTrader.Algo.Package
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<PackageStorage>();
 
         private readonly Ref<Impl> _impl;
+        private readonly ChannelEventSource<PackageUpdate> _pkgUpdateEventSrc;
 
-
-        public event Action<PackageUpdate> PackageUpdated;
+        public IEventSource<PackageUpdate> PackageUpdated => _pkgUpdateEventSrc;
 
 
         public PackageStorage()
         {
             _impl = Actor.SpawnLocal<Impl>(null, nameof(PackageStorage));
 
-            _impl.Send(a => a.Init());
+            var pkgUpdates = DefaultChannelFactory.CreateForEvent<PackageUpdate>();
+            _pkgUpdateEventSrc = new ChannelEventSource<PackageUpdate>(pkgUpdates);
 
-            _impl.Send(a => Task.Factory.StartNew(() => SendPackageUpdates(a.PackageUpdates.Reader)));
+            _impl.Send(a => a.Init(pkgUpdates.Writer));
         }
 
         public Task RegisterRepositoryLocation(string locationId, string path)
@@ -59,31 +61,6 @@ namespace TickTrader.Algo.Package
         }
 
 
-        private async Task SendPackageUpdates(ChannelReader<PackageUpdate> reader)
-        {
-            await Task.Yield();
-
-            while (true)
-            {
-                var hasData = await reader.WaitToReadAsync();
-                if (!hasData)
-                    break;
-
-                for (var i = 0; i < 10 && reader.TryRead(out var update); i++)
-                {
-                    try
-                    {
-                        PackageUpdated?.Invoke(update);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.Error(ex, $"Failed to dispatch PackageUpdate");
-                    }
-                }
-            }
-        }
-
-
         private class Impl : Actor
         {
             private readonly Dictionary<string, PackageRepository> _repositories = new Dictionary<string, PackageRepository>();
@@ -91,15 +68,14 @@ namespace TickTrader.Algo.Package
             private readonly Dictionary<string, int> _packageVersions = new Dictionary<string, int>();
             private readonly Dictionary<string, AlgoPackageRef> _packageMap = new Dictionary<string, AlgoPackageRef>();
 
+            private ChannelWriter<PackageUpdate> _pkgUpdateSink;
 
-            public Channel<PackageUpdate> PackageUpdates { get; private set; }
 
-
-            public void Init()
+            public void Init(ChannelWriter<PackageUpdate> pkgUpdateSink)
             {
-                _fileUpdateProcessor.Start(HandlePackageUpdate);
+                _pkgUpdateSink = pkgUpdateSink;
 
-                PackageUpdates = Channel.CreateUnbounded<PackageUpdate>(new UnboundedChannelOptions { AllowSynchronousContinuations = false, SingleReader = true, SingleWriter = true });
+                _fileUpdateProcessor.Start(HandlePackageUpdate);
             }
 
             public async Task Stop()
@@ -108,7 +84,7 @@ namespace TickTrader.Algo.Package
 
                 await _fileUpdateProcessor.Stop(false);
                 _logger.Debug("File update processor stopped");
-                PackageUpdates.Writer.TryComplete();
+                _pkgUpdateSink.TryComplete();
                 _logger.Debug("Marked update stream complete");
                 await Task.WhenAll(_repositories.Values.Select(r => r.Stop()));
                 _logger.Debug("Package repositories stopped");
@@ -173,11 +149,11 @@ namespace TickTrader.Algo.Package
                     case UpdateAction.Upsert:
                         var refId = GeneratePackageRefId(pkgId);
                         _packageMap[pkgId] = new AlgoPackageRef(refId, update.PkgInfo, update.PkgBytes);
-                        PackageUpdates.Writer.TryWrite(new PackageUpdate { Action = Domain.Package.Types.UpdateAction.Upsert, Id = pkgId, Package = update.PkgInfo, });
+                        _pkgUpdateSink.TryWrite(new PackageUpdate { Action = Domain.Package.Types.UpdateAction.Upsert, Id = pkgId, Package = update.PkgInfo, });
                         break;
                     case UpdateAction.Remove:
                         _packageMap.Remove(pkgId);
-                        PackageUpdates.Writer.TryWrite(new PackageUpdate { Action = Domain.Package.Types.UpdateAction.Removed, Id = pkgId, });
+                        _pkgUpdateSink.TryWrite(new PackageUpdate { Action = Domain.Package.Types.UpdateAction.Removed, Id = pkgId, });
                         break;
                 }
             }

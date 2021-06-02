@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
@@ -10,13 +9,15 @@ using TickTrader.Algo.ServerControl;
 using TickTrader.BotAgent.BA;
 using TickTrader.BotAgent.BA.Models;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
+using TickTrader.Algo.Package;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
 {
     public class BotAgentServerAdapter : IAlgoServerProvider
     {
         private static IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<BotAgentServerAdapter>();
-        private static readonly SetupContext _agentContext = new SetupContext();
+        private static readonly SetupContextInfo _agentContext = new SetupContextInfo(Feed.Types.Timeframe.M1,
+            new SymbolConfig("none", SymbolConfig.Types.SymbolOrigin.Online), MappingDefaults.DefaultBarToBarMapping.Key);
 
 
         private readonly IBotAgent _botAgent;
@@ -92,7 +93,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
 
         public Task<SetupContextInfo> GetSetupContext()
         {
-            return Task.FromResult(new SetupContextInfo(_agentContext.DefaultTimeFrame, _agentContext.DefaultSymbol.ToConfig(), _agentContext.DefaultMapping));
+            return Task.FromResult(_agentContext);
         }
 
         public async Task<AccountMetadataInfo> GetAccountMetadata(AccountMetadataRequest request)

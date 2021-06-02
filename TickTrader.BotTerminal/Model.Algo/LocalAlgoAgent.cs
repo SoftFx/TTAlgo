@@ -127,6 +127,7 @@ namespace TickTrader.BotTerminal
             if (EnvService.Instance.AlgoCommonRepositoryFolder != null)
                 Library.RegisterRepositoryLocation(SharedConstants.CommonRepositoryId, EnvService.Instance.AlgoCommonRepositoryFolder, Properties.Settings.Default.EnablePluginIsolation);
 
+            _reductions.LoadDefaultReductions();
             //_reductions.LoadReductions(EnvService.Instance.AlgoExtFolder, SharedConstants.LocalRepositoryId);
 
             Mappings = _reductions.CreateMappings();

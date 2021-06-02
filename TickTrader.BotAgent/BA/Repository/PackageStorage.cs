@@ -43,6 +43,7 @@ namespace TickTrader.BotAgent.BA.Repository
             Library.PackageStateChanged += LibraryOnPackageStateChanged;
 
             _reductions = new ReductionCollection();
+            _reductions.LoadDefaultReductions();
             Mappings = _reductions.CreateMappings();
         }
 

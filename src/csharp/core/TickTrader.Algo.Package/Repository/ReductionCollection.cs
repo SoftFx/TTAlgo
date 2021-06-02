@@ -60,6 +60,11 @@ namespace TickTrader.Algo.Package
             }
         }
 
+        public void LoadDefaultReductions()
+        {
+            AddFromAssembly(typeof(Ext.BarCloseReduction).Assembly);
+        }
+
 
         private void AddReductionsInternal(PackageInfo pkg)
         {
