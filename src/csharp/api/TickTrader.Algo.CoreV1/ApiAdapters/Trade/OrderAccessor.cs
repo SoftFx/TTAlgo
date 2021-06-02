@@ -83,6 +83,7 @@ namespace TickTrader.Algo.CoreV1
 
         Api.OrderOptions Order.Options => Info.Options.ToApiEnum();
 
+        string Order.OcoRelatedOrderId => Info.OcoRelatedOrderId;
 
         internal bool IsSameOrderId(OrderAccessor other) => other != null && string.Equals(Info.Id, other.Info.Id);
 
@@ -199,7 +200,7 @@ namespace TickTrader.Algo.CoreV1
             public double? OpenConversionRate { get; internal set; }
             public double? ClosePrice { get; set; }
             internal DateTime PositionCreated { get; set; }
-
+            public string OcoRelatedOrderId { get; internal set; }
             #region API Order
 
             public bool IsNull => false;

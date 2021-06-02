@@ -223,6 +223,7 @@ namespace TickTrader.Algo.CoreV1
         public double Margin => double.NaN;
         public double Profit => double.NaN;
         public OrderOptions Options => OrderOptions.None;
+        public string OcoRelatedOrderId => string.Empty;
     }
 
     [Serializable]
