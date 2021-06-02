@@ -33,9 +33,9 @@ namespace TickTrader.Algo.Package
             _impl.Send(a => a.Init(pkgUpdates.Writer));
         }
 
-        public Task RegisterRepositoryLocation(string locationId, string path)
+        public Task RegisterRepositoryLocation(string locationId, string path, bool isUploadLocation)
         {
-            return _impl.Call(a => a.RegisterRepository(locationId, path));
+            return _impl.Call(a => a.RegisterRepository(locationId, path, isUploadLocation));
         }
 
         public Task RegisterAssemblyAsPackage(Assembly assembly)
@@ -69,6 +69,7 @@ namespace TickTrader.Algo.Package
             private readonly Dictionary<string, AlgoPackageRef> _packageMap = new Dictionary<string, AlgoPackageRef>();
 
             private ChannelWriter<PackageUpdate> _pkgUpdateSink;
+            private string _uploadDir;
 
 
             public void Init(ChannelWriter<PackageUpdate> pkgUpdateSink)
@@ -98,10 +99,20 @@ namespace TickTrader.Algo.Package
                     .ContinueWith(t => continuation());
             }
 
-            public void RegisterRepository(string locationId, string path)
+            public void RegisterRepository(string locationId, string path, bool isUploadLocation)
             {
                 if (_repositories.ContainsKey(locationId))
                     throw new ArgumentException($"Cannot register multiple paths for location '{locationId}'");
+
+                if (isUploadLocation)
+                {
+                    if (string.IsNullOrEmpty(_uploadDir))
+                        throw new ArgumentException($"Upload location already set to '{_uploadDir}'");
+
+                    _uploadDir = path;
+                }
+
+                PathHelper.EnsureDirectoryCreated(path);
 
                 var repo = new PackageRepository(path, locationId, _fileUpdateProcessor);
                 _repositories[locationId] = repo;

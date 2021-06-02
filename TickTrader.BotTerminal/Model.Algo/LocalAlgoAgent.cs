@@ -15,6 +15,7 @@ using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
+using TickTrader.Algo.Indicators.Trend.MovingAverage;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.Server;
 using TickTrader.Algo.ServerControl;
@@ -101,10 +102,11 @@ namespace TickTrader.BotTerminal
             _logger.Info($"Started AlgoServer on port {AlgoServer.BoundPort}");
 
             AlgoServer.RegisterAccountProxy(ClientModel.GetAccountProxy());
+            var pkgStorage = AlgoServer.PackageStorage;
 
             _reductions = new ReductionCollection();
             IdProvider = new PluginIdProvider();
-            Library = new LocalAlgoLibrary(AlgoServer.PackageStorage);
+            Library = new LocalAlgoLibrary(pkgStorage);
             _botsWarden = new BotsWarden(this);
             _syncContext = new DispatcherSync();
             _packages = new VarDictionary<string, PackageInfo>();
@@ -122,10 +124,10 @@ namespace TickTrader.BotTerminal
             ClientModel.Disconnected += ClientModelOnDisconnected;
             ClientModel.Connection.StateChanged += ClientConnectionOnStateChanged;
 
-            Library.AddAssemblyAsPackage(Assembly.Load("TickTrader.Algo.Indicators"));
-            Library.RegisterRepositoryLocation(SharedConstants.LocalRepositoryId, EnvService.Instance.AlgoRepositoryFolder, Properties.Settings.Default.EnablePluginIsolation);
+            pkgStorage.RegisterAssemblyAsPackage(typeof(MovingAverage).Assembly);
+            pkgStorage.RegisterRepositoryLocation(SharedConstants.LocalRepositoryId, EnvService.Instance.AlgoRepositoryFolder, true);
             if (EnvService.Instance.AlgoCommonRepositoryFolder != null)
-                Library.RegisterRepositoryLocation(SharedConstants.CommonRepositoryId, EnvService.Instance.AlgoCommonRepositoryFolder, Properties.Settings.Default.EnablePluginIsolation);
+                pkgStorage.RegisterRepositoryLocation(SharedConstants.CommonRepositoryId, EnvService.Instance.AlgoCommonRepositoryFolder, false);
 
             _reductions.LoadDefaultReductions();
             //_reductions.LoadReductions(EnvService.Instance.AlgoExtFolder, SharedConstants.LocalRepositoryId);

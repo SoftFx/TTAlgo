@@ -1,7 +1,7 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 using NLog;
 using NLog.LayoutRenderers;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotTerminal
 {

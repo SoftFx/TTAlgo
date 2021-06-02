@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
@@ -32,7 +30,7 @@ namespace TickTrader.Algo.Package
         {
             _pkgStorage = pkgStorage;
 
-            _pkgStorage.PackageUpdated += OnPackageUpdated;
+            _pkgStorage.PackageUpdated.Subscribe(OnPackageUpdated);
             _packages = new Dictionary<string, PackageInfo>();
             _plugins = new Dictionary<PluginKey, PluginInfo>();
         }
@@ -66,21 +64,6 @@ namespace TickTrader.Algo.Package
         public AlgoPackageRef GetPackageRef(string packageId)
         {
             return _pkgStorage.GetPackageRef(packageId).Result;
-        }
-
-        public void RegisterRepositoryLocation(string locationId, string repoPath, bool isolation)
-        {
-            _pkgStorage.RegisterRepositoryLocation(locationId, repoPath);
-        }
-
-        public void AddAssemblyAsPackage(Assembly assembly)
-        {
-            _pkgStorage.RegisterAssemblyAsPackage(assembly);
-        }
-
-        public Task WaitInit()
-        {
-            return _pkgStorage.WaitLoaded();
         }
 
 

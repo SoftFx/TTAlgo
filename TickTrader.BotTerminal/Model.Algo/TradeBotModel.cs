@@ -5,6 +5,7 @@ using System.IO;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Server;
 using TickTrader.Algo.Core.Setup;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotTerminal
 {

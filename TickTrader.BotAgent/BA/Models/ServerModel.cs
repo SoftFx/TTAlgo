@@ -58,7 +58,7 @@ namespace TickTrader.BotAgent.BA.Models
             _threadPoolManager = new ThreadPoolManager();
             _fdkOptionsProvider = fdkOptionsProvider;
 
-            await _packageStorage.Library.WaitInit();
+            await _algoServer.PackageStorage.WaitLoaded();
 
             _packageStorage.PackageChanged += (p, a) => PackageChanged?.Invoke(p, a);
             _packageStorage.PackageStateChanged += p => PackageStateChanged?.Invoke(new PackageStateUpdate { PackageId = p.PackageId, IsLocked = p.IsLocked, IsValid = p.IsValid });

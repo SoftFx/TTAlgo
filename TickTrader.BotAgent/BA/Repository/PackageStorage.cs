@@ -37,8 +37,8 @@ namespace TickTrader.BotAgent.BA.Repository
 
             EnsureStorageDirectoryCreated();
 
+            algoServer.PackageStorage.RegisterRepositoryLocation(SharedConstants.LocalRepositoryId, _storageDir, true);
             Library = new LocalAlgoLibrary(algoServer.PackageStorage);
-            Library.RegisterRepositoryLocation(SharedConstants.LocalRepositoryId, _storageDir, true);
             Library.PackageUpdated += LibraryOnPackageUpdated;
             Library.PackageStateChanged += LibraryOnPackageStateChanged;
 
