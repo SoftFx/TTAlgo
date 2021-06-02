@@ -17,8 +17,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         public bool IsStopOrder => Type == OrderType.Stop || Type == OrderType.StopLimit;
 
-        public bool IsImmediateFill => (Type == OrderType.Market) || (Type == OrderType.Limit && Options.HasFlag(OrderExecOptions.ImmediateOrCancel));
-
+        public bool IsImmediateFill => Type == OrderType.Market || IsIoc;
 
 
         public double SlippagePrecision { get; }
@@ -67,6 +66,8 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
                 _expiration = value?.AddMilliseconds(-value.Value.Millisecond); //TTS reset milliseconds
             }
         }
+
+        public string OcoRelatedOrderId { get; set; }
 
 
         public OrderTemplate() { }
@@ -125,12 +126,16 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             if (!RealOrder.StopLoss.EI(SL) && !0.0.EI(SL) && !double.IsNaN(RealOrder.StopLoss))
                 ThrowVerificationException(nameof(RealOrder.StopLoss), SL, RealOrder.StopLoss);
 
-            if (IsSlippageSupported)
+            if (IsSupportedSlippage)
                 CheckSlippage(RealOrder.Slippage, (realSlippage, expectedSlippage) =>
                 {
                     if (!realSlippage.E(expectedSlippage))
                         ThrowVerificationException(nameof(RealOrder.Slippage), expectedSlippage, realSlippage);
                 });
+
+            if (IsSupportedOCO)
+                if (OcoRelatedOrderId != RealOrder.OcoRelatedOrderId)
+                    ThrowVerificationException(nameof(RealOrder.OcoRelatedOrderId), OcoRelatedOrderId, RealOrder.OcoRelatedOrderId);
 
             if (Comment != null && RealOrder.Comment != Comment)
                 ThrowVerificationException(nameof(RealOrder.Comment), Comment, RealOrder.Comment);
@@ -198,6 +203,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
             SetProperty(str, Expiration, nameof(Expiration));
             SetProperty(str, Comment, nameof(Comment));
+            SetProperty(str, OcoRelatedOrderId, nameof(OcoRelatedOrderId));
 
             str.Append($", options={Options}");
             str.Append($", async={Async}.");

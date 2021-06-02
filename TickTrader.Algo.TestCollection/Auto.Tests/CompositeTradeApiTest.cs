@@ -76,6 +76,9 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
                             if (testSet.IsLimit)
                                 await FullTestRun(testSet, OrderExecOptions.ImmediateOrCancel);
+
+                            //if (testSet.IsSupportedOCO)
+                            //    await FullOcoTestRun(testSet);
                         }
                         while (testSet.SwitchAsyncMode());
                     }
@@ -112,11 +115,18 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             if (!test.Async && Account.Type == AccountTypes.Gross && test.Type == OrderType.Market) //if test.async = true throw error
                 await PerformCloseByTests(test);
 
-            if (test.IsSlippageSupported)
+            if (test.IsSupportedSlippage)
                 await PrepareSlippageTest(test, PrepareOpenSlippageTest);
 
             if (IncludeADCases)
                 await PerformADCommentsTest(test);
+        }
+
+        private async Task FullOcoTestRun(TestParamsSet test)
+        {
+            test.Options = OrderExecOptions.OneCancelsTheOther;
+
+            await PerformOCOTests(test);
         }
 
         private async Task PerfomOpenModifyTests(OrderTemplate template)
@@ -185,7 +195,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         {
             await PrepareAndRun(TestAcion.ADReject, TestCommentRejectAD, test, OrderExecutionMode.Execution);
 
-            if (test.IsSlippageSupported)
+            if (test.IsSupportedSlippage)
                 await PrepareSlippageTest(test, TestPartialSlippageAD);
 
             if (test.Type != OrderType.StopLimit && !test.IsLimitIoC) // Limit IoC incorrect behavior
@@ -984,6 +994,30 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             }
 
             await PrepareAndRun(TestAcion.ModifyCancel, func, test, OrderExecutionMode.Waiting);
+        }
+
+
+        private async Task PerformOCOTests(TestParamsSet test)
+        {
+            async Task func(OrderTemplate first)
+            {
+                var second = GenerateTemplate(new TestParamsSet(OrderType.Stop, test.Side, test.Async) { Options = test.Options });
+
+                await TryPerformTest(() => TestOpenOrder(first));
+
+                second.OcoRelatedOrderId = first.Id;
+                //second.Options = OrderExecOptions.OneCancelsTheOther;
+
+                await TryPerformTest(() => TestOpenOrder(second));
+
+                first.OcoRelatedOrderId = second.Id;
+                //second.Options = OrderExecOptions.OneCancelsTheOther;
+
+                first.Verification();
+                //await TryPerformTest(() => TestCloseBy(template, inversed), 1);
+            }
+
+            await PrepareAndRun(TestAcion.OpenOCO, func, test, OrderExecutionMode.Waiting);
         }
 
         #endregion

@@ -7,7 +7,8 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
     public enum TestAcion
     {
         Fill, FillByModify, RejectIoC, ExecutionTP, ExecutionSL, Cancel, Expiration, ADReject, ADPartialActivate,
-        CloseByBigSmall, CloseBySmallBig, CloseByEven, OpenSlippage, PartialActiveWithSlippage, ModifyCancel
+        CloseByBigSmall, CloseBySmallBig, CloseByEven, OpenSlippage, PartialActiveWithSlippage, ModifyCancel,
+        OpenOCO,
     }
 
     public enum TestOrderAction { Open, Modify, Close, Cancel, CloseBy };
@@ -39,7 +40,9 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         public bool IsLimitIoC => Type == OrderType.Limit && Options.HasFlag(OrderExecOptions.ImmediateOrCancel);
 
-        public bool IsSlippageSupported => Type == OrderType.Stop || Type == OrderType.Market;
+        public bool IsSupportedSlippage => Type == OrderType.Stop || Type == OrderType.Market;
+
+        public bool IsSupportedOCO => (Type == OrderType.Stop || Type == OrderType.Limit) && AccountType != AccountTypes.Gross;
 
         public bool IsLimit => Type == OrderType.StopLimit || Type == OrderType.Limit;
 
@@ -61,6 +64,5 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         public string Info(TestAcion action) => $"{(Async ? "Async " : "")}{action} {Side} {Type} order (Tag: {Tag}, options: {Options})";
 
         protected virtual string GetInfo() => $"{(Async ? "Async " : "")}{TestOrderAction.Open} {Side} {Type} order (Tag: {Tag}, options: {Options})";
-
     }
 }
