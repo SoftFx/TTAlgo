@@ -72,7 +72,7 @@ namespace TickTrader.Algo.Server
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to start");
-                _pkgRef.DecrementRef();
+                _server.PackageStorage.ReleasePackageRef(_pkgRef);
             }
         }
 
@@ -104,7 +104,7 @@ namespace TickTrader.Algo.Server
             }
             finally
             {
-                _pkgRef.DecrementRef();
+                _server.PackageStorage.ReleasePackageRef(_pkgRef);
             }
         }
 

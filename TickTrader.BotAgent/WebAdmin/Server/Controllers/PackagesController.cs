@@ -7,10 +7,9 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.BotAgent.BA;
-using TickTrader.BotAgent.BA.Exceptions;
-using TickTrader.BotAgent.BA.Repository;
 using TickTrader.BotAgent.WebAdmin.Server.Dto;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 
@@ -32,17 +31,15 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         [HttpGet]
         public async Task<PackageDto[]> Get()
         {
-            var packages = await _botAgent.GetPackages();
+            var packages = await _botAgent.GetPackageSnapshot();
 
             return packages.Select(p => p.ToDto()).ToArray();
         }
 
         [HttpHead("{name}")]
-        public async Task<IActionResult> Head(string name)
+        public async Task<IActionResult> Head(string pkgName)
         {
-            var package = await _botAgent.GetPackage(name.ToLowerInvariant());
-
-            if (package != null)
+            if (await _botAgent.PackageWithNameExists(pkgName))
                 return Ok();
 
             return NotFound();
@@ -54,37 +51,43 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             if (file == null) throw new ArgumentNullException("File is null");
             if (file.Length == 0) throw new ArgumentException("File is empty");
 
-            using (var stream = file.OpenReadStream())
+            try
             {
-                using (var binaryReader = new BinaryReader(stream))
+                var tmpFile = Path.GetTempFileName();
+                using (var fileStream = System.IO.File.OpenWrite(tmpFile))
                 {
-                    var fileContent = binaryReader.ReadBytes((int)file.Length);
-                    try
-                    {
-                        await _botAgent.UpdatePackage(fileContent, file.FileName.ToLowerInvariant());
-                    }
-                    catch (BAException dsex)
-                    {
-                        _logger.LogError(dsex.Message);
-                        return BadRequest(dsex.ToBadResult());
-                    }
+                    await file.CopyToAsync(fileStream);
                 }
+
+                await _botAgent.UploadPackage(new UploadPackageRequest(null, file.FileName), tmpFile);
+
+                if (System.IO.File.Exists(tmpFile))
+                    System.IO.File.Delete(tmpFile);
+            }
+            catch (AlgoException algoEx)
+            {
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Package upload failed");
             }
 
             return Ok();
         }
 
         [HttpDelete("{name}")]
-        public async Task<IActionResult> Delete(string name)
+        public async Task<IActionResult> Delete(string packageId)
         {
             try
             {
-                await _botAgent.RemovePackage(new RemovePackageRequest(PackageStorage.GetPackageId(WebUtility.UrlDecode(name))));
+                await _botAgent.RemovePackage(new RemovePackageRequest(WebUtility.UrlDecode(packageId)));
             }
-            catch (BAException dsex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(dsex.Message);
-                return BadRequest(dsex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
 
             return Ok();

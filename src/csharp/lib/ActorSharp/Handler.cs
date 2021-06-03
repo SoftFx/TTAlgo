@@ -60,6 +60,11 @@ namespace ActorSharp
             return Actor.Call(actorMethod);
         }
 
+        protected Task<TResult> CallActorAsync<TResult>(Func<TActor, Task<TResult>> actorMethod)
+        {
+            return Actor.Call(actorMethod);
+        }
+
         protected TResult CallActor<TResult>(Func<TActor, Task<TResult>> actorMethod)
         {
             return Actor.Call(actorMethod).Result;

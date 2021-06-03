@@ -128,7 +128,7 @@ namespace TickTrader.BotAgent.BA.Models
                 ConfigurationChanged?.Invoke(this);
             }
             else
-                throw new InvalidStateException("Make sure that the bot is stopped before installing a new configuration");
+                throw new AlgoException("Make sure that the bot is stopped before installing a new configuration");
         }
 
         private void Client_StateChanged(ClientModel client)
@@ -168,14 +168,14 @@ namespace TickTrader.BotAgent.BA.Models
             CheckShutdownFlag();
 
             if (!IsStopped())
-                throw new InvalidStateException("Trade bot has been already started!");
+                throw new AlgoException("Trade bot has been already started!");
 
             UpdatePackage();
 
             if (State == PluginModelInfo.Types.PluginState.Broken)
-                throw new InvalidStateException("Trade bot is broken!");
+                throw new AlgoException("Trade bot is broken!");
 
-            Package.IncrementRef();
+            //Package.IncrementRef();
 
             SetRunning(true);
 
@@ -329,7 +329,7 @@ namespace TickTrader.BotAgent.BA.Models
         {
             try
             {
-                Package.DecrementRef();
+                //Package.DecrementRef();
             }
             catch (Exception ex)
             {

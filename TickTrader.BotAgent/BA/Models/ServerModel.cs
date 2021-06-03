@@ -84,16 +84,14 @@ namespace TickTrader.BotAgent.BA.Models
 
             #region Repository Management
 
-            public Task<List<PackageInfo>> GetPackages() => CallActorAsync(a => a.GetPackages());
-            public Task<PackageInfo> GetPackage(string package) => CallActorAsync(a => a.GetPackage(package));
-            public Task UpdatePackage(byte[] fileContent, string fileName) => CallActorAsync(a => a.UpdatePackage(fileContent, fileName));
-            public Task<byte[]> DownloadPackage(string packageId) => CallActorAsync(a => a.DownloadPackage(packageId));
-            public Task RemovePackage(RemovePackageRequest request) => CallActorAsync(a => a.RemovePackage(request));
+            public Task<List<PackageInfo>> GetPackageSnapshot() => CallActorAsync(a => a._algoServer.PackageStorage.GetPackageSnapshot());
+            public Task<bool> PackageWithNameExists(string pkgName) => CallActorAsync(a => a._algoServer.PackageStorage.PackageWithNameExists(pkgName));
+            public Task UploadPackage(UploadPackageRequest request, string pkgFilePath) => CallActorAsync(a => a._algoServer.PackageStorage.UploadPackage(request, pkgFilePath));
+            public Task<byte[]> DownloadPackage(string packageId) => CallActorAsync(a => a._algoServer.PackageStorage.GetPackageBinary(packageId));
+            public Task RemovePackage(RemovePackageRequest request) => CallActorAsync(a => a._algoServer.PackageStorage.RemovePackage(request));
             public Task<List<PluginInfo>> GetAllPlugins() => CallActorAsync(a => a.GetAllPlugins());
             public Task<List<PluginInfo>> GetPluginsByType(Metadata.Types.PluginType type) => CallActorAsync(a => a.GetPluginsByType(type));
             public Task<MappingCollectionInfo> GetMappingsInfo() => CallActorAsync(a => a.GetMappingsInfo());
-            public Task<string> GetPackageReadPath(DownloadPackageRequest request) => CallActorAsync(a => a.GetPackageReadPath(request));
-            public Task<string> GetPackageWritePath(UploadPackageRequest request) => CallActorAsync(a => a.GetPackageWritePath(request));
 
             public event Action<PackageInfo, ChangeAction> PackageChanged
             {
@@ -232,9 +230,9 @@ namespace TickTrader.BotAgent.BA.Models
 
             var accountId = AccountId.Pack(server, userId);
             if (FindAccount(accountId) != null)
-                throw new DuplicateAccountException($"Account '{accountId}' already exists");
+                throw new AlgoException($"Account '{accountId}' already exists");
             if (FindAccount(server, displayName) != null)
-                throw new DuplicateAccountException($"Account with displayName '{displayName}' already exists on '{server}'");
+                throw new AlgoException($"Account with displayName '{displayName}' already exists on '{server}'");
             else
             {
                 var newAcc = new ClientModel(server, userId, creds, request.DisplayName);
@@ -250,17 +248,17 @@ namespace TickTrader.BotAgent.BA.Models
         private void Validate(string server, string userId, AccountCreds creds)
         {
             if (string.IsNullOrWhiteSpace(server))
-                throw new InvalidAccountException("Server is required");
+                throw new AlgoException("Server is required");
             if (string.IsNullOrWhiteSpace(userId))
-                throw new InvalidAccountException("UserId is required");
+                throw new AlgoException("UserId is required");
             switch(creds.AuthScheme)
             {
                 case AccountCreds.SimpleAuthSchemeId:
                     if (string.IsNullOrWhiteSpace(creds.GetPassword()))
-                        throw new InvalidAccountException("Password is required");
+                        throw new AlgoException("Password is required");
                     break;
                 default:
-                    throw new InvalidAccountException("Creds.AuthScheme is not supported");
+                    throw new AlgoException("Creds.AuthScheme is not supported");
             }
         }
 
@@ -272,7 +270,7 @@ namespace TickTrader.BotAgent.BA.Models
                 return;
 
             if (acc.HasRunningBots)
-                throw new AccountLockedException("Account cannot be removed! Stop all bots and try again.");
+                throw new AlgoException("Account cannot be removed! Stop all bots and try again.");
 
             acc.RemoveAllBots();
             _accounts.Remove(acc);
@@ -306,7 +304,7 @@ namespace TickTrader.BotAgent.BA.Models
         {
             var acc = FindAccount(accountId);
             if (acc == null)
-                throw new AccountNotFoundException($"Account with id '{accountId}' does not exist!");
+                throw new AlgoException($"Account with id '{accountId}' does not exist!");
             return acc;
         }
 
@@ -368,9 +366,9 @@ namespace TickTrader.BotAgent.BA.Models
         private void OnBotValidation(TradeBotModel bot)
         {
             if (!_botIdHelper.Validate(bot.Id))
-                throw new InvalidBotException($"The instance Id must be no more than {_botIdHelper.MaxLength} characters and consist of characters: a-z A-Z 0-9 and space");
+                throw new AlgoException($"The instance Id must be no more than {_botIdHelper.MaxLength} characters and consist of characters: a-z A-Z 0-9 and space");
             if (_allBots.ContainsKey(bot.Id))
-                throw new DuplicateBotIdException("Bot with id '" + bot.Id + "' already exist!");
+                throw new AlgoException("Bot with id '" + bot.Id + "' already exist!");
         }
 
         private void OnBotInitialized(TradeBotModel bot)
@@ -419,7 +417,7 @@ namespace TickTrader.BotAgent.BA.Models
         {
             var tradeBot = _allBots.GetOrDefault(id);
             if (tradeBot == null)
-                throw new BotNotFoundException($"Bot {id} not found");
+                throw new AlgoException($"Bot {id} not found");
             else
                 return tradeBot;
         }
@@ -472,25 +470,6 @@ namespace TickTrader.BotAgent.BA.Models
         private event Action<PackageInfo, ChangeAction> PackageChanged;
         private event Action<PackageStateUpdate> PackageStateChanged;
 
-        private List<PackageInfo> GetPackages()
-        {
-            return _packageStorage.Library.GetPackages().ToList();
-        }
-
-        private PackageInfo GetPackage(string packageName)
-        {
-            return _packageStorage.Library.GetPackage(PackageStorage.GetPackageId(packageName));
-        }
-
-        private void UpdatePackage(byte[] fileContent, string fileName)
-        {
-            _packageStorage.Update(fileContent, fileName);
-        }
-
-        private byte[] DownloadPackage(string packageId)
-        {
-            return _packageStorage.GetPackageBinary(packageId);
-        }
 
         private void RemovePackage(RemovePackageRequest request)
         {
@@ -507,7 +486,7 @@ namespace TickTrader.BotAgent.BA.Models
                 foreach (var bot in botsToDelete)
                     bot.Remove();
 
-                _packageStorage.Remove(packageId);
+                //_packageStorage.Remove(packageId);
             }
         }
 
@@ -526,16 +505,6 @@ namespace TickTrader.BotAgent.BA.Models
         private MappingCollectionInfo GetMappingsInfo()
         {
             return _packageStorage.Mappings;
-        }
-
-        private string GetPackageReadPath(DownloadPackageRequest request)
-        {
-            return _packageStorage.GetPackageReadPath(request);
-        }
-
-        private string GetPackageWritePath(UploadPackageRequest request)
-        {
-            return _packageStorage.GetPackageWritePath(request);
         }
 
         #endregion

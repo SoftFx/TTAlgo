@@ -164,12 +164,12 @@ namespace TickTrader.BotTerminal
 
         protected virtual void LockResources()
         {
-            PackageRef.IncrementRef();
+            //PackageRef.IncrementRef();
         }
 
         protected virtual void UnlockResources()
         {
-            PackageRef?.DecrementRef();
+            //PackageRef?.DecrementRef();
         }
 
         protected virtual void OnRefsUpdated()

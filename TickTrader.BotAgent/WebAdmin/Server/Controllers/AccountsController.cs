@@ -10,6 +10,7 @@ using System.Net;
 using TickTrader.Algo.Domain;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain.ServerControl;
+using TickTrader.BotAgent.WebAdmin.Server.Models;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 {
@@ -49,17 +50,15 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
                 }
                 else
                 {
-                    var communicationExc = new CommunicationException($"Connection error: {connError.Code}", connError.Code);
-
-                    _logger.LogError(communicationExc.Message);
-
-                    return BadRequest(communicationExc.ToBadResult());
+                    var msg = $"Connection error: {connError.Code}";
+                    _logger.LogError(msg);
+                    return BadRequest(new BadRequestResultDto(ExceptionCodes.CommunicationError, msg));
                 }
             }
-            catch (BAException dsex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(dsex.Message);
-                return BadRequest(dsex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
         }
 
@@ -71,10 +70,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
                 var request = new AddAccountRequest(account.Server, account.Login, account.Password);
                 await _botAgent.AddAccount(request);
             }
-            catch (BAException dsex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(dsex.Message);
-                return BadRequest(dsex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
 
             return Ok();
@@ -88,10 +87,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
                 var accId = AccountId.Pack(server, login);
                 await _botAgent.RemoveAccount(new RemoveAccountRequest(accId));
             }
-            catch (BAException dsex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(dsex.Message);
-                return BadRequest(dsex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
 
             return Ok();
@@ -106,10 +105,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
                 var request = new ChangeAccountRequest(accId, new AccountCreds(account.Password));
                 await _botAgent.ChangeAccount(request);
             }
-            catch (BAException dsex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(dsex.Message);
-                return BadRequest(dsex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
 
             return Ok();
@@ -126,10 +125,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 
                 return Ok(await testResult);
             }
-            catch (BAException dsex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(dsex.Message);
-                return BadRequest(dsex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
         }
     }

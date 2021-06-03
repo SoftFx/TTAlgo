@@ -81,9 +81,9 @@ namespace TickTrader.Algo.ServerControl
 
         Task RemovePackage(RemovePackageRequest request);
 
-        Task<string> GetPackageReadPath(DownloadPackageRequest request);
+        Task UploadPackage(UploadPackageRequest request, string pkgFilePath);
 
-        Task<string> GetPackageWritePath(UploadPackageRequest request);
+        Task<byte[]> GetPackageBinary(DownloadPackageRequest request);
 
         Task<string> GetBotStatusAsync(PluginStatusRequest request);
 

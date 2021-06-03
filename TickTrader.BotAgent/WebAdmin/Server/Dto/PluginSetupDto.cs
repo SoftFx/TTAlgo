@@ -4,7 +4,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Dto
 {
     public class PluginSetupDto
     {
-        public string PackageName { get; set; }
+        public string PackageId { get; set; }
         public string PluginId { get; set; }
         public string InstanceId { get; set; }
         public string Symbol { get; set; }

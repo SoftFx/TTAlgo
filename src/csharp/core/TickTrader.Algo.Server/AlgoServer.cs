@@ -158,7 +158,7 @@ namespace TickTrader.Algo.Server
             catch (Exception ex)
             {
                 _logger.Error(ex, $"Failed to start runtime {runtimeId} for {pkgRef.Id}");
-                pkgRef.DecrementRef();
+                _pkgStorage.ReleasePackageRef(pkgRef);
             }
             return runtime;
         }

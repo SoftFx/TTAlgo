@@ -97,7 +97,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
         {
             return new PackageDto()
             {
-                Name = package.Identity.FileName.ToLower(),
+                Id = package.PackageId,
                 DisplayName = package.Identity.FileName,
                 Created = package.Identity.LastModifiedUtc.ToDateTime().ToLocalTime(),
                 Plugins = package.Plugins.Where(p => p.Descriptor_.IsTradeBot).Select(p => p.ToPluginDto()).ToArray(),

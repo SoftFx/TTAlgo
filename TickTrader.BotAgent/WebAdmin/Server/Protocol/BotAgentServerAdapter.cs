@@ -78,7 +78,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
 
         public Task<List<PackageInfo>> GetPackageList()
         {
-            return _botAgent.GetPackages();
+            return _botAgent.GetPackageSnapshot();
         }
 
         public Task<ApiMetadataInfo> GetApiMetadata()
@@ -161,14 +161,14 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return _botAgent.RemovePackage(request);
         }
 
-        public Task<string> GetPackageReadPath(DownloadPackageRequest request)
+        public Task UploadPackage(UploadPackageRequest request, string pkgFilePath)
         {
-            return _botAgent.GetPackageReadPath(request);
+            return _botAgent.UploadPackage(request, pkgFilePath);
         }
 
-        public Task<string> GetPackageWritePath(UploadPackageRequest request)
+        public Task<byte[]> GetPackageBinary(DownloadPackageRequest request)
         {
-            return _botAgent.GetPackageWritePath(request);
+            return _botAgent.DownloadPackage(request.PackageId);
         }
 
         public async Task<string> GetBotStatusAsync(PluginStatusRequest request)

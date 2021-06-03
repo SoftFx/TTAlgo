@@ -13,16 +13,14 @@ namespace TickTrader.BotAgent.BA
     {
         // -------- Repository Management --------
 
-        Task<List<PackageInfo>> GetPackages();
-        Task<PackageInfo> GetPackage(string package);
-        Task UpdatePackage(byte[] fileContent, string fileName);
+        Task<List<PackageInfo>> GetPackageSnapshot();
+        Task<bool> PackageWithNameExists(string pkgName);
+        Task UploadPackage(UploadPackageRequest request, string pkgFilePath);
         Task<byte[]> DownloadPackage(string packageId);
         Task RemovePackage(RemovePackageRequest request);
         Task<List<PluginInfo>> GetAllPlugins();
         Task<List<PluginInfo>> GetPluginsByType(Metadata.Types.PluginType type);
         Task<MappingCollectionInfo> GetMappingsInfo();
-        Task<string> GetPackageReadPath(DownloadPackageRequest request);
-        Task<string> GetPackageWritePath(UploadPackageRequest request);
 
         event Action<PackageInfo, ChangeAction> PackageChanged;
         event Action<PackageStateUpdate> PackageStateChanged;

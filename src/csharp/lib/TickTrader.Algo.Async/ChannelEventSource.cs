@@ -18,14 +18,17 @@ namespace TickTrader.Algo.Async
         private readonly Channel<T> _channel;
         private readonly List<EventSubscription> _subList = new List<EventSubscription>();
         private readonly object _subLock = new object();
+        private readonly CancellationTokenSource _cancelTokenSrc;
 
         private int _subListVersion = 0;
-        private CancellationTokenSource _cancelTokenSrc;
 
 
-        public ChannelEventSource(Channel<T> channel, int batchSize = 10)
+        public ChannelWriter<T> Writer { get; }
+
+
+        public ChannelEventSource(int batchSize = 10)
         {
-            _channel = channel;
+            _channel = DefaultChannelFactory.CreateForEvent<T>();
 
             _cancelTokenSrc = new CancellationTokenSource();
             var _ = DispatchEvents(_channel.Reader, batchSize, _cancelTokenSrc.Token);

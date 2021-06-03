@@ -39,7 +39,7 @@ export class AccountModel implements Serializable<AccountModel> {
 }
 
 export class PackageModel implements Serializable<PackageModel> {
-    public Name: string;
+    public Id: string;
     public DisplayName: string;
     public Created: Date;
     public IsValid: boolean;
@@ -52,9 +52,9 @@ export class PackageModel implements Serializable<PackageModel> {
     public Deserialize(input: any): PackageModel {
         this.Created = input.Created;
         this.IsValid = input.IsValid;
-        this.Name = input.Name;
+        this.Id = input.Id;
         this.DisplayName = input.DisplayName;
-        this.Plugins = input.Plugins ? input.Plugins.map(p => new PluginModel(input.Name).Deserialize(p)) : input.Plugins;
+        this.Plugins = input.Plugins ? input.Plugins.map(p => new PluginModel(input.Id).Deserialize(p)) : input.Plugins;
 
         return this;
     }
@@ -66,10 +66,10 @@ export class PluginModel implements Serializable<PluginModel>{
     public UserDisplayName: string;
     public Type: string;
     public ParamDescriptors: ParameterDescriptor[];
-    public Package: string;
+    public PackageId: string;
 
-    constructor(packageName?: string) {
-        this.Package = packageName;
+    constructor(packageId?: string) {
+        this.PackageId = packageId;
     }
 
     public get IsIndicator() {
@@ -341,7 +341,7 @@ export enum ParameterDataTypes {
 }
 
 export class SetupModel {
-    public PackageName: string;
+    public PackageId: string;
     public PluginId: string;
     public InstanceId: string;
     public Account: AccountModel;
@@ -354,7 +354,7 @@ export class SetupModel {
     public get Payload() {
 
         return {
-            PackageName: this.PackageName,
+            PackageName: this.PackageId,
             PluginId: this.PluginId,
             InstanceId: this.InstanceId,
             Account: this.Account,
@@ -382,7 +382,7 @@ export class SetupModel {
 
     public static ForPlugin(plugin: PluginModel) {
         let setup = new SetupModel();
-        setup.PackageName = plugin.Package;
+        setup.PackageId = plugin.PackageId;
         setup.PluginId = plugin.Id;
         setup.Parameters = plugin.ParamDescriptors.map(pDescriptor =>
             new Parameter(pDescriptor.Id,

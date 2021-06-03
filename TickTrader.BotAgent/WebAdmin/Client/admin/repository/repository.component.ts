@@ -23,7 +23,7 @@ export class RepositoryComponent implements OnInit {
     }
 
     public OnPackageDeleted(algoPackage: PackageModel) {
-        this.deletePackage(algoPackage.Name);
+        this.deletePackage(algoPackage.Id);
     }
 
     private loadPackages() {
@@ -33,7 +33,7 @@ export class RepositoryComponent implements OnInit {
 
     private addOrUpdatePackage(packageModel: PackageModel) {
         let index = -1;
-        let fpackage = this.Packages.find((p, i) => { index = i; return p.Name === packageModel.Name });
+        let fpackage = this.Packages.find((p, i) => { index = i; return p.Id === packageModel.Id });
 
         if (fpackage)
             this.Packages[index] = packageModel;
@@ -41,7 +41,7 @@ export class RepositoryComponent implements OnInit {
             this.Packages = this.Packages.concat(packageModel);
     }
 
-    private deletePackage(packageName: string) {
-        this.Packages = this.Packages.filter(p => p.Name !== packageName);
+    private deletePackage(packageId: string) {
+        this.Packages = this.Packages.filter(p => p.Id !== packageId);
     }
 }

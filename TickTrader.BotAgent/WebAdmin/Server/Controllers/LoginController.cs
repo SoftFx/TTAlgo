@@ -26,7 +26,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             var identity = _authManager.Login(loginData.Login, loginData.Password);
             if (identity == null)
             {
-                return BadRequest(new Models.BadRequestResult(ExceptionCodes.InvalidCredentials, "Invalid username or password"));
+                return BadRequest(new Models.BadRequestResultDto(ExceptionCodes.InvalidCredentials, "Invalid username or password"));
             }
             else
             {

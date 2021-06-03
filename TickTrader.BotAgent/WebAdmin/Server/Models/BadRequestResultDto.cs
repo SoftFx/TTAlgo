@@ -1,8 +1,8 @@
 ﻿namespace TickTrader.BotAgent.WebAdmin.Server.Models
 {
-    public class BadRequestResult
+    public class BadRequestResultDto
     {
-        public BadRequestResult(int code, string message)
+        public BadRequestResultDto(int code, string message)
         {
             Code = code;
             Message = message;

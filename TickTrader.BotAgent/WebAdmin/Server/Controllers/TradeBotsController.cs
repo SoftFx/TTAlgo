@@ -45,10 +45,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 
                 return Ok(tradeBot.ToDto());
             }
-            catch (BAException ex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(ex.Message);
-                return BadRequest(ex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
         }
 
@@ -64,10 +64,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 
                 return Ok();
             }
-            catch (BAException ex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(ex.Message);
-                return BadRequest(ex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
         }
 
@@ -81,10 +81,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 
                 return Ok(await log.ToDto());
             }
-            catch (BAException ex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(ex.Message);
-                return BadRequest(ex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
         }
 
@@ -101,10 +101,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 
                 return File(readOnlyFile.OpenRead(), MimeMipping.GetContentType(decodedFile), decodedFile);
             }
-            catch (BAException ex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(ex.Message);
-                return BadRequest(ex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
         }
 
@@ -119,10 +119,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 
                 return Ok();
             }
-            catch (BAException ex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(ex.Message);
-                return BadRequest(ex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
         }
         #endregion
@@ -140,10 +140,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 
                 return Ok(files);
             }
-            catch (BAException ex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(ex.Message);
-                return BadRequest(ex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
         }
 
@@ -160,10 +160,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 
                 return File(readOnlyFile.OpenRead(), MimeMipping.GetContentType(decodedFile), decodedFile);
             }
-            catch (BAException ex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(ex.Message);
-                return BadRequest(ex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
         }
         #endregion
@@ -182,10 +182,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
                     BotId = botId
                 });
             }
-            catch (BAException ex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(ex.Message);
-                return BadRequest(ex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
         }
 
@@ -203,17 +203,17 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
                 var pluginCfg = setup.Parse();
                 var accountId = AccountId.Pack(setup.Account.Server, setup.Account.Login);
 
-                pluginCfg.Key = new PluginKey(PackageStorage.GetPackageId(setup.PackageName), setup.PluginId);
+                pluginCfg.Key = new PluginKey(setup.PackageId, setup.PluginId);
 
                 var tradeBot = await _botAgent.AddBot(new AddPluginRequest(accountId, pluginCfg));
                 setup.EnsureFiles(ServerModel.GetWorkingFolderFor(tradeBot.InstanceId));
 
                 return Ok(tradeBot.ToDto());
             }
-            catch (BAException ex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(ex.Message);
-                return BadRequest(ex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
         }
 
@@ -232,10 +232,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 
                 return Ok();
             }
-            catch (BAException ex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(ex.Message);
-                return BadRequest(ex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
         }
 
@@ -248,10 +248,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 
                 return Ok();
             }
-            catch (BAException ex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(ex.Message);
-                return BadRequest(ex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
         }
 
@@ -264,10 +264,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 
                 return Ok();
             }
-            catch (BAException ex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(ex.Message);
-                return BadRequest(ex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
         }
 
@@ -280,10 +280,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 
                 return Ok();
             }
-            catch (BAException ex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(ex.Message);
-                return BadRequest(ex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
         }
     }

@@ -1075,40 +1075,18 @@ namespace TickTrader.Algo.ServerControl.Grpc
             var request = transferMsg.Header.Unpack<UploadPackageRequest>();
             _messageFormatter.LogClientResponse(session?.Logger, request);
 
+            var tmpPath = Path.GetTempFileName();
             try
             {
                 var chunkOffset = request.TransferSettings.ChunkOffset;
                 var chunkSize = request.TransferSettings.ChunkSize;
 
                 var buffer = new byte[chunkSize];
-                var packagePath = await _algoServer.GetPackageWritePath(request);
-                string oldPackagePath = null;
-                if (File.Exists(packagePath))
+                using (var stream = File.Open(tmpPath, FileMode.Create, FileAccess.ReadWrite))
                 {
-                    oldPackagePath = $"{packagePath}.old";
-                    File.Move(packagePath, oldPackagePath);
-                }
-                using (var stream = File.Open(packagePath, FileMode.Create, FileAccess.ReadWrite))
-                {
-                    if (oldPackagePath != null)
+                    for (var chunkId = 0; chunkId < chunkOffset; chunkId++)
                     {
-                        using (var oldStream = File.Open(oldPackagePath, FileMode.Open, FileAccess.Read))
-                        {
-                            for (var chunkId = 0; chunkId < chunkOffset; chunkId++)
-                            {
-                                var bytesRead = oldStream.Read(buffer, 0, chunkSize);
-                                for (var i = bytesRead; i < chunkSize; i++) buffer[i] = 0;
-                                stream.Write(buffer, 0, chunkSize);
-                            }
-                        }
-                        File.Delete(oldPackagePath);
-                    }
-                    else
-                    {
-                        for (var chunkId = 0; chunkId < chunkOffset; chunkId++)
-                        {
-                            stream.Write(buffer, 0, chunkSize);
-                        }
+                        stream.Write(buffer, 0, chunkSize);
                     }
                     while (await requestStream.MoveNext())
                     {
@@ -1124,12 +1102,18 @@ namespace TickTrader.Algo.ServerControl.Grpc
                             break;
                     }
                 }
+
+                await _algoServer.UploadPackage(request, tmpPath);
             }
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to upload package");
                 res.ExecResult = CreateErrorResult(ex);
             }
+
+            if (File.Exists(tmpPath))
+                File.Delete(tmpPath);
+
             return res;
         }
 
@@ -1182,8 +1166,8 @@ namespace TickTrader.Algo.ServerControl.Grpc
             try
             {
                 var buffer = new byte[chunkSize];
-                var packagePath = await _algoServer.GetPackageReadPath(request);
-                using (var stream = File.Open(packagePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                var packageBinary = await _algoServer.GetPackageBinary(request);
+                using (var stream = new MemoryStream(packageBinary))
                 {
                     stream.Seek((long)chunkSize * chunkOffset, SeekOrigin.Begin);
                     for (var cnt = stream.Read(buffer, 0, chunkSize); cnt > 0; cnt = stream.Read(buffer, 0, chunkSize))

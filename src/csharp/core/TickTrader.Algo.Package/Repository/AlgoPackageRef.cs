@@ -6,7 +6,6 @@ namespace TickTrader.Algo.Package
 {
     public class AlgoPackageRef : IDisposable
     {
-        private byte[] _pkgBytes;
         private int _refCount;
 
 
@@ -17,6 +16,8 @@ namespace TickTrader.Algo.Package
         public PackageIdentity Identity => PackageInfo.Identity;
 
         public PackageInfo PackageInfo { get; private set; }
+
+        public byte[] PackageBytes { get; private set; }
 
         public bool IsLocked => _refCount > 0;
 
@@ -31,18 +32,18 @@ namespace TickTrader.Algo.Package
         {
             Id = id;
             PackageInfo = packageInfo;
-            _pkgBytes = pkgBytes;
+            PackageBytes = pkgBytes;
             IsObsolete = false;
         }
 
 
-        public void IncrementRef()
+        internal void IncrementRef()
         {
             if (Interlocked.Increment(ref _refCount) == 1)
                 OnLockedChanged();
         }
 
-        public void DecrementRef()
+        internal void DecrementRef()
         {
             if (Interlocked.Decrement(ref _refCount) == 0)
             {
@@ -53,7 +54,7 @@ namespace TickTrader.Algo.Package
             }
         }
 
-        public void SetObsolete()
+        internal void SetObsolete()
         {
             IsObsolete = true;
             if (!IsLocked)
@@ -62,10 +63,9 @@ namespace TickTrader.Algo.Package
             OnObsoleteChanged();
         }
 
-
         internal void Dispose()
         {
-            _pkgBytes = null;
+            PackageBytes = null;
         }
 
 

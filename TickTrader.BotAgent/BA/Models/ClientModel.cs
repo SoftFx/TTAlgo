@@ -440,7 +440,7 @@ namespace TickTrader.BotAgent.BA.Models
             var package = _packageProvider.GetPackageRef(algoKey.PackageId);
 
             if (package == null)
-                throw new PackageNotFoundException($"Algo Package {algoKey.PackageId} cannot be found!");
+                throw new AlgoException($"Algo Package {algoKey.PackageId} cannot be found!");
 
             var newBot = new TradeBotModel(config);
             BotValidation?.Invoke(newBot);
@@ -474,7 +474,7 @@ namespace TickTrader.BotAgent.BA.Models
             if (bot != null)
             {
                 if (bot.IsRunning)
-                    throw new InvalidStateException("Cannot remove running bot!");
+                    throw new AlgoException("Cannot remove running bot!");
 
                 if (cleanLog)
                     bot.ClearLog();
@@ -493,7 +493,7 @@ namespace TickTrader.BotAgent.BA.Models
             CheckInitialized();
 
             if (HasRunningBots)
-                throw new InvalidStateException("Some bots are running. Remove is not possible.");
+                throw new AlgoException("Some bots are running. Remove is not possible.");
 
             foreach (var bot in _bots)
             {
