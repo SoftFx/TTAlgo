@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
+using TickTrader.FeedStorage;
 
 namespace TickTrader.Algo.Backtester
 {
@@ -23,8 +24,8 @@ namespace TickTrader.Algo.Backtester
         //private IBarStorage _bidStorage;
         //private IBarStorage _askStorage;
 
-        public BarSeriesReader(string symbol, Feed.Types.Timeframe baseTimeFrame, IBarStorage bidSrc, IBarStorage askSrc)
-            : this(symbol, baseTimeFrame, bidSrc?.GetBarStream(), askSrc?.GetBarStream())
+        public BarSeriesReader(string symbol, Feed.Types.Timeframe baseTimeFrame, ICrossDomainStorage<BarData> bidSrc, ICrossDomainStorage<BarData> askSrc)
+            : this(symbol, baseTimeFrame, bidSrc?.GetStream(), askSrc?.GetStream())
         {
             //_bidStorage = bidSrc;
             //_askStorage = askSrc;

@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Domain\TickTrader.Algo.Domain.csproj" />
+    <ProjectReference Include="..\src\csharp\lib\ActorSharp\ActorSharp.csproj" />
+    <ProjectReference Include="..\src\csharp\lib\Machinarium\Machinarium.csproj" />
+    <ProjectReference Include="..\src\csharp\lib\TickTrader.SeriesStorage.Lmdb\TickTrader.SeriesStorage.Lmdb.csproj" />
+    <ProjectReference Include="..\src\csharp\lib\TickTrader.SeriesStorage.Protobuf\TickTrader.SeriesStorage.Protobuf.csproj" />
+    <ProjectReference Include="..\src\csharp\lib\TickTrader.SeriesStorage\TickTrader.SeriesStorage.csproj" />
+  </ItemGroup>
+
+</Project>

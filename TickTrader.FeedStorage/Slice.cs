@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TickTrader.Algo.Account.FeedStorage
+namespace TickTrader.FeedStorage
 {
     public class SliceInfo
     {

@@ -1,6 +1,6 @@
 ﻿using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.Account.FeedStorage
+namespace TickTrader.FeedStorage
 {
     public static class TimeFrameModel
     {
@@ -35,6 +35,5 @@ namespace TickTrader.Algo.Account.FeedStorage
             Feed.Types.Timeframe.S10,
             Feed.Types.Timeframe.S1,
         };
-
     }
 }

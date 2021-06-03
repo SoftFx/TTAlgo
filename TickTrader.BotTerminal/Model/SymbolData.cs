@@ -6,12 +6,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Account;
-using TickTrader.Algo.Account.FeedStorage;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
+using TickTrader.FeedStorage;
 using TickTrader.SeriesStorage;
 
 namespace TickTrader.BotTerminal
@@ -47,14 +46,14 @@ namespace TickTrader.BotTerminal
 
         public abstract SymbolToken ToSymbolToken();
 
-        public IBarStorage GetCrossDomainBarReader(Feed.Types.Timeframe frame, Feed.Types.MarketSide priceType, DateTime from, DateTime to)
+        public BarCrossDomainReader GetCrossDomainBarReader(Feed.Types.Timeframe frame, Feed.Types.MarketSide priceType, DateTime from, DateTime to)
         {
-            return _storage.CreateBarCrossDomainReader(new FeedCacheKey(Name, frame, priceType), from, to);
+            return _storage.CreateBarCrossDomainReader(new CrossDomainReaderRequest(new FeedCacheKey(Name, frame, priceType), from, to));
         }
 
-        public ITickStorage GetCrossDomainTickReader(Feed.Types.Timeframe timeFrame, DateTime from, DateTime to)
+        public TickCrossDomainReader GetCrossDomainTickReader(Feed.Types.Timeframe timeFrame, DateTime from, DateTime to)
         {
-            return _storage.CreateTickCrossDomainReader(new FeedCacheKey(Name, timeFrame), from, to);
+            return _storage.CreateTickCrossDomainReader(new CrossDomainReaderRequest(new FeedCacheKey(Name, timeFrame), from, to));
         }
 
         public void WriteSlice(Feed.Types.Timeframe frame, Feed.Types.MarketSide priceType, Timestamp from, Timestamp to, BarData[] values)

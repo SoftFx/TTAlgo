@@ -6,12 +6,13 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
+using TickTrader.FeedStorage;
 
 namespace TickTrader.Algo.Backtester
 {
     public class FeedEmulator : IFeedProvider, IFeedHistoryProvider, ISyncContext
     {
-        private List<IFeedStorage> _storages = new List<IFeedStorage>();
+        private List<ICrossDomainStorage> _storages = new List<ICrossDomainStorage>();
         private Dictionary<string, SeriesReader> _feedReaders = new Dictionary<string, SeriesReader>();
         private Dictionary<string, FeedSeriesEmulator> _feedSeries = new Dictionary<string, FeedSeriesEmulator>();
 
@@ -111,7 +112,7 @@ namespace TickTrader.Algo.Backtester
             _feedSeries.Add(symbol, new FeedSeriesEmulator());
         }
 
-        public void AddSource(string symbol, ITickStorage storage)
+        public void AddSource(string symbol, ICrossDomainStorage<QuoteInfo> storage)
         {
             //if (timeFrame != TimeFrames.Ticks && timeFrame != TimeFrames.TicksLevel2)
             //    throw new ArgumentException("timeFrame", "This overload accept only TimeFrames.Ticks or TimeFrames.TicksLevel2.");
@@ -128,7 +129,7 @@ namespace TickTrader.Algo.Backtester
             _feedSeries.Add(symbol, new FeedSeriesEmulator());
         }
 
-        public void AddSource(string symbol, Feed.Types.Timeframe timeframe, IBarStorage bidStream, IBarStorage askStream)
+        public void AddSource(string symbol, Feed.Types.Timeframe timeframe, ICrossDomainStorage<BarData> bidStream, ICrossDomainStorage<BarData> askStream)
         {
             _feedReaders.Add(symbol, new BarSeriesReader(symbol, timeframe, bidStream, askStream));
             _feedSeries.Add(symbol, new FeedSeriesEmulator());

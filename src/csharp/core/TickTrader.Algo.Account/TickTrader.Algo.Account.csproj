@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\TickTrader.FeedStorage\TickTrader.FeedStorage.csproj" />
     <ProjectReference Include="..\..\lib\Machinarium\Machinarium.csproj" />
     <ProjectReference Include="..\..\lib\TickTrader.SeriesStorage.Lmdb\TickTrader.SeriesStorage.Lmdb.csproj" />
     <ProjectReference Include="..\..\lib\TickTrader.SeriesStorage.Protobuf\TickTrader.SeriesStorage.Protobuf.csproj" />

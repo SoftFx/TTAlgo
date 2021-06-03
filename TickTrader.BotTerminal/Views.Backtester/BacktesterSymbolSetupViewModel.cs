@@ -8,11 +8,11 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Account.FeedStorage;
 using TickTrader.Algo.Backtester;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
+using TickTrader.FeedStorage;
 
 namespace TickTrader.BotTerminal
 {
@@ -263,14 +263,14 @@ namespace TickTrader.BotTerminal
 
             if (baseTimeFrame == Feed.Types.Timeframe.Ticks || baseTimeFrame == Feed.Types.Timeframe.TicksLevel2)
             {
-                ITickStorage feed = smbData.GetCrossDomainTickReader(baseTimeFrame, precacheFrom, precacheTo);
+                TickCrossDomainReader feed = smbData.GetCrossDomainTickReader(baseTimeFrame, precacheFrom, precacheTo);
 
                 feedEmulator.AddSource(smbData.Name, feed);
             }
             else
             {
-                IBarStorage bidFeed = null;
-                IBarStorage askFeed = null;
+                BarCrossDomainReader bidFeed = null;
+                BarCrossDomainReader askFeed = null;
 
                 if (priceChoice == DownloadPriceChoices.Bid | priceChoice == DownloadPriceChoices.Both)
                     bidFeed = smbData.GetCrossDomainBarReader(baseTimeFrame, Feed.Types.MarketSide.Bid, precacheFrom, precacheTo);

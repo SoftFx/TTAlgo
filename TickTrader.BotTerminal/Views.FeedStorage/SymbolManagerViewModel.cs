@@ -7,10 +7,10 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Account;
-using TickTrader.Algo.Account.FeedStorage;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
+using TickTrader.FeedStorage;
 
 namespace TickTrader.BotTerminal
 {
@@ -233,7 +233,7 @@ namespace TickTrader.BotTerminal
             Model = series;
             Key = series.Key;
             Symbol = Key.Symbol;
-            Cfg = Key.Frame + " " + Key.MarketSide;
+            Cfg = Key.TimeFrame + " " + Key.MarketSide;
         }
 
         public FeedCacheKey Key { get; }
