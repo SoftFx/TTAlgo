@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.Account.FeedStorage
+namespace TickTrader.FeedStorage
 {
     public static class TimeSlicer
     {

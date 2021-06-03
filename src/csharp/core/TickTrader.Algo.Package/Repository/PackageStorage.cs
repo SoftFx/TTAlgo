@@ -18,9 +18,10 @@ namespace TickTrader.Algo.Package
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<PackageStorage>();
 
         private readonly Ref<Impl> _impl;
-        private readonly ChannelEventSource<PackageUpdate> _pkgUpdateEventSrc;
+        //private readonly ChannelEventSource<PackageUpdate> _pkgUpdateEventSrc;
 
-        public IEventSource<PackageUpdate> PackageUpdated => _pkgUpdateEventSrc;
+        //public IEventSource<PackageUpdate> PackageUpdated => _pkgUpdateEventSrc;
+        public IEventSource<PackageUpdate> PackageUpdated { get; }
 
 
         public PackageStorage()
@@ -28,7 +29,7 @@ namespace TickTrader.Algo.Package
             _impl = Actor.SpawnLocal<Impl>(null, nameof(PackageStorage));
 
             var pkgUpdates = DefaultChannelFactory.CreateForEvent<PackageUpdate>();
-            _pkgUpdateEventSrc = new ChannelEventSource<PackageUpdate>(pkgUpdates);
+            PackageUpdated = new ChannelEventSource<PackageUpdate>(pkgUpdates);
 
             _impl.Send(a => a.Init(pkgUpdates.Writer));
         }
@@ -106,7 +107,7 @@ namespace TickTrader.Algo.Package
 
                 if (isUploadLocation)
                 {
-                    if (string.IsNullOrEmpty(_uploadDir))
+                    if (!string.IsNullOrEmpty(_uploadDir))
                         throw new ArgumentException($"Upload location already set to '{_uploadDir}'");
 
                     _uploadDir = path;

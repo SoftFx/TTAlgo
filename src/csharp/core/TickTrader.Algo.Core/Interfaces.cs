@@ -31,21 +31,4 @@ namespace TickTrader.Algo.Core
     {
         Task<T[]> GetNextPage();
     }
-
-
-    public interface IFeedStorage
-    {
-        void Start();
-        void Stop();
-    }
-
-    public interface ITickStorage : IFeedStorage
-    {
-        IEnumerable<QuoteInfo> GetQuoteStream();
-    }
-
-    public interface IBarStorage : IFeedStorage
-    {
-        IEnumerable<BarData> GetBarStream();
-    }
 }

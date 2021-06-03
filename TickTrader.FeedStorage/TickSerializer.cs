@@ -6,7 +6,7 @@ using TickTrader.Algo.Domain;
 using TickTrader.SeriesStorage;
 using TickTrader.SeriesStorage.LightSerializer;
 
-namespace TickTrader.Algo.Account.FeedStorage
+namespace TickTrader.FeedStorage
 {
     internal static class TickSerializer
     {

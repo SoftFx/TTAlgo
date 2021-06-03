@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Account.FeedStorage;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
+using TickTrader.FeedStorage;
 
 namespace TickTrader.BotTerminal
 {

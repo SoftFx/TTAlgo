@@ -1,7 +1,7 @@
 ﻿using System;
 using TickTrader.SeriesStorage;
 
-namespace TickTrader.Algo.Account.FeedStorage
+namespace TickTrader.FeedStorage
 {
     public class GuidKeySerializer : IKeySerializer<Guid>
     {

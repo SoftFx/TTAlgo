@@ -1,7 +1,7 @@
 ﻿using ProtoBuf;
 using System;
 
-namespace TickTrader.Algo.Account.FeedStorage
+namespace TickTrader.FeedStorage
 {
     public enum CustomCommissionType { Percentage, Points, Money }
 
@@ -35,7 +35,7 @@ namespace TickTrader.Algo.Account.FeedStorage
         [ProtoMember(12)]
         public bool SwapEnabled { get; set; }
         [ProtoMember(13)]
-        public Domain.SwapInfo.Types.Type SwapType { get; set; }
+        public Algo.Domain.SwapInfo.Types.Type SwapType { get; set; }
         [ProtoMember(14)]
         public double SwapSizeShort { get; set; }
         [ProtoMember(15)]
@@ -44,10 +44,10 @@ namespace TickTrader.Algo.Account.FeedStorage
         public bool TripleSwap { get; set; }
 
         [ProtoMember(17)]
-        public Domain.MarginInfo.Types.CalculationMode ProfitMode { get; set; }
+        public Algo.Domain.MarginInfo.Types.CalculationMode ProfitMode { get; set; }
 
         [ProtoMember(18)]
-        public Domain.MarginInfo.Types.CalculationMode MarginMode { get; set; }
+        public Algo.Domain.MarginInfo.Types.CalculationMode MarginMode { get; set; }
         [ProtoMember(19)]
         public double MarginHedged { get; set; }
         [ProtoMember(20)]
@@ -70,9 +70,9 @@ namespace TickTrader.Algo.Account.FeedStorage
         public string MinCommissionCurr { get; set; }
 
 
-        public Domain.SymbolInfo ToAlgo()
+        public Algo.Domain.SymbolInfo ToAlgo()
         {
-            return new Domain.SymbolInfo
+            return new Algo.Domain.SymbolInfo
             {
                 Name = Name,
                 TradeAllowed = true,
@@ -86,13 +86,13 @@ namespace TickTrader.Algo.Account.FeedStorage
 
                 Description = Description,
 
-                Slippage = new Domain.SlippageInfo
+                Slippage = new Algo.Domain.SlippageInfo
                 {
                     DefaultValue = Slippage,
-                    Type = Domain.SlippageInfo.Types.Type.Pips,
+                    Type = Algo.Domain.SlippageInfo.Types.Type.Pips,
                 },
 
-                Commission = new Domain.CommissonInfo
+                Commission = new Algo.Domain.CommissonInfo
                 {
                     Commission = Commission,
                     LimitsCommission = LimitsCommission,
@@ -101,7 +101,7 @@ namespace TickTrader.Algo.Account.FeedStorage
                     MinCommissionCurrency = MinCommissionCurr,
                 },
 
-                Swap = new Domain.SwapInfo
+                Swap = new Algo.Domain.SwapInfo
                 {
                     Enabled = SwapEnabled,
                     Type = SwapType,
@@ -110,7 +110,7 @@ namespace TickTrader.Algo.Account.FeedStorage
                     TripleSwapDay = TripleSwap ? (int)DayOfWeek.Wednesday : 0,
                 },
 
-                Margin = new Domain.MarginInfo
+                Margin = new Algo.Domain.MarginInfo
                 {
                     Mode = MarginMode,
                     Factor = MarginFactor,
@@ -118,12 +118,10 @@ namespace TickTrader.Algo.Account.FeedStorage
                     StopOrderReduction = StopOrderMarginReduction,
                     HiddenLimitOrderReduction = HiddenLimitOrderMarginReduction,
                 },
-
-                //ProfitCalcMode = ProfitMode,
             };
         }
 
-        public static CustomSymbol FromAlgo(Domain.SymbolInfo symbol)
+        public static CustomSymbol FromAlgo(Algo.Domain.SymbolInfo symbol)
         {
             return new CustomSymbol
             {
@@ -155,22 +153,20 @@ namespace TickTrader.Algo.Account.FeedStorage
                 MarginFactor = symbol.Margin.Factor,
                 StopOrderMarginReduction = symbol.Margin.StopOrderReduction ?? 1,
                 HiddenLimitOrderMarginReduction = symbol.Margin.HiddenLimitOrderReduction ?? 1
-
-                //ProfitMode = symbol.ProfitCalcMode,
             };
         }
 
-        private static CustomCommissionType Convert(Domain.CommissonInfo.Types.ValueType type)
+        private static CustomCommissionType Convert(Algo.Domain.CommissonInfo.Types.ValueType type)
         {
             switch (type)
             {
-                case Domain.CommissonInfo.Types.ValueType.Money:
+                case Algo.Domain.CommissonInfo.Types.ValueType.Money:
                     return CustomCommissionType.Money;
 
-                case Domain.CommissonInfo.Types.ValueType.Percentage:
+                case Algo.Domain.CommissonInfo.Types.ValueType.Percentage:
                     return CustomCommissionType.Percentage;
 
-                case Domain.CommissonInfo.Types.ValueType.Points:
+                case Algo.Domain.CommissonInfo.Types.ValueType.Points:
                     return CustomCommissionType.Points;
 
                 default:
@@ -178,86 +174,22 @@ namespace TickTrader.Algo.Account.FeedStorage
             }
         }
 
-        private static Domain.CommissonInfo.Types.ValueType Convert(CustomCommissionType type)
+        private static Algo.Domain.CommissonInfo.Types.ValueType Convert(CustomCommissionType type)
         {
             switch (type)
             {
                 case CustomCommissionType.Money:
-                    return Domain.CommissonInfo.Types.ValueType.Money;
+                    return Algo.Domain.CommissonInfo.Types.ValueType.Money;
 
                 case CustomCommissionType.Percentage:
-                    return Domain.CommissonInfo.Types.ValueType.Percentage;
+                    return Algo.Domain.CommissonInfo.Types.ValueType.Percentage;
 
                 case CustomCommissionType.Points:
-                    return Domain.CommissonInfo.Types.ValueType.Points;
+                    return Algo.Domain.CommissonInfo.Types.ValueType.Points;
 
                 default:
                     throw new InvalidCastException($"Commission type not found: {type}");
             }
         }
-
-        //private static Domain.SwapInfo.Types.Type Convert(BO.SwapType type)
-        //{
-        //    switch (type)
-        //    {
-        //        case BO.SwapType.Points:
-        //            return Domain.SwapInfo.Types.Type.Points;
-        //        case BO.SwapType.PercentPerYear:
-        //            return Domain.SwapInfo.Types.Type.PercentPerYear;
-        //        default:
-        //            throw new InvalidCastException($"Swap type not found: {type}");
-        //    }
-        //}
-
-        //private static BO.SwapType Convert(Domain.SwapInfo.Types.Type type)
-        //{
-        //    switch (type)
-        //    {
-        //        case Domain.SwapInfo.Types.Type.Points:
-        //            return BO.SwapType.Points;
-        //        case Domain.SwapInfo.Types.Type.PercentPerYear:
-        //            return BO.SwapType.PercentPerYear;
-        //        default:
-        //            throw new InvalidCastException($"Swap type not found: {type}");
-        //    }
-        //}
-
-        //private static Domain.MarginInfo.Types.CalculationMode Convert(BO.MarginCalculationModes mode)
-        //{
-        //    switch (mode)
-        //    {
-        //        case BO.MarginCalculationModes.Forex:
-        //            return Domain.MarginInfo.Types.CalculationMode.Forex;
-        //        case BO.MarginCalculationModes.CFD:
-        //            return Domain.MarginInfo.Types.CalculationMode.Cfd;
-        //        case BO.MarginCalculationModes.Futures:
-        //            return Domain.MarginInfo.Types.CalculationMode.Futures;
-        //        case BO.MarginCalculationModes.CFD_Index:
-        //            return Domain.MarginInfo.Types.CalculationMode.CfdIndex;
-        //        case BO.MarginCalculationModes.CFD_Leverage:
-        //            return Domain.MarginInfo.Types.CalculationMode.CfdLeverage;
-        //        default:
-        //            throw new InvalidCastException($"Margin calculation mode not found: {mode}");
-        //    }
-        //}
-
-        //private static BO.MarginCalculationModes Convert(Domain.MarginInfo.Types.CalculationMode mode)
-        //{
-        //    switch (mode)
-        //    {
-        //        case Domain.MarginInfo.Types.CalculationMode.Forex:
-        //            return BO.MarginCalculationModes.Forex;
-        //        case Domain.MarginInfo.Types.CalculationMode.Cfd:
-        //            return BO.MarginCalculationModes.CFD;
-        //        case Domain.MarginInfo.Types.CalculationMode.Futures:
-        //            return BO.MarginCalculationModes.Futures;
-        //        case Domain.MarginInfo.Types.CalculationMode.CfdIndex:
-        //            return BO.MarginCalculationModes.CFD_Index;
-        //        case Domain.MarginInfo.Types.CalculationMode.CfdLeverage:
-        //            return BO.MarginCalculationModes.CFD_Leverage;
-        //        default:
-        //            throw new InvalidCastException($"Margin calculation mode not found: {mode}");
-        //    }
-        //}
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
+using TickTrader.FeedStorage;
 
 namespace TickTrader.Algo.Backtester
 {
@@ -17,10 +17,10 @@ namespace TickTrader.Algo.Backtester
             _src = src;
         }
 
-        public TickSeriesReader(string symbol, ITickStorage storage)
+        public TickSeriesReader(string symbol, ICrossDomainStorage<QuoteInfo> storage)
         {
             _symbol = symbol;
-            _src = storage.GetQuoteStream();
+            _src = storage.GetStream();
         }
 
         public override SeriesReader Clone()

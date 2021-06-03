@@ -9,7 +9,7 @@ using TickTrader.Algo.Domain;
 using TickTrader.SeriesStorage;
 using TickTrader.SeriesStorage.Protobuf;
 
-namespace TickTrader.Algo.Account.FeedStorage
+namespace TickTrader.FeedStorage
 {
     public class CustomFeedStorage : FeedCache
     {
@@ -120,16 +120,6 @@ namespace TickTrader.Algo.Account.FeedStorage
 
             base.Stop();
         }
-
-        //public IVarSet<string, CustomSymbol> GetSymbolsSyncCopy(ISyncContext context)
-        //{
-        //    lock (SyncObj) return new DictionarySyncrhonizer<string, CustomSymbol>(_symbols, context);
-        //}
-
-        //public Task AddAsync(CustomSymbol newSymbol)
-        //{
-        //    return Task.Factory.StartNew(() => Add(newSymbol));
-        //}
 
         private void Add(CustomSymbol newSymbol)
         {

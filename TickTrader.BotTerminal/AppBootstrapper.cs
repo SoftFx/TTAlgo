@@ -13,13 +13,13 @@ using System.Threading.Tasks;
 using System.Windows;
 using TickTrader.Algo.Account;
 using TickTrader.Algo.Account.Fdk2;
-using TickTrader.Algo.Account.FeedStorage;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Isolation.NetFx;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.Server;
 using TickTrader.Algo.ServerControl;
+using TickTrader.FeedStorage;
 using TickTrader.WpfWindowsSupportLibrary;
 
 namespace TickTrader.BotTerminal

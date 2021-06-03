@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using TickTrader.Algo.Account;
-using TickTrader.Algo.Account.FeedStorage;
+using TickTrader.FeedStorage;
 
 namespace TickTrader.BotTerminal
 {

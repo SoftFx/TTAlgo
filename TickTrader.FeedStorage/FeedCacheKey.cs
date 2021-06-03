@@ -2,8 +2,9 @@
 using System.Text;
 using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.Account.FeedStorage
+namespace TickTrader.FeedStorage
 {
+
     public class FeedCacheKey
     {
         public string Symbol { get; private set; }

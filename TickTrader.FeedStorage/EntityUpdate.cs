@@ -1,4 +1,4 @@
-﻿namespace TickTrader.Algo.Account.FeedStorage
+﻿namespace TickTrader.FeedStorage
 {
     public struct EntityUpdateArgs<T>
     {

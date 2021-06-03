@@ -6,21 +6,23 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 using TickTrader.SeriesStorage;
+using TickTrader.SeriesStorage.Lmdb;
 
-namespace TickTrader.Algo.Account.FeedStorage
+namespace TickTrader.FeedStorage
 {
     public class FeedCache : Actor
     {
-        private VarDictionary<FeedCacheKey, ISeriesStorage<DateTime>> _series = new VarDictionary<FeedCacheKey, ISeriesStorage<DateTime>>();
-        private ISeriesDatabase _diskStorage;
-        private ActorEvent<FeedCacheKey> _addListeners = new ActorEvent<FeedCacheKey>();
-        private ActorEvent<FeedCacheKey> _removeListeners = new ActorEvent<FeedCacheKey>();
+        private readonly ActorEvent<FeedCacheKey> _addListeners = new ActorEvent<FeedCacheKey>();
+        private readonly ActorEvent<FeedCacheKey> _removeListeners = new ActorEvent<FeedCacheKey>();
+
+        private readonly VarDictionary<FeedCacheKey, ISeriesStorage<DateTime>> _series = new VarDictionary<FeedCacheKey, ISeriesStorage<DateTime>>();
 
         protected IVarSet<FeedCacheKey> Keys => _series.Keys;
-        protected ISeriesDatabase Database => _diskStorage;
+
+        protected ISeriesDatabase Database { get; private set; }
+
 
         public FeedCache()
         {
@@ -32,6 +34,7 @@ namespace TickTrader.Algo.Account.FeedStorage
                     _removeListeners.FireAndForget(a.Key);
             };
         }
+
 
         public class Handler
         {
@@ -48,15 +51,15 @@ namespace TickTrader.Algo.Account.FeedStorage
 
             public virtual async Task SyncData()
             {
-                 _series = new VarDictionary<FeedCacheKey, object>();
+                _series = new VarDictionary<FeedCacheKey, object>();
 
                 addCallback = ActorCallback.Create<FeedCacheKey>(k => _series.Add(k, null));
-                removeCallback = ActorCallback.Create<FeedCacheKey>(k => _series.Remove(k));
+                RemoveCallback = ActorCallback.Create<FeedCacheKey>(k => _series.Remove(k));
 
                 var snapshot = await _ref.Call(a =>
                 {
                     a._addListeners.Add(addCallback);
-                    a._removeListeners.Add(removeCallback);
+                    a._removeListeners.Add(RemoveCallback);
                     return a._series.Keys.Snapshot.ToList();
                 });
 
@@ -73,12 +76,14 @@ namespace TickTrader.Algo.Account.FeedStorage
                     _ref.Send(a =>
                     {
                         a._addListeners.Remove(addCallback);
-                        a._removeListeners.Remove(removeCallback);
+                        a._removeListeners.Remove(RemoveCallback);
                     });
                 }
             }
 
             public IVarSet<FeedCacheKey> Keys => _series?.Keys;
+
+            public ActorCallback<FeedCacheKey> RemoveCallback { get => removeCallback; set => removeCallback = value; }
 
             public Task Start(string folder)
             {
@@ -131,7 +136,7 @@ namespace TickTrader.Algo.Account.FeedStorage
 
             public ActorChannel<KeyRange<DateTime>> IterateCacheKeys(FeedCacheKey key, DateTime from, DateTime to)
             {
-                var channel = new ActorChannel<KeyRange<DateTime>> (ChannelDirections.Out, 1);
+                var channel = new ActorChannel<KeyRange<DateTime>>(ChannelDirections.Out, 1);
                 _ref.SendChannel(channel, (a, c) => a.IterateCacheKeys(c, key, from, to));
                 return channel;
             }
@@ -148,14 +153,14 @@ namespace TickTrader.Algo.Account.FeedStorage
             public Task RemoveSeries(FeedCacheKey seriesKey)
                 => _ref.Call(a => a.RemoveSeries(seriesKey));
 
-            public IBarStorage CreateBarCrossDomainReader(FeedCacheKey key, DateTime from, DateTime to)
+            public BarCrossDomainReader CreateBarCrossDomainReader(CrossDomainReaderRequest request)
             {
-                return new BarCrossDomainReader(_baseFolder, key, from, to);
+                return new BarCrossDomainReader(_baseFolder, request);
             }
 
-            public ITickStorage CreateTickCrossDomainReader(FeedCacheKey key, DateTime from, DateTime to)
+            public TickCrossDomainReader CreateTickCrossDomainReader(CrossDomainReaderRequest request)
             {
-                return new TickCrossDomainReader(_baseFolder, key, from, to);
+                return new TickCrossDomainReader(_baseFolder, request);
             }
 
             [Conditional("DEBUG")]
@@ -164,10 +169,10 @@ namespace TickTrader.Algo.Account.FeedStorage
 
         protected virtual void Start(string folder)
         {
-            if (_diskStorage != null)
+            if (Database != null)
                 throw new InvalidOperationException("Already started!");
 
-            _diskStorage = SeriesDatabase.Create(new SeriesStorage.Lmdb.LmdbManager(folder));
+            Database = SeriesDatabase.Create(new LmdbManager(folder));
 
             Refresh();
         }
@@ -178,7 +183,7 @@ namespace TickTrader.Algo.Account.FeedStorage
 
             var loadedKeys = new List<FeedCacheKey>();
 
-            foreach (var collectionName in _diskStorage.Collections)
+            foreach (var collectionName in Database.Collections)
             {
                 if (!IsSpecialCollection(collectionName))
                 {
@@ -198,10 +203,10 @@ namespace TickTrader.Algo.Account.FeedStorage
 
         protected virtual void Stop()
         {
-            if (_diskStorage != null)
+            if (Database != null)
             {
-                _diskStorage.Dispose();
-                _diskStorage = null;
+                Database.Dispose();
+                Database = null;
             }
         }
 
@@ -379,9 +384,9 @@ namespace TickTrader.Algo.Account.FeedStorage
             ISeriesStorage<DateTime> collection;
 
             if (key.Frame == Feed.Types.Timeframe.Ticks || key.Frame == Feed.Types.Timeframe.TicksLevel2)
-                collection = _diskStorage.GetSeries(new DateTimeKeySerializer(), TickSerializer.GetSerializer(key), b => b.Time, key.ToCodeString(), true);
+                collection = Database.GetSeries(new DateTimeKeySerializer(), TickSerializer.GetSerializer(key), b => b.Time, key.ToCodeString(), true);
             else
-                collection = _diskStorage.GetSeries(new DateTimeKeySerializer(), new BarSerializer(key.Frame), b => b.OpenTime.ToDateTime(), key.ToCodeString(), false);
+                collection = Database.GetSeries(new DateTimeKeySerializer(), new BarSerializer(key.Frame), b => b.OpenTime.ToDateTime(), key.ToCodeString(), false);
 
             _series.Add(key, collection);
             return collection;
@@ -403,7 +408,7 @@ namespace TickTrader.Algo.Account.FeedStorage
 
         protected void CheckState()
         {
-            if (_diskStorage == null)
+            if (Database == null)
                 throw new Exception("Invalid operation! CustomFeedStorage is not started or already stopped!");
         }
 
