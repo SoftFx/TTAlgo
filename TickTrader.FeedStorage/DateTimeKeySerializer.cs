@@ -3,7 +3,7 @@ using TickTrader.SeriesStorage;
 
 namespace TickTrader.FeedStorage
 {
-    internal class DateTimeKeySerializer : IKeySerializer<DateTime>
+    internal sealed class DateTimeKeySerializer : IKeySerializer<DateTime>
     {
         public int KeySize => 8;
 

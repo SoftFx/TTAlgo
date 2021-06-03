@@ -9,6 +9,7 @@
         }
 
         public T Entity { get; }
+
         public EntityUpdateActions Action { get; }
     }
 

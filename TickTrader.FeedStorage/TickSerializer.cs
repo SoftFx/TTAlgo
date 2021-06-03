@@ -12,12 +12,12 @@ namespace TickTrader.FeedStorage
     {
         public static ISliceSerializer<QuoteInfo> GetSerializer(FeedCacheKey key)
         {
-            if (key.Frame == Feed.Types.Timeframe.Ticks)
+            if (key.TimeFrame == Feed.Types.Timeframe.Ticks)
                 return new TopOfTheBook(key.Symbol);
-            else if (key.Frame == Feed.Types.Timeframe.TicksLevel2)
+            else if (key.TimeFrame == Feed.Types.Timeframe.TicksLevel2)
                 return new FullBook(key.Symbol);
 
-            throw new ArgumentException("Time frame is not supported: " + key.Frame);
+            throw new ArgumentException("Time frame is not supported: " + key.TimeFrame);
         }
 
         public class TopOfTheBook : ISliceSerializer<QuoteInfo>

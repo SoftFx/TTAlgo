@@ -293,7 +293,7 @@ namespace TickTrader.Algo.Account
 
             try
             {
-                _feedProxy.DownloadBars(CreateBlockingChannel(inputStream), key.Symbol, from.ToTimestamp(), correctedTo.ToTimestamp(), key.MarketSide.Value, key.Frame);
+                _feedProxy.DownloadBars(CreateBlockingChannel(inputStream), key.Symbol, from.ToTimestamp(), correctedTo.ToTimestamp(), key.MarketSide.Value, key.TimeFrame);
 
                 var i = from;
                 while (await inputStream.ReadNext())
@@ -360,7 +360,7 @@ namespace TickTrader.Algo.Account
 
         private async Task<DateTime> DownloadTicksInternal(Func<Slice<QuoteInfo>, IAwaitable<bool>> outputAction, FeedCacheKey key, DateTime from, DateTime to)
         {
-            var level2 = key.Frame == Feed.Types.Timeframe.TicksLevel2;
+            var level2 = key.TimeFrame == Feed.Types.Timeframe.TicksLevel2;
             var inputStream = ActorChannel.NewInput<QuoteInfo>();
             var quoteSlicer = TimeSlicer.GetQuoteSlicer(SliceMaxSize, from, to);
             var hasData = false;

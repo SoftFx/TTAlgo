@@ -32,7 +32,7 @@ namespace TickTrader.BotTerminal
 
             _exporters.Add(new CsvExporter());
 
-            DisplayName = string.Format("Export Series: {0} {1} {2}", key.Symbol, key.Frame, key.MarketSide);
+            DisplayName = string.Format("Export Series: {0} {1} {2}", key.Symbol, key.TimeFrame, key.MarketSide);
             
             DateRange = new DateRangeSelectionViewModel();
             ExportObserver = new ProgressViewModel();
@@ -154,7 +154,7 @@ namespace TickTrader.BotTerminal
 
                     try
                     {
-                        if (!_series.Key.Frame.IsTicks())
+                        if (!_series.Key.TimeFrame.IsTicks())
                         {
                             var i = _series.IterateBarCache(from, to);
 
@@ -202,7 +202,7 @@ namespace TickTrader.BotTerminal
             DateRange.Reset();
 
             var key = _series.Key;
-            var range = await _series.Symbol.GetAvailableRange(key.Frame, key.MarketSide);
+            var range = await _series.Symbol.GetAvailableRange(key.TimeFrame, key.MarketSide);
 
             DateTime from = DateTime.UtcNow.Date;
             DateTime to = from;

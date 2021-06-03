@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
 
@@ -7,10 +6,10 @@ namespace TickTrader.Algo.Core
 {
     public interface ITradeApi
     {
-        Task<TradeResultInfo> OpenOrder(bool isAysnc, OpenOrderRequest request);
-        Task<TradeResultInfo> CancelOrder(bool isAysnc, CancelOrderRequest request);
-        Task<TradeResultInfo> ModifyOrder(bool isAysnc, ModifyOrderRequest request);
-        Task<TradeResultInfo> CloseOrder(bool isAysnc, CloseOrderRequest request);
+        Task<TradeResultInfo> OpenOrder(bool isAsync, OpenOrderRequest request);
+        Task<TradeResultInfo> CancelOrder(bool isAsync, CancelOrderRequest request);
+        Task<TradeResultInfo> ModifyOrder(bool isAsync, ModifyOrderRequest request);
+        Task<TradeResultInfo> CloseOrder(bool isAsync, CloseOrderRequest request);
     }
 
     public interface ITradeExecutor

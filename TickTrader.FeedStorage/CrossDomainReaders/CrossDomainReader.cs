@@ -36,7 +36,7 @@ namespace TickTrader.FeedStorage
     }
 
 
-    public abstract class CrossDomainReader<T> : ICrossDomainStorage<T> where T : class
+    public abstract class CrossDomainReader<T> : ICrossDomainStorage<T>
     {
         private readonly string _dataBaseFolder;
         protected readonly CrossDomainReaderRequest _request;

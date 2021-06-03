@@ -96,7 +96,7 @@ namespace TickTrader.FeedStorage
             public Task Stop() => _ref.Call(a => a.Stop());
 
             public Task Put(FeedCacheKey key, DateTime from, DateTime to, QuoteInfo[] values)
-                => Put(key.Symbol, key.Frame, from, to, values);
+                => Put(key.Symbol, key.TimeFrame, from, to, values);
 
             public Task Put(string symbol, Feed.Types.Timeframe timeframe, DateTime from, DateTime to, QuoteInfo[] values)
                 => _ref.Call(a => a.Put(symbol, timeframe, from, to, values));
@@ -383,10 +383,10 @@ namespace TickTrader.FeedStorage
         {
             ISeriesStorage<DateTime> collection;
 
-            if (key.Frame == Feed.Types.Timeframe.Ticks || key.Frame == Feed.Types.Timeframe.TicksLevel2)
-                collection = Database.GetSeries(new DateTimeKeySerializer(), TickSerializer.GetSerializer(key), b => b.Time, key.ToCodeString(), true);
+            if (key.TimeFrame == Feed.Types.Timeframe.Ticks || key.TimeFrame == Feed.Types.Timeframe.TicksLevel2)
+                collection = Database.GetSeries(new DateTimeKeySerializer(), TickSerializer.GetSerializer(key), b => b.Time, key.CodeString(), true);
             else
-                collection = Database.GetSeries(new DateTimeKeySerializer(), new BarSerializer(key.Frame), b => b.OpenTime.ToDateTime(), key.ToCodeString(), false);
+                collection = Database.GetSeries(new DateTimeKeySerializer(), new BarSerializer(key.TimeFrame), b => b.OpenTime.ToDateTime(), key.CodeString(), false);
 
             _series.Add(key, collection);
             return collection;
@@ -442,7 +442,7 @@ namespace TickTrader.FeedStorage
         {
             try
             {
-                Debug.WriteLine("Cache data " + key.ToCodeString() + ":");
+                Debug.WriteLine("Cache data " + key.CodeString() + ":");
 
                 var count = 0;
                 var group = new List<KeyRange<DateTime>>();
