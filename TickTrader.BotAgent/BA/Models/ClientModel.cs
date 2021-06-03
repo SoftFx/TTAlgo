@@ -42,7 +42,6 @@ namespace TickTrader.BotAgent.BA.Models
 
         [DataMember(Name = "bots")]
         private List<TradeBotModel> _bots = new List<TradeBotModel>();
-        private Repository.PackageStorage _packageProvider;
 
         private bool _isInitialized;
         private bool _credsChanged;
@@ -62,7 +61,7 @@ namespace TickTrader.BotAgent.BA.Models
             DisplayName = string.IsNullOrEmpty(displayName) ? $"{server} - {userId}" : displayName;
         }
 
-        public async Task Init(Repository.PackageStorage packageProvider, IFdkOptionsProvider fdkOptionsProvider, AlertStorage storage, AlgoServer server)
+        public async Task Init(IFdkOptionsProvider fdkOptionsProvider, AlertStorage storage, AlgoServer server)
         {
             _loggerId = Interlocked.Increment(ref LoggerNameIdSeed);
             _log = AlgoLoggerFactory.GetLogger<ClientModel>(_loggerId);
@@ -77,7 +76,6 @@ namespace TickTrader.BotAgent.BA.Models
                         DisplayName = $"{Address} - {Username}";
                 }
 
-                _packageProvider = packageProvider;
                 _alertStorage = storage;
                 _server = server;
                 _requestGate = new AsyncGate();
@@ -435,13 +433,6 @@ namespace TickTrader.BotAgent.BA.Models
         {
             CheckInitialized();
 
-            var algoKey = config.Key;
-
-            var package = _packageProvider.GetPackageRef(algoKey.PackageId);
-
-            if (package == null)
-                throw new AlgoException($"Algo Package {algoKey.PackageId} cannot be found!");
-
             var newBot = new TradeBotModel(config);
             BotValidation?.Invoke(newBot);
             InitBot(newBot);
@@ -512,7 +503,7 @@ namespace TickTrader.BotAgent.BA.Models
             bot.ConfigurationChanged += OnBotConfigurationChanged;
             bot.StateChanged += OnBotStateChanged;
 
-            if (bot.Init(_server, this, _packageProvider, ServerModel.GetWorkingFolderFor(bot.Id), _alertStorage))
+            if (bot.Init(_server, this, ServerModel.GetWorkingFolderFor(bot.Id), _alertStorage))
             {
                 BotInitialized?.Invoke(bot);
             }

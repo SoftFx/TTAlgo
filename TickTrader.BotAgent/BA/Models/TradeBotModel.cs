@@ -1,6 +1,7 @@
 ﻿using ActorSharp;
 using NLog;
 using System;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
@@ -28,7 +29,6 @@ namespace TickTrader.BotAgent.BA.Models
         private AlgoData.ControlHandler _algoData;
         private PluginInfo _info;
         private BotListenerProxy _botListener;
-        private Repository.PackageStorage _packageRepo;
         private TaskCompletionSource<object> _startedEvent;
         private bool _closed;
 
@@ -84,13 +84,12 @@ namespace TickTrader.BotAgent.BA.Models
             return false;
         }
         
-        public bool Init(AlgoServer server, ClientModel client, Repository.PackageStorage packageRepo, string workingFolder, AlertStorage storage)
+        public bool Init(AlgoServer server, ClientModel client, string workingFolder, AlertStorage storage)
         {
             try
             {
                 _server = server;
                 _client = client;
-                _packageRepo = packageRepo;
 
                 UpdatePackage();
 
@@ -361,7 +360,7 @@ namespace TickTrader.BotAgent.BA.Models
         {
             var pluginKey = Config.Key;
             PackageId = pluginKey.PackageId;
-            Package = _packageRepo.GetPackageRef(PackageId);
+            Package = _server.PackageStorage.GetPackageRef(PackageId).Result;
 
             if (Package == null)
             {
@@ -369,12 +368,14 @@ namespace TickTrader.BotAgent.BA.Models
                 return;
             }
 
-            _info = _packageRepo.Library.GetPlugin(pluginKey);
+            _info = Package.PackageInfo.Plugins.FirstOrDefault(p => p.Key == pluginKey);
             if (_info == null || !_info.Descriptor_.IsTradeBot)
             {
                 BreakBot($"Trade bot {pluginKey.DescriptorId} is missing in Algo package {PackageId}!");
                 return;
             }
+
+            _server.PackageStorage.ReleasePackageRef(Package);
 
             if (State == PluginModelInfo.Types.PluginState.Broken)
                 ChangeState(PluginModelInfo.Types.PluginState.Stopped, null);

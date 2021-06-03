@@ -18,8 +18,6 @@ namespace TickTrader.BotAgent.BA
         Task UploadPackage(UploadPackageRequest request, string pkgFilePath);
         Task<byte[]> DownloadPackage(string packageId);
         Task RemovePackage(RemovePackageRequest request);
-        Task<List<PluginInfo>> GetAllPlugins();
-        Task<List<PluginInfo>> GetPluginsByType(Metadata.Types.PluginType type);
         Task<MappingCollectionInfo> GetMappingsInfo();
 
         event Action<PackageInfo, ChangeAction> PackageChanged;

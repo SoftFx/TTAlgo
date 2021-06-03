@@ -16,6 +16,7 @@ using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Server;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Package;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -53,15 +54,21 @@ namespace TickTrader.BotAgent.BA.Models
 
             _botIdHelper = new BotIdHelper();
             _allBots = new Dictionary<string, TradeBotModel>();
-            _packageStorage = new PackageStorage(_algoServer);
             _alertStorage = new AlertStorage();
             _threadPoolManager = new ThreadPoolManager();
             _fdkOptionsProvider = fdkOptionsProvider;
 
-            await _algoServer.PackageStorage.WaitLoaded();
+            var pkgStorage = _algoServer.PackageStorage;
 
-            _packageStorage.PackageChanged += (p, a) => PackageChanged?.Invoke(p, a);
-            _packageStorage.PackageStateChanged += p => PackageStateChanged?.Invoke(new PackageStateUpdate { PackageId = p.PackageId, IsLocked = p.IsLocked, IsValid = p.IsValid });
+            await pkgStorage.RegisterRepositoryLocation(SharedConstants.LocalRepositoryId, envService.AlgoRepositoryFolder, true);
+            await pkgStorage.WaitLoaded();
+
+            _reductions = new ReductionCollection();
+            _reductions.LoadDefaultReductions();
+            _mappingsInfo = _reductions.CreateMappings();
+
+            //pkgStorage.PackageUpdated.Subscribe(p => PackageChanged?.Invoke(p));
+            //pkgStorage.PackageStateChanged += p => PackageStateChanged?.Invoke(new PackageStateUpdate { PackageId = p.PackageId, IsLocked = p.IsLocked, IsValid = p.IsValid });
 
             _threadPoolManager.Start(GetBotsCnt());
 
@@ -89,8 +96,6 @@ namespace TickTrader.BotAgent.BA.Models
             public Task UploadPackage(UploadPackageRequest request, string pkgFilePath) => CallActorAsync(a => a._algoServer.PackageStorage.UploadPackage(request, pkgFilePath));
             public Task<byte[]> DownloadPackage(string packageId) => CallActorAsync(a => a._algoServer.PackageStorage.GetPackageBinary(packageId));
             public Task RemovePackage(RemovePackageRequest request) => CallActorAsync(a => a._algoServer.PackageStorage.RemovePackage(request));
-            public Task<List<PluginInfo>> GetAllPlugins() => CallActorAsync(a => a.GetAllPlugins());
-            public Task<List<PluginInfo>> GetPluginsByType(Metadata.Types.PluginType type) => CallActorAsync(a => a.GetPluginsByType(type));
             public Task<MappingCollectionInfo> GetMappingsInfo() => CallActorAsync(a => a.GetMappingsInfo());
 
             public event Action<PackageInfo, ChangeAction> PackageChanged
@@ -194,7 +199,7 @@ namespace TickTrader.BotAgent.BA.Models
             Validate(server, userId, creds);
 
             var acc = new ClientModel(server, userId, creds);
-            await acc.Init(_packageStorage, _fdkOptionsProvider, _alertStorage, _algoServer);
+            await acc.Init(_fdkOptionsProvider, _alertStorage, _algoServer);
 
             var testResult = await acc.TestConnection();
 
@@ -316,7 +321,7 @@ namespace TickTrader.BotAgent.BA.Models
             acc.StateChanged += OnAccountStateChanged;
             acc.BotChanged += OnBotChanged;
             acc.BotStateChanged += OnBotStateChanged;
-            await acc.Init(_packageStorage, _fdkOptionsProvider, _alertStorage, _algoServer);
+            await acc.Init(_fdkOptionsProvider, _alertStorage, _algoServer);
             _algoServer.RegisterAccountProxy(acc.GetAccountProxy());
         }
 
@@ -465,46 +470,18 @@ namespace TickTrader.BotAgent.BA.Models
 
         #region Repository management
 
-        private PackageStorage _packageStorage;
+        private ReductionCollection _reductions;
+        public MappingCollectionInfo _mappingsInfo;
 
         private event Action<PackageInfo, ChangeAction> PackageChanged;
         private event Action<PackageStateUpdate> PackageStateChanged;
 
 
-        private void RemovePackage(RemovePackageRequest request)
-        {
-            var packageId = request.PackageId;
-
-            var dPackage = _packageStorage.GetPackageRef(packageId);
-            if (dPackage != null)
-            {
-                if (dPackage.IsLocked)
-                    throw new PackageLockedException("Cannot remove Algo package: one or more trade bots from this package is being executed! Please stop all bots and try again!");
-
-                var botsToDelete = _allBots.Values.Where(b => b.Package == dPackage).ToList();
-
-                foreach (var bot in botsToDelete)
-                    bot.Remove();
-
-                //_packageStorage.Remove(packageId);
-            }
-        }
-
         private IAlertStorage GetAlertsStorage() => _alertStorage;
-
-        private List<PluginInfo> GetAllPlugins()
-        {
-            return _packageStorage.Library.GetPlugins().ToList();
-        }
-
-        private List<PluginInfo> GetPluginsByType(Metadata.Types.PluginType type)
-        {
-            return _packageStorage.Library.GetPlugins(type).ToList();
-        }
 
         private MappingCollectionInfo GetMappingsInfo()
         {
-            return _packageStorage.Mappings;
+            return _mappingsInfo;
         }
 
         #endregion
