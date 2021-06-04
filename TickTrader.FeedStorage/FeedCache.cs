@@ -384,9 +384,9 @@ namespace TickTrader.FeedStorage
             ISeriesStorage<DateTime> collection;
 
             if (key.TimeFrame == Feed.Types.Timeframe.Ticks || key.TimeFrame == Feed.Types.Timeframe.TicksLevel2)
-                collection = Database.GetSeries(new DateTimeKeySerializer(), TickSerializer.GetSerializer(key), b => b.Time, key.CodeString(), true);
+                collection = Database.GetSeries(new DateTimeKeySerializer(), TickSerializer.GetSerializer(key), b => b.Time, key.CodeString, true);
             else
-                collection = Database.GetSeries(new DateTimeKeySerializer(), new BarSerializer(key.TimeFrame), b => b.OpenTime.ToDateTime(), key.CodeString(), false);
+                collection = Database.GetSeries(new DateTimeKeySerializer(), new BarSerializer(key.TimeFrame), b => b.OpenTime.ToDateTime(), key.CodeString, false);
 
             _series.Add(key, collection);
             return collection;
@@ -442,7 +442,7 @@ namespace TickTrader.FeedStorage
         {
             try
             {
-                Debug.WriteLine("Cache data " + key.CodeString() + ":");
+                Debug.WriteLine("Cache data " + key.CodeString + ":");
 
                 var count = 0;
                 var group = new List<KeyRange<DateTime>>();

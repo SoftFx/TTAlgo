@@ -5,6 +5,9 @@ namespace TickTrader.FeedStorage
 {
     public class FeedCacheKey
     {
+        private static readonly char[] _codeSeparators = new char[] { '_' };
+
+
         public string Symbol { get; }
 
         public Feed.Types.Timeframe TimeFrame { get; }
@@ -12,7 +15,7 @@ namespace TickTrader.FeedStorage
         public Feed.Types.MarketSide? MarketSide { get; }
 
 
-        internal string CodeString() => $"{Symbol}_{TimeFrame}_{MarketSide?.ToString() ?? string.Empty}";
+        internal string CodeString => $"{Symbol}_{TimeFrame}_{MarketSide?.ToString() ?? string.Empty}";
 
 
         public FeedCacheKey(string symbol, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide? priceType = null)
@@ -25,23 +28,26 @@ namespace TickTrader.FeedStorage
 
         internal static bool TryParse(string strCode, out FeedCacheKey key)
         {
-            var parts = strCode.Split(new char[] { '_' }, StringSplitOptions.RemoveEmptyEntries);
+            var parts = strCode?.Split(_codeSeparators, StringSplitOptions.RemoveEmptyEntries);
             key = null;
 
-            if (parts.Length != 2 || parts.Length != 3)
+            if (parts == null || (parts.Length != 2 && parts.Length != 3))
                 return false;
 
             var result = !string.IsNullOrEmpty(parts[0]) & TryParseStrToEnum(parts[1], out Feed.Types.Timeframe timeframe);
 
-            if (result && parts.Length == 3)
+            if (result)
             {
-                if (TryParseStrToEnum(parts[2], out Feed.Types.MarketSide side))
-                    key = new FeedCacheKey(parts[0], timeframe, side);
+                if (parts.Length == 3)
+                {
+                    if (TryParseStrToEnum(parts[2], out Feed.Types.MarketSide side))
+                        key = new FeedCacheKey(parts[0], timeframe, side);
+                    else
+                        return false;
+                }
                 else
-                    return false;
+                    key = new FeedCacheKey(parts[0], timeframe, null);
             }
-            else
-                key = new FeedCacheKey(parts[0], timeframe, null);
 
             return result;
         }
@@ -49,12 +55,15 @@ namespace TickTrader.FeedStorage
         private static bool TryParseStrToEnum<TEnum>(string str, out TEnum value) where TEnum : struct
         {
             value = default;
-            return !string.IsNullOrEmpty(str) && Enum.TryParse(str, out value);
+            return !string.IsNullOrEmpty(str) && Enum.TryParse(str, true, out value);
         }
 
         public override bool Equals(object obj)
         {
-            return obj is FeedCacheKey other && other.Symbol == Symbol && other.MarketSide == MarketSide && other.TimeFrame == TimeFrame;
+            return obj is FeedCacheKey other &&
+                string.Equals(other.Symbol, Symbol) &&
+                other.MarketSide == MarketSide &&
+                other.TimeFrame == TimeFrame;
         }
 
         public override int GetHashCode()
