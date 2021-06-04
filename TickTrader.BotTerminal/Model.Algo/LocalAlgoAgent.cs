@@ -65,8 +65,6 @@ namespace TickTrader.BotTerminal
 
         public MappingCollectionInfo Mappings { get; }
 
-        public LocalAlgoLibrary Library { get; }
-
         public TraderClientModel ClientModel { get; }
 
         public IShell Shell { get; }
@@ -106,7 +104,6 @@ namespace TickTrader.BotTerminal
 
             _reductions = new ReductionCollection();
             IdProvider = new PluginIdProvider();
-            Library = new LocalAlgoLibrary(pkgStorage);
             _botsWarden = new BotsWarden(this);
             _syncContext = new DispatcherSync();
             _packages = new VarDictionary<string, PackageInfo>();
@@ -116,10 +113,8 @@ namespace TickTrader.BotTerminal
             AlertModel = new AlgoAlertModel(Name);
             Bots = _bots.Select((k, v) => (ITradeBot)v);
 
-            Library.PackageUpdated += LibraryOnPackageUpdated;
-            Library.PluginUpdated += LibraryOnPluginUpdated;
-            Library.PackageStateChanged += OnPackageStateChanged;
-            Library.Reset += LibraryOnReset;
+            //Library.PackageStateChanged += OnPackageStateChanged;
+            pkgStorage.PackageUpdated.Subscribe(OnPackageUpdated);
             ClientModel.Connected += ClientModelOnConnected;
             ClientModel.Disconnected += ClientModelOnDisconnected;
             ClientModel.Connection.StateChanged += ClientConnectionOnStateChanged;
@@ -341,53 +336,54 @@ namespace TickTrader.BotTerminal
             StopRunningBotsOnBlockedAccount();
         }
 
-        private void LibraryOnPackageUpdated(UpdateInfo<PackageInfo> update)
+        private void OnPackageUpdated(PackageUpdate update)
         {
-            _syncContext.Invoke(() =>
+            var pkgId = update.Id;
+            var newPkg = update.Package;
+            _packages.TryGetValue(update.Id, out var oldPkg);
+            switch (update.Action)
             {
-                var package = update.Value;
-                switch (update.Type)
-                {
-                    case UpdateInfo.Types.UpdateType.Added:
-                        _packages.Add(package.PackageId, package);
-                        break;
-                    case UpdateInfo.Types.UpdateType.Replaced:
-                        _packages[package.PackageId] = package;
-                        break;
-                    case UpdateInfo.Types.UpdateType.Removed:
-                        _packages.Remove(package.PackageId);
-                        break;
-                }
-            });
+                case Algo.Domain.Package.Types.UpdateAction.Upsert:
+                    _packages[pkgId] = newPkg;
+                    UpdatePlugins(oldPkg, newPkg);
+                    break;
+                case Algo.Domain.Package.Types.UpdateAction.Removed:
+                    _packages.Remove(pkgId);
+                    break;
+                default:
+                    break;
+            }
+            UpdatePlugins(oldPkg, newPkg);
         }
 
-        private void LibraryOnPluginUpdated(UpdateInfo<PluginInfo> update)
+        private void UpdatePlugins(PackageInfo oldPackage, PackageInfo newPackage)
         {
-            _syncContext.Invoke(() =>
+            var newPlugins = newPackage?.Plugins ?? Enumerable.Empty<PluginInfo>();
+            // upsert
+            foreach (var plugin in newPlugins)
             {
-                var plugin = update.Value;
-                switch (update.Type)
+                if (!_plugins.ContainsKey(plugin.Key))
                 {
-                    case UpdateInfo.Types.UpdateType.Added:
-                        _plugins.Add(plugin.Key, plugin);
-                        break;
-                    case UpdateInfo.Types.UpdateType.Replaced:
-                        _plugins[plugin.Key] = plugin;
-                        break;
-                    case UpdateInfo.Types.UpdateType.Removed:
+                    _plugins.Add(plugin.Key, plugin);
+                }
+                else
+                {
+                    _plugins[plugin.Key] = plugin;
+                }
+            }
+
+            if (oldPackage != null)
+            {
+                // remove
+                var newPluginsLookup = newPlugins.ToDictionary(p => p.Key);
+                foreach (var plugin in oldPackage.Plugins)
+                {
+                    if (!newPluginsLookup.ContainsKey(plugin.Key))
+                    {
                         _plugins.Remove(plugin.Key);
-                        break;
+                    }
                 }
-            });
-        }
-
-        private void LibraryOnReset()
-        {
-            _syncContext.Invoke(() =>
-            {
-                _packages.Clear();
-                _plugins.Clear();
-            });
+            }
         }
 
         private string GetBotFolderPath(string botId, PluginFolderInfo.Types.PluginFolderId folderId)

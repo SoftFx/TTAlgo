@@ -279,19 +279,20 @@ namespace TickTrader.BotTerminal
         {
             _syncContext.Invoke(() =>
             {
+                _packages.TryGetValue(package.PackageId, out var oldPackage);
                 switch (updateType)
                 {
                     case UpdateInfo.Types.UpdateType.Added:
                         _packages.Add(package.PackageId, package);
-                        MergePlugins(package);
+                        MergePlugins(oldPackage, package);
                         break;
                     case UpdateInfo.Types.UpdateType.Replaced:
                         _packages[package.PackageId] = package;
-                        MergePlugins(package);
+                        MergePlugins(oldPackage, package);
                         break;
                     case UpdateInfo.Types.UpdateType.Removed:
                         _packages.Remove(package.PackageId);
-                        MergePlugins(new PackageInfo { PackageId = package.PackageId });
+                        MergePlugins(oldPackage, new PackageInfo { PackageId = package.PackageId });
                         break;
                 }
             });
@@ -394,10 +395,11 @@ namespace TickTrader.BotTerminal
         }
 
 
-        private void MergePlugins(PackageInfo package)
+        private void MergePlugins(PackageInfo oldPackage, PackageInfo newPackage)
         {
+            var newPlugins = newPackage?.Plugins ?? Enumerable.Empty<PluginInfo>();
             // upsert
-            foreach (var plugin in package.Plugins)
+            foreach (var plugin in newPlugins)
             {
                 if (!_plugins.ContainsKey(plugin.Key))
                 {
@@ -409,13 +411,16 @@ namespace TickTrader.BotTerminal
                 }
             }
 
-            // remove
-            var newPluginsLookup = package.Plugins.ToDictionary(p => p.Key);
-            foreach (var plugin in _plugins.Values.Where(p => p.Key.PackageId == package.PackageId).ToList())
+            if (oldPackage != null)
             {
-                if (!newPluginsLookup.ContainsKey(plugin.Key))
+                // remove
+                var newPluginsLookup = newPlugins.ToDictionary(p => p.Key);
+                foreach (var plugin in oldPackage.Plugins)
                 {
-                    _plugins.Remove(plugin.Key);
+                    if (!newPluginsLookup.ContainsKey(plugin.Key))
+                    {
+                        _plugins.Remove(plugin.Key);
+                    }
                 }
             }
         }

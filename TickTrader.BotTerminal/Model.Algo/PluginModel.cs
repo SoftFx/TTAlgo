@@ -1,4 +1,5 @@
-﻿using NLog;
+﻿using Machinarium.Qnil;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,8 +24,6 @@ namespace TickTrader.BotTerminal
         public PluginConfig Config { get; private set; }
 
         public string InstanceId { get; }
-
-        public AlgoPackageRef PackageRef { get; private set; }
 
         public string FaultMessage { get; private set; }
 
@@ -57,7 +56,7 @@ namespace TickTrader.BotTerminal
 
             UpdateRefs();
 
-            Agent.Library.PluginUpdated += Library_PluginUpdated;
+            //Agent.Library.PluginUpdated += Library_PluginUpdated;
 
             AlertModel = agent.AlertModel;
             //AlertUpdateEvent += agent.Shell.AlertsManager.UpdateAlertModel;
@@ -65,8 +64,8 @@ namespace TickTrader.BotTerminal
 
         protected async Task<bool> StartExcecutor()
         {
-            if (PackageRef?.IsObsolete ?? true)
-                UpdateRefs();
+            UpdateRefs();
+
             if (State == PluginModelInfo.Types.PluginState.Broken)
                 return false;
 
@@ -179,20 +178,19 @@ namespace TickTrader.BotTerminal
         protected void UpdateRefs()
         {
             var packageId = Config.Key.PackageId;
-            var packageRef = Agent.Library.GetPackageRef(packageId);
-            if (packageRef == null)
+            var packageInfo = Agent.Packages.GetOrDefault(packageId);
+            if (packageInfo == null)
             {
                 ChangeState(PluginModelInfo.Types.PluginState.Broken, $"Algo Package {packageId} is not found!");
                 return;
             }
-            var plugin = Agent.Library.GetPlugin(Config.Key);
+            var plugin = packageInfo.GetPlugin(Config.Key);
             if (plugin == null)
             {
                 ChangeState(PluginModelInfo.Types.PluginState.Broken, $"Plugin {Config.Key.DescriptorId} is missing in Algo package {packageId}!");
                 return;
             }
 
-            PackageRef = packageRef;
             Descriptor = plugin.Descriptor_;
             ChangeState(PluginModelInfo.Types.PluginState.Stopped);
             OnRefsUpdated();

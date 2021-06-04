@@ -120,7 +120,7 @@ namespace TickTrader.BotTerminal
             {
                 if (a.New != null)
                 {
-                    var plugin = env.LocalAgent.Library.GetPlugin(a.New.Key);
+                    var plugin = env.LocalAgent.Plugins.GetOrDefault(a.New.Key);
                     UpdateOptimizationState(plugin.Descriptor_);
                     UpdatePluginState(plugin.Descriptor_);
                     PluginConfig = null;

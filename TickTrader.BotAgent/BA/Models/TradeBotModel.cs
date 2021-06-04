@@ -368,7 +368,7 @@ namespace TickTrader.BotAgent.BA.Models
                 return;
             }
 
-            _info = Package.PackageInfo.Plugins.FirstOrDefault(p => p.Key == pluginKey);
+            _info = Package.PackageInfo.GetPlugin(pluginKey);
             if (_info == null || !_info.Descriptor_.IsTradeBot)
             {
                 BreakBot($"Trade bot {pluginKey.DescriptorId} is missing in Algo package {PackageId}!");
