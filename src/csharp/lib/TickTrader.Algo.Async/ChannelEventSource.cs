@@ -23,7 +23,7 @@ namespace TickTrader.Algo.Async
         private int _subListVersion = 0;
 
 
-        public ChannelWriter<T> Writer { get; }
+        public ChannelWriter<T> Writer => _channel.Writer;
 
 
         public ChannelEventSource(int batchSize = 10)
