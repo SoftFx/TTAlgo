@@ -12,8 +12,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\TickTrader.FeedStorage\TickTrader.FeedStorage.csproj" />
     <ProjectReference Include="..\..\api\TickTrader.Algo.CoreV1\TickTrader.Algo.CoreV1.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.Calculator\TickTrader.Algo.Calculator.csproj" />
+    <ProjectReference Include="..\TickTrader.FeedStorage\TickTrader.FeedStorage.csproj" />
   </ItemGroup>
 
 </Project>

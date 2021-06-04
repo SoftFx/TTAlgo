@@ -14,7 +14,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TickTrader.FeedStorage\TickTrader.FeedStorage.csproj" />
+    <ProjectReference Include="..\..\core\TickTrader.Algo.Domain\TickTrader.Algo.Domain.csproj" />
+    <ProjectReference Include="..\..\core\TickTrader.FeedStorage\TickTrader.FeedStorage.csproj" />
   </ItemGroup>
 
 </Project>
