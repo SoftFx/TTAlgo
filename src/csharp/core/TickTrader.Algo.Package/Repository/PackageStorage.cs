@@ -197,7 +197,7 @@ namespace TickTrader.Algo.Package
             {
                 (var pkgId, var filename) = request;
 
-                if (!string.IsNullOrEmpty(pkgId) && !string.IsNullOrEmpty(pkgId))
+                if (!string.IsNullOrEmpty(pkgId) && !string.IsNullOrEmpty(filename))
                     throw new ArgumentException($"Both {nameof(request.PackageId)} and {nameof(request.Filename)} can't be specified");
                 if (string.IsNullOrEmpty(pkgId) && string.IsNullOrEmpty(filename))
                     throw new ArgumentException($"{nameof(request.PackageId)} or {nameof(request.Filename)} should be specified");
