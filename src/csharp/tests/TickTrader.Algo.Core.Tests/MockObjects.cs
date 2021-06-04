@@ -3,7 +3,7 @@ using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Core.Calc;
+using TickTrader.Algo.Calculator;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.CoreV1.Metadata;

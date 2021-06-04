@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using TickTrader.Algo.Calculator;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Calc;
 using TickTrader.Algo.Core.Infrastructure;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;

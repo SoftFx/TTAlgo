@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.Core.Calc
+namespace TickTrader.Algo.Calculator
 {
     public class MarginAccountCalculator
     {

@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using TickTrader.Algo.Core.Calc.Conversion;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.Core.Calc
+namespace TickTrader.Algo.Calculator
 {
     public abstract class MarketStateBase
     {

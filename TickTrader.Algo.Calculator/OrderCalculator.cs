@@ -1,8 +1,7 @@
 ﻿using System;
-using TickTrader.Algo.Core.Calc.Conversion;
 using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.Core.Calc
+namespace TickTrader.Algo.Calculator
 {
     public sealed class OrderCalculator : IOrderCalculator, IDisposable
     {

@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using TickTrader.Algo.Core.Calc;
+using TickTrader.Algo.Calculator;
 using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Domain;
 

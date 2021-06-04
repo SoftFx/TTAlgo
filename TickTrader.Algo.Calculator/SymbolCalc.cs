@@ -1,8 +1,7 @@
 ﻿using System;
-using TickTrader.Algo.Core.Calc.Conversion;
 using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.Core.Calc
+namespace TickTrader.Algo.Calculator
 {
     public class SymbolNotFoundException : Exception
     {
@@ -22,7 +21,7 @@ namespace TickTrader.Algo.Core.Calc
             Symbol = symbol;
             _market = market;
             AccInfo = accInfo;
-            Buy = new SideCalc(this, Domain.OrderInfo.Types.Side.Buy);
+            Buy = new SideCalc(this, OrderInfo.Types.Side.Buy);
             Sell = new SideCalc(this, Domain.OrderInfo.Types.Side.Sell);
 
             var tracker = market.GetSymbolNodeInternal(Symbol) ?? throw new SymbolNotFoundException("Market state lacks symbol:" + Symbol);

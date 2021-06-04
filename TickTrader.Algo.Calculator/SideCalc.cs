@@ -1,7 +1,7 @@
 ﻿using System;
 using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.Core.Calc
+namespace TickTrader.Algo.Calculator
 {
     public class SideCalc
     {

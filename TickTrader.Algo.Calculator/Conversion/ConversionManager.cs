@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.Core.Calc.Conversion
+namespace TickTrader.Algo.Calculator
 {
     public enum PriceType
     {

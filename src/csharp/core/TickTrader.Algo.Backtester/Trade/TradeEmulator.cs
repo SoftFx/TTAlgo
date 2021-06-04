@@ -1,15 +1,15 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Ext;
 using TickTrader.Algo.Api.Math;
+using TickTrader.Algo.Calculator;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Core.Calc;
-using TickTrader.Algo.Domain;
-using Google.Protobuf.WellKnownTypes;
 using TickTrader.Algo.CoreV1;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Backtester
 {
@@ -513,7 +513,7 @@ namespace TickTrader.Algo.Backtester
             if (!options.HasFlag(OpenOrderOptions.SkipDealing))
             {
                 // Dealer request
-                var dealerRequest = new OpenOrderDealerRequest(order,  new QuoteEntity((QuoteInfo)symbolInfo.LastQuote));
+                var dealerRequest = new OpenOrderDealerRequest(order, new QuoteEntity((QuoteInfo)symbolInfo.LastQuote));
                 _dealer.ConfirmOrderOpen(dealerRequest);
 
                 if (!dealerRequest.Confirmed || dealerRequest.DealerAmount < 0 || dealerRequest.DealerPrice <= 0)

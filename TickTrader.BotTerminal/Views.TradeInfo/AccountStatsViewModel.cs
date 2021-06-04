@@ -1,7 +1,7 @@
 ﻿using Caliburn.Micro;
 using System;
 using TickTrader.Algo.Account;
-using TickTrader.Algo.Core.Calc;
+using TickTrader.Algo.Calculator;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal

@@ -1,8 +1,8 @@
 ﻿using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using System;
+using TickTrader.Algo.Calculator;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Calc;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1

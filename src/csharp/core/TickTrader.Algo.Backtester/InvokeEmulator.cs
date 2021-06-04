@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using TickTrader.Algo.Calculator;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Calc;
 using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Domain;
 

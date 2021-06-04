@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using TickTrader.Algo.Core.Calc;
+using TickTrader.Algo.Calculator;
 
 namespace TickTrader.Algo.CoreV1
 {

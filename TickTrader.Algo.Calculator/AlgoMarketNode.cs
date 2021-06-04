@@ -1,8 +1,8 @@
-﻿using TickTrader.Algo.Core.Calc.Conversion;
+﻿using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Infrastructure;
 using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.Core.Calc
+namespace TickTrader.Algo.Calculator
 {
     /// <summary>
     /// Aggregates different entities by symbol to minimize dicionary lookups.

@@ -4,8 +4,8 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Calculator;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Calc;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 

@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\TickTrader.Algo.Calculator\TickTrader.Algo.Calculator.csproj" />
     <ProjectReference Include="..\..\api\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj" />
     <ProjectReference Include="..\..\core\TickTrader.Algo.Core.Lib\TickTrader.Algo.Core.Lib.csproj" />
     <ProjectReference Include="..\..\core\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj" />

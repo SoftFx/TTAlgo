@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.Core.Calc
+namespace TickTrader.Algo.Calculator
 {
     public class CashAccountCalculator : IDisposable
     {

@@ -1,6 +1,6 @@
 ﻿using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.Core.Calc.Conversion
+namespace TickTrader.Algo.Calculator
 {
     internal static class FormulaBuilder
     {

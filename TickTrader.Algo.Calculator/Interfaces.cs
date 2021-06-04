@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.Core.Calc
+namespace TickTrader.Algo.Calculator
 {
     public struct StatsChange
     {
