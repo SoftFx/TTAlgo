@@ -30,7 +30,7 @@
 
   <property name="ServerControlSrcDir"        value="${SourcesDir}\src\csharp\core\TickTrader.Algo.ServerControl\" />
   <property name="ServerControlProject"        value="${ServerControlSrcDir}TickTrader.Algo.ServerControl.csproj" />
-  <property name="ServerControlBinDir"        value="${ServerControlSrcDir}\bin\${Configuration}\netstandard2.0\publish" />
+  <property name="ServerControlBinDir"        value="${ServerControlSrcDir}\bin\publish" />
   <property name="ServerControlZipFile"     value="${OutputFolder}ServerControl ${Build}.zip" />
 
   <property name="SetupDir"            value="${SourcesDir}TickTrader.Algo.Setup" />
@@ -166,15 +166,21 @@
 
   <target name="PublishServerControl">
 
-    <property name="MSBuild.Target" value="Publish" />
-    <property name="MSBuild.TargetFile" value="${ServerControlProject}" />
-    <call target="RunMSBuildProject" />
+    <exec program="dotnet">
+      <arg line="publish" />
+      <arg line="${ServerControlProject}" />
+      <arg line="-o ${ServerControlBinDir}" />
+      <arg line="-c ${Configuration}" />
+      <arg line="-r win-x86" />
+    </exec>
 
-    <copy todir="${ServerControlBinDir}">
-      <fileset basedir="${TerminalBinDir}">
-        <include name="grpc_csharp_ext.*.dll" />
-      </fileset>
-    </copy>
+    <exec program="dotnet">
+      <arg line="publish" />
+      <arg line="${ServerControlProject}" />
+      <arg line="-o ${ServerControlBinDir}" />
+      <arg line="-c ${Configuration}" />
+      <arg line="-r win-x64" />
+    </exec>
 
   </target>
 
