@@ -12,33 +12,33 @@ namespace TickTrader.Algo.Calculator
         public static IConversionFormula Conversion(SymbolMarketNode tracker, PriceType side)
         {
             if (side == PriceType.Bid)
-                return new GetBid() { SrcSymbol = tracker };
+                return new GetBid(tracker);
             else
-                return new GetAsk() { SrcSymbol = tracker };
+                return new GetAsk(tracker);
         }
 
         public static IConversionFormula InverseConversion(SymbolMarketNode tracker, PriceType side)
         {
             if (side == PriceType.Bid)
-                return new GetInvertedBid() { SrcSymbol = tracker };
+                return new GetInvertedBid(tracker);
             else
-                return new GetInvertedAsk() { SrcSymbol = tracker };
+                return new GetInvertedAsk(tracker);
         }
 
         public static IConversionFormula Then(this IConversionFormula formula, SymbolMarketNode tracker, PriceType side)
         {
             if (side == PriceType.Bid)
-                return new MultByBid() { SrcSymbol = tracker, SrcFromula = formula };
+                return new MultByBid(tracker, formula);
             else
-                return new MultByAsk() { SrcSymbol = tracker, SrcFromula = formula };
+                return new MultByAsk(tracker, formula);
         }
 
         public static IConversionFormula ThenDivide(this IConversionFormula formula, SymbolMarketNode tracker, PriceType side)
         {
             if (side == PriceType.Bid)
-                return new DivByBid() { SrcSymbol = tracker, SrcFromula = formula };
+                return new DivByBid(tracker, formula);
             else
-                return new DivByAsk() { SrcSymbol = tracker, SrcFromula = formula };
+                return new DivByAsk(tracker, formula);
         }
 
         public static IConversionFormula Error(ISymbolInfo symbol, string currency, string accountCurrency)

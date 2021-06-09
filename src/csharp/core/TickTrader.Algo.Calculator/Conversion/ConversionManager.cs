@@ -11,7 +11,7 @@ namespace TickTrader.Algo.Calculator
         Ask = 1,
     }
 
-    public class ConversionManager
+    internal class ConversionManager
     {
         private MarketStateBase _market;
         private Dictionary<Tuple<string, string>, ISymbolInfo> _convertionSet = new Dictionary<Tuple<string, string>, ISymbolInfo>();
@@ -44,28 +44,28 @@ namespace TickTrader.Algo.Calculator
             }
         }
 
-        internal IConversionFormula GetMarginFormula(SymbolMarketNode tracker, string toCurrency)
+        internal IConversionFormula GetMarginFormula(SymbolMarketNode tracker, string depositCurr)
         {
-            return _marginConversions.GetOrAdd(Tuple.Create(tracker.SymbolInfo.Name, toCurrency), () => BuildMarginFormula(tracker, toCurrency));
+            return _marginConversions.GetOrAdd(Tuple.Create(tracker.SymbolInfo.Name, depositCurr), () => BuildMarginFormula(tracker, depositCurr));
         }
 
-        internal IConversionFormula GetPositiveProfitFormula(SymbolMarketNode tracker, string toCurrency)
+        public IConversionFormula GetPositiveProfitFormula(SymbolMarketNode tracker, string depositCurr)
         {
-            return _posProfitConversions.GetOrAdd(Tuple.Create(tracker.SymbolInfo.Name, toCurrency), () => BuildPositiveProfitFormula(tracker, toCurrency));
+            return _posProfitConversions.GetOrAdd(Tuple.Create(tracker.SymbolInfo.Name, depositCurr), () => BuildPositiveProfitFormula(tracker, depositCurr));
         }
 
-        internal IConversionFormula GetNegativeProfitFormula(SymbolMarketNode tracker, string toCurrency)
+        public IConversionFormula GetNegativeProfitFormula(SymbolMarketNode tracker, string depositCurr)
         {
-            return _negProfitConversions.GetOrAdd(Tuple.Create(tracker.SymbolInfo.Name, toCurrency), () => BuildNegativeProfitFormula(tracker, toCurrency));
+            return _negProfitConversions.GetOrAdd(Tuple.Create(tracker.SymbolInfo.Name, depositCurr), () => BuildNegativeProfitFormula(tracker, depositCurr));
         }
 
-        private IConversionFormula BuildMarginFormula(SymbolMarketNode tracker, string toCurrency)
+        private IConversionFormula BuildMarginFormula(SymbolMarketNode tracker, string depositCurr)
         {
             ISymbolInfo XY = tracker.SymbolInfo;
 
             string X = XY.MarginCurrency;
             string Y = XY.ProfitCurrency;
-            string Z = toCurrency;
+            string Z = depositCurr;
 
             // N 1
 

@@ -3,6 +3,15 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Calculator
 {
+    public enum CalcErrorCodes
+    {
+        None = 0,
+        OffQuote,
+        OffCrossQuote,
+        NoCrossSymbol,
+    }
+
+
     public sealed class OrderCalculator : IOrderCalculator, IDisposable
     {
         //private readonly ConversionManager conversionMap;
@@ -42,11 +51,11 @@ namespace TickTrader.Algo.Calculator
             MarginConversionRate.ValChanged += RecalculateStats;
         }
 
-        public Action Recalculate;
+        public Action<SymbolInfo> Recalculate;
 
-        private void RecalculateStats() => Recalculate?.Invoke();
+        private void RecalculateStats() => Recalculate?.Invoke(null);
 
-        public IRateInfo CurrentRate => RateTracker.Rate;
+        //public IRateInfo CurrentRate => RateTracker.Rate;
         public SymbolInfo SymbolInfo { get; }
         internal IConversionFormula PositiveProfitConversionRate { get; private set; }
         internal IConversionFormula NegativeProfitConversionRate { get; private set; }
@@ -297,7 +306,7 @@ namespace TickTrader.Algo.Calculator
 
         private bool GetBid(out double bid, out CalcErrorCodes error)
         {
-            var rate = RateTracker.Rate;
+            var rate = RateTracker.SymbolInfo.LastQuote;
 
             if (!rate.HasBid)
             {
@@ -313,7 +322,7 @@ namespace TickTrader.Algo.Calculator
 
         private bool GetAsk(out double ask, out CalcErrorCodes error)
         {
-            var rate = RateTracker.Rate;
+            var rate = RateTracker.SymbolInfo.LastQuote;
 
             if (!rate.HasAsk)
             {

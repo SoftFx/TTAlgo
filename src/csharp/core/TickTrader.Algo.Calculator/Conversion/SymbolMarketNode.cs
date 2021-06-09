@@ -8,27 +8,27 @@ namespace TickTrader.Algo.Calculator
         public SymbolMarketNode(SymbolInfo smb)
         {
             SymbolInfo = smb;
-            Rate = new QuoteInfo(smb.Name);
+            //Rate = new QuoteInfo(smb.Name);
         }
 
 
         public SymbolInfo SymbolInfo { get; private set; }
-        public IRateInfo Rate { get; private set; }
+        //public IRateInfo Rate { get; private set; }
         public bool IsShadowCopy { get; private set; }
 
-        public double Ask => Rate.Ask;
-        public double Bid => Rate.Bid;
+        public double Ask => SymbolInfo.Ask;
+        public double Bid => SymbolInfo.Bid;
 
-        public bool HasBid => Rate.HasBid;
-        public bool HasAsk => Rate.HasAsk;
+        public bool HasBid => SymbolInfo.LastQuote.HasBid;
+        public bool HasAsk => SymbolInfo.LastQuote.HasAsk;
 
-        public void Update(IRateInfo rate)
-        {
-            Rate = rate;
-            Changed?.Invoke();
-        }
+        //public void Update(IRateInfo rate)
+        //{
+        //    Rate = rate;
+        //    Changed?.Invoke();
+        //}
 
-        public event Action Changed;
+        //public event Action Changed;
 
         public void Update(SymbolInfo smb)
         {

@@ -155,6 +155,13 @@ namespace TickTrader.Algo.Domain
         string GetSnapshotString();
     }
 
+
+    public interface IOrderCalculator
+    {
+        double CalculateProfit(IMarginProfitCalc info);
+        double CalculateMargin(IMarginProfitCalc info);
+    }
+
     public interface IOrderUpdateInfo : IOrderCommonInfo
     {
         string InstanceId { get; }

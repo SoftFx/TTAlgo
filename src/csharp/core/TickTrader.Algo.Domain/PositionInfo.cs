@@ -53,18 +53,4 @@ namespace TickTrader.Algo.Domain
         decimal Margin { get; set; }
         decimal Profit { get; set; }
     }
-
-    public interface IOrderCalculator
-    {
-        double CalculateProfit(IMarginProfitCalc info);
-        double CalculateMargin(IMarginProfitCalc info);
-    }
-
-    public enum CalcErrorCodes
-    {
-        None = 0,
-        OffQuote,
-        OffCrossQuote,
-        NoCrossSymbol,
-    }
 }

@@ -45,8 +45,8 @@ namespace TickTrader.Algo.CoreV1
             var sub = node?.UserSubscriptionInfo;
             if (sub != null)
             {
-                var quote = node.Rate.LastQuote;
-                _context.Builder.InvokeOnQuote(new QuoteEntity(quote));
+                var quote = node.SymbolInfo.LastQuote;
+                _context.Builder.InvokeOnQuote(new QuoteEntity((QuoteInfo)quote));
                 //if (quote.Time >= sub.LastQuoteTime) // old quotes from snapshot should not be sent as new quotes
                 //  collection.OnUpdate(quote);
             }

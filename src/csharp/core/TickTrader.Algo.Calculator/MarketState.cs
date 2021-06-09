@@ -21,17 +21,18 @@ namespace TickTrader.Algo.Calculator
         }
 
         public IEnumerable<SymbolInfo> Symbols { get; private set; }
+
         public IEnumerable<ICurrencyInfo> Currencies { get; private set; }
 
-        public ConversionManager Conversion { get; }
+        internal ConversionManager Conversion { get; }
 
         public void Init(IEnumerable<SymbolInfo> symbolList, IEnumerable<CurrencyInfo> currencyList)
         {
-            Currencies = currencyList.ToList();
-            _currenciesByName = currencyList.ToDictionary(c => c.Name);
+            Currencies = currencyList?.ToList();
+            _currenciesByName = currencyList?.ToDictionary(c => c.Name);
             CurrenciesChanged?.Invoke();
 
-            Symbols = symbolList.ToList();
+            Symbols = symbolList?.ToList();
             InitNodes();
             SymbolsChanged?.Invoke();
 
@@ -102,43 +103,43 @@ namespace TickTrader.Algo.Calculator
         }
     }
 
-    public class MarketState : MarketStateBase
-    {
-        private readonly Dictionary<string, SymbolMarketNode> _smbMap = new Dictionary<string, SymbolMarketNode>();
+    //public class MarketState : MarketStateBase
+    //{
+    //    private readonly Dictionary<string, SymbolMarketNode> _smbMap = new Dictionary<string, SymbolMarketNode>();
 
-        public void Update(IRateInfo rate)
-        {
-            var tracker = GetSymbolNodeOrNull(rate.Symbol);
-            tracker.Update(rate);
-        }
+    //    public void Update(IRateInfo rate)
+    //    {
+    //        var tracker = GetSymbolNodeOrNull(rate.Symbol);
+    //        tracker.Update(rate);
+    //    }
 
-        public void Update(IEnumerable<IRateInfo> rates)
-        {
-            if (rates == null)
-                return;
+    //    public void Update(IEnumerable<IRateInfo> rates)
+    //    {
+    //        if (rates == null)
+    //            return;
 
-            foreach (IRateInfo rate in rates)
-                Update(rate);
-        }
+    //        foreach (IRateInfo rate in rates)
+    //            Update(rate);
+    //    }
 
-        internal SymbolMarketNode GetSymbolNodeOrNull(string symbol)
-        {
-            return _smbMap.GetOrDefault(symbol);
-        }
+    //    internal SymbolMarketNode GetSymbolNodeOrNull(string symbol)
+    //    {
+    //        return _smbMap.GetOrDefault(symbol);
+    //    }
 
-        protected override void InitNodes()
-        {
-            _smbMap.Clear();
+    //    protected override void InitNodes()
+    //    {
+    //        _smbMap.Clear();
 
-            foreach (var smb in Symbols)
-                _smbMap.Add(smb.Name, new SymbolMarketNode(smb));
-        }
+    //        foreach (var smb in Symbols)
+    //            _smbMap.Add(smb.Name, new SymbolMarketNode(smb));
+    //    }
 
-        internal override SymbolMarketNode GetSymbolNodeInternal(string smb)
-        {
-            return GetSymbolNodeOrNull(smb);
-        }
-    }
+    //    internal override SymbolMarketNode GetSymbolNodeInternal(string smb)
+    //    {
+    //        return GetSymbolNodeOrNull(smb);
+    //    }
+    //}
 
     public class AlgoMarketState : MarketStateBase
     {
@@ -194,7 +195,7 @@ namespace TickTrader.Algo.Calculator
             if (node != null)
             {
                 node.SymbolInfo.UpdateRate(newRate.LastQuote);
-                node.Update(newRate);
+                //node.Update(newRate);
             }
         }
     }

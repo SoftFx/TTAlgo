@@ -1193,8 +1193,8 @@ namespace TickTrader.Algo.Backtester
 
             if (_acc.Type == AccountInfo.Types.Type.Gross && position.Entity.TakeProfit.HasValue)
             {
-                double? currentRateBid = currentRate?.NullableBid();
-                double? currentRateAsk = currentRate?.NullableAsk();
+                double? currentRateBid = ((QuoteInfo)currentRate)?.NullableBid();
+                double? currentRateAsk = ((QuoteInfo)currentRate)?.NullableAsk();
                 //position.IsReducedCloseCommission = ((position.Side == OrderSide.Buy && currentRateBid.HasValue &&
                 //                                      position.TakeProfit > currentRateBid) ||
                 //                                     (position.Side == OrderSide.Sell && currentRateAsk.HasValue &&
@@ -1254,9 +1254,9 @@ namespace TickTrader.Algo.Backtester
         //    return orderClone;
         //}
 
-        private void RegisterOrder(OrderAccessor order, IRateInfo currentRate)
+        private void RegisterOrder(OrderAccessor order, IQuoteInfo currentRate)
         {
-            ActivationRecord activationInfo = _activator.AddOrder(order, currentRate);
+            ActivationRecord activationInfo = _activator.AddOrder(order, (QuoteInfo)currentRate);
             // Check if order must be activated immediately
             if (activationInfo != null)
             {
@@ -1300,7 +1300,7 @@ namespace TickTrader.Algo.Backtester
             var mainSymbol = _context.Builder.Symbols.GetOrNull(_settings.CommonSettings.MainSymbol);
 
             using (JournalScope())
-                _opSummary.AddStopOutAction(_acc, lastRate, mainSymbol);
+                _opSummary.AddStopOutAction(_acc, (QuoteInfo)lastRate, mainSymbol);
 
             _scheduler.SetFatalError(new StopOutException("Stop out!"));
         }
@@ -2054,14 +2054,14 @@ namespace TickTrader.Algo.Backtester
         private double? GetCurrentOpenPrice(OrderAccessor order, IRateInfo currentRate = null)
         {
             if (currentRate == null)
-                currentRate = _calcFixture.GetCurrentRateOrNull(order.Info.Symbol);
+                currentRate = (QuoteInfo)_calcFixture.GetCurrentRateOrNull(order.Info.Symbol);
 
             return GetCurrentOpenPrice(order.Info.Side, currentRate);
         }
 
         private double? GetCurrentOpenPrice(OrderInfo.Types.Side side, string smb)
         {
-            IRateInfo currentRate = _calcFixture.GetCurrentRateOrNull(smb);
+            IRateInfo currentRate = (QuoteInfo)_calcFixture.GetCurrentRateOrNull(smb);
             return GetCurrentOpenPrice(side, currentRate);
         }
 
@@ -2073,7 +2073,7 @@ namespace TickTrader.Algo.Backtester
         private double? GetCurrentClosePrice(IOrderCalcInfo order, IRateInfo currentRate = null)
         {
             if (currentRate == null)
-                currentRate = _calcFixture.GetCurrentRateOrNull(order.Symbol);
+                currentRate = (QuoteInfo)_calcFixture.GetCurrentRateOrNull(order.Symbol);
 
             return GetPositionClosePrice(currentRate, order.Side);
         }

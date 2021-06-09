@@ -61,7 +61,7 @@ namespace TickTrader.Algo.Backtester
         {
             _result.Clear();
             var index = node.ActivationIndex as ActivationRegistry;
-            index?.CheckPendingOrders(node.Rate, _result);
+            index?.CheckPendingOrders((QuoteInfo)node.SymbolInfo.LastQuote, _result);
             return _result;
         }
     }

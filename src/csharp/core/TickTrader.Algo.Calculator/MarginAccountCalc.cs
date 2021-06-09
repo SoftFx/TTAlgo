@@ -240,7 +240,7 @@ namespace TickTrader.Algo.Calculator
                 AddOrderWithoutCalculation(order);
 
             foreach (var smb in _bySymbolMap.Values)
-                smb.Recalculate();
+                smb.Recalculate(null);
         }
 
         private void RemoveOrder(IOrderCalcInfo order)

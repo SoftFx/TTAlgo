@@ -3,7 +3,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Calculator
 {
-    internal interface IConversionFormula
+    public interface IConversionFormula
     {
         double Value { get; }
         CalcErrorCodes ErrorCode { get; }
@@ -73,6 +73,19 @@ namespace TickTrader.Algo.Calculator
 
         protected abstract double GetValue();
 
+        internal ComplexConversion() { }
+
+        internal ComplexConversion(SymbolMarketNode srcSymbol) : this(srcSymbol, null) { }
+
+
+        internal ComplexConversion(SymbolMarketNode srcSymbol, IConversionFormula formula)
+        {
+            SrcSymbol = srcSymbol;
+            SrcFromula = formula;
+
+            Value = GetValue();
+        }
+
         protected override void Attach()
         {
             if (SrcFromula != null)
@@ -81,7 +94,7 @@ namespace TickTrader.Algo.Calculator
                 SrcFromula.ValChanged += SrcFromula_ValChanged;
             }
 
-            SrcSymbol.Changed += SrcSymbol_Changed;
+            SrcSymbol.SymbolInfo.RateUpdated += SrcSymbol_Changed;
 
             Value = GetValue();
         }
@@ -94,10 +107,10 @@ namespace TickTrader.Algo.Calculator
                 SrcFromula.ValChanged -= SrcFromula_ValChanged;
             }
 
-            SrcSymbol.Changed -= SrcSymbol_Changed;
+            SrcSymbol.SymbolInfo.RateUpdated -= SrcSymbol_Changed;
         }
 
-        private void SrcSymbol_Changed()
+        private void SrcSymbol_Changed(ISymbolInfo smb)
         {
             Value = GetValue();
         }
@@ -143,6 +156,8 @@ namespace TickTrader.Algo.Calculator
 
     internal class GetAsk : ComplexConversion
     {
+        internal GetAsk(SymbolMarketNode smb) : base(smb) { }
+
         protected override double GetValue()
         {
             if (CheckAsk())
@@ -156,6 +171,8 @@ namespace TickTrader.Algo.Calculator
 
     internal class GetBid : ComplexConversion
     {
+        internal GetBid(SymbolMarketNode smb) : base(smb) { }
+
         protected override double GetValue()
         {
             if (CheckBid())
@@ -169,6 +186,8 @@ namespace TickTrader.Algo.Calculator
 
     internal class GetInvertedAsk : ComplexConversion
     {
+        internal GetInvertedAsk(SymbolMarketNode smb) : base(smb) { }
+
         protected override double GetValue()
         {
             if (CheckAsk())
@@ -182,6 +201,8 @@ namespace TickTrader.Algo.Calculator
 
     internal class GetInvertedBid : ComplexConversion
     {
+        internal GetInvertedBid(SymbolMarketNode smb) : base(smb) { }
+
         protected override double GetValue()
         {
             if (CheckBid())
@@ -195,6 +216,8 @@ namespace TickTrader.Algo.Calculator
 
     internal class MultByBid : ComplexConversion
     {
+        internal MultByBid(SymbolMarketNode node, IConversionFormula formula) : base(node, formula) { }
+
         protected override double GetValue()
         {
             if (CheckBid() && CheckSrcFormula())
@@ -208,6 +231,8 @@ namespace TickTrader.Algo.Calculator
 
     internal class MultByAsk : ComplexConversion
     {
+        internal MultByAsk(SymbolMarketNode node, IConversionFormula formula) : base(node, formula) { }
+
         protected override double GetValue()
         {
             if (CheckAsk() && CheckSrcFormula())
@@ -221,6 +246,8 @@ namespace TickTrader.Algo.Calculator
 
     internal class DivByBid : ComplexConversion
     {
+        internal DivByBid(SymbolMarketNode node, IConversionFormula formula) : base(node, formula) { }
+
         protected override double GetValue()
         {
             if (CheckBid() && CheckSrcFormula())
@@ -234,6 +261,8 @@ namespace TickTrader.Algo.Calculator
 
     internal class DivByAsk : ComplexConversion
     {
+        internal DivByAsk(SymbolMarketNode node, IConversionFormula formula) : base(node, formula) { }
+
         protected override double GetValue()
         {
             if (CheckAsk() && CheckSrcFormula())
@@ -252,7 +281,7 @@ namespace TickTrader.Algo.Calculator
             ErrorCode = errorCode;
         }
 
-        public double Value => throw new InvalidOperationException("Conversion error: " + ErrorCode + "!");
+        public double Value => throw new InvalidOperationException($"Conversion error: {ErrorCode }!");
         public CalcErrorCodes ErrorCode { get; }
         public event Action ValChanged { add { } remove { } }
 

@@ -30,7 +30,7 @@ namespace TickTrader.Algo.Calculator
             if (autoUpdate)
             {
                 Tracker = tracker;
-                Tracker.Changed += Recalculate;
+                Tracker.SymbolInfo.RateUpdated += Recalculate;
             }
         }
 
@@ -47,7 +47,7 @@ namespace TickTrader.Algo.Calculator
 
         public event Action<StatsChange> StatsChanged;
 
-        public void Recalculate()
+        public void Recalculate(ISymbolInfo smb)
         {
             StatsChange change;
 
@@ -108,7 +108,7 @@ namespace TickTrader.Algo.Calculator
             _calc = null;
 
             if (Tracker != null)
-                Tracker.Changed -= Recalculate;
+                Tracker.SymbolInfo.RateUpdated -= Recalculate;
         }
 
         private SideCalc GetSideCalc(IOrderCalcInfo order)
@@ -184,7 +184,7 @@ namespace TickTrader.Algo.Calculator
 
         private void Tracker_Changed()
         {
-            Recalculate();
+            Recalculate(null);
         }
     }
 }

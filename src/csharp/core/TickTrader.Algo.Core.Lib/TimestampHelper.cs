@@ -32,7 +32,7 @@ namespace TickTrader.Algo.Core.Lib
         public static Timestamp AddMilliseconds(this Timestamp time, int cnt)
         {
             long newNanos = time.Nanos + (long)NanosInMillisecond * cnt;
-            var seconds = time.Seconds + Math.DivRem(newNanos, NanosInSecond, out var nanos);
+            var seconds = time.Seconds + System.Math.DivRem(newNanos, NanosInSecond, out var nanos);
             if (nanos < 0)
             {
                 nanos += NanosInSecond;

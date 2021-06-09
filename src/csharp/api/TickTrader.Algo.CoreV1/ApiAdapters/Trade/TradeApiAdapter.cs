@@ -955,21 +955,4 @@ namespace TickTrader.Algo.CoreV1
 
         public OrderCmdResultCodes ErrorCode { get; }
     }
-
-    internal static class TradeApiExtentions
-    {
-        public static OrderCmdResultCodes ToOrderError(this CalcErrorCodes error)
-        {
-            switch (error)
-            {
-                case CalcErrorCodes.None: return OrderCmdResultCodes.Ok;
-                case CalcErrorCodes.NoCrossSymbol: return OrderCmdResultCodes.Misconfiguration;
-                case CalcErrorCodes.OffCrossQuote: return OrderCmdResultCodes.OffQuotes;
-                case CalcErrorCodes.OffQuote: return OrderCmdResultCodes.OffQuotes;
-            }
-
-            throw new Exception("Unknown code: " + error);
-        }
-    }
-
 }
