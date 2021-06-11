@@ -58,13 +58,12 @@ namespace TickTrader.Algo.Calculator
         {
             var key = Tuple.Create(symbol, account.BalanceCurrency);
 
-            OrderCalculator calculator;
-            if (!_orderCalculators.TryGetValue(key, out calculator))
+            if (!_orderCalculators.TryGetValue(key, out OrderCalculator calculator))
             {
                 var tracker = GetSymbolNodeInternal(symbol);
                 if (tracker != null)
                 {
-                    calculator = new OrderCalculator(tracker, Conversion, account);
+                    calculator = new OrderCalculator(tracker.SymbolInfo, Conversion, account);
                     _orderCalculators.Add(key, calculator);
                 }
             }
@@ -143,13 +142,13 @@ namespace TickTrader.Algo.Calculator
 
     public class AlgoMarketState : MarketStateBase
     {
-        private readonly Dictionary<string, AlgoMarketNode> _smbMap = new Dictionary<string, AlgoMarketNode>();
+        private readonly Dictionary<string, SymbolMarketNode> _smbMap = new Dictionary<string, SymbolMarketNode>();
 
         public AlgoMarketState()
         {
         }
 
-        public IEnumerable<AlgoMarketNode> Nodes => _smbMap.Values;
+        public IEnumerable<SymbolMarketNode> Nodes => _smbMap.Values;
 
         protected override void InitNodes()
         {
@@ -170,12 +169,12 @@ namespace TickTrader.Algo.Calculator
                 }
                 else
                 {
-                    _smbMap.Add(smb.Name, new AlgoMarketNode(smb));
+                    _smbMap.Add(smb.Name, new SymbolMarketNode(smb));
                 }
             }
         }
 
-        public AlgoMarketNode GetSymbolNodeOrNull(string symbol)
+        public SymbolMarketNode GetSymbolNodeOrNull(string symbol)
         {
             if (_smbMap.TryGetValue(symbol, out var node))
             {
@@ -189,7 +188,7 @@ namespace TickTrader.Algo.Calculator
             return GetSymbolNodeOrNull(smb);
         }
 
-        public void UpdateRate(IRateInfo newRate, out AlgoMarketNode node)
+        public void UpdateRate(IRateInfo newRate, out SymbolMarketNode node)
         {
             node = GetSymbolNodeOrNull(newRate.Symbol);
             if (node != null)

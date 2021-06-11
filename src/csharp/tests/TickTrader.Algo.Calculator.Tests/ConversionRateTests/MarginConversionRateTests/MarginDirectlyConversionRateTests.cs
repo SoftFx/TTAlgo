@@ -1,11 +1,11 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace TickTrader.Algo.Calculator.Tests.ConvertionRateTests
+namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
 {
     //https://intranet.fxopen.org/wiki/pages/viewpage.action?pageId=24543580 formulas
 
     [TestClass]
-    public sealed class MarginDirectlyConvertionRateTests : ConvertionManagerBase
+    public sealed class MarginDirectlyConversionRateTests : ConversionManagerBase
     {
         [TestMethod]
         [DirectlyConvertionCategory]
@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConvertionRateTests
             _expected = () => 1.0;
             _actualFormula = _algoMarket.Conversion.GetMarginFormula;
 
-            LoadSymbolsAndCheckConvertionRate(X + Y);
+            LoadSymbolsAndCheckConversionRate(X + Y);
         }
 
         [TestMethod]
@@ -30,7 +30,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConvertionRateTests
             _expected = () => Ask[X + Y];
             _actualFormula = _algoMarket.Conversion.GetMarginFormula;
 
-            LoadSymbolsAndCheckConvertionRate(X + Y);
+            LoadSymbolsAndCheckConversionRate(X + Y);
         }
 
         [TestMethod]
@@ -44,7 +44,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConvertionRateTests
             _expected = () => Ask[X + Z];
             _actualFormula = _algoMarket.Conversion.GetMarginFormula;
 
-            LoadSymbolsAndCheckConvertionRate(X + Y, X + Z);
+            LoadSymbolsAndCheckConversionRate(X + Y, X + Z);
         }
 
         [TestMethod]
@@ -58,7 +58,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConvertionRateTests
             _expected = () => 1.0 / Bid[Z + X];
             _actualFormula = _algoMarket.Conversion.GetMarginFormula;
 
-            LoadSymbolsAndCheckConvertionRate(X + Y, Z + X);
+            LoadSymbolsAndCheckConversionRate(X + Y, Z + X);
         }
 
         [TestMethod]
@@ -72,7 +72,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConvertionRateTests
             _expected = () => Ask[X + Y] * Ask[Y + Z];
             _actualFormula = _algoMarket.Conversion.GetMarginFormula;
 
-            LoadSymbolsAndCheckConvertionRate(X + Y, Y + Z);
+            LoadSymbolsAndCheckConversionRate(X + Y, Y + Z);
         }
 
         [TestMethod]
@@ -86,7 +86,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConvertionRateTests
             _expected = () => Ask[X + Y] / Bid[Z + Y];
             _actualFormula = _algoMarket.Conversion.GetMarginFormula;
 
-            LoadSymbolsAndCheckConvertionRate(X + Y, Z + Y);
+            LoadSymbolsAndCheckConversionRate(X + Y, Z + Y);
         }
     }
 }

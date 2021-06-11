@@ -57,7 +57,7 @@ namespace TickTrader.Algo.Backtester
         /// </summary>
         /// <param name="rate"></param>
         /// <returns></returns>
-        public List<ActivationRecord> CheckPendingOrders(AlgoMarketNode node)
+        public List<ActivationRecord> CheckPendingOrders(SymbolMarketNode node)
         {
             _result.Clear();
             var index = node.ActivationIndex as ActivationRegistry;

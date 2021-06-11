@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 
-namespace TickTrader.Algo.Calculator.Tests.ConvertionRateTests
+namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
 {
-    public abstract class ProfitConvertionRateBase : ConvertionManagerBase
+    //https://intranet.fxopen.org/wiki/display/TIC/Profit formulas
+
+    public abstract class ProfitConversionRateBase : ConversionManagerBase
     {
         protected abstract Dictionary<string, double> Price1 { get; }
 
@@ -16,7 +18,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConvertionRateTests
 
             _expected = () => 1.0 / Price2[X + Y];
 
-            LoadSymbolsAndCheckConvertionRate(X + Y);
+            LoadSymbolsAndCheckConversionRate(X + Y);
         }
 
         public void Run_Y_Equal_Z_test()
@@ -26,7 +28,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConvertionRateTests
 
             _expected = () => 1.0;
 
-            LoadSymbolsAndCheckConvertionRate(X + Y);
+            LoadSymbolsAndCheckConversionRate(X + Y);
         }
 
         public void Run_XZ_test()
@@ -37,7 +39,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConvertionRateTests
 
             _expected = () => 1.0 / Price2[X + Y] * Price1[X + Z];
 
-            LoadSymbolsAndCheckConvertionRate(X + Y, X + Z);
+            LoadSymbolsAndCheckConversionRate(X + Y, X + Z);
         }
 
         public void Run_ZX_test()
@@ -48,7 +50,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConvertionRateTests
 
             _expected = () => 1.0 / Price2[X + Y] / Price2[Z + X];
 
-            LoadSymbolsAndCheckConvertionRate(X + Y, Z + X);
+            LoadSymbolsAndCheckConversionRate(X + Y, Z + X);
         }
 
         public void Run_YZ_test()
@@ -59,7 +61,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConvertionRateTests
 
             _expected = () => Price1[Y + Z];
 
-            LoadSymbolsAndCheckConvertionRate(X + Y, Y + Z);
+            LoadSymbolsAndCheckConversionRate(X + Y, Y + Z);
         }
 
         public void Run_ZY_test()
@@ -70,7 +72,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConvertionRateTests
 
             _expected = () => 1 / Price2[Z + Y];
 
-            LoadSymbolsAndCheckConvertionRate(X + Y, Z + Y);
+            LoadSymbolsAndCheckConversionRate(X + Y, Z + Y);
         }
 
         public void Run_YC_ZC_test()
@@ -82,7 +84,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConvertionRateTests
 
             _expected = () => Price1[Y + C] / Price2[Z + C];
 
-            LoadSymbolsAndCheckConvertionRate(X + Y, Y + C, Z + C);
+            LoadSymbolsAndCheckConversionRate(X + Y, Y + C, Z + C);
         }
 
         public void Run_CY_ZC_test()
@@ -94,7 +96,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConvertionRateTests
 
             _expected = () => 1.0 / Price2[C + Y] / Price2[Z + C];
 
-            LoadSymbolsAndCheckConvertionRate(X + Y, C + Y, Z + C);
+            LoadSymbolsAndCheckConversionRate(X + Y, C + Y, Z + C);
         }
 
         public void Run_YC_CZ_test()
@@ -106,7 +108,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConvertionRateTests
 
             _expected = () => Price1[Y + C] * Price1[C + Z];
 
-            LoadSymbolsAndCheckConvertionRate(X + Y, Y + C, C + Z);
+            LoadSymbolsAndCheckConversionRate(X + Y, Y + C, C + Z);
         }
 
         public void Run_CY_CZ_test()
@@ -118,7 +120,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConvertionRateTests
 
             _expected = () => 1.0 / Price2[C + Y] * Price1[C + Z];
 
-            LoadSymbolsAndCheckConvertionRate(X + Y, C + Y, C + Z);
+            LoadSymbolsAndCheckConversionRate(X + Y, C + Y, C + Z);
         }
     }
 }

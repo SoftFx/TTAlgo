@@ -19,15 +19,20 @@ namespace TickTrader.Algo.Domain
         public void UpdateRate(IQuoteInfo quote)
         {
             LastQuote = quote;
-            Bid = quote.Bid;
-            Ask = quote.Ask;
+            Bid = quote?.Bid ?? double.NaN;
+            Ask = quote?.Ask ?? double.NaN;
 
             RateUpdated?.Invoke(this);
         }
 
+        bool ISymbolInfo.HasBid => LastQuote?.HasBid ?? false;
+        bool ISymbolInfo.HasAsk => LastQuote?.HasAsk ?? false;
+
         string ISymbolInfo.MarginCurrency => BaseCurrency;
 
         string ISymbolInfo.ProfitCurrency => CounterCurrency; // QuoteCurrency.Name; //??? maybe, QuoteCurrency == CounterCurrency
+
+        string ISymbolInfo.NodeKey => $"{BaseCurrency}{CounterCurrency}";
 
         double ISymbolInfo.Point => Math.Pow(10, -Digits);
 
@@ -64,6 +69,8 @@ namespace TickTrader.Algo.Domain
         double Point { get; }
         double Bid { get; set; }
         double Ask { get; set; }
+        bool HasBid { get; }
+        bool HasAsk { get; }
         int Digits { get; }
         double LotSize { get; }
 
@@ -72,6 +79,7 @@ namespace TickTrader.Algo.Domain
         double MarginHedged { get; }
         string MarginCurrency { get; }
         string ProfitCurrency { get; }
+        string NodeKey { get; }
         double ContractSizeFractional { get; }
 
         Domain.SwapInfo.Types.Type SwapType { get; }

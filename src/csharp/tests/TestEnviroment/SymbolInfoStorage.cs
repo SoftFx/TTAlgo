@@ -6,8 +6,6 @@ namespace TestEnviroment
 {
     public sealed class SymbolInfoStorage
     {
-        private readonly TestRateGenerator _rateGenerator;
-
         private readonly List<(string, string)> _symbolCurr = new()
         {
             ("EUR", "USD"),
@@ -27,8 +25,6 @@ namespace TestEnviroment
 
         private SymbolInfoStorage()
         {
-            _rateGenerator = TestRateGenerator.Instance;
-
             Symbols = _symbolCurr.ToDictionary(k => $"{k.Item1}{k.Item2}", v => SymbolFactory.BuildSymbol(v.Item1, v.Item2));
 
             var smb = Symbols["EURUSD"];
@@ -49,10 +45,19 @@ namespace TestEnviroment
         public void AllSymbolsRateUpdate()
         {
             foreach (var symbol in Symbols.Values)
-                symbol.UpdateRate(_rateGenerator.BuildNewQuote(symbol.Name));
+                symbol.BuildNewQuote();
 
             Bid = Symbols.ToDictionary(k => k.Key, v => v.Value.Bid);
             Ask = Symbols.ToDictionary(k => k.Key, v => v.Value.Ask);
+        }
+
+        public void ResetAllRateUpdate()
+        {
+            foreach (var symbol in Symbols.Values)
+                symbol.UpdateRate(null);
+
+            Bid = null;
+            Ask = null;
         }
     }
 }

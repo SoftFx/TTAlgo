@@ -1,23 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using TickTrader.Algo.Core.Lib;
+﻿using System.Collections.Generic;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Calculator
 {
-    public enum PriceType
+    internal sealed class ConversionManager
     {
-        Bid = 0,
-        Ask = 1,
-    }
+        private readonly MarketStateBase _market;
 
-    internal class ConversionManager
-    {
-        private MarketStateBase _market;
-        private Dictionary<Tuple<string, string>, ISymbolInfo> _convertionSet = new Dictionary<Tuple<string, string>, ISymbolInfo>();
-        private Dictionary<Tuple<string, string>, IConversionFormula> _marginConversions = new Dictionary<Tuple<string, string>, IConversionFormula>();
-        private Dictionary<Tuple<string, string>, IConversionFormula> _posProfitConversions = new Dictionary<Tuple<string, string>, IConversionFormula>();
-        private Dictionary<Tuple<string, string>, IConversionFormula> _negProfitConversions = new Dictionary<Tuple<string, string>, IConversionFormula>();
+        private readonly Dictionary<string, ISideNode> Bid = new Dictionary<string, ISideNode>();
+        private readonly Dictionary<string, ISideNode> Ask = new Dictionary<string, ISideNode>();
+
+        private readonly Dictionary<(string, string), IConversionFormula> _marginConversions = new Dictionary<(string, string), IConversionFormula>();
+        private readonly Dictionary<(string, string), IConversionFormula> _posProfitConversions = new Dictionary<(string, string), IConversionFormula>();
+        private readonly Dictionary<(string, string), IConversionFormula> _negProfitConversions = new Dictionary<(string, string), IConversionFormula>();
 
         public ConversionManager(MarketStateBase market)
         {
@@ -26,263 +21,182 @@ namespace TickTrader.Algo.Calculator
 
         internal void Init()
         {
-            _convertionSet.Clear();
+            Ask.Clear();
+            Bid.Clear();
+
             _marginConversions.Clear();
             _posProfitConversions.Clear();
             _negProfitConversions.Clear();
-            //.negAssetFormulas.Clear();
-            FillConversionSet();
+
+            FillConversionSet(_market.Symbols);
         }
 
-        private void FillConversionSet()
+        private void FillConversionSet(IEnumerable<ISymbolInfo> symbols)
         {
-            foreach (var symbol in _market.Symbols)
-            {
-                var key = Tuple.Create(symbol.BaseCurrency, symbol.CounterCurrency);
-                if (!_convertionSet.ContainsKey(key))
-                    _convertionSet.Add(key, symbol);
-            }
+            foreach (var symbol in symbols)
+                if (!Exist(symbol.NodeKey))
+                {
+                    Bid[symbol.NodeKey] = new BidSideNode(symbol);
+                    Ask[symbol.NodeKey] = new AskSideNode(symbol);
+                }
         }
 
-        internal IConversionFormula GetMarginFormula(SymbolMarketNode tracker, string depositCurr)
+        internal IConversionFormula GetMarginFormula(ISymbolInfo tracker, string depositCurr)
         {
-            return _marginConversions.GetOrAdd(Tuple.Create(tracker.SymbolInfo.Name, depositCurr), () => BuildMarginFormula(tracker, depositCurr));
+            var key = (tracker.Name, depositCurr);
+
+            if (!_marginConversions.ContainsKey(key))
+                _marginConversions[key] = BuildMarginFormula(tracker, depositCurr);
+
+            return _marginConversions[key];
         }
 
-        public IConversionFormula GetPositiveProfitFormula(SymbolMarketNode tracker, string depositCurr)
+        public IConversionFormula GetPositiveProfitFormula(ISymbolInfo tracker, string depositCurr)
         {
-            return _posProfitConversions.GetOrAdd(Tuple.Create(tracker.SymbolInfo.Name, depositCurr), () => BuildPositiveProfitFormula(tracker, depositCurr));
+            var key = (tracker.Name, depositCurr);
+
+            if (!_posProfitConversions.ContainsKey(key))
+                _posProfitConversions[key] = BuildProfitFormula(tracker, depositCurr, Bid, Ask);
+
+            return _posProfitConversions[key];
         }
 
-        public IConversionFormula GetNegativeProfitFormula(SymbolMarketNode tracker, string depositCurr)
+        public IConversionFormula GetNegativeProfitFormula(ISymbolInfo tracker, string depositCurr)
         {
-            return _negProfitConversions.GetOrAdd(Tuple.Create(tracker.SymbolInfo.Name, depositCurr), () => BuildNegativeProfitFormula(tracker, depositCurr));
+            var key = (tracker.Name, depositCurr);
+
+            if (!_negProfitConversions.ContainsKey(key))
+                _negProfitConversions[key] = BuildProfitFormula(tracker, depositCurr, Ask, Bid);
+
+            return _negProfitConversions[key];
         }
 
-        private IConversionFormula BuildMarginFormula(SymbolMarketNode tracker, string depositCurr)
+        private IConversionFormula BuildMarginFormula(ISymbolInfo node, string depositCurr)
         {
-            ISymbolInfo XY = tracker.SymbolInfo;
-
-            string X = XY.MarginCurrency;
-            string Y = XY.ProfitCurrency;
+            string X = node.MarginCurrency;
+            string Y = node.ProfitCurrency;
             string Z = depositCurr;
 
-            // N 1
-
             if (X == Z)
-                return FormulaBuilder.Direct();
-
-            // N 2
+                return Formula.Direct; // N 1
 
             if (Y == Z)
-                return FormulaBuilder.Conversion(tracker, PriceType.Ask);
+                return Formula.Get(Ask[X + Y]); // N 2
 
-            // N 3
+            if (Exist(X + Z))
+                return Formula.Get(Ask[X + Z]); // N 3
 
-            ISymbolInfo XZ = GetFromSet(X, Z);
+            if (Exist(Z + X))
+                return Formula.Inv(Bid[Z + X]); // N 4
 
-            if (XZ != null)
-                return FormulaBuilder.Conversion(GetRate(XZ), PriceType.Ask);
+            if (Exist(Y + Z))
+                return Formula.Get(Ask[X + Y]).Mul(Ask[Y + Z]); // N 5
 
-            // N 4
+            if (Exist(Z + Y))
+                return Formula.Get(Ask[X + Y]).Div(Bid[Z + Y]); // N 6
 
-            ISymbolInfo ZX = GetFromSet(Z, X);
-
-            if (ZX != null)
-                return FormulaBuilder.InverseConversion(GetRate(ZX), PriceType.Bid);
-
-            // N 5
-
-            ISymbolInfo YZ = GetFromSet(Y, Z);
-
-            if (YZ != null)
-                return FormulaBuilder.Conversion(GetRate(XY), PriceType.Ask)
-                                     .Then(GetRate(YZ), PriceType.Ask);
-
-            // N 6
-
-            ISymbolInfo ZY = GetFromSet(Z, Y);
-
-            if (ZY != null)
-                return FormulaBuilder.Conversion(GetRate(XY), PriceType.Ask)
-                                     .ThenDivide(GetRate(ZY), PriceType.Bid);
 
             foreach (var curr in _market.Currencies)
             {
-                string C = curr.Name;
+                var C = curr.Name;
+                var XC = Exist(X + C);
+                var ZC = Exist(Z + C);
 
-                // N 7
 
-                ISymbolInfo XC = GetFromSet(X, C);
-                ISymbolInfo ZC = GetFromSet(Z, C);
+                if (XC && ZC)
+                    return Formula.Get(Ask[X + C]).Div(Bid[Z + C]); // N 7
 
-                if (XC != null && ZC != null)
-                    return FormulaBuilder.Conversion(GetRate(XC), PriceType.Ask)
-                                         .ThenDivide(GetRate(ZC), PriceType.Bid);
 
-                // N 8
+                var CX = Exist(C + X);
 
-                ISymbolInfo CX = GetFromSet(C, X);
+                if (Exist(C + X) && ZC)
+                    return Formula.Inv(Bid[C + X]).Div(Bid[Z + C]); // N 8
 
-                if (CX != null && ZC != null)
-                    return FormulaBuilder.InverseConversion(GetRate(CX), PriceType.Bid)
-                                         .ThenDivide(GetRate(ZC), PriceType.Bid);
 
-                // N 9
+                var CZ = Exist(C + Z);
 
-                ISymbolInfo CZ = GetFromSet(C, Z);
+                if (XC && CZ)
+                    return Formula.Get(Ask[X + C]).Mul(Ask[C + Z]); // N 9
 
-                if (XC != null && CZ != null)
-                    return FormulaBuilder.Conversion(GetRate(XC), PriceType.Ask)
-                                         .Then(GetRate(CZ), PriceType.Ask);
+                if (CX && CZ)
+                    return Formula.Inv(Bid[C + X]).Mul(Ask[C + Z]); // N 10
 
-                // N 10
 
-                if (CX != null && CZ != null)
-                    return FormulaBuilder.InverseConversion(GetRate(CX), PriceType.Bid)
-                                         .Then(GetRate(CZ), PriceType.Ask);
+                var YC = Exist(Y + C);
 
-                // N 11
+                if (YC && ZC)
+                    return Formula.Get(Ask[Y + C]).Div(Bid[Z + C]).Mul(Ask[X + Y]); // N 11
 
-                ISymbolInfo YC = GetFromSet(Y, C);
 
-                if (YC != null && ZC != null)
-                    return FormulaBuilder.Conversion(GetRate(YC), PriceType.Ask)
-                                         .ThenDivide(GetRate(ZC), PriceType.Bid)
-                                         .Then(GetRate(XY), PriceType.Ask);
+                var CY = Exist(C + Y);
 
-                // N 12
+                if (CY && ZC)
+                    return Formula.Inv(Bid[C + Y]).Div(Bid[Z + C]).Mul(Ask[X + Y]); // N 12
 
-                ISymbolInfo CY = GetFromSet(C, Y);
+                if (YC && CZ)
+                    return Formula.Get(Ask[Y + C]).Mul(Ask[C + Z]).Mul(Ask[X + Y]); // N 13
 
-                if (CY != null && ZC != null)
-                    return FormulaBuilder.InverseConversion(GetRate(CY), PriceType.Bid)
-                                         .ThenDivide(GetRate(ZC), PriceType.Bid)
-                                         .Then(GetRate(XY), PriceType.Ask);
-
-                // N 13
-
-                if (YC != null && CZ != null)
-                    return FormulaBuilder.Conversion(GetRate(YC), PriceType.Ask)
-                                         .Then(GetRate(CZ), PriceType.Ask)
-                                         .Then(GetRate(XY), PriceType.Ask);
-
-                // N 14
-
-                if (CY != null && CZ != null)
-                    return FormulaBuilder.InverseConversion(GetRate(CY), PriceType.Bid)
-                                         .Then(GetRate(CZ), PriceType.Ask)
-                                         .Then(GetRate(XY), PriceType.Ask);
+                if (CY && CZ)
+                    return Formula.Inv(Bid[C + Y]).Mul(Ask[C + Z]).Mul(Ask[X + Y]); // N 14
             }
 
-            return FormulaBuilder.Error(XY, X, Z);
+            return Formula.ErrorBuild;
         }
 
-        private IConversionFormula BuildPositiveProfitFormula(SymbolMarketNode tracker, string toCurrency)
-        {
-            return BuildProfitFormula(tracker, toCurrency, PriceType.Bid, PriceType.Ask);
-        }
 
-        private IConversionFormula BuildNegativeProfitFormula(SymbolMarketNode tracker, string toCurrency)
+        private IConversionFormula BuildProfitFormula(ISymbolInfo node, string toCurrency, Dictionary<string, ISideNode> price1, Dictionary<string, ISideNode> price2)
         {
-            return BuildProfitFormula(tracker, toCurrency, PriceType.Ask, PriceType.Bid);
-        }
-
-        private IConversionFormula BuildProfitFormula(SymbolMarketNode tracker, string toCurrency, PriceType price1, PriceType price2)
-        {
-            ISymbolInfo XY = tracker.SymbolInfo;
-
-            string X = XY.MarginCurrency;
-            string Y = XY.ProfitCurrency;
+            string X = node.MarginCurrency;
+            string Y = node.ProfitCurrency;
             string Z = toCurrency;
 
-            // N 1
-
             if (Y == Z)
-                return FormulaBuilder.Direct();
-
-            // N 2
+                return Formula.Direct; // N 1
 
             if (X == Z)
-                return FormulaBuilder.InverseConversion(this.GetRate(XY), price2);
+                return Formula.Inv(price2[X + Y]); // N 2
 
-            // N 3
+            if (Exist(Y + Z))
+                return Formula.Get(price1[Y + Z]); // N 3
 
-            ISymbolInfo YZ = GetFromSet(Y, Z);
+            if (Exist(Z + Y))
+                return Formula.Inv(price2[Z + Y]); // N 4
 
-            if (YZ != null)
-                return FormulaBuilder.Conversion(GetRate(YZ), price1);
+            if (Exist(Z + X))
+                return Formula.Inv(price2[X + Y]).Div(price2[Z + X]); // N 5
 
-            // N 4
+            if (Exist(X + Z))
+                return Formula.Inv(price2[X + Y]).Mul(price1[X + Z]); // N 6
 
-            ISymbolInfo ZY = GetFromSet(Z, Y);
-
-            if (ZY != null)
-                return FormulaBuilder.InverseConversion(GetRate(ZY), price2);
-
-            // N 5
-
-            ISymbolInfo ZX = GetFromSet(Z, X);
-
-            if (ZX != null)
-                return FormulaBuilder.InverseConversion(GetRate(XY), price2)
-                                     .ThenDivide(GetRate(ZX), price2);
-
-            // N 6
-
-            ISymbolInfo XZ = GetFromSet(X, Z);
-
-            if (XZ != null)
-                return FormulaBuilder.InverseConversion(GetRate(XY), price2)
-                                     .Then(GetRate(XZ), price1);
 
             foreach (var curr in this._market.Currencies)
             {
-                string C = curr.Name;
+                var C = curr.Name;
+                var YC = Exist(Y + C);
+                var ZC = Exist(Z + C);
 
-                // N 7
+                if (YC && ZC)
+                    return Formula.Get(price1[Y + C]).Div(price2[Z + C]); // N 7
 
-                ISymbolInfo YC = GetFromSet(Y, C);
-                ISymbolInfo ZC = GetFromSet(Z, C);
 
-                if (YC != null && ZC != null)
-                    return FormulaBuilder.Conversion(GetRate(YC), price1)
-                                         .ThenDivide(GetRate(ZC), price2);
+                var CY = Exist(C + Y);
 
-                // N 8
+                if (CY && ZC)
+                    return Formula.Inv(price2[C + Y]).Div(price2[Z + C]); // N 8
 
-                ISymbolInfo CY = GetFromSet(C, Y);
 
-                if (CY != null && ZC != null)
-                    return FormulaBuilder.InverseConversion(GetRate(CY), price2)
-                                         .ThenDivide(GetRate(ZC), price2);
+                var CZ = Exist(C + Z);
 
-                // N 9
+                if (YC && CZ)
+                    return Formula.Get(price1[Y + C]).Mul(price1[C + Z]); // N 9
 
-                ISymbolInfo CZ = GetFromSet(C, Z);
-
-                if (YC != null && CZ != null)
-                    return FormulaBuilder.Conversion(GetRate(YC), price1)
-                                         .Then(GetRate(CZ), price1);
-
-                // N 10
-
-                if (CY != null && CZ != null)
-                    return FormulaBuilder.InverseConversion(GetRate(CY), price2)
-                                         .Then(GetRate(CZ), price1);
+                if (CY && CZ)
+                    return Formula.Inv(price2[C + Y]).Mul(price1[C + Z]); // N 10
             }
 
-            return FormulaBuilder.Error(XY, Y, Z);
+            return Formula.ErrorBuild;
         }
 
-        private ISymbolInfo GetFromSet(string currency1, string currency2)
-        {
-            return _convertionSet.GetOrDefault(Tuple.Create(currency1, currency2));
-        }
-
-        private SymbolMarketNode GetRate(ISymbolInfo symbol)
-        {
-            return _market.GetSymbolNodeInternal(symbol.Name) ?? throw new Exception("Unknown symbol: " + symbol.Name);
-        }
+        private bool Exist(string key) => Bid.ContainsKey(key);
     }
 }

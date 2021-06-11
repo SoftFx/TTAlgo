@@ -51,7 +51,7 @@ namespace TickTrader.Algo.Backtester
         public ScheduleEmulator Scheduler { get; } = new ScheduleEmulator();
         public EmulatorStates State { get; private set; }
 
-        public event Action<AlgoMarketNode> RateUpdated;
+        public event Action<SymbolMarketNode> RateUpdated;
         public event Action<EmulatorStates> StateUpdated;
 
         #region InvokeStartegy implementation
@@ -475,8 +475,8 @@ namespace TickTrader.Algo.Backtester
 
             DelayExecution();
 
-            var bufferUpdate = OnFeedUpdate(rate, out var node);
-            RateUpdated?.Invoke(node);
+            //var bufferUpdate = OnFeedUpdate(rate, out var node);
+            RateUpdated?.Invoke(/*node*/null);
             _collector.OnRateUpdate(rate);
 
             var acc = Builder.Account;

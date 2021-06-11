@@ -1,10 +1,10 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 
-namespace TickTrader.Algo.Calculator.Tests.ConvertionRateTests
+namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
 {
     [TestClass]
-    public sealed class PositiveProfitDirectlyConvertionRateTests : ProfitConvertionRateBase
+    public sealed class PositiveProfitDirectlyConversionRateTests : ProfitConversionRateBase
     {
         protected override Dictionary<string, double> Price1 => Bid;
 

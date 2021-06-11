@@ -1,49 +1,58 @@
-﻿using TickTrader.Algo.Domain;
+﻿using System;
+using System.Collections.Generic;
+using TickTrader.Algo.Calculator.Operators;
+using TickTrader.Algo.Core.Lib.Math;
 
 namespace TickTrader.Algo.Calculator
 {
-    internal static class FormulaBuilder
+    internal sealed class FormulaBuilder : IConversionFormula
     {
-        public static IConversionFormula Direct()
+        private readonly List<IOperation> _operations;
+        private readonly ISideNode _node;
+
+        public double Value { get; private set; }
+
+        public CalcErrorCodes ErrorCode => throw new NotImplementedException();
+
+        internal FormulaBuilder(ISideNode node)
         {
-            return new NoConvertion();
+            _operations = new List<IOperation>(2);
+
+            _node = Subscribe(node);
+
+            RecalculateFormula();
         }
 
-        public static IConversionFormula Conversion(SymbolMarketNode tracker, PriceType side)
+        public FormulaBuilder Inv() => AddOperation(new InvOperator());
+
+        public FormulaBuilder Mul(ISideNode operand) => AddOperation(new MulOperator(Subscribe(operand)));
+
+        public FormulaBuilder Div(ISideNode operand) => AddOperation(new DivOperator(Subscribe(operand)));
+
+
+        private FormulaBuilder AddOperation(IOperation operation)
         {
-            if (side == PriceType.Bid)
-                return new GetBid(tracker);
-            else
-                return new GetAsk(tracker);
+            _operations.Add(operation);
+
+            RecalculateFormula();
+
+            return this;
         }
 
-        public static IConversionFormula InverseConversion(SymbolMarketNode tracker, PriceType side)
+        private void RecalculateFormula()
         {
-            if (side == PriceType.Bid)
-                return new GetInvertedBid(tracker);
-            else
-                return new GetInvertedAsk(tracker);
+            Value = _node?.Value.Filtration() ?? 0.0;
+
+            foreach (var operation in _operations)
+                Value = operation.Calculate(Value);
         }
 
-        public static IConversionFormula Then(this IConversionFormula formula, SymbolMarketNode tracker, PriceType side)
+        private ISideNode Subscribe(ISideNode node)
         {
-            if (side == PriceType.Bid)
-                return new MultByBid(tracker, formula);
-            else
-                return new MultByAsk(tracker, formula);
-        }
+            if (node != null)
+                node.ValueUpdate += RecalculateFormula;
 
-        public static IConversionFormula ThenDivide(this IConversionFormula formula, SymbolMarketNode tracker, PriceType side)
-        {
-            if (side == PriceType.Bid)
-                return new DivByBid(tracker, formula);
-            else
-                return new DivByAsk(tracker, formula);
-        }
-
-        public static IConversionFormula Error(ISymbolInfo symbol, string currency, string accountCurrency)
-        {
-            return new ConversionError(CalcErrorCodes.NoCrossSymbol);
+            return node;
         }
     }
 }

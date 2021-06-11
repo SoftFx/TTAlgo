@@ -1421,9 +1421,9 @@ namespace TickTrader.Algo.Backtester
                 var closeSwap = RoundMoney(k * (decimal)position.Info.Swap, _calcFixture.RoundingDigits);
                 var openPrice = fillSide == OrderInfo.Types.Side.Buy ? position.Long.Price : position.Short.Price;
                 closePrice = fillSide == OrderInfo.Types.Side.Buy ? position.Short.Price : position.Long.Price;
-                double profitRate;
-                var profit = RoundMoney(((OrderCalculator)position.Info.Calculator).CalculateProfitFixedPrice((double)openPrice, (double)oneSideClosingAmount, (double)closePrice,
-                    fillSide, out profitRate, out var error), _calcFixture.RoundingDigits);
+
+                var profit = RoundMoney(((OrderCalculator)position.Info.Calculator).CalculateProfitInternal((double)openPrice, (double)oneSideClosingAmount, (double)closePrice,
+                    fillSide, out var error), _calcFixture.RoundingDigits);
 
                 if (error != CalcErrorCodes.None)
                     throw new Exception();
@@ -1461,7 +1461,7 @@ namespace TickTrader.Algo.Backtester
             return info;
         }
 
-        internal void CheckActivation(AlgoMarketNode node)
+        internal void CheckActivation(SymbolMarketNode node)
         {
             var records = _activator.CheckPendingOrders(node);
             for (int i = 0; i < records.Count; i++)
@@ -1636,7 +1636,7 @@ namespace TickTrader.Algo.Backtester
             else if ((price != null) && (price.Value > 0))
             {
                 closePrice = price.Value;
-                profit = RoundMoney(((OrderCalculator)fCalc).CalculateProfitFixedPrice(position.Info.Price ?? 0, (double)actualCloseAmount, closePrice, position.Info.Side, out _, out var error), _calcFixture.RoundingDigits);
+                profit = RoundMoney(((OrderCalculator)fCalc).CalculateProfitInternal(position.Info.Price ?? 0, (double)actualCloseAmount, closePrice, position.Info.Side, out _), _calcFixture.RoundingDigits);
             }
             else
             {

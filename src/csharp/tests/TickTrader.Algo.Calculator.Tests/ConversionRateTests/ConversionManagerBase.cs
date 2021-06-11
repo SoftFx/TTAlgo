@@ -5,9 +5,9 @@ using System.Linq;
 using TestEnviroment;
 using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.Calculator.Tests.ConvertionRateTests
+namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
 {
-    public abstract class ConvertionManagerBase
+    public abstract class ConversionManagerBase
     {
         private static readonly SymbolInfoStorage _symbolStorage = SymbolInfoStorage.Instance;
         private static readonly CurrencyInfoStorage _currencyStorage = CurrencyInfoStorage.Instance;
@@ -18,9 +18,9 @@ namespace TickTrader.Algo.Calculator.Tests.ConvertionRateTests
         protected string X, Y, Z, C;
 
 
-        public delegate IConversionFormula BuildFormula(SymbolMarketNode node, string d);
+        internal delegate IConversionFormula BuildFormula(ISymbolInfo node, string d);
 
-        public BuildFormula _actualFormula;
+        internal BuildFormula _actualFormula;
 
 
         private static Dictionary<string, SymbolInfo> Symbols => _symbolStorage.Symbols;
@@ -29,7 +29,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConvertionRateTests
 
         protected static Dictionary<string, double> Ask => _symbolStorage.Ask; // change to _algoMarket.Ask
 
-        public ConvertionManagerBase()
+        public ConversionManagerBase()
         {
             _symbolStorage.AllSymbolsRateUpdate();
         }
@@ -44,20 +44,13 @@ namespace TickTrader.Algo.Calculator.Tests.ConvertionRateTests
             _actualFormula = null;
         }
 
-        protected static AlgoMarketState InitAlgoMarket(string[] symbols)
+        protected void LoadSymbolsAndCheckConversionRate(params string[] load)
         {
-            _algoMarket.Init(symbols.Where(u => Symbols.ContainsKey(u)).Select(u => Symbols[u]), _currencyStorage.Currency?.Values);
+            _algoMarket.Init(load.Where(u => Symbols.ContainsKey(u)).Select(u => Symbols[u]), _currencyStorage.Currency?.Values);
 
-            return _algoMarket;
-        }
+            var smbInfo = _algoMarket.Symbols.First(u => u.Name == X + Y);
 
-        protected void LoadSymbolsAndCheckConvertionRate(params string[] load)
-        {
-            var algoMarket = InitAlgoMarket(load);
-
-            var smbNode = new SymbolMarketNode(algoMarket.Symbols.First(u => u.Name == X + Y));
-
-            var actual = _actualFormula(smbNode, Z);
+            var actual = _actualFormula(smbInfo, Z);
 
             Assert.AreEqual(actual.Value, _expected());
         }

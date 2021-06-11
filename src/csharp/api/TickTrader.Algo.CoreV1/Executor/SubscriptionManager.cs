@@ -40,7 +40,7 @@ namespace TickTrader.Algo.CoreV1
             return IsSynchronized ? _subscription.Modify(updates) : feed.Sync.Invoke(() => _subscription.Modify(updates));
         }
 
-        public void OnUpdateEvent(AlgoMarketNode node)
+        public void OnUpdateEvent(SymbolMarketNode node)
         {
             var sub = node?.UserSubscriptionInfo;
             if (sub != null)

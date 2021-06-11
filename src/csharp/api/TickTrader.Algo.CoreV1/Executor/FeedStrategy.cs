@@ -155,9 +155,9 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        internal BufferUpdateResult ApplyUpdate(IRateInfo update, out AlgoMarketNode node)
+        internal BufferUpdateResult ApplyUpdate(IRateInfo update)
         {
-            _marketFixture.Market.UpdateRate(update, out node);
+            _marketFixture.Market.UpdateRate(update, out var node);
 
             var result = UpdateBuffers(update);
 

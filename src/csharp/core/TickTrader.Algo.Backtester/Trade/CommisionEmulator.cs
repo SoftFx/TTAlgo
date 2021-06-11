@@ -112,8 +112,7 @@ namespace TickTrader.Algo.Backtester
             double cmsValue = isReduced
                ? cfg.CmsValueBookOrders()
                : cfg.CmsValue();
-
-            double commiss = orderCalc.CalculateCommission((double)amount, cmsValue, cfg.Commission.ValueType, out var error);
+            double commiss = orderCalc.CalculateCommission((double)amount, cmsValue, cfg.Commission.ValueType, out _);
             commiss = ApplyMinimalMarginCommission(commiss, accCalc, cfg);
             return RoundValue(commiss, accCalc.RoundingDigits);
         }
@@ -187,16 +186,6 @@ namespace TickTrader.Algo.Backtester
         }
 
         #endregion
-
-        private static decimal? RoundValue(double? volume, int precision)
-        {
-            return RoundValue((decimal?)volume, precision);
-        }
-
-        private static decimal? RoundValue(decimal? volume, int precision)
-        {
-            return volume?.FloorBy(precision);
-        }
 
         private static decimal RoundValue(double volume, int precision)
         {

@@ -15,20 +15,22 @@ namespace TickTrader.Algo.Calculator
     public sealed class OrderCalculator : IOrderCalculator, IDisposable
     {
         //private readonly ConversionManager conversionMap;
+        private readonly ISymbolInfo _info;
+
         private readonly Converter<int, int> _leverageProvider;
         private readonly int _leverage = 0;
 
-        internal OrderCalculator(SymbolMarketNode tracker, ConversionManager conversion, IMarginAccountInfo2 account)
+        internal OrderCalculator(ISymbolInfo symbolInfo, ConversionManager conversion, IMarginAccountInfo2 account)
         {
             _leverage = account.Leverage;
+            _info = symbolInfo;
 
-            RateTracker = tracker;
+            SymbolInfo = (SymbolInfo)_info;
 
-            PositiveProfitConversionRate = conversion.GetPositiveProfitFormula(tracker, account.BalanceCurrency);
-            NegativeProfitConversionRate = conversion.GetNegativeProfitFormula(tracker, account.BalanceCurrency);
-            MarginConversionRate = conversion.GetMarginFormula(tracker, account.BalanceCurrency);
+            PositiveProfitConversionRate = conversion.GetPositiveProfitFormula(_info, account.BalanceCurrency);
+            NegativeProfitConversionRate = conversion.GetNegativeProfitFormula(_info, account.BalanceCurrency);
+            MarginConversionRate = conversion.GetMarginFormula(_info, account.BalanceCurrency);
 
-            SymbolInfo = tracker.SymbolInfo;
             //SymbolAccessor = tracker.SymbolInfo as SymbolAccessor;
 
             //if (this.SymbolInfo == null)
@@ -46,9 +48,9 @@ namespace TickTrader.Algo.Calculator
 
             InitMarginFactorCache();
 
-            PositiveProfitConversionRate.ValChanged += RecalculateStats;
-            NegativeProfitConversionRate.ValChanged += RecalculateStats;
-            MarginConversionRate.ValChanged += RecalculateStats;
+            //PositiveProfitConversionRate.ValChanged += RecalculateStats;
+            //NegativeProfitConversionRate.ValChanged += RecalculateStats;
+            //MarginConversionRate.ValChanged += RecalculateStats;
         }
 
         public Action<SymbolInfo> Recalculate;
@@ -61,13 +63,11 @@ namespace TickTrader.Algo.Calculator
         internal IConversionFormula NegativeProfitConversionRate { get; private set; }
         internal IConversionFormula MarginConversionRate { get; private set; }
 
-        internal SymbolMarketNode RateTracker { get; }
-
         public void Dispose()
         {
-            PositiveProfitConversionRate.ValChanged -= RecalculateStats;
-            NegativeProfitConversionRate.ValChanged -= RecalculateStats;
-            MarginConversionRate.ValChanged -= RecalculateStats;
+            //PositiveProfitConversionRate.ValChanged -= RecalculateStats;
+            //NegativeProfitConversionRate.ValChanged -= RecalculateStats;
+            //MarginConversionRate.ValChanged -= RecalculateStats;
         }
 
         #region Margin
@@ -131,11 +131,8 @@ namespace TickTrader.Algo.Calculator
 
         public double CalculateProfit(double openPrice, double volume, Domain.OrderInfo.Types.Side side, out CalcErrorCodes error)
         {
-            return CalculateProfit(openPrice, volume, side, out _, out error);
-        }
+            double closePrice;
 
-        public double CalculateProfit(double openPrice, double volume, Domain.OrderInfo.Types.Side side, out double closePrice, out CalcErrorCodes error)
-        {
             if (side == Domain.OrderInfo.Types.Side.Buy)
             {
                 if (!GetBid(out closePrice, out error))
@@ -147,15 +144,10 @@ namespace TickTrader.Algo.Calculator
                     return 0;
             }
 
-            return CalculateProfitInternal(openPrice, closePrice, volume, side, out _, out error);
+            return CalculateProfitInternal(openPrice, closePrice, volume, side, out error);
         }
 
-        public double CalculateProfitFixedPrice(double openPrice, double volume, double closePrice, Domain.OrderInfo.Types.Side side, out double conversionRate, out CalcErrorCodes error)
-        {
-            return CalculateProfitInternal(openPrice, closePrice, volume, side, out conversionRate, out error);
-        }
-
-        private double CalculateProfitInternal(double openPrice, double closePrice, double volume, Domain.OrderInfo.Types.Side side, out double conversionRate, out CalcErrorCodes error)
+        public double CalculateProfitInternal(double openPrice, double closePrice, double volume, OrderInfo.Types.Side side, out CalcErrorCodes error)
         {
             //this.VerifyInitialized();
 
@@ -166,7 +158,7 @@ namespace TickTrader.Algo.Calculator
             else
                 nonConvProfit = (openPrice - closePrice) * volume;
 
-            return ConvertProfitToAccountCurrency(nonConvProfit, out conversionRate, out error);
+            return ConvertProfitToAccountCurrency(nonConvProfit, out error);
         }
 
         public double ConvertMarginToAccountCurrency(double margin, out CalcErrorCodes error)
@@ -179,11 +171,8 @@ namespace TickTrader.Algo.Calculator
 
         public double ConvertProfitToAccountCurrency(double profit, out CalcErrorCodes error)
         {
-            return ConvertProfitToAccountCurrency(profit, out _, out error);
-        }
+            double conversionRate;
 
-        public double ConvertProfitToAccountCurrency(double profit, out double conversionRate, out CalcErrorCodes error)
-        {
             if (profit >= 0)
             {
                 error = PositiveProfitConversionRate.ErrorCode;
@@ -197,6 +186,7 @@ namespace TickTrader.Algo.Calculator
 
             if (error == CalcErrorCodes.None)
                 return profit * conversionRate;
+
             return 0;
         }
 
@@ -237,7 +227,7 @@ namespace TickTrader.Algo.Calculator
                 error = MarginConversionRate.ErrorCode;
                 if (error != CalcErrorCodes.None)
                     return 0;
-                return ConvertProfitToAccountCurrency(-(amount * ptValue * MarginConversionRate.Value), out _, out error);
+                return ConvertProfitToAccountCurrency(-(amount * ptValue * MarginConversionRate.Value), out error);
             }
 
             throw new Exception("Invalid comission configuration: " + " vType= " + vType);
@@ -306,7 +296,7 @@ namespace TickTrader.Algo.Calculator
 
         private bool GetBid(out double bid, out CalcErrorCodes error)
         {
-            var rate = RateTracker.SymbolInfo.LastQuote;
+            var rate = _info.LastQuote;
 
             if (!rate.HasBid)
             {
@@ -322,7 +312,7 @@ namespace TickTrader.Algo.Calculator
 
         private bool GetAsk(out double ask, out CalcErrorCodes error)
         {
-            var rate = RateTracker.SymbolInfo.LastQuote;
+            var rate = _info.LastQuote;
 
             if (!rate.HasAsk)
             {
@@ -361,16 +351,16 @@ namespace TickTrader.Algo.Calculator
 
         private void Attach()
         {
-            PositiveProfitConversionRate.AddUsage();
-            NegativeProfitConversionRate.AddUsage();
-            MarginConversionRate.AddUsage();
+            //PositiveProfitConversionRate.AddUsage();
+            //NegativeProfitConversionRate.AddUsage();
+            //MarginConversionRate.AddUsage();
         }
 
         private void Deattach()
         {
-            PositiveProfitConversionRate.RemoveUsage();
-            NegativeProfitConversionRate.RemoveUsage();
-            MarginConversionRate.RemoveUsage();
+            //PositiveProfitConversionRate.RemoveUsage();
+            //NegativeProfitConversionRate.RemoveUsage();
+            //MarginConversionRate.RemoveUsage();
         }
 
         public struct UsageToken : IDisposable
