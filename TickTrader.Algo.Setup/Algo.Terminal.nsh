@@ -3,7 +3,7 @@
 
 !define TERMINAL_NAME "AlgoTerminal"
 !define TERMINAL_DISPLAY_NAME "${BASE_NAME} ${TERMINAL_NAME}"
-!define TERMINAL_BINDIR "..\TickTrader.BotTerminal\bin\Release\"
+!define TERMINAL_BINDIR "..\TickTrader.BotTerminal\bin\Release\net472"
 !define TERMINAL_EXE "TickTrader.AlgoTerminal.exe"
 !define TERMINAL_LOCK_FILE "applock"
 

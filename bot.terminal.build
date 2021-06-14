@@ -7,7 +7,7 @@
   <property name="Configuration"       value="Release"                              unless="${property::exists('Configuration')}" />
 
   <property name="SourcesDir"          value=".\"                                   unless="${property::exists('SourcesDir')}" />
-  <property name="SolutionFile"        value="${SourcesDir}Algo.sln"                unless="${property::exists('SolutionFile')}" />  
+  <property name="SolutionFile"        value="${SourcesDir}Algo.sln"                unless="${property::exists('SolutionFile')}" />
 
   <property name="OutputFolder"        value="${SourcesDir}build.ouput\" />
   <property name="ToolsFolder"         value="${SourcesDir}tools\"  />
@@ -91,7 +91,7 @@
         <include name="*.ttalgo" />
       </fileset>
     </delete>
-    
+
     <delete>
       <fileset basedir="${AlgoServerBinDir}">
         <include name="**/*" />
@@ -110,16 +110,18 @@
       <arg line="-Verbosity detailed" />
       <arg line='-MSBuildPath "${MSBuildDir}."' />
     </exec>
-    
+
     <exec program="dotnet">
       <arg line="restore" />
       <arg line="${IsolationNetCoreProject}" />
+      <arg line="--force" />
       <arg line="--verbosity detailed" />
     </exec>
 
     <exec program="dotnet">
       <arg line="restore" />
       <arg line="${RuntimeV1NetCoreProject}" />
+      <arg line="--force" />
       <arg line="--verbosity detailed" />
     </exec>
 
@@ -133,6 +135,7 @@
         <exec program="dotnet">
           <arg line="restore" />
           <arg line="${TestProjectPath}" />
+          <arg line="--force" />
           <arg line="--verbosity detailed" />
         </exec>
       </do>
@@ -187,7 +190,7 @@
   <target name="CleanSolution">
 
     <property name="MSBuild.Target" value="Clean" />
-    
+
     <property name="MSBuild.TargetFile" value="${SolutionFile}" />
     <call target="RunMSBuildSolution" />
 
@@ -198,14 +201,14 @@
 
   <target name="RunMSBuildSolution">
 
-    <property name="MSBuild.Platform" value="Any CPU" />  
+    <property name="MSBuild.Platform" value="Any CPU" />
     <call target="RunMSBuild" />
 
   </target>
 
   <target name="RunMSBuildProject">
 
-    <property name="MSBuild.Platform" value="AnyCPU" />  
+    <property name="MSBuild.Platform" value="AnyCPU" />
     <call target="RunMSBuild" />
 
   </target>
@@ -261,7 +264,7 @@
     <property name="Zip.DstFile" value="${ServerControlZipFile}" />
     <call target="ZipDirectory" />
 
-  
+
   </target>
 
   <target name="ZipDirectory">
@@ -326,7 +329,7 @@
     <exec program="${SetupUtilExe}">
       <arg value="AppDir=${TerminalBinDir}" />
       <arg value="OutFile=${SetupDir}\Terminal.Uninstall.nsi" />
-    </exec>    
+    </exec>
 
     <exec program="${SetupUtilExe}">
       <arg value="AppDir=${AlgoServerBinDir}" />
