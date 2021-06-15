@@ -40,8 +40,6 @@ namespace TickTrader.Algo.Package
     {
         public const int MaxPkgSize = 256 * 1024 * 1024;
 
-        private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<PackageRepository>();
-
         private readonly Ref<Impl> _impl;
 
 
@@ -127,6 +125,7 @@ namespace TickTrader.Algo.Package
 
             private readonly Dictionary<string, PackageState> _pkgStateCache = new Dictionary<string, PackageState>();
 
+            private IAlgoLogger _logger;
             private IAsyncChannel<PackageFileUpdate> _updateChannel;
             private FileSystemWatcher _watcher;
             private Action _whenIdle;
@@ -141,7 +140,9 @@ namespace TickTrader.Algo.Package
                 _location = location;
                 _updateChannel = updateChannel;
 
-                _logger?.Debug($"Location = {_location}: Initialized");
+                _logger = AlgoLoggerFactory.GetLogger<PackageRepository>($"({location})");
+
+                _logger?.Debug($"Initialized");
             }
 
             public void Start()
@@ -168,7 +169,7 @@ namespace TickTrader.Algo.Package
                 if (!_enabled)
                     return;
 
-                _logger?.Debug($"Location = {_location}: Starting scan at '{_repPath}'");
+                _logger?.Debug($"Starting scan at '{_repPath}'");
 
                 try
                 {
@@ -185,7 +186,7 @@ namespace TickTrader.Algo.Package
                             cnt++;
                         }
 
-                    _logger?.Debug($"Location = {_location}: Scan finished found {cnt} packages");
+                    _logger?.Debug($"Scan finished found {cnt} packages");
                 }
                 catch (Exception ex)
                 {
@@ -210,7 +211,7 @@ namespace TickTrader.Algo.Package
                 if (!_enabled)
                     return;
 
-                _logger?.Debug($"Location = {_location}: Upsert package '{path}'");
+                _logger?.Debug($"Upsert package '{path}'");
 
                 if (!_pkgStateCache.TryGetValue(path, out var pkgState))
                 {
@@ -237,13 +238,16 @@ namespace TickTrader.Algo.Package
             {
                 (var path, var fileUpdate) = loadResult;
 
-                _logger?.Debug($"Location = {_location}: Loaded package '{path}'");
+                if (fileUpdate == null)
+                    return; // load skipped or failed
+
+                _logger?.Debug($"Loaded package '{path}'");
 
                 if (fileUpdate != null)
                     _updateChannel.AddAsync(fileUpdate);
 
                 if (!_pkgStateCache.TryGetValue(path, out var pkgState))
-                    _logger?.Error($"Location = {_location}: Missing package state for '{path}'");
+                    _logger?.Error($"Missing package state for '{path}'");
 
                 pkgState.IsLoading = false;
                 pkgState.Identity = fileUpdate.PkgInfo.Identity;
@@ -266,7 +270,7 @@ namespace TickTrader.Algo.Package
 
             private void RemovePackage(string path)
             {
-                _logger?.Debug($"Location = {_location}: Remove package '{path}'");
+                _logger?.Debug($"Remove package '{path}'");
 
                 _pkgStateCache.TryGetValue(path, out var pkgState);
 
@@ -326,14 +330,14 @@ namespace TickTrader.Algo.Package
 
             private void WatcherOnError(object sender, ErrorEventArgs e)
             {
-                _logger?.Error(e.GetException(), $"Location = {_location}: Watcher error");
+                _logger?.Error(e.GetException(), $"Watcher error");
 
                 ContextSend(Scan); // restart watcher
             }
 
             private void WatcherOnRenamed(object sender, RenamedEventArgs e)
             {
-                _logger?.Debug($"Location = {_location}: Watcher renamed '{e.OldFullPath}' into '{e.FullPath}' ({e.ChangeType})");
+                _logger?.Debug($"Watcher renamed '{e.OldFullPath}' into '{e.FullPath}' ({e.ChangeType})");
 
                 SchedulePackageRemove(e.OldFullPath);
                 SchedulePackageUpsert(e.FullPath);
@@ -341,14 +345,14 @@ namespace TickTrader.Algo.Package
 
             private void WatcherOnChanged(object sender, FileSystemEventArgs e)
             {
-                _logger?.Debug($"Location = {_location}: Watcher changed '{e.FullPath}' ({e.ChangeType})");
+                _logger?.Debug($"Watcher changed '{e.FullPath}' ({e.ChangeType})");
 
                 SchedulePackageUpsert(e.FullPath);
             }
 
             private void WatcherOnDeleted(object sender, FileSystemEventArgs e)
             {
-                _logger?.Debug($"Location = {_location}: Watcher deleted '{e.FullPath}' ({e.ChangeType})");
+                _logger?.Debug($"Watcher deleted '{e.FullPath}' ({e.ChangeType})");
 
                 SchedulePackageRemove(e.FullPath);
             }
@@ -360,7 +364,7 @@ namespace TickTrader.Algo.Package
                 var pkgId = PackageId.FromPath(_location, path);
                 byte[] fileBytes = null;
 
-                _logger?.Debug($"Location = {_location}: Loading package '{path}'");
+                _logger?.Debug($"Loading package '{path}'");
 
                 try // loading file in memory
                 {
@@ -371,7 +375,7 @@ namespace TickTrader.Algo.Package
 
                         if (pkgSize > MaxPkgSize)
                         {
-                            _logger?.Error($"Location = {_location}: Algo package size({pkgSize}) exceeds limit '{path}'");
+                            _logger?.Error($"Algo package size({pkgSize}) exceeds limit '{path}'");
                             return res;
                         }
 
@@ -385,7 +389,7 @@ namespace TickTrader.Algo.Package
                         // Therefore we can have many events asking to load this file without real need
                         if (skipFileScan)
                         {
-                            _logger?.Debug($"Location = {_location}: Algo package scan skipped at '{path}'");
+                            _logger?.Debug($"Algo package scan skipped at '{path}'");
                             return res;
                         }
 
@@ -402,13 +406,13 @@ namespace TickTrader.Algo.Package
                 catch (IOException ioEx)
                 {
                     if (ioEx.IsLockException())
-                        _logger?.Debug($"Location = {_location}: Algo package is locked at '{path}'");
+                        _logger?.Debug($"Algo package is locked at '{path}'");
                     else
-                        _logger?.Info($"Location = {_location}: Can't open Algo package at '{path}': {ioEx.Message}"); // other errors
+                        _logger?.Info($"Can't open Algo package at '{path}': {ioEx.Message}"); // other errors
                 }
                 catch (Exception ex)
                 {
-                    _logger?.Error(ex, $"Location = {_location}: Failed to load Algo package at '{path}'");
+                    _logger?.Error(ex, $"Failed to load Algo package at '{path}'");
                 }
 
                 if (fileBytes == null)
@@ -434,7 +438,7 @@ namespace TickTrader.Algo.Package
                 }
                 catch (Exception ex)
                 {
-                    _logger?.Error(ex, $"Location = {_location}: Failed to scan Algo package at '{path}'");
+                    _logger?.Error(ex, $"Failed to scan Algo package at '{path}'");
                 }
 
                 res.FileUpdate = new PackageFileUpdate(pkgId, UpdateAction.Upsert, pkgInfo, pkgInfo.IsValid ? fileBytes : null);
