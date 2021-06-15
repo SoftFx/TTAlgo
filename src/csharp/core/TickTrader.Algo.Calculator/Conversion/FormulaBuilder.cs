@@ -12,7 +12,7 @@ namespace TickTrader.Algo.Calculator
 
         public double Value { get; private set; }
 
-        public CalcErrorCodes ErrorCode => throw new NotImplementedException();
+        public CalcErrorCodes ErrorCode => CalcErrorCodes.None;
 
         internal FormulaBuilder(ISideNode node)
         {
