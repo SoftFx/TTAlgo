@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Xml;
-using TickTrader.BotAgent.BA.Repository;
 using TickTrader.BotAgent.BA.Exceptions;
 using System.Threading.Tasks;
 using TickTrader.BotAgent.Infrastructure;

@@ -14,23 +14,39 @@ using TickTrader.Algo.Util;
 
 namespace TickTrader.Algo.Package
 {
+    public class PackageVersionUpdate
+    {
+        public string PackageId { get; }
+
+        public string LatestPkgRefId { get; }
+
+
+        public PackageVersionUpdate(string packageId, string latestPkgRefId)
+        {
+            PackageId = packageId;
+            LatestPkgRefId = latestPkgRefId;
+        }
+    }
+
+
     public class PackageStorage
     {
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<PackageStorage>();
 
         private readonly Ref<Impl> _impl;
-        private readonly ChannelEventSource<PackageUpdate> _pkgUpdateEventSrc;
+        private readonly ChannelEventSource<PackageUpdate> _pkgUpdateEventSrc = new ChannelEventSource<PackageUpdate>();
+        private readonly ChannelEventSource<PackageVersionUpdate> _pkgVersionUpdateEventSrc = new ChannelEventSource<PackageVersionUpdate>();
 
         public IEventSource<PackageUpdate> PackageUpdated => _pkgUpdateEventSrc;
+
+        public IEventSource<PackageVersionUpdate> PackageVersionUpdated => _pkgVersionUpdateEventSrc;
 
 
         public PackageStorage()
         {
             _impl = Actor.SpawnLocal<Impl>(null, nameof(PackageStorage));
 
-            _pkgUpdateEventSrc = new ChannelEventSource<PackageUpdate>();
-
-            _impl.Send(a => a.Init(_pkgUpdateEventSrc.Writer));
+            _impl.Send(a => a.Init(_pkgUpdateEventSrc.Writer, _pkgVersionUpdateEventSrc.Writer));
         }
 
         public Task RegisterRepositoryLocation(string locationId, string path, bool isUploadLocation)
@@ -100,12 +116,14 @@ namespace TickTrader.Algo.Package
             private readonly Dictionary<string, AlgoPackageRef> _packageMap = new Dictionary<string, AlgoPackageRef>();
 
             private ChannelWriter<PackageUpdate> _pkgUpdateSink;
+            private ChannelWriter<PackageVersionUpdate> _pkgVersionUpdateSink;
             private string _uploadLocationId, _uploadDir;
 
 
-            public void Init(ChannelWriter<PackageUpdate> pkgUpdateSink)
+            public void Init(ChannelWriter<PackageUpdate> pkgUpdateSink, ChannelWriter<PackageVersionUpdate> pkgVersionUpdateSink)
             {
                 _pkgUpdateSink = pkgUpdateSink;
+                _pkgVersionUpdateSink = pkgVersionUpdateSink;
 
                 _fileUpdateProcessor.Start(HandlePackageUpdate);
             }
@@ -288,14 +306,16 @@ namespace TickTrader.Algo.Package
                 }
             }
 
-            private string GeneratePackageRefId(string packageId)
+            private string GeneratePackageRefId(string pkgId)
             {
-                if (!_packageVersions.TryGetValue(packageId, out var currentVersion))
+                if (!_packageVersions.TryGetValue(pkgId, out var currentVersion))
                     currentVersion = -1;
 
                 currentVersion++;
-                _packageVersions[packageId] = currentVersion;
-                return $"{packageId}/{currentVersion}";
+                _packageVersions[pkgId] = currentVersion;
+                var pkgRefId = $"{pkgId}/{currentVersion}";
+                _pkgVersionUpdateSink.TryWrite(new PackageVersionUpdate(pkgId, pkgRefId));
+                return pkgRefId;
             }
         }
     }

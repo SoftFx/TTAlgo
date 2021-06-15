@@ -1,14 +1,12 @@
 ﻿using ActorSharp;
 using NLog;
 using System;
-using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.Server;
-using TickTrader.BotAgent.BA.Exceptions;
 
 namespace TickTrader.BotAgent.BA.Models
 {

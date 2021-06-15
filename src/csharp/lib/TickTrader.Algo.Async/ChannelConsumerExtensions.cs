@@ -57,8 +57,7 @@ namespace TickTrader.Algo.Async
                     catch (Exception) { }
                 }
 
-                if (i == batchSize)
-                    await Task.Yield(); // break sync processing
+                await Task.Yield(); // break sync processing
             }
         }
 
@@ -81,8 +80,7 @@ namespace TickTrader.Algo.Async
                     catch (Exception) { }
                 }
 
-                if (i == batchSize)
-                    await Task.Yield(); // break sync processing
+                await Task.Yield(); // break sync processing
             }
         }
     }
