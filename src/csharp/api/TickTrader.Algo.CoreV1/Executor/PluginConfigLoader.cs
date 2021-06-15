@@ -38,7 +38,7 @@ namespace TickTrader.Algo.CoreV1
                     var filePath = fileParam.FileName;
                     if (Path.GetFullPath(filePath) != filePath)
                         filePath = Path.Combine(workingFolder, fileParam.FileName);
-                    paramValue = filePath;
+                    paramValue = new FileEntity(filePath);
                 }
                 else if (propConfig is IParameterConfig paramConfig)
                     paramValue = paramConfig.ValObj;
