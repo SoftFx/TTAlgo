@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using TickTrader.Algo.Async.Actors;
 
 namespace TickTrader.Algo.Async
 {
@@ -11,6 +12,10 @@ namespace TickTrader.Algo.Async
         IDisposable Subscribe(Action<T> handler);
 
         IDisposable Subscribe(Func<T, Task> handler);
+
+        IDisposable Subscribe(IActorRef actor);
+
+        IDisposable Subscribe<TMsg>(IActorRef actor, Func<T, TMsg> msgBuilder);
     }
 
     public sealed class ChannelEventSource<T> : IEventSource<T>, IDisposable
@@ -40,19 +45,13 @@ namespace TickTrader.Algo.Async
             _cancelTokenSrc.Cancel();
         }
 
-        public IDisposable Subscribe(Action<T> handler)
-        {
-            var sub = new EventSubscription(handler, RemoveSub);
-            AddSub(sub);
-            return sub;
-        }
+        public IDisposable Subscribe(Action<T> handler) => new SyncEventSubscription(handler, this);
 
-        public IDisposable Subscribe(Func<T, Task> handler)
-        {
-            var sub = new EventSubscription(handler, RemoveSub);
-            AddSub(sub);
-            return sub;
-        }
+        public IDisposable Subscribe(Func<T, Task> handler) => new AsyncEventSubscription(handler, this);
+
+        public IDisposable Subscribe(IActorRef actor) => new ActorEventSubscription(actor, this);
+
+        public IDisposable Subscribe<TMsg>(IActorRef actor, Func<T, TMsg> msgBuilder) => new ActorEventSubscription<TMsg>(actor, msgBuilder, this);
 
 
         private async Task DispatchEvents(ChannelReader<T> reader, int batchSize, CancellationToken cancelToken)
@@ -112,41 +111,100 @@ namespace TickTrader.Algo.Async
         }
 
 
-        private sealed class EventSubscription : IDisposable
+        private class EventSubscription : IDisposable
         {
-            private readonly Action<T> _syncHandler;
-            private readonly Func<T, Task> _asyncHandler;
-            private readonly Action<EventSubscription> _removeSub;
+            private readonly ChannelEventSource<T> _parent;
 
 
-            public EventSubscription(Action<T> handler, Action<EventSubscription> removeSub)
-                : this(removeSub)
+            protected EventSubscription(ChannelEventSource<T> parent)
             {
-                _syncHandler = handler;
-            }
-
-            public EventSubscription(Func<T, Task> handler, Action<EventSubscription> removeSub)
-                : this(removeSub)
-            {
-                _asyncHandler = handler;
-            }
-
-            private EventSubscription(Action<EventSubscription> removeSub)
-            {
-                _removeSub = removeSub;
+                _parent = parent;
+                parent.AddSub(this);
             }
 
 
             public void Dispose()
             {
-                _removeSub(this);
+                _parent.RemoveSub(this);
             }
 
-            public async ValueTask DispatchEvent(T args)
+            public virtual Task DispatchEvent(T args) => null;
+        }
+
+        private sealed class SyncEventSubscription : EventSubscription
+        {
+            private readonly Action<T> _handler;
+
+
+            public SyncEventSubscription(Action<T> handler, ChannelEventSource<T> parent)
+                : base(parent)
             {
-                if (_syncHandler != null)
-                    _syncHandler(args);
-                else await _asyncHandler(args);
+                _handler = handler;
+            }
+
+
+            public override Task DispatchEvent(T args)
+            {
+                _handler(args);
+                return null;
+            }
+        }
+
+        private sealed class AsyncEventSubscription : EventSubscription
+        {
+            private readonly Func<T, Task> _handler;
+
+
+            public AsyncEventSubscription(Func<T, Task> handler, ChannelEventSource<T> parent)
+                : base(parent)
+            {
+                _handler = handler;
+            }
+
+
+            public override Task DispatchEvent(T args)
+            {
+                return _handler(args);
+            }
+        }
+
+        private sealed class ActorEventSubscription : EventSubscription
+        {
+            private readonly IActorRef _actor;
+
+
+            public ActorEventSubscription(IActorRef actor, ChannelEventSource<T> parent)
+                : base(parent)
+            {
+                _actor = actor;
+            }
+
+
+            public override Task DispatchEvent(T args)
+            {
+                _actor.Tell(args);
+                return null;
+            }
+        }
+
+        private sealed class ActorEventSubscription<TMsg> : EventSubscription
+        {
+            private readonly IActorRef _actor;
+            private readonly Func<T, TMsg> _msgBuilder;
+
+
+            public ActorEventSubscription(IActorRef actor, Func<T, TMsg> msgBuilder, ChannelEventSource<T> parent)
+                : base(parent)
+            {
+                _actor = actor;
+                _msgBuilder = msgBuilder;
+            }
+
+
+            public override Task DispatchEvent(T args)
+            {
+                _actor.Tell(_msgBuilder(args));
+                return null;
             }
         }
     }
