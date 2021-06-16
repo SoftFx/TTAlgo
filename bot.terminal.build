@@ -25,7 +25,7 @@
   <property name="ConfiguratorBinDir"  value="${SourcesDir}TickTrader.BotAgent.Configurator\bin\${Configuration}\net472\" />
 
   <property name="CoreZipFile"         value="${OutputFolder}Core ${Build}.zip" />
-  <property name="TerminalZipFile"     value="${OutputFolder}AlgoTerminal ${Build}.zip" />
+  <property name="TerminalZipFile"     value="${OutputFolder}AlgoTerminal ${Build}.x64.zip" />
   <property name="AlgoServerZipFile"        value="${OutputFolder}AlgoServer ${Build}.x64.zip" />
 
   <property name="ServerControlSrcDir"        value="${SourcesDir}\src\csharp\core\TickTrader.Algo.ServerControl\" />
