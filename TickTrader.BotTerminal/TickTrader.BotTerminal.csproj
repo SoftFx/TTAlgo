@@ -4,7 +4,7 @@
     <TargetFramework>net472</TargetFramework>
     <OutputType>WinExe</OutputType>
     <AssemblyName>TickTrader.AlgoTerminal</AssemblyName>
-    <PlatformTarget>x64</PlatformTarget>
+    <RuntimeIdentifiers>win7-x64;win7-x86</RuntimeIdentifiers>
     <MapFileExtensions>true</MapFileExtensions>
     <UseApplicationTrust>false</UseApplicationTrust>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -18,6 +18,7 @@
     <PackageReference Include="Caliburn.Micro" Version="4.0.173" />
     <PackageReference Include="Extended.Wpf.Toolkit" Version="3.8.1" />
     <PackageReference Include="FontAwesome.WPF" Version="4.7.0.9" />
+    <PackageReference Include="Grpc.Core" Version="2.36.1" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.31" />
     <PackageReference Include="NLog" Version="4.7.7" />
   </ItemGroup>
@@ -120,6 +121,10 @@
     <Copy SourceFiles="@(RuLocale)" DestinationFolder="$(TargetDir)Resources\ru" />
     <RemoveDir Directories="$(TargetDir)en-gb;$(TargetDir)ru-ru;$(TargetDir)de;$(TargetDir)es;$(TargetDir)fr;$(TargetDir)hu;$(TargetDir)it" />
     <RemoveDir Directories="$(TargetDir)pt-BR;$(TargetDir)ro;$(TargetDir)ru;$(TargetDir)sv;$(TargetDir)zh-Hans;$(TargetDir)cs-CZ" />
+  </Target>
+
+  <Target Name="RemoveLinuxLibs" AfterTargets="Build">
+    <Delete Files="$(TargetDir)\libgrpc_csharp_ext.x64.dylib;$(TargetDir)\libgrpc_csharp_ext.x64.so" />
   </Target>
 
   <Target Name="CopyBinaries" AfterTargets="Build">
