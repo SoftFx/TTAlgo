@@ -88,28 +88,30 @@ namespace TickTrader.Algo.Async.Actors
 
         private void InvokeAskMsg(IAskMsg askMsg)
         {
-            try
-            {
-                var response = InvokeMsgHandler(askMsg.Request.GetType().FullName, askMsg.Request);
-                askMsg.SetResponse(response);
-            }
-            catch (Exception ex)
-            {
-                askMsg.SetResponse(ex);
-            }
+            var response = InvokeMsgHandler(askMsg.Request.GetType().FullName, askMsg.Request);
+            askMsg.SetResponse(response);
         }
 
         private void InvokeMsg(object msg)
         {
             var res = InvokeMsgHandler(msg.GetType().FullName, msg);
-            if (res is Exception ex)
+            if (res is Exception ex) // msg handlers can return exceptions as part of their logic
                 ActorSystem.OnActorError(Name, ex);
         }
 
         private object InvokeMsgHandler(string msgType, object msg)
         {
             if (_handlers.TryGetValue(msgType, out var handler))
-                return handler.Run(msg);
+            {
+                try
+                {
+                    return handler.Run(msg);
+                }
+                catch (Exception ex)
+                {
+                    return ex;
+                }
+            }
 
             return Errors.MsgHandlerNotFound(msgType);
         }

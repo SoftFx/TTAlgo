@@ -4,12 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
-using TickTrader.Algo.Package;
 using TickTrader.Algo.Server;
 
 namespace TickTrader.BotTerminal
@@ -221,7 +219,7 @@ namespace TickTrader.BotTerminal
                     if (config is ColoredLineOutputConfig)
                         CreateOuput<double>(executor, config, descriptor);
                     else if (config is MarkerSeriesOutputConfig)
-                        CreateOuput<Marker>(executor, config, descriptor);
+                        CreateOuput<MarkerInfo>(executor, config, descriptor);
                 }
                 OutputsChanged?.Invoke();
             }

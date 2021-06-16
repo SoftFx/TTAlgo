@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Backtester;
 using TickTrader.Algo.Domain;
 
@@ -24,7 +23,7 @@ namespace TickTrader.BotTerminal
                     if (output is ColoredLineOutputConfig)
                         CreateOuput<double>(backtester, output);
                     else if (output is MarkerSeriesOutputConfig)
-                        CreateOuput<Marker>(backtester, output);
+                        CreateOuput<MarkerInfo>(backtester, output);
                 }
             }
         }

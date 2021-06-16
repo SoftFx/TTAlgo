@@ -590,7 +590,7 @@ namespace TickTrader.Algo.CoreV1
 
         void IPluginSetupTarget.SetupOutput<T>(string id, bool enabled)
         {
-            outputFixtures[id] = new OutputFixtureFactory<double>(id).Create(this, enabled);
+            outputFixtures[id] = new OutputFixtureFactory<T>(id).Create(this, enabled);
         }
 
         public OutputFixture<T> GetOutput<T>(string id)

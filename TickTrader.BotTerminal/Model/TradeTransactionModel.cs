@@ -1,7 +1,4 @@
 ﻿using System;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
@@ -28,7 +25,7 @@ namespace TickTrader.BotTerminal
 
             IsPosition = transaction.OrderType == OrderInfo.Types.Type.Position;
             IsMarket = transaction.OrderType == OrderInfo.Types.Type.Market;
-            IsPending = transaction.OrderType == OrderInfo.Types.Type.Limit || transaction.OrderType == Algo.Domain.OrderInfo.Types.Type.Stop || transaction.OrderType == Algo.Domain.OrderInfo.Types.Type.StopLimit;
+            IsPending = transaction.OrderType == OrderInfo.Types.Type.Limit || transaction.OrderType == OrderInfo.Types.Type.Stop || transaction.OrderType == OrderInfo.Types.Type.StopLimit;
             IsBalanceTransaction = transaction.ReportType == TradeReportInfo.Types.ReportType.BalanceTransaction;
 
             OrderId = GetId(transaction);
@@ -147,7 +144,7 @@ namespace TickTrader.BotTerminal
         public double? ReqQuantity { get; protected set; }
         public double? PosRemainingPrice { get; protected set; }
         public string OrderExecutionOption { get; protected set; }
-        public OrderType? InitialType { get; protected set; }
+        public OrderInfo.Types.Type? InitialType { get; protected set; }
         public Reasons? Reason { get; protected set; }
         public string Tag { get; protected set; }
         public string InstanceId { get; protected set; }
@@ -360,9 +357,9 @@ namespace TickTrader.BotTerminal
             return transaction.OrderOptions.GetString();
         }
 
-        protected virtual OrderType? GetInitialOrderType(TradeReportInfo transaction)
+        protected virtual OrderInfo.Types.Type? GetInitialOrderType(TradeReportInfo transaction)
         {
-            return IsBalanceTransaction ? null : (OrderType?)transaction.RequestedOrderType.ToApiEnum();
+            return IsBalanceTransaction ? null : (OrderInfo.Types.Type?)transaction.RequestedOrderType;
         }
 
         protected virtual double? GetReqOpenPrice(TradeReportInfo transaction)

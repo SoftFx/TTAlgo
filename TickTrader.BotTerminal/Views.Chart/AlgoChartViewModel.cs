@@ -2,14 +2,10 @@
 using Machinarium.Qnil;
 using Machinarium.Var;
 using SciChart.Charting.Model.ChartSeries;
-using SciChart.Charting.Visuals.Annotations;
 using SciChart.Charting.Visuals.Axes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 
