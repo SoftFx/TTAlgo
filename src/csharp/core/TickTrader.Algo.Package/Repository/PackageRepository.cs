@@ -182,7 +182,7 @@ namespace TickTrader.Algo.Package
                     foreach (var file in fileList)
                         if (PackageHelper.IsFileSupported(file))
                         {
-                            SchedulePackageUpsert(file);
+                            UpsertPackage(file);
                             cnt++;
                         }
 

@@ -44,7 +44,7 @@ namespace TickTrader.Algo.Async.Actors
 
             _msgHandler = msgHandler;
             _doProcessing = true;
-            _msgLoopTask = ProcessLoop();
+            _msgLoopTask = Task.Factory.StartNew(ProcessLoop).Unwrap();
         }
 
         public async Task Stop()

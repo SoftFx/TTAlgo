@@ -14,14 +14,21 @@ namespace TickTrader.Algo.Async.Actors
         internal IMsgDispatcher MsgDispatcher { get; private set; }
 
 
+        protected IActorRef Self { get; private set; }
+
+
         internal void Init(string name, IMsgDispatcher msgDispatcher, object initMsg = null)
         {
             Name = name ?? throw Errors.ActorNameRequired();
             MsgDispatcher = msgDispatcher ?? throw Errors.MsgDispatcherRequired();
+            Self = new LocalRef(msgDispatcher, Name);
+
             MsgDispatcher.Start(HandleMsg);
             if (initMsg != null)
                 MsgDispatcher.PostMessage(new InvokeInitCmd(initMsg));
         }
+
+        internal IActorRef GetRef() => Self;
 
 
         protected void Receive<T>(Action<T> action)

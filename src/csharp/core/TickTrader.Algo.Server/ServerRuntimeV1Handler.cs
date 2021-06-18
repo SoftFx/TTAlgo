@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Server
         private static readonly Any VoidResponse = Any.Pack(new VoidResponse());
 
         private readonly AlgoServer _server;
-        private RuntimeModel _runtime;
+        private PkgRuntimeModel _runtime;
         private RpcSession _session;
 
         private ConcurrentDictionary<string, object> _pendingRequestHandlers;
@@ -49,25 +49,7 @@ namespace TickTrader.Algo.Server
         public Task<Any> HandleRequest(string proxyId, string callId, Any payload)
         {
             if (payload.Is(AttachRuntimeRequest.Descriptor))
-            {
-                var request = payload.Unpack<AttachRuntimeRequest>();
-                if (_runtime != null)
-                {
-                    return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Runtime already attached!" }));
-                }
-                if (_server.TryGetRuntime(request.Id, out var runtime))
-                {
-                    _runtime = runtime;
-
-                    _runtime.OnAttached(_session);
-
-                    return Task.FromResult(Any.Pack(new AttachRuntimeResponse { Success = true }));
-                }
-                else
-                {
-                    return Task.FromResult(Any.Pack(new AttachRuntimeResponse { Success = false }));
-                }
-            }
+                return AttachRuntimeRequestHandler(payload);
             else if (payload.Is(RuntimeConfigRequest.Descriptor))
                 return RuntimeConfigRequestHandler();
             else if (payload.Is(PackagePathRequest.Descriptor))
@@ -121,15 +103,25 @@ namespace TickTrader.Algo.Server
         }
 
 
+        private async Task<Any> AttachRuntimeRequestHandler(Any payload)
+        {
+            var request = payload.Unpack<AttachRuntimeRequest>();
+            if (_runtime != null)
+                return Any.Pack(new ErrorResponse { Message = "Runtime already attached!" });
+
+            _runtime = await _server.Runtimes.ConnectRuntime(request.Id, _session);
+            return Any.Pack(new AttachRuntimeResponse { Success = _runtime != null });
+        }
+
         private Task<Any> RuntimeConfigRequestHandler()
         {
-            return Task.FromResult(Any.Pack(_runtime.Config));
+            return _runtime.GetConfig().ContinueWith(t => Any.Pack(t.Result));
         }
 
         private Task<Any> PackagePathRequestHandler(Any payload)
         {
             //var request = payload.Unpack<PackagePathRequest>();
-            return Task.FromResult(Any.Pack(new PackagePathResponse { Path = _runtime.GetPackagePath() }));
+            return Task.FromResult(Any.Pack(new PackagePathResponse { Path = string.Empty }));
         }
 
         private Task<Any> ExecutorConfigRequestHandler(string executorId)
@@ -143,14 +135,14 @@ namespace TickTrader.Algo.Server
         private Task<Any> AttachAccountRequestHandler(Any payload)
         {
             var request = payload.Unpack<AttachAccountRequest>();
-            _runtime.AttachAccount(request.AccountId);
+            _runtime.AttachAccount(request);
             return Task.FromResult(VoidResponse);
         }
 
         private Task<Any> DetachAccountRequestHandler(Any payload)
         {
             var request = payload.Unpack<DetachAccountRequest>();
-            _runtime.DetachAccount(request.AccountId);
+            _runtime.DetachAccount(request);
             return Task.FromResult(VoidResponse);
         }
 

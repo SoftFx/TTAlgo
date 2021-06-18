@@ -56,7 +56,7 @@ namespace TickTrader.BotTerminal
 
                 _token.ThrowIfCancellationRequested();
 
-                await _agent.AlgoServer.PackageStorage.WaitLoaded();
+                await _agent.AlgoServer.PkgStorage.WaitLoaded();
 
                 _token.ThrowIfCancellationRequested();
 

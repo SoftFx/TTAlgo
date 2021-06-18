@@ -2,11 +2,19 @@
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Runtime;
 
-namespace TickTrader.Algo.Runtime
+namespace TickTrader.Algo.Server
 {
+    public interface IRuntimeHostProxy
+    {
+        Task Start(string address, int port, string proxyId);
+
+        Task Stop();
+    }
+
+
     public static class RuntimeHost
     {
         public static IRuntimeHostProxy Create(bool isolated)

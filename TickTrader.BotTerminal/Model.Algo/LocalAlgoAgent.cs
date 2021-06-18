@@ -100,7 +100,7 @@ namespace TickTrader.BotTerminal
             _logger.Info($"Started AlgoServer on port {AlgoServer.BoundPort}");
 
             AlgoServer.RegisterAccountProxy(ClientModel.GetAccountProxy());
-            var pkgStorage = AlgoServer.PackageStorage;
+            var pkgStorage = AlgoServer.PkgStorage;
 
             _reductions = new ReductionCollection();
             IdProvider = new PluginIdProvider();

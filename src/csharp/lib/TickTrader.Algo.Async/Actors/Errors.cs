@@ -2,7 +2,7 @@
 
 namespace TickTrader.Algo.Async.Actors
 {
-    public static class Errors
+    internal static class Errors
     {
         public static Exception InvalidMsgType(Type excepted, Type actual) => new InvalidCastException($"Expected msg type '{excepted}', but got '{actual}'");
 

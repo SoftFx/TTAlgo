@@ -52,14 +52,14 @@ namespace TickTrader.Algo.Async.Actors
             where T : Actor, new()
         {
             Actor instance = new T();
-            actorName = actorName ?? typeof(T).Name + Guid.NewGuid().ToString("N");
+            actorName = actorName ?? typeof(T).FullName + Guid.NewGuid().ToString("N");
             
             if (!_actors.TryAdd(actorName, instance))
                 throw Errors.DuplicateActorName(actorName);
 
             var msgDispather = _msgDispatcherFactory.CreateDispatcher(actorName, _maxBatch);
             instance.Init(actorName, msgDispather, initMsg);
-            return new LocalRef(msgDispather, actorName);
+            return instance.GetRef();
         }
     }
 }

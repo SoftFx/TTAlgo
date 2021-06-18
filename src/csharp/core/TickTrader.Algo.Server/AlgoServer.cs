@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
@@ -15,9 +14,6 @@ namespace TickTrader.Algo.Server
     {
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<AlgoServer>();
 
-        private readonly PackageStorage _pkgStorage = new PackageStorage();
-        private readonly Dictionary<string, RuntimeModel> _runtimeMap = new Dictionary<string, RuntimeModel>();
-        private readonly Dictionary<string, string> _pkgRuntimeMap = new Dictionary<string, string>();
         private readonly Dictionary<string, ExecutorModel> _executorsMap = new Dictionary<string, ExecutorModel>();
         private readonly Dictionary<string, IAccountProxy> _accountsMap = new Dictionary<string, IAccountProxy>();
         private readonly RpcServer _rpcServer;
@@ -27,11 +23,14 @@ namespace TickTrader.Algo.Server
 
         public int BoundPort => _rpcServer.BoundPort;
 
-        public PackageStorage PackageStorage => _pkgStorage;
+        public PackageStorage PkgStorage { get; } = new PackageStorage();
+
+        public RuntimeManager Runtimes { get; }
 
 
         public AlgoServer()
         {
+            Runtimes = new RuntimeManager(this);
             _rpcServer = new RpcServer(new TcpFactory(), this);
         }
 
@@ -45,16 +44,9 @@ namespace TickTrader.Algo.Server
         {
             _logger.Debug("Stopping...");
 
-            await _pkgStorage.Stop();
+            await PkgStorage.Stop();
 
-            Task[] stopRuntimeTasks;
-            lock (_runtimeMap)
-            {
-                stopRuntimeTasks = _runtimeMap.Values.Select(r => StopRuntime(r)).ToArray();
-            }
-            _logger.Debug("Runtimes stopping...");
-            await Task.WhenAll(stopRuntimeTasks);
-            _logger.Debug("Runtimes stopped");
+            await Runtimes.Shutdown();
 
             await _rpcServer.Stop();
 
@@ -68,8 +60,12 @@ namespace TickTrader.Algo.Server
 
             var packageId = config.Key.PackageId;
 
-            var runtime = await GetPackageRuntime(packageId);
-            var executor = runtime.CreateExecutor(config, accountId);
+            var runtime = await Runtimes.GetPkgRuntime(packageId);
+            if (runtime == null)
+                throw new ArgumentException($"Package doesn't exists '{packageId}'");
+            await runtime.Start();
+
+            var executor = new ExecutorModel(runtime, config, accountId);
             _executorsMap.Add(executor.Id, executor);
             return executor;
         }
@@ -84,11 +80,6 @@ namespace TickTrader.Algo.Server
         }
 
 
-        internal bool TryGetRuntime(string runtimeId, out RuntimeModel runtime)
-        {
-            return _runtimeMap.TryGetValue(runtimeId, out runtime);
-        }
-
         internal bool TryGetExecutor(string executorId, out ExecutorModel executor)
         {
             return _executorsMap.TryGetValue(executorId, out executor);
@@ -102,77 +93,6 @@ namespace TickTrader.Algo.Server
         internal void OnExecutorStopped(string executorId)
         {
             _executorsMap.Remove(executorId);
-        }
-
-        internal void OnRuntimeStopped(string runtimeId)
-        {
-            lock (_runtimeMap)
-            {
-                _runtimeMap.Remove(runtimeId);
-            }
-        }
-
-
-        private async Task<RuntimeModel> GetPackageRuntime(string pkgId)
-        {
-            if (_pkgRuntimeMap.TryGetValue(pkgId, out var runtimeId))
-            {
-                var rt = _runtimeMap[runtimeId];
-                await rt.WaitForLaunch();
-                return rt;
-            }
-
-            var pkgRef = await _pkgStorage.GetPackageRef(pkgId);
-            if (pkgRef == null)
-                throw new ArgumentException("Package not found", nameof(pkgId));
-
-            runtimeId = pkgRef.Id;
-            var runtime = await StartRuntime(runtimeId, pkgRef);
-            _pkgRuntimeMap[pkgId] = runtimeId;
-            return runtime;
-        }
-
-        private async Task<RuntimeModel> GetInstanceRuntime(string instanceId, string pkgId)
-        {
-            var runtimeId = $"inst/{instanceId}";
-            if (_runtimeMap.ContainsKey(runtimeId))
-                throw new ArgumentException("Instance runtime already exists", nameof(instanceId));
-
-            var pkgRef = await _pkgStorage.GetPackageRef(pkgId);
-            if (pkgRef == null)
-                throw new ArgumentException("Package not found", nameof(pkgId));
-
-            return await StartRuntime(runtimeId, pkgRef);
-        }
-
-        private async Task<RuntimeModel> StartRuntime(string runtimeId, AlgoPackageRef pkgRef)
-        {
-            RuntimeModel runtime = null;
-            try
-            {
-                runtime = new RuntimeModel(this, runtimeId, pkgRef);
-                _runtimeMap[runtimeId] = runtime;
-                await runtime.Start(Address, BoundPort);
-                await runtime.WaitForLaunch();
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, $"Failed to start runtime {runtimeId} for {pkgRef.Id}");
-                _pkgStorage.ReleasePackageRef(pkgRef);
-            }
-            return runtime;
-        }
-
-        private async Task StopRuntime(RuntimeModel runtime)
-        {
-            try
-            {
-                await runtime.Stop("Server shutdown");
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, $"Failed to stop runtime {runtime.Id}");
-            }
         }
 
 

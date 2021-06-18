@@ -7,7 +7,6 @@ using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.Rpc;
-using TickTrader.Algo.Runtime;
 
 namespace TickTrader.Algo.Server
 {
@@ -72,7 +71,7 @@ namespace TickTrader.Algo.Server
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to start");
-                _server.PackageStorage.ReleasePackageRef(_pkgRef);
+                _server.PkgStorage.ReleasePackageRef(_pkgRef);
             }
         }
 
@@ -96,7 +95,7 @@ namespace TickTrader.Algo.Server
 
                 _logger.Debug("Stopped");
 
-                _server.OnRuntimeStopped(Id);
+                //_server.OnRuntimeStopped(Id);
             }
             catch (Exception ex)
             {
@@ -104,7 +103,7 @@ namespace TickTrader.Algo.Server
             }
             finally
             {
-                _server.PackageStorage.ReleasePackageRef(_pkgRef);
+                _server.PkgStorage.ReleasePackageRef(_pkgRef);
             }
         }
 
@@ -130,7 +129,7 @@ namespace TickTrader.Algo.Server
         internal void OnAttached(RpcSession session)
         {
             _onNotification = session.Tell;
-            _proxy = new RuntimeProxy(session);
+            _proxy = new RemoteRuntimeProxy(session);
             _session = session;
 
             _attachTask?.TrySetResult(true);
@@ -146,11 +145,6 @@ namespace TickTrader.Algo.Server
         internal string GetPackagePath()
         {
             return _pkgRef.Identity.FilePath;
-        }
-
-        internal ExecutorModel CreateExecutor(PluginConfig config, string accountId)
-        {
-            return new ExecutorModel(this, config, accountId);
         }
 
         internal void AttachAccount(string accountId)

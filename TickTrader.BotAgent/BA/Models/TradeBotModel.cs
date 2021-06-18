@@ -358,7 +358,7 @@ namespace TickTrader.BotAgent.BA.Models
         {
             var pluginKey = Config.Key;
             PackageId = pluginKey.PackageId;
-            Package = _server.PackageStorage.GetPackageRef(PackageId).Result;
+            Package = _server.PkgStorage.GetPackageRef(PackageId).Result;
 
             if (Package == null)
             {
@@ -373,7 +373,7 @@ namespace TickTrader.BotAgent.BA.Models
                 return;
             }
 
-            _server.PackageStorage.ReleasePackageRef(Package);
+            _server.PkgStorage.ReleasePackageRef(Package);
 
             if (State == PluginModelInfo.Types.PluginState.Broken)
                 ChangeState(PluginModelInfo.Types.PluginState.Stopped, null);

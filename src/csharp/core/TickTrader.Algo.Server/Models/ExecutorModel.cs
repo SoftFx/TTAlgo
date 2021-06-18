@@ -7,7 +7,7 @@ namespace TickTrader.Algo.Server
 {
     public class ExecutorModel
     {
-        private readonly RuntimeModel _host;
+        private readonly PkgRuntimeModel _host;
 
 
         public string Id { get; }
@@ -23,7 +23,7 @@ namespace TickTrader.Algo.Server
         public event Action<ExecutorModel> Stopped;
 
 
-        public ExecutorModel(RuntimeModel host, PluginConfig config, string accountId)
+        public ExecutorModel(PkgRuntimeModel host, PluginConfig config, string accountId)
         {
             _host = host;
             Id = config.InstanceId;
@@ -41,17 +41,12 @@ namespace TickTrader.Algo.Server
 
         public Task Start()
         {
-            return _host.Proxy.StartExecutor(Id)
-                .ContinueWith(t =>
-                {
-                    if (t.IsCompleted)
-                        _host.OnExecutorStarted(Id);
-                });
+            return _host.StartExecutor(new StartExecutorRequest { ExecutorId = Id });
         }
 
         public Task Stop()
         {
-            return _host.Proxy.StopExecutor(Id);
+            return _host.StopExecutor(new StopExecutorRequest { ExecutorId = Id });
         }
 
 

@@ -64,6 +64,12 @@ namespace TickTrader.Algo.Package
             return _impl.Call(a => a.GetPackageRef(pkgId));
         }
 
+        public Task<bool> LockPackageRef(string pkgRefId) => _impl.Call(a => a.LockPackageRef(pkgRefId));
+
+        public void ReleasePackageRef(string pkgRefId) => _impl.Call(a => a.ReleasePackageRef(pkgRefId));
+
+        public Task<string> GetPackageRefPath(string pkgRefId) => _impl.Call(a => a.GetPackageRefPath(pkgRefId));
+
         public void ReleasePackageRef(AlgoPackageRef pkgRef)
         {
             _impl.Send(a => a.ReleasePackageRef(pkgRef));
@@ -113,7 +119,8 @@ namespace TickTrader.Algo.Package
             private readonly Dictionary<string, PackageRepository> _repositories = new Dictionary<string, PackageRepository>();
             private readonly AsyncChannelProcessor<PackageFileUpdate> _fileUpdateProcessor = AsyncChannelProcessor<PackageFileUpdate>.CreateUnbounded($"{nameof(PackageStorage)} package loop", true);
             private readonly Dictionary<string, int> _packageVersions = new Dictionary<string, int>();
-            private readonly Dictionary<string, AlgoPackageRef> _packageMap = new Dictionary<string, AlgoPackageRef>();
+            private readonly Dictionary<string, string> _pkgIdToRefMap = new Dictionary<string, string>();
+            private readonly Dictionary<string, AlgoPackageRef> _pkgRefMap = new Dictionary<string, AlgoPackageRef>();
 
             private ChannelWriter<PackageUpdate> _pkgUpdateSink;
             private ChannelWriter<PackageVersionUpdate> _pkgVersionUpdateSink;
@@ -148,7 +155,7 @@ namespace TickTrader.Algo.Package
                     .ContinueWith(t => continuation());
             }
 
-            public void RegisterRepository(string locationId, string path, bool isUploadLocation)
+            public Task RegisterRepository(string locationId, string path, bool isUploadLocation)
             {
                 if (_repositories.ContainsKey(locationId))
                     throw new ArgumentException($"Cannot register multiple paths for location '{locationId}'");
@@ -166,7 +173,7 @@ namespace TickTrader.Algo.Package
 
                 var repo = new PackageRepository(path, locationId, _fileUpdateProcessor);
                 _repositories[locationId] = repo;
-                repo.Start(); // fire and forget
+                return repo.Start(); // wait for initial directory scan
             }
 
             public void RegisterAssembly(Assembly assembly)
@@ -193,9 +200,13 @@ namespace TickTrader.Algo.Package
 
             public AlgoPackageRef GetPackageRef(string pkgId)
             {
-                _packageMap.TryGetValue(pkgId, out var pkgRef);
-                pkgRef?.IncrementRef();
-                return pkgRef;
+                if (TryGetPackageRefByPkgId(pkgId, out var pkgRef))
+                {
+                    pkgRef.IncrementRef();
+                    return pkgRef;
+                }
+
+                return null;
             }
 
             public void ReleasePackageRef(AlgoPackageRef pkgRef)
@@ -203,14 +214,40 @@ namespace TickTrader.Algo.Package
                 pkgRef?.DecrementRef();
             }
 
+            public bool LockPackageRef(string pkgRefId)
+            {
+                if (_pkgRefMap.TryGetValue(pkgRefId, out var pkgRef))
+                {
+                    pkgRef.IncrementRef();
+                    return true;
+                }
+
+                return false;
+            }
+
+            public void ReleasePackageRef(string pkgRefId)
+            {
+                if (_pkgRefMap.TryGetValue(pkgRefId, out var pkgRef))
+                    pkgRef.DecrementRef();
+
+            }
+
+            public string GetPackageRefPath(string pkgRefId)
+            {
+                if (_pkgRefMap.TryGetValue(pkgRefId, out var pkgRef))
+                    return pkgRef.Identity.FilePath;
+
+                throw new AlgoException($"Package ref '{pkgRefId}' doesn't exist");
+            }
+
             public byte[] GetPackageBinary(string pkgId)
             {
-                if (!_packageMap.TryGetValue(pkgId, out var pkgRef))
-                    throw new AlgoException($"Package '{pkgId}' doesn't exist");
+                if (TryGetPackageRefByPkgId(pkgId, out var pkgRef))
+                    return pkgRef.PackageBytes;
 
-                return pkgRef.PackageBytes;
+                throw new AlgoException($"Package '{pkgId}' doesn't exist");
             }
-            
+
             public void UploadPackage(UploadPackageRequest request, string pkgFilePath)
             {
                 (var pkgId, var filename) = request;
@@ -226,7 +263,7 @@ namespace TickTrader.Algo.Package
                     pkgId = PackageId.Pack(_uploadLocationId, filename);
 
                 var pkgPath = string.Empty;
-                if (_packageMap.TryGetValue(pkgId, out var pkgRef))
+                if (TryGetPackageRefByPkgId(pkgId, out var pkgRef))
                 {
                     if (pkgRef.IsLocked)
                         throw new AlgoException($"Can't update Algo package '{pkgId}': one or more trade bots from this package is being executed! Please stop all bots and try again!");
@@ -249,7 +286,7 @@ namespace TickTrader.Algo.Package
                         File.Delete(pkgPath);
                     File.Move(pkgFilePath, pkgPath);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     _logger.Error(ex, $"Error saving Algo package '{pkgId}' at '{pkgPath}'");
                 }
@@ -258,7 +295,7 @@ namespace TickTrader.Algo.Package
             public void RemovePackage(RemovePackageRequest request)
             {
                 var pkgId = request.PackageId;
-                if (!_packageMap.TryGetValue(pkgId, out var pkgRef))
+                if (!TryGetPackageRefByPkgId(pkgId, out var pkgRef))
                     throw new AlgoException($"Package '{pkgId}' doesn't exist");
                 if (pkgRef.IsLocked)
                     throw new AlgoException($"Can't remove Algo package '{pkgId}': one or more trade bots from this package is being executed! Please stop all bots and try again!");
@@ -277,30 +314,38 @@ namespace TickTrader.Algo.Package
             public bool PackageWithNameExists(string pkgName)
             {
                 var pkgId = PackageId.Pack(_uploadLocationId, pkgName);
-                return _packageMap.TryGetValue(pkgId, out _);
+                return _pkgIdToRefMap.TryGetValue(pkgId, out _);
             }
 
             public List<PackageInfo> GetPackageSnapshot()
             {
-                return _packageMap.Values.Select(p => p.PackageInfo).ToList();
+                var res = new List<PackageInfo>(_pkgIdToRefMap.Count);
+                foreach(var pkgRefId in _pkgIdToRefMap.Values)
+                {
+                    if (_pkgRefMap.TryGetValue(pkgRefId, out var pkgRef))
+                        res.Add(pkgRef.PackageInfo);
+                }
+                return res;
             }
 
 
             private void HandlePackageUpdate(PackageFileUpdate update)
             {
                 var pkgId = update.PkgId;
-                if (_packageMap.TryGetValue(pkgId, out var pkgRef))
+                if (TryGetPackageRefByPkgId(pkgId, out var pkgRef))
                     pkgRef?.SetObsolete();
 
                 switch (update.Action)
                 {
                     case UpdateAction.Upsert:
                         var refId = GeneratePackageRefId(pkgId);
-                        _packageMap[pkgId] = new AlgoPackageRef(refId, update.PkgInfo, update.PkgBytes);
+                        _pkgIdToRefMap[pkgId] = refId;
+                        _pkgRefMap[refId] = new AlgoPackageRef(refId, update.PkgInfo, update.PkgBytes);
                         _pkgUpdateSink.TryWrite(new PackageUpdate { Action = Domain.Package.Types.UpdateAction.Upsert, Id = pkgId, Package = update.PkgInfo, });
                         break;
                     case UpdateAction.Remove:
-                        _packageMap.Remove(pkgId);
+                        _pkgIdToRefMap.Remove(pkgId);
+                        _pkgRefMap.Remove(pkgRef?.Id);
                         _pkgUpdateSink.TryWrite(new PackageUpdate { Action = Domain.Package.Types.UpdateAction.Removed, Id = pkgId, });
                         break;
                 }
@@ -316,6 +361,12 @@ namespace TickTrader.Algo.Package
                 var pkgRefId = $"{pkgId}/{currentVersion}";
                 _pkgVersionUpdateSink.TryWrite(new PackageVersionUpdate(pkgId, pkgRefId));
                 return pkgRefId;
+            }
+
+            private bool TryGetPackageRefByPkgId(string pkgId, out AlgoPackageRef pkgRef)
+            {
+                pkgRef = default;
+                return _pkgIdToRefMap.TryGetValue(pkgId, out var pkgRefId) && _pkgRefMap.TryGetValue(pkgRefId, out pkgRef);
             }
         }
     }

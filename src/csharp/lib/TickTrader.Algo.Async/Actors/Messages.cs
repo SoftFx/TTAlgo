@@ -76,6 +76,8 @@ namespace TickTrader.Algo.Async.Actors
                 SetException(ex);
             else if (response is TResponse)
                 SetResult((TResponse)response);
+            else if (response is null)
+                SetResult(default(TResponse));
             else SetException(Errors.InvalidResponseType(typeof(TResponse), response.GetType()));
         }
     }

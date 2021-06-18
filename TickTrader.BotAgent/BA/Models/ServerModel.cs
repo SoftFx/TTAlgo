@@ -57,7 +57,7 @@ namespace TickTrader.BotAgent.BA.Models
             _threadPoolManager = new ThreadPoolManager();
             _fdkOptionsProvider = fdkOptionsProvider;
 
-            var pkgStorage = _algoServer.PackageStorage;
+            var pkgStorage = _algoServer.PkgStorage;
 
             await pkgStorage.RegisterRepositoryLocation(SharedConstants.LocalRepositoryId, envService.AlgoRepositoryFolder, true);
             await pkgStorage.WaitLoaded();
@@ -90,11 +90,11 @@ namespace TickTrader.BotAgent.BA.Models
 
             #region Repository Management
 
-            public Task<List<PackageInfo>> GetPackageSnapshot() => CallActorAsync(a => a._algoServer.PackageStorage.GetPackageSnapshot());
-            public Task<bool> PackageWithNameExists(string pkgName) => CallActorAsync(a => a._algoServer.PackageStorage.PackageWithNameExists(pkgName));
-            public Task UploadPackage(UploadPackageRequest request, string pkgFilePath) => CallActorAsync(a => a._algoServer.PackageStorage.UploadPackage(request, pkgFilePath));
-            public Task<byte[]> DownloadPackage(string packageId) => CallActorAsync(a => a._algoServer.PackageStorage.GetPackageBinary(packageId));
-            public Task RemovePackage(RemovePackageRequest request) => CallActorAsync(a => a._algoServer.PackageStorage.RemovePackage(request));
+            public Task<List<PackageInfo>> GetPackageSnapshot() => CallActorAsync(a => a._algoServer.PkgStorage.GetPackageSnapshot());
+            public Task<bool> PackageWithNameExists(string pkgName) => CallActorAsync(a => a._algoServer.PkgStorage.PackageWithNameExists(pkgName));
+            public Task UploadPackage(UploadPackageRequest request, string pkgFilePath) => CallActorAsync(a => a._algoServer.PkgStorage.UploadPackage(request, pkgFilePath));
+            public Task<byte[]> DownloadPackage(string packageId) => CallActorAsync(a => a._algoServer.PkgStorage.GetPackageBinary(packageId));
+            public Task RemovePackage(RemovePackageRequest request) => CallActorAsync(a => a._algoServer.PkgStorage.RemovePackage(request));
             public Task<MappingCollectionInfo> GetMappingsInfo() => CallActorAsync(a => a.GetMappingsInfo());
 
             public event Action<PackageInfo, ChangeAction> PackageChanged

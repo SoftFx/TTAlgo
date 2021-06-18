@@ -79,7 +79,9 @@ namespace TickTrader.Algo.Async
                     {
                         try
                         {
-                            await subListCache[j].DispatchEvent(item);
+                            var t = subListCache[j].DispatchEvent(item);
+                            if (t != null)
+                                await t;
                         }
                         catch (Exception) { }
                     }
