@@ -303,11 +303,22 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }
         }
 
-        private void OnPackageChanged(PackageInfo package, ChangeAction action)
+        private void OnPackageChanged(PackageUpdate update)
         {
             try
             {
-                PackageUpdated(new UpdateInfo<PackageInfo>(Convert(action), package));
+                UpdateInfo<PackageInfo> updateInfo = default;
+                switch (update.Action)
+                {
+                    case Package.Types.UpdateAction.Upsert:
+                        updateInfo = new UpdateInfo<PackageInfo>(UpdateInfo.Types.UpdateType.Replaced, update.Package);
+                        break;
+                    case Package.Types.UpdateAction.Removed:
+                        updateInfo = new UpdateInfo<PackageInfo>(UpdateInfo.Types.UpdateType.Removed, new PackageInfo { PackageId = update.Id });
+                        break;
+                }
+                if (updateInfo != null)
+                    PackageUpdated(updateInfo);
             }
             catch (Exception ex)
             {

@@ -85,16 +85,15 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             }
         }
 
-        private static void OnPackageChanged(PackageInfo package, ChangeAction action)
+        private static void OnPackageChanged(PackageUpdate update)
         {
-            switch (action)
+            switch (update.Action)
             {
-                case ChangeAction.Added:
-                case ChangeAction.Modified:
-                    Hub.Clients.All.AddOrUpdatePackage(package.ToDto());
+                case Package.Types.UpdateAction.Upsert:
+                    Hub.Clients.All.AddOrUpdatePackage(update.Package.ToDto());
                     break;
-                case ChangeAction.Removed:
-                    Hub.Clients.All.DeletePackage(package.PackageId);
+                case Package.Types.UpdateAction.Removed:
+                    Hub.Clients.All.DeletePackage(update.Id);
                     break;
             }
         }

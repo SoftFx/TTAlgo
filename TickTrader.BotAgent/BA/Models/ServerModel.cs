@@ -66,7 +66,7 @@ namespace TickTrader.BotAgent.BA.Models
             _reductions.LoadDefaultReductions();
             _mappingsInfo = _reductions.CreateMappings();
 
-            //pkgStorage.PackageUpdated.Subscribe(p => PackageChanged?.Invoke(p));
+            pkgStorage.PackageUpdated.Subscribe(p => PackageChanged?.Invoke(p));
             //pkgStorage.PackageStateChanged += p => PackageStateChanged?.Invoke(new PackageStateUpdate { PackageId = p.PackageId, IsLocked = p.IsLocked, IsValid = p.IsValid });
 
             _threadPoolManager.Start(GetBotsCnt());
@@ -97,7 +97,7 @@ namespace TickTrader.BotAgent.BA.Models
             public Task RemovePackage(RemovePackageRequest request) => CallActorAsync(a => a._algoServer.PkgStorage.RemovePackage(request));
             public Task<MappingCollectionInfo> GetMappingsInfo() => CallActorAsync(a => a.GetMappingsInfo());
 
-            public event Action<PackageInfo, ChangeAction> PackageChanged
+            public event Action<PackageUpdate> PackageChanged
             {
                 // Warning! This violates actor model rules! Deadlocks are possible!
                 add => CallActorFlatten(a => a.PackageChanged += value);
@@ -472,7 +472,7 @@ namespace TickTrader.BotAgent.BA.Models
         private ReductionCollection _reductions;
         public MappingCollectionInfo _mappingsInfo;
 
-        private event Action<PackageInfo, ChangeAction> PackageChanged;
+        private event Action<PackageUpdate> PackageChanged;
         private event Action<PackageStateUpdate> PackageStateChanged;
 
 

@@ -20,7 +20,7 @@ namespace TickTrader.BotAgent.BA
         Task RemovePackage(RemovePackageRequest request);
         Task<MappingCollectionInfo> GetMappingsInfo();
 
-        event Action<PackageInfo, ChangeAction> PackageChanged;
+        event Action<PackageUpdate> PackageChanged;
         event Action<PackageStateUpdate> PackageStateChanged;
         
         // -------- Account Management --------
