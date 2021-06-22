@@ -46,6 +46,10 @@ namespace TickTrader.Algo.Server
 
         internal void OnExecutorStopped(string executorId) => _impl.Tell(new ExecutorStoppedMsg(executorId));
 
+        internal Task<PluginInfo> GetPluginInfo(PluginKey plugin) => _impl.Ask<PluginInfo>(new GetPluginInfoRequest(plugin));
+
+        internal Task<ExecutorModel> CreateExecutor(string executorId, ExecutorConfig config) => _impl.Ask<ExecutorModel>(new CreateExecutorCmd(executorId, config));
+
 
         private class InitMsg
         {
@@ -100,6 +104,29 @@ namespace TickTrader.Algo.Server
             }
         }
 
+        private class GetPluginInfoRequest
+        {
+            public PluginKey Plugin { get; }
+
+            public GetPluginInfoRequest(PluginKey plugin)
+            {
+                Plugin = plugin;
+            }
+        }
+
+        private class CreateExecutorCmd
+        {
+            public string ExecutorId { get; }
+
+            public ExecutorConfig Config { get; }
+
+            public CreateExecutorCmd(string executorId, ExecutorConfig config)
+            {
+                ExecutorId = executorId;
+                Config = config;
+            }
+        }
+
 
 
         private class Impl : Actor
@@ -108,6 +135,8 @@ namespace TickTrader.Algo.Server
             public const int ShutdownTimeout = 10000;
 
 
+            private readonly Dictionary<string, ExecutorConfig> _executorConfigMap = new Dictionary<string, ExecutorConfig>();
+            private readonly Dictionary<string, ExecutorModel> _executorsMap = new Dictionary<string, ExecutorModel>();
             private readonly Dictionary<string, AttachedAccount> _attachedAccounts = new Dictionary<string, AttachedAccount>();
 
             private IAlgoLogger _logger;
@@ -136,6 +165,8 @@ namespace TickTrader.Algo.Server
                 Receive<StopExecutorRequest>(StopExecutor);
                 Receive<ExecutorStoppedMsg>(OnExecutorStopped);
                 Receive<RuntimeConfigRequest, RuntimeConfig>(GetConfig);
+                Receive<GetPluginInfoRequest, PluginInfo>(GetPluginInfo);
+                Receive<CreateExecutorCmd, ExecutorModel>(CreateExecutor);
             }
 
 
@@ -296,7 +327,7 @@ namespace TickTrader.Algo.Server
                 return _proxy.StopExecutor(request.ExecutorId);
             }
 
-            internal void OnExecutorStopped(ExecutorStoppedMsg msg)
+            private void OnExecutorStopped(ExecutorStoppedMsg msg)
             {
                 _startedExecutorsCnt--;
                 _logger.Debug($"Executor {msg.ExecutorId} stopped. Have {_startedExecutorsCnt} active executors");
@@ -305,6 +336,22 @@ namespace TickTrader.Algo.Server
 
                 if (_startedExecutorsCnt == 0 && _shutdownWhenIdle)
                     ShutdownInternal();
+            }
+
+            private PluginInfo GetPluginInfo(GetPluginInfoRequest request)
+            {
+                return new PluginInfo(request.Plugin, null);
+            }
+
+            private Task<ExecutorModel> CreateExecutor(CreateExecutorCmd cmd)
+            {
+                var id = cmd.ExecutorId;
+                if (_executorsMap.ContainsKey(id))
+                    return Task.FromException<ExecutorModel>(Errors.DuplicateExecutorId(id));
+
+                var executor = new ExecutorModel(null, id, cmd.Config);
+                _executorsMap.Add(id, executor);
+                return Task.FromResult(executor);
             }
 
             private bool AttachAccount(AttachAccountRequest request)

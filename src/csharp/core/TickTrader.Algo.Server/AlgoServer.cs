@@ -27,9 +27,13 @@ namespace TickTrader.Algo.Server
 
         public RuntimeManager Runtimes { get; }
 
+        public EnvService Env { get; }
+
 
         public AlgoServer()
         {
+            Env = new EnvService(AppDomain.CurrentDomain.BaseDirectory);
+
             Runtimes = new RuntimeManager(this);
             _rpcServer = new RpcServer(new TcpFactory(), this);
         }

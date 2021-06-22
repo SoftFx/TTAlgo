@@ -24,7 +24,7 @@ namespace TickTrader.BotAgent.BA.Models
     {
         private static readonly ILogger _logger = LogManager.GetLogger(nameof(ServerModel));
 
-        private static readonly EnvService envService = new EnvService();
+        private static readonly EnvService envService = new EnvService(AppDomain.CurrentDomain.BaseDirectory);
         private static readonly string cfgFilePath = Path.Combine(envService.AppFolder, "server.config.xml");
 
         [DataMember(Name = "accounts")]

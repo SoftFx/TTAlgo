@@ -238,19 +238,19 @@ namespace TickTrader.Algo.Package
             {
                 (var path, var fileUpdate) = loadResult;
 
-                if (fileUpdate == null)
-                    return; // load skipped or failed
-
-                _logger?.Debug($"Loaded package '{path}'");
-
-                if (fileUpdate != null)
-                    _updateChannel.AddAsync(fileUpdate);
-
                 if (!_pkgStateCache.TryGetValue(path, out var pkgState))
+                {
                     _logger?.Error($"Missing package state for '{path}'");
+                    return;
+                }
 
                 pkgState.IsLoading = false;
-                pkgState.Identity = fileUpdate.PkgInfo.Identity;
+                if (fileUpdate != null)
+                {
+                    _logger?.Debug($"Loaded package '{path}'");
+                    pkgState.Identity = fileUpdate.PkgInfo.Identity;
+                    _updateChannel.AddAsync(fileUpdate);
+                }
 
                 if (pkgState.NextAction != null)
                 {

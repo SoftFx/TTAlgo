@@ -32,6 +32,13 @@ namespace TickTrader.Algo.Server
             UpdateConfig(config);
         }
 
+        public ExecutorModel(PkgRuntimeModel host, string id, ExecutorConfig config)
+        {
+            _host = host;
+            Id = id;
+            Config = config;
+        }
+
 
         public void Configure(PluginConfig config)
         {
