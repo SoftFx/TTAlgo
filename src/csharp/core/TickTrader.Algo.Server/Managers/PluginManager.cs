@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
@@ -19,6 +20,17 @@ namespace TickTrader.Algo.Server
         }
 
 
+        public Task Shutdown() => _impl.Ask(new ShutdownCmd());
+        
+        public Task Add(AddPluginRequest request) => _impl.Ask(request);
+
+        public Task Remove(RemovePluginRequest request) => _impl.Ask(request);
+
+        public Task StartPlugin(StartPluginRequest request) => _impl.Ask(request);
+
+        public Task StopPlugin(StopPluginRequest request) => _impl.Ask(request);
+
+
         private class InitMsg
         {
             public AlgoServer Server { get; }
@@ -28,6 +40,8 @@ namespace TickTrader.Algo.Server
                 Server = server;
             }
         }
+
+        private class ShutdownCmd { }
 
 
         private class Impl : Actor
@@ -43,6 +57,7 @@ namespace TickTrader.Algo.Server
                 Receive<RemovePluginRequest>(RemovePlugin);
                 Receive<StartPluginRequest>(StartPlugin);
                 Receive<StopPluginRequest>(StopPlugin);
+                Receive<ShutdownCmd>(Shutdown);
             }
 
 
@@ -53,6 +68,17 @@ namespace TickTrader.Algo.Server
             }
 
 
+            private async Task Shutdown(ShutdownCmd cmd)
+            {
+                _logger.Debug("Plugins stopping...");
+
+                await Task.WhenAll(_plugins.Values.Select(p =>
+                    p.Stop(new StopPluginRequest())
+                    .OnException(ex => _logger.Error(ex, $"Failed to stop runtime {p.Id}"))).ToArray());
+
+                _logger.Debug("Plugins stopped");
+            }
+            
             private Task<PluginModel> AddPlugin(AddPluginRequest request)
             {
                 var id = request.Config.InstanceId;
@@ -64,14 +90,20 @@ namespace TickTrader.Algo.Server
                 return Task.FromResult(plugin);
             }
 
-            private void RemovePlugin(RemovePluginRequest request)
+            private Task RemovePlugin(RemovePluginRequest request)
             {
+                var id = request.PluginId;
+                if (!_plugins.TryGetValue(id, out var plugin))
+                    return Task.FromException(Errors.PluginNotFound(id));
+
+                _plugins.Remove(id);
+                return plugin.Stop(new StopPluginRequest { PluginId = id })
+                    .OnException(ex => _logger.Error(ex, $"Failed to stop plugin"));
             }
 
             private Task StartPlugin(StartPluginRequest request)
             {
                 var id = request.PluginId;
-
                 if (!_plugins.TryGetValue(id, out var plugin))
                     return Task.FromException(Errors.PluginNotFound(id));
 
@@ -81,7 +113,6 @@ namespace TickTrader.Algo.Server
             private Task StopPlugin(StopPluginRequest request)
             {
                 var id = request.PluginId;
-
                 if (!_plugins.TryGetValue(id, out var plugin))
                     return Task.FromException(Errors.PluginNotFound(id));
 

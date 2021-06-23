@@ -1,6 +1,7 @@
 ﻿using Caliburn.Micro;
 using System.Diagnostics;
 using System.IO;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
@@ -20,9 +21,9 @@ namespace TickTrader.BotTerminal
 
         public PluginKey Plugin => Model.Config.Key;
 
-        public bool IsRunning => PluginStateHelper.IsRunning(Model.State) || Agent.Model.IsRemote && Model.State == PluginModelInfo.Types.PluginState.Starting;
+        public bool IsRunning => Model.State.IsRunning() || Agent.Model.IsRemote && Model.State == PluginModelInfo.Types.PluginState.Starting;
 
-        public bool IsStopped => PluginStateHelper.IsStopped(Model.State);
+        public bool IsStopped => Model.State.IsStopped();
 
         public bool CanStart => IsStopped && Agent.Model.AccessManager.CanStartBot();
 
@@ -30,7 +31,7 @@ namespace TickTrader.BotTerminal
 
         public bool CanStartStop => CanStart || CanStop;
 
-        public bool CanRemove => PluginStateHelper.IsStopped(Model.State) && Agent.Model.AccessManager.CanRemoveBot();
+        public bool CanRemove => Model.State.IsStopped() && Agent.Model.AccessManager.CanRemoveBot();
 
         public bool CanOpenChart => !Model.IsRemote && (Model.Descriptor?.SetupMainSymbol ?? false);
 

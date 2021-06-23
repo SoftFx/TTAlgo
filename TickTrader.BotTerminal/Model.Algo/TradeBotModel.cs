@@ -6,6 +6,7 @@ using TickTrader.Algo.Domain;
 using TickTrader.Algo.Server;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
@@ -74,7 +75,7 @@ namespace TickTrader.BotTerminal
 
         public async Task Start()
         {
-            if (!PluginStateHelper.CanStart(State))
+            if (!State.CanStart())
                 return;
 
             if (await StartExcecutor())
@@ -86,7 +87,7 @@ namespace TickTrader.BotTerminal
 
         public async Task Stop()
         {
-            if (!PluginStateHelper.CanStop(State))
+            if (!State.CanStop())
                 return;
 
             if (await StopExecutor())
@@ -112,7 +113,7 @@ namespace TickTrader.BotTerminal
             if (State == PluginModelInfo.Types.PluginState.Broken)
                 return;
 
-            if (PluginStateHelper.IsStopped(State))
+            if (State.IsStopped())
             {
                 base.Configurate(config);
 
@@ -130,7 +131,7 @@ namespace TickTrader.BotTerminal
 
         protected override void OnPluginUpdated()
         {
-            if (PluginStateHelper.IsStopped(State))
+            if (State.IsStopped())
             {
                 UpdateRefs();
             }

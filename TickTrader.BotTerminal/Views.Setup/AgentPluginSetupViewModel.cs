@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
@@ -98,7 +99,7 @@ namespace TickTrader.BotTerminal
 
         public ITradeBot Bot { get; private set; }
 
-        public bool PluginIsStopped => Bot == null ? true : PluginStateHelper.IsStopped(Bot.State);
+        public bool PluginIsStopped => Bot == null ? true : Bot.State.IsStopped();
 
         public bool CanOk => (Setup?.IsValid ?? false) && PluginIsStopped && !_hasPendingRequest && SelectedPlugin != null
             && (IsNewMode ? SelectedAgent.Model.AccessManager.CanAddBot() : SelectedAgent.Model.AccessManager.CanChangeBotConfig());

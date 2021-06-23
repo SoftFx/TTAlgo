@@ -46,6 +46,8 @@ namespace TickTrader.Algo.Server
             UpdateConfig(config);
         }
 
+        public void Dispose() { }
+
         public Task Start()
         {
             return _host.StartExecutor(new StartExecutorRequest { ExecutorId = Id });

@@ -71,9 +71,9 @@ namespace TickTrader.BotTerminal
 
         public IAlertModel AlertModel { get; }
 
-        public int RunningBotsCnt => _bots.Snapshot.Values.Count(b => !PluginStateHelper.IsStopped(b.State));
+        public int RunningBotsCnt => _bots.Snapshot.Values.Count(b => !b.State.IsStopped());
 
-        public bool HasRunningBots => _bots.Snapshot.Values.Any(b => !PluginStateHelper.IsStopped(b.State));
+        public bool HasRunningBots => _bots.Snapshot.Values.Any(b => !b.State.IsStopped());
 
         public event Action<PackageInfo> PackageStateChanged;
 
@@ -448,7 +448,7 @@ namespace TickTrader.BotTerminal
             {
                 profileStorage.Bots = _bots.Snapshot.Values.Select(b => new TradeBotStorageEntry
                 {
-                    Started = PluginStateHelper.IsRunning(b.State),
+                    Started = b.State.IsRunning(),
                     Config = Algo.Core.Config.PluginConfig.FromDomain(b.Config),
                 }).ToList();
             }
@@ -505,7 +505,7 @@ namespace TickTrader.BotTerminal
         private void StopRunningBotsOnBlockedAccount()
         {
             if (ClientModel.Connection.LastError?.Code == ConnectionErrorInfo.Types.ErrorCode.BlockedAccount)
-                _bots.Snapshot.Values.Where(b => PluginStateHelper.IsRunning(b.State)).ForEach(b => b.Stop().Forget());
+                _bots.Snapshot.Values.Where(b => b.State.IsRunning()).ForEach(b => b.Stop().Forget());
         }
 
         #endregion

@@ -23,11 +23,16 @@ namespace TickTrader.Algo.Server
 
         public int BoundPort => _rpcServer.BoundPort;
 
+        public EnvService Env { get; }
+
         public PackageStorage PkgStorage { get; } = new PackageStorage();
 
         public RuntimeManager Runtimes { get; }
 
-        public EnvService Env { get; }
+        public PluginManager Plugins { get; }
+
+
+        internal ServerStateModel State { get; }
 
 
         public AlgoServer()
@@ -35,6 +40,10 @@ namespace TickTrader.Algo.Server
             Env = new EnvService(AppDomain.CurrentDomain.BaseDirectory);
 
             Runtimes = new RuntimeManager(this);
+            Plugins = new PluginManager(this);
+
+            State = new ServerStateModel(ServerStateManager.Create());
+
             _rpcServer = new RpcServer(new TcpFactory(), this);
         }
 
@@ -47,6 +56,8 @@ namespace TickTrader.Algo.Server
         public async Task Stop()
         {
             _logger.Debug("Stopping...");
+
+            await Plugins.Shutdown();
 
             await PkgStorage.Stop();
 

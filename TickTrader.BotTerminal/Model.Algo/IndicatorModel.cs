@@ -3,6 +3,7 @@ using System.Threading;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Server;
 using TickTrader.Algo.Core.Setup;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
@@ -57,7 +58,7 @@ namespace TickTrader.BotTerminal
 
         private void StartIndicator()
         {
-            if (PluginStateHelper.CanStart(State))
+            if (State.CanStart())
             {
                 _host.EnqueueStartAction(() => StartExcecutor().ContinueWith(t => { if (t.Result) ChangeState(PluginModelInfo.Types.PluginState.Running); }));
                 //if (StartExcecutor())
@@ -67,7 +68,7 @@ namespace TickTrader.BotTerminal
 
         private async Task StopIndicator()
         {
-            if (State == PluginModelInfo.Types.PluginState.Running)
+            if (State.IsRunning())
             {
                 if (await StopExecutor())
                     ChangeState(PluginModelInfo.Types.PluginState.Stopped);
