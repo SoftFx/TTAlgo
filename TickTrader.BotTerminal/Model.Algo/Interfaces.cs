@@ -104,8 +104,7 @@ namespace TickTrader.BotTerminal
         void Lock();
         void Unlock();
 
-        void InitializePlugin(ExecutorModel runtime);
-        void UpdatePlugin(ExecutorModel runtime);
+        void InitializePlugin(ExecutorConfig config);
         void EnqueueStartAction(Action action);
 
         ITradeExecutor GetTradeApi();

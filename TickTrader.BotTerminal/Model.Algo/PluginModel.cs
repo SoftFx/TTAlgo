@@ -79,7 +79,6 @@ namespace TickTrader.BotTerminal
                 //Setup.SetWorkingFolder(_executor.Config.WorkingFolder);
                 //Setup.Apply(_executor.Config);
 
-                Host.UpdatePlugin(_executor);
                 await _executor.Start();
                 //_executor.WriteConnectionInfo(Host.GetConnectionInfo());
                 return true;
@@ -124,15 +123,23 @@ namespace TickTrader.BotTerminal
             //_executor.Abort();
         }
 
+        protected virtual void FillExectorConfig(ExecutorConfig config) { }
+
         protected virtual async Task<ExecutorModel> CreateExecutor()
         {
-            var runtime = await Agent.AlgoServer.CreateExecutor(Config, Agent.ClientModel.Id);
+            var executorConfig = new ExecutorConfig
+            {
+                IsLoggingEnabled = true,
+                AccountId = Agent.ClientModel.Id,
+                WorkingDirectory = EnvService.Instance.AlgoWorkingFolder,
+            };
+
+            FillExectorConfig(executorConfig);
+            Host.InitializePlugin(executorConfig);
+
+            var runtime = await Agent.AlgoServer.CreateExecutor(Config.Key.PackageId, InstanceId, executorConfig);
 
             runtime.ErrorOccurred += Executor_OnRuntimeError;
-
-            runtime.Config.WorkingDirectory = EnvService.Instance.AlgoWorkingFolder;
-
-            Host.InitializePlugin(runtime);
 
             CreateOutputs(runtime);
 

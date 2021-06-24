@@ -30,7 +30,6 @@ namespace TickTrader.Algo.Server
             _onStopped = onStopped;
             _writer = writer;
 
-            executor.Config.IsLoggingEnabled = true;
             executor.Stopped += Executor_Stopped;
             executor.LogUpdated += Executor_LogUpdated;
         }

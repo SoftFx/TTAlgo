@@ -61,20 +61,12 @@ namespace TickTrader.BotTerminal
             return new IndicatorModel(config, Agent, this, this);
         }
 
-        public override void InitializePlugin(ExecutorModel executor)
+        public override void InitializePlugin(ExecutorConfig config)
         {
-            base.InitializePlugin(executor);
-            //var feed = new PluginFeedProvider(ClientModel.Cache, ClientModel.Distributor, ClientModel.FeedHistory, new DispatcherSync());
-            //executor.Feed = feed;
-            //executor.FeedHistory = feed;
-            //executor.Metadata = feed;
-            executor.Config.InitBarStrategy(Feed.Types.MarketSide.Bid);
-        }
+            base.InitializePlugin(config);
 
-        public override void UpdatePlugin(ExecutorModel executor)
-        {
-            base.UpdatePlugin(executor);
-            executor.Config.SetMainSeries(_barVector);
+            config.InitBarStrategy(Feed.Types.MarketSide.Bid);
+            config.SetMainSeries(_barVector);
         }
 
         protected override void ApplyUpdate(QuoteInfo quote)

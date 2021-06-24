@@ -253,13 +253,15 @@ namespace TickTrader.BotAgent.BA.Models
                 if (executor != null)
                     throw new InvalidOperationException("Cannot start executor: old executor instance is not disposed!");
 
-                executor = await _server.CreateExecutor(Config, _client.Id);
-                executor.Config.WorkingDirectory = await _algoData.GetFolder();
-                //executor.SetConnectionInfo(GetConnectionInfo());
+                var executorConfig = new ExecutorConfig { AccountId = _client.Id, IsLoggingEnabled = true };
 
-                executor.Config.InitPriorityInvokeStrategy();
-                executor.Config.InitSlidingBuffering(4000);
-                executor.Config.InitBarStrategy(Feed.Types.MarketSide.Bid);
+                executorConfig.SetPluginConfig(Config);
+                executorConfig.InitPriorityInvokeStrategy();
+                executorConfig.InitSlidingBuffering(4000);
+                executorConfig.InitBarStrategy(Feed.Types.MarketSide.Bid);
+                executorConfig.WorkingDirectory = await _algoData.GetFolder();
+
+                executor = await _server.CreateExecutor(Config.Key.PackageId, Config.InstanceId, executorConfig);
 
                 //var feedAdapter = _client.PluginFeedAdapter;
                 //executor.Feed = feedAdapter;

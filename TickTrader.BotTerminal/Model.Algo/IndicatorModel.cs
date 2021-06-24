@@ -50,7 +50,6 @@ namespace TickTrader.BotTerminal
         {
             var executor = await base.CreateExecutor();
 
-            executor.Config.IsLoggingEnabled = true;
             _indicatorListener = new IndicatorListenerProxy(executor, this);
 
             return executor;

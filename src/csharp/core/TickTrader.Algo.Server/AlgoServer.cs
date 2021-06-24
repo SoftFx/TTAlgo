@@ -27,22 +27,22 @@ namespace TickTrader.Algo.Server
 
         public PackageStorage PkgStorage { get; } = new PackageStorage();
 
-        public RuntimeManager Runtimes { get; }
+        public RuntimeManagerModel Runtimes { get; }
 
-        public PluginManager Plugins { get; }
+        public PluginManagerModel Plugins { get; }
 
 
-        internal ServerStateModel State { get; }
+        internal ServerStateModel SavedState { get; }
 
 
         public AlgoServer()
         {
             Env = new EnvService(AppDomain.CurrentDomain.BaseDirectory);
 
-            Runtimes = new RuntimeManager(this);
-            Plugins = new PluginManager(this);
+            Runtimes = new RuntimeManagerModel(RuntimeManager.Create(this));
+            Plugins = new PluginManagerModel(PluginManager.Create(this));
 
-            State = new ServerStateModel(ServerStateManager.Create());
+            SavedState = new ServerStateModel(ServerStateManager.Create(Env.ServerStateFilePath));
 
             _rpcServer = new RpcServer(new TcpFactory(), this);
         }
@@ -51,11 +51,15 @@ namespace TickTrader.Algo.Server
         public async Task Start()
         {
             await _rpcServer.Start(Address, 0);
+
+            await Plugins.Restore();
         }
 
         public async Task Stop()
         {
             _logger.Debug("Stopping...");
+
+            await SavedState.StopSaving();
 
             await Plugins.Shutdown();
 
@@ -68,21 +72,14 @@ namespace TickTrader.Algo.Server
             _logger.Debug("Stopped");
         }
 
-        public async Task<ExecutorModel> CreateExecutor(PluginConfig config, string accountId)
+        public async Task<ExecutorModel> CreateExecutor(string pkgId, string instanceId, ExecutorConfig config)
         {
-            if (_executorsMap.ContainsKey(config.InstanceId))
-                throw new ArgumentException("Duplicate instance id");
-
-            var packageId = config.Key.PackageId;
-
-            var runtime = await Runtimes.GetPkgRuntime(packageId);
+            var runtime = await Runtimes.GetPkgRuntime(pkgId);
             if (runtime == null)
-                throw new ArgumentException($"Package doesn't exists '{packageId}'");
+                throw new ArgumentException($"Package doesn't exists '{pkgId}'");
             await runtime.Start();
 
-            var executor = new ExecutorModel(runtime, config, accountId);
-            _executorsMap.Add(executor.Id, executor);
-            return executor;
+            return await runtime.CreateExecutor(instanceId, config);
         }
 
         public bool RegisterAccountProxy(IAccountProxy account)

@@ -61,5 +61,19 @@ namespace TickTrader.Algo.Async.Actors
             instance.Init(actorName, msgDispather, initMsg);
             return instance.GetRef();
         }
+
+        public static IActorRef SpawnLocal<T>(Func<T> factory, string actorName = null, object initMsg = null)
+            where T : Actor
+        {
+            Actor instance = factory();
+            actorName = actorName ?? typeof(T).FullName + Guid.NewGuid().ToString("N");
+
+            if (!_actors.TryAdd(actorName, instance))
+                throw Errors.DuplicateActorName(actorName);
+
+            var msgDispather = _msgDispatcherFactory.CreateDispatcher(actorName, _maxBatch);
+            instance.Init(actorName, msgDispather, initMsg ?? instance); // since we pass ctor params in factory method, we will most likely need to run some init code
+            return instance.GetRef();
+        }
     }
 }

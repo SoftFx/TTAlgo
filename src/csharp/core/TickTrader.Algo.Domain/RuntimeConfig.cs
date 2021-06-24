@@ -37,5 +37,10 @@ namespace TickTrader.Algo.Domain
             barChunk.Bars.AddRange(bars);
             MainSeries = Any.Pack(barChunk);
         }
+
+        public void SetPluginConfig(PluginConfig config)
+        {
+            PluginConfig = Any.Pack(config);
+        }
     }
 }

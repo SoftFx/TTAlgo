@@ -8,39 +8,89 @@ using TickTrader.Algo.Rpc;
 
 namespace TickTrader.Algo.Server
 {
-    public class RuntimeManager
+    public class RuntimeManager : Actor
     {
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<RuntimeManager>();
 
-        private readonly IActorRef _impl;
+        private readonly AlgoServer _server;
+        private readonly Dictionary<string, PkgRuntimeModel> _runtimeMap = new Dictionary<string, PkgRuntimeModel>();
+        private readonly Dictionary<string, string> _pkgRuntimeMap = new Dictionary<string, string>();
 
 
-        public RuntimeManager(AlgoServer server)
+        private RuntimeManager(AlgoServer server)
         {
-            _impl = ActorSystem.SpawnLocal<Impl>(nameof(RuntimeManager), new InitMsg(server));
+            _server = server;
+
+            Receive<PackageVersionUpdate>(OnPackageVersionUpdate);
+            Receive<PkgRuntimeRequest, PkgRuntimeModel>(GetRuntime);
+            Receive<ShutdownRuntimesCmd>(Shutdown);
+            Receive<RuntimeStoppedMsg>(OnRuntimeStopped);
+            Receive<ConnectRuntimeCmd>(ConnectRuntime);
         }
 
 
-        public Task<PkgRuntimeModel> GetPkgRuntime(string pkgId) => _impl.Ask<PkgRuntimeModel>(new PkgRuntimeRequest(pkgId));
-
-        public Task Shutdown() => _impl.Ask(new ShutdownRuntimesCmd());
-
-        internal void OnRuntimeStopped(string runtimeId) => _impl.Tell(new RuntimeStoppedMsg(runtimeId));
-
-        internal Task<PkgRuntimeModel> ConnectRuntime(string runtimeId, RpcSession session) => _impl.Ask<PkgRuntimeModel>(new ConnectRuntimeCmd(runtimeId, session));
-
-
-        private class InitMsg
+        public static IActorRef Create(AlgoServer server)
         {
-            public AlgoServer Server { get; }
+            return ActorSystem.SpawnLocal(() => new RuntimeManager(server), nameof(RuntimeManager));
+        }
 
-            public InitMsg(AlgoServer server)
+
+        protected override void ActorInit(object initMsg)
+        {
+            _server.PkgStorage.PackageVersionUpdated.Subscribe(Self);
+        }
+
+
+        private void OnPackageVersionUpdate(PackageVersionUpdate update)
+        {
+            var pkgId = update.PackageId;
+            var pkgRefId = update.LatestPkgRefId;
+
+            if (_pkgRuntimeMap.TryGetValue(pkgId, out var runtimeId))
             {
-                Server = server;
+                _runtimeMap[runtimeId].MarkForShutdown();
             }
+
+            if (string.IsNullOrEmpty(pkgRefId))
+                return;
+
+            runtimeId = pkgRefId.Replace('/', '-');
+
+            _pkgRuntimeMap[pkgId] = runtimeId;
+            _runtimeMap[runtimeId] = new PkgRuntimeModel(PkgRuntimeActor.Create(runtimeId, pkgId, pkgRefId, _server));
         }
 
-        private class PkgRuntimeRequest
+        private PkgRuntimeModel GetRuntime(PkgRuntimeRequest request)
+        {
+            return _pkgRuntimeMap.TryGetValue(request.PkgId, out var runtimeId) ? _runtimeMap[runtimeId] : null;
+        }
+
+        private async Task Shutdown(ShutdownRuntimesCmd cmd)
+        {
+            _logger.Debug("Runtimes stopping...");
+
+            await Task.WhenAll(_runtimeMap.Select(r =>
+                r.Value.Stop("Server shutdown")
+                    .OnException(ex => _logger.Error(ex, $"Failed to stop runtime {r.Key}"))).ToArray());
+
+            _logger.Debug("Runtimes stopped");
+        }
+
+        private void OnRuntimeStopped(RuntimeStoppedMsg msg)
+        {
+            _runtimeMap.Remove(msg.Id);
+        }
+
+        private async Task<PkgRuntimeModel> ConnectRuntime(ConnectRuntimeCmd cmd)
+        {
+            if (!_runtimeMap.TryGetValue(cmd.Id, out var runtime))
+                return null;
+
+            return await runtime.OnConnect(cmd.Session) ? runtime : null;
+        }
+
+
+        internal class PkgRuntimeRequest
         {
             public string PkgId { get; }
 
@@ -50,9 +100,9 @@ namespace TickTrader.Algo.Server
             }
         }
 
-        private class ShutdownRuntimesCmd { }
+        internal class ShutdownRuntimesCmd { }
 
-        private class RuntimeStoppedMsg
+        internal class RuntimeStoppedMsg
         {
             public string Id { get; }
 
@@ -62,7 +112,7 @@ namespace TickTrader.Algo.Server
             }
         }
 
-        private class ConnectRuntimeCmd
+        internal class ConnectRuntimeCmd
         {
             public string Id { get; }
 
@@ -72,82 +122,6 @@ namespace TickTrader.Algo.Server
             {
                 Id = id;
                 Session = session;
-            }
-        }
-
-
-        private class Impl : Actor
-        {
-            private readonly Dictionary<string, PkgRuntimeModel> _runtimeMap = new Dictionary<string, PkgRuntimeModel>();
-            private readonly Dictionary<string, string> _pkgRuntimeMap = new Dictionary<string, string>();
-
-            private AlgoServer _server;
-
-
-            public Impl()
-            {
-                Receive<PackageVersionUpdate>(OnPackageVersionUpdate);
-                Receive<PkgRuntimeRequest, PkgRuntimeModel>(GetRuntime);
-                Receive<ShutdownRuntimesCmd>(Shutdown);
-                Receive<RuntimeStoppedMsg>(OnRuntimeStopped);
-                Receive<ConnectRuntimeCmd>(ConnectRuntime);
-            }
-
-
-            protected override void ActorInit(object initMsg)
-            {
-                var msg = (InitMsg)initMsg;
-                _server = msg.Server;
-                _server.PkgStorage.PackageVersionUpdated.Subscribe(Self);
-            }
-
-
-            private void OnPackageVersionUpdate(PackageVersionUpdate update)
-            {
-                var pkgId = update.PackageId;
-                var pkgRefId = update.LatestPkgRefId;
-
-                if (_pkgRuntimeMap.TryGetValue(pkgId, out var runtimeId))
-                {
-                    _runtimeMap[runtimeId].MarkForShutdown();
-                }
-
-                if (string.IsNullOrEmpty(pkgRefId))
-                    return;
-
-                runtimeId = pkgRefId.Replace('/', '-');
-
-                _pkgRuntimeMap[pkgId] = runtimeId;
-                _runtimeMap[runtimeId] = new PkgRuntimeModel(runtimeId, pkgId, pkgRefId, _server);
-            }
-
-            private PkgRuntimeModel GetRuntime(PkgRuntimeRequest request)
-            {
-                return _pkgRuntimeMap.TryGetValue(request.PkgId, out var runtimeId) ? _runtimeMap[runtimeId] : null;
-            }
-
-            private async Task Shutdown(ShutdownRuntimesCmd cmd)
-            {
-                _logger.Debug("Runtimes stopping...");
-
-                await Task.WhenAll(_runtimeMap.Values.Select(r => 
-                    r.Stop("Server shutdown")
-                        .OnException(ex => _logger.Error(ex, $"Failed to stop runtime {r.Id}"))).ToArray());
-
-                _logger.Debug("Runtimes stopped");
-            }
-
-            private void OnRuntimeStopped(RuntimeStoppedMsg msg)
-            {
-                _runtimeMap.Remove(msg.Id);
-            }
-
-            private async Task<PkgRuntimeModel> ConnectRuntime(ConnectRuntimeCmd cmd)
-            {
-                if (!_runtimeMap.TryGetValue(cmd.Id, out var runtime))
-                    return null;
-
-                return await runtime.OnConnect(cmd.Session) ? runtime : null;
             }
         }
     }

@@ -14,5 +14,9 @@ namespace TickTrader.Algo.Server
         public static Exception DuplicateAccount(string accId) => new AlgoException($"Account '{accId}' already exists");
 
         public static Exception AccountNotFound(string accId) => new AlgoException($"Account '{accId}' not found");
+
+        public static Exception InvalidPluginConfig(string pluginId) => new AlgoException($"Plugin '{pluginId}' has invalid config");
+
+        public static Exception PluginIsRunning(string pluginId) => new AlgoException($"Plugin '{pluginId}' is running");
     }
 }

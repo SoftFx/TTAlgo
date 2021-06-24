@@ -398,17 +398,11 @@ namespace TickTrader.BotTerminal
             return $"account {ClientModel.Connection.CurrentLogin} on {ClientModel.Connection.CurrentServer} using {ClientModel.Connection.CurrentProtocol}";
         }
 
-        public virtual void InitializePlugin(ExecutorModel executor)
+        public virtual void InitializePlugin(ExecutorConfig config)
         {
-            executor.Config.InitPriorityInvokeStrategy();
+            config.InitPriorityInvokeStrategy();
+            config.InitTimeSpanBuffering(TimelineStart, DateTime.Now + TimeSpan.FromDays(100));
             //runtime.AccInfoProvider = new PluginTradeInfoProvider(ClientModel.Cache, new DispatcherSync());
-        }
-
-        public virtual void UpdatePlugin(ExecutorModel executor)
-        {
-            //runtime.Config.TimeFrame = TimeFrame;
-            //runtime.Config.MainSymbolCode = SymbolCode;
-            executor.Config.InitTimeSpanBuffering(TimelineStart, DateTime.Now + TimeSpan.FromDays(100));
         }
 
         bool IExecStateObservable.IsStarted { get { return isIndicatorsOnline; } }

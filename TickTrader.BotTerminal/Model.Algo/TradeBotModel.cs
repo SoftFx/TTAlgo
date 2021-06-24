@@ -97,14 +97,18 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        protected override void FillExectorConfig(ExecutorConfig config)
+        {
+            config.WorkingDirectory = Path.Combine(EnvService.Instance.AlgoWorkingFolder, PathHelper.GetSafeFileName(InstanceId));
+            EnvService.Instance.EnsureFolder(config.WorkingDirectory);
+        }
+
         protected override async Task<ExecutorModel> CreateExecutor()
         {
             var executor = await base.CreateExecutor();
-            executor.Config.WorkingDirectory = Path.Combine(EnvService.Instance.AlgoWorkingFolder, PathHelper.GetSafeFileName(InstanceId));
-            EnvService.Instance.EnsureFolder(executor.Config.WorkingDirectory);
 
-            executor.Config.IsLoggingEnabled = true;
             _botListener = new BotListenerProxy(executor, OnBotExited, this);
+
             return executor;
         }
 

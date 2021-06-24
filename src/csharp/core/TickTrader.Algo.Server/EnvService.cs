@@ -21,6 +21,8 @@ namespace TickTrader.Algo.Server
 
         public string AppDataFolder { get; }
 
+        public string ServerStateFilePath { get; }
+
 
         public EnvService(string appFolder)
         {
@@ -33,6 +35,7 @@ namespace TickTrader.Algo.Server
             AlgoWorkingFolder = Path.Combine(appFolder, "AlgoData");
             FeedHistoryCacheFolder = Path.Combine(appFolder, "FeedCache");
             AppDataFolder = Path.Combine(appFolder, "Settings");
+            ServerStateFilePath = Path.Combine(AppDataFolder, "server.state.json");
 
             PathHelper.EnsureDirectoryCreated(appFolder);
             PathHelper.EnsureDirectoryCreated(AlgoRepositoryFolder);

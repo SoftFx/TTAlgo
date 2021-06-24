@@ -585,28 +585,11 @@ namespace TickTrader.BotTerminal
             return $"account {ClientModel.Connection.CurrentLogin} on {ClientModel.Connection.CurrentServer} using {ClientModel.Connection.CurrentProtocol}";
         }
 
-        public virtual void InitializePlugin(ExecutorModel executor)
+        public virtual void InitializePlugin(ExecutorConfig config)
         {
-            executor.Config.InitPriorityInvokeStrategy();
-            //executor.AccInfoProvider = new PluginTradeInfoProvider(ClientModel.Cache, new DispatcherSync());
-            //var feedProvider = new PluginFeedProvider(ClientModel.Cache, ClientModel.Distributor, ClientModel.FeedHistory, new DispatcherSync());
-            //executor.Metadata = feedProvider;
-            //executor.Feed = feedProvider;
-            //executor.FeedHistory = feedProvider;
-            switch (executor.Timeframe)
-            {
-                case Feed.Types.Timeframe.Ticks:
-                    executor.Config.InitQuoteStrategy();
-                    break;
-                default:
-                    executor.Config.InitBarStrategy(Feed.Types.MarketSide.Bid);
-                    break;
-            }
-            executor.Config.InitSlidingBuffering(4000);
-        }
-
-        public virtual void UpdatePlugin(ExecutorModel executor)
-        {
+            config.InitPriorityInvokeStrategy();
+            config.InitBarStrategy(Feed.Types.MarketSide.Bid);
+            config.InitSlidingBuffering(4000);
         }
 
         bool IExecStateObservable.IsStarted => false;
