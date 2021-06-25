@@ -27,6 +27,8 @@ namespace TickTrader.Algo.Server
 
         public PackageStorage PkgStorage { get; } = new PackageStorage();
 
+        public AccountManagerModel Accounts { get; }
+
         public RuntimeManagerModel Runtimes { get; }
 
         public PluginManagerModel Plugins { get; }
@@ -39,6 +41,7 @@ namespace TickTrader.Algo.Server
         {
             Env = new EnvService(AppDomain.CurrentDomain.BaseDirectory);
 
+            Accounts = new AccountManagerModel(AccountManager.Create(this));
             Runtimes = new RuntimeManagerModel(RuntimeManager.Create(this));
             Plugins = new PluginManagerModel(PluginManager.Create(this));
 

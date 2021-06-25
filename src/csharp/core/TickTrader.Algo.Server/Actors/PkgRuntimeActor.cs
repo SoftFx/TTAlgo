@@ -18,7 +18,6 @@ namespace TickTrader.Algo.Server
         private readonly string _id, _pkgId, _pkgRefId;
         private readonly AlgoServer _server;
         private readonly IRuntimeHostProxy _runtimeHost;
-        private readonly Dictionary<string, ExecutorConfig> _executorConfigMap = new Dictionary<string, ExecutorConfig>();
         private readonly Dictionary<string, ExecutorModel> _executorsMap = new Dictionary<string, ExecutorModel>();
         private readonly Dictionary<string, AttachedAccount> _attachedAccounts = new Dictionary<string, AttachedAccount>();
 
@@ -51,6 +50,7 @@ namespace TickTrader.Algo.Server
             Receive<RuntimeConfigRequest, RuntimeConfig>(GetConfig);
             Receive<GetPluginInfoRequest, PluginInfo>(GetPluginInfo);
             Receive<CreateExecutorCmd, ExecutorModel>(CreateExecutor);
+            Receive<DisposeExecutorCmd>(DisposeExecutor);
         }
 
 
@@ -209,8 +209,6 @@ namespace TickTrader.Algo.Server
             _startedExecutorsCnt--;
             _logger.Debug($"Executor {msg.ExecutorId} stopped. Have {_startedExecutorsCnt} active executors");
 
-            _server.OnExecutorStopped(msg.ExecutorId);
-
             if (_startedExecutorsCnt == 0 && _shutdownWhenIdle)
                 ShutdownInternal();
         }
@@ -229,6 +227,11 @@ namespace TickTrader.Algo.Server
             var executor = new ExecutorModel(new PkgRuntimeModel(Self), id, cmd.Config);
             _executorsMap.Add(id, executor);
             return Task.FromResult(executor);
+        }
+
+        private void DisposeExecutor(DisposeExecutorCmd cmd)
+        {
+            _executorsMap.Remove(cmd.ExecutorId);
         }
 
         private bool AttachAccount(AttachAccountRequest request)
@@ -411,6 +414,16 @@ namespace TickTrader.Algo.Server
             {
                 ExecutorId = executorId;
                 Config = config;
+            }
+        }
+
+        internal class DisposeExecutorCmd
+        {
+            public string ExecutorId { get; }
+
+            public DisposeExecutorCmd(string executorId)
+            {
+                ExecutorId = executorId;
             }
         }
     }

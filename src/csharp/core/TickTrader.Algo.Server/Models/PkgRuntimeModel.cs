@@ -40,5 +40,7 @@ namespace TickTrader.Algo.Server
         internal Task<PluginInfo> GetPluginInfo(PluginKey plugin) => _ref.Ask<PluginInfo>(new PkgRuntimeActor.GetPluginInfoRequest(plugin));
 
         internal Task<ExecutorModel> CreateExecutor(string executorId, ExecutorConfig config) => _ref.Ask<ExecutorModel>(new PkgRuntimeActor.CreateExecutorCmd(executorId, config));
+
+        internal void DisposeExecutor(string executorId) => _ref.Tell(new PkgRuntimeActor.DisposeExecutorCmd(executorId));
     }
 }

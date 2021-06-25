@@ -9,6 +9,9 @@ namespace TickTrader.Algo.Rpc
 {
     public static class RpcHandler
     {
+        public static readonly Any VoidResponse = Any.Pack(new VoidResponse());
+
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryGetError(this Any payload, out Exception ex)
         {

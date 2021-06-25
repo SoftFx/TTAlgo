@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
 
@@ -14,23 +13,12 @@ namespace TickTrader.Algo.Server
 
         public ExecutorConfig Config { get; } = new ExecutorConfig();
 
-        public Feed.Types.Timeframe Timeframe { get; private set; }
-
 
         public event Action<PluginLogRecord> LogUpdated;
         public event Action<DataSeriesUpdate> OutputUpdate;
         public event Action<Exception> ErrorOccurred;
         public event Action<ExecutorModel> Stopped;
 
-
-        public ExecutorModel(PkgRuntimeModel host, PluginConfig config, string accountId)
-        {
-            _host = host;
-            Id = config.InstanceId;
-            Config.AccountId = accountId;
-
-            UpdateConfig(config);
-        }
 
         public ExecutorModel(PkgRuntimeModel host, string id, ExecutorConfig config)
         {
@@ -40,13 +28,10 @@ namespace TickTrader.Algo.Server
         }
 
 
-        public void Configure(PluginConfig config)
+        public void Dispose()
         {
-            // check if running
-            UpdateConfig(config);
+            _host.DisposeExecutor(Id);
         }
-
-        public void Dispose() { }
 
         public Task Start()
         {
@@ -94,13 +79,6 @@ namespace TickTrader.Algo.Server
             //else if (update.SeriesType == DataSeriesUpdate.Types.Type.Output)
             if (update.SeriesType == DataSeriesUpdate.Types.Type.Output)
                 OutputUpdate?.Invoke(update);
-        }
-
-
-        private void UpdateConfig(PluginConfig config)
-        {
-            Timeframe = config.Timeframe;
-            Config.PluginConfig = Any.Pack(config);
         }
     }
 }

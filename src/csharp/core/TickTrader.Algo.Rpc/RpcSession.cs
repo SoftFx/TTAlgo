@@ -69,6 +69,8 @@ namespace TickTrader.Algo.Rpc
         private string _sessionId;
 
 
+        public string Id => _sessionId;
+
         public RpcSessionState State { get; private set; }
 
         public IObservable<RpcSessionStateChangedArgs> ObserveStates => _sessionStateSubject;

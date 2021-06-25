@@ -172,6 +172,7 @@ namespace TickTrader.Algo.Server
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to start plugin");
+                _executor?.Dispose();
                 _startTaskSrc.SetResult(false);
                 ChangeState(PluginModelInfo.Types.PluginState.Faulted);
             }

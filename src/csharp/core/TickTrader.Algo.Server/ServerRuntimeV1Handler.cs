@@ -1,9 +1,6 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System.Collections.Concurrent;
-using System.Linq;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
 
@@ -11,20 +8,17 @@ namespace TickTrader.Algo.Server
 {
     internal class ServerRuntimeV1Handler : IRpcHandler
     {
-        private static readonly Any VoidResponse = Any.Pack(new VoidResponse());
+        private readonly ConcurrentDictionary<string, AccountRpcHandler> _accProxies = new ConcurrentDictionary<string, AccountRpcHandler>();
 
         private readonly AlgoServer _server;
         private PkgRuntimeModel _runtime;
         private RpcSession _session;
 
-        private ConcurrentDictionary<string, object> _pendingRequestHandlers;
 
 
         public ServerRuntimeV1Handler(AlgoServer server)
         {
             _server = server;
-
-            _pendingRequestHandlers = new ConcurrentDictionary<string, object>();
         }
 
 
@@ -60,46 +54,12 @@ namespace TickTrader.Algo.Server
                 return AttachAccountRequestHandler(payload);
             else if (payload.Is(DetachAccountRequest.Descriptor))
                 return DetachAccountRequestHandler(payload);
-            else if (payload.Is(ConnectionInfoRequest.Descriptor))
-                return ConnectionInfoRequestHandler(proxyId);
-            else if (payload.Is(CurrencyListRequest.Descriptor))
-                return CurrencyListRequestHandler(proxyId);
-            else if (payload.Is(SymbolListRequest.Descriptor))
-                return SymbolListRequestHandler(proxyId);
-            else if (payload.Is(LastQuoteListRequest.Descriptor))
-                return LastQuoteListRequestHandler(proxyId);
-            else if (payload.Is(AccountInfoRequest.Descriptor))
-                return AccountInfoRequestHandler(proxyId);
-            else if (payload.Is(OrderListRequest.Descriptor))
-                return OrderListRequestHandler(proxyId, callId);
-            else if (payload.Is(PositionListRequest.Descriptor))
-                return PositionListRequestHandler(proxyId, callId);
-            else if (payload.Is(OpenOrderRequest.Descriptor))
-                return OpenOrderRequestHandler(proxyId, payload);
-            else if (payload.Is(ModifyOrderRequest.Descriptor))
-                return ModifyOrderRequestHandler(proxyId, payload);
-            else if (payload.Is(CloseOrderRequest.Descriptor))
-                return CloseOrderRequestHandler(proxyId, payload);
-            else if (payload.Is(CancelOrderRequest.Descriptor))
-                return CancelOrderRequestHandler(proxyId, payload);
-            else if (payload.Is(TradeHistoryRequest.Descriptor))
-                return TradeHistoryRequestHandler(proxyId, callId, payload);
-            else if (payload.Is(TradeHistoryRequestNextPage.Descriptor))
-                return TradeHistoryRequestNextPageHandler(callId);
-            else if (payload.Is(TradeHistoryRequestDispose.Descriptor))
-                return TradeHistoryRequestDisposeHandler(callId);
-            else if (payload.Is(FeedSnapshotRequest.Descriptor))
-                return FeedSnapshotRequestHandler(proxyId);
-            else if (payload.Is(ModifyFeedSubscriptionRequest.Descriptor))
-                return ModifyFeedSubscriptionRequestHandler(proxyId, payload);
-            else if (payload.Is(CancelAllFeedSubscriptionsRequest.Descriptor))
-                return CancelAllFeedSubscriptionsRequestHandler(proxyId);
-            else if (payload.Is(BarListRequest.Descriptor))
-                return BarListRequestHandler(proxyId, payload);
-            else if (payload.Is(QuoteListRequest.Descriptor))
-                return QuoteListRequestHandler(proxyId, payload);
+            else if (_accProxies.TryGetValue(proxyId, out var acc))
+                return acc.HandleRequest(callId, payload);
 
-            return Task.FromResult(default(Any));
+            return string.IsNullOrEmpty(proxyId)
+                ? Task.FromResult(default(Any))
+                : Task.FromResult(Any.Pack(new ErrorResponse { Message = $"Unknown proxy id '{proxyId}'" }));
         }
 
 
@@ -132,158 +92,31 @@ namespace TickTrader.Algo.Server
             return Task.FromResult(Any.Pack(executor.Config));
         }
 
-        private Task<Any> AttachAccountRequestHandler(Any payload)
+        private async Task<Any> AttachAccountRequestHandler(Any payload)
         {
             var request = payload.Unpack<AttachAccountRequest>();
-            _runtime.AttachAccount(request);
-            return Task.FromResult(VoidResponse);
+
+            var accId = request.AccountId;
+            var accControl = await _server.Accounts.GetConsumerController(accId);
+            await accControl.AttachSession(_session);
+            if (!_accProxies.ContainsKey(accId))
+            {
+                var accProxy = new AccountRpcHandler(await accControl.GetAccountProxy(), _session);
+                _accProxies[accId] = accProxy;
+            }
+
+            return RpcHandler.VoidResponse;
         }
 
-        private Task<Any> DetachAccountRequestHandler(Any payload)
+        private async Task<Any> DetachAccountRequestHandler(Any payload)
         {
             var request = payload.Unpack<DetachAccountRequest>();
-            _runtime.DetachAccount(request);
-            return Task.FromResult(VoidResponse);
-        }
 
-        private Task<Any> ConnectionInfoRequestHandler(string accountId)
-        {
-            if (!_server.TryGetAccount(accountId, out var account))
-                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown account" }));
+            var accId = request.AccountId;
+            var accControl = await _server.Accounts.GetConsumerController(accId);
+            await accControl.DetachSession(_session.Id);
 
-            return Task.FromResult(Any.Pack(new ConnectionInfoResponse { ConnectionInfo = account.Id }));
-        }
-
-        private Task<Any> CurrencyListRequestHandler(string accountId)
-        {
-            if (!_server.TryGetAccount(accountId, out var account))
-                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown account" }));
-
-            var response = new CurrencyListResponse();
-            response.Currencies.Add(account.Metadata.GetCurrencyMetadata());
-            return Task.FromResult(Any.Pack(response));
-        }
-
-        private Task<Any> SymbolListRequestHandler(string accountId)
-        {
-            if (!_server.TryGetAccount(accountId, out var account))
-                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown account" }));
-
-            var response = new SymbolListResponse();
-            response.Symbols.Add(account.Metadata.GetSymbolMetadata());
-            return Task.FromResult(Any.Pack(response));
-        }
-
-        private Task<Any> LastQuoteListRequestHandler(string accountId)
-        {
-            if (!_server.TryGetAccount(accountId, out var account))
-                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown account" }));
-
-            var response = new LastQuoteListResponse();
-            response.Quotes.Add(account.Metadata.GetLastQuoteMetadata());
-            return Task.FromResult(Any.Pack(response));
-        }
-
-        private Task<Any> AccountInfoRequestHandler(string accountId)
-        {
-            if (!_server.TryGetAccount(accountId, out var account))
-                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown account" }));
-
-            var response = new AccountInfoResponse();
-            response.Account = account.AccInfoProvider.GetAccountInfo();
-            return Task.FromResult(Any.Pack(response));
-        }
-
-        private Task<Any> OrderListRequestHandler(string accountId, string callId)
-        {
-            const int chunkSize = 10;
-
-            if (!_server.TryGetAccount(accountId, out var account))
-                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown account" }));
-
-            var response = new OrderListResponse { IsFinal = false };
-            var orders = account.AccInfoProvider.GetOrders();
-            var cnt = orders.Count;
-
-            var nextFlush = chunkSize;
-            for (var i = 0; i < cnt; i++)
-            {
-                if (i == nextFlush)
-                {
-                    nextFlush += chunkSize;
-                    _session.Tell(RpcMessage.Response(callId, Any.Pack(response)));
-                    response.Orders.Clear();
-                }
-                response.Orders.Add(orders[i]);
-            }
-            response.IsFinal = true;
-            return Task.FromResult(Any.Pack(response));
-        }
-
-        private Task<Any> PositionListRequestHandler(string accountId, string callId)
-        {
-            const int chunkSize = 10;
-
-            if (!_server.TryGetAccount(accountId, out var account))
-                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown account" }));
-
-            var response = new PositionListResponse { IsFinal = false };
-            var positions = account.AccInfoProvider.GetPositions();
-            var cnt = positions.Count;
-
-            var nextFlush = chunkSize;
-            for (var i = 0; i < cnt; i++)
-            {
-                if (i == nextFlush)
-                {
-                    nextFlush += chunkSize;
-                    _session.Tell(RpcMessage.Response(callId, Any.Pack(response)));
-                    response.Positions.Clear();
-                }
-                response.Positions.Add(positions[i]);
-            }
-            response.IsFinal = true;
-            return Task.FromResult(Any.Pack(response));
-        }
-
-        private Task<Any> OpenOrderRequestHandler(string accountId, Any payload)
-        {
-            if (!_server.TryGetAccount(accountId, out var account))
-                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown account" }));
-
-            var request = payload.Unpack<OpenOrderRequest>();
-            account.TradeExecutor.SendOpenOrder(request);
-            return Task.FromResult(VoidResponse);
-        }
-
-        private Task<Any> ModifyOrderRequestHandler(string accountId, Any payload)
-        {
-            if (!_server.TryGetAccount(accountId, out var account))
-                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown account" }));
-
-            var request = payload.Unpack<ModifyOrderRequest>();
-            account.TradeExecutor.SendModifyOrder(request);
-            return Task.FromResult(VoidResponse);
-        }
-
-        private Task<Any> CloseOrderRequestHandler(string accountId, Any payload)
-        {
-            if (!_server.TryGetAccount(accountId, out var account))
-                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown account" }));
-
-            var request = payload.Unpack<CloseOrderRequest>();
-            account.TradeExecutor.SendCloseOrder(request);
-            return Task.FromResult(VoidResponse);
-        }
-
-        private Task<Any> CancelOrderRequestHandler(string accountId, Any payload)
-        {
-            if (!_server.TryGetAccount(accountId, out var account))
-                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown account" }));
-
-            var request = payload.Unpack<CancelOrderRequest>();
-            account.TradeExecutor.SendCancelOrder(request);
-            return Task.FromResult(VoidResponse);
+            return RpcHandler.VoidResponse;
         }
 
         private void PluginLogRecordHandler(string executorId, Any payload)
@@ -319,120 +152,6 @@ namespace TickTrader.Algo.Server
 
             var update = payload.Unpack<DataSeriesUpdate>();
             executor.OnDataSeriesUpdate(update);
-        }
-
-        private Task<Any> TradeHistoryRequestHandler(string accountId, string callId, Any payload)
-        {
-            if (!_server.TryGetAccount(accountId, out var account))
-                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown account" }));
-
-            var request = payload.Unpack<TradeHistoryRequest>();
-            var enumerator = account.TradeHistoryProvider.GetTradeHistory(request.From?.ToDateTime(), request.To?.ToDateTime(), request.Options);
-            if (enumerator != null)
-            {
-                _pendingRequestHandlers.TryAdd(callId, enumerator);
-            }
-            return Task.FromResult<Any>(null);
-        }
-
-        private Task<Any> TradeHistoryRequestNextPageHandler(string callId)
-        {
-            _pendingRequestHandlers.TryGetValue(callId, out var state);
-            var enumerator = (IAsyncPagedEnumerator<TradeReportInfo>)state;
-            var page = enumerator.GetNextPage().GetAwaiter().GetResult();
-            var response = new TradeHistoryPageResponse();
-            if (page == null || page.Length == 0)
-            {
-                _pendingRequestHandlers.TryRemove(callId, out state);
-                enumerator.Dispose();
-            }
-            else
-            {
-                response.Reports.AddRange(page);
-            }
-            return Task.FromResult(Any.Pack(response));
-        }
-
-        private Task<Any> TradeHistoryRequestDisposeHandler(string callId)
-        {
-            if (_pendingRequestHandlers.TryRemove(callId, out var state))
-            {
-                var enumerator = (IAsyncPagedEnumerator<TradeReportInfo>)state;
-                enumerator.Dispose();
-            }
-            return Task.FromResult<Any>(null);
-        }
-
-        private Task<Any> FeedSnapshotRequestHandler(string accountId)
-        {
-            if (!_server.TryGetAccount(accountId, out var account))
-                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown account" }));
-
-            var response = new QuotePage();
-            response.Quotes.AddRange(account.Feed.GetSnapshot().Select(q => q.GetFullQuote()));
-            return Task.FromResult(Any.Pack(response));
-        }
-
-        private Task<Any> ModifyFeedSubscriptionRequestHandler(string accountId, Any payload)
-        {
-            if (!_server.TryGetAccount(accountId, out var account))
-                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown account" }));
-
-            var request = payload.Unpack<ModifyFeedSubscriptionRequest>();
-            var response = new QuotePage();
-            var snapshot = account.Feed.Sync.Invoke(() => account.Feed.Modify(request.Updates.ToList()));
-            response.Quotes.AddRange(snapshot.Select(q => q.GetFullQuote()));
-            return Task.FromResult(Any.Pack(response));
-        }
-
-        private Task<Any> CancelAllFeedSubscriptionsRequestHandler(string accountId)
-        {
-            if (!_server.TryGetAccount(accountId, out var account))
-                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown account" }));
-
-            account.Feed.Sync.Invoke(() => account.Feed.CancelAll());
-            return Task.FromResult(VoidResponse);
-        }
-
-        private async Task<Any> BarListRequestHandler(string accountId, Any payload)
-        {
-            if (!_server.TryGetAccount(accountId, out var account))
-                return Any.Pack(new ErrorResponse { Message = "Unknown account" });
-
-            var request = payload.Unpack<BarListRequest>();
-            var symbol = request.Symbol;
-            var marketSide = request.MarketSide;
-            var timeframe = request.Timeframe;
-            var count = request.Count;
-            var response = new BarChunk
-            {
-                Symbol = symbol,
-                MarketSide = marketSide,
-                Timeframe = timeframe,
-            };
-            var barList = await (count.HasValue
-                ? account.FeedHistory.QueryBarsAsync(symbol, marketSide, timeframe, request.From, count.Value)
-                : account.FeedHistory.QueryBarsAsync(symbol, marketSide, timeframe, request.From, request.To));
-            response.Bars.AddRange(barList);
-
-            return Any.Pack(response);
-        }
-
-        private async Task<Any> QuoteListRequestHandler(string accountId, Any payload)
-        {
-            if (!_server.TryGetAccount(accountId, out var account))
-                return Any.Pack(new ErrorResponse { Message = "Unknown account" });
-
-            var request = payload.Unpack<QuoteListRequest>();
-            var symbol = request.Symbol;
-            var count = request.Count;
-            var response = new QuoteChunk { Symbol = symbol, };
-            var quoteList = await (count.HasValue
-                ? account.FeedHistory.QueryQuotesAsync(symbol, request.From, count.Value, request.Level2)
-                : account.FeedHistory.QueryQuotesAsync(symbol, request.From, request.To, request.Level2));
-            response.Quotes.AddRange(quoteList.Select(q => q.GetData()));
-
-            return Any.Pack(response);
         }
     }
 }
