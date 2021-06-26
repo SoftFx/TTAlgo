@@ -321,7 +321,7 @@ namespace TickTrader.BotAgent.BA.Models
             acc.BotChanged += OnBotChanged;
             acc.BotStateChanged += OnBotStateChanged;
             await acc.Init(_fdkOptionsProvider, _alertStorage, _algoServer);
-            _algoServer.RegisterAccountProxy(acc.GetAccountProxy());
+            await _algoServer.Accounts.RegisterAccountProxy(acc.GetAccountProxy());
         }
 
         private void OnBotStateChanged(TradeBotModel bot)

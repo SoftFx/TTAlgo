@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using Google.Protobuf.WellKnownTypes;
+using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
@@ -35,12 +36,14 @@ namespace TickTrader.Algo.Server
 
         internal Task StopExecutor(StopExecutorRequest request) => _ref.Ask(request);
 
-        internal void OnExecutorStopped(string executorId) => _ref.Tell(new PkgRuntimeActor.ExecutorStoppedMsg(executorId));
-
         internal Task<PluginInfo> GetPluginInfo(PluginKey plugin) => _ref.Ask<PluginInfo>(new PkgRuntimeActor.GetPluginInfoRequest(plugin));
 
         internal Task<ExecutorModel> CreateExecutor(string executorId, ExecutorConfig config) => _ref.Ask<ExecutorModel>(new PkgRuntimeActor.CreateExecutorCmd(executorId, config));
 
         internal void DisposeExecutor(string executorId) => _ref.Tell(new PkgRuntimeActor.DisposeExecutorCmd(executorId));
+
+        internal Task<ExecutorConfig> GetExecutorConfig(string executorId) => _ref.Ask<ExecutorConfig>(new PkgRuntimeActor.ExecutorConfigRequest(executorId));
+
+        internal void OnExecutorNotification(string executorId, Any payload) => _ref.Tell(new PkgRuntimeActor.ExecutorNotificationMsg(executorId, payload));
     }
 }

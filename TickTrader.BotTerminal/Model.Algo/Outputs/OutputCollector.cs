@@ -22,17 +22,16 @@ namespace TickTrader.BotTerminal
 
     internal class OutputCollector<T> : IOutputCollector, IDisposable
     {
-        private readonly ExecutorModel _executor;
         private readonly string _outputId;
+        private readonly IDisposable _outputSub;
 
         public OutputCollector(ExecutorModel executor, IOutputConfig config, OutputDescriptor descriptor)
         {
-            _executor = executor;
             _outputId = config.PropertyId;
             OutputConfig = config;
             OutputDescriptor = descriptor;
 
-            executor.OutputUpdate += Executor_OutputUpdate;
+            _outputSub = executor.OutputUpdated.Subscribe(Executor_OutputUpdate);
         }
 
         public virtual bool IsNotSyncrhonized => false;
@@ -47,7 +46,7 @@ namespace TickTrader.BotTerminal
 
         public virtual void Dispose()
         {
-            _executor.OutputUpdate -= Executor_OutputUpdate;
+            _outputSub.Dispose();
         }
 
         private void Executor_OutputUpdate(DataSeriesUpdate update)

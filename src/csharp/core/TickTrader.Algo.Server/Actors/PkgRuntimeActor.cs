@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
@@ -19,7 +20,6 @@ namespace TickTrader.Algo.Server
         private readonly AlgoServer _server;
         private readonly IRuntimeHostProxy _runtimeHost;
         private readonly Dictionary<string, ExecutorModel> _executorsMap = new Dictionary<string, ExecutorModel>();
-        private readonly Dictionary<string, AttachedAccount> _attachedAccounts = new Dictionary<string, AttachedAccount>();
 
         private TaskCompletionSource<bool> _startTaskSrc, _connectTaskSrc;
         private Action<RpcMessage> _onNotification;
@@ -42,15 +42,14 @@ namespace TickTrader.Algo.Server
             Receive<StopRuntimeCmd>(Stop);
             Receive<MarkForShutdownCmd>(MarkForShutdown);
             Receive<ConnectSessionCmd, bool>(OnConnect);
-            Receive<AttachAccountRequest, bool>(AttachAccount);
-            Receive<DetachAccountRequest, bool>(DetachAccount);
             Receive<StartExecutorRequest>(StartExecutor);
             Receive<StopExecutorRequest>(StopExecutor);
-            Receive<ExecutorStoppedMsg>(OnExecutorStopped);
             Receive<RuntimeConfigRequest, RuntimeConfig>(GetConfig);
             Receive<GetPluginInfoRequest, PluginInfo>(GetPluginInfo);
             Receive<CreateExecutorCmd, ExecutorModel>(CreateExecutor);
             Receive<DisposeExecutorCmd>(DisposeExecutor);
+            Receive<ExecutorConfigRequest, ExecutorConfig>(GetExecutorConfig);
+            Receive<ExecutorNotificationMsg>(OnExecutorNotification);
         }
 
 
@@ -204,15 +203,6 @@ namespace TickTrader.Algo.Server
             return _proxy.StopExecutor(request.ExecutorId);
         }
 
-        private void OnExecutorStopped(ExecutorStoppedMsg msg)
-        {
-            _startedExecutorsCnt--;
-            _logger.Debug($"Executor {msg.ExecutorId} stopped. Have {_startedExecutorsCnt} active executors");
-
-            if (_startedExecutorsCnt == 0 && _shutdownWhenIdle)
-                ShutdownInternal();
-        }
-
         private PluginInfo GetPluginInfo(GetPluginInfoRequest request)
         {
             return new PluginInfo(request.Plugin, null);
@@ -234,129 +224,49 @@ namespace TickTrader.Algo.Server
             _executorsMap.Remove(cmd.ExecutorId);
         }
 
-        private bool AttachAccount(AttachAccountRequest request)
+        private ExecutorConfig GetExecutorConfig(ExecutorConfigRequest request)
         {
-            var accId = request.AccountId;
-            _logger.Debug($"Attaching account {accId}...");
+            var id = request.ExecutorId;
+            if (!_executorsMap.TryGetValue(id, out var executor))
+                throw Errors.ExecutorNotFound(id);
 
-            try
-            {
-                if (!_attachedAccounts.TryGetValue(accId, out var account))
-                {
-                    if (!_server.TryGetAccount(accId, out var accountProxy))
-                    {
-                        _logger.Error($"Can't attach account. '{accId}' doesn't exists");
-                        return false;
-                    }
-
-                    account = new AttachedAccount(this, accountProxy);
-                    _attachedAccounts.Add(accId, account);
-                }
-                var refCnt = account.AddRef();
-                _logger.Debug($"Attached account {accId}. Have {refCnt} active refs");
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, $"Failed to attach account {accId}");
-            }
-            return false;
+            return executor.Config;
         }
 
-        private bool DetachAccount(DetachAccountRequest request)
+        private void OnExecutorNotification(ExecutorNotificationMsg msg)
         {
-            var accId = request.AccountId;
-            _logger.Debug($"Detaching account {accId}...");
+            var id = msg.ExecutorId;
+            var payload = msg.Payload;
 
-            try
-            {
-                if (!_attachedAccounts.TryGetValue(accId, out var account))
-                {
-                    _logger.Error($"Can't detach account. '{accId}' is not attached or doesn't exists");
-                    return false;
-                }
+            if (payload.Is(PluginError.Descriptor))
+                PluginErrorHandler(id, payload);
 
-                var refCnt = account.RemoveRef();
-                _logger.Debug($"Detached account {accId}. Have {refCnt} active refs");
-                if (refCnt == 0)
-                    _attachedAccounts.Remove(accId);
+            if (!_executorsMap.TryGetValue(id, out var executor))
+                _logger.Error($"Executor {id} not found. Notification type {msg.Payload.TypeUrl}");
 
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, $"Failed to detach account {accId}");
-            }
-            return false;
+            if (payload.Is(PluginStopped.Descriptor))
+                PluginStoppedHandler(executor);
+            else if (payload.Is(PluginLogRecord.Descriptor))
+                executor.OnLogUpdated(payload.Unpack<PluginLogRecord>());
+            else if (payload.Is(DataSeriesUpdate.Descriptor))
+                executor.OnDataSeriesUpdate(payload.Unpack<DataSeriesUpdate>());
         }
 
-
-        private class AttachedAccount
+        private void PluginErrorHandler(string id, Any payload)
         {
-            private readonly PkgRuntimeActor _runtime;
-            private readonly IAccountProxy _account;
-            private readonly string _accId;
-            private readonly object _lock = new object();
-            private int _refCnt;
+            var error = payload.Unpack<PluginError>();
+            _logger.Error(new AlgoPluginException(error), $"Exception in executor {id}");
+        }
 
+        private void PluginStoppedHandler(ExecutorModel executor)
+        {
+            _startedExecutorsCnt--;
+            _logger.Debug($"Executor {executor.Id} stopped. Have {_startedExecutorsCnt} active executors");
 
-            public AttachedAccount(PkgRuntimeActor runtime, IAccountProxy account)
-            {
-                _runtime = runtime;
-                _account = account;
-                _accId = _account.Id;
-            }
+            executor.OnStopped();
 
-
-            public int AddRef()
-            {
-                lock (_lock)
-                {
-                    if (_refCnt == 0)
-                    {
-                        _account.AccInfoProvider.OrderUpdated += OnOrderUpdated;
-                        _account.AccInfoProvider.PositionUpdated += OnPositionUpdated;
-                        _account.AccInfoProvider.BalanceUpdated += OnBalanceUpdated;
-
-                        _account.Feed.RateUpdated += OnRateUpdated;
-                        _account.Feed.RatesUpdated += OnRatesUpdated;
-                    }
-                    _refCnt++;
-
-                    return _refCnt;
-                }
-            }
-
-            public int RemoveRef()
-            {
-                lock (_lock)
-                {
-                    _refCnt--;
-                    if (_refCnt == 0)
-                    {
-                        _account.AccInfoProvider.OrderUpdated -= OnOrderUpdated;
-                        _account.AccInfoProvider.PositionUpdated -= OnPositionUpdated;
-                        _account.AccInfoProvider.BalanceUpdated -= OnBalanceUpdated;
-
-                        _account.Feed.RateUpdated -= OnRateUpdated;
-                        _account.Feed.RatesUpdated -= OnRatesUpdated;
-                    }
-
-                    return _refCnt;
-                }
-            }
-
-
-            private void OnOrderUpdated(OrderExecReport r) => _runtime._onNotification?.Invoke(RpcMessage.Notification(_accId, r));
-
-            private void OnPositionUpdated(PositionExecReport r) => _runtime._onNotification?.Invoke(RpcMessage.Notification(_accId, r));
-
-            private void OnBalanceUpdated(BalanceOperation r) => _runtime._onNotification?.Invoke(RpcMessage.Notification(_accId, r));
-
-            private void OnRateUpdated(QuoteInfo r) => _runtime._onNotification?.Invoke(RpcMessage.Notification(_accId, r.GetFullQuote()));
-
-            private void OnRatesUpdated(List<QuoteInfo> r) => _runtime._onNotification?.Invoke(RpcMessage.Notification(_accId, QuotePage.Create(r)));
+            if (_startedExecutorsCnt == 0 && _shutdownWhenIdle)
+                ShutdownInternal();
         }
 
 
@@ -381,16 +291,6 @@ namespace TickTrader.Algo.Server
             public ConnectSessionCmd(RpcSession session)
             {
                 Session = session;
-            }
-        }
-
-        internal class ExecutorStoppedMsg
-        {
-            public string ExecutorId { get; }
-
-            public ExecutorStoppedMsg(string executorId)
-            {
-                ExecutorId = executorId;
             }
         }
 
@@ -424,6 +324,29 @@ namespace TickTrader.Algo.Server
             public DisposeExecutorCmd(string executorId)
             {
                 ExecutorId = executorId;
+            }
+        }
+
+        internal class ExecutorConfigRequest
+        {
+            public string ExecutorId { get; }
+
+            public ExecutorConfigRequest(string executorId)
+            {
+                ExecutorId = executorId;
+            }
+        }
+
+        internal class ExecutorNotificationMsg
+        {
+            public string ExecutorId { get; }
+
+            public Any Payload { get; }
+
+            public ExecutorNotificationMsg(string executorId, Any payload)
+            {
+                ExecutorId = executorId;
+                Payload = payload;
             }
         }
     }

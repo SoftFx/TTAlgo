@@ -99,7 +99,7 @@ namespace TickTrader.BotTerminal
             Task.Factory.StartNew(() => AlgoServer.Start());//.GetAwaiter().GetResult();
             _logger.Info($"Started AlgoServer on port {AlgoServer.BoundPort}");
 
-            AlgoServer.RegisterAccountProxy(ClientModel.GetAccountProxy());
+            AlgoServer.Accounts.RegisterAccountProxy(ClientModel.GetAccountProxy());
             var pkgStorage = AlgoServer.PkgStorage;
 
             _reductions = new ReductionCollection();

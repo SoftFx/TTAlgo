@@ -134,12 +134,11 @@ namespace TickTrader.BotTerminal
                 WorkingDirectory = EnvService.Instance.AlgoWorkingFolder,
             };
 
+            executorConfig.SetPluginConfig(Config);
             FillExectorConfig(executorConfig);
             Host.InitializePlugin(executorConfig);
 
             var runtime = await Agent.AlgoServer.CreateExecutor(Config.Key.PackageId, InstanceId, executorConfig);
-
-            runtime.ErrorOccurred += Executor_OnRuntimeError;
 
             CreateOutputs(runtime);
 
@@ -199,11 +198,6 @@ namespace TickTrader.BotTerminal
             Descriptor = plugin.Descriptor_;
             ChangeState(PluginModelInfo.Types.PluginState.Stopped);
             OnRefsUpdated();
-        }
-
-        private void Executor_OnRuntimeError(Exception ex)
-        {
-            _logger.Error(ex, "Exception in Algo executor! InstanceId=" + InstanceId);
         }
 
         private void Library_PluginUpdated(UpdateInfo<PluginInfo> update)

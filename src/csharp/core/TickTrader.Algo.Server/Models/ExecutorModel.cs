@@ -1,5 +1,5 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using TickTrader.Algo.Async;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Server
@@ -7,17 +7,20 @@ namespace TickTrader.Algo.Server
     public class ExecutorModel
     {
         private readonly PkgRuntimeModel _host;
+        private readonly ChannelEventSource<PluginLogRecord> _logEventSrc = new ChannelEventSource<PluginLogRecord>();
+        private readonly ChannelEventSource<DataSeriesUpdate> _outputEventSrc = new ChannelEventSource<DataSeriesUpdate>();
+        private readonly ChannelEventSource<bool> _stoppedEventSrc = new ChannelEventSource<bool>();
 
 
         public string Id { get; }
 
         public ExecutorConfig Config { get; } = new ExecutorConfig();
 
+        public IEventSource<PluginLogRecord> LogUpdated => _logEventSrc;
 
-        public event Action<PluginLogRecord> LogUpdated;
-        public event Action<DataSeriesUpdate> OutputUpdate;
-        public event Action<Exception> ErrorOccurred;
-        public event Action<ExecutorModel> Stopped;
+        public IEventSource<DataSeriesUpdate> OutputUpdated => _outputEventSrc;
+
+        public IEventSource<bool> Stopped => _stoppedEventSrc;
 
 
         public ExecutorModel(PkgRuntimeModel host, string id, ExecutorConfig config)
@@ -31,6 +34,10 @@ namespace TickTrader.Algo.Server
         public void Dispose()
         {
             _host.DisposeExecutor(Id);
+
+            _logEventSrc.Dispose();
+            _outputEventSrc.Dispose();
+            _stoppedEventSrc.Dispose();
         }
 
         public Task Start()
@@ -46,39 +53,17 @@ namespace TickTrader.Algo.Server
 
         internal void OnLogUpdated(PluginLogRecord record)
         {
-            LogUpdated?.Invoke(record);
-        }
-
-        internal void OnErrorOccured(Exception ex)
-        {
-            ErrorOccurred?.Invoke(ex);
-        }
-
-        internal void OnStopped()
-        {
-            _host.OnExecutorStopped(Id);
-
-            Stopped?.Invoke(this);
+            _logEventSrc.Writer.TryWrite(record);
         }
 
         internal void OnDataSeriesUpdate(DataSeriesUpdate update)
         {
-            //if (update.SeriesType == DataSeriesUpdate.Types.Type.SymbolRate)
-            //{
-            //    var bar = update.Value.Unpack<BarData>();
-            //    ChartBarUpdated?.Invoke(bar, update.SeriesId, update.UpdateAction);
-            //}
-            //else if (update.SeriesType == DataSeriesUpdate.Types.Type.NamedStream)
-            //{
-            //    var bar = update.Value.Unpack<BarData>();
-            //    if (update.SeriesId == BacktesterCollector.EquityStreamName)
-            //        EquityUpdated?.Invoke(bar, update.UpdateAction);
-            //    else if (update.SeriesId == BacktesterCollector.MarginStreamName)
-            //        MarginUpdated?.Invoke(bar, update.UpdateAction);
-            //}
-            //else if (update.SeriesType == DataSeriesUpdate.Types.Type.Output)
-            if (update.SeriesType == DataSeriesUpdate.Types.Type.Output)
-                OutputUpdate?.Invoke(update);
+            _outputEventSrc.Writer.TryWrite(update);
+        }
+
+        internal void OnStopped()
+        {
+            _stoppedEventSrc.Writer.TryWrite(false);
         }
     }
 }

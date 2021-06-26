@@ -44,7 +44,7 @@ namespace TickTrader.Algo.Server
         private AccountConsumerControllerModel GetConsumerController(ConsumerControllerRequest request)
         {
             var accId = request.AccountId;
-            if (_accountsMap.TryGetValue(accId, out var account))
+            if (!_accountsMap.TryGetValue(accId, out var account))
                 throw Errors.AccountNotFound(accId);
 
             return account;

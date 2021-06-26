@@ -17,21 +17,21 @@ namespace TickTrader.Algo.Server
 
     public class BotListenerProxy
     {
-        private ExecutorModel _executor;
-        private Action _onStopped;
-        private IBotWriter _writer;
+        private readonly Action _onStopped;
+        private readonly IBotWriter _writer;
+        private readonly IDisposable _logSub, _stoppedSub;
+
         private string _currentStatus;
         private Timer _timer;
 
 
         public BotListenerProxy(ExecutorModel executor, Action onStopped, IBotWriter writer)
         {
-            _executor = executor;
             _onStopped = onStopped;
             _writer = writer;
 
-            executor.Stopped += Executor_Stopped;
-            executor.LogUpdated += Executor_LogUpdated;
+            _logSub = executor.LogUpdated.Subscribe(Executor_LogUpdated);
+            _stoppedSub = executor.Stopped.Subscribe(Executor_Stopped);
         }
 
 
@@ -58,8 +58,8 @@ namespace TickTrader.Algo.Server
         {
             _timer?.Dispose();
 
-            _executor.Stopped -= Executor_Stopped;
-            _executor.LogUpdated -= Executor_LogUpdated;
+            _logSub.Dispose();
+            _stoppedSub.Dispose();
         }
 
 
@@ -74,7 +74,7 @@ namespace TickTrader.Algo.Server
             }
         }
 
-        private void Executor_Stopped(ExecutorModel executor)
+        private void Executor_Stopped(bool val)
         {
             _onStopped();
         }

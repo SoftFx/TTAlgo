@@ -24,6 +24,7 @@ namespace TickTrader.Algo.Server
 
             Receive<AttachSessionCmd>(AttachSession);
             Receive<DetachSessionCmd>(DetachSession);
+            Receive<AccountProxyRequest, IAccountProxy>(GetAccountProxy);
             Receive<RpcMessage>(SendNotification);
         }
 

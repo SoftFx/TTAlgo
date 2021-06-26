@@ -93,6 +93,7 @@ namespace TickTrader.BotTerminal
             if (await StopExecutor())
             {
                 _botListener?.Stop();
+                _botListener?.Dispose();
                 ChangeState(PluginModelInfo.Types.PluginState.Stopped);
             }
         }

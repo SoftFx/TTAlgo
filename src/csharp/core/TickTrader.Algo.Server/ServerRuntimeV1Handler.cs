@@ -29,14 +29,7 @@ namespace TickTrader.Algo.Server
 
         public void HandleNotification(string proxyId, string callId, Any payload)
         {
-            if (payload.Is(PluginLogRecord.Descriptor))
-                PluginLogRecordHandler(proxyId, payload);
-            else if (payload.Is(PluginError.Descriptor))
-                PluginErrorHandler(proxyId, payload);
-            else if (payload.Is(PluginStopped.Descriptor))
-                PluginStoppedHandler(proxyId);
-            else if (payload.Is(DataSeriesUpdate.Descriptor))
-                DataSeriesUpdateHandler(proxyId, payload);
+            _runtime.OnExecutorNotification(proxyId, payload);
 
         }
 
@@ -86,10 +79,7 @@ namespace TickTrader.Algo.Server
 
         private Task<Any> ExecutorConfigRequestHandler(string executorId)
         {
-            if (!_server.TryGetExecutor(executorId, out var executor))
-                return Task.FromResult(Any.Pack(new ErrorResponse { Message = "Unknown executor" }));
-
-            return Task.FromResult(Any.Pack(executor.Config));
+            return _runtime.GetExecutorConfig(executorId).ContinueWith(t => Any.Pack(t.Result));
         }
 
         private async Task<Any> AttachAccountRequestHandler(Any payload)
@@ -117,41 +107,6 @@ namespace TickTrader.Algo.Server
             await accControl.DetachSession(_session.Id);
 
             return RpcHandler.VoidResponse;
-        }
-
-        private void PluginLogRecordHandler(string executorId, Any payload)
-        {
-            if (!_server.TryGetExecutor(executorId, out var executor))
-                return;
-
-            var record = payload.Unpack<PluginLogRecord>();
-            executor.OnLogUpdated(record);
-        }
-
-        private void PluginErrorHandler(string executorId, Any payload)
-        {
-            if (!_server.TryGetExecutor(executorId, out var executor))
-                return;
-
-            var error = payload.Unpack<PluginError>();
-            executor.OnErrorOccured(new AlgoPluginException(error));
-        }
-
-        private void PluginStoppedHandler(string executorId)
-        {
-            if (!_server.TryGetExecutor(executorId, out var executor))
-                return;
-
-            executor.OnStopped();
-        }
-
-        private void DataSeriesUpdateHandler(string executorId, Any payload)
-        {
-            if (!_server.TryGetExecutor(executorId, out var executor))
-                return;
-
-            var update = payload.Unpack<DataSeriesUpdate>();
-            executor.OnDataSeriesUpdate(update);
         }
     }
 }
