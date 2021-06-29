@@ -208,6 +208,8 @@ namespace TickTrader.Algo.Server
         {
             try
             {
+                _logger.Debug("Stopping...");
+
                 await _initCompletionSrc.Task;
 
                 if (_state == AccountModelInfo.Types.ConnectionState.Offline)
@@ -216,6 +218,8 @@ namespace TickTrader.Algo.Server
                     ManageConnectionInternal();
 
                 await _core.CloseHandler();
+
+                _logger.Debug("Stopped");
             }
             catch (Exception ex)
             {

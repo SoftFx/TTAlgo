@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Package;
@@ -14,8 +12,6 @@ namespace TickTrader.Algo.Server
     {
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<AlgoServer>();
 
-        private readonly Dictionary<string, ExecutorModel> _executorsMap = new Dictionary<string, ExecutorModel>();
-        private readonly Dictionary<string, IAccountProxy> _accountsMap = new Dictionary<string, IAccountProxy>();
         private readonly RpcServer _rpcServer;
 
 
@@ -55,6 +51,8 @@ namespace TickTrader.Algo.Server
         {
             await _rpcServer.Start(Address, 0);
 
+            await Accounts.Restore();
+
             await Plugins.Restore();
         }
 
@@ -70,6 +68,8 @@ namespace TickTrader.Algo.Server
 
             await Runtimes.Shutdown();
 
+            await Accounts.Shutdown();
+
             await _rpcServer.Stop();
 
             _logger.Debug("Stopped");
@@ -83,31 +83,6 @@ namespace TickTrader.Algo.Server
             await runtime.Start();
 
             return await runtime.CreateExecutor(instanceId, config);
-        }
-
-        public bool RegisterAccountProxy(IAccountProxy account)
-        {
-            if (_accountsMap.ContainsKey(account.Id))
-                return false;
-
-            _accountsMap.Add(account.Id, account);
-            return true;
-        }
-
-
-        internal bool TryGetExecutor(string executorId, out ExecutorModel executor)
-        {
-            return _executorsMap.TryGetValue(executorId, out executor);
-        }
-
-        internal bool TryGetAccount(string accountId, out IAccountProxy account)
-        {
-            return _accountsMap.TryGetValue(accountId, out account);
-        }
-
-        internal void OnExecutorStopped(string executorId)
-        {
-            _executorsMap.Remove(executorId);
         }
 
 
