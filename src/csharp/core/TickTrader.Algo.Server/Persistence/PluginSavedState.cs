@@ -31,7 +31,7 @@ namespace TickTrader.Algo.Server.Persistence
 
         public PluginConfig UnpackConfig()
         {
-            if (ConfigUri != PluginConfig.Descriptor.FullName)
+            if (ConfigUri == PluginConfig.Descriptor.FullName)
                 return PluginConfig.Parser.ParseFrom(ByteString.CopyFromUtf8(ConfigData));
 
             return null;

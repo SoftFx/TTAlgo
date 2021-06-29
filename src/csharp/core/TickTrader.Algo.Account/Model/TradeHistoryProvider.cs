@@ -18,7 +18,7 @@ namespace TickTrader.Algo.Account
         private Dictionary<Ref<Handler>, ActorChannel<Domain.TradeReportInfo>> _listeners = new Dictionary<Ref<Handler>, ActorChannel<Domain.TradeReportInfo>>();
         private bool _isStarted;
 
-        public TradeHistoryProvider(ConnectionModel connection, int loggerId)
+        public TradeHistoryProvider(ConnectionModel connection, string loggerId)
         {
             logger = AlgoLoggerFactory.GetLogger<TradeHistoryProvider>(loggerId);
 

@@ -117,7 +117,7 @@ namespace TickTrader.BotAgent.BA.Models
                 //var options = new ConnectionOptions() { EnableLogs = false, LogsFolder = ServerModel.Environment.LogFolder, Type = AppType.BotAgent };
 
                 _core = new Algo.Account.ClientModel.ControlHandler2((options, loggerId) => new SfxInterop(options, loggerId), fdkOptionsProvider.GetConnectionOptions(),
-                    ServerModel.Environment.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerClientHierarchy, _loggerId);
+                    ServerModel.Environment.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerClientHierarchy, _loggerId.ToString());
 
                 await _core.OpenHandler();
 
@@ -213,11 +213,6 @@ namespace TickTrader.BotAgent.BA.Models
             //            return GetMetadataInfo();
             //        }));
             //}
-        }
-
-        public PluginFeedProvider CreatePluginFeedAdapter()
-        {
-            return _core.CreateFeedProvider().Result;
         }
 
         private void CheckInitialized()

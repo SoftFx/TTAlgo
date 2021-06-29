@@ -21,7 +21,7 @@ namespace TickTrader.Algo.Account
         private FeedCache.Handler _diskCache = new FeedCache.Handler(SpawnLocal<FeedCache>());
         private IFeedServerApi _feedProxy;
 
-        private void Init(string onlieDataFolder, FeedHistoryFolderOptions folderOptions, int loggerId)
+        private void Init(string onlieDataFolder, FeedHistoryFolderOptions folderOptions, string loggerId)
         {
             logger = AlgoLoggerFactory.GetLogger<FeedHistoryProviderModel>(loggerId);
             _dataFolder = onlieDataFolder;
@@ -30,7 +30,7 @@ namespace TickTrader.Algo.Account
 
         internal class ControlHandler : Handler<FeedHistoryProviderModel>
         {
-            public ControlHandler(ConnectionModel connection, string onlieDataFolder, FeedHistoryFolderOptions folderOptions, int loggerId)
+            public ControlHandler(ConnectionModel connection, string onlieDataFolder, FeedHistoryFolderOptions folderOptions, string loggerId)
                 : base(SpawnLocal<FeedHistoryProviderModel>())
             {
                 Actor.Send(a => a.Init(onlieDataFolder, folderOptions, loggerId));

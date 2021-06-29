@@ -46,7 +46,7 @@ namespace TickTrader.Algo.Account.Fdk2
 
         public event Action<IServerInterop, ConnectionErrorInfo> Disconnected;
 
-        public SfxInterop(ConnectionOptions options, int loggerId)
+        public SfxInterop(ConnectionOptions options, string loggerId)
         {
             logger = AlgoLoggerFactory.GetLogger<SfxInterop>(loggerId);
 

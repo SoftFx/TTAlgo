@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Account
     {
         private StateMachine<States> _stateControl;
         private IAlgoLogger logger;
-        private readonly int _loggerId;
+        private readonly string _loggerId;
         private readonly ServerInteropFactory _accFactory;
         public enum States { Offline, Connecting, Online, Disconnecting, OfflineRetry }
         public enum Events { LostConnection, ConnectFailed, Connected, DoneDisconnecting, OnRequest, OnRetry, StopRetryRequested }
@@ -32,7 +32,7 @@ namespace TickTrader.Algo.Account
         private ActorEvent _deinitListeners = new ActorEvent();
         private ActorEvent<StateInfo> _stateListeners = new ActorEvent<StateInfo>();
 
-        public ConnectionModel(ServerInteropFactory accFactory, ConnectionOptions options, int loggerId)
+        public ConnectionModel(ServerInteropFactory accFactory, ConnectionOptions options, string loggerId)
         {
             _loggerId = loggerId;
             logger = AlgoLoggerFactory.GetLogger<ConnectionModel>(loggerId);

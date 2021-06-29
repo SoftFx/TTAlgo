@@ -160,7 +160,7 @@ namespace TickTrader.Algo.Server
                 return null;
 
             var accId = cmd.Account.Id;
-            if (!_state.Accounts.Remove(accId))
+            if (!_state.Accounts.ContainsKey(accId))
                 return Errors.AccountNotFound(accId);
 
             _state.Accounts[accId] = cmd.Account;

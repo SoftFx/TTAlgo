@@ -40,7 +40,7 @@ namespace TickTrader.Algo.Account
             _defaultSubscription = _rootDistributor.AddSubscription(q => { });
         }
 
-        private void Init(ServerInteropFactory accFactory, ConnectionOptions connectionOptions, string historyFolder, FeedHistoryFolderOptions historyOptions, int loggerId)
+        private void Init(ServerInteropFactory accFactory, ConnectionOptions connectionOptions, string historyFolder, FeedHistoryFolderOptions historyOptions, string loggerId)
         {
             logger = AlgoLoggerFactory.GetLogger<ClientModel>(loggerId);
 
@@ -99,7 +99,7 @@ namespace TickTrader.Algo.Account
 
         public class ControlHandler : BlockingHandler<ClientModel>
         {
-            public ControlHandler(ServerInteropFactory accFactory, ConnectionOptions options, string historyFolder, FeedHistoryFolderOptions hsitoryOptions, int loggerId)
+            public ControlHandler(ServerInteropFactory accFactory, ConnectionOptions options, string historyFolder, FeedHistoryFolderOptions hsitoryOptions, string loggerId)
                 : base(SpawnLocal<ClientModel>(null, "ClientModel " + Interlocked.Increment(ref ActorNameIdSeed)))
             {
                 ActorSend(a => a.Init(accFactory, options, historyFolder, hsitoryOptions, loggerId));
@@ -110,7 +110,7 @@ namespace TickTrader.Algo.Account
 
         public class ControlHandler2 : Handler<ClientModel>
         {
-            public ControlHandler2(ServerInteropFactory accFactory, ConnectionOptions options, string historyFolder, FeedHistoryFolderOptions hsitoryOptions, int loggerId)
+            public ControlHandler2(ServerInteropFactory accFactory, ConnectionOptions options, string historyFolder, FeedHistoryFolderOptions hsitoryOptions, string loggerId)
                 : base(SpawnLocal<ClientModel>(null, "ClientModel " + Interlocked.Increment(ref ActorNameIdSeed)))
             {
                 Actor.Send(a => a.Init(accFactory, options, historyFolder, hsitoryOptions, loggerId));

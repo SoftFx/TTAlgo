@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Google.Protobuf;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Server.Persistence
 {
@@ -12,7 +13,9 @@ namespace TickTrader.Algo.Server.Persistence
 
         public string DisplayName { get; set; }
 
-        public Dictionary<string, string> Creds { get; private set; } = new Dictionary<string, string>();
+        public string CredsUri { get; set; }
+
+        public string CredsData { get; set; }
 
 
         public AccountSavedState Clone()
@@ -23,8 +26,24 @@ namespace TickTrader.Algo.Server.Persistence
                 Server = Server,
                 UserId = UserId,
                 DisplayName = DisplayName,
-                Creds = new Dictionary<string, string>(Creds),
+                CredsUri = CredsUri,
+                CredsData = CredsData,
             };
+        }
+
+
+        public AccountCreds UnpackCreds()
+        {
+            if (CredsUri == AccountCreds.Descriptor.FullName)
+                return AccountCreds.Parser.ParseFrom(ByteString.CopyFromUtf8(CredsData));
+
+            return null;
+        }
+
+        public void PackCreds(AccountCreds creds)
+        {
+            CredsUri = AccountCreds.Descriptor.FullName;
+            CredsData = creds.ToByteString().ToStringUtf8();
         }
     }
 }

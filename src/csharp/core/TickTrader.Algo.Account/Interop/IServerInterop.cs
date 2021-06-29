@@ -18,7 +18,7 @@ namespace TickTrader.Algo.Account
         event Action<IServerInterop, ConnectionErrorInfo> Disconnected;
     }
 
-    public delegate IServerInterop ServerInteropFactory(ConnectionOptions options, int loggerId);
+    public delegate IServerInterop ServerInteropFactory(ConnectionOptions options, string loggerId);
 
     public interface ITradeServerApi
     {

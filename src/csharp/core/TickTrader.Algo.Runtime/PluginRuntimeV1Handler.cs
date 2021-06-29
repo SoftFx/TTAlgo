@@ -11,8 +11,6 @@ namespace TickTrader.Algo.Runtime
 {
     internal class PluginRuntimeV1Handler : IRpcHandler
     {
-        private static readonly Any VoidResponse = Any.Pack(new VoidResponse());
-
         private readonly IRuntimeProxy _runtime;
         private readonly Dictionary<string, IRpcHandler> _knownProxies;
         private RpcSession _session;
@@ -151,27 +149,27 @@ namespace TickTrader.Algo.Runtime
         private async Task<Any> StartRuntimeRequestHandler()
         {
             await _runtime.Launch();
-            return VoidResponse;
+            return RpcHandler.VoidResponse;
         }
 
         private async Task<Any> StopRuntimeRequestHandler()
         {
             await _runtime.Stop();
-            return VoidResponse;
+            return RpcHandler.VoidResponse;
         }
 
         private async Task<Any> StartExecutorRequestHandler(Any payload)
         {
             var request = payload.Unpack<StartExecutorRequest>();
             await _runtime.StartExecutor(request.ExecutorId);
-            return VoidResponse;
+            return RpcHandler.VoidResponse;
         }
 
         private async Task<Any> StopExecutorRequestHandler(Any payload)
         {
             var request = payload.Unpack<StopExecutorRequest>();
             await _runtime.StopExecutor(request.ExecutorId);
-            return VoidResponse;
+            return RpcHandler.VoidResponse;
         }
 
         private async Task<Any> PackageInfoRequestHandler()
