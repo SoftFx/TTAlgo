@@ -360,9 +360,8 @@ namespace TickTrader.BotTerminal
         {
             _syncContext.Invoke(() =>
             {
-                if (_packages.TryGetValue(update.PackageId, out var packageModel))
+                if (_packages.TryGetValue(update.Id, out var packageModel))
                 {
-                    packageModel.IsValid = update.IsValid;
                     packageModel.IsLocked = update.IsLocked;
                     PackageStateChanged(packageModel);
                 }
@@ -373,7 +372,7 @@ namespace TickTrader.BotTerminal
         {
             _syncContext.Invoke(() =>
             {
-                if (_accounts.TryGetValue(update.AccountId, out var accountModel))
+                if (_accounts.TryGetValue(update.Id, out var accountModel))
                 {
                     accountModel.ConnectionState = update.ConnectionState;
                     accountModel.LastError = update.LastError;
@@ -386,7 +385,7 @@ namespace TickTrader.BotTerminal
         {
             _syncContext.Invoke(() =>
             {
-                if (_bots.TryGetValue(update.PluginId, out var botModel))
+                if (_bots.TryGetValue(update.Id, out var botModel))
                 {
                     botModel.UpdateState(update);
                     BotStateChanged(botModel);

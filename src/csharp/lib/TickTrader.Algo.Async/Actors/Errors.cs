@@ -10,7 +10,7 @@ namespace TickTrader.Algo.Async.Actors
 
         public static Exception DuplicateMsgHandler(Type msgType) => new Exception($"Message handler for type '{msgType.FullName}' already exists");
 
-        public static Exception MsgHandlerNotFound(string msgType) => new Exception($"Messagge handler for type '{msgType}' is not found");
+        public static Exception MsgHandlerNotFound(string msgType) => new Exception($"Message handler for type '{msgType}' is not found");
 
         public static Exception ActorNameRequired() => new Exception($"Actor name is required");
 

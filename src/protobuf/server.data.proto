@@ -10,9 +10,9 @@ import "runtime.package.proto";
 import "runtime.plugin.proto";
 import "runtime.feed.proto";
 import "runtime.proto";
+import "common.proto";
 
-message MappingInfo
-{
+message MappingInfo {
     MappingKey key = 1;
     google.protobuf.StringValue display_name = 2;
 }
@@ -136,20 +136,49 @@ message PluginFolderInfo {
     repeated PluginFileInfo files = 4;
 }
 
+message PackageUpdate {
+    string id = 1;
+    Update.Action action = 2;
+    PackageInfo package = 3;
+}
+
 message PackageStateUpdate {
-    string package_id = 1;
+    string id = 1;
     bool is_locked = 2;
-    bool is_valid = 3;
+}
+
+message AccountModelUpdate {
+    string id = 1;
+    Update.Action action = 2;
+    AccountModelInfo account = 3;
 }
 
 message AccountStateUpdate {
-    string account_id = 1;
+    string id = 1;
     AccountModelInfo.ConnectionState connection_state = 2;
     ConnectionErrorInfo last_error = 3;
 }
 
+message PluginModelUpdate {
+    string id = 1;
+    Update.Action action = 2;
+    PluginModelInfo plugin = 3;
+}
+
 message PluginStateUpdate {
-    string plugin_id = 1;
+    string id = 1;
     PluginModelInfo.PluginState state = 2;
     google.protobuf.StringValue fault_message = 3;
+}
+
+message PackageListSnapshot {
+    repeated PackageInfo packages = 1;
+}
+
+message AccountListSnapshot {
+    repeated AccountModelInfo accounts = 1;
+}
+
+message PluginListSnapshot {
+    repeated PluginModelInfo plugins = 1;
 }

@@ -25,13 +25,13 @@ namespace TickTrader.BotAgent.BA.Models
             if (bot.State == PluginModelInfo.Types.PluginState.Stopping)
             {
                 var tokenSource = new CancellationTokenSource();
-                _abortTasks.Add(bot.PluginId, tokenSource);
+                _abortTasks.Add(bot.Id, tokenSource);
 
-                AbortBotAfter(bot.PluginId, _delayPunishment, tokenSource.Token).Forget();
+                AbortBotAfter(bot.Id, _delayPunishment, tokenSource.Token).Forget();
             }
             else if (bot.State == PluginModelInfo.Types.PluginState.Stopped)
             {
-                СancelAbortTask(bot.PluginId);
+                СancelAbortTask(bot.Id);
             }
         }
 

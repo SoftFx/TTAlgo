@@ -187,13 +187,6 @@ message PackageIdentity {
     google.protobuf.StringValue hash = 6;
 }
 
-message Package {
-    enum UpdateAction {
-        Upsert = 0;
-        Removed = 1;
-    }
-}
-
 message PackageInfo {
     string package_id = 1;
     PackageIdentity identity = 2;
@@ -201,10 +194,4 @@ message PackageInfo {
     repeated PluginInfo plugins = 4;
     repeated ReductionInfo reductions = 5;
     bool is_locked = 6;
-}
-
-message PackageUpdate {
-    string id = 1;
-    Package.UpdateAction action = 2;
-    PackageInfo package = 3;
 }

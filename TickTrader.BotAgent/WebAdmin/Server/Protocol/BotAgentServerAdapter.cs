@@ -310,10 +310,13 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                 UpdateInfo<PackageInfo> updateInfo = default;
                 switch (update.Action)
                 {
-                    case Package.Types.UpdateAction.Upsert:
+                    case Update.Types.Action.Added:
+                        updateInfo = new UpdateInfo<PackageInfo>(UpdateInfo.Types.UpdateType.Added, update.Package);
+                        break;
+                    case Update.Types.Action.Updated:
                         updateInfo = new UpdateInfo<PackageInfo>(UpdateInfo.Types.UpdateType.Replaced, update.Package);
                         break;
-                    case Package.Types.UpdateAction.Removed:
+                    case Update.Types.Action.Removed:
                         updateInfo = new UpdateInfo<PackageInfo>(UpdateInfo.Types.UpdateType.Removed, new PackageInfo { PackageId = update.Id });
                         break;
                 }

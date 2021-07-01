@@ -341,12 +341,13 @@ namespace TickTrader.Algo.Package
                         var refId = GeneratePackageRefId(pkgId);
                         _pkgIdToRefMap[pkgId] = refId;
                         _pkgRefMap[refId] = new AlgoPackageRef(refId, update.PkgInfo, update.PkgBytes);
-                        _pkgUpdateSink.TryWrite(new PackageUpdate { Action = Domain.Package.Types.UpdateAction.Upsert, Id = pkgId, Package = update.PkgInfo, });
+                        var pkgInfo = update.PkgInfo;
+                        _pkgUpdateSink.TryWrite(pkgRef != null ? PackageUpdate.Updated(pkgId, pkgInfo) : PackageUpdate.Added(pkgId, pkgInfo));
                         break;
                     case UpdateAction.Remove:
                         _pkgIdToRefMap.Remove(pkgId);
                         _pkgRefMap.Remove(pkgRef?.Id);
-                        _pkgUpdateSink.TryWrite(new PackageUpdate { Action = Domain.Package.Types.UpdateAction.Removed, Id = pkgId, });
+                        _pkgUpdateSink.TryWrite(PackageUpdate.Removed(pkgId));
                         break;
                 }
             }

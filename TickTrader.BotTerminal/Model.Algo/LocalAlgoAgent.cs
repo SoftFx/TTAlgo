@@ -343,11 +343,12 @@ namespace TickTrader.BotTerminal
             _packages.TryGetValue(update.Id, out var oldPkg);
             switch (update.Action)
             {
-                case Algo.Domain.Package.Types.UpdateAction.Upsert:
+                case Update.Types.Action.Added:
+                case Update.Types.Action.Updated:
                     _packages[pkgId] = newPkg;
                     UpdatePlugins(oldPkg, newPkg);
                     break;
-                case Algo.Domain.Package.Types.UpdateAction.Removed:
+                case Update.Types.Action.Removed:
                     _packages.Remove(pkgId);
                     break;
                 default:

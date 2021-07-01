@@ -122,9 +122,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
         {
             return new BotStateDto
             {
-                Id = bot.PluginId,
+                Id = bot.Id,
                 State = bot.State.ToString(),
-                FaultMessage = bot.FaultMessage
+                FaultMessage = bot.FaultMessage,
             };
         }
 

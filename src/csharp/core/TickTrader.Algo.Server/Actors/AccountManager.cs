@@ -29,6 +29,8 @@ namespace TickTrader.Algo.Server
 
             Receive<RegisterAccountProxyCmd, object>(RegisterAccountProxy);
             Receive<ConsumerControllerRequest, AccountConsumerControllerModel>(GetConsumerController);
+            Receive<ShutdownCmd>(Shutdown);
+            Receive<RestoreCmd>(Restore);
             Receive<AddAccountRequest>(AddAccount);
             Receive<ChangeAccountRequest>(ChangeAccount);
             Receive<RemoveAccountRequest>(RemoveAccount);

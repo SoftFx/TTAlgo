@@ -89,10 +89,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
         {
             switch (update.Action)
             {
-                case Package.Types.UpdateAction.Upsert:
+                case Update.Types.Action.Added:
+                case Update.Types.Action.Updated:
                     Hub.Clients.All.AddOrUpdatePackage(update.Package.ToDto());
                     break;
-                case Package.Types.UpdateAction.Removed:
+                case Update.Types.Action.Removed:
                     Hub.Clients.All.DeletePackage(update.Id);
                     break;
             }

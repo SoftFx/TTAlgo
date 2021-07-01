@@ -4,10 +4,12 @@ package ticktrader.algo.domain;
 
 option csharp_namespace = "TickTrader.Algo.Domain";
 
-enum UpdateAction {
-    Added = 0;
-    Modified = 1;
-    Deleted = 2;
+message Update {
+    enum Action {
+        Added = 0;
+        Updated = 1;
+        Removed = 2;
+    }
 }
 
 message UrlInfo {

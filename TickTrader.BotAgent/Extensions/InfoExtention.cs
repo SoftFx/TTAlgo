@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Domain;
-using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.BotAgent.BA.Models;
 
 namespace TickTrader.BotAgent.Extensions
@@ -24,7 +22,7 @@ namespace TickTrader.BotAgent.Extensions
         {
             return new AccountStateUpdate
             {
-                AccountId = acc.AccountId,
+                Id = acc.AccountId,
                 ConnectionState = acc.ConnectionState,
                 LastError = acc.LastError ?? ConnectionErrorInfo.Ok,
             };
@@ -57,25 +55,10 @@ namespace TickTrader.BotAgent.Extensions
         {
             return new PluginStateUpdate
             {
-                PluginId = model.Id,
+                Id = model.Id,
                 State = model.State,
                 FaultMessage = model.FaultMessage,
             };
-        }
-
-        public static ChangeAction Convert(this UpdateInfo.Types.UpdateType updateType)
-        {
-            switch (updateType)
-            {
-                case UpdateInfo.Types.UpdateType.Added:
-                    return ChangeAction.Added;
-                case UpdateInfo.Types.UpdateType.Replaced:
-                    return ChangeAction.Modified;
-                case UpdateInfo.Types.UpdateType.Removed:
-                    return ChangeAction.Removed;
-                default:
-                    throw new ArgumentException();
-            }
         }
     }
 }
