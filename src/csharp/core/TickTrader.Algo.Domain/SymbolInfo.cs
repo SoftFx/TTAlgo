@@ -48,7 +48,7 @@ namespace TickTrader.Algo.Domain
 
         MarginInfo.Types.CalculationMode ISymbolInfo.MarginMode => Margin.Mode;
 
-        double ISymbolInfo.MarginFactorFractional => Margin.Factor;
+        double ISymbolInfo.MarginFactor => Margin.Factor;
 
         double ISymbolInfo.ContractSizeFractional => LotSize;
 
@@ -75,7 +75,7 @@ namespace TickTrader.Algo.Domain
         double LotSize { get; }
 
         Domain.MarginInfo.Types.CalculationMode MarginMode { get; }
-        double MarginFactorFractional { get; }
+        double MarginFactor { get; }
         double MarginHedged { get; }
         string MarginCurrency { get; }
         string ProfitCurrency { get; }

@@ -1,81 +1,73 @@
 ﻿using System.Collections.Generic;
+using TickTrader.Algo.Calculator.AlgoMarket;
 using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.Calculator
+namespace TickTrader.Algo.Calculator.Conversions
 {
-    internal sealed class ConversionManager
+    public sealed class ConversionManager
     {
-        private readonly MarketStateBase _market;
+        private readonly AlgoMarketState _market;
 
-        private readonly Dictionary<string, ISideNode> Bid = new Dictionary<string, ISideNode>();
-        private readonly Dictionary<string, ISideNode> Ask = new Dictionary<string, ISideNode>();
+        private readonly Dictionary<string, IConversionFormula> _marginConversions = new Dictionary<string, IConversionFormula>();
+        private readonly Dictionary<string, IConversionFormula> _posProfitConversions = new Dictionary<string, IConversionFormula>();
+        private readonly Dictionary<string, IConversionFormula> _negProfitConversions = new Dictionary<string, IConversionFormula>();
 
-        private readonly Dictionary<(string, string), IConversionFormula> _marginConversions = new Dictionary<(string, string), IConversionFormula>();
-        private readonly Dictionary<(string, string), IConversionFormula> _posProfitConversions = new Dictionary<(string, string), IConversionFormula>();
-        private readonly Dictionary<(string, string), IConversionFormula> _negProfitConversions = new Dictionary<(string, string), IConversionFormula>();
+        private Dictionary<string, ISideNode> Bid => _market.Bid;
 
-        public ConversionManager(MarketStateBase market)
+        private Dictionary<string, ISideNode> Ask => _market.Ask;
+
+
+        private string _accountBalanceCurrency;
+
+        public ConversionManager(AlgoMarketState market)
         {
             _market = market;
         }
 
-        internal void Init()
+        internal void Init(string accBalanceCurrency)
         {
-            Ask.Clear();
-            Bid.Clear();
+            _accountBalanceCurrency = accBalanceCurrency;
 
             _marginConversions.Clear();
             _posProfitConversions.Clear();
             _negProfitConversions.Clear();
-
-            FillConversionSet(_market.Symbols);
         }
 
-        private void FillConversionSet(IEnumerable<ISymbolInfo> symbols)
+        internal IConversionFormula GetMarginFormula(ISymbolInfo tracker)
         {
-            foreach (var symbol in symbols)
-                if (!Exist(symbol.NodeKey))
-                {
-                    Bid[symbol.NodeKey] = new BidSideNode(symbol);
-                    Ask[symbol.NodeKey] = new AskSideNode(symbol);
-                }
-        }
-
-        internal IConversionFormula GetMarginFormula(ISymbolInfo tracker, string depositCurr)
-        {
-            var key = (tracker.Name, depositCurr);
+            var key = tracker.Name;
 
             if (!_marginConversions.ContainsKey(key))
-                _marginConversions[key] = BuildMarginFormula(tracker, depositCurr);
+                _marginConversions[key] = BuildMarginFormula(tracker);
 
             return _marginConversions[key];
         }
 
-        public IConversionFormula GetPositiveProfitFormula(ISymbolInfo tracker, string depositCurr)
+        public IConversionFormula GetPositiveProfitFormula(ISymbolInfo tracker)
         {
-            var key = (tracker.Name, depositCurr);
+            var key = tracker.Name;
 
             if (!_posProfitConversions.ContainsKey(key))
-                _posProfitConversions[key] = BuildProfitFormula(tracker, depositCurr, Bid, Ask);
+                _posProfitConversions[key] = BuildProfitFormula(tracker, Bid, Ask);
 
             return _posProfitConversions[key];
         }
 
-        public IConversionFormula GetNegativeProfitFormula(ISymbolInfo tracker, string depositCurr)
+        public IConversionFormula GetNegativeProfitFormula(ISymbolInfo tracker)
         {
-            var key = (tracker.Name, depositCurr);
+            var key = tracker.Name;
 
             if (!_negProfitConversions.ContainsKey(key))
-                _negProfitConversions[key] = BuildProfitFormula(tracker, depositCurr, Ask, Bid);
+                _negProfitConversions[key] = BuildProfitFormula(tracker, Ask, Bid);
 
             return _negProfitConversions[key];
         }
 
-        private IConversionFormula BuildMarginFormula(ISymbolInfo node, string depositCurr)
+        private IConversionFormula BuildMarginFormula(ISymbolInfo node)
         {
             string X = node.MarginCurrency;
             string Y = node.ProfitCurrency;
-            string Z = depositCurr;
+            string Z = _accountBalanceCurrency;
 
             if (X == Z)
                 return Formula.Direct; // N 1
@@ -144,11 +136,11 @@ namespace TickTrader.Algo.Calculator
         }
 
 
-        private IConversionFormula BuildProfitFormula(ISymbolInfo node, string toCurrency, Dictionary<string, ISideNode> price1, Dictionary<string, ISideNode> price2)
+        private IConversionFormula BuildProfitFormula(ISymbolInfo node, Dictionary<string, ISideNode> price1, Dictionary<string, ISideNode> price2)
         {
             string X = node.MarginCurrency;
             string Y = node.ProfitCurrency;
-            string Z = toCurrency;
+            string Z = _accountBalanceCurrency;
 
             if (Y == Z)
                 return Formula.Direct; // N 1
@@ -169,7 +161,7 @@ namespace TickTrader.Algo.Calculator
                 return Formula.Inv(price2[X + Y]).Mul(price1[X + Z]); // N 6
 
 
-            foreach (var curr in this._market.Currencies)
+            foreach (var curr in _market.Currencies)
             {
                 var C = curr.Name;
                 var YC = Exist(Y + C);

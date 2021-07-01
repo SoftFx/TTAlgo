@@ -1,4 +1,5 @@
 ﻿using System;
+using TickTrader.Algo.Domain.CalculatorInterfaces;
 
 namespace TickTrader.Algo.Domain
 {
@@ -10,18 +11,14 @@ namespace TickTrader.Algo.Domain
 
         public IPositionSide Short { get; set; }
 
-        public IOrderCalculator Calculator { get; set; }
+        public ISymbolCalculator Calculator { get; set; }
 
-        decimal IPositionInfo.Amount => Math.Max(Long.Amount, Short.Amount);
-
-        decimal IPositionInfo.Commission => (decimal)Commission;
-
-        decimal IPositionInfo.Swap => (decimal)Swap;
+        double IPositionInfo.Amount => Math.Max(Long.Amount, Short.Amount);
 
         DateTime? IPositionInfo.Modified => Modified?.ToDateTime();
 
         double IMarginProfitCalc.Price => (double)(Long.Amount > Short.Amount ? Long.Price : Short.Price);
-        decimal IMarginProfitCalc.RemainingAmount => Math.Max(Long.Amount, Short.Amount);
+        double IMarginProfitCalc.RemainingAmount => (double)Math.Max(Long.Amount, Short.Amount);
         OrderInfo.Types.Type IMarginProfitCalc.Type => OrderInfo.Types.Type.Position;
 
         bool IMarginProfitCalc.IsHidden => false;
@@ -32,14 +29,14 @@ namespace TickTrader.Algo.Domain
 
     public interface IPositionInfo : IMarginProfitCalc
     {
-        decimal Amount { get; }
+        double Amount { get; }
         string Symbol { get; }
-        decimal Commission { get; }
-        decimal Swap { get; }
+        double Commission { get; }
+        double Swap { get; }
         IPositionSide Long { get; } // buy
         IPositionSide Short { get; } //sell
         DateTime? Modified { get; }
-        IOrderCalculator Calculator { get; set; }
+        ISymbolCalculator Calculator { get; set; }
         bool IsEmpty { get; }
 
 
@@ -48,9 +45,9 @@ namespace TickTrader.Algo.Domain
 
     public interface IPositionSide
     {
-        decimal Amount { get; }
-        decimal Price { get; }
-        decimal Margin { get; set; }
-        decimal Profit { get; set; }
+        double Amount { get; }
+        double Price { get; }
+        double Margin { get; set; }
+        double Profit { get; set; }
     }
 }

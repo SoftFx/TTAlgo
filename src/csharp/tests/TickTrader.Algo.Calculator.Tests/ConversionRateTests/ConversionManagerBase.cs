@@ -2,32 +2,24 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TestEnviroment;
+using TickTrader.Algo.Calculator.Conversions;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
 {
-    public abstract class ConversionManagerBase
+    public abstract class ConversionManagerBase : AlgoMarketEmulator
     {
-        private static readonly SymbolInfoStorage _symbolStorage = SymbolInfoStorage.Instance;
-        private static readonly CurrencyInfoStorage _currencyStorage = CurrencyInfoStorage.Instance;
-
-        protected static AlgoMarketState _algoMarket;
         protected Func<double> _expected;
-
         protected string X, Y, Z, C;
 
-
-        internal delegate IConversionFormula BuildFormula(ISymbolInfo node, string d);
-
+        internal delegate IConversionFormula BuildFormula(ISymbolInfo node);
         internal BuildFormula _actualFormula;
 
 
-        private static Dictionary<string, SymbolInfo> Symbols => _symbolStorage.Symbols;
+        protected Dictionary<string, double> Bid => _symbolStorage.Bid;
 
-        protected static Dictionary<string, double> Bid => _symbolStorage.Bid; // change to _algoMarket.Bids
+        protected Dictionary<string, double> Ask => _symbolStorage.Ask;
 
-        protected static Dictionary<string, double> Ask => _symbolStorage.Ask; // change to _algoMarket.Ask
 
         public ConversionManagerBase()
         {
@@ -37,7 +29,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
         [TestInitialize]
         public void InitTestBaseState()
         {
-            _algoMarket = new AlgoMarketState();
+            CreateAlgoMarket();
 
             X = Y = C = Z = null;
             _expected = null;
@@ -46,11 +38,12 @@ namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
 
         protected void LoadSymbolsAndCheckConversionRate(params string[] load)
         {
-            _algoMarket.Init(load.Where(u => Symbols.ContainsKey(u)).Select(u => Symbols[u]), _currencyStorage.Currency?.Values);
+            _account.BalanceCurrencyName = Z;
+
+            InitAlgoMarket(load);
 
             var smbInfo = _algoMarket.Symbols.First(u => u.Name == X + Y);
-
-            var actual = _actualFormula(smbInfo, Z);
+            var actual = _actualFormula(smbInfo);
 
             Assert.AreEqual(actual.Value, _expected());
         }

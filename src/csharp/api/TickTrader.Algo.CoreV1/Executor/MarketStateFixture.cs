@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using TickTrader.Algo.Calculator;
+using TickTrader.Algo.Calculator.AlgoMarket;
 
 namespace TickTrader.Algo.CoreV1
 {
@@ -20,7 +20,7 @@ namespace TickTrader.Algo.CoreV1
         public void Init()
         {
             var builder = _context.Builder;
-            Market.Init(builder.Symbols.Values.Select(u => u.Info), builder.Currencies.Values.Select(u => u.Info));
+            Market.Init(builder.Account, builder.Symbols.Values.Select(u => u.Info), builder.Currencies.Values.Select(u => u.Info));
         }
     }
 }

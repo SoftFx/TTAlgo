@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using TickTrader.Algo.Calculator;
+using TickTrader.Algo.Calculator.AlgoMarket;
 using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Domain;
 
@@ -25,21 +25,22 @@ namespace TickTrader.Algo.Backtester
         /// <param name="acc"></param>
         public ActivationRecord AddOrder(OrderAccessor order, IRateInfo currentRate)
         {
-            var node = _state.GetSymbolNodeOrNull(order.Info.Symbol);
-            var index = node.ActivationIndex as ActivationRegistry;
-            if (index == null)
-                index = new ActivationRegistry();
+            //var node = _state.GetSymbolNodeOrNull(order.Info.Symbol);
+            //var index = node.ActivationIndex as ActivationRegistry;
+            //if (index == null)
+            var index = new ActivationRegistry();
+
             return index.AddOrder(order, currentRate);
         }
 
         public bool RemoveOrder(OrderAccessor order)
         {
-            var node = _state.GetSymbolNodeOrNull(order.Info.Symbol);
-            var index = node.ActivationIndex as ActivationRegistry;
-            if (index == null)
-                return false;
+            //var node = _state.GetSymbolNodeOrNull(order.Info.Symbol);
+            //var index = node.ActivationIndex as ActivationRegistry;
+            //if (index == null)
+            return false;
 
-            return index.RemoveOrder(order);
+            //return index.RemoveOrder(order);
         }
 
         //public void ResetOrderActivation(OrderAccessor order)
@@ -60,8 +61,8 @@ namespace TickTrader.Algo.Backtester
         public List<ActivationRecord> CheckPendingOrders(SymbolMarketNode node)
         {
             _result.Clear();
-            var index = node.ActivationIndex as ActivationRegistry;
-            index?.CheckPendingOrders((QuoteInfo)node.SymbolInfo.LastQuote, _result);
+            //var index = node.ActivationIndex as ActivationRegistry;
+            //index?.CheckPendingOrders((QuoteInfo)node.SymbolInfo.LastQuote, _result);
             return _result;
         }
     }

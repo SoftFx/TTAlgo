@@ -3,13 +3,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Calculator;
+using TickTrader.Algo.Calculator.AlgoMarket;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Account
 {
-    public class AccountModel : IOrderDependenciesResolver, IMarginAccountInfo2, ICashAccountInfo2
+    public class AccountModel : IMarginAccountInfo2, ICashAccountInfo2, IMarketStateAccountInfo
     {
         private IAlgoLogger _logger;
 
@@ -21,6 +22,7 @@ namespace TickTrader.Algo.Account
         private readonly IReadOnlyDictionary<string, SymbolInfo> _symbols;
         private bool _isCalcStarted;
         private OrderUpdateAction _updateWatingForPosition = null;
+        private IFeedSubscription _subscriptions;
 
         public AlgoMarketState Market { get; }
 
@@ -60,6 +62,7 @@ namespace TickTrader.Algo.Account
         public double Balance { get; private set; }
         public string BalanceCurrency { get; private set; }
         public int BalanceDigits { get; private set; }
+        public CurrencyInfo BalanceCurrencyInfo { get; private set; }
         public int Leverage { get; private set; }
 
         AccountInfo.Types.Type IAccountInfo2.Type => Type ?? AccountInfo.Types.Type.Gross;
@@ -69,6 +72,8 @@ namespace TickTrader.Algo.Account
         IEnumerable<IAssetInfo> ICashAccountInfo2.Assets => Assets.Snapshot.Values;
 
         IEnumerable<IPositionInfo> IMarginAccountInfo2.Positions => Positions.Snapshot.Values;
+
+        CurrencyInfo IMarketStateAccountInfo.BalanceCurrency => BalanceCurrencyInfo;
 
         public event Action<OrderUpdateInfo> OrderUpdate;
         public event Action<PositionInfo, Domain.OrderExecReport.Types.ExecAction> PositionUpdate;
@@ -96,8 +101,8 @@ namespace TickTrader.Algo.Account
 
         internal void StartCalculator(IMarketDataProvider marketData)
         {
-            Market.Init(marketData.Symbols.Snapshot.Values, marketData.Currencies.Snapshot.Values);
-            Market.Subscriptions = marketData.Distributor.AddSubscription((rate) => Market.UpdateRate(rate, out _), marketData.Symbols.Snapshot.Keys);
+            Market.Init(this, marketData.Symbols.Snapshot.Values, marketData.Currencies.Snapshot.Values);
+            _subscriptions = marketData.Distributor.AddSubscription((rate) => Market.GetUpdateNode(rate), marketData.Symbols.Snapshot.Keys);
 
 
             if (!_isCalcStarted)
@@ -111,7 +116,7 @@ namespace TickTrader.Algo.Account
                         break;
                     case AccountInfo.Types.Type.Net:
                     case AccountInfo.Types.Type.Gross:
-                        MarginCalculator = new MarginAccountCalculator(this, Market, _logger.Error, true);
+                        MarginCalculator = new MarginAccountCalculator(this, Market, _logger.Error);
                         break;
 
                     default:
@@ -135,6 +140,7 @@ namespace TickTrader.Algo.Account
             BalanceCurrency = accInfo.BalanceCurrency;
             Leverage = accInfo.Leverage;
             BalanceDigits = balanceCurrencyInfo?.Digits ?? 2;
+            BalanceCurrencyInfo = balanceCurrencyInfo;
 
             foreach (var fdkPosition in positions)
             {
@@ -193,7 +199,7 @@ namespace TickTrader.Algo.Account
                 _isCalcStarted = false;
             }
 
-            Market?.Subscriptions?.CancelAll();
+            _subscriptions?.CancelAll();
             _orders.Updated -= OrdersUpdated;
         }
 
@@ -589,10 +595,7 @@ namespace TickTrader.Algo.Account
 
         #endregion
 
-        SymbolInfo IOrderDependenciesResolver.GetSymbolOrNull(string name)
-        {
-            return _symbols.GetOrDefault(name);
-        }
+        public SymbolInfo GetSymbolOrNull(string name) => _symbols.GetOrDefault(name);
 
         public EntityCacheUpdate GetSnapshotUpdate()
         {
@@ -740,10 +743,5 @@ namespace TickTrader.Algo.Account
         public Domain.OrderExecReport.Types.EntityAction EntityAction { get; }
         public OrderInfo Order { get; }
         public Domain.PositionInfo Position { get; }
-    }
-
-    public interface IOrderDependenciesResolver
-    {
-        SymbolInfo GetSymbolOrNull(string name);
     }
 }

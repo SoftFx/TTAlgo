@@ -7,7 +7,8 @@ namespace TickTrader.BotTerminal
     {
         private readonly PositionInfo _position;
 
-        public PositionViewModel(PositionInfo position, AccountModel account) : base((account as IOrderDependenciesResolver).GetSymbolOrNull(position.Symbol), account.BalanceDigits)
+
+        public PositionViewModel(PositionInfo position, AccountModel account) : base(account.GetSymbolOrNull(position.Symbol), account.BalanceDigits)
         {
             _position = position;
 
@@ -15,7 +16,9 @@ namespace TickTrader.BotTerminal
         }
 
         public override string Id => _position.Id;
-        public override double Profit => _position?.Calculator?.CalculateProfit(_position) ?? 0;
+
+        public override double Profit => /*_position?.Calculator?.CalculateProfit(_position) ??*/ 0;
+
 
         protected override void Update()
         {
@@ -25,7 +28,7 @@ namespace TickTrader.BotTerminal
             Volume.Value = _position.Volume;
 
             Side.Value = _position.Side;
-            Type.Value = Algo.Domain.OrderInfo.Types.Type.Position;
+            Type.Value = OrderInfo.Types.Type.Position;
 
             Swap.Value = _position.Swap;
             Commission.Value = _position.Commission;

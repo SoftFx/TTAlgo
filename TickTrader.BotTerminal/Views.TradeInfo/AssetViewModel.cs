@@ -8,14 +8,14 @@ namespace TickTrader.BotTerminal
     {
         private readonly VarContext _varContext = new VarContext();
 
-        private readonly PricePrecisionConverter<decimal> _currencyConverter;
+        private readonly PricePrecisionConverter<double> _currencyConverter;
         private readonly IAssetInfo _asset;
 
         public AssetViewModel(AssetInfo asset, CurrencyInfo info)
         {
             _asset = asset;
 
-            _currencyConverter = new PricePrecisionConverter<decimal>(info?.Digits ?? 2);
+            _currencyConverter = new PricePrecisionConverter<double>(info?.Digits ?? 2);
 
             _asset.MarginUpdate += Update;
 
@@ -28,9 +28,9 @@ namespace TickTrader.BotTerminal
         }
 
         public Property<string> Currency { get; }
-        public Property<decimal> Amount { get; }
-        public Property<decimal> Margin { get; }
-        public Property<decimal> FreeAmount { get; }
+        public Property<double> Amount { get; }
+        public Property<double> Margin { get; }
+        public Property<double> FreeAmount { get; }
 
         private void Update()
         {

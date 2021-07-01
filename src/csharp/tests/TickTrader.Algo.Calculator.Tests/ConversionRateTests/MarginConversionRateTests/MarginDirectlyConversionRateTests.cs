@@ -15,7 +15,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
             Y = "USD";
 
             _expected = () => 1.0;
-            _actualFormula = _algoMarket.Conversion.GetMarginFormula;
+            _actualFormula = _conversion.GetMarginFormula;
 
             LoadSymbolsAndCheckConversionRate(X + Y);
         }
@@ -28,7 +28,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
             Y = Z = "USD";
 
             _expected = () => Ask[X + Y];
-            _actualFormula = _algoMarket.Conversion.GetMarginFormula;
+            _actualFormula = _conversion.GetMarginFormula;
 
             LoadSymbolsAndCheckConversionRate(X + Y);
         }
@@ -42,7 +42,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
             Z = "AUD";
 
             _expected = () => Ask[X + Z];
-            _actualFormula = _algoMarket.Conversion.GetMarginFormula;
+            _actualFormula = _conversion.GetMarginFormula;
 
             LoadSymbolsAndCheckConversionRate(X + Y, X + Z);
         }
@@ -56,7 +56,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
             Z = "EUR";
 
             _expected = () => 1.0 / Bid[Z + X];
-            _actualFormula = _algoMarket.Conversion.GetMarginFormula;
+            _actualFormula = _conversion.GetMarginFormula;
 
             LoadSymbolsAndCheckConversionRate(X + Y, Z + X);
         }
@@ -70,7 +70,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
             Z = "CAD";
 
             _expected = () => Ask[X + Y] * Ask[Y + Z];
-            _actualFormula = _algoMarket.Conversion.GetMarginFormula;
+            _actualFormula = _conversion.GetMarginFormula;
 
             LoadSymbolsAndCheckConversionRate(X + Y, Y + Z);
         }
@@ -84,7 +84,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
             Z = "AUD";
 
             _expected = () => Ask[X + Y] / Bid[Z + Y];
-            _actualFormula = _algoMarket.Conversion.GetMarginFormula;
+            _actualFormula = _conversion.GetMarginFormula;
 
             LoadSymbolsAndCheckConversionRate(X + Y, Z + Y);
         }

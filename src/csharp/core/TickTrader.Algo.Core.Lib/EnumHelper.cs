@@ -10,6 +10,5 @@ namespace TickTrader.Algo.Core.Lib
         {
             return Enum.GetValues(typeof(TEnum)).Cast<TEnum>();
         }
-
     }
 }

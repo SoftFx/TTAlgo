@@ -3,6 +3,7 @@ using System;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Domain.CalculatorInterfaces;
 
 namespace TickTrader.Algo.CoreV1
 {
@@ -76,9 +77,9 @@ namespace TickTrader.Algo.CoreV1
 
         double Order.LastFillVolume => Info.LastFillAmount / LotSize ?? double.NaN;
 
-        double Order.Margin => Info.Calculator?.CalculateMargin(Info) ?? double.NaN;
+        double Order.Margin => /*Info.Calculator?.CalculateMargin(Info) ?? */ double.NaN;
 
-        double Order.Profit => Info.Calculator?.CalculateProfit(Info) ?? double.NaN;
+        double Order.Profit => /*Info.Calculator?.CalculateProfit(Info) ??*/ double.NaN;
 
         Api.OrderOptions Order.Options => Info.Options.ToApiEnum();
 
@@ -97,8 +98,8 @@ namespace TickTrader.Algo.CoreV1
         internal sealed class WriteEntity : Order, IOrderCalcInfo
         {
             public event Action<OrderEssentialsChangeArgs> EssentialsChanged;
-            public event Action<OrderPropArgs<decimal>> SwapChanged;
-            public event Action<OrderPropArgs<decimal>> CommissionChanged;
+            public event Action<OrderPropArgs<double>> SwapChanged;
+            public event Action<OrderPropArgs<double>> CommissionChanged;
 
             public WriteEntity(SymbolInfo info)
             {
@@ -134,8 +135,8 @@ namespace TickTrader.Algo.CoreV1
                     LastFillPrice = LastFillPrice,
                     LastFillAmount = (double)LastFillAmount,
                     Options = Options,
-                    Swap = (double)(Swap ?? 0),
-                    Commission = (double)(Commission ?? 0),
+                    Swap = Swap,
+                    Commission = Commission,
                     InitialType = InitialType,
                 };
             }
@@ -146,9 +147,9 @@ namespace TickTrader.Algo.CoreV1
 
             public string Symbol { get; internal set; }
 
-            public decimal RequestedAmount { get; internal set; }
-            public decimal RemainingAmount { get; internal set; }
-            public decimal? MaxVisibleAmount { get; internal set; }
+            public double RequestedAmount { get; internal set; }
+            public double RemainingAmount { get; internal set; }
+            public double? MaxVisibleAmount { get; internal set; }
 
             public OrderInfo.Types.Type Type { get; internal set; }
             public OrderInfo.Types.Side Side { get; internal set; }
@@ -172,21 +173,21 @@ namespace TickTrader.Algo.CoreV1
             public DateTime? Created { get; internal set; }
 
             public double? ExecPrice { get; internal set; }
-            public decimal ExecAmount { get; internal set; }
+            public double ExecAmount { get; internal set; }
             public double? LastFillPrice { get; internal set; }
-            public decimal LastFillAmount { get; internal set; }
+            public double LastFillAmount { get; internal set; }
 
             public Domain.OrderOptions Options { get; internal set; }
 
-            public double Margin => Calculator?.CalculateMargin(this) ?? double.NaN;
-            public double Profit => Calculator?.CalculateProfit(this) ?? double.NaN;
+            public double Margin => /*Calculator?.CalculateMargin(this) ??*/ double.NaN;
+            public double Profit => /*Calculator?.CalculateProfit(this) ??*/ double.NaN;
 
-            public decimal? Swap { get; internal set; }
-            public decimal? Commission { get; internal set; }
+            public double Swap { get; internal set; }
+            public double Commission { get; internal set; }
 
             public bool IsPending => Type == OrderInfo.Types.Type.Limit || Type == OrderInfo.Types.Type.StopLimit || Type == OrderInfo.Types.Type.Stop;
 
-            public bool IsHidden => MaxVisibleAmount.HasValue && MaxVisibleAmount.Value < 1e-9M;
+            public bool IsHidden => MaxVisibleAmount.HasValue && MaxVisibleAmount.Value < 1e-9;
 
             public OrderInfo.Types.Type InitialType { get; internal set; }
             public short ActionNo { get; internal set; }
@@ -225,35 +226,35 @@ namespace TickTrader.Algo.CoreV1
 
             Api.OrderOptions Order.Options => Options.ToApiEnum();
 
-            public IOrderCalculator Calculator { get; set; }
+            public ISymbolCalculator Calculator { get; set; }
 
-            public decimal CashMargin { get; set; }
+            public double CashMargin { get; set; }
 
             public SymbolInfo SymbolInfo { get; }
             #endregion
 
-            internal void SetSwap(decimal swap)
+            internal void SetSwap(double swap)
             {
-                var oldSwap = Swap ?? 0;
+                var oldSwap = Swap;
                 Swap = swap;
-                SwapChanged?.Invoke(new OrderPropArgs<decimal>(this, oldSwap, swap));
+                SwapChanged?.Invoke(new OrderPropArgs<double>(this, oldSwap, swap));
             }
 
-            internal void ChangeCommission(decimal newCommision)
+            internal void ChangeCommission(double newCommision)
             {
-                var oldCom = Commission ?? 0;
+                var oldCom = Commission;
                 Commission = newCommision;
-                CommissionChanged?.Invoke(new OrderPropArgs<decimal>(this, oldCom, newCommision));
+                CommissionChanged?.Invoke(new OrderPropArgs<double>(this, oldCom, newCommision));
             }
 
-            internal void ChangeRemAmount(decimal newAmount)
+            internal void ChangeRemAmount(double newAmount)
             {
                 var oldAmount = RemainingAmount;
                 RemainingAmount = newAmount;
                 EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldAmount, Price, StopPrice, Type, false));
             }
 
-            internal void ChangeEssentials(OrderInfo.Types.Type newType, decimal newAmount, double? newPrice, double? newStopPirce)
+            internal void ChangeEssentials(OrderInfo.Types.Type newType, double newAmount, double? newPrice, double? newStopPirce)
             {
                 var oldPrice = Price;
                 var oldType = Type;

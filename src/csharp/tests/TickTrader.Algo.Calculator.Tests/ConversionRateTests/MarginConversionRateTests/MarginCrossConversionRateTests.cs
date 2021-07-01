@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
             C = "USD";
 
             _expected = () => Ask[X + C] / Bid[Z + C];
-            _actualFormula = _algoMarket.Conversion.GetMarginFormula;
+            _actualFormula = _conversion.GetMarginFormula;
 
             LoadSymbolsAndCheckConversionRate(X + Y, X + C, Z + C);
         }
@@ -32,7 +32,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
             C = "AUD";
 
             _expected = () => 1.0 / Bid[C + X] / Bid[Z + C];
-            _actualFormula = _algoMarket.Conversion.GetMarginFormula;
+            _actualFormula = _conversion.GetMarginFormula;
 
             LoadSymbolsAndCheckConversionRate(X + Y, C + X, Z + C);
         }
@@ -47,7 +47,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
             C = "AUD";
 
             _expected = () => Ask[X + C] * Ask[C + Z];
-            _actualFormula = _algoMarket.Conversion.GetMarginFormula;
+            _actualFormula = _conversion.GetMarginFormula;
 
             LoadSymbolsAndCheckConversionRate(X + Y, X + C, C + Z);
         }
@@ -62,7 +62,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
             C = "EUR";
 
             _expected = () => 1.0 / Bid[C + X] * Ask[C + Z];
-            _actualFormula = _algoMarket.Conversion.GetMarginFormula;
+            _actualFormula = _conversion.GetMarginFormula;
 
             LoadSymbolsAndCheckConversionRate(X + Y, C + X, C + Z);
         }
@@ -77,7 +77,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
             C = "USD";
 
             _expected = () => Ask[Y + C] / Bid[Z + C] * Ask[X + Y];
-            _actualFormula = _algoMarket.Conversion.GetMarginFormula;
+            _actualFormula = _conversion.GetMarginFormula;
 
             LoadSymbolsAndCheckConversionRate(X + Y, Y + C, Z + C);
         }
@@ -92,7 +92,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
             C = "AUD";
 
             _expected = () => 1.0 / Bid[C + Y] / Bid[Z + C] * Ask[X + Y];
-            _actualFormula = _algoMarket.Conversion.GetMarginFormula;
+            _actualFormula = _conversion.GetMarginFormula;
 
             LoadSymbolsAndCheckConversionRate(X + Y, C + Y, Z + C);
         }
@@ -107,7 +107,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
             C = "USD";
 
             _expected = () => Ask[Y + C] * Ask[C + Z] * Ask[X + Y];
-            _actualFormula = _algoMarket.Conversion.GetMarginFormula;
+            _actualFormula = _conversion.GetMarginFormula;
 
             LoadSymbolsAndCheckConversionRate(X + Y, Y + C, C + Z);
         }
@@ -122,7 +122,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
             C = "AUD";
 
             _expected = () => 1.0 / Bid[C + Y] * Ask[C + Z] * Ask[X + Y];
-            _actualFormula = _algoMarket.Conversion.GetMarginFormula;
+            _actualFormula = _conversion.GetMarginFormula;
 
             LoadSymbolsAndCheckConversionRate(X + Y, C + Y, C + Z);
         }

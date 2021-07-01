@@ -1,7 +1,7 @@
 ﻿using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using System;
-using TickTrader.Algo.Calculator;
+using TickTrader.Algo.Calculator.AlgoMarket;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 

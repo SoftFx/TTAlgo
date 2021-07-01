@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using TickTrader.Algo.Calculator.AlgoMarket;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
@@ -10,34 +11,18 @@ namespace TickTrader.Algo.Calculator
     {
         private readonly ICashAccountInfo2 account;
         private readonly Dictionary<string, IAssetInfo> assets = new Dictionary<string, IAssetInfo>();
-        private MarketStateBase market;
         private Action<Exception, string> _onLogError;
 
-        public MarketStateBase Market
-        {
-            get { return market; }
-            set
-            {
-                if (value == null)
-                    throw new ArgumentNullException(nameof(value), @"Market property cannot be null.");
-
-                if (ReferenceEquals(market, value))
-                    return;
-
-                market = value;
-            }
-        }
-
-        public CashAccountCalculator(ICashAccountInfo2 infoProvider, MarketStateBase market, Action<Exception, string> onLogError)
+        public CashAccountCalculator(ICashAccountInfo2 infoProvider, AlgoMarketState market, Action<Exception, string> onLogError)
         {
             if (infoProvider == null)
                 throw new ArgumentNullException("infoProvider");
 
-            if (market == null)
-                throw new ArgumentNullException("market");
+            //if (market == null)
+            //    throw new ArgumentNullException("market");
 
             this.account = infoProvider;
-            this.market = market;
+            //this.market = market;
             _onLogError = onLogError;
 
             if (this.account.Assets != null)
@@ -56,7 +41,7 @@ namespace TickTrader.Algo.Calculator
         //    return HasSufficientMarginToOpenOrder(order.Type, order.Side, symbol, marginMovement);
         //}
 
-        public bool HasSufficientMarginToOpenOrder(OrderInfo.Types.Type type, OrderInfo.Types.Side side, ISymbolInfo symbol, decimal? marginMovement)
+        public bool HasSufficientMarginToOpenOrder(OrderInfo.Types.Type type, OrderInfo.Types.Side side, ISymbolInfo symbol, double? marginMovement)
         {
             //if (order == null)
             //    throw new ArgumentNullException("order");
@@ -92,29 +77,29 @@ namespace TickTrader.Algo.Calculator
             return true;
         }
 
-        public static decimal CalculateMarginFactor(OrderInfo.Types.Type type, ISymbolInfo symbol, bool isHidden)
+        public static double CalculateMarginFactor(OrderInfo.Types.Type type, ISymbolInfo symbol, bool isHidden)
         {
-            decimal combinedMarginFactor = 1.0M;
+            double combinedMarginFactor = 1.0;
             if (type == OrderInfo.Types.Type.Stop || type == OrderInfo.Types.Type.StopLimit)
-                combinedMarginFactor *= (decimal)symbol.StopOrderMarginReduction;
+                combinedMarginFactor *= symbol.StopOrderMarginReduction;
             else if (type == OrderInfo.Types.Type.Limit && isHidden)
-                combinedMarginFactor *= (decimal)symbol.HiddenLimitOrderMarginReduction;
+                combinedMarginFactor *= symbol.HiddenLimitOrderMarginReduction;
             return combinedMarginFactor;
         }
 
-        public static decimal CalculateMargin(IOrderCalcInfo order, ISymbolInfo symbol)
+        public static double CalculateMargin(IOrderCalcInfo order, ISymbolInfo symbol)
         {
             return CalculateMargin(order.Type, order.RemainingAmount, order.Price, order.StopPrice, order.Side, symbol, order.IsHidden);
         }
 
-        public static decimal CalculateMargin(OrderInfo.Types.Type type, decimal amount, double? orderPrice, double? orderStopPrice, OrderInfo.Types.Side side, ISymbolInfo symbol, bool isHidden)
+        public static double CalculateMargin(OrderInfo.Types.Type type, double amount, double? orderPrice, double? orderStopPrice, OrderInfo.Types.Side side, ISymbolInfo symbol, bool isHidden)
         {
-            decimal combinedMarginFactor = CalculateMarginFactor(type, symbol, isHidden);
+            double combinedMarginFactor = CalculateMarginFactor(type, symbol, isHidden);
 
             double price = ((type == OrderInfo.Types.Type.Stop) || (type == OrderInfo.Types.Type.StopLimit)) ? orderStopPrice.Value : orderPrice.Value;
 
             if (side == OrderInfo.Types.Side.Buy)
-                return combinedMarginFactor * amount * (decimal)price;
+                return combinedMarginFactor * amount * price;
             else
                 return combinedMarginFactor * amount;
         }

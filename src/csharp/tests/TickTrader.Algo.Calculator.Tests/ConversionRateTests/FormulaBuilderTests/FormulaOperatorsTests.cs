@@ -1,6 +1,9 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TestEnviroment;
-using TickTrader.Algo.Calculator.Operators;
+using TickTrader.Algo.Calculator.AlgoMarket;
+using TickTrader.Algo.Calculator.Conversions;
+using TickTrader.Algo.Calculator.TradeSpeсificsCalculators;
+using TickTrader.Algo.Domain.CalculatorInterfaces;
 
 namespace TickTrader.Algo.Calculator.Tests.FormulaBuilderTests
 {
@@ -11,8 +14,10 @@ namespace TickTrader.Algo.Calculator.Tests.FormulaBuilderTests
 
         private ISideNode _node;
 
-        [ClassInitialize]
-        public static void Init(TestContext _) => LoadSymbol();
+        public FormulaOperatorsTests() : base()
+        {
+            LoadSymbol();
+        }
 
         [TestInitialize]
         public void InitTestState()
@@ -29,7 +34,7 @@ namespace TickTrader.Algo.Calculator.Tests.FormulaBuilderTests
             var actual = inv.Calculate(TestValue);
             var expected = Inverse(TestValue);
 
-            Assert.AreEqual(actual, expected);
+            TestSuccessful(actual, expected);
         }
 
         [TestMethod]
@@ -37,7 +42,7 @@ namespace TickTrader.Algo.Calculator.Tests.FormulaBuilderTests
         {
             var inv = new InvOperator();
 
-            WaitingForZero(inv.Calculate(0.0));
+            TestSuccessfulWithZero(inv.Calculate(0.0));
         }
 
         [TestMethod]
@@ -48,7 +53,7 @@ namespace TickTrader.Algo.Calculator.Tests.FormulaBuilderTests
             var actual = mul.Calculate(TestValue);
             var expected = Mul(TestValue, _node.Value);
 
-            Assert.AreEqual(actual, expected);
+            TestSuccessful(actual, expected);
         }
 
         [TestMethod]
@@ -56,7 +61,7 @@ namespace TickTrader.Algo.Calculator.Tests.FormulaBuilderTests
         {
             var mul = new MulOperator(_node);
 
-            WaitingForZero(mul.Calculate(0.0));
+            TestSuccessfulWithZero(mul.Calculate(0.0));
         }
 
         [TestMethod]
@@ -64,7 +69,7 @@ namespace TickTrader.Algo.Calculator.Tests.FormulaBuilderTests
         {
             var mul = new MulOperator(null);
 
-            WaitingForZero(mul.Calculate(TestValue));
+            TestFailedCrossSymbolNotFound(mul.Calculate(TestValue));
         }
 
         [TestMethod]
@@ -74,7 +79,7 @@ namespace TickTrader.Algo.Calculator.Tests.FormulaBuilderTests
 
             var mul = new MulOperator(_node);
 
-            WaitingForZero(mul.Calculate(TestValue));
+            TestSuccessfulWithZero(mul.Calculate(TestValue));
         }
 
         [TestMethod]
@@ -84,7 +89,7 @@ namespace TickTrader.Algo.Calculator.Tests.FormulaBuilderTests
 
             var mul = new MulOperator(_node);
 
-            WaitingForZero(mul.Calculate(TestValue));
+            TestFailedOffCrossQuotes(mul.Calculate(TestValue));
         }
 
         [TestMethod]
@@ -95,7 +100,7 @@ namespace TickTrader.Algo.Calculator.Tests.FormulaBuilderTests
             var actual = div.Calculate(TestValue);
             var expected = Div(TestValue, _node.Value);
 
-            Assert.AreEqual(actual, expected);
+            TestSuccessful(actual, expected);
         }
 
         [TestMethod]
@@ -103,7 +108,7 @@ namespace TickTrader.Algo.Calculator.Tests.FormulaBuilderTests
         {
             var div = new DivOperator(_node);
 
-            WaitingForZero(div.Calculate(0.0));
+            TestSuccessfulWithZero(div.Calculate(0.0));
         }
 
         [TestMethod]
@@ -111,17 +116,17 @@ namespace TickTrader.Algo.Calculator.Tests.FormulaBuilderTests
         {
             var div = new DivOperator(null);
 
-            WaitingForZero(div.Calculate(TestValue));
+            TestFailedCrossSymbolNotFound(div.Calculate(TestValue));
         }
 
         [TestMethod]
         public void Div_With_Zero_Base()
         {
-            ResetSymbolRate();
+            _symbol.BuildZeroQuote();
 
             var div = new DivOperator(_node);
 
-            WaitingForZero(div.Calculate(TestValue));
+            TestSuccessfulWithZero(div.Calculate(TestValue));
         }
 
         [TestMethod]
@@ -131,10 +136,38 @@ namespace TickTrader.Algo.Calculator.Tests.FormulaBuilderTests
 
             var div = new DivOperator(_node);
 
-            WaitingForZero(div.Calculate(TestValue));
+            TestFailedOffCrossQuotes(div.Calculate(TestValue));
         }
 
-        protected static void WaitingForZero(double actual) => Assert.AreEqual(actual, 0.0);
+
+        protected static void TestSuccessful(CalculateResponse response, double expected)
+        {
+            Assert.IsTrue(response);
+            Assert.AreEqual(CalculationError.None, response.Error);
+            Assert.AreEqual(expected, response.Value);
+        }
+
+        protected static void TestSuccessfulWithZero(CalculateResponse response)
+        {
+            Assert.IsTrue(response);
+            Assert.AreEqual(CalculationError.None, response.Error);
+            Assert.AreEqual(0.0, response.Value);
+        }
+
+        protected static void TestFailedCrossSymbolNotFound(CalculateResponse response)
+        {
+            Assert.IsFalse(response);
+            Assert.AreEqual(CalculationError.NoCrossSymbol, response.Error);
+            Assert.AreEqual(0.0, response.Value);
+        }
+
+        protected static void TestFailedOffCrossQuotes(CalculateResponse response)
+        {
+            Assert.IsFalse(response);
+            Assert.AreEqual(CalculationError.OffCrossQuote, response.Error);
+            Assert.AreEqual(0.0, response.Value);
+        }
+
 
         protected static double Inverse(double val) => 1.0 / val;
 

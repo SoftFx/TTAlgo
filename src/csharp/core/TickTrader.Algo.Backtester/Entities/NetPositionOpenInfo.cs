@@ -11,8 +11,8 @@ namespace TickTrader.Algo.Backtester
 
     internal class NetPositionCloseInfo
     {
-        public decimal CloseAmount { get; set; }
-        public decimal ClosePrice { get; set; }
-        public decimal BalanceMovement { get; set; }
+        public double CloseAmount { get; set; }
+        public double ClosePrice { get; set; }
+        public double BalanceMovement { get; set; }
     }
 }

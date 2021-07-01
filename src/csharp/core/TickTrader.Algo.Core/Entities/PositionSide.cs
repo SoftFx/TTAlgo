@@ -4,19 +4,19 @@ namespace TickTrader.Algo.Core
 {
     public class PositionSide : IPositionSide
     {
-        private decimal margin;
-        private decimal profit;
+        private double margin;
+        private double profit;
 
-        public decimal Amount { get; set; }
-        public decimal Price { get; set; }
+        public double Amount { get; set; }
+        public double Price { get; set; }
 
         public PositionSide(double amount, double price)
         {
-            Amount = (decimal)amount;
-            Price = (decimal)price;
+            Amount = amount;
+            Price = price;
         }
 
-        public decimal Margin
+        public double Margin
         {
             get { return margin; }
             set
@@ -29,7 +29,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public decimal Profit
+        public double Profit
         {
             get { return profit; }
             set

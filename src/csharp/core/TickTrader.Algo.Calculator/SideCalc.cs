@@ -1,5 +1,6 @@
 ﻿using System;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Domain.CalculatorInterfaces;
 
 namespace TickTrader.Algo.Calculator
 {
@@ -12,8 +13,8 @@ namespace TickTrader.Algo.Calculator
         private readonly OrderNetting _stopOrders;
         private readonly OrderNetting _hiddendOrders;
         //private readonly OrderNetting _marketOrders;
-        private decimal _netPosAmount;
-        private decimal _netPosPrice;
+        private double _netPosAmount;
+        private double _netPosPrice;
         //private readonly OrderNetting _hiddenLimitOrders;
         //private readonly SymbolNetting parent;
 
@@ -22,10 +23,10 @@ namespace TickTrader.Algo.Calculator
         public SideCalc(SymbolCalc parent, OrderInfo.Types.Side side)
         {
             _parent = parent;
-            _positions = new OrderNetting(parent.AccInfo, OrderInfo.Types.Type.Position, side, false);
-            _limitOrders = new OrderNetting(parent.AccInfo, OrderInfo.Types.Type.Limit, side, false);
-            _stopOrders = new OrderNetting(parent.AccInfo, OrderInfo.Types.Type.Stop, side, false);
-            _hiddendOrders = new OrderNetting(parent.AccInfo, OrderInfo.Types.Type.Limit, side, true);
+            _positions = new OrderNetting(/*parent.AccInfo, */OrderInfo.Types.Type.Position, side, false);
+            _limitOrders = new OrderNetting(/*parent.AccInfo, */OrderInfo.Types.Type.Limit, side, false);
+            _stopOrders = new OrderNetting(/*parent.AccInfo, */OrderInfo.Types.Type.Stop, side, false);
+            _hiddendOrders = new OrderNetting(/*parent.AccInfo, */OrderInfo.Types.Type.Limit, side, true);
 
             _positions.AmountChanged += OnAmountChanged;
             _limitOrders.AmountChanged += OnAmountChanged;
@@ -35,7 +36,7 @@ namespace TickTrader.Algo.Calculator
 
         public bool IsEmpty => TotalAmount <= 0;
         public double Margin { get; private set; }
-        public decimal TotalAmount { get; private set; }
+        public double TotalAmount { get; private set; }
 
         public StatsChange Recalculate()
         {
@@ -90,8 +91,8 @@ namespace TickTrader.Algo.Calculator
         {
             _positions.RemovePositionWithoutCalculation(_netPosAmount, _netPosPrice);
 
-            _netPosAmount = pos.Amount;
-            _netPosPrice = pos.Price;
+            _netPosAmount = (double)pos.Amount;
+            _netPosPrice = (double)pos.Price;
 
             if (type == PositionChangeTypes.AddedModified)
                 _positions.AddPositionWithoutCalculation(_netPosAmount, _netPosPrice);
@@ -100,7 +101,7 @@ namespace TickTrader.Algo.Calculator
             UpdateStats(change);
         }
 
-        public void SetCalculators(OrderCalculator calc)
+        public void SetCalculators(ISymbolCalculator calc)
         {
             SetCalculator(_positions, calc);
             SetCalculator(_limitOrders, calc);
@@ -108,7 +109,7 @@ namespace TickTrader.Algo.Calculator
             SetCalculator(_hiddendOrders, calc);
         }
 
-        private static void SetCalculator(OrderNetting nett, OrderCalculator calc)
+        private static void SetCalculator(OrderNetting nett, ISymbolCalculator calc)
         {
             nett.Calculator = calc;
         }
@@ -155,7 +156,7 @@ namespace TickTrader.Algo.Calculator
             _parent.OnStatsChange(change);
         }
 
-        private void OnAmountChanged(decimal delta)
+        private void OnAmountChanged(double delta)
         {
             TotalAmount += delta;
         }

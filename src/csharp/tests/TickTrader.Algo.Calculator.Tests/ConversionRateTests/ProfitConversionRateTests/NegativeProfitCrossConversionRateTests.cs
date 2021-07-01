@@ -15,7 +15,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
         [CrossProfitCurrencyCategory]
         public void YC_ZC()
         {
-            _actualFormula = _algoMarket.Conversion.GetNegativeProfitFormula;
+            _actualFormula = _conversion.GetNegativeProfitFormula;
 
             Run_YC_ZC_test();
         }
@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
         [CrossProfitCurrencyCategory]
         public void CY_ZC()
         {
-            _actualFormula = _algoMarket.Conversion.GetNegativeProfitFormula;
+            _actualFormula = _conversion.GetNegativeProfitFormula;
 
             Run_CY_ZC_test();
         }
@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
         [CrossProfitCurrencyCategory]
         public void YC_CZ()
         {
-            _actualFormula = _algoMarket.Conversion.GetNegativeProfitFormula;
+            _actualFormula = _conversion.GetNegativeProfitFormula;
 
             Run_YC_CZ_test();
         }
@@ -42,7 +42,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
         [CrossProfitCurrencyCategory]
         public void CY_CZ()
         {
-            _actualFormula = _algoMarket.Conversion.GetNegativeProfitFormula;
+            _actualFormula = _conversion.GetNegativeProfitFormula;
 
             Run_CY_CZ_test();
         }

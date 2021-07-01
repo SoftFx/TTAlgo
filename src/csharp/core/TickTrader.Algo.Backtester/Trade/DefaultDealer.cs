@@ -21,13 +21,13 @@ namespace TickTrader.Algo.Backtester
                 // IOC
                 if (order.Side == OrderSide.Buy && quote.HasAsk && (quote.Ask <= order.Price))
                 {
-                    request.Confirm((decimal)order.RequestedVolume, quote.Ask);
+                    request.Confirm(order.RequestedVolume, quote.Ask);
                     return;
                 }
 
                 if (order.Side == OrderSide.Sell && quote.HasBid && (quote.Bid >= order.Price))
                 {
-                    request.Confirm((decimal)order.RequestedVolume, quote.Bid);
+                    request.Confirm(order.RequestedVolume, quote.Bid);
                     return;
                 }
 

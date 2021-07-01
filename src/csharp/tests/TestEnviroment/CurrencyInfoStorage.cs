@@ -6,14 +6,12 @@ namespace TestEnviroment
 {
     public sealed class CurrencyInfoStorage
     {
-        private readonly List<string> _currencyNames = new() { "EUR", "CAD", "USD", "AUD" };
-
-        public static CurrencyInfoStorage Instance { get; } = new CurrencyInfoStorage();
+        private readonly List<string> _currencyNames = new() { "EUR", "CAD", "USD", "AUD", "JPY", "BTC" };
 
 
-        public readonly Dictionary<string, CurrencyInfo> Currency;
+        public Dictionary<string, CurrencyInfo> Currency { get; }
 
-        private CurrencyInfoStorage()
+        public CurrencyInfoStorage()
         {
             Currency = _currencyNames.ToDictionary(k => k, v => CurrencyFactory.BuildCurrency(v));
         }

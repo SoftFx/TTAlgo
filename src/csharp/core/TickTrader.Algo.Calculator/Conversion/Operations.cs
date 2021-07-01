@@ -1,36 +1,61 @@
-﻿using TickTrader.Algo.Core.Lib.Math;
+﻿using TickTrader.Algo.Calculator.AlgoMarket;
+using TickTrader.Algo.Calculator.TradeSpeсificsCalculators;
+using TickTrader.Algo.Core.Lib.Math;
+using TickTrader.Algo.Domain.CalculatorInterfaces;
 
-namespace TickTrader.Algo.Calculator.Operators
+namespace TickTrader.Algo.Calculator.Conversions
 {
     internal interface IOperation
     {
         ISideNode Operand { get; }
 
-        double Calculate(double value);
+        CalculateResponse Calculate(double value);
     }
 
-    internal sealed class InvOperator : IOperation
+
+    internal abstract class BaseOperator
     {
         public ISideNode Operand { get; }
 
-        public double Calculate(double value) => value.E(0.0) ? 0.0 : 1.0 / value;
+
+        protected BaseOperator() { }
+
+        internal BaseOperator(ISideNode operand) => Operand = operand;
+
+
+        protected virtual CalculateResponse Calculate(double? value)
+        {
+            if (Operand == null || Operand.Error == CalculationError.SymbolNotFound)
+                return CalculateResponse.NoCrossSymbol;
+
+            if (!Operand.HasValue)
+                return CalculateResponse.OffCrossQuotes;
+
+            return new CalculateResponse(value.Filtration());
+        }
     }
 
-    internal sealed class MulOperator : IOperation
+
+    internal sealed class InvOperator : BaseOperator, IOperation
     {
-        public ISideNode Operand { get; }
-
-        internal MulOperator(ISideNode operand) => Operand = operand;
-
-        public double Calculate(double value) => (value * Operand?.Value).Filtration();
+        public CalculateResponse Calculate(double value) => new CalculateResponse(value.E(0.0) ? 0.0 : 1.0 / value);
     }
 
-    internal sealed class DivOperator : IOperation
+
+    internal sealed class MulOperator : BaseOperator, IOperation
     {
-        public ISideNode Operand { get; }
+        internal MulOperator(ISideNode operand) : base(operand) { }
 
-        internal DivOperator(ISideNode operand) => Operand = operand;
 
-        public double Calculate(double value) => (value / Operand?.Value).Filtration();
+        public CalculateResponse Calculate(double value) => Calculate(value * Operand?.Value);
+    }
+
+
+    internal sealed class DivOperator : BaseOperator, IOperation
+    {
+        internal DivOperator(ISideNode operand) : base(operand) { }
+
+
+        public CalculateResponse Calculate(double value) => Calculate(value / Operand?.Value);
     }
 }

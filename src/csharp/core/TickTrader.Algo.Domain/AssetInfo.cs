@@ -4,7 +4,7 @@ namespace TickTrader.Algo.Domain
 {
     public partial class AssetInfo : IAssetInfo
     {
-        private decimal _margin;
+        private double _margin;
 
         public AssetInfo(double balance, string currency)
         {
@@ -12,7 +12,7 @@ namespace TickTrader.Algo.Domain
             Currency = currency;
         }
 
-        public decimal Margin
+        public double Margin
         {
             get => _margin;
             set
@@ -28,20 +28,20 @@ namespace TickTrader.Algo.Domain
 
         public event Action MarginUpdate;
 
-        decimal IAssetInfo.Amount => (decimal)Balance;
+        double IAssetInfo.Amount => Balance;
 
-        decimal IAssetInfo.FreeAmount => (decimal)Balance - Margin;
+        double IAssetInfo.FreeAmount => Balance - Margin;
 
-        decimal IAssetInfo.LockedAmount => Margin;
+        double IAssetInfo.LockedAmount => Margin;
     }
 
     public interface IAssetInfo
     {
         string Currency { get; }
-        decimal Amount { get; }
-        decimal FreeAmount { get; }
-        decimal LockedAmount { get; }
-        decimal Margin { get; set; }
+        double Amount { get; }
+        double FreeAmount { get; }
+        double LockedAmount { get; }
+        double Margin { get; set; }
 
         event Action MarginUpdate;
     }

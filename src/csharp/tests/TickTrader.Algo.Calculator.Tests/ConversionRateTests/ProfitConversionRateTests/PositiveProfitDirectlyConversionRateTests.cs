@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
         [TestMethod, DirectlyConvertionCategory]
         public void X_Equal_Z()
         {
-            _actualFormula = _algoMarket.Conversion.GetPositiveProfitFormula;
+            _actualFormula = _conversion.GetPositiveProfitFormula;
 
             Run_X_Equal_Z_test();
         }
@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
         [TestMethod, DirectlyConvertionCategory]
         public void Y_Equal_Z()
         {
-            _actualFormula = _algoMarket.Conversion.GetPositiveProfitFormula;
+            _actualFormula = _conversion.GetPositiveProfitFormula;
 
             Run_Y_Equal_Z_test();
         }
@@ -30,7 +30,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
         [TestMethod, DirectlyConvertionCategory]
         public void XZ()
         {
-            _actualFormula = _algoMarket.Conversion.GetPositiveProfitFormula;
+            _actualFormula = _conversion.GetPositiveProfitFormula;
 
             Run_XZ_test();
         }
@@ -38,7 +38,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
         [TestMethod, DirectlyConvertionCategory]
         public void ZX()
         {
-            _actualFormula = _algoMarket.Conversion.GetPositiveProfitFormula;
+            _actualFormula = _conversion.GetPositiveProfitFormula;
 
             Run_ZX_test();
         }
@@ -46,7 +46,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
         [TestMethod, DirectlyConvertionCategory]
         public void YZ()
         {
-            _actualFormula = _algoMarket.Conversion.GetPositiveProfitFormula;
+            _actualFormula = _conversion.GetPositiveProfitFormula;
 
             Run_YZ_test();
         }
@@ -54,7 +54,7 @@ namespace TickTrader.Algo.Calculator.Tests.ConversionRateTests
         [TestMethod, DirectlyConvertionCategory]
         public void ZY()
         {
-            _actualFormula = _algoMarket.Conversion.GetPositiveProfitFormula;
+            _actualFormula = _conversion.GetPositiveProfitFormula;
 
             Run_ZY_test();
         }

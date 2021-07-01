@@ -1,38 +1,40 @@
 ﻿using System;
+using TickTrader.Algo.Calculator.TradeSpeсificsCalculators;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Domain.CalculatorInterfaces;
 
 namespace TickTrader.Algo.Calculator
 {
     internal class OrderNetting
     {
-        private double _dblMarginAmount;
-        private double _dblProfitAmount;
+        //private double _dblMarginAmount;
+        //private double _dblProfitAmount;
 
-        public OrderNetting(IMarginAccountInfo2 accInfo, OrderInfo.Types.Type type, OrderInfo.Types.Side side, bool isHidden)
+        public OrderNetting(/*IMarginAccountInfo2 accInfo, */OrderInfo.Types.Type type, OrderInfo.Types.Side side, bool isHidden)
         {
-            AccountData = accInfo;
+            //AccountData = accInfo;
             Type = type;
             Side = side;
             IsHidden = isHidden;
         }
 
         public bool IsEmpty => MarginAmount <= 0;
-        public decimal MarginAmount { get; protected set; }
-        public decimal ProfitAmount { get; protected set; }
+        public double MarginAmount { get; protected set; }
+        public double ProfitAmount { get; protected set; }
         public double WeightedAveragePrice { get; protected set; }
-        public decimal TotalWeight { get; private set; }
+        public double TotalWeight { get; private set; }
 
         public double Margin { get; private set; }
         public double Profit { get; private set; }
         public int ErrorCount { get; private set; }
 
-        public IMarginAccountInfo2 AccountData { get; }
-        public OrderCalculator Calculator { get; internal set; }
+        //public IMarginAccountInfo2 AccountData { get; }
+        public ISymbolCalculator Calculator { get; internal set; }
         public OrderInfo.Types.Type Type { get; }
         public OrderInfo.Types.Side Side { get; }
         public bool IsHidden { get; }
 
-        public event Action<decimal> AmountChanged;
+        public event Action<double> AmountChanged;
 
         public StatsChange Recalculate()
         {
@@ -51,19 +53,21 @@ namespace TickTrader.Algo.Calculator
             }
             else
             {
-                if (_dblMarginAmount > 0)
+                if (MarginAmount > 0)
                 {
-                    Margin = Calculator.CalculateMargin(_dblMarginAmount, Type, Side, IsHidden, out var error);
-                    if (error != CalcErrorCodes.None)
+                    var response = Calculator.Margin.Calculate(new MarginRequest(MarginAmount, Type, IsHidden));
+                    Margin = response.Value;
+                    if (response.IsFailed)
                         ErrorCount++;
                 }
                 else
                     Margin = 0;
 
-                if (_dblProfitAmount > 0)
+                if (ProfitAmount > 0)
                 {
-                    Profit = Calculator.CalculateProfit(WeightedAveragePrice, _dblProfitAmount, Side, out var error);
-                    if (error != CalcErrorCodes.None)
+                    var response = Calculator.Profit.Calculate(new ProfitRequest(WeightedAveragePrice, ProfitAmount, Side));
+                    Profit = response.Value;
+                    if (response.IsFailed)
                         ErrorCount++;
                 }
                 else
@@ -73,25 +77,25 @@ namespace TickTrader.Algo.Calculator
             return new StatsChange(Margin - oldMargin, Profit - oldProfit, ErrorCount - oldErros);
         }
 
-        public StatsChange AddOrder(decimal remAmount, double? price)
+        public StatsChange AddOrder(double remAmount, double? price)
         {
             AddOrderWithoutCalculation(remAmount, price);
             return Recalculate();
         }
 
-        public void AddOrderWithoutCalculation(decimal remAmount, double? price)
+        public void AddOrderWithoutCalculation(double remAmount, double? price)
         {
             ChangeMarginAmountBy(remAmount);
 
             if (Type == OrderInfo.Types.Type.Position)
             {
                 ChangeProfitAmountBy(remAmount);
-                TotalWeight += remAmount * (decimal)price.Value;
+                TotalWeight += remAmount * price.Value;
                 UpdateAveragePrice();
             }
         }
 
-        public void AddPositionWithoutCalculation(decimal posAmount, decimal posPrice)
+        public void AddPositionWithoutCalculation(double posAmount, double posPrice)
         {
             ChangeMarginAmountBy(posAmount);
             ChangeProfitAmountBy(posAmount);
@@ -99,7 +103,7 @@ namespace TickTrader.Algo.Calculator
             UpdateAveragePrice();
         }
 
-        public void RemovePositionWithoutCalculation(decimal posAmount, decimal posPrice)
+        public void RemovePositionWithoutCalculation(double posAmount, double posPrice)
         {
             ChangeMarginAmountBy(-posAmount);
             ChangeProfitAmountBy(-posAmount);
@@ -107,7 +111,7 @@ namespace TickTrader.Algo.Calculator
             UpdateAveragePrice();
         }
 
-        public StatsChange RemoveOrder(decimal remAmount, double? price)
+        public StatsChange RemoveOrder(double remAmount, double? price)
         {
             //Count--;
             ChangeMarginAmountBy(-remAmount);
@@ -115,7 +119,7 @@ namespace TickTrader.Algo.Calculator
             if (Type == OrderInfo.Types.Type.Position)
             {
                 ChangeProfitAmountBy(-remAmount);
-                TotalWeight -= remAmount * (decimal)price.Value;
+                TotalWeight -= remAmount * price.Value;
                 UpdateAveragePrice();
             }
 
@@ -139,23 +143,23 @@ namespace TickTrader.Algo.Calculator
         private void UpdateAveragePrice()
         {
             if (ProfitAmount > 0)
-                WeightedAveragePrice = (double)(TotalWeight / ProfitAmount);
+                WeightedAveragePrice = TotalWeight / ProfitAmount;
             else
                 WeightedAveragePrice = 0;
         }
 
-        public void ChangeMarginAmountBy(decimal delta)
+        public void ChangeMarginAmountBy(double delta)
         {
             MarginAmount += delta;
-            _dblMarginAmount = (double)MarginAmount;
+            //_dblMarginAmount = MarginAmount;
 
             AmountChanged.Invoke(delta);
         }
 
-        public void ChangeProfitAmountBy(decimal delta)
+        public void ChangeProfitAmountBy(double delta)
         {
             ProfitAmount += delta;
-            _dblProfitAmount = (double)ProfitAmount;
+            //_dblProfitAmount = ProfitAmount;
         }
 
         //private void Order_TypeAmountChanged(TypeAmountChangeArgs obj)

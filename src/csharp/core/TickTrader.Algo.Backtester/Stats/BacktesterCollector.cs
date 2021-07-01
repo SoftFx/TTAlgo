@@ -267,9 +267,9 @@ namespace TickTrader.Algo.Backtester
             Stats.TotalSwap += swap;
         }
 
-        public void OnCommisionCharged(decimal commission)
+        public void OnCommisionCharged(double commission)
         {
-            Stats.TotalComission += (double)commission;
+            Stats.TotalComission += commission;
         }
 
         public void OnOrderOpened()

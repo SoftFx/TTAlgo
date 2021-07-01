@@ -10,10 +10,10 @@ namespace TickTrader.Algo.Backtester
 {
     internal class TradeChargesInfo
     {
-        public decimal Swap { get; set; }
-        public decimal Commission { get; set; }
+        public double Swap { get; set; }
+        public double Commission { get; set; }
 
-        public decimal Total => Swap + Commission;
+        public double Total => Swap + Commission;
         public CurrencyInfo CurrencyInfo { get; set; }
 
         public void Clear()
@@ -29,7 +29,7 @@ namespace TickTrader.Algo.Backtester
 
     internal struct FillInfo
     {
-        public decimal FillAmount { get; set; }
+        public double FillAmount { get; set; }
         public double FillPrice { get; set; }
         public OrderAccessor Position { get; set; }
         public NetPositionOpenInfo NetPos { get; set; }
@@ -73,7 +73,7 @@ namespace TickTrader.Algo.Backtester
             //PrintComment(order);
         }
 
-        public void AddOpenFailAction(OrderType type, string symbol, OrderSide side, decimal amountLots, OrderCmdResultCodes error, AccountAccessor acc)
+        public void AddOpenFailAction(OrderType type, string symbol, OrderSide side, double amountLots, OrderCmdResultCodes error, AccountAccessor acc)
         {
             var currFormat = acc.BalanceCurrencyFormat;
 
@@ -100,7 +100,7 @@ namespace TickTrader.Algo.Backtester
         {
             var smbInfo = order.SymbolInfo;
             var priceFormat = FormatExtentions.CreateTradeFormatInfo(5);
-            var fillAmountLots = info.FillAmount / (decimal)smbInfo.LotSize;
+            var fillAmountLots = info.FillAmount / smbInfo.LotSize;
 
             StartNewAction();
 
@@ -124,7 +124,7 @@ namespace TickTrader.Algo.Backtester
             PrintAmountAndPrice(order);
         }
 
-        public void AddStopLimitActivationAction(OrderAccessor order, decimal price)
+        public void AddStopLimitActivationAction(OrderAccessor order, double price)
         {
             StartNewAction();
 
@@ -135,7 +135,7 @@ namespace TickTrader.Algo.Backtester
             //return _builder.ToString();
         }
 
-        public void AddGrossCloseAction(OrderAccessor pos, decimal profit, double price, TradeChargesInfo charges, CurrencyInfo balanceCurrInf)
+        public void AddGrossCloseAction(OrderAccessor pos, double profit, double price, TradeChargesInfo charges, CurrencyInfo balanceCurrInf)
         {
             var priceFormat = FormatExtentions.CreateTradeFormatInfo(5);
             var profitFormat = new NumberFormatInfo { NumberDecimalDigits = balanceCurrInf.Digits };
@@ -156,7 +156,7 @@ namespace TickTrader.Algo.Backtester
                 return;
 
             var priceFormat = FormatExtentions.CreateTradeFormatInfo(5);
-            var closeAmountLost = closeInfo.CloseAmount / (decimal)symbol.LotSize;
+            var closeAmountLost = closeInfo.CloseAmount / symbol.LotSize;
             var profitFormat = new NumberFormatInfo { NumberDecimalDigits = balanceCurrInfo.Digits };
 
             StartNewAction();

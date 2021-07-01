@@ -193,7 +193,7 @@ namespace TickTrader.Algo.CoreV1
 
                 if (accProxy.Type == AccountInfo.Types.Type.Gross || accProxy.Type == AccountInfo.Types.Type.Net)
                 {
-                    accProxy.Balance = (decimal)report.Balance;
+                    accProxy.Balance = report.Balance;
                     var currencyInfo = currencies.GetOrDefault(report.Currency);
 
                     if (report.Type == BalanceOperation.Types.Type.DepositWithdrawal)
@@ -403,7 +403,7 @@ namespace TickTrader.Algo.CoreV1
 
             if (acc.Type == AccountInfo.Types.Type.Gross || acc.Type == AccountInfo.Types.Type.Net)
             {
-                var newBalance = (decimal?)eReport.NewBalance;
+                var newBalance = eReport.NewBalance;
 
                 if (eReport.NewBalance != null && acc.Balance != newBalance.Value)
                 {

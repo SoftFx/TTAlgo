@@ -31,13 +31,13 @@ namespace TickTrader.Algo.CoreV1
         {
             if (info.Side == OrderInfo.Types.Side.Buy)
             {
-                Long.Update((decimal)info.Volume, (decimal)info.Price);
+                Long.Update(info.Volume, info.Price);
                 Short.Update(0, 0);
             }
             else
             {
                 Long.Update(0, 0);
-                Short.Update((decimal)info.Volume, (decimal)info.Price);
+                Short.Update(info.Volume, info.Price);
             }
 
             Changed?.Invoke(this);
@@ -52,7 +52,7 @@ namespace TickTrader.Algo.CoreV1
         public string Id => Info.Id;
         public bool IsEmpty => Amount == 0;
         public string Symbol => _symbolName;
-        public decimal Amount => Math.Max(Long.Amount, Short.Amount);
+        public double Amount => Math.Max(Long.Amount, Short.Amount);
 
         public PositionInfo Info { get; }
 
@@ -60,8 +60,8 @@ namespace TickTrader.Algo.CoreV1
         public SideProxy Short { get; } = new SideProxy();
 
         double NetPosition.Volume => (double)Amount / _lotSize;
-        double NetPosition.Margin => Info?.Calculator?.CalculateMargin(Info) ?? double.NaN;
-        double NetPosition.Profit => Info?.Calculator?.CalculateProfit(Info) ?? double.NaN;
+        double NetPosition.Margin => /*Info?.Calculator?.CalculateMargin(Info) ??*/ double.NaN;
+        double NetPosition.Profit => /*Info?.Calculator?.CalculateProfit(Info) ??*/ double.NaN;
         double NetPosition.Swap => (double)Info.Swap;
         double NetPosition.Commission => (double)Info.Commission;
         OrderSide NetPosition.Side => Side.ToApiEnum();
@@ -71,7 +71,7 @@ namespace TickTrader.Algo.CoreV1
 
         #region Emulator
 
-        internal void Increase(decimal amount, decimal price, OrderInfo.Types.Side side)
+        internal void Increase(double amount, double price, OrderInfo.Types.Side side)
         {
             if (side == OrderInfo.Types.Side.Buy)
                 Long.Increase(amount, price);
@@ -81,7 +81,7 @@ namespace TickTrader.Algo.CoreV1
             Changed?.Invoke(this);
         }
 
-        internal void DecreaseBothSides(decimal byAmount)
+        internal void DecreaseBothSides(double byAmount)
         {
             Long.Decrease(byAmount);
             Short.Decrease(byAmount);
@@ -97,7 +97,7 @@ namespace TickTrader.Algo.CoreV1
             {
             }
 
-            internal void Update(decimal amount, decimal price)
+            internal void Update(double amount, double price)
             {
                 Amount = amount;
                 Price = price;
@@ -105,23 +105,23 @@ namespace TickTrader.Algo.CoreV1
                 Margin = 0;
             }
 
-            internal void Increase(decimal amount, decimal price)
+            internal void Increase(double amount, double price)
             {
                 Price = CalculatePositionAvgPrice(this, price, amount);
                 Amount += amount;
             }
 
-            internal void Decrease(decimal byAmount)
+            internal void Decrease(double byAmount)
             {
                 Amount -= byAmount;
             }
 
-            public decimal Amount { get; private set; }
-            public decimal Price { get; private set; }
-            public decimal Margin { get; set; }
-            public decimal Profit { get; set; }
+            public double Amount { get; private set; }
+            public double Price { get; private set; }
+            public double Margin { get; set; }
+            public double Profit { get; set; }
 
-            private static decimal CalculatePositionAvgPrice(IPositionSide side, decimal price2, decimal amount2)
+            private static double CalculatePositionAvgPrice(IPositionSide side, double price2, double amount2)
             {
                 // some optimization
                 if (side.Amount == 0)

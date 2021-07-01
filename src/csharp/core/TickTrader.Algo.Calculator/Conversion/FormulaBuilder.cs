@@ -1,18 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using TickTrader.Algo.Calculator.Operators;
+﻿using System.Collections.Generic;
+using TickTrader.Algo.Calculator.AlgoMarket;
 using TickTrader.Algo.Core.Lib.Math;
+using TickTrader.Algo.Domain.CalculatorInterfaces;
 
-namespace TickTrader.Algo.Calculator
+namespace TickTrader.Algo.Calculator.Conversions
 {
     internal sealed class FormulaBuilder : IConversionFormula
     {
         private readonly List<IOperation> _operations;
         private readonly ISideNode _node;
 
-        public double Value { get; private set; }
+        private double _value;
 
-        public CalcErrorCodes ErrorCode => CalcErrorCodes.None;
+
+        public double Value
+        {
+            get => Error == CalculationError.None ? _value : 0.0;
+
+            private set => _value = value;
+        }
+
+        public CalculationError Error { get; private set; }
+
 
         internal FormulaBuilder(ISideNode node)
         {
@@ -22,6 +31,7 @@ namespace TickTrader.Algo.Calculator
 
             RecalculateFormula();
         }
+
 
         public FormulaBuilder Inv() => AddOperation(new InvOperator());
 
@@ -41,10 +51,29 @@ namespace TickTrader.Algo.Calculator
 
         private void RecalculateFormula()
         {
-            Value = _node?.Value.Filtration() ?? 0.0;
+            Error = _node?.Error ?? CalculationError.SymbolNotFound;
 
-            foreach (var operation in _operations)
-                Value = operation.Calculate(Value);
+            if (Error == CalculationError.OffQuote && !IsDirectlyFormula)
+                Error = CalculationError.OffCrossQuote;
+            else
+            if (Error == CalculationError.None)
+            {
+                Error = CalculationError.None;
+                Value = _node.Value.Filtration();
+
+                foreach (var operation in _operations)
+                {
+                    var result = operation.Calculate(Value);
+
+                    if (!result)
+                    {
+                        Error = result.Error;
+                        break;
+                    }
+
+                    Value = result.Value;
+                }
+            }
         }
 
         private ISideNode Subscribe(ISideNode node)
@@ -54,5 +83,7 @@ namespace TickTrader.Algo.Calculator
 
             return node;
         }
+
+        private bool IsDirectlyFormula => _operations.Count == 0 || (_operations.Count == 1 && (_operations[0] is InvOperator));
     }
 }

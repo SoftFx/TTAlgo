@@ -56,11 +56,7 @@ namespace TickTrader.Algo.Account
 
         public bool IsHidden => MaxVisibleAmount.HasValue && !(Math.Abs(MaxVisibleAmount.Value) < 1e-9);
 
-        decimal IMarginProfitCalc.RemainingAmount => (decimal)LeavesVolume;
-
-        decimal? IOrderCommonInfo.Commission => (decimal?)Commission;
-
-        decimal? IOrderCommonInfo.Swap => (decimal?)Swap;
+        double IMarginProfitCalc.RemainingAmount => LeavesVolume;
 
         Timestamp IOrderUpdateInfo.Created => Created?.ToTimestamp();
 

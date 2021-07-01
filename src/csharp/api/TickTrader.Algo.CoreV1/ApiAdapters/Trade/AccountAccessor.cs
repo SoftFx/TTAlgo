@@ -5,13 +5,14 @@ using System.Linq;
 using System.Text;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Calculator;
+using TickTrader.Algo.Calculator.AlgoMarket;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
 {
-    public class AccountAccessor : AccountDataProvider, IMarginAccountInfo2, ICashAccountInfo2
+    public class AccountAccessor : AccountDataProvider, IMarginAccountInfo2, ICashAccountInfo2, IMarketStateAccountInfo
     {
         private readonly PluginBuilder _builder;
         private Dictionary<string, OrderFilteredCollection> bySymbolFilterCache;
@@ -21,7 +22,7 @@ namespace TickTrader.Algo.CoreV1
         private PositionCollection _positions;
         private AssetsCollection _assets;
         private bool _blEventsEnabled;
-        private decimal _balance;
+        private double _balance;
         private string _balanceCurrency;
         private string _id;
         private AccountInfo.Types.Type _type;
@@ -73,7 +74,7 @@ namespace TickTrader.Algo.CoreV1
                 _id = value;
             }
         }
-        public decimal Balance
+        public double Balance
         {
             get
             {
@@ -119,8 +120,6 @@ namespace TickTrader.Algo.CoreV1
         public bool IsMarginType => Type == AccountInfo.Types.Type.Net || Type == AccountInfo.Types.Type.Gross;
         public bool IsCashType => Type == AccountInfo.Types.Type.Cash;
 
-        double IMarginAccountInfo2.Balance => (double)Balance;
-
         AccountTypes AccountDataProvider.Type
         {
             get
@@ -135,7 +134,7 @@ namespace TickTrader.Algo.CoreV1
             Id = info.Id;
             Type = info.Type;
             Leverage = info.Leverage;
-            Balance = (decimal)info.Balance;
+            Balance = info.Balance;
             UpdateCurrency(currencies.GetOrDefault(info.BalanceCurrency));
             Assets.Clear();
             foreach (var asset in info.Assets)
@@ -311,6 +310,8 @@ namespace TickTrader.Algo.CoreV1
         IEnumerable<IPositionInfo> IMarginAccountInfo2.Positions => NetPositions.Values.Select(u => u.Info);
         IEnumerable<IAssetInfo> ICashAccountInfo2.Assets => Assets.Values.Select(u => u.Info);
 
+        CurrencyInfo IMarketStateAccountInfo.BalanceCurrency => BalanceCurrencyInfo;
+
         public event Action<IOrderCalcInfo> OrderAdded = delegate { };
         public event Action<IEnumerable<IOrderCalcInfo>> OrdersAdded { add { } remove { } }
         public event Action<IOrderCalcInfo> OrderRemoved = delegate { };
@@ -410,7 +411,7 @@ namespace TickTrader.Algo.CoreV1
         //    OnPositionUpdated(pos.Info);
         //}
 
-        internal void IncreaseAsset(string currency, decimal byAmount)
+        internal void IncreaseAsset(string currency, double byAmount)
         {
             var asset = Assets.GetOrAdd(currency, out var chType);
             asset.IncreaseBy(byAmount);

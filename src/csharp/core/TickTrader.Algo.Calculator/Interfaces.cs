@@ -15,7 +15,9 @@ namespace TickTrader.Algo.Calculator
         }
 
         public int ErrorDelta { get; }
+
         public double MarginDelta { get; }
+
         public double ProfitDelta { get; }
 
         public static StatsChange operator +(StatsChange c1, StatsChange c2)

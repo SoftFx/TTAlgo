@@ -7,10 +7,12 @@ namespace TestEnviroment
     public static class TestRateGenerator
     {
         private const int GeneratorSeed = 42;
+        private const double MinPrice = 1.0;
+        private const double MaxPrice = 3.0;
 
         private static readonly Random _generator = new(GeneratorSeed);
 
-        public static double Rate => _generator.NextDoubleInRange(0.1, 2);
+        public static double Rate => _generator.NextDoubleInRange(MinPrice, MaxPrice);
 
 
         public static SymbolInfo BuildNewQuote(this SymbolInfo symbol)

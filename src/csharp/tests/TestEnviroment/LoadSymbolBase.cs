@@ -7,10 +7,16 @@ namespace TestEnviroment
         protected static SymbolInfoStorage _storage;
         protected static SymbolInfo _symbol;
 
+        public LoadSymbolBase()
+        {
+            _storage = new SymbolInfoStorage();
+        }
+
         protected static void LoadSymbol(string symbol = "EURUSD")
         {
-            _storage = SymbolInfoStorage.Instance;
             _symbol = _storage.Symbols[symbol];
+
+            ResetSymbolRate();
         }
 
         protected static void UpdateSymbolRate()

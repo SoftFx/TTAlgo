@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TestEnviroment;
+using TickTrader.Algo.Calculator.AlgoMarket;
 
 namespace TickTrader.Algo.Calculator.Tests.SideNodeTests
 {
@@ -8,13 +9,10 @@ namespace TickTrader.Algo.Calculator.Tests.SideNodeTests
     {
         private BidSideNode _bidNode;
 
-        [ClassInitialize]
-        public static void Init(TestContext _) => LoadSymbol();
-
         [TestInitialize]
         public void InitTest()
         {
-            ResetSymbolRate();
+            LoadSymbol();
 
             _bidNode = new BidSideNode(_symbol);
         }
@@ -23,6 +21,7 @@ namespace TickTrader.Algo.Calculator.Tests.SideNodeTests
         public void Empty_Node()
         {
             Assert.IsFalse(_bidNode.HasValue);
+            Assert.AreEqual(_bidNode.Value, double.NaN);
         }
 
         [TestMethod]
@@ -51,6 +50,40 @@ namespace TickTrader.Algo.Calculator.Tests.SideNodeTests
             ResetSymbolRate();
 
             Empty_Node();
+        }
+
+        [TestMethod]
+        public void Check_Subscribe_Method()
+        {
+            Check_Node_Value();
+
+            LoadSymbol("AUDUSD");
+
+            _bidNode.Subscribe(_symbol);
+
+            Check_Multiple_Update();
+        }
+
+        [TestMethod]
+        public void Check_Unsubscribe_Method()
+        {
+            Check_Node_Value();
+
+            _bidNode.Subscribe(null);
+
+            Empty_Node();
+        }
+
+        [TestMethod]
+        public void Check_Unsubscribe_Subscribe()
+        {
+            Check_Unsubscribe_Method();
+
+            LoadSymbol("AUDUSD");
+
+            _bidNode.Subscribe(_symbol);
+
+            Check_Multiple_Update();
         }
     }
 }

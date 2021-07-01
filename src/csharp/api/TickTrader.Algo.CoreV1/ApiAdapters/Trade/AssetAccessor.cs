@@ -27,9 +27,9 @@ namespace TickTrader.Algo.CoreV1
             return false;
         }
 
-        internal void IncreaseBy(decimal amount)
+        internal void IncreaseBy(double amount)
         {
-            Info.Balance += (double)amount;
+            Info.Balance += amount;
         }
 
         double Asset.Volume => Info.Balance;

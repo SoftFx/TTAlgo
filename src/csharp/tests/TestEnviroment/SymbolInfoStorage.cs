@@ -16,14 +16,12 @@ namespace TestEnviroment
             ("BTC", "USD"),
         };
 
-        public static SymbolInfoStorage Instance { get; } = new SymbolInfoStorage();
-
         public Dictionary<string, SymbolInfo> Symbols;
 
         public Dictionary<string, double> Bid, Ask;
 
 
-        private SymbolInfoStorage()
+        public SymbolInfoStorage()
         {
             Symbols = _symbolCurr.ToDictionary(k => $"{k.Item1}{k.Item2}", v => SymbolFactory.BuildSymbol(v.Item1, v.Item2));
 
@@ -40,6 +38,8 @@ namespace TestEnviroment
             smb = Symbols["AUDUSD"];
             smb.Swap.SizeLong = -0.98;
             smb.Swap.SizeShort = -0.44;
+
+            AllSymbolsRateUpdate();
         }
 
         public void AllSymbolsRateUpdate()

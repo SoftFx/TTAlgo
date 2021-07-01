@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System;
+using TickTrader.Algo.Domain.CalculatorInterfaces;
 
 namespace TickTrader.Algo.Domain
 {
@@ -34,17 +35,11 @@ namespace TickTrader.Algo.Domain
         public bool IsLimitOrder => Type == Types.Type.Limit || Type == Types.Type.StopLimit;
 
 
-        public IOrderCalculator Calculator { get; set; }
+        public ISymbolCalculator Calculator { get; set; }
 
-        public decimal CashMargin { get; set; }
+        public double CashMargin { get; set; }
 
         public SymbolInfo SymbolInfo { get; private set; }
-
-        decimal IMarginProfitCalc.RemainingAmount => (decimal)RemainingAmount;
-
-        decimal? IOrderCommonInfo.Commission => (decimal)Commission;
-
-        decimal? IOrderCommonInfo.Swap => (decimal)Swap;
 
         double IMarginProfitCalc.Price => Price ?? 0;
 
@@ -55,8 +50,8 @@ namespace TickTrader.Algo.Domain
         string IOrderLogDetailsInfo.OrderId => Id;
 
         public event Action<OrderEssentialsChangeArgs> EssentialsChanged;
-        public event Action<OrderPropArgs<decimal>> SwapChanged;
-        public event Action<OrderPropArgs<decimal>> CommissionChanged;
+        public event Action<OrderPropArgs<double>> SwapChanged;
+        public event Action<OrderPropArgs<double>> CommissionChanged;
 
         public void SetSymbol(SymbolInfo symbol)
         {
@@ -122,13 +117,13 @@ namespace TickTrader.Algo.Domain
                 InstanceId = info.InstanceId;
             }
 
-            EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, (decimal)oldAmount, oldPrice, oldStopPrice, oldType, oldIsHidden));
+            EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldAmount, oldPrice, oldStopPrice, oldType, oldIsHidden));
 
             if (Math.Abs(oldSwap - Swap) > 1e-10)
-                SwapChanged?.Invoke(new OrderPropArgs<decimal>(this, (decimal)oldSwap, (decimal)Swap));
+                SwapChanged?.Invoke(new OrderPropArgs<double>(this, oldSwap, Swap));
 
             if (Math.Abs(oldCommission - Commission) > 1e-10)
-                CommissionChanged?.Invoke(new OrderPropArgs<decimal>(this, (decimal)oldCommission, (decimal)Commission));
+                CommissionChanged?.Invoke(new OrderPropArgs<double>(this, oldCommission, Commission));
         }
 
         public string GetSnapshotString() => ToString();
@@ -141,25 +136,18 @@ namespace TickTrader.Algo.Domain
 
     public interface IOrderCalcInfo : IOrderCommonInfo
     {
-        IOrderCalculator Calculator { get; set; }
+        ISymbolCalculator Calculator { get; set; }
 
-        decimal CashMargin { get; set; }
+        double CashMargin { get; set; }
 
         SymbolInfo SymbolInfo { get; }
 
         event Action<OrderEssentialsChangeArgs> EssentialsChanged;
-        event Action<OrderPropArgs<decimal>> SwapChanged;
-        event Action<OrderPropArgs<decimal>> CommissionChanged;
+        event Action<OrderPropArgs<double>> SwapChanged;
+        event Action<OrderPropArgs<double>> CommissionChanged;
 
 
         string GetSnapshotString();
-    }
-
-
-    public interface IOrderCalculator
-    {
-        double CalculateProfit(IMarginProfitCalc info);
-        double CalculateMargin(IMarginProfitCalc info);
     }
 
     public interface IOrderUpdateInfo : IOrderCommonInfo
@@ -205,8 +193,8 @@ namespace TickTrader.Algo.Domain
         string Id { get; }
         string Symbol { get; }
         double? StopPrice { get; }
-        decimal? Commission { get; }
-        decimal? Swap { get; }
+        double Commission { get; }
+        double Swap { get; }
     }
 
     public interface IMarginProfitCalc
@@ -214,7 +202,7 @@ namespace TickTrader.Algo.Domain
         double Price { get; }
         Domain.OrderInfo.Types.Side Side { get; }
         Domain.OrderInfo.Types.Type Type { get; }
-        decimal RemainingAmount { get; }
+        double RemainingAmount { get; }
         bool IsHidden { get; }
     }
 
@@ -259,7 +247,7 @@ namespace TickTrader.Algo.Domain
 
     public struct OrderEssentialsChangeArgs
     {
-        public OrderEssentialsChangeArgs(IOrderCalcInfo order, decimal oldRemAmount, double? oldPrice, double? oldStopPrice, Domain.OrderInfo.Types.Type oldType, bool oldIsHidden)
+        public OrderEssentialsChangeArgs(IOrderCalcInfo order, double oldRemAmount, double? oldPrice, double? oldStopPrice, Domain.OrderInfo.Types.Type oldType, bool oldIsHidden)
         {
             Order = order;
             OldRemAmount = oldRemAmount;
@@ -270,7 +258,7 @@ namespace TickTrader.Algo.Domain
         }
 
         public IOrderCalcInfo Order { get; }
-        public decimal OldRemAmount { get; }
+        public double OldRemAmount { get; }
         public double? OldPrice { get; }
         public double? OldStopPrice { get; }
         public Domain.OrderInfo.Types.Type OldType { get; }

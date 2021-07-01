@@ -1,49 +1,39 @@
 ﻿using System;
+using TickTrader.Algo.Calculator.AlgoMarket;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Domain.CalculatorInterfaces;
 
 namespace TickTrader.Algo.Calculator
 {
-    public class SymbolNotFoundException : Exception
-    {
-        public SymbolNotFoundException(string message) : base(message) { }
-    }
-
     public class SymbolCalc : IDisposable
     {
-        private MarketStateBase _market;
-        private OrderCalculator _calc;
+        //private AlgoMarketState _market;
+        private ISymbolCalculator _calc;
         private double _hedgeFormulPart;
-        private decimal _netPosSwap;
-        private decimal _netPosComm;
+        private double _netPosSwap;
+        private double _netPosComm;
 
-        public SymbolCalc(string symbol, IMarginAccountInfo2 accInfo, MarketStateBase market, bool autoUpdate)
+        public SymbolCalc(string symbol, AlgoMarketState market)
         {
             Symbol = symbol;
-            _market = market;
-            AccInfo = accInfo;
+            //_market = market;
             Buy = new SideCalc(this, OrderInfo.Types.Side.Buy);
             Sell = new SideCalc(this, Domain.OrderInfo.Types.Side.Sell);
 
-            var tracker = market.GetSymbolNodeInternal(Symbol) ?? throw new SymbolNotFoundException("Market state lacks symbol:" + Symbol);
             CreateCalculator();
 
-            if (autoUpdate)
-            {
-                Tracker = tracker;
-                Tracker.SymbolInfo.RateUpdated += Recalculate;
-            }
+            Tracker = market.GetSymbolNodeOrNull(Symbol);
+            Tracker.SymbolInfo.RateUpdated += Recalculate;
         }
 
         internal SymbolMarketNode Tracker { get; }
-        public IMarginAccountInfo2 AccInfo { get; }
-        //public int Count { get; private set; }
         public bool IsEmpty => Sell.IsEmpty && Buy.IsEmpty; // Count <= 0;
         public string Symbol { get; }
 
         public SideCalc Buy { get; }
         public SideCalc Sell { get; }
         public double Margin { get; private set; }
-        public OrderCalculator Calc => _calc;
+        public ISymbolCalculator Calc => _calc;
 
         public event Action<StatsChange> StatsChanged;
 
@@ -69,7 +59,7 @@ namespace TickTrader.Algo.Calculator
         public void AddOrder(IOrderCalcInfo order)
         {
             //Count++;
-            order.Calculator = _calc;
+            //order.Calculator = _calc;
             GetSideCalc(order).AddOrder(order);
             //AddOrder(order, GetSideCalc(order));
         }
@@ -77,7 +67,7 @@ namespace TickTrader.Algo.Calculator
         public void AddOrderWithoutCalculation(IOrderCalcInfo order)
         {
             //Count++;
-            order.Calculator = _calc;
+            //order.Calculator = _calc;
             GetSideCalc(order).AddOrderWithoutCalculation(order);
         }
 
@@ -88,9 +78,9 @@ namespace TickTrader.Algo.Calculator
             //RemoveOrder(order, GetSideCalc(order));
         }
 
-        public void UpdatePosition(IPositionInfo pos, PositionChangeTypes type, out decimal swapDelta, out decimal commDelta)
+        public void UpdatePosition(IPositionInfo pos, PositionChangeTypes type, out double swapDelta, out double commDelta)
         {
-            pos.Calculator = Calc;
+            //pos.Calculator = Calc;
 
             swapDelta = pos.Swap - _netPosSwap;
             commDelta = pos.Commission - _netPosComm;
@@ -104,44 +94,20 @@ namespace TickTrader.Algo.Calculator
 
         public void Dispose()
         {
-            _calc?.RemoveUsage();
+            //_calc?.RemoveUsage();
+            //_calc?.Dispose();
             _calc = null;
 
             if (Tracker != null)
                 Tracker.SymbolInfo.RateUpdated -= Recalculate;
         }
 
-        private SideCalc GetSideCalc(IOrderCalcInfo order)
-        {
-            if (order.Side == Domain.OrderInfo.Types.Side.Buy)
-                return Buy;
-            else
-                return Sell;
-        }
+        private SideCalc GetSideCalc(IOrderCalcInfo order) => order.Side.IsBuy() ? Buy : Sell;
 
         private void UpdateMargin()
         {
-            //decimal sellMargin = 0;
-            //decimal buyMargin = 0;
-
             var buyMargin = Buy.Margin;
             var sellMargin = Sell.Margin;
-
-            //if (AccInfo.AccountingType == AccountingTypes.Gross)
-            //{
-            //    buyMargin = Buy.Margin;
-            //    sellMargin = Sell.Margin;
-            //}
-            //else
-            //{
-            //    buyMargin = Buy.PendingMargin;
-            //    sellMargin = Sell.PendingMargin;
-
-            //    if (Buy.PositionMargin > Sell.PositionMargin)
-            //        buyMargin += Buy.PositionMargin - Sell.PositionMargin;
-            //    else if (Sell.PositionMargin > Buy.PositionMargin)
-            //        sellMargin += Sell.PositionMargin - Buy.PositionMargin;
-            //}
 
             Margin = Math.Max(sellMargin, buyMargin) + _hedgeFormulPart * Math.Min(sellMargin, buyMargin);
 
@@ -169,22 +135,22 @@ namespace TickTrader.Algo.Calculator
 
         private void CreateCalculator()
         {
-            _calc?.RemoveUsage();
-            _calc = _market.GetCalculator(Symbol, AccInfo);
-            _calc.AddUsage();
+            //_calc?.RemoveUsage();
+            //_calc = _market.GetCalculator(Symbol);
+            //_calc.AddUsage();
 
-            var hedge = _calc.SymbolInfo != null ? _calc.SymbolInfo.Margin.Hedged : 0.5;
-            _hedgeFormulPart = (2 * hedge - 1);
+            //var hedge = _calc.SymbolInfo != null ? _calc.SymbolInfo.Margin.Hedged : 0.5;
+            //_hedgeFormulPart = (2 * hedge - 1);
 
-            Buy.SetCalculators(_calc);
-            Sell.SetCalculators(_calc);
+            //Buy.SetCalculators(_calc);
+            //Sell.SetCalculators(_calc);
 
-            _calc.Recalculate += Recalculate;
+            //_calc.Recalculate += Recalculate;
         }
 
-        private void Tracker_Changed()
-        {
-            Recalculate(null);
-        }
+        //private void Tracker_Changed()
+        //{
+        //    Recalculate(null);
+        //}
     }
 }

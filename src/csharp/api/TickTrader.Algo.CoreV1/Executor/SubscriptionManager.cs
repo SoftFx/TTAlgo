@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using TickTrader.Algo.Calculator;
+using TickTrader.Algo.Calculator.AlgoMarket;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Infrastructure;
 using TickTrader.Algo.Core.Lib;
@@ -43,6 +43,7 @@ namespace TickTrader.Algo.CoreV1
         public void OnUpdateEvent(SymbolMarketNode node)
         {
             var sub = node?.UserSubscriptionInfo;
+
             if (sub != null)
             {
                 var quote = node.SymbolInfo.LastQuote;
@@ -94,13 +95,6 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public void ClearUserSubscriptions()
-        {
-            foreach (var node in _context.MarketData.Nodes)
-            {
-                node.UserSubscriptionInfo?.CancelAll();
-                node.UserSubscriptionInfo = null;
-            }
-        }
+        public void ClearUserSubscriptions() => _context.MarketData.ClearUserSubscriptions();
     }
 }

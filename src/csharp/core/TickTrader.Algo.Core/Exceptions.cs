@@ -39,4 +39,9 @@ namespace TickTrader.Algo.Core
 
         }
     }
+
+    public class SymbolNotFoundException : AlgoException
+    {
+        public SymbolNotFoundException(string message) : base(message) { }
+    }
 }
