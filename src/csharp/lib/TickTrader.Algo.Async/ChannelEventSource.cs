@@ -23,7 +23,7 @@ namespace TickTrader.Algo.Async
         private readonly object _subLock = new object();
         private readonly CancellationTokenSource _cancelTokenSrc;
 
-        private EventSubscription[] _subs;
+        private EventSubscription[] _subs = new EventSubscription[0];
 
 
         public ChannelWriter<T> Writer => _channel.Writer;
