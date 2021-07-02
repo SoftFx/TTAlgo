@@ -63,9 +63,13 @@ namespace TickTrader.Algo.Server
             _logger = AlgoLoggerFactory.GetLogger(Name);
 
             _state = AccountModelInfo.Types.ConnectionState.Offline;
+            _lastError = ConnectionErrorInfo.Ok;
+
             _requestGate = new ActorSharp.Lib.AsyncGate();
             _requestGate.OnWait += () => Self.Tell(ManageConnectionCmd.Instance);
             _requestGate.OnExit += () => Self.Tell(ScheduleDisconnectCmd.Instance);
+
+            _server.EventBus.SendUpdate(AccountModelUpdate.Added(_id, GetInfoCopy()));
 
             _initCompletionSrc = new TaskCompletionSource<object>();
             InitInternal().Forget();
@@ -103,7 +107,8 @@ namespace TickTrader.Algo.Server
                 await _server.SavedState.UpdateAccount(_savedState);
                 if (_credsChanged)
                     ManageConnectionInternal();
-                //Changed?.Invoke(this);
+
+                _server.EventBus.SendUpdate(AccountModelUpdate.Updated(_id, GetInfoCopy()));
             }
         }
 
@@ -283,11 +288,22 @@ namespace TickTrader.Algo.Server
         }
 
 
+        private AccountModelInfo GetInfoCopy()
+        {
+            return new AccountModelInfo
+            {
+                AccountId = _id,
+                ConnectionState = _state,
+                DisplayName = _savedState.DisplayName,
+                LastError = _lastError,
+            };
+        }
+
         private void ChangeState(AccountModelInfo.Types.ConnectionState newState)
         {
             LogConnectionState(_state, newState);
             _state = newState;
-            //StateChanged?.Invoke(this);
+            _server.EventBus.SendUpdate(new AccountStateUpdate(_id, _state, _lastError));
         }
 
         private void LogConnectionState(AccountModelInfo.Types.ConnectionState oldState, AccountModelInfo.Types.ConnectionState newState)

@@ -51,6 +51,8 @@ namespace TickTrader.Algo.Server
 
             _config = _savedState.UnpackConfig();
 
+            _server.EventBus.SendUpdate(PluginModelUpdate.Added(_id, GetInfoCopy()));
+
             var _ = UpdatePackage();
         }
 
@@ -85,6 +87,8 @@ namespace TickTrader.Algo.Server
             _savedState.PackConfig(cmd.NewConfig);
             await _server.SavedState.UpdatePlugin(_savedState);
             _config = cmd.NewConfig;
+
+            _server.EventBus.SendUpdate(PluginModelUpdate.Updated(_id, GetInfoCopy()));
         }
 
 
@@ -117,6 +121,8 @@ namespace TickTrader.Algo.Server
             if (_state == PluginModelInfo.Types.PluginState.Broken)
                 ChangeState(PluginModelInfo.Types.PluginState.Stopped);
 
+            _server.EventBus.SendUpdate(PluginModelUpdate.Updated(_id, GetInfoCopy()));
+
             _updatePkgTaskSrc.SetResult(true);
             _updatePkgTaskSrc = null;
             return true;
@@ -135,7 +141,8 @@ namespace TickTrader.Algo.Server
                 _logger.Error($"State: {newState} Error: {faultMsg}");
             _state = newState;
             _faultMsg = faultMsg;
-            //StateChanged?.Invoke(new PluginStateUpdate { PluginId = _config.InstanceId, State = newState, FaultMessage = faultMsg });
+
+            _server.EventBus.SendUpdate(new PluginStateUpdate(_id, newState, faultMsg));
         }
 
         private async Task StartInternal()
@@ -205,6 +212,20 @@ namespace TickTrader.Algo.Server
             }
 
             _stopTaskSrc = null;
+        }
+
+
+        private PluginModelInfo GetInfoCopy()
+        {
+            return new PluginModelInfo
+            {
+                InstanceId = _id,
+                State = _state,
+                AccountId = _accId,
+                Descriptor_ = _pluginInfo.Descriptor_,
+                Config = _config,
+                FaultMessage = _faultMsg,
+            };
         }
 
 

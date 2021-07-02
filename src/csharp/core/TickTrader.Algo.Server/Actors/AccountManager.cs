@@ -140,7 +140,7 @@ namespace TickTrader.Algo.Server
             _accounts.Remove(accId);
             _accountDisplayNameCache.Remove(accId);
 
-            //AccountChanged?.Invoke(acc.GetInfoCopy(), ChangeAction.Removed);
+            _server.EventBus.SendUpdate(AccountModelUpdate.Removed(accId));
 
             await ShutdownAccountInternal(accId, account);
         }
