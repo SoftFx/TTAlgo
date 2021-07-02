@@ -1,4 +1,6 @@
-﻿using TickTrader.Algo.Async.Actors;
+﻿using Google.Protobuf;
+using System.Threading.Channels;
+using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
@@ -9,6 +11,7 @@ namespace TickTrader.Algo.Server
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<ServerBusActor>();
 
         private readonly ServerSnapshotBuilder _snapshotBuilder = new ServerSnapshotBuilder();
+        private readonly ActorEventSource<IMessage> _updateEventSrc = new ActorEventSource<IMessage>();
 
 
         private ServerBusActor()
@@ -23,6 +26,7 @@ namespace TickTrader.Algo.Server
             Receive<PackageSnapshotRequest, PackageListSnapshot>(_ => _snapshotBuilder.GetPackageSnapshot());
             Receive<AccountSnapshotRequest, AccountListSnapshot>(_ => _snapshotBuilder.GetAccountSnapshot());
             Receive<PluginSnapshotRequest, PluginListSnapshot>(_ => _snapshotBuilder.GetPluginSnapshot());
+            Receive<SubscribeToUpdatesRequest>(SubcribeToUpdates);
         }
 
 
@@ -34,32 +38,53 @@ namespace TickTrader.Algo.Server
 
         private void OnPackageUpdate(PackageUpdate update)
         {
-            _snapshotBuilder.UpdatePackage(update);
+            if (_snapshotBuilder.UpdatePackage(update))
+                _updateEventSrc.DispatchEvent(update);
         }
 
         private void OnPackageStateUpdate(PackageStateUpdate update)
         {
-            _snapshotBuilder.UpdatePackageState(update);
+            if (_snapshotBuilder.UpdatePackageState(update))
+                _updateEventSrc.DispatchEvent(update);
         }
 
         private void OnAccountUpdate(AccountModelUpdate update)
         {
-            _snapshotBuilder.UpdateAccount(update);
+            if (_snapshotBuilder.UpdateAccount(update))
+                _updateEventSrc.DispatchEvent(update);
         }
 
         private void OnAccountStateUpdate(AccountStateUpdate update)
         {
-            _snapshotBuilder.UpdateAccountState(update);
+            if (_snapshotBuilder.UpdateAccountState(update))
+                _updateEventSrc.DispatchEvent(update);
         }
 
         private void OnPluginUpdate(PluginModelUpdate update)
         {
-            _snapshotBuilder.UpdatePlugin(update);
+            if (_snapshotBuilder.UpdatePlugin(update))
+                _updateEventSrc.DispatchEvent(update);
         }
 
         private void OnPluginStateUpdate(PluginStateUpdate update)
         {
-            _snapshotBuilder.UpdatePluginState(update);
+            if (_snapshotBuilder.UpdatePluginState(update))
+                _updateEventSrc.DispatchEvent(update);
+        }
+
+        private void SubcribeToUpdates(SubscribeToUpdatesRequest request)
+        {
+            var sink = request.UpdateSink;
+            if (sink != null)
+            {
+                if (request.SendSnapsnot)
+                {
+                    sink.TryWrite(_snapshotBuilder.GetPackageSnapshot());
+                    sink.TryWrite(_snapshotBuilder.GetAccountSnapshot());
+                    sink.TryWrite(_snapshotBuilder.GetPluginSnapshot());
+                }
+                _updateEventSrc.Subscribe(sink);
+            }
         }
 
 
@@ -68,5 +93,18 @@ namespace TickTrader.Algo.Server
         internal class AccountSnapshotRequest : Singleton<AccountSnapshotRequest> { }
 
         internal class PluginSnapshotRequest : Singleton<PluginSnapshotRequest> { }
+
+        internal class SubscribeToUpdatesRequest
+        {
+            public ChannelWriter<IMessage> UpdateSink { get; }
+
+            public bool SendSnapsnot { get; }
+
+            public SubscribeToUpdatesRequest(ChannelWriter<IMessage> updateSink, bool sendSnapsnot)
+            {
+                UpdateSink = updateSink;
+                SendSnapsnot = sendSnapsnot;
+            }
+        }
     }
 }

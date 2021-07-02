@@ -21,6 +21,8 @@ namespace TickTrader.Algo.Server
 
         public EnvService Env { get; }
 
+        public ServerBusModel EventBus { get; }
+
         public PackageStorage PkgStorage { get; } = new PackageStorage();
 
         public AccountManagerModel Accounts { get; }
@@ -36,6 +38,8 @@ namespace TickTrader.Algo.Server
         public AlgoServer()
         {
             Env = new EnvService(AppDomain.CurrentDomain.BaseDirectory);
+
+            EventBus = new ServerBusModel(ServerBusActor.Create());
 
             Accounts = new AccountManagerModel(AccountManager.Create(this));
             Runtimes = new RuntimeManagerModel(RuntimeManager.Create(this));

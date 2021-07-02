@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -21,11 +20,10 @@ namespace TickTrader.Algo.Async
     public sealed class ChannelEventSource<T> : IEventSource<T>, IDisposable
     {
         private readonly Channel<T> _channel;
-        private readonly List<EventSubscription> _subList = new List<EventSubscription>();
         private readonly object _subLock = new object();
         private readonly CancellationTokenSource _cancelTokenSrc;
 
-        private int _subListVersion = 0;
+        private EventSubscription[] _subs;
 
 
         public ChannelWriter<T> Writer => _channel.Writer;
@@ -45,6 +43,8 @@ namespace TickTrader.Algo.Async
             _cancelTokenSrc.Cancel();
         }
 
+        public bool Send(T item) => _channel.Writer.TryWrite(item);
+
         public IDisposable Subscribe(Action<T> handler) => new SyncEventSubscription(handler, this);
 
         public IDisposable Subscribe(Func<T, Task> handler) => new AsyncEventSubscription(handler, this);
@@ -60,15 +60,9 @@ namespace TickTrader.Algo.Async
 
             while (!cancelToken.IsCancellationRequested && await reader.WaitToReadAsync())
             {
-                EventSubscription[] subListCache;
-                int cacheVersion;
-                lock (_subLock)
-                {
-                    subListCache = _subList.ToArray();
-                    cacheVersion = _subListVersion;
-                }
+                var subList = _subs;
 
-                var n = subListCache.Length;
+                var n = subList.Length;
                 var i = 0;
                 for (; i < batchSize; i++)
                 {
@@ -79,15 +73,12 @@ namespace TickTrader.Algo.Async
                     {
                         try
                         {
-                            var t = subListCache[j].DispatchEvent(item);
+                            var t = subList[j].DispatchEvent(item);
                             if (t != null)
                                 await t;
                         }
                         catch (Exception) { }
                     }
-
-                    if (_subListVersion != cacheVersion)
-                        break;
                 }
 
                 await Task.Yield(); // break sync processing
@@ -98,8 +89,14 @@ namespace TickTrader.Algo.Async
         {
             lock (_subLock)
             {
-                _subListVersion++;
-                _subList.Add(sub);
+                var subs = _subs;
+                var cnt = subs.Length;
+                
+                var newSubs = new EventSubscription[cnt + 1];
+                for (var i = 0; i < cnt; i++) newSubs[i] = subs[i];
+                newSubs[cnt] = sub;
+
+                Volatile.Write(ref _subs, newSubs);
             }
         }
 
@@ -107,8 +104,22 @@ namespace TickTrader.Algo.Async
         {
             lock (_subLock)
             {
-                _subListVersion++;
-                _subList.Remove(sub);
+                var subs = _subs;
+                var cnt = subs.Length;
+
+                var newSubs = new EventSubscription[cnt - 1];
+                var j = 0;
+                for (var i = 0; i < cnt; i++)
+                {
+                    var item = subs[i];
+                    if (!ReferenceEquals(item, sub))
+                    {
+                        newSubs[j] = sub;
+                        j++;
+                    }
+                }
+
+                Volatile.Write(ref _subs, newSubs);
             }
         }
 

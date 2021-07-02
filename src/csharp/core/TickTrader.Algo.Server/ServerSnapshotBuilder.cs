@@ -16,8 +16,8 @@ namespace TickTrader.Algo.Server
         private readonly Dictionary<string, AccountModelInfo> _accounts = new Dictionary<string, AccountModelInfo>();
         private readonly Dictionary<string, PluginModelInfo> _plugins = new Dictionary<string, PluginModelInfo>();
 
-        private int _packagesVersion, _accountsVersion, _pluginsVersion;
-        private int _packageSnapshotVersion, _accountSnapshotVersion, _pluginSnapshotVersion;
+        private ulong _packagesVersion, _accountsVersion, _pluginsVersion;
+        private ulong _packageSnapshotVersion, _accountSnapshotVersion, _pluginSnapshotVersion;
         private PackageListSnapshot _packageSnapshot = new PackageListSnapshot();
         private AccountListSnapshot _accountSnapshot = new AccountListSnapshot();
         private PluginListSnapshot _pluginSnapshot = new PluginListSnapshot();
