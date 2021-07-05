@@ -48,6 +48,11 @@ message PluginLogRecord {
     google.protobuf.StringValue details = 4;
 }
 
+message PluginStatusUpdate {
+    string plugin_id = 1;
+    google.protobuf.StringValue message = 2;
+}
+
 message PluginError {
     string message = 1;
     string exception_type = 2;
