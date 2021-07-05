@@ -263,6 +263,7 @@ namespace TickTrader.Algo.Server
             _startedExecutorsCnt--;
             _logger.Debug($"Executor {executor.Id} stopped. Have {_startedExecutorsCnt} active executors");
 
+            _executorsMap.Remove(executor.Id);
             executor.OnStopped();
 
             if (_startedExecutorsCnt == 0 && _shutdownWhenIdle)
