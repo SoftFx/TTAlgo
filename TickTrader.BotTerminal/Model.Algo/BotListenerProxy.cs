@@ -18,7 +18,7 @@ namespace TickTrader.BotTerminal
     {
         private readonly Action _onStopped;
         private readonly IBotWriter _writer;
-        private readonly IDisposable _logSub, _stoppedSub;
+        private readonly IDisposable _logSub, _statusSub, _stoppedSub;
 
         private string _currentStatus;
         private DispatcherTimer _timer;
@@ -29,6 +29,7 @@ namespace TickTrader.BotTerminal
             _writer = writer;
 
             _logSub = executor.LogUpdated.Subscribe(Executor_LogUpdated);
+            _statusSub = executor.StatusUpdated.Subscribe(Executor_StatusUpdated);
             _stoppedSub = executor.Stopped.Subscribe(Executor_Stopped);
         }
 
@@ -57,18 +58,19 @@ namespace TickTrader.BotTerminal
             _timer?.Stop();
 
             _logSub.Dispose();
+            _statusSub.Dispose();
             _stoppedSub.Dispose();
         }
 
         private void Executor_LogUpdated(PluginLogRecord record)
         {
-            if (record.Severity != PluginLogRecord.Types.LogSeverity.CustomStatus)
-                _writer.LogMesssage(record);
-            else
-            {
-                _currentStatus = record.Message;
-                _writer.UpdateStatus(record.Message);
-            }
+            _writer.LogMesssage(record);
+        }
+
+        private void Executor_StatusUpdated(PluginStatusUpdate update)
+        {
+            _currentStatus = update.Message;
+            _writer.UpdateStatus(update.Message);
         }
 
         private void Executor_Stopped(bool val)

@@ -29,7 +29,7 @@ namespace TickTrader.Algo.Server
         private TaskCompletionSource<bool> _startTaskSrc, _stopTaskSrc, _updatePkgTaskSrc;
         private ExecutorModel _executor;
         private MessageCache<PluginLogRecord> _logsCache;
-        private PluginStatusUpdate _lastStatus; 
+        private PluginStatusUpdate _lastStatus;
 
 
         private PluginActor(AlgoServer server, PluginSavedState savedState)
@@ -119,11 +119,8 @@ namespace TickTrader.Algo.Server
 
         private void OnLogUpdated(PluginLogRecord log)
         {
-            if (log.Severity != PluginLogRecord.Types.LogSeverity.CustomStatus)
-            {
-                _logsCache.Add(log);
-                _logEventSrc.DispatchEvent(log);
-            }
+            _logsCache.Add(log);
+            _logEventSrc.DispatchEvent(log);
         }
 
 

@@ -157,7 +157,6 @@ namespace TickTrader.Algo.Backtester
             {
                 case Domain.PluginLogRecord.Types.LogSeverity.Info: return WriteInfo;
                 case Domain.PluginLogRecord.Types.LogSeverity.Custom: return WriteCustom;
-                case Domain.PluginLogRecord.Types.LogSeverity.CustomStatus: return false;
                 case Domain.PluginLogRecord.Types.LogSeverity.Error: return WriteJournal;
                 case Domain.PluginLogRecord.Types.LogSeverity.Trade: return WriteTrade;
                 case Domain.PluginLogRecord.Types.LogSeverity.TradeFail: return WriteTrade;

@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Server
     {
         private readonly Action _onStopped;
         private readonly IBotWriter _writer;
-        private readonly IDisposable _logSub, _stoppedSub;
+        private readonly IDisposable _logSub, _statusSub, _stoppedSub;
 
         private string _currentStatus;
         private Timer _timer;
@@ -31,6 +31,7 @@ namespace TickTrader.Algo.Server
             _writer = writer;
 
             _logSub = executor.LogUpdated.Subscribe(Executor_LogUpdated);
+            _statusSub = executor.StatusUpdated.Subscribe(Executor_StatusUpdated);
             _stoppedSub = executor.Stopped.Subscribe(Executor_Stopped);
         }
 
@@ -59,19 +60,20 @@ namespace TickTrader.Algo.Server
             _timer?.Dispose();
 
             _logSub.Dispose();
+            _statusSub.Dispose();
             _stoppedSub.Dispose();
         }
 
 
         private void Executor_LogUpdated(Domain.PluginLogRecord record)
         {
-            if (record.Severity != Domain.PluginLogRecord.Types.LogSeverity.CustomStatus)
-                _writer.LogMesssage(record);
-            else
-            {
-                _currentStatus = record.Message;
-                _writer.UpdateStatus(record.Message);
-            }
+            _writer.LogMesssage(record);
+        }
+
+        private void Executor_StatusUpdated(Domain.PluginStatusUpdate update)
+        {
+            _currentStatus = update.Message;
+            _writer.UpdateStatus(update.Message);
         }
 
         private void Executor_Stopped(bool val)

@@ -205,7 +205,18 @@ namespace TickTrader.Algo.CoreV1
         public void UpdateStatus(string status)
         {
             if (_isTradeBot)
-                AddLogRecord(Domain.PluginLogRecord.Types.LogSeverity.CustomStatus, status);
+            {
+                try
+                {
+                    var update = new Domain.PluginStatusUpdate(_context.InstanceId, status);
+
+                    _context.SendNotification(update);
+                }
+                catch(Exception ex)
+                {
+                    _context.OnInternalException(ex);
+                }
+            }
         }
 
         private void AddLogRecord(Domain.PluginLogRecord.Types.LogSeverity logSeverity, string message, string errorDetails = null)
