@@ -20,7 +20,18 @@ namespace TickTrader.Algo.Calculator
             Buy = new SideCalc(this, OrderInfo.Types.Side.Buy);
             Sell = new SideCalc(this, Domain.OrderInfo.Types.Side.Sell);
 
-            CreateCalculator();
+            //CreateCalculator();
+            //_calc?.RemoveUsage();
+            //_calc = market.GetCalculator(Symbol);
+            //_calc.AddUsage();
+
+            var hedge = _calc.SymbolInfo != null ? _calc.SymbolInfo.Margin.Hedged : 0.5;
+            _hedgeFormulPart = (2 * hedge - 1);
+
+            Buy.SetCalculators(_calc);
+            Sell.SetCalculators(_calc);
+
+            //_calc.Recalculate += Recalculate;
 
             Tracker = market.GetSymbolNodeOrNull(Symbol);
             Tracker.SymbolInfo.RateUpdated += Recalculate;
@@ -133,20 +144,20 @@ namespace TickTrader.Algo.Calculator
         //    side.AddOrder(order);
         //}
 
-        private void CreateCalculator()
-        {
-            //_calc?.RemoveUsage();
-            //_calc = _market.GetCalculator(Symbol);
-            //_calc.AddUsage();
+        //private void CreateCalculator()
+        //{
+        //    _calc?.RemoveUsage();
+        //    _calc = _market.GetCalculator(Symbol);
+        //    _calc.AddUsage();
 
-            //var hedge = _calc.SymbolInfo != null ? _calc.SymbolInfo.Margin.Hedged : 0.5;
-            //_hedgeFormulPart = (2 * hedge - 1);
+        //    var hedge = _calc.SymbolInfo != null ? _calc.SymbolInfo.Margin.Hedged : 0.5;
+        //    _hedgeFormulPart = (2 * hedge - 1);
 
-            //Buy.SetCalculators(_calc);
-            //Sell.SetCalculators(_calc);
+        //    Buy.SetCalculators(_calc);
+        //    Sell.SetCalculators(_calc);
 
-            //_calc.Recalculate += Recalculate;
-        }
+        //    _calc.Recalculate += Recalculate;
+        //}
 
         //private void Tracker_Changed()
         //{
