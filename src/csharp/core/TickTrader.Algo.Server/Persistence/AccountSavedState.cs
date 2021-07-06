@@ -35,7 +35,7 @@ namespace TickTrader.Algo.Server.Persistence
         public AccountCreds UnpackCreds()
         {
             if (CredsUri == AccountCreds.Descriptor.FullName)
-                return AccountCreds.Parser.ParseFrom(ByteString.CopyFromUtf8(CredsData));
+                return AccountCreds.Parser.ParseFrom(ByteString.FromBase64(CredsData));
 
             return null;
         }
@@ -43,7 +43,7 @@ namespace TickTrader.Algo.Server.Persistence
         public void PackCreds(AccountCreds creds)
         {
             CredsUri = AccountCreds.Descriptor.FullName;
-            CredsData = creds.ToByteString().ToStringUtf8();
+            CredsData = creds.ToByteString().ToBase64();
         }
     }
 }
