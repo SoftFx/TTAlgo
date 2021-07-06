@@ -172,26 +172,26 @@ namespace TickTrader.BotTerminal
         {
             model.ProfileManager.Stop(); // stop stub.profile
 
-            foreach (var acc in state.Accounts.Values)
+            var accLogin = model.AuthSettingsStorage.LastLogin;
+            var accServer = model.AuthSettingsStorage.LastServer;
+
+            model.ProfileManager.LoadCachedProfile(accServer, accLogin);
+
+            foreach (var config in model.ProfileManager.CurrentProfile.Bots.Select(u => u.Config))
             {
-                model.ProfileManager.LoadCachedProfile(acc.Server, acc.UserId);
-
-                foreach (var config in model.ProfileManager.CurrentProfile.Bots.Select(u => u.Config))
+                var pluginState = new PluginSavedState
                 {
-                    var pluginState = new PluginSavedState
-                    {
-                        Id = config.InstanceId,
-                        AccountId = acc.Id,
-                        IsRunning = false,
-                    };
+                    Id = config.InstanceId,
+                    AccountId = AccountId.Pack(accServer, accLogin),
+                    IsRunning = false,
+                };
 
-                    pluginState.PackConfig(config.ToDomain());
+                pluginState.PackConfig(config.ToDomain());
 
-                    state.Plugins.Add(pluginState.Id, pluginState);
-                }
-
-                model.ProfileManager.Stop();
+                state.Plugins.Add(pluginState.Id, pluginState);
             }
+
+            model.ProfileManager.Stop();
 
             return state;
         }

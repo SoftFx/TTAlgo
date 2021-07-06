@@ -76,7 +76,7 @@ namespace TickTrader.Algo.Core.Config
                 InstanceId = InstanceId,
                 Permissions = Permissions.Convert(),
             };
-            res.PackProperties(Properties.Select(p => p.Convert()));
+            res.PackProperties(Properties.Select(p => p.Convert())); //where filtration should be added
 
             return res;
         }
