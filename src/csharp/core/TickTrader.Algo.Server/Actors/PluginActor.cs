@@ -254,7 +254,7 @@ namespace TickTrader.Algo.Server
                 InstanceId = _id,
                 State = _state,
                 AccountId = _accId,
-                Descriptor_ = _pluginInfo.Descriptor_,
+                Descriptor_ = _pluginInfo?.Descriptor_,
                 Config = _config,
                 FaultMessage = _faultMsg,
             };
