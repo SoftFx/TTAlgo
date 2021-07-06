@@ -1,6 +1,5 @@
-﻿using System;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Channels;
 using TickTrader.Algo.Core.Lib;
 
@@ -9,7 +8,7 @@ namespace TickTrader.Algo.Server
     /// <summary>
     /// Not thread-safe.
     /// </summary>
-    public class MessageCache<T>
+    public class MessageCache<T> : IEnumerable<T>
     {
         private readonly CircularList<T> _buffer = new CircularList<T>();
         private readonly int _maxCachedRecords;
@@ -31,15 +30,14 @@ namespace TickTrader.Algo.Server
             _buffer.Add(item);
         }
 
-        public List<T> GetCachedMessages(Func<T, bool> selector, int maxCount)
-        {
-            return _buffer.Where(selector).Take(maxCount).ToList();
-        }
-
         public void SendSnapshot(ChannelWriter<T> sink)
         {
             foreach (var item in _buffer)
                 sink.TryWrite(item);
         }
+
+        IEnumerator<T> IEnumerable<T>.GetEnumerator() => _buffer.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => _buffer.GetEnumerator();
     }
 }
