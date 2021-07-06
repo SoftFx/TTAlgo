@@ -13,11 +13,8 @@ namespace TickTrader.Algo.Core.Config
     [KnownType(typeof(FileParameter))]
     [KnownType(typeof(ColoredLineOutput))]
     [KnownType(typeof(MarkerSeriesOutput))]
-    [KnownType(typeof(QuoteInput))]
-    [KnownType(typeof(QuoteToDoubleInput))]
     [KnownType(typeof(BarToBarInput))]
     [KnownType(typeof(BarToDoubleInput))]
-    [KnownType(typeof(QuoteToBarInput))]
     public abstract class Property
     {
         [DataMember(Name = "Key")]

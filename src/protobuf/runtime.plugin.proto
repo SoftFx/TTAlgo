@@ -63,12 +63,6 @@ message SymbolConfig {
     SymbolOrigin origin = 2;
 }
 
-message QuoteInputConfig {
-    string property_id = 1;
-    SymbolConfig selected_symbol = 2;
-    bool use_l2 = 3;
-}
-
 message BarToBarInputConfig {
     string property_id = 1;
     SymbolConfig selected_symbol = 2;
@@ -76,18 +70,6 @@ message BarToBarInputConfig {
 }
 
 message BarToDoubleInputConfig {
-    string property_id = 1;
-    SymbolConfig selected_symbol = 2;
-    MappingKey selected_mapping = 3;
-}
-
-message QuoteToBarInputConfig {
-    string property_id = 1;
-    SymbolConfig selected_symbol = 2;
-    MappingKey selected_mapping = 3;
-}
-
-message QuoteToDoubleInputConfig {
     string property_id = 1;
     SymbolConfig selected_symbol = 2;
     MappingKey selected_mapping = 3;

@@ -80,6 +80,8 @@ namespace TickTrader.Algo.Server
         private void LoadSavedState(LoadSavedStateCmd cmd)
         {
             _state = cmd.ServerState ?? _state;
+
+            IncreaseStateCnt();
         }
 
         private void ScheduleSave(int saveDelay)

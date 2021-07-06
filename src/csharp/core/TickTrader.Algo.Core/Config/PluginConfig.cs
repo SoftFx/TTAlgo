@@ -76,7 +76,7 @@ namespace TickTrader.Algo.Core.Config
                 InstanceId = InstanceId,
                 Permissions = Permissions.Convert(),
             };
-            res.PackProperties(Properties.Select(p => p.Convert())); //where filtration should be added
+            res.PackProperties(Properties.Select(p => p.Convert()).Where(u => u != null));
 
             return res;
         }
@@ -93,7 +93,7 @@ namespace TickTrader.Algo.Core.Config
                 InstanceId = config.InstanceId,
                 Permissions = config.Permissions.Convert(),
             };
-            res.Properties.AddRange(config.UnpackProperties().Select(p => p.Convert()));
+            res.Properties.AddRange(config.UnpackProperties().Select(p => p.Convert()).Where(u => u != null));
 
             return res;
         }
@@ -236,12 +236,6 @@ namespace TickTrader.Algo.Core.Config
                 case FileParameterConfig par:
                     return new FileParameter { Id = par.PropertyId, FileName = par.FileName };
 
-                case QuoteInputConfig input:
-                    return new QuoteInput { Id = input.PropertyId, UseL2 = input.UseL2, SelectedSymbol = input.SelectedSymbol.Convert(), };
-                case QuoteToBarInputConfig input:
-                    return new QuoteToBarInput { Id = input.PropertyId, SelectedSymbol = input.SelectedSymbol.Convert(), SelectedMapping = input.SelectedMapping.Convert(), };
-                case QuoteToDoubleInputConfig input:
-                    return new QuoteToDoubleInput { Id = input.PropertyId, SelectedSymbol = input.SelectedSymbol.Convert(), SelectedMapping = input.SelectedMapping.Convert(), };
                 case BarToBarInputConfig input:
                     return new BarToBarInput { Id = input.PropertyId, SelectedSymbol = input.SelectedSymbol.Convert(), SelectedMapping = input.SelectedMapping.Convert(), };
                 case BarToDoubleInputConfig input:
@@ -260,7 +254,7 @@ namespace TickTrader.Algo.Core.Config
         public static string Convert(this PackageKey package)
         {
             var locationId = SharedConstants.EmbeddedRepositoryId;
-            switch(package.Location)
+            switch (package.Location)
             {
                 case RepositoryLocation.LocalRepository:
                 case RepositoryLocation.LocalExtensions:
@@ -369,12 +363,6 @@ namespace TickTrader.Algo.Core.Config
                 case FileParameter par:
                     return new FileParameterConfig { PropertyId = par.Id, FileName = par.FileName };
 
-                case QuoteInput input:
-                    return new QuoteInputConfig { PropertyId = input.Id, UseL2 = input.UseL2, SelectedSymbol = input.SelectedSymbol.Convert(), };
-                case QuoteToBarInput input:
-                    return new QuoteToBarInputConfig { PropertyId = input.Id, SelectedSymbol = input.SelectedSymbol.Convert(), SelectedMapping = input.SelectedMapping.Convert(), };
-                case QuoteToDoubleInput input:
-                    return new QuoteToDoubleInputConfig { PropertyId = input.Id, SelectedSymbol = input.SelectedSymbol.Convert(), SelectedMapping = input.SelectedMapping.Convert(), };
                 case BarToBarInput input:
                     return new BarToBarInputConfig { PropertyId = input.Id, SelectedSymbol = input.SelectedSymbol.Convert(), SelectedMapping = input.SelectedMapping.Convert(), };
                 case BarToDoubleInput input:

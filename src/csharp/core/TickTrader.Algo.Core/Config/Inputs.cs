@@ -43,18 +43,6 @@ namespace TickTrader.Algo.Core.Config
         }
     }
 
-    [DataContract(Name = "QuoteInput", Namespace = "TTAlgo.Config.v2")]
-    public class QuoteInput : Input
-    {
-        [DataMember(Name = "Level2")]
-        public bool UseL2 { get; set; }
-
-
-        public override Property Clone()
-        {
-            return new QuoteInput { Id = Id, SelectedSymbol = SelectedSymbol.Clone(), UseL2 = UseL2 };
-        }
-    }
 
     [DataContract(Name = "MappedInput", Namespace = "TTAlgo.Config.v2")]
     public abstract class MappedInput : Input
@@ -80,25 +68,6 @@ namespace TickTrader.Algo.Core.Config
         public override Property Clone()
         {
             return new BarToDoubleInput { Id = Id, SelectedSymbol = SelectedSymbol.Clone(), SelectedMapping = SelectedMapping.Clone() };
-        }
-    }
-
-
-    [DataContract(Name = "QuoteToBarInput", Namespace = "TTAlgo.Config.v2")]
-    public class QuoteToBarInput : MappedInput
-    {
-        public override Property Clone()
-        {
-            return new QuoteToBarInput { Id = Id, SelectedSymbol = SelectedSymbol.Clone(), SelectedMapping = SelectedMapping.Clone() };
-        }
-    }
-
-    [DataContract(Name = "QuoteToDoubleInput", Namespace = "TTAlgo.Config.v2")]
-    public class QuoteToDoubleInput : MappedInput
-    {
-        public override Property Clone()
-        {
-            return new QuoteToDoubleInput { Id = Id, SelectedSymbol = SelectedSymbol.Clone(), SelectedMapping = SelectedMapping.Clone() };
         }
     }
 }
