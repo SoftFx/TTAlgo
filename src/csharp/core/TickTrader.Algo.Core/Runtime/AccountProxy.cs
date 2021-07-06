@@ -59,6 +59,7 @@ namespace TickTrader.Algo.Core
 
         private RpcSession _session;
         private int _refCnt;
+        private TaskCompletionSource<object> _startTaskSrc, _stopTaskSrc;
 
 
         public string Id { get; }
@@ -117,33 +118,60 @@ namespace TickTrader.Algo.Core
         }
 
 
-        public async Task AddRef()
+        public Task AddRef()
         {
             _refCnt++;
             if (_refCnt == 1)
             {
-                await Start();
+                _startTaskSrc = new TaskCompletionSource<object>();
+                var _ = Start();
             }
+            return _startTaskSrc?.Task ?? Task.CompletedTask;
         }
 
-        public async Task RemoveRef()
+        public Task RemoveRef()
         {
             _refCnt--;
             if (_refCnt == 0)
             {
-                await Stop();
+                _stopTaskSrc = new TaskCompletionSource<object>();
+                var _ = Stop();
             }
+            return _stopTaskSrc?.Task ?? Task.CompletedTask;
         }
         
         private async Task Start()
         {
-            await _provider.PreLoad();
-            await Task.Factory.StartNew(() => _distributor.Start(_provider));
+            if (_stopTaskSrc != null)
+                await _stopTaskSrc.Task;
+
+            try
+            {
+                await _provider.PreLoad();
+                await Task.Factory.StartNew(() => _distributor.Start(_provider));
+            }
+            finally
+            {
+                _startTaskSrc.TrySetResult(null);
+                _startTaskSrc = null;
+            }
         }
 
         private async Task Stop()
         {
-            await Task.Factory.StartNew(() => _distributor.Stop());
+            if (_startTaskSrc != null)
+                await _startTaskSrc.Task;
+
+            _stopTaskSrc = new TaskCompletionSource<object>();
+            try
+            {
+                await Task.Factory.StartNew(() => _distributor.Stop());
+            }
+            finally
+            {
+                _stopTaskSrc.TrySetResult(null);
+                _stopTaskSrc = null;
+            }
         }
 
 
