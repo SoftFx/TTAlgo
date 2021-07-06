@@ -70,4 +70,38 @@ namespace TickTrader.Algo.Core.Config
             return new BarToDoubleInput { Id = Id, SelectedSymbol = SelectedSymbol.Clone(), SelectedMapping = SelectedMapping.Clone() };
         }
     }
+
+
+    [DataContract(Name = "QuoteInput", Namespace = "TTAlgo.Config.v2")]
+    public class QuoteInput : Input //TODO remove later
+    {
+        [DataMember(Name = "Level2")]
+        public bool UseL2 { get; set; }
+
+
+        public override Property Clone()
+        {
+            return new QuoteInput { Id = Id, SelectedSymbol = SelectedSymbol.Clone(), UseL2 = UseL2 };
+        }
+    }
+
+
+    [DataContract(Name = "QuoteToBarInput", Namespace = "TTAlgo.Config.v2")]
+    public class QuoteToBarInput : MappedInput //TODO remove later
+    {
+        public override Property Clone()
+        {
+            return new QuoteToBarInput { Id = Id, SelectedSymbol = SelectedSymbol.Clone(), SelectedMapping = SelectedMapping.Clone() };
+        }
+    }
+
+
+    [DataContract(Name = "QuoteToDoubleInput", Namespace = "TTAlgo.Config.v2")]
+    public class QuoteToDoubleInput : MappedInput //TODO remove later
+    {
+        public override Property Clone()
+        {
+            return new QuoteToDoubleInput { Id = Id, SelectedSymbol = SelectedSymbol.Clone(), SelectedMapping = SelectedMapping.Clone() };
+        }
+    }
 }

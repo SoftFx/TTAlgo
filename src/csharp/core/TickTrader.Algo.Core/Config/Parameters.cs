@@ -15,6 +15,9 @@ namespace TickTrader.Algo.Core.Config
     [KnownType(typeof(MarkerSeriesOutput))]
     [KnownType(typeof(BarToBarInput))]
     [KnownType(typeof(BarToDoubleInput))]
+    [KnownType(typeof(QuoteInput))] // backward compatibility, remove later
+    [KnownType(typeof(QuoteToDoubleInput))]
+    [KnownType(typeof(QuoteToBarInput))]
     public abstract class Property
     {
         [DataMember(Name = "Key")]
