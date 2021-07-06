@@ -3,7 +3,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Server.Persistence
 {
-    internal class PluginSavedState
+    public class PluginSavedState
     {
         public string Id { get; set; }
 

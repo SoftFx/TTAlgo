@@ -5,6 +5,7 @@ using TickTrader.Algo.Domain;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.Rpc;
 using TickTrader.Algo.Rpc.OverTcp;
+using TickTrader.Algo.Server.Persistence;
 
 namespace TickTrader.Algo.Server
 {
@@ -89,6 +90,10 @@ namespace TickTrader.Algo.Server
             return await runtime.CreateExecutor(instanceId, config);
         }
 
+        public async Task LoadSavedData(ServerSavedState serverState)
+        {
+            await SavedState.LoadSavedState(serverState);
+        }
 
         #region IRpcHost implementation
 

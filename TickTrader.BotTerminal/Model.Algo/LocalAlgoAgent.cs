@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Account;
@@ -18,6 +17,7 @@ using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.Server;
+using TickTrader.Algo.Server.Persistence;
 using TickTrader.Algo.ServerControl;
 using File = System.IO.File;
 
@@ -96,7 +96,10 @@ namespace TickTrader.BotTerminal
             _preferences = storage.PreferencesStorage.StorageModel;
 
             AlgoServer = new AlgoServer();
-            Task.Factory.StartNew(() => AlgoServer.Start());//.GetAwaiter().GetResult();
+
+            var serverSavedState = BuildServerSavedState(storage);
+
+            Task.Factory.StartNew(() => AlgoServer.LoadSavedData(serverSavedState).ContinueWith(_ => AlgoServer.Start()));//.GetAwaiter().GetResult();
             _logger.Info($"Started AlgoServer on port {AlgoServer.BoundPort}");
 
             AlgoServer.Accounts.RegisterAccountProxy(ClientModel.GetAccountProxy());
@@ -132,6 +135,66 @@ namespace TickTrader.BotTerminal
             AccessManager = new AccessManager(ClientClaims.Types.AccessLevel.Admin);
         }
 
+        private ServerSavedState BuildServerSavedState(PersistModel model)
+        {
+            if (File.Exists(AlgoServer.Env.ServerStateFilePath))
+                return null;
+
+            var state = new ServerSavedState();
+
+            state = AddAccountsSavedStates(state, model);
+            state = AddPluginsSavedStates(state, model);
+
+            return state;
+        }
+
+        private static ServerSavedState AddAccountsSavedStates(ServerSavedState state, PersistModel model)
+        {
+            foreach (var acc in model.AuthSettingsStorage.Accounts.Values)
+            {
+                var accState = new AccountSavedState
+                {
+                    Id = AccountId.Pack(acc.ServerAddress, acc.Login),
+                    UserId = acc.Login,
+                    Server = acc.ServerAddress,
+                };
+
+                if (acc.HasPassword)
+                    accState.PackCreds(new AccountCreds(acc.Password));
+
+                state.Accounts.Add(accState.Id, accState);
+            }
+
+            return state;
+        }
+
+        private static ServerSavedState AddPluginsSavedStates(ServerSavedState state, PersistModel model)
+        {
+            model.ProfileManager.Stop(); // stop stub.profile
+
+            foreach (var acc in state.Accounts.Values)
+            {
+                model.ProfileManager.LoadCachedProfile(acc.Server, acc.UserId);
+
+                foreach (var config in model.ProfileManager.CurrentProfile.Bots.Select(u => u.Config))
+                {
+                    var pluginState = new PluginSavedState
+                    {
+                        Id = config.InstanceId,
+                        AccountId = acc.Id,
+                        IsRunning = false,
+                    };
+
+                    pluginState.PackConfig(config.ToDomain());
+
+                    state.Plugins.Add(pluginState.Id, pluginState);
+                }
+
+                model.ProfileManager.Stop();
+            }
+
+            return state;
+        }
 
         public Task<SetupMetadata> GetSetupMetadata(string accountId, SetupContextInfo setupContext)
         {
