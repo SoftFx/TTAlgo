@@ -70,7 +70,9 @@ namespace TickTrader.Algo.CoreV1.Metadata
             var currentApiVersion = typeof(Indicator).Assembly.GetName().Version;
 
             if (_apiVersion > currentApiVersion)
-                SetError(Domain.Metadata.Types.MetadataErrorCode.IncompatibleApiVersion);
+                SetError(Domain.Metadata.Types.MetadataErrorCode.IncompatibleApiNewerVersion);
+            if (_apiVersion < new Version(currentApiVersion.Major, currentApiVersion.Minor, 0))
+                SetError(Domain.Metadata.Types.MetadataErrorCode.IncompatibleApiOlderVersion);
         }
 
 
