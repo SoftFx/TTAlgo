@@ -8,6 +8,12 @@ namespace TickTrader.Algo.CoreV1
 {
     public class PackageV1Explorer : IPackageExplorer
     {
+        private PackageV1Explorer() { }
+
+
+        public static IPackageExplorer Create() => new PackageV1Explorer();
+
+
         public PackageInfo ScanAssembly(string packageId, Assembly assembly)
         {
             var metadata = PackageMetadataCache.ExamineAssembly(packageId, assembly);

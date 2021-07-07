@@ -260,6 +260,7 @@ namespace TickTrader.BotAgent.BA.Models
                 executorConfig.InitSlidingBuffering(4000);
                 executorConfig.InitBarStrategy(Feed.Types.MarketSide.Bid);
                 executorConfig.WorkingDirectory = await _algoData.GetFolder();
+                executorConfig.LogDirectory = await _botLog.GetFolder();
 
                 executor = await _server.CreateExecutor(Config.Key.PackageId, Config.InstanceId, executorConfig);
 

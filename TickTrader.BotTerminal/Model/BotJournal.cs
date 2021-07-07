@@ -41,7 +41,7 @@ namespace TickTrader.BotTerminal
 
         public void LogStatus(string status)
         {
-            _logger.Trace(status);
+            //_logger.Trace(status);
         }
 
         protected override void OnAppended(BotMessage item)
@@ -62,31 +62,26 @@ namespace TickTrader.BotTerminal
 
         private void WriteToLogger(BotMessage message)
         {
-            if (!_writeToLogger)
-                return;
+            //if (!_writeToLogger)
+            //    return;
 
-            if (message.Type != JournalMessageType.Error)
-                _logger.Info(message.ToString());
-            else
-            {
-                _logger.Error(message.ToString());
-                if (message.Details != null)
-                    _logger.Error(message.Details);
-            }
+            //if (message.Type != JournalMessageType.Error)
+            //    _logger.Info(message.ToString());
+            //else
+            //{
+            //    _logger.Error(message.ToString());
+            //    if (message.Details != null)
+            //        _logger.Error(message.Details);
+            //}
         }
 
         private void WriteToLogger(List<BotMessage> items)
         {
-            if (!_writeToLogger)
-                return;
+            //if (!_writeToLogger)
+            //    return;
 
-            foreach (var item in items)
-                WriteToLogger(item);
-        }
-
-        private void LogError(BotMessage message)
-        {
-            _logger.Error(message.ToString());
+            //foreach (var item in items)
+            //    WriteToLogger(item);
         }
     }
 

@@ -119,12 +119,13 @@ message ExecutorConfigRequest { }
 message ExecutorConfig {
     string working_directory = 1;
     bool is_logging_enabled = 2;
-    google.protobuf.Any plugin_config = 3;
-    google.protobuf.Any feed_strategy_config = 4;
-    google.protobuf.Any buffer_strategy_config = 5;
-    google.protobuf.Any invoke_strategy_config = 6;
-    google.protobuf.Any main_series = 7;
-    string account_id = 8;
+    google.protobuf.StringValue log_directory = 3;
+    google.protobuf.Any plugin_config = 4;
+    google.protobuf.Any feed_strategy_config = 5;
+    google.protobuf.Any buffer_strategy_config = 6;
+    google.protobuf.Any invoke_strategy_config = 7;
+    google.protobuf.Any main_series = 8;
+    string account_id = 9;
 }
 
 message BarStratefyConfig {

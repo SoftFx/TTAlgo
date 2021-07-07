@@ -13,9 +13,11 @@ using System.Threading.Tasks;
 using System.Windows;
 using TickTrader.Algo.Account;
 using TickTrader.Algo.Account.Fdk2;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Isolation.NetFx;
+using TickTrader.Algo.Logging;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.Server;
 using TickTrader.Algo.ServerControl;
@@ -54,8 +56,9 @@ namespace TickTrader.BotTerminal
                 ConfigurateLogger();
                 ConfigureGlobalExceptionHandling();
 
-                PackageLoadContext.Init(isolated => PackageLoadContextProvider.Create(isolated));
-                PackageExplorer.Init(new PackageV1Explorer());
+                PackageLoadContext.Init(PackageLoadContextProvider.Create);
+                PackageExplorer.Init(PackageV1Explorer.Create());
+                PluginLogWriter.Init(NLogPluginLogWriter.Create);
             }
         }
 
@@ -129,8 +132,6 @@ namespace TickTrader.BotTerminal
 
         private void ConfigurateLogger()
         {
-            NonBlockingFileCompressor.Setup();
-
             ConfigurationItemFactory.Default.LayoutRenderers.RegisterDefinition("botName", typeof(BotNameLayoutRenderer));
 
             var debuggerTarget = new DebuggerTarget() { Layout = "${logger} -> ${message} ${exception:format=tostring}" };
@@ -255,7 +256,8 @@ namespace TickTrader.BotTerminal
 
             NLog.LogManager.Configuration = config;
 
-            AlgoLoggerFactory.Init(s => new AlgoLogAdapter(s));
+            AlgoLoggerFactory.Init(NLogLoggerAdapter.Create);
+            NonBlockingFileCompressor.Setup();
         }
 
         protected override void OnExit(object sender, EventArgs e)

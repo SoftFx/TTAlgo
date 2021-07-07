@@ -9,6 +9,7 @@ using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Ext;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
+using TickTrader.Algo.Logging;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.Rpc;
 using TickTrader.Algo.Rpc.OverTcp;
@@ -173,7 +174,7 @@ namespace TickTrader.Algo.Runtime
 
         internal void InitDebugLogger()
         {
-            AlgoLoggerFactory.InitDebugLogger();
+            AlgoLoggerFactory.Init(DebugLoggerAdapter.Create);
         }
 
 

@@ -51,6 +51,7 @@ namespace TickTrader.BotAgent.BA.Models
 
             public Ref<BotLog> Ref => Actor;
             public IBotWriter GetWriter() => Actor.Call(a => new LogWriter(a)).Result;
+            public Task<string> GetFolder() => Actor.Call(a => a._logDirectory);
             public Task Clear() => Actor.Call(a => a.Clear());
         }
 
@@ -96,24 +97,24 @@ namespace TickTrader.BotAgent.BA.Models
         {
             var msg = new LogEntry(record);
 
-            switch (record.Severity)
-            {
-                case PluginLogRecord.Types.LogSeverity.Custom:
-                case PluginLogRecord.Types.LogSeverity.Info:
-                case PluginLogRecord.Types.LogSeverity.Trade:
-                case PluginLogRecord.Types.LogSeverity.TradeSuccess:
-                case PluginLogRecord.Types.LogSeverity.TradeFail:
-                    _logger.Info(msg.ToString());
-                    break;
-                case PluginLogRecord.Types.LogSeverity.Alert:
-                    _logger.Warn(msg.ToString());
-                    break;
-                case PluginLogRecord.Types.LogSeverity.Error:
-                    _logger.Error(msg.ToString());
-                    if (!string.IsNullOrEmpty(record.Details))
-                        _logger.Error(record.Details);
-                    break;
-            }
+            //switch (record.Severity)
+            //{
+            //    case PluginLogRecord.Types.LogSeverity.Custom:
+            //    case PluginLogRecord.Types.LogSeverity.Info:
+            //    case PluginLogRecord.Types.LogSeverity.Trade:
+            //    case PluginLogRecord.Types.LogSeverity.TradeSuccess:
+            //    case PluginLogRecord.Types.LogSeverity.TradeFail:
+            //        _logger.Info(msg.ToString());
+            //        break;
+            //    case PluginLogRecord.Types.LogSeverity.Alert:
+            //        _logger.Warn(msg.ToString());
+            //        break;
+            //    case PluginLogRecord.Types.LogSeverity.Error:
+            //        _logger.Error(msg.ToString());
+            //        if (!string.IsNullOrEmpty(record.Details))
+            //            _logger.Error(record.Details);
+            //        break;
+            //}
 
             if (IsLogFull)
                 _logMessages.Dequeue();

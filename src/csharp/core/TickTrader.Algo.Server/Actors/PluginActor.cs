@@ -195,8 +195,9 @@ namespace TickTrader.Algo.Server
 
                 await _server.SavedState.SetPluginRunning(_id, true);
 
-                var config = new ExecutorConfig { AccountId = _accId, PluginConfig = Any.Pack(_config) };
+                var config = new ExecutorConfig { AccountId = _accId, IsLoggingEnabled = true, PluginConfig = Any.Pack(_config) };
                 config.WorkingDirectory = _server.Env.GetPluginWorkingFolder(_id);
+                config.LogDirectory = _server.Env.GetPluginLogsFolder(_id);
                 config.InitPriorityInvokeStrategy();
                 config.InitSlidingBuffering(4000);
                 config.InitBarStrategy(Feed.Types.MarketSide.Bid);
