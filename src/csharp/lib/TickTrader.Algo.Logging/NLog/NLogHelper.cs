@@ -24,6 +24,8 @@ namespace TickTrader.Algo.Logging
     {
         public const string FileExtension = ".log";
         public const string ArchiveExtension = ".zip";
+        public const string SimpleLogLayout = "${longdate} | ${message}";
+        public const string NormalLogLayout = "${longdate} | ${level} | ${logger} | ${message} ${exception:format=tostring}";
 
 
         public static FileTarget CreateFileTarget(NLogFileParams p)
@@ -57,25 +59,16 @@ namespace TickTrader.Algo.Logging
         {
             var logConfig = new LoggingConfiguration();
 
-            var p = new NLogFileParams { LogDirectory = logDir, Layout = "${longdate} | ${message}" };
+            var p = new NLogFileParams { LogDirectory = logDir, Layout = SimpleLogLayout };
 
-            var allTarget = "plugin-all";
-            p.TargetName = allTarget;
             p.FileNameSuffix = "all";
-            logConfig.AddTarget(CreateAsyncFileTarget(p, 100, 1000));
-            logConfig.AddRule(LogLevel.Debug, LogLevel.Fatal, allTarget);
+            logConfig.AddRule(LogLevel.Debug, LogLevel.Fatal, CreateAsyncFileTarget(p, 100, 1000));
 
-            var errTarget = "plugin-error";
-            p.TargetName = errTarget;
             p.FileNameSuffix = "error";
-            logConfig.AddTarget(CreateAsyncFileTarget(p, 20, 100));
-            logConfig.AddRule(LogLevel.Error, LogLevel.Fatal, errTarget);
+            logConfig.AddRule(LogLevel.Error, LogLevel.Fatal, CreateAsyncFileTarget(p, 20, 100));
 
-            var statusTarget = "plugin-status";
-            p.TargetName = statusTarget;
             p.FileNameSuffix = "status";
-            logConfig.AddTarget(CreateAsyncFileTarget(p, 20, 100));
-            logConfig.AddRule(LogLevel.Trace, LogLevel.Trace, statusTarget);
+            logConfig.AddRule(LogLevel.Trace, LogLevel.Trace, CreateAsyncFileTarget(p, 20, 100));
 
             return logConfig;
         }
@@ -84,19 +77,13 @@ namespace TickTrader.Algo.Logging
         {
             var logConfig = new LoggingConfiguration();
 
-            var p = new NLogFileParams { LogDirectory = logDir, Layout = "${longdate} | ${level} | ${logger} | ${message} ${exception:format=tostring}" };
+            var p = new NLogFileParams { LogDirectory = logDir, Layout = NormalLogLayout };
 
-            var allTarget = "runtime-all";
-            p.TargetName = allTarget;
             p.FileNameSuffix = "all";
-            logConfig.AddTarget(CreateAsyncFileTarget(p, 500, 10000));
-            logConfig.AddRule(LogLevel.Debug, LogLevel.Fatal, allTarget);
+            logConfig.AddRule(LogLevel.Debug, LogLevel.Fatal, CreateAsyncFileTarget(p, 500, 10000));
 
-            var errTarget = "runtime-error";
-            p.TargetName = errTarget;
             p.FileNameSuffix = "error";
-            logConfig.AddTarget(CreateAsyncFileTarget(p, 50, 1000));
-            logConfig.AddRule(LogLevel.Error, LogLevel.Fatal, errTarget);
+            logConfig.AddRule(LogLevel.Error, LogLevel.Fatal, CreateAsyncFileTarget(p, 200, 1000));
 
             return logConfig;
         }

@@ -132,127 +132,29 @@ namespace TickTrader.BotTerminal
 
         private void ConfigurateLogger()
         {
-            ConfigurationItemFactory.Default.LayoutRenderers.RegisterDefinition("botName", typeof(BotNameLayoutRenderer));
-
-            var debuggerTarget = new DebuggerTarget() { Layout = "${logger} -> ${message} ${exception:format=tostring}" };
-
-            var logTarget = new FileTarget()
-            {
-                Layout = "${longdate} | ${level} | ${logger} -> ${message} ${exception:format=tostring}",
-                FileName = Path.Combine(EnvService.Instance.LogFolder, "terminal.log"),
-                Encoding = Encoding.UTF8,
-                ArchiveFileName = Path.Combine(EnvService.Instance.LogFolder, "Archives", "terminal-{#}.zip"),
-                ArchiveEvery = FileArchivePeriod.Day,
-                ArchiveNumbering = ArchiveNumberingMode.Date,
-                EnableArchiveFileCompression = true,
-            };
-
-            var alertTarget = new FileTarget()
-            {
-                Layout = "${longdate} | ${message} ${exception:format=tostring}",
-                FileName = Path.Combine(EnvService.Instance.LogFolder, "alert.log"),
-                Encoding = Encoding.UTF8,
-                ArchiveFileName = Path.Combine(EnvService.Instance.LogFolder, "Archives", "alerts-{#}.zip"),
-                ArchiveEvery = FileArchivePeriod.Day,
-                ArchiveNumbering = ArchiveNumberingMode.Date,
-                EnableArchiveFileCompression = true,
-            };
-
-            var journalTarget = new FileTarget()
-            {
-                FileName = Path.Combine(EnvService.Instance.JournalFolder, "Journal-${shortdate}.txt"),
-                Layout = "${longdate} | ${message}",
-                Encoding = Encoding.UTF8,
-            };
-
-            var botInfoTarget = new FileTarget()
-            {
-                FileName = Path.Combine(EnvService.Instance.BotLogFolder, "${botName}/Log.txt"),
-                Layout = "${longdate} | ${message}",
-                Encoding = Encoding.UTF8,
-                ArchiveFileName = Path.Combine(Path.Combine(EnvService.Instance.BotLogFolder, "${botName}", "Archives"), "Log-{#}.zip"),
-                ArchiveEvery = FileArchivePeriod.Day,
-                ArchiveNumbering = ArchiveNumberingMode.Date,
-                EnableArchiveFileCompression = true
-            };
-
-            var botErrorTarget = new FileTarget()
-            {
-                FileName = Path.Combine(EnvService.Instance.BotLogFolder, "${botName}/Error.txt"),
-                Layout = "${longdate} | ${message}",
-                Encoding = Encoding.UTF8,
-                ArchiveFileName = Path.Combine(EnvService.Instance.BotLogFolder, "${botName}", "Archives", "Error-{#}.zip"),
-                ArchiveEvery = FileArchivePeriod.Day,
-                ArchiveNumbering = ArchiveNumberingMode.Date,
-                EnableArchiveFileCompression = true
-            };
-
-            var botStatusTarget = new FileTarget()
-            {
-                FileName = Path.Combine(EnvService.Instance.BotLogFolder, "${botName}/Status.txt"),
-                Layout = "${longdate} | ${message}",
-                Encoding = Encoding.UTF8,
-                ArchiveFileName = Path.Combine(EnvService.Instance.BotLogFolder, "${botName}", "Archives", "Status-{#}.zip"),
-                ArchiveEvery = FileArchivePeriod.Day,
-                ArchiveNumbering = ArchiveNumberingMode.Date,
-                EnableArchiveFileCompression = true
-            };
-
-            var alertWrapper = new AsyncTargetWrapper(alertTarget)
-            {
-                BatchSize = 100,
-                QueueLimit = 1000,
-                OverflowAction = AsyncTargetWrapperOverflowAction.Block,
-            };
-
-            var journalWrapper = new AsyncTargetWrapper(journalTarget)
-            {
-                BatchSize = 100,
-                QueueLimit = 1000,
-                OverflowAction = AsyncTargetWrapperOverflowAction.Block,
-            };
-
-            var botInfoWrapper = new AsyncTargetWrapper(botInfoTarget)
-            {
-                BatchSize = 100,
-                QueueLimit = 1000,
-                OverflowAction = AsyncTargetWrapperOverflowAction.Block,
-            };
-
-            var botErrorWrapper = new AsyncTargetWrapper(botErrorTarget)
-            {
-                BatchSize = 20,
-                QueueLimit = 100,
-                OverflowAction = AsyncTargetWrapperOverflowAction.Block,
-            };
-
-            var botStatusWrapper = new AsyncTargetWrapper(botStatusTarget)
-            {
-                BatchSize = 20,
-                QueueLimit = 100,
-                OverflowAction = AsyncTargetWrapperOverflowAction.Block,
-            };
-
-            var ruleForJournalTarget = new LoggingRule(string.Concat("*", nameof(EventJournal)), LogLevel.Trace, journalWrapper) { Final = true };
-            var ruleForBotInfoTarget = new LoggingRule(string.Concat(LoggerHelper.LoggerNamePrefix, "*"), LogLevel.Debug, botInfoWrapper) { Final = true };
-            var ruleForBotErrorTarget = new LoggingRule(string.Concat(LoggerHelper.LoggerNamePrefix, "*"), LogLevel.Error, botErrorWrapper);
-            var ruleForBotStatusTarget = new LoggingRule(string.Concat(LoggerHelper.LoggerNamePrefix, "*"), LogLevel.Trace, LogLevel.Trace, botStatusWrapper) { Final = true };
-            var ruleForAlertTarget = new LoggingRule(string.Concat("*", nameof(AlertViewModel)), LogLevel.Trace, alertWrapper) { Final = true };
-            var ruleForLogTarget = new LoggingRule();
-            ruleForLogTarget.LoggerNamePattern = "*";
-
-            ruleForLogTarget.EnableLoggingForLevels(LogLevel.Debug, LogLevel.Fatal);
-            ruleForLogTarget.Targets.Add(debuggerTarget);
-            ruleForLogTarget.Targets.Add(logTarget);
-
             var config = new LoggingConfiguration();
 
-            config.LoggingRules.Add(ruleForAlertTarget);
-            config.LoggingRules.Add(ruleForJournalTarget);
-            config.LoggingRules.Add(ruleForBotStatusTarget);
-            config.LoggingRules.Add(ruleForBotErrorTarget);
-            config.LoggingRules.Add(ruleForBotInfoTarget);
-            config.LoggingRules.Add(ruleForLogTarget);
+            var p = new NLogFileParams { LogDirectory = EnvService.Instance.JournalFolder, Layout = NLogHelper.SimpleLogLayout };
+
+            p.FileNameSuffix = "journal";
+            var journalTarget = NLogHelper.CreateAsyncFileTarget(p, 500, 10000);
+            config.AddRule(LogLevel.Trace, LogLevel.Trace, journalTarget, string.Concat("*", nameof(EventJournal)), true);
+
+            p.LogDirectory = EnvService.Instance.LogFolder;
+
+            p.FileNameSuffix = "alert";
+            var alertTarget = NLogHelper.CreateAsyncFileTarget(p, 100, 1000);
+            config.AddRule(LogLevel.Trace, LogLevel.Trace, alertTarget, string.Concat("*", nameof(AlertViewModel)), true);
+
+            p.Layout = NLogHelper.NormalLogLayout;
+
+            p.FileNameSuffix = "terminal";
+            var logTarget = NLogHelper.CreateAsyncFileTarget(p, 500, 10000);
+            config.AddRule(LogLevel.Debug, LogLevel.Fatal, logTarget);
+
+            p.FileNameSuffix = "terminal-error";
+            var errTarget = NLogHelper.CreateAsyncFileTarget(p, 200, 1000);
+            config.AddRule(LogLevel.Error, LogLevel.Fatal, errTarget);
 
             NLog.LogManager.Configuration = config;
 

@@ -26,7 +26,7 @@ namespace TickTrader.BotAgent.BA.Models
         private BotLog.ControlHandler _botLog;
         private AlgoData.ControlHandler _algoData;
         private PluginInfo _info;
-        private BotListenerProxy _botListener;
+        private IDisposable _logSub, _statusSub;
         private TaskCompletionSource<object> _startedEvent;
         private bool _closed;
 
@@ -264,18 +264,10 @@ namespace TickTrader.BotAgent.BA.Models
 
                 executor = await _server.CreateExecutor(Config.Key.PackageId, Config.InstanceId, executorConfig);
 
-                //var feedAdapter = _client.PluginFeedAdapter;
-                //executor.Feed = feedAdapter;
-                //executor.FeedHistory = feedAdapter;
-                //executor.Metadata = feedAdapter;
-
-                //executor.AccInfoProvider = _client.PluginTradeInfo;
-                //executor.TradeExecutor = _client.PluginTradeApi;
-                //executor.TradeHistoryProvider = _client.PluginTradeHistory.AlgoAdapter;
-                _botListener = new BotListenerProxy(executor, OnBotExited, _botLog.GetWriter());
+                _logSub = executor.LogUpdated.Subscribe(_botLog.AddLog);
+                _statusSub = executor.StatusUpdated.Subscribe(_botLog.UpdateStatus);
 
                 await executor.Start();
-                _botListener.Start();
 
                 ChangeState(PluginModelInfo.Types.PluginState.Running);
             }
@@ -311,7 +303,6 @@ namespace TickTrader.BotAgent.BA.Models
                 _log.Error(ex, "StopExecutor() failed!");
             }
 
-            _botListener?.Stop();
             DisposeExecutor();
             ChangeState(hasError ? PluginModelInfo.Types.PluginState.Faulted : PluginModelInfo.Types.PluginState.Stopped);
             OnStop();
@@ -319,10 +310,10 @@ namespace TickTrader.BotAgent.BA.Models
 
         private void DisposeExecutor()
         {
-            _botListener?.Dispose();
-            //executor?.Dispose();
+            _logSub?.Dispose();
+            _statusSub?.Dispose();
+            executor?.Dispose();
             executor = null;
-            _botListener = null;
         }
 
         private void OnStop()

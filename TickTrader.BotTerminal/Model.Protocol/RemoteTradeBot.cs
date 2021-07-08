@@ -57,7 +57,7 @@ namespace TickTrader.BotTerminal
 
             _statusSubscriptionCnt = 0;
             _logsSubscriptionCnt = 0;
-            Journal = new BotJournal(info.InstanceId, false);
+            Journal = new BotJournal(info.InstanceId);
             ResetJournal();
         }
 

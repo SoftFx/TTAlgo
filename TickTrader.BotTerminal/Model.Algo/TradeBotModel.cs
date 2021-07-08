@@ -45,9 +45,9 @@ namespace TickTrader.BotTerminal
         void UnsubscribeFromLogs();
     }
 
-    internal class TradeBotModel : PluginModel, IBotWriter, ITradeBot
+    internal class TradeBotModel : PluginModel, ITradeBot
     {
-        private BotListenerProxy _botListener;
+        private IDisposable _logSub, _statusSub;
 
         public bool IsRemote => false;
         public string Status { get; private set; }
@@ -62,7 +62,7 @@ namespace TickTrader.BotTerminal
             : base(config, agent, host, setupContext)
         {
             AccountId = accountId;
-            Journal = new BotJournal(InstanceId, true);
+            Journal = new BotJournal(InstanceId);
             host.Connected += Host_Connected;
             host.Disconnected += Host_Disconnected;
         }
@@ -80,7 +80,6 @@ namespace TickTrader.BotTerminal
 
             if (await StartExcecutor())
             {
-                _botListener?.Start();
                 ChangeState(PluginModelInfo.Types.PluginState.Running);
             }
         }
@@ -92,8 +91,8 @@ namespace TickTrader.BotTerminal
 
             if (await StopExecutor())
             {
-                _botListener?.Stop();
-                _botListener?.Dispose();
+                _logSub?.Dispose();
+                _statusSub?.Dispose();
                 ChangeState(PluginModelInfo.Types.PluginState.Stopped);
             }
         }
@@ -108,7 +107,8 @@ namespace TickTrader.BotTerminal
         {
             var executor = await base.CreateExecutor();
 
-            _botListener = new BotListenerProxy(executor, OnBotExited, this);
+            _logSub = executor.LogUpdated.Subscribe(LogMesssage);
+            _statusSub = executor.StatusUpdated.Subscribe(UpdateStatus);
 
             return executor;
         }
@@ -187,18 +187,6 @@ namespace TickTrader.BotTerminal
             return BotMessage.Create(record, InstanceId);
         }
 
-        private void OnBotExited()
-        {
-            Execute.OnUIThread(() =>
-            {
-                if (State == PluginModelInfo.Types.PluginState.Running)
-                {
-                    ChangeState(PluginModelInfo.Types.PluginState.Stopped);
-                    UnlockResources();
-                }
-            });
-        }
-
         #region ITradeBot stubs
 
         public void SubscribeToStatus() { }
@@ -215,9 +203,7 @@ namespace TickTrader.BotTerminal
 
         #endregion
 
-        #region IBotWriter implementation
-
-        void IBotWriter.LogMesssage(PluginLogRecord rec)
+        private void LogMesssage(PluginLogRecord rec)
         {
             Journal.Add(Convert(rec));
 
@@ -225,17 +211,10 @@ namespace TickTrader.BotTerminal
                 AlertModel.AddAlert(InstanceId, rec);
         }
 
-        void IBotWriter.UpdateStatus(string status)
+        private void UpdateStatus(PluginStatusUpdate update)
         {
-            Status = status;
+            Status = update.Message;
             StatusChanged?.Invoke(this);
         }
-
-        void IBotWriter.Trace(string status)
-        {
-            Journal.LogStatus(status);
-        }
-
-        #endregion IBotWriter implementation
     }
 }
