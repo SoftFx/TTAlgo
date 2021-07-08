@@ -199,7 +199,7 @@ namespace TickTrader.Algo.CoreV1
                 var timeKey = _keyGen.NextKey(DateTime.Now);
                 var record = new Domain.PluginLogRecord(timeKey, logSeverity, message, errorDetails);
 
-                _logWriter.OnLogRecord(record);
+                _logWriter?.OnLogRecord(record);
                 _context.SendNotification(record);
             }
             catch (Exception ex)
