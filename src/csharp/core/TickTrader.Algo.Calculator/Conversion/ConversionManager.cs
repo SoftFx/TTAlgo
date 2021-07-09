@@ -71,8 +71,6 @@ namespace TickTrader.Algo.Calculator.Conversions
 
             var XY = Exist(X + Y);
 
-            var XY = Exist(X + Y);
-
             if (X == Z)
                 return Formula.Direct; // N 1
 
@@ -145,8 +143,6 @@ namespace TickTrader.Algo.Calculator.Conversions
             string X = node.MarginCurrency;
             string Y = node.ProfitCurrency;
             string Z = _accountBalanceCurrency;
-
-            var XY = Exist(X + Y);
 
             var XY = Exist(X + Y);
 
