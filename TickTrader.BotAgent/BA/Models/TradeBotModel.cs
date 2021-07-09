@@ -373,14 +373,6 @@ namespace TickTrader.BotAgent.BA.Models
                 ChangeState(PluginModelInfo.Types.PluginState.Stopped, null);
         }
 
-        public void Abort()
-        {
-            CheckShutdownFlag();
-
-            //if (State == PluginModelInfo.Types.PluginState.Stopping)
-            //    executor?.Abort();
-        }
-
         private void BreakBot(string message)
         {
             ChangeState(PluginModelInfo.Types.PluginState.Broken, message);

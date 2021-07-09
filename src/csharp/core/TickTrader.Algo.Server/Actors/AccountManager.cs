@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using TickTrader.Algo.Account;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
@@ -34,6 +36,9 @@ namespace TickTrader.Algo.Server
             Receive<AddAccountRequest>(AddAccount);
             Receive<ChangeAccountRequest>(ChangeAccount);
             Receive<RemoveAccountRequest>(RemoveAccount);
+            Receive<TestAccountRequest, ConnectionErrorInfo>(TestAccount);
+            Receive<TestAccountCredsRequest, ConnectionErrorInfo>(TestAccountCreds);
+            Receive<AccountMetadataRequest, AccountMetadataInfo>(GetMetadata);
         }
 
 
@@ -91,6 +96,10 @@ namespace TickTrader.Algo.Server
         {
             var server = request.Server;
             var userId = request.UserId;
+            var creds = request.Creds;
+
+            Validate(server, userId, creds);
+
             var accId = AccountId.Pack(server, userId);
             if (_accounts.ContainsKey(accId))
                 throw Errors.DuplicateAccount(accId);
@@ -145,6 +154,56 @@ namespace TickTrader.Algo.Server
             await ShutdownAccountInternal(accId, account);
         }
 
+        private Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request)
+        {
+            var accId = request.AccountId;
+            if (!_accounts.TryGetValue(accId, out var account))
+                throw Errors.AccountNotFound(accId);
+
+            return account.Test(request);
+        }
+
+        private async Task<ConnectionErrorInfo> TestAccountCreds(TestAccountCredsRequest request)
+        {
+            var server = request.Server;
+            var userId = request.UserId;
+            var creds = request.Creds;
+
+            Validate(server, userId, creds);
+
+            try
+            {
+                var options = new ConnectionOptions { EnableLogs = false, LogsFolder = _server.Env.LogFolder, Type = AppType.BotAgent };
+                var client = new ClientModel.ControlHandler2(KnownAccountFactories.Fdk2, options,
+                        _server.Env.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerClientHierarchy, "test" + Guid.NewGuid().ToString("N"));
+
+                await client.OpenHandler();
+
+                var lastError = await client.Connection.Connect(userId, creds.GetPassword(), server, CancellationToken.None);
+
+                await client.Connection.Disconnect();
+
+                await client.CloseHandler();
+
+                return lastError;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to test account creds");
+            }
+
+            return ConnectionErrorInfo.UnknownNoText;
+        }
+
+        private Task<AccountMetadataInfo> GetMetadata(AccountMetadataRequest request)
+        {
+            var accId = request.AccountId;
+            if (!_accounts.TryGetValue(accId, out var account))
+                throw Errors.AccountNotFound(accId);
+
+            return account.GetMetadata(request);
+        }
+
 
         private void CreateAccountInternal(AccountSavedState savedState)
         {
@@ -164,6 +223,23 @@ namespace TickTrader.Algo.Server
             catch(Exception ex)
             {
                 _logger.Error(ex, $"Failed to shutdown account '{accId}'");
+            }
+        }
+
+        private void Validate(string server, string userId, AccountCreds creds)
+        {
+            if (string.IsNullOrWhiteSpace(server))
+                throw new AlgoException("Server is required");
+            if (string.IsNullOrWhiteSpace(userId))
+                throw new AlgoException("UserId is required");
+            switch (creds.AuthScheme)
+            {
+                case AccountCreds.SimpleAuthSchemeId:
+                    if (string.IsNullOrWhiteSpace(creds.GetPassword()))
+                        throw new AlgoException("Password is required");
+                    break;
+                default:
+                    throw new AlgoException("Creds.AuthScheme is not supported");
             }
         }
 

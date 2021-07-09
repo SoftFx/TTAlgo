@@ -95,7 +95,6 @@ namespace TickTrader.BotAgent.WebAdmin
             app.UseJwtAuthentication();
 
             app.ObserveBotAgent();
-            app.UseWardenOverBots();
 
             app.UseAuthentication();
 

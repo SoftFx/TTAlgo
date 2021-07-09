@@ -47,7 +47,6 @@ namespace TickTrader.BotAgent.BA
         Task ChangeBotConfig(ChangePluginConfigRequest request);
         Task StartBot(StartPluginRequest request);
         Task StopBotAsync(StopPluginRequest request);
-        void AbortBot(string botId);
         Task<IBotLog> GetBotLog(string botId);
 
         Task<IAlertStorage> GetAlertStorage();

@@ -30,7 +30,7 @@ namespace TickTrader.BotAgent.BA.Models
         [DataMember(Name = "accounts")]
         private List<ClientModel> _accounts = new List<ClientModel>();
         private Dictionary<string, TradeBotModel> _allBots;
-        private BotIdHelper _botIdHelper;
+        private PluginIdHelper _botIdHelper;
         private IFdkOptionsProvider _fdkOptionsProvider;
 
         private AlertStorage _alertStorage;
@@ -51,7 +51,7 @@ namespace TickTrader.BotAgent.BA.Models
             await _algoServer.Start();
             _logger.Info($"Started AlgoServer on port {_algoServer.BoundPort}");
 
-            _botIdHelper = new BotIdHelper();
+            _botIdHelper = new PluginIdHelper();
             _allBots = new Dictionary<string, TradeBotModel>();
             _alertStorage = new AlertStorage();
             _threadPoolManager = new ThreadPoolManager();
@@ -146,7 +146,6 @@ namespace TickTrader.BotAgent.BA.Models
             public Task RemoveBot(RemovePluginRequest request) => CallActorAsync(a => a.RemoveBot(request));
             public Task StartBot(StartPluginRequest request) => CallActorAsync(a => a.GetBotOrThrow(request.PluginId).Start());
             public Task StopBotAsync(StopPluginRequest request) => CallActorFlattenAsync(a => a.GetBotOrThrow(request.PluginId).StopAsync());
-            public void AbortBot(string botId) => ActorSend(a => a.GetBotOrThrow(botId).Abort());
             public Task<PluginModelInfo> GetBotInfo(string botId) => CallActorAsync(a => a.GetBotOrThrow(botId).GetInfoCopy());
             public Task<List<PluginModelInfo>> GetBots() => CallActorAsync(a => a._allBots.Values.GetInfoCopy());
             public async Task<IBotFolder> GetAlgoData(string botId)

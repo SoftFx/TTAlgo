@@ -23,6 +23,7 @@ namespace TickTrader.Algo.Server
 
             Receive<ShutdownCmd>(Shutdown);
             Receive<RestoreCmd>(Restore);
+            Receive<PluginExistsRequest, bool>(r => _plugins.ContainsKey(r.PluginId));
             Receive<AddPluginRequest>(AddPlugin);
             Receive<ChangePluginConfigRequest>(UpdateConfig);
             Receive<RemovePluginRequest>(RemovePlugin);
@@ -81,9 +82,6 @@ namespace TickTrader.Algo.Server
 
             await _server.SavedState.AddPlugin(pluginSavedState);
 
-            var plugin = new PluginModel(PluginActor.Create(_server, pluginSavedState));
-            _plugins[id] = plugin;
-
             return CreatePluginIntenal(id, pluginSavedState);
         }
 
@@ -141,5 +139,15 @@ namespace TickTrader.Algo.Server
         internal class ShutdownCmd { }
 
         internal class RestoreCmd { }
+
+        internal class PluginExistsRequest
+        {
+            public string PluginId { get; }
+
+            public PluginExistsRequest(string pluginId)
+            {
+                PluginId = pluginId;
+            }
+        }
     }
 }

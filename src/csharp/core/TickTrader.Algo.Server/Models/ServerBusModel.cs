@@ -61,6 +61,8 @@ namespace TickTrader.Algo.Server
 
         public Task<PluginListSnapshot> GetPluginSnapshot() => _ref.Ask<PluginListSnapshot>(ServerBusActor.PluginSnapshotRequest.Instance);
 
+        public Task<PluginModelInfo> GetPluginInfo(string pluginId) => _ref.Ask<PluginModelInfo>(new ServerBusActor.PluginInfoRequest(pluginId));
+
 
         internal void SendUpdate(IMessage update) => _ref.Tell(update);
 

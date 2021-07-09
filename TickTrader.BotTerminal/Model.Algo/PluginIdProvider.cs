@@ -7,14 +7,14 @@ namespace TickTrader.BotTerminal
 {
     internal class PluginIdProvider : IPluginIdProvider
     {
-        private BotIdHelper _pluginsIdHelper;
+        private PluginIdHelper _pluginsIdHelper;
         private Dictionary<string, int> _plugins;
 
 
         public PluginIdProvider()
         {
             _plugins = new Dictionary<string, int>();
-            _pluginsIdHelper = new BotIdHelper();
+            _pluginsIdHelper = new PluginIdHelper();
         }
 
         public string GeneratePluginId(PluginDescriptor descriptor)

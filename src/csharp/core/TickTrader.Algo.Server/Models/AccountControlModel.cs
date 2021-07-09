@@ -21,5 +21,7 @@ namespace TickTrader.Algo.Server
         public Task Change(ChangeAccountRequest request) => _ref.Ask(request);
 
         public Task<AccountMetadataInfo> GetMetadata(AccountMetadataRequest request) => _ref.Ask<AccountMetadataInfo>(request);
+
+        public Task<ConnectionErrorInfo> Test(TestAccountRequest request) => _ref.Ask<ConnectionErrorInfo>(request);
     }
 }

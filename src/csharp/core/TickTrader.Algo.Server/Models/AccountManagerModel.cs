@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 
 namespace TickTrader.Algo.Server
@@ -30,5 +31,11 @@ namespace TickTrader.Algo.Server
         public Task Change(ChangeAccountRequest request) => _ref.Ask(request);
 
         public Task Remove(RemoveAccountRequest request) => _ref.Ask(request);
+
+        public Task<ConnectionErrorInfo> Test(TestAccountRequest request) => _ref.Ask<ConnectionErrorInfo>(request);
+
+        public Task<ConnectionErrorInfo> TestCreds(TestAccountCredsRequest request) => _ref.Ask<ConnectionErrorInfo>(request);
+
+        public Task<AccountMetadataInfo> GetMetadata(AccountMetadataRequest request) => _ref.Ask<AccountMetadataInfo>(request);
     }
 }

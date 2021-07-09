@@ -19,6 +19,8 @@ namespace TickTrader.Algo.Server
 
         public Task Restore() => _ref.Ask(new PluginManager.RestoreCmd());
 
+        public Task<bool> PluginExists(string pluginId) => _ref.Ask<bool>(pluginId);
+
         public Task Add(AddPluginRequest request) => _ref.Ask(request);
 
         public Task UpdateConfig(ChangePluginConfigRequest request) => _ref.Ask(request);

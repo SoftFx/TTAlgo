@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace TickTrader.Algo.Core
 {
-    public class BotIdHelper
+    public class PluginIdHelper
     {
         public int MaxLength { get; private set; } = 30;
         public string Pattern { get; private set; } = "[^A-Za-z0-9 ]";

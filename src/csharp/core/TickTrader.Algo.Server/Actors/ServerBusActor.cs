@@ -26,6 +26,7 @@ namespace TickTrader.Algo.Server
             Receive<PackageSnapshotRequest, PackageListSnapshot>(_ => _snapshotBuilder.GetPackageSnapshot());
             Receive<AccountSnapshotRequest, AccountListSnapshot>(_ => _snapshotBuilder.GetAccountSnapshot());
             Receive<PluginSnapshotRequest, PluginListSnapshot>(_ => _snapshotBuilder.GetPluginSnapshot());
+            Receive<PluginInfoRequest, PluginModelInfo>(r => _snapshotBuilder.GetPluginInfo(r.PluginId));
             Receive<SubscribeToUpdatesRequest>(SubcribeToUpdates);
         }
 
@@ -93,6 +94,16 @@ namespace TickTrader.Algo.Server
         internal class AccountSnapshotRequest : Singleton<AccountSnapshotRequest> { }
 
         internal class PluginSnapshotRequest : Singleton<PluginSnapshotRequest> { }
+
+        internal class PluginInfoRequest
+        {
+            public string PluginId { get; }
+
+            public PluginInfoRequest(string pluginId)
+            {
+                PluginId = pluginId;
+            }
+        }
 
         internal class SubscribeToUpdatesRequest
         {

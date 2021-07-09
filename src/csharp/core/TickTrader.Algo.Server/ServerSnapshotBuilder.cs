@@ -63,6 +63,14 @@ namespace TickTrader.Algo.Server
             return _pluginSnapshot;
         }
 
+        public PluginModelInfo GetPluginInfo(string id)
+        {
+            if (!_plugins.TryGetValue(id, out var plugin))
+                throw Errors.PluginNotFound(id);
+
+            return plugin.Clone();
+        }
+
         public bool UpdatePackage(PackageUpdate update)
         {
             var id = update.Id;
@@ -181,7 +189,7 @@ namespace TickTrader.Algo.Server
 
             _pluginsVersion++;
             return true;
-        }        
+        }
 
         #endregion Snapshots
     }

@@ -23,16 +23,6 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
         }
 
 
-        public static IApplicationBuilder UseWardenOverBots(this IApplicationBuilder app)
-        {
-            _services = app.ApplicationServices;
-            var botAgent = _services.GetService<IBotAgent>();
-
-            var warden = new BotsWarden(botAgent);
-
-            return app;
-        }
-
         /// <summary>
         /// Use SignalR Hubs to notify clients about server changes
         /// </summary>

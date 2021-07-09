@@ -45,6 +45,7 @@ namespace TickTrader.Algo.Server
             Receive<ShutdownCmd>(Shutdown);
             Receive<ChangeAccountRequest>(Change);
             Receive<AccountMetadataRequest, AccountMetadataInfo>(GetMetadata);
+            Receive<TestAccountRequest, ConnectionErrorInfo>(TestConnection);
 
             Receive<ManageConnectionCmd>(ManageConnectionLoop);
             Receive<ScheduleDisconnectCmd>(ScheduleDisconnect);
@@ -112,7 +113,7 @@ namespace TickTrader.Algo.Server
             }
         }
 
-        public async Task<AccountMetadataInfo> GetMetadata(AccountMetadataRequest request)
+        private async Task<AccountMetadataInfo> GetMetadata(AccountMetadataRequest request)
         {
             using (await _requestGate.Enter())
             {
@@ -123,6 +124,12 @@ namespace TickTrader.Algo.Server
                 var defaultSymbol = await _core.GetDefaultSymbol();
                 return new AccountMetadataInfo(_id, symbols.Select(s => s.ToInfo()).ToList(), defaultSymbol.ToInfo());
             }
+        }
+
+        private async Task<ConnectionErrorInfo> TestConnection(TestAccountRequest request)
+        {
+            using (await _requestGate.Enter())
+                return _lastError;
         }
 
         private void ManageConnectionLoop(ManageConnectionCmd cmd)
