@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 
@@ -7,39 +6,49 @@ namespace TickTrader.Algo.ServerControl
 {
     public interface IProtocolClient
     {
-        void StartClient();
+        #region Connection Management
 
-        void StopClient();
+        ClientStates State { get; }
 
-        void SendLogin();
+        string LastError { get; }
 
-        void SendLogout();
+        VersionSpec VersionSpec { get; }
 
-        void SendDisconnect();
+        AccessManager AccessManager { get; }
 
-        void Init();
 
-        Task<ApiMetadataInfo> GetApiMetadata();
+        Task Connect(ClientSessionSettings settings);
 
-        Task<MappingCollectionInfo> GetMappingsInfo();
+        Task Disconnect();
 
-        Task<SetupContextInfo> GetSetupContext();
+        #endregion Connection Management
+
+
+        #region Other
 
         Task<AccountMetadataInfo> GetAccountMetadata(AccountMetadataRequest request);
 
-        Task<List<PluginModelInfo>> GetPluginList();
+        // to be removed
+        Task<AlertRecordInfo[]> GetAlerts(PluginAlertsRequest request);
 
-        Task AddPlugin(AddPluginRequest request);
+        // replacement
+        //Task SubscribeToAlertList(AlertListSubscribeRequest request); // request params: Timestamp from
 
-        Task RemovePlugin(RemovePluginRequest request);
+        #endregion Other
 
-        Task StartPlugin(StartPluginRequest request);
 
-        Task StopPlugin(StopPluginRequest request);
+        #region Package Management
 
-        Task ChangePluginConfig(ChangePluginConfigRequest request);
+        Task UploadPackage(UploadPackageRequest request, string srcPath, IFileProgressListener progressListener);
 
-        Task<List<AccountModelInfo>> GetAccountList();
+        Task RemovePackage(RemovePackageRequest request);
+
+        Task DownloadPackage(DownloadPackageRequest request, string dstPath, IFileProgressListener progressListener);
+
+        #endregion Package Management
+
+
+        #region Account Management
 
         Task AddAccount(AddAccountRequest request);
 
@@ -51,19 +60,37 @@ namespace TickTrader.Algo.ServerControl
 
         Task<ConnectionErrorInfo> TestAccountCreds(TestAccountCredsRequest request);
 
-        Task<List<PackageInfo>> GetPackageList();
+        #endregion Account Management
 
-        Task UploadPackage(UploadPackageRequest request, string srcPath, IFileProgressListener progressListener);
 
-        Task RemovePackage(RemovePackageRequest request);
+        #region Plugin Management
 
-        Task DownloadPackage(DownloadPackageRequest request, string dstPath, IFileProgressListener progressListener);
+        Task AddPlugin(AddPluginRequest request);
 
+        Task RemovePlugin(RemovePluginRequest request);
+
+        Task StartPlugin(StartPluginRequest request);
+
+        Task StopPlugin(StopPluginRequest request);
+
+        Task ChangePluginConfig(ChangePluginConfigRequest request);
+
+        // to be removed
         Task<string> GetPluginStatus(PluginStatusRequest request);
 
+        // replacement
+        //Task SubscribeToPluginStatus(PluginStatusSubscribeRequest request); // request params: string pluginId
+
+        // to be removed
         Task<LogRecordInfo[]> GetPluginLogs(PluginLogsRequest request);
 
-        Task<AlertRecordInfo[]> GetAlerts(PluginAlertsRequest request);
+        // replacement
+        //Task SubscribeToPluginLogs(PluginLogsSubscribeRequest request); // request params: string pluginId
+
+        #endregion Plugin Management
+
+
+        #region Plugin Files Management
 
         Task<PluginFolderInfo> GetPluginFolderInfo(PluginFolderInfoRequest request);
 
@@ -74,5 +101,7 @@ namespace TickTrader.Algo.ServerControl
         Task DownloadPluginFile(DownloadPluginFileRequest request, string dstPath, IFileProgressListener progressListener);
 
         Task UploadPluginFile(UploadPluginFileRequest request, string srcPath, IFileProgressListener progressListener);
+
+        #endregion Plugin Files Management
     }
 }

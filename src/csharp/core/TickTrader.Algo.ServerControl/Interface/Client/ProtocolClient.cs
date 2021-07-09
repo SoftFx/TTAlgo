@@ -25,8 +25,8 @@ namespace TickTrader.Algo.ServerControl
 
         protected IAlgoServerClient AlgoClient { get; }
 
+        protected ClientSessionSettings SessionSettings { get; set; }
 
-        public ClientSessionSettings SessionSettings { get; protected set; }
 
         public ClientStates State => StateMachine.Current;
 

@@ -8,7 +8,7 @@ namespace TickTrader.Algo.ServerControl
     {
         void AccessLevelChanged();
 
-        #region Initialization
+        #region Connection init
 
         void InitPackageList(List<PackageInfo> report);
 
@@ -22,22 +22,34 @@ namespace TickTrader.Algo.ServerControl
 
         void SetSetupContext(SetupContextInfo setupContext);
 
-        #endregion Initialization
+        #endregion Connection init
 
 
         #region Updates
 
         void UpdatePackage(UpdateInfo.Types.UpdateType updateType, PackageInfo package);
+        // void OnPackageUpdate(PackageUpdate update);
 
         void UpdateAccount(UpdateInfo.Types.UpdateType updateType, AccountModelInfo account);
+        // void OnAccountUpdate(AccountModelUpdate update);
 
         void UpdateBot(UpdateInfo.Types.UpdateType updateType, PluginModelInfo plugin);
+        // void OnPluginModelUpdate(PluginModelUpdate update);
 
         void UpdatePackageState(PackageStateUpdate packageState);
+        // void OnPackageStateUpdate(PackageStateUpdate packageState);
 
         void UpdateAccountState(AccountStateUpdate accountState);
+        // void OnAccountStateUpdate(AccountStateUpdate accountState);
 
         void UpdateBotState(PluginStateUpdate pluginState);
+        // void OnPluginStateUpdate
+
+        //void OnPluginStatusUpdate(PluginStatusUpdate update);
+
+        //void OnPluginLogUpdate(PluginLogUpdate update); // params: string pluginId, LogRecord[] records
+
+        //void OnAlertListUpdate(AlertListUpdate update); // params: AlertRecordInfo[]
 
         #endregion Updates
     }
