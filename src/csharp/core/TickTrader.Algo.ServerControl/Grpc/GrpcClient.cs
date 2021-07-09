@@ -30,7 +30,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
         }
 
 
-        public GrpcClient(IAlgoServerClient algoClient) : base(algoClient)
+        public GrpcClient(IAlgoServerEventHandler algoClient) : base(algoClient)
         {
             _messageFormatter = new MessageFormatter();
         }

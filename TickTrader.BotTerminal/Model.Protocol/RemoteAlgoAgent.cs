@@ -12,7 +12,7 @@ using TickTrader.Algo.ServerControl;
 
 namespace TickTrader.BotTerminal
 {
-    internal class RemoteAlgoAgent : IAlgoAgent, IAlgoServerClient
+    internal class RemoteAlgoAgent : IAlgoAgent, IAlgoServerEventHandler
     {
 
         private ISyncContext _syncContext;
@@ -224,7 +224,7 @@ namespace TickTrader.BotTerminal
 
         #region IAlgoServerClient implementation
 
-        void IAlgoServerClient.AccessLevelChanged()
+        void IAlgoServerEventHandler.AccessLevelChanged()
         {
             _syncContext.Invoke(() =>
             {
@@ -232,7 +232,7 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IAlgoServerClient.InitPackageList(List<PackageInfo> packages)
+        void IAlgoServerEventHandler.InitPackageList(List<PackageInfo> packages)
         {
             _syncContext.Invoke(() =>
             {
@@ -249,7 +249,7 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IAlgoServerClient.InitAccountList(List<AccountModelInfo> accounts)
+        void IAlgoServerEventHandler.InitAccountList(List<AccountModelInfo> accounts)
         {
             _syncContext.Invoke(() =>
             {
@@ -261,7 +261,7 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IAlgoServerClient.InitBotList(List<PluginModelInfo> bots)
+        void IAlgoServerEventHandler.InitBotList(List<PluginModelInfo> bots)
         {
             _syncContext.Invoke(() =>
             {
@@ -275,7 +275,7 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IAlgoServerClient.UpdatePackage(UpdateInfo.Types.UpdateType updateType, PackageInfo package)
+        void IAlgoServerEventHandler.UpdatePackage(UpdateInfo.Types.UpdateType updateType, PackageInfo package)
         {
             _syncContext.Invoke(() =>
             {
@@ -298,7 +298,7 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IAlgoServerClient.UpdateAccount(UpdateInfo.Types.UpdateType updateType, AccountModelInfo acc)
+        void IAlgoServerEventHandler.UpdateAccount(UpdateInfo.Types.UpdateType updateType, AccountModelInfo acc)
         {
             _syncContext.Invoke(() =>
             {
@@ -316,7 +316,7 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IAlgoServerClient.UpdateBot(UpdateInfo.Types.UpdateType updateType, PluginModelInfo bot)
+        void IAlgoServerEventHandler.UpdateBot(UpdateInfo.Types.UpdateType updateType, PluginModelInfo bot)
         {
             _syncContext.Invoke(() =>
             {
@@ -341,22 +341,22 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IAlgoServerClient.SetApiMetadata(ApiMetadataInfo apiMetadata)
+        void IAlgoServerEventHandler.SetApiMetadata(ApiMetadataInfo apiMetadata)
         {
             _apiMetadata = apiMetadata;
         }
 
-        void IAlgoServerClient.SetMappingsInfo(MappingCollectionInfo mappings)
+        void IAlgoServerEventHandler.SetMappingsInfo(MappingCollectionInfo mappings)
         {
             _mappings = mappings;
         }
 
-        void IAlgoServerClient.SetSetupContext(SetupContextInfo setupContext)
+        void IAlgoServerEventHandler.SetSetupContext(SetupContextInfo setupContext)
         {
             _setupContext = setupContext;
         }
 
-        void IAlgoServerClient.UpdatePackageState(PackageStateUpdate update)
+        void IAlgoServerEventHandler.UpdatePackageState(PackageStateUpdate update)
         {
             _syncContext.Invoke(() =>
             {
@@ -368,7 +368,7 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IAlgoServerClient.UpdateAccountState(AccountStateUpdate update)
+        void IAlgoServerEventHandler.UpdateAccountState(AccountStateUpdate update)
         {
             _syncContext.Invoke(() =>
             {
@@ -381,7 +381,7 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IAlgoServerClient.UpdateBotState(PluginStateUpdate update)
+        void IAlgoServerEventHandler.UpdateBotState(PluginStateUpdate update)
         {
             _syncContext.Invoke(() =>
             {

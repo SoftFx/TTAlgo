@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 
@@ -6,51 +6,102 @@ namespace TickTrader.Algo.ServerControl
 {
     public interface IAlgoServerClient
     {
-        void AccessLevelChanged();
+        #region Connection Management
 
-        #region Connection init
+        ClientStates State { get; }
 
-        void InitPackageList(List<PackageInfo> report);
+        string LastError { get; }
 
-        void InitAccountList(List<AccountModelInfo> report);
+        VersionSpec VersionSpec { get; }
 
-        void InitBotList(List<PluginModelInfo> report);
-
-        void SetApiMetadata(ApiMetadataInfo apiMetadata);
-
-        void SetMappingsInfo(MappingCollectionInfo mappings);
-
-        void SetSetupContext(SetupContextInfo setupContext);
-
-        #endregion Connection init
+        AccessManager AccessManager { get; }
 
 
-        #region Updates
+        Task Connect(ClientSessionSettings settings);
 
-        void UpdatePackage(UpdateInfo.Types.UpdateType updateType, PackageInfo package);
-        // void OnPackageUpdate(PackageUpdate update);
+        Task Disconnect();
 
-        void UpdateAccount(UpdateInfo.Types.UpdateType updateType, AccountModelInfo account);
-        // void OnAccountUpdate(AccountModelUpdate update);
+        #endregion Connection Management
 
-        void UpdateBot(UpdateInfo.Types.UpdateType updateType, PluginModelInfo plugin);
-        // void OnPluginModelUpdate(PluginModelUpdate update);
 
-        void UpdatePackageState(PackageStateUpdate packageState);
-        // void OnPackageStateUpdate(PackageStateUpdate packageState);
+        #region Other
 
-        void UpdateAccountState(AccountStateUpdate accountState);
-        // void OnAccountStateUpdate(AccountStateUpdate accountState);
+        Task<AccountMetadataInfo> GetAccountMetadata(AccountMetadataRequest request);
 
-        void UpdateBotState(PluginStateUpdate pluginState);
-        // void OnPluginStateUpdate
+        // to be removed
+        Task<AlertRecordInfo[]> GetAlerts(PluginAlertsRequest request);
 
-        //void OnPluginStatusUpdate(PluginStatusUpdate update);
+        // replacement
+        //Task SubscribeToAlertList(AlertListSubscribeRequest request); // request params: Timestamp from
 
-        //void OnPluginLogUpdate(PluginLogUpdate update); // params: string pluginId, LogRecord[] records
+        #endregion Other
 
-        //void OnAlertListUpdate(AlertListUpdate update); // params: AlertRecordInfo[]
 
-        #endregion Updates
+        #region Account Management
+
+        Task AddAccount(AddAccountRequest request);
+
+        Task RemoveAccount(RemoveAccountRequest request);
+
+        Task ChangeAccount(ChangeAccountRequest request);
+
+        Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request);
+
+        Task<ConnectionErrorInfo> TestAccountCreds(TestAccountCredsRequest request);
+
+        #endregion Account Management
+
+
+        #region Package Management
+
+        Task UploadPackage(UploadPackageRequest request, string srcPath, IFileProgressListener progressListener);
+
+        Task RemovePackage(RemovePackageRequest request);
+
+        Task DownloadPackage(DownloadPackageRequest request, string dstPath, IFileProgressListener progressListener);
+
+        #endregion Package Management
+
+
+        #region Plugin Management
+
+        Task AddPlugin(AddPluginRequest request);
+
+        Task RemovePlugin(RemovePluginRequest request);
+
+        Task StartPlugin(StartPluginRequest request);
+
+        Task StopPlugin(StopPluginRequest request);
+
+        Task ChangePluginConfig(ChangePluginConfigRequest request);
+
+        // to be removed 
+        Task<string> GetPluginStatus(PluginStatusRequest request);
+
+        // replacement
+        //Task SubscribeToPluginStatus(PluginStatusSubscribeRequest request); // request params: string pluginId
+
+        // to be removed
+        Task<LogRecordInfo[]> GetPluginLogs(PluginLogsRequest request);
+
+        // replacement
+        //Task SubscribeToPluginLogs(PluginLogsSubscribeRequest request); // request params: string pluginId
+
+        #endregion Plugin Management
+
+
+        #region Plugin Files Management
+
+        Task<PluginFolderInfo> GetPluginFolderInfo(PluginFolderInfoRequest request);
+
+        Task ClearPluginFolder(ClearPluginFolderRequest request);
+
+        Task DeletePluginFile(DeletePluginFileRequest request);
+
+        Task DownloadPluginFile(DownloadPluginFileRequest request, string dstPath, IFileProgressListener progressListener);
+
+        Task UploadPluginFile(UploadPluginFileRequest request, string srcPath, IFileProgressListener progressListener);
+
+        #endregion Plugin Files Management
     }
 }

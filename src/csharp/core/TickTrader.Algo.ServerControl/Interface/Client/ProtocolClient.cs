@@ -23,7 +23,7 @@ namespace TickTrader.Algo.ServerControl
 
         protected StateMachine<ClientStates> StateMachine { get; }
 
-        protected IAlgoServerClient AlgoClient { get; }
+        protected IAlgoServerEventHandler AlgoClient { get; }
 
         protected ClientSessionSettings SessionSettings { get; set; }
 
@@ -43,7 +43,7 @@ namespace TickTrader.Algo.ServerControl
         public event Action Disconnected = delegate { };
 
 
-        public ProtocolClient(IAlgoServerClient algoClient)
+        public ProtocolClient(IAlgoServerEventHandler algoClient)
         {
             AlgoClient = algoClient;
 
@@ -87,7 +87,7 @@ namespace TickTrader.Algo.ServerControl
         }
 
 
-        public static ProtocolClient Create(IAlgoServerClient client)
+        public static ProtocolClient Create(IAlgoServerEventHandler client)
         {
             return new Grpc.GrpcClient(client);
         }
