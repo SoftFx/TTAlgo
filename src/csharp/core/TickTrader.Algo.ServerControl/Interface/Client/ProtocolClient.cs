@@ -14,7 +14,7 @@ namespace TickTrader.Algo.ServerControl
     public enum ClientEvents { Started, Connected, Disconnected, ConnectionError, LoggedIn, LoggedOut, LoginReject, Initialized, Deinitialized, LogoutRequest }
 
 
-    public abstract class ProtocolClient
+    public abstract class ProtocolClient : IProtocolClient
     {
         public const int DefaultRequestTimeout = 10;
 
@@ -124,17 +124,17 @@ namespace TickTrader.Algo.ServerControl
         }
 
 
-        protected abstract void StartClient();
+        public abstract void StartClient();
 
-        protected abstract void StopClient();
+        public abstract void StopClient();
 
-        protected abstract void SendLogin();
+        public abstract void SendLogin();
 
-        protected abstract void SendLogout();
+        public abstract void SendLogout();
 
-        protected abstract void SendDisconnect();
+        public abstract void SendDisconnect();
 
-        protected abstract void Init();
+        public abstract void Init();
 
 
         protected void OnConnected()

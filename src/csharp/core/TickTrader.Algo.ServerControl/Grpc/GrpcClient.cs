@@ -12,7 +12,7 @@ using TickTrader.Algo.Domain.ServerControl;
 
 namespace TickTrader.Algo.ServerControl.Grpc
 {
-    public class GrpcClient : ProtocolClient
+    internal class GrpcClient : ProtocolClient
     {
         private const int HeartbeatTimeout = 10000;
 
@@ -36,7 +36,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
         }
 
 
-        protected override void StartClient()
+        public override void StartClient()
         {
             GrpcEnvironment.SetLogger(new GrpcLoggerAdapter(Logger));
             var creds = new SslCredentials(CertificateProvider.RootCertificate); //, new KeyCertificatePair(CertificateProvider.ClientCertificate, CertificateProvider.ClientKey));
@@ -67,7 +67,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 });
         }
 
-        protected override void StopClient()
+        public override void StopClient()
         {
             _messageFormatter.LogMessages = false;
             _updateStreamCancelTokenSrc?.Cancel();
@@ -77,7 +77,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
             _channel.ShutdownAsync().Wait();
         }
 
-        protected override void SendLogin()
+        public override void SendLogin()
         {
             ExecuteUnaryRequest(LoginInternal, new LoginRequest
             {
@@ -115,7 +115,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
             });
         }
 
-        protected override void Init()
+        public override void Init()
         {
             ExecuteUnaryRequestAuthorized(GetSnapshotInternal, new SnapshotRequest())
                 .ContinueWith(t =>
@@ -137,7 +137,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 });
         }
 
-        protected override void SendLogout()
+        public override void SendLogout()
         {
             ExecuteUnaryRequestAuthorized(LogoutInternal, new LogoutRequest())
                 .ContinueWith(t =>
@@ -159,7 +159,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 });
         }
 
-        protected override void SendDisconnect()
+        public override void SendDisconnect()
         {
             OnDisconnected();
         }
