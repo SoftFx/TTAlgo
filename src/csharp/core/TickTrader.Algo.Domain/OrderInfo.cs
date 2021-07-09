@@ -15,7 +15,7 @@ namespace TickTrader.Algo.Domain
     }
 
 
-    public partial class OrderInfo : IOrderUpdateInfo, IOrderCalcInfo, IOrderLogDetailsInfo
+    public partial class OrderInfo : IOrderUpdateInfo, IOrderCalcInfo, IOrderLogDetailsInfo, IMarginCalculateRequest, IProfitCalculateRequest
     {
         public OrderOptions Options
         {
@@ -31,9 +31,6 @@ namespace TickTrader.Algo.Domain
 
         public bool IsHidden => MaxVisibleAmount.HasValue && MaxVisibleAmount.Value < 1e-9;
 
-        public bool IsStopOrder => Type == Types.Type.Stop || Type == Types.Type.StopLimit;
-        public bool IsLimitOrder => Type == Types.Type.Limit || Type == Types.Type.StopLimit;
-
 
         public ISymbolCalculator Calculator { get; set; }
 
@@ -48,6 +45,22 @@ namespace TickTrader.Algo.Domain
         double? IOrderLogDetailsInfo.Price => Price;
 
         string IOrderLogDetailsInfo.OrderId => Id;
+
+
+        Types.Type IMarginCalculateRequest.Type => Type;
+
+        double IMarginCalculateRequest.Volume => RemainingAmount;
+
+        bool IMarginCalculateRequest.IsHiddenLimit => IsHidden && Type.IsLimit();
+
+
+        double IProfitCalculateRequest.Price => Price ?? 0.0;
+
+        double IProfitCalculateRequest.Volume => RemainingAmount;
+
+        Types.Side IProfitCalculateRequest.Side => Side;
+
+
 
         public event Action<OrderEssentialsChangeArgs> EssentialsChanged;
         public event Action<OrderPropArgs<double>> SwapChanged;
@@ -69,7 +82,7 @@ namespace TickTrader.Algo.Domain
         public void Update(IOrderUpdateInfo info)
         {
             var oldAmount = RequestedAmount;
-            var oldPrice = IsStopOrder ? StopPrice : Price;
+            var oldPrice = Type.IsStop() ? StopPrice : Price;
             var oldStopPrice = StopPrice;
             var oldType = Type;
             var oldSwap = Swap;
@@ -80,7 +93,7 @@ namespace TickTrader.Algo.Domain
 
             Symbol = info.Symbol;
             RequestedAmount = info.RequestedAmount;
-            RemainingAmount = (double)info.RemainingAmount;
+            RemainingAmount = info.RemainingAmount;
             Type = info.Type;
             InitialType = info.InitialType;
             Side = info.Side;

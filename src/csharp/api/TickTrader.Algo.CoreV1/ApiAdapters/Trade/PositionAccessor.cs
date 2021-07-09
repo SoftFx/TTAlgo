@@ -1,6 +1,7 @@
 ﻿using System;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Domain.CalculatorInterfaces;
 
 namespace TickTrader.Algo.CoreV1
 {
@@ -60,14 +61,19 @@ namespace TickTrader.Algo.CoreV1
         public SideProxy Short { get; } = new SideProxy();
 
         double NetPosition.Volume => (double)Amount / _lotSize;
-        double NetPosition.Margin => /*Info?.Calculator?.CalculateMargin(Info) ??*/ double.NaN;
-        double NetPosition.Profit => /*Info?.Calculator?.CalculateProfit(Info) ??*/ double.NaN;
+        double NetPosition.Margin => ProcessResponse(Info.Calculator?.Margin?.Calculate(Info));
+        double NetPosition.Profit => ProcessResponse(Info.Calculator?.Profit.Calculate(Info));
         double NetPosition.Swap => (double)Info.Swap;
         double NetPosition.Commission => (double)Info.Commission;
         OrderSide NetPosition.Side => Side.ToApiEnum();
         DateTime? NetPosition.Modified => Info.Modified?.ToDateTime();
 
         internal event Action<PositionAccessor> Changed;
+
+        private static double ProcessResponse(ICalculateResponse<double> response)
+        {
+            return response != null && response.IsCompleted ? response.Value : double.NaN;
+        }
 
         #region Emulator
 

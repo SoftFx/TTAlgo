@@ -43,7 +43,7 @@ namespace TickTrader.BotTerminal
         }
 
         public override string Id => _order.Id;
-        public override double Profit => /*_order?.Calculator != null ? (double)_order?.Calculator?.CalculateProfit(_order) :*/ 0;
+        public override double Profit => _order?.Calculator?.Profit.Calculate(_order)?.Value ?? 0.0;
 
         public Property<double?> StopPrice { get; }
         public Property<double?> LimitPrice { get; }

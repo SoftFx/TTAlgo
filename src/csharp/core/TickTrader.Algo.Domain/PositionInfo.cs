@@ -3,7 +3,7 @@ using TickTrader.Algo.Domain.CalculatorInterfaces;
 
 namespace TickTrader.Algo.Domain
 {
-    public partial class PositionInfo : IPositionInfo
+    public partial class PositionInfo : IPositionInfo, IMarginCalculateRequest, IProfitCalculateRequest
     {
         public bool IsEmpty => Math.Abs(Volume) < 1e-9;
 
@@ -18,10 +18,18 @@ namespace TickTrader.Algo.Domain
         DateTime? IPositionInfo.Modified => Modified?.ToDateTime();
 
         double IMarginProfitCalc.Price => (double)(Long.Amount > Short.Amount ? Long.Price : Short.Price);
-        double IMarginProfitCalc.RemainingAmount => (double)Math.Max(Long.Amount, Short.Amount);
+        double IMarginProfitCalc.RemainingAmount => Math.Max(Long.Amount, Short.Amount);
         OrderInfo.Types.Type IMarginProfitCalc.Type => OrderInfo.Types.Type.Position;
 
+        
+
         bool IMarginProfitCalc.IsHidden => false;
+
+        OrderInfo.Types.Type IMarginCalculateRequest.Type => OrderInfo.Types.Type.Position;
+
+        double IMarginCalculateRequest.Volume => Math.Max(Long.Amount, Short.Amount);
+
+        bool IMarginCalculateRequest.IsHiddenLimit => false;
 
 
         public string GetSnapshotString() => ToString();

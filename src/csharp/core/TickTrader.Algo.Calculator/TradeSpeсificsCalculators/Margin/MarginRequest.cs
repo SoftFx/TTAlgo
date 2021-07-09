@@ -12,7 +12,7 @@ namespace TickTrader.Algo.Calculator.TradeSpeсificsCalculators
 
         public double Volume { get; private set; }
 
-        public bool IsHiddenLimit => Type == OrderInfo.Types.Type.Limit && _isHidden;
+        public bool IsHiddenLimit => Type.IsLimit() && _isHidden;
 
 
         public MarginRequest(OrderInfo.Types.Type type, bool isHidden)

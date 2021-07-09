@@ -33,7 +33,7 @@ namespace TickTrader.Algo.CoreV1
         public AccountAccessor Acc { get; private set; }
         public AlgoMarketState Market => _context.MarketData;
         public bool IsCalculated => _marginCalc?.IsCalculated ?? true;
-        public int RoundingDigits => _marginCalc?.RoundingDigits ?? 2;
+        public int RoundingDigits => Acc?.BalanceCurrencyInfo.Digits ?? 2;
 
         public void Start()
         {
@@ -175,7 +175,7 @@ namespace TickTrader.Algo.CoreV1
                 try
                 {
                     // Check for margin
-                    var hasMargin = _marginCalc.HasSufficientMarginToOpenOrder(newOrder.Info, out double newMargin);
+                    var hasMargin = _marginCalc.HasSufficientMarginToOpenOrder(newOrder.Info);
 
                     if (hasMargin.Error == CalculationError.NoCrossSymbol)
                         throw new MisconfigException("No cross symbol to convert from " + newOrder.Info.Symbol + " to " + Acc.BalanceCurrency + "!");
@@ -184,7 +184,8 @@ namespace TickTrader.Algo.CoreV1
                     //    throw new OrderValidationError($"Failed to calculate order margin: {error}", error.ToOrderError());
 
                     if (!hasMargin)
-                        throw new OrderValidationError($"Not Enough Money. {this}, NewMargin={newMargin}", Api.OrderCmdResultCodes.NotEnoughMoney);
+                        //throw new OrderValidationError($"Not Enough Money. {this}, NewMargin={newMargin}", Api.OrderCmdResultCodes.NotEnoughMoney);
+                        throw new OrderValidationError($"Not Enough Money. {this}", Api.OrderCmdResultCodes.NotEnoughMoney);
                 }
                 catch (MarketConfigurationException e)
                 {
@@ -245,7 +246,7 @@ namespace TickTrader.Algo.CoreV1
             {
                 if (_marginCalc != null)
                 {
-                    var result = _marginCalc.HasSufficientMarginToOpenOrder(orderVol, symbol, type, side, isHidden, out _);
+                    var result = _marginCalc.HasSufficientMarginToOpenOrder(orderVol, symbol, type, side, isHidden);
                     HandleMarginCalcError(result.Error, symbol.Name);
                     return result.Value;
                 }

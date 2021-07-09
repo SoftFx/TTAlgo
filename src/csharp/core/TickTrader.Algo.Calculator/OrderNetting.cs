@@ -1,80 +1,70 @@
-﻿using System;
-using TickTrader.Algo.Calculator.TradeSpeсificsCalculators;
+﻿using TickTrader.Algo.Calculator.TradeSpeсificsCalculators;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.CalculatorInterfaces;
 
 namespace TickTrader.Algo.Calculator
 {
-    internal class OrderNetting
+    internal sealed class OrderNetting
     {
-        //private double _dblMarginAmount;
-        //private double _dblProfitAmount;
+        private readonly ISymbolCalculator _calculator;
+        private readonly OrderInfo.Types.Type _type;
+        private readonly OrderInfo.Types.Side _side;
+        private readonly bool _isHidden;
 
-        public OrderNetting(/*IMarginAccountInfo2 accInfo, */OrderInfo.Types.Type type, OrderInfo.Types.Side side, bool isHidden)
+        private double _totalAmount = 0.0, _profitAmount = 0.0, _marginAmount = 0.0;
+        private double _currentMargin = 0.0, _currentProfit = 0.0;
+        private int _errorsCount = 0;
+
+        public bool IsEmpty => _marginAmount <= 0;
+
+
+        public OrderNetting(ISymbolCalculator calculator, OrderInfo.Types.Type type, OrderInfo.Types.Side side, bool isHidden)
         {
-            //AccountData = accInfo;
-            Type = type;
-            Side = side;
-            IsHidden = isHidden;
+            _calculator = calculator;
+            _type = type;
+            _side = side;
+            _isHidden = isHidden;
         }
-
-        public bool IsEmpty => MarginAmount <= 0;
-        public double MarginAmount { get; protected set; }
-        public double ProfitAmount { get; protected set; }
-        public double WeightedAveragePrice { get; protected set; }
-        public double TotalWeight { get; private set; }
-
-        public double Margin { get; private set; }
-        public double Profit { get; private set; }
-        public int ErrorCount { get; private set; }
-
-        //public IMarginAccountInfo2 AccountData { get; }
-        public ISymbolCalculator Calculator { get; internal set; }
-        public OrderInfo.Types.Type Type { get; }
-        public OrderInfo.Types.Side Side { get; }
-        public bool IsHidden { get; }
-
-        public event Action<double> AmountChanged;
 
         public StatsChange Recalculate()
         {
-            UpdateAveragePrice();
+            var oldMargin = _currentMargin;
+            var oldProfit = _currentProfit;
+            var oldErros = _errorsCount;
 
-            var oldMargin = Margin;
-            var oldProfit = Profit;
-            var oldErros = ErrorCount;
-
-            ErrorCount = 0;
+            _errorsCount = 0;
 
             if (IsEmpty)
             {
-                Margin = 0;
-                Profit = 0;
+                _currentMargin = 0;
+                _currentProfit = 0;
             }
             else
             {
-                if (MarginAmount > 0)
+                if (_marginAmount > 0.0)
                 {
-                    var response = Calculator.Margin.Calculate(new MarginRequest(MarginAmount, Type, IsHidden));
-                    Margin = response.Value;
-                    if (response.IsFailed)
-                        ErrorCount++;
-                }
-                else
-                    Margin = 0;
+                    var response = _calculator.Margin.Calculate(new MarginRequest(_marginAmount, _type, _isHidden));
+                    _currentMargin = response.Value;
 
-                if (ProfitAmount > 0)
-                {
-                    var response = Calculator.Profit.Calculate(new ProfitRequest(WeightedAveragePrice, ProfitAmount, Side));
-                    Profit = response.Value;
                     if (response.IsFailed)
-                        ErrorCount++;
+                        _errorsCount++;
                 }
                 else
-                    Profit = 0;
+                    _currentMargin = 0;
+
+                if (_profitAmount > 0.0)
+                {
+                    var response = _calculator.Profit.Calculate(new ProfitRequest(_totalAmount / _profitAmount, _profitAmount, _side));
+                    _currentProfit = response.Value;
+
+                    if (response.IsFailed)
+                        _errorsCount++;
+                }
+                else
+                    _currentProfit = 0;
             }
 
-            return new StatsChange(Margin - oldMargin, Profit - oldProfit, ErrorCount - oldErros);
+            return new StatsChange(_currentMargin - oldMargin, _currentProfit - oldProfit, _errorsCount - oldErros);
         }
 
         public StatsChange AddOrder(double remAmount, double? price)
@@ -83,91 +73,38 @@ namespace TickTrader.Algo.Calculator
             return Recalculate();
         }
 
-        public void AddOrderWithoutCalculation(double remAmount, double? price)
-        {
-            ChangeMarginAmountBy(remAmount);
-
-            if (Type == OrderInfo.Types.Type.Position)
-            {
-                ChangeProfitAmountBy(remAmount);
-                TotalWeight += remAmount * price.Value;
-                UpdateAveragePrice();
-            }
-        }
-
-        public void AddPositionWithoutCalculation(double posAmount, double posPrice)
-        {
-            ChangeMarginAmountBy(posAmount);
-            ChangeProfitAmountBy(posAmount);
-            TotalWeight += posAmount * posPrice;
-            UpdateAveragePrice();
-        }
-
-        public void RemovePositionWithoutCalculation(double posAmount, double posPrice)
-        {
-            ChangeMarginAmountBy(-posAmount);
-            ChangeProfitAmountBy(-posAmount);
-            TotalWeight -= posAmount * posPrice;
-            UpdateAveragePrice();
-        }
-
         public StatsChange RemoveOrder(double remAmount, double? price)
         {
-            //Count--;
-            ChangeMarginAmountBy(-remAmount);
-
-            if (Type == OrderInfo.Types.Type.Position)
-            {
-                ChangeProfitAmountBy(-remAmount);
-                TotalWeight -= remAmount * price.Value;
-                UpdateAveragePrice();
-            }
+            if (_type.IsPosition())
+                RemovePositionWithoutCalculation(remAmount, price ?? 0.0);
+            else
+                _marginAmount -= remAmount;
 
             return Recalculate();
         }
 
-        //public StatsChange ChangeOrderAmount(decimal delta, decimal? price)
-        //{
-        //    MarginAmount += delta;
-
-        //    if (Type == OrderTypes.Position)
-        //    {
-        //        ProfitAmount += delta;
-        //        TotalWeight += delta * price.Value;
-        //        UpdateAveragePrice();
-        //    }
-
-        //    return Recalculate();
-        //}
-
-        private void UpdateAveragePrice()
+        public void AddOrderWithoutCalculation(double remAmount, double? price)
         {
-            if (ProfitAmount > 0)
-                WeightedAveragePrice = TotalWeight / ProfitAmount;
+            if (_type.IsPosition())
+                AddPositionWithoutCalculation(remAmount, price ?? 0.0);
             else
-                WeightedAveragePrice = 0;
+                _marginAmount += remAmount;
         }
 
-        public void ChangeMarginAmountBy(double delta)
+        public void AddPositionWithoutCalculation(double posAmount, double posPrice)
         {
-            MarginAmount += delta;
-            //_dblMarginAmount = MarginAmount;
+            _marginAmount += posAmount;
 
-            AmountChanged.Invoke(delta);
+            _profitAmount += posAmount;
+            _totalAmount += posAmount * posPrice;
         }
 
-        public void ChangeProfitAmountBy(double delta)
+        public void RemovePositionWithoutCalculation(double posAmount, double posPrice)
         {
-            ProfitAmount += delta;
-            //_dblProfitAmount = ProfitAmount;
+            _marginAmount -= -posAmount;
+
+            _profitAmount -= posAmount;
+            _totalAmount -= posAmount * posPrice;
         }
-
-        //private void Order_TypeAmountChanged(TypeAmountChangeArgs obj)
-        //{
-        //}
-
-        //private void Order_RemAmountChanged(ParamChangeArgs<decimal> obj)
-        //{
-        //}
     }
 }

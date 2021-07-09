@@ -3,54 +3,52 @@ using System.Collections.Generic;
 using TickTrader.Algo.Calculator.AlgoMarket;
 using TickTrader.Algo.Calculator.TradeSpeсificsCalculators;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib.Math;
 using TickTrader.Algo.Domain;
-using TickTrader.Algo.Domain.CalculatorInterfaces;
 
 namespace TickTrader.Algo.Calculator
 {
     public class MarginAccountCalculator
     {
         private readonly AlgoMarketState _market;
-        private readonly IDictionary<string, SymbolCalc> _bySymbolMap = new Dictionary<string, SymbolCalc>();
+        private readonly Dictionary<string, SymbolCalc> _bySymbolMap = new Dictionary<string, SymbolCalc>();
         private int _errorCount;
-        //private bool _autoUpdate;
         private double _cms;
         private double _swap;
-        //private double _dblCms;
-        //private double _dblSwap;
+
         private Action<Exception, string> _onLogError;
 
         public event Action<MarginAccountCalculator> Updated;
 
-        public MarginAccountCalculator(IMarginAccountInfo2 accInfo, AlgoMarketState market, Action<Exception, string> onLogError/*, bool autoUpdate = false*/)
+        public MarginAccountCalculator(IMarginAccountInfo2 accInfo, AlgoMarketState market, Action<Exception, string> onLogError)
         {
-            Info = accInfo;
+            Account = accInfo;
             _market = market;
-            //_autoUpdate = autoUpdate;
             _onLogError = onLogError;
-
-            //_market.CurrenciesChanged += InitRounding;
-
-            RoundingDigits = market.Account.BalanceCurrency.Digits;
 
             AddOrdersBunch(accInfo.Orders);
             AddPositions(accInfo.Positions);
 
-            Info.OrderAdded += AddOrder;
-            Info.OrderRemoved += RemoveOrder;
-            Info.OrdersAdded += AddOrdersBunch;
-            Info.PositionChanged += AddModifyNetPos;
-            Info.PositionRemoved += RemoveNetPos;
+            Account.OrderAdded += AddOrder;
+            Account.OrderRemoved += RemoveOrder;
+            Account.OrdersAdded += AddOrdersBunch;
+            Account.PositionChanged += AddModifyNetPos;
+            Account.PositionRemoved += RemoveNetPos;
         }
 
-        public IMarginAccountInfo2 Info { get; }
+        public IMarginAccountInfo2 Account { get; }
+
         public bool IsCalculated => _errorCount <= 0;
-        public int RoundingDigits { get; private set; }
+
         public double Profit { get; private set; }
-        public double Equity => Info.Balance + Floating;
+
+        public double Equity => Account.Balance + Floating;
+
         public double Floating => Profit + Commission + Swap;
+
         public double Margin { get; private set; }
-        public double MarginLevel => CalculateMarginLevel();
+
+        public double MarginLevel => Margin.Gt(0.0) ? 100 * Equity / Margin : 0.0;
 
         public double Commission
         {
@@ -58,7 +56,6 @@ namespace TickTrader.Algo.Calculator
             set
             {
                 _cms = value;
-                //_dblCms = value;
 
                 Updated?.Invoke(this);
             }
@@ -70,7 +67,6 @@ namespace TickTrader.Algo.Calculator
             set
             {
                 _swap = value;
-                //_dblSwap = (double)value;
 
                 Updated?.Invoke(this);
             }
@@ -78,13 +74,11 @@ namespace TickTrader.Algo.Calculator
 
         public void Dispose()
         {
-            //_market.CurrenciesChanged -= InitRounding;
-
-            Info.OrderAdded -= AddOrder;
-            Info.OrderRemoved -= RemoveOrder;
-            Info.OrdersAdded -= AddOrdersBunch;
-            Info.PositionChanged -= AddModifyNetPos;
-            Info.PositionRemoved -= RemoveNetPos;
+            Account.OrderAdded -= AddOrder;
+            Account.OrderRemoved -= RemoveOrder;
+            Account.OrdersAdded -= AddOrdersBunch;
+            Account.PositionChanged -= AddModifyNetPos;
+            Account.PositionRemoved -= RemoveNetPos;
 
             foreach (var smbCalc in _bySymbolMap.Values)
                 DisposeCalc(smbCalc);
@@ -94,44 +88,35 @@ namespace TickTrader.Algo.Calculator
 
         public CalculateResponseBase<bool> HasSufficientMarginToOpenOrder(IOrderCalcInfo order)
         {
-            return HasSufficientMarginToOpenOrder(order, out _);
-        }
-
-        public CalculateResponseBase<bool> HasSufficientMarginToOpenOrder(IOrderCalcInfo order, out double newAccountMargin)
-        {
             var netting = GetSymbolStats(order.Symbol);
-            var calc = netting?.Calc ?? _market.GetCalculator(order.SymbolInfo);
-            //using (calc.UsageScope())
-            //{
-                var orderMargin = calc.Margin.Calculate(new MarginRequest(order.RemainingAmount, order.Type, order.IsHidden));
-                return HasSufficientMarginToOpenOrder(orderMargin.Value, netting, order.Side, out newAccountMargin);
-            //}
+            var calc = netting?.Calculator ?? _market.GetCalculator(order.SymbolInfo);
+
+            var orderMargin = calc.Margin.Calculate(new MarginRequest(order.RemainingAmount, order.Type, order.IsHidden));
+            return HasSufficientMarginToOpenOrder(orderMargin.Value, netting, order.Side);
         }
 
-        public CalculateResponseBase<bool> HasSufficientMarginToOpenOrder(double orderAmount, SymbolInfo symbol, Domain.OrderInfo.Types.Type type, Domain.OrderInfo.Types.Side side, bool isHidden, out double newAccountMargin)
+        public CalculateResponseBase<bool> HasSufficientMarginToOpenOrder(double orderAmount, SymbolInfo symbol, OrderInfo.Types.Type type, OrderInfo.Types.Side side, bool isHidden)
         {
             var netting = GetSymbolStats(symbol.Name);
-            var calc = netting?.Calc ?? _market.GetCalculator(symbol);
-            //using (calc.UsageScope())
-            //{
-                var orderMargin = calc.Margin.Calculate(new MarginRequest(orderAmount, type, isHidden));
-                if (orderMargin.IsFailed)
-                {
-                    newAccountMargin = 0;
-                    //return new CalculateResponseBase<bool>(orderMargin.Error);
-                    return new CalculateResponseBase<bool>(false);
-                }
-                return HasSufficientMarginToOpenOrder(orderMargin.Value, netting, side, out newAccountMargin);
-            //}
+            var calc = netting?.Calculator ?? _market.GetCalculator(symbol);
+
+            var orderMargin = calc.Margin.Calculate(new MarginRequest(orderAmount, type, isHidden));
+            if (orderMargin.IsFailed)
+            {
+                // newAccountMargin = 0;
+                //return new CalculateResponseBase<bool>(orderMargin.Error);
+                return new CalculateResponseBase<bool>(false);
+            }
+            return HasSufficientMarginToOpenOrder(orderMargin.Value, netting, side);
         }
 
-        public CalculateResponseBase<bool> HasSufficientMarginToOpenOrder(double orderMargin, string symbol, Domain.OrderInfo.Types.Side orderSide)
+        public CalculateResponseBase<bool> HasSufficientMarginToOpenOrder(double orderMargin, string symbol, OrderInfo.Types.Side orderSide)
         {
             var netting = GetSymbolStats(symbol);
-            return HasSufficientMarginToOpenOrder(orderMargin, netting, orderSide, out _);
+            return HasSufficientMarginToOpenOrder(orderMargin, netting, orderSide);
         }
 
-        public CalculateResponseBase<bool> HasSufficientMarginToOpenOrder(double orderMargin, SymbolCalc netting, Domain.OrderInfo.Types.Side orderSide, out double newAccountMargin)
+        public CalculateResponseBase<bool> HasSufficientMarginToOpenOrder(double orderMargin, SymbolCalc netting, OrderInfo.Types.Side orderSide)
         {
             double smbMargin;
             double newSmbMargin;
@@ -143,7 +128,7 @@ namespace TickTrader.Algo.Calculator
             }
             else
             {
-                if (Info.Type == Domain.AccountInfo.Types.Type.Gross)
+                if (Account.Type == Domain.AccountInfo.Types.Type.Gross)
                 {
                     var marginBuy = netting.Buy.Margin;
                     var marginSell = netting.Sell.Margin;
@@ -154,7 +139,7 @@ namespace TickTrader.Algo.Calculator
                     else
                         newSmbMargin = Math.Max(marginSell + orderMargin, marginBuy);
                 }
-                else if (Info.Type == Domain.AccountInfo.Types.Type.Net)
+                else if (Account.Type == Domain.AccountInfo.Types.Type.Net)
                 {
                     var marginBuy = netting.Buy.Margin;
                     var marginSell = netting.Sell.Margin;
@@ -175,27 +160,16 @@ namespace TickTrader.Algo.Calculator
             }
 
             var marginIncrement = newSmbMargin - smbMargin;
-            newAccountMargin = Margin + marginIncrement;
+            var newAccountMargin = Margin + marginIncrement;
 
             return new CalculateResponseBase<bool>(marginIncrement <= 0 || newAccountMargin < Equity);
         }
 
         public SymbolCalc GetSymbolStats(string symbol)
         {
-            SymbolCalc calc;
-            _bySymbolMap.TryGetValue(symbol, out calc);
+            _bySymbolMap.TryGetValue(symbol, out SymbolCalc calc);
             return calc;
         }
-
-        //public void EnableAutoUpdate()
-        //{
-        //    _market.RateChanged += a =>
-        //    {
-        //        var smbCalc = GetSymbolStats(a.Symbol);
-        //        if (smbCalc != null)
-        //            smbCalc.Recalculate();
-        //    };
-        //}
 
         private void AddOrder(IOrderCalcInfo order)
         {
@@ -292,7 +266,7 @@ namespace TickTrader.Algo.Calculator
                 Swap += dSwap;
                 Commission += dComm;
             }
-            catch(SymbolNotFoundException snfex)
+            catch (SymbolNotFoundException snfex)
             {
                 _onLogError?.Invoke(null, $"{nameof(MarginAccountCalculator)} failed to update net position: {snfex.Message}. {position?.GetSnapshotString()}");
             }
@@ -321,7 +295,7 @@ namespace TickTrader.Algo.Calculator
         {
             if (!_bySymbolMap.TryGetValue(symbol, out SymbolCalc calc))
             {
-                calc = new SymbolCalc(symbol, _market);
+                calc = new SymbolCalc(_market.GetSymbolNodeOrNull(symbol)); //check on null
                 calc.StatsChanged += Calc_StatsChanged;
                 _bySymbolMap.Add(symbol, calc);
             }
@@ -345,14 +319,6 @@ namespace TickTrader.Algo.Calculator
         private void Order_CommissionChanged(OrderPropArgs<double> args)
         {
             Commission += args.NewVal - args.OldVal;
-        }
-
-        private double CalculateMarginLevel()
-        {
-            if (Margin > 0)
-                return 100 * Equity / Margin;
-            else
-                return 0;
         }
     }
 }

@@ -155,7 +155,7 @@ namespace TickTrader.Algo.CoreV1
                     break;
                 case ExecAction.Filled:
                 case ExecAction.Closed:
-                    AppendFilledCloseOrderInfo(builder, order, action, order.IsStopOrder ? order.StopPrice : order.Price,
+                    AppendFilledCloseOrderInfo(builder, order, action, order.Type.IsStop() ? order.StopPrice : order.Price,
                                                order.IsImmediateOrCancel ? order.LastFillAmount : order.ExecAmount); //Remaning Amount
                     goto case ExecAction.Activated;
                 case ExecAction.Activated:

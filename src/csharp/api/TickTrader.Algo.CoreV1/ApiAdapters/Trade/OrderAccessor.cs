@@ -77,9 +77,9 @@ namespace TickTrader.Algo.CoreV1
 
         double Order.LastFillVolume => Info.LastFillAmount / LotSize ?? double.NaN;
 
-        double Order.Margin => /*Info.Calculator?.CalculateMargin(Info) ?? */ double.NaN;
+        double Order.Margin => ProcessResponse(Info.Calculator?.Margin?.Calculate(Info));
 
-        double Order.Profit => /*Info.Calculator?.CalculateProfit(Info) ??*/ double.NaN;
+        double Order.Profit => ProcessResponse(Info.Calculator?.Profit.Calculate(Info));
 
         Api.OrderOptions Order.Options => Info.Options.ToApiEnum();
 
@@ -95,7 +95,12 @@ namespace TickTrader.Algo.CoreV1
         public static bool IsHiddenOrder(double? maxVisibleVolume) => maxVisibleVolume != null && maxVisibleVolume.Value.E(0.0);
 
 
-        internal sealed class WriteEntity : Order, IOrderCalcInfo
+        private static double ProcessResponse(ICalculateResponse<double> response)
+        {
+            return response != null && response.IsCompleted ? response.Value : double.NaN;
+        }
+
+        internal sealed class WriteEntity : Order, IOrderCalcInfo, IMarginCalculateRequest, IProfitCalculateRequest
         {
             public event Action<OrderEssentialsChangeArgs> EssentialsChanged;
             public event Action<OrderPropArgs<double>> SwapChanged;
@@ -114,9 +119,9 @@ namespace TickTrader.Algo.CoreV1
                 {
                     Id = Id,
                     Symbol = Symbol,
-                    RequestedAmount = (double)RequestedAmount,
-                    RemainingAmount = (double)RemainingAmount,
-                    MaxVisibleAmount = (double?)MaxVisibleAmount,
+                    RequestedAmount = RequestedAmount,
+                    RemainingAmount = RemainingAmount,
+                    MaxVisibleAmount = MaxVisibleAmount,
                     Type = Type,
                     Side = Side,
                     Price = Price,
@@ -179,8 +184,8 @@ namespace TickTrader.Algo.CoreV1
 
             public Domain.OrderOptions Options { get; internal set; }
 
-            public double Margin => /*Calculator?.CalculateMargin(this) ??*/ double.NaN;
-            public double Profit => /*Calculator?.CalculateProfit(this) ??*/ double.NaN;
+            public double Margin => ProcessResponse(Calculator?.Margin?.Calculate(this));
+            public double Profit => ProcessResponse(Calculator?.Profit.Calculate(this));
 
             public double Swap { get; internal set; }
             public double Commission { get; internal set; }
@@ -209,9 +214,9 @@ namespace TickTrader.Algo.CoreV1
             double Order.TakeProfit => TakeProfit ?? double.NaN;
             double Order.Slippage => Slippage ?? double.NaN;
 
-            double Order.RequestedVolume => (double)RequestedAmount / SymbolInfo.LotSize;
-            double Order.RemainingVolume => (double)RemainingAmount / SymbolInfo.LotSize;
-            double Order.MaxVisibleVolume => (double?)MaxVisibleAmount / SymbolInfo.LotSize ?? double.NaN;
+            double Order.RequestedVolume => RequestedAmount / SymbolInfo.LotSize;
+            double Order.RemainingVolume => RemainingAmount / SymbolInfo.LotSize;
+            double Order.MaxVisibleVolume => MaxVisibleAmount / SymbolInfo.LotSize ?? double.NaN;
 
             DateTime Order.Created => Created?.ToLocalTime() ?? DateTime.MinValue;
             DateTime Order.Modified => Modified?.ToLocalTime() ?? DateTime.MinValue;
@@ -231,6 +236,21 @@ namespace TickTrader.Algo.CoreV1
             public double CashMargin { get; set; }
 
             public SymbolInfo SymbolInfo { get; }
+
+
+            OrderInfo.Types.Type IMarginCalculateRequest.Type => Type;
+
+            double IMarginCalculateRequest.Volume => RemainingAmount;
+
+            bool IMarginCalculateRequest.IsHiddenLimit => IsHidden && Type.IsLimit();
+
+
+            double IProfitCalculateRequest.Price => Price ?? 0.0;
+
+            double IProfitCalculateRequest.Volume => RemainingAmount;
+
+            OrderInfo.Types.Side IProfitCalculateRequest.Side => Side;
+
             #endregion
 
             internal void SetSwap(double swap)
