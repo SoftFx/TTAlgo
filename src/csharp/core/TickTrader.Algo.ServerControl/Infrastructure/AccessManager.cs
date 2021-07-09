@@ -3,7 +3,7 @@ using TickTrader.Algo.Domain.ServerControl;
 
 namespace TickTrader.Algo.ServerControl
 {
-    public class AccessManager
+    public class AccessManager : IAccessManager
     {
         public ClientClaims.Types.AccessLevel Level { get; }
 

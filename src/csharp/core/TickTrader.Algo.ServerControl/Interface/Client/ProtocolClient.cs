@@ -14,7 +14,7 @@ namespace TickTrader.Algo.ServerControl
     public enum ClientEvents { Started, Connected, Disconnected, ConnectionError, LoggedIn, LoggedOut, LoginReject, Initialized, Deinitialized, LogoutRequest }
 
 
-    public abstract class ProtocolClient : IProtocolClient
+    public abstract class ProtocolClient : IAlgoServerClient
     {
         public const int DefaultRequestTimeout = 10;
 
@@ -35,6 +35,11 @@ namespace TickTrader.Algo.ServerControl
         public VersionSpec VersionSpec { get; private set; }
 
         public AccessManager AccessManager { get; private set; }
+
+
+        IVersionSpec IAlgoServerClient.VersionSpec => VersionSpec;
+
+        IAccessManager IAlgoServerClient.AccessManager => AccessManager;
 
 
         public event Action Connecting = delegate { };

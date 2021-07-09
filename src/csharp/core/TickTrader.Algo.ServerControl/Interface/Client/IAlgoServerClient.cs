@@ -12,9 +12,9 @@ namespace TickTrader.Algo.ServerControl
 
         string LastError { get; }
 
-        VersionSpec VersionSpec { get; }
+        IVersionSpec VersionSpec { get; }
 
-        AccessManager AccessManager { get; }
+        IAccessManager AccessManager { get; }
 
 
         Task Connect(ClientSessionSettings settings);
