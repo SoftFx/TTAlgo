@@ -50,10 +50,8 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
             InitNodes();
         }
 
-        protected void InitNodes()
+        private void InitNodes()
         {
-            _conversionManager.Init(Account.BalanceCurrency.Name);
-
             // We have to leave deleted symbols, MarketNodes contain subscription info
             // In case they will come back after reconnect we need to re-enable their subscription
             _marketNodes.Values.ForEach(u => u.Update(null));
@@ -65,7 +63,11 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
                 else
                     AddNewMarketNode(smb);
             }
+        }
 
+        public void StartCalculators()
+        {
+            _conversionManager.Init(Account.BalanceCurrency.Name);
             _marketNodes.Values.ForEach(u => u.InitCalculators(_conversionManager));
         }
 

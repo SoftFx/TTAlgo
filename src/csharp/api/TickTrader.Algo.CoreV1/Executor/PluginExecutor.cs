@@ -317,7 +317,10 @@ namespace TickTrader.Algo.CoreV1
 
                     // Setup strategy
 
+                    accFixture.Start();
+
                     _marketFixture.Init();
+
                     iStrategy.Init(_builder, OnInternalException, OnRuntimeException, _fStrategy);
                     _fStrategy.Init(this, _bStrategy, _marketFixture);
                     _fStrategy.SetUserSubscription(MainSymbolCode, 1);   // Default subscribe
@@ -341,7 +344,6 @@ namespace TickTrader.Algo.CoreV1
 
                     _pluginLoggerFixture?.Start();
                     _statusFixture.Start();
-                    accFixture.Start();
                     _timerFixture.Start();
                     _fStrategy.Start(); // enqueue build action
                     _calcFixture.Start();

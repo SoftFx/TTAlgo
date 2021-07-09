@@ -44,6 +44,7 @@ namespace TickTrader.Algo.Calculator.Tests
         protected void InitAlgoMarket(params string[] load)
         {
             _algoMarket.Init(_account, load.Where(u => Symbol.ContainsKey(u)).Select(u => Symbol[u]), _currencyStorage.Currency?.Values);
+            _algoMarket.StartCalculators();
             _conversion.Init(_account.BalanceCurrencyName);
         }
     }

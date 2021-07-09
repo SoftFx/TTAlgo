@@ -102,6 +102,7 @@ namespace TickTrader.Algo.Account
         internal void StartCalculator(IMarketDataProvider marketData)
         {
             Market.Init(this, marketData.Symbols.Snapshot.Values, marketData.Currencies.Snapshot.Values);
+            Market.StartCalculators();
             _subscriptions = marketData.Distributor.AddSubscription((rate) => Market.GetUpdateNode(rate), marketData.Symbols.Snapshot.Keys);
 
 
@@ -141,6 +142,8 @@ namespace TickTrader.Algo.Account
             Leverage = accInfo.Leverage;
             BalanceDigits = balanceCurrencyInfo?.Digits ?? 2;
             BalanceCurrencyInfo = balanceCurrencyInfo;
+
+            //Market.InitNodes();
 
             foreach (var fdkPosition in positions)
             {
