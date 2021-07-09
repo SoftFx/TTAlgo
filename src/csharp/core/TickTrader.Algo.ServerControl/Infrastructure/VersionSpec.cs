@@ -1,6 +1,6 @@
 ﻿namespace TickTrader.Algo.ServerControl
 {
-    public class VersionSpec
+    public sealed class VersionSpec : IVersionSpec
     {
         public static int MajorVersion => 2;
 
@@ -43,5 +43,10 @@
 
 
         public bool SupportsBlackjack => CurrentVersion == MinorVersion;
+
+
+        int IVersionSpec.MajorVersion => MajorVersion;
+
+        int IVersionSpec.MinorVersion => MinorVersion;
     }
 }

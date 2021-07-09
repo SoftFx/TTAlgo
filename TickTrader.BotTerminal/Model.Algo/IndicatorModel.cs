@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using System.Threading;
 using TickTrader.Algo.Domain;
-using TickTrader.Algo.Server;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Core;
 
@@ -9,7 +8,6 @@ namespace TickTrader.BotTerminal
 {
     internal class IndicatorModel : PluginModel, IIndicatorWriter
     {
-        private IndicatorListenerProxy _indicatorListener;
         private EventJournal _journal;
         private IAlgoPluginHost _host;
 
@@ -44,15 +42,6 @@ namespace TickTrader.BotTerminal
                 UpdateRefs();
                 StartIndicator();
             }
-        }
-
-        protected override async Task<ExecutorModel> CreateExecutor()
-        {
-            var executor = await base.CreateExecutor();
-
-            _indicatorListener = new IndicatorListenerProxy(executor, this);
-
-            return executor;
         }
 
         private void StartIndicator()

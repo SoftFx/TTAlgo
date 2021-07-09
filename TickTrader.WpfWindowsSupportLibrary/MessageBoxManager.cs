@@ -42,7 +42,10 @@ namespace TickTrader.WpfWindowsSupportLibrary
 
         private static MessageBoxResult GetMessageBoxResult(string message, MessageBoxButton button, (string, MessageBoxImage) setting)
         {
-            return MessageBox.Show(Application.Current.MainWindow, message, setting.Item1, button, setting.Item2);
+            if (Application.Current?.MainWindow == null)
+                return MessageBox.Show(message, setting.Item1, button, setting.Item2);
+            else
+                return MessageBox.Show(Application.Current.MainWindow, message, setting.Item1, button, setting.Item2);
         }
     }
 }

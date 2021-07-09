@@ -15,6 +15,8 @@ namespace TickTrader.Algo.Server
         }
 
 
+        public Task LoadSavedState(ServerSavedState state) => _ref.Ask(new ServerStateManager.LoadSavedStateCmd(state));
+
         public Task StopSaving() => _ref.Ask(new ServerStateManager.StopSavingCmd());
 
         public Task<ServerSavedState> GetSnapshot() => _ref.Ask<ServerSavedState>(new ServerStateManager.StateSnapshotRequest());

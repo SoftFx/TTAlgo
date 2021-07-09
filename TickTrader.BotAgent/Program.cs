@@ -22,6 +22,7 @@ using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.Isolation.NetFx;
 using TickTrader.Algo.CoreV1;
+using TickTrader.Algo.Logging;
 
 namespace TickTrader.BotAgent
 {
@@ -42,10 +43,10 @@ namespace TickTrader.BotAgent
 
             NonBlockingFileCompressor.Setup();
 
-            AlgoLoggerFactory.Init(cn => new LoggerAdapter(LogManager.GetLogger(cn)));
+            AlgoLoggerFactory.Init(NLogLoggerAdapter.Create);
 
-            PackageLoadContext.Init(isolated => PackageLoadContextProvider.Create(isolated));
-            PackageExplorer.Init(new PackageV1Explorer());
+            PackageLoadContext.Init(PackageLoadContextProvider.Create);
+            PackageExplorer.Init(PackageV1Explorer.Create());
 
             var logger = LogManager.GetLogger(nameof(Program));
 

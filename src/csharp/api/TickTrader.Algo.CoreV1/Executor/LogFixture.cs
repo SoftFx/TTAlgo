@@ -6,68 +6,35 @@ namespace TickTrader.Algo.CoreV1
 {
     public class LogFixture : IPluginLogger
     {
-        //private BufferBlock<PluginLogRecord> _logBuffer;
-        //private ActionBlock<PluginLogRecord[]> _logSender;
-        private IFixtureContext _context;
-        private TimeKeyGenerator _keyGen = new TimeKeyGenerator();
-        //private Task _batchLinkTask;
-        private bool _isTradeBot;
-        private string _indicatorPrefix;
+        private readonly TimeKeyGenerator _keyGen = new TimeKeyGenerator();
+        private readonly IFixtureContext _context;
+        private readonly bool _isTradeBot;
+        private readonly string _logDir;
 
-        internal LogFixture(IFixtureContext context, bool isTradeBot)
+        private IPluginLogWriter _logWriter;
+
+        internal LogFixture(IFixtureContext context, bool isTradeBot, string logDir)
         {
             _context = context;
             _isTradeBot = isTradeBot;
-            if (!_isTradeBot)
-                _indicatorPrefix = $"{context.InstanceId} ({context.MainSymbolCode}, {context.TimeFrame})";
+            _logDir = logDir;
         }
 
         public void Start()
         {
+            _logWriter = PluginLogWriter.Create();
+            _logWriter.Start(_logDir);
+
             _context.Builder.Logger = this;
-
-            //if (!_context.IsGlobalUpdateMarshalingEnabled)
-            //{
-            //    var bufferOptions = new DataflowBlockOptions() { BoundedCapacity = 30 };
-            //    var senderOptions = new ExecutionDataflowBlockOptions() { BoundedCapacity = 30 };
-
-            //    _logBuffer = new BufferBlock<PluginLogRecord>(bufferOptions);
-            //    _logSender = new ActionBlock<PluginLogRecord[]>(msgList =>
-            //    {
-            //        try
-            //        {
-            //            NewRecords?.Invoke(msgList);
-            //        }
-            //        catch (Exception ex)
-            //        {
-            //            _context.OnInternalException(ex);
-            //        }
-            //    }, senderOptions);
-
-            //    _batchLinkTask = _logBuffer.BatchLinkTo(_logSender, 30);
-            //}
         }
 
-        public async Task Stop()
+        public Task Stop()
         {
-            //if (!_context.IsGlobalUpdateMarshalingEnabled)
-            //{
-            //    try
-            //    {
-            //        _logBuffer.Complete();
-            //        await _logBuffer.Completion;
-            //        await _batchLinkTask;
-            //        _logSender.Complete();
-            //        await _logSender.Completion;
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        _context.OnInternalException(ex);
-            //    }
-            //}
-        }
+            _logWriter.Stop();
+            _logWriter = null;
 
-        //public event Action<PluginLogRecord[]> NewRecords;
+            return Task.CompletedTask;
+        }
 
         public void OnPrint(string entry)
         {
@@ -155,8 +122,11 @@ namespace TickTrader.Algo.CoreV1
         public void OnStart()
         {
             if (_isTradeBot)
+            {
                 AddLogRecord(Domain.PluginLogRecord.Types.LogSeverity.Info, $"Bot started");
-            else AddLogRecord(Domain.PluginLogRecord.Types.LogSeverity.Info, $"{_indicatorPrefix}: Indicator started");
+                _logWriter.OnBotStarted();
+            }
+            else AddLogRecord(Domain.PluginLogRecord.Types.LogSeverity.Info, $"Indicator started");
         }
 
         public void OnStop()
@@ -165,8 +135,9 @@ namespace TickTrader.Algo.CoreV1
             {
                 AddLogRecord(Domain.PluginLogRecord.Types.LogSeverity.Info, $"Bot stopped");
                 AddLogRecord(Domain.PluginLogRecord.Types.LogSeverity.Info, $"Plugin version = {_context.Builder.Metadata.Descriptor.Version}");
+                _logWriter.OnBotStopped();
             }
-            else AddLogRecord(Domain.PluginLogRecord.Types.LogSeverity.Info, $"{_indicatorPrefix}: Indicator stopped");
+            else AddLogRecord(Domain.PluginLogRecord.Types.LogSeverity.Info, $"Indicator stopped");
         }
 
         public void OnExit()
@@ -181,6 +152,7 @@ namespace TickTrader.Algo.CoreV1
             {
                 AddLogRecord(Domain.PluginLogRecord.Types.LogSeverity.Info, $"Bot aborted");
                 AddLogRecord(Domain.PluginLogRecord.Types.LogSeverity.Info, $"Plugin version = {_context.Builder.Metadata.Descriptor.Version}");
+                _logWriter.OnBotStopped();
             }
         }
 
@@ -205,7 +177,19 @@ namespace TickTrader.Algo.CoreV1
         public void UpdateStatus(string status)
         {
             if (_isTradeBot)
-                AddLogRecord(Domain.PluginLogRecord.Types.LogSeverity.CustomStatus, status);
+            {
+                try
+                {
+                    var update = new Domain.PluginStatusUpdate(_context.InstanceId, status);
+
+                    _logWriter.OnStatusUpdate(update);
+                    _context.SendNotification(update);
+                }
+                catch(Exception ex)
+                {
+                    _context.OnInternalException(ex);
+                }
+            }
         }
 
         private void AddLogRecord(Domain.PluginLogRecord.Types.LogSeverity logSeverity, string message, string errorDetails = null)
@@ -214,9 +198,8 @@ namespace TickTrader.Algo.CoreV1
             {
                 var timeKey = _keyGen.NextKey(DateTime.Now);
                 var record = new Domain.PluginLogRecord(timeKey, logSeverity, message, errorDetails);
-                //if (_logBuffer != null)
-                //    _logBuffer.SendAsync(record).Wait();
-                //else
+
+                _logWriter?.OnLogRecord(record);
                 _context.SendNotification(record);
             }
             catch (Exception ex)

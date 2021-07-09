@@ -1,16 +1,21 @@
 ﻿using System;
+using TickTrader.Algo.Core.Lib;
 
-namespace TickTrader.Algo.Core.Lib.Logging
+namespace TickTrader.Algo.Logging
 {
-    internal class ConsoleLoggerAdapter : IAlgoLogger
+    public sealed class ConsoleLoggerAdapter : IAlgoLogger
     {
         private readonly string _loggerName;
 
 
-        public ConsoleLoggerAdapter(string loggerName)
+        private ConsoleLoggerAdapter(string loggerName)
         {
             _loggerName = loggerName;
         }
+
+
+        public static IAlgoLogger Create(string componentName) => new ConsoleLoggerAdapter(componentName);
+
 
         public void Debug(string msg)
         {

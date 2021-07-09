@@ -64,7 +64,8 @@ message Metadata {
         UNKNOWN_METADATA_ERROR = 1;
         HAS_INVALID_PROPERTIES = 2;
         UNKNOWN_BASE_TYPE = 3;
-        INCOMPATIBLE_API_VERSION = 4;
+        INCOMPATIBLE_API_NEWER_VERSION = 4;
+        INCOMPATIBLE_API_OLDER_VERSION = 5;
     }
 
     enum ReductionType {

@@ -277,57 +277,9 @@
         </Grid>
     </DataTemplate>
 
-    <DataTemplate DataType="{x:Type l:QuoteToBarInputSetupViewModel}">
-        <Grid HorizontalAlignment="Stretch">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="90" />
-            </Grid.ColumnDefinitions>
-
-            <ComboBox Grid.Column="0" IsEditable="False" Margin="0"
-                      SelectedValue="{Binding SelectedSymbol}"
-                      ItemsSource="{Binding AvailableSymbols}"
-                      DisplayMemberPath="Name"/>
-            <ComboBox Grid.Column="1" IsEditable="False" IsEnabled="True"
-                      ItemsSource="{Binding AvailableMappings}"
-                      SelectedValue="{Binding SelectedMapping}"
-                      DisplayMemberPath="DisplayName"
-                      Margin="2,0,0,0" />
-        </Grid>
-    </DataTemplate>
-
-    <!-- Tick Input Setup Template  -->
-
-    <DataTemplate DataType="{x:Type l:QuoteInputSetupViewModel}">
-        <ComboBox Grid.Column="1" IsEditable="False" Margin="0"
-                      SelectedValue="{Binding SymbolCode}" ItemsSource="{Binding AvailableSymbols}"
-                      IsEnabled="{Binding HasChoice}"/>
-    </DataTemplate>
-
     <!-- Double (bar based) Input Setup Template  -->
 
     <DataTemplate DataType="{x:Type l:BarToDoubleInputSetupViewModel}">
-        <Grid HorizontalAlignment="Stretch">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="90" />
-            </Grid.ColumnDefinitions>
-
-            <ComboBox Grid.Column="0" IsEditable="False" Margin="0"
-                      SelectedValue="{Binding SelectedSymbol}"
-                      ItemsSource="{Binding AvailableSymbols}"
-                      DisplayMemberPath="Name"/>
-            <ComboBox Grid.Column="1" IsEditable="False" IsEnabled="True"
-                      ItemsSource="{Binding AvailableMappings}"
-                      SelectedValue="{Binding SelectedMapping}"
-                      DisplayMemberPath="DisplayName"
-                      Margin="2,0,0,0" />
-        </Grid>
-    </DataTemplate>
-
-    <!-- Double (tick based) Input Setup Template  -->
-
-    <DataTemplate DataType="{x:Type l:QuoteToDoubleInputSetupViewModel}">
         <Grid HorizontalAlignment="Stretch">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />

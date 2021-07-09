@@ -1,16 +1,21 @@
 ﻿using System;
+using TickTrader.Algo.Core.Lib;
 
-namespace TickTrader.Algo.Core.Lib
+namespace TickTrader.Algo.Logging
 {
-    internal class DebugLoggerAdapter : IAlgoLogger
+    public sealed class DebugLoggerAdapter : IAlgoLogger
     {
         private readonly string _loggerName;
 
 
-        public DebugLoggerAdapter(string loggerName)
+        private DebugLoggerAdapter(string loggerName)
         {
             _loggerName = loggerName;
         }
+
+
+        public static IAlgoLogger Create(string componentName) => new DebugLoggerAdapter(componentName);
+
 
         public void Debug(string msg)
         {

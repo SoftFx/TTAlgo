@@ -342,7 +342,7 @@
   <data name="Theme_Classic" xml:space="preserve">
     <value>Classic</value>
   </data>
-  <data name="PluginError_IncompatibleApiVersion" xml:space="preserve">
+  <data name="PluginError_IncompatibleApiNewerVersion" xml:space="preserve">
     <value>This indicator or bot uses incompatible (newer) API version. Please update Algo Terminal to be able to run this indicator/bot.</value>
   </data>
   <data name="PluginError_HasInvalidProperties" xml:space="preserve">
@@ -527,5 +527,8 @@
   </data>
   <data name="OptMode_Annealing" xml:space="preserve">
     <value>Simulated Annealing (fast)</value>
+  </data>
+  <data name="PluginError_IncompatibleApiOlderVersion" xml:space="preserve">
+    <value>This indicator/bot uses incompatible (older) API version. Please update indicator/bot.</value>
   </data>
 </root>

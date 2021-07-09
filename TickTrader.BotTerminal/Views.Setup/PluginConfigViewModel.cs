@@ -27,7 +27,6 @@ namespace TickTrader.BotTerminal
         private List<PropertySetupViewModel> _allProperties;
         private List<ParameterSetupViewModel> _parameters;
         private List<InputSetupViewModel> _barBasedInputs;
-        private List<InputSetupViewModel> _tickBasedInputs;
         private List<OutputSetupViewModel> _outputs;
         private Feed.Types.Timeframe _selectedTimeFrame;
         private ISetupSymbolInfo _mainSymbol;
@@ -207,7 +206,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private List<InputSetupViewModel> ActiveInputs => _selectedTimeFrame == Feed.Types.Timeframe.Ticks ? _tickBasedInputs : _barBasedInputs;
+        private List<InputSetupViewModel> ActiveInputs => _barBasedInputs;
 
         public event System.Action ValidityChanged = delegate { };
 
@@ -399,10 +398,8 @@ namespace TickTrader.BotTerminal
 
             _parameters = Descriptor.Parameters.Select(CreateParameter).ToList();
             _barBasedInputs = Descriptor.Inputs.Select(CreateBarBasedInput).ToList();
-            _tickBasedInputs = Descriptor.Inputs.Select(CreateTickBasedInput).ToList();
             _outputs = Descriptor.Outputs.Select(CreateOutput).ToList();
 
-            //_allProperties = _parameters.Concat<PropertySetupViewModel>(_barBasedInputs).Concat(_tickBasedInputs).Concat(_outputs).ToList();
             _allProperties = _parameters.Concat<PropertySetupViewModel>(_barBasedInputs).Concat(_outputs).ToList();
             _allProperties.ForEach(p => p.ErrorChanged += s => Validate());
 
@@ -444,23 +441,6 @@ namespace TickTrader.BotTerminal
             {
                 case "System.Double": return new BarToDoubleInputSetupViewModel(descriptor, SetupMetadata);
                 case "TickTrader.Algo.Api.Bar": return new BarToBarInputSetupViewModel(descriptor, SetupMetadata);
-                //case "TickTrader.Algo.Api.Quote": return new QuoteInputSetupModel(descriptor, Metadata, DefaultSymbolCode, false);
-                //case "TickTrader.Algo.Api.QuoteL2": return new QuoteInputSetupModel(descriptor, Metadata, DefaultSymbolCode, true);
-                default: return new InputSetupViewModel.Invalid(descriptor, ErrorMsgCodes.UnsupportedInputType);
-            }
-        }
-
-        private InputSetupViewModel CreateTickBasedInput(InputDescriptor descriptor)
-        {
-            if (!descriptor.IsValid)
-                return new InputSetupViewModel.Invalid(descriptor);
-
-            switch (descriptor.DataSeriesBaseTypeFullName)
-            {
-                case "System.Double": return new QuoteToDoubleInputSetupViewModel(descriptor, SetupMetadata);
-                case "TickTrader.Algo.Api.Bar": return new QuoteToBarInputSetupViewModel(descriptor, SetupMetadata);
-                case "TickTrader.Algo.Api.Quote": return new QuoteInputSetupViewModel(descriptor, SetupMetadata, false);
-                case "TickTrader.Algo.Api.QuoteL2": return new QuoteInputSetupViewModel(descriptor, SetupMetadata, true);
                 default: return new InputSetupViewModel.Invalid(descriptor, ErrorMsgCodes.UnsupportedInputType);
             }
         }

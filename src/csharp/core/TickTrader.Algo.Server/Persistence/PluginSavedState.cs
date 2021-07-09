@@ -3,7 +3,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Server.Persistence
 {
-    internal class PluginSavedState
+    public class PluginSavedState
     {
         public string Id { get; set; }
 
@@ -32,7 +32,7 @@ namespace TickTrader.Algo.Server.Persistence
         public PluginConfig UnpackConfig()
         {
             if (ConfigUri == PluginConfig.Descriptor.FullName)
-                return PluginConfig.Parser.ParseFrom(ByteString.CopyFromUtf8(ConfigData));
+                return PluginConfig.Parser.ParseFrom(ByteString.FromBase64(ConfigData));
 
             return null;
         }
@@ -40,7 +40,7 @@ namespace TickTrader.Algo.Server.Persistence
         public void PackConfig(PluginConfig config)
         {
             ConfigUri = PluginConfig.Descriptor.FullName;
-            ConfigData = config.ToByteString().ToStringUtf8();
+            ConfigData = config.ToByteString().ToBase64();
         }
     }
 }

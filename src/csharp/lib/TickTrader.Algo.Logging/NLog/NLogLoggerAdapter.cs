@@ -2,55 +2,60 @@
 using System;
 using TickTrader.Algo.Core.Lib;
 
-namespace TickTrader.BotTerminal
+namespace TickTrader.Algo.Logging
 {
-    internal class AlgoLogAdapter : IAlgoLogger
+    public sealed class NLogLoggerAdapter : IAlgoLogger
     {
-        private readonly Logger logger;
+        private readonly Logger _logger;
 
-        public AlgoLogAdapter(string componentName)
+
+        private NLogLoggerAdapter(string componentName)
         {
-            logger = NLog.LogManager.GetLogger(componentName);
+            _logger = LogManager.GetLogger(componentName);
         }
+
+
+        public static IAlgoLogger Create(string componentName) => new NLogLoggerAdapter(componentName);
+
 
         public void Debug(string msg)
         {
-            logger.Debug(msg);
+            _logger.Debug(msg);
         }
 
         public void Debug(string msgFormat, params object[] msgParams)
         {
-            logger.Debug(msgFormat, msgParams);
+            _logger.Debug(msgFormat, msgParams);
         }
 
         public void Error(string msg)
         {
-            logger.Error(msg);
+            _logger.Error(msg);
         }
 
         public void Error(Exception ex)
         {
-            logger.Error(ex);
+            _logger.Error(ex);
         }
 
         public void Error(Exception ex, string msg)
         {
-            logger.Error(ex, msg);
+            _logger.Error(ex, msg);
         }
 
         public void Error(Exception ex, string msgFormat, params object[] msgParams)
         {
-            logger.Error(ex, msgFormat, msgParams);
+            _logger.Error(ex, msgFormat, msgParams);
         }
 
         public void Info(string msg)
         {
-            logger.Info(msg);
+            _logger.Info(msg);
         }
 
         public void Info(string msgFormat, params object[] msgParams)
         {
-            logger.Info(msgFormat, msgParams);
+            _logger.Info(msgFormat, msgParams);
         }
     }
 }

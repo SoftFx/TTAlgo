@@ -35,11 +35,11 @@ namespace TickTrader.Algo.Async.Actors
             {
                 tRes.ContinueWith(t =>
                 {
-                    if (t.IsCompleted)
-                        SetResult(null);
-                    else if (t.IsCanceled)
+                    if (t.IsCanceled)
                         SetCanceled();
-                    else SetException(t.Exception);
+                    else if (t.IsFaulted)
+                        SetException(t.Exception);
+                    else SetResult(null);
                 });
             }
             else if (response is Exception ex)
@@ -65,11 +65,11 @@ namespace TickTrader.Algo.Async.Actors
             {
                 tRes.ContinueWith(t =>
                 {
-                    if (t.IsCompleted)
-                        SetResult(tRes.Result);
-                    else if (t.IsCanceled)
+                    if (t.IsCanceled)
                         SetCanceled();
-                    else SetException(t.Exception);
+                    else if (t.IsFaulted)
+                        SetException(t.Exception);
+                    else SetResult(tRes.Result);
                 });
             }
             else if (response is Exception ex)

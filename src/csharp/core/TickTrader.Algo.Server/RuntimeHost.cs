@@ -68,7 +68,7 @@ namespace TickTrader.Algo.Server
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 Arguments = string.Join(" ", address, port.ToString(), $"\"{proxyId}\""),
-                WorkingDirectory = Path.Combine(Directory.GetCurrentDirectory(), ".."),
+                WorkingDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory),
             };
             _process = Process.Start(startInfo);
             _process.EnableRaisingEvents = true;

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Server.Persistence;
 
@@ -104,6 +105,9 @@ namespace TickTrader.Algo.Server
             await _server.SavedState.RemovePlugin(id);
 
             _plugins.Remove(id);
+
+            _server.EventBus.SendUpdate(PluginModelUpdate.Removed(id));
+
             await plugin.Stop().OnException(ex => _logger.Error(ex, $"Failed to stop plugin {id}"));
         }
 

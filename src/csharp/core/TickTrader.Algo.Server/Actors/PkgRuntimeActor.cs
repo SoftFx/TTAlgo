@@ -248,6 +248,8 @@ namespace TickTrader.Algo.Server
                 PluginStoppedHandler(executor);
             else if (payload.Is(PluginLogRecord.Descriptor))
                 executor.OnLogUpdated(payload.Unpack<PluginLogRecord>());
+            else if (payload.Is(PluginStatusUpdate.Descriptor))
+                executor.OnStatusUpdated(payload.Unpack<PluginStatusUpdate>());
             else if (payload.Is(DataSeriesUpdate.Descriptor))
                 executor.OnDataSeriesUpdate(payload.Unpack<DataSeriesUpdate>());
         }
@@ -263,6 +265,7 @@ namespace TickTrader.Algo.Server
             _startedExecutorsCnt--;
             _logger.Debug($"Executor {executor.Id} stopped. Have {_startedExecutorsCnt} active executors");
 
+            _executorsMap.Remove(executor.Id);
             executor.OnStopped();
 
             if (_startedExecutorsCnt == 0 && _shutdownWhenIdle)

@@ -25,11 +25,6 @@ namespace TickTrader.Algo.Core.Lib
             _factoryFunc = factoryFunc;
         }
 
-        public static void InitDebugLogger()
-        {
-            _factoryFunc = n => new DebugLoggerAdapter(n);
-        }
-
         public static IAlgoLogger GetLogger(string loggerName)
         {
             return _factoryFunc(loggerName);

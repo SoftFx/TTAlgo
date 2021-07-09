@@ -15,6 +15,7 @@
     <ProjectReference Include="..\..\core\TickTrader.Algo.Isolation.NetCore\TickTrader.Algo.Isolation.NetCore.csproj" />
     <ProjectReference Include="..\..\core\TickTrader.Algo.Package\TickTrader.Algo.Package.csproj" />
     <ProjectReference Include="..\..\core\TickTrader.Algo.Runtime\TickTrader.Algo.Runtime.csproj" />
+    <ProjectReference Include="..\..\lib\TickTrader.Algo.Logging\TickTrader.Algo.Logging.csproj" />
   </ItemGroup>
 
 </Project>

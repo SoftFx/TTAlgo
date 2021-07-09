@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace TickTrader.Algo.Server.Persistence
 {
-    internal class ServerSavedState
+    public class ServerSavedState
     {
         public string Version { get; set; }
 

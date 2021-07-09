@@ -28,6 +28,9 @@ namespace TickTrader.Algo.Async.Actors
 
         public void Subscribe(ChannelWriter<T> writer)
         {
+            if (writer == null)
+                return;
+
             _subs.AddLast(new WriterSub(writer));
         }
 

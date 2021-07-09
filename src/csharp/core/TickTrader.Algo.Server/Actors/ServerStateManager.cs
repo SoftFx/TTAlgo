@@ -29,6 +29,7 @@ namespace TickTrader.Algo.Server
 
             Receive<StopSavingCmd>(StopSaving);
             Receive<SaveCmd>(Save);
+            Receive<LoadSavedStateCmd>(LoadSavedState);
             Receive<StateSnapshotRequest, ServerSavedState>(GetSnapshot);
             Receive<AddAccountCmd, object>(AddAccount);
             Receive<RemoveAccountCmd, object>(RemoveAccount);
@@ -44,16 +45,17 @@ namespace TickTrader.Algo.Server
             return ActorSystem.SpawnLocal(() => new ServerStateManager(serverStatePath), nameof(ServerStateManager));
         }
 
-
         protected override void ActorInit(object initMsg)
         {
             if (!Load())
             {
                 _state = new ServerSavedState();
             }
+
             _cancelTokenSrc = new CancellationTokenSource();
             _stateCnt = _lastSavedStateCnt = 0;
             _isStopped = false;
+
             ScheduleSave(SaveDelay);
         }
 
@@ -73,6 +75,13 @@ namespace TickTrader.Algo.Server
                 }
             }
             return false;
+        }
+
+        private void LoadSavedState(LoadSavedStateCmd cmd)
+        {
+            _state = cmd.ServerState ?? _state;
+
+            IncreaseStateCnt();
         }
 
         private void ScheduleSave(int saveDelay)
@@ -248,6 +257,16 @@ namespace TickTrader.Algo.Server
         internal class SaveCmd { }
 
         internal class StateSnapshotRequest { }
+
+        internal class LoadSavedStateCmd
+        {
+            public ServerSavedState ServerState { get; }
+
+            public LoadSavedStateCmd(ServerSavedState state)
+            {
+                ServerState = state;
+            }
+        }
 
         internal class AddAccountCmd
         {

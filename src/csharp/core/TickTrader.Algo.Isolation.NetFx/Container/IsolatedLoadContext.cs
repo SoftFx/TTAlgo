@@ -65,7 +65,7 @@ namespace TickTrader.Algo.Isolation.NetFx
             public ChildDomainProxy()
             {
                 _loadContext = new DefaultLoadContext();
-                PackageExplorer.Init(new PackageV1Explorer());
+                PackageExplorer.Init(PackageV1Explorer.Create());
             }
 
 

@@ -130,6 +130,7 @@ namespace TickTrader.BotTerminal
             var executorConfig = new ExecutorConfig
             {
                 IsLoggingEnabled = true,
+                LogDirectory = Agent.AlgoServer.Env.GetPluginLogsFolder(InstanceId),
                 AccountId = Agent.ClientModel.Id,
                 WorkingDirectory = EnvService.Instance.AlgoWorkingFolder,
             };

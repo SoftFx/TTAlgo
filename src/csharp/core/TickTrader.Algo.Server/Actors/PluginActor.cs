@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core;
@@ -13,11 +14,13 @@ namespace TickTrader.Algo.Server
     {
         private readonly AlgoServer _server;
         private readonly string _id, _accId;
+        private readonly ActorEventSource<PluginLogRecord> _logEventSrc = new ActorEventSource<PluginLogRecord>();
+        private readonly ActorEventSource<PluginStatusUpdate> _statusEventSrc = new ActorEventSource<PluginStatusUpdate>();
+        private readonly ActorEventSource<DataSeriesUpdate> _outputEventSrc = new ActorEventSource<DataSeriesUpdate>();
 
         private PluginSavedState _savedState;
         private IAlgoLogger _logger;
         private PluginConfig _config;
-        private PluginKey _pluginKey;
 
         private PluginModelInfo.Types.PluginState _state;
         private PkgRuntimeModel _runtime;
@@ -25,6 +28,8 @@ namespace TickTrader.Algo.Server
         private string _faultMsg;
         private TaskCompletionSource<bool> _startTaskSrc, _stopTaskSrc, _updatePkgTaskSrc;
         private ExecutorModel _executor;
+        private MessageCache<PluginLogRecord> _logsCache;
+        private PluginStatusUpdate _lastStatus;
 
 
         private PluginActor(AlgoServer server, PluginSavedState savedState)
@@ -32,10 +37,18 @@ namespace TickTrader.Algo.Server
             _server = server;
             _savedState = savedState;
             _id = savedState.Id;
+            _accId = savedState.AccountId;
 
             Receive<StartCmd>(Start);
             Receive<StopCmd>(Stop);
             Receive<UpdateConfigCmd>(UpdateConfig);
+            Receive<AttachLogsChannelCmd>(AttachLogsChannel);
+            Receive<AttachStatusChannelCmd>(cmd => _statusEventSrc.Subscribe(cmd.StatusSink));
+            Receive<AttachOutputsChannelCmd>(cmd => _outputEventSrc.Subscribe(cmd.OutputSink));
+
+            Receive<PluginLogRecord>(OnLogUpdated);
+            Receive<PluginStatusUpdate>(update => _statusEventSrc.DispatchEvent(update));
+            Receive<DataSeriesUpdate>(update => _outputEventSrc.DispatchEvent(update));
         }
 
 
@@ -48,8 +61,11 @@ namespace TickTrader.Algo.Server
         protected override void ActorInit(object initMsg)
         {
             _logger = AlgoLoggerFactory.GetLogger(Name);
+            _logsCache = new MessageCache<PluginLogRecord>(100);
 
             _config = _savedState.UnpackConfig();
+
+            _server.EventBus.SendUpdate(PluginModelUpdate.Added(_id, GetInfoCopy()));
 
             var _ = UpdatePackage();
         }
@@ -85,6 +101,26 @@ namespace TickTrader.Algo.Server
             _savedState.PackConfig(cmd.NewConfig);
             await _server.SavedState.UpdatePlugin(_savedState);
             _config = cmd.NewConfig;
+
+            _server.EventBus.SendUpdate(PluginModelUpdate.Updated(_id, GetInfoCopy()));
+        }
+
+        private void AttachLogsChannel(AttachLogsChannelCmd cmd)
+        {
+            var sink = cmd.LogSink;
+            if (sink == null)
+                return;
+
+            if (cmd.SendSnapshot)
+                _logsCache.SendSnapshot(sink);
+
+            _logEventSrc.Subscribe(sink);
+        }
+
+        private void OnLogUpdated(PluginLogRecord log)
+        {
+            _logsCache.Add(log);
+            _logEventSrc.DispatchEvent(log);
         }
 
 
@@ -117,6 +153,8 @@ namespace TickTrader.Algo.Server
             if (_state == PluginModelInfo.Types.PluginState.Broken)
                 ChangeState(PluginModelInfo.Types.PluginState.Stopped);
 
+            _server.EventBus.SendUpdate(PluginModelUpdate.Updated(_id, GetInfoCopy()));
+
             _updatePkgTaskSrc.SetResult(true);
             _updatePkgTaskSrc = null;
             return true;
@@ -135,7 +173,8 @@ namespace TickTrader.Algo.Server
                 _logger.Error($"State: {newState} Error: {faultMsg}");
             _state = newState;
             _faultMsg = faultMsg;
-            //StateChanged?.Invoke(new PluginStateUpdate { PluginId = _config.InstanceId, State = newState, FaultMessage = faultMsg });
+
+            _server.EventBus.SendUpdate(new PluginStateUpdate(_id, newState, faultMsg));
         }
 
         private async Task StartInternal()
@@ -156,8 +195,9 @@ namespace TickTrader.Algo.Server
 
                 await _server.SavedState.SetPluginRunning(_id, true);
 
-                var config = new ExecutorConfig { AccountId = _accId, PluginConfig = Any.Pack(_config) };
+                var config = new ExecutorConfig { AccountId = _accId, IsLoggingEnabled = true, PluginConfig = Any.Pack(_config) };
                 config.WorkingDirectory = _server.Env.GetPluginWorkingFolder(_id);
+                config.LogDirectory = _server.Env.GetPluginLogsFolder(_id);
                 config.InitPriorityInvokeStrategy();
                 config.InitSlidingBuffering(4000);
                 config.InitBarStrategy(Feed.Types.MarketSide.Bid);
@@ -208,6 +248,20 @@ namespace TickTrader.Algo.Server
         }
 
 
+        private PluginModelInfo GetInfoCopy()
+        {
+            return new PluginModelInfo
+            {
+                InstanceId = _id,
+                State = _state,
+                AccountId = _accId,
+                Descriptor_ = _pluginInfo?.Descriptor_,
+                Config = _config,
+                FaultMessage = _faultMsg,
+            };
+        }
+
+
         internal class StartCmd { }
 
         internal class StopCmd { }
@@ -219,6 +273,39 @@ namespace TickTrader.Algo.Server
             public UpdateConfigCmd(PluginConfig newConfig)
             {
                 NewConfig = newConfig;
+            }
+        }
+
+        internal class AttachLogsChannelCmd
+        {
+            public ChannelWriter<PluginLogRecord> LogSink { get; }
+
+            public bool SendSnapshot { get; }
+
+            public AttachLogsChannelCmd(ChannelWriter<PluginLogRecord> logSink, bool sendSnapshot)
+            {
+                LogSink = logSink;
+                SendSnapshot = sendSnapshot;
+            }
+        }
+
+        internal class AttachStatusChannelCmd
+        {
+            public ChannelWriter<PluginStatusUpdate> StatusSink { get; }
+
+            public AttachStatusChannelCmd(ChannelWriter<PluginStatusUpdate> statusSink)
+            {
+                StatusSink = statusSink;
+            }
+        }
+
+        internal class AttachOutputsChannelCmd
+        {
+            public ChannelWriter<DataSeriesUpdate> OutputSink { get; }
+
+            public AttachOutputsChannelCmd(ChannelWriter<DataSeriesUpdate> outputSink)
+            {
+                OutputSink = outputSink;
             }
         }
     }

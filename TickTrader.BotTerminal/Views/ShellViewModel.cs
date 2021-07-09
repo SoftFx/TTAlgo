@@ -208,7 +208,7 @@ namespace TickTrader.BotTerminal
             if (isConfirmed)
                 StopTerminal(true);
 
-            return base.CanCloseAsync(cancellationToken);
+            return Task.FromResult(isConfirmed);
         }
 
         //public override void CanClose(Action<bool> callback)
