@@ -45,7 +45,7 @@ namespace TickTrader.BotTerminal
 
         public bool CanTestAccount => Agent.Model.AccessManager.CanTestAccount();
 
-        public bool CanAddBot => Agent.Model.AccessManager.CanAddBot();
+        public bool CanAddBot => Agent.Model.AccessManager.CanAddPlugin();
 
         public bool CanManageFiles => Agent.Model.AccessManager.CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId.BotLogs);
 

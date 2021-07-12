@@ -38,15 +38,15 @@ namespace TickTrader.Algo.ServerControl
 
         public bool CanGetBotList() => HasViewerAccess;
 
-        public bool CanAddBot() => HasAdminAccess;
+        public bool CanAddPlugin() => HasAdminAccess;
 
-        public bool CanRemoveBot() => HasAdminAccess;
+        public bool CanRemovePlugin() => HasAdminAccess;
 
-        public bool CanStartBot() => HasDealerAccess;
+        public bool CanStartPlugin() => HasDealerAccess;
 
-        public bool CanStopBot() => HasDealerAccess;
+        public bool CanStopPlugin() => HasDealerAccess;
 
-        public bool CanChangeBotConfig() => HasAdminAccess;
+        public bool CanChangePluginConfig() => HasAdminAccess;
 
         public bool CanGetAccountList() => HasViewerAccess;
 
@@ -68,9 +68,9 @@ namespace TickTrader.Algo.ServerControl
 
         public bool CanDownloadPackage() => HasAdminAccess;
 
-        public bool CanGetBotStatus() => HasViewerAccess;
+        public bool CanGetPluginStatus() => HasViewerAccess;
 
-        public bool CanGetBotLogs() => HasViewerAccess;
+        public bool CanGetPluginLogs() => HasViewerAccess;
 
         public bool CanGetAlerts() => HasViewerAccess;
 

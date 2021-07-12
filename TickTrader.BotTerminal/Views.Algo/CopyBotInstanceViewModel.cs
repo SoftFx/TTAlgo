@@ -102,7 +102,7 @@ namespace TickTrader.BotTerminal
 
         public bool CanOk => !_hasPendingRequest && _isValid
             && _selectedAgent.Model.AccessManager.CanUploadPackage()
-            && _selectedAgent.Model.AccessManager.CanAddBot()
+            && _selectedAgent.Model.AccessManager.CanAddPlugin()
             && _selectedAgent.Model.AccessManager.CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId.AlgoData)
             && _selectedAgent.Model.AccessManager.CanUploadBotFile();
 

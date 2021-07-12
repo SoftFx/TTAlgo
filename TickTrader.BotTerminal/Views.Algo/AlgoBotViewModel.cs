@@ -25,13 +25,13 @@ namespace TickTrader.BotTerminal
 
         public bool IsStopped => Model.State.IsStopped();
 
-        public bool CanStart => IsStopped && Agent.Model.AccessManager.CanStartBot();
+        public bool CanStart => IsStopped && Agent.Model.AccessManager.CanStartPlugin();
 
-        public bool CanStop => IsRunning && Agent.Model.AccessManager.CanStopBot();
+        public bool CanStop => IsRunning && Agent.Model.AccessManager.CanStopPlugin();
 
         public bool CanStartStop => CanStart || CanStop;
 
-        public bool CanRemove => Model.State.IsStopped() && Agent.Model.AccessManager.CanRemoveBot();
+        public bool CanRemove => Model.State.IsStopped() && Agent.Model.AccessManager.CanRemovePlugin();
 
         public bool CanOpenChart => !Model.IsRemote && (Model.Descriptor?.SetupMainSymbol ?? false);
 
@@ -42,7 +42,7 @@ namespace TickTrader.BotTerminal
         public bool CanCopyTo => Agent.Model.AccessManager.CanDownloadPackage() && Agent.Model.AccessManager.CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId.AlgoData) 
             && Agent.Model.AccessManager.CanDownloadBotFile(PluginFolderInfo.Types.PluginFolderId.AlgoData);
 
-        public bool CanAddBot => Agent.Model.AccessManager.CanAddBot();
+        public bool CanAddBot => Agent.Model.AccessManager.CanAddPlugin();
 
         public AlgoBotViewModel(ITradeBot bot, AlgoAgentViewModel agent)
         {

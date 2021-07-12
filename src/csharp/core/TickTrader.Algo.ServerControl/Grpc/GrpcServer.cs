@@ -773,7 +773,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
             var res = new AddPluginResponse { ExecResult = execResult };
             if (session == null)
                 return res;
-            if (!session.AccessManager.CanAddBot())
+            if (!session.AccessManager.CanAddPlugin())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
                 return res;
@@ -797,7 +797,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
             var res = new RemovePluginResponse { ExecResult = execResult };
             if (session == null)
                 return res;
-            if (!session.AccessManager.CanRemoveBot())
+            if (!session.AccessManager.CanRemovePlugin())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
                 return res;
@@ -821,7 +821,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
             var res = new StartPluginResponse { ExecResult = execResult };
             if (session == null)
                 return res;
-            if (!session.AccessManager.CanStartBot())
+            if (!session.AccessManager.CanStartPlugin())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
                 return res;
@@ -844,7 +844,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
             var res = new StopPluginResponse { ExecResult = execResult };
             if (session == null)
                 return res;
-            if (!session.AccessManager.CanStopBot())
+            if (!session.AccessManager.CanStopPlugin())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
                 return res;
@@ -867,7 +867,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
             var res = new ChangePluginConfigResponse { ExecResult = execResult };
             if (session == null)
                 return res;
-            if (!session.AccessManager.CanChangeBotConfig())
+            if (!session.AccessManager.CanChangePluginConfig())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
                 return res;
@@ -1193,7 +1193,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
             var res = new PluginStatusResponse { ExecResult = execResult, PluginId = request.PluginId };
             if (session == null)
                 return res;
-            if (!session.AccessManager.CanGetBotStatus())
+            if (!session.AccessManager.CanGetPluginStatus())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
                 return res;
@@ -1216,7 +1216,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
             var res = new PluginLogsResponse { ExecResult = execResult, PluginId = request.PluginId };
             if (session == null)
                 return res;
-            if (!session.AccessManager.CanGetBotLogs())
+            if (!session.AccessManager.CanGetPluginLogs())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
                 return res;

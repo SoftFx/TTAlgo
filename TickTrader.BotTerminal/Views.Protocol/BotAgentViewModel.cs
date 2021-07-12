@@ -22,7 +22,7 @@ namespace TickTrader.BotTerminal
 
         public bool CanDisconnectBotAgent => Connection.State == BotAgentConnectionManager.States.Connecting || Connection.State == BotAgentConnectionManager.States.Online || Connection.State == BotAgentConnectionManager.States.WaitReconnect;
 
-        public bool CanAddBot => Agent.Model.AccessManager.CanAddBot();
+        public bool CanAddBot => Agent.Model.AccessManager.CanAddPlugin();
 
         public bool CanAddAccount => Agent.Model.AccessManager.CanAddAccount();
 

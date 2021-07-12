@@ -43,10 +43,10 @@ namespace TickTrader.Algo.Calculator
             {
                 if (_marginAmount > 0.0)
                 {
-                    var response = _calculator?.Margin.Calculate(new MarginRequest(_marginAmount, _type, _isHidden));
-                    _currentMargin = response.Value;
+                    var response = _calculator?.Margin?.Calculate(new MarginRequest(_marginAmount, _type, _isHidden));
+                    _currentMargin = response?.Value ?? 0.0;
 
-                    if (response.IsFailed)
+                    if (response == null || response.IsFailed)
                         _errorsCount++;
                 }
                 else
@@ -54,10 +54,10 @@ namespace TickTrader.Algo.Calculator
 
                 if (_profitAmount > 0.0)
                 {
-                    var response = _calculator?.Profit.Calculate(new ProfitRequest(_totalAmount / _profitAmount, _profitAmount, _side));
-                    _currentProfit = response.Value;
+                    var response = _calculator?.Profit?.Calculate(new ProfitRequest(_totalAmount / _profitAmount, _profitAmount, _side));
+                    _currentProfit = response?.Value ?? 0.0;
 
-                    if (response.IsFailed)
+                    if (response == null || response.IsFailed)
                         _errorsCount++;
                 }
                 else

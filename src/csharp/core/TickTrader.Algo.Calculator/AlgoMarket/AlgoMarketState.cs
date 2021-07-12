@@ -67,8 +67,11 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
 
         public void StartCalculators()
         {
-            _conversionManager.Init(Account.BalanceCurrency.Name);
-            _marketNodes.Values.ForEach(u => u.InitCalculators(_conversionManager));
+            if (Account.BalanceCurrency != null)
+            {
+                _conversionManager.Init(Account.BalanceCurrency.Name);
+                _marketNodes.Values.ForEach(u => u.InitCalculators(_conversionManager));
+            }
         }
 
         public ISymbolCalculator GetCalculator(SymbolInfo symbol)

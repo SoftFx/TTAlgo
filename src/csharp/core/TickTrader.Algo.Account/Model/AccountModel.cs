@@ -143,7 +143,7 @@ namespace TickTrader.Algo.Account
             BalanceDigits = balanceCurrencyInfo?.Digits ?? 2;
             BalanceCurrencyInfo = balanceCurrencyInfo;
 
-            //Market.InitNodes();
+            //Market.StartCalculators();
 
             foreach (var fdkPosition in positions)
             {

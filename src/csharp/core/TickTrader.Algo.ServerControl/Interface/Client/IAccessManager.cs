@@ -4,42 +4,9 @@ namespace TickTrader.Algo.ServerControl
 {
     public interface IAccessManager
     {
-        bool CanGetSnapshot();
-
-        bool CanSubscribeToUpdates();
-
-        bool CanGetApiMetadata();
-
-        bool CanGetMappingsInfo();
-
-        bool CanGetSetupContext();
-
         bool CanGetAccountMetadata();
 
-        bool CanGetBotList();
-
         bool CanGetAlerts();
-
-
-        #region Plugin management permissions
-
-        bool CanAddBot();
-
-        bool CanRemoveBot();
-
-        bool CanStartBot();
-
-        bool CanStopBot();
-
-        bool CanChangeBotConfig();
-
-        bool CanGetAccountList();
-
-        bool CanGetBotStatus();
-
-        bool CanGetBotLogs();
-
-        #endregion
 
 
         #region Account management permissions
@@ -59,13 +26,30 @@ namespace TickTrader.Algo.ServerControl
 
         #region Package management permissions
 
-        bool CanGetPackageList();
-
         bool CanUploadPackage();
 
         bool CanRemovePackage();
 
         bool CanDownloadPackage();
+
+        #endregion
+
+
+        #region Plugin management permissions
+
+        bool CanAddPlugin();
+
+        bool CanRemovePlugin();
+
+        bool CanStartPlugin();
+
+        bool CanStopPlugin();
+
+        bool CanChangePluginConfig();
+
+        bool CanGetPluginStatus();
+
+        bool CanGetPluginLogs();
 
         #endregion
 
@@ -78,9 +62,9 @@ namespace TickTrader.Algo.ServerControl
 
         bool CanDeleteBotFile();
 
-        bool CanUploadBotFile();
-
         bool CanDownloadBotFile(PluginFolderInfo.Types.PluginFolderId folderId);
+
+        bool CanUploadBotFile();
 
         #endregion
     }
