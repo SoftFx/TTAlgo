@@ -1,6 +1,6 @@
 ﻿namespace TickTrader.Algo.ServerControl
 {
-    public class ClientSessionSettings
+    public class ClientSessionSettings : IClientSessionSettings
     {
         public string ServerAddress { get; }
 

@@ -25,7 +25,7 @@ namespace TickTrader.Algo.ServerControl
 
         protected IAlgoServerEventHandler AlgoClient { get; }
 
-        protected ClientSessionSettings SessionSettings { get; set; }
+        protected IClientSessionSettings SessionSettings { get; set; }
 
 
         public ClientStates State => StateMachine.Current;
@@ -98,7 +98,7 @@ namespace TickTrader.Algo.ServerControl
         }
 
 
-        public void TriggerConnect(ClientSessionSettings settings)
+        public void TriggerConnect(IClientSessionSettings settings)
         {
             StateMachine.SyncContext.Synchronized(() =>
             {
@@ -111,7 +111,7 @@ namespace TickTrader.Algo.ServerControl
             });
         }
 
-        public Task Connect(ClientSessionSettings settings)
+        public Task Connect(IClientSessionSettings settings)
         {
             TriggerConnect(settings);
             return StateMachine.AsyncWait(s => s == ClientStates.Online || s == ClientStates.Offline);

@@ -17,7 +17,7 @@ namespace TickTrader.Algo.ServerControl
         IAccessManager AccessManager { get; }
 
 
-        Task Connect(ClientSessionSettings settings);
+        Task Connect(IClientSessionSettings settings);
 
         Task Disconnect();
 

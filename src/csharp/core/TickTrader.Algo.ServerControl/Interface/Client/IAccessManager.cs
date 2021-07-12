@@ -18,6 +18,11 @@ namespace TickTrader.Algo.ServerControl
 
         bool CanGetBotList();
 
+        bool CanGetAlerts();
+
+
+        #region Plugin management permissions
+
         bool CanAddBot();
 
         bool CanRemoveBot();
@@ -30,6 +35,15 @@ namespace TickTrader.Algo.ServerControl
 
         bool CanGetAccountList();
 
+        bool CanGetBotStatus();
+
+        bool CanGetBotLogs();
+
+        #endregion
+
+
+        #region Account management permissions
+
         bool CanAddAccount();
 
         bool CanRemoveAccount();
@@ -40,6 +54,11 @@ namespace TickTrader.Algo.ServerControl
 
         bool CanTestAccountCreds();
 
+        #endregion
+
+
+        #region Package management permissions
+
         bool CanGetPackageList();
 
         bool CanUploadPackage();
@@ -48,11 +67,10 @@ namespace TickTrader.Algo.ServerControl
 
         bool CanDownloadPackage();
 
-        bool CanGetBotStatus();
+        #endregion
 
-        bool CanGetBotLogs();
 
-        bool CanGetAlerts();
+        #region Plugin Files management permissions
 
         bool CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId folderId);
 
@@ -63,5 +81,7 @@ namespace TickTrader.Algo.ServerControl
         bool CanUploadBotFile();
 
         bool CanDownloadBotFile(PluginFolderInfo.Types.PluginFolderId folderId);
+
+        #endregion
     }
 }
