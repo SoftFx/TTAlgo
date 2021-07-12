@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
+using TickTrader.Algo.Rpc;
 using TickTrader.Algo.Server.Persistence;
 
 namespace TickTrader.Algo.Server
@@ -20,6 +22,7 @@ namespace TickTrader.Algo.Server
 
         private readonly AlgoServer _server;
         private readonly string _id;
+        private readonly Dictionary<string, RpcSession> _sessions = new Dictionary<string, RpcSession>();
 
         private AccountSavedState _savedState;
         private AccountCreds _creds;
@@ -27,7 +30,7 @@ namespace TickTrader.Algo.Server
         private ActorSharp.Lib.AsyncGate _requestGate;
         private AccountModelInfo.Types.ConnectionState _state;
         private ConnectionErrorInfo _lastError;
-        private int _startedBotsCount;
+        private int _refCnt;
         private bool _isInitialized, _credsChanged, _lostConnection;
         private TaskCompletionSource<object> _initCompletionSrc, _shutdownCompletionSrc;
         private DateTime _pendingDisconnect, _pendingReconnect;
@@ -46,6 +49,10 @@ namespace TickTrader.Algo.Server
             Receive<ChangeAccountRequest>(Change);
             Receive<AccountMetadataRequest, AccountMetadataInfo>(GetMetadata);
             Receive<TestAccountRequest, ConnectionErrorInfo>(TestConnection);
+            Receive<AttachSessionCmd>(AttachSession);
+            Receive<DetachSessionCmd>(DetachSession);
+            Receive<AccountProxyRequest, IAccountProxy>(_ => _accProxy);
+            Receive<RpcMessage>(SendNotification);
 
             Receive<ManageConnectionCmd>(ManageConnectionLoop);
             Receive<ScheduleDisconnectCmd>(ScheduleDisconnect);
@@ -161,8 +168,8 @@ namespace TickTrader.Algo.Server
         {
             if (_state == AccountModelInfo.Types.ConnectionState.Offline)
             {
-                var forcedConnect = (_startedBotsCount > 0 && _credsChanged) || _requestGate.WatingCount > 0;
-                var scheduledConnect = _startedBotsCount > 0 && _pendingReconnect < DateTime.UtcNow;
+                var forcedConnect = (_refCnt > 0 && _credsChanged) || _requestGate.WatingCount > 0;
+                var scheduledConnect = _refCnt > 0 && _pendingReconnect < DateTime.UtcNow;
 
                 if (forcedConnect || scheduledConnect)
                     ConnectInternal().OnException(ex => _logger.Error(ex, "Connect failed"));
@@ -170,7 +177,7 @@ namespace TickTrader.Algo.Server
             else if (_state == AccountModelInfo.Types.ConnectionState.Online)
             {
                 var forcedDisconnect = _credsChanged || _lostConnection || _shutdownCompletionSrc != null;
-                var scheduledDisconnect = _startedBotsCount == 0 && _pendingDisconnect < DateTime.UtcNow;
+                var scheduledDisconnect = _refCnt == 0 && _pendingDisconnect < DateTime.UtcNow;
 
                 if (forcedDisconnect || scheduledDisconnect)
                     DisconnectInternal().OnException(ex => _logger.Error(ex, "Disconnect failed"));
@@ -295,6 +302,78 @@ namespace TickTrader.Algo.Server
         }
 
 
+        private void AttachSession(AttachSessionCmd cmd)
+        {
+            var session = cmd.Session;
+            var sessionId = session.Id;
+
+            _logger.Debug($"Attaching session {sessionId}...");
+
+            _sessions[sessionId] = session;
+
+            _refCnt++;
+            if (_refCnt == 1)
+            {
+                var acc = _accProxy;
+                acc.AccInfoProvider.OrderUpdated += OnOrderUpdated;
+                acc.AccInfoProvider.PositionUpdated += OnPositionUpdated;
+                acc.AccInfoProvider.BalanceUpdated += OnBalanceUpdated;
+
+                acc.Feed.RateUpdated += OnRateUpdated;
+                acc.Feed.RatesUpdated += OnRatesUpdated;
+
+                ManageConnectionInternal();
+            }
+
+            _logger.Debug($"Attached session {sessionId}. Have {_refCnt} active refs");
+        }
+
+        private void DetachSession(DetachSessionCmd cmd)
+        {
+            var sessionId = cmd.SessionId;
+
+            _logger.Debug($"Detaching session {sessionId}...");
+
+            _refCnt--;
+            if (_refCnt == 0)
+            {
+                var acc = _accProxy;
+                acc.AccInfoProvider.OrderUpdated -= OnOrderUpdated;
+                acc.AccInfoProvider.PositionUpdated -= OnPositionUpdated;
+                acc.AccInfoProvider.BalanceUpdated -= OnBalanceUpdated;
+
+                acc.Feed.RateUpdated -= OnRateUpdated;
+                acc.Feed.RatesUpdated -= OnRatesUpdated;
+
+                ManageConnectionInternal();
+            }
+
+            _logger.Debug($"Detached session {sessionId}. Have {_refCnt} active refs");
+        }
+
+        private void OnOrderUpdated(OrderExecReport r) => Self.Tell(RpcMessage.Notification(_id, r)); // not actor thread. _id is safe since it is readonly
+
+        private void OnPositionUpdated(PositionExecReport r) => Self.Tell(RpcMessage.Notification(_id, r)); // not actor thread. _id is safe since it is readonly
+
+        private void OnBalanceUpdated(BalanceOperation r) => Self.Tell(RpcMessage.Notification(_id, r)); // not actor thread. _id is safe since it is readonly
+
+        private void OnRateUpdated(QuoteInfo r) => Self.Tell(RpcMessage.Notification(_id, r.GetFullQuote())); // not actor thread. _id is safe since it is readonly
+
+        private void OnRatesUpdated(List<QuoteInfo> r) => Self.Tell(RpcMessage.Notification(_id, QuotePage.Create(r))); // not actor thread. _id is safe since it is readonly
+
+
+        private void SendNotification(RpcMessage msg)
+        {
+            if (_sessions.Count == 0)
+                return;
+
+            foreach (var session in _sessions.Values)
+            {
+                session.Tell(msg);
+            }
+        }
+
+
         private AccountModelInfo GetInfoCopy()
         {
             return new AccountModelInfo
@@ -351,5 +430,27 @@ namespace TickTrader.Algo.Server
         private sealed class ConnectionLostMsg : Singleton<ConnectionLostMsg> { }
 
         private sealed class ScheduleDisconnectCmd : Singleton<ScheduleDisconnectCmd> { }
+
+        internal class AttachSessionCmd
+        {
+            public RpcSession Session { get; }
+
+            public AttachSessionCmd(RpcSession session)
+            {
+                Session = session;
+            }
+        }
+
+        internal class DetachSessionCmd
+        {
+            public string SessionId { get; }
+
+            public DetachSessionCmd(string sessionId)
+            {
+                SessionId = sessionId;
+            }
+        }
+
+        internal class AccountProxyRequest : Singleton<AccountProxyRequest> { }
     }
 }

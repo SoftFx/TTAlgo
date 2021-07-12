@@ -249,15 +249,15 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         }
 
 
-        private UpdateInfo.Types.UpdateType Convert(ChangeAction action)
+        private UpdateInfo.Types.UpdateType Convert(Update.Types.Action action)
         {
             switch (action)
             {
-                case ChangeAction.Added:
+                case Update.Types.Action.Added:
                     return UpdateInfo.Types.UpdateType.Added;
-                case ChangeAction.Modified:
+                case Update.Types.Action.Updated:
                     return UpdateInfo.Types.UpdateType.Replaced;
-                case ChangeAction.Removed:
+                case Update.Types.Action.Removed:
                     return UpdateInfo.Types.UpdateType.Removed;
                 default:
                     throw new ArgumentException();
@@ -279,11 +279,15 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
 
         #region Event handlers
 
-        private void OnAccountChanged(AccountModelInfo account, ChangeAction action)
+        private void OnAccountChanged(AccountModelUpdate update)
         {
             try
             {
-                AccountUpdated(new UpdateInfo<AccountModelInfo>(Convert(action), account));
+                var acc = update.Account;
+                if (update.Action == Update.Types.Action.Removed)
+                    acc = new AccountModelInfo { AccountId = update.Id }; // backwards compatibility
+
+                AccountUpdated(new UpdateInfo<AccountModelInfo>(Convert(update.Action), acc));
             }
             catch (Exception ex)
             {
@@ -291,11 +295,15 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }
         }
 
-        private void OnBotChanged(PluginModelInfo bot, ChangeAction action)
+        private void OnBotChanged(PluginModelUpdate update)
         {
             try
             {
-                BotUpdated(new UpdateInfo<PluginModelInfo>(Convert(action), bot));
+                var plugin = update.Plugin;
+                if (update.Action == Update.Types.Action.Removed)
+                    plugin = new PluginModelInfo { InstanceId = update.Id }; // backwards compatibility
+
+                BotUpdated(new UpdateInfo<PluginModelInfo>(Convert(update.Action), plugin));
             }
             catch (Exception ex)
             {
@@ -307,21 +315,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         {
             try
             {
-                UpdateInfo<PackageInfo> updateInfo = default;
-                switch (update.Action)
-                {
-                    case Update.Types.Action.Added:
-                        updateInfo = new UpdateInfo<PackageInfo>(UpdateInfo.Types.UpdateType.Added, update.Package);
-                        break;
-                    case Update.Types.Action.Updated:
-                        updateInfo = new UpdateInfo<PackageInfo>(UpdateInfo.Types.UpdateType.Replaced, update.Package);
-                        break;
-                    case Update.Types.Action.Removed:
-                        updateInfo = new UpdateInfo<PackageInfo>(UpdateInfo.Types.UpdateType.Removed, new PackageInfo { PackageId = update.Id });
-                        break;
-                }
-                if (updateInfo != null)
-                    PackageUpdated(updateInfo);
+                var pkg = update.Package;
+                if (update.Action == Update.Types.Action.Removed)
+                    pkg = new PackageInfo { PackageId = update.Id }; // backwards compatibility
+
+                PackageUpdated(new UpdateInfo<PackageInfo>(Convert(update.Action), pkg));
             }
             catch (Exception ex)
             {

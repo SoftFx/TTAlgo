@@ -1,7 +1,9 @@
 ﻿using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
+using TickTrader.Algo.Rpc;
 
 namespace TickTrader.Algo.Server
 {
@@ -23,5 +25,11 @@ namespace TickTrader.Algo.Server
         public Task<AccountMetadataInfo> GetMetadata(AccountMetadataRequest request) => _ref.Ask<AccountMetadataInfo>(request);
 
         public Task<ConnectionErrorInfo> Test(TestAccountRequest request) => _ref.Ask<ConnectionErrorInfo>(request);
+
+        public Task AttachSession(RpcSession session) => _ref.Ask(new AccountControlActor.AttachSessionCmd(session));
+
+        public Task DetachSession(string sessionId) => _ref.Ask(new AccountControlActor.DetachSessionCmd(sessionId));
+
+        public Task<IAccountProxy> GetAccountProxy() => _ref.Ask<IAccountProxy>(AccountControlActor.AccountProxyRequest.Instance);
     }
 }

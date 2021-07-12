@@ -48,6 +48,12 @@ namespace TickTrader.BotAgent.BA.Models
         private async Task InitAsync(IFdkOptionsProvider fdkOptionsProvider)
         {
             _algoServer = new AlgoServer();
+
+            if (!File.Exists(_algoServer.Env.ServerStateFilePath))
+            {
+                //_algoServer.LoadSavedData(serverConfigState);
+            }
+
             await _algoServer.Start();
             _logger.Info($"Started AlgoServer on port {_algoServer.BoundPort}");
 
@@ -69,10 +75,18 @@ namespace TickTrader.BotAgent.BA.Models
             pkgStorage.PackageUpdated.Subscribe(p => PackageChanged?.Invoke(p));
             //pkgStorage.PackageStateChanged += p => PackageStateChanged?.Invoke(new PackageStateUpdate { PackageId = p.PackageId, IsLocked = p.IsLocked, IsValid = p.IsValid });
 
+            var eventBus = _algoServer.EventBus;
+            eventBus.PackageUpdated.Subscribe(p => PackageChanged?.Invoke(p));
+            eventBus.PackageStateUpdated.Subscribe(p => PackageStateChanged?.Invoke(p));
+            eventBus.AccountUpdated.Subscribe(a => AccountChanged?.Invoke(a));
+            eventBus.AccountStateUpdated.Subscribe(a => AccountStateChanged?.Invoke(a));
+            eventBus.PluginUpdated.Subscribe(p => BotChanged?.Invoke(p));
+            eventBus.PluginStateUpdated.Subscribe(p => BotStateChanged?.Invoke(p));
+
             _threadPoolManager.Start(GetBotsCnt());
 
-            foreach (var acc in _accounts)
-                await InitAccount(acc);
+            //foreach (var acc in _accounts)
+            //    await InitAccount(acc);
         }
 
         private int GetBotsCnt()
@@ -122,7 +136,7 @@ namespace TickTrader.BotAgent.BA.Models
             public Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request) => CallActorFlattenAsync(a => a.GetAccountOrThrow(request.AccountId).TestConnection());
             public Task<ConnectionErrorInfo> TestCreds(TestAccountCredsRequest request) => CallActorFlattenAsync(a => a.TestCreds(request));
 
-            public event Action<AccountModelInfo, ChangeAction> AccountChanged
+            public event Action<AccountModelUpdate> AccountChanged
             {
                 // Warning! This violates actor model rules! Deadlocks are possible!
                 add => CallActorFlatten(a => a.AccountChanged += value);
@@ -162,7 +176,7 @@ namespace TickTrader.BotAgent.BA.Models
 
             public Task<Tuple<ConnectionErrorInfo, AccountMetadataInfo>> GetAccountMetadata(string accountId) => CallActorFlattenAsync(a => a.GetAccountMetadata(accountId));
 
-            public event Action<PluginModelInfo, ChangeAction> BotChanged
+            public event Action<PluginModelUpdate> BotChanged
             {
                 // Warning! This violates actor model rules! Deadlocks are possible!
                 add => CallActorFlatten(a => a.BotChanged += value);
@@ -185,7 +199,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         #region Account management
 
-        public event Action<AccountModelInfo, ChangeAction> AccountChanged;
+        public event Action<AccountModelUpdate> AccountChanged;
         public event Action<AccountStateUpdate> AccountStateChanged;
 
         public async Task<ConnectionErrorInfo> TestCreds(TestAccountCredsRequest request)
@@ -240,7 +254,7 @@ namespace TickTrader.BotAgent.BA.Models
             {
                 var newAcc = new ClientModel(server, userId, creds, request.DisplayName);
                 _accounts.Add(newAcc);
-                AccountChanged?.Invoke(newAcc.GetInfoCopy(), ChangeAction.Added);
+                //AccountChanged?.Invoke(newAcc.GetInfoCopy(), ChangeAction.Added);
 
                 Save();
 
@@ -281,7 +295,7 @@ namespace TickTrader.BotAgent.BA.Models
 
             Save();
 
-            AccountChanged?.Invoke(acc.GetInfoCopy(), ChangeAction.Removed);
+            //AccountChanged?.Invoke(acc.GetInfoCopy(), ChangeAction.Removed);
 
             if (!await acc.ShutdownAsync().WaitAsync(5000))
                 throw new BAException($"Can't stop connection to {acc.Address} - {acc.Username}");
@@ -341,7 +355,7 @@ namespace TickTrader.BotAgent.BA.Models
         private void OnAccountChanged(ClientModel acc)
         {
             Save();
-            AccountChanged?.Invoke(acc.GetInfoCopy(), ChangeAction.Modified);
+            //AccountChanged?.Invoke(acc.GetInfoCopy(), ChangeAction.Modified);
         }
 
         private void OnAccountStateChanged(ClientModel acc)
@@ -363,7 +377,7 @@ namespace TickTrader.BotAgent.BA.Models
             }
 
             Save();
-            BotChanged?.Invoke(bot.GetInfoCopy(), changeAction);
+            //BotChanged?.Invoke(bot.GetInfoCopy(), changeAction);
         }
 
         private void OnBotValidation(TradeBotModel bot)
@@ -383,7 +397,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         #region Bot management
 
-        private event Action<PluginModelInfo, ChangeAction> BotChanged;
+        private event Action<PluginModelUpdate> BotChanged;
         private event Action<PluginStateUpdate> BotStateChanged;
 
         private PluginModelInfo AddBot(AddPluginRequest request)

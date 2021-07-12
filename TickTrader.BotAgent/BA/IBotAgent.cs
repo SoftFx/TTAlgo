@@ -33,7 +33,7 @@ namespace TickTrader.BotAgent.BA
         Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request);
         Task<ConnectionErrorInfo> TestCreds(TestAccountCredsRequest request);
 
-        event Action<AccountModelInfo, ChangeAction> AccountChanged;
+        event Action<AccountModelUpdate> AccountChanged;
         event Action<AccountStateUpdate> AccountStateChanged;
 
         // -------- Bot Management --------
@@ -51,7 +51,7 @@ namespace TickTrader.BotAgent.BA
 
         Task<IAlertStorage> GetAlertStorage();
 
-        event Action<PluginModelInfo, ChangeAction> BotChanged;
+        event Action<PluginModelUpdate> BotChanged;
         event Action<PluginStateUpdate> BotStateChanged;
 
         // -------- Server Management --------
