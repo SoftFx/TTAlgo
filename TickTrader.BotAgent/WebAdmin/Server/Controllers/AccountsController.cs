@@ -30,8 +30,8 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         [HttpGet]
         public async Task<AccountDto[]> Get()
         {
-            var accounts = await _botAgent.GetAccounts();
-            return accounts.Select(a => a.ToDto()).ToArray();
+            var snapshot = await _botAgent.GetAccounts();
+            return snapshot.Accounts.Select(a => a.ToDto()).ToArray();
         }
 
         [HttpGet("{server}/{login}/[action]")]

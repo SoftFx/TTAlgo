@@ -37,6 +37,7 @@ namespace TickTrader.Algo.Server
             Receive<AddPluginCmd, object>(AddPlugin);
             Receive<UpdatePluginCmd, object>(UpdatePlugin);
             Receive<RemovePluginCmd, object>(RemovePlugin);
+            Receive<SetPluginRunningCmd, object>(SetPluginRunning);
         }
 
 
@@ -102,7 +103,12 @@ namespace TickTrader.Algo.Server
             {
                 try
                 {
+#if DEBUG
+                    File.WriteAllText(_stateFilePath, JsonSerializer.Serialize(_state,
+                        new JsonSerializerOptions { WriteIndented = true }));
+#else
                     File.WriteAllText(_stateFilePath, JsonSerializer.Serialize(_state));
+#endif
                     _lastSavedStateCnt = _stateCnt;
 
                     _logger.Debug($"Saved server state {_stateCnt}");

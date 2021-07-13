@@ -13,7 +13,7 @@ namespace TickTrader.BotAgent.BA
     {
         // -------- Repository Management --------
 
-        Task<List<PackageInfo>> GetPackageSnapshot();
+        Task<PackageListSnapshot> GetPackageSnapshot();
         Task<bool> PackageWithNameExists(string pkgName);
         Task UploadPackage(UploadPackageRequest request, string pkgFilePath);
         Task<byte[]> DownloadPackage(string packageId);
@@ -25,7 +25,7 @@ namespace TickTrader.BotAgent.BA
         
         // -------- Account Management --------
 
-        Task<List<AccountModelInfo>> GetAccounts();
+        Task<AccountListSnapshot> GetAccounts();
         Task AddAccount(AddAccountRequest request);
         Task RemoveAccount(RemoveAccountRequest request);
         Task ChangeAccount(ChangeAccountRequest request);
@@ -38,18 +38,20 @@ namespace TickTrader.BotAgent.BA
 
         // -------- Bot Management --------
 
-        Task<List<PluginModelInfo>> GetBots();
+        Task<PluginListSnapshot> GetBots();
         Task<PluginModelInfo> GetBotInfo(string botId);
         Task<IBotFolder> GetAlgoData(string botId);
         Task<string> GenerateBotId(string botDisplayName);
-        Task<PluginModelInfo> AddBot(AddPluginRequest request);
+        Task AddBot(AddPluginRequest request);
         Task RemoveBot(RemovePluginRequest request);
         Task ChangeBotConfig(ChangePluginConfigRequest request);
         Task StartBot(StartPluginRequest request);
         Task StopBotAsync(StopPluginRequest request);
         Task<IBotLog> GetBotLog(string botId);
+        Task<PluginLogRecord[]> GetBotLogs(PluginLogsRequest request);
+        Task<string> GetBotStatus(PluginStatusRequest request);
 
-        Task<IAlertStorage> GetAlertStorage();
+        Task<AlertRecordInfo[]> GetAlerts(PluginAlertsRequest request);
 
         event Action<PluginModelUpdate> BotChanged;
         event Action<PluginStateUpdate> BotStateChanged;

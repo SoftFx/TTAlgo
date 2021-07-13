@@ -16,6 +16,7 @@ using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Server;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Package;
+using TickTrader.Algo.Server.Persistence;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -51,7 +52,7 @@ namespace TickTrader.BotAgent.BA.Models
 
             if (!File.Exists(_algoServer.Env.ServerStateFilePath))
             {
-                //_algoServer.LoadSavedData(serverConfigState);
+                await _algoServer.LoadSavedData(BuildServerSavedState());
             }
 
             await _algoServer.Start();
@@ -83,19 +84,37 @@ namespace TickTrader.BotAgent.BA.Models
             eventBus.PluginUpdated.Subscribe(p => BotChanged?.Invoke(p));
             eventBus.PluginStateUpdated.Subscribe(p => BotStateChanged?.Invoke(p));
 
-            _threadPoolManager.Start(GetBotsCnt());
+            _threadPoolManager.Start(0);
 
             //foreach (var acc in _accounts)
             //    await InitAccount(acc);
         }
 
-        private int GetBotsCnt()
-        {
-            return _accounts.Sum(a => a.TotalBotsCount);
-        }
 
-        public void Close()
+        private ServerSavedState BuildServerSavedState()
         {
+            var state = new ServerSavedState();
+
+            foreach (var acc in _accounts)
+            {
+                var server = acc.Address;
+                var userId = acc.Username;
+                var accState = new AccountSavedState
+                {
+                    Id = AccountId.Pack(server, userId),
+                    UserId = userId,
+                    Server = server,
+                    DisplayName = string.IsNullOrEmpty(acc.DisplayName) ? $"{server} - {userId}" : acc.DisplayName,
+                };
+
+                accState.PackCreds(new AccountCreds(acc.Password));
+
+                state.Accounts.Add(accState.Id, accState);
+
+                acc.AddPluginsSavedStates(state, accState.Id);
+            }
+
+            return state;
         }
 
         public class Handler : BlockingHandler<ServerModel>, IBotAgent
@@ -104,7 +123,7 @@ namespace TickTrader.BotAgent.BA.Models
 
             #region Repository Management
 
-            public Task<List<PackageInfo>> GetPackageSnapshot() => CallActorAsync(a => a._algoServer.PkgStorage.GetPackageSnapshot());
+            public Task<PackageListSnapshot> GetPackageSnapshot() => CallActorAsync(a => a._algoServer.EventBus.GetPackageSnapshot());
             public Task<bool> PackageWithNameExists(string pkgName) => CallActorAsync(a => a._algoServer.PkgStorage.PackageWithNameExists(pkgName));
             public Task UploadPackage(UploadPackageRequest request, string pkgFilePath) => CallActorAsync(a => a._algoServer.PkgStorage.UploadPackage(request, pkgFilePath));
             public Task<byte[]> DownloadPackage(string packageId) => CallActorAsync(a => a._algoServer.PkgStorage.GetPackageBinary(packageId));
@@ -129,12 +148,12 @@ namespace TickTrader.BotAgent.BA.Models
 
             #region Account Management
 
-            public Task AddAccount(AddAccountRequest request) => CallActorFlattenAsync(a => a.AddAccount(request));
-            public Task ChangeAccount(ChangeAccountRequest request) => CallActorAsync(a => a.ChangeAccount(request));
-            public Task<List<AccountModelInfo>> GetAccounts() => CallActorAsync(a => a._accounts.GetInfoCopy());
-            public Task RemoveAccount(RemoveAccountRequest request) => CallActorFlattenAsync(a => a.RemoveAccount(request));
-            public Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request) => CallActorFlattenAsync(a => a.GetAccountOrThrow(request.AccountId).TestConnection());
-            public Task<ConnectionErrorInfo> TestCreds(TestAccountCredsRequest request) => CallActorFlattenAsync(a => a.TestCreds(request));
+            public Task<AccountListSnapshot> GetAccounts() => CallActorAsync(a => a._algoServer.EventBus.GetAccountSnapshot());
+            public Task AddAccount(AddAccountRequest request) => CallActorFlattenAsync(a => a._algoServer.Accounts.Add(request));
+            public Task ChangeAccount(ChangeAccountRequest request) => CallActorAsync(a => a._algoServer.Accounts.Change(request));
+            public Task RemoveAccount(RemoveAccountRequest request) => CallActorFlattenAsync(a => a._algoServer.Accounts.Remove(request));
+            public Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request) => CallActorFlattenAsync(a => a._algoServer.Accounts.Test(request));
+            public Task<ConnectionErrorInfo> TestCreds(TestAccountCredsRequest request) => CallActorFlattenAsync(a => a._algoServer.Accounts.TestCreds(request));
 
             public event Action<AccountModelUpdate> AccountChanged
             {
@@ -153,15 +172,15 @@ namespace TickTrader.BotAgent.BA.Models
             #endregion
 
             #region Bot Management
-            public Task<IAlertStorage> GetAlertStorage() => CallActorAsync(a => a.GetAlertsStorage());
+            public Task<AlertRecordInfo[]> GetAlerts(PluginAlertsRequest request) => CallActorAsync(a => a._algoServer.Alerts.GetAlerts(request));
             public Task<string> GenerateBotId(string botDisplayName) => CallActorAsync(a => a.AutogenerateBotId(botDisplayName));
-            public Task<PluginModelInfo> AddBot(AddPluginRequest request) => CallActorAsync(a => a.AddBot(request));
-            public Task ChangeBotConfig(ChangePluginConfigRequest request) => CallActorAsync(a => a.ChangeBotConfig(request));
-            public Task RemoveBot(RemovePluginRequest request) => CallActorAsync(a => a.RemoveBot(request));
-            public Task StartBot(StartPluginRequest request) => CallActorAsync(a => a.GetBotOrThrow(request.PluginId).Start());
-            public Task StopBotAsync(StopPluginRequest request) => CallActorFlattenAsync(a => a.GetBotOrThrow(request.PluginId).StopAsync());
-            public Task<PluginModelInfo> GetBotInfo(string botId) => CallActorAsync(a => a.GetBotOrThrow(botId).GetInfoCopy());
-            public Task<List<PluginModelInfo>> GetBots() => CallActorAsync(a => a._allBots.Values.GetInfoCopy());
+            public Task AddBot(AddPluginRequest request) => CallActorAsync(a => a._algoServer.Plugins.Add(request));
+            public Task ChangeBotConfig(ChangePluginConfigRequest request) => CallActorAsync(a => a._algoServer.Plugins.UpdateConfig(request));
+            public Task RemoveBot(RemovePluginRequest request) => CallActorAsync(a => a._algoServer.Plugins.Remove(request));
+            public Task StartBot(StartPluginRequest request) => CallActorAsync(a => a._algoServer.Plugins.StartPlugin(request));
+            public Task StopBotAsync(StopPluginRequest request) => CallActorFlattenAsync(a => a._algoServer.Plugins.StopPlugin(request));
+            public Task<PluginModelInfo> GetBotInfo(string botId) => CallActorAsync(a => a._algoServer.EventBus.GetPluginInfo(botId));
+            public Task<PluginListSnapshot> GetBots() => CallActorAsync(a => a._algoServer.EventBus.GetPluginSnapshot());
             public async Task<IBotFolder> GetAlgoData(string botId)
             {
                 var algoDataRef = await CallActorAsync(a => a.GetBotOrThrow(botId).AlgoDataRef);
@@ -173,6 +192,9 @@ namespace TickTrader.BotAgent.BA.Models
                 var logRef = await CallActorAsync(a => a.GetBotOrThrow(botId).LogRef);
                 return new BotLog.Handler(logRef);
             }
+
+            public Task<PluginLogRecord[]> GetBotLogs(PluginLogsRequest request) => CallActorAsync(a => a._algoServer.Plugins.GetPluginLogs(request));
+            public Task<string> GetBotStatus(PluginStatusRequest request) => CallActorAsync(a => a._algoServer.Plugins.GetPluginStatus(request));
 
             public Task<Tuple<ConnectionErrorInfo, AccountMetadataInfo>> GetAccountMetadata(string accountId) => CallActorFlattenAsync(a => a.GetAccountMetadata(accountId));
 
@@ -268,7 +290,7 @@ namespace TickTrader.BotAgent.BA.Models
                 throw new AlgoException("Server is required");
             if (string.IsNullOrWhiteSpace(userId))
                 throw new AlgoException("UserId is required");
-            switch(creds.AuthScheme)
+            switch (creds.AuthScheme)
             {
                 case AccountCreds.SimpleAuthSchemeId:
                     if (string.IsNullOrWhiteSpace(creds.GetPassword()))
@@ -368,12 +390,12 @@ namespace TickTrader.BotAgent.BA.Models
             if (changeAction == ChangeAction.Removed)
             {
                 _allBots.Remove(bot.Id);
-                _threadPoolManager.OnNewBotsCnt(GetBotsCnt());
+                //_threadPoolManager.OnNewBotsCnt(GetBotsCnt());
             }
 
             if (changeAction == ChangeAction.Added)
             {
-                _threadPoolManager.OnNewBotsCnt(GetBotsCnt());
+                //_threadPoolManager.OnNewBotsCnt(GetBotsCnt());
             }
 
             Save();
@@ -501,8 +523,8 @@ namespace TickTrader.BotAgent.BA.Models
         private async Task ShutdownAsync()
         {
             _logger.Debug("ServerModel is shutting down...");
-            var shutdonwTasks = _accounts.Select(ac => ac.ShutdownAsync()).ToArray();
-            await Task.WhenAll(shutdonwTasks);
+            //var shutdonwTasks = _accounts.Select(ac => ac.ShutdownAsync()).ToArray();
+            //await Task.WhenAll(shutdonwTasks);
             await _algoServer.Stop();
             await _threadPoolManager.Stop();
         }

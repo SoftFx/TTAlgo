@@ -66,19 +66,19 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return ClientClaims.Types.AccessLevel.Anonymous;
         }
 
-        public Task<List<AccountModelInfo>> GetAccountList()
+        public async Task<List<AccountModelInfo>> GetAccountList()
         {
-            return _botAgent.GetAccounts();
+            return (await _botAgent.GetAccounts()).Accounts.ToList();
         }
 
-        public Task<List<PluginModelInfo>> GetBotList()
+        public async Task<List<PluginModelInfo>> GetBotList()
         {
-            return _botAgent.GetBots();
+            return (await _botAgent.GetBots()).Plugins.ToList();
         }
 
-        public Task<List<PackageInfo>> GetPackageList()
+        public async Task<List<PackageInfo>> GetPackageList()
         {
-            return _botAgent.GetPackageSnapshot();
+            return (await _botAgent.GetPackageSnapshot()).Packages.ToList();
         }
 
         public Task<ApiMetadataInfo> GetApiMetadata()
@@ -171,16 +171,14 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return _botAgent.DownloadPackage(request.PackageId);
         }
 
-        public async Task<string> GetBotStatusAsync(PluginStatusRequest request)
+        public Task<string> GetBotStatusAsync(PluginStatusRequest request)
         {
-            var log = await _botAgent.GetBotLog(request.PluginId);
-            return await log.GetStatusAsync();
+            return _botAgent.GetBotStatus(request);
         }
 
         public async Task<LogRecordInfo[]> GetBotLogsAsync(PluginLogsRequest request)
         {
-            var log = await _botAgent.GetBotLog(request.PluginId);
-            var msgs = await log.QueryMessagesAsync(request.LastLogTimeUtc, request.MaxCount);
+            var msgs = await _botAgent.GetBotLogs(request);
 
             return msgs.Select(e => new LogRecordInfo
             {
@@ -190,17 +188,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }).ToArray();
         }
 
-        public async Task<AlertRecordInfo[]> GetAlertsAsync(PluginAlertsRequest request)
+        public Task<AlertRecordInfo[]> GetAlertsAsync(PluginAlertsRequest request)
         {
-            var storage = await _botAgent.GetAlertStorage();
-            var alerts = await storage.QueryAlertsAsync(request.LastLogTimeUtc, request.MaxCount);
-
-            return alerts.Select(e => new AlertRecordInfo
-            {
-                TimeUtc = e.TimeUtc,
-                Message = e.Message,
-                PluginId = e.BotId,
-            }).ToArray();
+            return _botAgent.GetAlerts(request);
         }
 
         public async Task<PluginFolderInfo> GetBotFolderInfo(PluginFolderInfoRequest request)

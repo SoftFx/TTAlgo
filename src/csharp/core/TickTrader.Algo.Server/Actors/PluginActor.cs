@@ -1,11 +1,13 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System;
+using System.Linq;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Server.Persistence;
 
 namespace TickTrader.Algo.Server
@@ -43,11 +45,13 @@ namespace TickTrader.Algo.Server
             Receive<StopCmd>(Stop);
             Receive<UpdateConfigCmd>(UpdateConfig);
             Receive<AttachLogsChannelCmd>(AttachLogsChannel);
-            Receive<AttachStatusChannelCmd>(cmd => _statusEventSrc.Subscribe(cmd.StatusSink));
+            Receive<AttachStatusChannelCmd>(AttachStatusChannel);
             Receive<AttachOutputsChannelCmd>(cmd => _outputEventSrc.Subscribe(cmd.OutputSink));
+            Receive<PluginLogsRequest, PluginLogRecord[]>(GetLogs);
+            Receive<PluginStatusRequest, string>(GetStatus);
 
             Receive<PluginLogRecord>(OnLogUpdated);
-            Receive<PluginStatusUpdate>(update => _statusEventSrc.DispatchEvent(update));
+            Receive<PluginStatusUpdate>(OnStatusUpdated);
             Receive<DataSeriesUpdate>(update => _outputEventSrc.DispatchEvent(update));
         }
 
@@ -62,6 +66,7 @@ namespace TickTrader.Algo.Server
         {
             _logger = AlgoLoggerFactory.GetLogger(Name);
             _logsCache = new MessageCache<PluginLogRecord>(100);
+            _lastStatus = new PluginStatusUpdate { PluginId = _id, Message = string.Empty };
 
             _config = _savedState.UnpackConfig();
 
@@ -117,10 +122,40 @@ namespace TickTrader.Algo.Server
             _logEventSrc.Subscribe(sink);
         }
 
+        private void AttachStatusChannel(AttachStatusChannelCmd cmd)
+        {
+            var sink = cmd.StatusSink;
+            if (sink == null)
+                return;
+
+            if (cmd.SendSnapshot)
+                sink.TryWrite(_lastStatus);
+
+            _statusEventSrc.Subscribe(sink);
+        }
+
+        private PluginLogRecord[] GetLogs(PluginLogsRequest request)
+        {
+            return _logsCache.Where(u => u.TimeUtc > request.LastLogTimeUtc).Take(request.MaxCount).ToArray();
+        }
+
+        private string GetStatus(PluginStatusRequest request)
+        {
+            return _lastStatus.Message;
+        }
+
         private void OnLogUpdated(PluginLogRecord log)
         {
             _logsCache.Add(log);
             _logEventSrc.DispatchEvent(log);
+            if (log.Severity == PluginLogRecord.Types.LogSeverity.Alert)
+                _server.Alerts.SendPluginAlert(_id, log);
+        }
+
+        private void OnStatusUpdated(PluginStatusUpdate update)
+        {
+            _lastStatus = update;
+            _statusEventSrc.DispatchEvent(update);
         }
 
 
@@ -139,14 +174,18 @@ namespace TickTrader.Algo.Server
             {
                 BreakBot($"Algo package {pkgId} is not found");
                 _updatePkgTaskSrc.SetResult(false);
+                _updatePkgTaskSrc = null;
                 return false;
             }
+
+            await _runtime.Start();
 
             _pluginInfo = await _runtime.GetPluginInfo(pluginKey);
             if (_pluginInfo == null)
             {
                 BreakBot($"Trade bot '{pluginKey.DescriptorId}' is missing in Algo package '{pkgId}'");
                 _updatePkgTaskSrc.SetResult(false);
+                _updatePkgTaskSrc = null;
                 return false;
             }
 
@@ -190,6 +229,7 @@ namespace TickTrader.Algo.Server
                 if (!await UpdatePackage())
                 {
                     _startTaskSrc.SetResult(false);
+                    _startTaskSrc = null;
                     return;
                 }
 
@@ -293,9 +333,12 @@ namespace TickTrader.Algo.Server
         {
             public ChannelWriter<PluginStatusUpdate> StatusSink { get; }
 
-            public AttachStatusChannelCmd(ChannelWriter<PluginStatusUpdate> statusSink)
+            public bool SendSnapshot { get; }
+
+            public AttachStatusChannelCmd(ChannelWriter<PluginStatusUpdate> statusSink, bool sendSnapshot)
             {
                 StatusSink = statusSink;
+                SendSnapshot = sendSnapshot;
             }
         }
 

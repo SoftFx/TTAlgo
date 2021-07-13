@@ -31,9 +31,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         [HttpGet]
         public async Task<PackageDto[]> Get()
         {
-            var packages = await _botAgent.GetPackageSnapshot();
+            var snapshot = await _botAgent.GetPackageSnapshot();
 
-            return packages.Select(p => p.ToDto()).ToArray();
+            return snapshot.Packages.Select(p => p.ToDto()).ToArray();
         }
 
         [HttpHead("{name}")]

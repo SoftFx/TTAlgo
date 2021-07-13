@@ -1,10 +1,12 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System;
+using System.Linq;
 using System.Threading.Channels;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Domain.ServerControl;
 
 namespace TickTrader.Algo.Server
 {
@@ -14,26 +16,24 @@ namespace TickTrader.Algo.Server
 
         private readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<AlertManager>();
 
-        private readonly AlgoServer _server;
         private readonly MessageCache<AlertRecordInfo> _cache = new MessageCache<AlertRecordInfo>(MaxCachedAlerts);
         private readonly ActorEventSource<AlertRecordInfo> _alertEventSrc = new ActorEventSource<AlertRecordInfo>();
         private readonly TimeKeyGenerator _timeGen = new TimeKeyGenerator();
 
 
-        private AlertManager(AlgoServer server)
+        private AlertManager()
         {
-            _server = server;
-
             Receive<PluginAlertMsg>(OnPluginAlert);
             Receive<ServerAlertMsg>(OnServerAlert);
 
             Receive<AttachAlertChannelCmd>(AttachAlertChannel);
+            Receive<PluginAlertsRequest, AlertRecordInfo[]>(GetAlerts);
         }
 
 
-        public static void Create(AlgoServer server)
+        public static IActorRef Create()
         {
-            ActorSystem.SpawnLocal(() => new AlertManager(server), $"{nameof(AlertManager)}");
+            return ActorSystem.SpawnLocal(() => new AlertManager(), $"{nameof(AlertManager)}");
         }
 
 
@@ -90,6 +90,11 @@ namespace TickTrader.Algo.Server
             }
 
             _alertEventSrc.Subscribe(sink);
+        }
+
+        private AlertRecordInfo[] GetAlerts(PluginAlertsRequest request)
+        {
+            return _cache.Where(u => u.TimeUtc > request.LastLogTimeUtc).Take(request.MaxCount).ToArray();
         }
 
 

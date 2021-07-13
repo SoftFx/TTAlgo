@@ -193,14 +193,18 @@ namespace TickTrader.Algo.Server
 
         private async Task StartExecutor(StartExecutorRequest request)
         {
+            await WhenStarted();
+
             await _proxy.StartExecutor(request.ExecutorId);
             _startedExecutorsCnt++;
             _logger.Debug($"Executor {request.ExecutorId} started. Have {_startedExecutorsCnt} active executors");
         }
 
-        private Task StopExecutor(StopExecutorRequest request)
+        private async Task StopExecutor(StopExecutorRequest request)
         {
-            return _proxy.StopExecutor(request.ExecutorId);
+            await WhenStarted();
+
+            await _proxy.StopExecutor(request.ExecutorId);
         }
 
         private PluginInfo GetPluginInfo(GetPluginInfoRequest request)
@@ -270,6 +274,17 @@ namespace TickTrader.Algo.Server
 
             if (_startedExecutorsCnt == 0 && _shutdownWhenIdle)
                 ShutdownInternal();
+        }
+
+
+        private async Task WhenStarted()
+        {
+            if (_startTaskSrc == null)
+                throw Errors.RuntimeNotStarted(_id);
+
+            var connected = await _startTaskSrc.Task;
+            if (!connected)
+                throw Errors.RuntimeNotStarted(_id);
         }
 
 

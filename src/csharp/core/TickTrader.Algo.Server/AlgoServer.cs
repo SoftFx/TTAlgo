@@ -24,6 +24,8 @@ namespace TickTrader.Algo.Server
 
         public ServerBusModel EventBus { get; }
 
+        public AlertManagerModel Alerts { get; }
+
         public PackageStorage PkgStorage { get; } = new PackageStorage();
 
         public AccountManagerModel Accounts { get; }
@@ -41,6 +43,7 @@ namespace TickTrader.Algo.Server
             Env = new EnvService(AppDomain.CurrentDomain.BaseDirectory);
 
             EventBus = new ServerBusModel(ServerBusActor.Create());
+            Alerts = new AlertManagerModel(AlertManager.Create());
 
             Accounts = new AccountManagerModel(AccountManager.Create(this));
             Runtimes = new RuntimeManagerModel(RuntimeManager.Create(this));
@@ -90,9 +93,9 @@ namespace TickTrader.Algo.Server
             return await runtime.CreateExecutor(instanceId, config);
         }
 
-        public async Task LoadSavedData(ServerSavedState serverState)
+        public Task LoadSavedData(ServerSavedState serverState)
         {
-            await SavedState.LoadSavedState(serverState);
+            return SavedState.LoadSavedState(serverState);
         }
 
         #region IRpcHost implementation

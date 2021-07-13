@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
+using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 
 namespace TickTrader.Algo.Server
@@ -30,5 +31,9 @@ namespace TickTrader.Algo.Server
         public Task StartPlugin(StartPluginRequest request) => _ref.Ask(request);
 
         public Task StopPlugin(StopPluginRequest request) => _ref.Ask(request);
+
+        public Task<PluginLogRecord[]> GetPluginLogs(PluginLogsRequest request) => _ref.Ask<PluginLogRecord[]>(request);
+
+        public Task<string> GetPluginStatus(PluginStatusRequest request) => _ref.Ask<string>(request);
     }
 }

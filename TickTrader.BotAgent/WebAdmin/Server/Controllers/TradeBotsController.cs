@@ -32,8 +32,8 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         [HttpGet]
         public async Task<TradeBotDto[]> Get()
         {
-            var bots = await _botAgent.GetBots();
-            return bots.Select(b => b.ToDto()).ToArray();
+            var snapshot = await _botAgent.GetBots();
+            return snapshot.Plugins.Select(b => b.ToDto()).ToArray();
         }
 
         [HttpGet("{id}")]
@@ -205,8 +205,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 
                 pluginCfg.Key = new PluginKey(setup.PackageId, setup.PluginId);
 
-                var tradeBot = await _botAgent.AddBot(new AddPluginRequest(accountId, pluginCfg));
-                setup.EnsureFiles(ServerModel.GetWorkingFolderFor(tradeBot.InstanceId));
+                await _botAgent.AddBot(new AddPluginRequest(accountId, pluginCfg));
+                var botId = setup.InstanceId;
+                setup.EnsureFiles(ServerModel.GetWorkingFolderFor(botId));
+
+                var tradeBot = await _botAgent.GetBotInfo(botId);
 
                 return Ok(tradeBot.ToDto());
             }

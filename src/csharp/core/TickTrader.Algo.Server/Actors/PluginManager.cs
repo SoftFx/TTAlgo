@@ -29,6 +29,8 @@ namespace TickTrader.Algo.Server
             Receive<RemovePluginRequest>(RemovePlugin);
             Receive<StartPluginRequest>(StartPlugin);
             Receive<StopPluginRequest>(StopPlugin);
+            Receive<PluginLogsRequest, PluginLogRecord[]>(GetPluginLogs);
+            Receive<PluginStatusRequest, string>(GetPluginStatus);
         }
 
 
@@ -125,6 +127,24 @@ namespace TickTrader.Algo.Server
                 return Task.FromException(Errors.PluginNotFound(id));
 
             return plugin.Stop();
+        }
+
+        private Task<PluginLogRecord[]> GetPluginLogs(PluginLogsRequest request)
+        {
+            var id = request.PluginId;
+            if (!_plugins.TryGetValue(id, out var plugin))
+                return Task.FromException<PluginLogRecord[]>(Errors.PluginNotFound(id));
+
+            return plugin.GetLogs(request);
+        }
+
+        private Task<string> GetPluginStatus(PluginStatusRequest request)
+        {
+            var id = request.PluginId;
+            if (!_plugins.TryGetValue(id, out var plugin))
+                return Task.FromException<string>(Errors.PluginNotFound(id));
+
+            return plugin.GetStatus(request);
         }
 
 
