@@ -1,63 +1,56 @@
 <project name="TickTrader Algo API" default="help">
 
-  <property name="MSBuildDir"		    value="c:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\"  		unless="${property::exists('MSBuildDir')}" />
+  <property name="MSBuildDir"          value="c:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"      unless="${property::exists('MSBuildDir')}" />
 
   <property name="Configuration"		value="Release"							                 unless="${property::exists('Configuration')}" />
   <property name="Version"          value="1.0.0.0"                              unless="${property::exists('Version')}" />
   <property name="NugetApiKey"      value="DON'T EVER PUSH REAL KEY TO GIT"      unless="${property::exists('NugetApiKey')}" />
 
-  <property name="SolutionDir"		  value="d:\some\cool\path\"							     unless="${property::exists('SolutionDir')}" />
+  <property name="SolutionDir"		  value=".\"							     unless="${property::exists('SolutionDir')}" />
   <property name="ProjectName"      value="TickTrader.Algo.Api"                  unless="${property::exists('ProjectName')}" />
 
-  <property name="ProjectDir"       value="${SolutionDir}${ProjectName}\"        unless="${property::exists('ProjectDir')}" />
+  <property name="ProjectDir"       value="${SolutionDir}\src\csharp\api\${ProjectName}\"        unless="${property::exists('ProjectDir')}" />
   <property name="ProjectFile"      value="${ProjectDir}${ProjectName}.csproj"   unless="${property::exists('ProjectFile')}" />
 
   <property name="ToolsDir"			    value="${SolutionDir}tools\"  />
   <property name="OutputDir"        value="${SolutionDir}nuget.output\" />
 
   <target name="help">
-    <echo message="Use: nant.exe buildfile:bot.terminal.build [Clean|Build|Publish]"/>
+    <echo message="Use: nant.exe -buildfile:api.nuget.build [Clean|Build|Publish]"/>
   </target>
 
   <target name="Clean" >
-    <property name="Build.Target" value="Clean" />
-    <call target="RunMSBuild" />
+    
+    <exec program="dotnet">
+      <arg line="clean" />
+      <arg line="${ProjectFile}" />
+      <arg line="--configuration ${Configuration}" />
+      <arg line="--verbosity detailed" />
+    </exec>
+
     <call target="CleanOutput" />
   </target>
 
   <target name="Build" >
     <call target="CleanOutput" />
-	  <property name="Build.Target" value="Build" />
-    <call target="RestoreNugetPackages" />
-    <call target="RunMSBuild" />
-    <call target="CreateNugetPackage" />
+	  
+    <exec program="dotnet">
+      <arg line="pack" />
+      <arg line="${ProjectFile}" />
+      <arg line="--configuration ${Configuration}" />
+      <arg line="--verbosity detailed" />
+      <arg line="--output ${OutputDir}" />
+    </exec>
+    
   </target>
 
   <target name="Publish" >
-    <call target="PublishNugetPackage" />
-  </target>
-
-  <target name="RunMSBuild">
-
-    <property name="MSBuild.ProjectFile" value="${ProjectFile}" />
-    <property name="MSBuild.SolutionDir" value="${SolutionDir}" />
-    <property name="MSBuild.Target" value="${Build.Target}" />
-    <property name="MSBuild.Output" value="${SolutionDir}BotTerminal.build-${Configuration}.log" />
-    <property name="MSBuild.Configuration" value="${Configuration}" />
-    <property name="MSBuild.Platform" value="AnyCPU" />
-
-    <exec program="${MSBuildDir}msbuild.exe" verbose="true">
-      <arg value="${MSBuild.ProjectFile}" />
-      <arg value="/t:${MSBuild.Target}" />
-      <arg value="/maxcpucount" />
-      <arg value="/fl" />
-      <arg value="/flp:Verbosity=Normal;LogFile=${MSBuild.Output}" />
-      <arg value="/clp:NoItemAndPropertyList" />
-      <arg value="/verbosity:n" />
-      <arg value="/nologo" />
-      <arg value="/p:Configuration=${MSBuild.Configuration}" />
-      <arg value="/p:Platform=${MSBuild.Platform}" />
-      <arg value="/p:SolutionDir=${MSBuild.SolutionDir}" />
+    
+    <exec program="dotnet">
+      <arg line="nuget push" />
+      <arg line="${OutputDir}*.nupkg" />
+      <arg line="-s https://api.nuget.org/v3/index.json" />
+      <arg line="-k ${NugetApiKey}" />
     </exec>
 
   </target>
@@ -68,44 +61,6 @@
         <include name="*.nupkg" />
       </fileset>
     </delete>
-  </target>
-
-  <target name="RestoreNugetPackages">
-
-    <exec program="${ToolsDir}nuget.exe" verbose="true">
-      <arg line="restore" />
-      <arg line="${ProjectFile}" />
-      <arg line="-NoCache" />
-      <arg line="-Verbosity detailed" />
-      <arg line="-SolutionDirectory ${SolutionDir}" />
-      <arg line='-MSBuildPath "${MSBuildDir}."' />
-    </exec>
-
-  </target>
-
-  <target name="CreateNugetPackage">
-
-    <exec program="${ToolsDir}nuget.exe" verbose="true">
-      <arg line="pack" />
-      <arg line="${ProjectFile}" />
-      <arg line="-OutputDirectory ${OutputDir}" />
-      <arg line="-Verbosity detailed" />
-      <arg line="-Version ${Version}" />
-      <arg line="-Properties Configuration=Release"/>
-    </exec>
-
-  </target>
-
-  <target name="PublishNugetPackage">
-
-    <exec program="${ToolsDir}nuget.exe" verbose="true">
-      <arg line="push" />
-      <arg line="${OutputDir}${ProjectName}.${Version}.nupkg" />
-      <arg line="-Source nuget.org" />
-      <arg line="-ApiKey ${NugetApiKey}" />
-      <arg line="-Verbosity detailed" />
-    </exec>
-
   </target>
 
 </project>
