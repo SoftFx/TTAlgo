@@ -9,7 +9,6 @@ using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Ext;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
-using TickTrader.Algo.Logging;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.Rpc;
 using TickTrader.Algo.Rpc.OverTcp;
@@ -160,7 +159,7 @@ namespace TickTrader.Algo.Runtime
 
             _executorsMap.Add(executorId, executorCore);
 
-            var _ = Task.Run(() => StartExecutor(executorCore));
+            await Task.Run(() => StartExecutor(executorCore));
         }
 
         public Task StopExecutor(string executorId)
@@ -172,23 +171,21 @@ namespace TickTrader.Algo.Runtime
         }
 
 
-        internal void InitDebugLogger()
-        {
-            AlgoLoggerFactory.Init(DebugLoggerAdapter.Create);
-        }
-
-
-        private async Task StartExecutor(PluginExecutorCore executorCore)
+        private Task StartExecutor(PluginExecutorCore executorCore)
         {
             try
             {
                 executorCore.Start();
                 executorCore.Stopped += OnExecutorStopped;
+
+                return Task.CompletedTask;
             }
             catch (Exception ex)
             {
                 _logger.Error(ex, $"Failed to start executor '{executorCore.InstanceId}'");
                 _executorsMap.Remove(executorCore.InstanceId);
+
+                return Task.FromException(ex);
             }
         }
 
@@ -204,8 +201,7 @@ namespace TickTrader.Algo.Runtime
             {
                 executorCore.Abort();
             }
-            else
-            if (stopTask.IsFaulted)
+            else if (stopTask.IsFaulted)
             {
                 _logger.Error(stopTask.Exception, $"Failed to stop executor '{executorCore.InstanceId}'");
                 if (_executorsMap.ContainsKey(executorCore.InstanceId))

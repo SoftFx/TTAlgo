@@ -58,7 +58,7 @@ namespace TickTrader.Algo.Server
 
         public static IActorRef Create(AlgoServer server, PluginSavedState savedState)
         {
-            return ActorSystem.SpawnLocal(() => new PluginActor(server, savedState), $"{nameof(PluginActor)} ({savedState.Id})", new object());
+            return ActorSystem.SpawnLocal(() => new PluginActor(server, savedState), $"{nameof(PluginActor)} ({savedState.Id})");
         }
 
 

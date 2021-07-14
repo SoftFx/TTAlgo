@@ -7,6 +7,8 @@ option csharp_namespace = "TickTrader.Algo.Domain";
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/timestamp.proto";
 
+import "common.proto";
+
 message CurrencyInfo {
     string name = 1;
     int32 digits = 2;
@@ -139,30 +141,6 @@ message ModifyFeedSubscriptionRequest { // returns QuotePage
 }
 
 message CancelAllFeedSubscriptionsRequest { }
-
-message Feed {
-    enum MarketSide {
-        BID = 0;
-        ASK = 1;
-    }
-
-    enum Timeframe {
-        S1 = 0;
-        S10 = 1;
-        M1 = 2;
-        M5 = 3;
-        M15 = 4;
-        M30 = 5;
-        H1 = 6;
-        H4 = 7;
-        D = 8;
-        W = 9;
-        M_N = 10;
-        TICKS = 11;
-        TICKS_LEVEL2 = 12;
-        TICKS_VWAP = 13;
-    }
-}
 
 message BarInfo {
     string symbol = 1;

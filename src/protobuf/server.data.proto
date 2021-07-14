@@ -8,8 +8,6 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 import "runtime.package.proto";
 import "runtime.plugin.proto";
-import "runtime.feed.proto";
-import "runtime.proto";
 import "common.proto";
 
 message MappingInfo {
