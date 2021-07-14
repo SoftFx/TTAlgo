@@ -196,7 +196,7 @@ namespace TickTrader.BotAgent.BA.Models
             public Task<PluginLogRecord[]> GetBotLogs(PluginLogsRequest request) => CallActorAsync(a => a._algoServer.Plugins.GetPluginLogs(request));
             public Task<string> GetBotStatus(PluginStatusRequest request) => CallActorAsync(a => a._algoServer.Plugins.GetPluginStatus(request));
 
-            public Task<Tuple<ConnectionErrorInfo, AccountMetadataInfo>> GetAccountMetadata(string accountId) => CallActorFlattenAsync(a => a.GetAccountMetadata(accountId));
+            public Task<AccountMetadataInfo> GetAccountMetadata(AccountMetadataRequest request) => CallActorFlattenAsync(a => a._algoServer.Accounts.GetMetadata(request));
 
             public event Action<PluginModelUpdate> BotChanged
             {

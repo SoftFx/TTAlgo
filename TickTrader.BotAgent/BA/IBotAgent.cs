@@ -29,7 +29,7 @@ namespace TickTrader.BotAgent.BA
         Task AddAccount(AddAccountRequest request);
         Task RemoveAccount(RemoveAccountRequest request);
         Task ChangeAccount(ChangeAccountRequest request);
-        Task<Tuple<ConnectionErrorInfo, AccountMetadataInfo>> GetAccountMetadata(string accountId);
+        Task<AccountMetadataInfo> GetAccountMetadata(AccountMetadataRequest request);
         Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request);
         Task<ConnectionErrorInfo> TestCreds(TestAccountCredsRequest request);
 

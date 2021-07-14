@@ -96,14 +96,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return Task.FromResult(_agentContext);
         }
 
-        public async Task<AccountMetadataInfo> GetAccountMetadata(AccountMetadataRequest request)
+        public Task<AccountMetadataInfo> GetAccountMetadata(AccountMetadataRequest request)
         {
-            var accountId = request.AccountId;
-
-            var (error, accMetadata) = await _botAgent.GetAccountMetadata(accountId);
-            if (!error.IsOk)
-                throw new Exception($"Account '{accountId}' failed to connect");
-            return accMetadata;
+            return _botAgent.GetAccountMetadata(request);
         }
 
         public Task StartBot(StartPluginRequest request)
