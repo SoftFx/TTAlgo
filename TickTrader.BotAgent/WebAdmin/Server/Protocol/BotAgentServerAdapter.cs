@@ -7,7 +7,6 @@ using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.ServerControl;
 using TickTrader.BotAgent.BA;
-using TickTrader.BotAgent.BA.Models;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
 using TickTrader.Algo.Package;
 
@@ -188,49 +187,29 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return _botAgent.GetAlerts(request);
         }
 
-        public async Task<PluginFolderInfo> GetBotFolderInfo(PluginFolderInfoRequest request)
+        public Task<PluginFolderInfo> GetBotFolderInfo(PluginFolderInfoRequest request)
         {
-            var botId = request.PluginId;
-            var folderId = request.FolderId;
-
-            var botFolder = await GetBotFolder(botId, folderId);
-
-            var res = new PluginFolderInfo
-            {
-                PluginId = botId,
-                FolderId = folderId,
-                Path = await botFolder.GetFolder(),
-            };
-            res.Files.AddRange((await botFolder.GetFiles()).Select(f => new PluginFileInfo { Name = f.Name, Size = f.Size }));
-            return res;
+            return _botAgent.GetPluginFolderInfo(request);
         }
 
-        public async Task ClearBotFolder(ClearPluginFolderRequest request)
+        public Task ClearBotFolder(ClearPluginFolderRequest request)
         {
-            var botFolder = await GetBotFolder(request.PluginId, request.FolderId);
-
-            await botFolder.Clear();
+            return _botAgent.ClearPluginFolder(request);
         }
 
-        public async Task DeleteBotFile(DeletePluginFileRequest request)
+        public Task DeleteBotFile(DeletePluginFileRequest request)
         {
-            var botFolder = await GetBotFolder(request.PluginId, request.FolderId);
-
-            await botFolder.DeleteFile(request.FileName);
+            return _botAgent.DeletePluginFile(request);
         }
 
-        public async Task<string> GetBotFileReadPath(DownloadPluginFileRequest request)
+        public Task<string> GetBotFileReadPath(DownloadPluginFileRequest request)
         {
-            var botFolder = await GetBotFolder(request.PluginId, request.FolderId);
-
-            return await botFolder.GetFileReadPath(request.FileName);
+            return _botAgent.GetPluginFileReadPath(request);
         }
 
-        public async Task<string> GetBotFileWritePath(UploadPluginFileRequest request)
+        public Task<string> GetBotFileWritePath(UploadPluginFileRequest request)
         {
-            var botFolder = await GetBotFolder(request.PluginId, request.FolderId);
-
-            return await botFolder.GetFileWritePath(request.FileName);
+            return _botAgent.GetPluginFileWritePath(request);
         }
 
 
@@ -244,19 +223,6 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                     return UpdateInfo.Types.UpdateType.Replaced;
                 case Update.Types.Action.Removed:
                     return UpdateInfo.Types.UpdateType.Removed;
-                default:
-                    throw new ArgumentException();
-            }
-        }
-
-        private async Task<IBotFolder> GetBotFolder(string botId, PluginFolderInfo.Types.PluginFolderId folderId)
-        {
-            switch (folderId)
-            {
-                case PluginFolderInfo.Types.PluginFolderId.AlgoData:
-                    return await _botAgent.GetAlgoData(botId);
-                case PluginFolderInfo.Types.PluginFolderId.BotLogs:
-                    return await _botAgent.GetBotLog(botId);
                 default:
                     throw new ArgumentException();
             }

@@ -181,6 +181,11 @@ namespace TickTrader.BotAgent.BA.Models
             public Task StopBotAsync(StopPluginRequest request) => CallActorFlattenAsync(a => a._algoServer.Plugins.StopPlugin(request));
             public Task<PluginModelInfo> GetBotInfo(string botId) => CallActorAsync(a => a._algoServer.EventBus.GetPluginInfo(botId));
             public Task<PluginListSnapshot> GetBots() => CallActorAsync(a => a._algoServer.EventBus.GetPluginSnapshot());
+            public Task<PluginFolderInfo> GetPluginFolderInfo(PluginFolderInfoRequest request) => CallActorAsync(a => a._algoServer.PluginFiles.GetFolderInfo(request));
+            public Task ClearPluginFolder(ClearPluginFolderRequest request) => CallActorAsync(a => a._algoServer.PluginFiles.ClearFolder(request));
+            public Task DeletePluginFile(DeletePluginFileRequest request) => CallActorAsync(a => a._algoServer.PluginFiles.DeleteFile(request));
+            public Task<string> GetPluginFileReadPath(DownloadPluginFileRequest request) => CallActorAsync(a => a._algoServer.PluginFiles.GetFileReadPath(request));
+            public Task<string> GetPluginFileWritePath(UploadPluginFileRequest request) => CallActorAsync(a => a._algoServer.PluginFiles.GetFileWritePath(request));
             public async Task<IBotFolder> GetAlgoData(string botId)
             {
                 var algoDataRef = await CallActorAsync(a => a.GetBotOrThrow(botId).AlgoDataRef);

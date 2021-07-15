@@ -102,7 +102,7 @@ namespace TickTrader.BotTerminal
             }
             else
             {
-                var logDir = Path.Combine(EnvService.Instance.BotLogFolder, PathHelper.GetSafeFileName(InstanceId));
+                var logDir = Path.Combine(EnvService.Instance.BotLogFolder, PathHelper.Escape(InstanceId));
 
                 if (!Directory.Exists(logDir))
                     Directory.CreateDirectory(logDir);

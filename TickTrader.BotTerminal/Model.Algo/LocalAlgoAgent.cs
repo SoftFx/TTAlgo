@@ -458,9 +458,9 @@ namespace TickTrader.BotTerminal
             switch (folderId)
             {
                 case PluginFolderInfo.Types.PluginFolderId.AlgoData:
-                    return Path.Combine(EnvService.Instance.AlgoWorkingFolder, PathHelper.GetSafeFileName(botId));
+                    return Path.Combine(EnvService.Instance.AlgoWorkingFolder, PathHelper.Escape(botId));
                 case PluginFolderInfo.Types.PluginFolderId.BotLogs:
-                    return Path.Combine(EnvService.Instance.AlgoWorkingFolder, PathHelper.GetSafeFileName(botId));
+                    return Path.Combine(EnvService.Instance.AlgoWorkingFolder, PathHelper.Escape(botId));
                 default:
                     throw new ArgumentException("Unknown bot folder id");
             }

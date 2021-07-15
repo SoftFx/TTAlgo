@@ -244,6 +244,10 @@ namespace TickTrader.Algo.Server
 
                 _executor = await _runtime.CreateExecutor(_id, config);
 
+                _executor.LogUpdated.Subscribe(Self);
+                _executor.StatusUpdated.Subscribe(Self);
+                _executor.OutputUpdated.Subscribe(Self);
+
                 await _executor.Start();
 
                 _startTaskSrc.SetResult(true);

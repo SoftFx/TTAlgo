@@ -50,12 +50,12 @@ namespace TickTrader.Algo.Server
 
         public string GetPluginWorkingFolder(string pluginId)
         {
-            return Path.Combine(AlgoWorkingFolder, PathEscaper.Escape(pluginId));
+            return Path.Combine(AlgoWorkingFolder, PathHelper.Escape(pluginId));
         }
 
         public string GetPluginLogsFolder(string pluginId)
         {
-            return Path.Combine(BotLogFolder, PathEscaper.Escape(pluginId));
+            return Path.Combine(BotLogFolder, PathHelper.Escape(pluginId));
         }
     }
 }

@@ -1,18 +1,16 @@
-﻿using System;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using TickTrader.BotAgent.BA;
 using System.Linq;
 using Microsoft.AspNetCore.Authorization;
-using TickTrader.BotAgent.BA.Exceptions;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 using TickTrader.BotAgent.WebAdmin.Server.Dto;
 using TickTrader.BotAgent.BA.Models;
 using System.Net;
 using TickTrader.Algo.Domain;
 using System.Threading.Tasks;
-using TickTrader.BotAgent.BA.Repository;
 using TickTrader.Algo.Domain.ServerControl;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 {
@@ -59,8 +57,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             try
             {
                 var botId = WebUtility.UrlDecode(id);
-                var log = await _botAgent.GetBotLog(botId);
-                await log.Clear();
+                await _botAgent.ClearPluginFolder(new ClearPluginFolderRequest(botId, PluginFolderInfo.Types.PluginFolderId.BotLogs));
 
                 return Ok();
             }
@@ -77,9 +74,17 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             try
             {
                 var botId = WebUtility.UrlDecode(id);
-                var log = await _botAgent.GetBotLog(botId);
 
-                return Ok(await log.ToDto());
+                var logs = await _botAgent.GetBotLogs(new PluginLogsRequest { PluginId = botId, MaxCount = 100 });
+                var folderInfo = await _botAgent.GetPluginFolderInfo(new PluginFolderInfoRequest(botId, PluginFolderInfo.Types.PluginFolderId.BotLogs));
+
+                var res = new TradeBotLogDto
+                {
+                    Snapshot = logs.OrderByDescending(le => le.TimeUtc).Select(e => e.ToDto()).ToArray(),
+                    Files = folderInfo.Files.Select(f => f.ToDto()).ToArray(),
+                };
+
+                return Ok(res);
             }
             catch (AlgoException algoEx)
             {
@@ -94,12 +99,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             try
             {
                 var botId = WebUtility.UrlDecode(id);
-                var log = await _botAgent.GetBotLog(botId);
-
                 var decodedFile = WebUtility.UrlDecode(file);
-                var readOnlyFile = await log.GetFile(decodedFile);
 
-                return File(readOnlyFile.OpenRead(), MimeMipping.GetContentType(decodedFile), decodedFile);
+                var filePath = await _botAgent.GetPluginFileReadPath(new DownloadPluginFileRequest(botId, PluginFolderInfo.Types.PluginFolderId.BotLogs, decodedFile));
+
+                return File(FileHelper.OpenSharedRead(filePath), MimeMipping.GetContentType(decodedFile), decodedFile);
             }
             catch (AlgoException algoEx)
             {
@@ -114,8 +118,8 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             try
             {
                 var botId = WebUtility.UrlDecode(id);
-                var log = await _botAgent.GetBotLog(botId);
-                await log.DeleteFile(WebUtility.UrlDecode(file));
+                var decodedFile = WebUtility.UrlDecode(file);
+                await _botAgent.DeletePluginFile(new DeletePluginFileRequest(botId, PluginFolderInfo.Types.PluginFolderId.BotLogs, decodedFile));
 
                 return Ok();
             }
@@ -134,9 +138,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             try
             {
                 var botId = WebUtility.UrlDecode(id);
-                var algoData = await _botAgent.GetAlgoData(botId);
 
-                var files = (await algoData.GetFiles()).Select(f => f.ToDto()).ToArray();
+                var folderInfo = await _botAgent.GetPluginFolderInfo(new PluginFolderInfoRequest(botId, PluginFolderInfo.Types.PluginFolderId.AlgoData));
+
+                var files = folderInfo.Files.Select(f => f.ToDto()).ToArray();
 
                 return Ok(files);
             }
@@ -153,12 +158,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             try
             {
                 var botId = WebUtility.UrlDecode(id);
-                var algoData = await _botAgent.GetAlgoData(botId);
-
                 var decodedFile = WebUtility.UrlDecode(file);
-                var readOnlyFile = await algoData.GetFile(decodedFile);
 
-                return File(readOnlyFile.OpenRead(), MimeMipping.GetContentType(decodedFile), decodedFile);
+                var filePath = await _botAgent.GetPluginFileReadPath(new DownloadPluginFileRequest(botId, PluginFolderInfo.Types.PluginFolderId.AlgoData, decodedFile));
+
+                return File(FileHelper.OpenSharedRead(filePath), MimeMipping.GetContentType(decodedFile), decodedFile);
             }
             catch (AlgoException algoEx)
             {
@@ -174,12 +178,12 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             try
             {
                 var botId = WebUtility.UrlDecode(id);
-                var log = await _botAgent.GetBotLog(botId);
+                var status = await _botAgent.GetBotStatus(new PluginStatusRequest { PluginId = botId });
 
                 return Ok(new BotStatusDto
                 {
-                    Status = await log.GetStatusAsync(),
-                    BotId = botId
+                    Status = status,
+                    BotId = botId,
                 });
             }
             catch (AlgoException algoEx)

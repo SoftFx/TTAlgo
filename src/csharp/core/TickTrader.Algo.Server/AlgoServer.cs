@@ -34,6 +34,8 @@ namespace TickTrader.Algo.Server
 
         public PluginManagerModel Plugins { get; }
 
+        public PluginFileManagerModel PluginFiles { get; }
+
 
         internal ServerStateModel SavedState { get; }
 
@@ -49,6 +51,8 @@ namespace TickTrader.Algo.Server
             Runtimes = new RuntimeManagerModel(RuntimeManager.Create(this));
             Plugins = new PluginManagerModel(PluginManager.Create(this));
 
+            PluginFiles = new PluginFileManagerModel(PluginFileManager.Create(this));
+
             SavedState = new ServerStateModel(ServerStateManager.Create(Env.ServerStateFilePath));
 
             _rpcServer = new RpcServer(new TcpFactory(), this);
@@ -57,6 +61,8 @@ namespace TickTrader.Algo.Server
 
         public async Task Start()
         {
+            PkgStorage.PackageUpdated.Subscribe(upd => EventBus.SendUpdate(upd));
+
             await _rpcServer.Start(Address, 0);
 
             await Accounts.Restore();

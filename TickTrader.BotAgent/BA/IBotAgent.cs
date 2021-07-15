@@ -58,6 +58,12 @@ namespace TickTrader.BotAgent.BA
 
         // -------- Server Management --------
 
+        Task<PluginFolderInfo> GetPluginFolderInfo(PluginFolderInfoRequest request);
+        Task ClearPluginFolder(ClearPluginFolderRequest request);
+        Task DeletePluginFile(DeletePluginFileRequest request);
+        Task<string> GetPluginFileReadPath(DownloadPluginFileRequest request);
+        Task<string> GetPluginFileWritePath(UploadPluginFileRequest request);
+
         // TO DO : server start and stop should not be managed from WebAdmin
 
         Task InitAsync(IFdkOptionsProvider fdkOptionsProvider);
