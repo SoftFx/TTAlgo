@@ -14,6 +14,7 @@ namespace TickTrader.Algo.Server
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<AlgoServer>();
 
         private readonly RpcServer _rpcServer;
+        private readonly AlgoServerSettings _settings;
 
 
         public string Address { get; } = "127.0.0.1";
@@ -40,9 +41,11 @@ namespace TickTrader.Algo.Server
         internal ServerStateModel SavedState { get; }
 
 
-        public AlgoServer()
+        public AlgoServer(AlgoServerSettings settings)
         {
-            Env = new EnvService(AppDomain.CurrentDomain.BaseDirectory);
+            _settings = settings;
+
+            Env = new EnvService(settings.DataFolder);
 
             EventBus = new ServerBusModel(ServerBusActor.Create());
             Alerts = new AlertManagerModel(AlertManager.Create());
@@ -63,7 +66,15 @@ namespace TickTrader.Algo.Server
         {
             PkgStorage.PackageUpdated.Subscribe(upd => EventBus.SendUpdate(upd));
 
+            foreach (var assembly in _settings.PkgStorage.Assemblies)
+                await PkgStorage.RegisterAssemblyAsPackage(assembly);
+            foreach (var loc in _settings.PkgStorage.Locations)
+                await PkgStorage.RegisterRepositoryLocation(loc.LocationId, loc.Path, loc.LocationId == _settings.PkgStorage.UploadLocationId);
+
+            await PkgStorage.WaitLoaded();
+
             await _rpcServer.Start(Address, 0);
+            _logger.Info($"Started AlgoServer internal API on port {BoundPort}");
 
             await Accounts.Restore();
 

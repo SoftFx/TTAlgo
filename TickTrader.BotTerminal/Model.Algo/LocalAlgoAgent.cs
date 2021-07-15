@@ -95,15 +95,27 @@ namespace TickTrader.BotTerminal
             ClientModel = clientModel;
             _preferences = storage.PreferencesStorage.StorageModel;
 
-            AlgoServer = new AlgoServer();
+            var settings = new AlgoServerSettings();
+            settings.DataFolder = AppDomain.CurrentDomain.BaseDirectory;
+            settings.PkgStorage.Assemblies.Add(typeof(MovingAverage).Assembly);
+            settings.PkgStorage.AddLocation(SharedConstants.LocalRepositoryId, EnvService.Instance.AlgoRepositoryFolder);
+            settings.PkgStorage.UploadLocationId = SharedConstants.LocalRepositoryId;
+            if (EnvService.Instance.AlgoCommonRepositoryFolder != null)
+                settings.PkgStorage.AddLocation(SharedConstants.CommonRepositoryId, EnvService.Instance.AlgoCommonRepositoryFolder);
 
-            var serverSavedState = BuildServerSavedState(storage);
+            AlgoServer = new AlgoServer(settings);
 
-            Task.Factory.StartNew(() => AlgoServer.LoadSavedData(serverSavedState).ContinueWith(_ => AlgoServer.Start()));//.GetAwaiter().GetResult();
-            _logger.Info($"Started AlgoServer on port {AlgoServer.BoundPort}");
+            AlgoServer.PkgStorage.PackageUpdated.Subscribe(OnPackageUpdated);
+
+            if (!File.Exists(AlgoServer.Env.ServerStateFilePath))
+            {
+                var serverSavedState = BuildServerSavedState(storage);
+                Task.Factory.StartNew(() => AlgoServer.LoadSavedData(serverSavedState)).GetAwaiter().GetResult();
+            }
+
+            Task.Factory.StartNew(() => AlgoServer.Start());//.GetAwaiter().GetResult();
 
             AlgoServer.Accounts.RegisterAccountProxy(ClientModel.GetAccountProxy());
-            var pkgStorage = AlgoServer.PkgStorage;
 
             _reductions = new ReductionCollection();
             IdProvider = new PluginIdProvider();
@@ -116,16 +128,9 @@ namespace TickTrader.BotTerminal
             AlertModel = new AlgoAlertModel(Name);
             Bots = _bots.Select((k, v) => (ITradeBot)v);
 
-            //Library.PackageStateChanged += OnPackageStateChanged;
-            pkgStorage.PackageUpdated.Subscribe(OnPackageUpdated);
             ClientModel.Connected += ClientModelOnConnected;
             ClientModel.Disconnected += ClientModelOnDisconnected;
             ClientModel.Connection.StateChanged += ClientConnectionOnStateChanged;
-
-            pkgStorage.RegisterAssemblyAsPackage(typeof(MovingAverage).Assembly);
-            pkgStorage.RegisterRepositoryLocation(SharedConstants.LocalRepositoryId, EnvService.Instance.AlgoRepositoryFolder, true);
-            if (EnvService.Instance.AlgoCommonRepositoryFolder != null)
-                pkgStorage.RegisterRepositoryLocation(SharedConstants.CommonRepositoryId, EnvService.Instance.AlgoCommonRepositoryFolder, false);
 
             _reductions.LoadDefaultReductions();
             //_reductions.LoadReductions(EnvService.Instance.AlgoExtFolder, SharedConstants.LocalRepositoryId);
@@ -137,9 +142,6 @@ namespace TickTrader.BotTerminal
 
         private ServerSavedState BuildServerSavedState(PersistModel model)
         {
-            if (File.Exists(AlgoServer.Env.ServerStateFilePath))
-                return null;
-
             var state = new ServerSavedState();
 
             state = AddAccountsSavedStates(state, model);

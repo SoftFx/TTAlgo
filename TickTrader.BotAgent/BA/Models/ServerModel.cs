@@ -48,7 +48,13 @@ namespace TickTrader.BotAgent.BA.Models
 
         private async Task InitAsync(IFdkOptionsProvider fdkOptionsProvider)
         {
-            _algoServer = new AlgoServer();
+            var settings = new AlgoServerSettings();
+            settings.DataFolder = AppDomain.CurrentDomain.BaseDirectory;
+            settings.ConnectionOptions = fdkOptionsProvider.GetConnectionOptions();
+            settings.PkgStorage.AddLocation(SharedConstants.LocalRepositoryId, envService.AlgoRepositoryFolder);
+            settings.PkgStorage.UploadLocationId = SharedConstants.LocalRepositoryId;
+
+            _algoServer = new AlgoServer(settings);
 
             if (!File.Exists(_algoServer.Env.ServerStateFilePath))
             {
@@ -56,7 +62,6 @@ namespace TickTrader.BotAgent.BA.Models
             }
 
             await _algoServer.Start();
-            _logger.Info($"Started AlgoServer on port {_algoServer.BoundPort}");
 
             _botIdHelper = new PluginIdHelper();
             _allBots = new Dictionary<string, TradeBotModel>();
@@ -64,17 +69,9 @@ namespace TickTrader.BotAgent.BA.Models
             _threadPoolManager = new ThreadPoolManager();
             _fdkOptionsProvider = fdkOptionsProvider;
 
-            var pkgStorage = _algoServer.PkgStorage;
-
-            await pkgStorage.RegisterRepositoryLocation(SharedConstants.LocalRepositoryId, envService.AlgoRepositoryFolder, true);
-            await pkgStorage.WaitLoaded();
-
             _reductions = new ReductionCollection();
             _reductions.LoadDefaultReductions();
             _mappingsInfo = _reductions.CreateMappings();
-
-            pkgStorage.PackageUpdated.Subscribe(p => PackageChanged?.Invoke(p));
-            //pkgStorage.PackageStateChanged += p => PackageStateChanged?.Invoke(new PackageStateUpdate { PackageId = p.PackageId, IsLocked = p.IsLocked, IsValid = p.IsValid });
 
             var eventBus = _algoServer.EventBus;
             eventBus.PackageUpdated.Subscribe(p => PackageChanged?.Invoke(p));
