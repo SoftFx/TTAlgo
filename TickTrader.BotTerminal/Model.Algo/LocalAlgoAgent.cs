@@ -175,6 +175,9 @@ namespace TickTrader.BotTerminal
             var accLogin = model.AuthSettingsStorage.LastLogin;
             var accServer = model.AuthSettingsStorage.LastServer;
 
+            if (string.IsNullOrEmpty(accLogin) || string.IsNullOrEmpty(accServer))
+                return state;
+
             model.ProfileManager.LoadCachedProfile(accServer, accLogin);
 
             foreach (var config in model.ProfileManager.CurrentProfile.Bots.Select(u => u.Config))
