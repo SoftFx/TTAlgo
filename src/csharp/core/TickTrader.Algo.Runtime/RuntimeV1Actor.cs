@@ -132,16 +132,6 @@ namespace TickTrader.Algo.Runtime
             catch (Exception ex)
             {
                 _logger.Error(ex, $"Failed to stop executor {executorId}");
-                _executorsMap.Remove(executorId);
-            }
-
-            try
-            {
-                await ActorSystem.StopActor(executor);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, $"Failed to stop actor {executor.Name}");
             }
         }
 
@@ -153,7 +143,12 @@ namespace TickTrader.Algo.Runtime
             _handler.SendNotification(executorId, update);
             if (newState.IsFaulted() || newState.IsStopped())
             {
-                _executorsMap.Remove(executorId);
+                if (_executorsMap.TryGetValue(executorId, out var executor))
+                {
+                    ActorSystem.StopActor(executor)
+                        .OnException(ex => _logger.Error(ex, $"Failed to stop actor {executor.Name}"));
+                    _executorsMap.Remove(executorId);
+                }
             }
         }
 

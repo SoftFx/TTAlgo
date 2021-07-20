@@ -61,8 +61,8 @@ namespace TickTrader.Algo.Runtime
             var accId = _config.AccountId;
             try
             {
-                await _account.Ask(new AttachedAccountActor.AddRefCmd(_id, Self));
                 _provider = await _account.Ask<RuntimeInfoProvider>(AttachedAccountActor.GetInfoProviderRequest.Instance);
+                await _account.Ask(new AttachedAccountActor.AddRefCmd(_id, Self));
             }
             catch (Exception ex)
             {

@@ -7,8 +7,7 @@ namespace TickTrader.Algo.Core.Infrastructure
 {
     public class QuoteDistributor
     {
-        private readonly Dictionary<string, QuoteInfo> _lastQuotes = new Dictionary<string, QuoteInfo>();
-        private readonly Dictionary<string, SubscriptionGroup> groups = new Dictionary<string, SubscriptionGroup>();
+        private readonly Dictionary<string, SubscriptionGroup> _groups = new Dictionary<string, SubscriptionGroup>();
         private IFeedSubscription _src;
         //private bool _isSubscribedForAll;
         private HashSet<string> _availableSymbols;
@@ -50,11 +49,14 @@ namespace TickTrader.Algo.Core.Infrastructure
             {
                 var updates = new List<FeedSubscriptionUpdate>();
 
-                foreach (var group in groups.Values)
+                lock (_groups)
                 {
-                    var depth = group.GetMaxDepth();
-                    updates.Add(FeedSubscriptionUpdate.Upsert(group.Symbol, depth));
-                    group.Depth = depth;
+                    foreach (var group in _groups.Values)
+                    {
+                        var depth = group.GetMaxDepth();
+                        updates.Add(FeedSubscriptionUpdate.Upsert(group.Symbol, depth));
+                        group.Depth = depth;
+                    }
                 }
 
                 _src.Modify(updates);
@@ -172,18 +174,20 @@ namespace TickTrader.Algo.Core.Infrastructure
 
         public virtual SubscriptionGroup GetOrAddGroup(string symbol)
         {
-            SubscriptionGroup group;
-            if (!groups.TryGetValue(symbol, out group))
+            lock (_groups)
             {
-                group = new SubscriptionGroup(symbol);
-                groups.Add(symbol, group);
+                if (!_groups.TryGetValue(symbol, out var group))
+                {
+                    group = new SubscriptionGroup(symbol);
+                    _groups.Add(symbol, group);
+                }
+                return group;
             }
-            return group;
         }
 
         public virtual SubscriptionGroup GetGroupOrDefault(string symbol)
         {
-            groups.TryGetValue(symbol, out var group);
+            _groups.TryGetValue(symbol, out var group);
             return group;
         }
     }
