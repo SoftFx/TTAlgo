@@ -1,7 +1,7 @@
 ﻿using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
@@ -12,7 +12,7 @@ namespace TickTrader.Algo.Runtime
     internal class PluginRuntimeV1Handler : IRpcHandler
     {
         private readonly IRuntimeProxy _runtime;
-        private readonly Dictionary<string, IRpcHandler> _knownProxies;
+        private readonly ConcurrentDictionary<string, IRpcHandler> _knownProxies;
         private RpcSession _session;
         private TaskCompletionSource<bool> _disconnectedTask;
         private IDisposable _rpcStateSub;
@@ -21,7 +21,7 @@ namespace TickTrader.Algo.Runtime
         public PluginRuntimeV1Handler(IRuntimeProxy runtime)
         {
             _runtime = runtime;
-            _knownProxies = new Dictionary<string, IRpcHandler>();
+            _knownProxies = new ConcurrentDictionary<string, IRpcHandler>();
             _disconnectedTask = new TaskCompletionSource<bool>();
         }
 
@@ -40,14 +40,6 @@ namespace TickTrader.Algo.Runtime
             return context.TaskSrc.Task;
         }
 
-        public async Task<string> GetPackagePath(string name, int location)
-        {
-            var request = new PackagePathRequest { Name = name, Location = location };
-            var context = new RpcResponseTaskContext<PackagePathResponse>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(request), context);
-            return (await context.TaskSrc.Task).Path;
-        }
-
         public Task<ExecutorConfig> GetExecutorConfig(string executorId)
         {
             var context = new RpcResponseTaskContext<ExecutorConfig>(RpcHandler.SingleReponseHandler);
@@ -55,39 +47,39 @@ namespace TickTrader.Algo.Runtime
             return context.TaskSrc.Task;
         }
 
-        public async Task<IAccountProxy> AttachAccount(string accountId)
+        public async Task AttachAccount(string accountId, IRpcHandler handler)
         {
-            var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(new AttachAccountRequest { AccountId = accountId }), context);
-            await context.TaskSrc.Task;
+            if (_knownProxies.ContainsKey(accountId))
+                return;
 
-            RemoteAccountProxy account;
-            if (_knownProxies.TryGetValue(accountId, out var proxy))
+            _knownProxies.TryAdd(accountId, handler);
+
+            try
             {
-                account = (RemoteAccountProxy)proxy;
+                var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
+                _session.Ask(RpcMessage.Request(new AttachAccountRequest { AccountId = accountId }), context);
+                await context.TaskSrc.Task;
             }
-            else
+            catch(Exception)
             {
-                account = new RemoteAccountProxy(accountId);
-                _knownProxies.Add(accountId, account);
-                (account as IRpcHandler).SetSession(_session);
+                _knownProxies.TryRemove(accountId, out var _);
+
+                throw;
             }
 
-            await account.AddRef();
-            return account;
+            handler.SetSession(_session);
         }
 
         public async Task DetachAccount(string accountId)
         {
-            if (!_knownProxies.TryGetValue(accountId, out var proxy))
+            if (!_knownProxies.ContainsKey(accountId))
                 throw new ArgumentException("Unknown account id");
+
+            _knownProxies.TryRemove(accountId, out var _);
 
             var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(new DetachAccountRequest { AccountId = accountId }), context);
             await context.TaskSrc.Task;
-
-            var account = (RemoteAccountProxy)proxy;
-            await account.RemoveRef();
         }
 
         internal void SendNotification(string proxyId, IMessage msg)
@@ -120,15 +112,13 @@ namespace TickTrader.Algo.Runtime
         public Task<Any> HandleRequest(string proxyId, string callId, Any payload)
         {
             if (payload.Is(StartRuntimeRequest.Descriptor))
-                return StartRuntimeRequestHandler();
+                return StartRuntimeRequestHandler(payload);
             else if (payload.Is(StopRuntimeRequest.Descriptor))
-                return StopRuntimeRequestHandler();
+                return StopRuntimeRequestHandler(payload);
             else if (payload.Is(StartExecutorRequest.Descriptor))
                 return StartExecutorRequestHandler(payload);
             else if (payload.Is(StopExecutorRequest.Descriptor))
                 return StopExecutorRequestHandler(payload);
-            else if (payload.Is(PackageInfoRequest.Descriptor))
-                return PackageInfoRequestHandler();
             else if (_knownProxies.TryGetValue(proxyId, out var proxy))
                 proxy.HandleRequest(proxyId, callId, payload);
 
@@ -146,36 +136,32 @@ namespace TickTrader.Algo.Runtime
         }
 
 
-        private async Task<Any> StartRuntimeRequestHandler()
+        private async Task<Any> StartRuntimeRequestHandler(Any payload)
         {
-            await _runtime.Launch();
+            var request = payload.Unpack<StartRuntimeRequest>();
+            await _runtime.Start(request);
             return RpcHandler.VoidResponse;
         }
 
-        private async Task<Any> StopRuntimeRequestHandler()
+        private async Task<Any> StopRuntimeRequestHandler(Any payload)
         {
-            await _runtime.Stop();
+            var request = payload.Unpack<StopRuntimeRequest>();
+            await _runtime.Stop(request);
             return RpcHandler.VoidResponse;
         }
 
         private async Task<Any> StartExecutorRequestHandler(Any payload)
         {
             var request = payload.Unpack<StartExecutorRequest>();
-            await _runtime.StartExecutor(request.ExecutorId);
+            await _runtime.StartExecutor(request);
             return RpcHandler.VoidResponse;
         }
 
         private async Task<Any> StopExecutorRequestHandler(Any payload)
         {
             var request = payload.Unpack<StopExecutorRequest>();
-            await _runtime.StopExecutor(request.ExecutorId);
+            await _runtime.StopExecutor(request);
             return RpcHandler.VoidResponse;
-        }
-
-        private async Task<Any> PackageInfoRequestHandler()
-        {
-            var info = await _runtime.GetPackageInfo();
-            return Any.Pack(info);
         }
 
         private bool AttachRuntimeResponseHandler(TaskCompletionSource<bool> taskSrc, Any payload)

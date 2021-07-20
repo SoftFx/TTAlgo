@@ -41,15 +41,16 @@ message StopExecutorRequest { // void response
 message ExecutorConfigRequest { }
 
 message ExecutorConfig {
-    string working_directory = 1;
-    bool is_logging_enabled = 2;
-    google.protobuf.StringValue log_directory = 3;
-    google.protobuf.Any plugin_config = 4;
-    google.protobuf.Any feed_strategy_config = 5;
-    google.protobuf.Any buffer_strategy_config = 6;
-    google.protobuf.Any invoke_strategy_config = 7;
-    google.protobuf.Any main_series = 8;
-    string account_id = 9;
+    string id = 1;
+    string working_directory = 2;
+    bool is_logging_enabled = 3;
+    google.protobuf.StringValue log_directory = 4;
+    google.protobuf.Any plugin_config = 5;
+    google.protobuf.Any feed_strategy_config = 6;
+    google.protobuf.Any buffer_strategy_config = 7;
+    google.protobuf.Any invoke_strategy_config = 8;
+    google.protobuf.Any main_series = 9;
+    string account_id = 10;
 }
 
 message BarStratefyConfig {
@@ -69,17 +70,6 @@ message TimeSpanStrategyConfig {
 
 message PriorityInvokeStrategyConfig { }
 
-message PackagePathRequest {
-    string name = 1;
-    int32 location = 2;
-}
-
-message PackagePathResponse {
-    string path = 1;
-}
-
-message PackageInfoRequest { } // PackageInfo
-
 message ConnectionInfoRequest { }
 
 message ConnectionInfoResponse {
@@ -94,6 +84,21 @@ message DetachAccountRequest { // void response
     string account_id = 1;
 }
 
-message AccountDisconnectNotification { }
+message ExecutorStateUpdate {
+    string executor_id = 1;
+    Executor.State old_state = 2;
+    Executor.State new_state = 3;
+}
 
-message AccountReconnectNotification { }
+message ExecutorErrorMsg {
+    string id = 1;
+    string message = 2;
+    string exception_type = 3;
+    string stacktrace = 4;
+}
+
+message ConnectionStateUpdate {
+    string account_id = 1;
+    Account.ConnectionState old_state = 2;
+    Account.ConnectionState new_state = 3;
+}

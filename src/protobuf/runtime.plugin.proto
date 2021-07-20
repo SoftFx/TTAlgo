@@ -34,14 +34,6 @@ message PluginStatusUpdate {
     google.protobuf.StringValue message = 2;
 }
 
-message PluginError {
-    string message = 1;
-    string exception_type = 2;
-    string stacktrace = 3;
-}
-
-message PluginStopped { }
-
 message OutputPoint {
     google.protobuf.Timestamp time = 1;
     int32 index = 2;

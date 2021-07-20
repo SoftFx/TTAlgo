@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Async.Actors
 {
@@ -13,6 +14,8 @@ namespace TickTrader.Algo.Async.Actors
         void PostMessage(object msg);
 
         void Start(Action<object> msgHandler);
+
+        Task Stop();
     }
 
     public interface IMsgDispatcherFactory

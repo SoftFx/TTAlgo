@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Domain;
-using TickTrader.Algo.Ext;
-using TickTrader.Algo.Indicators.Trend.MovingAverage;
-using TickTrader.Algo.Package;
 using TickTrader.Algo.Rpc;
 using TickTrader.Algo.Rpc.OverTcp;
 
@@ -19,31 +12,25 @@ namespace TickTrader.Algo.Runtime
     {
         public const int AbortTimeout = 10000;
 
-
         private readonly RpcClient _client;
         private readonly PluginRuntimeV1Handler _handler;
+
         private IAlgoLogger _logger;
-        private TaskCompletionSource<bool> _finishTaskSrc;
-        private RuntimeConfig _runtimeConfig;
-        private Dictionary<string, PluginExecutorCore> _executorsMap;
-        private PackageInfo _packageInfo;
+        private string _id;
+        private IActorRef _runtime;
 
 
         public RuntimeV1Loader()
         {
             _client = new RpcClient(new TcpFactory(), this, new ProtocolSpec { Url = KnownProtocolUrls.RuntimeV1, MajorVerion = 1, MinorVerion = 0 });
             _handler = new PluginRuntimeV1Handler(this);
-
-            _executorsMap = new Dictionary<string, PluginExecutorCore>();
         }
 
 
         public async void Init(string address, int port, string proxyId)
         {
             _logger = AlgoLoggerFactory.GetLogger<RuntimeV1Loader>();
-
-            // load default reduction to metadata cache
-            PackageExplorer.ScanAssembly(MappingDefaults.DefaultExtPackageId, typeof(BarCloseReduction).Assembly);
+            _id = proxyId;
 
             await _client.Connect(address, port).ConfigureAwait(false);
             await _handler.AttachRuntime(proxyId).ConfigureAwait(false);
@@ -56,165 +43,29 @@ namespace TickTrader.Algo.Runtime
 
         public Task WhenFinished()
         {
-            //if (_finishTaskSrc == null)
-            //    _finishTaskSrc = new TaskCompletionSource<bool>();
-
-            //return _finishTaskSrc.Task;
             return _handler.WhenDisconnected();
         }
 
-        public async Task Launch()
+        public async Task Start(StartRuntimeRequest request)
         {
-            _runtimeConfig = await _handler.GetRuntimeConfig().ConfigureAwait(false);
+            _runtime = RuntimeV1Actor.Create(_id, _handler);
 
-            var packageId = _runtimeConfig.PackageId;
-            var packagePath = _runtimeConfig.PackagePath;
-            var info = new FileInfo(packagePath);
-            var hash = FileHelper.CalculateSha256Hash(info);
-            var identity = PackageIdentity.Create(info, hash);
-
-            if (packagePath.EndsWith("TickTrader.Algo.Indicators.dll", StringComparison.OrdinalIgnoreCase))
-            {
-                _packageInfo = PackageExplorer.ScanAssembly(packageId, typeof(MovingAverage).Assembly);
-            }
-            else
-            {
-                _packageInfo = PackageLoadContext.Load(_runtimeConfig.PackageId, _runtimeConfig.PackagePath);
-            }
-
-            _packageInfo.Identity = identity;
-
-            //var package = config.Key.Package;
-            //var path = string.Empty;
-            //if (package.Location == RepositoryLocation.Embedded && package.Name.Equals("TickTrader.Algo.Indicators.dll", System.StringComparison.OrdinalIgnoreCase))
-            //{
-            //    var indicatorsAssembly = Assembly.Load("TickTrader.Algo.Indicators");
-            //    AlgoAssemblyInspector.FindPlugins(indicatorsAssembly);
-            //    path = indicatorsAssembly.Location;
-            //}
-            //else
-            //{
-            //    path = await _handler.GetPackagePath(package.Name, (int)package.Location).ConfigureAwait(false);
-            //    var sandbox = new AlgoSandbox(path, false);
-            //}
-
-            //var requiredPackages = new List<PackageKey> { config.Key.GetPackageKey() };
-            //requiredPackages.AddRange(config.SelectedMapping.GetPackageKeys());
-            //foreach (var property in config.Properties)
-            //{
-            //    var input = property as MappedInput;
-            //    if (input != null)
-            //    {
-            //        requiredPackages.AddRange(input.SelectedMapping.GetPackageKeys());
-            //    }
-            //}
-
-            //foreach(var package in requiredPackages.Distinct())
-            //{
-            //    var path = await _handler.GetPackagePath(package.Name, (int)package.Location);
-            //    var sandbox = new AlgoSandbox(path, true);
-            //}
+            await _runtime.Ask(request);
         }
 
-        public async Task Stop()
+        public Task Stop(StopRuntimeRequest request)
         {
-            try
-            {
-                var stopTasks = _executorsMap.Values.Select(e => StopExecutor(e));
-                await Task.WhenAll(stopTasks);
-
-                _finishTaskSrc?.TrySetResult(true);
-            }
-            catch (Exception)
-            {
-                _finishTaskSrc?.TrySetResult(false);
-            }
+            return _runtime.Ask(request);
         }
 
-        public Task<PackageInfo> GetPackageInfo()
+        public Task StartExecutor(StartExecutorRequest request)
         {
-            return Task.FromResult(_packageInfo);
+            return _runtime.Ask(request);
         }
 
-        public async Task StartExecutor(string executorId)
+        public Task StopExecutor(StopExecutorRequest request)
         {
-            if (_executorsMap.TryGetValue(executorId, out var executorCore))
-                throw new Exception("Executor already started");
-
-            var executorConfig = await _handler.GetExecutorConfig(executorId).ConfigureAwait(false);
-
-            var config = executorConfig.PluginConfig.Unpack<PluginConfig>();
-
-            var accountProxy = await _handler.AttachAccount(executorConfig.AccountId);
-
-            executorCore = new PluginExecutorCore(config.Key);
-            executorCore.OnNotification += msg => _handler.SendNotification(executorId, msg);
-            executorCore.OnStopExecutorRequest += executor => Task.Run(() => StopExecutor(executor));
-            executorCore.IsGlobalMarshalingEnabled = true;
-            executorCore.IsBunchingRequired = true;
-
-            executorCore.AccountId = executorConfig.AccountId;
-
-            executorCore.ApplyConfig(executorConfig, config, accountProxy);
-
-            _executorsMap.Add(executorId, executorCore);
-
-            await Task.Run(() => StartExecutor(executorCore));
-        }
-
-        public Task StopExecutor(string executorId)
-        {
-            if (!_executorsMap.TryGetValue(executorId, out var executorCore))
-                throw new ArgumentException("Unknown executorId");
-
-            return StopExecutor(executorCore);
-        }
-
-
-        private Task StartExecutor(PluginExecutorCore executorCore)
-        {
-            try
-            {
-                executorCore.Start();
-                executorCore.Stopped += OnExecutorStopped;
-
-                return Task.CompletedTask;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, $"Failed to start executor '{executorCore.InstanceId}'");
-                _executorsMap.Remove(executorCore.InstanceId);
-
-                return Task.FromException(ex);
-            }
-        }
-
-        private async Task StopExecutor(PluginExecutorCore executorCore)
-        {
-            var stopTask = executorCore.Stop();
-
-            var delayTask = Task.Delay(AbortTimeout);
-
-            var t = await Task.WhenAny(stopTask, delayTask);
-
-            if (t == delayTask)
-            {
-                executorCore.Abort();
-            }
-            else if (stopTask.IsFaulted)
-            {
-                _logger.Error(stopTask.Exception, $"Failed to stop executor '{executorCore.InstanceId}'");
-                if (_executorsMap.ContainsKey(executorCore.InstanceId))
-                    _executorsMap.Remove(executorCore.InstanceId);
-            }
-
-            await _handler.DetachAccount(executorCore.AccountId);
-        }
-
-        private void OnExecutorStopped(PluginExecutorCore executorCore)
-        {
-            executorCore.Stopped -= OnExecutorStopped;
-            _executorsMap.Remove(executorCore.InstanceId);
+            return _runtime.Ask(request);
         }
 
 

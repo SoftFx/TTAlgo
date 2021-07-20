@@ -39,8 +39,6 @@ namespace TickTrader.Algo.Server
                 return AttachRuntimeRequestHandler(payload);
             else if (payload.Is(RuntimeConfigRequest.Descriptor))
                 return RuntimeConfigRequestHandler();
-            else if (payload.Is(PackagePathRequest.Descriptor))
-                return PackagePathRequestHandler(payload);
             else if (payload.Is(ExecutorConfigRequest.Descriptor))
                 return ExecutorConfigRequestHandler(proxyId);
             else if (payload.Is(AttachAccountRequest.Descriptor))
@@ -69,12 +67,6 @@ namespace TickTrader.Algo.Server
         private Task<Any> RuntimeConfigRequestHandler()
         {
             return _runtime.GetConfig().ContinueWith(t => Any.Pack(t.Result));
-        }
-
-        private Task<Any> PackagePathRequestHandler(Any payload)
-        {
-            //var request = payload.Unpack<PackagePathRequest>();
-            return Task.FromResult(Any.Pack(new PackagePathResponse { Path = string.Empty }));
         }
 
         private Task<Any> ExecutorConfigRequestHandler(string executorId)

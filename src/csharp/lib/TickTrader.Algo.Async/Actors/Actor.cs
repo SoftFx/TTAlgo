@@ -28,6 +28,14 @@ namespace TickTrader.Algo.Async.Actors
                 MsgDispatcher.PostMessage(new InvokeInitCmd(initMsg));
         }
 
+        internal async Task Stop()
+        {
+            if (MsgDispatcher == null)
+                throw Errors.MsgDispatcherRequired();
+
+            await MsgDispatcher.Stop();
+        }
+
         internal IActorRef GetRef() => Self;
 
 

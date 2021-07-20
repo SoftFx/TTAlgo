@@ -5,14 +5,12 @@ namespace TickTrader.Algo.Core
 {
     public interface IRuntimeProxy
     {
-        Task Launch();
+        Task Start(StartRuntimeRequest request);
 
-        Task Stop();
+        Task Stop(StopRuntimeRequest request);
 
-        Task StartExecutor(string executorId);
+        Task StartExecutor(StartExecutorRequest request);
 
-        Task StopExecutor(string executorId);
-
-        Task<PackageInfo> GetPackageInfo();
+        Task StopExecutor(StopExecutorRequest request);
     }
 }

@@ -53,6 +53,7 @@ namespace TickTrader.Algo.Server
             Receive<PluginLogRecord>(OnLogUpdated);
             Receive<PluginStatusUpdate>(OnStatusUpdated);
             Receive<DataSeriesUpdate>(update => _outputEventSrc.DispatchEvent(update));
+            Receive<ExecutorStateUpdate>(OnExecutorStateUpdated);
         }
 
 
@@ -158,6 +159,22 @@ namespace TickTrader.Algo.Server
             _statusEventSrc.DispatchEvent(update);
         }
 
+        private void OnExecutorStateUpdated(ExecutorStateUpdate update)
+        {
+            if (update.NewState.IsWaitConnect())
+                ChangeState(PluginModelInfo.Types.PluginState.Starting);
+            else if (update.NewState.IsFaulted())
+                ChangeState(PluginModelInfo.Types.PluginState.Faulted);
+            else if (update.NewState.IsRunning())
+                ChangeState(PluginModelInfo.Types.PluginState.Running);
+            else if (update.NewState.IsStopping())
+                ChangeState(PluginModelInfo.Types.PluginState.Stopping);
+            else if (update.NewState.IsStopped())
+                ChangeState(PluginModelInfo.Types.PluginState.Stopped);
+            else if (update.NewState.IsWaitReconnect())
+                ChangeState(PluginModelInfo.Types.PluginState.Reconnecting);
+        }
+
 
         private async Task<bool> UpdatePackage()
         {
@@ -235,7 +252,7 @@ namespace TickTrader.Algo.Server
 
                 await _server.SavedState.SetPluginRunning(_id, true);
 
-                var config = new ExecutorConfig { AccountId = _accId, IsLoggingEnabled = true, PluginConfig = Any.Pack(_config) };
+                var config = new ExecutorConfig { Id = _id, AccountId = _accId, IsLoggingEnabled = true, PluginConfig = Any.Pack(_config) };
                 config.WorkingDirectory = _server.Env.GetPluginWorkingFolder(_id);
                 config.LogDirectory = _server.Env.GetPluginLogsFolder(_id);
                 config.InitPriorityInvokeStrategy();
@@ -247,11 +264,11 @@ namespace TickTrader.Algo.Server
                 _executor.LogUpdated.Subscribe(Self);
                 _executor.StatusUpdated.Subscribe(Self);
                 _executor.OutputUpdated.Subscribe(Self);
+                _executor.StateUpdated.Subscribe(Self);
 
                 await _executor.Start();
 
                 _startTaskSrc.SetResult(true);
-                ChangeState(PluginModelInfo.Types.PluginState.Running);
             }
             catch (Exception ex)
             {

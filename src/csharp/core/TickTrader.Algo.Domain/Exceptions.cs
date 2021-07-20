@@ -11,9 +11,9 @@ namespace TickTrader.Algo.Domain
 
     public class AlgoPluginException : Exception
     {
-        private readonly PluginError _error;
+        private readonly ExecutorErrorMsg _error;
 
-        public AlgoPluginException(PluginError error) : base()
+        public AlgoPluginException(ExecutorErrorMsg error) : base()
         {
             _error = error;
         }

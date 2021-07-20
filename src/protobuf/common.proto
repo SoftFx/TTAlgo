@@ -35,3 +35,23 @@ message Feed {
         TICKS_VWAP = 13;
     }
 }
+
+message Executor {
+    enum State {
+        Stopped = 0;
+        WaitConnect = 1;
+        Running = 2;
+        WaitReconnect = 3;
+        Stopping = 4;
+        Faulted = 5;
+    }
+}
+
+message Account {
+    enum ConnectionState {
+        OFFLINE = 0;
+        CONNECTING = 1;
+        ONLINE = 2;
+        DISCONNECTING = 3;
+    }
+}

@@ -311,6 +311,10 @@ namespace TickTrader.Algo.Server
 
             _sessions[sessionId] = session;
 
+            // send connection state snapshot
+            var update = new ConnectionStateUpdate(_id, (Domain.Account.Types.ConnectionState)_state, (Domain.Account.Types.ConnectionState)_state);
+            session.Tell(RpcMessage.Notification(_id, update));
+
             _refCnt++;
             if (_refCnt == 1)
             {
@@ -345,6 +349,7 @@ namespace TickTrader.Algo.Server
                 acc.Feed.RateUpdated -= OnRateUpdated;
                 acc.Feed.RatesUpdated -= OnRatesUpdated;
 
+                ScheduleDisconnect(ScheduleDisconnectCmd.Instance);
                 ManageConnectionInternal();
             }
 
@@ -369,7 +374,14 @@ namespace TickTrader.Algo.Server
 
             foreach (var session in _sessions.Values)
             {
-                session.Tell(msg);
+                try
+                {
+                    session.Tell(msg);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, $"Failed to send message to session {session.Id}");
+                }
             }
         }
 
@@ -387,9 +399,12 @@ namespace TickTrader.Algo.Server
 
         private void ChangeState(AccountModelInfo.Types.ConnectionState newState)
         {
+            var update = new ConnectionStateUpdate(_id, (Domain.Account.Types.ConnectionState)_state, (Domain.Account.Types.ConnectionState)newState);
             LogConnectionState(_state, newState);
             _state = newState;
             _server.EventBus.SendUpdate(new AccountStateUpdate(_id, _state, _lastError));
+
+            SendNotification(RpcMessage.Notification(_id, update));
         }
 
         private void LogConnectionState(AccountModelInfo.Types.ConnectionState oldState, AccountModelInfo.Types.ConnectionState newState)
