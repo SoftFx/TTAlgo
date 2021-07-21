@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using TickTrader.BotAgent.BA;
 using Microsoft.Extensions.DependencyInjection;
-using TickTrader.BotAgent.BA.Models;
 using System;
 using TickTrader.BotAgent.WebAdmin.Server.Hubs;
 using Microsoft.AspNetCore.SignalR;
