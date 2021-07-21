@@ -150,15 +150,15 @@ namespace TickTrader.Algo.Runtime
 
         private async Task InitAccount()
         {
-            var currentState = _stateCnt;
-
             try
             {
                 ChangeState(Account.Types.ConnectionState.Connecting);
 
+                var currentState = _stateCnt;
+
                 await _accProxy.Start();
 
-                if (_stateCnt == currentState)
+                if (_stateCnt == currentState) // in case account disconnected during proxy start
                 {
                     ChangeState(Account.Types.ConnectionState.Online);
                 }

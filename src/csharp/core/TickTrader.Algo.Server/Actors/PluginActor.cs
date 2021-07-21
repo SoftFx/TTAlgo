@@ -297,7 +297,6 @@ namespace TickTrader.Algo.Server
                 _executor.Dispose();
 
                 _stopTaskSrc.SetResult(true);
-                ChangeState(PluginModelInfo.Types.PluginState.Stopped);
             }
             catch (Exception ex)
             {

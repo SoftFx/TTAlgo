@@ -76,6 +76,12 @@ namespace TickTrader.Algo.Runtime
             if (_state.IsStopped())
                 throw new AlgoException("Executor already stopped");
 
+            if (_state.IsWaitConnect())
+            {
+                OnStopped(StoppedMsg.Instance);
+                return;
+            }
+
             if (_state.IsRunning() || _state.IsWaitReconnect())
             {
                 ChangeState(Executor.Types.State.Stopping);
@@ -144,6 +150,8 @@ namespace TickTrader.Algo.Runtime
         {
             try
             {
+                _logger.Debug("Starting internal executor...");
+
                 var config = _config.PluginConfig.Unpack<PluginConfig>();
 
                 _executor = new PluginExecutorCore(config.Key);
