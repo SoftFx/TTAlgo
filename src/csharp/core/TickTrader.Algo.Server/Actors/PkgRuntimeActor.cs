@@ -256,6 +256,8 @@ namespace TickTrader.Algo.Server
                 executor.OnStatusUpdated(payload.Unpack<PluginStatusUpdate>());
             else if (payload.Is(DataSeriesUpdate.Descriptor))
                 executor.OnDataSeriesUpdate(payload.Unpack<DataSeriesUpdate>());
+            else if (payload.Is(PluginExitedMsg.Descriptor))
+                executor.OnExit(payload.Unpack<PluginExitedMsg>());
         }
 
         private void PluginErrorHandler(string id, Any payload)
