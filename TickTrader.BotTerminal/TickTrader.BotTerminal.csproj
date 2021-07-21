@@ -12,6 +12,7 @@
     <UseWPF>true</UseWPF>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
     <ApplicationIcon>terminal.ico</ApplicationIcon>
+    <Deterministic>false</Deterministic>
   </PropertyGroup>
 
   <ItemGroup>
