@@ -202,7 +202,7 @@ namespace TickTrader.Algo.Package
             {
                 if (TryGetPackageRefByPkgId(pkgId, out var pkgRef))
                 {
-                    pkgRef.IncrementRef();
+                    //pkgRef.IncrementRef();
                     return pkgRef;
                 }
 
@@ -211,14 +211,14 @@ namespace TickTrader.Algo.Package
 
             public void ReleasePackageRef(AlgoPackageRef pkgRef)
             {
-                pkgRef?.DecrementRef();
+                //pkgRef?.DecrementRef();
             }
 
             public bool LockPackageRef(string pkgRefId)
             {
                 if (_pkgRefMap.TryGetValue(pkgRefId, out var pkgRef))
                 {
-                    pkgRef.IncrementRef();
+                    //pkgRef.IncrementRef();
                     return true;
                 }
 
@@ -227,8 +227,8 @@ namespace TickTrader.Algo.Package
 
             public void ReleasePackageRef(string pkgRefId)
             {
-                if (_pkgRefMap.TryGetValue(pkgRefId, out var pkgRef))
-                    pkgRef.DecrementRef();
+                //if (_pkgRefMap.TryGetValue(pkgRefId, out var pkgRef))
+                //    pkgRef.DecrementRef();
 
             }
 
