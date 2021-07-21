@@ -1,6 +1,6 @@
-﻿namespace TickTrader.Algo.ServerControl
+﻿namespace TickTrader.Algo.Server.Common
 {
-    public sealed class VersionSpec : IVersionSpec
+    public class VersionSpec
     {
         public static int MajorVersion => 2;
 
@@ -13,40 +13,38 @@
 
         public string CurrentVersionStr => $"{MajorVersion}.{CurrentVersion}";
 
-        internal VersionSpec()
+
+        public VersionSpec()
         {
             CurrentVersion = MinorVersion;
         }
 
-        internal VersionSpec(int currentVersion)
+        public VersionSpec(int currentVersion)
         {
             CurrentVersion = currentVersion;
         }
 
 
-        internal static bool CheckClientCompatibility(int clientMajorVersion, int clientMinorVersion, out string error)
+        public static bool CheckClientCompatibility(int clientMajorVersion, int clientMinorVersion, out string error)
         {
-            error = "";
+            error = string.Empty;
 
             if (MajorVersion != clientMajorVersion)
             {
                 error = $"Major version mismatch: server - {MajorVersion}, client - {clientMajorVersion}";
                 return false;
             }
+
             if (MinorVersion > clientMinorVersion)
             {
                 error = "Server doesn't support older clients";
                 return false;
             }
+
             return true;
         }
 
 
         public bool SupportsBlackjack => CurrentVersion == MinorVersion;
-
-
-        int IVersionSpec.MajorVersion => MajorVersion;
-
-        int IVersionSpec.MinorVersion => MinorVersion;
     }
 }

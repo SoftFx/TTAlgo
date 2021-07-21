@@ -12,7 +12,7 @@ using TickTrader.Algo.ServerControl;
 
 namespace TickTrader.BotTerminal
 {
-    internal class RemoteAlgoAgent : IAlgoAgent, IAlgoServerEventHandler
+    internal class RemoteAlgoAgent : IAlgoAgent /*IAlgoServerEventHandler*/
     {
 
         private ISyncContext _syncContext;
@@ -232,7 +232,7 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IAlgoServerEventHandler.InitPackageList(List<PackageInfo> packages)
+        void InitPackageList(List<PackageInfo> packages)
         {
             _syncContext.Invoke(() =>
             {
@@ -249,7 +249,7 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IAlgoServerEventHandler.InitAccountList(List<AccountModelInfo> accounts)
+        void InitAccountList(List<AccountModelInfo> accounts)
         {
             _syncContext.Invoke(() =>
             {
@@ -261,7 +261,7 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IAlgoServerEventHandler.InitBotList(List<PluginModelInfo> bots)
+        void InitBotList(List<PluginModelInfo> bots)
         {
             _syncContext.Invoke(() =>
             {
@@ -275,7 +275,7 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IAlgoServerEventHandler.UpdatePackage(UpdateInfo.Types.UpdateType updateType, PackageInfo package)
+        void UpdatePackage(UpdateInfo.Types.UpdateType updateType, PackageInfo package)
         {
             _syncContext.Invoke(() =>
             {
@@ -298,7 +298,7 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IAlgoServerEventHandler.UpdateAccount(UpdateInfo.Types.UpdateType updateType, AccountModelInfo acc)
+        void UpdateAccount(UpdateInfo.Types.UpdateType updateType, AccountModelInfo acc)
         {
             _syncContext.Invoke(() =>
             {
@@ -316,7 +316,7 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IAlgoServerEventHandler.UpdateBot(UpdateInfo.Types.UpdateType updateType, PluginModelInfo bot)
+        void UpdateBot(UpdateInfo.Types.UpdateType updateType, PluginModelInfo bot)
         {
             _syncContext.Invoke(() =>
             {
@@ -341,22 +341,22 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IAlgoServerEventHandler.SetApiMetadata(ApiMetadataInfo apiMetadata)
+        void SetApiMetadata(ApiMetadataInfo apiMetadata)
         {
             _apiMetadata = apiMetadata;
         }
 
-        void IAlgoServerEventHandler.SetMappingsInfo(MappingCollectionInfo mappings)
+        void SetMappingsInfo(MappingCollectionInfo mappings)
         {
             _mappings = mappings;
         }
 
-        void IAlgoServerEventHandler.SetSetupContext(SetupContextInfo setupContext)
+        void SetSetupContext(SetupContextInfo setupContext)
         {
             _setupContext = setupContext;
         }
 
-        void IAlgoServerEventHandler.UpdatePackageState(PackageStateUpdate update)
+        void UpdatePackageState(PackageStateUpdate update)
         {
             _syncContext.Invoke(() =>
             {
@@ -368,7 +368,7 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IAlgoServerEventHandler.UpdateAccountState(AccountStateUpdate update)
+        void UpdateAccountState(AccountStateUpdate update)
         {
             _syncContext.Invoke(() =>
             {
@@ -381,7 +381,7 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IAlgoServerEventHandler.UpdateBotState(PluginStateUpdate update)
+        void UpdateBotState(PluginStateUpdate update)
         {
             _syncContext.Invoke(() =>
             {

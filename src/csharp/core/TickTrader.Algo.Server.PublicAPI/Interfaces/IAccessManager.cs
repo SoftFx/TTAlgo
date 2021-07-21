@@ -1,6 +1,6 @@
 ﻿using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.ServerControl
+namespace TickTrader.Algo.Server.PublicAPI
 {
     public interface IAccessManager
     {

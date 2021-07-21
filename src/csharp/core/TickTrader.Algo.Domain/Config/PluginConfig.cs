@@ -1,4 +1,5 @@
-﻿using Google.Protobuf.WellKnownTypes;
+﻿using Google.Protobuf.Collections;
+using Google.Protobuf.WellKnownTypes;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -6,10 +7,20 @@ namespace TickTrader.Algo.Domain
 {
     public partial class PluginConfig
     {
-        public void PackProperties(IEnumerable<IPropertyConfig> properties)
+        public PluginConfig PackProperties(IEnumerable<IPropertyConfig> properties)
         {
             Properties.Clear();
             Properties.AddRange(properties.Select(p => Any.Pack(p)));
+
+            return this;
+        }
+
+        public PluginConfig PackProperties(RepeatedField<Any> properties)
+        {
+            Properties.Clear();
+            Properties.AddRange(properties.Select(p => Any.Pack(p)));
+
+            return this;
         }
 
         public List<IPropertyConfig> UnpackProperties()

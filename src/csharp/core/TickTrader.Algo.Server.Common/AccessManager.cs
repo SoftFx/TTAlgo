@@ -1,18 +1,20 @@
 ﻿using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 
-namespace TickTrader.Algo.ServerControl
+namespace TickTrader.Algo.Server.Common
 {
-    public class AccessManager : IAccessManager
+    public class AccessManager
     {
         public ClientClaims.Types.AccessLevel Level { get; }
 
-        public bool HasViewerAccess { get; }
+        public bool HasViewerAccess { get; protected set; }
 
-        public bool HasDealerAccess { get; }
+        public bool HasDealerAccess { get; protected set; }
 
-        public bool HasAdminAccess { get; }
+        public bool HasAdminAccess { get; protected set; }
 
+
+        protected AccessManager() { }
 
         public AccessManager(ClientClaims.Types.AccessLevel level)
         {

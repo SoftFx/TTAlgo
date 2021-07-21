@@ -1,35 +1,35 @@
 ﻿using System;
 
-namespace TickTrader.Algo.ServerControl
+namespace TickTrader.Algo.Server.Common
 {
-    public class AlgoException : Exception
+    public class AlgoServerException : Exception
     {
-        public AlgoException(string message) : base(message) { }
+        public AlgoServerException(string message) : base(message) { }
     }
 
 
-    public class UnauthorizedException : AlgoException
+    public class UnauthorizedException : AlgoServerException
     {
         public UnauthorizedException(string message) : base(message)
         {
         }
     }
 
-    public class UnsupportedException : AlgoException
+    public class UnsupportedException : AlgoServerException
     {
         public UnsupportedException(string message) : base(message)
         {
         }
     }
 
-    public class ConnectionFailedException : AlgoException
+    public class ConnectionFailedException : AlgoServerException
     {
         public ConnectionFailedException(string message) : base(message)
         {
         }
     }
 
-    public class TimeoutException : AlgoException
+    public class TimeoutException : AlgoServerException
     {
         public TimeoutException(string message) : base(message)
         {

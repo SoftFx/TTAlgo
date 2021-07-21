@@ -1,0 +1,47 @@
+﻿syntax = "proto3";
+
+package ticktrader.algo.server.publicApi;
+
+option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
+
+import "google/protobuf/wrappers.proto";
+import "requests/base.request.proto";
+
+
+message LoginRequest {
+    google.protobuf.StringValue login = 1;
+    google.protobuf.StringValue password = 2;
+    int32 major_version = 3; // client version
+    int32 minor_version = 4; // client version
+}
+
+message LoginResponse {
+    enum LoginError {
+        NONE = 0;
+        INVALID_CREDENTIALS = 1;
+        VERSION_MISMATCH = 2;
+    }
+
+    LoginError error = 1;
+    int32 major_version = 2; // server version
+    int32 minor_version = 3; // server version
+    google.protobuf.StringValue session_id = 4;
+    google.protobuf.StringValue access_token = 5;
+    ClientClaims.AccessLevel access_level = 6;
+
+    RequestResult exec_result = 101;
+}
+
+message LogoutRequest { }
+
+message LogoutResponse {
+    enum LogoutReason {
+        CLIENT_REQUEST = 0;
+        SERVER_LOGOUT = 1;
+    }
+
+    LogoutReason reason = 1;
+    google.protobuf.StringValue text = 2;
+
+    RequestResult exec_result = 101;
+}

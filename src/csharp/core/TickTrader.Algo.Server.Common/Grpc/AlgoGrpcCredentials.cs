@@ -1,7 +1,7 @@
 ﻿using Grpc.Core;
 using System.Threading.Tasks;
 
-namespace TickTrader.Algo.ServerControl.Grpc
+namespace TickTrader.Algo.Server.Common.Grpc
 {
     public static class AlgoGrpcCredentials
     {

@@ -1,8 +1,14 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Grpc\protos\**" />
+    <EmbeddedResource Remove="Grpc\protos\**" />
+    <None Remove="Grpc\protos\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Remove="algo-ca.crt" />
@@ -26,16 +32,7 @@
     <ProjectReference Include="..\..\lib\ActorSharp\ActorSharp.csproj" />
     <ProjectReference Include="..\..\lib\Machinarium\Machinarium.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Domain\TickTrader.Algo.Domain.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Grpc\protos\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Protobuf Include="..\..\..\protobuf\algo_server.proto">
-      <Link>Grpc\protos\algo_server.proto</Link>
-    </Protobuf>
+    <ProjectReference Include="..\TickTrader.Algo.Server.PublicAPI\TickTrader.Algo.Server.PublicAPI.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Reflection;
 
-namespace TickTrader.Algo.ServerControl
+namespace TickTrader.Algo.Server.Common
 {
     public static class CertificateProvider
     {
@@ -22,6 +22,7 @@ namespace TickTrader.Algo.ServerControl
         {
             var a = Assembly.GetExecutingAssembly();
 
+            //change path to sertificate
             using (var s = a.GetManifestResourceStream("TickTrader.Algo.ServerControl.certs.algo-ca.crt"))
             using (var r = new StreamReader(s))
             {

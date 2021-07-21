@@ -2,7 +2,7 @@
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 
-namespace TickTrader.Algo.ServerControl
+namespace TickTrader.Algo.Server.PublicAPI
 {
     public interface IAlgoServerEventHandler
     {

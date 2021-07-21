@@ -1,4 +1,6 @@
-﻿namespace TickTrader.Algo.ServerControl
+﻿using TickTrader.Algo.Server.PublicAPI;
+
+namespace TickTrader.Algo.ServerControl
 {
     public class ClientSessionSettings : IClientSessionSettings
     {

@@ -9,6 +9,10 @@ using Grpc.Core;
 using NLog;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
+using TickTrader.Algo.Server.Common;
+using TickTrader.Algo.Server.Common.Grpc;
+using AlgoServerApi = TickTrader.Algo.Server.PublicAPI;
+using GrpcCore = Grpc.Core;
 
 namespace TickTrader.Algo.ServerControl.Grpc
 {
@@ -16,7 +20,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
     {
         private IJwtProvider _jwtProvider;
         private BotAgentServerImpl _impl;
-        private Server _server;
+        private GrpcCore.Server _server;
 
 
         public GrpcServer(IAlgoServerProvider agentServer, ServerSettings settings, IJwtProvider jwtProvider) : base(agentServer, settings)
@@ -30,9 +34,9 @@ namespace TickTrader.Algo.ServerControl.Grpc
             GrpcEnvironment.SetLogger(new GrpcLoggerAdapter(Logger));
             _impl = new BotAgentServerImpl(AlgoSrv, _jwtProvider, Logger, Settings.LogMessages, VersionSpec);
             var creds = new SslServerCredentials(new[] { new KeyCertificatePair(CertificateProvider.ServerCertificate, CertificateProvider.ServerKey), }); //,CertificateProvider.RootCertificate, true);
-            _server = new Server
+            _server = new GrpcCore.Server
             {
-                Services = { AlgoServerPublic.BindService(_impl) },
+                Services = { AlgoServerApi.AlgoServerPublic.BindService(_impl) },
                 Ports = { new ServerPort("0.0.0.0", Settings.ServerPort, creds) },
             };
             _server.Start();
@@ -48,7 +52,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
     }
 
 
-    internal class BotAgentServerImpl : AlgoServerPublic.AlgoServerPublicBase
+    internal class BotAgentServerImpl : AlgoServerApi.AlgoServerPublic.AlgoServerPublicBase
     {
         private IAlgoServerProvider _algoServer;
         private IJwtProvider _jwtProvider;
@@ -64,7 +68,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
             _jwtProvider = jwtProvider;
             _logger = logger;
 
-            _messageFormatter = new MessageFormatter { LogMessages = logMessages };
+            _messageFormatter = new MessageFormatter(AlgoServerApi.AlgoServerPublicAPIReflection.Descriptor) { LogMessages = logMessages };
             _sessions = new Dictionary<string, ServerSession.Handler>();
 
             _algoServer.PackageUpdated += OnPackageUpdate;
@@ -80,52 +84,52 @@ namespace TickTrader.Algo.ServerControl.Grpc
         }
 
 
-        public static RequestResult CreateSuccessResult(string message = "")
+        public static AlgoServerApi.RequestResult CreateSuccessResult(string message = "")
         {
-            return new RequestResult { Status = RequestResult.Types.RequestStatus.Success, Message = message ?? "" };
+            return new AlgoServerApi.RequestResult { Status = AlgoServerApi.RequestResult.Types.RequestStatus.Success, Message = message ?? "" };
         }
 
-        public static RequestResult CreateErrorResult(string message = "")
+        public static AlgoServerApi.RequestResult CreateErrorResult(string message = "")
         {
-            return new RequestResult { Status = RequestResult.Types.RequestStatus.InternalServerError, Message = message ?? "" };
+            return new AlgoServerApi.RequestResult { Status = AlgoServerApi.RequestResult.Types.RequestStatus.InternalServerError, Message = message ?? "" };
         }
 
-        public static RequestResult CreateErrorResult(Exception ex)
+        public static AlgoServerApi.RequestResult CreateErrorResult(Exception ex)
         {
             return CreateErrorResult(ex.Flatten().Message);
         }
 
-        public static RequestResult CreateUnauthorizedResult(string message = "")
+        public static AlgoServerApi.RequestResult CreateUnauthorizedResult(string message = "")
         {
-            return new RequestResult { Status = RequestResult.Types.RequestStatus.Unauthorized, Message = message ?? "" };
+            return new AlgoServerApi.RequestResult { Status = AlgoServerApi.RequestResult.Types.RequestStatus.Unauthorized, Message = message ?? "" };
         }
 
-        public static RequestResult CreateUnauthorizedResult(Exception ex)
+        public static AlgoServerApi.RequestResult CreateUnauthorizedResult(Exception ex)
         {
             return CreateUnauthorizedResult(ex.Flatten().Message);
         }
 
-        public static RequestResult CreateRejectResult(string message = "")
+        public static AlgoServerApi.RequestResult CreateRejectResult(string message = "")
         {
-            return new RequestResult { Status = RequestResult.Types.RequestStatus.Reject, Message = message ?? "" };
+            return new AlgoServerApi.RequestResult { Status = AlgoServerApi.RequestResult.Types.RequestStatus.Reject, Message = message ?? "" };
         }
 
-        public static RequestResult CreateRejectResult(Exception ex)
+        public static AlgoServerApi.RequestResult CreateRejectResult(Exception ex)
         {
             return CreateRejectResult(ex.Flatten().Message);
         }
 
-        public static RequestResult CreateNotAllowedResult(string message = "")
+        public static AlgoServerApi.RequestResult CreateNotAllowedResult(string message = "")
         {
-            return new RequestResult { Status = RequestResult.Types.RequestStatus.NotAllowed, Message = message ?? "" };
+            return new AlgoServerApi.RequestResult { Status = AlgoServerApi.RequestResult.Types.RequestStatus.NotAllowed, Message = message ?? "" };
         }
 
-        public static RequestResult CreateNotAllowedResult(Exception ex)
+        public static AlgoServerApi.RequestResult CreateNotAllowedResult(Exception ex)
         {
             return CreateNotAllowedResult(ex.Flatten().Message);
         }
 
-        public static RequestResult CreateNotAllowedResult(ServerSession.Handler session, string requestName)
+        public static AlgoServerApi.RequestResult CreateNotAllowedResult(ServerSession.Handler session, string requestName)
         {
             return CreateNotAllowedResult($"{session.AccessManager.Level} is not allowed to execute {requestName}");
         }
@@ -146,171 +150,171 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
         #region Grpc request handlers overrides
 
-        public override Task<LoginResponse> Login(LoginRequest request, ServerCallContext context)
+        public override Task<AlgoServerApi.LoginResponse> Login(AlgoServerApi.LoginRequest request, ServerCallContext context)
         {
             return ExecuteUnaryRequest(LoginInternal, request, context);
         }
 
-        public override Task<LogoutResponse> Logout(LogoutRequest request, ServerCallContext context)
+        public override Task<AlgoServerApi.LogoutResponse> Logout(AlgoServerApi.LogoutRequest request, ServerCallContext context)
         {
             return ExecuteUnaryRequestAuthorized(LogoutInternal, request, context);
         }
 
-        public override Task<HeartbeatResponse> Heartbeat(HeartbeatRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(HeartbeatInternal, request, context);
-        }
+        //public override Task<HeartbeatResponse> Heartbeat(HeartbeatRequest request, ServerCallContext context)
+        //{
+        //    return ExecuteUnaryRequestAuthorized(HeartbeatInternal, request, context);
+        //}
 
-        public override Task<SnapshotResponse> GetSnapshot(SnapshotRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(GetSnapshotInternal, request, context);
-        }
+        //public override Task<SnapshotResponse> GetSnapshot(SnapshotRequest request, ServerCallContext context)
+        //{
+        //    return ExecuteUnaryRequestAuthorized(GetSnapshotInternal, request, context);
+        //}
 
-        public override Task SubscribeToUpdates(SubscribeToUpdatesRequest request, IServerStreamWriter<UpdateInfo> responseStream, ServerCallContext context)
-        {
-            return ExecuteServerStreamingRequestAuthorized(SubscribeToUpdatesInternal, request, responseStream, context);
-        }
+        //public override Task SubscribeToUpdates(SubscribeToUpdatesRequest request, IServerStreamWriter<UpdateInfo> responseStream, ServerCallContext context)
+        //{
+        //    return ExecuteServerStreamingRequestAuthorized(SubscribeToUpdatesInternal, request, responseStream, context);
+        //}
 
-        public override Task<ApiMetadataResponse> GetApiMetadata(ApiMetadataRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(GetApiMetadataInternal, request, context);
-        }
+        //public override Task<ApiMetadataResponse> GetApiMetadata(ApiMetadataRequest request, ServerCallContext context)
+        //{
+        //    return ExecuteUnaryRequestAuthorized(GetApiMetadataInternal, request, context);
+        //}
 
-        public override Task<MappingsInfoResponse> GetMappingsInfo(MappingsInfoRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(GetMappingsInfoInternal, request, context);
-        }
+        //public override Task<MappingsInfoResponse> GetMappingsInfo(MappingsInfoRequest request, ServerCallContext context)
+        //{
+        //    return ExecuteUnaryRequestAuthorized(GetMappingsInfoInternal, request, context);
+        //}
 
-        public override Task<SetupContextResponse> GetSetupContext(SetupContextRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(GetSetupContextInternal, request, context);
-        }
+        //public override Task<SetupContextResponse> GetSetupContext(SetupContextRequest request, ServerCallContext context)
+        //{
+        //    return ExecuteUnaryRequestAuthorized(GetSetupContextInternal, request, context);
+        //}
 
-        public override Task<AccountMetadataResponse> GetAccountMetadata(AccountMetadataRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(GetAccountMetadataInternal, request, context);
-        }
+        //public override Task<AccountMetadataResponse> GetAccountMetadata(AccountMetadataRequest request, ServerCallContext context)
+        //{
+        //    return ExecuteUnaryRequestAuthorized(GetAccountMetadataInternal, request, context);
+        //}
 
-        public override Task<PluginListResponse> GetPluginList(PluginListRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(GetBotListInternal, request, context);
-        }
+        //public override Task<PluginListResponse> GetPluginList(PluginListRequest request, ServerCallContext context)
+        //{
+        //    return ExecuteUnaryRequestAuthorized(GetBotListInternal, request, context);
+        //}
 
-        public override Task<AddPluginResponse> AddPlugin(AddPluginRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(AddBotInternal, request, context);
+        //public override Task<AddPluginResponse> AddPlugin(AddPluginRequest request, ServerCallContext context)
+        //{
+        //    return ExecuteUnaryRequestAuthorized(AddBotInternal, request, context);
 
-        }
+        //}
 
-        public override Task<RemovePluginResponse> RemovePlugin(RemovePluginRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(RemoveBotInternal, request, context);
-        }
+        //public override Task<RemovePluginResponse> RemovePlugin(RemovePluginRequest request, ServerCallContext context)
+        //{
+        //    return ExecuteUnaryRequestAuthorized(RemoveBotInternal, request, context);
+        //}
 
-        public override Task<StartPluginResponse> StartPlugin(StartPluginRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(StartBotInternal, request, context);
-        }
+        //public override Task<StartPluginResponse> StartPlugin(StartPluginRequest request, ServerCallContext context)
+        //{
+        //    return ExecuteUnaryRequestAuthorized(StartBotInternal, request, context);
+        //}
 
-        public override Task<StopPluginResponse> StopPlugin(StopPluginRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(StopBotInternal, request, context);
-        }
+        //public override Task<StopPluginResponse> StopPlugin(StopPluginRequest request, ServerCallContext context)
+        //{
+        //    return ExecuteUnaryRequestAuthorized(StopBotInternal, request, context);
+        //}
 
-        public override Task<ChangePluginConfigResponse> ChangePluginConfig(ChangePluginConfigRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(ChangeBotConfigInternal, request, context);
-        }
+        //public override Task<ChangePluginConfigResponse> ChangePluginConfig(ChangePluginConfigRequest request, ServerCallContext context)
+        //{
+        //    return ExecuteUnaryRequestAuthorized(ChangeBotConfigInternal, request, context);
+        //}
 
-        public override Task<AccountListResponse> GetAccountList(AccountListRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(GetAccountListInternal, request, context);
-        }
+        //public override Task<AccountListResponse> GetAccountList(AccountListRequest request, ServerCallContext context)
+        //{
+        //    return ExecuteUnaryRequestAuthorized(GetAccountListInternal, request, context);
+        //}
 
-        public override Task<AddAccountResponse> AddAccount(AddAccountRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(AddAccountInternal, request, context);
-        }
+        //public override Task<AddAccountResponse> AddAccount(AddAccountRequest request, ServerCallContext context)
+        //{
+        //    return ExecuteUnaryRequestAuthorized(AddAccountInternal, request, context);
+        //}
 
-        public override Task<RemoveAccountResponse> RemoveAccount(RemoveAccountRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(RemoveAccountInternal, request, context);
-        }
+        //public override Task<RemoveAccountResponse> RemoveAccount(RemoveAccountRequest request, ServerCallContext context)
+        //{
+        //    return ExecuteUnaryRequestAuthorized(RemoveAccountInternal, request, context);
+        //}
 
-        public override Task<ChangeAccountResponse> ChangeAccount(ChangeAccountRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(ChangeAccountInternal, request, context);
-        }
+        //public override Task<ChangeAccountResponse> ChangeAccount(ChangeAccountRequest request, ServerCallContext context)
+        //{
+        //    return ExecuteUnaryRequestAuthorized(ChangeAccountInternal, request, context);
+        //}
 
-        public override Task<TestAccountResponse> TestAccount(TestAccountRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(TestAccountInternal, request, context);
-        }
+        //public override Task<TestAccountResponse> TestAccount(TestAccountRequest request, ServerCallContext context)
+        //{
+        //    return ExecuteUnaryRequestAuthorized(TestAccountInternal, request, context);
+        //}
 
-        public override Task<TestAccountCredsResponse> TestAccountCreds(TestAccountCredsRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(TestAccountCredsInternal, request, context);
-        }
+        //public override Task<TestAccountCredsResponse> TestAccountCreds(TestAccountCredsRequest request, ServerCallContext context)
+        //{
+        //    return ExecuteUnaryRequestAuthorized(TestAccountCredsInternal, request, context);
+        //}
 
-        public override Task<PackageListResponse> GetPackageList(PackageListRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(GetPackageListInternal, request, context);
-        }
+        //public override Task<PackageListResponse> GetPackageList(PackageListRequest request, ServerCallContext context)
+        //{
+        //    return ExecuteUnaryRequestAuthorized(GetPackageListInternal, request, context);
+        //}
 
-        public override Task<UploadPackageResponse> UploadPackage(IAsyncStreamReader<FileTransferMsg> requestStream, ServerCallContext context)
-        {
-            return ExecuteClientStreamingRequestAuthorized(UploadPackageInternal, requestStream, context);
-        }
+        //public override Task<UploadPackageResponse> UploadPackage(IAsyncStreamReader<FileTransferMsg> requestStream, ServerCallContext context)
+        //{
+        //    return ExecuteClientStreamingRequestAuthorized(UploadPackageInternal, requestStream, context);
+        //}
 
-        public override Task<RemovePackageResponse> RemovePackage(RemovePackageRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(RemovePackageInternal, request, context);
-        }
+        //public override Task<RemovePackageResponse> RemovePackage(RemovePackageRequest request, ServerCallContext context)
+        //{
+        //    return ExecuteUnaryRequestAuthorized(RemovePackageInternal, request, context);
+        //}
 
-        public override Task DownloadPackage(DownloadPackageRequest request, IServerStreamWriter<FileTransferMsg> responseStream, ServerCallContext context)
-        {
-            return ExecuteServerStreamingRequestAuthorized(DownloadPackageInternal, request, responseStream, context);
-        }
+        //public override Task DownloadPackage(DownloadPackageRequest request, IServerStreamWriter<FileTransferMsg> responseStream, ServerCallContext context)
+        //{
+        //    return ExecuteServerStreamingRequestAuthorized(DownloadPackageInternal, request, responseStream, context);
+        //}
 
-        public override Task<PluginStatusResponse> GetPluginStatus(PluginStatusRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(GetBotStatusInternal, request, context);
-        }
+        //public override Task<PluginStatusResponse> GetPluginStatus(PluginStatusRequest request, ServerCallContext context)
+        //{
+        //    return ExecuteUnaryRequestAuthorized(GetBotStatusInternal, request, context);
+        //}
 
-        public override Task<PluginLogsResponse> GetPluginLogs(PluginLogsRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(GetBotLogsInternal, request, context);
-        }
+        //public override Task<PluginLogsResponse> GetPluginLogs(PluginLogsRequest request, ServerCallContext context)
+        //{
+        //    return ExecuteUnaryRequestAuthorized(GetBotLogsInternal, request, context);
+        //}
 
-        public override Task<PluginAlertsResponse> GetAlerts(PluginAlertsRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(GetAlertsInternal, request, context);
-        }
+        //public override Task<PluginAlertsResponse> GetAlerts(PluginAlertsRequest request, ServerCallContext context)
+        //{
+        //    return ExecuteUnaryRequestAuthorized(GetAlertsInternal, request, context);
+        //}
 
-        public override Task<PluginFolderInfoResponse> GetPluginFolderInfo(PluginFolderInfoRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(GetBotFolderInfoInternal, request, context);
-        }
+        //public override Task<PluginFolderInfoResponse> GetPluginFolderInfo(PluginFolderInfoRequest request, ServerCallContext context)
+        //{
+        //    return ExecuteUnaryRequestAuthorized(GetBotFolderInfoInternal, request, context);
+        //}
 
-        public override Task<ClearPluginFolderResponse> ClearPluginFolder(ClearPluginFolderRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(ClearBotFolderInternal, request, context);
-        }
+        //public override Task<ClearPluginFolderResponse> ClearPluginFolder(ClearPluginFolderRequest request, ServerCallContext context)
+        //{
+        //    return ExecuteUnaryRequestAuthorized(ClearBotFolderInternal, request, context);
+        //}
 
-        public override Task<DeletePluginFileResponse> DeletePluginFile(DeletePluginFileRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(DeleteBotFileInternal, request, context);
-        }
+        //public override Task<DeletePluginFileResponse> DeletePluginFile(DeletePluginFileRequest request, ServerCallContext context)
+        //{
+        //    return ExecuteUnaryRequestAuthorized(DeleteBotFileInternal, request, context);
+        //}
 
-        public override Task DownloadPluginFile(DownloadPluginFileRequest request, IServerStreamWriter<FileTransferMsg> responseStream, ServerCallContext context)
-        {
-            return ExecuteServerStreamingRequestAuthorized(DownloadBotFileInternal, request, responseStream, context);
-        }
+        //public override Task DownloadPluginFile(DownloadPluginFileRequest request, IServerStreamWriter<FileTransferMsg> responseStream, ServerCallContext context)
+        //{
+        //    return ExecuteServerStreamingRequestAuthorized(DownloadBotFileInternal, request, responseStream, context);
+        //}
 
-        public override Task<UploadPluginFileResponse> UploadPluginFile(IAsyncStreamReader<FileTransferMsg> requestStream, ServerCallContext context)
-        {
-            return ExecuteClientStreamingRequestAuthorized(UploadBotFileInternal, requestStream, context);
-        }
+        //public override Task<UploadPluginFileResponse> UploadPluginFile(IAsyncStreamReader<FileTransferMsg> requestStream, ServerCallContext context)
+        //{
+        //    return ExecuteClientStreamingRequestAuthorized(UploadBotFileInternal, requestStream, context);
+        //}
 
         #endregion Grpc request handlers overrides
 
@@ -369,7 +373,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
         }
 
         private async Task<TResponse> ExecuteUnaryRequestAuthorized<TRequest, TResponse>(
-            Func<TRequest, ServerCallContext, ServerSession.Handler, RequestResult, Task<TResponse>> requestAction, TRequest request, ServerCallContext context)
+            Func<TRequest, ServerCallContext, ServerSession.Handler, AlgoServerApi.RequestResult, Task<TResponse>> requestAction, TRequest request, ServerCallContext context)
             where TRequest : IMessage
             where TResponse : IMessage
         {
@@ -391,7 +395,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
         }
 
         private Task ExecuteServerStreamingRequestAuthorized<TRequest, TResponse>(
-            Func<TRequest, IServerStreamWriter<TResponse>, ServerCallContext, ServerSession.Handler, RequestResult, Task> requestAction,
+            Func<TRequest, IServerStreamWriter<TResponse>, ServerCallContext, ServerSession.Handler, AlgoServerApi.RequestResult, Task> requestAction,
             TRequest request, IServerStreamWriter<TResponse> responseStream, ServerCallContext context)
             where TRequest : IMessage
             where TResponse : IMessage
@@ -411,7 +415,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
         }
 
         private async Task<TResponse> ExecuteClientStreamingRequestAuthorized<TRequest, TResponse>(
-            Func<IAsyncStreamReader<TRequest>, ServerCallContext, ServerSession.Handler, RequestResult, Task<TResponse>> requestAction,
+            Func<IAsyncStreamReader<TRequest>, ServerCallContext, ServerSession.Handler, AlgoServerApi.RequestResult, Task<TResponse>> requestAction,
             IAsyncStreamReader<TRequest> requestStream, ServerCallContext context)
             where TRequest : IMessage
             where TResponse : IMessage
@@ -432,7 +436,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
             }
         }
 
-        private ServerSession.Handler GetSession(ServerCallContext context, System.Type requestType, out RequestResult execResult)
+        private ServerSession.Handler GetSession(ServerCallContext context, System.Type requestType, out AlgoServerApi.RequestResult execResult)
         {
             execResult = CreateSuccessResult();
 
@@ -512,14 +516,14 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return Task.FromResult(new HeartbeatResponse());
         }
 
-        private Task<LoginResponse> LoginInternal(LoginRequest request, ServerCallContext context)
+        private Task<AlgoServerApi.LoginResponse> LoginInternal(AlgoServerApi.LoginRequest request, ServerCallContext context)
         {
-            var res = new LoginResponse
+            var res = new AlgoServerApi.LoginResponse
             {
                 MajorVersion = VersionSpec.MajorVersion,
                 MinorVersion = VersionSpec.MinorVersion,
                 ExecResult = CreateSuccessResult(),
-                Error = LoginResponse.Types.LoginError.None,
+                Error = AlgoServerApi.LoginResponse.Types.LoginError.None,
                 AccessToken = "",
             };
 
@@ -528,7 +532,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 if (!VersionSpec.CheckClientCompatibility(request.MajorVersion, request.MinorVersion, out var error))
                 {
                     res.ExecResult = CreateRejectResult(error);
-                    res.Error = LoginResponse.Types.LoginError.VersionMismatch;
+                    res.Error = AlgoServerApi.LoginResponse.Types.LoginError.VersionMismatch;
                 }
                 else
                 {
@@ -536,7 +540,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                     if (accessLevel == ClientClaims.Types.AccessLevel.Anonymous)
                     {
                         res.ExecResult = CreateRejectResult();
-                        res.Error = LoginResponse.Types.LoginError.InvalidCredentials;
+                        res.Error = AlgoServerApi.LoginResponse.Types.LoginError.InvalidCredentials;
                     }
                     else
                     {
@@ -552,7 +556,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                             };
                             res.SessionId = session.SessionId;
                             res.AccessToken = _jwtProvider.CreateToken(payload);
-                            res.AccessLevel = session.AccessManager.Level;
+                            res.AccessLevel = session.AccessManager.Level.ToApi();
                         }
                         catch (Exception ex)
                         {
@@ -581,9 +585,9 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return Task.FromResult(res);
         }
 
-        private Task<LogoutResponse> LogoutInternal(LogoutRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        private Task<AlgoServerApi.LogoutResponse> LogoutInternal(AlgoServerApi.LogoutRequest request, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
         {
-            var res = new LogoutResponse { ExecResult = execResult };
+            var res = new AlgoServerApi.LogoutResponse { ExecResult = execResult };
             if (session == null)
                 return Task.FromResult(res);
 
@@ -594,7 +598,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                     session.CloseUpdateStream();
                     _sessions.Remove(session.SessionId);
                 }
-                res.Reason = LogoutResponse.Types.LogoutReason.ClientRequest;
+                res.Reason = AlgoServerApi.LogoutResponse.Types.LogoutReason.ClientRequest;
             }
             catch (Exception ex)
             {
@@ -605,172 +609,172 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return Task.FromResult(res);
         }
 
-        private Task<HeartbeatResponse> HeartbeatInternal(HeartbeatRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        //private Task<HeartbeatResponse> HeartbeatInternal(HeartbeatRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        //{
+        //    var res = new HeartbeatResponse { ExecResult = execResult };
+        //    //if (session == null)
+        //    //    return Task.FromResult(res);
+
+        //    return Task.FromResult(res);
+        //}
+
+        //private async Task<SnapshotResponse> GetSnapshotInternal(SnapshotRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        //{
+        //    var res = new SnapshotResponse { ExecResult = execResult };
+        //    if (session == null)
+        //        return res;
+        //    if (!session.AccessManager.CanGetSnapshot())
+        //    {
+        //        res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+        //        return res;
+        //    }
+
+        //    try
+        //    {
+        //        res.ApiMetadata = await GetApiMetadataInternal(new ApiMetadataRequest(), context, session, execResult);
+        //        res.MappingsInfo = await GetMappingsInfoInternal(new MappingsInfoRequest(), context, session, execResult);
+        //        res.SetupContext = await GetSetupContextInternal(new SetupContextRequest(), context, session, execResult);
+        //        res.PackageList = await GetPackageListInternal(new PackageListRequest(), context, session, execResult);
+        //        res.AccountList = await GetAccountListInternal(new AccountListRequest(), context, session, execResult);
+        //        res.PluginList = await GetBotListInternal(new PluginListRequest(), context, session, execResult);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        session.Logger.Error(ex, "Failed to get snapshot");
+        //        res.ExecResult = CreateErrorResult(ex);
+        //    }
+        //    return res;
+        //}
+
+        //private Task SubscribeToUpdatesInternal(SubscribeToUpdatesRequest request, IServerStreamWriter<UpdateInfo> responseStream, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        //{
+        //    if (session == null)
+        //        return Task.FromResult(this);
+        //    if (!session.AccessManager.CanSubscribeToUpdates())
+        //        return Task.FromResult(this);
+
+        //    return session.SetupUpdateStream(responseStream);
+        //}
+
+        //private async Task<ApiMetadataResponse> GetApiMetadataInternal(ApiMetadataRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        //{
+        //    var res = new ApiMetadataResponse { ExecResult = execResult };
+        //    if (session == null)
+        //        return res;
+        //    if (!session.AccessManager.CanGetApiMetadata())
+        //    {
+        //        res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+        //        return res;
+        //    }
+
+        //    try
+        //    {
+        //        res.ApiMetadata = await _algoServer.GetApiMetadata();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        session.Logger.Error(ex, "Failed to get api metadata");
+        //        res.ExecResult = CreateErrorResult(ex);
+        //    }
+        //    return res;
+        //}
+
+        //private async Task<MappingsInfoResponse> GetMappingsInfoInternal(MappingsInfoRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        //{
+        //    var res = new MappingsInfoResponse { ExecResult = execResult };
+        //    if (session == null)
+        //        return res;
+        //    if (!session.AccessManager.CanGetMappingsInfo())
+        //    {
+        //        res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+        //        return res;
+        //    }
+
+        //    try
+        //    {
+        //        res.Mappings = await _algoServer.GetMappingsInfo();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        session.Logger.Error(ex, "Failed to get mappings collection");
+        //        res.ExecResult = CreateErrorResult(ex);
+        //    }
+        //    return res;
+        //}
+
+        //private async Task<SetupContextResponse> GetSetupContextInternal(SetupContextRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        //{
+        //    var res = new SetupContextResponse { ExecResult = execResult };
+        //    if (session == null)
+        //        return res;
+        //    if (!session.AccessManager.CanGetSetupContext())
+        //    {
+        //        res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+        //        return res;
+        //    }
+
+        //    try
+        //    {
+        //        res.SetupContext = await _algoServer.GetSetupContext();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        session.Logger.Error(ex, "Failed to get setup context");
+        //        res.ExecResult = CreateErrorResult(ex);
+        //    }
+        //    return res;
+        //}
+
+        //private async Task<AccountMetadataResponse> GetAccountMetadataInternal(AccountMetadataRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        //{
+        //    var res = new AccountMetadataResponse { ExecResult = execResult };
+        //    if (session == null)
+        //        return res;
+        //    if (!session.AccessManager.CanGetAccountMetadata())
+        //    {
+        //        res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+        //        return res;
+        //    }
+
+        //    try
+        //    {
+        //        res.AccountMetadata = await _algoServer.GetAccountMetadata(request);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        session.Logger.Error(ex, "Failed to get account metadata");
+        //        res.ExecResult = CreateErrorResult(ex);
+        //    }
+        //    return res;
+        //}
+
+        //private async Task<PluginListResponse> GetBotListInternal(PluginListRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        //{
+        //    var res = new PluginListResponse { ExecResult = execResult };
+        //    if (session == null)
+        //        return res;
+        //    if (!session.AccessManager.CanGetBotList())
+        //    {
+        //        res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+        //        return res;
+        //    }
+
+        //    try
+        //    {
+        //        var bots = await _algoServer.GetBotList();
+        //        res.Plugins.AddRange(bots);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        session.Logger.Error(ex, "Failed to get bot list");
+        //        res.ExecResult = CreateErrorResult(ex);
+        //    }
+        //    return res;
+        //}
+
+        private async Task<AlgoServerApi.AddPluginResponse> AddBotInternal(AlgoServerApi.AddPluginRequest request, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
         {
-            var res = new HeartbeatResponse { ExecResult = execResult };
-            //if (session == null)
-            //    return Task.FromResult(res);
-
-            return Task.FromResult(res);
-        }
-
-        private async Task<SnapshotResponse> GetSnapshotInternal(SnapshotRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
-        {
-            var res = new SnapshotResponse { ExecResult = execResult };
-            if (session == null)
-                return res;
-            if (!session.AccessManager.CanGetSnapshot())
-            {
-                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return res;
-            }
-
-            try
-            {
-                res.ApiMetadata = await GetApiMetadataInternal(new ApiMetadataRequest(), context, session, execResult);
-                res.MappingsInfo = await GetMappingsInfoInternal(new MappingsInfoRequest(), context, session, execResult);
-                res.SetupContext = await GetSetupContextInternal(new SetupContextRequest(), context, session, execResult);
-                res.PackageList = await GetPackageListInternal(new PackageListRequest(), context, session, execResult);
-                res.AccountList = await GetAccountListInternal(new AccountListRequest(), context, session, execResult);
-                res.PluginList = await GetBotListInternal(new PluginListRequest(), context, session, execResult);
-            }
-            catch (Exception ex)
-            {
-                session.Logger.Error(ex, "Failed to get snapshot");
-                res.ExecResult = CreateErrorResult(ex);
-            }
-            return res;
-        }
-
-        private Task SubscribeToUpdatesInternal(SubscribeToUpdatesRequest request, IServerStreamWriter<UpdateInfo> responseStream, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
-        {
-            if (session == null)
-                return Task.FromResult(this);
-            if (!session.AccessManager.CanSubscribeToUpdates())
-                return Task.FromResult(this);
-
-            return session.SetupUpdateStream(responseStream);
-        }
-
-        private async Task<ApiMetadataResponse> GetApiMetadataInternal(ApiMetadataRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
-        {
-            var res = new ApiMetadataResponse { ExecResult = execResult };
-            if (session == null)
-                return res;
-            if (!session.AccessManager.CanGetApiMetadata())
-            {
-                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return res;
-            }
-
-            try
-            {
-                res.ApiMetadata = await _algoServer.GetApiMetadata();
-            }
-            catch (Exception ex)
-            {
-                session.Logger.Error(ex, "Failed to get api metadata");
-                res.ExecResult = CreateErrorResult(ex);
-            }
-            return res;
-        }
-
-        private async Task<MappingsInfoResponse> GetMappingsInfoInternal(MappingsInfoRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
-        {
-            var res = new MappingsInfoResponse { ExecResult = execResult };
-            if (session == null)
-                return res;
-            if (!session.AccessManager.CanGetMappingsInfo())
-            {
-                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return res;
-            }
-
-            try
-            {
-                res.Mappings = await _algoServer.GetMappingsInfo();
-            }
-            catch (Exception ex)
-            {
-                session.Logger.Error(ex, "Failed to get mappings collection");
-                res.ExecResult = CreateErrorResult(ex);
-            }
-            return res;
-        }
-
-        private async Task<SetupContextResponse> GetSetupContextInternal(SetupContextRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
-        {
-            var res = new SetupContextResponse { ExecResult = execResult };
-            if (session == null)
-                return res;
-            if (!session.AccessManager.CanGetSetupContext())
-            {
-                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return res;
-            }
-
-            try
-            {
-                res.SetupContext = await _algoServer.GetSetupContext();
-            }
-            catch (Exception ex)
-            {
-                session.Logger.Error(ex, "Failed to get setup context");
-                res.ExecResult = CreateErrorResult(ex);
-            }
-            return res;
-        }
-
-        private async Task<AccountMetadataResponse> GetAccountMetadataInternal(AccountMetadataRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
-        {
-            var res = new AccountMetadataResponse { ExecResult = execResult };
-            if (session == null)
-                return res;
-            if (!session.AccessManager.CanGetAccountMetadata())
-            {
-                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return res;
-            }
-
-            try
-            {
-                res.AccountMetadata = await _algoServer.GetAccountMetadata(request);
-            }
-            catch (Exception ex)
-            {
-                session.Logger.Error(ex, "Failed to get account metadata");
-                res.ExecResult = CreateErrorResult(ex);
-            }
-            return res;
-        }
-
-        private async Task<PluginListResponse> GetBotListInternal(PluginListRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
-        {
-            var res = new PluginListResponse { ExecResult = execResult };
-            if (session == null)
-                return res;
-            if (!session.AccessManager.CanGetBotList())
-            {
-                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return res;
-            }
-
-            try
-            {
-                var bots = await _algoServer.GetBotList();
-                res.Plugins.AddRange(bots);
-            }
-            catch (Exception ex)
-            {
-                session.Logger.Error(ex, "Failed to get bot list");
-                res.ExecResult = CreateErrorResult(ex);
-            }
-            return res;
-        }
-
-        private async Task<AddPluginResponse> AddBotInternal(AddPluginRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
-        {
-            var res = new AddPluginResponse { ExecResult = execResult };
+            var res = new AlgoServerApi.AddPluginResponse { ExecResult = execResult };
             if (session == null)
                 return res;
             if (!session.AccessManager.CanAddPlugin())
@@ -781,7 +785,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                await _algoServer.AddBot(request);
+                await _algoServer.AddBot(request.ToServer());
             }
             catch (Exception ex)
             {
@@ -792,9 +796,9 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
         }
 
-        private async Task<RemovePluginResponse> RemoveBotInternal(RemovePluginRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        private async Task<AlgoServerApi.RemovePluginResponse> RemoveBotInternal(AlgoServerApi.RemovePluginRequest request, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
         {
-            var res = new RemovePluginResponse { ExecResult = execResult };
+            var res = new AlgoServerApi.RemovePluginResponse { ExecResult = execResult };
             if (session == null)
                 return res;
             if (!session.AccessManager.CanRemovePlugin())
@@ -805,7 +809,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                await _algoServer.RemoveBot(request);
+                await _algoServer.RemoveBot(request.ToServer());
             }
             catch (Exception ex)
             {
@@ -816,9 +820,9 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
         }
 
-        private async Task<StartPluginResponse> StartBotInternal(StartPluginRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        private async Task<AlgoServerApi.StartPluginResponse> StartBotInternal(AlgoServerApi.StartPluginRequest request, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
         {
-            var res = new StartPluginResponse { ExecResult = execResult };
+            var res = new AlgoServerApi.StartPluginResponse { ExecResult = execResult };
             if (session == null)
                 return res;
             if (!session.AccessManager.CanStartPlugin())
@@ -829,7 +833,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                await _algoServer.StartBot(request);
+                await _algoServer.StartBot(request.ToServer());
             }
             catch (Exception ex)
             {
@@ -839,9 +843,9 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return res;
         }
 
-        private async Task<StopPluginResponse> StopBotInternal(StopPluginRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        private async Task<AlgoServerApi.StopPluginResponse> StopBotInternal(AlgoServerApi.StopPluginRequest request, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
         {
-            var res = new StopPluginResponse { ExecResult = execResult };
+            var res = new AlgoServerApi.StopPluginResponse { ExecResult = execResult };
             if (session == null)
                 return res;
             if (!session.AccessManager.CanStopPlugin())
@@ -852,7 +856,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                await _algoServer.StopBot(request);
+                await _algoServer.StopBot(request.ToServer());
             }
             catch (Exception ex)
             {
@@ -862,9 +866,9 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return res;
         }
 
-        private async Task<ChangePluginConfigResponse> ChangeBotConfigInternal(ChangePluginConfigRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        private async Task<AlgoServerApi.ChangePluginConfigResponse> ChangeBotConfigInternal(AlgoServerApi.ChangePluginConfigRequest request, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
         {
-            var res = new ChangePluginConfigResponse { ExecResult = execResult };
+            var res = new AlgoServerApi.ChangePluginConfigResponse { ExecResult = execResult };
             if (session == null)
                 return res;
             if (!session.AccessManager.CanChangePluginConfig())
@@ -875,7 +879,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                await _algoServer.ChangeBotConfig(request);
+                await _algoServer.ChangeBotConfig(request.ToServer());
             }
             catch (Exception ex)
             {
@@ -886,33 +890,33 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
         }
 
-        private async Task<AccountListResponse> GetAccountListInternal(AccountListRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
-        {
-            var res = new AccountListResponse { ExecResult = execResult };
-            if (session == null)
-                return res;
-            if (!session.AccessManager.CanGetAccountList())
-            {
-                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return res;
-            }
+        //private async Task<AccountListResponse> GetAccountListInternal(AccountListRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        //{
+        //    var res = new AccountListResponse { ExecResult = execResult };
+        //    if (session == null)
+        //        return res;
+        //    if (!session.AccessManager.CanGetAccountList())
+        //    {
+        //        res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+        //        return res;
+        //    }
 
-            try
-            {
-                var accounts = await _algoServer.GetAccountList();
-                res.Accounts.AddRange(accounts);
-            }
-            catch (Exception ex)
-            {
-                session.Logger.Error(ex, "Failed to get account list");
-                res.ExecResult = CreateErrorResult(ex);
-            }
-            return res;
-        }
+        //    try
+        //    {
+        //        var accounts = await _algoServer.GetAccountList();
+        //        res.Accounts.AddRange(accounts);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        session.Logger.Error(ex, "Failed to get account list");
+        //        res.ExecResult = CreateErrorResult(ex);
+        //    }
+        //    return res;
+        //}
 
-        private async Task<AddAccountResponse> AddAccountInternal(AddAccountRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        private async Task<AlgoServerApi.AddAccountResponse> AddAccountInternal(AlgoServerApi.AddAccountRequest request, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
         {
-            var res = new AddAccountResponse { ExecResult = execResult };
+            var res = new AlgoServerApi.AddAccountResponse { ExecResult = execResult };
             if (session == null)
                 return res;
             if (!session.AccessManager.CanAddAccount())
@@ -923,7 +927,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                await _algoServer.AddAccount(request);
+                await _algoServer.AddAccount(request.ToServer());
             }
             catch (Exception ex)
             {
@@ -933,9 +937,9 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return res;
         }
 
-        private async Task<RemoveAccountResponse> RemoveAccountInternal(RemoveAccountRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        private async Task<AlgoServerApi.RemoveAccountResponse> RemoveAccountInternal(AlgoServerApi.RemoveAccountRequest request, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
         {
-            var res = new RemoveAccountResponse { ExecResult = execResult };
+            var res = new AlgoServerApi.RemoveAccountResponse { ExecResult = execResult };
             if (session == null)
                 return res;
             if (!session.AccessManager.CanRemoveAccount())
@@ -946,7 +950,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                await _algoServer.RemoveAccount(request);
+                await _algoServer.RemoveAccount(request.ToServer());
             }
             catch (Exception ex)
             {
@@ -956,9 +960,9 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return res;
         }
 
-        private async Task<ChangeAccountResponse> ChangeAccountInternal(ChangeAccountRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        private async Task<AlgoServerApi.ChangeAccountResponse> ChangeAccountInternal(AlgoServerApi.ChangeAccountRequest request, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
         {
-            var res = new ChangeAccountResponse { ExecResult = execResult };
+            var res = new AlgoServerApi.ChangeAccountResponse { ExecResult = execResult };
             if (session == null)
                 return res;
             if (!session.AccessManager.CanChangeAccount())
@@ -969,7 +973,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                await _algoServer.ChangeAccount(request);
+                await _algoServer.ChangeAccount(request.ToServer());
             }
             catch (Exception ex)
             {
@@ -979,9 +983,9 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return res;
         }
 
-        private async Task<TestAccountResponse> TestAccountInternal(TestAccountRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        private async Task<AlgoServerApi.TestAccountResponse> TestAccountInternal(AlgoServerApi.TestAccountRequest request, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
         {
-            var res = new TestAccountResponse { ExecResult = execResult };
+            var res = new AlgoServerApi.TestAccountResponse { ExecResult = execResult };
             if (session == null)
                 return res;
             if (!session.AccessManager.CanTestAccount())
@@ -992,7 +996,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                res.ErrorInfo = await _algoServer.TestAccount(request);
+                res.ErrorInfo = (await _algoServer.TestAccount(request.ToServer())).ToApi();
             }
             catch (Exception ex)
             {
@@ -1002,9 +1006,9 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return res;
         }
 
-        private async Task<TestAccountCredsResponse> TestAccountCredsInternal(TestAccountCredsRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        private async Task<AlgoServerApi.TestAccountCredsResponse> TestAccountCredsInternal(AlgoServerApi.TestAccountCredsRequest request, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
         {
-            var res = new TestAccountCredsResponse { ExecResult = execResult };
+            var res = new AlgoServerApi.TestAccountCredsResponse { ExecResult = execResult };
             if (session == null)
                 return res;
             if (!session.AccessManager.CanTestAccountCreds())
@@ -1015,7 +1019,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                res.ErrorInfo = await _algoServer.TestAccountCreds(request);
+                res.ErrorInfo = (await _algoServer.TestAccountCreds(request.ToServer())).ToApi();
             }
             catch (Exception ex)
             {
@@ -1025,38 +1029,38 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return res;
         }
 
-        private async Task<PackageListResponse> GetPackageListInternal(PackageListRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
-        {
-            var res = new PackageListResponse { ExecResult = execResult };
-            if (session == null)
-                return res;
-            if (!session.AccessManager.CanGetPackageList())
-            {
-                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return res;
-            }
+        //private async Task<PackageListResponse> GetPackageListInternal(PackageListRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        //{
+        //    var res = new PackageListResponse { ExecResult = execResult };
+        //    if (session == null)
+        //        return res;
+        //    if (!session.AccessManager.CanGetPackageList())
+        //    {
+        //        res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+        //        return res;
+        //    }
 
-            try
-            {
-                var packages = await _algoServer.GetPackageList();
-                res.Packages.AddRange(packages);
-            }
-            catch (Exception ex)
-            {
-                session.Logger.Error(ex, "Failed to get packages list");
-                res.ExecResult = CreateErrorResult(ex);
-            }
-            return res;
-        }
+        //    try
+        //    {
+        //        var packages = await _algoServer.GetPackageList();
+        //        res.Packages.AddRange(packages);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        session.Logger.Error(ex, "Failed to get packages list");
+        //        res.ExecResult = CreateErrorResult(ex);
+        //    }
+        //    return res;
+        //}
 
-        private async Task<UploadPackageResponse> UploadPackageInternal(IAsyncStreamReader<FileTransferMsg> requestStream, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        private async Task<AlgoServerApi.UploadPackageResponse> UploadPackageInternal(IAsyncStreamReader<AlgoServerApi.FileTransferMsg> requestStream, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
         {
-            var res = new UploadPackageResponse { ExecResult = execResult };
+            var res = new AlgoServerApi.UploadPackageResponse { ExecResult = execResult };
             if (session == null)
                 return res;
             if (!session.AccessManager.CanUploadPackage())
             {
-                res.ExecResult = CreateNotAllowedResult(session, typeof(UploadPackageRequest).Name);
+                res.ExecResult = CreateNotAllowedResult(session, typeof(AlgoServerApi.UploadPackageRequest).Name);
                 return res;
             }
 
@@ -1067,12 +1071,12 @@ namespace TickTrader.Algo.ServerControl.Grpc
             }
 
             var transferMsg = GetClientStreamRequest(requestStream, session);
-            if (transferMsg == null || !transferMsg.Header.Is(UploadPackageRequest.Descriptor))
+            if (transferMsg == null || !transferMsg.Header.Is(AlgoServerApi.UploadPackageRequest.Descriptor))
             {
-                res.ExecResult = CreateRejectResult($"Expected {nameof(UploadPackageRequest)} header, but received '{transferMsg.Header.TypeUrl}'");
+                res.ExecResult = CreateRejectResult($"Expected {nameof(AlgoServerApi.UploadPackageRequest)} header, but received '{transferMsg.Header.TypeUrl}'");
                 return res;
             }
-            var request = transferMsg.Header.Unpack<UploadPackageRequest>();
+            var request = transferMsg.Header.Unpack<AlgoServerApi.UploadPackageRequest>();
             _messageFormatter.LogClientResponse(session?.Logger, request);
 
             var tmpPath = Path.GetTempFileName();
@@ -1103,7 +1107,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                     }
                 }
 
-                await _algoServer.UploadPackage(request, tmpPath);
+                await _algoServer.UploadPackage(request.ToServer(), tmpPath);
             }
             catch (Exception ex)
             {
@@ -1117,9 +1121,9 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return res;
         }
 
-        private async Task<RemovePackageResponse> RemovePackageInternal(RemovePackageRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        private async Task<AlgoServerApi.RemovePackageResponse> RemovePackageInternal(AlgoServerApi.RemovePackageRequest request, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
         {
-            var res = new RemovePackageResponse { ExecResult = execResult };
+            var res = new AlgoServerApi.RemovePackageResponse { ExecResult = execResult };
             if (session == null)
                 return res;
             if (!session.AccessManager.CanRemovePackage())
@@ -1130,7 +1134,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                await _algoServer.RemovePackage(request);
+                await _algoServer.RemovePackage(request.ToServer());
             }
             catch (Exception ex)
             {
@@ -1140,10 +1144,10 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return res;
         }
 
-        private async Task DownloadPackageInternal(DownloadPackageRequest request, IServerStreamWriter<FileTransferMsg> responseStream, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        private async Task DownloadPackageInternal(AlgoServerApi.DownloadPackageRequest request, IServerStreamWriter<AlgoServerApi.FileTransferMsg> responseStream, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
         {
-            var response = new DownloadPackageResponse { ExecResult = execResult };
-            var transferMsg = new FileTransferMsg { Data = FileChunk.FinalChunk };
+            var response = new AlgoServerApi.DownloadPackageResponse { ExecResult = execResult };
+            var transferMsg = new AlgoServerApi.FileTransferMsg { Data = AlgoServerApi.FileChunk.FinalChunk };
 
             if (session == null)
             {
@@ -1162,11 +1166,11 @@ namespace TickTrader.Algo.ServerControl.Grpc
             var chunkOffset = request.TransferSettings.ChunkOffset;
             var chunkSize = request.TransferSettings.ChunkSize;
 
-            transferMsg.Data = new FileChunk(chunkOffset);
+            transferMsg.Data = new AlgoServerApi.FileChunk(chunkOffset);
             try
             {
                 var buffer = new byte[chunkSize];
-                var packageBinary = await _algoServer.GetPackageBinary(request);
+                var packageBinary = await _algoServer.GetPackageBinary(request.ToServer());
                 using (var stream = new MemoryStream(packageBinary))
                 {
                     stream.Seek((long)chunkSize * chunkOffset, SeekOrigin.Begin);
@@ -1183,17 +1187,88 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 session.Logger.Error(ex, "Failed to download Algo package");
                 response.ExecResult = CreateErrorResult(ex);
             }
-            transferMsg.Data = FileChunk.FinalChunk;
+            transferMsg.Data = AlgoServerApi.FileChunk.FinalChunk;
             transferMsg.Header = Any.Pack(response);
             await SendServerStreamResponse(responseStream, session, transferMsg);
         }
 
-        private async Task<PluginStatusResponse> GetBotStatusInternal(PluginStatusRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        //private async Task<PluginStatusResponse> GetBotStatusInternal(PluginStatusRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        //{
+        //    var res = new PluginStatusResponse { ExecResult = execResult, PluginId = request.PluginId };
+        //    if (session == null)
+        //        return res;
+        //    if (!session.AccessManager.CanGetPluginStatus())
+        //    {
+        //        res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+        //        return res;
+        //    }
+
+        //    try
+        //    {
+        //        res.Status = await _algoServer.GetBotStatusAsync(request);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        session.Logger.Error(ex, "Failed to get bot status");
+        //        res.ExecResult = CreateErrorResult(ex);
+        //    }
+        //    return res;
+        //}
+
+        //private async Task<PluginLogsResponse> GetBotLogsInternal(PluginLogsRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        //{
+        //    var res = new PluginLogsResponse { ExecResult = execResult, PluginId = request.PluginId };
+        //    if (session == null)
+        //        return res;
+        //    if (!session.AccessManager.CanGetPluginLogs())
+        //    {
+        //        res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+        //        return res;
+        //    }
+
+        //    try
+        //    {
+        //        var entries = await _algoServer.GetBotLogsAsync(request);
+        //        res.Logs.AddRange(entries);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        session.Logger.Error(ex, "Failed to get bot logs");
+        //        res.ExecResult = CreateErrorResult(ex);
+        //    }
+        //    return res;
+        //}
+
+        //private async Task<PluginAlertsResponse> GetAlertsInternal(PluginAlertsRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        //{
+        //    var res = new PluginAlertsResponse { ExecResult = execResult };
+        //    if (session == null)
+        //        return res;
+        //    if (!session.AccessManager.CanGetAlerts())
+        //    {
+        //        res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+        //        return res;
+        //    }
+
+        //    try
+        //    {
+        //        var entries = await _algoServer.GetAlertsAsync(request);
+        //        res.Alerts.AddRange(entries);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        session.Logger.Error(ex, "Failed to get alerts");
+        //        res.ExecResult = CreateErrorResult(ex);
+        //    }
+        //    return res;
+        //}
+
+        private async Task<AlgoServerApi.PluginFolderInfoResponse> GetBotFolderInfoInternal(AlgoServerApi.PluginFolderInfoRequest request, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
         {
-            var res = new PluginStatusResponse { ExecResult = execResult, PluginId = request.PluginId };
+            var res = new AlgoServerApi.PluginFolderInfoResponse { ExecResult = execResult };
             if (session == null)
                 return res;
-            if (!session.AccessManager.CanGetPluginStatus())
+            if (!session.AccessManager.CanGetBotFolderInfo(request.ToServer().FolderId))
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
                 return res;
@@ -1201,78 +1276,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                res.Status = await _algoServer.GetBotStatusAsync(request);
-            }
-            catch (Exception ex)
-            {
-                session.Logger.Error(ex, "Failed to get bot status");
-                res.ExecResult = CreateErrorResult(ex);
-            }
-            return res;
-        }
-
-        private async Task<PluginLogsResponse> GetBotLogsInternal(PluginLogsRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
-        {
-            var res = new PluginLogsResponse { ExecResult = execResult, PluginId = request.PluginId };
-            if (session == null)
-                return res;
-            if (!session.AccessManager.CanGetPluginLogs())
-            {
-                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return res;
-            }
-
-            try
-            {
-                var entries = await _algoServer.GetBotLogsAsync(request);
-                res.Logs.AddRange(entries);
-            }
-            catch (Exception ex)
-            {
-                session.Logger.Error(ex, "Failed to get bot logs");
-                res.ExecResult = CreateErrorResult(ex);
-            }
-            return res;
-        }
-
-        private async Task<PluginAlertsResponse> GetAlertsInternal(PluginAlertsRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
-        {
-            var res = new PluginAlertsResponse { ExecResult = execResult };
-            if (session == null)
-                return res;
-            if (!session.AccessManager.CanGetAlerts())
-            {
-                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return res;
-            }
-
-            try
-            {
-                var entries = await _algoServer.GetAlertsAsync(request);
-                res.Alerts.AddRange(entries);
-            }
-            catch (Exception ex)
-            {
-                session.Logger.Error(ex, "Failed to get alerts");
-                res.ExecResult = CreateErrorResult(ex);
-            }
-            return res;
-        }
-
-        private async Task<PluginFolderInfoResponse> GetBotFolderInfoInternal(PluginFolderInfoRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
-        {
-            var res = new PluginFolderInfoResponse { ExecResult = execResult };
-            if (session == null)
-                return res;
-            if (!session.AccessManager.CanGetBotFolderInfo(request.FolderId))
-            {
-                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return res;
-            }
-
-            try
-            {
-                res.FolderInfo = (await _algoServer.GetBotFolderInfo(request));
+                res.FolderInfo = (await _algoServer.GetBotFolderInfo(request.ToServer())).ToApi();
             }
             catch (Exception ex)
             {
@@ -1282,9 +1286,9 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return res;
         }
 
-        private async Task<ClearPluginFolderResponse> ClearBotFolderInternal(ClearPluginFolderRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        private async Task<AlgoServerApi.ClearPluginFolderResponse> ClearBotFolderInternal(AlgoServerApi.ClearPluginFolderRequest request, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
         {
-            var res = new ClearPluginFolderResponse { ExecResult = execResult };
+            var res = new AlgoServerApi.ClearPluginFolderResponse { ExecResult = execResult };
             if (session == null)
                 return res;
             if (!session.AccessManager.CanClearBotFolder())
@@ -1295,7 +1299,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                await _algoServer.ClearBotFolder(request);
+                await _algoServer.ClearBotFolder(request.ToServer());
             }
             catch (Exception ex)
             {
@@ -1305,9 +1309,9 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return res;
         }
 
-        private async Task<DeletePluginFileResponse> DeleteBotFileInternal(DeletePluginFileRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        private async Task<AlgoServerApi.DeletePluginFileResponse> DeleteBotFileInternal(AlgoServerApi.DeletePluginFileRequest request, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
         {
-            var res = new DeletePluginFileResponse { ExecResult = execResult };
+            var res = new AlgoServerApi.DeletePluginFileResponse { ExecResult = execResult };
             if (session == null)
                 return res;
             if (!session.AccessManager.CanDeleteBotFile())
@@ -1318,7 +1322,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                await _algoServer.DeleteBotFile(request);
+                await _algoServer.DeleteBotFile(request.ToServer());
             }
             catch (Exception ex)
             {
@@ -1328,10 +1332,10 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return res;
         }
 
-        private async Task DownloadBotFileInternal(DownloadPluginFileRequest request, IServerStreamWriter<FileTransferMsg> responseStream, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        private async Task DownloadBotFileInternal(AlgoServerApi.DownloadPluginFileRequest request, IServerStreamWriter<AlgoServerApi.FileTransferMsg> responseStream, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
         {
-            var response = new DownloadPluginFileResponse { ExecResult = execResult };
-            var transferMsg = new FileTransferMsg { Data = FileChunk.FinalChunk };
+            var response = new AlgoServerApi.DownloadPluginFileResponse { ExecResult = execResult };
+            var transferMsg = new AlgoServerApi.FileTransferMsg { Data = AlgoServerApi.FileChunk.FinalChunk };
 
             if (session == null)
             {
@@ -1339,7 +1343,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 await SendServerStreamResponse(responseStream, session, transferMsg);
                 return;
             }
-            if (!session.AccessManager.CanDownloadBotFile(request.FolderId))
+            if (!session.AccessManager.CanDownloadBotFile(request.FolderId.ToServer()))
             {
                 response.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
                 transferMsg.Header = Any.Pack(response);
@@ -1350,11 +1354,11 @@ namespace TickTrader.Algo.ServerControl.Grpc
             var chunkOffset = request.TransferSettings.ChunkOffset;
             var chunkSize = request.TransferSettings.ChunkSize;
 
-            transferMsg.Data = new FileChunk(chunkOffset);
+            transferMsg.Data = new AlgoServerApi.FileChunk(chunkOffset);
             try
             {
                 var buffer = new byte[chunkSize];
-                var packagePath = await _algoServer.GetBotFileReadPath(request);
+                var packagePath = await _algoServer.GetBotFileReadPath(request.ToServer());
                 using (var stream = File.Open(packagePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
                     stream.Seek((long)chunkSize * chunkOffset, SeekOrigin.Begin);
@@ -1371,19 +1375,19 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 session.Logger.Error(ex, "Failed to download bot file");
                 response.ExecResult = CreateErrorResult(ex);
             }
-            transferMsg.Data = FileChunk.FinalChunk;
+            transferMsg.Data = AlgoServerApi.FileChunk.FinalChunk;
             transferMsg.Header = Any.Pack(response);
             await SendServerStreamResponse(responseStream, session, transferMsg);
         }
 
-        private async Task<UploadPluginFileResponse> UploadBotFileInternal(IAsyncStreamReader<FileTransferMsg> requestStream, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
+        private async Task<AlgoServerApi.UploadPluginFileResponse> UploadBotFileInternal(IAsyncStreamReader<AlgoServerApi.FileTransferMsg> requestStream, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
         {
-            var res = new UploadPluginFileResponse { ExecResult = execResult };
+            var res = new AlgoServerApi.UploadPluginFileResponse { ExecResult = execResult };
             if (session == null)
                 return res;
             if (!session.AccessManager.CanUploadBotFile())
             {
-                res.ExecResult = CreateNotAllowedResult(session, typeof(UploadPluginFileRequest).Name);
+                res.ExecResult = CreateNotAllowedResult(session, typeof(AlgoServerApi.UploadPluginFileRequest).Name);
                 return res;
             }
 
@@ -1394,12 +1398,12 @@ namespace TickTrader.Algo.ServerControl.Grpc
             }
 
             var transferMsg = GetClientStreamRequest(requestStream, session);
-            if (transferMsg == null || !transferMsg.Header.Is(UploadPluginFileRequest.Descriptor))
+            if (transferMsg == null || !transferMsg.Header.Is(AlgoServerApi.UploadPluginFileRequest.Descriptor))
             {
-                res.ExecResult = CreateRejectResult($"Expected {nameof(UploadPluginFileRequest)} header, but received '{transferMsg.Header.TypeUrl}'");
+                res.ExecResult = CreateRejectResult($"Expected {nameof(AlgoServerApi.UploadPluginFileRequest)} header, but received '{transferMsg.Header.TypeUrl}'");
                 return res;
             }
-            var request = transferMsg.Header.Unpack<UploadPluginFileRequest>();
+            var request = transferMsg.Header.Unpack<AlgoServerApi.UploadPluginFileRequest>();
             _messageFormatter.LogClientResponse(session?.Logger, request);
 
             try
@@ -1408,7 +1412,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 var chunkSize = request.TransferSettings.ChunkSize;
 
                 var buffer = new byte[chunkSize];
-                var filePath = await _algoServer.GetBotFileWritePath(request);
+                var filePath = await _algoServer.GetBotFileWritePath(request.ToServer());
                 string oldFilePath = null;
                 if (File.Exists(filePath))
                 {

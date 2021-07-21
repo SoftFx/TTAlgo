@@ -1,0 +1,120 @@
+﻿syntax = "proto3";
+
+package ticktrader.algo.server.publicApi;
+
+option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/any.proto";
+import "requests/base.request.proto";
+
+
+message Feed {
+    enum MarketSide {
+        BID = 0;
+        ASK = 1;
+    }
+
+    enum Timeframe {
+        S1 = 0;
+        S10 = 1;
+        M1 = 2;
+        M5 = 3;
+        M15 = 4;
+        M30 = 5;
+        H1 = 6;
+        H4 = 7;
+        D = 8;
+        W = 9;
+        M_N = 10;
+        TICKS = 11;
+        TICKS_LEVEL2 = 12;
+        TICKS_VWAP = 13;
+    }
+}
+
+message PluginKey {
+    string package_id = 1;
+    string descriptor_id = 2;
+}
+
+message ReductionKey {
+    string package_id = 1;
+    string descriptor_id = 2;
+}
+
+message MappingKey {
+    ReductionKey primary_reduction = 1;
+    ReductionKey secondary_reduction = 2;
+}
+
+message SymbolConfig {
+    enum SymbolOrigin {
+        ONLINE = 0;
+        CUSTOM = 1;
+        TOKEN = 2;
+    }
+
+    string name = 1;
+    SymbolOrigin origin = 2;
+}
+
+message PluginPermissions {
+    bool trade_allowed = 1;
+    bool isolated = 2;
+}
+
+message PluginConfig {
+    PluginKey key = 1;
+    Feed.Timeframe timeframe = 2;
+    Feed.Timeframe model_timeframe = 3;
+    SymbolConfig main_symbol = 4;
+    MappingKey selected_mapping = 5;
+    string instance_id = 6;
+    PluginPermissions permissions = 7;
+    repeated google.protobuf.Any properties = 8;
+}
+
+message AddPluginRequest {
+    string account_id = 1;
+    PluginConfig config = 2;
+}
+
+message AddPluginResponse {
+    RequestResult exec_result = 101;
+}
+
+message RemovePluginRequest {
+    google.protobuf.StringValue plugin_id = 1;
+    bool clean_log = 2;
+    bool clean_algo_data = 3;
+}
+
+message RemovePluginResponse {
+    RequestResult exec_result = 101;
+}
+
+message StartPluginRequest {
+    google.protobuf.StringValue plugin_id = 1;
+}
+
+message StartPluginResponse {
+    RequestResult exec_result = 101;
+}
+
+message StopPluginRequest {
+    google.protobuf.StringValue plugin_id = 1;
+}
+
+message StopPluginResponse {
+    RequestResult exec_result = 101;
+}
+
+message ChangePluginConfigRequest {
+    google.protobuf.StringValue plugin_id = 1;
+    PluginConfig new_config = 2;
+}
+
+message ChangePluginConfigResponse {
+    RequestResult exec_result = 101;
+}

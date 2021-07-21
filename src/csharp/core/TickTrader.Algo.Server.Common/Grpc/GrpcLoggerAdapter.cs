@@ -1,7 +1,7 @@
 ﻿using System;
 using Grpc.Core.Logging;
 
-namespace TickTrader.Algo.ServerControl.Grpc
+namespace TickTrader.Algo.Server.Common.Grpc
 {
     public class GrpcLoggerAdapter : ILogger
     {

@@ -7,9 +7,9 @@ using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Domain.ServerControl;
 
-namespace TickTrader.Algo.ServerControl.Grpc
+namespace TickTrader.Algo.Server.Common
 {
-    internal class MessageFormatter
+    public class MessageFormatter
     {
         private static readonly string[] ExcludedFields = new[] { "password", "binary" };
         private static readonly string[] EscapedMessages = new[] { "chunk" };
@@ -21,9 +21,9 @@ namespace TickTrader.Algo.ServerControl.Grpc
         public bool LogMessages { get; set; }
 
 
-        public MessageFormatter()
+        public MessageFormatter(FileDescriptor serviceDescriptor)
         {
-            _formatter = new JsonFormatter(new JsonFormatter.Settings(true, TypeRegistry.FromFiles(AlgoServerReflection.Descriptor)));
+            _formatter = new JsonFormatter(new JsonFormatter.Settings(true, TypeRegistry.FromFiles(serviceDescriptor))); //передача
         }
 
 

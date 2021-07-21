@@ -1,0 +1,58 @@
+﻿syntax = "proto3";
+
+package ticktrader.algo.server.publicApi;
+
+option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
+
+
+import "google/protobuf/any.proto";
+
+import "requests/account.management.proto";
+import "requests/connection.management.proto";
+import "requests/package.management.proto";
+import "requests/plugin.management.proto";
+import "requests/plugin.files.management.proto";
+
+
+
+message FileChunk {
+    int32 id = 1;
+    bytes binary = 2;
+    bool is_final = 3;
+}
+
+message FileTransferMsg {
+    google.protobuf.Any header = 1;
+    FileChunk data = 2;
+}
+
+
+service AlgoServerPublic
+{
+    rpc Login(LoginRequest) returns (LoginResponse);
+    rpc Logout(LogoutRequest) returns (LogoutResponse);
+
+    rpc GetAccountMetadata(AccountMetadataRequest) returns (AccountMetadataResponse);
+
+    rpc AddAccount(AddAccountRequest) returns (AddAccountResponse);
+    rpc RemoveAccount(RemoveAccountRequest) returns (RemoveAccountResponse);
+    rpc ChangeAccount(ChangeAccountRequest) returns (ChangeAccountResponse);
+    rpc TestAccount(TestAccountRequest) returns (TestAccountResponse);
+    rpc TestAccountCreds(TestAccountCredsRequest) returns (TestAccountCredsResponse);
+
+    rpc UploadPackage(stream FileTransferMsg) returns (UploadPackageResponse);
+    rpc RemovePackage(RemovePackageRequest) returns (RemovePackageResponse);
+    rpc DownloadPackage(DownloadPackageRequest) returns (stream FileTransferMsg);
+
+    rpc AddPlugin(AddPluginRequest) returns (AddPluginResponse);
+    rpc RemovePlugin(RemovePluginRequest) returns (RemovePluginResponse);
+    rpc StartPlugin(StartPluginRequest) returns (StartPluginResponse);
+    rpc StopPlugin(StopPluginRequest) returns (StopPluginResponse);
+    rpc ChangePluginConfig(ChangePluginConfigRequest) returns (ChangePluginConfigResponse);
+
+    rpc GetPluginFolderInfo(PluginFolderInfoRequest) returns (PluginFolderInfoResponse);
+    rpc ClearPluginFolder(ClearPluginFolderRequest) returns (ClearPluginFolderResponse);
+    rpc DeletePluginFile(DeletePluginFileRequest) returns (DeletePluginFileResponse);
+    rpc DownloadPluginFile(DownloadPluginFileRequest) returns (stream FileTransferMsg);
+    rpc UploadPluginFile(stream FileTransferMsg) returns (UploadPluginFileResponse);
+}

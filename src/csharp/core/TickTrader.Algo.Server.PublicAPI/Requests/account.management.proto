@@ -1,0 +1,103 @@
+﻿syntax = "proto3";
+
+package ticktrader.algo.server.publicApi;
+
+option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
+
+import "requests/plugin.management.proto";
+import "requests/base.request.proto";
+import "google/protobuf/wrappers.proto";
+
+message AccountCreds {
+    string auth_scheme = 1;
+    map<string, google.protobuf.StringValue> secret = 2;
+}
+
+message ConnectionErrorInfo {
+    enum ErrorCode {
+        NO_CONNECTION_ERROR = 0;
+        UNKNOWN_CONNECTION_ERROR = 1;
+        NETWORK_ERROR = 2;
+        TIMEOUT = 3;
+        BLOCKED_ACCOUNT = 4;
+        CLIENT_INITIATED = 5;
+        INVALID_CREDENTIALS = 6;
+        SLOW_CONNECTION = 7;
+        SERVER_ERROR = 8;
+        LOGIN_DELETED = 9;
+        SERVER_LOGOUT = 10;
+        CANCELED = 11;
+        REJECTED_BY_SERVER = 12;
+    }
+
+    ErrorCode code = 1;
+    google.protobuf.StringValue text_message = 2;
+}
+
+message AccountMetadataRequest {
+    string account_id = 1;
+}
+
+message AccountMetadataResponse {
+    ConnectionErrorInfo error_info = 1;
+    AccountMetadataInfo account_metadata = 2;
+
+    RequestResult exec_result = 101;
+}
+
+message AccountMetadataInfo {
+    string account_id = 1;
+    repeated SymbolConfig symbols = 2;
+    SymbolConfig default_symbol = 3;
+}
+
+message AddAccountRequest {
+    string server = 1;
+    string user_id = 2;
+    AccountCreds creds = 3;
+    google.protobuf.StringValue display_name = 4;
+}
+
+message AddAccountResponse {
+    ticktrader.algo.server.publicApi.RequestResult exec_result = 101;
+}
+
+message RemoveAccountRequest {
+    string account_id = 1;
+}
+
+message RemoveAccountResponse {
+    ticktrader.algo.server.publicApi.RequestResult exec_result = 101;
+}
+
+message ChangeAccountRequest {
+    string account_id = 1;
+    AccountCreds creds = 2;
+    google.protobuf.StringValue display_name = 3;
+}
+
+message ChangeAccountResponse {
+    ticktrader.algo.server.publicApi.RequestResult exec_result = 101;
+}
+
+message TestAccountRequest {
+    string account_id = 1;
+}
+
+message TestAccountResponse {
+    ConnectionErrorInfo error_info = 1;
+
+    ticktrader.algo.server.publicApi.RequestResult exec_result = 101;
+}
+
+message TestAccountCredsRequest {
+    string server = 1;
+    string user_id = 2;
+    AccountCreds creds = 3;
+}
+
+message TestAccountCredsResponse {
+    ConnectionErrorInfo error_info = 1;
+
+    ticktrader.algo.server.publicApi.RequestResult exec_result = 101;
+}

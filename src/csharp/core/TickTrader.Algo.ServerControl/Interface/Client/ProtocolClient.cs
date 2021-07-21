@@ -1,20 +1,16 @@
 ﻿using Machinarium.State;
 using NLog;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using TickTrader.Algo.Domain;
-using TickTrader.Algo.Domain.ServerControl;
+using TickTrader.Algo.Server.Common;
+using TickTrader.Algo.Server.PublicAPI;
 
 namespace TickTrader.Algo.ServerControl
 {
-    public enum ClientStates { Offline, Online, Connecting, Disconnecting, LoggingIn, LoggingOut, Initializing, Deinitializing };
-
-
     public enum ClientEvents { Started, Connected, Disconnected, ConnectionError, LoggedIn, LoggedOut, LoginReject, Initialized, Deinitialized, LogoutRequest }
 
 
-    public abstract class ProtocolClient : IAlgoServerClient
+    public abstract class ProtocolClient
     {
         public const int DefaultRequestTimeout = 10;
 
@@ -37,11 +33,6 @@ namespace TickTrader.Algo.ServerControl
         public AccessManager AccessManager { get; private set; }
 
 
-        IVersionSpec IAlgoServerClient.VersionSpec => VersionSpec;
-
-        IAccessManager IAlgoServerClient.AccessManager => AccessManager;
-
-
         public event Action Connecting = delegate { };
         public event Action Connected = delegate { };
         public event Action Disconnecting = delegate { };
@@ -53,7 +44,7 @@ namespace TickTrader.Algo.ServerControl
             AlgoClient = algoClient;
 
             VersionSpec = new VersionSpec();
-            AccessManager = new AccessManager(ClientClaims.Types.AccessLevel.Anonymous);
+            AccessManager = new AccessManager(Domain.ServerControl.ClientClaims.Types.AccessLevel.Anonymous);
 
             StateMachine = new StateMachine<ClientStates>(ClientStates.Offline);
 
@@ -158,12 +149,12 @@ namespace TickTrader.Algo.ServerControl
             StateMachine.PushEvent(ClientEvents.ConnectionError);
         }
 
-        protected void OnLogin(int serverMajorVersion, int serverMinorVersion, ClientClaims.Types.AccessLevel accessLevel)
+        protected void OnLogin(int serverMajorVersion, int serverMinorVersion, Domain.ServerControl.ClientClaims.Types.AccessLevel accessLevel)
         {
             VersionSpec = new VersionSpec(serverMinorVersion);
             AccessManager = new AccessManager(accessLevel);
             AlgoClient.AccessLevelChanged();
-            Logger.Info($"Client version - {VersionSpec.LatestVersion}; Server version - {serverMajorVersion}.{serverMinorVersion}");
+            Logger.Info($"Client version - {ApiVersionSpec.LatestVersion}; Server version - {serverMajorVersion}.{serverMinorVersion}");
             Logger.Info($"Current version set to {VersionSpec.CurrentVersionStr}");
             StateMachine.PushEvent(ClientEvents.LoggedIn);
         }
@@ -177,7 +168,7 @@ namespace TickTrader.Algo.ServerControl
         protected void OnLogout(string reason)
         {
             //LastError = reason;
-            AccessManager = new AccessManager(ClientClaims.Types.AccessLevel.Anonymous);
+            AccessManager = new AccessManager(Domain.ServerControl.ClientClaims.Types.AccessLevel.Anonymous);
             AlgoClient.AccessLevelChanged();
             StateMachine.PushEvent(ClientEvents.LoggedOut);
         }
@@ -261,66 +252,5 @@ namespace TickTrader.Algo.ServerControl
         }
 
         #endregion Connection routine
-
-
-        #region Requests
-
-        public abstract Task<ApiMetadataInfo> GetApiMetadata();
-
-        public abstract Task<MappingCollectionInfo> GetMappingsInfo();
-
-        public abstract Task<SetupContextInfo> GetSetupContext();
-
-        public abstract Task<AccountMetadataInfo> GetAccountMetadata(AccountMetadataRequest request);
-
-        public abstract Task<List<PluginModelInfo>> GetPluginList();
-
-        public abstract Task AddPlugin(AddPluginRequest request);
-
-        public abstract Task RemovePlugin(RemovePluginRequest request);
-
-        public abstract Task StartPlugin(StartPluginRequest request);
-
-        public abstract Task StopPlugin(StopPluginRequest request);
-
-        public abstract Task ChangePluginConfig(ChangePluginConfigRequest request);
-
-        public abstract Task<List<AccountModelInfo>> GetAccountList();
-
-        public abstract Task AddAccount(AddAccountRequest request);
-
-        public abstract Task RemoveAccount(RemoveAccountRequest request);
-
-        public abstract Task ChangeAccount(ChangeAccountRequest request);
-
-        public abstract Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request);
-
-        public abstract Task<ConnectionErrorInfo> TestAccountCreds(TestAccountCredsRequest request);
-
-        public abstract Task<List<PackageInfo>> GetPackageList();
-
-        public abstract Task UploadPackage(UploadPackageRequest request, string srcPath, IFileProgressListener progressListener);
-
-        public abstract Task RemovePackage(RemovePackageRequest request);
-
-        public abstract Task DownloadPackage(DownloadPackageRequest request, string dstPath, IFileProgressListener progressListener);
-
-        public abstract Task<string> GetPluginStatus(PluginStatusRequest request);
-
-        public abstract Task<LogRecordInfo[]> GetPluginLogs(PluginLogsRequest request);
-
-        public abstract Task<AlertRecordInfo[]> GetAlerts(PluginAlertsRequest request);
-
-        public abstract Task<PluginFolderInfo> GetPluginFolderInfo(PluginFolderInfoRequest request);
-
-        public abstract Task ClearPluginFolder(ClearPluginFolderRequest request);
-
-        public abstract Task DeletePluginFile(DeletePluginFileRequest request);
-
-        public abstract Task DownloadPluginFile(DownloadPluginFileRequest request, string dstPath, IFileProgressListener progressListener);
-
-        public abstract Task UploadPluginFile(UploadPluginFileRequest request, string srcPath, IFileProgressListener progressListener);
-
-        #endregion Requests
     }
 }

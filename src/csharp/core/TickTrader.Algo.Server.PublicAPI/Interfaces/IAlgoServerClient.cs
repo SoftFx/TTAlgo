@@ -1,8 +1,6 @@
 ﻿using System.Threading.Tasks;
-using TickTrader.Algo.Domain;
-using TickTrader.Algo.Domain.ServerControl;
 
-namespace TickTrader.Algo.ServerControl
+namespace TickTrader.Algo.Server.PublicAPI
 {
     public interface IAlgoServerClient
     {
@@ -29,7 +27,7 @@ namespace TickTrader.Algo.ServerControl
         Task<AccountMetadataInfo> GetAccountMetadata(AccountMetadataRequest request);
 
         // to be removed
-        Task<AlertRecordInfo[]> GetAlerts(PluginAlertsRequest request);
+        //Task<AlertRecordInfo[]> GetAlerts(PluginAlertsRequest request);
 
         // replacement
         //Task SubscribeToAlertList(AlertListSubscribeRequest request); // request params: Timestamp from
@@ -54,11 +52,11 @@ namespace TickTrader.Algo.ServerControl
 
         #region Package Management
 
-        Task UploadPackage(UploadPackageRequest request, string srcPath, IFileProgressListener progressListener);
+        //Task UploadPackage(UploadPackageRequest request, string srcPath, IFileProgressListener progressListener);
 
         Task RemovePackage(RemovePackageRequest request);
 
-        Task DownloadPackage(DownloadPackageRequest request, string dstPath, IFileProgressListener progressListener);
+        //Task DownloadPackage(DownloadPackageRequest request, string dstPath, IFileProgressListener progressListener);
 
         #endregion Package Management
 
@@ -76,13 +74,13 @@ namespace TickTrader.Algo.ServerControl
         Task ChangePluginConfig(ChangePluginConfigRequest request);
 
         // to be removed 
-        Task<string> GetPluginStatus(PluginStatusRequest request);
+        //Task<string> GetPluginStatus(PluginStatusRequest request);
 
         // replacement
         //Task SubscribeToPluginStatus(PluginStatusSubscribeRequest request); // request params: string pluginId
 
         // to be removed
-        Task<LogRecordInfo[]> GetPluginLogs(PluginLogsRequest request);
+        //Task<LogRecordInfo[]> GetPluginLogs(PluginLogsRequest request);
 
         // replacement
         //Task SubscribeToPluginLogs(PluginLogsSubscribeRequest request); // request params: string pluginId
@@ -98,9 +96,9 @@ namespace TickTrader.Algo.ServerControl
 
         Task DeletePluginFile(DeletePluginFileRequest request);
 
-        Task DownloadPluginFile(DownloadPluginFileRequest request, string dstPath, IFileProgressListener progressListener);
+        //Task DownloadPluginFile(DownloadPluginFileRequest request, string dstPath, IFileProgressListener progressListener);
 
-        Task UploadPluginFile(UploadPluginFileRequest request, string srcPath, IFileProgressListener progressListener);
+        //Task UploadPluginFile(UploadPluginFileRequest request, string srcPath, IFileProgressListener progressListener);
 
         #endregion Plugin Files Management
     }

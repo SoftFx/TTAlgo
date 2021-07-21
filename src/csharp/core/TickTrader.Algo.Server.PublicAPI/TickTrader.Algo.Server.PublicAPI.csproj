@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Requests\account.management.proto" />
+    <None Remove="Requests\base.request.proto" />
+    <None Remove="Requests\connection.management.proto" />
+    <None Remove="Requests\package.management.proto" />
+    <None Remove="Requests\plugin.files.management.proto" />
+    <None Remove="Requests\plugin.management.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.15.5" />
+    <PackageReference Include="Grpc" Version="2.36.1" />
+    <PackageReference Include="Grpc.Tools" Version="2.36.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="NLog" Version="4.7.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\lib\Machinarium\Machinarium.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.Domain\TickTrader.Algo.Domain.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.Server.Common\TickTrader.Algo.Server.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="Requests\base.request.proto" GrpcServices="Client" />
+    <Protobuf Include="Requests\account.management.proto" GrpcServices="Client" />
+    <Protobuf Include="Requests\connection.management.proto" GrpcServices="Client" />
+    <Protobuf Include="Requests\package.management.proto" GrpcServices="Client" />
+    <Protobuf Include="Requests\plugin.files.management.proto" GrpcServices="Client" />
+    <Protobuf Include="Requests\plugin.management.proto" GrpcServices="Client" />
+    <Protobuf Include="Services\algo.server.publicAPI.proto" GrpcServices="Both" />
+  </ItemGroup>
+
+</Project>

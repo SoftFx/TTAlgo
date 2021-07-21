@@ -4,6 +4,7 @@ using NLog;
 using System;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain.ServerControl;
+using TickTrader.Algo.Server.Common;
 
 namespace TickTrader.Algo.ServerControl.Grpc
 {
@@ -89,7 +90,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
         private async Task SetupUpdateStream(IServerStreamWriter<UpdateInfo> updateStream)
         {
             if (_updateStreamTaskSrc != null)
-                throw new AlgoException($"Session {_sessionId} already has opened update stream");
+                throw new AlgoServerException($"Session {_sessionId} already has opened update stream");
 
             _updateStream = updateStream;
             _updateStreamTaskSrc = new TaskCompletionSource<bool>();

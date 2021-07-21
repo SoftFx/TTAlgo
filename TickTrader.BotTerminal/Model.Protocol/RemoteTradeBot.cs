@@ -180,7 +180,7 @@ namespace TickTrader.BotTerminal
                     Journal.Add(logs.Select(this.Convert).ToList());
                 }
             }
-            catch (Algo.ServerControl.AlgoException baex)
+            catch (Algo.ServerControl.AlgoServerException baex)
             {
                 _logger.Error($"Failed to get bot logs {InstanceId} at {_agent.Name}: {baex.Message}");
             }
