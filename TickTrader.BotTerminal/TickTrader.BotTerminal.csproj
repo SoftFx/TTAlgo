@@ -8,7 +8,6 @@
     <PlatformTarget>x64</PlatformTarget>
     <MapFileExtensions>true</MapFileExtensions>
     <UseApplicationTrust>false</UseApplicationTrust>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <UseWPF>true</UseWPF>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
     <ApplicationIcon>terminal.ico</ApplicationIcon>
