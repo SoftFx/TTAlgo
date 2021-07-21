@@ -7,6 +7,7 @@ using System.Reflection;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 using System.Threading.Tasks;
+using TickTrader.Algo.Domain.ServerControl;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
 {
@@ -53,27 +54,18 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             };
         }
 
-        public static async Task<TradeBotLogDto> ToDto(this IBotLog botlog)
-        {
-            return new TradeBotLogDto
-            {
-                Snapshot = (await botlog.GetMessages()).OrderByDescending(le => le.TimeUtc).Select(e => e.ToDto()).ToArray(),
-                Files = (await botlog.GetFiles()).Select(fm => fm.ToDto()).ToArray()
-            };
-        }
-
-        public static FileDto ToDto(this IFile file)
+        public static FileDto ToDto(this PluginFileInfo file)
         {
             return new FileDto { Name = file.Name, Size = file.Size };
         }
 
-        public static LogEntryDto ToDto(this ILogEntry entry)
+        public static LogEntryDto ToDto(this PluginLogRecord entry)
         {
             return new LogEntryDto
             {
                 Time = entry.TimeUtc.ToDateTime(),
                 Type = entry.Severity.ToString(),
-                Message = entry.Message
+                Message = entry.Message,
             };
         }
 

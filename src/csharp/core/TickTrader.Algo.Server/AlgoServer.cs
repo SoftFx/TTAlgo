@@ -14,6 +14,7 @@ namespace TickTrader.Algo.Server
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<AlgoServer>();
 
         private readonly RpcServer _rpcServer;
+        private readonly AlgoServerSettings _settings;
 
 
         public string Address { get; } = "127.0.0.1";
@@ -24,6 +25,8 @@ namespace TickTrader.Algo.Server
 
         public ServerBusModel EventBus { get; }
 
+        public AlertManagerModel Alerts { get; }
+
         public PackageStorage PkgStorage { get; } = new PackageStorage();
 
         public AccountManagerModel Accounts { get; }
@@ -32,19 +35,26 @@ namespace TickTrader.Algo.Server
 
         public PluginManagerModel Plugins { get; }
 
+        public PluginFileManagerModel PluginFiles { get; }
+
 
         internal ServerStateModel SavedState { get; }
 
 
-        public AlgoServer()
+        public AlgoServer(AlgoServerSettings settings)
         {
-            Env = new EnvService(AppDomain.CurrentDomain.BaseDirectory);
+            _settings = settings;
+
+            Env = new EnvService(settings.DataFolder);
 
             EventBus = new ServerBusModel(ServerBusActor.Create());
+            Alerts = new AlertManagerModel(AlertManager.Create());
 
             Accounts = new AccountManagerModel(AccountManager.Create(this));
             Runtimes = new RuntimeManagerModel(RuntimeManager.Create(this));
             Plugins = new PluginManagerModel(PluginManager.Create(this));
+
+            PluginFiles = new PluginFileManagerModel(PluginFileManager.Create(this));
 
             SavedState = new ServerStateModel(ServerStateManager.Create(Env.ServerStateFilePath));
 
@@ -54,7 +64,17 @@ namespace TickTrader.Algo.Server
 
         public async Task Start()
         {
+            PkgStorage.PackageUpdated.Subscribe(upd => EventBus.SendUpdate(upd));
+
+            foreach (var assembly in _settings.PkgStorage.Assemblies)
+                await PkgStorage.RegisterAssemblyAsPackage(assembly);
+            foreach (var loc in _settings.PkgStorage.Locations)
+                await PkgStorage.RegisterRepositoryLocation(loc.LocationId, loc.Path, loc.LocationId == _settings.PkgStorage.UploadLocationId);
+
+            await PkgStorage.WaitLoaded();
+
             await _rpcServer.Start(Address, 0);
+            _logger.Info($"Started AlgoServer internal API on port {BoundPort}");
 
             await Accounts.Restore();
 
@@ -90,9 +110,9 @@ namespace TickTrader.Algo.Server
             return await runtime.CreateExecutor(instanceId, config);
         }
 
-        public async Task LoadSavedData(ServerSavedState serverState)
+        public Task LoadSavedData(ServerSavedState serverState)
         {
-            await SavedState.LoadSavedState(serverState);
+            return SavedState.LoadSavedState(serverState);
         }
 
         #region IRpcHost implementation

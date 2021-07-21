@@ -9,7 +9,8 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
 {
     public class SymbolMarketNode : ISymbolCalculator, IProfitCalculationInfo, IMarginCalculationInfo
     {
-        private readonly int _leverage;
+        private readonly IMarketStateAccountInfo _account;
+
 
         public ISideNode Bid { get; }
 
@@ -23,7 +24,7 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
 
         public SymbolMarketNode(IMarketStateAccountInfo acc, ISymbolInfo smb)
         {
-            _leverage = smb.MarginMode.IsLeverageMode() ? acc.Leverage : 1;
+            _account = acc;
 
             SymbolInfo = smb;
 
@@ -52,7 +53,7 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
 
         SymbolInfo ISymbolCalculator.SymbolInfo => (SymbolInfo)SymbolInfo;
 
-        int IMarginCalculationInfo.Leverage => _leverage;
+        int IMarginCalculationInfo.Leverage => SymbolInfo.MarginMode.IsLeverageMode() ? _account.Leverage : 1;
 
         double IMarginCalculationInfo.Factor => SymbolInfo.MarginFactor;
 

@@ -8,7 +8,7 @@ import "google/protobuf/wrappers.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/any.proto";
 
-import "runtime.feed.proto";
+import "common.proto";
 
 message AttachRuntimeRequest {
     string id = 1;
@@ -30,82 +30,6 @@ message RuntimeConfig {
     string package_id = 3;
 }
 
-message PluginLogRecord {
-    enum LogSeverity {
-        INFO = 0;
-        ERROR = 1;
-        TRADE = 2;
-        TRADE_SUCCESS = 3;
-        TRADE_FAIL = 4;
-        CUSTOM = 5;
-        ALERT = 6;
-    }
-
-    google.protobuf.Timestamp time_utc = 1;
-    LogSeverity severity = 2;
-    google.protobuf.StringValue message = 3;
-    google.protobuf.StringValue details = 4;
-}
-
-message PluginStatusUpdate {
-    string plugin_id = 1;
-    google.protobuf.StringValue message = 2;
-}
-
-message PluginError {
-    string message = 1;
-    string exception_type = 2;
-    string stacktrace = 3;
-}
-
-message PluginStopped { }
-
-message OutputPoint {
-    google.protobuf.Timestamp time = 1;
-    int32 index = 2;
-    google.protobuf.Any value = 3;
-}
-
-message OutputPointRange {
-    repeated OutputPoint points = 1;
-}
-
-message DataSeriesUpdate {
-    enum Type {
-        OUTPUT = 0;
-        SYMBOL_RATE = 1;
-        NAMED_STREAM = 2;
-    }
-
-    enum UpdateAction {
-        APPEND = 0;
-        UPDATE = 1;
-    }
-
-    Type series_type = 1;
-    google.protobuf.StringValue series_id = 2;
-    UpdateAction update_action = 3;
-    google.protobuf.Any value = 4;
-    int32 buffer_truncated_by = 5;
-}
-
-message MarkerInfo {
-    enum IconType {
-        CIRCLE = 0;
-        UP_ARROW = 1;
-        DOWN_ARROW = 2;
-        UP_TRIANGLE = 3;
-        DOWN_TRIANGLE = 4;
-        DIAMOND = 5;
-        SQUARE = 6;
-    }
-
-    double y = 1;
-    google.protobuf.StringValue display_text = 2;
-    IconType icon = 3;
-    uint32 color_argb = 4;
-}
-
 message StartExecutorRequest { // void response
     string executor_id = 1;
 }
@@ -117,15 +41,16 @@ message StopExecutorRequest { // void response
 message ExecutorConfigRequest { }
 
 message ExecutorConfig {
-    string working_directory = 1;
-    bool is_logging_enabled = 2;
-    google.protobuf.StringValue log_directory = 3;
-    google.protobuf.Any plugin_config = 4;
-    google.protobuf.Any feed_strategy_config = 5;
-    google.protobuf.Any buffer_strategy_config = 6;
-    google.protobuf.Any invoke_strategy_config = 7;
-    google.protobuf.Any main_series = 8;
-    string account_id = 9;
+    string id = 1;
+    string working_directory = 2;
+    bool is_logging_enabled = 3;
+    google.protobuf.StringValue log_directory = 4;
+    google.protobuf.Any plugin_config = 5;
+    google.protobuf.Any feed_strategy_config = 6;
+    google.protobuf.Any buffer_strategy_config = 7;
+    google.protobuf.Any invoke_strategy_config = 8;
+    google.protobuf.Any main_series = 9;
+    string account_id = 10;
 }
 
 message BarStratefyConfig {
@@ -145,26 +70,11 @@ message TimeSpanStrategyConfig {
 
 message PriorityInvokeStrategyConfig { }
 
-message PackagePathRequest {
-    string name = 1;
-    int32 location = 2;
-}
-
-message PackagePathResponse {
-    string path = 1;
-}
-
-message PackageInfoRequest { } // PackageInfo
-
 message ConnectionInfoRequest { }
 
 message ConnectionInfoResponse {
     string connection_info = 1;
 }
-
-message AccountDisconnectNotification { }
-
-message AccountReconnectNotification { }
 
 message AttachAccountRequest { // void response
     string account_id = 1;
@@ -172,4 +82,23 @@ message AttachAccountRequest { // void response
 
 message DetachAccountRequest { // void response
     string account_id = 1;
+}
+
+message ExecutorStateUpdate {
+    string executor_id = 1;
+    Executor.State old_state = 2;
+    Executor.State new_state = 3;
+}
+
+message ExecutorErrorMsg {
+    string id = 1;
+    string message = 2;
+    string exception_type = 3;
+    string stacktrace = 4;
+}
+
+message ConnectionStateUpdate {
+    string account_id = 1;
+    Account.ConnectionState old_state = 2;
+    Account.ConnectionState new_state = 3;
 }

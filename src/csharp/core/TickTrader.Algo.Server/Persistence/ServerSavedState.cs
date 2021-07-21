@@ -7,9 +7,9 @@ namespace TickTrader.Algo.Server.Persistence
     {
         public string Version { get; set; }
 
-        public Dictionary<string, AccountSavedState> Accounts { get; private set; } = new Dictionary<string, AccountSavedState>();
+        public Dictionary<string, AccountSavedState> Accounts { get; set; } = new Dictionary<string, AccountSavedState>();
 
-        public Dictionary<string, PluginSavedState> Plugins { get; private set; } = new Dictionary<string, PluginSavedState>();
+        public Dictionary<string, PluginSavedState> Plugins { get; set; } = new Dictionary<string, PluginSavedState>();
 
 
         public ServerSavedState Clone()

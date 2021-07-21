@@ -22,5 +22,13 @@ namespace TickTrader.Algo.Server
         public static Exception InvalidPluginConfig(string pluginId) => new AlgoException($"Plugin '{pluginId}' has invalid config");
 
         public static Exception PluginIsRunning(string pluginId) => new AlgoException($"Plugin '{pluginId}' is running");
+
+        public static Exception RuntimeNotStarted(string runtimeId) => new AlgoException($"Runtime '{runtimeId}' is not started");
+
+        public static Exception PluginFileNotFound(string fileName) => new AlgoException($"File with name '{fileName}' not found");
+
+        public static Exception PluginLogsFolderUploadForbidden() => new AlgoException("Uploading files to plugin logs folder is not allowed");
+
+        public static Exception PluginFileIncorrectName(string fileName) => new AlgoException($"Incorrect file name '{fileName}'");
     }
 }

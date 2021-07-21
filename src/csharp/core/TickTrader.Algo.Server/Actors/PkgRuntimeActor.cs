@@ -87,7 +87,7 @@ namespace TickTrader.Algo.Server
 
                 if (connected)
                 {
-                    await _proxy.Launch();
+                    await _proxy.Start(new StartRuntimeRequest());
 
                     _startTaskSrc.TrySetResult(true);
                     _logger.Debug("Started");
@@ -122,7 +122,7 @@ namespace TickTrader.Algo.Server
                 await _startTaskSrc.Task;
                 _startTaskSrc = null;
 
-                var finished = await _proxy.Stop().WaitAsync(ShutdownTimeout);
+                var finished = await _proxy.Stop(new StopRuntimeRequest()).WaitAsync(ShutdownTimeout);
                 if (!finished)
                     _logger.Error("No response for stop request. Considering process hanged");
 
@@ -193,14 +193,18 @@ namespace TickTrader.Algo.Server
 
         private async Task StartExecutor(StartExecutorRequest request)
         {
-            await _proxy.StartExecutor(request.ExecutorId);
+            await WhenStarted();
+
+            await _proxy.StartExecutor(request);
             _startedExecutorsCnt++;
             _logger.Debug($"Executor {request.ExecutorId} started. Have {_startedExecutorsCnt} active executors");
         }
 
-        private Task StopExecutor(StopExecutorRequest request)
+        private async Task StopExecutor(StopExecutorRequest request)
         {
-            return _proxy.StopExecutor(request.ExecutorId);
+            await WhenStarted();
+
+            await _proxy.StopExecutor(request);
         }
 
         private PluginInfo GetPluginInfo(GetPluginInfoRequest request)
@@ -238,14 +242,14 @@ namespace TickTrader.Algo.Server
             var id = msg.ExecutorId;
             var payload = msg.Payload;
 
-            if (payload.Is(PluginError.Descriptor))
+            if (payload.Is(ExecutorErrorMsg.Descriptor))
                 PluginErrorHandler(id, payload);
 
             if (!_executorsMap.TryGetValue(id, out var executor))
                 _logger.Error($"Executor {id} not found. Notification type {msg.Payload.TypeUrl}");
 
-            if (payload.Is(PluginStopped.Descriptor))
-                PluginStoppedHandler(executor);
+            if (payload.Is(ExecutorStateUpdate.Descriptor))
+                ExecutorStateUpdateHandler(executor, payload.Unpack<ExecutorStateUpdate>());
             else if (payload.Is(PluginLogRecord.Descriptor))
                 executor.OnLogUpdated(payload.Unpack<PluginLogRecord>());
             else if (payload.Is(PluginStatusUpdate.Descriptor))
@@ -256,20 +260,39 @@ namespace TickTrader.Algo.Server
 
         private void PluginErrorHandler(string id, Any payload)
         {
-            var error = payload.Unpack<PluginError>();
+            var error = payload.Unpack<ExecutorErrorMsg>();
             _logger.Error(new AlgoPluginException(error), $"Exception in executor {id}");
         }
 
-        private void PluginStoppedHandler(ExecutorModel executor)
+        private void ExecutorStateUpdateHandler(ExecutorModel executor, ExecutorStateUpdate update)
+        {
+            if (update.NewState.IsFaulted() || update.NewState.IsStopped())
+                OnExecutorStopped(update.ExecutorId);
+
+            executor.OnStateUpdated(update);
+        }
+
+
+        private void OnExecutorStopped(string executorId)
         {
             _startedExecutorsCnt--;
-            _logger.Debug($"Executor {executor.Id} stopped. Have {_startedExecutorsCnt} active executors");
+            _logger.Debug($"Executor {executorId} stopped. Have {_startedExecutorsCnt} active executors");
 
-            _executorsMap.Remove(executor.Id);
-            executor.OnStopped();
+            _executorsMap.Remove(executorId);
 
             if (_startedExecutorsCnt == 0 && _shutdownWhenIdle)
                 ShutdownInternal();
+        }
+
+
+        private async Task WhenStarted()
+        {
+            if (_startTaskSrc == null)
+                throw Errors.RuntimeNotStarted(_id);
+
+            var connected = await _startTaskSrc.Task;
+            if (!connected)
+                throw Errors.RuntimeNotStarted(_id);
         }
 
 

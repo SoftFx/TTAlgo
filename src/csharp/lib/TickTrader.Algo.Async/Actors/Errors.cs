@@ -18,6 +18,10 @@ namespace TickTrader.Algo.Async.Actors
 
         public static Exception DuplicateActorName(string actorName) => new Exception($"Actor with name '{actorName}' already exists");
 
+        public static Exception ActorNotFound(string actorName) => new Exception($"Actor with name '{actorName}' not found");
+
+        public static Exception ActorStopTimeout(string actorName) => new Exception($"Actor with name '{actorName}' failed to stop within timeout");
+
         public static Exception MsgDispatcherAlreadyStarted(string actorName) => new Exception($"Message dispatcher already started for actor '{actorName}'");
 
         public static Exception MsgDispatcherAlreadyStopped(string actorName) => new Exception($"Message dispatcher already stopped for actor '{actorName}'");

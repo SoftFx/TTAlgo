@@ -13,7 +13,7 @@ namespace TickTrader.BotAgent.BA
     {
         // -------- Repository Management --------
 
-        Task<List<PackageInfo>> GetPackageSnapshot();
+        Task<PackageListSnapshot> GetPackageSnapshot();
         Task<bool> PackageWithNameExists(string pkgName);
         Task UploadPackage(UploadPackageRequest request, string pkgFilePath);
         Task<byte[]> DownloadPackage(string packageId);
@@ -25,36 +25,44 @@ namespace TickTrader.BotAgent.BA
         
         // -------- Account Management --------
 
-        Task<List<AccountModelInfo>> GetAccounts();
+        Task<AccountListSnapshot> GetAccounts();
         Task AddAccount(AddAccountRequest request);
         Task RemoveAccount(RemoveAccountRequest request);
         Task ChangeAccount(ChangeAccountRequest request);
-        Task<Tuple<ConnectionErrorInfo, AccountMetadataInfo>> GetAccountMetadata(string accountId);
+        Task<AccountMetadataInfo> GetAccountMetadata(AccountMetadataRequest request);
         Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request);
         Task<ConnectionErrorInfo> TestCreds(TestAccountCredsRequest request);
 
-        event Action<AccountModelInfo, ChangeAction> AccountChanged;
+        event Action<AccountModelUpdate> AccountChanged;
         event Action<AccountStateUpdate> AccountStateChanged;
 
         // -------- Bot Management --------
 
-        Task<List<PluginModelInfo>> GetBots();
+        Task<PluginListSnapshot> GetBots();
         Task<PluginModelInfo> GetBotInfo(string botId);
         Task<IBotFolder> GetAlgoData(string botId);
         Task<string> GenerateBotId(string botDisplayName);
-        Task<PluginModelInfo> AddBot(AddPluginRequest request);
+        Task AddBot(AddPluginRequest request);
         Task RemoveBot(RemovePluginRequest request);
         Task ChangeBotConfig(ChangePluginConfigRequest request);
         Task StartBot(StartPluginRequest request);
         Task StopBotAsync(StopPluginRequest request);
         Task<IBotLog> GetBotLog(string botId);
+        Task<PluginLogRecord[]> GetBotLogs(PluginLogsRequest request);
+        Task<string> GetBotStatus(PluginStatusRequest request);
 
-        Task<IAlertStorage> GetAlertStorage();
+        Task<AlertRecordInfo[]> GetAlerts(PluginAlertsRequest request);
 
-        event Action<PluginModelInfo, ChangeAction> BotChanged;
+        event Action<PluginModelUpdate> BotChanged;
         event Action<PluginStateUpdate> BotStateChanged;
 
         // -------- Server Management --------
+
+        Task<PluginFolderInfo> GetPluginFolderInfo(PluginFolderInfoRequest request);
+        Task ClearPluginFolder(ClearPluginFolderRequest request);
+        Task DeletePluginFile(DeletePluginFileRequest request);
+        Task<string> GetPluginFileReadPath(DownloadPluginFileRequest request);
+        Task<string> GetPluginFileWritePath(UploadPluginFileRequest request);
 
         // TO DO : server start and stop should not be managed from WebAdmin
 

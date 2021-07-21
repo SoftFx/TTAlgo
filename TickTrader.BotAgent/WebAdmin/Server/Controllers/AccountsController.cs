@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Logging;
 using System.Linq;
 using TickTrader.BotAgent.BA;
-using TickTrader.BotAgent.BA.Exceptions;
 using TickTrader.BotAgent.WebAdmin.Server.Dto;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 using Microsoft.AspNetCore.Authorization;
@@ -10,7 +9,6 @@ using System.Net;
 using TickTrader.Algo.Domain;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain.ServerControl;
-using TickTrader.BotAgent.WebAdmin.Server.Models;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 {
@@ -30,8 +28,8 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         [HttpGet]
         public async Task<AccountDto[]> Get()
         {
-            var accounts = await _botAgent.GetAccounts();
-            return accounts.Select(a => a.ToDto()).ToArray();
+            var snapshot = await _botAgent.GetAccounts();
+            return snapshot.Accounts.Select(a => a.ToDto()).ToArray();
         }
 
         [HttpGet("{server}/{login}/[action]")]
@@ -40,20 +38,8 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             try
             {
                 var accId = AccountId.Pack(WebUtility.UrlDecode(server), WebUtility.UrlDecode(login));
-                var res = await _botAgent.GetAccountMetadata(accId);
-                var connError = res.Item1;
-                var info = res.Item2;
-
-                if (connError.IsOk)
-                {
-                    return Ok(info.ToDto());
-                }
-                else
-                {
-                    var msg = $"Connection error: {connError.Code}";
-                    _logger.LogError(msg);
-                    return BadRequest(new BadRequestResultDto(ExceptionCodes.CommunicationError, msg));
-                }
+                var res = await _botAgent.GetAccountMetadata(new AccountMetadataRequest(accId));
+                return Ok(res.ToDto());
             }
             catch (AlgoException algoEx)
             {

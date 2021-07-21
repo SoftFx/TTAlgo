@@ -15,6 +15,7 @@ using TickTrader.Algo.Server;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.Account;
 using TickTrader.Algo.Account.Fdk2;
+using TickTrader.Algo.Server.Persistence;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -219,6 +220,26 @@ namespace TickTrader.BotAgent.BA.Models
         {
             if (!_isInitialized)
                 throw new InvalidOperationException("Not Initialized!");
+        }
+
+        internal void AddPluginsSavedStates(ServerSavedState state, string accId)
+        {
+            foreach (var plugin in _bots)
+            {
+                if (!plugin.OnDeserialized())
+                    continue; // skip corrupted configs
+
+                var pluginState = new PluginSavedState
+                {
+                    Id = plugin.Config.InstanceId,
+                    AccountId = accId,
+                    IsRunning = plugin.IsRunning,
+                };
+
+                pluginState.PackConfig(plugin.Config);
+
+                state.Plugins.Add(pluginState.Id, pluginState);
+            }
         }
 
         #region Connection Management

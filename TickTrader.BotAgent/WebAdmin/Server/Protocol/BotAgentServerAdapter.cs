@@ -7,7 +7,6 @@ using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.ServerControl;
 using TickTrader.BotAgent.BA;
-using TickTrader.BotAgent.BA.Models;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
 using TickTrader.Algo.Package;
 
@@ -66,19 +65,19 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return ClientClaims.Types.AccessLevel.Anonymous;
         }
 
-        public Task<List<AccountModelInfo>> GetAccountList()
+        public async Task<List<AccountModelInfo>> GetAccountList()
         {
-            return _botAgent.GetAccounts();
+            return (await _botAgent.GetAccounts()).Accounts.ToList();
         }
 
-        public Task<List<PluginModelInfo>> GetBotList()
+        public async Task<List<PluginModelInfo>> GetBotList()
         {
-            return _botAgent.GetBots();
+            return (await _botAgent.GetBots()).Plugins.ToList();
         }
 
-        public Task<List<PackageInfo>> GetPackageList()
+        public async Task<List<PackageInfo>> GetPackageList()
         {
-            return _botAgent.GetPackageSnapshot();
+            return (await _botAgent.GetPackageSnapshot()).Packages.ToList();
         }
 
         public Task<ApiMetadataInfo> GetApiMetadata()
@@ -96,14 +95,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return Task.FromResult(_agentContext);
         }
 
-        public async Task<AccountMetadataInfo> GetAccountMetadata(AccountMetadataRequest request)
+        public Task<AccountMetadataInfo> GetAccountMetadata(AccountMetadataRequest request)
         {
-            var accountId = request.AccountId;
-
-            var (error, accMetadata) = await _botAgent.GetAccountMetadata(accountId);
-            if (!error.IsOk)
-                throw new Exception($"Account '{accountId}' failed to connect");
-            return accMetadata;
+            return _botAgent.GetAccountMetadata(request);
         }
 
         public Task StartBot(StartPluginRequest request)
@@ -171,16 +165,14 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return _botAgent.DownloadPackage(request.PackageId);
         }
 
-        public async Task<string> GetBotStatusAsync(PluginStatusRequest request)
+        public Task<string> GetBotStatusAsync(PluginStatusRequest request)
         {
-            var log = await _botAgent.GetBotLog(request.PluginId);
-            return await log.GetStatusAsync();
+            return _botAgent.GetBotStatus(request);
         }
 
         public async Task<LogRecordInfo[]> GetBotLogsAsync(PluginLogsRequest request)
         {
-            var log = await _botAgent.GetBotLog(request.PluginId);
-            var msgs = await log.QueryMessagesAsync(request.LastLogTimeUtc, request.MaxCount);
+            var msgs = await _botAgent.GetBotLogs(request);
 
             return msgs.Select(e => new LogRecordInfo
             {
@@ -190,88 +182,47 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }).ToArray();
         }
 
-        public async Task<AlertRecordInfo[]> GetAlertsAsync(PluginAlertsRequest request)
+        public Task<AlertRecordInfo[]> GetAlertsAsync(PluginAlertsRequest request)
         {
-            var storage = await _botAgent.GetAlertStorage();
-            var alerts = await storage.QueryAlertsAsync(request.LastLogTimeUtc, request.MaxCount);
-
-            return alerts.Select(e => new AlertRecordInfo
-            {
-                TimeUtc = e.TimeUtc,
-                Message = e.Message,
-                PluginId = e.BotId,
-            }).ToArray();
+            return _botAgent.GetAlerts(request);
         }
 
-        public async Task<PluginFolderInfo> GetBotFolderInfo(PluginFolderInfoRequest request)
+        public Task<PluginFolderInfo> GetBotFolderInfo(PluginFolderInfoRequest request)
         {
-            var botId = request.PluginId;
-            var folderId = request.FolderId;
-
-            var botFolder = await GetBotFolder(botId, folderId);
-
-            var res = new PluginFolderInfo
-            {
-                PluginId = botId,
-                FolderId = folderId,
-                Path = await botFolder.GetFolder(),
-            };
-            res.Files.AddRange((await botFolder.GetFiles()).Select(f => new PluginFileInfo { Name = f.Name, Size = f.Size }));
-            return res;
+            return _botAgent.GetPluginFolderInfo(request);
         }
 
-        public async Task ClearBotFolder(ClearPluginFolderRequest request)
+        public Task ClearBotFolder(ClearPluginFolderRequest request)
         {
-            var botFolder = await GetBotFolder(request.PluginId, request.FolderId);
-
-            await botFolder.Clear();
+            return _botAgent.ClearPluginFolder(request);
         }
 
-        public async Task DeleteBotFile(DeletePluginFileRequest request)
+        public Task DeleteBotFile(DeletePluginFileRequest request)
         {
-            var botFolder = await GetBotFolder(request.PluginId, request.FolderId);
-
-            await botFolder.DeleteFile(request.FileName);
+            return _botAgent.DeletePluginFile(request);
         }
 
-        public async Task<string> GetBotFileReadPath(DownloadPluginFileRequest request)
+        public Task<string> GetBotFileReadPath(DownloadPluginFileRequest request)
         {
-            var botFolder = await GetBotFolder(request.PluginId, request.FolderId);
-
-            return await botFolder.GetFileReadPath(request.FileName);
+            return _botAgent.GetPluginFileReadPath(request);
         }
 
-        public async Task<string> GetBotFileWritePath(UploadPluginFileRequest request)
+        public Task<string> GetBotFileWritePath(UploadPluginFileRequest request)
         {
-            var botFolder = await GetBotFolder(request.PluginId, request.FolderId);
-
-            return await botFolder.GetFileWritePath(request.FileName);
+            return _botAgent.GetPluginFileWritePath(request);
         }
 
 
-        private UpdateInfo.Types.UpdateType Convert(ChangeAction action)
+        private UpdateInfo.Types.UpdateType Convert(Update.Types.Action action)
         {
             switch (action)
             {
-                case ChangeAction.Added:
+                case Update.Types.Action.Added:
                     return UpdateInfo.Types.UpdateType.Added;
-                case ChangeAction.Modified:
+                case Update.Types.Action.Updated:
                     return UpdateInfo.Types.UpdateType.Replaced;
-                case ChangeAction.Removed:
+                case Update.Types.Action.Removed:
                     return UpdateInfo.Types.UpdateType.Removed;
-                default:
-                    throw new ArgumentException();
-            }
-        }
-
-        private async Task<IBotFolder> GetBotFolder(string botId, PluginFolderInfo.Types.PluginFolderId folderId)
-        {
-            switch (folderId)
-            {
-                case PluginFolderInfo.Types.PluginFolderId.AlgoData:
-                    return await _botAgent.GetAlgoData(botId);
-                case PluginFolderInfo.Types.PluginFolderId.BotLogs:
-                    return await _botAgent.GetBotLog(botId);
                 default:
                     throw new ArgumentException();
             }
@@ -279,11 +230,15 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
 
         #region Event handlers
 
-        private void OnAccountChanged(AccountModelInfo account, ChangeAction action)
+        private void OnAccountChanged(AccountModelUpdate update)
         {
             try
             {
-                AccountUpdated(new UpdateInfo<AccountModelInfo>(Convert(action), account));
+                var acc = update.Account;
+                if (update.Action == Update.Types.Action.Removed)
+                    acc = new AccountModelInfo { AccountId = update.Id }; // backwards compatibility
+
+                AccountUpdated(new UpdateInfo<AccountModelInfo>(Convert(update.Action), acc));
             }
             catch (Exception ex)
             {
@@ -291,11 +246,15 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }
         }
 
-        private void OnBotChanged(PluginModelInfo bot, ChangeAction action)
+        private void OnBotChanged(PluginModelUpdate update)
         {
             try
             {
-                BotUpdated(new UpdateInfo<PluginModelInfo>(Convert(action), bot));
+                var plugin = update.Plugin;
+                if (update.Action == Update.Types.Action.Removed)
+                    plugin = new PluginModelInfo { InstanceId = update.Id }; // backwards compatibility
+
+                BotUpdated(new UpdateInfo<PluginModelInfo>(Convert(update.Action), plugin));
             }
             catch (Exception ex)
             {
@@ -307,21 +266,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         {
             try
             {
-                UpdateInfo<PackageInfo> updateInfo = default;
-                switch (update.Action)
-                {
-                    case Update.Types.Action.Added:
-                        updateInfo = new UpdateInfo<PackageInfo>(UpdateInfo.Types.UpdateType.Added, update.Package);
-                        break;
-                    case Update.Types.Action.Updated:
-                        updateInfo = new UpdateInfo<PackageInfo>(UpdateInfo.Types.UpdateType.Replaced, update.Package);
-                        break;
-                    case Update.Types.Action.Removed:
-                        updateInfo = new UpdateInfo<PackageInfo>(UpdateInfo.Types.UpdateType.Removed, new PackageInfo { PackageId = update.Id });
-                        break;
-                }
-                if (updateInfo != null)
-                    PackageUpdated(updateInfo);
+                var pkg = update.Package;
+                if (update.Action == Update.Types.Action.Removed)
+                    pkg = new PackageInfo { PackageId = update.Id }; // backwards compatibility
+
+                PackageUpdated(new UpdateInfo<PackageInfo>(Convert(update.Action), pkg));
             }
             catch (Exception ex)
             {

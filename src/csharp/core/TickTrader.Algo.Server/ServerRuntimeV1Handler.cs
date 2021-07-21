@@ -39,8 +39,6 @@ namespace TickTrader.Algo.Server
                 return AttachRuntimeRequestHandler(payload);
             else if (payload.Is(RuntimeConfigRequest.Descriptor))
                 return RuntimeConfigRequestHandler();
-            else if (payload.Is(PackagePathRequest.Descriptor))
-                return PackagePathRequestHandler(payload);
             else if (payload.Is(ExecutorConfigRequest.Descriptor))
                 return ExecutorConfigRequestHandler(proxyId);
             else if (payload.Is(AttachAccountRequest.Descriptor))
@@ -71,12 +69,6 @@ namespace TickTrader.Algo.Server
             return _runtime.GetConfig().ContinueWith(t => Any.Pack(t.Result));
         }
 
-        private Task<Any> PackagePathRequestHandler(Any payload)
-        {
-            //var request = payload.Unpack<PackagePathRequest>();
-            return Task.FromResult(Any.Pack(new PackagePathResponse { Path = string.Empty }));
-        }
-
         private Task<Any> ExecutorConfigRequestHandler(string executorId)
         {
             return _runtime.GetExecutorConfig(executorId).ContinueWith(t => Any.Pack(t.Result));
@@ -87,7 +79,7 @@ namespace TickTrader.Algo.Server
             var request = payload.Unpack<AttachAccountRequest>();
 
             var accId = request.AccountId;
-            var accControl = await _server.Accounts.GetConsumerController(accId);
+            var accControl = await _server.Accounts.GetAccountControl(accId);
             await accControl.AttachSession(_session);
             if (!_accProxies.ContainsKey(accId))
             {
@@ -103,7 +95,7 @@ namespace TickTrader.Algo.Server
             var request = payload.Unpack<DetachAccountRequest>();
 
             var accId = request.AccountId;
-            var accControl = await _server.Accounts.GetConsumerController(accId);
+            var accControl = await _server.Accounts.GetAccountControl(accId);
             await accControl.DetachSession(_session.Id);
 
             return RpcHandler.VoidResponse;

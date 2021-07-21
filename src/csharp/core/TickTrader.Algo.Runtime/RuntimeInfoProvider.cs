@@ -4,10 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.Core
+namespace TickTrader.Algo.Runtime
 {
     internal class RuntimeInfoProvider : IPluginMetadata, IAccountInfoProvider, ITradeExecutor, ITradeHistoryProvider, IFeedProvider, IFeedHistoryProvider
     {
@@ -167,10 +168,7 @@ namespace TickTrader.Algo.Core
 
         public List<QuoteInfo> Modify(List<FeedSubscriptionUpdate> updates)
         {
-            var request = new ModifyFeedSubscriptionRequest();
-            request.Updates.AddRange(updates);
-            return _account.ModifyFeedSubscription(request);
-            //return ModifyAsync(updates).GetAwaiter().GetResult();
+            return ModifyAsync(updates).GetAwaiter().GetResult();
         }
 
         public Task<List<QuoteInfo>> ModifyAsync(List<FeedSubscriptionUpdate> updates)

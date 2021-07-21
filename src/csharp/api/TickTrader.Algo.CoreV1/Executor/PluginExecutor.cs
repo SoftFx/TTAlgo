@@ -271,7 +271,7 @@ namespace TickTrader.Algo.CoreV1
         }
 
         public event Action<PluginExecutorCore> IsRunningChanged = delegate { };
-        public event Action<Exception> OnRuntimeError = delegate { };
+        public event Action<Exception> OnInternalError = delegate { };
 
         public string AccountId { get; set; }
 
@@ -491,7 +491,6 @@ namespace TickTrader.Algo.CoreV1
 
             try
             {
-                OnNotification(new Domain.PluginStopped());
                 Stopped?.Invoke(this);
             }
             catch (Exception ex)
@@ -751,8 +750,7 @@ namespace TickTrader.Algo.CoreV1
 
         private void OnInternalException(Exception ex)
         {
-            var error = new Domain.PluginError(ex);
-            OnNotification(error);
+            OnInternalError?.Invoke(ex);
         }
 
         private void OnRuntimeException(Exception ex)

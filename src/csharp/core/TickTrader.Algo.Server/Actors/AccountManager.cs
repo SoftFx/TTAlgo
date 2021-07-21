@@ -33,6 +33,7 @@ namespace TickTrader.Algo.Server
             Receive<ConsumerControllerRequest, AccountConsumerControllerModel>(GetConsumerController);
             Receive<ShutdownCmd>(Shutdown);
             Receive<RestoreCmd>(Restore);
+            Receive<AccountControlRequest, AccountControlModel>(GetAccountControl);
             Receive<AddAccountRequest>(AddAccount);
             Receive<ChangeAccountRequest>(ChangeAccount);
             Receive<RemoveAccountRequest>(RemoveAccount);
@@ -90,6 +91,15 @@ namespace TickTrader.Algo.Server
             }
 
             _logger.Debug("Restored saved state");
+        }
+
+        private Task<AccountControlModel> GetAccountControl(AccountControlRequest request)
+        {
+            var accId = request.AccountId;
+            if (!_accounts.TryGetValue(accId, out var account))
+                return Task.FromException<AccountControlModel>(Errors.AccountNotFound(accId));
+
+            return Task.FromResult(account);
         }
 
         private async Task AddAccount(AddAccountRequest request)
@@ -267,5 +277,15 @@ namespace TickTrader.Algo.Server
         internal class ShutdownCmd : Singleton<ShutdownCmd> { }
 
         internal class RestoreCmd : Singleton<RestoreCmd> { }
+
+        internal class AccountControlRequest
+        {
+            public  string AccountId { get; }
+
+            public AccountControlRequest(string accountId)
+            {
+                AccountId = accountId;
+            }
+        }
     }
 }

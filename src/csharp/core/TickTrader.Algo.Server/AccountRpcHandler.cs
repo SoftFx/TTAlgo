@@ -185,11 +185,11 @@ namespace TickTrader.Algo.Server
             return Task.FromResult<Any>(null);
         }
 
-        private Task<Any> TradeHistoryRequestNextPageHandler(string callId)
+        private async Task<Any> TradeHistoryRequestNextPageHandler(string callId)
         {
             _pendingRequestHandlers.TryGetValue(callId, out var state);
             var enumerator = (IAsyncPagedEnumerator<TradeReportInfo>)state;
-            var page = enumerator.GetNextPage().GetAwaiter().GetResult();
+            var page = await enumerator.GetNextPage();
             var response = new TradeHistoryPageResponse();
             if (page == null || page.Length == 0)
             {
@@ -200,7 +200,7 @@ namespace TickTrader.Algo.Server
             {
                 response.Reports.AddRange(page);
             }
-            return Task.FromResult(Any.Pack(response));
+            return Any.Pack(response);
         }
 
         private Task<Any> TradeHistoryRequestDisposeHandler(string callId)

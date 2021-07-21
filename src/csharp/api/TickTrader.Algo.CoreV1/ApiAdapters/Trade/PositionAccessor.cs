@@ -62,7 +62,7 @@ namespace TickTrader.Algo.CoreV1
 
         double NetPosition.Volume => (double)Amount / _lotSize;
         double NetPosition.Margin => ProcessResponse(Info.Calculator?.Margin?.Calculate(Info));
-        double NetPosition.Profit => ProcessResponse(Info.Calculator?.Profit.Calculate(Info));
+        double NetPosition.Profit => ProcessResponse(Info.Calculator?.Profit?.Calculate(Info));
         double NetPosition.Swap => (double)Info.Swap;
         double NetPosition.Commission => (double)Info.Commission;
         OrderSide NetPosition.Side => Side.ToApiEnum();

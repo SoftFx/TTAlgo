@@ -10,7 +10,7 @@ namespace TickTrader.Algo.Server
         private readonly ChannelEventSource<PluginLogRecord> _logEventSrc = new ChannelEventSource<PluginLogRecord>();
         private readonly ChannelEventSource<PluginStatusUpdate> _statusEventSrc = new ChannelEventSource<PluginStatusUpdate>();
         private readonly ChannelEventSource<DataSeriesUpdate> _outputEventSrc = new ChannelEventSource<DataSeriesUpdate>();
-        private readonly ChannelEventSource<bool> _stoppedEventSrc = new ChannelEventSource<bool>();
+        private readonly ChannelEventSource<ExecutorStateUpdate> _stateEventSrc = new ChannelEventSource<ExecutorStateUpdate>();
 
 
         public string Id { get; }
@@ -23,7 +23,7 @@ namespace TickTrader.Algo.Server
 
         public IEventSource<DataSeriesUpdate> OutputUpdated => _outputEventSrc;
 
-        public IEventSource<bool> Stopped => _stoppedEventSrc;
+        public IEventSource<ExecutorStateUpdate> StateUpdated => _stateEventSrc;
 
 
         public ExecutorModel(PkgRuntimeModel host, string id, ExecutorConfig config)
@@ -41,7 +41,7 @@ namespace TickTrader.Algo.Server
             _logEventSrc.Dispose();
             _statusEventSrc.Dispose();
             _outputEventSrc.Dispose();
-            _stoppedEventSrc.Dispose();
+            _stateEventSrc.Dispose();
         }
 
         public Task Start()
@@ -70,9 +70,9 @@ namespace TickTrader.Algo.Server
             _outputEventSrc.Writer.TryWrite(update);
         }
 
-        internal void OnStopped()
+        internal void OnStateUpdated(ExecutorStateUpdate update)
         {
-            _stoppedEventSrc.Writer.TryWrite(false);
+            _stateEventSrc.Writer.TryWrite(update);
         }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Async.Actors
 {
@@ -12,6 +14,8 @@ namespace TickTrader.Algo.Async.Actors
 
     public static class ActorSystem
     {
+        private const int StopActorTimeout = 5000;
+
         private static readonly ConcurrentDictionary<string, Actor> _actors = new ConcurrentDictionary<string, Actor>();
         private static IMsgDispatcherFactory _msgDispatcherFactory;
         private static int _maxBatch;
@@ -53,7 +57,7 @@ namespace TickTrader.Algo.Async.Actors
         {
             Actor instance = new T();
             actorName = actorName ?? typeof(T).FullName + Guid.NewGuid().ToString("N");
-            
+
             if (!_actors.TryAdd(actorName, instance))
                 throw Errors.DuplicateActorName(actorName);
 
@@ -74,6 +78,20 @@ namespace TickTrader.Algo.Async.Actors
             var msgDispather = _msgDispatcherFactory.CreateDispatcher(actorName, _maxBatch);
             instance.Init(actorName, msgDispather, initMsg ?? instance); // since we pass ctor params in factory method, we will most likely need to run some init code
             return instance.GetRef();
+        }
+
+        public static async Task StopActor(IActorRef actor)
+        {
+            var actorName = actor.Name;
+            if (!_actors.TryRemove(actorName, out var instance))
+                throw Errors.ActorNotFound(actorName);
+
+            var stopTask = instance.Stop();
+            var res = await stopTask.WaitAsync(StopActorTimeout);
+            if (!res)
+                throw Errors.ActorStopTimeout(actorName);
+
+            stopTask.Wait(); // spawn exception if failed
         }
     }
 }

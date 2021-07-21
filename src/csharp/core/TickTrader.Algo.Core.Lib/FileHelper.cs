@@ -25,5 +25,10 @@ namespace TickTrader.Algo.Core.Lib
             }
             return HexConverter.BytesToString(hashBytes);
         }
+
+        public static Stream OpenSharedRead(string filePath)
+        {
+            return File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        }
     }
 }

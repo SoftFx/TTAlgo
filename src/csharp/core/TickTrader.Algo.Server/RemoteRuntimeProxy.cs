@@ -16,38 +16,31 @@ namespace TickTrader.Algo.Server
         }
 
 
-        public Task Launch()
+        public Task Start(StartRuntimeRequest request)
         {
             var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(new StartRuntimeRequest()), context);
+            _session.Ask(RpcMessage.Request(request), context);
             return context.TaskSrc.Task;
         }
 
-        public Task Stop()
+        public Task Stop(StopRuntimeRequest request)
         {
             var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(new StopRuntimeRequest()), context);
+            _session.Ask(RpcMessage.Request(request), context);
             return context.TaskSrc.Task;
         }
 
-        public Task StartExecutor(string executorId)
+        public Task StartExecutor(StartExecutorRequest request)
         {
             var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(new StartExecutorRequest { ExecutorId = executorId }), context);
+            _session.Ask(RpcMessage.Request(request), context);
             return context.TaskSrc.Task;
         }
 
-        public Task StopExecutor(string executorId)
+        public Task StopExecutor(StopExecutorRequest request)
         {
             var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(new StopExecutorRequest { ExecutorId = executorId }), context);
-            return context.TaskSrc.Task;
-        }
-
-        public Task<PackageInfo> GetPackageInfo()
-        {
-            var context = new RpcResponseTaskContext<PackageInfo>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(new PackageInfoRequest()), context);
+            _session.Ask(RpcMessage.Request(request), context);
             return context.TaskSrc.Task;
         }
     }

@@ -26,6 +26,8 @@ namespace TickTrader.Algo.Server
 
         public Task Restore() => _ref.Ask(AccountManager.RestoreCmd.Instance);
 
+        internal Task<AccountControlModel> GetAccountControl(string accId) => _ref.Ask<AccountControlModel>(new AccountManager.AccountControlRequest(accId));
+
         public Task Add(AddAccountRequest request) => _ref.Ask(request);
 
         public Task Change(ChangeAccountRequest request) => _ref.Ask(request);

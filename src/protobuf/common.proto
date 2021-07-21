@@ -12,7 +12,46 @@ message Update {
     }
 }
 
-message UrlInfo {
-    string address = 1;
-    int32 port = 2;
+message Feed {
+    enum MarketSide {
+        BID = 0;
+        ASK = 1;
+    }
+
+    enum Timeframe {
+        S1 = 0;
+        S10 = 1;
+        M1 = 2;
+        M5 = 3;
+        M15 = 4;
+        M30 = 5;
+        H1 = 6;
+        H4 = 7;
+        D = 8;
+        W = 9;
+        M_N = 10;
+        TICKS = 11;
+        TICKS_LEVEL2 = 12;
+        TICKS_VWAP = 13;
+    }
+}
+
+message Executor {
+    enum State {
+        Stopped = 0;
+        WaitConnect = 1;
+        Running = 2;
+        WaitReconnect = 3;
+        Stopping = 4;
+        Faulted = 5;
+    }
+}
+
+message Account {
+    enum ConnectionState {
+        OFFLINE = 0;
+        CONNECTING = 1;
+        ONLINE = 2;
+        DISCONNECTING = 3;
+    }
 }

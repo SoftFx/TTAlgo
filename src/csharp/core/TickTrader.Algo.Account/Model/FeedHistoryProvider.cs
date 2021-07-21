@@ -115,9 +115,9 @@ namespace TickTrader.Algo.Account
 
             var onlineFolder = _dataFolder;
             if (_folderOptions == FeedHistoryFolderOptions.ServerHierarchy || _folderOptions == FeedHistoryFolderOptions.ServerClientHierarchy)
-                onlineFolder = Path.Combine(onlineFolder, PathEscaper.Escape(server));
+                onlineFolder = Path.Combine(onlineFolder, PathHelper.Escape(server));
             if (_folderOptions == FeedHistoryFolderOptions.ServerClientHierarchy)
-                onlineFolder = Path.Combine(onlineFolder, PathEscaper.Escape(login));
+                onlineFolder = Path.Combine(onlineFolder, PathHelper.Escape(login));
 
             //await _diskCache.SyncData();
             await _diskCache.Start(onlineFolder);
