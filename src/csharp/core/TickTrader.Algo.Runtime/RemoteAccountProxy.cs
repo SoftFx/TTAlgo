@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TickTrader.Algo.Async;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Infrastructure;
@@ -19,16 +20,24 @@ namespace TickTrader.Algo.Runtime
 
         private RpcSession _session;
         private TaskCompletionSource<object> _startTaskSrc, _stopTaskSrc;
+        private readonly ChannelEventSource<OrderExecReport> _orderEventSrc = new ChannelEventSource<OrderExecReport>();
+        private readonly ChannelEventSource<PositionExecReport> _positionEventSrc = new ChannelEventSource<PositionExecReport>();
+        private readonly ChannelEventSource<BalanceOperation> _balanceEventSrc = new ChannelEventSource<BalanceOperation>();
+        private readonly ChannelEventSource<QuoteInfo> _rateEventSrc = new ChannelEventSource<QuoteInfo>();
+        private readonly ChannelEventSource<List<QuoteInfo>> _rateListEventSrc = new ChannelEventSource<List<QuoteInfo>>();
 
 
         public string Id { get; }
 
-        public event Action<OrderExecReport> OrderUpdated;
-        public event Action<PositionExecReport> PositionUpdated;
-        public event Action<BalanceOperation> BalanceUpdated;
+        public IEventSource<OrderExecReport> OrderUpdated => _orderEventSrc;
 
-        public event Action<QuoteInfo> RateUpdated;
-        public event Action<List<QuoteInfo>> RatesUpdated;
+        public IEventSource<PositionExecReport> PositionUpdated => _positionEventSrc;
+
+        public IEventSource<BalanceOperation> BalanceUpdated => _balanceEventSrc;
+
+        public IEventSource<QuoteInfo> RateUpdated => _rateEventSrc;
+
+        public IEventSource<List<QuoteInfo>> RatesUpdated => _rateListEventSrc;
 
 
         public RemoteAccountProxy(string id, IActorRef acc)
@@ -124,6 +133,15 @@ namespace TickTrader.Algo.Runtime
             }
         }
 
+        public void Dispose()
+        {
+            _orderEventSrc.Dispose();
+            _positionEventSrc.Dispose();
+            _balanceEventSrc.Dispose();
+            _rateEventSrc.Dispose();
+            _rateListEventSrc.Dispose();
+        }
+
 
         internal IFeedSubscription GetSubscription()
         {
@@ -178,30 +196,22 @@ namespace TickTrader.Algo.Runtime
 
         internal void SendOpenOrder(OpenOrderRequest request)
         {
-            var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(Id, request), context);
-            context.TaskSrc.Task.GetAwaiter().GetResult();
+            _session.Tell(RpcMessage.Request(Id, request));
         }
 
         internal void SendModifyOrder(ModifyOrderRequest request)
         {
-            var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(Id, request), context);
-            context.TaskSrc.Task.GetAwaiter().GetResult();
+            _session.Tell(RpcMessage.Request(Id, request));
         }
 
         internal void SendCloseOrder(CloseOrderRequest request)
         {
-            var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(Id, request), context);
-            context.TaskSrc.Task.GetAwaiter().GetResult();
+            _session.Tell(RpcMessage.Request(Id, request));
         }
 
         internal void SendCancelOrder(CancelOrderRequest request)
         {
-            var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(Id, request), context);
-            context.TaskSrc.Task.GetAwaiter().GetResult();
+            _session.Tell(RpcMessage.Request(Id, request));
         }
 
         internal IAsyncPagedEnumerator<TradeReportInfo> GetTradeHistory(TradeHistoryRequest request)
@@ -256,32 +266,29 @@ namespace TickTrader.Algo.Runtime
 
         private void OrderExecReportNotificationHandler(Any payload)
         {
-            var report = payload.Unpack<OrderExecReport>();
-            OrderUpdated?.Invoke(report);
+            _orderEventSrc.Send(payload.Unpack<OrderExecReport>());
         }
 
         private void PositionExecReportNotificationHandler(Any payload)
         {
-            var report = payload.Unpack<PositionExecReport>();
-            PositionUpdated?.Invoke(report);
+            _positionEventSrc.Send(payload.Unpack<PositionExecReport>());
         }
 
         private void BalanceOperationNotificationHandler(Any payload)
         {
-            var report = payload.Unpack<BalanceOperation>();
-            BalanceUpdated?.Invoke(report);
+            _balanceEventSrc.Send(payload.Unpack<BalanceOperation>());
         }
 
         private void FullQuoteInfoNotificationHandler(Any payload)
         {
             var quote = payload.Unpack<FullQuoteInfo>();
-            RateUpdated?.Invoke(new QuoteInfo(quote));
+            _rateEventSrc.Send(new QuoteInfo(quote));
         }
 
         private void QuotePageNotificationHandler(Any payload)
         {
             var page = payload.Unpack<QuotePage>();
-            RatesUpdated?.Invoke(page.Quotes.Select(q => new QuoteInfo(q)).ToList());
+            _rateListEventSrc.Send(page.Quotes.Select(q => new QuoteInfo(q)).ToList());
         }
 
 
@@ -332,7 +339,7 @@ namespace TickTrader.Algo.Runtime
             else
             {
                 var response = payload.Unpack<TradeHistoryPageResponse>();
-                var res = new Domain.TradeReportInfo[response.Reports.Count];
+                var res = new TradeReportInfo[response.Reports.Count];
                 response.Reports.CopyTo(res, 0);
                 taskSrc.TrySetResult(res);
                 if (res.Length != 0)

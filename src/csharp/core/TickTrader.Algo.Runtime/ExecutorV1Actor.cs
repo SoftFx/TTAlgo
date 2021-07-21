@@ -111,6 +111,8 @@ namespace TickTrader.Algo.Runtime
             ChangeState(Executor.Types.State.Stopped);
 
             DetachAccount();
+
+            _provider.Dispose();
         }
 
         private void OnExited(ExitedMsg msg)

@@ -16,8 +16,8 @@ namespace TickTrader.Algo.Runtime
 
         private readonly Ref<RuntimeContext> _context;
         private readonly ISyncContext _sync;
-
         private readonly RemoteAccountProxy _account;
+        private readonly IDisposable _orderUpdateSub, _positionUpdateSub, _balanceUpdateSub, _rateUpdateSub, _rateListUpdateSub;
 
         private List<CurrencyInfo> _currencies;
         private List<SymbolInfo> _symbols;
@@ -34,12 +34,12 @@ namespace TickTrader.Algo.Runtime
             _context = Actor.SpawnLocal<RuntimeContext>(null, $"Runtime {Guid.NewGuid()}");
             _sync = _context.GetSyncContext();
 
-            _account.OrderUpdated += o => OrderUpdated?.Invoke(o);
-            _account.PositionUpdated += p => PositionUpdated?.Invoke(p);
-            _account.BalanceUpdated += b => BalanceUpdated?.Invoke(b);
+            _orderUpdateSub = _account.OrderUpdated.Subscribe(o => OrderUpdated?.Invoke(o));
+            _positionUpdateSub = _account.PositionUpdated.Subscribe(p => PositionUpdated?.Invoke(p));
+            _balanceUpdateSub = _account.BalanceUpdated.Subscribe(b => BalanceUpdated?.Invoke(b));
 
-            _account.RateUpdated += q => RateUpdated?.Invoke(q);
-            _account.RatesUpdated += q => RatesUpdated?.Invoke(q);
+            _rateUpdateSub = _account.RateUpdated.Subscribe(q => RateUpdated?.Invoke(q));
+            _rateListUpdateSub = _account.RatesUpdated.Subscribe(q => RatesUpdated?.Invoke(q));
         }
 
 
@@ -55,6 +55,16 @@ namespace TickTrader.Algo.Runtime
 
             ApplyLastQuoteListToSymbols();
         }
+
+        public void Dispose()
+        {
+            _orderUpdateSub.Dispose();
+            _positionUpdateSub.Dispose();
+            _balanceUpdateSub.Dispose();
+            _rateUpdateSub.Dispose();
+            _rateListUpdateSub.Dispose();
+        }
+
 
         private Task RunOnThreadPool(Func<Task> func)
         {
@@ -95,8 +105,8 @@ namespace TickTrader.Algo.Runtime
 
         #region IAccountInfoProvider
 
-        public event Action<Domain.OrderExecReport> OrderUpdated;
-        public event Action<Domain.PositionExecReport> PositionUpdated;
+        public event Action<OrderExecReport> OrderUpdated;
+        public event Action<PositionExecReport> PositionUpdated;
         public event Action<BalanceOperation> BalanceUpdated;
 
         public AccountInfo GetAccountInfo()
