@@ -10,11 +10,10 @@ using TickTrader.Algo.Server.Common.Grpc;
 
 namespace TickTrader.Algo.Server.PublicAPI
 {
-    internal sealed class AlgoServerClient : ProtocolClient, IAlgoServerClient
+    public sealed class AlgoServerClient : ProtocolClient, IAlgoServerClient
     {
         private const int HeartbeatTimeout = 10000;
-
-        public const int DefaultRequestTimeout = 10;
+        private const int DefaultRequestTimeout = 10;
 
         public ClientStates State => throw new System.NotImplementedException();
 

@@ -1,8 +1,6 @@
-﻿using TickTrader.Algo.Server.PublicAPI;
-
-namespace TickTrader.Algo.ServerControl
+﻿namespace TickTrader.Algo.Server.Common
 {
-    public class ClientSessionSettings : IClientSessionSettings
+    public class ClientSessionSettings
     {
         public string ServerAddress { get; }
 

@@ -1,15 +1,16 @@
 ﻿using Machinarium.Qnil;
+using SciChart.Charting.Visuals.Axes;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.ServerControl;
-using System.Collections.Generic;
-using SciChart.Charting.Visuals.Axes;
+using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
-using TickTrader.Algo.Server;
-using TickTrader.Algo.Core.Setup;
-using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Server.Common;
+
+
 
 namespace TickTrader.BotTerminal
 {

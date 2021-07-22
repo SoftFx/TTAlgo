@@ -1,0 +1,43 @@
+﻿syntax = "proto3";
+
+package ticktrader.algo.server.publicApi;
+
+option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
+
+import "google/protobuf/wrappers.proto";
+
+
+message ConnectionErrorInfo {
+    enum ErrorCode {
+        NO_CONNECTION_ERROR = 0;
+        UNKNOWN_CONNECTION_ERROR = 1;
+        NETWORK_ERROR = 2;
+        TIMEOUT = 3;
+        BLOCKED_ACCOUNT = 4;
+        CLIENT_INITIATED = 5;
+        INVALID_CREDENTIALS = 6;
+        SLOW_CONNECTION = 7;
+        SERVER_ERROR = 8;
+        LOGIN_DELETED = 9;
+        SERVER_LOGOUT = 10;
+        CANCELED = 11;
+        REJECTED_BY_SERVER = 12;
+    }
+
+    ErrorCode code = 1;
+    google.protobuf.StringValue text_message = 2;
+}
+
+message AccountModelInfo {
+    enum ConnectionState {
+        OFFLINE = 0;
+        CONNECTING = 1;
+        ONLINE = 2;
+        DISCONNECTING = 3;
+    }
+
+    string account_id = 1;
+    ConnectionState connection_state = 2;
+    ConnectionErrorInfo last_error = 3;
+    google.protobuf.StringValue display_name = 4;
+}

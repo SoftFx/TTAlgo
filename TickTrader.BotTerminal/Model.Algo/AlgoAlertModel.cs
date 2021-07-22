@@ -86,23 +86,23 @@ namespace TickTrader.BotTerminal
         {
             _alertTimer?.Change(-1, -1);
 
-            try
-            {
-                var alerts = await _remoteAgent.GetAlerts(_lastAlertTimeUtc);
-                if (alerts.Length > 0)
-                {
-                    _lastAlertTimeUtc = alerts.Max(l => l.TimeUtc);
-                    AddAlerts(alerts.Select(Convert).ToList<IAlertUpdateEventArgs>());
-                }
-            }
-            catch (AlgoException baex)
-            {
-                _logger.Error($"Failed to get alerts at {Name}: {baex.Message}");
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, $"Failed to get alerts at {Name}");
-            }
+            //try
+            //{
+            //    var alerts = await _remoteAgent.GetAlerts(_lastAlertTimeUtc);
+            //    if (alerts.Length > 0)
+            //    {
+            //        _lastAlertTimeUtc = alerts.Max(l => l.TimeUtc);
+            //        AddAlerts(alerts.Select(Convert).ToList<IAlertUpdateEventArgs>());
+            //    }
+            //}
+            //catch (AlgoException baex)
+            //{
+            //    _logger.Error($"Failed to get alerts at {Name}: {baex.Message}");
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.Error(ex, $"Failed to get alerts at {Name}");
+            //}
 
             _alertTimer?.Change(AlertsUpdateTimeout, -1);
         }

@@ -1,6 +1,7 @@
 ﻿using NLog;
 using System;
 using System.Threading.Tasks;
+using TickTrader.Algo.Server.Common;
 
 namespace TickTrader.Algo.ServerControl
 {

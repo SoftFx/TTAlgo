@@ -1,10 +1,11 @@
 ﻿using System.Runtime.Serialization;
-using TickTrader.Algo.ServerControl;
+using TickTrader.Algo.Server.Common;
+using TickTrader.Algo.Server.PublicAPI;
 
 namespace TickTrader.BotTerminal
 {
     [DataContract(Namespace = "")]
-    internal class BotAgentStorageEntry
+    internal class BotAgentStorageEntry : IClientSessionSettings
     {
         [DataMember]
         public string Name { get; private set; }
@@ -27,6 +28,13 @@ namespace TickTrader.BotTerminal
         public bool Connect { get; set; }
 
 
+        int IClientSessionSettings.ServerPort => Port;
+
+        string IClientSessionSettings.LogDirectory => ProtocolSettings.LogDirectoryName;
+
+        bool IClientSessionSettings.LogMessages => ProtocolSettings.LogMessages;
+
+
         public BotAgentStorageEntry(string name)
         {
             Name = name;
@@ -45,11 +53,6 @@ namespace TickTrader.BotTerminal
         public BotAgentStorageEntry Clone()
         {
             return new BotAgentStorageEntry(Name, Login, Password, ServerAddress, Port) { Connect = Connect };
-        }
-
-        public ClientSessionSettings ToClientSettings()
-        {
-            return new ClientSessionSettings(ServerAddress, Port, Login, Password, ProtocolSettings.LogDirectoryName, ProtocolSettings.LogMessages);
         }
 
         // Compatibility with previous versions

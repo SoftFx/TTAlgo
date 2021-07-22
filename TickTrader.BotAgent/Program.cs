@@ -23,6 +23,7 @@ using TickTrader.Algo.Package;
 using TickTrader.Algo.Isolation.NetFx;
 using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Logging;
+using TickTrader.Algo.Server.Common;
 
 namespace TickTrader.BotAgent
 {

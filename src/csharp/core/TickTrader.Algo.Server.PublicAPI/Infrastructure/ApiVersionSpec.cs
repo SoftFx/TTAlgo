@@ -2,7 +2,7 @@
 
 namespace TickTrader.Algo.Server.PublicAPI
 {
-    public sealed class ApiVersionSpec : VersionSpec, IVersionSpec
+    internal sealed class ApiVersionSpec : VersionSpec, IVersionSpec
     {
         int IVersionSpec.MajorVersion => MajorVersion;
 

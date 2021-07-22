@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Server.Common;
 
 namespace TickTrader.BotTerminal
 {
@@ -147,48 +148,47 @@ namespace TickTrader.BotTerminal
         private async void UpdateStatus(object state)
         {
             _statusTimer?.Change(-1, -1);
-            try
-            {
-                var status = await _agent.GetBotStatus(InstanceId);
-                if (status != Status)
-                {
-                    Status = status;
-                    StatusChanged?.Invoke(this);
-                }
-            }
-            catch(Algo.ServerControl.AlgoException baex)
-            {
-                _logger.Error($"Failed to get bot status {InstanceId} at {_agent.Name}: {baex.Message}");
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, $"Failed to get bot status {InstanceId} at {_agent.Name}");
-            }
+            //try
+            //{
+            //    var status = await _agent.GetBotStatus(InstanceId);
+            //    if (status != Status)
+            //    {
+            //        Status = status;
+            //        StatusChanged?.Invoke(this);
+            //    }
+            //}
+            //catch(AlgoServerException baex)
+            //{
+            //    _logger.Error($"Failed to get bot status {InstanceId} at {_agent.Name}: {baex.Message}");
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.Error(ex, $"Failed to get bot status {InstanceId} at {_agent.Name}");
+            //}
             _statusTimer?.Change(StatusUpdateTimeout, -1);
         }
 
         private async void UpdateLogs(object state)
         {
             _logsTimer?.Change(-1, -1);
-            try
-            {
-                var logs = await _agent.GetBotLogs(InstanceId, _lastLogTimeUtc);
-                if (logs.Length > 0)
-                {
-                    _lastLogTimeUtc = logs.Max(l => l.TimeUtc);
+            //try
+            //{
+            //    var logs = await _agent.GetBotLogs(InstanceId, _lastLogTimeUtc);
+            //    if (logs.Length > 0)
+            //    {
+            //        _lastLogTimeUtc = logs.Max(l => l.TimeUtc);
 
-                    Journal.Add(logs.Select(this.Convert).ToList());
-                }
-            }
-            catch (Algo.ServerControl.AlgoServerException baex)
-            {
-                _logger.Error($"Failed to get bot logs {InstanceId} at {_agent.Name}: {baex.Message}");
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, $"Failed to get bot logs {InstanceId} at {_agent.Name}");
-            }
-
+            //        Journal.Add(logs.Select(this.Convert).ToList());
+            //    }
+            //}
+            //catch (AlgoServerException baex)
+            //{
+            //    _logger.Error($"Failed to get bot logs {InstanceId} at {_agent.Name}: {baex.Message}");
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.Error(ex, $"Failed to get bot logs {InstanceId} at {_agent.Name}");
+            //}
             _logsTimer?.Change(LogsUpdateTimeout, -1);
         }
 

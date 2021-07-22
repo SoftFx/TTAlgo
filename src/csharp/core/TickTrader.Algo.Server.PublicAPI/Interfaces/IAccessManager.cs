@@ -1,9 +1,9 @@
-﻿using TickTrader.Algo.Domain;
-
-namespace TickTrader.Algo.Server.PublicAPI
+﻿namespace TickTrader.Algo.Server.PublicAPI
 {
     public interface IAccessManager
     {
+        ClientClaims.Types.AccessLevel Level { get; }
+
         bool CanGetAccountMetadata();
 
         bool CanGetAlerts();

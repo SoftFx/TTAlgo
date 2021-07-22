@@ -4,34 +4,17 @@ package ticktrader.algo.server.publicApi;
 
 option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 
-import "requests/plugin.management.proto";
-import "requests/base.request.proto";
+
 import "google/protobuf/wrappers.proto";
+
+import "structures/account.model.info.proto";
+import "structures/plugin.model.info.proto";
+
+import "requests/base.request.proto";
 
 message AccountCreds {
     string auth_scheme = 1;
     map<string, google.protobuf.StringValue> secret = 2;
-}
-
-message ConnectionErrorInfo {
-    enum ErrorCode {
-        NO_CONNECTION_ERROR = 0;
-        UNKNOWN_CONNECTION_ERROR = 1;
-        NETWORK_ERROR = 2;
-        TIMEOUT = 3;
-        BLOCKED_ACCOUNT = 4;
-        CLIENT_INITIATED = 5;
-        INVALID_CREDENTIALS = 6;
-        SLOW_CONNECTION = 7;
-        SERVER_ERROR = 8;
-        LOGIN_DELETED = 9;
-        SERVER_LOGOUT = 10;
-        CANCELED = 11;
-        REJECTED_BY_SERVER = 12;
-    }
-
-    ErrorCode code = 1;
-    google.protobuf.StringValue text_message = 2;
 }
 
 message AccountMetadataRequest {

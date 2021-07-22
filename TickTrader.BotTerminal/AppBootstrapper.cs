@@ -2,13 +2,10 @@
 using Caliburn.Micro;
 using NLog;
 using NLog.Config;
-using NLog.Targets;
-using NLog.Targets.Wrappers;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using TickTrader.Algo.Account;
@@ -20,7 +17,7 @@ using TickTrader.Algo.Isolation.NetFx;
 using TickTrader.Algo.Logging;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.Server;
-using TickTrader.Algo.ServerControl;
+using TickTrader.Algo.Server.Common;
 using TickTrader.FeedStorage;
 using TickTrader.WpfWindowsSupportLibrary;
 

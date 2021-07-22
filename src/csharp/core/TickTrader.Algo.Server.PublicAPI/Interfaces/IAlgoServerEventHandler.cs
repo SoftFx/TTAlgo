@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
-using TickTrader.Algo.Domain;
-using TickTrader.Algo.Domain.ServerControl;
+
 
 namespace TickTrader.Algo.Server.PublicAPI
 {
@@ -27,22 +26,22 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         #region Updates
 
-        void UpdatePackage(UpdateInfo.Types.UpdateType updateType, PackageInfo package);
-        // void OnPackageUpdate(PackageUpdate update);
+        //void UpdatePackage(UpdateInfo.Types.UpdateType updateType, PackageInfo package);
+        //// void OnPackageUpdate(PackageUpdate update);
 
-        void UpdateAccount(UpdateInfo.Types.UpdateType updateType, AccountModelInfo account);
-        // void OnAccountUpdate(AccountModelUpdate update);
+        //void UpdateAccount(UpdateInfo.Types.UpdateType updateType, AccountModelInfo account);
+        //// void OnAccountUpdate(AccountModelUpdate update);
 
-        void UpdateBot(UpdateInfo.Types.UpdateType updateType, PluginModelInfo plugin);
-        // void OnPluginModelUpdate(PluginModelUpdate update);
+        //void UpdateBot(UpdateInfo.Types.UpdateType updateType, PluginModelInfo plugin);
+        //// void OnPluginModelUpdate(PluginModelUpdate update);
 
-        void UpdatePackageState(PackageStateUpdate packageState);
-        // void OnPackageStateUpdate(PackageStateUpdate packageState);
+        //void UpdatePackageState(PackageStateUpdate packageState);
+        //// void OnPackageStateUpdate(PackageStateUpdate packageState);
 
-        void UpdateAccountState(AccountStateUpdate accountState);
-        // void OnAccountStateUpdate(AccountStateUpdate accountState);
+        //void UpdateAccountState(AccountStateUpdate accountState);
+        //// void OnAccountStateUpdate(AccountStateUpdate accountState);
 
-        void UpdateBotState(PluginStateUpdate pluginState);
+        //void UpdateBotState(PluginStateUpdate pluginState);
         // void OnPluginStateUpdate
 
         //void OnPluginStatusUpdate(PluginStatusUpdate update);

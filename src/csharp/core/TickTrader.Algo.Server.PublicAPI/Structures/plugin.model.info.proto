@@ -1,0 +1,81 @@
+﻿syntax = "proto3";
+
+package ticktrader.algo.server.publicApi;
+
+option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/any.proto";
+
+import "structures/package.info.proto";
+
+
+message Feed {
+    enum MarketSide {
+        BID = 0;
+        ASK = 1;
+    }
+
+    enum Timeframe {
+        S1 = 0;
+        S10 = 1;
+        M1 = 2;
+        M5 = 3;
+        M15 = 4;
+        M30 = 5;
+        H1 = 6;
+        H4 = 7;
+        D = 8;
+        W = 9;
+        M_N = 10;
+        TICKS = 11;
+        TICKS_LEVEL2 = 12;
+        TICKS_VWAP = 13;
+    }
+}
+
+message SymbolConfig {
+    enum SymbolOrigin {
+        ONLINE = 0;
+        CUSTOM = 1;
+        TOKEN = 2;
+    }
+
+    string name = 1;
+    SymbolOrigin origin = 2;
+}
+
+message PluginPermissions {
+    bool trade_allowed = 1;
+    bool isolated = 2;
+}
+
+message PluginConfig {
+    PluginKey key = 1;
+    Feed.Timeframe timeframe = 2;
+    Feed.Timeframe model_timeframe = 3;
+    SymbolConfig main_symbol = 4;
+    MappingKey selected_mapping = 5;
+    string instance_id = 6;
+    PluginPermissions permissions = 7;
+    repeated google.protobuf.Any properties = 8;
+}
+
+message PluginModelInfo {
+    enum PluginState {
+        STOPPED = 0;
+        STARTING = 1;
+        FAULTED = 2;
+        RUNNING = 3;
+        STOPPING = 4;
+        BROKEN = 5;
+        RECONNECTING = 6;
+    }
+
+    string instance_id = 1;
+    string account_id = 2;
+    PluginState state = 3;
+    google.protobuf.StringValue fault_message = 4;
+    PluginConfig config = 5;
+    PluginDescriptor descriptor = 6;
+}

@@ -1,5 +1,5 @@
 ﻿using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.ServerControl;
+using TickTrader.Algo.Server.Common;
 
 namespace TickTrader.BotTerminal
 {

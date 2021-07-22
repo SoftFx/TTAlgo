@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Server.PublicAPI
 {
-    internal abstract class ProtocolClient
+    public abstract class ProtocolClient
     {
         protected readonly IAlgoServerEventHandler _serverHandler;
         protected readonly StateMachine<ClientStates> _stateMachine;

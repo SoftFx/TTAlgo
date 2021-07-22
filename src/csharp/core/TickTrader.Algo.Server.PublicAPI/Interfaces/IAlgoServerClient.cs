@@ -52,11 +52,11 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         #region Package Management
 
-        //Task UploadPackage(UploadPackageRequest request, string srcPath, IFileProgressListener progressListener);
+        Task UploadPackage(UploadPackageRequest request, string srcPath, IFileProgressListener progressListener);
 
         Task RemovePackage(RemovePackageRequest request);
 
-        //Task DownloadPackage(DownloadPackageRequest request, string dstPath, IFileProgressListener progressListener);
+        Task DownloadPackage(DownloadPackageRequest request, string dstPath, IFileProgressListener progressListener);
 
         #endregion Package Management
 
@@ -96,9 +96,9 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         Task DeletePluginFile(DeletePluginFileRequest request);
 
-        //Task DownloadPluginFile(DownloadPluginFileRequest request, string dstPath, IFileProgressListener progressListener);
+        Task DownloadPluginFile(DownloadPluginFileRequest request, string dstPath, IFileProgressListener progressListener);
 
-        //Task UploadPluginFile(UploadPluginFileRequest request, string srcPath, IFileProgressListener progressListener);
+        Task UploadPluginFile(UploadPluginFileRequest request, string srcPath, IFileProgressListener progressListener);
 
         #endregion Plugin Files Management
     }

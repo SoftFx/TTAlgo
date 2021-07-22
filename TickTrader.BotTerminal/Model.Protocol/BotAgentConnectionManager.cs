@@ -2,9 +2,7 @@
 using NLog;
 using System;
 using System.Threading.Tasks;
-using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Server.PublicAPI;
-using TickTrader.Algo.ServerControl;
 using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal
@@ -20,7 +18,7 @@ namespace TickTrader.BotTerminal
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
 
-        private ProtocolClient _protocolClient;
+        private IAlgoServerClient _protocolClient;
         private StateMachine<States> _stateControl;
         private bool _needReconnect;
 
@@ -48,11 +46,11 @@ namespace TickTrader.BotTerminal
             Creds = botAgentCreds;
 
             RemoteAgent = new RemoteAlgoAgent(Creds.Name);
-            _protocolClient = ProtocolClient.Create(RemoteAgent);
+            _protocolClient = AlgoServerClient.Create(RemoteAgent);
             RemoteAgent.SetProtocolClient(_protocolClient);
 
-            _protocolClient.Connected += ClientOnConnected;
-            _protocolClient.Disconnected += ClientOnDisconnected;
+            //_protocolClient.Connected += ClientOnConnected;
+            //_protocolClient.Disconnected += ClientOnDisconnected;
 
             _stateControl = new StateMachine<States>(new DispatcherStateMachineSync());
             _stateControl.AddTransition(States.Offline, Events.ConnectRequest, States.Connecting);
@@ -117,22 +115,24 @@ namespace TickTrader.BotTerminal
 
         private void ClientOnConnected()
         {
-            _stateControl.PushEvent(Events.Connected);
+            if (_protocolClient.State == ClientStates.Online)
+                _stateControl.PushEvent(Events.Connected);
         }
 
         private void ClientOnDisconnected()
         {
-            _stateControl.PushEvent(Events.Disconnected);
+            if (_protocolClient.State == ClientStates.Offline)
+                _stateControl.PushEvent(Events.Disconnected);
         }
 
         private void StartConnecting()
         {
-            _protocolClient.TriggerConnect(Creds.ToClientSettings());
+            _protocolClient.Connect(Creds).ContinueWith(_ => ClientOnConnected());
         }
 
         private void StartDisconnecting()
         {
-            _protocolClient.TriggerDisconnect();
+            _protocolClient.Disconnect().ContinueWith(_ => ClientOnDisconnected());
         }
     }
 }

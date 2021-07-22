@@ -17,8 +17,9 @@ using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.Server;
+using TickTrader.Algo.Server.Common;
 using TickTrader.Algo.Server.Persistence;
-using TickTrader.Algo.ServerControl;
+using AlgoServerPublicApi = TickTrader.Algo.Server.PublicAPI;
 using File = System.IO.File;
 
 namespace TickTrader.BotTerminal

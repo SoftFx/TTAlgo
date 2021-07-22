@@ -2,7 +2,7 @@
 
 namespace TickTrader.Algo.Server.PublicAPI
 {
-    public class ApiAccessManager : AccessManager, IAccessManager
+    internal sealed class ApiAccessManager : AccessManager, IAccessManager
     {
         public new ClientClaims.Types.AccessLevel Level { get; }
 

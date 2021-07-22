@@ -1,9 +1,6 @@
 ﻿namespace TickTrader.Algo.Server.PublicAPI
 {
-    public interface IFileProgressListener
+    public interface IFileProgressListener : Common.IFileProgressListener
     {
-        void Init(long initialProgress);
-
-        void IncrementProgress(long progressValue);
     }
 }

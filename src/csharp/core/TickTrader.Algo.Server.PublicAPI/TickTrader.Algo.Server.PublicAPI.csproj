@@ -11,6 +11,10 @@
     <None Remove="Requests\package.management.proto" />
     <None Remove="Requests\plugin.files.management.proto" />
     <None Remove="Requests\plugin.management.proto" />
+    <None Remove="Structures\account.model.info.proto" />
+    <None Remove="Structures\api.metadata.info.proto" />
+    <None Remove="Structures\package.info.proto" />
+    <None Remove="Structures\plugin.model.info.proto" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,7 +29,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\lib\Machinarium\Machinarium.csproj" />
-    <ProjectReference Include="..\TickTrader.Algo.Domain\TickTrader.Algo.Domain.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Server.Common\TickTrader.Algo.Server.Common.csproj" />
   </ItemGroup>
 
@@ -36,7 +39,11 @@
     <Protobuf Include="Requests\package.management.proto" GrpcServices="Client" />
     <Protobuf Include="Requests\plugin.files.management.proto" GrpcServices="Client" />
     <Protobuf Include="Requests\plugin.management.proto" GrpcServices="Client" />
+    <Protobuf Include="Structures\account.model.info.proto" GrpcServices="Client" />
+    <Protobuf Include="Structures\api.metadata.info.proto" GrpcServices="Client" />
+    <Protobuf Include="Structures\package.info.proto" GrpcServices="Client" />
     <Protobuf Include="Services\algo.server.publicAPI.proto" GrpcServices="Both" />
+    <Protobuf Include="Structures\plugin.model.info.proto" GrpcServices="Client" />
   </ItemGroup>
 
 </Project>
