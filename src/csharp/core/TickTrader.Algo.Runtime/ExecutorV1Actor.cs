@@ -33,6 +33,7 @@ namespace TickTrader.Algo.Runtime
             Receive<StartExecutorRequest>(Start);
             Receive<StopExecutorRequest>(Stop);
             Receive<StoppedMsg>(OnStopped);
+            Receive<ExitedMsg>(OnExited);
             Receive<ConnectionStateUpdate>(OnConnectionStateUpdated);
         }
 
@@ -76,6 +77,12 @@ namespace TickTrader.Algo.Runtime
             if (_state.IsStopped())
                 throw new AlgoException("Executor already stopped");
 
+            if (_state.IsWaitConnect())
+            {
+                OnStopped(StoppedMsg.Instance);
+                return;
+            }
+
             if (_state.IsRunning() || _state.IsWaitReconnect())
             {
                 ChangeState(Executor.Types.State.Stopping);
@@ -104,6 +111,17 @@ namespace TickTrader.Algo.Runtime
             ChangeState(Executor.Types.State.Stopped);
 
             DetachAccount();
+
+            _provider.Dispose();
+        }
+
+        private void OnExited(ExitedMsg msg)
+        {
+            _logger.Debug("Received exit request");
+
+            _runtime.Tell(new ExecutorNotification(_id, new PluginExitedMsg { Id = _id }));
+
+            Self.Tell(new StopExecutorRequest());
         }
 
         private void OnConnectionStateUpdated(ConnectionStateUpdate update)
@@ -144,11 +162,13 @@ namespace TickTrader.Algo.Runtime
         {
             try
             {
+                _logger.Debug("Starting internal executor...");
+
                 var config = _config.PluginConfig.Unpack<PluginConfig>();
 
                 _executor = new PluginExecutorCore(config.Key);
                 _executor.Stopped += _ => Self.Tell(StoppedMsg.Instance);
-                _executor.OnStopExecutorRequest += _ => Self.Tell(new StopExecutorRequest());
+                _executor.OnExitRequest += _ => Self.Tell(ExitedMsg.Instance);
                 _executor.OnNotification += msg => _runtime.Tell(new ExecutorNotification(_id, msg));
                 _executor.OnInternalError += ex => _logger.Error(ex, "Internal error in executor");
                 _executor.IsGlobalMarshalingEnabled = true;
@@ -187,6 +207,8 @@ namespace TickTrader.Algo.Runtime
 
 
         internal class StoppedMsg : Singleton<StoppedMsg> { }
+
+        internal class ExitedMsg : Singleton<ExitedMsg> { }
 
         internal class ExecutorNotification
         {

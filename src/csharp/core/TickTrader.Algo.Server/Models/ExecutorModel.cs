@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using TickTrader.Algo.Async;
 using TickTrader.Algo.Domain;
 
@@ -24,6 +25,8 @@ namespace TickTrader.Algo.Server
         public IEventSource<DataSeriesUpdate> OutputUpdated => _outputEventSrc;
 
         public IEventSource<ExecutorStateUpdate> StateUpdated => _stateEventSrc;
+
+        public Action<PluginExitedMsg> ExitHandler { get; set; }
 
 
         public ExecutorModel(PkgRuntimeModel host, string id, ExecutorConfig config)
@@ -73,6 +76,11 @@ namespace TickTrader.Algo.Server
         internal void OnStateUpdated(ExecutorStateUpdate update)
         {
             _stateEventSrc.Writer.TryWrite(update);
+        }
+
+        internal void OnExit(PluginExitedMsg msg)
+        {
+            ExitHandler?.Invoke(msg);
         }
     }
 }

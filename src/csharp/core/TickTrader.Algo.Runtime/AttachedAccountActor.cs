@@ -58,7 +58,6 @@ namespace TickTrader.Algo.Runtime
             }
             else if (update.NewState.IsOnline())
             {
-                ChangeState(Account.Types.ConnectionState.Connecting);
                 var _ = InitAccount();
             }
         }
@@ -151,13 +150,15 @@ namespace TickTrader.Algo.Runtime
 
         private async Task InitAccount()
         {
-            var currentState = _stateCnt;
-
             try
             {
+                ChangeState(Account.Types.ConnectionState.Connecting);
+
+                var currentState = _stateCnt;
+
                 await _accProxy.Start();
 
-                if (_stateCnt == currentState)
+                if (_stateCnt == currentState) // in case account disconnected during proxy start
                 {
                     ChangeState(Account.Types.ConnectionState.Online);
                 }
@@ -165,7 +166,7 @@ namespace TickTrader.Algo.Runtime
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to init attached account");
-                return;
+                ChangeState(Account.Types.ConnectionState.Offline);
             }
         }
 
@@ -179,7 +180,6 @@ namespace TickTrader.Algo.Runtime
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to deinit attached account");
-                return;
             }
         }
 

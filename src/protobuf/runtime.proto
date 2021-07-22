@@ -102,3 +102,7 @@ message ConnectionStateUpdate {
     Account.ConnectionState old_state = 2;
     Account.ConnectionState new_state = 3;
 }
+
+message PluginExitedMsg {
+    string id = 1;
+}

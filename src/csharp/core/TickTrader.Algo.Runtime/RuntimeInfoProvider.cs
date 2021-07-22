@@ -16,8 +16,8 @@ namespace TickTrader.Algo.Runtime
 
         private readonly Ref<RuntimeContext> _context;
         private readonly ISyncContext _sync;
-
         private readonly RemoteAccountProxy _account;
+        private readonly IDisposable _orderUpdateSub, _positionUpdateSub, _balanceUpdateSub, _rateUpdateSub, _rateListUpdateSub;
 
         private List<CurrencyInfo> _currencies;
         private List<SymbolInfo> _symbols;
@@ -34,26 +34,46 @@ namespace TickTrader.Algo.Runtime
             _context = Actor.SpawnLocal<RuntimeContext>(null, $"Runtime {Guid.NewGuid()}");
             _sync = _context.GetSyncContext();
 
-            _account.OrderUpdated += o => OrderUpdated?.Invoke(o);
-            _account.PositionUpdated += p => PositionUpdated?.Invoke(p);
-            _account.BalanceUpdated += b => BalanceUpdated?.Invoke(b);
+            _orderUpdateSub = _account.OrderUpdated.Subscribe(o => OrderUpdated?.Invoke(o));
+            _positionUpdateSub = _account.PositionUpdated.Subscribe(p => PositionUpdated?.Invoke(p));
+            _balanceUpdateSub = _account.BalanceUpdated.Subscribe(b => BalanceUpdated?.Invoke(b));
 
-            _account.RateUpdated += q => RateUpdated?.Invoke(q);
-            _account.RatesUpdated += q => RatesUpdated?.Invoke(q);
+            _rateUpdateSub = _account.RateUpdated.Subscribe(q => RateUpdated?.Invoke(q));
+            _rateListUpdateSub = _account.RatesUpdated.Subscribe(q => RatesUpdated?.Invoke(q));
         }
 
 
         public async Task PreLoad()
         {
-            _currencies = await _account.GetCurrencyListAsync();
-            _symbols = await _account.GetSymbolListAsync();
-            _quotes = await _account.GetLastQuotesListAsync();
+            _currencies = await RunOnThreadPool(_account.GetCurrencyListAsync);
+            _symbols = await RunOnThreadPool(_account.GetSymbolListAsync);
+            _quotes = await RunOnThreadPool(_account.GetLastQuotesListAsync);
 
-            _accInfo = await _account.GetAccountInfoAsync();
-            _orders = await _account.GetOrderListAsync();
-            _positions = await _account.GetPositionListAsync();
+            _accInfo = await RunOnThreadPool(_account.GetAccountInfoAsync);
+            _orders = await RunOnThreadPool(_account.GetOrderListAsync);
+            _positions = await RunOnThreadPool(_account.GetPositionListAsync);
 
             ApplyLastQuoteListToSymbols();
+        }
+
+        public void Dispose()
+        {
+            _orderUpdateSub.Dispose();
+            _positionUpdateSub.Dispose();
+            _balanceUpdateSub.Dispose();
+            _rateUpdateSub.Dispose();
+            _rateListUpdateSub.Dispose();
+        }
+
+
+        private Task RunOnThreadPool(Func<Task> func)
+        {
+            return Task.Run(() => func());
+        }
+
+        private Task<T> RunOnThreadPool<T>(Func<Task<T>> func)
+        {
+            return Task.Run(() => func());
         }
 
         private void ApplyLastQuoteListToSymbols()
@@ -85,8 +105,8 @@ namespace TickTrader.Algo.Runtime
 
         #region IAccountInfoProvider
 
-        public event Action<Domain.OrderExecReport> OrderUpdated;
-        public event Action<Domain.PositionExecReport> PositionUpdated;
+        public event Action<OrderExecReport> OrderUpdated;
+        public event Action<PositionExecReport> PositionUpdated;
         public event Action<BalanceOperation> BalanceUpdated;
 
         public AccountInfo GetAccountInfo()
@@ -158,7 +178,7 @@ namespace TickTrader.Algo.Runtime
 
         public Task<List<QuoteInfo>> GetSnapshotAsync()
         {
-            return _account.GetFeedSnapshotAsync();
+            return RunOnThreadPool(_account.GetFeedSnapshotAsync);
         }
 
         public IFeedSubscription GetSubscription()
@@ -175,7 +195,7 @@ namespace TickTrader.Algo.Runtime
         {
             var request = new ModifyFeedSubscriptionRequest();
             request.Updates.AddRange(updates);
-            return _account.ModifyFeedSubscriptionAsync(request);
+            return RunOnThreadPool(() => _account.ModifyFeedSubscriptionAsync(request));
         }
 
         public void CancelAll()
@@ -185,7 +205,7 @@ namespace TickTrader.Algo.Runtime
 
         public Task CancelAllAsync()
         {
-            return _account.CancelAllFeedSubscriptionsAsync();
+            return RunOnThreadPool(_account.CancelAllFeedSubscriptionsAsync);
         }
 
         #endregion IFeedProvider
@@ -222,7 +242,7 @@ namespace TickTrader.Algo.Runtime
                 From = from,
                 To = to,
             };
-            return _account.GetBarListAsync(request);
+            return RunOnThreadPool(() => _account.GetBarListAsync(request));
         }
 
         public Task<List<BarData>> QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count)
@@ -235,7 +255,7 @@ namespace TickTrader.Algo.Runtime
                 From = from,
                 Count = count,
             };
-            return _account.GetBarListAsync(request);
+            return RunOnThreadPool(() => _account.GetBarListAsync(request));
         }
 
         public Task<List<QuoteInfo>> QueryQuotesAsync(string symbol, Timestamp from, Timestamp to, bool level2)
@@ -247,7 +267,7 @@ namespace TickTrader.Algo.Runtime
                 To = to,
                 Level2 = level2,
             };
-            return _account.GetQuoteListAsync(request);
+            return RunOnThreadPool(() => _account.GetQuoteListAsync(request));
         }
 
         public Task<List<QuoteInfo>> QueryQuotesAsync(string symbol, Timestamp from, int count, bool level2)
@@ -259,7 +279,7 @@ namespace TickTrader.Algo.Runtime
                 Count = count,
                 Level2 = level2,
             };
-            return _account.GetQuoteListAsync(request);
+            return RunOnThreadPool(() => _account.GetQuoteListAsync(request));
         }
 
         #endregion IFeedHistoryProvider

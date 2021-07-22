@@ -78,7 +78,7 @@ namespace TickTrader.Algo.Async.Actors
             {
                 _syncContext.Enter();
 
-                for (var i = 0; i < maxBatch && reader.TryRead(out var msg); i++)
+                for (var i = 0; i < maxBatch && _doProcessing && reader.TryRead(out var msg); i++)
                     msgHandler(msg);
 
             }

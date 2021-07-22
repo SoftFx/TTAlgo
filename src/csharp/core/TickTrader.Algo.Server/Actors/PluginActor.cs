@@ -54,6 +54,7 @@ namespace TickTrader.Algo.Server
             Receive<PluginStatusUpdate>(OnStatusUpdated);
             Receive<DataSeriesUpdate>(update => _outputEventSrc.DispatchEvent(update));
             Receive<ExecutorStateUpdate>(OnExecutorStateUpdated);
+            Receive<PluginExitedMsg>(OnExited);
         }
 
 
@@ -175,6 +176,13 @@ namespace TickTrader.Algo.Server
                 ChangeState(PluginModelInfo.Types.PluginState.Reconnecting);
         }
 
+        private void OnExited(PluginExitedMsg msg)
+        {
+            _logger.Debug("Received exit notification");
+
+            _server.SavedState.SetPluginRunning(_id, false).Forget();
+        }
+
 
         private async Task<bool> UpdatePackage()
         {
@@ -265,6 +273,7 @@ namespace TickTrader.Algo.Server
                 _executor.StatusUpdated.Subscribe(Self);
                 _executor.OutputUpdated.Subscribe(Self);
                 _executor.StateUpdated.Subscribe(Self);
+                _executor.ExitHandler = msg => Self.Tell(msg);
 
                 await _executor.Start();
 
@@ -297,7 +306,6 @@ namespace TickTrader.Algo.Server
                 _executor.Dispose();
 
                 _stopTaskSrc.SetResult(true);
-                ChangeState(PluginModelInfo.Types.PluginState.Stopped);
             }
             catch (Exception ex)
             {

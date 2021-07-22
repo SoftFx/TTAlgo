@@ -53,6 +53,7 @@ namespace TickTrader.Algo.Runtime
                 return;
 
             _knownProxies.TryAdd(accountId, handler);
+            handler.SetSession(_session);
 
             try
             {
@@ -62,12 +63,11 @@ namespace TickTrader.Algo.Runtime
             }
             catch(Exception)
             {
+                handler.SetSession(null);
                 _knownProxies.TryRemove(accountId, out var _);
 
                 throw;
             }
-
-            handler.SetSession(_session);
         }
 
         public async Task DetachAccount(string accountId)
