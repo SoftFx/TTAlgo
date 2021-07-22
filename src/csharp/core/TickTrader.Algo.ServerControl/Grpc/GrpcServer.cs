@@ -1,16 +1,17 @@
-﻿using System;
+﻿using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
+using Grpc.Core;
+using NLog;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Google.Protobuf;
-using Google.Protobuf.WellKnownTypes;
-using Grpc.Core;
-using NLog;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Server.Common;
 using TickTrader.Algo.Server.Common.Grpc;
+
 using AlgoServerApi = TickTrader.Algo.Server.PublicAPI;
 using GrpcCore = Grpc.Core;
 
@@ -200,81 +201,80 @@ namespace TickTrader.Algo.ServerControl.Grpc
         //    return ExecuteUnaryRequestAuthorized(GetBotListInternal, request, context);
         //}
 
-        //public override Task<AddPluginResponse> AddPlugin(AddPluginRequest request, ServerCallContext context)
-        //{
-        //    return ExecuteUnaryRequestAuthorized(AddBotInternal, request, context);
+        public override Task<AlgoServerApi.AddPluginResponse> AddPlugin(AlgoServerApi.AddPluginRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(AddBotInternal, request, context);
+        }
 
-        //}
+        public override Task<AlgoServerApi.RemovePluginResponse> RemovePlugin(AlgoServerApi.RemovePluginRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(RemoveBotInternal, request, context);
+        }
 
-        //public override Task<RemovePluginResponse> RemovePlugin(RemovePluginRequest request, ServerCallContext context)
-        //{
-        //    return ExecuteUnaryRequestAuthorized(RemoveBotInternal, request, context);
-        //}
+        public override Task<AlgoServerApi.StartPluginResponse> StartPlugin(AlgoServerApi.StartPluginRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(StartBotInternal, request, context);
+        }
 
-        //public override Task<StartPluginResponse> StartPlugin(StartPluginRequest request, ServerCallContext context)
-        //{
-        //    return ExecuteUnaryRequestAuthorized(StartBotInternal, request, context);
-        //}
+        public override Task<AlgoServerApi.StopPluginResponse> StopPlugin(AlgoServerApi.StopPluginRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(StopBotInternal, request, context);
+        }
 
-        //public override Task<StopPluginResponse> StopPlugin(StopPluginRequest request, ServerCallContext context)
-        //{
-        //    return ExecuteUnaryRequestAuthorized(StopBotInternal, request, context);
-        //}
-
-        //public override Task<ChangePluginConfigResponse> ChangePluginConfig(ChangePluginConfigRequest request, ServerCallContext context)
-        //{
-        //    return ExecuteUnaryRequestAuthorized(ChangeBotConfigInternal, request, context);
-        //}
+        public override Task<AlgoServerApi.ChangePluginConfigResponse> ChangePluginConfig(AlgoServerApi.ChangePluginConfigRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(ChangeBotConfigInternal, request, context);
+        }
 
         //public override Task<AccountListResponse> GetAccountList(AccountListRequest request, ServerCallContext context)
         //{
         //    return ExecuteUnaryRequestAuthorized(GetAccountListInternal, request, context);
         //}
 
-        //public override Task<AddAccountResponse> AddAccount(AddAccountRequest request, ServerCallContext context)
-        //{
-        //    return ExecuteUnaryRequestAuthorized(AddAccountInternal, request, context);
-        //}
+        public override Task<AlgoServerApi.AddAccountResponse> AddAccount(AlgoServerApi.AddAccountRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(AddAccountInternal, request, context);
+        }
 
-        //public override Task<RemoveAccountResponse> RemoveAccount(RemoveAccountRequest request, ServerCallContext context)
-        //{
-        //    return ExecuteUnaryRequestAuthorized(RemoveAccountInternal, request, context);
-        //}
+        public override Task<AlgoServerApi.RemoveAccountResponse> RemoveAccount(AlgoServerApi.RemoveAccountRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(RemoveAccountInternal, request, context);
+        }
 
-        //public override Task<ChangeAccountResponse> ChangeAccount(ChangeAccountRequest request, ServerCallContext context)
-        //{
-        //    return ExecuteUnaryRequestAuthorized(ChangeAccountInternal, request, context);
-        //}
+        public override Task<AlgoServerApi.ChangeAccountResponse> ChangeAccount(AlgoServerApi.ChangeAccountRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(ChangeAccountInternal, request, context);
+        }
 
-        //public override Task<TestAccountResponse> TestAccount(TestAccountRequest request, ServerCallContext context)
-        //{
-        //    return ExecuteUnaryRequestAuthorized(TestAccountInternal, request, context);
-        //}
+        public override Task<AlgoServerApi.TestAccountResponse> TestAccount(AlgoServerApi.TestAccountRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(TestAccountInternal, request, context);
+        }
 
-        //public override Task<TestAccountCredsResponse> TestAccountCreds(TestAccountCredsRequest request, ServerCallContext context)
-        //{
-        //    return ExecuteUnaryRequestAuthorized(TestAccountCredsInternal, request, context);
-        //}
+        public override Task<AlgoServerApi.TestAccountCredsResponse> TestAccountCreds(AlgoServerApi.TestAccountCredsRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(TestAccountCredsInternal, request, context);
+        }
 
         //public override Task<PackageListResponse> GetPackageList(PackageListRequest request, ServerCallContext context)
         //{
         //    return ExecuteUnaryRequestAuthorized(GetPackageListInternal, request, context);
         //}
 
-        //public override Task<UploadPackageResponse> UploadPackage(IAsyncStreamReader<FileTransferMsg> requestStream, ServerCallContext context)
-        //{
-        //    return ExecuteClientStreamingRequestAuthorized(UploadPackageInternal, requestStream, context);
-        //}
+        public override Task<AlgoServerApi.UploadPackageResponse> UploadPackage(IAsyncStreamReader<AlgoServerApi.FileTransferMsg> requestStream, ServerCallContext context)
+        {
+            return ExecuteClientStreamingRequestAuthorized(UploadPackageInternal, requestStream, context);
+        }
 
-        //public override Task<RemovePackageResponse> RemovePackage(RemovePackageRequest request, ServerCallContext context)
-        //{
-        //    return ExecuteUnaryRequestAuthorized(RemovePackageInternal, request, context);
-        //}
+        public override Task<AlgoServerApi.RemovePackageResponse> RemovePackage(AlgoServerApi.RemovePackageRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(RemovePackageInternal, request, context);
+        }
 
-        //public override Task DownloadPackage(DownloadPackageRequest request, IServerStreamWriter<FileTransferMsg> responseStream, ServerCallContext context)
-        //{
-        //    return ExecuteServerStreamingRequestAuthorized(DownloadPackageInternal, request, responseStream, context);
-        //}
+        public override Task DownloadPackage(AlgoServerApi.DownloadPackageRequest request, IServerStreamWriter<AlgoServerApi.FileTransferMsg> responseStream, ServerCallContext context)
+        {
+            return ExecuteServerStreamingRequestAuthorized(DownloadPackageInternal, request, responseStream, context);
+        }
 
         //public override Task<PluginStatusResponse> GetPluginStatus(PluginStatusRequest request, ServerCallContext context)
         //{
@@ -291,30 +291,30 @@ namespace TickTrader.Algo.ServerControl.Grpc
         //    return ExecuteUnaryRequestAuthorized(GetAlertsInternal, request, context);
         //}
 
-        //public override Task<PluginFolderInfoResponse> GetPluginFolderInfo(PluginFolderInfoRequest request, ServerCallContext context)
-        //{
-        //    return ExecuteUnaryRequestAuthorized(GetBotFolderInfoInternal, request, context);
-        //}
+        public override Task<AlgoServerApi.PluginFolderInfoResponse> GetPluginFolderInfo(AlgoServerApi.PluginFolderInfoRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(GetBotFolderInfoInternal, request, context);
+        }
 
-        //public override Task<ClearPluginFolderResponse> ClearPluginFolder(ClearPluginFolderRequest request, ServerCallContext context)
-        //{
-        //    return ExecuteUnaryRequestAuthorized(ClearBotFolderInternal, request, context);
-        //}
+        public override Task<AlgoServerApi.ClearPluginFolderResponse> ClearPluginFolder(AlgoServerApi.ClearPluginFolderRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(ClearBotFolderInternal, request, context);
+        }
 
-        //public override Task<DeletePluginFileResponse> DeletePluginFile(DeletePluginFileRequest request, ServerCallContext context)
-        //{
-        //    return ExecuteUnaryRequestAuthorized(DeleteBotFileInternal, request, context);
-        //}
+        public override Task<AlgoServerApi.DeletePluginFileResponse> DeletePluginFile(AlgoServerApi.DeletePluginFileRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(DeleteBotFileInternal, request, context);
+        }
 
-        //public override Task DownloadPluginFile(DownloadPluginFileRequest request, IServerStreamWriter<FileTransferMsg> responseStream, ServerCallContext context)
-        //{
-        //    return ExecuteServerStreamingRequestAuthorized(DownloadBotFileInternal, request, responseStream, context);
-        //}
+        public override Task DownloadPluginFile(AlgoServerApi.DownloadPluginFileRequest request, IServerStreamWriter<AlgoServerApi.FileTransferMsg> responseStream, ServerCallContext context)
+        {
+            return ExecuteServerStreamingRequestAuthorized(DownloadBotFileInternal, request, responseStream, context);
+        }
 
-        //public override Task<UploadPluginFileResponse> UploadPluginFile(IAsyncStreamReader<FileTransferMsg> requestStream, ServerCallContext context)
-        //{
-        //    return ExecuteClientStreamingRequestAuthorized(UploadBotFileInternal, requestStream, context);
-        //}
+        public override Task<AlgoServerApi.UploadPluginFileResponse> UploadPluginFile(IAsyncStreamReader<AlgoServerApi.FileTransferMsg> requestStream, ServerCallContext context)
+        {
+            return ExecuteClientStreamingRequestAuthorized(UploadBotFileInternal, requestStream, context);
+        }
 
         #endregion Grpc request handlers overrides
 

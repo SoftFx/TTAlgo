@@ -6,9 +6,9 @@ using NLog.Targets;
 using System.IO;
 using System.Text;
 
-namespace TickTrader.Algo.ServerControl
+namespace TickTrader.Algo.Server.Common
 {
-    internal static class LoggerHelper
+    public static class LoggerHelper
     {
         public const string SessionLoggerPrefix = "Session.";
 
@@ -19,7 +19,7 @@ namespace TickTrader.Algo.ServerControl
         }
 
 
-        internal static ILogger GetLogger(string loggerName, string logsDir, string folderName)
+        public static ILogger GetLogger(string loggerName, string logsDir, string folderName)
         {
             var logTargetName = $"all-{folderName}";
             var errorTargetName = $"error-{folderName}";

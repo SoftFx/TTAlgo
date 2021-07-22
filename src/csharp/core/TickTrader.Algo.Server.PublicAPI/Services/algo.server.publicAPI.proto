@@ -12,6 +12,7 @@ import "requests/connection.management.proto";
 import "requests/package.management.proto";
 import "requests/plugin.management.proto";
 import "requests/plugin.files.management.proto";
+import "requests/log.subscribe.management.proto";
 
 
 message FileChunk {
@@ -54,4 +55,8 @@ service AlgoServerPublic
     rpc DeletePluginFile(DeletePluginFileRequest) returns (DeletePluginFileResponse);
     rpc DownloadPluginFile(DownloadPluginFileRequest) returns (stream FileTransferMsg);
     rpc UploadPluginFile(stream FileTransferMsg) returns (UploadPluginFileResponse);
+
+    rpc SubscribeToAlertList(AlertListSubscribeRequest) returns (AlertListSubscribeResponse);
+    rpc SubscribeToPluginStatus(PluginStatusSubscribeRequest) returns (PluginStatusSubscribeResponse);
+    rpc SubscribeToPluginLogs(PluginLogsSubscribeRequest) returns (PluginLogsSubscribeResponse);
 }

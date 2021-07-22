@@ -26,11 +26,7 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         Task<AccountMetadataInfo> GetAccountMetadata(AccountMetadataRequest request);
 
-        // to be removed
-        //Task<AlertRecordInfo[]> GetAlerts(PluginAlertsRequest request);
-
-        // replacement
-        //Task SubscribeToAlertList(AlertListSubscribeRequest request); // request params: Timestamp from
+        Task SubscribeToAlertList(AlertListSubscribeRequest request);
 
         #endregion Other
 
@@ -73,17 +69,10 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         Task ChangePluginConfig(ChangePluginConfigRequest request);
 
-        // to be removed 
-        //Task<string> GetPluginStatus(PluginStatusRequest request);
 
-        // replacement
-        //Task SubscribeToPluginStatus(PluginStatusSubscribeRequest request); // request params: string pluginId
+        Task SubscribeToPluginStatus(PluginStatusSubscribeRequest request);
 
-        // to be removed
-        //Task<LogRecordInfo[]> GetPluginLogs(PluginLogsRequest request);
-
-        // replacement
-        //Task SubscribeToPluginLogs(PluginLogsSubscribeRequest request); // request params: string pluginId
+        Task SubscribeToPluginLogs(PluginLogsSubscribeRequest request);
 
         #endregion Plugin Management
 

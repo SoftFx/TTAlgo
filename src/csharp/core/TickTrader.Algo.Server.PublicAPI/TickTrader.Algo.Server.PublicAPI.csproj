@@ -8,6 +8,7 @@
     <None Remove="Requests\account.management.proto" />
     <None Remove="Requests\base.request.proto" />
     <None Remove="Requests\connection.management.proto" />
+    <None Remove="Requests\log.subscribe.management.proto" />
     <None Remove="Requests\package.management.proto" />
     <None Remove="Requests\plugin.files.management.proto" />
     <None Remove="Requests\plugin.management.proto" />
@@ -36,6 +37,7 @@
     <Protobuf Include="Requests\base.request.proto" GrpcServices="Client" />
     <Protobuf Include="Requests\account.management.proto" GrpcServices="Client" />
     <Protobuf Include="Requests\connection.management.proto" GrpcServices="Client" />
+    <Protobuf Include="Requests\log.subscribe.management.proto" GrpcServices="Client" />
     <Protobuf Include="Requests\package.management.proto" GrpcServices="Client" />
     <Protobuf Include="Requests\plugin.files.management.proto" GrpcServices="Client" />
     <Protobuf Include="Requests\plugin.management.proto" GrpcServices="Client" />

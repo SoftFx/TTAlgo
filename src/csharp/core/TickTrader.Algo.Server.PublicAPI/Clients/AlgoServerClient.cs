@@ -15,7 +15,7 @@ namespace TickTrader.Algo.Server.PublicAPI
         private const int HeartbeatTimeout = 10000;
         private const int DefaultRequestTimeout = 10;
 
-        public ClientStates State => throw new System.NotImplementedException();
+        public ClientStates State => _stateMachine.Current;
 
         //public string LastError => throw new System.NotImplementedException();
 
@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Server.PublicAPI
         //public IAccessManager AccessManager => throw new System.NotImplementedException();
 
 
-        private MessageFormatter _messageFormatter;
+        private readonly MessageFormatter _messageFormatter;
         private Channel _channel;
         private AlgoServerPublic.AlgoServerPublicClient _client;
         private string _accessToken;
@@ -48,13 +48,16 @@ namespace TickTrader.Algo.Server.PublicAPI
         public override void StartClient()
         {
             GrpcEnvironment.SetLogger(new GrpcLoggerAdapter(Logger));
+
             var creds = new SslCredentials(CertificateProvider.RootCertificate); //, new KeyCertificatePair(CertificateProvider.ClientCertificate, CertificateProvider.ClientKey));
             var options = new[] { new ChannelOption(ChannelOptions.SslTargetNameOverride, "bot-agent.soft-fx.lv"), };
-            _channel = new Channel(SessionSettings.ServerAddress, SessionSettings.ServerPort, creds, options);
-            _accessToken = "";
-            _messageFormatter.LogMessages = SessionSettings.LogMessages;
 
+            _channel = new Channel(SessionSettings.ServerAddress, SessionSettings.ServerPort, creds, options);
             _client = new AlgoServerPublic.AlgoServerPublicClient(_channel);
+
+            _messageFormatter.LogMessages = SessionSettings.LogMessages;
+            _accessToken = string.Empty;
+
 
             _channel.ConnectAsync(DateTime.UtcNow.AddSeconds(DefaultRequestTimeout))
                 .ContinueWith(t =>
@@ -79,10 +82,13 @@ namespace TickTrader.Algo.Server.PublicAPI
         public override void StopClient()
         {
             _messageFormatter.LogMessages = false;
+
             _updateStreamCancelTokenSrc?.Cancel();
             _updateStreamCancelTokenSrc = null;
+
             _heartbeatTimer?.Dispose();
             _heartbeatTimer = null;
+
             _channel.ShutdownAsync().Wait();
         }
 
@@ -99,19 +105,21 @@ namespace TickTrader.Algo.Server.PublicAPI
                 switch (t.Status)
                 {
                     case TaskStatus.RanToCompletion:
-                        var taskResult = t.Result;
-                        if (taskResult.Error == LoginResponse.Types.LoginError.None)
                         {
-                            _accessToken = taskResult.AccessToken;
-                            Logger.Info($"Server session id: {taskResult.SessionId}");
-                            OnLogin(taskResult.MajorVersion, taskResult.MinorVersion, taskResult.AccessLevel);
-                            _heartbeatTimer = new Timer(HeartbeatTimerCallback, null, HeartbeatTimeout, -1);
+                            var taskResult = t.Result;
+
+                            if (taskResult.Error == LoginResponse.Types.LoginError.None)
+                            {
+                                _accessToken = taskResult.AccessToken;
+                                Logger.Info($"Server session id: {taskResult.SessionId}");
+                                OnLogin(taskResult.MajorVersion, taskResult.MinorVersion, taskResult.AccessLevel);
+                                _heartbeatTimer = new Timer(HeartbeatTimerCallback, null, HeartbeatTimeout, -1);
+                            }
+                            else
+                                OnConnectionError(taskResult.Error.ToString());
+
+                            break;
                         }
-                        else
-                        {
-                            OnConnectionError(taskResult.Error.ToString());
-                        }
-                        break;
                     case TaskStatus.Canceled:
                         Logger.Error("Login request timed out");
                         OnConnectionError("Login timeout");
@@ -187,7 +195,7 @@ namespace TickTrader.Algo.Server.PublicAPI
                     : new AlgoServerException($"{requestResult.Status} - {requestResult.Message}");
         }
 
-        //private void ApplySnapshot(SnapshotResponse snapshot)
+        //private void ApplySnapshot(/*SnapshotResponse snapshot*/)
         //{
         //    try
         //    {
@@ -230,25 +238,25 @@ namespace TickTrader.Algo.Server.PublicAPI
         //        return;
         //    }
 
-        //    ExecuteServerStreamingRequestAuthorized(SubscribeToUpdatesInternal, new SubscribeToUpdatesRequest())
-        //        .ContinueWith(t =>
-        //        {
-        //            switch (t.Status)
-        //            {
-        //                case TaskStatus.RanToCompletion:
-        //                    ListenToUpdates(t.Result);
-        //                    OnSubscribed();
-        //                    break;
-        //                case TaskStatus.Canceled:
-        //                    Logger.Error("Subscribe to updates request timed out");
-        //                    OnConnectionError("Request timeout during init");
-        //                    break;
-        //                case TaskStatus.Faulted:
-        //                    Logger.Error(t.Exception, "Init failed: Can't subscribe to updates");
-        //                    OnConnectionError("Init failed");
-        //                    break;
-        //            }
-        //        });
+        //    //ExecuteServerStreamingRequestAuthorized(SubscribeToUpdatesInternal, new SubscribeToUpdatesRequest())
+        //    //    .ContinueWith(t =>
+        //    //    {
+        //    //        switch (t.Status)
+        //    //        {
+        //    //            case TaskStatus.RanToCompletion:
+        //    //                ListenToUpdates(t.Result);
+        //    //                OnSubscribed();
+        //    //                break;
+        //    //            case TaskStatus.Canceled:
+        //    //                Logger.Error("Subscribe to updates request timed out");
+        //    //                OnConnectionError("Request timeout during init");
+        //    //                break;
+        //    //            case TaskStatus.Faulted:
+        //    //                Logger.Error(t.Exception, "Init failed: Can't subscribe to updates");
+        //    //                OnConnectionError("Init failed");
+        //    //                break;
+        //    //        }
+        //    //    });
         //}
 
         //private async void ListenToUpdates(AsyncServerStreamingCall<UpdateInfo> updateCall)
@@ -545,10 +553,49 @@ namespace TickTrader.Algo.Server.PublicAPI
             return call;
         }
 
+        private Task<AlertListSubscribeResponse> SubscribeToAlertListInternal(AlertListSubscribeRequest request, CallOptions options)
+        {
+            return _client.SubscribeToAlertListAsync(request, options).ResponseAsync;
+        }
+
+        private Task<PluginStatusSubscribeResponse> SubscribeToPluginStatusInternal(PluginStatusSubscribeRequest request, CallOptions options)
+        {
+            return _client.SubscribeToPluginStatusAsync(request, options).ResponseAsync;
+        }
+
+        private Task<PluginLogsSubscribeResponse> SubscribeToPluginLogsInternal(PluginLogsSubscribeRequest request, CallOptions options)
+        {
+            return _client.SubscribeToPluginLogsAsync(request, options).ResponseAsync;
+        }
         #endregion Grpc request calls
 
 
         #region Requests
+
+        public async Task<AccountMetadataInfo> GetAccountMetadata(AccountMetadataRequest request)
+        {
+            var response = await ExecuteUnaryRequestAuthorized(GetAccountMetadataInternal, request);
+            FailForNonSuccess(response.ExecResult);
+            return response.AccountMetadata;
+        }
+
+        public async Task SubscribeToAlertList(AlertListSubscribeRequest request)
+        {
+            //var response = await ExecuteUnaryRequestAuthorized(AddBotInternal, request);
+            //FailForNonSuccess(response.ExecResult);
+        }
+
+        public async Task SubscribeToPluginStatus(PluginStatusSubscribeRequest request)
+        {
+            //var response = await ExecuteUnaryRequestAuthorized(AddBotInternal, request);
+            //FailForNonSuccess(response.ExecResult);
+        }
+
+        public async Task SubscribeToPluginLogs(PluginLogsSubscribeRequest request)
+        {
+            //var response = await ExecuteUnaryRequestAuthorized(AddBotInternal, request);
+            //FailForNonSuccess(response.ExecResult);
+        }
 
         public async Task AddPlugin(AddPluginRequest request)
         {
@@ -866,11 +913,6 @@ namespace TickTrader.Algo.Server.PublicAPI
 
             var response = await clientStream.ResponseAsync;
             FailForNonSuccess(response.ExecResult);
-        }
-
-        public Task<AccountMetadataInfo> GetAccountMetadata(AccountMetadataRequest request)
-        {
-            throw new NotImplementedException();
         }
 
         #endregion Requests

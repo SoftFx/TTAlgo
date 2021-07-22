@@ -7,6 +7,7 @@ namespace TickTrader.Algo.Server.PublicAPI
     {
         void AccessLevelChanged();
 
+
         #region Connection init
 
         void InitPackageList(List<PackageInfo> report);

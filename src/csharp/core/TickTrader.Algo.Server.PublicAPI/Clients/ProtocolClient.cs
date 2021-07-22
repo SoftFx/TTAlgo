@@ -2,6 +2,7 @@
 using NLog;
 using System;
 using System.Threading.Tasks;
+using TickTrader.Algo.Server.Common;
 
 namespace TickTrader.Algo.Server.PublicAPI
 {
@@ -77,37 +78,11 @@ namespace TickTrader.Algo.Server.PublicAPI
         private void StateMachineOnStateChanged(ClientStates from, ClientStates to)
         {
             Logger?.Debug($"STATE {from} -> {to}");
-            //Task.Factory.StartNew(() =>
-            //{
-            //    try
-            //    {
-            //        if (to == ClientStates.Connecting)
-            //        {
-            //            Connecting();
-            //        }
-            //        if (to == ClientStates.Online)
-            //        {
-            //            Connected();
-            //        }
-            //        if (from == ClientStates.Online)
-            //        {
-            //            Disconnecting();
-            //        }
-            //        if (to == ClientStates.Offline)
-            //        {
-            //            Disconnected();
-            //        }
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        //Logger?.Error(ex, $"Connection event failed: {ex.Message}");
-            //    }
-            //});
         }
 
         private void StartConnecting()
         {
-            //Logger = LoggerHelper.GetLogger(GetType().Name, System.IO.Path.Combine(SessionSettings.LogDirectory, GetType().Name), SessionSettings.ServerAddress);
+            Logger = LoggerHelper.GetLogger(GetType().Name, System.IO.Path.Combine(SessionSettings.LogDirectory, GetType().Name), SessionSettings.ServerAddress);
 
             LastError = null;
 
@@ -144,14 +119,9 @@ namespace TickTrader.Algo.Server.PublicAPI
             Logger?.Debug($"EVENT {e}");
         }
 
-        public void TriggerDisconnect()
-        {
-            _stateMachine.PushEvent(ClientEvents.LogoutRequest);
-        }
-
         public Task Disconnect()
         {
-            TriggerDisconnect();
+            _stateMachine.PushEvent(ClientEvents.LogoutRequest);
             return _stateMachine.AsyncWait(ClientStates.Offline);
         }
 
@@ -189,8 +159,11 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             VersionSpec = new ApiVersionSpec(serverMinorVersion);
             AccessManager = new ApiAccessManager(accessLevel);
+
             _serverHandler.AccessLevelChanged();
+
             Logger.Info($"Client version - {VersionSpec.MajorVersion}.{VersionSpec.MinorVersion}; Server version - {serverMajorVersion}.{serverMinorVersion}");
+
             Logger.Info($"Current version set to {VersionSpec.MajorVersion}.{VersionSpec.CurrentVersion}");
             _stateMachine.PushEvent(ClientEvents.LoggedIn);
         }
@@ -204,8 +177,10 @@ namespace TickTrader.Algo.Server.PublicAPI
         protected void OnLogout(string reason)
         {
             LastError = reason;
+
             AccessManager = new ApiAccessManager(ClientClaims.Types.AccessLevel.Anonymous);
             _serverHandler.AccessLevelChanged();
+
             _stateMachine.PushEvent(ClientEvents.LoggedOut);
         }
 

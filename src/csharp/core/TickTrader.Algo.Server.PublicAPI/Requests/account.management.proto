@@ -12,6 +12,7 @@ import "structures/plugin.model.info.proto";
 
 import "requests/base.request.proto";
 
+
 message AccountCreds {
     string auth_scheme = 1;
     map<string, google.protobuf.StringValue> secret = 2;
@@ -42,7 +43,7 @@ message AddAccountRequest {
 }
 
 message AddAccountResponse {
-    ticktrader.algo.server.publicApi.RequestResult exec_result = 101;
+    RequestResult exec_result = 101;
 }
 
 message RemoveAccountRequest {
@@ -50,7 +51,7 @@ message RemoveAccountRequest {
 }
 
 message RemoveAccountResponse {
-    ticktrader.algo.server.publicApi.RequestResult exec_result = 101;
+    RequestResult exec_result = 101;
 }
 
 message ChangeAccountRequest {
@@ -60,7 +61,7 @@ message ChangeAccountRequest {
 }
 
 message ChangeAccountResponse {
-    ticktrader.algo.server.publicApi.RequestResult exec_result = 101;
+    RequestResult exec_result = 101;
 }
 
 message TestAccountRequest {
@@ -70,7 +71,7 @@ message TestAccountRequest {
 message TestAccountResponse {
     ConnectionErrorInfo error_info = 1;
 
-    ticktrader.algo.server.publicApi.RequestResult exec_result = 101;
+    RequestResult exec_result = 101;
 }
 
 message TestAccountCredsRequest {
@@ -82,5 +83,5 @@ message TestAccountCredsRequest {
 message TestAccountCredsResponse {
     ConnectionErrorInfo error_info = 1;
 
-    ticktrader.algo.server.publicApi.RequestResult exec_result = 101;
+    RequestResult exec_result = 101;
 }
