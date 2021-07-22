@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Account;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
-using TickTrader.BotAgent.BA.Models;
 
 namespace TickTrader.BotAgent.BA
 {
@@ -40,14 +39,12 @@ namespace TickTrader.BotAgent.BA
 
         Task<PluginListSnapshot> GetBots();
         Task<PluginModelInfo> GetBotInfo(string botId);
-        Task<IBotFolder> GetAlgoData(string botId);
         Task<string> GenerateBotId(string botDisplayName);
         Task AddBot(AddPluginRequest request);
         Task RemoveBot(RemovePluginRequest request);
         Task ChangeBotConfig(ChangePluginConfigRequest request);
         Task StartBot(StartPluginRequest request);
         Task StopBotAsync(StopPluginRequest request);
-        Task<IBotLog> GetBotLog(string botId);
         Task<PluginLogRecord[]> GetBotLogs(PluginLogsRequest request);
         Task<string> GetBotStatus(PluginStatusRequest request);
 
@@ -71,30 +68,11 @@ namespace TickTrader.BotAgent.BA
         Task ShutdownAsync();
     }
 
-    public interface IBotFolder
-    {
-        Task<string> GetFolder();
-        Task<IFile[]> GetFiles();
-        Task Clear();
-        Task<IFile> GetFile(string decodedFile);
-        Task DeleteFile(string name);
-        Task SaveFile(string name, byte[] bytes);
-        Task<string> GetFileReadPath(string name);
-        Task<string> GetFileWritePath(string name);
-    }
-
     public interface ILogEntry
     {
         Timestamp TimeUtc { get; }
         PluginLogRecord.Types.LogSeverity Severity { get; }
         string Message { get; }
-    }
-
-    public interface IBotLog : IBotFolder
-    {
-        Task<ILogEntry[]> GetMessages();
-        Task<string> GetStatusAsync();
-        Task<List<ILogEntry>> QueryMessagesAsync(Timestamp from, int maxCount);
     }
 
     public interface IAlertEntry

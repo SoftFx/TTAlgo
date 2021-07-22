@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.Serialization;
 using System.Xml;
-using TickTrader.BotAgent.BA.Exceptions;
 using System.Threading.Tasks;
 using TickTrader.BotAgent.Infrastructure;
-using TickTrader.BotAgent.Extensions;
-using TickTrader.Algo.Core.Lib;
 using ActorSharp;
 using NLog;
 using TickTrader.Algo.Domain;
@@ -17,6 +13,7 @@ using TickTrader.Algo.Server;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.Server.Persistence;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -32,9 +29,7 @@ namespace TickTrader.BotAgent.BA.Models
         private List<ClientModel> _accounts = new List<ClientModel>();
         private Dictionary<string, TradeBotModel> _allBots;
         private PluginIdHelper _botIdHelper;
-        private IFdkOptionsProvider _fdkOptionsProvider;
 
-        private AlertStorage _alertStorage;
         private ThreadPoolManager _threadPoolManager;
 
         private AlgoServer _algoServer;
@@ -43,7 +38,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         public static string GetWorkingFolderFor(string botId)
         {
-            return Path.Combine(Environment.AlgoWorkingFolder, botId.Escape());
+            return Path.Combine(Environment.AlgoWorkingFolder, PathHelper.Escape(botId));
         }
 
         private async Task InitAsync(IFdkOptionsProvider fdkOptionsProvider)
@@ -65,9 +60,7 @@ namespace TickTrader.BotAgent.BA.Models
 
             _botIdHelper = new PluginIdHelper();
             _allBots = new Dictionary<string, TradeBotModel>();
-            _alertStorage = new AlertStorage();
             _threadPoolManager = new ThreadPoolManager();
-            _fdkOptionsProvider = fdkOptionsProvider;
 
             _reductions = new ReductionCollection();
             _reductions.LoadDefaultReductions();
@@ -183,17 +176,6 @@ namespace TickTrader.BotAgent.BA.Models
             public Task DeletePluginFile(DeletePluginFileRequest request) => CallActorAsync(a => a._algoServer.PluginFiles.DeleteFile(request));
             public Task<string> GetPluginFileReadPath(DownloadPluginFileRequest request) => CallActorAsync(a => a._algoServer.PluginFiles.GetFileReadPath(request));
             public Task<string> GetPluginFileWritePath(UploadPluginFileRequest request) => CallActorAsync(a => a._algoServer.PluginFiles.GetFileWritePath(request));
-            public async Task<IBotFolder> GetAlgoData(string botId)
-            {
-                var algoDataRef = await CallActorAsync(a => a.GetBotOrThrow(botId).AlgoDataRef);
-                return new AlgoData.Handler(algoDataRef);
-            }
-
-            public async Task<IBotLog> GetBotLog(string botId)
-            {
-                var logRef = await CallActorAsync(a => a.GetBotOrThrow(botId).LogRef);
-                return new BotLog.Handler(logRef);
-            }
 
             public Task<PluginLogRecord[]> GetBotLogs(PluginLogsRequest request) => CallActorAsync(a => a._algoServer.Plugins.GetPluginLogs(request));
             public Task<string> GetBotStatus(PluginStatusRequest request) => CallActorAsync(a => a._algoServer.Plugins.GetPluginStatus(request));
@@ -226,219 +208,12 @@ namespace TickTrader.BotAgent.BA.Models
         public event Action<AccountModelUpdate> AccountChanged;
         public event Action<AccountStateUpdate> AccountStateChanged;
 
-        public async Task<ConnectionErrorInfo> TestCreds(TestAccountCredsRequest request)
-        {
-            var server = request.Server;
-            var userId = request.UserId;
-            var creds = request.Creds;
-
-            Validate(server, userId, creds);
-
-            var acc = new ClientModel(server, userId, creds);
-            await acc.Init(_fdkOptionsProvider, _alertStorage, _algoServer);
-
-            var testResult = await acc.TestConnection();
-
-            if (!await acc.ShutdownAsync().WaitAsync(5000))
-            {
-                _logger.Error($"Can't stop test connection to {server} - {userId}");
-            }
-
-            return testResult;
-        }
-
-        private async Task<Tuple<ConnectionErrorInfo, AccountMetadataInfo>> GetAccountMetadata(string accountId)
-        {
-            try
-            {
-                var metadata = await GetAccountOrThrow(accountId).GetMetadata();
-                return Tuple.Create(ConnectionErrorInfo.Ok, metadata);
-            }
-            catch (CommunicationException ex)
-            {
-                return Tuple.Create(new ConnectionErrorInfo(ex.FdkCode, ex.Message), (AccountMetadataInfo)null);
-            }
-        }
-
-        public async Task AddAccount(AddAccountRequest request)
-        {
-            var server = request.Server;
-            var userId = request.UserId;
-            var creds = request.Creds;
-            var displayName = request.DisplayName;
-
-            Validate(server, userId, creds);
-
-            var accountId = AccountId.Pack(server, userId);
-            if (FindAccount(accountId) != null)
-                throw new AlgoException($"Account '{accountId}' already exists");
-            if (FindAccount(server, displayName) != null)
-                throw new AlgoException($"Account with displayName '{displayName}' already exists on '{server}'");
-            else
-            {
-                var newAcc = new ClientModel(server, userId, creds, request.DisplayName);
-                _accounts.Add(newAcc);
-                //AccountChanged?.Invoke(newAcc.GetInfoCopy(), ChangeAction.Added);
-
-                Save();
-
-                await InitAccount(newAcc);
-            }
-        }
-
-        private void Validate(string server, string userId, AccountCreds creds)
-        {
-            if (string.IsNullOrWhiteSpace(server))
-                throw new AlgoException("Server is required");
-            if (string.IsNullOrWhiteSpace(userId))
-                throw new AlgoException("UserId is required");
-            switch (creds.AuthScheme)
-            {
-                case AccountCreds.SimpleAuthSchemeId:
-                    if (string.IsNullOrWhiteSpace(creds.GetPassword()))
-                        throw new AlgoException("Password is required");
-                    break;
-                default:
-                    throw new AlgoException("Creds.AuthScheme is not supported");
-            }
-        }
-
-        public async Task RemoveAccount(RemoveAccountRequest request)
-        {
-            ClientModel acc = FindAccount(request.AccountId);
-
-            if (acc == null)
-                return;
-
-            if (acc.HasRunningBots)
-                throw new AlgoException("Account cannot be removed! Stop all bots and try again.");
-
-            acc.RemoveAllBots();
-            _accounts.Remove(acc);
-            DisposeAccount(acc);
-
-            Save();
-
-            //AccountChanged?.Invoke(acc.GetInfoCopy(), ChangeAction.Removed);
-
-            if (!await acc.ShutdownAsync().WaitAsync(5000))
-                throw new BAException($"Can't stop connection to {acc.Address} - {acc.Username}");
-        }
-
-        public void ChangeAccount(ChangeAccountRequest request)
-        {
-            var acc = GetAccountOrThrow(request.AccountId);
-            acc.Change(request);
-        }
-
-        private ClientModel FindAccount(string server, string displayName)
-        {
-            return _accounts.FirstOrDefault(a => a.Address == server && a.DisplayName == displayName);
-        }
-
-        private ClientModel FindAccount(string accountId)
-        {
-            return _accounts.FirstOrDefault(a => a.AccountId == accountId);
-        }
-
-        private ClientModel GetAccountOrThrow(string accountId)
-        {
-            var acc = FindAccount(accountId);
-            if (acc == null)
-                throw new AlgoException($"Account with id '{accountId}' does not exist!");
-            return acc;
-        }
-
-        private async Task InitAccount(ClientModel acc)
-        {
-            acc.BotValidation += OnBotValidation;
-            acc.BotInitialized += OnBotInitialized;
-            acc.Changed += OnAccountChanged;
-            acc.StateChanged += OnAccountStateChanged;
-            acc.BotChanged += OnBotChanged;
-            acc.BotStateChanged += OnBotStateChanged;
-            await acc.Init(_fdkOptionsProvider, _alertStorage, _algoServer);
-            await _algoServer.Accounts.RegisterAccountProxy(acc.GetAccountProxy());
-        }
-
-        private void OnBotStateChanged(TradeBotModel bot)
-        {
-            BotStateChanged?.Invoke(bot.GetStateUpdate());
-        }
-
-        private void DisposeAccount(ClientModel acc)
-        {
-            acc.BotValidation -= OnBotValidation;
-            acc.BotInitialized -= OnBotInitialized;
-            acc.Changed -= OnAccountChanged;
-            acc.StateChanged -= OnAccountStateChanged;
-            acc.BotChanged -= OnBotChanged;
-            acc.BotStateChanged -= OnBotStateChanged;
-        }
-
-        private void OnAccountChanged(ClientModel acc)
-        {
-            Save();
-            //AccountChanged?.Invoke(acc.GetInfoCopy(), ChangeAction.Modified);
-        }
-
-        private void OnAccountStateChanged(ClientModel acc)
-        {
-            AccountStateChanged?.Invoke(acc.GetStateUpdate());
-        }
-
-        private void OnBotChanged(TradeBotModel bot, ChangeAction changeAction)
-        {
-            if (changeAction == ChangeAction.Removed)
-            {
-                _allBots.Remove(bot.Id);
-                //_threadPoolManager.OnNewBotsCnt(GetBotsCnt());
-            }
-
-            if (changeAction == ChangeAction.Added)
-            {
-                //_threadPoolManager.OnNewBotsCnt(GetBotsCnt());
-            }
-
-            Save();
-            //BotChanged?.Invoke(bot.GetInfoCopy(), changeAction);
-        }
-
-        private void OnBotValidation(TradeBotModel bot)
-        {
-            if (!_botIdHelper.Validate(bot.Id))
-                throw new AlgoException($"The instance Id must be no more than {_botIdHelper.MaxLength} characters and consist of characters: a-z A-Z 0-9 and space");
-            if (_allBots.ContainsKey(bot.Id))
-                throw new AlgoException("Bot with id '" + bot.Id + "' already exist!");
-        }
-
-        private void OnBotInitialized(TradeBotModel bot)
-        {
-            _allBots.Add(bot.Id, bot);
-        }
-
         #endregion
 
         #region Bot management
 
         private event Action<PluginModelUpdate> BotChanged;
         private event Action<PluginStateUpdate> BotStateChanged;
-
-        private PluginModelInfo AddBot(AddPluginRequest request)
-        {
-            var bot = GetAccountOrThrow(request.AccountId).AddBot(request.Config);
-            return bot.GetInfoCopy();
-        }
-
-        private void ChangeBotConfig(ChangePluginConfigRequest request)
-        {
-            GetBotOrThrow(request.PluginId).ChangeBotConfig(request.NewConfig);
-        }
-
-        public void RemoveBot(RemovePluginRequest request)
-        {
-            _allBots.GetOrDefault(request.PluginId)?.Remove(request.CleanLog, request.CleanAlgoData);
-        }
 
         private string AutogenerateBotId(string botDescriptorName)
         {
@@ -452,15 +227,6 @@ namespace TickTrader.BotAgent.BA.Models
 
                 seed++;
             }
-        }
-
-        private TradeBotModel GetBotOrThrow(string id)
-        {
-            var tradeBot = _allBots.GetOrDefault(id);
-            if (tradeBot == null)
-                throw new AlgoException($"Bot {id} not found");
-            else
-                return tradeBot;
         }
 
         #endregion
@@ -513,8 +279,6 @@ namespace TickTrader.BotAgent.BA.Models
         private event Action<PackageStateUpdate> PackageStateChanged;
 
 
-        private IAlertStorage GetAlertsStorage() => _alertStorage;
-
         private MappingCollectionInfo GetMappingsInfo()
         {
             return _mappingsInfo;
@@ -525,12 +289,9 @@ namespace TickTrader.BotAgent.BA.Models
         private async Task ShutdownAsync()
         {
             _logger.Debug("ServerModel is shutting down...");
-            //var shutdonwTasks = _accounts.Select(ac => ac.ShutdownAsync()).ToArray();
-            //await Task.WhenAll(shutdonwTasks);
+
             await _algoServer.Stop();
             await _threadPoolManager.Stop();
         }
     }
-
-    public enum ChangeAction { Added, Removed, Modified }
 }
