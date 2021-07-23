@@ -27,29 +27,23 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         #region Updates
 
-        //void UpdatePackage(UpdateInfo.Types.UpdateType updateType, PackageInfo package);
-        //// void OnPackageUpdate(PackageUpdate update);
+        void OnPackageUpdate(PackageUpdate update);
 
-        //void UpdateAccount(UpdateInfo.Types.UpdateType updateType, AccountModelInfo account);
-        //// void OnAccountUpdate(AccountModelUpdate update);
+        void OnAccountUpdate(AccountModelUpdate update);
 
-        //void UpdateBot(UpdateInfo.Types.UpdateType updateType, PluginModelInfo plugin);
-        //// void OnPluginModelUpdate(PluginModelUpdate update);
+        void OnPluginModelUpdate(PluginModelUpdate update);
 
-        //void UpdatePackageState(PackageStateUpdate packageState);
-        //// void OnPackageStateUpdate(PackageStateUpdate packageState);
+        void OnPackageStateUpdate(PackageStateUpdate packageState);
 
-        //void UpdateAccountState(AccountStateUpdate accountState);
-        //// void OnAccountStateUpdate(AccountStateUpdate accountState);
+        void OnAccountStateUpdate(AccountStateUpdate accountState);
 
-        //void UpdateBotState(PluginStateUpdate pluginState);
-        // void OnPluginStateUpdate
+        void OnPluginStateUpdate(PluginStateUpdate pluginState);
 
-        //void OnPluginStatusUpdate(PluginStatusUpdate update);
+        void OnPluginStatusUpdate(PluginStatusUpdate update);
 
-        //void OnPluginLogUpdate(PluginLogUpdate update); // params: string pluginId, LogRecord[] records
+        void OnPluginLogUpdate(PluginLogUpdate update);
 
-        //void OnAlertListUpdate(AlertListUpdate update); // params: AlertRecordInfo[]
+        void OnAlertListUpdate(AlertListUpdate update);
 
         #endregion Updates
     }

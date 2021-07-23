@@ -161,6 +161,21 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return ExecuteUnaryRequestAuthorized(LogoutInternal, request, context);
         }
 
+        public override Task<AlgoServerApi.AlertListSubscribeResponse> SubscribeToAlertList(AlgoServerApi.AlertListSubscribeRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(SubscribeToAlertListInternal, request, context);
+        }
+
+        public override Task<AlgoServerApi.PluginStatusSubscribeResponse> SubscribeToPluginStatus(AlgoServerApi.PluginStatusSubscribeRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(SubscribeToPluginStatusInternal, request, context);
+        }
+
+        public override Task<AlgoServerApi.PluginLogsSubscribeResponse> SubscribeToPluginLogs(AlgoServerApi.PluginLogsSubscribeRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(SubscribeToPluginLogsInternal, request, context);
+        }
+
         //public override Task<HeartbeatResponse> Heartbeat(HeartbeatRequest request, ServerCallContext context)
         //{
         //    return ExecuteUnaryRequestAuthorized(HeartbeatInternal, request, context);
@@ -609,6 +624,36 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return Task.FromResult(res);
         }
 
+        private async Task<AlgoServerApi.AlertListSubscribeResponse> SubscribeToAlertListInternal(AlgoServerApi.AlertListSubscribeRequest request, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
+        {
+            var res = new AlgoServerApi.AlertListSubscribeResponse { ExecResult = execResult };
+
+            if (res != null && !session.AccessManager.CanGetAlerts())
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+
+            return res;
+        }
+
+        private async Task<AlgoServerApi.PluginStatusSubscribeResponse> SubscribeToPluginStatusInternal(AlgoServerApi.PluginStatusSubscribeRequest request, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
+        {
+            var res = new AlgoServerApi.PluginStatusSubscribeResponse { ExecResult = execResult };
+
+            if (res != null && !session.AccessManager.CanGetPluginStatus())
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+
+            return res;
+        }
+
+        private async Task<AlgoServerApi.PluginLogsSubscribeResponse> SubscribeToPluginLogsInternal(AlgoServerApi.PluginLogsSubscribeRequest request, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
+        {
+            var res = new AlgoServerApi.PluginLogsSubscribeResponse { ExecResult = execResult };
+
+            if (res != null && !session.AccessManager.CanGetPluginStatus())
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+
+            return res;
+        }
+
         //private Task<HeartbeatResponse> HeartbeatInternal(HeartbeatRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
         //{
         //    var res = new HeartbeatResponse { ExecResult = execResult };
@@ -793,7 +838,6 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 res.ExecResult = CreateErrorResult(ex);
             }
             return res;
-
         }
 
         private async Task<AlgoServerApi.RemovePluginResponse> RemoveBotInternal(AlgoServerApi.RemovePluginRequest request, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)

@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using Machinarium.Qnil;
+﻿using Machinarium.Qnil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -357,6 +356,52 @@ namespace TickTrader.BotTerminal
         {
             _setupContext = setupContext.ToServer();
         }
+
+        void AlgoServerApi.IAlgoServerEventHandler.OnPackageUpdate(AlgoServerApi.PackageUpdate update)
+        {
+            throw new NotImplementedException();
+        }
+
+        void AlgoServerApi.IAlgoServerEventHandler.OnAccountUpdate(AlgoServerApi.AccountModelUpdate update)
+        {
+            throw new NotImplementedException();
+        }
+
+        void AlgoServerApi.IAlgoServerEventHandler.OnPluginModelUpdate(AlgoServerApi.PluginModelUpdate update)
+        {
+            throw new NotImplementedException();
+        }
+
+        void AlgoServerApi.IAlgoServerEventHandler.OnPackageStateUpdate(AlgoServerApi.PackageStateUpdate packageState)
+        {
+            throw new NotImplementedException();
+        }
+
+        void AlgoServerApi.IAlgoServerEventHandler.OnAccountStateUpdate(AlgoServerApi.AccountStateUpdate accountState)
+        {
+            throw new NotImplementedException();
+        }
+
+        void AlgoServerApi.IAlgoServerEventHandler.OnPluginStateUpdate(AlgoServerApi.PluginStateUpdate pluginState)
+        {
+            throw new NotImplementedException();
+        }
+
+        void AlgoServerApi.IAlgoServerEventHandler.OnPluginStatusUpdate(AlgoServerApi.PluginStatusUpdate update)
+        {
+            throw new NotImplementedException();
+        }
+
+        void AlgoServerApi.IAlgoServerEventHandler.OnPluginLogUpdate(AlgoServerApi.PluginLogUpdate update)
+        {
+            throw new NotImplementedException();
+        }
+
+        void AlgoServerApi.IAlgoServerEventHandler.OnAlertListUpdate(AlgoServerApi.AlertListUpdate update)
+        {
+            throw new NotImplementedException();
+        }
+
 
         //void UpdatePackageState(PackageStateUpdate update)
         //{

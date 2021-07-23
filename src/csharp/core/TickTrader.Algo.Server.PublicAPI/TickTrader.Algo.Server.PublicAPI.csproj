@@ -16,6 +16,7 @@
     <None Remove="Structures\api.metadata.info.proto" />
     <None Remove="Structures\package.info.proto" />
     <None Remove="Structures\plugin.model.info.proto" />
+    <None Remove="Structures\server.updates.proto" />
   </ItemGroup>
 
   <ItemGroup>
@@ -46,6 +47,7 @@
     <Protobuf Include="Structures\package.info.proto" GrpcServices="Client" />
     <Protobuf Include="Services\algo.server.publicAPI.proto" GrpcServices="Both" />
     <Protobuf Include="Structures\plugin.model.info.proto" GrpcServices="Client" />
+    <Protobuf Include="Structures\server.updates.proto" />
   </ItemGroup>
 
 </Project>

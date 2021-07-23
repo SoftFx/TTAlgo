@@ -1,0 +1,69 @@
+﻿syntax = "proto3";
+
+package ticktrader.algo.server.publicApi;
+
+option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
+
+import "google/protobuf/wrappers.proto";
+
+import "structures/package.info.proto";
+import "structures/plugin.model.info.proto";
+import "structures/account.model.info.proto";
+
+
+message Update {
+    enum Action {
+        Added = 0;
+        Updated = 1;
+        Removed = 2;
+    }
+}
+
+message PackageUpdate {
+    string id = 1;
+    Update.Action action = 2;
+    PackageInfo package = 3;
+}
+
+message PackageStateUpdate {
+    string id = 1;
+    bool is_locked = 2;
+}
+
+message AccountModelUpdate {
+    string id = 1;
+    Update.Action action = 2;
+    AccountModelInfo account = 3;
+}
+
+message AccountStateUpdate {
+    string id = 1;
+    AccountModelInfo.ConnectionState connection_state = 2;
+    ConnectionErrorInfo last_error = 3;
+}
+
+message PluginModelUpdate {
+    string id = 1;
+    Update.Action action = 2;
+    PluginModelInfo plugin = 3;
+}
+
+message PluginStateUpdate {
+    string id = 1;
+    PluginModelInfo.PluginState state = 2;
+    google.protobuf.StringValue fault_message = 3;
+}
+
+message PluginStatusUpdate {
+    string plugin_id = 1;
+    google.protobuf.StringValue message = 2;
+}
+
+message PluginLogUpdate {
+    google.protobuf.StringValue plugin_id = 1;
+    repeated LogRecordInfo records = 2;
+}
+
+message AlertListUpdate {
+    repeated AlertRecordInfo alerts = 1;
+}
