@@ -14,8 +14,8 @@ namespace TickTrader.Algo.Server.PublicAPI
         protected ILogger Logger { get; set; }
 
         public string LastError { get; private set; }
-        public IVersionSpec VersionSpec { get; private set; }
-        public IAccessManager AccessManager { get; private set; }
+        public IVersionSpec VersionSpec { get; protected set; }
+        public IAccessManager AccessManager { get; protected set; }
 
         protected IClientSessionSettings SessionSettings { get; private set; }
 

@@ -5,18 +5,24 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="certs\algo-ca.crt" />
     <None Remove="Requests\account.management.proto" />
     <None Remove="Requests\base.request.proto" />
     <None Remove="Requests\connection.management.proto" />
-    <None Remove="Requests\log.subscribe.management.proto" />
     <None Remove="Requests\package.management.proto" />
     <None Remove="Requests\plugin.files.management.proto" />
     <None Remove="Requests\plugin.management.proto" />
+    <None Remove="Requests\subscribes.management.proto" />
+    <None Remove="Requests\unsubscribes.management.proto" />
     <None Remove="Structures\account.model.info.proto" />
     <None Remove="Structures\api.metadata.info.proto" />
     <None Remove="Structures\package.info.proto" />
     <None Remove="Structures\plugin.model.info.proto" />
     <None Remove="Structures\server.updates.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="certs\algo-ca.crt" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,10 +44,13 @@
     <Protobuf Include="Requests\base.request.proto" GrpcServices="Client" />
     <Protobuf Include="Requests\account.management.proto" GrpcServices="Client" />
     <Protobuf Include="Requests\connection.management.proto" GrpcServices="Client" />
-    <Protobuf Include="Requests\log.subscribe.management.proto" GrpcServices="Client" />
+    <Protobuf Include="Requests\subscribes.management.proto" GrpcServices="Client" />
     <Protobuf Include="Requests\package.management.proto" GrpcServices="Client" />
     <Protobuf Include="Requests\plugin.files.management.proto" GrpcServices="Client" />
     <Protobuf Include="Requests\plugin.management.proto" GrpcServices="Client" />
+    <Protobuf Include="Requests\unsubscribes.management.proto" GrpcServices="Client">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Protobuf>
     <Protobuf Include="Structures\account.model.info.proto" GrpcServices="Client" />
     <Protobuf Include="Structures\api.metadata.info.proto" GrpcServices="Client" />
     <Protobuf Include="Structures\package.info.proto" GrpcServices="Client" />

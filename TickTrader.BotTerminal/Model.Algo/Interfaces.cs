@@ -10,6 +10,7 @@ using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Server.Common;
 
+using AlgoServerPublicApi = TickTrader.Algo.Server.PublicAPI;
 
 
 namespace TickTrader.BotTerminal
@@ -68,11 +69,11 @@ namespace TickTrader.BotTerminal
 
         Task<ConnectionErrorInfo> TestAccountCreds(TestAccountCredsRequest request);
 
-        Task UploadPackage(string fileName, string srcFilePath, IFileProgressListener progressListener);
+        Task UploadPackage(string fileName, string srcFilePath, AlgoServerPublicApi.IFileProgressListener progressListener);
 
         Task RemovePackage(string packageId);
 
-        Task DownloadPackage(string packageId, string dstFilePath, IFileProgressListener progressListener);
+        Task DownloadPackage(string packageId, string dstFilePath, AlgoServerPublicApi.IFileProgressListener progressListener);
 
         Task<PluginFolderInfo> GetBotFolderInfo(string botId, PluginFolderInfo.Types.PluginFolderId folderId);
 
@@ -80,9 +81,9 @@ namespace TickTrader.BotTerminal
 
         Task DeleteBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName);
 
-        Task DownloadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string dstPath, IFileProgressListener progressListener);
+        Task DownloadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string dstPath, AlgoServerPublicApi.IFileProgressListener progressListener);
 
-        Task UploadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string srcPath, IFileProgressListener progressListener);
+        Task UploadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string srcPath, AlgoServerPublicApi.IFileProgressListener progressListener);
     }
 
     internal interface IExecStateObservable

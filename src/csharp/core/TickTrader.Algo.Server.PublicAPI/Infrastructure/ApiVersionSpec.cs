@@ -9,6 +9,8 @@ namespace TickTrader.Algo.Server.PublicAPI
         int IVersionSpec.MinorVersion => MinorVersion;
 
 
+        public ApiVersionSpec() : base() { }
+
         public ApiVersionSpec(int currentVersion) : base(currentVersion) { }
     }
 }

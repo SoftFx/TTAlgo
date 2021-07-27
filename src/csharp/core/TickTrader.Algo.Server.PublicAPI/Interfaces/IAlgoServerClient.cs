@@ -28,6 +28,8 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         Task SubscribeToAlertList(AlertListSubscribeRequest request);
 
+        Task UnsubscribeToAlertList(AlertListUnsubscribeRequest request);
+
         #endregion Other
 
 
@@ -73,6 +75,10 @@ namespace TickTrader.Algo.Server.PublicAPI
         Task SubscribeToPluginStatus(PluginStatusSubscribeRequest request);
 
         Task SubscribeToPluginLogs(PluginLogsSubscribeRequest request);
+
+        Task UnsubscribeToPluginStatus(PluginStatusUnsubscribeRequest request);
+
+        Task UnsubscribeToPluginLogs(PluginLogsUnsubscribeRequest request);
 
         #endregion Plugin Management
 

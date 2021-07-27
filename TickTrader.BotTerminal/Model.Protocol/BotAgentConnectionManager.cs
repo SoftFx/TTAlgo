@@ -116,13 +116,19 @@ namespace TickTrader.BotTerminal
         private void ClientOnConnected()
         {
             if (_protocolClient.State == ClientStates.Online)
+            {
                 _stateControl.PushEvent(Events.Connected);
+                RemoteAgent.AlertModel.SubscribeToRemoteAgent();
+            }
         }
 
         private void ClientOnDisconnected()
         {
             if (_protocolClient.State == ClientStates.Offline)
+            {
                 _stateControl.PushEvent(Events.Disconnected);
+                RemoteAgent.UnsubscribeToAlerts();
+            }
         }
 
         private void StartConnecting()

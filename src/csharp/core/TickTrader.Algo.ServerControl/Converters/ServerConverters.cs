@@ -157,8 +157,8 @@ namespace TickTrader.Algo.ServerControl
         {
             return new MappingKey
             {
-                PrimaryReduction = key.PrimaryReduction.ToServer(),
-                SecondaryReduction = key.SecondaryReduction.ToServer(),
+                PrimaryReduction = key.PrimaryReduction?.ToServer(),
+                SecondaryReduction = key.SecondaryReduction?.ToServer(),
             };
         }
 
@@ -748,7 +748,7 @@ namespace TickTrader.Algo.ServerControl
             {
                 AccountId = info.AccountId,
                 ConnectionState = info.ConnectionState.ToServer(),
-                LastError = info.LastError.ToServer(),
+                LastError = info.LastError?.ToServer(),
                 DisplayName = info.DisplayName,
             };
         }
@@ -856,6 +856,74 @@ namespace TickTrader.Algo.ServerControl
                 DefaultTimeFrame = info.DefaultTimeFrame.ToServer(),
                 DefaultSymbol = info.DefaultSymbol.ToServer(),
                 DefaultMapping = info.DefaultMapping.ToServer(),
+            };
+        }
+
+        public static PluginStateUpdate ToServer(this Api.PluginStateUpdate update)
+        {
+            return new PluginStateUpdate
+            {
+                Id = update.Id,
+                State = update.State.ToServer(),
+                FaultMessage = update.FaultMessage,
+            };
+        }
+
+        public static AccountMetadataRequest ToServer(this Api.AccountMetadataRequest request)
+        {
+            return new AccountMetadataRequest
+            {
+                AccountId = request.AccountId,
+            };
+        }
+
+        public static PluginLogRecord.Types.LogSeverity ToServer(this Api.PluginLogRecord.Types.LogSeverity severity)
+        {
+            switch (severity)
+            {
+                case Api.PluginLogRecord.Types.LogSeverity.Info:
+                    return PluginLogRecord.Types.LogSeverity.Info;
+
+                case Api.PluginLogRecord.Types.LogSeverity.Error:
+                    return PluginLogRecord.Types.LogSeverity.Error;
+
+                case Api.PluginLogRecord.Types.LogSeverity.Trade:
+                    return PluginLogRecord.Types.LogSeverity.Trade;
+
+                case Api.PluginLogRecord.Types.LogSeverity.TradeSuccess:
+                    return PluginLogRecord.Types.LogSeverity.TradeSuccess;
+
+                case Api.PluginLogRecord.Types.LogSeverity.TradeFail:
+                    return PluginLogRecord.Types.LogSeverity.TradeFail;
+
+                case Api.PluginLogRecord.Types.LogSeverity.Custom:
+                    return PluginLogRecord.Types.LogSeverity.Custom;
+
+                case Api.PluginLogRecord.Types.LogSeverity.Alert:
+                    return PluginLogRecord.Types.LogSeverity.Alert;
+
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
+        public static LogRecordInfo ToServer(this Api.LogRecordInfo info)
+        {
+            return new LogRecordInfo
+            {
+                TimeUtc = info.TimeUtc,
+                Severity = info.Severity.ToServer(),
+                Message = info.Message,
+            };
+        }
+
+        public static AlertRecordInfo ToServer(this Api.AlertRecordInfo info)
+        {
+            return new AlertRecordInfo
+            {
+                Message = info.Message,
+                PluginId = info.PluginId,
+                TimeUtc = info.TimeUtc,
             };
         }
     }

@@ -3,6 +3,8 @@ using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using System;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Server.Common;
@@ -34,12 +36,15 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         static AlgoServerClient()
         {
-            CertificateProvider.InitClient(); // should be object
+            CertificateProvider.InitClient(Assembly.GetExecutingAssembly(), "TickTrader.Algo.Server.PublicAPI.certs.algo-ca.crt");
         }
 
         private AlgoServerClient(IAlgoServerEventHandler handler) : base(handler)
         {
             _messageFormatter = new MessageFormatter(AlgoServerPublicAPIReflection.Descriptor);
+
+            VersionSpec = new ApiVersionSpec();
+            AccessManager = new ApiAccessManager(ClientClaims.Types.AccessLevel.Anonymous);
         }
 
         public static IAlgoServerClient Create(IAlgoServerEventHandler handler) => new AlgoServerClient(handler);
@@ -134,24 +139,25 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         public override void Init()
         {
-            //ExecuteUnaryRequestAuthorized(GetSnapshotInternal, new SnapshotRequest())
-            //    .ContinueWith(t =>
-            //    {
-            //        switch (t.Status)
-            //        {
-            //            case TaskStatus.RanToCompletion:
-            //                ApplySnapshot(t.Result);
-            //                break;
-            //            case TaskStatus.Canceled:
-            //                Logger.Error("Get snapshot request timed out");
-            //                OnConnectionError("Request timeout during init");
-            //                break;
-            //            case TaskStatus.Faulted:
-            //                Logger.Error(t.Exception, "Get snapshot request failed");
-            //                OnConnectionError("Init failed");
-            //                break;
-            //        }
-            //    });
+            ExecuteServerStreamingRequestAuthorized(SubscribeToUpdatesInternal, new SubscribeToUpdatesRequest())
+                .ContinueWith(t =>
+                {
+                    switch (t.Status)
+                    {
+                        case TaskStatus.RanToCompletion:
+                            ListenToUpdates(t.Result);
+                            OnSubscribed();
+                            break;
+                        case TaskStatus.Canceled:
+                            Logger.Error("Subscribe to updates request timed out");
+                            OnConnectionError("Request timeout during init");
+                            break;
+                        case TaskStatus.Faulted:
+                            Logger.Error(t.Exception, "Init failed: Can't subscribe to updates");
+                            OnConnectionError("Init failed");
+                            break;
+                    }
+                });
         }
 
         public override void SendLogout()
@@ -176,6 +182,35 @@ namespace TickTrader.Algo.Server.PublicAPI
                 });
         }
 
+        private void ApplyAlgoServerMetadata(AlgoServerMetadataUpdate snapshot)
+        {
+            try
+            {
+                FailForNonSuccess(snapshot.ExecResult);
+
+                _serverHandler.SetApiMetadata(snapshot.ApiMetadata);
+                _serverHandler.SetMappingsInfo(snapshot.MappingsCollection);
+                _serverHandler.SetSetupContext(snapshot.SetupContext);
+
+                _serverHandler.InitPackageList(snapshot.Packages.ToList());
+                _serverHandler.InitAccountList(snapshot.Accounts.ToList());
+                _serverHandler.InitBotList(snapshot.Plugins.ToList());
+            }
+            catch (UnauthorizedException uex)
+            {
+                Logger.Error(uex, "Init failed: Bad access token");
+                OnConnectionError("Bad access token");
+                return;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Init failed: Can't apply snapshot");
+                OnConnectionError("Init failed");
+                return;
+            }
+        }
+
+
         public override void SendDisconnect()
         {
             OnDisconnected();
@@ -195,118 +230,69 @@ namespace TickTrader.Algo.Server.PublicAPI
                     : new AlgoServerException($"{requestResult.Status} - {requestResult.Message}");
         }
 
-        //private void ApplySnapshot(/*SnapshotResponse snapshot*/)
-        //{
-        //    try
-        //    {
-        //        FailForNonSuccess(snapshot.ExecResult);
+        private async void ListenToUpdates(AsyncServerStreamingCall<UpdateInfo> updateCall)
+        {
+            _updateStreamCancelTokenSrc = new CancellationTokenSource();
+            try
+            {
+                var updateStream = updateCall.ResponseStream;
+                while (await updateStream.MoveNext(_updateStreamCancelTokenSrc.Token))
+                {
+                    var update = updateStream.Current;
+                    if (update.TryUnpack(out var updateInfo))
+                    {
+                        //_messageFormatter.LogClientUpdate(Logger, updateInfo);
+                        if (updateInfo is UpdateInfo<AlgoServerMetadataUpdate>)
+                            ApplyAlgoServerMetadata(((UpdateInfo<AlgoServerMetadataUpdate>)updateInfo).Value);
 
-        //        var apiMetadata = snapshot.ApiMetadata;
-        //        FailForNonSuccess(apiMetadata.ExecResult);
-        //        _serverHandler.SetApiMetadata(apiMetadata.ApiMetadata);
+                        else if (updateInfo is UpdateInfo<PackageUpdate>)
+                            _serverHandler.OnPackageUpdate(((UpdateInfo<PackageUpdate>)updateInfo).Value);
+                        else if (updateInfo is UpdateInfo<AccountModelUpdate>)
+                            _serverHandler.OnAccountUpdate(((UpdateInfo<AccountModelUpdate>)updateInfo).Value);
+                        else if (updateInfo is UpdateInfo<PluginModelUpdate>)
+                            _serverHandler.OnPluginModelUpdate(((UpdateInfo<PluginModelUpdate>)updateInfo).Value);
 
-        //        var mappings = snapshot.MappingsInfo;
-        //        FailForNonSuccess(mappings.ExecResult);
-        //        _serverHandler.SetMappingsInfo(mappings.Mappings);
+                        else if (updateInfo is UpdateInfo<PackageStateUpdate>)
+                            _serverHandler.OnPackageStateUpdate(((UpdateInfo<PackageStateUpdate>)updateInfo).Value);
+                        else if (updateInfo is UpdateInfo<AccountStateUpdate>)
+                            _serverHandler.OnAccountStateUpdate(((UpdateInfo<AccountStateUpdate>)updateInfo).Value);
+                        else if (updateInfo is UpdateInfo<PluginStateUpdate>)
+                            _serverHandler.OnPluginStateUpdate(((UpdateInfo<PluginStateUpdate>)updateInfo).Value);
 
-        //        var setupContext = snapshot.SetupContext;
-        //        FailForNonSuccess(setupContext.ExecResult);
-        //        _serverHandler.SetSetupContext(setupContext.SetupContext);
+                        else if (updateInfo is UpdateInfo<PluginStatusUpdate>)
+                            _serverHandler.OnPluginStatusUpdate(((UpdateInfo<PluginStatusUpdate>)updateInfo).Value);
+                        else if (updateInfo is UpdateInfo<PluginLogUpdate>)
+                            _serverHandler.OnPluginLogUpdate(((UpdateInfo<PluginLogUpdate>)updateInfo).Value);
+                        else if (updateInfo is UpdateInfo<AlertListUpdate>)
+                            _serverHandler.OnAlertListUpdate(((UpdateInfo<AlertListUpdate>)updateInfo).Value);
 
-        //        var packages = snapshot.PackageList;
-        //        FailForNonSuccess(packages.ExecResult);
-        //        _serverHandler.InitPackageList(packages.Packages.ToList());
-
-        //        var accounts = snapshot.AccountList;
-        //        FailForNonSuccess(accounts.ExecResult);
-        //        _serverHandler.InitAccountList(accounts.Accounts.ToList());
-
-        //        var bots = snapshot.PluginList;
-        //        FailForNonSuccess(bots.ExecResult);
-        //        _serverHandler.InitBotList(bots.Plugins.ToList());
-        //    }
-        //    catch (UnauthorizedException uex)
-        //    {
-        //        Logger.Error(uex, "Init failed: Bad access token");
-        //        OnConnectionError("Bad access token");
-        //        return;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Logger.Error(ex, "Init failed: Can't apply snapshot");
-        //        OnConnectionError("Init failed");
-        //        return;
-        //    }
-
-        //    //ExecuteServerStreamingRequestAuthorized(SubscribeToUpdatesInternal, new SubscribeToUpdatesRequest())
-        //    //    .ContinueWith(t =>
-        //    //    {
-        //    //        switch (t.Status)
-        //    //        {
-        //    //            case TaskStatus.RanToCompletion:
-        //    //                ListenToUpdates(t.Result);
-        //    //                OnSubscribed();
-        //    //                break;
-        //    //            case TaskStatus.Canceled:
-        //    //                Logger.Error("Subscribe to updates request timed out");
-        //    //                OnConnectionError("Request timeout during init");
-        //    //                break;
-        //    //            case TaskStatus.Faulted:
-        //    //                Logger.Error(t.Exception, "Init failed: Can't subscribe to updates");
-        //    //                OnConnectionError("Init failed");
-        //    //                break;
-        //    //        }
-        //    //    });
-        //}
-
-        //private async void ListenToUpdates(AsyncServerStreamingCall<UpdateInfo> updateCall)
-        //{
-        //    _updateStreamCancelTokenSrc = new CancellationTokenSource();
-        //    try
-        //    {
-        //        var updateStream = updateCall.ResponseStream;
-        //        while (await updateStream.MoveNext(_updateStreamCancelTokenSrc.Token))
-        //        {
-        //            var update = updateStream.Current;
-        //            if (update.TryUnpack(out var updateInfo))
-        //            {
-        //                _messageFormatter.LogClientUpdate(Logger, updateInfo);
-        //                if (updateInfo is UpdateInfo<PackageInfo>)
-        //                    _serverHandler.UpdatePackage(updateInfo.Type, ((UpdateInfo<PackageInfo>)updateInfo).Value);
-        //                else if (updateInfo is UpdateInfo<PackageStateUpdate>)
-        //                    _serverHandler.UpdatePackageState(((UpdateInfo<PackageStateUpdate>)updateInfo).Value);
-        //                else if (updateInfo is UpdateInfo<AccountModelInfo>)
-        //                    _serverHandler.UpdateAccount(updateInfo.Type, ((UpdateInfo<AccountModelInfo>)updateInfo).Value);
-        //                else if (updateInfo is UpdateInfo<AccountStateUpdate>)
-        //                    _serverHandler.UpdateAccountState(((UpdateInfo<AccountStateUpdate>)updateInfo).Value);
-        //                else if (updateInfo is UpdateInfo<PluginModelInfo>)
-        //                    _serverHandler.UpdateBot(updateInfo.Type, ((UpdateInfo<PluginModelInfo>)updateInfo).Value);
-        //                else if (updateInfo is UpdateInfo<PluginStateUpdate>)
-        //                    _serverHandler.UpdateBotState(((UpdateInfo<PluginStateUpdate>)updateInfo).Value);
-        //                else Logger.Error($"Failed to dispatch update of type: {update.Payload.TypeUrl}");
-        //            }
-        //            else
-        //            {
-        //                Logger.Error($"Failed to unpack update of type: {update.Payload.TypeUrl}");
-        //            }
-        //        }
-        //        if (State != ClientStates.LoggingOut)
-        //        {
-        //            Logger.Info("Update stream stopped by server");
-        //            OnConnectionError("Update stream stopped by server");
-        //        }
-        //    }
-        //    catch (TaskCanceledException) { }
-        //    catch (Exception ex)
-        //    {
-        //        Logger.Error(ex, "Update stream failed");
-        //        OnConnectionError("Update stream failed");
-        //    }
-        //    finally
-        //    {
-        //        updateCall.Dispose();
-        //    }
-        //}
+                        else if (updateInfo is UpdateInfo<HeartbeatUpdate>)
+                            break;
+                        else
+                            Logger.Error($"Failed to dispatch update of type: {update.Payload.TypeUrl}");
+                    }
+                    else
+                    {
+                        Logger.Error($"Failed to unpack update of type: {update.Payload.TypeUrl}");
+                    }
+                }
+                if (State != ClientStates.LoggingOut)
+                {
+                    Logger.Info("Update stream stopped by server");
+                    OnConnectionError("Update stream stopped by server");
+                }
+            }
+            catch (TaskCanceledException) { }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Update stream failed");
+                OnConnectionError("Update stream failed");
+            }
+            finally
+            {
+                updateCall.Dispose();
+            }
+        }
 
         private async void HeartbeatTimerCallback(object state)
         {
@@ -439,9 +425,6 @@ namespace TickTrader.Algo.Server.PublicAPI
         }
 
 
-
-
-
         #region Grpc request calls
 
         private Task<LoginResponse> LoginInternal(LoginRequest request, CallOptions options)
@@ -567,6 +550,26 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             return _client.SubscribeToPluginLogsAsync(request, options).ResponseAsync;
         }
+
+        private Task<AlertListUnsubscribeResponse> UnsubscribeToAlertListInternal(AlertListUnsubscribeRequest request, CallOptions options)
+        {
+            return _client.UnsubscribeToAlertListAsync(request, options).ResponseAsync;
+        }
+
+        private Task<PluginStatusUnsubscribeResponse> UnsubscribeToPluginStatusInternal(PluginStatusUnsubscribeRequest request, CallOptions options)
+        {
+            return _client.UnsubscribeToPluginStatusAsync(request, options).ResponseAsync;
+        }
+
+        private Task<PluginLogsUnsubscribeResponse> UnsubscribeToPluginLogsInternal(PluginLogsUnsubscribeRequest request, CallOptions options)
+        {
+            return _client.UnsubscribeToPluginLogsAsync(request, options).ResponseAsync;
+        }
+
+        private Task<AsyncServerStreamingCall<UpdateInfo>> SubscribeToUpdatesInternal(SubscribeToUpdatesRequest request, CallOptions options)
+        {
+            return Task.FromResult(_client.SubscribeToUpdates(request, options));
+        }
         #endregion Grpc request calls
 
 
@@ -581,20 +584,38 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         public async Task SubscribeToAlertList(AlertListSubscribeRequest request)
         {
-            //var response = await ExecuteUnaryRequestAuthorized(AddBotInternal, request);
-            //FailForNonSuccess(response.ExecResult);
+            var response = await ExecuteUnaryRequestAuthorized(SubscribeToAlertListInternal, request);
+            FailForNonSuccess(response.ExecResult);
         }
 
         public async Task SubscribeToPluginStatus(PluginStatusSubscribeRequest request)
         {
-            //var response = await ExecuteUnaryRequestAuthorized(AddBotInternal, request);
-            //FailForNonSuccess(response.ExecResult);
+            var response = await ExecuteUnaryRequestAuthorized(SubscribeToPluginStatusInternal, request);
+            FailForNonSuccess(response.ExecResult);
         }
 
         public async Task SubscribeToPluginLogs(PluginLogsSubscribeRequest request)
         {
-            //var response = await ExecuteUnaryRequestAuthorized(AddBotInternal, request);
-            //FailForNonSuccess(response.ExecResult);
+            var response = await ExecuteUnaryRequestAuthorized(SubscribeToPluginLogsInternal, request);
+            FailForNonSuccess(response.ExecResult);
+        }
+
+        public async Task UnsubscribeToAlertList(AlertListUnsubscribeRequest request)
+        {
+            var response = await ExecuteUnaryRequestAuthorized(UnsubscribeToAlertListInternal, request);
+            FailForNonSuccess(response.ExecResult);
+        }
+
+        public async Task UnsubscribeToPluginStatus(PluginStatusUnsubscribeRequest request)
+        {
+            var response = await ExecuteUnaryRequestAuthorized(UnsubscribeToPluginStatusInternal, request);
+            FailForNonSuccess(response.ExecResult);
+        }
+
+        public async Task UnsubscribeToPluginLogs(PluginLogsUnsubscribeRequest request)
+        {
+            var response = await ExecuteUnaryRequestAuthorized(UnsubscribeToPluginLogsInternal, request);
+            FailForNonSuccess(response.ExecResult);
         }
 
         public async Task AddPlugin(AddPluginRequest request)

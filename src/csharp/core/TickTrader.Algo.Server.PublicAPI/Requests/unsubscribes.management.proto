@@ -6,33 +6,30 @@ option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 
 
 import "google/protobuf/wrappers.proto";
-import "google/protobuf/timestamp.proto";
 
 import "requests/base.request.proto";
 
 
-message AlertListSubscribeRequest {
-	google.protobuf.Timestamp timestamp = 1;
-}
+message AlertListUnsubscribeRequest { }
 
-message AlertListSubscribeResponse {
+message AlertListUnsubscribeResponse {
 	RequestResult exec_result = 101;
 }
 
 
-message PluginStatusSubscribeRequest {
+message PluginStatusUnsubscribeRequest {
 	google.protobuf.StringValue plugin_id = 1;
 }
 
-message PluginStatusSubscribeResponse {
+message PluginStatusUnsubscribeResponse {
 	RequestResult exec_result = 101;
 }
 
 
-message PluginLogsSubscribeRequest {
+message PluginLogsUnsubscribeRequest {
 	google.protobuf.StringValue plugin_id = 1;
 }
 
-message PluginLogsSubscribeResponse {
+message PluginLogsUnsubscribeResponse {
 	RequestResult exec_result = 101;
 }

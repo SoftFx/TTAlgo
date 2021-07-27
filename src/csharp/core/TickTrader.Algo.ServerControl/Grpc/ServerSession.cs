@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Server.Common;
 
+using AlgoServerApi = TickTrader.Algo.Server.PublicAPI;
+
 namespace TickTrader.Algo.ServerControl.Grpc
 {
     internal class ServerSession : Actor
@@ -17,7 +19,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
         private MessageFormatter _messageFormatter;
         private AccessManager _accessManager;
         private TaskCompletionSource<bool> _updateStreamTaskSrc;
-        private IServerStreamWriter<UpdateInfo> _updateStream;
+        private IServerStreamWriter<AlgoServerApi.UpdateInfo> _updateStream;
         private bool _isFaulted;
 
 
@@ -62,7 +64,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 IsFaulted = false;
             }
 
-            public Task SetupUpdateStream(IServerStreamWriter<UpdateInfo> updateStream) => CallActorAsync(a => a.SetupUpdateStream(updateStream));
+            public Task SetupUpdateStream(IServerStreamWriter<AlgoServerApi.UpdateInfo> updateStream) => CallActorAsync(a => a.SetupUpdateStream(updateStream));
 
             public void SendUpdate(IUpdateInfo update)
             {
@@ -87,7 +89,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
         }
 
 
-        private async Task SetupUpdateStream(IServerStreamWriter<UpdateInfo> updateStream)
+        private async Task SetupUpdateStream(IServerStreamWriter<AlgoServerApi.UpdateInfo> updateStream)
         {
             if (_updateStreamTaskSrc != null)
                 throw new AlgoServerException($"Session {_sessionId} already has opened update stream");
@@ -105,7 +107,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                _updateStream.WriteAsync(update.Pack()).Wait();
+                _updateStream.WriteAsync(update.Pack().ToApi()).Wait();
                 _messageFormatter.LogServerUpdate(_logger, update);
             }
             catch (Exception ex)

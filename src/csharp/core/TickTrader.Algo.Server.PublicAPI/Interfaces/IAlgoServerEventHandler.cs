@@ -33,11 +33,13 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         void OnPluginModelUpdate(PluginModelUpdate update);
 
+
         void OnPackageStateUpdate(PackageStateUpdate packageState);
 
         void OnAccountStateUpdate(AccountStateUpdate accountState);
 
         void OnPluginStateUpdate(PluginStateUpdate pluginState);
+
 
         void OnPluginStatusUpdate(PluginStatusUpdate update);
 

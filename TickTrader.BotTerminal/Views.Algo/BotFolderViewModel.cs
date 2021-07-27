@@ -9,9 +9,12 @@ using System.Windows.Data;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Server.Common;
 
+using AlgoServerPublicApi = TickTrader.Algo.Server.PublicAPI;
+
+
 namespace TickTrader.BotTerminal
 {
-    internal class BotFolderViewModel : Screen, IWindowModel, IFileProgressListener
+    internal class BotFolderViewModel : Screen, IWindowModel, AlgoServerPublicApi.IFileProgressListener
     {
         private readonly static ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
 

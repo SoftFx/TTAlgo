@@ -5,8 +5,12 @@ package ticktrader.algo.server.publicApi;
 option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 
 import "google/protobuf/wrappers.proto";
+import "google/protobuf/any.proto";
+
+import "requests/base.request.proto";
 
 import "structures/package.info.proto";
+import "structures/api.metadata.info.proto";
 import "structures/plugin.model.info.proto";
 import "structures/account.model.info.proto";
 
@@ -17,6 +21,26 @@ message Update {
         Updated = 1;
         Removed = 2;
     }
+}
+
+message UpdateInfo {
+    google.protobuf.Any payload = 2;
+}
+
+message HeartbeatUpdate {
+    RequestResult exec_result = 101;
+}
+
+message AlgoServerMetadataUpdate {
+    ApiMetadataInfo api_metadata = 1;
+    MappingCollectionInfo mappings_collection = 2;
+    SetupContextInfo setup_context = 3;
+
+    repeated PackageInfo packages = 4;
+    repeated AccountModelInfo accounts = 5;
+    repeated PluginModelInfo plugins = 6;
+
+    RequestResult exec_result = 101;
 }
 
 message PackageUpdate {

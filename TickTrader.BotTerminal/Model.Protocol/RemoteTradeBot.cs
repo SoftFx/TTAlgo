@@ -1,27 +1,18 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using NLog;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using TickTrader.Algo.Domain;
-using TickTrader.Algo.Server.Common;
 
 namespace TickTrader.BotTerminal
 {
-    internal class RemoteTradeBot : ITradeBot, IDisposable
+    internal class RemoteTradeBot : ITradeBot
     {
-        private static readonly ILogger _logger = LogManager.GetCurrentClassLogger();
-
-        private const int StatusUpdateTimeout = 1000;
-        private const int LogsUpdateTimeout = 1000;
-
-
         private RemoteAlgoAgent _agent;
         private int _statusSubscriptionCnt;
         private int _logsSubscriptionCnt;
-        private Timer _statusTimer;
-        private Timer _logsTimer;
-        private Timestamp _lastLogTimeUtc;
+
+        private bool _subscribeStatusEnable = false;
+        private bool _subscribeLogsEnable = false;
 
 
         public PluginModelInfo Info { get; private set; }
@@ -76,120 +67,88 @@ namespace TickTrader.BotTerminal
             StateChanged?.Invoke(this);
         }
 
+        public void UpdateStatus(string status)
+        {
+            if (status != Status)
+            {
+                Status = status;
+                StatusChanged?.Invoke(this);
+            }
+        }
+
+        public void UpdateLogs(List<LogRecordInfo> logs)
+        {
+            if (State == PluginModelInfo.Types.PluginState.Running)
+                Journal.Add(logs.Select(Convert).ToList());
+        }
+
         public void SubscribeToStatus()
         {
             _statusSubscriptionCnt++;
-            ManageStatusTimer();
+            ManageSubscribeToStatus();
         }
 
         public void UnsubscribeFromStatus()
         {
             _statusSubscriptionCnt--;
-            ManageStatusTimer();
+            ManageSubscribeToStatus();
         }
 
         public void SubscribeToLogs()
         {
             _logsSubscriptionCnt++;
-            ManageLogsTimer();
+            ManageSubscribeToLogs();
         }
 
         public void UnsubscribeFromLogs()
         {
             _logsSubscriptionCnt--;
-            ManageLogsTimer();
+            ManageSubscribeToLogs();
         }
 
-        public void Dispose()
-        {
-            _statusTimer.Dispose();
-            _logsTimer.Dispose();
-        }
-
-
-        private void ManageStatusTimer()
+        private async void ManageSubscribeToStatus()
         {
             if (_statusSubscriptionCnt < 0)
                 _statusSubscriptionCnt = 0;
 
-            if (_statusSubscriptionCnt > 0 && _statusTimer == null)
+            if (_statusSubscriptionCnt > 0 && !_subscribeStatusEnable)
             {
-                _statusTimer = new Timer(UpdateStatus, null, StatusUpdateTimeout, -1);
+                _subscribeStatusEnable = true;
+
+                await _agent.SubscribeToPluginStatus(InstanceId);
             }
-            else if (_statusSubscriptionCnt == 0 && _statusTimer != null)
+            else
+            if (_statusSubscriptionCnt == 0 && _subscribeStatusEnable)
             {
-                _statusTimer.Dispose();
-                _statusTimer = null;
+                _subscribeStatusEnable = false;
+
+                await _agent.UnsubscribeToPluginStatus(InstanceId);
             }
         }
 
-        private void ManageLogsTimer()
+        private async void ManageSubscribeToLogs()
         {
             if (_logsSubscriptionCnt < 0)
                 _logsSubscriptionCnt = 0;
 
-            if (_logsSubscriptionCnt > 0 && _logsTimer == null)
+            if (_logsSubscriptionCnt > 0 && !_subscribeLogsEnable)
             {
-                _logsTimer = new Timer(UpdateLogs, null, LogsUpdateTimeout, -1);
+                _subscribeLogsEnable = true;
+
+                await _agent.SubscribeToPluginLogs(InstanceId);
             }
-            else if (_logsSubscriptionCnt == 0 && _logsTimer != null)
+            else
+            if (_logsSubscriptionCnt == 0 && _subscribeLogsEnable)
             {
-                _logsTimer.Dispose();
-                _logsTimer = null;
+                _subscribeLogsEnable = false;
+
+                await _agent.UnsubscribeToPluginLogs(InstanceId);
             }
         }
 
         private void ResetJournal()
         {
-            _lastLogTimeUtc = new Timestamp(); // 1970-01-01
             Journal.Clear();
-        }
-
-        private async void UpdateStatus(object state)
-        {
-            _statusTimer?.Change(-1, -1);
-            //try
-            //{
-            //    var status = await _agent.GetBotStatus(InstanceId);
-            //    if (status != Status)
-            //    {
-            //        Status = status;
-            //        StatusChanged?.Invoke(this);
-            //    }
-            //}
-            //catch(AlgoServerException baex)
-            //{
-            //    _logger.Error($"Failed to get bot status {InstanceId} at {_agent.Name}: {baex.Message}");
-            //}
-            //catch (Exception ex)
-            //{
-            //    _logger.Error(ex, $"Failed to get bot status {InstanceId} at {_agent.Name}");
-            //}
-            _statusTimer?.Change(StatusUpdateTimeout, -1);
-        }
-
-        private async void UpdateLogs(object state)
-        {
-            _logsTimer?.Change(-1, -1);
-            //try
-            //{
-            //    var logs = await _agent.GetBotLogs(InstanceId, _lastLogTimeUtc);
-            //    if (logs.Length > 0)
-            //    {
-            //        _lastLogTimeUtc = logs.Max(l => l.TimeUtc);
-
-            //        Journal.Add(logs.Select(this.Convert).ToList());
-            //    }
-            //}
-            //catch (AlgoServerException baex)
-            //{
-            //    _logger.Error($"Failed to get bot logs {InstanceId} at {_agent.Name}: {baex.Message}");
-            //}
-            //catch (Exception ex)
-            //{
-            //    _logger.Error(ex, $"Failed to get bot logs {InstanceId} at {_agent.Name}");
-            //}
-            _logsTimer?.Change(LogsUpdateTimeout, -1);
         }
 
         private BotMessage Convert(LogRecordInfo record)
@@ -197,7 +156,7 @@ namespace TickTrader.BotTerminal
             return new BotMessage(record.TimeUtc, InstanceId, record.Message, Convert(record.Severity));
         }
 
-        private JournalMessageType Convert(PluginLogRecord.Types.LogSeverity severity)
+        private static JournalMessageType Convert(PluginLogRecord.Types.LogSeverity severity)
         {
             switch (severity)
             {

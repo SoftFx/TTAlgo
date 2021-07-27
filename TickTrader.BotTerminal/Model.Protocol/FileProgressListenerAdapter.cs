@@ -1,9 +1,11 @@
 ﻿using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Server.Common;
+
+using AlgoServerPublicApi = TickTrader.Algo.Server.PublicAPI;
+
 
 namespace TickTrader.BotTerminal
 {
-    public class FileProgressListenerAdapter : IFileProgressListener
+    public class FileProgressListenerAdapter : AlgoServerPublicApi.IFileProgressListener
     {
         private IActionObserver _progressObserver;
 

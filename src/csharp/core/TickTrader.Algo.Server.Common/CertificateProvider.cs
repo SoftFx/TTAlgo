@@ -18,16 +18,13 @@ namespace TickTrader.Algo.Server.Common
             ServerKey = serverPrivateKey;
         }
 
-        public static void InitClient()
+        public static void InitClient(Assembly assembly, string pathToCertificate)
         {
-            var a = Assembly.GetExecutingAssembly();
-
-            //change path to sertificate
-            using (var s = a.GetManifestResourceStream("TickTrader.Algo.ServerControl.certs.algo-ca.crt"))
-            using (var r = new StreamReader(s))
-            {
-                RootCertificate = r.ReadToEnd();
-            }
+            using (var s = assembly.GetManifestResourceStream(pathToCertificate))
+                using (var r = new StreamReader(s))
+                {
+                    RootCertificate = r.ReadToEnd();
+                }
         }
     }
 }

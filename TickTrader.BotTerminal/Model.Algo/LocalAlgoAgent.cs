@@ -284,7 +284,7 @@ namespace TickTrader.BotTerminal
             throw new NotSupportedException();
         }
 
-        public Task UploadPackage(string fileName, string srcFilePath, IFileProgressListener progressListener)
+        public Task UploadPackage(string fileName, string srcFilePath, AlgoServerPublicApi.IFileProgressListener progressListener)
         {
             var dstFilePath = Path.Combine(EnvService.Instance.AlgoRepositoryFolder, fileName);
             progressListener.Init(0);
@@ -302,7 +302,7 @@ namespace TickTrader.BotTerminal
             return Task.CompletedTask;
         }
 
-        public Task DownloadPackage(string packageId, string dstFilePath, IFileProgressListener progressListener)
+        public Task DownloadPackage(string packageId, string dstFilePath,  AlgoServerPublicApi.IFileProgressListener progressListener)
         {
             if (!_packages.TryGetValue(packageId, out var package))
                 throw new ArgumentException("Can't resolve path to Algo package location");
@@ -338,12 +338,12 @@ namespace TickTrader.BotTerminal
             throw new NotSupportedException();
         }
 
-        public Task DownloadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string dstPath, IFileProgressListener progressListener)
+        public Task DownloadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string dstPath, AlgoServerPublicApi.IFileProgressListener progressListener)
         {
             throw new NotSupportedException();
         }
 
-        public Task UploadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string srcPath, IFileProgressListener progressListener)
+        public Task UploadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string srcPath, AlgoServerPublicApi.IFileProgressListener progressListener)
         {
             //throw new NotSupportedException();
             // used in bot setup
