@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Server
 {
     internal class PluginActor : Actor
     {
-        private readonly AlgoServer _server;
+        private readonly AlgoServerPrivate _server;
         private readonly string _id, _accId;
         private readonly ActorEventSource<PluginLogRecord> _logEventSrc = new ActorEventSource<PluginLogRecord>();
         private readonly ActorEventSource<PluginStatusUpdate> _statusEventSrc = new ActorEventSource<PluginStatusUpdate>();
@@ -34,7 +34,7 @@ namespace TickTrader.Algo.Server
         private PluginStatusUpdate _lastStatus;
 
 
-        private PluginActor(AlgoServer server, PluginSavedState savedState)
+        private PluginActor(AlgoServerPrivate server, PluginSavedState savedState)
         {
             _server = server;
             _savedState = savedState;
@@ -58,7 +58,7 @@ namespace TickTrader.Algo.Server
         }
 
 
-        public static IActorRef Create(AlgoServer server, PluginSavedState savedState)
+        public static IActorRef Create(AlgoServerPrivate server, PluginSavedState savedState)
         {
             return ActorSystem.SpawnLocal(() => new PluginActor(server, savedState), $"{nameof(PluginActor)} ({savedState.Id})");
         }
@@ -72,7 +72,7 @@ namespace TickTrader.Algo.Server
 
             _config = _savedState.UnpackConfig();
 
-            _server.EventBus.SendUpdate(PluginModelUpdate.Added(_id, GetInfoCopy()));
+            _server.SendUpdate(PluginModelUpdate.Added(_id, GetInfoCopy()));
 
             var _ = UpdatePackage();
         }
@@ -109,7 +109,7 @@ namespace TickTrader.Algo.Server
             await _server.SavedState.UpdatePlugin(_savedState);
             _config = cmd.NewConfig;
 
-            _server.EventBus.SendUpdate(PluginModelUpdate.Updated(_id, GetInfoCopy()));
+            _server.SendUpdate(PluginModelUpdate.Updated(_id, GetInfoCopy()));
         }
 
         private void AttachLogsChannel(AttachLogsChannelCmd cmd)
@@ -194,7 +194,7 @@ namespace TickTrader.Algo.Server
             var pluginKey = _config.Key;
             var pkgId = pluginKey.PackageId;
 
-            _runtime = await _server.Runtimes.GetPkgRuntime(pkgId);
+            _runtime = await _server.GetPkgRuntime(pkgId);
             if (_runtime == null)
             {
                 BreakBot($"Algo package {pkgId} is not found");
@@ -217,7 +217,7 @@ namespace TickTrader.Algo.Server
             if (_state == PluginModelInfo.Types.PluginState.Broken)
                 ChangeState(PluginModelInfo.Types.PluginState.Stopped);
 
-            _server.EventBus.SendUpdate(PluginModelUpdate.Updated(_id, GetInfoCopy()));
+            _server.SendUpdate(PluginModelUpdate.Updated(_id, GetInfoCopy()));
 
             _updatePkgTaskSrc.SetResult(true);
             _updatePkgTaskSrc = null;
@@ -238,7 +238,7 @@ namespace TickTrader.Algo.Server
             _state = newState;
             _faultMsg = faultMsg;
 
-            _server.EventBus.SendUpdate(new PluginStateUpdate(_id, newState, faultMsg));
+            _server.SendUpdate(new PluginStateUpdate(_id, newState, faultMsg));
         }
 
         private async Task StartInternal()

@@ -77,7 +77,7 @@ namespace TickTrader.Algo.Package.V1
             }
         }
 
-        public static Package Load(FileStream stream)
+        public static Package Load(Stream stream)
         {
             using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Read))
             {

@@ -10,13 +10,12 @@ namespace TickTrader.Algo.Server
     {
         private readonly ConcurrentDictionary<string, AccountRpcHandler> _accProxies = new ConcurrentDictionary<string, AccountRpcHandler>();
 
-        private readonly AlgoServer _server;
+        private readonly AlgoServerPrivate _server;
         private PkgRuntimeModel _runtime;
         private RpcSession _session;
 
 
-
-        public ServerRuntimeV1Handler(AlgoServer server)
+        public ServerRuntimeV1Handler(AlgoServerPrivate server)
         {
             _server = server;
         }
@@ -60,7 +59,7 @@ namespace TickTrader.Algo.Server
             if (_runtime != null)
                 return Any.Pack(new ErrorResponse { Message = "Runtime already attached!" });
 
-            _runtime = await _server.Runtimes.ConnectRuntime(request.Id, _session);
+            _runtime = await _server.ConnectRuntime(request.Id, _session);
             return Any.Pack(new AttachRuntimeResponse { Success = _runtime != null });
         }
 
@@ -79,7 +78,7 @@ namespace TickTrader.Algo.Server
             var request = payload.Unpack<AttachAccountRequest>();
 
             var accId = request.AccountId;
-            var accControl = await _server.Accounts.GetAccountControl(accId);
+            var accControl = await _server.GetAccountControl(accId);
             await accControl.AttachSession(_session);
             if (!_accProxies.ContainsKey(accId))
             {
@@ -95,7 +94,7 @@ namespace TickTrader.Algo.Server
             var request = payload.Unpack<DetachAccountRequest>();
 
             var accId = request.AccountId;
-            var accControl = await _server.Accounts.GetAccountControl(accId);
+            var accControl = await _server.GetAccountControl(accId);
             await accControl.DetachSession(_session.Id);
 
             return RpcHandler.VoidResponse;

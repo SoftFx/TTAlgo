@@ -1,39 +1,26 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 
 namespace TickTrader.Algo.Server
 {
-    internal class PluginFileManager : Actor
+    internal class PluginFileManager
     {
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<PluginFileManager>();
 
-        private readonly AlgoServer _server;
+        private readonly AlgoServerPrivate _server;
 
 
-        private PluginFileManager(AlgoServer server)
+        public PluginFileManager(AlgoServerPrivate server)
         {
             _server = server;
-
-            Receive<PluginFolderInfoRequest, PluginFolderInfo>(GetFolderInfo);
-            Receive<ClearPluginFolderRequest>(ClearFolder);
-            Receive<DeletePluginFileRequest>(DeleteFile);
-            Receive<DownloadPluginFileRequest, string>(GetFileReadPath);
-            Receive<UploadPluginFileRequest, string>(GetFileWritePath);
         }
 
 
-        public static IActorRef Create(AlgoServer server)
-        {
-            return ActorSystem.SpawnLocal(() => new PluginFileManager(server), nameof(PluginFileManager));
-        }
-
-
-        private PluginFolderInfo GetFolderInfo(PluginFolderInfoRequest request)
+        public PluginFolderInfo GetFolderInfo(PluginFolderInfoRequest request)
         {
             var path = GetFolderPath(request);
 
@@ -53,7 +40,7 @@ namespace TickTrader.Algo.Server
             return res;
         }
 
-        private void ClearFolder(ClearPluginFolderRequest request)
+        public void ClearFolder(ClearPluginFolderRequest request)
         {
             var path = GetFolderPath(request);
 
@@ -72,14 +59,14 @@ namespace TickTrader.Algo.Server
             }
         }
 
-        private void DeleteFile(DeletePluginFileRequest request)
+        public void DeleteFile(DeletePluginFileRequest request)
         {
             var path = GetFolderPath(request);
 
             File.Delete(Path.Combine(path, request.FileName));
         }
 
-        private string GetFileReadPath(DownloadPluginFileRequest request)
+        public string GetFileReadPath(DownloadPluginFileRequest request)
         {
             var fileName = request.FileName;
             if (!PathHelper.IsFileNameValid(fileName))

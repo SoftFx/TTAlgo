@@ -86,7 +86,7 @@ namespace TickTrader.BotTerminal
         public event Action AccessLevelChanged { add { } remove { } }
 
 
-        internal AlgoServer AlgoServer { get; }
+        internal LocalAlgoServer AlgoServer { get; }
 
 
         public LocalAlgoAgent(IShell shell, TraderClientModel clientModel, PersistModel storage)
@@ -95,27 +95,10 @@ namespace TickTrader.BotTerminal
             ClientModel = clientModel;
             _preferences = storage.PreferencesStorage.StorageModel;
 
-            var settings = new AlgoServerSettings();
-            settings.DataFolder = AppDomain.CurrentDomain.BaseDirectory;
-            settings.PkgStorage.Assemblies.Add(typeof(MovingAverage).Assembly);
-            settings.PkgStorage.AddLocation(SharedConstants.LocalRepositoryId, EnvService.Instance.AlgoRepositoryFolder);
-            settings.PkgStorage.UploadLocationId = SharedConstants.LocalRepositoryId;
-            if (EnvService.Instance.AlgoCommonRepositoryFolder != null)
-                settings.PkgStorage.AddLocation(SharedConstants.CommonRepositoryId, EnvService.Instance.AlgoCommonRepositoryFolder);
+            AlgoServer = new LocalAlgoServer();
+            AlgoServer.EventBus.PackageUpdated.Subscribe(OnPackageUpdated);
 
-            AlgoServer = new AlgoServer(settings);
-
-            AlgoServer.PkgStorage.PackageUpdated.Subscribe(OnPackageUpdated);
-
-            if (!File.Exists(AlgoServer.Env.ServerStateFilePath))
-            {
-                var serverSavedState = BuildServerSavedState(storage);
-                Task.Factory.StartNew(() => AlgoServer.LoadSavedData(serverSavedState)).GetAwaiter().GetResult();
-            }
-
-            Task.Factory.StartNew(() => AlgoServer.Start());//.GetAwaiter().GetResult();
-
-            AlgoServer.Accounts.RegisterAccountProxy(ClientModel.GetAccountProxy());
+            Task.Factory.StartNew(() => StartServer(storage));//.GetAwaiter().GetResult();
 
             _reductions = new ReductionCollection();
             IdProvider = new PluginIdProvider();
@@ -138,6 +121,26 @@ namespace TickTrader.BotTerminal
             Mappings = _reductions.CreateMappings();
             Catalog = new PluginCatalog(this);
             AccessManager = new AccessManager(ClientClaims.Types.AccessLevel.Admin);
+        }
+
+
+        private async Task StartServer(PersistModel storage)
+        {
+            var settings = new AlgoServerSettings();
+            settings.DataFolder = AppDomain.CurrentDomain.BaseDirectory;
+            settings.PkgStorage.Assemblies.Add(typeof(MovingAverage).Assembly);
+            settings.PkgStorage.AddLocation(SharedConstants.LocalRepositoryId, EnvService.Instance.AlgoRepositoryFolder);
+            settings.PkgStorage.UploadLocationId = SharedConstants.LocalRepositoryId;
+            if (EnvService.Instance.AlgoCommonRepositoryFolder != null)
+                settings.PkgStorage.AddLocation(SharedConstants.CommonRepositoryId, EnvService.Instance.AlgoCommonRepositoryFolder);
+
+            await AlgoServer.Init(settings);
+            if (await AlgoServer.NeedLegacyState())
+            {
+                var serverSavedState = BuildServerSavedState(storage);
+                await AlgoServer.LoadLegacyState(serverSavedState);
+            }
+            await AlgoServer.Start();
         }
 
         private ServerSavedState BuildServerSavedState(PersistModel model)

@@ -9,6 +9,7 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/any.proto";
 
 import "common.proto";
+import "runtime.package.proto";
 
 message AttachRuntimeRequest {
     string id = 1;
@@ -25,9 +26,10 @@ message StopRuntimeRequest { } // void response
 message RuntimeConfigRequest { }
 
 message RuntimeConfig {
-    string working_directory = 1;
-    string package_path = 2;
-    string package_id = 3;
+    string id = 1;
+    string package_id = 2;
+    bytes package_binary = 3;
+    PackageIdentity package_identity = 4;
 }
 
 message StartExecutorRequest { // void response

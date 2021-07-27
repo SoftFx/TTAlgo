@@ -1,7 +1,6 @@
 ﻿using Google.Protobuf;
 using System;
 using System.Reflection;
-using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Domain;
@@ -34,26 +33,21 @@ namespace TickTrader.Algo.Isolation.NetFx
             }
         }
 
-        public PackageInfo Load(string packageId, string packagePath)
+        public PackageInfo Load(string pkgId, string pkgPath)
         {
-            return LoadInternal(packageId, packagePath);
+            var data = _childDomain.Value.Load(pkgId, pkgPath);
+            return PackageInfo.Parser.ParseFrom(data);
         }
 
-        public Task<PackageInfo> LoadAsync(string packageId, string packagePath)
+        public PackageInfo Load(string pkgId, byte[] pkgBinary)
         {
-            return Task.Factory.StartNew(() => LoadInternal(packageId, packagePath));
+            var data = _childDomain.Value.Load(pkgId, pkgBinary);
+            return PackageInfo.Parser.ParseFrom(data);
         }
 
-        public PackageInfo ScanAssembly(string packageId, Assembly assembly)
+        public PackageInfo ScanAssembly(string pkgId, Assembly assembly)
         {
             throw new NotSupportedException("Assembly should be loaded into isolated context explicitly");
-        }
-
-
-        private PackageInfo LoadInternal(string packageId, string packagePath)
-        {
-            var data = _childDomain.Value.Load(packageId, packagePath);
-            return PackageInfo.Parser.ParseFrom(data);
         }
 
 
@@ -69,9 +63,19 @@ namespace TickTrader.Algo.Isolation.NetFx
             }
 
 
-            public byte[] Load(string packageId, string packagePath)
+            public byte[] Load(string pkgId, string pkgPath)
             {
-                var pkgInfo = _loadContext.LoadInternal(packageId, packagePath);
+                var loader = PackageLoader.CreateForPath(pkgPath);
+                loader.Init();
+                var pkgInfo = _loadContext.LoadInternal(pkgId, loader);
+                return pkgInfo.ToByteArray();
+            }
+
+            public byte[] Load(string pkgId, byte[] pkgBinary)
+            {
+                var loader = new ZipBinaryV1Loader(pkgBinary);
+                loader.Init();
+                var pkgInfo = _loadContext.LoadInternal(pkgId, loader);
                 return pkgInfo.ToByteArray();
             }
         }

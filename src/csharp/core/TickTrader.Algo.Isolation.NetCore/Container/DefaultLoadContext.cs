@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Loader;
-using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Package;
 
@@ -30,32 +29,34 @@ namespace TickTrader.Algo.Isolation.NetCore
             throw new NotSupportedException("Can't unload current load context");
         }
 
-        public PackageInfo Load(string packageId, string packagePath)
+        public PackageInfo Load(string pkgId, string pkgPath)
         {
-            return LoadInternal(packageId, packagePath);
-        }
-
-        public Task<PackageInfo> LoadAsync(string packageId, string packagePath)
-        {
-            return Task.Factory.StartNew(() => LoadInternal(packageId, packagePath));
-        }
-
-        public PackageInfo ScanAssembly(string packageId, Assembly assembly)
-        {
-            return PackageExplorer.ScanAssembly(packageId, assembly);
-        }
-
-
-        internal PackageInfo LoadInternal(string packageId, string packagePath)
-        {
-            var loader = PackageLoader.CreateForPath(packagePath);
+            var loader = PackageLoader.CreateForPath(pkgPath);
             loader.Init();
+            return LoadInternal(pkgId, loader);
+        }
+
+        public PackageInfo Load(string pkgId, byte[] pkgBinary)
+        {
+            var loader = new ZipBinaryV1Loader(pkgBinary);
+            loader.Init();
+            return LoadInternal(pkgId, loader);
+        }
+
+        public PackageInfo ScanAssembly(string pkgId, Assembly assembly)
+        {
+            return PackageExplorer.ScanAssembly(pkgId, assembly);
+        }
+
+
+        internal PackageInfo LoadInternal(string pkgId, IPackageLoader loader)
+        {
             lock (_lock)
             {
                 _loaders.Add(loader);
             }
             var mainAssembly = LoadAssembly(loader, loader.MainAssemblyName);
-            return PackageExplorer.ScanAssembly(packageId, mainAssembly);
+            return PackageExplorer.ScanAssembly(pkgId, mainAssembly);
         }
 
         private Assembly LoadAssembly(IPackageLoader loader, string assemblyFileName)

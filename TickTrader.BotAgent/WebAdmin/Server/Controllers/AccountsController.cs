@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Linq;
-using TickTrader.BotAgent.BA;
 using TickTrader.BotAgent.WebAdmin.Server.Dto;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 using Microsoft.AspNetCore.Authorization;
@@ -9,6 +8,7 @@ using System.Net;
 using TickTrader.Algo.Domain;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain.ServerControl;
+using TickTrader.Algo.Server;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 {
@@ -17,18 +17,18 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
     public class AccountsController : Controller
     {
         private readonly ILogger<PackagesController> _logger;
-        private readonly IBotAgent _botAgent;
+        private readonly IAlgoServerLocal _algoServer;
 
-        public AccountsController(IBotAgent ddServer, ILogger<PackagesController> logger)
+        public AccountsController(IAlgoServerLocal algoServer, ILogger<PackagesController> logger)
         {
-            _botAgent = ddServer;
+            _algoServer = algoServer;
             _logger = logger;
         }
 
         [HttpGet]
         public async Task<AccountDto[]> Get()
         {
-            var snapshot = await _botAgent.GetAccounts();
+            var snapshot = await _algoServer.GetAccounts();
             return snapshot.Accounts.Select(a => a.ToDto()).ToArray();
         }
 
@@ -38,7 +38,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             try
             {
                 var accId = AccountId.Pack(WebUtility.UrlDecode(server), WebUtility.UrlDecode(login));
-                var res = await _botAgent.GetAccountMetadata(new AccountMetadataRequest(accId));
+                var res = await _algoServer.GetAccountMetadata(new AccountMetadataRequest(accId));
                 return Ok(res.ToDto());
             }
             catch (AlgoException algoEx)
@@ -54,7 +54,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             try
             {
                 var request = new AddAccountRequest(account.Server, account.Login, account.Password);
-                await _botAgent.AddAccount(request);
+                await _algoServer.AddAccount(request);
             }
             catch (AlgoException algoEx)
             {
@@ -71,7 +71,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             try
             {
                 var accId = AccountId.Pack(server, login);
-                await _botAgent.RemoveAccount(new RemoveAccountRequest(accId));
+                await _algoServer.RemoveAccount(new RemoveAccountRequest(accId));
             }
             catch (AlgoException algoEx)
             {
@@ -89,7 +89,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             {
                 var accId = AccountId.Pack(account.Server, account.Login);
                 var request = new ChangeAccountRequest(accId, new AccountCreds(account.Password));
-                await _botAgent.ChangeAccount(request);
+                await _algoServer.ChangeAccount(request);
             }
             catch (AlgoException algoEx)
             {
@@ -106,8 +106,8 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             try
             {
                 var testResult = string.IsNullOrWhiteSpace(password) ?
-                    _botAgent.TestAccount(new TestAccountRequest(AccountId.Pack(server, login))) :
-                    _botAgent.TestCreds(new TestAccountCredsRequest(server, login, new AccountCreds(password)));
+                    _algoServer.TestAccount(new TestAccountRequest(AccountId.Pack(server, login))) :
+                    _algoServer.TestCreds(new TestAccountCredsRequest(server, login, new AccountCreds(password)));
 
                 return Ok(await testResult);
             }

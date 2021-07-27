@@ -688,7 +688,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                res.Mappings = await _algoServer.GetMappingsInfo();
+                res.Mappings = await _algoServer.GetMappingsInfo(request);
             }
             catch (Exception ex)
             {

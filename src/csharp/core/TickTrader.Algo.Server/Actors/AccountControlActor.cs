@@ -20,7 +20,7 @@ namespace TickTrader.Algo.Server
         private static readonly TimeSpan ReconnectThreshold = TimeSpan.FromSeconds(5);
         private static readonly TimeSpan ReconnectThreshold_AuthProblem = TimeSpan.FromMinutes(1);
 
-        private readonly AlgoServer _server;
+        private readonly AlgoServerPrivate _server;
         private readonly string _id;
         private readonly Dictionary<string, RpcSession> _sessions = new Dictionary<string, RpcSession>();
 
@@ -38,7 +38,7 @@ namespace TickTrader.Algo.Server
         private IAccountProxy _accProxy;
 
 
-        private AccountControlActor(AlgoServer server, AccountSavedState savedState)
+        private AccountControlActor(AlgoServerPrivate server, AccountSavedState savedState)
         {
             _server = server;
             _savedState = savedState;
@@ -60,7 +60,7 @@ namespace TickTrader.Algo.Server
         }
 
 
-        public static IActorRef Create(AlgoServer server, AccountSavedState savedState)
+        public static IActorRef Create(AlgoServerPrivate server, AccountSavedState savedState)
         {
             return ActorSystem.SpawnLocal(() => new AccountControlActor(server, savedState), $"{nameof(AccountControlActor)} ({savedState.Id})");
         }
@@ -77,7 +77,7 @@ namespace TickTrader.Algo.Server
             _requestGate.OnWait += () => Self.Tell(ManageConnectionCmd.Instance);
             _requestGate.OnExit += () => Self.Tell(ScheduleDisconnectCmd.Instance);
 
-            _server.EventBus.SendUpdate(AccountModelUpdate.Added(_id, GetInfoCopy()));
+            _server.SendUpdate(AccountModelUpdate.Added(_id, GetInfoCopy()));
 
             _initCompletionSrc = new TaskCompletionSource<object>();
             InitInternal().Forget();
@@ -116,7 +116,7 @@ namespace TickTrader.Algo.Server
                 if (_credsChanged)
                     ManageConnectionInternal();
 
-                _server.EventBus.SendUpdate(AccountModelUpdate.Updated(_id, GetInfoCopy()));
+                _server.SendUpdate(AccountModelUpdate.Updated(_id, GetInfoCopy()));
             }
         }
 
@@ -402,7 +402,7 @@ namespace TickTrader.Algo.Server
             var update = new ConnectionStateUpdate(_id, (Domain.Account.Types.ConnectionState)_state, (Domain.Account.Types.ConnectionState)newState);
             LogConnectionState(_state, newState);
             _state = newState;
-            _server.EventBus.SendUpdate(new AccountStateUpdate(_id, _state, _lastError));
+            _server.SendUpdate(new AccountStateUpdate(_id, _state, _lastError));
 
             SendNotification(RpcMessage.Notification(_id, update));
         }

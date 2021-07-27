@@ -6,9 +6,9 @@ using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.ServerControl;
-using TickTrader.BotAgent.BA;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
 using TickTrader.Algo.Package;
+using TickTrader.Algo.Server;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
 {
@@ -19,7 +19,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             new SymbolConfig("none", SymbolConfig.Types.SymbolOrigin.Online), MappingDefaults.DefaultBarToBarMapping.Key);
 
 
-        private readonly IBotAgent _botAgent;
+        private readonly IAlgoServerLocal _algoServer;
         private readonly IAuthManager _authManager;
 
 
@@ -35,17 +35,18 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         public event Action<AccountStateUpdate> AccountStateUpdated = delegate { };
 
 
-        public BotAgentServerAdapter(IBotAgent botAgent, IAuthManager authManager)
+        public BotAgentServerAdapter(IAlgoServerLocal algoServer, IAuthManager authManager)
         {
-            _botAgent = botAgent;
+            _algoServer = algoServer;
             _authManager = authManager;
 
-            _botAgent.AccountChanged += OnAccountChanged;
-            _botAgent.BotChanged += OnBotChanged;
-            _botAgent.PackageChanged += OnPackageChanged;
-            _botAgent.BotStateChanged += OnBotStateChanged;
-            _botAgent.AccountStateChanged += OnAccountStateChanged;
-            _botAgent.PackageStateChanged += OnPackageStateChanged;
+            var eventBus = algoServer.EventBus;
+            eventBus.PackageUpdated.Subscribe(OnPackageUpdated);
+            eventBus.AccountUpdated.Subscribe(OnAccountUpdated);
+            eventBus.PluginUpdated.Subscribe(OnPluginUpdated);
+            eventBus.PackageStateUpdated.Subscribe(OnPackageStateUpdated);
+            eventBus.AccountStateUpdated.Subscribe(OnAccountStateUpdated);
+            eventBus.PluginStateUpdated.Subscribe(OnPluginStateUpdated);
 
             _authManager.AdminCredsChanged += OnAdminCredsChanged;
             _authManager.DealerCredsChanged += OnDealerCredsChanged;
@@ -67,17 +68,17 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
 
         public async Task<List<AccountModelInfo>> GetAccountList()
         {
-            return (await _botAgent.GetAccounts()).Accounts.ToList();
+            return (await _algoServer.GetAccounts()).Accounts.ToList();
         }
 
         public async Task<List<PluginModelInfo>> GetBotList()
         {
-            return (await _botAgent.GetBots()).Plugins.ToList();
+            return (await _algoServer.GetPlugins()).Plugins.ToList();
         }
 
         public async Task<List<PackageInfo>> GetPackageList()
         {
-            return (await _botAgent.GetPackageSnapshot()).Packages.ToList();
+            return (await _algoServer.GetPackageSnapshot()).Packages.ToList();
         }
 
         public Task<ApiMetadataInfo> GetApiMetadata()
@@ -85,9 +86,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return Task.FromResult(ApiMetadataInfo.CreateCurrentMetadata());
         }
 
-        public Task<MappingCollectionInfo> GetMappingsInfo()
+        public Task<MappingCollectionInfo> GetMappingsInfo(MappingsInfoRequest request)
         {
-            return _botAgent.GetMappingsInfo();
+            return _algoServer.GetMappingsInfo(request);
         }
 
         public Task<SetupContextInfo> GetSetupContext()
@@ -97,82 +98,82 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
 
         public Task<AccountMetadataInfo> GetAccountMetadata(AccountMetadataRequest request)
         {
-            return _botAgent.GetAccountMetadata(request);
+            return _algoServer.GetAccountMetadata(request);
         }
 
         public Task StartBot(StartPluginRequest request)
         {
-            return _botAgent.StartBot(request);
+            return _algoServer.StartPlugin(request);
         }
 
         public Task StopBot(StopPluginRequest request)
         {
-            return _botAgent.StopBotAsync(request);
+            return _algoServer.StopPlugin(request);
         }
 
         public Task AddBot(AddPluginRequest request)
         {
-            return _botAgent.AddBot(request);
+            return _algoServer.AddPlugin(request);
         }
 
         public Task RemoveBot(RemovePluginRequest request)
         {
-            return _botAgent.RemoveBot(request);
+            return _algoServer.RemovePlugin(request);
         }
 
         public Task ChangeBotConfig(ChangePluginConfigRequest request)
         {
-            return _botAgent.ChangeBotConfig(request);
+            return _algoServer.UpdatePluginConfig(request);
         }
 
         public Task AddAccount(AddAccountRequest request)
         {
-            return _botAgent.AddAccount(request);
+            return _algoServer.AddAccount(request);
         }
 
         public Task RemoveAccount(RemoveAccountRequest request)
         {
-            return _botAgent.RemoveAccount(request);
+            return _algoServer.RemoveAccount(request);
         }
 
         public Task ChangeAccount(ChangeAccountRequest request)
         {
-            return _botAgent.ChangeAccount(request);
+            return _algoServer.ChangeAccount(request);
         }
 
         public Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request)
         {
-            return _botAgent.TestAccount(request);
+            return _algoServer.TestAccount(request);
         }
 
         public Task<ConnectionErrorInfo> TestAccountCreds(TestAccountCredsRequest request)
         {
-            return _botAgent.TestCreds(request);
+            return _algoServer.TestCreds(request);
         }
 
         public Task RemovePackage(RemovePackageRequest request)
         {
-            return _botAgent.RemovePackage(request);
+            return _algoServer.RemovePackage(request);
         }
 
         public Task UploadPackage(UploadPackageRequest request, string pkgFilePath)
         {
-            return _botAgent.UploadPackage(request, pkgFilePath);
+            return _algoServer.UploadPackage(request, pkgFilePath);
         }
 
         public Task<byte[]> GetPackageBinary(DownloadPackageRequest request)
         {
-            return _botAgent.DownloadPackage(request.PackageId);
+            return _algoServer.GetPackageBinary(request.PackageId);
         }
 
         public Task<string> GetBotStatusAsync(PluginStatusRequest request)
         {
-            return _botAgent.GetBotStatus(request);
+            return _algoServer.GetPluginStatus(request);
         }
 
         public async Task<LogRecordInfo[]> GetBotLogsAsync(PluginLogsRequest request)
         {
-            var msgs = await _botAgent.GetBotLogs(request);
+            var msgs = await _algoServer.GetPluginLogs(request);
 
             return msgs.Select(e => new LogRecordInfo
             {
@@ -184,32 +185,32 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
 
         public Task<AlertRecordInfo[]> GetAlertsAsync(PluginAlertsRequest request)
         {
-            return _botAgent.GetAlerts(request);
+            return _algoServer.GetAlerts(request);
         }
 
         public Task<PluginFolderInfo> GetBotFolderInfo(PluginFolderInfoRequest request)
         {
-            return _botAgent.GetPluginFolderInfo(request);
+            return _algoServer.GetPluginFolderInfo(request);
         }
 
         public Task ClearBotFolder(ClearPluginFolderRequest request)
         {
-            return _botAgent.ClearPluginFolder(request);
+            return _algoServer.ClearPluginFolder(request);
         }
 
         public Task DeleteBotFile(DeletePluginFileRequest request)
         {
-            return _botAgent.DeletePluginFile(request);
+            return _algoServer.DeletePluginFile(request);
         }
 
         public Task<string> GetBotFileReadPath(DownloadPluginFileRequest request)
         {
-            return _botAgent.GetPluginFileReadPath(request);
+            return _algoServer.GetPluginFileReadPath(request);
         }
 
         public Task<string> GetBotFileWritePath(UploadPluginFileRequest request)
         {
-            return _botAgent.GetPluginFileWritePath(request);
+            return _algoServer.GetPluginFileWritePath(request);
         }
 
 
@@ -230,7 +231,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
 
         #region Event handlers
 
-        private void OnAccountChanged(AccountModelUpdate update)
+        private void OnAccountUpdated(AccountModelUpdate update)
         {
             try
             {
@@ -246,7 +247,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }
         }
 
-        private void OnBotChanged(PluginModelUpdate update)
+        private void OnPluginUpdated(PluginModelUpdate update)
         {
             try
             {
@@ -262,7 +263,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }
         }
 
-        private void OnPackageChanged(PackageUpdate update)
+        private void OnPackageUpdated(PackageUpdate update)
         {
             try
             {
@@ -278,7 +279,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }
         }
 
-        private void OnBotStateChanged(PluginStateUpdate bot)
+        private void OnPluginStateUpdated(PluginStateUpdate bot)
         {
             try
             {
@@ -290,7 +291,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }
         }
 
-        private void OnAccountStateChanged(AccountStateUpdate account)
+        private void OnAccountStateUpdated(AccountStateUpdate account)
         {
             try
             {
@@ -302,7 +303,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }
         }
 
-        private void OnPackageStateChanged(PackageStateUpdate package)
+        private void OnPackageStateUpdated(PackageStateUpdate package)
         {
             try
             {

@@ -1,448 +1,348 @@
-﻿using ActorSharp;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async;
+using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
-using TickTrader.Algo.Util;
 
 namespace TickTrader.Algo.Package
 {
-    internal enum UpdateAction { Upsert, Remove }
-
-
-    internal sealed class PackageFileUpdate
+    internal sealed class PackageState
     {
-        public string PkgId { get; }
+        public string Id { get; set; }
 
-        public UpdateAction Action { get; }
+        public PackageIdentity Identity { get; set; }
 
-        public PackageInfo PkgInfo { get; }
+        public PkgUpdateAction? NextAction { get; set; }
 
-        public byte[] PkgBytes { get; }
-
-
-        public PackageFileUpdate(string pkgId, UpdateAction action, PackageInfo pkgInfo = null, byte[] pkgBytes = null)
-        {
-            PkgId = pkgId;
-            Action = action;
-            PkgInfo = pkgInfo;
-            PkgBytes = pkgBytes;
-        }
+        public bool IsLoading { get; set; }
     }
 
 
-    internal sealed class PackageRepository
+    public sealed class PackageRepository : Actor
     {
         public const int MaxPkgSize = 256 * 1024 * 1024;
 
-        private readonly Ref<Impl> _impl;
+        private readonly string _path, _locationId;
+        private readonly ChannelWriter<PackageFileUpdate> _updateSink;
+        private readonly Dictionary<string, PackageState> _pkgStateCache = new Dictionary<string, PackageState>();
+
+        private IAlgoLogger _logger;
+        private bool _enabled;
+        private FileWatcherAdapter _watcher;
+        private TaskCompletionSource<object> _whenIdleSrc;
 
 
-        internal PackageRepository(string repPath, string locationId, IAsyncChannel<PackageFileUpdate> updateChannel)
+        private PackageRepository(string path, string locationId, ChannelWriter<PackageFileUpdate> updateSink)
         {
-            _impl = Actor.SpawnLocal<Impl>(null, $"PackageRepository {locationId}");
+            _path = path;
+            _locationId = locationId;
+            _updateSink = updateSink;
 
-            _impl.Send(a => a.Init(repPath, locationId, updateChannel));
+            Receive<StartCmd>(Start);
+            Receive<StopCmd>(Stop);
+            Receive<WhenIdleRequest, Task>(WhenIdle);
+            Receive<PackageLoadResult>(OnPackageLoaded);
         }
 
 
-        public Task Start()
+        public static IActorRef Create(string path, string locationId, ChannelWriter<PackageFileUpdate> updateSink)
         {
-            return _impl.Call(a => a.Start());
-        }
-
-        public Task Stop()
-        {
-            return _impl.Call(a => a.Stop());
-        }
-
-        public Task<object> WaitLoaded()
-        {
-            var taskSrc = new TaskCompletionSource<object>();
-
-            _impl.Send(a => a.WhenIdle(() => taskSrc.TrySetResult(null)));
-
-            return taskSrc.Task;
+            return ActorSystem.SpawnLocal(() => new PackageRepository(path, locationId, updateSink), $"{nameof(PackageRepository)} ({locationId})");
         }
 
 
-        private sealed class Impl : Actor
+        protected override void ActorInit(object initMsg)
         {
-            internal sealed class PackageState
+            _logger = AlgoLoggerFactory.GetLogger(Name);
+            _watcher = new FileWatcherAdapter(Self, _logger);
+        }
+
+
+        private void Start(StartCmd cmd)
+        {
+            _enabled = true;
+            Scan();
+        }
+
+        private void Stop(StopCmd cmd)
+        {
+            _enabled = false;
+            _whenIdleSrc?.TrySetResult(null);
+            _watcher.Deinit();
+        }
+
+        private Task WhenIdle(WhenIdleRequest request)
+        {
+            if (!_enabled)
+                throw new InvalidOperationException($"{Name} not started");
+
+            if (IsIdle())
+                return Task.CompletedTask;
+
+            if (_whenIdleSrc == null)
+                _whenIdleSrc = new TaskCompletionSource<object>();
+
+            return _whenIdleSrc.Task;
+        }
+
+        private void OnPackageLoaded(PackageLoadResult result)
+        {
+            (var path, var fileUpdate) = result;
+
+            if (!_pkgStateCache.TryGetValue(path, out var pkgState))
             {
-                public PackageIdentity Identity { get; set; }
-
-                public UpdateAction? NextAction { get; set; }
-
-                public bool IsLoading { get; set; }
+                _logger?.Error($"Missing package state for '{path}'");
+                return;
             }
 
-
-            internal sealed class PackageLoadRequest
+            pkgState.IsLoading = false;
+            if (fileUpdate != null)
             {
-                public string Path { get; }
+                _logger?.Debug($"Loaded package '{path}'");
+                pkgState.Identity = fileUpdate.PkgInfo.Identity;
+                _updateSink.TryWrite(fileUpdate);
+            }
 
-                public PackageIdentity CachedIdentity { get; }
-
-
-                public PackageLoadRequest(string path, PackageIdentity cachedIdentity)
+            if (pkgState.NextAction != null)
+            {
+                switch (pkgState.NextAction.Value)
                 {
-                    Path = path;
-                    CachedIdentity = cachedIdentity;
-                }
-
-                public void Deconstruct(out string path, out PackageIdentity identity)
-                {
-                    path = Path;
-                    identity = CachedIdentity;
-                }
-            }
-
-
-            internal sealed class PackageLoadResult
-            {
-                public string Path { get; }
-
-                public PackageFileUpdate FileUpdate { get; set; }
-
-
-                public PackageLoadResult(string path)
-                {
-                    Path = path;
-                }
-
-                public void Deconstruct(out string path, out PackageFileUpdate update)
-                {
-                    path = Path;
-                    update = FileUpdate;
-                }
-            }
-
-            private readonly Dictionary<string, PackageState> _pkgStateCache = new Dictionary<string, PackageState>();
-
-            private IAlgoLogger _logger;
-            private IAsyncChannel<PackageFileUpdate> _updateChannel;
-            private FileSystemWatcher _watcher;
-            private Action _whenIdle;
-
-            private string _repPath;
-            private string _location;
-            private bool _enabled;
-
-            public void Init(string repPath, string location, IAsyncChannel<PackageFileUpdate> updateChannel)
-            {
-                _repPath = repPath;
-                _location = location;
-                _updateChannel = updateChannel;
-
-                _logger = AlgoLoggerFactory.GetLogger<PackageRepository>($"({location})");
-
-                _logger?.Debug($"Initialized");
-            }
-
-            public void Start()
-            {
-                _enabled = true;
-                Scan();
-            }
-
-            public void Stop()
-            {
-                _enabled = false;
-                DeinitWatcher();
-            }
-
-            public void WhenIdle(Action callback)
-            {
-                _whenIdle = callback;
-                CheckIdle();
-            }
-
-
-            private void Scan()
-            {
-                if (!_enabled)
-                    return;
-
-                _logger?.Debug($"Starting scan at '{_repPath}'");
-
-                try
-                {
-                    var cnt = 0;
-                    var fileList = Directory.GetFiles(_repPath);
-
-                    DeinitWatcher();
-                    InitWatcher();
-
-                    foreach (var file in fileList)
-                        if (PackageHelper.IsFileSupported(file))
-                        {
-                            UpsertPackage(file);
-                            cnt++;
-                        }
-
-                    _logger?.Debug($"Scan finished found {cnt} packages");
-                }
-                catch (Exception ex)
-                {
-                    _logger?.Error(ex, $"Failed to scan '{_repPath}'");
+                    case PkgUpdateAction.Upsert:
+                        UpsertPackage(path);
+                        break;
+                    case PkgUpdateAction.Remove:
+                        RemovePackage(path);
+                        break;
                 }
             }
 
-            private void SchedulePackageUpsert(string path)
+            if (_whenIdleSrc != null && IsIdle())
             {
-                if (PackageHelper.IsFileSupported(path))
-                    ContextSend(() => UpsertPackage(path));
+                _whenIdleSrc.TrySetResult(null);
+                _whenIdleSrc = null;
             }
+        }
 
-            private void SchedulePackageRemove(string path)
+
+        private void Scan()
+        {
+            if (!_enabled)
+                return;
+
+            _logger.Debug($"Starting scan at '{_path}'");
+
+            try
             {
-                if (PackageHelper.IsFileSupported(path))
-                    ContextSend(() => RemovePackage(path));
-            }
+                var cnt = 0;
+                var fileList = Directory.GetFiles(_path);
 
-            private void UpsertPackage(string path)
-            {
-                if (!_enabled)
-                    return;
+                _watcher.Deinit();
+                _watcher.Init(_path);
 
-                _logger?.Debug($"Upsert package '{path}'");
-
-                if (!_pkgStateCache.TryGetValue(path, out var pkgState))
-                {
-                    pkgState = new PackageState();
-                    _pkgStateCache[path] = pkgState;
-                }
-
-                if (pkgState.IsLoading)
-                {
-                    pkgState.NextAction = UpdateAction.Upsert;
-                }
-                else
-                {
-                    pkgState.IsLoading = true;
-                    pkgState.NextAction = null;
-
-                    Task.Factory.StartNew(() => LoadPackage(new PackageLoadRequest(path, pkgState.Identity)),
-                        CancellationToken.None, TaskCreationOptions.None, ParallelTaskScheduler.ShortRunning)
-                        .ContinueWith(t => ContextSend(() => OnPackageLoaded(t.IsCompleted ? t.Result : new PackageLoadResult(path))));
-                }
-            }
-
-            private void OnPackageLoaded(PackageLoadResult loadResult)
-            {
-                (var path, var fileUpdate) = loadResult;
-
-                if (!_pkgStateCache.TryGetValue(path, out var pkgState))
-                {
-                    _logger?.Error($"Missing package state for '{path}'");
-                    return;
-                }
-
-                pkgState.IsLoading = false;
-                if (fileUpdate != null)
-                {
-                    _logger?.Debug($"Loaded package '{path}'");
-                    pkgState.Identity = fileUpdate.PkgInfo.Identity;
-                    _updateChannel.AddAsync(fileUpdate);
-                }
-
-                if (pkgState.NextAction != null)
-                {
-                    switch (pkgState.NextAction.Value)
+                foreach (var file in fileList)
+                    if (PackageHelper.IsFileSupported(file))
                     {
-                        case UpdateAction.Upsert:
-                            UpsertPackage(path);
-                            break;
-                        case UpdateAction.Remove:
-                            RemovePackage(path);
-                            break;
+                        UpsertPackage(file);
+                        cnt++;
                     }
-                }
 
-                CheckIdle();
+                _logger.Debug($"Scan finished found {cnt} packages");
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Failed to scan '{_path}'");
+            }
+        }
+
+        private void UpsertPackage(string path)
+        {
+            if (!_enabled)
+                return;
+
+            _logger.Debug($"Upsert package '{path}'");
+
+            if (!_pkgStateCache.TryGetValue(path, out var pkgState))
+            {
+                pkgState = new PackageState { Id = PackageId.FromPath(_locationId, path) };
+                _pkgStateCache[path] = pkgState;
             }
 
-            private void RemovePackage(string path)
+            if (pkgState.IsLoading)
             {
-                _logger?.Debug($"Remove package '{path}'");
+                pkgState.NextAction = PkgUpdateAction.Upsert;
+            }
+            else
+            {
+                pkgState.IsLoading = true;
+                pkgState.NextAction = null;
 
-                _pkgStateCache.TryGetValue(path, out var pkgState);
+                Task.Factory.StartNew(() => LoadPackage(new PackageLoadRequest(pkgState.Id, path, pkgState.Identity), _logger),
+                    CancellationToken.None, TaskCreationOptions.None, ParallelTaskScheduler.ShortRunning)
+                    .ContinueWith(t => Self.Tell(t.IsCompleted ? t.Result : new PackageLoadResult(path)));
+            }
+        }
 
-                if (pkgState?.IsLoading ?? false)
+        private void RemovePackage(string path)
+        {
+            _logger.Debug($"Remove package '{path}'");
+
+            _pkgStateCache.TryGetValue(path, out var pkgState);
+
+            if (pkgState?.IsLoading ?? false)
+            {
+                pkgState.NextAction = PkgUpdateAction.Remove;
+            }
+            else
+            {
+                var pkgId = PackageId.FromPath(_locationId, path);
+
+                _pkgStateCache.Remove(path);
+                _updateSink.TryWrite(new PackageFileUpdate(pkgId, PkgUpdateAction.Remove));
+            }
+        }
+
+        private bool IsIdle() => _pkgStateCache.Values.All(p => !p.IsLoading);
+
+        private static PackageLoadResult LoadPackage(PackageLoadRequest request, IAlgoLogger logger)
+        {
+            (var pkgId, var path, var pkgIdentity) = request;
+            var res = new PackageLoadResult(path);
+            byte[] fileBytes = null;
+
+            logger?.Debug($"Loading package '{path}'");
+
+            try // loading file in memory
+            {
+                using (var stream = File.Open(path, FileMode.Open, FileAccess.Read))
                 {
-                    pkgState.NextAction = UpdateAction.Remove;
-                }
-                else
-                {
-                    var pkgId = PackageId.FromPath(_location, path);
+                    var fileInfo = new FileInfo(path);
+                    var pkgSize = fileInfo.Length;
 
-                    _pkgStateCache.Remove(path);
-                    _updateChannel.AddAsync(new PackageFileUpdate(pkgId, UpdateAction.Remove));
-                }
-            }
-
-            private void CheckIdle()
-            {
-                if (_whenIdle != null && _pkgStateCache.Values.All(p => !p.IsLoading))
-                {
-                    Task.Factory.StartNew(_whenIdle);
-                    _whenIdle = null;
-                }
-            }
-
-            private void InitWatcher()
-            {
-                _watcher = new FileSystemWatcher()
-                {
-                    Path = _repPath,
-                    IncludeSubdirectories = false,
-                    EnableRaisingEvents = true,
-                };
-
-                _watcher.Changed += WatcherOnChanged;
-                _watcher.Created += WatcherOnChanged;
-                _watcher.Deleted += WatcherOnDeleted;
-                _watcher.Renamed += WatcherOnRenamed;
-                _watcher.Error += WatcherOnError;
-            }
-
-            private void DeinitWatcher()
-            {
-                if (_watcher == null)
-                    return;
-
-                _watcher.Changed -= WatcherOnChanged;
-                _watcher.Created -= WatcherOnChanged;
-                _watcher.Deleted -= WatcherOnDeleted;
-                _watcher.Renamed -= WatcherOnRenamed;
-                _watcher.Error -= WatcherOnError;
-
-                _watcher.Dispose();
-
-                _watcher = null;
-            }
-
-            private void WatcherOnError(object sender, ErrorEventArgs e)
-            {
-                _logger?.Error(e.GetException(), $"Watcher error");
-
-                ContextSend(Scan); // restart watcher
-            }
-
-            private void WatcherOnRenamed(object sender, RenamedEventArgs e)
-            {
-                _logger?.Debug($"Watcher renamed '{e.OldFullPath}' into '{e.FullPath}' ({e.ChangeType})");
-
-                SchedulePackageRemove(e.OldFullPath);
-                SchedulePackageUpsert(e.FullPath);
-            }
-
-            private void WatcherOnChanged(object sender, FileSystemEventArgs e)
-            {
-                _logger?.Debug($"Watcher changed '{e.FullPath}' ({e.ChangeType})");
-
-                SchedulePackageUpsert(e.FullPath);
-            }
-
-            private void WatcherOnDeleted(object sender, FileSystemEventArgs e)
-            {
-                _logger?.Debug($"Watcher deleted '{e.FullPath}' ({e.ChangeType})");
-
-                SchedulePackageRemove(e.FullPath);
-            }
-
-            private PackageLoadResult LoadPackage(PackageLoadRequest request)
-            {
-                (var path, var pkgIdentity) = request;
-                var res = new PackageLoadResult(path);
-                var pkgId = PackageId.FromPath(_location, path);
-                byte[] fileBytes = null;
-
-                _logger?.Debug($"Loading package '{path}'");
-
-                try // loading file in memory
-                {
-                    using (var stream = File.Open(path, FileMode.Open, FileAccess.Read))
+                    if (pkgSize > MaxPkgSize)
                     {
-                        var fileInfo = new FileInfo(path);
-                        var pkgSize = fileInfo.Length;
-
-                        if (pkgSize > MaxPkgSize)
-                        {
-                            _logger?.Error($"Algo package size({pkgSize}) exceeds limit '{path}'");
-                            return res;
-                        }
-
-                        var skipFileScan = pkgIdentity != null
-                            && pkgSize == pkgIdentity.Size
-                            && fileInfo.CreationTimeUtc == pkgIdentity.CreatedUtc.ToDateTime()
-                            && fileInfo.LastWriteTimeUtc == pkgIdentity.LastModifiedUtc.ToDateTime();
-
-                        // FileSystemWatcher produces many events
-                        // Package scans might take a while
-                        // Therefore we can have many events asking to load this file without real need
-                        if (skipFileScan)
-                        {
-                            _logger?.Debug($"Algo package scan skipped at '{path}'");
-                            return res;
-                        }
-
-                        fileBytes = new byte[pkgSize];
-
-                        using (var memStream = new MemoryStream(fileBytes))
-                        {
-                            stream.CopyTo(memStream);
-                        }
-
-                        pkgIdentity = PackageIdentity.Create(fileInfo, string.Empty);
+                        logger?.Error($"Algo package size({pkgSize}) exceeds limit '{path}'");
+                        return res;
                     }
-                }
-                catch (IOException ioEx)
-                {
-                    if (ioEx.IsLockException())
-                        _logger?.Debug($"Algo package is locked at '{path}'");
-                    else
-                        _logger?.Info($"Can't open Algo package at '{path}': {ioEx.Message}"); // other errors
-                }
-                catch (Exception ex)
-                {
-                    _logger?.Error(ex, $"Failed to load Algo package at '{path}'");
-                }
 
-                if (fileBytes == null)
-                    return res; // load skipped or failed
+                    var skipFileScan = pkgIdentity != null
+                        && pkgSize == pkgIdentity.Size
+                        && fileInfo.CreationTimeUtc == pkgIdentity.CreatedUtc.ToDateTime()
+                        && fileInfo.LastWriteTimeUtc == pkgIdentity.LastModifiedUtc.ToDateTime();
 
-                var pkgInfo = new PackageInfo
-                {
-                    PackageId = pkgId,
-                    Identity = pkgIdentity,
-                    IsValid = false,
-                };
+                    // FileSystemWatcher produces many events
+                    // Package scans might take a while
+                    // Therefore we can have many events asking to load this file without real need
+                    if (skipFileScan)
+                    {
+                        logger?.Debug($"Algo package scan skipped at '{path}'");
+                        return res;
+                    }
 
-                try // scan package
-                {
+                    fileBytes = new byte[pkgSize];
+
                     using (var memStream = new MemoryStream(fileBytes))
                     {
-                        pkgIdentity.Hash = FileHelper.CalculateSha256Hash(memStream);
+                        stream.CopyTo(memStream);
                     }
 
-                    pkgInfo = PackageLoadContext.ReflectionOnlyLoad(pkgId, path);
-                    pkgInfo.Identity = pkgIdentity;
-                    pkgInfo.IsValid = true;
+                    pkgIdentity = PackageIdentity.Create(fileInfo, string.Empty);
                 }
-                catch (Exception ex)
+            }
+            catch (IOException ioEx)
+            {
+                if (ioEx.IsLockException())
+                    logger?.Debug($"Algo package is locked at '{path}'");
+                else
+                    logger?.Info($"Can't open Algo package at '{path}': {ioEx.Message}"); // other errors
+            }
+            catch (Exception ex)
+            {
+                logger?.Error(ex, $"Failed to load Algo package at '{path}'");
+            }
+
+            if (fileBytes == null)
+                return res; // load skipped or failed
+
+            var pkgInfo = new PackageInfo
+            {
+                PackageId = pkgId,
+                Identity = pkgIdentity,
+                IsValid = false,
+            };
+
+            try // scan package
+            {
+                using (var memStream = new MemoryStream(fileBytes))
                 {
-                    _logger?.Error(ex, $"Failed to scan Algo package at '{path}'");
+                    pkgIdentity.Hash = FileHelper.CalculateSha256Hash(memStream);
                 }
 
-                res.FileUpdate = new PackageFileUpdate(pkgId, UpdateAction.Upsert, pkgInfo, pkgInfo.IsValid ? fileBytes : null);
-                return res;
+                pkgInfo = PackageLoadContext.ReflectionOnlyLoad(pkgId, path);
+                pkgInfo.Identity = pkgIdentity;
+                pkgInfo.IsValid = true;
+            }
+            catch (Exception ex)
+            {
+                logger?.Error(ex, $"Failed to scan Algo package at '{path}'");
+            }
+
+            res.FileUpdate = new PackageFileUpdate(pkgId, PkgUpdateAction.Upsert, pkgInfo, pkgInfo.IsValid ? fileBytes : null);
+            return res;
+        }
+
+
+        public class StartCmd : Singleton<StartCmd> { }
+
+        public class StopCmd : Singleton<StopCmd> { }
+
+        public class WhenIdleRequest : Singleton<WhenIdleRequest> { }
+
+        internal sealed class PackageLoadRequest
+        {
+            public string Id { get; }
+
+            public string Path { get; }
+
+            public PackageIdentity CachedIdentity { get; }
+
+
+            public PackageLoadRequest(string id, string path, PackageIdentity cachedIdentity)
+            {
+                Id = id;
+                Path = path;
+                CachedIdentity = cachedIdentity;
+            }
+
+            public void Deconstruct(out string id, out string path, out PackageIdentity identity)
+            {
+                id = Id;
+                path = Path;
+                identity = CachedIdentity;
+            }
+        }
+
+        internal sealed class PackageLoadResult
+        {
+            public string Path { get; }
+
+            public PackageFileUpdate FileUpdate { get; set; }
+
+
+            public PackageLoadResult(string path)
+            {
+                Path = path;
+            }
+
+            public void Deconstruct(out string path, out PackageFileUpdate update)
+            {
+                path = Path;
+                update = FileUpdate;
             }
         }
     }
