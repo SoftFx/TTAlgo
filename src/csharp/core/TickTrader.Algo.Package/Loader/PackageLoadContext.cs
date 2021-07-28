@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reflection;
-using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Package
@@ -25,8 +24,6 @@ namespace TickTrader.Algo.Package
 
     public static class PackageLoadContext
     {
-        private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger(nameof(PackageLoadContext));
-
         private static Func<bool, IPackageLoadContext> _factory;
         private static IPackageLoadContext _default;
 
@@ -71,16 +68,9 @@ namespace TickTrader.Algo.Package
         public static PackageInfo ReflectionOnlyLoad(string pkgId, string pkgPath)
         {
             PackageInfo res = null;
-            try
+            using (var loadContext = _factory(true))
             {
-                using (var loadContext = _factory(true))
-                {
-                    res = loadContext.Load(pkgId, pkgPath);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "RefletionOnlyLoad failed");
+                res = loadContext.Load(pkgId, pkgPath);
             }
             return res;
         }

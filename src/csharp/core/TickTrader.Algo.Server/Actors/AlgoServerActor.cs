@@ -176,12 +176,14 @@ namespace TickTrader.Algo.Server
         {
             var pkgRef = _pkgStorage.GetPkgRef(pkgId);
 
-            var id = pkgRef.Id.Replace('/', '-');
-            var pkgBytes = pkgRef.PkgBytes;
-            var pkgBin = pkgBytes == null ? ByteString.Empty : ByteString.CopyFrom(pkgBytes);
-            var config = new RuntimeConfig { Id = id, PackageId = pkgId, PackageBinary = pkgBin, PackageIdentity = pkgRef.PkgInfo.Identity };
+            var pkgInfo = pkgRef.PkgInfo;
+            if (!pkgInfo.IsValid)
+            {
+                _logger.Debug($"Skipped creating runtime for pkg ref '{pkgRef.Id}'");
+                return;
+            }
 
-            _runtimes.CreateRuntime(config);
+            _runtimes.CreateRuntime(pkgRef.Id.Replace('/', '-'), pkgRef);
         }
 
 

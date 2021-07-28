@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace TickTrader.Algo.Package.V1
@@ -83,6 +84,10 @@ namespace TickTrader.Algo.Package.V1
             {
                 Dictionary<string, byte[]> files = new Dictionary<string, byte[]>();
                 PackageMetadata metadata = null;
+
+                var rawSize = archive.Entries.Sum(e => e.Length);
+                if (rawSize > PackageLoader.MaxRawPkgSize)
+                    throw new Exception($"Invalid Algo package: Unpacked size({rawSize}) exceeds limit");
 
                 foreach (var entry in archive.Entries)
                 {

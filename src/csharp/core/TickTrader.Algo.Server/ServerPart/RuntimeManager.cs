@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Google.Protobuf;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
@@ -51,10 +52,12 @@ namespace TickTrader.Algo.Server
             return _pkgRuntimeMap.TryGetValue(pkgId, out var runtimeId) ? _runtimeMap[runtimeId] : null;
         }
 
-        public void CreateRuntime(RuntimeConfig config)
+        public void CreateRuntime(string id, PackageRef pkgRef)
         {
-            var id = config.Id;
-            var pkgId = config.PackageId;
+            var pkgId = pkgRef.PkgId;
+            var pkgBytes = pkgRef.PkgBytes;
+            var pkgBin = pkgBytes == null ? ByteString.Empty : ByteString.CopyFrom(pkgBytes);
+            var config = new RuntimeConfig { Id = id, PackageId = pkgId, PackageBinary = pkgBin, PackageIdentity = pkgRef.PkgInfo.Identity };
 
             _pkgRuntimeMap[pkgId] = id;
             _runtimeMap[id] = new PkgRuntimeModel(PkgRuntimeActor.Create(config, _server));

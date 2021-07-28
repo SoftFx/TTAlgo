@@ -26,8 +26,6 @@ namespace TickTrader.Algo.Package
 
     public sealed class PackageRepository : Actor
     {
-        public const int MaxPkgSize = 256 * 1024 * 1024;
-
         private readonly string _path, _locationId;
         private readonly ChannelWriter<PackageFileUpdate> _updateSink;
         private readonly Dictionary<string, PackageState> _pkgStateCache = new Dictionary<string, PackageState>();
@@ -224,7 +222,7 @@ namespace TickTrader.Algo.Package
                     var fileInfo = new FileInfo(path);
                     var pkgSize = fileInfo.Length;
 
-                    if (pkgSize > MaxPkgSize)
+                    if (pkgSize > PackageLoader.MaxZipPkgSize)
                     {
                         logger?.Error($"Algo package size({pkgSize}) exceeds limit '{path}'");
                         return res;
@@ -292,7 +290,7 @@ namespace TickTrader.Algo.Package
                 logger?.Error(ex, $"Failed to scan Algo package at '{path}'");
             }
 
-            res.FileUpdate = new PackageFileUpdate(pkgId, PkgUpdateAction.Upsert, pkgInfo, pkgInfo.IsValid ? fileBytes : null);
+            res.FileUpdate = new PackageFileUpdate(pkgId, PkgUpdateAction.Upsert, pkgInfo, fileBytes);
             return res;
         }
 
