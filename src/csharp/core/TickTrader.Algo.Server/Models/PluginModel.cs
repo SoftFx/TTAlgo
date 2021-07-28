@@ -19,9 +19,9 @@ namespace TickTrader.Algo.Server
         }
 
 
-        public Task Start() => _ref.Ask(new PluginActor.StartCmd());
+        public Task Start() => _ref.Ask(PluginActor.StartCmd.Instance);
 
-        public Task Stop() => _ref.Ask(new PluginActor.StopCmd());
+        public Task Stop() => _ref.Ask(PluginActor.StopCmd.Instance);
 
         public Task UpdateConfig(PluginConfig newConfig) => _ref.Ask(new PluginActor.UpdateConfigCmd(newConfig));
 

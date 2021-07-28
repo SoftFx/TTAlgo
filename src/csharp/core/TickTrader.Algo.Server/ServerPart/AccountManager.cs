@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Account;
+using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
@@ -18,7 +19,7 @@ namespace TickTrader.Algo.Server
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<AccountManager>();
 
         private readonly AlgoServerPrivate _server;
-        private readonly Dictionary<string, AccountControlModel> _accounts = new Dictionary<string, AccountControlModel>();
+        private readonly Dictionary<string, IActorRef> _accounts = new Dictionary<string, IActorRef>();
         private readonly Dictionary<string, string> _accountDisplayNameCache = new Dictionary<string, string>();
 
 
@@ -41,7 +42,7 @@ namespace TickTrader.Algo.Server
         {
             _logger.Debug("Restoring saved state...");
 
-            foreach(var acc in savedState.Accounts.Values)
+            foreach (var acc in savedState.Accounts.Values)
             {
                 CreateAccountInternal(acc);
             }
@@ -54,7 +55,7 @@ namespace TickTrader.Algo.Server
             if (!_accounts.TryGetValue(accId, out var account))
                 return Task.FromException<AccountControlModel>(Errors.AccountNotFound(accId));
 
-            return Task.FromResult(account);
+            return Task.FromResult(new AccountControlModel(account));
         }
 
         public async Task AddAccount(AddAccountRequest request)
@@ -96,7 +97,7 @@ namespace TickTrader.Algo.Server
             if (!_accounts.TryGetValue(accId, out var account))
                 throw Errors.AccountNotFound(accId);
 
-            await account.Change(request);
+            await account.Ask(request);
 
             var displayName = request.DisplayName;
             if (!string.IsNullOrEmpty(displayName))
@@ -125,7 +126,7 @@ namespace TickTrader.Algo.Server
             if (!_accounts.TryGetValue(accId, out var account))
                 throw Errors.AccountNotFound(accId);
 
-            return account.Test(request);
+            return account.Ask<ConnectionErrorInfo>(request);
         }
 
         public async Task<ConnectionErrorInfo> TestAccountCreds(TestAccountCredsRequest request)
@@ -165,29 +166,32 @@ namespace TickTrader.Algo.Server
             if (!_accounts.TryGetValue(accId, out var account))
                 throw Errors.AccountNotFound(accId);
 
-            return account.GetMetadata(request);
+            return account.Ask<AccountMetadataInfo>(request);
         }
 
 
         private void CreateAccountInternal(AccountSavedState savedState)
         {
             var accId = savedState.Id;
-            var acc = new AccountControlModel(AccountControlActor.Create(_server, savedState));
+            var acc = AccountControlActor.Create(_server, savedState);
             _accounts[accId] = acc;
             _accountDisplayNameCache[accId] = savedState.DisplayName;
         }
-        
-        private async Task ShutdownAccountInternal(string accId, AccountControlModel acc)
+
+        private async Task ShutdownAccountInternal(string accId, IActorRef acc)
         {
             try
             {
-                if (!await acc.Shutdown().WaitAsync(AccountShutdownTimeout))
+                if (!await acc.Ask(AccountControlActor.ShutdownCmd.Instance).WaitAsync(AccountShutdownTimeout))
                     _logger.Error($"Failed to shutdown account '{accId}': Timeout");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.Error(ex, $"Failed to shutdown account '{accId}'");
             }
+
+            await ActorSystem.StopActor(acc)
+                    .OnException(ex => _logger.Error(ex, $"Failed to stop actor {acc.Name}"));
         }
 
         private void Validate(string server, string userId, AccountCreds creds)

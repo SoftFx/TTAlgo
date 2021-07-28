@@ -331,9 +331,9 @@ namespace TickTrader.Algo.Server
         }
 
 
-        internal class StartCmd { }
+        internal class StartCmd : Singleton<StartCmd> { }
 
-        internal class StopCmd { }
+        internal class StopCmd : Singleton<StopCmd> { }
 
         internal class UpdateConfigCmd
         {
