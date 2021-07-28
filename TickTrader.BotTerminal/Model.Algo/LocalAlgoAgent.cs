@@ -32,8 +32,6 @@ namespace TickTrader.BotTerminal
         private static readonly ApiMetadataInfo _apiMetadata = ApiMetadataInfo.CreateCurrentMetadata();
         private static readonly ISetupSymbolInfo _defaultSymbol = new SymbolToken("none");
 
-        private readonly ReductionCollection _reductions;
-        private readonly MappingCollectionInfo _mappingsInfo;
         private ISyncContext _syncContext;
         private VarDictionary<string, PackageInfo> _packages;
         private VarDictionary<PluginKey, PluginInfo> _plugins;
@@ -64,7 +62,7 @@ namespace TickTrader.BotTerminal
 
         public PluginIdProvider IdProvider { get; }
 
-        public MappingCollectionInfo Mappings { get; }
+        public MappingCollectionInfo Mappings { get; private set; }
 
         public TraderClientModel ClientModel { get; }
 
@@ -101,7 +99,6 @@ namespace TickTrader.BotTerminal
 
             Task.Factory.StartNew(() => StartServer(storage));//.GetAwaiter().GetResult();
 
-            _reductions = new ReductionCollection();
             IdProvider = new PluginIdProvider();
             _botsWarden = new BotsWarden(this);
             _syncContext = new DispatcherSync();
@@ -116,10 +113,6 @@ namespace TickTrader.BotTerminal
             ClientModel.Disconnected += ClientModelOnDisconnected;
             ClientModel.Connection.StateChanged += ClientConnectionOnStateChanged;
 
-            _reductions.LoadDefaultReductions();
-            //_reductions.LoadReductions(EnvService.Instance.AlgoExtFolder, SharedConstants.LocalRepositoryId);
-
-            Mappings = _reductions.CreateMappings();
             Catalog = new PluginCatalog(this);
             AccessManager = new AccessManager(ClientClaims.Types.AccessLevel.Admin);
         }
@@ -142,6 +135,8 @@ namespace TickTrader.BotTerminal
                 await AlgoServer.LoadLegacyState(serverSavedState);
             }
             await AlgoServer.Start();
+
+            Mappings = await AlgoServer.GetMappingsInfo(new MappingsInfoRequest());
         }
 
         private ServerSavedState BuildServerSavedState(PersistModel model)
