@@ -469,7 +469,7 @@ namespace TickTrader.BotTerminal
 
         public async ValueTask DisposeAsync()
         {
-            await UnsubscribeToAlerts();
+            //await UnsubscribeToAlerts();
         }
 
         #endregion

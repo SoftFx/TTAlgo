@@ -127,7 +127,7 @@ namespace TickTrader.BotTerminal
             if (_protocolClient.State == ClientStates.Offline)
             {
                 _stateControl.PushEvent(Events.Disconnected);
-                RemoteAgent.UnsubscribeToAlerts();
+                //RemoteAgent.UnsubscribeToAlerts();
             }
         }
 
