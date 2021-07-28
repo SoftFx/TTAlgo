@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Server.PublicAPI
 {
     public sealed class AlgoServerClient : ProtocolClient, IAlgoServerClient
     {
-        private const int HeartbeatTimeout = 10000;
+        //private const int HeartbeatTimeout = 10000;
         private const int DefaultRequestTimeout = 10;
 
         public ClientStates State => _stateMachine.Current;
@@ -31,7 +31,6 @@ namespace TickTrader.Algo.Server.PublicAPI
         private AlgoServerPublic.AlgoServerPublicClient _client;
         private string _accessToken;
         private CancellationTokenSource _updateStreamCancelTokenSrc;
-        private Timer _heartbeatTimer;
 
 
         static AlgoServerClient()
@@ -54,7 +53,7 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             GrpcEnvironment.SetLogger(new GrpcLoggerAdapter(Logger));
 
-            var creds = new SslCredentials(CertificateProvider.RootCertificate); //, new KeyCertificatePair(CertificateProvider.ClientCertificate, CertificateProvider.ClientKey));
+            var creds = new SslCredentials(CertificateProvider.RootCertificate);
             var options = new[] { new ChannelOption(ChannelOptions.SslTargetNameOverride, "bot-agent.soft-fx.lv"), };
 
             _channel = new Channel(SessionSettings.ServerAddress, SessionSettings.ServerPort, creds, options);
@@ -91,9 +90,6 @@ namespace TickTrader.Algo.Server.PublicAPI
             _updateStreamCancelTokenSrc?.Cancel();
             _updateStreamCancelTokenSrc = null;
 
-            _heartbeatTimer?.Dispose();
-            _heartbeatTimer = null;
-
             _channel.ShutdownAsync().Wait();
         }
 
@@ -118,7 +114,7 @@ namespace TickTrader.Algo.Server.PublicAPI
                                 _accessToken = taskResult.AccessToken;
                                 Logger.Info($"Server session id: {taskResult.SessionId}");
                                 OnLogin(taskResult.MajorVersion, taskResult.MinorVersion, taskResult.AccessLevel);
-                                _heartbeatTimer = new Timer(HeartbeatTimerCallback, null, HeartbeatTimeout, -1);
+                                //_heartbeatTimer = new Timer(HeartbeatTimerCallback, null, HeartbeatTimeout, -1);
                             }
                             else
                                 OnConnectionError(taskResult.Error.ToString());
@@ -292,20 +288,6 @@ namespace TickTrader.Algo.Server.PublicAPI
             {
                 updateCall.Dispose();
             }
-        }
-
-        private async void HeartbeatTimerCallback(object state)
-        {
-            //if (_heartbeatTimer == null)
-            //    return;
-
-            //_heartbeatTimer?.Change(-1, -1);
-            //try
-            //{
-            //    await ExecuteUnaryRequestAuthorized(HeartbeatInternal, new HeartbeatRequest());
-            //}
-            //catch (Exception) { }
-            //_heartbeatTimer?.Change(HeartbeatTimeout, -1);
         }
 
         private CallOptions GetCallOptions(bool setDeadline = true)

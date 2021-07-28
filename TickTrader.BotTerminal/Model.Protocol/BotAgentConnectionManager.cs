@@ -49,9 +49,6 @@ namespace TickTrader.BotTerminal
             _protocolClient = AlgoServerClient.Create(RemoteAgent);
             RemoteAgent.SetProtocolClient(_protocolClient);
 
-            //_protocolClient.Connected += ClientOnConnected;
-            //_protocolClient.Disconnected += ClientOnDisconnected;
-
             _stateControl = new StateMachine<States>(new DispatcherStateMachineSync());
             _stateControl.AddTransition(States.Offline, Events.ConnectRequest, States.Connecting);
             _stateControl.AddTransition(States.Connecting, Events.Connected, States.Online);
@@ -103,6 +100,9 @@ namespace TickTrader.BotTerminal
 
         public Task WaitDisconnect()
         {
+            if (_stateControl.Current != States.Online)
+                return Task.CompletedTask;
+
             Disconnect();
             return _stateControl.AsyncWait(States.Offline);
         }

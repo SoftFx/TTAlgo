@@ -38,9 +38,7 @@ namespace TickTrader.Algo.Rpc
 
         public async Task Stop()
         {
-            _logger.Debug("Stopping listening to new connections...");
-            await _transportServer.StopNewConnections();
-            _logger.Debug("Stopped listening to new connections");
+            await StopNewConnections();
 
             _newConnectionSubscription?.Dispose();
             _newConnectionSubscription = null;
@@ -74,12 +72,33 @@ namespace TickTrader.Algo.Rpc
             await Task.WhenAll(tasks);
             _logger.Debug("Closed all clients");
 
-            _logger.Debug("Transport server stopping...");
-            await _transportServer.Stop();
-            _transportServer = null;
-            _logger.Debug("Transport server stopped");
+            await StopTransportServer();
         }
 
+        private async Task StopNewConnections()
+        {
+            if (_transportServer == null)
+                return;
+
+            _logger.Debug("Stopping listening to new connections...");
+
+            await _transportServer.StopNewConnections();
+
+            _logger.Debug("Stopped listening to new connections");
+        }
+
+        private async Task StopTransportServer()
+        {
+            if (_transportServer == null)
+                return;
+
+            _logger.Debug("Transport server stopping...");
+
+            await _transportServer?.Stop();
+            _transportServer = null;
+
+            _logger.Debug("Transport server stopped");
+        }
 
         private void OnNewConnection(ITransportProxy transport)
         {
