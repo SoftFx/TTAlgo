@@ -510,11 +510,6 @@ namespace TickTrader.Algo.Server.PublicAPI
             return call;
         }
 
-        private Task<AlertListSubscribeResponse> SubscribeToAlertListInternal(AlertListSubscribeRequest request, CallOptions options)
-        {
-            return _client.SubscribeToAlertListAsync(request, options).ResponseAsync;
-        }
-
         private Task<PluginStatusSubscribeResponse> SubscribeToPluginStatusInternal(PluginStatusSubscribeRequest request, CallOptions options)
         {
             return _client.SubscribeToPluginStatusAsync(request, options).ResponseAsync;
@@ -523,11 +518,6 @@ namespace TickTrader.Algo.Server.PublicAPI
         private Task<PluginLogsSubscribeResponse> SubscribeToPluginLogsInternal(PluginLogsSubscribeRequest request, CallOptions options)
         {
             return _client.SubscribeToPluginLogsAsync(request, options).ResponseAsync;
-        }
-
-        private Task<AlertListUnsubscribeResponse> UnsubscribeToAlertListInternal(AlertListUnsubscribeRequest request, CallOptions options)
-        {
-            return _client.UnsubscribeToAlertListAsync(request, options).ResponseAsync;
         }
 
         private Task<PluginStatusUnsubscribeResponse> UnsubscribeToPluginStatusInternal(PluginStatusUnsubscribeRequest request, CallOptions options)
@@ -556,12 +546,6 @@ namespace TickTrader.Algo.Server.PublicAPI
             return response.AccountMetadata;
         }
 
-        public async Task SubscribeToAlertList(AlertListSubscribeRequest request)
-        {
-            var response = await ExecuteUnaryRequestAuthorized(SubscribeToAlertListInternal, request);
-            FailForNonSuccess(response.ExecResult);
-        }
-
         public async Task SubscribeToPluginStatus(PluginStatusSubscribeRequest request)
         {
             var response = await ExecuteUnaryRequestAuthorized(SubscribeToPluginStatusInternal, request);
@@ -573,13 +557,6 @@ namespace TickTrader.Algo.Server.PublicAPI
             var response = await ExecuteUnaryRequestAuthorized(SubscribeToPluginLogsInternal, request);
             FailForNonSuccess(response.ExecResult);
         }
-
-        public async Task UnsubscribeToAlertList(AlertListUnsubscribeRequest request)
-        {
-            var response = await ExecuteUnaryRequestAuthorized(UnsubscribeToAlertListInternal, request);
-            FailForNonSuccess(response.ExecResult);
-        }
-
         public async Task UnsubscribeToPluginStatus(PluginStatusUnsubscribeRequest request)
         {
             var response = await ExecuteUnaryRequestAuthorized(UnsubscribeToPluginStatusInternal, request);

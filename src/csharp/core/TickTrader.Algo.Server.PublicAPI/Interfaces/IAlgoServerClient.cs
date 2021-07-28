@@ -26,10 +26,6 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         Task<AccountMetadataInfo> GetAccountMetadata(AccountMetadataRequest request);
 
-        Task SubscribeToAlertList(AlertListSubscribeRequest request);
-
-        Task UnsubscribeToAlertList(AlertListUnsubscribeRequest request);
-
         #endregion Other
 
 

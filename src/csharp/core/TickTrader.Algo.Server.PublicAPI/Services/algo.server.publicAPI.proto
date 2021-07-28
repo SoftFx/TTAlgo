@@ -60,11 +60,9 @@ service AlgoServerPublic
 
     rpc SubscribeToUpdates(SubscribeToUpdatesRequest) returns (stream UpdateInfo);
 
-    rpc SubscribeToAlertList(AlertListSubscribeRequest) returns (AlertListSubscribeResponse);
     rpc SubscribeToPluginStatus(PluginStatusSubscribeRequest) returns (PluginStatusSubscribeResponse);
     rpc SubscribeToPluginLogs(PluginLogsSubscribeRequest) returns (PluginLogsSubscribeResponse);
 
-    rpc UnsubscribeToAlertList(AlertListUnsubscribeRequest) returns (AlertListUnsubscribeResponse);
     rpc UnsubscribeToPluginStatus(PluginStatusUnsubscribeRequest) returns (PluginStatusUnsubscribeResponse);
     rpc UnsubscribeToPluginLogs(PluginLogsUnsubscribeRequest) returns (PluginLogsUnsubscribeResponse);
 }

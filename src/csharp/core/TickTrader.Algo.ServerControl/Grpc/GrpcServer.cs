@@ -102,7 +102,10 @@ namespace TickTrader.Algo.ServerControl.Grpc
             _algoServer.ViewerCredsChanged += OnViewerCredsChanged;
 
             _heartbeat = new UpdateInfo<AlgoServerApi.HeartbeatUpdate>(UpdateInfo.Types.UpdateType.Replaced, new AlgoServerApi.HeartbeatUpdate());
+            _lastAlertTimeUtc = DateTime.UtcNow.ToTimestamp();
+
             _heartbeatTimer = new Timer(HeartbeatUpdate, null, HeartbeatTimeout, -1);
+            _alertTimer = new Timer(OnAlertsUpdate, null, AlertsUpdateTimeout, -1);
         }
 
         private void HeartbeatUpdate(object o)
@@ -116,7 +119,6 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             _heartbeatTimer.Change(HeartbeatTimeout, -1);
         }
-
 
         public static AlgoServerApi.RequestResult CreateSuccessResult(string message = "")
         {
@@ -194,11 +196,6 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return ExecuteUnaryRequestAuthorized(LogoutInternal, request, context);
         }
 
-        //public override Task<AlgoServerApi.AlertListSubscribeResponse> SubscribeToAlertList(AlgoServerApi.AlertListSubscribeRequest request, ServerCallContext context)
-        //{
-        //    return ExecuteUnaryRequestAuthorized(SubscribeToAlertListInternal, request, context);
-        //}
-
         public override Task<AlgoServerApi.PluginStatusSubscribeResponse> SubscribeToPluginStatus(AlgoServerApi.PluginStatusSubscribeRequest request, ServerCallContext context)
         {
             return ExecuteUnaryRequestAuthorized(SubscribeToPluginStatusInternal, request, context);
@@ -207,11 +204,6 @@ namespace TickTrader.Algo.ServerControl.Grpc
         public override Task<AlgoServerApi.PluginLogsSubscribeResponse> SubscribeToPluginLogs(AlgoServerApi.PluginLogsSubscribeRequest request, ServerCallContext context)
         {
             return ExecuteUnaryRequestAuthorized(SubscribeToPluginLogsInternal, request, context);
-        }
-
-        public override Task<AlgoServerApi.AlertListUnsubscribeResponse> UnsubscribeToAlertList(AlgoServerApi.AlertListUnsubscribeRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(UnsubscribeToAlertListInternal, request, context);
         }
 
         public override Task<AlgoServerApi.PluginStatusUnsubscribeResponse> UnsubscribeToPluginStatus(AlgoServerApi.PluginStatusUnsubscribeRequest request, ServerCallContext context)
@@ -228,11 +220,6 @@ namespace TickTrader.Algo.ServerControl.Grpc
         {
             return ExecuteUnaryRequestAuthorized(GetAccountMetadataInternal, request, context);
         }
-
-        //public override Task<HeartbeatResponse> Heartbeat(HeartbeatRequest request, ServerCallContext context)
-        //{
-        //    return ExecuteUnaryRequestAuthorized(HeartbeatInternal, request, context);
-        //}
 
         public override Task SubscribeToUpdates(AlgoServerApi.SubscribeToUpdatesRequest request, IServerStreamWriter<AlgoServerApi.UpdateInfo> responseStream, ServerCallContext context)
         {
@@ -645,31 +632,6 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return res;
         }
 
-        private async Task<AlgoServerApi.AlertListSubscribeResponse> SubscribeToAlertListInternal(AlgoServerApi.AlertListSubscribeRequest request, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
-        {
-            var res = new AlgoServerApi.AlertListSubscribeResponse { ExecResult = execResult };
-
-            if (!session.AccessManager.CanGetAlerts())
-                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-            else
-            {
-
-
-                _lastAlertTimeUtc = request.Timestamp;
-            }
-
-            return res;
-        }
-
-        private void EnableAlgoServerAlertsTimer()
-        {
-            if (_alertTimer == null)
-            {
-                _alertTimer = new Timer(OnAlertsUpdate, null, AlertsUpdateTimeout, -1);
-                _lastAlertTimeUtc = DateTime.UtcNow.ToTimestamp();
-            }
-        }
-
         private async Task<AlgoServerApi.PluginStatusSubscribeResponse> SubscribeToPluginStatusInternal(AlgoServerApi.PluginStatusSubscribeRequest request, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
         {
             var res = new AlgoServerApi.PluginStatusSubscribeResponse { ExecResult = execResult };
@@ -708,16 +670,6 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 if (!_subscribedPluginsToLogs.Contains(request.PluginId))
                     _subscribedPluginsToLogs.Add(request.PluginId);
             }
-
-            return res;
-        }
-
-        private async Task<AlgoServerApi.AlertListUnsubscribeResponse> UnsubscribeToAlertListInternal(AlgoServerApi.AlertListUnsubscribeRequest request, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
-        {
-            var res = new AlgoServerApi.AlertListUnsubscribeResponse { ExecResult = execResult };
-
-            if (!session.AccessManager.CanGetAlerts())
-                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
 
             return res;
         }
@@ -1379,8 +1331,6 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
                 var plugins = await _algoServer.GetBotList();
                 update.Plugins.AddRange(plugins.Select(u => u.ToApi()));
-
-                EnableAlgoServerAlertsTimer();
             }
             catch (Exception ex)
             {
@@ -1460,7 +1410,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
                 update.Alerts.AddRange(alerts.Select(u => u.ToApi()));
 
-                _lastAlertTimeUtc = alerts.Max(u => u.TimeUtc);
+                _lastAlertTimeUtc = alerts.Max(u => u.TimeUtc) ?? _lastAlertTimeUtc;
 
                 SendUpdate(new UpdateInfo<AlgoServerApi.AlertListUpdate>(UpdateInfo.Types.UpdateType.Replaced, update));
             }
@@ -1561,7 +1511,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
         public void Dispose()
         {
             _alertTimer?.Dispose();
-            _alertTimer = null;
+            _heartbeatTimer?.Dispose();
 
             DisconnectAllClients();
         }

@@ -122,11 +122,6 @@ namespace TickTrader.BotTerminal
             return _protocolClient.SubscribeToPluginLogs(new AlgoServerApi.PluginLogsSubscribeRequest { PluginId = instanceId });
         }
 
-        public Task SubscribeToAlerts(Timestamp dateTime)
-        {
-            return _protocolClient.SubscribeToAlertList(new AlgoServerApi.AlertListSubscribeRequest { Timestamp = dateTime });
-        }
-
         public Task UnsubscribeToPluginStatus(string instanceId)
         {
             return _protocolClient.UnsubscribeToPluginStatus(new AlgoServerApi.PluginStatusUnsubscribeRequest { PluginId = instanceId });
@@ -135,11 +130,6 @@ namespace TickTrader.BotTerminal
         public Task UnsubscribeToPluginLogs(string instanceId)
         {
             return _protocolClient.UnsubscribeToPluginLogs(new AlgoServerApi.PluginLogsUnsubscribeRequest { PluginId = instanceId });
-        }
-
-        public Task UnsubscribeToAlerts()
-        {
-            return _protocolClient.UnsubscribeToAlertList(new AlgoServerApi.AlertListUnsubscribeRequest());
         }
 
         public Task StartBot(string instanceId)
