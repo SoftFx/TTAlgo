@@ -188,8 +188,7 @@ namespace TickTrader.Algo.Server
         {
             try
             {
-                var options = new ConnectionOptions { EnableLogs = false, LogsFolder = _server.Env.LogFolder, Type = AppType.BotAgent };
-                _core = new ClientModel.ControlHandler2(KnownAccountFactories.Fdk2, options,
+                _core = new ClientModel.ControlHandler2(KnownAccountFactories.Fdk2, _server.AccountOptions,
                         _server.Env.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerClientHierarchy, _id);
 
                 await _core.OpenHandler();

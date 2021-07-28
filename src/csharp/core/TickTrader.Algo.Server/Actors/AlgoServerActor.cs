@@ -104,6 +104,7 @@ namespace TickTrader.Algo.Server
             _alerts = new AlertManagerModel(AlertManager.Create());
             _savedState = new ServerStateModel(_stateManager);
             _serverPrivate = new AlgoServerPrivate(Self, _env, _eventBus, _savedState, _alerts);
+            _serverPrivate.AccountOptions = Account.ConnectionOptions.CreateForServer(_settings.EnableAccountLogs, _env.LogFolder);
 
             _pkgStorage = new PackageStorage(_eventBus);
             _runtimes = new RuntimeManager(_serverPrivate);

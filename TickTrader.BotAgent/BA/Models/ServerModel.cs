@@ -9,6 +9,7 @@ using TickTrader.Algo.Domain;
 using TickTrader.Algo.Server;
 using TickTrader.Algo.Server.Persistence;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.BotAgent.WebAdmin.Server.Models;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -35,11 +36,11 @@ namespace TickTrader.BotAgent.BA.Models
             return Path.Combine(Environment.AlgoWorkingFolder, PathHelper.Escape(botId));
         }
 
-        public async Task InitAsync(IFdkOptionsProvider fdkOptionsProvider)
+        public async Task InitAsync(FdkSettings fdkSettings)
         {
             var settings = new AlgoServerSettings();
             settings.DataFolder = AppDomain.CurrentDomain.BaseDirectory;
-            settings.ConnectionOptions = fdkOptionsProvider.GetConnectionOptions();
+            settings.EnableAccountLogs = fdkSettings.EnableLogs;
             settings.PkgStorage.AddLocation(SharedConstants.LocalRepositoryId, envService.AlgoRepositoryFolder);
             settings.PkgStorage.UploadLocationId = SharedConstants.LocalRepositoryId;
 

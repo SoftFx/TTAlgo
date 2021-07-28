@@ -1,17 +1,12 @@
 ﻿using System.Threading.Tasks;
-using TickTrader.Algo.Account;
+using TickTrader.BotAgent.WebAdmin.Server.Models;
 
 namespace TickTrader.BotAgent.BA
 {
     public interface IBotAgent
     {
-        Task InitAsync(IFdkOptionsProvider fdkOptionsProvider);
+        Task InitAsync(FdkSettings fdkSettings);
 
         Task ShutdownAsync();
-    }
-
-    public interface IFdkOptionsProvider
-    {
-        ConnectionOptions GetConnectionOptions();
     }
 }

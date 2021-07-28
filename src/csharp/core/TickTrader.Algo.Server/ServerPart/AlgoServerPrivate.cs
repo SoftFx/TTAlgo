@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf;
 using System.Threading.Tasks;
+using TickTrader.Algo.Account;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Rpc;
 
@@ -19,6 +20,8 @@ namespace TickTrader.Algo.Server
         public ServerStateModel SavedState { get; }
 
         public AlertManagerModel Alerts { get; }
+
+        public ConnectionOptions AccountOptions { get; set; }
 
 
         public AlgoServerPrivate(IActorRef server, EnvService env, IActorRef eventBus, ServerStateModel savedState, AlertManagerModel alerts)

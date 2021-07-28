@@ -195,13 +195,7 @@ namespace TickTrader.BotTerminal
             {
                 CertificateProvider.InitServer(SslImport.LoadServerCertificate(), SslImport.LoadServerPrivateKey());
 
-                var connectionOptions = new ConnectionOptions()
-                {
-                    AutoReconnect = true,
-                    EnableLogs = BotTerminal.Properties.Settings.Default.EnableConnectionLogs,
-                    LogsFolder = EnvService.Instance.LogFolder,
-                    Type = AppType.BotTerminal,
-                };
+                var connectionOptions = ConnectionOptions.CreateForTerminal(Properties.Settings.Default.EnableConnectionLogs, EnvService.Instance.LogFolder);
 
                 var clientHandler = new ClientModel.ControlHandler((options, loggerId) => new SfxInterop(options, loggerId),connectionOptions, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy, "0");
                 var dataHandler = clientHandler.CreateDataHandler();

@@ -122,6 +122,7 @@ namespace TickTrader.BotTerminal
         {
             var settings = new AlgoServerSettings();
             settings.DataFolder = AppDomain.CurrentDomain.BaseDirectory;
+            settings.EnableAccountLogs = Properties.Settings.Default.EnableConnectionLogs;
             settings.PkgStorage.Assemblies.Add(typeof(MovingAverage).Assembly);
             settings.PkgStorage.AddLocation(SharedConstants.LocalRepositoryId, EnvService.Instance.AlgoRepositoryFolder);
             settings.PkgStorage.UploadLocationId = SharedConstants.LocalRepositoryId;

@@ -41,7 +41,6 @@ namespace TickTrader.BotAgent.WebAdmin
             var tokenProvider = new JwtSecurityTokenProvider(Configuration);
             services.AddSingleton<ISecurityTokenProvider, JwtSecurityTokenProvider>(s => tokenProvider);
             services.AddSingleton<IAuthManager, AuthManager>();
-            services.AddSingleton<IFdkOptionsProvider, FdkOptionsProvider>();
 
             services.AddSignalR(options => options.EnableDetailedErrors = true)
                 .AddJsonProtocol(o => o.PayloadSerializerSettings.ContractResolver = new DefaultContractResolver());

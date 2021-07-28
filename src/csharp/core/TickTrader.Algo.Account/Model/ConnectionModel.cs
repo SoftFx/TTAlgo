@@ -472,6 +472,14 @@ namespace TickTrader.Algo.Account
 
         public AppType Type { get; set; }
 
+
+        public static ConnectionOptions CreateForTerminal(bool enableLogs, string logsFolder)
+            => new ConnectionOptions { EnableLogs = enableLogs, LogsFolder = logsFolder, Type = AppType.BotTerminal, AutoReconnect = true };
+
+        public static ConnectionOptions CreateForServer(bool enableLogs, string logsFolder)
+            => new ConnectionOptions { EnableLogs = enableLogs, LogsFolder = logsFolder, Type = AppType.BotAgent, AutoReconnect = false };
+
+
         public ConnectionOptions WithNewLogsFolder(string logsFolder)
         {
             return new ConnectionOptions { AutoReconnect = AutoReconnect, EnableLogs = EnableLogs, LogsFolder = logsFolder, Type = Type };

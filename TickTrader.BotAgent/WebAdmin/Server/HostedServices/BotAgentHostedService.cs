@@ -1,24 +1,26 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TickTrader.BotAgent.BA;
+using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.HostedServices
 {
     public class BotAgentHostedService : IHostedService
     {
         private readonly IBotAgent _botAgent;
-        private readonly IFdkOptionsProvider _fdkOptionsProvider;
+        private readonly IConfiguration _config;
         private readonly ILogger<BotAgentHostedService> _logger;
         private bool _started;
 
 
-        public BotAgentHostedService(IBotAgent botAgent, IFdkOptionsProvider fdkOptionsProvider, ILogger<BotAgentHostedService> logger)
+        public BotAgentHostedService(IBotAgent botAgent, IConfiguration config, ILogger<BotAgentHostedService> logger)
         {
             _botAgent = botAgent;
-            _fdkOptionsProvider = fdkOptionsProvider;
+            _config = config;
             _logger = logger;
         }
 
@@ -29,7 +31,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.HostedServices
                 return;
 
             _logger.LogInformation("Starting algo server...");
-            await _botAgent.InitAsync(_fdkOptionsProvider);
+            await _botAgent.InitAsync(_config.GetFdkSettings());
             _started = true;
             _logger.LogInformation("Started algo server...");
         }
