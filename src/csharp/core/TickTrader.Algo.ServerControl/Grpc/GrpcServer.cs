@@ -1363,7 +1363,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
             try
             {
                 update.ApiMetadata = await _algoServer.GetApiMetadata().ContinueWith(u => u.Result.ToApi());
-                update.MappingsCollection = await _algoServer.GetMappingsInfo().ContinueWith(u => u.Result.ToApi());
+                update.MappingsCollection = await _algoServer.GetMappingsInfo(new MappingsInfoRequest()).ContinueWith(u => u.Result.ToApi());
                 update.SetupContext = await _algoServer.GetSetupContext().ContinueWith(u => u.Result.ToApi());
 
                 var packages = await _algoServer.GetPackageList();

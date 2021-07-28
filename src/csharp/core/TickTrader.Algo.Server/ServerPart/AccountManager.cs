@@ -4,8 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Account;
-using TickTrader.Algo.Async.Actors;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
@@ -13,65 +11,24 @@ using TickTrader.Algo.Server.Persistence;
 
 namespace TickTrader.Algo.Server
 {
-    internal class AccountManager : Actor
+    internal class AccountManager
     {
         private const int AccountShutdownTimeout = 5000;
 
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<AccountManager>();
 
-        private readonly AlgoServer _server;
-        private readonly Dictionary<string, AccountConsumerControllerModel> _accountsMap2 = new Dictionary<string, AccountConsumerControllerModel>();
+        private readonly AlgoServerPrivate _server;
         private readonly Dictionary<string, AccountControlModel> _accounts = new Dictionary<string, AccountControlModel>();
         private readonly Dictionary<string, string> _accountDisplayNameCache = new Dictionary<string, string>();
 
 
-        private AccountManager(AlgoServer server)
+        public AccountManager(AlgoServerPrivate server)
         {
             _server = server;
-
-            Receive<RegisterAccountProxyCmd, object>(RegisterAccountProxy);
-            Receive<ConsumerControllerRequest, AccountConsumerControllerModel>(GetConsumerController);
-            Receive<ShutdownCmd>(Shutdown);
-            Receive<RestoreCmd>(Restore);
-            Receive<AccountControlRequest, AccountControlModel>(GetAccountControl);
-            Receive<AddAccountRequest>(AddAccount);
-            Receive<ChangeAccountRequest>(ChangeAccount);
-            Receive<RemoveAccountRequest>(RemoveAccount);
-            Receive<TestAccountRequest, ConnectionErrorInfo>(TestAccount);
-            Receive<TestAccountCredsRequest, ConnectionErrorInfo>(TestAccountCreds);
-            Receive<AccountMetadataRequest, AccountMetadataInfo>(GetMetadata);
         }
 
 
-        public static IActorRef Create(AlgoServer server)
-        {
-            return ActorSystem.SpawnLocal(() => new AccountManager(server), nameof(AccountManager));
-        }
-
-
-        private object RegisterAccountProxy(RegisterAccountProxyCmd cmd)
-        {
-            var accProxy = cmd.Account;
-            var accId = accProxy.Id;
-            if (_accountsMap2.ContainsKey(accId))
-                return Errors.DuplicateAccount(accId);
-
-            var acc = new AccountConsumerControllerModel(AccountConsumerController.Create(accProxy));
-            _accountsMap2.Add(accId, acc);
-
-            return null;
-        }
-
-        private AccountConsumerControllerModel GetConsumerController(ConsumerControllerRequest request)
-        {
-            var accId = request.AccountId;
-            if (!_accountsMap2.TryGetValue(accId, out var account))
-                throw Errors.AccountNotFound(accId);
-
-            return account;
-        }
-
-        private async Task Shutdown(ShutdownCmd cmd)
+        public async Task Shutdown()
         {
             _logger.Debug("Stopping...");
 
@@ -80,11 +37,10 @@ namespace TickTrader.Algo.Server
             _logger.Debug("Stopped");
         }
 
-        private async Task Restore(RestoreCmd cmd)
+        public void Restore(ServerSavedState savedState)
         {
             _logger.Debug("Restoring saved state...");
 
-            var savedState = await _server.SavedState.GetSnapshot();
             foreach(var acc in savedState.Accounts.Values)
             {
                 CreateAccountInternal(acc);
@@ -93,16 +49,15 @@ namespace TickTrader.Algo.Server
             _logger.Debug("Restored saved state");
         }
 
-        private Task<AccountControlModel> GetAccountControl(AccountControlRequest request)
+        public Task<AccountControlModel> GetAccountControl(string accId)
         {
-            var accId = request.AccountId;
             if (!_accounts.TryGetValue(accId, out var account))
                 return Task.FromException<AccountControlModel>(Errors.AccountNotFound(accId));
 
             return Task.FromResult(account);
         }
 
-        private async Task AddAccount(AddAccountRequest request)
+        public async Task AddAccount(AddAccountRequest request)
         {
             var server = request.Server;
             var userId = request.UserId;
@@ -135,7 +90,7 @@ namespace TickTrader.Algo.Server
             CreateAccountInternal(savedState);
         }
 
-        private async Task ChangeAccount(ChangeAccountRequest request)
+        public async Task ChangeAccount(ChangeAccountRequest request)
         {
             var accId = request.AccountId;
             if (!_accounts.TryGetValue(accId, out var account))
@@ -148,7 +103,7 @@ namespace TickTrader.Algo.Server
                 _accountDisplayNameCache[accId] = displayName;
         }
 
-        private async Task RemoveAccount(RemoveAccountRequest request)
+        public async Task RemoveAccount(RemoveAccountRequest request)
         {
             var accId = request.AccountId;
             if (!_accounts.TryGetValue(accId, out var account))
@@ -159,12 +114,12 @@ namespace TickTrader.Algo.Server
             _accounts.Remove(accId);
             _accountDisplayNameCache.Remove(accId);
 
-            _server.EventBus.SendUpdate(AccountModelUpdate.Removed(accId));
+            _server.SendUpdate(AccountModelUpdate.Removed(accId));
 
             await ShutdownAccountInternal(accId, account);
         }
 
-        private Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request)
+        public Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request)
         {
             var accId = request.AccountId;
             if (!_accounts.TryGetValue(accId, out var account))
@@ -173,7 +128,7 @@ namespace TickTrader.Algo.Server
             return account.Test(request);
         }
 
-        private async Task<ConnectionErrorInfo> TestAccountCreds(TestAccountCredsRequest request)
+        public async Task<ConnectionErrorInfo> TestAccountCreds(TestAccountCredsRequest request)
         {
             var server = request.Server;
             var userId = request.UserId;
@@ -205,7 +160,7 @@ namespace TickTrader.Algo.Server
             return ConnectionErrorInfo.UnknownNoText;
         }
 
-        private Task<AccountMetadataInfo> GetMetadata(AccountMetadataRequest request)
+        public Task<AccountMetadataInfo> GetMetadata(AccountMetadataRequest request)
         {
             var accId = request.AccountId;
             if (!_accounts.TryGetValue(accId, out var account))
@@ -250,41 +205,6 @@ namespace TickTrader.Algo.Server
                     break;
                 default:
                     throw new AlgoException("Creds.AuthScheme is not supported");
-            }
-        }
-
-
-        internal class RegisterAccountProxyCmd
-        {
-            public IAccountProxy Account { get; }
-
-            public RegisterAccountProxyCmd(IAccountProxy account)
-            {
-                Account = account;
-            }
-        }
-
-        internal class ConsumerControllerRequest
-        {
-            public string AccountId { get; }
-
-            public ConsumerControllerRequest(string accountId)
-            {
-                AccountId = accountId;
-            }
-        }
-
-        internal class ShutdownCmd : Singleton<ShutdownCmd> { }
-
-        internal class RestoreCmd : Singleton<RestoreCmd> { }
-
-        internal class AccountControlRequest
-        {
-            public  string AccountId { get; }
-
-            public AccountControlRequest(string accountId)
-            {
-                AccountId = accountId;
             }
         }
     }

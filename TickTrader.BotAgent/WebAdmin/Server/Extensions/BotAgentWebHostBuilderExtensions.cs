@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using TickTrader.Algo.Server;
 using TickTrader.Algo.ServerControl;
 using TickTrader.Algo.ServerControl.Grpc;
 using TickTrader.BotAgent.BA;
@@ -16,7 +17,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
         {
             builder.ConfigureServices(services =>
             {
-                services.AddSingleton<IBotAgent>(s => new ServerModel.Handler(ServerModel.Load()));
+                var botAgent = ServerModel.Load();
+                services.AddSingleton<IBotAgent>(_ => botAgent);
+                services.AddSingleton<IAlgoServerLocal>(_ => botAgent.Server);
                 services.AddHostedService<BotAgentHostedService>();
             });
             return builder;

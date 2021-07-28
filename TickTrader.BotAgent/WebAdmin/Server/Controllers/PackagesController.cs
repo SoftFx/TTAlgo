@@ -9,7 +9,7 @@ using System.Net;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
-using TickTrader.BotAgent.BA;
+using TickTrader.Algo.Server;
 using TickTrader.BotAgent.WebAdmin.Server.Dto;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 
@@ -20,18 +20,18 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
     public class PackagesController : Controller
     {
         private readonly ILogger<PackagesController> _logger;
-        private readonly IBotAgent _botAgent;
+        private readonly IAlgoServerLocal _algoServer;
 
-        public PackagesController(IBotAgent ddServer, ILogger<PackagesController> logger)
+        public PackagesController(IAlgoServerLocal algoServer, ILogger<PackagesController> logger)
         {
-            _botAgent = ddServer;
+            _algoServer = algoServer;
             _logger = logger;
         }
 
         [HttpGet]
         public async Task<PackageDto[]> Get()
         {
-            var snapshot = await _botAgent.GetPackageSnapshot();
+            var snapshot = await _algoServer.GetPackageSnapshot();
 
             return snapshot.Packages.Select(p => p.ToDto()).ToArray();
         }
@@ -39,7 +39,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         [HttpHead("{name}")]
         public async Task<IActionResult> Head(string pkgName)
         {
-            if (await _botAgent.PackageWithNameExists(pkgName))
+            if (await _algoServer.PackageWithNameExists(pkgName))
                 return Ok();
 
             return NotFound();
@@ -59,7 +59,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
                     await file.CopyToAsync(fileStream);
                 }
 
-                await _botAgent.UploadPackage(new UploadPackageRequest(null, file.FileName), tmpFile);
+                await _algoServer.UploadPackage(new UploadPackageRequest(null, file.FileName), tmpFile);
 
                 if (System.IO.File.Exists(tmpFile))
                     System.IO.File.Delete(tmpFile);
@@ -82,7 +82,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                await _botAgent.RemovePackage(new RemovePackageRequest(WebUtility.UrlDecode(packageId)));
+                await _algoServer.RemovePackage(new RemovePackageRequest(WebUtility.UrlDecode(packageId)));
             }
             catch (AlgoException algoEx)
             {

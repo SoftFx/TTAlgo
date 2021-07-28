@@ -16,8 +16,9 @@ namespace TickTrader.Algo.Server
         public const int ShutdownTimeout = 10000;
 
         private readonly IAlgoLogger _logger;
+        private readonly RuntimeConfig _config;
         private readonly string _id, _pkgId, _pkgRefId;
-        private readonly AlgoServer _server;
+        private readonly AlgoServerPrivate _server;
         private readonly IRuntimeHostProxy _runtimeHost;
         private readonly Dictionary<string, ExecutorModel> _executorsMap = new Dictionary<string, ExecutorModel>();
 
@@ -28,11 +29,11 @@ namespace TickTrader.Algo.Server
         private int _startedExecutorsCnt;
         private bool _shutdownWhenIdle;
 
-        public PkgRuntimeActor(string id, string pkgId, string pkgRefId, AlgoServer server)
+        public PkgRuntimeActor(RuntimeConfig config, AlgoServerPrivate server)
         {
-            _id = id;
-            _pkgId = pkgId;
-            _pkgRefId = pkgRefId;
+            _config = config;
+            _id = config.Id;
+            _pkgId = config.PackageId;
             _server = server;
 
             _logger = AlgoLoggerFactory.GetLogger($"{nameof(PkgRuntimeModel)}({_id})");
@@ -53,9 +54,9 @@ namespace TickTrader.Algo.Server
         }
 
 
-        public static IActorRef Create(string id, string pkgId, string pkgRefId, AlgoServer server)
+        public static IActorRef Create(RuntimeConfig config, AlgoServerPrivate server)
         {
-            return ActorSystem.SpawnLocal(() => new PkgRuntimeActor(id, pkgId, pkgRefId, server), $"{nameof(PkgRuntimeActor)} {id}");
+            return ActorSystem.SpawnLocal(() => new PkgRuntimeActor(config, server), $"{nameof(PkgRuntimeActor)} {config.Id}");
         }
 
 
@@ -65,18 +66,17 @@ namespace TickTrader.Algo.Server
                 return await _startTaskSrc.Task;
 
             _startTaskSrc = new TaskCompletionSource<bool>();
-            var pkgStorage = _server.PkgStorage;
 
             _logger.Debug("Starting...");
 
             try
             {
-                var hasPkg = await pkgStorage.LockPackageRef(_pkgRefId);
-                if (!hasPkg)
-                {
-                    _logger.Error($"Package ref '{_pkgRefId}' not found");
-                    return false;
-                }
+                //var hasPkg = await _server.LockPkgRef(_pkgRefId);
+                //if (!hasPkg)
+                //{
+                //    _logger.Error($"Package ref '{_pkgRefId}' not found");
+                //    return false;
+                //}
 
                 _connectTaskSrc = new TaskCompletionSource<bool>();
                 await _runtimeHost.Start(_server.Address, _server.BoundPort, _id);
@@ -96,7 +96,7 @@ namespace TickTrader.Algo.Server
                 else
                 {
                     _logger.Error("Failed to connect runtime host");
-                    pkgStorage.ReleasePackageRef(_pkgRefId);
+                    //_server.ReleasePkgRef(_pkgRefId);
                     await _runtimeHost.Stop();
                 }
             }
@@ -105,7 +105,7 @@ namespace TickTrader.Algo.Server
                 _logger.Error(ex, "Failed to start");
             }
 
-            pkgStorage.ReleasePackageRef(_pkgRefId);
+            //_server.ReleasePkgRef(_pkgRefId);
             return false;
         }
 
@@ -130,7 +130,7 @@ namespace TickTrader.Algo.Server
                 OnDetached();
                 await _runtimeHost.Stop();
 
-                _server.Runtimes.OnRuntimeStopped(_id);
+                _server.OnRuntimeStopped(_id);
 
                 _logger.Debug("Stopped");
             }
@@ -140,10 +140,9 @@ namespace TickTrader.Algo.Server
             }
         }
 
-        private async Task<RuntimeConfig> GetConfig(RuntimeConfigRequest request)
+        private RuntimeConfig GetConfig(RuntimeConfigRequest request)
         {
-            var path = await _server.PkgStorage.GetPackageRefPath(_pkgRefId);
-            return new RuntimeConfig { PackageId = _pkgId, PackagePath = path };
+            return _config;
         }
 
         private void MarkForShutdown(MarkForShutdownCmd cmd)

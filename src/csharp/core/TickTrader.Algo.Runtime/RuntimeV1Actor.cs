@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
@@ -60,13 +59,9 @@ namespace TickTrader.Algo.Runtime
             _config = await _handler.GetRuntimeConfig().ConfigureAwait(false);
 
             var pkgId = _config.PackageId;
-            var pkgPath = _config.PackagePath;
+            var pkgPath = _config.PackageIdentity.FilePath;
 
             _logger.Debug($"Loading package '{pkgId}'");
-
-            var info = new FileInfo(pkgPath);
-            var hash = FileHelper.CalculateSha256Hash(info);
-            var identity = PackageIdentity.Create(info, hash);
 
             _logger.Debug($"Scanning package '{pkgId}' at {pkgPath}");
             if (pkgPath.EndsWith("TickTrader.Algo.Indicators.dll", StringComparison.OrdinalIgnoreCase))
@@ -75,10 +70,10 @@ namespace TickTrader.Algo.Runtime
             }
             else
             {
-                _pkgInfo = PackageLoadContext.Load(_config.PackageId, _config.PackagePath);
+                _pkgInfo = PackageLoadContext.Load(_config.PackageId, _config.PackageBinary.ToByteArray());
             }
 
-            _pkgInfo.Identity = identity;
+            _pkgInfo.Identity = _config.PackageIdentity;
 
             _logger.Debug("Started successfully");
         }

@@ -99,7 +99,7 @@ namespace TickTrader.BotTerminal
 
         protected override void FillExectorConfig(ExecutorConfig config)
         {
-            config.WorkingDirectory = Agent.AlgoServer.Env.GetPluginWorkingFolder(InstanceId);
+            //config.WorkingDirectory = Agent.AlgoServer.Env.GetPluginWorkingFolder(InstanceId);
             EnvService.Instance.EnsureFolder(config.WorkingDirectory);
         }
 

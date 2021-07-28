@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Builder;
-using TickTrader.BotAgent.BA;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using TickTrader.BotAgent.WebAdmin.Server.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Server;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
 {
@@ -30,17 +30,17 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
         public static IApplicationBuilder ObserveBotAgent(this IApplicationBuilder app)
         {
             _services = app.ApplicationServices;
-            var botAgent = _services.GetService<IBotAgent>();
+            var eventBus = _services.GetService<IAlgoServerLocal>().EventBus;
 
-            botAgent.PackageChanged += OnPackageChanged;
-            botAgent.AccountChanged += OnAccountChanged;
-            botAgent.BotStateChanged += OnBotStateChanged;
-            botAgent.BotChanged += OnBotChaged;
+            eventBus.PackageUpdated.Subscribe(OnPackageUpdated);
+            eventBus.AccountUpdated.Subscribe(OnAccountUpdated);
+            eventBus.PluginUpdated.Subscribe(OnPluginUpdated);
+            eventBus.PluginStateUpdated.Subscribe(OnPluginStateUpdated);
 
             return app;
         }
 
-        private static void OnBotChaged(PluginModelUpdate update)
+        private static void OnPluginUpdated(PluginModelUpdate update)
         {
             switch (update.Action)
             {
@@ -56,12 +56,12 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             }
         }
 
-        private static void OnBotStateChanged(PluginStateUpdate bot)
+        private static void OnPluginStateUpdated(PluginStateUpdate bot)
         {
             Hub.Clients.All.ChangeBotState(bot.ToBotStateDto());
         }
 
-        private static void OnAccountChanged(AccountModelUpdate update)
+        private static void OnAccountUpdated(AccountModelUpdate update)
         {
             switch (update.Action)
             {
@@ -74,7 +74,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             }
         }
 
-        private static void OnPackageChanged(PackageUpdate update)
+        private static void OnPackageUpdated(PackageUpdate update)
         {
             switch (update.Action)
             {

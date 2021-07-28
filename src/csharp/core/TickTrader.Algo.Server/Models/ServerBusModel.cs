@@ -11,7 +11,6 @@ namespace TickTrader.Algo.Server
     {
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<ServerBusModel>();
 
-        private readonly IActorRef _ref;
         private readonly ChannelEventSource<IMessage> _updateEventSrc = new ChannelEventSource<IMessage>();
         private readonly ChannelEventSource<PackageUpdate> _pkgUpdateEventSrc = new ChannelEventSource<PackageUpdate>();
         private readonly ChannelEventSource<PackageStateUpdate> _pkgStateEventSrc = new ChannelEventSource<PackageStateUpdate>();
@@ -19,6 +18,8 @@ namespace TickTrader.Algo.Server
         private readonly ChannelEventSource<AccountStateUpdate> _accStateEventSrc = new ChannelEventSource<AccountStateUpdate>();
         private readonly ChannelEventSource<PluginModelUpdate> _pluginUpdateEventSrc = new ChannelEventSource<PluginModelUpdate>();
         private readonly ChannelEventSource<PluginStateUpdate> _pluginStateEventSrc = new ChannelEventSource<PluginStateUpdate>();
+
+        private IActorRef _ref;
 
 
         public IEventSource<PackageUpdate> PackageUpdated => _pkgUpdateEventSrc;
@@ -34,13 +35,7 @@ namespace TickTrader.Algo.Server
         public IEventSource<PluginStateUpdate> PluginStateUpdated => _pluginStateEventSrc;
 
 
-        public ServerBusModel(IActorRef actor)
-        {
-            _ref = actor;
-            _ref.Tell(new ServerBusActor.SubscribeToUpdatesRequest(_updateEventSrc.Writer, false));
-
-            _updateEventSrc.Subscribe(DispatchUpdate);
-        }
+        public ServerBusModel() { }
 
 
         public void Dispose()
@@ -63,8 +58,13 @@ namespace TickTrader.Algo.Server
 
         public Task<PluginModelInfo> GetPluginInfo(string pluginId) => _ref.Ask<PluginModelInfo>(new ServerBusActor.PluginInfoRequest(pluginId));
 
+        internal void Init(IActorRef actor)
+        {
+            _ref = actor;
+            _ref.Tell(new ServerBusActor.SubscribeToUpdatesRequest(_updateEventSrc.Writer, false));
 
-        internal void SendUpdate(IMessage update) => _ref.Tell(update);
+            _updateEventSrc.Subscribe(DispatchUpdate);
+        }
 
 
         private void DispatchUpdate(IMessage update)

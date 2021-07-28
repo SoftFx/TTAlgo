@@ -130,7 +130,7 @@ namespace TickTrader.BotTerminal
             var executorConfig = new ExecutorConfig
             {
                 IsLoggingEnabled = true,
-                LogDirectory = Agent.AlgoServer.Env.GetPluginLogsFolder(InstanceId),
+                //LogDirectory = Agent.AlgoServer.Env.GetPluginLogsFolder(InstanceId),
                 AccountId = Agent.ClientModel.Id,
                 WorkingDirectory = EnvService.Instance.AlgoWorkingFolder,
             };
@@ -139,11 +139,12 @@ namespace TickTrader.BotTerminal
             FillExectorConfig(executorConfig);
             Host.InitializePlugin(executorConfig);
 
-            var runtime = await Agent.AlgoServer.CreateExecutor(Config.Key.PackageId, InstanceId, executorConfig);
+            //var runtime = await Agent.AlgoServer.CreateExecutor(Config.Key.PackageId, InstanceId, executorConfig);
 
-            CreateOutputs(runtime);
+            //CreateOutputs(runtime);
 
-            return runtime;
+            //return runtime;
+            return null;
         }
 
         protected virtual void HandleReconnect()
