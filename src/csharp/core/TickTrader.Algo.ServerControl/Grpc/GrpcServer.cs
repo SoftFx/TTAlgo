@@ -194,10 +194,10 @@ namespace TickTrader.Algo.ServerControl.Grpc
             return ExecuteUnaryRequestAuthorized(LogoutInternal, request, context);
         }
 
-        public override Task<AlgoServerApi.AlertListSubscribeResponse> SubscribeToAlertList(AlgoServerApi.AlertListSubscribeRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(SubscribeToAlertListInternal, request, context);
-        }
+        //public override Task<AlgoServerApi.AlertListSubscribeResponse> SubscribeToAlertList(AlgoServerApi.AlertListSubscribeRequest request, ServerCallContext context)
+        //{
+        //    return ExecuteUnaryRequestAuthorized(SubscribeToAlertListInternal, request, context);
+        //}
 
         public override Task<AlgoServerApi.PluginStatusSubscribeResponse> SubscribeToPluginStatus(AlgoServerApi.PluginStatusSubscribeRequest request, ServerCallContext context)
         {
@@ -653,13 +653,21 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
             else
             {
-                if (_alertTimer == null)
-                    _alertTimer = new Timer(OnAlertsUpdate, null, AlertsUpdateTimeout, -1);
+
 
                 _lastAlertTimeUtc = request.Timestamp;
             }
 
             return res;
+        }
+
+        private void EnableAlgoServerAlertsTimer()
+        {
+            if (_alertTimer == null)
+            {
+                _alertTimer = new Timer(OnAlertsUpdate, null, AlertsUpdateTimeout, -1);
+                _lastAlertTimeUtc = DateTime.UtcNow.ToTimestamp();
+            }
         }
 
         private async Task<AlgoServerApi.PluginStatusSubscribeResponse> SubscribeToPluginStatusInternal(AlgoServerApi.PluginStatusSubscribeRequest request, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
@@ -1371,6 +1379,8 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
                 var plugins = await _algoServer.GetBotList();
                 update.Plugins.AddRange(plugins.Select(u => u.ToApi()));
+
+                EnableAlgoServerAlertsTimer();
             }
             catch (Exception ex)
             {

@@ -4,6 +4,7 @@ using System.IO;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.ServerControl;
 
 namespace TickTrader.BotTerminal
 {
@@ -37,10 +38,10 @@ namespace TickTrader.BotTerminal
 
         public string Status => Model.Status;
 
-        public bool CanBrowse => !Model.IsRemote || Agent.Model.AccessManager.CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId.BotLogs);
+        public bool CanBrowse => !Model.IsRemote || Agent.Model.AccessManager.CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId.BotLogs.ToApi());
 
-        public bool CanCopyTo => Agent.Model.AccessManager.CanDownloadPackage() && Agent.Model.AccessManager.CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId.AlgoData) 
-            && Agent.Model.AccessManager.CanDownloadBotFile(PluginFolderInfo.Types.PluginFolderId.AlgoData);
+        public bool CanCopyTo => Agent.Model.AccessManager.CanDownloadPackage() && Agent.Model.AccessManager.CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId.AlgoData.ToApi())
+            && Agent.Model.AccessManager.CanDownloadBotFile(PluginFolderInfo.Types.PluginFolderId.AlgoData.ToApi());
 
         public bool CanAddBot => Agent.Model.AccessManager.CanAddPlugin();
 

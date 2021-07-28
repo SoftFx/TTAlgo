@@ -3,6 +3,7 @@ using Machinarium.Qnil;
 using System.Linq;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.ServerControl;
 
 namespace TickTrader.BotTerminal
 {
@@ -47,7 +48,7 @@ namespace TickTrader.BotTerminal
 
         public bool CanAddBot => Agent.Model.AccessManager.CanAddPlugin();
 
-        public bool CanManageFiles => Agent.Model.AccessManager.CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId.BotLogs);
+        public bool CanManageFiles => Agent.Model.AccessManager.CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId.BotLogs.ToApi());
 
         public bool HasRunningBots => Bots.Any(b => b.IsRunning);
 

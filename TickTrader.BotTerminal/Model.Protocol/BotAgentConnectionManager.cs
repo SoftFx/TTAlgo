@@ -118,7 +118,7 @@ namespace TickTrader.BotTerminal
             if (_protocolClient.State == ClientStates.Online)
             {
                 _stateControl.PushEvent(Events.Connected);
-                RemoteAgent.AlertModel.SubscribeToRemoteAgent();
+                //RemoteAgent.AlertModel.SubscribeToRemoteAgent();
             }
         }
 

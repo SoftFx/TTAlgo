@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.ServerControl;
 
 namespace TickTrader.BotTerminal
 {
@@ -39,7 +40,7 @@ namespace TickTrader.BotTerminal
         public AlgoBotViewModel Bot { get; private set; }
         public bool IsRunning => Bot?.IsRunning ?? false;
         public bool CanStartStop => Bot?.CanStartStop ?? false;
-        public bool CanBrowse => !(Bot?.Model.IsRemote ?? true) || Bot.Agent.Model.AccessManager.CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId.BotLogs);
+        public bool CanBrowse => !(Bot?.Model.IsRemote ?? true) || Bot.Agent.Model.AccessManager.CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId.BotLogs.ToApi());
         public string ExecStatus { get; private set; }
         public string BotInfo => string.Join(Environment.NewLine, GetBotInfo());
         public int ErrorsCount => Bot?.Model.Journal.MessageCount[JournalMessageType.Error] ?? 0;

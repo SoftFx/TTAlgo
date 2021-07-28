@@ -255,7 +255,7 @@ namespace TickTrader.Algo.Server.PublicAPI
                             _serverHandler.OnAlertListUpdate(((UpdateInfo<AlertListUpdate>)updateInfo).Value);
 
                         else if (updateInfo is UpdateInfo<HeartbeatUpdate>)
-                            break;
+                            continue;
                         else
                             Logger.Error($"Failed to dispatch update of type: {update.Payload.TypeUrl}");
                     }

@@ -73,7 +73,7 @@ namespace TickTrader.BotTerminal
             if (_remoteAgent == null)
                 return;
 
-            _remoteAgent.SubscribeToAlerts(_lastAlertTimeUtc);
+            //_remoteAgent.SubscribeToAlerts(_lastAlertTimeUtc);
         }
 
         public void UpdateRemoteAlert(List<AlertRecordInfo> alerts)

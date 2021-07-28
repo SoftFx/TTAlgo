@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.ServerControl;
 
 namespace TickTrader.BotTerminal
 {
@@ -103,7 +104,7 @@ namespace TickTrader.BotTerminal
         public bool CanOk => !_hasPendingRequest && _isValid
             && _selectedAgent.Model.AccessManager.CanUploadPackage()
             && _selectedAgent.Model.AccessManager.CanAddPlugin()
-            && _selectedAgent.Model.AccessManager.CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId.AlgoData)
+            && _selectedAgent.Model.AccessManager.CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId.AlgoData.ToApi())
             && _selectedAgent.Model.AccessManager.CanUploadBotFile();
 
         public bool HasError => !string.IsNullOrEmpty(_error);

@@ -48,7 +48,7 @@ namespace TickTrader.BotTerminal
 
         public bool SupportsAccountManagement => true;
 
-        public AccessManager AccessManager => (AccessManager)_protocolClient.AccessManager;
+        public AlgoServerApi.IAccessManager AccessManager => _protocolClient.AccessManager;
 
         public IAlertModel AlertModel { get; }
 

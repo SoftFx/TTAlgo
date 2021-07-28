@@ -4,6 +4,7 @@ using System;
 using System.ComponentModel;
 using System.Windows.Data;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.ServerControl;
 
 namespace TickTrader.BotTerminal
 {
@@ -58,7 +59,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public bool CanBrowse => !_bot.Model.IsRemote || _bot.Agent.Model.AccessManager.CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId.BotLogs);
+        public bool CanBrowse => !_bot.Model.IsRemote || _bot.Agent.Model.AccessManager.CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId.BotLogs.ToApi());
 
         public bool IsRemote => _bot.Model.IsRemote;
 

@@ -8,7 +8,7 @@ using System.Linq;
 using System.Windows.Data;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Server.Common;
-
+using TickTrader.Algo.ServerControl;
 using AlgoServerPublicApi = TickTrader.Algo.Server.PublicAPI;
 
 
@@ -140,11 +140,11 @@ namespace TickTrader.BotTerminal
 
         public bool CanUploadFile => SelectedBot != null && SelectedFolderId == PluginFolderInfo.Types.PluginFolderId.AlgoData && SelectedAgent.Model.AccessManager.CanUploadBotFile();
 
-        public bool CanDownloadFile => SelectedBotFile != null && SelectedAgent.Model.AccessManager.CanDownloadBotFile(SelectedFolderId);
+        public bool CanDownloadFile => SelectedBotFile != null && SelectedAgent.Model.AccessManager.CanDownloadBotFile(SelectedFolderId.ToApi());
 
         public bool CanDeleteFile => SelectedBotFile != null && SelectedAgent.Model.AccessManager.CanDeleteBotFile();
 
-        public bool CanRefreshFolderInfo => SelectedBot != null && SelectedAgent.Model.AccessManager.CanGetBotFolderInfo(SelectedFolderId);
+        public bool CanRefreshFolderInfo => SelectedBot != null && SelectedAgent.Model.AccessManager.CanGetBotFolderInfo(SelectedFolderId.ToApi());
 
         public bool CanClear => SelectedBot != null && SelectedAgent.Model.AccessManager.CanClearBotFolder();
 

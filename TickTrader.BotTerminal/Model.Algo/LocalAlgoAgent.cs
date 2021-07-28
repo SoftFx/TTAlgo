@@ -58,7 +58,7 @@ namespace TickTrader.BotTerminal
 
         public bool SupportsAccountManagement => false;
 
-        public AccessManager AccessManager { get; }
+        public AlgoServerPublicApi.IAccessManager AccessManager { get; }
 
         public PluginIdProvider IdProvider { get; }
 
@@ -114,7 +114,7 @@ namespace TickTrader.BotTerminal
             ClientModel.Connection.StateChanged += ClientConnectionOnStateChanged;
 
             Catalog = new PluginCatalog(this);
-            AccessManager = new AccessManager(ClientClaims.Types.AccessLevel.Admin);
+            AccessManager = new AlgoServerPublicApi.ApiAccessManager(AlgoServerPublicApi.ClientClaims.Types.AccessLevel.Admin);
         }
 
 

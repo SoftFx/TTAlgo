@@ -8,7 +8,6 @@ using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
-using TickTrader.Algo.Server.Common;
 
 using AlgoServerPublicApi = TickTrader.Algo.Server.PublicAPI;
 
@@ -35,7 +34,7 @@ namespace TickTrader.BotTerminal
 
         bool SupportsAccountManagement { get; }
 
-        AccessManager AccessManager { get; }
+        AlgoServerPublicApi.IAccessManager AccessManager { get; }
 
         IAlertModel AlertModel { get; }
 
