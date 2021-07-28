@@ -245,7 +245,9 @@ namespace TickTrader.Algo.ServerControl
                 Permissions = config.Permissions.ToApi()
             };
 
-            return apiConfig.PackProperties(config.Properties);
+            apiConfig.Properties.AddRange(config.Properties);
+
+            return apiConfig;
         }
 
         public static Api.AccountCreds ToApi(this AccountCreds creds)

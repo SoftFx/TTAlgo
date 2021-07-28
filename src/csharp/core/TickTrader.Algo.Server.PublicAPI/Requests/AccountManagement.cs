@@ -26,7 +26,8 @@
 
             if (value == null)
                 secret.Remove(key);
-            else secret[key] = value;
+            else 
+                secret[key] = value;
 
             return true;
         }

@@ -503,13 +503,13 @@ namespace TickTrader.BotTerminal
 
         #region IFileProgressListener implementation
 
-        void IFileProgressListener.Init(long initialProgress)
+        void AlgoServerPublicApi.IFileProgressListener.Init(long initialProgress)
         {
             _currentProgress = initialProgress;
             ProgressValue = 100.0 * _currentProgress / _fullProgress;
         }
 
-        void IFileProgressListener.IncrementProgress(long progressValue)
+        void AlgoServerPublicApi.IFileProgressListener.IncrementProgress(long progressValue)
         {
             _currentProgress += progressValue;
             ProgressValue = 100.0 * _currentProgress / _fullProgress;

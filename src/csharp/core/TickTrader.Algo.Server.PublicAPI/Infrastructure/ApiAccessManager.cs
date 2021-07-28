@@ -11,14 +11,9 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             Level = level;
 
-            HasViewerAccess = Level == ClientClaims.Types.AccessLevel.Viewer ||
-                              Level == ClientClaims.Types.AccessLevel.Dealer ||
-                              Level == ClientClaims.Types.AccessLevel.Admin;
-
-            HasDealerAccess = Level == ClientClaims.Types.AccessLevel.Dealer ||
-                              Level == ClientClaims.Types.AccessLevel.Admin;
-
-            HasAdminAccess = Level == ClientClaims.Types.AccessLevel.Admin;
+            HasViewerAccess = Level <= ClientClaims.Types.AccessLevel.Viewer;
+            HasDealerAccess = Level <= ClientClaims.Types.AccessLevel.Dealer;
+            HasAdminAccess = Level <= ClientClaims.Types.AccessLevel.Admin;
         }
 
 

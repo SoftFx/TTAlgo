@@ -49,13 +49,13 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
         protected override async Task StopServer()
         {
-            _impl.DisconnectAllClients();
+            _impl?.Dispose();
             await _server.ShutdownAsync();
         }
     }
 
 
-    internal class BotAgentServerImpl : AlgoServerApi.AlgoServerPublic.AlgoServerPublicBase
+    internal class BotAgentServerImpl : AlgoServerApi.AlgoServerPublic.AlgoServerPublicBase, IDisposable
     {
         private const int AlertsUpdateTimeout = 1000;
         private const int PluginStatusUpdateTimeout = 1000;
@@ -726,7 +726,10 @@ namespace TickTrader.Algo.ServerControl.Grpc
                     _subscribedPluginsToStatus.Remove(request.PluginId);
 
                 if (_subscribedPluginsToStatus.Count == 0)
+                {
+                    _pluginStatusTimer?.Dispose();
                     _pluginStatusTimer = null;
+                }
             }
 
             return res;
@@ -744,20 +747,14 @@ namespace TickTrader.Algo.ServerControl.Grpc
                     _subscribedPluginsToLogs.Remove(request.PluginId);
 
                 if (_subscribedPluginsToLogs.Count == 0)
+                {
+                    _pluginLogsTimer?.Dispose();
                     _pluginLogsTimer = null;
+                }
             }
 
             return res;
         }
-
-        //private Task<HeartbeatResponse> HeartbeatInternal(HeartbeatRequest request, ServerCallContext context, ServerSession.Handler session, RequestResult execResult)
-        //{
-        //    var res = new HeartbeatResponse { ExecResult = execResult };
-        //    //if (session == null)
-        //    //    return Task.FromResult(res);
-
-        //    return Task.FromResult(res);
-        //}
 
         private Task SubscribeToUpdatesInternal(AlgoServerApi.SubscribeToUpdatesRequest request, IServerStreamWriter<AlgoServerApi.UpdateInfo> responseStream, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
         {
@@ -1445,8 +1442,8 @@ namespace TickTrader.Algo.ServerControl.Grpc
             {
                 var update = new AlgoServerApi.AlertListUpdate();
 
-                var alerts = await _algoServer.GetAlertsAsync(new PluginAlertsRequest 
-                {  
+                var alerts = await _algoServer.GetAlertsAsync(new PluginAlertsRequest
+                {
                     MaxCount = 1000,
                     LastLogTimeUtc = _lastAlertTimeUtc,
                 });
@@ -1549,6 +1546,14 @@ namespace TickTrader.Algo.ServerControl.Grpc
                     _logger.Error(ex, $"Failed to multicast update: {update}");
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            _alertTimer?.Dispose();
+            _alertTimer = null;
+
+            DisconnectAllClients();
         }
 
         #endregion

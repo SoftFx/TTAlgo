@@ -14,7 +14,6 @@ namespace TickTrader.Algo.Server.PublicAPI
 {
     public sealed class AlgoServerClient : ProtocolClient, IAlgoServerClient
     {
-        //private const int HeartbeatTimeout = 10000;
         private const int DefaultRequestTimeout = 10;
 
         public ClientStates State => _stateMachine.Current;
@@ -114,7 +113,6 @@ namespace TickTrader.Algo.Server.PublicAPI
                                 _accessToken = taskResult.AccessToken;
                                 Logger.Info($"Server session id: {taskResult.SessionId}");
                                 OnLogin(taskResult.MajorVersion, taskResult.MinorVersion, taskResult.AccessLevel);
-                                //_heartbeatTimer = new Timer(HeartbeatTimerCallback, null, HeartbeatTimeout, -1);
                             }
                             else
                                 OnConnectionError(taskResult.Error.ToString());
@@ -212,15 +210,9 @@ namespace TickTrader.Algo.Server.PublicAPI
             OnDisconnected();
         }
 
-
-        private bool FailForNonSuccess(RequestResult.Types.RequestStatus status)
-        {
-            return status != RequestResult.Types.RequestStatus.Success;
-        }
-
         private void FailForNonSuccess(RequestResult requestResult)
         {
-            if (FailForNonSuccess(requestResult.Status))
+            if (requestResult.Status != RequestResult.Types.RequestStatus.Success)
                 throw requestResult.Status == RequestResult.Types.RequestStatus.Unauthorized
                     ? new UnauthorizedException(requestResult.Message)
                     : new AlgoServerException($"{requestResult.Status} - {requestResult.Message}");

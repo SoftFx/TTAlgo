@@ -12,11 +12,6 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
         }
 
-        public FileChunk(int id, ByteString binary)
-            : this(id, binary, false)
-        {
-        }
-
         public FileChunk(int id, ByteString binary, bool isFinal)
         {
             Id = id;
