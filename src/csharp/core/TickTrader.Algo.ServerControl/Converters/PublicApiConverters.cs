@@ -348,7 +348,7 @@ namespace TickTrader.Algo.ServerControl
 
         public static Any ToApi(this Any payload)
         {
-            IMessage message = payload;
+            IMessage message;
 
             if (payload.Is(BoolParameterConfig.Descriptor))
                 message = payload.Unpack<BoolParameterConfig>().ToApi();
@@ -366,14 +366,16 @@ namespace TickTrader.Algo.ServerControl
                 message = payload.Unpack<EnumParameterConfig>().ToApi();
             else if (payload.Is(FileParameterConfig.Descriptor))
                 message = payload.Unpack<FileParameterConfig>().ToApi();
-            if (payload.Is(BarToBarInputConfig.Descriptor))
+            else if (payload.Is(BarToBarInputConfig.Descriptor))
                 message = payload.Unpack<BarToBarInputConfig>().ToApi();
             else if (payload.Is(BarToDoubleInputConfig.Descriptor))
                 message = payload.Unpack<BarToDoubleInputConfig>().ToApi();
-            if (payload.Is(ColoredLineOutputConfig.Descriptor))
+            else if (payload.Is(ColoredLineOutputConfig.Descriptor))
                 message = payload.Unpack<ColoredLineOutputConfig>().ToApi();
             else if (payload.Is(MarkerSeriesOutputConfig.Descriptor))
                 message = payload.Unpack<MarkerSeriesOutputConfig>().ToApi();
+            else
+                throw new ArgumentException($"Unsupported type {payload}");
 
             return Any.Pack(message);
         }

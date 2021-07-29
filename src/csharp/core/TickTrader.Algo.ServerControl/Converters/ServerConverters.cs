@@ -308,11 +308,11 @@ namespace TickTrader.Algo.ServerControl
                 message = payload.Unpack<Api.EnumParameterConfig>().ToServer();
             else if (payload.Is(Api.FileParameterConfig.Descriptor))
                 message = payload.Unpack<Api.FileParameterConfig>().ToServer();
-            if (payload.Is(Api.BarToBarInputConfig.Descriptor))
+            else if (payload.Is(Api.BarToBarInputConfig.Descriptor))
                 message = payload.Unpack<Api.BarToBarInputConfig>().ToServer();
             else if (payload.Is(Api.BarToDoubleInputConfig.Descriptor))
                 message = payload.Unpack<Api.BarToDoubleInputConfig>().ToServer();
-            if (payload.Is(Api.ColoredLineOutputConfig.Descriptor))
+            else if (payload.Is(Api.ColoredLineOutputConfig.Descriptor))
                 message = payload.Unpack<Api.ColoredLineOutputConfig>().ToServer();
             else if (payload.Is(Api.MarkerSeriesOutputConfig.Descriptor))
                 message = payload.Unpack<Api.MarkerSeriesOutputConfig>().ToServer();

@@ -1412,7 +1412,8 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
                 _lastAlertTimeUtc = alerts.Max(u => u.TimeUtc) ?? _lastAlertTimeUtc;
 
-                SendUpdate(new UpdateInfo<AlgoServerApi.AlertListUpdate>(UpdateInfo.Types.UpdateType.Replaced, update));
+                if (alerts.Length > 0)
+                    SendUpdate(new UpdateInfo<AlgoServerApi.AlertListUpdate>(UpdateInfo.Types.UpdateType.Replaced, update));
             }
             catch (Exception ex)
             {
@@ -1471,7 +1472,8 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
                     update.Records.AddRange(records.Select(u => u.ToApi()));
 
-                    SendUpdate(new UpdateInfo<AlgoServerApi.PluginLogUpdate>(UpdateInfo.Types.UpdateType.Replaced, update));
+                    if (records.Length > 0)
+                        SendUpdate(new UpdateInfo<AlgoServerApi.PluginLogUpdate>(UpdateInfo.Types.UpdateType.Replaced, update));
                 }
                 catch (Exception ex)
                 {
