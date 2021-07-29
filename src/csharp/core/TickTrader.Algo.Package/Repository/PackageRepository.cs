@@ -46,6 +46,9 @@ namespace TickTrader.Algo.Package
             Receive<StopCmd>(Stop);
             Receive<WhenIdleRequest, Task>(WhenIdle);
             Receive<PackageLoadResult>(OnPackageLoaded);
+            Receive<FileWatcherAdapter.FileUpsertMsg>(msg => UpsertPackage(msg.Path));
+            Receive<FileWatcherAdapter.FileRemovedMsg>(msg => RemovePackage(msg.Path));
+            Receive<FileWatcherAdapter.RestartRequiredMsg>(_ => Scan());
         }
 
 

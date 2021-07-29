@@ -815,7 +815,7 @@ namespace TickTrader.Algo.ServerControl
             var apiInfo = new Api.PackageInfo
             {
                 PackageId = info.PackageId,
-                Identity = info.Identity.ToApi(),
+                Identity = info.Identity?.ToApi(),
                 IsValid = info.IsValid,
                 IsLocked = info.IsLocked,
             };
