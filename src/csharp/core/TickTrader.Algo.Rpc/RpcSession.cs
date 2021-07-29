@@ -160,7 +160,7 @@ namespace TickTrader.Algo.Rpc
 
             var reader = _eventBus.Reader;
 
-            while(!reader.Completion.IsCompleted)
+            while (!reader.Completion.IsCompleted)
             {
                 var canRead = await reader.WaitToReadAsync().ConfigureAwait(false);
                 if (!canRead)
@@ -220,7 +220,7 @@ namespace TickTrader.Algo.Rpc
         {
             _eventBus.Writer.TryWrite(sessionEvent);
         }
-        
+
         private async Task HandleMessages()
         {
             await Task.Yield();
@@ -234,11 +234,20 @@ namespace TickTrader.Algo.Rpc
                     break;
 
                 while (readChannel.TryRead(out var msg))
-                    HandleMessage(msg);
+                {
+                    try
+                    {
+                        HandleMessage(msg);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error(ex, $"Failed to process '{msg.Flags}' of type '{msg.Payload.TypeUrl}'");
+                    }
+                }
             }
             PushEvent(RpcSessionEvent.ConnectionError);
         }
-        
+
         private void ChangeState(RpcSessionState newState)
         {
             var changeArgs = new RpcSessionStateChangedArgs(this, State, newState);
@@ -267,7 +276,7 @@ namespace TickTrader.Algo.Rpc
             {
                 await _transport.Close();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to close transport");
             }
@@ -432,7 +441,7 @@ namespace TickTrader.Algo.Rpc
 
                 if (msg.Flags == RpcFlags.Request)
                 {
-                    _rpcHandler.HandleRequest(msg.ProxyId, msg.CallId, msg.Payload)
+                    TaskExt.WrapSyncException(() => _rpcHandler.HandleRequest(msg.ProxyId, msg.CallId, msg.Payload))
                         .ContinueWith(t =>
                         {
                             switch (t.Status)

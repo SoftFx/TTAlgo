@@ -49,5 +49,29 @@ namespace TickTrader.Algo.Core.Lib
         {
             Task.Delay(timeMs).ContinueWith(_ => action());
         }
+
+        public static Task WrapSyncException(Func<Task> func)
+        {
+            try
+            {
+                return func();
+            }
+            catch (Exception ex)
+            {
+                return Task.FromException(ex);
+            }
+        }
+
+        public static Task<T> WrapSyncException<T>(Func<Task<T>> func)
+        {
+            try
+            {
+                return func();
+            }
+            catch (Exception ex)
+            {
+                return Task.FromException<T>(ex);
+            }
+        }
     }
 }

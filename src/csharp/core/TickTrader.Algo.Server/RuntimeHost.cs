@@ -36,14 +36,14 @@ namespace TickTrader.Algo.Server
         {
             _runtime = new RuntimeV1Loader();
 
-            await Task.Factory.StartNew(() => _runtime.Init(address, port, proxyId));
+            await Task.Run(() => _runtime.Init(address, port, proxyId));
         }
 
         public async Task Stop()
         {
             await Task.Delay(2000); // ugly hack to give code in another domain some time for correct stop without thread abort
 
-            await Task.Factory.StartNew(() => _runtime.Deinit());
+            await Task.Run(() => _runtime.Deinit());
         }
     }
 

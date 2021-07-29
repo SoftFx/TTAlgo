@@ -27,16 +27,21 @@ namespace TickTrader.Algo.Runtime
         }
 
 
-        public async void Init(string address, int port, string proxyId)
+        public async Task Init(string address, int port, string proxyId)
         {
             _logger = AlgoLoggerFactory.GetLogger<RuntimeV1Loader>();
             _id = proxyId;
 
             await _client.Connect(address, port).ConfigureAwait(false);
-            await _handler.AttachRuntime(proxyId).ConfigureAwait(false);
+            var attached = await _handler.AttachRuntime(proxyId).ConfigureAwait(false);
+            if (!attached)
+            {
+                _logger.Error("Runtime was not attached");
+                await _client.Disconnect("Runtime shutdown").ConfigureAwait(false);
+            }
         }
 
-        public async void Deinit()
+        public async Task Deinit()
         {
             await _client.Disconnect("Runtime shutdown").ConfigureAwait(false);
         }

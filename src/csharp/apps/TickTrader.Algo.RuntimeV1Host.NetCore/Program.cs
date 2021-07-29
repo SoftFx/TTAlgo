@@ -43,7 +43,7 @@ namespace TickTrader.Algo.RuntimeV1Host.NetCore
             {
 
                 loader = new RuntimeV1Loader();
-                loader.Init(args[0], int.Parse(args[1]), args[2]);
+                await loader.Init(args[0], int.Parse(args[1]), args[2]);
             }
             catch (Exception ex)
             {
@@ -59,7 +59,7 @@ namespace TickTrader.Algo.RuntimeV1Host.NetCore
 
             try
             {
-                loader.Deinit();
+                await loader.Deinit();
             }
             catch (Exception ex)
             {
