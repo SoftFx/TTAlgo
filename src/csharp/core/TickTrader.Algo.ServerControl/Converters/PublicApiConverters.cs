@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Linq;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
@@ -229,6 +231,153 @@ namespace TickTrader.Algo.ServerControl
             };
         }
 
+        public static Api.BoolParameterConfig ToApi(this BoolParameterConfig config)
+        {
+            return new Api.BoolParameterConfig
+            {
+                PropertyId = config.PropertyId,
+                Value = config.Value,
+            };
+        }
+
+        public static Api.Int32ParameterConfig ToApi(this Int32ParameterConfig config)
+        {
+            return new Api.Int32ParameterConfig
+            {
+                PropertyId = config.PropertyId,
+                Value = config.Value,
+            };
+        }
+
+        public static Api.NullableInt32ParameterConfig ToApi(this NullableInt32ParameterConfig config)
+        {
+            return new Api.NullableInt32ParameterConfig
+            {
+                PropertyId = config.PropertyId,
+                Value = config.Value,
+            };
+        }
+
+        public static Api.DoubleParameterConfig ToApi(this DoubleParameterConfig config)
+        {
+            return new Api.DoubleParameterConfig
+            {
+                PropertyId = config.PropertyId,
+                Value = config.Value,
+            };
+        }
+
+        public static Api.NullableDoubleParameterConfig ToApi(this NullableDoubleParameterConfig config)
+        {
+            return new Api.NullableDoubleParameterConfig
+            {
+                PropertyId = config.PropertyId,
+                Value = config.Value,
+            };
+        }
+
+        public static Api.StringParameterConfig ToApi(this StringParameterConfig config)
+        {
+            return new Api.StringParameterConfig
+            {
+                PropertyId = config.PropertyId,
+                Value = config.Value,
+            };
+        }
+
+        public static Api.EnumParameterConfig ToApi(this EnumParameterConfig config)
+        {
+            return new Api.EnumParameterConfig
+            {
+                PropertyId = config.PropertyId,
+                Value = config.Value,
+            };
+        }
+
+        public static Api.FileParameterConfig ToApi(this FileParameterConfig config)
+        {
+            return new Api.FileParameterConfig
+            {
+                PropertyId = config.PropertyId,
+                FileName = config.FileName,
+            };
+        }
+
+        public static Api.BarToBarInputConfig ToApi(this BarToBarInputConfig config)
+        {
+            return new Api.BarToBarInputConfig
+            {
+                PropertyId = config.PropertyId,
+                SelectedSymbol = config.SelectedSymbol.ToApi(),
+                SelectedMapping = config.SelectedMapping.ToApi(),
+            };
+        }
+
+        public static Api.BarToDoubleInputConfig ToApi(this BarToDoubleInputConfig config)
+        {
+            return new Api.BarToDoubleInputConfig
+            {
+                PropertyId = config.PropertyId,
+                SelectedSymbol = config.SelectedSymbol.ToApi(),
+                SelectedMapping = config.SelectedMapping.ToApi(),
+            };
+        }
+
+        public static Api.ColoredLineOutputConfig ToApi(this ColoredLineOutputConfig config)
+        {
+            return new Api.ColoredLineOutputConfig
+            {
+                PropertyId = config.PropertyId,
+                IsEnabled = config.IsEnabled,
+                LineColorArgb = config.LineColorArgb,
+                LineThickness = config.LineThickness,
+                LineStyle = config.LineStyle.ToApi(),
+            };
+        }
+        public static Api.MarkerSeriesOutputConfig ToApi(this MarkerSeriesOutputConfig config)
+        {
+            return new Api.MarkerSeriesOutputConfig
+            {
+                PropertyId = config.PropertyId,
+                IsEnabled = config.IsEnabled,
+                LineColorArgb = config.LineColorArgb,
+                LineThickness = config.LineThickness,
+                MarkerSize = config.MarkerSize.ToApi(),
+            };
+        }
+
+        public static Any ToApi(this Any payload)
+        {
+            IMessage message = payload;
+
+            if (payload.Is(BoolParameterConfig.Descriptor))
+                message = payload.Unpack<BoolParameterConfig>().ToApi();
+            else if (payload.Is(Int32ParameterConfig.Descriptor))
+                message = payload.Unpack<Int32ParameterConfig>().ToApi();
+            else if (payload.Is(NullableInt32ParameterConfig.Descriptor))
+                message = payload.Unpack<NullableInt32ParameterConfig>().ToApi();
+            else if (payload.Is(DoubleParameterConfig.Descriptor))
+                message = payload.Unpack<DoubleParameterConfig>().ToApi();
+            else if (payload.Is(NullableDoubleParameterConfig.Descriptor))
+                message = payload.Unpack<NullableDoubleParameterConfig>().ToApi();
+            else if (payload.Is(StringParameterConfig.Descriptor))
+                message = payload.Unpack<StringParameterConfig>().ToApi();
+            else if (payload.Is(EnumParameterConfig.Descriptor))
+                message = payload.Unpack<EnumParameterConfig>().ToApi();
+            else if (payload.Is(FileParameterConfig.Descriptor))
+                message = payload.Unpack<FileParameterConfig>().ToApi();
+            if (payload.Is(BarToBarInputConfig.Descriptor))
+                message = payload.Unpack<BarToBarInputConfig>().ToApi();
+            else if (payload.Is(BarToDoubleInputConfig.Descriptor))
+                message = payload.Unpack<BarToDoubleInputConfig>().ToApi();
+            if (payload.Is(ColoredLineOutputConfig.Descriptor))
+                message = payload.Unpack<ColoredLineOutputConfig>().ToApi();
+            else if (payload.Is(MarkerSeriesOutputConfig.Descriptor))
+                message = payload.Unpack<MarkerSeriesOutputConfig>().ToApi();
+
+            return Any.Pack(message);
+        }
+
         public static Api.PluginConfig ToApi(this PluginConfig config)
         {
             if (config == null)
@@ -245,7 +394,7 @@ namespace TickTrader.Algo.ServerControl
                 Permissions = config.Permissions.ToApi()
             };
 
-            apiConfig.Properties.AddRange(config.Properties);
+            apiConfig.Properties.AddRange(config.Properties.Select(ToApi));
 
             return apiConfig;
         }
