@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Server.PublicAPI
 {
@@ -19,6 +20,10 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         Task Disconnect();
 
+
+        event Action Connected;
+
+        event Action Disconnected;
         #endregion Connection Management
 
 

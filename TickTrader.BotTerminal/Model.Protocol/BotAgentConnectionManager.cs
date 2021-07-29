@@ -71,6 +71,9 @@ namespace TickTrader.BotTerminal
             _stateControl.OnEnter(States.Offline, () => RemoteAgent.ClearCache());
 
             _stateControl.StateChanged += OnStateChanged;
+
+            _protocolClient.Connected += OnClientConnected;
+            _protocolClient.Disconnected += OnClientDisconnected;
         }
 
 
@@ -108,37 +111,27 @@ namespace TickTrader.BotTerminal
         }
 
 
-        private void OnStateChanged(States from, States to)
+        private void OnStateChanged(States from, States to) => StateChanged();
+
+
+        private void OnClientConnected()
         {
-            StateChanged();
+            _stateControl.PushEvent(Events.Connected);
         }
 
-        private void ClientOnConnected()
+        private void OnClientDisconnected()
         {
-            if (_protocolClient.State == ClientStates.Online)
-            {
-                _stateControl.PushEvent(Events.Connected);
-                //RemoteAgent.AlertModel.SubscribeToRemoteAgent();
-            }
-        }
-
-        private void ClientOnDisconnected()
-        {
-            if (_protocolClient.State == ClientStates.Offline)
-            {
-                _stateControl.PushEvent(Events.Disconnected);
-                //RemoteAgent.UnsubscribeToAlerts();
-            }
+            _stateControl.PushEvent(Events.Disconnected);
         }
 
         private void StartConnecting()
         {
-            _protocolClient.Connect(Creds).ContinueWith(_ => ClientOnConnected());
+            _protocolClient.Connect(Creds);
         }
 
         private void StartDisconnecting()
         {
-            _protocolClient.Disconnect().ContinueWith(_ => ClientOnDisconnected());
+            _protocolClient.Disconnect();
         }
     }
 }

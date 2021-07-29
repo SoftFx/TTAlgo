@@ -20,6 +20,10 @@ namespace TickTrader.Algo.Server.PublicAPI
         protected IClientSessionSettings SessionSettings { get; private set; }
 
 
+        public event Action Connected = delegate { };
+        public event Action Disconnected = delegate { };
+
+
         internal ProtocolClient(IAlgoServerEventHandler handler)
         {
             _serverHandler = handler;
@@ -78,6 +82,28 @@ namespace TickTrader.Algo.Server.PublicAPI
         private void StateMachineOnStateChanged(ClientStates from, ClientStates to)
         {
             Logger?.Debug($"STATE {from} -> {to}");
+
+            Task.Run(() =>
+            {
+                try
+                {
+                    switch (to)
+                    {
+                        case ClientStates.Online:
+                            Connected();
+                            break;
+                        case ClientStates.Offline:
+                            Disconnected();
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger?.Error(ex, $"{to} event failed: {ex.Message}");
+                }
+            });
         }
 
         private void StartConnecting()
@@ -121,6 +147,9 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         public Task Disconnect()
         {
+            if (_stateMachine.Current == ClientStates.Offline)
+                return Task.CompletedTask;
+
             _stateMachine.PushEvent(ClientEvents.LogoutRequest);
             return _stateMachine.AsyncWait(ClientStates.Offline);
         }
