@@ -25,7 +25,7 @@ namespace TickTrader.Algo.Server.PublicAPI
         //public IAccessManager AccessManager => throw new System.NotImplementedException();
 
 
-        private readonly MessageFormatter _messageFormatter;
+        private readonly ApiMessageFormatter _messageFormatter;
         private Channel _channel;
         private AlgoServerPublic.AlgoServerPublicClient _client;
         private string _accessToken;
@@ -39,7 +39,7 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         private AlgoServerClient(IAlgoServerEventHandler handler) : base(handler)
         {
-            _messageFormatter = new MessageFormatter(AlgoServerPublicAPIReflection.Descriptor);
+            _messageFormatter = new ApiMessageFormatter(AlgoServerPublicAPIReflection.Descriptor);
 
             VersionSpec = new ApiVersionSpec();
             AccessManager = new ApiAccessManager(ClientClaims.Types.AccessLevel.Anonymous);
@@ -229,9 +229,17 @@ namespace TickTrader.Algo.Server.PublicAPI
                     var update = updateStream.Current;
                     if (update.TryUnpack(out var updateInfo))
                     {
-                        //_messageFormatter.LogClientUpdate(Logger, updateInfo);
-                        if (updateInfo is UpdateInfo<AlgoServerMetadataUpdate>)
-                            ApplyAlgoServerMetadata(((UpdateInfo<AlgoServerMetadataUpdate>)updateInfo).Value);
+                        _messageFormatter.LogClientUpdate(Logger, updateInfo);
+
+                        if (updateInfo is UpdateInfo<HeartbeatUpdate>)
+                            continue;
+
+                        else if (updateInfo is UpdateInfo<AlertListUpdate>)
+                            _serverHandler.OnAlertListUpdate(((UpdateInfo<AlertListUpdate>)updateInfo).Value);
+                        else if (updateInfo is UpdateInfo<PluginStatusUpdate>)
+                            _serverHandler.OnPluginStatusUpdate(((UpdateInfo<PluginStatusUpdate>)updateInfo).Value);
+                        else if (updateInfo is UpdateInfo<PluginLogUpdate>)
+                            _serverHandler.OnPluginLogUpdate(((UpdateInfo<PluginLogUpdate>)updateInfo).Value);
 
                         else if (updateInfo is UpdateInfo<PackageUpdate>)
                             _serverHandler.OnPackageUpdate(((UpdateInfo<PackageUpdate>)updateInfo).Value);
@@ -247,15 +255,9 @@ namespace TickTrader.Algo.Server.PublicAPI
                         else if (updateInfo is UpdateInfo<PluginStateUpdate>)
                             _serverHandler.OnPluginStateUpdate(((UpdateInfo<PluginStateUpdate>)updateInfo).Value);
 
-                        else if (updateInfo is UpdateInfo<PluginStatusUpdate>)
-                            _serverHandler.OnPluginStatusUpdate(((UpdateInfo<PluginStatusUpdate>)updateInfo).Value);
-                        else if (updateInfo is UpdateInfo<PluginLogUpdate>)
-                            _serverHandler.OnPluginLogUpdate(((UpdateInfo<PluginLogUpdate>)updateInfo).Value);
-                        else if (updateInfo is UpdateInfo<AlertListUpdate>)
-                            _serverHandler.OnAlertListUpdate(((UpdateInfo<AlertListUpdate>)updateInfo).Value);
+                        else if (updateInfo is UpdateInfo<AlgoServerMetadataUpdate>)
+                            ApplyAlgoServerMetadata(((UpdateInfo<AlgoServerMetadataUpdate>)updateInfo).Value);
 
-                        else if (updateInfo is UpdateInfo<HeartbeatUpdate>)
-                            continue;
                         else
                             Logger.Error($"Failed to dispatch update of type: {update.Payload.TypeUrl}");
                     }

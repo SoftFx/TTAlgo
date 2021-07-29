@@ -1467,7 +1467,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
                     var records = await _algoServer.GetBotLogsAsync(serverRequest);
 
-                    _lastLogTimeUtc = records.Max(u => u.TimeUtc);
+                    _lastLogTimeUtc = records.Max(u => u.TimeUtc) ?? _lastLogTimeUtc;
 
                     update.Records.AddRange(records.Select(u => u.ToApi()));
 

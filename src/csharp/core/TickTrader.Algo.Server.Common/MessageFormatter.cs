@@ -48,14 +48,6 @@ namespace TickTrader.Algo.Server.Common
             }
         }
 
-        public void LogClientUpdate(ILogger logger, IUpdateInfo updateInfo)
-        {
-            if (LogMessages && logger != null)
-            {
-                logger.Info($"client < {updateInfo.ValueMsg.Descriptor.Name}: {{ Type = {updateInfo.Type}, Value = {Format(updateInfo.ValueMsg)} }}");
-            }
-        }
-
         public void LogServerRequest(ILogger logger, IMessage request)
         {
             if (LogMessages && logger != null)
@@ -81,7 +73,7 @@ namespace TickTrader.Algo.Server.Common
         }
 
 
-        private string Format(IMessage msg)
+        protected string Format(IMessage msg)
         {
             var escapedFields = new Dictionary<IFieldAccessor, object>();
 
