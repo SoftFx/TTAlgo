@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
@@ -13,7 +14,7 @@ namespace TickTrader.Algo.Server
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<RuntimeManager>();
 
         private readonly AlgoServerPrivate _server;
-        private readonly Dictionary<string, PkgRuntimeModel> _runtimeMap = new Dictionary<string, PkgRuntimeModel>();
+        private readonly Dictionary<string, IActorRef> _runtimeMap = new Dictionary<string, IActorRef>();
         private readonly Dictionary<string, string> _pkgRuntimeMap = new Dictionary<string, string>();
 
 
@@ -28,7 +29,7 @@ namespace TickTrader.Algo.Server
             _logger.Debug("Runtimes stopping...");
 
             await Task.WhenAll(_runtimeMap.Select(r =>
-                r.Value.Stop("Server shutdown")
+                r.Value.Ask(new PkgRuntimeActor.StopRuntimeCmd("Server shutdown"))
                     .OnException(ex => _logger.Error(ex, $"Failed to stop runtime {r.Key}"))).ToArray());
 
             _logger.Debug("Runtimes stopped");
@@ -36,7 +37,12 @@ namespace TickTrader.Algo.Server
 
         public void OnRuntimeStopped(string id)
         {
+            if (!_runtimeMap.TryGetValue(id, out var runtime))
+                return;
+
             _runtimeMap.Remove(id);
+            ActorSystem.StopActor(runtime)
+                .OnException(ex => _logger.Error(ex, $"Failed to stop actor {runtime.Name}"));
         }
 
         public async Task<PkgRuntimeModel> ConnectRuntime(string id, RpcSession session)
@@ -44,12 +50,13 @@ namespace TickTrader.Algo.Server
             if (!_runtimeMap.TryGetValue(id, out var runtime))
                 return null;
 
-            return await runtime.OnConnect(session) ? runtime : null;
+            var connected = await runtime.Ask<bool>(new PkgRuntimeActor.ConnectSessionCmd(session));
+            return  connected ? new PkgRuntimeModel(runtime) : null;
         }
 
         public PkgRuntimeModel GetPkgRuntime(string pkgId)
         {
-            return _pkgRuntimeMap.TryGetValue(pkgId, out var runtimeId) ? _runtimeMap[runtimeId] : null;
+            return _pkgRuntimeMap.TryGetValue(pkgId, out var runtimeId) ? new PkgRuntimeModel(_runtimeMap[runtimeId]) : null;
         }
 
         public void CreateRuntime(string id, PackageRef pkgRef)
@@ -60,7 +67,7 @@ namespace TickTrader.Algo.Server
             var config = new RuntimeConfig { Id = id, PackageId = pkgId, PackageBinary = pkgBin, PackageIdentity = pkgRef.PkgInfo.Identity };
 
             _pkgRuntimeMap[pkgId] = id;
-            _runtimeMap[id] = new PkgRuntimeModel(PkgRuntimeActor.Create(config, _server));
+            _runtimeMap[id] = PkgRuntimeActor.Create(config, _server);
         }
 
 

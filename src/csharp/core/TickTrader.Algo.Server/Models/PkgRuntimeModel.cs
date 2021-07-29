@@ -28,10 +28,6 @@ namespace TickTrader.Algo.Server
 
         internal Task<bool> OnConnect(RpcSession session) => _ref.Ask<bool>(new PkgRuntimeActor.ConnectSessionCmd(session));
 
-        internal Task<bool> AttachAccount(AttachAccountRequest request) => _ref.Ask<bool>(request);
-
-        internal Task<bool> DetachAccount(DetachAccountRequest request) => _ref.Ask<bool>(request);
-
         internal Task StartExecutor(StartExecutorRequest request) => _ref.Ask(request);
 
         internal Task StopExecutor(StopExecutorRequest request) => _ref.Ask(request);

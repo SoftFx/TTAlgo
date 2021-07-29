@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using TickTrader.Algo.Account;
 using TickTrader.Algo.Account.Fdk2;
+using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.CoreV1;
@@ -121,10 +122,13 @@ namespace TickTrader.BotTerminal
                 logger.Error(e.Exception, "Unhandled Exception on Dispatcher level!");
             };
 
-            Actor.UnhandledException += (e) =>
+            ActorSharp.Actor.UnhandledException += (e) =>
             {
                 logger.Error(e, "Unhandled Exception on Actor level!");
             };
+
+            ActorSystem.ActorErrors.Subscribe(ex => logger.Error(ex));
+            ActorSystem.ActorFailed.Subscribe(ex => logger.Fatal(ex));
         }
 
         private void ConfigurateLogger()
@@ -201,7 +205,7 @@ namespace TickTrader.BotTerminal
                 var dataHandler = clientHandler.CreateDataHandler();
                 await dataHandler.Init();
 
-                var customStorage = new CustomFeedStorage.Handler(Actor.SpawnLocal<CustomFeedStorage>());
+                var customStorage = new CustomFeedStorage.Handler(ActorSharp.Actor.SpawnLocal<CustomFeedStorage>());
                 await customStorage.SyncData();
                 await customStorage.Start(EnvService.Instance.CustomFeedCacheFolder);
 

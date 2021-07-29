@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.CoreV1;
@@ -29,6 +30,8 @@ namespace TickTrader.Algo.RuntimeV1Host.NetFx
             AlgoLoggerFactory.Init(NLogLoggerAdapter.Create);
 
             var logger = LogManager.GetLogger("MainLoop");
+
+            SetupGlobalExceptionLogging(logger);
 
             logger.Info("Starting runtime with id {runtimeId} at server {address}:{port}", args[2], args[0], args[1]);
 
@@ -75,6 +78,26 @@ namespace TickTrader.Algo.RuntimeV1Host.NetFx
 
             AlgoLoggerFactory.Init(NLogLoggerAdapter.Create);
             NonBlockingFileCompressor.Setup();
+        }
+
+        private static void SetupGlobalExceptionLogging(Logger logger)
+        {
+            AppDomain.CurrentDomain.UnhandledException += (s, e) =>
+            {
+                var ex = e.ExceptionObject as Exception;
+                if (ex != null)
+                    logger.Fatal(ex, "Unhandled Exception on Domain level!");
+                else
+                    logger.Fatal("Unhandled Exception on Domain level! No exception specified!");
+            };
+
+            ActorSharp.Actor.UnhandledException += (ex) =>
+            {
+                logger.Error(ex, "Unhandled Exception on Actor level!");
+            };
+
+            ActorSystem.ActorErrors.Subscribe(ex => logger.Error(ex));
+            ActorSystem.ActorFailed.Subscribe(ex => logger.Fatal(ex));
         }
     }
 }

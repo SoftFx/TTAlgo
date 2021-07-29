@@ -23,6 +23,7 @@ using TickTrader.Algo.Isolation.NetFx;
 using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Logging;
 using TickTrader.Algo.Server.Common;
+using TickTrader.Algo.Async.Actors;
 
 namespace TickTrader.BotAgent
 {
@@ -197,10 +198,13 @@ namespace TickTrader.BotAgent
                     log.Fatal("Unhandled Exception on Domain level! No exception specified!");
             };
 
-            Actor.UnhandledException += (ex) =>
+            ActorSharp.Actor.UnhandledException += (ex) =>
             {
                 log.Error(ex, "Unhandled Exception on Actor level!");
             };
+
+            ActorSystem.ActorErrors.Subscribe(ex => log.Error(ex));
+            ActorSystem.ActorFailed.Subscribe(ex => log.Fatal(ex));
         }
     }
 }
