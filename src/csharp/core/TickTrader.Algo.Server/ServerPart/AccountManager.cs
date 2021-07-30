@@ -115,9 +115,14 @@ namespace TickTrader.Algo.Server
             _accounts.Remove(accId);
             _accountDisplayNameCache.Remove(accId);
 
-            _server.SendUpdate(AccountModelUpdate.Removed(accId));
-
-            await ShutdownAccountInternal(accId, account);
+            try
+            {
+                await ShutdownAccountInternal(accId, account);
+            }
+            finally
+            {
+                _server.SendUpdate(AccountModelUpdate.Removed(accId));
+            }
         }
 
         public Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request)

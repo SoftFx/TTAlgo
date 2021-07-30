@@ -90,9 +90,14 @@ namespace TickTrader.Algo.Server
 
             _plugins.Remove(id);
 
-            _server.SendUpdate(PluginModelUpdate.Removed(id));
-
-            await ShutdownPluginInternal(id, plugin);
+            try
+            {
+                await ShutdownPluginInternal(id, plugin);
+            }
+            finally
+            {
+                _server.SendUpdate(PluginModelUpdate.Removed(id));
+            }
         }
 
         public Task StartPlugin(StartPluginRequest request)
