@@ -106,6 +106,10 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             _heartbeatTimer = new Timer(HeartbeatUpdate, null, HeartbeatTimeout, -1);
             _alertTimer = new Timer(OnAlertsUpdate, null, AlertsUpdateTimeout, -1);
+
+            _subscribedPluginsToStatus = new HashSet<string>();
+            _subscribedPluginsToLogs = new HashSet<string>();
+
         }
 
         private void HeartbeatUpdate(object o)
@@ -511,11 +515,6 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
         #region Request handlers
 
-        private Task<HeartbeatResponse> HeartbeatInternal(HeartbeatRequest request, ServerCallContext context)
-        {
-            return Task.FromResult(new HeartbeatResponse());
-        }
-
         private Task<AlgoServerApi.LoginResponse> LoginInternal(AlgoServerApi.LoginRequest request, ServerCallContext context)
         {
             var res = new AlgoServerApi.LoginResponse
@@ -642,7 +641,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
             {
                 if (_pluginStatusTimer == null)
                 {
-                    _subscribedPluginsToStatus = new HashSet<string>();
+                    //_subscribedPluginsToStatus = new HashSet<string>();
                     _pluginStatusTimer = new Timer(OnPluginStatusUpdate, null, PluginStatusUpdateTimeout, -1);
                 }
 
@@ -663,7 +662,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
             {
                 if (_pluginLogsTimer == null)
                 {
-                    _subscribedPluginsToLogs = new HashSet<string>();
+                    //_subscribedPluginsToLogs = new HashSet<string>();
                     _pluginLogsTimer = new Timer(OnPluginLogsUpdate, null, PluginLogsUpdateTimeout, -1);
                 }
 
