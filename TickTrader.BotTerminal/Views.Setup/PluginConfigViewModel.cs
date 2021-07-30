@@ -165,7 +165,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public bool IsInstanceIdValid => Mode == PluginSetupMode.Edit ? true : _idProvider.IsValidPluginId(Descriptor.Type, InstanceId);
+        public bool IsInstanceIdValid => Mode == PluginSetupMode.Edit || _idProvider.IsValidPluginId(Descriptor.Type, InstanceId);
 
         public bool AllowTrade
         {
@@ -258,13 +258,16 @@ namespace TickTrader.BotTerminal
 
         public PluginConfig Save()
         {
-            var cfg = new PluginConfig();
-            cfg.Timeframe = SelectedTimeFrame;
-            cfg.ModelTimeframe = SelectedModel.Value;
-            cfg.MainSymbol = MainSymbol.ToConfig();
-            cfg.SelectedMapping = SelectedMapping.Key;
-            cfg.InstanceId = InstanceId;
-            cfg.Permissions = new PluginPermissions { TradeAllowed = _allowTrade, Isolated = _isolate };
+            var cfg = new PluginConfig
+            {
+                Timeframe = SelectedTimeFrame,
+                ModelTimeframe = SelectedModel.Value,
+                MainSymbol = MainSymbol.ToConfig(),
+                SelectedMapping = SelectedMapping.Key,
+                InstanceId = InstanceId,
+                Permissions = new PluginPermissions { TradeAllowed = _allowTrade, Isolated = _isolate }
+            };
+
             cfg.PackProperties(_allProperties.Select(p => p.Save()));
             return cfg;
         }

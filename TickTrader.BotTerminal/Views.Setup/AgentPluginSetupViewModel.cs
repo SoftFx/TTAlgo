@@ -3,10 +3,10 @@ using Machinarium.Qnil;
 using NLog;
 using System;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Threading;
-using TickTrader.Algo.Domain;
+using System.Threading.Tasks;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -20,11 +20,10 @@ namespace TickTrader.BotTerminal
         private AlgoPluginViewModel _selectedPlugin;
         private CancellationTokenSource _updateSetupMetadataSrc;
         private TaskCompletionSource<SetupMetadata> _updateSetupMetadataTaskSrc;
-        private CancellationTokenSource _updateSetupCancelSrc;
+        private CancellationToken _updateSetupToken;
         private bool _hasPendingRequest;
         private string _requestError;
         private bool _showFileProgress;
-
 
         public IObservableList<AlgoAgentViewModel> Agents { get; }
 
@@ -279,10 +278,12 @@ namespace TickTrader.BotTerminal
         {
             Accounts = SelectedAgent.Accounts.AsObservable();
             Plugins = SelectedAgent.Plugins.Where(p => p.Descriptor.Type == Type).AsObservable();
+
             NotifyOfPropertyChange(nameof(Accounts));
             NotifyOfPropertyChange(nameof(Plugins));
-            SelectedAccount = (Accounts.Any() ? Accounts.First() : null);
-            SelectedPlugin = (Plugins.Any() ? Plugins.First() : null);
+
+            SelectedAccount = Accounts.FirstOrDefault();
+            SelectedPlugin = Plugins.FirstOrDefault();
         }
 
         private void Init()
@@ -347,14 +348,16 @@ namespace TickTrader.BotTerminal
             if (SelectedAccount != null)
             {
                 _updateSetupMetadataSrc?.Cancel();
+
                 _updateSetupMetadataSrc = new CancellationTokenSource();
+                _updateSetupToken = _updateSetupMetadataSrc.Token;
 
                 var tcs = new TaskCompletionSource<SetupMetadata>();
                 _updateSetupMetadataTaskSrc = tcs;
 
                 var metadata = await SelectedAgent.Model.GetSetupMetadata(SelectedAccount.AccountId, SetupContext);
 
-                if (_updateSetupMetadataSrc.IsCancellationRequested)
+                if (_updateSetupToken.IsCancellationRequested)
                 {
                     tcs.SetCanceled();
                     return;
@@ -368,8 +371,7 @@ namespace TickTrader.BotTerminal
         {
             if (SelectedPlugin != null && _updateSetupMetadataSrc != null)
             {
-                _updateSetupCancelSrc?.Cancel();
-                _updateSetupCancelSrc = new CancellationTokenSource();
+                var currentUpdateSetupToken = _updateSetupToken;
 
                 SetupMetadata metadata = null;
                 try
@@ -382,13 +384,15 @@ namespace TickTrader.BotTerminal
                     return;
                 }
 
-                if (_updateSetupCancelSrc.IsCancellationRequested)
+                if (currentUpdateSetupToken.IsCancellationRequested)
                     return;
 
                 if (Setup != null)
                     Setup.ValidityChanged -= Validate;
+
                 Setup = new PluginConfigViewModel(SelectedPlugin.PluginInfo, metadata, SelectedAgent.Model.IdProvider, Mode);
                 Init();
+
                 if (Bot != null)
                     Setup.Load(Bot.Config);
 
