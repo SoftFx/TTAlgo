@@ -111,7 +111,7 @@ namespace TickTrader.Algo.Account.Fdk2
             }
             catch (Exception ex)
             {
-                var flatEx = ex.FlattenAsPossible();
+                var flatEx = ex is AggregateException aggrEx ? aggrEx.InnerExceptions.Last() : ex;
 
                 if (flatEx is LoginException loginEx)
                 {
@@ -125,17 +125,17 @@ namespace TickTrader.Algo.Account.Fdk2
                 }
                 else if (flatEx is InteropException interopEx)
                 {
-                    logger.Info("Connection sequence failed: " + interopEx.Message);
+                    logger.Info($"Connection sequence failed: {interopEx.Message}");
                     return new ConnectionErrorInfo(interopEx.ErrorCode, interopEx.Message);
                 }
                 else if (flatEx is RejectException rejectEx)
                 {
-                    logger.Info("Connection sequence failed: " + rejectEx.Message);
+                    logger.Info($"Connection sequence failed: {rejectEx.Message}");
                     return new ConnectionErrorInfo(ConnectionErrorInfo.Types.ErrorCode.RejectedByServer, rejectEx.Message);
                 }
                 else if (flatEx is SoftFX.Net.Core.DisconnectedException disconnectEx)
                 {
-                    logger.Info("Connection sequence failed: " + disconnectEx.Message);
+                    logger.Info($"Connection sequence failed: {disconnectEx.Message}");
                     return new ConnectionErrorInfo(ConnectionErrorInfo.Types.ErrorCode.NetworkError, disconnectEx.Message);
                 }
                 else
