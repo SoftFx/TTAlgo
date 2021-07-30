@@ -15,13 +15,13 @@ namespace TickTrader.Algo.Server
         public const int AttachTimeout = 5000;
         public const int ShutdownTimeout = 10000;
 
-        private readonly IAlgoLogger _logger;
-        private readonly RuntimeConfig _config;
-        private readonly string _id, _pkgId, _pkgRefId;
         private readonly AlgoServerPrivate _server;
+        private readonly RuntimeConfig _config;
+        private readonly string _id, _pkgId;
         private readonly IRuntimeHostProxy _runtimeHost;
         private readonly Dictionary<string, ExecutorModel> _executorsMap = new Dictionary<string, ExecutorModel>();
 
+        private IAlgoLogger _logger;
         private TaskCompletionSource<bool> _startTaskSrc, _connectTaskSrc;
         private Action<RpcMessage> _onNotification;
         private IRuntimeProxy _proxy;
@@ -29,14 +29,13 @@ namespace TickTrader.Algo.Server
         private int _startedExecutorsCnt;
         private bool _shutdownWhenIdle;
 
-        public PkgRuntimeActor(RuntimeConfig config, AlgoServerPrivate server)
+        public PkgRuntimeActor(AlgoServerPrivate server, RuntimeConfig config)
         {
+            _server = server;
             _config = config;
             _id = config.Id;
             _pkgId = config.PackageId;
-            _server = server;
 
-            _logger = AlgoLoggerFactory.GetLogger($"{nameof(PkgRuntimeModel)}({_id})");
             _runtimeHost = RuntimeHost.Create(true);
 
             Receive<StartRuntimeCmd, bool>(Start);
@@ -54,9 +53,15 @@ namespace TickTrader.Algo.Server
         }
 
 
-        public static IActorRef Create(RuntimeConfig config, AlgoServerPrivate server)
+        public static IActorRef Create(AlgoServerPrivate server, RuntimeConfig config)
         {
-            return ActorSystem.SpawnLocal(() => new PkgRuntimeActor(config, server), $"{nameof(PkgRuntimeActor)} {config.Id}");
+            return ActorSystem.SpawnLocal(() => new PkgRuntimeActor(server, config), $"{nameof(PkgRuntimeActor)} ({config.Id})");
+        }
+
+
+        protected override void ActorInit(object initMsg)
+        {
+            _logger = AlgoLoggerFactory.GetLogger(Name);
         }
 
 
@@ -71,13 +76,6 @@ namespace TickTrader.Algo.Server
 
             try
             {
-                //var hasPkg = await _server.LockPkgRef(_pkgRefId);
-                //if (!hasPkg)
-                //{
-                //    _logger.Error($"Package ref '{_pkgRefId}' not found");
-                //    return false;
-                //}
-
                 _connectTaskSrc = new TaskCompletionSource<bool>();
                 await _runtimeHost.Start(_server.Address, _server.BoundPort, _id);
 
@@ -87,7 +85,7 @@ namespace TickTrader.Algo.Server
 
                 if (connected)
                 {
-                    await _proxy.Start(new StartRuntimeRequest());
+                    await _proxy.Start(new StartRuntimeRequest { Config = _config });
 
                     _startTaskSrc.TrySetResult(true);
                     _logger.Debug("Started");
@@ -96,7 +94,6 @@ namespace TickTrader.Algo.Server
                 else
                 {
                     _logger.Error("Failed to connect runtime host");
-                    //_server.ReleasePkgRef(_pkgRefId);
                     await _runtimeHost.Stop();
                 }
             }
@@ -105,7 +102,6 @@ namespace TickTrader.Algo.Server
                 _logger.Error(ex, "Failed to start");
             }
 
-            //_server.ReleasePkgRef(_pkgRefId);
             return false;
         }
 

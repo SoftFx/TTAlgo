@@ -19,7 +19,9 @@ message AttachRuntimeResponse {
     bool success = 1;
 }
 
-message StartRuntimeRequest { } // void response
+message StartRuntimeRequest { // void response
+    RuntimeConfig config = 1;
+}
 
 message StopRuntimeRequest { } // void response
 

@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Server
 
         public string PkgId => PkgInfo.PackageId;
 
-        public PackageInfo PkgInfo { get; private set; }
+        public PackageInfo PkgInfo { get; }
 
         public byte[] PkgBytes { get; private set; }
 

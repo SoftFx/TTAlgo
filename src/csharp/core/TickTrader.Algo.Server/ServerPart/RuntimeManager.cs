@@ -67,7 +67,7 @@ namespace TickTrader.Algo.Server
             var config = new RuntimeConfig { Id = id, PackageId = pkgId, PackageBinary = pkgBin, PackageIdentity = pkgRef.PkgInfo.Identity };
 
             _pkgRuntimeMap[pkgId] = id;
-            _runtimeMap[id] = PkgRuntimeActor.Create(config, _server);
+            _runtimeMap[id] = PkgRuntimeActor.Create(_server, config);
         }
 
 

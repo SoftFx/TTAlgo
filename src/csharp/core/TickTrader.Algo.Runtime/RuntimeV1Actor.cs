@@ -49,14 +49,14 @@ namespace TickTrader.Algo.Runtime
         }
 
 
-        private async Task Start(StartRuntimeRequest request)
+        private void Start(StartRuntimeRequest request)
         {
             _logger.Debug("Starting...");
 
             // load default reduction to metadata cache
             PackageExplorer.ScanAssembly(MappingDefaults.DefaultExtPackageId, typeof(BarCloseReduction).Assembly);
 
-            _config = await _handler.GetRuntimeConfig().ConfigureAwait(false);
+            _config = request.Config;
 
             var pkgId = _config.PackageId;
             var pkgPath = _config.PackageIdentity.FilePath;
