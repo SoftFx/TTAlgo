@@ -241,7 +241,10 @@ namespace TickTrader.Algo.Server
                 PluginErrorHandler(id, payload);
 
             if (!_executorsMap.TryGetValue(id, out var executor))
+            {
                 _logger.Error($"Executor {id} not found. Notification type {msg.Payload.TypeUrl}");
+                return;
+            }
 
             if (payload.Is(ExecutorStateUpdate.Descriptor))
                 ExecutorStateUpdateHandler(executor, payload.Unpack<ExecutorStateUpdate>());

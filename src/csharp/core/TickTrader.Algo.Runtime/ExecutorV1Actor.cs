@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core;
@@ -89,9 +90,10 @@ namespace TickTrader.Algo.Runtime
 
                 var stopTask = _executor.Stop();
 
-                var delayTask = Task.Delay(AbortTimeout);
-
+                var cancelTokenSrc = new CancellationTokenSource();
+                var delayTask = Task.Delay(AbortTimeout, cancelTokenSrc.Token);
                 var t = await Task.WhenAny(stopTask, delayTask);
+                cancelTokenSrc.Cancel();
 
                 if (t == delayTask)
                 {
