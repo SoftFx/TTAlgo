@@ -50,7 +50,7 @@ namespace TickTrader.Algo.Server
             Receive<AlgoServerPrivate.ReleasePkgRefCmd>(cmd => _pkgStorage.ReleasePkgRef(cmd.Id));
             Receive<AlgoServerPrivate.RuntimeStoppedMsg>(msg => _runtimes.OnRuntimeStopped(msg.Id));
             Receive<AlgoServerPrivate.ConnectRuntimeCmd>(cmd => _runtimes.ConnectRuntime(cmd.Id, cmd.Session));
-            Receive<AlgoServerPrivate.AccountControlRequest>(r => _accounts.GetAccountControl(r.Id));
+            Receive<AlgoServerPrivate.AccountControlRequest, AccountControlModel>(r => _accounts.GetAccountControl(r.Id));
             Receive<AlgoServerPrivate.PkgRuntimeRequest, PkgRuntimeModel>(r => _runtimes.GetPkgRuntime(r.PkgId));
 
             Receive<LocalAlgoServer.PkgFileExistsRequest, bool>(r => _pkgStorage.PackageFileExists(r.PkgName));
@@ -61,7 +61,7 @@ namespace TickTrader.Algo.Server
 
             Receive<AddAccountRequest>(r => _accounts.AddAccount(r));
             Receive<ChangeAccountRequest>(r => _accounts.ChangeAccount(r));
-            Receive<RemoveAccountRequest>(r => _accounts.RemoveAccount(r));
+            Receive<RemoveAccountRequest>(RemoveAccount);
             Receive<TestAccountRequest>(r => _accounts.TestAccount(r));
             Receive<TestAccountCredsRequest>(r => _accounts.TestAccountCreds(r));
             Receive<AccountMetadataRequest>(r => _accounts.GetMetadata(r));
@@ -184,6 +184,16 @@ namespace TickTrader.Algo.Server
             }
 
             _runtimes.CreateRuntime(pkgRef.Id.Replace('/', '-'), pkgRef);
+        }
+
+        private async Task RemoveAccount(RemoveAccountRequest request)
+        {
+            var accId = request.AccountId;
+            var account = _accounts.GetAccountRefOrThrow(accId);
+
+            await _plugins.RemoveAllPluginsFromAccount(accId);
+
+            await _accounts.RemoveAccountInternal(accId, account);
         }
 
 

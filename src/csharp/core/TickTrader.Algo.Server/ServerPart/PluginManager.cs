@@ -16,6 +16,7 @@ namespace TickTrader.Algo.Server
 
         private readonly AlgoServerPrivate _server;
         private readonly Dictionary<string, IActorRef> _plugins = new Dictionary<string, IActorRef>();
+        private readonly Dictionary<string, string> _pluginAccountMap = new Dictionary<string, string>();
         private readonly PluginIdHelper _pluginIdHelper = new PluginIdHelper();
 
 
@@ -80,25 +81,7 @@ namespace TickTrader.Algo.Server
             return plugin.Ask(new PluginActor.UpdateConfigCmd(request.NewConfig));
         }
 
-        public async Task RemovePlugin(RemovePluginRequest request)
-        {
-            var id = request.PluginId;
-            if (!_plugins.TryGetValue(id, out var plugin))
-                throw Errors.PluginNotFound(id);
-
-            await _server.SavedState.RemovePlugin(id);
-
-            _plugins.Remove(id);
-
-            try
-            {
-                await ShutdownPluginInternal(id, plugin);
-            }
-            finally
-            {
-                _server.SendUpdate(PluginModelUpdate.Removed(id));
-            }
-        }
+        public Task RemovePlugin(RemovePluginRequest request) => RemovePluginInternal(request.PluginId);
 
         public Task StartPlugin(StartPluginRequest request)
         {
@@ -155,12 +138,39 @@ namespace TickTrader.Algo.Server
             }
         }
 
+        public async Task RemoveAllPluginsFromAccount(string accId)
+        {
+            await Task.WhenAll(_pluginAccountMap.Where(p => p.Value == accId)
+                .Select(p => RemovePluginInternal(p.Key).OnException(ex => _logger.Error(ex, $"Failed to remove plugin {p.Key}"))));
+        }
+
 
         private IActorRef CreatePluginIntenal(string id, PluginSavedState savedState)
         {
             var plugin = PluginActor.Create(_server, savedState);
             _plugins[id] = plugin;
+            _pluginAccountMap[id] = savedState.AccountId;
             return plugin;
+        }
+
+        private async Task RemovePluginInternal(string id)
+        {
+            if (!_plugins.TryGetValue(id, out var plugin))
+                throw Errors.PluginNotFound(id);
+
+            await _server.SavedState.RemovePlugin(id);
+
+            _plugins.Remove(id);
+            _pluginAccountMap.Remove(id);
+
+            try
+            {
+                await ShutdownPluginInternal(id, plugin);
+            }
+            finally
+            {
+                _server.SendUpdate(PluginModelUpdate.Removed(id));
+            }
         }
 
         private async Task ShutdownPluginInternal(string id, IActorRef plugin)

@@ -34,7 +34,15 @@ namespace TickTrader.Algo.Async.Actors
         public void PostMessage(object msg)
         {
             if (!_channel.Writer.TryWrite(msg))
-                throw Errors.MsgDispatcherAlreadyStopped(_actorName);
+            {
+                if (msg is CallbackMsg)
+                    return; // some task continuations are invoked from thread pool and can crash application
+
+                if (msg is IAskMsg)
+                    msg = (msg as IAskMsg).Request;
+
+                throw Errors.PostMessageFailed(_actorName, msg.GetType().FullName);
+            }
         }
 
         public void Start(Action<object> msgHandler)

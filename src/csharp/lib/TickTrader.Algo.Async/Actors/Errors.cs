@@ -25,5 +25,7 @@ namespace TickTrader.Algo.Async.Actors
         public static Exception MsgDispatcherAlreadyStarted(string actorName) => new Exception($"Message dispatcher already started for actor '{actorName}'");
 
         public static Exception MsgDispatcherAlreadyStopped(string actorName) => new Exception($"Message dispatcher already stopped for actor '{actorName}'");
+
+        public static Exception PostMessageFailed(string actorName, string msgType) => new Exception($"Failed to post message of type '{msgType}' to actor '{actorName}'");
     }
 }

@@ -50,12 +50,9 @@ namespace TickTrader.Algo.Server
             _logger.Debug("Restored saved state");
         }
 
-        public Task<AccountControlModel> GetAccountControl(string accId)
+        public AccountControlModel GetAccountControl(string accId)
         {
-            if (!_accounts.TryGetValue(accId, out var account))
-                return Task.FromException<AccountControlModel>(Errors.AccountNotFound(accId));
-
-            return Task.FromResult(new AccountControlModel(account));
+            return new AccountControlModel(GetAccountRefOrThrow(accId));
         }
 
         public async Task AddAccount(AddAccountRequest request)
@@ -94,8 +91,7 @@ namespace TickTrader.Algo.Server
         public async Task ChangeAccount(ChangeAccountRequest request)
         {
             var accId = request.AccountId;
-            if (!_accounts.TryGetValue(accId, out var account))
-                throw Errors.AccountNotFound(accId);
+            var account = GetAccountRefOrThrow(request.AccountId);
 
             await account.Ask(request);
 
@@ -104,32 +100,9 @@ namespace TickTrader.Algo.Server
                 _accountDisplayNameCache[accId] = displayName;
         }
 
-        public async Task RemoveAccount(RemoveAccountRequest request)
-        {
-            var accId = request.AccountId;
-            if (!_accounts.TryGetValue(accId, out var account))
-                throw Errors.AccountNotFound(accId);
-
-            await _server.SavedState.RemoveAccount(accId);
-
-            _accounts.Remove(accId);
-            _accountDisplayNameCache.Remove(accId);
-
-            try
-            {
-                await ShutdownAccountInternal(accId, account);
-            }
-            finally
-            {
-                _server.SendUpdate(AccountModelUpdate.Removed(accId));
-            }
-        }
-
         public Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request)
         {
-            var accId = request.AccountId;
-            if (!_accounts.TryGetValue(accId, out var account))
-                throw Errors.AccountNotFound(accId);
+            var account = GetAccountRefOrThrow(request.AccountId);
 
             return account.Ask<ConnectionErrorInfo>(request);
         }
@@ -167,11 +140,35 @@ namespace TickTrader.Algo.Server
 
         public Task<AccountMetadataInfo> GetMetadata(AccountMetadataRequest request)
         {
-            var accId = request.AccountId;
+            var account = GetAccountRefOrThrow(request.AccountId);
+
+            return account.Ask<AccountMetadataInfo>(request);
+        }
+
+
+        internal IActorRef GetAccountRefOrThrow(string accId)
+        {
             if (!_accounts.TryGetValue(accId, out var account))
                 throw Errors.AccountNotFound(accId);
 
-            return account.Ask<AccountMetadataInfo>(request);
+            return account;
+        }
+
+        internal async Task RemoveAccountInternal(string accId, IActorRef account)
+        {
+            await _server.SavedState.RemoveAccount(accId);
+
+            _accounts.Remove(accId);
+            _accountDisplayNameCache.Remove(accId);
+
+            try
+            {
+                await ShutdownAccountInternal(accId, account);
+            }
+            finally
+            {
+                _server.SendUpdate(AccountModelUpdate.Removed(accId));
+            }
         }
 
 
