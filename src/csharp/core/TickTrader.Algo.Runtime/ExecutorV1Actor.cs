@@ -1,6 +1,5 @@
 ﻿using Google.Protobuf;
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core;
@@ -33,7 +32,6 @@ namespace TickTrader.Algo.Runtime
 
             Receive<StartExecutorRequest>(Start);
             Receive<StopExecutorRequest>(Stop);
-            Receive<StoppedMsg>(OnStopped);
             Receive<ExitedMsg>(OnExited);
             Receive<ConnectionStateUpdate>(OnConnectionStateUpdated);
         }
@@ -80,7 +78,7 @@ namespace TickTrader.Algo.Runtime
 
             if (_state.IsWaitConnect())
             {
-                OnStopped(StoppedMsg.Instance);
+                OnStopped();
                 return;
             }
 
@@ -90,25 +88,31 @@ namespace TickTrader.Algo.Runtime
 
                 var stopTask = _executor.Stop();
 
-                var cancelTokenSrc = new CancellationTokenSource();
-                var delayTask = Task.Delay(AbortTimeout, cancelTokenSrc.Token);
+                var delayTask = Task.Delay(AbortTimeout);
                 var t = await Task.WhenAny(stopTask, delayTask);
-                cancelTokenSrc.Cancel();
 
                 if (t == delayTask)
                 {
                     _logger.Info("Executor didn't stop within timeout. Aborting...");
-                    _executor.Abort();
+                    try
+                    {
+                        _executor.Abort();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error(ex, "Failed to abot executor");
+                    }
                 }
                 else if (stopTask.IsFaulted)
                 {
                     _logger.Error(stopTask.Exception, "Failed to stop executor");
-                    DetachAccount();
                 }
+
+                OnStopped();
             }
         }
 
-        private void OnStopped(StoppedMsg msg)
+        private void OnStopped()
         {
             ChangeState(Executor.Types.State.Stopped);
 
@@ -169,7 +173,6 @@ namespace TickTrader.Algo.Runtime
                 var config = _config.PluginConfig.Unpack<PluginConfig>();
 
                 _executor = new PluginExecutorCore(config.Key);
-                _executor.Stopped += _ => Self.Tell(StoppedMsg.Instance);
                 _executor.OnExitRequest += _ => Self.Tell(ExitedMsg.Instance);
                 _executor.OnNotification += msg => _runtime.Tell(new ExecutorNotification(_id, msg));
                 _executor.OnInternalError += ex => _logger.Error(ex, "Internal error in executor");
@@ -207,8 +210,6 @@ namespace TickTrader.Algo.Runtime
             ChangeState(Executor.Types.State.Running);
         }
 
-
-        internal class StoppedMsg : Singleton<StoppedMsg> { }
 
         internal class ExitedMsg : Singleton<ExitedMsg> { }
 
