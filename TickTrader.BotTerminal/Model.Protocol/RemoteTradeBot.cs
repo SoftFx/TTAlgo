@@ -78,8 +78,7 @@ namespace TickTrader.BotTerminal
 
         public void UpdateLogs(List<LogRecordInfo> logs)
         {
-            if (State == PluginModelInfo.Types.PluginState.Running)
-                Journal.Add(logs.Select(Convert).ToList());
+            Journal.Add(logs.Select(Convert).ToList());
         }
 
         public void SubscribeToStatus()

@@ -66,7 +66,9 @@ namespace TickTrader.Algo.ServerControl.Grpc
         private readonly UpdateInfo<AlgoServerApi.HeartbeatUpdate> _heartbeat;
 
         private HashSet<string> _subscribedPluginsToStatus;
-        private HashSet<string> _subscribedPluginsToLogs;
+        private Dictionary<string, Timestamp> _subscribedPluginsToLogs;
+
+        private LinkedList<string> _unsubscribeLogList;
 
         private IAlgoServerProvider _algoServer;
         private IJwtProvider _jwtProvider;
@@ -108,8 +110,9 @@ namespace TickTrader.Algo.ServerControl.Grpc
             _alertTimer = new Timer(OnAlertsUpdate, null, AlertsUpdateTimeout, -1);
 
             _subscribedPluginsToStatus = new HashSet<string>();
-            _subscribedPluginsToLogs = new HashSet<string>();
+            _subscribedPluginsToLogs = new Dictionary<string, Timestamp>();
 
+            _unsubscribeLogList = new LinkedList<string>();
         }
 
         private void HeartbeatUpdate(object o)
@@ -661,13 +664,10 @@ namespace TickTrader.Algo.ServerControl.Grpc
             else
             {
                 if (_pluginLogsTimer == null)
-                {
-                    //_subscribedPluginsToLogs = new HashSet<string>();
                     _pluginLogsTimer = new Timer(OnPluginLogsUpdate, null, PluginLogsUpdateTimeout, -1);
-                }
 
-                if (!_subscribedPluginsToLogs.Contains(request.PluginId))
-                    _subscribedPluginsToLogs.Add(request.PluginId);
+                if (!_subscribedPluginsToLogs.ContainsKey(request.PluginId))
+                    _subscribedPluginsToLogs.Add(request.PluginId, DateTime.UtcNow.ToTimestamp());
             }
 
             return res;
@@ -702,14 +702,16 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
             else
             {
-                if (_subscribedPluginsToLogs.Contains(request.PluginId))
-                    _subscribedPluginsToLogs.Remove(request.PluginId);
+                _unsubscribeLogList.AddLast(request.PluginId);
 
-                if (_subscribedPluginsToLogs.Count == 0)
-                {
-                    _pluginLogsTimer?.Dispose();
-                    _pluginLogsTimer = null;
-                }
+                //if (_subscribedPluginsToLogs.Contains(request.PluginId))
+                //    _subscribedPluginsToLogs.Remove(request.PluginId);
+
+                //if (_subscribedPluginsToLogs.Count == 0)
+                //{
+                //    _pluginLogsTimer?.Dispose();
+                //    _pluginLogsTimer = null;
+                //}
             }
 
             return res;
@@ -1450,7 +1452,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
         {
             _pluginLogsTimer?.Change(-1, -1);
 
-            foreach (var pluginKey in _subscribedPluginsToLogs.ToList())
+            foreach (var pluginKey in _subscribedPluginsToLogs.Keys.ToList())
                 try
                 {
                     var update = new AlgoServerApi.PluginLogUpdate
@@ -1462,12 +1464,12 @@ namespace TickTrader.Algo.ServerControl.Grpc
                     {
                         PluginId = pluginKey,
                         MaxCount = 1000,
-                        LastLogTimeUtc = _lastLogTimeUtc,
+                        LastLogTimeUtc = _subscribedPluginsToLogs[pluginKey],
                     };
 
                     var records = await _algoServer.GetBotLogsAsync(serverRequest);
 
-                    _lastLogTimeUtc = records.Max(u => u.TimeUtc) ?? _lastLogTimeUtc;
+                    _subscribedPluginsToLogs[pluginKey] = records.Max(u => u.TimeUtc) ?? _subscribedPluginsToLogs[pluginKey];
 
                     update.Records.AddRange(records.Select(u => u.ToApi()));
 
@@ -1478,6 +1480,18 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 {
                     _logger.Error(ex);
                 }
+
+            foreach (var removeLogs in _unsubscribeLogList)
+                if (_subscribedPluginsToLogs.ContainsKey(removeLogs))
+                    _subscribedPluginsToLogs.Remove(removeLogs);
+
+            _unsubscribeLogList.Clear();
+
+            if (_subscribedPluginsToLogs.Count == 0)
+            {
+                _pluginLogsTimer?.Dispose();
+                _pluginLogsTimer = null;
+            }
 
             _pluginLogsTimer?.Change(PluginLogsUpdateTimeout, -1);
         }

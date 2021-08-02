@@ -24,6 +24,7 @@ namespace TickTrader.Algo.Server.PublicAPI
         event Action Connected;
 
         event Action Disconnected;
+
         #endregion Connection Management
 
 
@@ -32,6 +33,19 @@ namespace TickTrader.Algo.Server.PublicAPI
         Task<AccountMetadataInfo> GetAccountMetadata(AccountMetadataRequest request);
 
         #endregion Other
+
+
+        #region Subscriptions Management
+
+        Task SubscribeToPluginStatus(PluginStatusSubscribeRequest request);
+
+        Task SubscribeToPluginLogs(PluginLogsSubscribeRequest request);
+
+        Task UnsubscribeToPluginStatus(PluginStatusUnsubscribeRequest request);
+
+        Task UnsubscribeToPluginLogs(PluginLogsUnsubscribeRequest request);
+
+        #endregion
 
 
         #region Account Management
@@ -72,14 +86,6 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         Task ChangePluginConfig(ChangePluginConfigRequest request);
 
-
-        Task SubscribeToPluginStatus(PluginStatusSubscribeRequest request);
-
-        Task SubscribeToPluginLogs(PluginLogsSubscribeRequest request);
-
-        Task UnsubscribeToPluginStatus(PluginStatusUnsubscribeRequest request);
-
-        Task UnsubscribeToPluginLogs(PluginLogsUnsubscribeRequest request);
 
         #endregion Plugin Management
 

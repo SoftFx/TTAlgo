@@ -80,30 +80,20 @@ namespace TickTrader.BotTerminal
             Bot.Browse();
         }
 
-        protected override Task OnActivateAsync(CancellationToken cancellationToken)
+        protected override async Task OnActivateAsync(CancellationToken cancellationToken)
         {
+            await base.OnActivateAsync(cancellationToken);
+
             _isActivated = true;
             Init();
-
-            return base.OnActivateAsync(cancellationToken);
         }
 
-        //protected override void OnActivate()
-        //{
-        //    base.OnActivate();
-
-        //    _isActivated = true;
-
-        //    Init();
-        //}
-
-        protected override Task OnDeactivateAsync(bool close, CancellationToken cancellationToken)
+        protected override async Task OnDeactivateAsync(bool close, CancellationToken cancellationToken)
         {
+            await base.OnDeactivateAsync(close, cancellationToken);
+
             _isActivated = false;
-
             Deinit();
-
-            return base.OnDeactivateAsync(close, cancellationToken);
         }
 
         //protected override void OnDeactivate(bool close)

@@ -100,7 +100,7 @@ namespace TickTrader.Algo.Runtime
                     }
                     catch (Exception ex)
                     {
-                        _logger.Error(ex, "Failed to abot executor");
+                        _logger.Error(ex, "Failed to abort executor");
                     }
                 }
                 else if (stopTask.IsFaulted)
