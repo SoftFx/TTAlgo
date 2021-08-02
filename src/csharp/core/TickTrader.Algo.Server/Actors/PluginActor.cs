@@ -162,18 +162,23 @@ namespace TickTrader.Algo.Server
 
         private void OnExecutorStateUpdated(ExecutorStateUpdate update)
         {
-            if (update.NewState.IsWaitConnect())
+            var newState = update.NewState;
+
+            if (newState.IsWaitConnect())
                 ChangeState(PluginModelInfo.Types.PluginState.Starting);
-            else if (update.NewState.IsFaulted())
+            else if (newState.IsFaulted())
                 ChangeState(PluginModelInfo.Types.PluginState.Faulted);
-            else if (update.NewState.IsRunning())
+            else if (newState.IsRunning())
                 ChangeState(PluginModelInfo.Types.PluginState.Running);
-            else if (update.NewState.IsStopping())
+            else if (newState.IsStopping())
                 ChangeState(PluginModelInfo.Types.PluginState.Stopping);
-            else if (update.NewState.IsStopped())
+            else if (newState.IsStopped())
                 ChangeState(PluginModelInfo.Types.PluginState.Stopped);
-            else if (update.NewState.IsWaitReconnect())
+            else if (newState.IsWaitReconnect())
                 ChangeState(PluginModelInfo.Types.PluginState.Reconnecting);
+
+            if (newState.IsStopped() || newState.IsFaulted())
+                _executor?.Dispose();
         }
 
         private void OnExited(PluginExitedMsg msg)
