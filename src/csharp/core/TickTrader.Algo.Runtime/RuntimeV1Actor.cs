@@ -90,11 +90,10 @@ namespace TickTrader.Algo.Runtime
 
         private async Task StartExecutor(StartExecutorRequest request)
         {
-            var executorId = request.ExecutorId;
+            var config = request.Config;
+            var executorId = config.Id;
             if (_executorsMap.ContainsKey(executorId))
                 throw new AlgoException("Executor already started");
-
-            var config = await _handler.GetExecutorConfig(executorId);
 
             var acc = GetOrCreateAccount(config.AccountId);
 
@@ -108,7 +107,6 @@ namespace TickTrader.Algo.Runtime
             catch (Exception ex)
             {
                 _logger.Error(ex, $"Failed to start executor {executorId}");
-                _executorsMap.Remove(executorId);
 
                 throw;
             }

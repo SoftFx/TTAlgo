@@ -46,12 +46,10 @@ namespace TickTrader.Algo.Server
             Receive<NeedLegacyStateRequest, bool>(_ => !File.Exists(_env.ServerStateFilePath));
             Receive<LoadLegacyStateCmd>(cmd => _savedState.LoadSavedState(cmd.SavedState));
 
-            Receive<AlgoServerPrivate.LockPkgRefCmd>(cmd => _pkgStorage.LockPkgRef(cmd.Id));
-            Receive<AlgoServerPrivate.ReleasePkgRefCmd>(cmd => _pkgStorage.ReleasePkgRef(cmd.Id));
+            Receive<AlgoServerPrivate.RuntimeRequest, IActorRef>(r => _runtimes.GetRuntime(r.Id));
+            Receive<AlgoServerPrivate.PkgRuntimeRequest, IActorRef>(r => _runtimes.GetPkgRuntime(r.PkgId));
             Receive<AlgoServerPrivate.RuntimeStoppedMsg>(msg => _runtimes.OnRuntimeStopped(msg.Id));
-            Receive<AlgoServerPrivate.ConnectRuntimeCmd>(cmd => _runtimes.ConnectRuntime(cmd.Id, cmd.Session));
             Receive<AlgoServerPrivate.AccountControlRequest, AccountControlModel>(r => _accounts.GetAccountControl(r.Id));
-            Receive<AlgoServerPrivate.PkgRuntimeRequest, PkgRuntimeModel>(r => _runtimes.GetPkgRuntime(r.PkgId));
 
             Receive<LocalAlgoServer.PkgFileExistsRequest, bool>(r => _pkgStorage.PackageFileExists(r.PkgName));
             Receive<LocalAlgoServer.PkgBinaryRequest, byte[]>(r => _pkgStorage.GetPackageBinary(r.Id));
@@ -164,7 +162,9 @@ namespace TickTrader.Algo.Server
             var pkgId = update.PkgId;
             var pkgRefId = update.LatestPkgRefId;
 
-            _runtimes.GetPkgRuntime(pkgId)?.MarkForShutdown();
+            var oldRuntime = _runtimes.GetPkgRuntime(pkgId);
+            if (oldRuntime != null)
+                RuntimeControlModel.MarkForShutdown(oldRuntime);
 
             if (string.IsNullOrEmpty(pkgRefId))
                 return;

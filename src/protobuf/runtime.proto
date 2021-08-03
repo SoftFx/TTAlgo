@@ -25,8 +25,6 @@ message StartRuntimeRequest { // void response
 
 message StopRuntimeRequest { } // void response
 
-message RuntimeConfigRequest { }
-
 message RuntimeConfig {
     string id = 1;
     string package_id = 2;
@@ -35,14 +33,12 @@ message RuntimeConfig {
 }
 
 message StartExecutorRequest { // void response
-    string executor_id = 1;
+    ExecutorConfig config = 1;
 }
 
 message StopExecutorRequest { // void response
     string executor_id = 1;
 }
-
-message ExecutorConfigRequest { }
 
 message ExecutorConfig {
     string id = 1;

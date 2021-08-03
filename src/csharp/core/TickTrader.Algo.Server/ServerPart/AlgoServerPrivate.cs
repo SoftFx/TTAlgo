@@ -36,15 +36,11 @@ namespace TickTrader.Algo.Server
 
         internal void SendUpdate(IMessage update) => _eventBus.Tell(update);
 
-        internal Task<bool> LockPkgRef(string pkgRefId) => _server.Ask<bool>(new LockPkgRefCmd(pkgRefId));
-
-        internal void ReleasePkgRef(string pkgRefId) => _server.Tell(new ReleasePkgRefCmd(pkgRefId));
-
         internal void OnRuntimeStopped(string runtimeId) => _server.Tell(new RuntimeStoppedMsg(runtimeId));
 
-        internal Task<PkgRuntimeModel> GetPkgRuntime(string pkgId) => _server.Ask<PkgRuntimeModel>(new PkgRuntimeRequest(pkgId));
+        internal Task<IActorRef> GetRuntime(string id) => _server.Ask<IActorRef>(new RuntimeRequest(id));
 
-        internal Task<PkgRuntimeModel> ConnectRuntime(string runtimeId, RpcSession session) => _server.Ask<PkgRuntimeModel>(new ConnectRuntimeCmd(runtimeId, session));
+        internal Task<IActorRef> GetPkgRuntime(string pkgId) => _server.Ask<IActorRef>(new PkgRuntimeRequest(pkgId));
 
         internal Task<AccountControlModel> GetAccountControl(string accId) => _server.Ask<AccountControlModel>(new AccountControlRequest(accId));
 
@@ -70,21 +66,11 @@ namespace TickTrader.Algo.Server
         #endregion IRpcHost implementation
 
 
-        internal class LockPkgRefCmd
+        internal class RuntimeRequest
         {
             public string Id { get; }
 
-            public LockPkgRefCmd(string id)
-            {
-                Id = id;
-            }
-        }
-
-        internal class ReleasePkgRefCmd
-        {
-            public string Id { get; }
-
-            public ReleasePkgRefCmd(string id)
+            public RuntimeRequest(string id)
             {
                 Id = id;
             }
@@ -107,19 +93,6 @@ namespace TickTrader.Algo.Server
             public RuntimeStoppedMsg(string id)
             {
                 Id = id;
-            }
-        }
-
-        internal class ConnectRuntimeCmd
-        {
-            public string Id { get; }
-
-            public RpcSession Session { get; }
-
-            public ConnectRuntimeCmd(string id, RpcSession session)
-            {
-                Id = id;
-                Session = session;
             }
         }
 

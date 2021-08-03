@@ -1,6 +1,7 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
 
@@ -11,7 +12,7 @@ namespace TickTrader.Algo.Server
         private readonly ConcurrentDictionary<string, AccountRpcHandler> _accProxies = new ConcurrentDictionary<string, AccountRpcHandler>();
 
         private readonly AlgoServerPrivate _server;
-        private PkgRuntimeModel _runtime;
+        private IActorRef _runtime;
         private RpcSession _session;
 
 
@@ -28,18 +29,13 @@ namespace TickTrader.Algo.Server
 
         public void HandleNotification(string proxyId, string callId, Any payload)
         {
-            _runtime.OnExecutorNotification(proxyId, payload);
-
+            RuntimeControlModel.OnExecutorNotification(_runtime, proxyId, payload);
         }
 
         public Task<Any> HandleRequest(string proxyId, string callId, Any payload)
         {
             if (payload.Is(AttachRuntimeRequest.Descriptor))
                 return AttachRuntimeRequestHandler(payload);
-            else if (payload.Is(RuntimeConfigRequest.Descriptor))
-                return RuntimeConfigRequestHandler();
-            else if (payload.Is(ExecutorConfigRequest.Descriptor))
-                return ExecutorConfigRequestHandler(proxyId);
             else if (payload.Is(AttachAccountRequest.Descriptor))
                 return AttachAccountRequestHandler(payload);
             else if (payload.Is(DetachAccountRequest.Descriptor))
@@ -59,18 +55,12 @@ namespace TickTrader.Algo.Server
             if (_runtime != null)
                 return Any.Pack(new ErrorResponse { Message = "Runtime already attached!" });
 
-            _runtime = await _server.ConnectRuntime(request.Id, _session);
-            return Any.Pack(new AttachRuntimeResponse { Success = _runtime != null });
-        }
+            _runtime = await _server.GetRuntime(request.Id);
+            var success = false;
+            if (_runtime != null)
+                success = await RuntimeControlModel.ConnectSession(_runtime, _session);
 
-        private Task<Any> RuntimeConfigRequestHandler()
-        {
-            return _runtime.GetConfig().ContinueWith(t => Any.Pack(t.Result));
-        }
-
-        private Task<Any> ExecutorConfigRequestHandler(string executorId)
-        {
-            return _runtime.GetExecutorConfig(executorId).ContinueWith(t => Any.Pack(t.Result));
+            return Any.Pack(new AttachRuntimeResponse { Success = success });
         }
 
         private async Task<Any> AttachAccountRequestHandler(Any payload)

@@ -33,20 +33,6 @@ namespace TickTrader.Algo.Runtime
             return context.TaskSrc.Task;
         }
 
-        public Task<RuntimeConfig> GetRuntimeConfig()
-        {
-            var context = new RpcResponseTaskContext<RuntimeConfig>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(new RuntimeConfigRequest()), context);
-            return context.TaskSrc.Task;
-        }
-
-        public Task<ExecutorConfig> GetExecutorConfig(string executorId)
-        {
-            var context = new RpcResponseTaskContext<ExecutorConfig>(RpcHandler.SingleReponseHandler);
-            _session.Ask(RpcMessage.Request(executorId, new ExecutorConfigRequest()), context);
-            return context.TaskSrc.Task;
-        }
-
         public async Task AttachAccount(string accountId, IRpcHandler handler)
         {
             if (_knownProxies.ContainsKey(accountId))

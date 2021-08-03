@@ -7,7 +7,7 @@ namespace TickTrader.Algo.Server
 {
     public class ExecutorModel
     {
-        private readonly PkgRuntimeModel _host;
+        //private readonly RuntimeControlModel _host;
         private readonly ChannelEventSource<PluginLogRecord> _logEventSrc = new ChannelEventSource<PluginLogRecord>();
         private readonly ChannelEventSource<PluginStatusUpdate> _statusEventSrc = new ChannelEventSource<PluginStatusUpdate>();
         private readonly ChannelEventSource<DataSeriesUpdate> _outputEventSrc = new ChannelEventSource<DataSeriesUpdate>();
@@ -29,9 +29,9 @@ namespace TickTrader.Algo.Server
         public Action<PluginExitedMsg> ExitHandler { get; set; }
 
 
-        public ExecutorModel(PkgRuntimeModel host, string id, ExecutorConfig config)
+        public ExecutorModel(string id, ExecutorConfig config)
         {
-            _host = host;
+            //_host = host;
             Id = id;
             Config = config;
         }
@@ -39,7 +39,7 @@ namespace TickTrader.Algo.Server
 
         public void Dispose()
         {
-            _host.DisposeExecutor(Id);
+            //_host.DisposeExecutor(Id);
 
             _logEventSrc.Dispose();
             _statusEventSrc.Dispose();
@@ -49,12 +49,12 @@ namespace TickTrader.Algo.Server
 
         public Task Start()
         {
-            return _host.StartExecutor(new StartExecutorRequest { ExecutorId = Id });
+            return Task.CompletedTask;// _host.StartExecutor(new StartExecutorRequest { ExecutorId = Id });
         }
 
         public Task Stop()
         {
-            return _host.StopExecutor(new StopExecutorRequest { ExecutorId = Id });
+            return Task.CompletedTask;// _host.StopExecutor(new StopExecutorRequest { ExecutorId = Id });
         }
 
 

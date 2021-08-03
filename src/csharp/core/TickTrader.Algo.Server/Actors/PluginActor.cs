@@ -25,10 +25,10 @@ namespace TickTrader.Algo.Server
         private PluginConfig _config;
 
         private PluginModelInfo.Types.PluginState _state;
-        private PkgRuntimeModel _runtime;
+        private IActorRef _runtime;
         private PluginInfo _pluginInfo;
         private string _faultMsg;
-        private TaskCompletionSource<bool> _startTaskSrc, _stopTaskSrc, _updatePkgTaskSrc;
+        private TaskCompletionSource<bool> _startTaskSrc, _stopTaskSrc, _updateRuntimeTaskSrc;
         private ExecutorModel _executor;
         private MessageCache<PluginLogRecord> _logsCache;
         private PluginStatusUpdate _lastStatus;
@@ -74,7 +74,7 @@ namespace TickTrader.Algo.Server
 
             _server.SendUpdate(PluginModelUpdate.Added(_id, GetInfoCopy()));
 
-            var _ = UpdatePackage();
+            var _ = UpdateRuntime();
         }
 
 
@@ -189,43 +189,71 @@ namespace TickTrader.Algo.Server
         }
 
 
-        private async Task<bool> UpdatePackage()
+        private async Task<bool> UpdateRuntime()
         {
-            if (_updatePkgTaskSrc != null)
-                return await _updatePkgTaskSrc.Task;
+            if (_updateRuntimeTaskSrc != null)
+                return await _updateRuntimeTaskSrc.Task;
 
-            _updatePkgTaskSrc = new TaskCompletionSource<bool>();
+            var res = false;
+            _updateRuntimeTaskSrc = new TaskCompletionSource<bool>();
+            try
+            {
+                res = await UpdateRuntimeInternal();
+            }
+            catch(Exception ex)
+            {
+                _logger.Error(ex, "Failed to get package runtime");
+            }
 
+            _updateRuntimeTaskSrc.TrySetResult(res);
+            _updateRuntimeTaskSrc = null;
+
+            return res;
+        }
+
+        private async Task<bool> UpdateRuntimeInternal()
+        {
             var pluginKey = _config.Key;
             var pkgId = pluginKey.PackageId;
+
+            if (_runtime != null)
+            {
+                var detached = await RuntimeControlModel.DetachPlugin(_runtime, _id);
+                if (!detached)
+                {
+                    BreakBot($"Can't detach from old runtime");
+                    return false;
+                }
+            }
 
             _runtime = await _server.GetPkgRuntime(pkgId);
             if (_runtime == null)
             {
                 BreakBot($"Algo package {pkgId} is not found");
-                _updatePkgTaskSrc.SetResult(false);
-                _updatePkgTaskSrc = null;
                 return false;
             }
 
-            await _runtime.Start();
-
-            _pluginInfo = await _runtime.GetPluginInfo(pluginKey);
+            _pluginInfo = await RuntimeControlModel.GetPluginInfo(_runtime, pluginKey);
             if (_pluginInfo == null)
             {
-                BreakBot($"Trade bot '{pluginKey.DescriptorId}' is missing in Algo package '{pkgId}'");
-                _updatePkgTaskSrc.SetResult(false);
-                _updatePkgTaskSrc = null;
+                BreakBot($"Plugin '{pluginKey.DescriptorId}' is missing in Algo package '{pkgId}'");
+                return false;
+            }
+
+            var attached = await RuntimeControlModel.AttachPlugin(_runtime, _id, Self);
+            if (!attached)
+            {
+                BreakBot($"Can't attach to new runtime");
                 return false;
             }
 
             if (_state == PluginModelInfo.Types.PluginState.Broken)
                 ChangeState(PluginModelInfo.Types.PluginState.Stopped);
 
+            await RuntimeControlModel.Start(_runtime);
+
             _server.SendUpdate(PluginModelUpdate.Updated(_id, GetInfoCopy()));
 
-            _updatePkgTaskSrc.SetResult(true);
-            _updatePkgTaskSrc = null;
             return true;
         }
 
@@ -246,6 +274,18 @@ namespace TickTrader.Algo.Server
             _server.SendUpdate(new PluginStateUpdate(_id, newState, faultMsg));
         }
 
+        private ExecutorConfig CreateDefaultExecutorConfig()
+        {
+            var config = new ExecutorConfig { Id = _id, AccountId = _accId, IsLoggingEnabled = true, PluginConfig = Any.Pack(_config) };
+            config.WorkingDirectory = _server.Env.GetPluginWorkingFolder(_id);
+            config.LogDirectory = _server.Env.GetPluginLogsFolder(_id);
+            config.InitPriorityInvokeStrategy();
+            config.InitSlidingBuffering(4000);
+            config.InitBarStrategy(Feed.Types.MarketSide.Bid);
+
+            return config;
+        }
+
         private async Task StartInternal()
         {
             _startTaskSrc = new TaskCompletionSource<bool>();
@@ -256,7 +296,7 @@ namespace TickTrader.Algo.Server
             {
                 ChangeState(PluginModelInfo.Types.PluginState.Starting);
 
-                if (!await UpdatePackage())
+                if (!await UpdateRuntime())
                 {
                     _startTaskSrc.SetResult(false);
                     _startTaskSrc = null;
@@ -265,22 +305,9 @@ namespace TickTrader.Algo.Server
 
                 await _server.SavedState.SetPluginRunning(_id, true);
 
-                var config = new ExecutorConfig { Id = _id, AccountId = _accId, IsLoggingEnabled = true, PluginConfig = Any.Pack(_config) };
-                config.WorkingDirectory = _server.Env.GetPluginWorkingFolder(_id);
-                config.LogDirectory = _server.Env.GetPluginLogsFolder(_id);
-                config.InitPriorityInvokeStrategy();
-                config.InitSlidingBuffering(4000);
-                config.InitBarStrategy(Feed.Types.MarketSide.Bid);
+                var config = CreateDefaultExecutorConfig();
 
-                _executor = await _runtime.CreateExecutor(_id, config);
-
-                _executor.LogUpdated.Subscribe(Self);
-                _executor.StatusUpdated.Subscribe(Self);
-                _executor.OutputUpdated.Subscribe(Self);
-                _executor.StateUpdated.Subscribe(Self);
-                _executor.ExitHandler = msg => Self.Tell(msg);
-
-                await _executor.Start();
+                await RuntimeControlModel.StartExecutor(_runtime, config);
 
                 _startTaskSrc.SetResult(true);
             }
@@ -307,8 +334,7 @@ namespace TickTrader.Algo.Server
 
                 await _server.SavedState.SetPluginRunning(_id, false);
 
-                await _executor.Stop();
-                _executor.Dispose();
+                await RuntimeControlModel.StopExecutor(_runtime, _id);
 
                 _stopTaskSrc.SetResult(true);
             }

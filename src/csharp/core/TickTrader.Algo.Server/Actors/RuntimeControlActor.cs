@@ -10,7 +10,7 @@ using TickTrader.Algo.Rpc;
 
 namespace TickTrader.Algo.Server
 {
-    internal class PkgRuntimeActor : Actor
+    internal class RuntimeControlActor : Actor
     {
         public const int AttachTimeout = 5000;
         public const int ShutdownTimeout = 10000;
@@ -19,17 +19,17 @@ namespace TickTrader.Algo.Server
         private readonly RuntimeConfig _config;
         private readonly string _id, _pkgId;
         private readonly IRuntimeHostProxy _runtimeHost;
-        private readonly Dictionary<string, ExecutorModel> _executorsMap = new Dictionary<string, ExecutorModel>();
+        private readonly Dictionary<string, IActorRef> _pluginsMap = new Dictionary<string, IActorRef>();
 
         private IAlgoLogger _logger;
         private TaskCompletionSource<bool> _startTaskSrc, _connectTaskSrc;
         private Action<RpcMessage> _onNotification;
         private IRuntimeProxy _proxy;
         private RpcSession _session;
-        private int _startedExecutorsCnt;
+        private int _activeExecutorsCnt;
         private bool _shutdownWhenIdle;
 
-        public PkgRuntimeActor(AlgoServerPrivate server, RuntimeConfig config)
+        public RuntimeControlActor(AlgoServerPrivate server, RuntimeConfig config)
         {
             _server = server;
             _config = config;
@@ -41,21 +41,19 @@ namespace TickTrader.Algo.Server
             Receive<StartRuntimeCmd, bool>(Start);
             Receive<StopRuntimeCmd>(Stop);
             Receive<MarkForShutdownCmd>(MarkForShutdown);
-            Receive<ConnectSessionCmd, bool>(OnConnect);
+            Receive<ConnectSessionCmd, bool>(ConnectSession);
             Receive<StartExecutorRequest>(StartExecutor);
             Receive<StopExecutorRequest>(StopExecutor);
-            Receive<RuntimeConfigRequest, RuntimeConfig>(GetConfig);
+            Receive<AttachPluginCmd, bool>(AttachPlugin);
+            Receive<DetachPluginCmd, bool>(DetachPlugin);
             Receive<GetPluginInfoRequest, PluginInfo>(GetPluginInfo);
-            Receive<CreateExecutorCmd, ExecutorModel>(CreateExecutor);
-            Receive<DisposeExecutorCmd>(DisposeExecutor);
-            Receive<ExecutorConfigRequest, ExecutorConfig>(GetExecutorConfig);
             Receive<ExecutorNotificationMsg>(OnExecutorNotification);
         }
 
 
         public static IActorRef Create(AlgoServerPrivate server, RuntimeConfig config)
         {
-            return ActorSystem.SpawnLocal(() => new PkgRuntimeActor(server, config), $"{nameof(PkgRuntimeActor)} ({config.Id})");
+            return ActorSystem.SpawnLocal(() => new RuntimeControlActor(server, config), $"{nameof(RuntimeControlActor)} ({config.Id})");
         }
 
 
@@ -102,6 +100,7 @@ namespace TickTrader.Algo.Server
                 _logger.Error(ex, "Failed to start");
             }
 
+            _startTaskSrc.TrySetResult(false);
             return false;
         }
 
@@ -136,20 +135,15 @@ namespace TickTrader.Algo.Server
             }
         }
 
-        private RuntimeConfig GetConfig(RuntimeConfigRequest request)
-        {
-            return _config;
-        }
-
         private void MarkForShutdown(MarkForShutdownCmd cmd)
         {
             _shutdownWhenIdle = true;
             _logger.Debug("Marked for shutdown");
-            if (_startedExecutorsCnt == 0)
+            if (_activeExecutorsCnt == 0)
                 ShutdownInternal();
         }
 
-        private bool OnConnect(ConnectSessionCmd cmd)
+        private bool ConnectSession(ConnectSessionCmd cmd)
         {
             var session = cmd.Session;
             if (_connectTaskSrc == null)
@@ -190,9 +184,9 @@ namespace TickTrader.Algo.Server
         {
             await WhenStarted();
 
+            _activeExecutorsCnt++;
             await _proxy.StartExecutor(request);
-            _startedExecutorsCnt++;
-            _logger.Debug($"Executor {request.ExecutorId} started. Have {_startedExecutorsCnt} active executors");
+            _logger.Debug($"Executor {request.Config.Id} started. Have {_activeExecutorsCnt} active executors");
         }
 
         private async Task StopExecutor(StopExecutorRequest request)
@@ -207,29 +201,34 @@ namespace TickTrader.Algo.Server
             return new PluginInfo(request.Plugin, null);
         }
 
-        private Task<ExecutorModel> CreateExecutor(CreateExecutorCmd cmd)
+        private bool AttachPlugin(AttachPluginCmd cmd)
         {
-            var id = cmd.ExecutorId;
-            if (_executorsMap.ContainsKey(id))
-                return Task.FromException<ExecutorModel>(Errors.DuplicateExecutorId(id));
+            var id = cmd.PluginId;
+            if (_pluginsMap.ContainsKey(id))
+            {
+                _logger.Error($"Plugin '{id}' already attached");
+                return false;
+            }
 
-            var executor = new ExecutorModel(new PkgRuntimeModel(Self), id, cmd.Config);
-            _executorsMap.Add(id, executor);
-            return Task.FromResult(executor);
+            _pluginsMap.Add(id, cmd.Plugin);
+            _logger.Debug($"Attached plugin '{id}'. Have {_pluginsMap.Count} attached plugins");
+            return true;
         }
 
-        private void DisposeExecutor(DisposeExecutorCmd cmd)
+        public bool DetachPlugin(DetachPluginCmd cmd)
         {
-            _executorsMap.Remove(cmd.ExecutorId);
-        }
+            var id = cmd.PluginId;
 
-        private ExecutorConfig GetExecutorConfig(ExecutorConfigRequest request)
-        {
-            var id = request.ExecutorId;
-            if (!_executorsMap.TryGetValue(id, out var executor))
-                throw Errors.ExecutorNotFound(id);
-
-            return executor.Config;
+            if (_pluginsMap.Remove(id))
+            {
+                _logger.Debug($"Detached plugin '{id}'. Have {_pluginsMap.Count} attached plugins");
+                return true;
+            }
+            else
+            {
+                _logger.Error($"Plugin '{id}' was not attached");
+                return false;
+            }
         }
 
         private void OnExecutorNotification(ExecutorNotificationMsg msg)
@@ -240,22 +239,22 @@ namespace TickTrader.Algo.Server
             if (payload.Is(ExecutorErrorMsg.Descriptor))
                 PluginErrorHandler(id, payload);
 
-            if (!_executorsMap.TryGetValue(id, out var executor))
+            if (!_pluginsMap.TryGetValue(id, out var plugin))
             {
                 _logger.Error($"Executor {id} not found. Notification type {msg.Payload.TypeUrl}");
                 return;
             }
 
             if (payload.Is(ExecutorStateUpdate.Descriptor))
-                ExecutorStateUpdateHandler(executor, payload.Unpack<ExecutorStateUpdate>());
+                ExecutorStateUpdateHandler(plugin, payload.Unpack<ExecutorStateUpdate>());
             else if (payload.Is(PluginLogRecord.Descriptor))
-                executor.OnLogUpdated(payload.Unpack<PluginLogRecord>());
+                plugin.Tell(payload.Unpack<PluginLogRecord>());
             else if (payload.Is(PluginStatusUpdate.Descriptor))
-                executor.OnStatusUpdated(payload.Unpack<PluginStatusUpdate>());
+                plugin.Tell(payload.Unpack<PluginStatusUpdate>());
             else if (payload.Is(DataSeriesUpdate.Descriptor))
-                executor.OnDataSeriesUpdate(payload.Unpack<DataSeriesUpdate>());
+                plugin.Tell(payload.Unpack<DataSeriesUpdate>());
             else if (payload.Is(PluginExitedMsg.Descriptor))
-                executor.OnExit(payload.Unpack<PluginExitedMsg>());
+                plugin.Tell(payload.Unpack<PluginExitedMsg>());
         }
 
         private void PluginErrorHandler(string id, Any payload)
@@ -264,23 +263,21 @@ namespace TickTrader.Algo.Server
             _logger.Error(new AlgoPluginException(error), $"Exception in executor {id}");
         }
 
-        private void ExecutorStateUpdateHandler(ExecutorModel executor, ExecutorStateUpdate update)
+        private void ExecutorStateUpdateHandler(IActorRef plugin, ExecutorStateUpdate update)
         {
             if (update.NewState.IsFaulted() || update.NewState.IsStopped())
                 OnExecutorStopped(update.ExecutorId);
 
-            executor.OnStateUpdated(update);
+            plugin.Tell(update);
         }
 
 
         private void OnExecutorStopped(string executorId)
         {
-            _startedExecutorsCnt--;
-            _logger.Debug($"Executor {executorId} stopped. Have {_startedExecutorsCnt} active executors");
+            _activeExecutorsCnt--;
+            _logger.Debug($"Executor {executorId} stopped. Have {_activeExecutorsCnt} active executors");
 
-            _executorsMap.Remove(executorId);
-
-            if (_startedExecutorsCnt == 0 && _shutdownWhenIdle)
+            if (_activeExecutorsCnt == 0 && _shutdownWhenIdle)
                 ShutdownInternal();
         }
 
@@ -330,39 +327,6 @@ namespace TickTrader.Algo.Server
             }
         }
 
-        internal class CreateExecutorCmd
-        {
-            public string ExecutorId { get; }
-
-            public ExecutorConfig Config { get; }
-
-            public CreateExecutorCmd(string executorId, ExecutorConfig config)
-            {
-                ExecutorId = executorId;
-                Config = config;
-            }
-        }
-
-        internal class DisposeExecutorCmd
-        {
-            public string ExecutorId { get; }
-
-            public DisposeExecutorCmd(string executorId)
-            {
-                ExecutorId = executorId;
-            }
-        }
-
-        internal class ExecutorConfigRequest
-        {
-            public string ExecutorId { get; }
-
-            public ExecutorConfigRequest(string executorId)
-            {
-                ExecutorId = executorId;
-            }
-        }
-
         internal class ExecutorNotificationMsg
         {
             public string ExecutorId { get; }
@@ -373,6 +337,29 @@ namespace TickTrader.Algo.Server
             {
                 ExecutorId = executorId;
                 Payload = payload;
+            }
+        }
+
+        internal class AttachPluginCmd
+        {
+            public string PluginId { get; }
+
+            public IActorRef Plugin { get; }
+
+            public AttachPluginCmd(string pluginId, IActorRef plugin)
+            {
+                PluginId = pluginId;
+                Plugin = plugin;
+            }
+        }
+
+        internal class DetachPluginCmd
+        {
+            public string PluginId { get; }
+
+            public DetachPluginCmd(string pluginId)
+            {
+                PluginId = pluginId;
             }
         }
     }
