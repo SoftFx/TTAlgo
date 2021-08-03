@@ -114,6 +114,9 @@ namespace TickTrader.Algo.Runtime
 
         private void OnStopped()
         {
+            if (_state == Executor.Types.State.Stopped || _state == Executor.Types.State.Faulted)
+                return;
+
             ChangeState(Executor.Types.State.Stopped);
 
             DetachAccount();
@@ -175,7 +178,7 @@ namespace TickTrader.Algo.Runtime
                 _executor = new PluginExecutorCore(config.Key);
                 _executor.OnExitRequest += _ => Self.Tell(ExitedMsg.Instance);
                 _executor.OnNotification += msg => _runtime.Tell(new ExecutorNotification(_id, msg));
-                _executor.OnInternalError += ex => _logger.Error(ex, "Internal error in executor");
+                _executor.OnInternalError += OnExecutorException;
                 _executor.IsGlobalMarshalingEnabled = true;
                 _executor.IsBunchingRequired = true;
 
@@ -201,6 +204,13 @@ namespace TickTrader.Algo.Runtime
                 _logger.Error(ex, "Failed to start executor");
                 ChangeState(Executor.Types.State.Faulted);
             }
+        }
+
+        private void OnExecutorException(Exception ex)
+        {
+            _logger.Error(ex, "Internal error in executor");
+
+            OnStopped();
         }
 
         private async Task HandleReconnectInternal()

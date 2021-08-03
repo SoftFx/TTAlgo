@@ -515,6 +515,7 @@ namespace TickTrader.Algo.CoreV1
         private void OnInitFailed(Exception ex)
         {
             OnExit();
+            OnInternalException(ex);
         }
 
         #region Setup Methods
@@ -739,6 +740,7 @@ namespace TickTrader.Algo.CoreV1
 
         private void OnInternalException(Exception ex)
         {
+            _pluginLogger.OnError(ex.Message);
             OnInternalError?.Invoke(ex);
         }
 
