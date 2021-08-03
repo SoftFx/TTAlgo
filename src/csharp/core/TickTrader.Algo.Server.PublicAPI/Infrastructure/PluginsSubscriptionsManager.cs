@@ -6,7 +6,7 @@ namespace TickTrader.Algo.Server.PublicAPI
 {
     internal sealed class PluginsSubscriptionsManager
     {
-        private readonly Dictionary<string, Timestamp> _logsSubscriptions;
+        private readonly HashSet<string> _logsSubscriptions;
         private readonly HashSet<string> _statusSubscriptions;
 
 
@@ -15,36 +15,36 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         internal PluginsSubscriptionsManager()
         {
-            _logsSubscriptions = new Dictionary<string, Timestamp>();
+            _logsSubscriptions = new HashSet<string>();
             _statusSubscriptions = new HashSet<string>();
         }
 
 
-        internal bool TryAddLogsSubscription(string pluginId, Timestamp lastTimePoint)
+        internal bool TryAddLogsSubscription(string pluginId)
         {
-            if (_logsSubscriptions.ContainsKey(pluginId))
+            if (_logsSubscriptions.Contains(pluginId))
                 return false;
 
-            _logsSubscriptions.Add(pluginId, lastTimePoint);
+            _logsSubscriptions.Add(pluginId);
 
             return true;
         }
 
 
-        internal bool TryUpdateLogsSubscriptionTime(string pluginId, Timestamp newTimePoint)
-        {
-            if (!_logsSubscriptions.ContainsKey(pluginId))
-                return false;
+        //internal bool TryUpdateLogsSubscriptionTime(string pluginId, Timestamp newTimePoint)
+        //{
+        //    if (!_logsSubscriptions.Contains(pluginId))
+        //        return false;
 
-            _logsSubscriptions[pluginId] = newTimePoint;
+        //    _logsSubscriptions[pluginId] = newTimePoint;
 
-            return true;
-        }
+        //    return true;
+        //}
 
 
         internal bool TryRemoveLogsSubscription(string pluginId)
         {
-            if (!_logsSubscriptions.ContainsKey(pluginId))
+            if (!_logsSubscriptions.Contains(pluginId))
                 return false;
 
             _logsSubscriptions.Remove(pluginId);
@@ -56,12 +56,12 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             var requests = new List<PluginLogsSubscribeRequest>(LogsSubscriptionsCount);
 
-            foreach (var sub in _logsSubscriptions.ToList())
+            foreach (var pluginId in _logsSubscriptions.ToList())
             {
                 requests.Add(new PluginLogsSubscribeRequest
                 {
-                    PluginId = sub.Key,
-                    LastLogTimeUtc = sub.Value,
+                    PluginId = pluginId,
+                    //LastLogTimeUtc = sub.Value,
                 });
             }
 

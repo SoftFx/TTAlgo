@@ -664,10 +664,13 @@ namespace TickTrader.Algo.ServerControl.Grpc
             else
             {
                 if (_pluginLogsTimer == null)
+                {
+                    OnPluginLogsUpdate(null);
                     _pluginLogsTimer = new Timer(OnPluginLogsUpdate, null, PluginLogsUpdateTimeout, -1);
+                }
 
                 if (!_subscribedPluginsToLogs.ContainsKey(request.PluginId))
-                    _subscribedPluginsToLogs.Add(request.PluginId, DateTime.UtcNow.ToTimestamp());
+                    _subscribedPluginsToLogs.Add(request.PluginId, null);
             }
 
             return res;
@@ -1463,7 +1466,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                     var serverRequest = new PluginLogsRequest
                     {
                         PluginId = pluginKey,
-                        MaxCount = 1000,
+                        MaxCount = 100,
                         LastLogTimeUtc = _subscribedPluginsToLogs[pluginKey],
                     };
 

@@ -16,6 +16,13 @@ namespace TickTrader.Algo.Server.PublicAPI
     {
         private const int DefaultRequestTimeout = 10;
 
+        private readonly PluginsSubscriptionsManager _subscriptions;
+        private readonly ApiMessageFormatter _messageFormatter;
+        private AlgoServerPublic.AlgoServerPublicClient _client;
+        private CancellationTokenSource _updateStreamCancelTokenSrc;
+        private Channel _channel;
+        private string _accessToken;
+
         public ClientStates State => _stateMachine.Current;
 
         //public string LastError => throw new System.NotImplementedException();
@@ -23,13 +30,6 @@ namespace TickTrader.Algo.Server.PublicAPI
         //public IVersionSpec VersionSpec => throw new System.NotImplementedException();
 
         //public IAccessManager AccessManager => throw new System.NotImplementedException();
-
-
-        private readonly ApiMessageFormatter _messageFormatter;
-        private Channel _channel;
-        private AlgoServerPublic.AlgoServerPublicClient _client;
-        private string _accessToken;
-        private CancellationTokenSource _updateStreamCancelTokenSrc;
 
 
         static AlgoServerClient()
@@ -40,6 +40,7 @@ namespace TickTrader.Algo.Server.PublicAPI
         private AlgoServerClient(IAlgoServerEventHandler handler) : base(handler)
         {
             _messageFormatter = new ApiMessageFormatter(AlgoServerPublicAPIReflection.Descriptor);
+            _subscriptions = new PluginsSubscriptionsManager();
 
             VersionSpec = new ApiVersionSpec();
             AccessManager = new ApiAccessManager(ClientClaims.Types.AccessLevel.Anonymous);
@@ -69,6 +70,7 @@ namespace TickTrader.Algo.Server.PublicAPI
                     {
                         case TaskStatus.RanToCompletion:
                             OnConnected();
+                            RestoreSubscribeToPluginLogsInternal();
                             break;
                         case TaskStatus.Canceled:
                             Logger.Info("Connect timed out");
@@ -238,8 +240,11 @@ namespace TickTrader.Algo.Server.PublicAPI
                             _serverHandler.OnAlertListUpdate(((UpdateInfo<AlertListUpdate>)updateInfo).Value);
                         else if (updateInfo is UpdateInfo<PluginStatusUpdate>)
                             _serverHandler.OnPluginStatusUpdate(((UpdateInfo<PluginStatusUpdate>)updateInfo).Value);
-                        else if (updateInfo is UpdateInfo<PluginLogUpdate>)
-                            _serverHandler.OnPluginLogUpdate(((UpdateInfo<PluginLogUpdate>)updateInfo).Value);
+                        else if (updateInfo is UpdateInfo<PluginLogUpdate> logUpdate)
+                        {
+                            //UploadSubscribeToPluginLogsInternal(logUpdate.Value);
+                            _serverHandler.OnPluginLogUpdate(logUpdate.Value);
+                        }
 
                         else if (updateInfo is UpdateInfo<PackageUpdate>)
                             _serverHandler.OnPackageUpdate(((UpdateInfo<PackageUpdate>)updateInfo).Value);
@@ -517,11 +522,6 @@ namespace TickTrader.Algo.Server.PublicAPI
             return _client.SubscribeToPluginStatusAsync(request, options).ResponseAsync;
         }
 
-        private Task<PluginLogsSubscribeResponse> SubscribeToPluginLogsInternal(PluginLogsSubscribeRequest request, CallOptions options)
-        {
-            return _client.SubscribeToPluginLogsAsync(request, options).ResponseAsync;
-        }
-
         private Task<PluginStatusUnsubscribeResponse> UnsubscribeToPluginStatusInternal(PluginStatusUnsubscribeRequest request, CallOptions options)
         {
             return _client.UnsubscribeToPluginStatusAsync(request, options).ResponseAsync;
@@ -531,6 +531,26 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             return _client.UnsubscribeToPluginLogsAsync(request, options).ResponseAsync;
         }
+
+        private Task<PluginLogsSubscribeResponse> SubscribeToPluginLogsInternal(PluginLogsSubscribeRequest request, CallOptions options)
+        {
+            return _client.SubscribeToPluginLogsAsync(request, options).ResponseAsync;
+        }
+
+        //private void UploadSubscribeToPluginLogsInternal(PluginLogUpdate update)
+        //{
+        //    var newTimePoint = update.Records.Max(u => u.TimeUtc);
+
+        //    if (newTimePoint != null)
+        //        _subscriptions.TryUpdateLogsSubscriptionTime(update.PluginId, newTimePoint);
+        //}
+
+        private void RestoreSubscribeToPluginLogsInternal()
+        {
+            foreach (var request in _subscriptions.BuildLogsSubscriptionRequests())
+                Task.Run(() => SubscribeToPluginLogs(request));
+        }
+
 
         private Task<AsyncServerStreamingCall<UpdateInfo>> SubscribeToUpdatesInternal(SubscribeToUpdatesRequest request, CallOptions options)
         {
@@ -556,13 +576,20 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         public async Task SubscribeToPluginLogs(PluginLogsSubscribeRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(SubscribeToPluginLogsInternal, request);
-            FailForNonSuccess(response.ExecResult);
+            if (_subscriptions.TryAddLogsSubscription(request.PluginId))
+            {
+                var response = await ExecuteUnaryRequestAuthorized(SubscribeToPluginLogsInternal, request);
+                FailForNonSuccess(response.ExecResult);
+            }
         }
+
         public async Task UnsubscribeToPluginStatus(PluginStatusUnsubscribeRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(UnsubscribeToPluginStatusInternal, request);
-            FailForNonSuccess(response.ExecResult);
+            if (_subscriptions.TryRemoveLogsSubscription(request.PluginId))
+            {
+                var response = await ExecuteUnaryRequestAuthorized(UnsubscribeToPluginStatusInternal, request);
+                FailForNonSuccess(response.ExecResult);
+            }
         }
 
         public async Task UnsubscribeToPluginLogs(PluginLogsUnsubscribeRequest request)
