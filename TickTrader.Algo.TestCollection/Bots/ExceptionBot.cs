@@ -15,47 +15,47 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         protected override void Init()
         {
-            Account.BalanceUpdated += () => Throw(ThrowVariants.OnTradeEvents);
-            Account.Orders.Filled += a => Throw(ThrowVariants.OnTradeEvents);
-            Account.Orders.Opened += a => Throw(ThrowVariants.OnTradeEvents);
-            Account.Orders.Canceled += a => Throw(ThrowVariants.OnTradeEvents);
-            Account.Orders.Activated += a => Throw(ThrowVariants.OnTradeEvents);
-            Account.Orders.Expired += a => Throw(ThrowVariants.OnTradeEvents);
-            Account.Orders.Closed += a => Throw(ThrowVariants.OnTradeEvents);
-            Account.Orders.Modified += a => Throw(ThrowVariants.OnTradeEvents);
-            Account.Orders.Replaced += a => Throw(ThrowVariants.OnTradeEvents);
+            Account.BalanceUpdated += () => Throw(ThrowVariants.OnTradeEvents, "BalanceUpdated");
+            Account.Orders.Filled += a => Throw(ThrowVariants.OnTradeEvents, "OrderFilled");
+            Account.Orders.Opened += a => Throw(ThrowVariants.OnTradeEvents, "OrderOpened");
+            Account.Orders.Canceled += a => Throw(ThrowVariants.OnTradeEvents, "OrderCanceled");
+            Account.Orders.Activated += a => Throw(ThrowVariants.OnTradeEvents, "OrderActivated");
+            Account.Orders.Expired += a => Throw(ThrowVariants.OnTradeEvents, "OrderExpired");
+            Account.Orders.Closed += a => Throw(ThrowVariants.OnTradeEvents, "OrderClosed");
+            Account.Orders.Modified += a => Throw(ThrowVariants.OnTradeEvents, "OrderModified");
+            Account.Orders.Replaced += a => Throw(ThrowVariants.OnTradeEvents, "OrderReplaced");
 
-            Account.Orders.Added += a => Throw(ThrowVariants.OnTradeEvents);
-            Account.Orders.Removed += a => Throw(ThrowVariants.OnTradeEvents);
+            Account.Orders.Added += a => Throw(ThrowVariants.OnTradeEvents, "OrderAdded");
+            Account.Orders.Removed += a => Throw(ThrowVariants.OnTradeEvents, "OrderRemoved");
 
-            Throw(ThrowVariants.OnInit);
+            Throw(ThrowVariants.OnInit, nameof(Init));
         }
 
         protected override void OnStart()
         {
-            Throw(ThrowVariants.OnStart);
+            Throw(ThrowVariants.OnStart, nameof(OnStart));
         }
 
         protected override async Task AsyncStop()
         {
             await Task.Delay(100);
-            Throw(ThrowVariants.OnAsyncStop);
+            Throw(ThrowVariants.OnAsyncStop, nameof(AsyncStop));
         }
 
         protected override void OnStop()
         {
-            Throw(ThrowVariants.OnStop);
+            Throw(ThrowVariants.OnStop, nameof(OnStop));
         }
 
         protected override void OnQuote(Quote quote)
         {
-            Throw(ThrowVariants.OnQuote);
+            Throw(ThrowVariants.OnQuote, nameof(OnQuote));
         }
 
-        private void Throw(ThrowVariants place)
+        private void Throw(ThrowVariants place, string eventName)
         {
             if (place == ThrowOn)
-                throw new Exception("Test exception!");
+                throw new Exception($"Test exception! Event {eventName}");
         }
     }
 }
