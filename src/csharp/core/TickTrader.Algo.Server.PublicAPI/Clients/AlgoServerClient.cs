@@ -62,7 +62,6 @@ namespace TickTrader.Algo.Server.PublicAPI
                         {
                             case TaskStatus.RanToCompletion:
                                 OnConnected();
-                                RestoreSubscribeToPluginLogsInternal();
                                 break;
                             case TaskStatus.Canceled:
                                 OnConnectionError("Connection timeout");
@@ -131,6 +130,8 @@ namespace TickTrader.Algo.Server.PublicAPI
                     {
                         case TaskStatus.RanToCompletion:
                             ListenToUpdates(t.Result);
+                            RestoreSubscribeToPluginStatusInternal();
+                            RestoreSubscribeToPluginLogsInternal();
                             OnSubscribed();
                             break;
                         case TaskStatus.Canceled:
@@ -204,6 +205,7 @@ namespace TickTrader.Algo.Server.PublicAPI
         private async void ListenToUpdates(AsyncServerStreamingCall<UpdateInfo> updateCall)
         {
             _updateStreamCancelTokenSrc = new CancellationTokenSource();
+
             try
             {
                 var updateStream = updateCall.ResponseStream;
@@ -498,6 +500,13 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             return _client.UnsubscribeToPluginStatusAsync(request, options).ResponseAsync;
         }
+
+        private void RestoreSubscribeToPluginStatusInternal()
+        {
+            foreach (var request in _subscriptions.BuildStatusSubscriptionRequests())
+                Task.Run(() => SubscribeToPluginStatus(request));
+        }
+
 
         private Task<PluginLogsUnsubscribeResponse> UnsubscribeToPluginLogsInternal(PluginLogsUnsubscribeRequest request, CallOptions options)
         {
