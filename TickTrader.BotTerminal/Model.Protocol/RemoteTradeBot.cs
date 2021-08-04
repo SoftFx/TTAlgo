@@ -5,9 +5,10 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
-    internal class RemoteTradeBot : ITradeBot
+    internal sealed class RemoteTradeBot : ITradeBot
     {
-        private RemoteAlgoAgent _agent;
+        private readonly RemoteAlgoAgent _agent;
+
         private int _statusSubscriptionCnt;
         private int _logsSubscriptionCnt;
 
@@ -45,12 +46,14 @@ namespace TickTrader.BotTerminal
         public RemoteTradeBot(PluginModelInfo info, RemoteAlgoAgent agent)
         {
             Info = info;
+
             _agent = agent;
 
             _statusSubscriptionCnt = 0;
             _logsSubscriptionCnt = 0;
             Journal = new BotJournal(info.InstanceId);
-            ResetJournal();
+
+            Journal.Clear();
         }
 
 
@@ -78,7 +81,7 @@ namespace TickTrader.BotTerminal
 
         public void UpdateLogs(List<LogRecordInfo> logs)
         {
-            Journal.Add(logs.Select(Convert).ToList());
+            Journal.Add(logs.Where(u => new TimeKey(u.TimeUtc).CompareTo(Journal.TimeLastClearedMessage) == 1).Select(Convert).ToList());
         }
 
         public void SubscribeToStatus()
@@ -142,12 +145,9 @@ namespace TickTrader.BotTerminal
                 _subscribeLogsEnable = false;
 
                 await _agent.UnsubscribeToPluginLogs(InstanceId);
-            }
-        }
 
-        private void ResetJournal()
-        {
-            Journal.Clear();
+                Journal.Clear();
+            }
         }
 
         private BotMessage Convert(LogRecordInfo record)

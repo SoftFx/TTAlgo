@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
-using Google.Protobuf.WellKnownTypes;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
@@ -8,13 +10,18 @@ namespace TickTrader.BotTerminal
     {
         public BotMessageTypeCounter MessageCount { get; }
 
+        public TimeKey TimeLastClearedMessage { get; private set; }
+
+
         public BotJournal(string botId) : this(botId, 1000) { }
 
         public BotJournal(string botId, int journalSize)
             : base(journalSize)
         {
             MessageCount = new BotMessageTypeCounter();
+            TimeLastClearedMessage = new TimeKey(DateTime.MinValue, 0);
         }
+
 
         protected override void OnAppended(BotMessage item)
         {
@@ -28,6 +35,9 @@ namespace TickTrader.BotTerminal
 
         public override void Clear()
         {
+            if (Records.Count > 0)
+                TimeLastClearedMessage = Records.Max(u => u.TimeKey);
+
             MessageCount.Reset();
             base.Clear();
         }
