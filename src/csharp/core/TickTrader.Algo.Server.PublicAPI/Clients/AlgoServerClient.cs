@@ -97,21 +97,21 @@ namespace TickTrader.Algo.Server.PublicAPI
                 switch (t.Status)
                 {
                     case TaskStatus.RanToCompletion:
-                    {
-                        var taskResult = t.Result;
-
-                        if (taskResult.Error == LoginResponse.Types.LoginError.None)
                         {
-                            _accessToken = taskResult.AccessToken;
-                            _logger.Info($"Server session id: {taskResult.SessionId}");
+                            var taskResult = t.Result;
 
-                            OnLogin(taskResult.MajorVersion, taskResult.MinorVersion, taskResult.AccessLevel);
+                            if (taskResult.Error == LoginResponse.Types.LoginError.None)
+                            {
+                                _accessToken = taskResult.AccessToken;
+                                _logger.Info($"Server session id: {taskResult.SessionId}");
+
+                                OnLogin(taskResult.MajorVersion, taskResult.MinorVersion, taskResult.AccessLevel);
+                            }
+                            else
+                                OnConnectionError(taskResult.Error.ToString());
+
+                            break;
                         }
-                        else
-                            OnConnectionError(taskResult.Error.ToString());
-
-                        break;
-                    }
                     case TaskStatus.Canceled:
                         OnConnectionError("Login request time out");
                         break;
@@ -532,11 +532,25 @@ namespace TickTrader.Algo.Server.PublicAPI
             return response.AccountMetadata;
         }
 
+
         public async Task SubscribeToPluginStatus(PluginStatusSubscribeRequest request)
         {
-            var response = await ExecuteUnaryRequestAuthorized(SubscribeToPluginStatusInternal, request);
-            FailForNonSuccess(response.ExecResult);
+            if (_subscriptions.TryAddStatusSubscription(request.PluginId))
+            {
+                var response = await ExecuteUnaryRequestAuthorized(SubscribeToPluginStatusInternal, request);
+                FailForNonSuccess(response.ExecResult);
+            }
         }
+
+        public async Task UnsubscribeToPluginStatus(PluginStatusUnsubscribeRequest request)
+        {
+            if (_subscriptions.TryRemoveStatusSubscription(request.PluginId))
+            {
+                var response = await ExecuteUnaryRequestAuthorized(UnsubscribeToPluginStatusInternal, request);
+                FailForNonSuccess(response.ExecResult);
+            }
+        }
+
 
         public async Task SubscribeToPluginLogs(PluginLogsSubscribeRequest request)
         {
@@ -547,20 +561,15 @@ namespace TickTrader.Algo.Server.PublicAPI
             }
         }
 
-        public async Task UnsubscribeToPluginStatus(PluginStatusUnsubscribeRequest request)
+        public async Task UnsubscribeToPluginLogs(PluginLogsUnsubscribeRequest request)
         {
             if (_subscriptions.TryRemoveLogsSubscription(request.PluginId))
             {
-                var response = await ExecuteUnaryRequestAuthorized(UnsubscribeToPluginStatusInternal, request);
+                var response = await ExecuteUnaryRequestAuthorized(UnsubscribeToPluginLogsInternal, request);
                 FailForNonSuccess(response.ExecResult);
             }
         }
 
-        public async Task UnsubscribeToPluginLogs(PluginLogsUnsubscribeRequest request)
-        {
-            var response = await ExecuteUnaryRequestAuthorized(UnsubscribeToPluginLogsInternal, request);
-            FailForNonSuccess(response.ExecResult);
-        }
 
         public async Task AddPlugin(AddPluginRequest request)
         {

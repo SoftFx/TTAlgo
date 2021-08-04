@@ -11,6 +11,8 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         internal int LogsSubscriptionsCount => _logsSubscriptions.Count;
 
+        internal int StatusSubscriptionsCount => _statusSubscriptions.Count;
+
 
         internal PluginsSubscriptionsManager()
         {
@@ -52,6 +54,44 @@ namespace TickTrader.Algo.Server.PublicAPI
             }
 
             _logsSubscriptions.Clear();
+
+            return requests;
+        }
+
+
+        internal bool TryAddStatusSubscription(string pluginId)
+        {
+            if (_statusSubscriptions.Contains(pluginId))
+                return false;
+
+            _statusSubscriptions.Add(pluginId);
+
+            return true;
+        }
+
+        internal bool TryRemoveStatusSubscription(string pluginId)
+        {
+            if (!_statusSubscriptions.Contains(pluginId))
+                return false;
+
+            _statusSubscriptions.Remove(pluginId);
+
+            return true;
+        }
+
+        internal List<PluginStatusSubscribeRequest> BuildStatusSubscriptionRequests()
+        {
+            var requests = new List<PluginStatusSubscribeRequest>(StatusSubscriptionsCount);
+
+            foreach (var pluginId in _statusSubscriptions.ToList())
+            {
+                requests.Add(new PluginStatusSubscribeRequest
+                {
+                    PluginId = pluginId,
+                });
+            }
+
+            _statusSubscriptions.Clear();
 
             return requests;
         }

@@ -81,7 +81,8 @@ namespace TickTrader.BotTerminal
 
         public void UpdateLogs(List<LogRecordInfo> logs)
         {
-            Journal.Add(logs.Where(u => new TimeKey(u.TimeUtc).CompareTo(Journal.TimeLastClearedMessage) == 1).Select(Convert).ToList());
+            if (_subscribeLogsEnable)
+                Journal.Add(logs.Where(ApplyNewRecordsFilter).Select(Convert).ToList());
         }
 
         public void SubscribeToStatus()
@@ -168,6 +169,19 @@ namespace TickTrader.BotTerminal
                 case PluginLogRecord.Types.LogSeverity.Alert: return JournalMessageType.Alert;
                 default: return JournalMessageType.Info;
             }
+        }
+
+        private bool ApplyNewRecordsFilter(LogRecordInfo info)
+        {
+            var timeKey = new TimeKey(info.TimeUtc);
+
+            var isTailMessage = true;
+            var isClearedMessage = timeKey.CompareTo(Journal.TimeLastClearedMessage) != 1;
+
+            if (Journal.Records.Count > 0)
+                isTailMessage = timeKey.CompareTo(Journal.Records.Last().TimeKey) == 1;
+
+            return isTailMessage && !isClearedMessage;
         }
     }
 }

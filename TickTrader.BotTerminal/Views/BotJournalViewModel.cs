@@ -65,7 +65,7 @@ namespace TickTrader.BotTerminal
 
         public void Clear()
         {
-            _bot.Model.Journal.Clear();
+            _bot.Model.Journal.ForceClear();
         }
 
         public void Browse()

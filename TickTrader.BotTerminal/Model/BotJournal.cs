@@ -33,11 +33,16 @@ namespace TickTrader.BotTerminal
             MessageCount.Removed(item);
         }
 
-        public override void Clear()
+        public void ForceClear()
         {
             if (Records.Count > 0)
                 TimeLastClearedMessage = Records.Max(u => u.TimeKey);
 
+            Clear();
+        }
+
+        public override void Clear()
+        {
             MessageCount.Reset();
             base.Clear();
         }

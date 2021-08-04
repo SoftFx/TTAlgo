@@ -96,15 +96,6 @@ namespace TickTrader.BotTerminal
             Deinit();
         }
 
-        //protected override void OnDeactivate(bool close)
-        //{
-        //    base.OnDeactivate(close);
-
-        //    _isActivated = false;
-
-        //    Deinit();
-        //}
-
         private bool FindBot()
         {
             var bot = _algoEnv.Agents.Snapshot.FirstOrDefault(a => a.Name == _agent.Name)
@@ -255,7 +246,6 @@ namespace TickTrader.BotTerminal
                         Deinit();
                     break;
             }
-
         }
 
         private void BotJournal_CollectionChanged(object sender, NotifyCollectionChangedEventArgs args)

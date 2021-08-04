@@ -63,12 +63,13 @@ namespace TickTrader.Algo.ServerControl.Grpc
         private const int HeartbeatUpdateTimeout = 1000;
         private const int HeartbeatTimeout = 10000;
 
+        private readonly Dictionary<string, Timestamp> _subscribedPluginsToLogs;
+        private readonly HashSet<string> _subscribedPluginsToStatus;
+
+        private readonly HashSet<string> _unsubscribeStatusList;
+        private readonly HashSet<string> _unsubscribeLogList;
+
         private readonly UpdateInfo<AlgoServerApi.HeartbeatUpdate> _heartbeat;
-
-        private HashSet<string> _subscribedPluginsToStatus;
-        private Dictionary<string, Timestamp> _subscribedPluginsToLogs;
-
-        private LinkedList<string> _unsubscribeLogList;
 
         private IAlgoServerProvider _algoServer;
         private IJwtProvider _jwtProvider;
@@ -112,7 +113,8 @@ namespace TickTrader.Algo.ServerControl.Grpc
             _subscribedPluginsToStatus = new HashSet<string>();
             _subscribedPluginsToLogs = new Dictionary<string, Timestamp>();
 
-            _unsubscribeLogList = new LinkedList<string>();
+            _unsubscribeStatusList = new HashSet<string>();
+            _unsubscribeLogList = new HashSet<string>();
         }
 
         private void HeartbeatUpdate(object o)
@@ -643,13 +645,10 @@ namespace TickTrader.Algo.ServerControl.Grpc
             else
             {
                 if (_pluginStatusTimer == null)
-                {
-                    //_subscribedPluginsToStatus = new HashSet<string>();
                     _pluginStatusTimer = new Timer(OnPluginStatusUpdate, null, PluginStatusUpdateTimeout, -1);
-                }
 
-                if (!_subscribedPluginsToStatus.Contains(request.PluginId))
-                    _subscribedPluginsToStatus.Add(request.PluginId);
+                _subscribedPluginsToStatus.Add(request.PluginId);
+                _unsubscribeStatusList.Remove(request.PluginId);
             }
 
             return res;
@@ -664,60 +663,41 @@ namespace TickTrader.Algo.ServerControl.Grpc
             else
             {
                 if (_pluginLogsTimer == null)
-                {
-                    OnPluginLogsUpdate(null);
                     _pluginLogsTimer = new Timer(OnPluginLogsUpdate, null, PluginLogsUpdateTimeout, -1);
-                }
 
                 if (!_subscribedPluginsToLogs.ContainsKey(request.PluginId))
                     _subscribedPluginsToLogs.Add(request.PluginId, null);
+                else
+                    _subscribedPluginsToLogs[request.PluginId] = null;
+
+                _unsubscribeLogList.Remove(request.PluginId);
             }
 
             return res;
         }
 
-        private async Task<AlgoServerApi.PluginStatusUnsubscribeResponse> UnsubscribeToPluginStatusInternal(AlgoServerApi.PluginStatusUnsubscribeRequest request, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
+        private Task<AlgoServerApi.PluginStatusUnsubscribeResponse> UnsubscribeToPluginStatusInternal(AlgoServerApi.PluginStatusUnsubscribeRequest request, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
         {
             var res = new AlgoServerApi.PluginStatusUnsubscribeResponse { ExecResult = execResult };
 
             if (!session.AccessManager.CanGetPluginStatus())
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
             else
-            {
-                if (_subscribedPluginsToStatus.Contains(request.PluginId))
-                    _subscribedPluginsToStatus.Remove(request.PluginId);
+                _unsubscribeStatusList.Add(request.PluginId);
 
-                if (_subscribedPluginsToStatus.Count == 0)
-                {
-                    _pluginStatusTimer?.Dispose();
-                    _pluginStatusTimer = null;
-                }
-            }
-
-            return res;
+            return Task.FromResult(res);
         }
 
-        private async Task<AlgoServerApi.PluginLogsUnsubscribeResponse> UnsubscribeToPluginLogsInternal(AlgoServerApi.PluginLogsUnsubscribeRequest request, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
+        private Task<AlgoServerApi.PluginLogsUnsubscribeResponse> UnsubscribeToPluginLogsInternal(AlgoServerApi.PluginLogsUnsubscribeRequest request, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
         {
             var res = new AlgoServerApi.PluginLogsUnsubscribeResponse { ExecResult = execResult };
 
             if (!session.AccessManager.CanGetPluginLogs())
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
             else
-            {
-                _unsubscribeLogList.AddLast(request.PluginId);
+                _unsubscribeLogList.Add(request.PluginId);
 
-                //if (_subscribedPluginsToLogs.Contains(request.PluginId))
-                //    _subscribedPluginsToLogs.Remove(request.PluginId);
-
-                //if (_subscribedPluginsToLogs.Count == 0)
-                //{
-                //    _pluginLogsTimer?.Dispose();
-                //    _pluginLogsTimer = null;
-                //}
-            }
-
-            return res;
+            return Task.FromResult(res);
         }
 
         private Task SubscribeToUpdatesInternal(AlgoServerApi.SubscribeToUpdatesRequest request, IServerStreamWriter<AlgoServerApi.UpdateInfo> responseStream, ServerCallContext context, ServerSession.Handler session, AlgoServerApi.RequestResult execResult)
@@ -1441,12 +1421,25 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
                     update.Message = await _algoServer.GetBotStatusAsync(new PluginStatusRequest { PluginId = pluginKey });
 
-                    SendUpdate(new UpdateInfo<AlgoServerApi.PluginStatusUpdate>(UpdateInfo.Types.UpdateType.Replaced, update));
+                    if (!string.IsNullOrEmpty(update.Message))
+                        SendUpdate(new UpdateInfo<AlgoServerApi.PluginStatusUpdate>(UpdateInfo.Types.UpdateType.Replaced, update));
                 }
                 catch (Exception ex)
                 {
                     _logger.Error(ex);
                 }
+
+            foreach (var pluginId in _unsubscribeStatusList)
+                if (_subscribedPluginsToStatus.Contains(pluginId))
+                    _subscribedPluginsToStatus.Remove(pluginId);
+
+            _unsubscribeStatusList.Clear();
+
+            if (_subscribedPluginsToStatus.Count == 0)
+            {
+                _pluginStatusTimer?.Dispose();
+                _pluginStatusTimer = null;
+            }
 
             _pluginStatusTimer?.Change(PluginStatusUpdateTimeout, -1);
         }
@@ -1484,9 +1477,9 @@ namespace TickTrader.Algo.ServerControl.Grpc
                     _logger.Error(ex);
                 }
 
-            foreach (var removeLogs in _unsubscribeLogList)
-                if (_subscribedPluginsToLogs.ContainsKey(removeLogs))
-                    _subscribedPluginsToLogs.Remove(removeLogs);
+            foreach (var pluginId in _unsubscribeLogList)
+                if (_subscribedPluginsToLogs.ContainsKey(pluginId))
+                    _subscribedPluginsToLogs.Remove(pluginId);
 
             _unsubscribeLogList.Clear();
 
