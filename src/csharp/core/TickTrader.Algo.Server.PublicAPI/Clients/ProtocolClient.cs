@@ -11,10 +11,15 @@ namespace TickTrader.Algo.Server.PublicAPI
         protected readonly IAlgoServerEventHandler _serverHandler;
         protected readonly StateMachine<ClientStates> _stateMachine;
 
-        protected ILogger Logger { get; set; }
+        protected ILogger _logger;
+
 
         public string LastError { get; private set; }
+
+        public ClientStates State => _stateMachine.Current;
+
         public IVersionSpec VersionSpec { get; protected set; }
+
         public IAccessManager AccessManager { get; protected set; }
 
         protected IClientSessionSettings SessionSettings { get; private set; }
@@ -81,7 +86,7 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         private void StateMachineOnStateChanged(ClientStates from, ClientStates to)
         {
-            Logger?.Debug($"STATE {from} -> {to}");
+            _logger?.Debug($"STATE {from} -> {to}");
 
             Task.Run(() =>
             {
@@ -101,14 +106,14 @@ namespace TickTrader.Algo.Server.PublicAPI
                 }
                 catch (Exception ex)
                 {
-                    Logger?.Error(ex, $"{to} event failed: {ex.Message}");
+                    _logger?.Error(ex, $"{to} event failed: {ex.Message}");
                 }
             });
         }
 
         private void StartConnecting()
         {
-            Logger = LoggerHelper.GetLogger(GetType().Name, System.IO.Path.Combine(SessionSettings.LogDirectory, GetType().Name), SessionSettings.ServerAddress);
+            _logger = LoggerHelper.GetLogger(GetType().Name, System.IO.Path.Combine(SessionSettings.LogDirectory, GetType().Name), SessionSettings.ServerAddress);
 
             LastError = null;
 
@@ -118,7 +123,7 @@ namespace TickTrader.Algo.Server.PublicAPI
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "Failed to start client");
+                _logger.Error(ex, "Failed to start client");
                 OnConnectionError("Client failed to start");
             }
         }
@@ -133,7 +138,7 @@ namespace TickTrader.Algo.Server.PublicAPI
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error(ex, "Failed to stop client");
+                    _logger.Error(ex, "Failed to stop client");
                 }
 
                 _stateMachine.PushEvent(ClientEvents.Deinitialized);
@@ -142,7 +147,7 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         private void StateMachineOnEventFired(object e)
         {
-            Logger?.Debug($"EVENT {e}");
+            _logger?.Debug($"EVENT {e}");
         }
 
         public Task Disconnect()
@@ -178,9 +183,11 @@ namespace TickTrader.Algo.Server.PublicAPI
             _stateMachine.PushEvent(ClientEvents.Disconnected);
         }
 
-        protected void OnConnectionError(string text)
+        protected void OnConnectionError(string text, Exception ex = null)
         {
             LastError = $"Connection error: {text}";
+            _logger.Error(ex, LastError);
+
             _stateMachine.PushEvent(ClientEvents.ConnectionError);
         }
 
@@ -191,16 +198,10 @@ namespace TickTrader.Algo.Server.PublicAPI
 
             _serverHandler.AccessLevelChanged();
 
-            Logger.Info($"Client version - {VersionSpec.MajorVersion}.{VersionSpec.MinorVersion}; Server version - {serverMajorVersion}.{serverMinorVersion}");
+            _logger.Info($"Client version - {VersionSpec.MajorVersion}.{VersionSpec.MinorVersion}; Server version - {serverMajorVersion}.{serverMinorVersion}");
+            _logger.Info($"Current version set to {VersionSpec.MajorVersion}.{VersionSpec.CurrentVersion}");
 
-            Logger.Info($"Current version set to {VersionSpec.MajorVersion}.{VersionSpec.CurrentVersion}");
             _stateMachine.PushEvent(ClientEvents.LoggedIn);
-        }
-
-        protected void OnLoginReject(string reason)
-        {
-            LastError = reason;
-            _stateMachine.PushEvent(ClientEvents.LoginReject);
         }
 
         protected void OnLogout(string reason)

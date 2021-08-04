@@ -18,18 +18,11 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         private readonly PluginsSubscriptionsManager _subscriptions;
         private readonly ApiMessageFormatter _messageFormatter;
+
         private AlgoServerPublic.AlgoServerPublicClient _client;
         private CancellationTokenSource _updateStreamCancelTokenSrc;
         private Channel _channel;
         private string _accessToken;
-
-        public ClientStates State => _stateMachine.Current;
-
-        //public string LastError => throw new System.NotImplementedException();
-
-        //public IVersionSpec VersionSpec => throw new System.NotImplementedException();
-
-        //public IAccessManager AccessManager => throw new System.NotImplementedException();
 
 
         static AlgoServerClient()
@@ -51,7 +44,7 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         public override void StartClient()
         {
-            GrpcEnvironment.SetLogger(new GrpcLoggerAdapter(Logger));
+            GrpcEnvironment.SetLogger(new GrpcLoggerAdapter(_logger));
 
             var creds = new SslCredentials(CertificateProvider.RootCertificate);
             var options = new[] { new ChannelOption(ChannelOptions.SslTargetNameOverride, "bot-agent.soft-fx.lv"), };
@@ -62,26 +55,23 @@ namespace TickTrader.Algo.Server.PublicAPI
             _messageFormatter.LogMessages = SessionSettings.LogMessages;
             _accessToken = string.Empty;
 
-
             _channel.ConnectAsync(DateTime.UtcNow.AddSeconds(DefaultRequestTimeout))
-                .ContinueWith(t =>
-                {
-                    switch (t.Status)
+                    .ContinueWith(t =>
                     {
-                        case TaskStatus.RanToCompletion:
-                            OnConnected();
-                            RestoreSubscribeToPluginLogsInternal();
-                            break;
-                        case TaskStatus.Canceled:
-                            Logger.Info("Connect timed out");
-                            OnConnectionError("Connection timeout");
-                            break;
-                        case TaskStatus.Faulted:
-                            Logger.Error(t.Exception, "Connection failed");
-                            OnConnectionError("Connection failed");
-                            break;
-                    }
-                });
+                        switch (t.Status)
+                        {
+                            case TaskStatus.RanToCompletion:
+                                OnConnected();
+                                RestoreSubscribeToPluginLogsInternal();
+                                break;
+                            case TaskStatus.Canceled:
+                                OnConnectionError("Connection timeout");
+                                break;
+                            case TaskStatus.Faulted:
+                                OnConnectionError("Connection failed");
+                                break;
+                        }
+                    });
         }
 
         public override void StopClient()
@@ -107,26 +97,25 @@ namespace TickTrader.Algo.Server.PublicAPI
                 switch (t.Status)
                 {
                     case TaskStatus.RanToCompletion:
+                    {
+                        var taskResult = t.Result;
+
+                        if (taskResult.Error == LoginResponse.Types.LoginError.None)
                         {
-                            var taskResult = t.Result;
+                            _accessToken = taskResult.AccessToken;
+                            _logger.Info($"Server session id: {taskResult.SessionId}");
 
-                            if (taskResult.Error == LoginResponse.Types.LoginError.None)
-                            {
-                                _accessToken = taskResult.AccessToken;
-                                Logger.Info($"Server session id: {taskResult.SessionId}");
-                                OnLogin(taskResult.MajorVersion, taskResult.MinorVersion, taskResult.AccessLevel);
-                            }
-                            else
-                                OnConnectionError(taskResult.Error.ToString());
-
-                            break;
+                            OnLogin(taskResult.MajorVersion, taskResult.MinorVersion, taskResult.AccessLevel);
                         }
+                        else
+                            OnConnectionError(taskResult.Error.ToString());
+
+                        break;
+                    }
                     case TaskStatus.Canceled:
-                        Logger.Error("Login request timed out");
-                        OnConnectionError("Login timeout");
+                        OnConnectionError("Login request time out");
                         break;
                     case TaskStatus.Faulted:
-                        Logger.Error(t.Exception, "Login failed");
                         OnConnectionError("Login failed");
                         break;
                 }
@@ -145,12 +134,10 @@ namespace TickTrader.Algo.Server.PublicAPI
                             OnSubscribed();
                             break;
                         case TaskStatus.Canceled:
-                            Logger.Error("Subscribe to updates request timed out");
                             OnConnectionError("Request timeout during init");
                             break;
                         case TaskStatus.Faulted:
-                            Logger.Error(t.Exception, "Init failed: Can't subscribe to updates");
-                            OnConnectionError("Init failed");
+                            OnConnectionError("Init failed: Can't subscribe to updates");
                             break;
                     }
                 });
@@ -167,11 +154,9 @@ namespace TickTrader.Algo.Server.PublicAPI
                             OnLogout(t.Result.Reason.ToString());
                             break;
                         case TaskStatus.Canceled:
-                            Logger.Error("Logout request timed out");
                             OnConnectionError("Logout timeout");
                             break;
                         case TaskStatus.Faulted:
-                            Logger.Error(t.Exception, "Logout failed");
                             OnConnectionError("Logout failed");
                             break;
                     }
@@ -194,15 +179,11 @@ namespace TickTrader.Algo.Server.PublicAPI
             }
             catch (UnauthorizedException uex)
             {
-                Logger.Error(uex, "Init failed: Bad access token");
-                OnConnectionError("Bad access token");
-                return;
+                OnConnectionError("Bad access token", uex);
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "Init failed: Can't apply snapshot");
-                OnConnectionError("Init failed");
-                return;
+                OnConnectionError("Init failed: Can't apply server metadata", ex);
             }
         }
 
@@ -212,7 +193,7 @@ namespace TickTrader.Algo.Server.PublicAPI
             OnDisconnected();
         }
 
-        private void FailForNonSuccess(RequestResult requestResult)
+        private static void FailForNonSuccess(RequestResult requestResult)
         {
             if (requestResult.Status != RequestResult.Types.RequestStatus.Success)
                 throw requestResult.Status == RequestResult.Types.RequestStatus.Unauthorized
@@ -231,7 +212,7 @@ namespace TickTrader.Algo.Server.PublicAPI
                     var update = updateStream.Current;
                     if (update.TryUnpack(out var updateInfo))
                     {
-                        _messageFormatter.LogClientUpdate(Logger, updateInfo);
+                        _messageFormatter.LogClientUpdate(_logger, updateInfo);
 
                         if (updateInfo is UpdateInfo<HeartbeatUpdate>)
                             continue;
@@ -261,24 +242,20 @@ namespace TickTrader.Algo.Server.PublicAPI
                             ApplyAlgoServerMetadata(serverMetadata.Value);
 
                         else
-                            Logger.Error($"Failed to dispatch update of type: {update.Payload.TypeUrl}");
+                            _logger.Error($"Failed to dispatch update of type: {update.Payload.TypeUrl}");
                     }
                     else
                     {
-                        Logger.Error($"Failed to unpack update of type: {update.Payload.TypeUrl}");
+                        _logger.Error($"Failed to unpack update of type: {update.Payload.TypeUrl}");
                     }
                 }
                 if (State != ClientStates.LoggingOut)
-                {
-                    Logger.Info("Update stream stopped by server");
                     OnConnectionError("Update stream stopped by server");
-                }
             }
             catch (TaskCanceledException) { }
             catch (Exception ex)
             {
-                Logger.Error(ex, "Update stream failed");
-                OnConnectionError("Update stream failed");
+                OnConnectionError("Update stream failed", ex);
             }
             finally
             {
@@ -286,26 +263,12 @@ namespace TickTrader.Algo.Server.PublicAPI
             }
         }
 
-        private static CallOptions GetCallOptions(bool setDeadline = true)
-        {
-            return !setDeadline ? new CallOptions()
-                 : new CallOptions(deadline: DateTime.UtcNow.AddSeconds(DefaultRequestTimeout));
-        }
-
-        private static CallOptions GetCallOptions(string accessToken, bool setDeadline = true)
-        {
-            return !setDeadline ? new CallOptions(credentials: AlgoGrpcCredentials.FromAccessToken(accessToken))
-                 : new CallOptions(deadline: DateTime.UtcNow.AddSeconds(DefaultRequestTimeout), credentials: AlgoGrpcCredentials.FromAccessToken(accessToken));
-        }
-
         private static CallOptions BuildCallOptions(string accessToken = null, bool setDeadline = true)
         {
             var deadline = setDeadline ? (DateTime?)DateTime.UtcNow.AddSeconds(DefaultRequestTimeout) : null;
             var credentials = string.IsNullOrEmpty(accessToken) ? null : AlgoGrpcCredentials.FromAccessToken(accessToken);
 
-            return new CallOptions(
-                deadline: deadline,
-                credentials: credentials);
+            return new CallOptions(deadline: deadline, credentials: credentials);
         }
 
         private async Task<TResponse> ExecuteUnaryRequest<TRequest, TResponse>(
@@ -315,15 +278,15 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             try
             {
-                _messageFormatter.LogServerRequest(Logger, request);
-                var response = await requestAction(request, GetCallOptions());
-                _messageFormatter.LogServerResponse(Logger, response);
+                _messageFormatter.LogServerRequest(_logger, request);
+                var response = await requestAction(request, BuildCallOptions());
+                _messageFormatter.LogServerResponse(_logger, response);
 
                 return response;
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Failed to execute {_messageFormatter.ToJson(request)}");
+                _logger.Error(ex, $"Failed to execute {_messageFormatter.ToJson(request)}");
                 throw;
             }
         }
@@ -335,35 +298,35 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             try
             {
-                _messageFormatter.LogServerRequest(Logger, request);
-                var response = await requestAction(request, GetCallOptions(_accessToken));
-                _messageFormatter.LogServerResponse(Logger, response);
+                _messageFormatter.LogServerRequest(_logger, request);
+                var response = await requestAction(request, BuildCallOptions(_accessToken));
+                _messageFormatter.LogServerResponse(_logger, response);
 
                 return response;
             }
             catch (UnauthorizedException uex)
             {
-                Logger.Error(uex, $"Bad access token for {_messageFormatter.ToJson(request)}");
+                _logger.Error(uex, $"Bad access token for {_messageFormatter.ToJson(request)}");
                 throw;
             }
             catch (RpcException rex)
             {
                 if (rex.StatusCode == StatusCode.DeadlineExceeded)
                 {
-                    Logger.Error($"Request timed out {_messageFormatter.ToJson(request)}");
+                    _logger.Error($"Request timed out {_messageFormatter.ToJson(request)}");
                     throw new Common.TimeoutException($"Request {nameof(TRequest)} timed out");
                 }
                 else if (rex.StatusCode == StatusCode.Unknown && rex.Status.Detail == "Stream removed")
                 {
-                    Logger.Error($"Disconnected while executing {_messageFormatter.ToJson(request)}");
+                    _logger.Error($"Disconnected while executing {_messageFormatter.ToJson(request)}");
                     throw new AlgoServerException("Connection error");
                 }
-                Logger.Error(rex, $"Failed to execute {_messageFormatter.ToJson(request)}");
+                _logger.Error(rex, $"Failed to execute {_messageFormatter.ToJson(request)}");
                 throw;
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Failed to execute {_messageFormatter.ToJson(request)}");
+                _logger.Error(ex, $"Failed to execute {_messageFormatter.ToJson(request)}");
                 throw;
             }
         }
@@ -375,17 +338,18 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             try
             {
-                _messageFormatter.LogServerRequest(Logger, request);
-                return requestAction(request, GetCallOptions(_accessToken, false));
+                _messageFormatter.LogServerRequest(_logger, request);
+
+                return requestAction(request, BuildCallOptions(_accessToken, false));
             }
             catch (UnauthorizedException uex)
             {
-                Logger.Error(uex, $"Bad access token for {_messageFormatter.ToJson(request)}");
+                _logger.Error(uex, $"Bad access token for {_messageFormatter.ToJson(request)}");
                 throw;
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Failed to execute {_messageFormatter.ToJson(request)}");
+                _logger.Error(ex, $"Failed to execute {_messageFormatter.ToJson(request)}");
                 throw;
             }
         }
@@ -397,17 +361,18 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             try
             {
-                _messageFormatter.LogServerRequest(Logger, request);
-                return requestAction(request, GetCallOptions(_accessToken, false));
+                _messageFormatter.LogServerRequest(_logger, request);
+
+                return requestAction(request, BuildCallOptions(_accessToken, false));
             }
             catch (UnauthorizedException uex)
             {
-                Logger.Error(uex, $"Bad access token for {_messageFormatter.ToJson(request)}");
+                _logger.Error(uex, $"Bad access token for {_messageFormatter.ToJson(request)}");
                 throw;
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Failed to execute {_messageFormatter.ToJson(request)}");
+                _logger.Error(ex, $"Failed to execute {_messageFormatter.ToJson(request)}");
                 throw;
             }
         }
@@ -683,7 +648,7 @@ namespace TickTrader.Algo.Server.PublicAPI
                     for (var cnt = stream.Read(buffer, 0, chunkSize); cnt > 0; cnt = stream.Read(buffer, 0, chunkSize))
                     {
                         transferMsg.Data.Binary = ByteString.CopyFrom(buffer, 0, cnt);
-                        _messageFormatter.LogClientRequest(Logger, transferMsg);
+                        _messageFormatter.LogClientRequest(_logger, transferMsg);
                         await clientStream.RequestStream.WriteAsync(transferMsg);
                         progressListener.IncrementProgress(cnt);
                         transferMsg.Data.Id++;
@@ -693,7 +658,7 @@ namespace TickTrader.Algo.Server.PublicAPI
             finally
             {
                 transferMsg.Data = FileChunk.FinalChunk;
-                _messageFormatter.LogClientRequest(Logger, transferMsg);
+                _messageFormatter.LogClientRequest(_logger, transferMsg);
                 await clientStream.RequestStream.WriteAsync(transferMsg);
             }
 
@@ -754,12 +719,12 @@ namespace TickTrader.Algo.Server.PublicAPI
                     do
                     {
                         var transferMsg = fileReader.Current;
-                        _messageFormatter.LogServerResponse(Logger, transferMsg);
+                        _messageFormatter.LogServerResponse(_logger, transferMsg);
 
                         if (transferMsg.Header != null)
                         {
                             var response = transferMsg.Header.Unpack<DownloadPackageResponse>();
-                            _messageFormatter.LogServerResponse(Logger, response);
+                            _messageFormatter.LogServerResponse(_logger, response);
                             FailForNonSuccess(response.ExecResult);
                         }
 
@@ -848,12 +813,12 @@ namespace TickTrader.Algo.Server.PublicAPI
                     do
                     {
                         var transferMsg = fileReader.Current;
-                        _messageFormatter.LogServerResponse(Logger, transferMsg);
+                        _messageFormatter.LogServerResponse(_logger, transferMsg);
 
                         if (transferMsg.Header != null)
                         {
                             var response = transferMsg.Header.Unpack<DownloadPluginFileResponse>();
-                            _messageFormatter.LogServerResponse(Logger, response);
+                            _messageFormatter.LogServerResponse(_logger, response);
                             FailForNonSuccess(response.ExecResult);
                         }
 
@@ -897,7 +862,7 @@ namespace TickTrader.Algo.Server.PublicAPI
                     for (var cnt = stream.Read(buffer, 0, chunkSize); cnt > 0; cnt = stream.Read(buffer, 0, chunkSize))
                     {
                         transferMsg.Data.Binary = ByteString.CopyFrom(buffer, 0, cnt);
-                        _messageFormatter.LogClientRequest(Logger, transferMsg);
+                        _messageFormatter.LogClientRequest(_logger, transferMsg);
                         await clientStream.RequestStream.WriteAsync(transferMsg);
                         progressListener.IncrementProgress(cnt);
                         transferMsg.Data.Id++;
@@ -907,7 +872,7 @@ namespace TickTrader.Algo.Server.PublicAPI
             finally
             {
                 transferMsg.Data = FileChunk.FinalChunk;
-                _messageFormatter.LogClientRequest(Logger, request);
+                _messageFormatter.LogClientRequest(_logger, request);
                 await clientStream.RequestStream.WriteAsync(transferMsg);
             }
 
