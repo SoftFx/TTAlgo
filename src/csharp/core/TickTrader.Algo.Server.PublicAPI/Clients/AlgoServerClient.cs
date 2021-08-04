@@ -236,32 +236,29 @@ namespace TickTrader.Algo.Server.PublicAPI
                         if (updateInfo is UpdateInfo<HeartbeatUpdate>)
                             continue;
 
-                        else if (updateInfo is UpdateInfo<AlertListUpdate>)
-                            _serverHandler.OnAlertListUpdate(((UpdateInfo<AlertListUpdate>)updateInfo).Value);
-                        else if (updateInfo is UpdateInfo<PluginStatusUpdate>)
-                            _serverHandler.OnPluginStatusUpdate(((UpdateInfo<PluginStatusUpdate>)updateInfo).Value);
+                        else if (updateInfo is UpdateInfo<AlertListUpdate> alertUpdate)
+                            _serverHandler.OnAlertListUpdate(alertUpdate.Value);
+                        else if (updateInfo is UpdateInfo<PluginStatusUpdate> pluginStatusUpdate)
+                            _serverHandler.OnPluginStatusUpdate(pluginStatusUpdate.Value);
                         else if (updateInfo is UpdateInfo<PluginLogUpdate> logUpdate)
-                        {
-                            //UploadSubscribeToPluginLogsInternal(logUpdate.Value);
                             _serverHandler.OnPluginLogUpdate(logUpdate.Value);
-                        }
 
-                        else if (updateInfo is UpdateInfo<PackageUpdate>)
-                            _serverHandler.OnPackageUpdate(((UpdateInfo<PackageUpdate>)updateInfo).Value);
-                        else if (updateInfo is UpdateInfo<AccountModelUpdate>)
-                            _serverHandler.OnAccountUpdate(((UpdateInfo<AccountModelUpdate>)updateInfo).Value);
-                        else if (updateInfo is UpdateInfo<PluginModelUpdate>)
-                            _serverHandler.OnPluginModelUpdate(((UpdateInfo<PluginModelUpdate>)updateInfo).Value);
+                        else if (updateInfo is UpdateInfo<PackageUpdate> packageUpdate)
+                            _serverHandler.OnPackageUpdate(packageUpdate.Value);
+                        else if (updateInfo is UpdateInfo<AccountModelUpdate> accountUpdate)
+                            _serverHandler.OnAccountUpdate(accountUpdate.Value);
+                        else if (updateInfo is UpdateInfo<PluginModelUpdate> pluginUpdate)
+                            _serverHandler.OnPluginModelUpdate(pluginUpdate.Value);
 
-                        else if (updateInfo is UpdateInfo<PackageStateUpdate>)
-                            _serverHandler.OnPackageStateUpdate(((UpdateInfo<PackageStateUpdate>)updateInfo).Value);
-                        else if (updateInfo is UpdateInfo<AccountStateUpdate>)
-                            _serverHandler.OnAccountStateUpdate(((UpdateInfo<AccountStateUpdate>)updateInfo).Value);
-                        else if (updateInfo is UpdateInfo<PluginStateUpdate>)
-                            _serverHandler.OnPluginStateUpdate(((UpdateInfo<PluginStateUpdate>)updateInfo).Value);
+                        else if (updateInfo is UpdateInfo<PackageStateUpdate> packageStateUpdate)
+                            _serverHandler.OnPackageStateUpdate(packageStateUpdate.Value);
+                        else if (updateInfo is UpdateInfo<AccountStateUpdate> accountStateUpdate)
+                            _serverHandler.OnAccountStateUpdate(accountStateUpdate.Value);
+                        else if (updateInfo is UpdateInfo<PluginStateUpdate> pluginStateUpdate)
+                            _serverHandler.OnPluginStateUpdate(pluginStateUpdate.Value);
 
-                        else if (updateInfo is UpdateInfo<AlgoServerMetadataUpdate>)
-                            ApplyAlgoServerMetadata(((UpdateInfo<AlgoServerMetadataUpdate>)updateInfo).Value);
+                        else if (updateInfo is UpdateInfo<AlgoServerMetadataUpdate> serverMetadata)
+                            ApplyAlgoServerMetadata(serverMetadata.Value);
 
                         else
                             Logger.Error($"Failed to dispatch update of type: {update.Payload.TypeUrl}");
@@ -289,16 +286,26 @@ namespace TickTrader.Algo.Server.PublicAPI
             }
         }
 
-        private CallOptions GetCallOptions(bool setDeadline = true)
+        private static CallOptions GetCallOptions(bool setDeadline = true)
         {
             return !setDeadline ? new CallOptions()
                  : new CallOptions(deadline: DateTime.UtcNow.AddSeconds(DefaultRequestTimeout));
         }
 
-        private CallOptions GetCallOptions(string accessToken, bool setDeadline = true)
+        private static CallOptions GetCallOptions(string accessToken, bool setDeadline = true)
         {
             return !setDeadline ? new CallOptions(credentials: AlgoGrpcCredentials.FromAccessToken(accessToken))
                  : new CallOptions(deadline: DateTime.UtcNow.AddSeconds(DefaultRequestTimeout), credentials: AlgoGrpcCredentials.FromAccessToken(accessToken));
+        }
+
+        private static CallOptions BuildCallOptions(string accessToken = null, bool setDeadline = true)
+        {
+            var deadline = setDeadline ? (DateTime?)DateTime.UtcNow.AddSeconds(DefaultRequestTimeout) : null;
+            var credentials = string.IsNullOrEmpty(accessToken) ? null : AlgoGrpcCredentials.FromAccessToken(accessToken);
+
+            return new CallOptions(
+                deadline: deadline,
+                credentials: credentials);
         }
 
         private async Task<TResponse> ExecuteUnaryRequest<TRequest, TResponse>(
@@ -536,14 +543,6 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             return _client.SubscribeToPluginLogsAsync(request, options).ResponseAsync;
         }
-
-        //private void UploadSubscribeToPluginLogsInternal(PluginLogUpdate update)
-        //{
-        //    var newTimePoint = update.Records.Max(u => u.TimeUtc);
-
-        //    if (newTimePoint != null)
-        //        _subscriptions.TryUpdateLogsSubscriptionTime(update.PluginId, newTimePoint);
-        //}
 
         private void RestoreSubscribeToPluginLogsInternal()
         {

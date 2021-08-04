@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace TickTrader.Algo.Server.PublicAPI
@@ -30,18 +29,6 @@ namespace TickTrader.Algo.Server.PublicAPI
             return true;
         }
 
-
-        //internal bool TryUpdateLogsSubscriptionTime(string pluginId, Timestamp newTimePoint)
-        //{
-        //    if (!_logsSubscriptions.Contains(pluginId))
-        //        return false;
-
-        //    _logsSubscriptions[pluginId] = newTimePoint;
-
-        //    return true;
-        //}
-
-
         internal bool TryRemoveLogsSubscription(string pluginId)
         {
             if (!_logsSubscriptions.Contains(pluginId))
@@ -61,7 +48,6 @@ namespace TickTrader.Algo.Server.PublicAPI
                 requests.Add(new PluginLogsSubscribeRequest
                 {
                     PluginId = pluginId,
-                    //LastLogTimeUtc = sub.Value,
                 });
             }
 
