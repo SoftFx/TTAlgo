@@ -216,7 +216,6 @@ namespace TickTrader.Algo.CoreV1
 
         private void OnPluginException(Exception ex, bool init)
         {
-            LogAdapter.PrintError(ex.Message);
             Logger.OnError(ex);
 
             if (init)

@@ -164,10 +164,15 @@ namespace TickTrader.Algo.Server
         {
             var newState = update.NewState;
 
+            _logger.Debug($"Executor state: {update.OldState} -> {newState}");
+
             if (newState.IsWaitConnect())
                 ChangeState(PluginModelInfo.Types.PluginState.Starting);
             else if (newState.IsFaulted())
+            {
                 ChangeState(PluginModelInfo.Types.PluginState.Faulted);
+                _server.SavedState.SetPluginRunning(_id, false).Forget();
+            }
             else if (newState.IsRunning())
                 ChangeState(PluginModelInfo.Types.PluginState.Running);
             else if (newState.IsStopping())

@@ -6,6 +6,8 @@
 
         public static bool IsWaitConnect(this Executor.Types.State state) => state == Executor.Types.State.WaitConnect;
 
+        public static bool IsStarting(this Executor.Types.State state) => state == Executor.Types.State.Starting;
+
         public static bool IsRunning(this Executor.Types.State state) => state == Executor.Types.State.Running;
 
         public static bool IsWaitReconnect(this Executor.Types.State state) => state == Executor.Types.State.WaitReconnect;

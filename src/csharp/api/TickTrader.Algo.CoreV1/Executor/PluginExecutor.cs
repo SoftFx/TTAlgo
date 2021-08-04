@@ -271,9 +271,7 @@ namespace TickTrader.Algo.CoreV1
         }
 
         public event Action<PluginExecutorCore> IsRunningChanged = delegate { };
-        public event Action<Exception> OnInternalError = delegate { };
-
-        public string AccountId { get; set; }
+        public event Action<ExecutorInternalError> OnInternalError = delegate { };
 
         #endregion
 
@@ -319,7 +317,7 @@ namespace TickTrader.Algo.CoreV1
 
                     _marketFixture.Init();
 
-                    iStrategy.Init(_builder, OnInternalException, OnRuntimeException, _fStrategy);
+                    iStrategy.Init(_builder, OnRuntimeException, _fStrategy);
                     _fStrategy.Init(this, _bStrategy, _marketFixture);
                     _fStrategy.SetUserSubscription(MainSymbolCode, 1);   // Default subscribe
                     setupActions.ForEach(a => a());
@@ -371,21 +369,28 @@ namespace TickTrader.Algo.CoreV1
 
         public Task Stop()
         {
-            return StopInternal();
+            System.Diagnostics.Debug.WriteLine("EXECUTOR STOP!");
+
+            return StopInternal(false);
         }
 
-        private Task StopInternal()
+        public Task Exit()
+        {
+            System.Diagnostics.Debug.WriteLine("EXECUTOR EXIT!");
+
+            return StopInternal(false);
+        }
+
+        private Task StopInternal(bool quick)
         {
             lock (_sync)
             {
-                System.Diagnostics.Debug.WriteLine("EXECUTOR STOP!");
-
                 if (state == States.Idle)
-                    return null;
+                    return Task.CompletedTask;
                 else if (state != States.Stopping)
                 {
                     ChangeState(States.Stopping);
-                    stopTask = DoStop(false);
+                    stopTask = DoStop(quick);
                 }
 
                 return stopTask;
@@ -482,9 +487,7 @@ namespace TickTrader.Algo.CoreV1
             }
             catch (Exception ex)
             {
-                OnInternalException(ex);
-                if (!quick)
-                    OnExit();
+                OnInternalException(ex, false);
             }
 
             try
@@ -498,24 +501,9 @@ namespace TickTrader.Algo.CoreV1
             lock (_sync) ChangeState(States.Idle);
         }
 
-        private void OnExit()
-        {
-            lock (_sync)
-            {
-                System.Diagnostics.Debug.WriteLine("EXECUTOR EXIT!");
-
-                if (state != States.Running)
-                    return;
-
-                ChangeState(States.Stopping);
-                stopTask = DoStop(true);
-            }
-        }
-
         private void OnInitFailed(Exception ex)
         {
-            OnExit();
-            OnInternalException(ex);
+            OnInternalException(ex, true);
         }
 
         #region Setup Methods
@@ -738,15 +726,14 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        private void OnInternalException(Exception ex)
+        private void OnInternalException(Exception ex, bool isFatal)
         {
-            _pluginLogger.OnError(ex.Message);
-            OnInternalError?.Invoke(ex);
+            OnInternalError?.Invoke(new ExecutorInternalError(ex, isFatal));
         }
 
         private void OnRuntimeException(Exception ex)
         {
-            OnInternalException(ex);
+            OnInternalException(ex, false);
         }
 
         private void OnInputResize(int newSize)
@@ -886,7 +873,7 @@ namespace TickTrader.Algo.CoreV1
 
         void IFixtureContext.OnInternalException(Exception ex)
         {
-            OnInternalException(ex);
+            OnInternalException(ex, false);
         }
 
         void IFixtureContext.SendExtUpdate(object update) => OnUpdate(update);

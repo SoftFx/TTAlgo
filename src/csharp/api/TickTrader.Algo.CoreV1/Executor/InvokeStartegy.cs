@@ -10,18 +10,16 @@ namespace TickTrader.Algo.CoreV1
 {
     public abstract class InvokeStartegy
     {
-        private Action<ExecutorException> onCoreError;
-        private Action<Exception> onRuntimeError;
+        private Action<Exception> _onRuntimeError;
 
         internal InvokeStartegy()
         {
         }
 
-        public void Init(PluginBuilder builder, Action<ExecutorException> onCoreError, Action<Exception> onRuntimeError, FeedStrategy fStrategy)
+        public void Init(PluginBuilder builder, Action<Exception> onRuntimeError, FeedStrategy fStrategy)
         {
-            this.Builder = builder;
-            this.onCoreError = onCoreError;
-            this.onRuntimeError = onRuntimeError;
+            Builder = builder;
+            _onRuntimeError = onRuntimeError;
             FStartegy = fStrategy;
             OnInit();
         }
@@ -47,14 +45,9 @@ namespace TickTrader.Algo.CoreV1
             return FStartegy.ApplyUpdate(update);
         }
 
-        protected void OnError(ExecutorException ex)
-        {
-            onCoreError?.Invoke(ex);
-        }
-
         protected void OnRuntimeException(Exception ex)
         {
-            onRuntimeError?.Invoke(ex);
+            _onRuntimeError?.Invoke(ex);
         }
     }
 
@@ -221,10 +214,6 @@ namespace TickTrader.Algo.CoreV1
                     ((Action<PluginBuilder>)item)(Builder);
             }
             catch (ThreadAbortException) { }
-            catch (ExecutorException ex)
-            {
-                OnError(ex);
-            }
             catch (Exception ex)
             {
                 OnRuntimeException(ex);

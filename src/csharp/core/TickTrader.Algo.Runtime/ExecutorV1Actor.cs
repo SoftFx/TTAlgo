@@ -32,8 +32,9 @@ namespace TickTrader.Algo.Runtime
 
             Receive<StartExecutorRequest>(Start);
             Receive<StopExecutorRequest>(Stop);
-            Receive<ExitedMsg>(OnExited);
+            Receive<ExitRequest>(OnExitRequest);
             Receive<ConnectionStateUpdate>(OnConnectionStateUpdated);
+            Receive<ExecutorInternalError>(OnExecutorInternalError);
         }
 
 
@@ -78,53 +79,26 @@ namespace TickTrader.Algo.Runtime
 
             if (_state.IsWaitConnect())
             {
-                OnStopped();
+                OnStopped(true);
                 return;
             }
 
-            if (_state.IsRunning() || _state.IsWaitReconnect())
+            if (_state.IsStarting() || _state.IsRunning() || _state.IsWaitReconnect())
             {
                 ChangeState(Executor.Types.State.Stopping);
 
-                var stopTask = _executor.Stop();
+                var t = await AbortWrapper(_executor.Stop());
 
-                var delayTask = Task.Delay(AbortTimeout);
-                var t = await Task.WhenAny(stopTask, delayTask);
-
-                if (t == delayTask)
+                if (t.IsFaulted)
                 {
-                    _logger.Info("Executor didn't stop within timeout. Aborting...");
-                    try
-                    {
-                        _executor.Abort();
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.Error(ex, "Failed to abort executor");
-                    }
-                }
-                else if (stopTask.IsFaulted)
-                {
-                    _logger.Error(stopTask.Exception, "Failed to stop executor");
+                    _logger.Error(t.Exception, "Failed to stop executor");
                 }
 
-                OnStopped();
+                OnStopped(true);
             }
         }
 
-        private void OnStopped()
-        {
-            if (_state == Executor.Types.State.Stopped || _state == Executor.Types.State.Faulted)
-                return;
-
-            ChangeState(Executor.Types.State.Stopped);
-
-            DetachAccount();
-
-            _provider.Dispose();
-        }
-
-        private void OnExited(ExitedMsg msg)
+        private void OnExitRequest(ExitRequest msg)
         {
             _logger.Debug("Received exit request");
 
@@ -151,6 +125,15 @@ namespace TickTrader.Algo.Runtime
             }
         }
 
+        private void OnExecutorInternalError(ExecutorInternalError error)
+        {
+            var ex = error.Exception;
+            _logger.Error(ex, "Internal error in executor");
+
+            if (error.IsFatal)
+                ExitInternal().Forget();
+        }
+
 
         private void ChangeState(Executor.Types.State newState)
         {
@@ -173,12 +156,14 @@ namespace TickTrader.Algo.Runtime
             {
                 _logger.Debug("Starting internal executor...");
 
+                ChangeState(Executor.Types.State.Starting);
+
                 var config = _config.PluginConfig.Unpack<PluginConfig>();
 
                 _executor = new PluginExecutorCore(config.Key);
-                _executor.OnExitRequest += _ => Self.Tell(ExitedMsg.Instance);
+                _executor.OnExitRequest += _ => Self.Tell(ExitRequest.Instance);
                 _executor.OnNotification += msg => _runtime.Tell(new ExecutorNotification(_id, msg));
-                _executor.OnInternalError += OnExecutorException;
+                _executor.OnInternalError += err => Self.Tell(err);
                 _executor.IsGlobalMarshalingEnabled = true;
                 _executor.IsBunchingRequired = true;
 
@@ -206,13 +191,6 @@ namespace TickTrader.Algo.Runtime
             }
         }
 
-        private void OnExecutorException(Exception ex)
-        {
-            _logger.Error(ex, "Internal error in executor");
-
-            OnStopped();
-        }
-
         private async Task HandleReconnectInternal()
         {
             await _provider.PreLoad();
@@ -220,8 +198,57 @@ namespace TickTrader.Algo.Runtime
             ChangeState(Executor.Types.State.Running);
         }
 
+        private void OnStopped(bool normalStop)
+        {
+            ChangeState(normalStop ? Executor.Types.State.Stopped : Executor.Types.State.Faulted);
 
-        internal class ExitedMsg : Singleton<ExitedMsg> { }
+            DetachAccount();
+
+            _provider.Dispose();
+        }
+
+        private async Task<Task> AbortWrapper(Task stopOrExitTask)
+        {
+            var delayTask = Task.Delay(AbortTimeout);
+            var t = await Task.WhenAny(stopOrExitTask, delayTask);
+
+            if (t == delayTask)
+            {
+                _logger.Info("Executor didn't stop within timeout. Aborting...");
+                try
+                {
+                    _executor.Abort();
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, "Failed to abort executor");
+                }
+
+                return Task.CompletedTask;
+            }
+
+            return stopOrExitTask;
+        }
+
+        private async Task ExitInternal()
+        {
+            if (_state.IsStarting() || _state.IsRunning())
+            {
+                ChangeState(Executor.Types.State.Stopping);
+
+                var t = await AbortWrapper(_executor.Exit());
+
+                if (t.IsFaulted)
+                {
+                    _logger.Error(t.Exception, "Failed to exit executor");
+                }
+
+                OnStopped(false);
+            }
+        }
+
+
+        internal class ExitRequest : Singleton<ExitRequest> { }
 
         internal class ExecutorNotification
         {

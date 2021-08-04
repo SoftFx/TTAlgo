@@ -19,7 +19,7 @@ namespace TickTrader.Algo.CoreV1
 
     public enum BalanceAction
     {
-        Deposite,
+        Deposit,
         Withdrawal,
         Dividend,
     }

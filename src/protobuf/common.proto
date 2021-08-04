@@ -40,10 +40,11 @@ message Executor {
     enum State {
         Stopped = 0;
         WaitConnect = 1;
-        Running = 2;
-        WaitReconnect = 3;
-        Stopping = 4;
-        Faulted = 5;
+        Starting = 2;
+        Running = 3;
+        WaitReconnect = 4;
+        Stopping = 5;
+        Faulted = 6;
     }
 }
 

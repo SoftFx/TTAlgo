@@ -200,7 +200,7 @@ namespace TickTrader.Algo.CoreV1
 
                     if (report.Type == BalanceOperation.Types.Type.DepositWithdrawal)
                     {
-                        context.Logger.NotifyBalanceEvent(report.TransactionAmount, accProxy.BalanceCurrencyInfo, report.TransactionAmount > 0 ? BalanceAction.Deposite : BalanceAction.Withdrawal);
+                        context.Logger.NotifyBalanceEvent(report.TransactionAmount, accProxy.BalanceCurrencyInfo, report.TransactionAmount > 0 ? BalanceAction.Deposit : BalanceAction.Withdrawal);
                         context.EnqueueEvent(builder => accProxy.FireBalanceUpdateEvent());
                     }
 
@@ -219,7 +219,7 @@ namespace TickTrader.Algo.CoreV1
                     {
                         if (report.Type == BalanceOperation.Types.Type.DepositWithdrawal)
                         {
-                            context.Logger.NotifyBalanceEvent(report.TransactionAmount, currencyInfo, report.TransactionAmount > 0 ? BalanceAction.Deposite : BalanceAction.Withdrawal);
+                            context.Logger.NotifyBalanceEvent(report.TransactionAmount, currencyInfo, report.TransactionAmount > 0 ? BalanceAction.Deposit : BalanceAction.Withdrawal);
                             context.EnqueueEvent(builder => accProxy.Assets.FireModified(new AssetUpdateEventArgsImpl(asset)));
                             context.EnqueueEvent(builder => accProxy.FireBalanceUpdateEvent());
                         }
@@ -230,7 +230,7 @@ namespace TickTrader.Algo.CoreV1
 
         private void DataProvider_PositionUpdated(PositionExecReport report)
         {
-            UpdatePosition(report.PositionCopy, report.ExecAction);
+            context.EnqueueTradeUpdate(b => UpdatePosition(b, report.PositionCopy, report.ExecAction));
         }
 
         private void DataProvider_OrderUpdated(OrderExecReport eReport)
@@ -242,10 +242,9 @@ namespace TickTrader.Algo.CoreV1
             });
         }
 
-        private void UpdatePosition(PositionInfo position, OrderExecReport.Types.ExecAction action)
+        private void UpdatePosition(PluginBuilder builder, PositionInfo position, OrderExecReport.Types.ExecAction action)
         {
-            var accProxy = context.Builder.Account;
-            var positions = accProxy.NetPositions;
+            var positions = builder.Account.NetPositions;
 
             var oldPos = positions.GetOrNull(position.Symbol);
             var clone = oldPos?.Clone() ?? new PositionAccessor(position.Symbol, _symbols.GetOrNull(position.Symbol));
@@ -254,11 +253,11 @@ namespace TickTrader.Algo.CoreV1
 
             if (action == OrderExecReport.Types.ExecAction.Splitted)
             {
-                context.EnqueueEvent(builder => positions.FirePositionSplitted(new PositionSplittedEventArgsImpl(clone, pos, isClosed)));
+                context.EnqueueEvent(b => positions.FirePositionSplitted(new PositionSplittedEventArgsImpl(clone, pos, isClosed)));
                 context.Logger.NotifyPositionSplitting(pos);
             }
             else
-                context.EnqueueEvent(builder => positions.FirePositionUpdated(new PositionModifiedEventArgsImpl(clone, pos, isClosed)));
+                context.EnqueueEvent(b => positions.FirePositionUpdated(new PositionModifiedEventArgsImpl(clone, pos, isClosed)));
         }
 
         private void UpdateOrders(PluginBuilder builder, OrderExecReport eReport)
@@ -266,7 +265,7 @@ namespace TickTrader.Algo.CoreV1
             System.Diagnostics.Debug.WriteLine($"ER: {eReport.EntityAction} {(eReport.OrderCopy != null ? $"#{eReport.OrderCopy.Id} {eReport.OrderCopy.Type}" : "no order copy")}");
 
             if (eReport.NetPositionCopy != null)
-                UpdatePosition(eReport.NetPositionCopy, eReport.ExecAction); // applied position bounded to order fill
+                UpdatePosition(builder, eReport.NetPositionCopy, eReport.ExecAction); // applied position bounded to order fill
 
             var orderCollection = builder.Account.Orders;
             if (eReport.ExecAction == OrderExecReport.Types.ExecAction.Activated)
