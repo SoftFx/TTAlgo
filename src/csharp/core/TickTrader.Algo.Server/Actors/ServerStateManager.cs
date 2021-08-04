@@ -103,12 +103,20 @@ namespace TickTrader.Algo.Server
             {
                 try
                 {
+                    var path = _stateFilePath;
+                    var newPath = $"{path}.new";
 #if DEBUG
-                    File.WriteAllText(_stateFilePath, JsonSerializer.Serialize(_state,
+                    File.WriteAllText(newPath, JsonSerializer.Serialize(_state,
                         new JsonSerializerOptions { WriteIndented = true }));
 #else
-                    File.WriteAllText(_stateFilePath, JsonSerializer.Serialize(_state));
+                    File.WriteAllText(newPath, JsonSerializer.Serialize(_state));
 #endif
+                    var oldPath = $"{path}.old";
+                    if (File.Exists(oldPath))
+                        File.Delete(oldPath);
+                    File.Move(path, oldPath);
+                    File.Move(newPath, path);
+
                     _lastSavedStateCnt = _stateCnt;
 
                     _logger.Debug($"Saved server state {_stateCnt}");
