@@ -337,6 +337,8 @@ namespace TickTrader.Algo.Server
 
             _logger.Debug($"Detaching session {sessionId}...");
 
+            _sessions.Remove(sessionId);
+
             _refCnt--;
             if (_refCnt == 0)
             {
@@ -371,15 +373,39 @@ namespace TickTrader.Algo.Server
             if (_sessions.Count == 0)
                 return;
 
+            var cleanupSessions = false;
             foreach (var session in _sessions.Values)
             {
                 try
                 {
-                    session.Tell(msg);
+                    if (session.State == RpcSessionState.Connected)
+                    {
+                        session.Tell(msg);
+                    }
+                    else
+                    {
+                        cleanupSessions = true;
+                    }
                 }
                 catch (Exception ex)
                 {
                     _logger.Error(ex, $"Failed to send message to session {session.Id}");
+                }
+            }
+
+            if (cleanupSessions)
+            {
+                try
+                {
+                    var sessionsIdToRemove = _sessions.Where(s => s.Value.State != RpcSessionState.Connected).Select(s => s.Key).ToList();
+                    foreach (var sessionId in sessionsIdToRemove)
+                    {
+                        DetachSession(new DetachSessionCmd(sessionId));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, "Failed to cleanup disconnected sessions");
                 }
             }
         }
