@@ -1,13 +1,22 @@
-﻿namespace TickTrader.Algo.Server.PublicAPI
+﻿using System.Collections.Generic;
+
+namespace TickTrader.Algo.Server.PublicAPI
 {
     public partial class AccountCreds
     {
+        private const string SimpleAuthSchemeId = "simple";
         private const string PasswordKey = "password";
 
 
-        public AccountCreds(string scheme, string password)
+        public AccountCreds(string scheme, IDictionary<string, string> secret)
         {
             AuthScheme = scheme;
+            Secret.Add(secret);
+        }
+
+        public AccountCreds(string password)
+        {
+            AuthScheme = SimpleAuthSchemeId;
             SetPassword(password);
         }
 

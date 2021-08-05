@@ -403,7 +403,7 @@ namespace TickTrader.Algo.ServerControl
 
         public static Api.AccountCreds ToApi(this AccountCreds creds)
         {
-            return new Api.AccountCreds(creds.AuthScheme, creds.Secret[AccountCreds.PasswordKey]);
+            return new Api.AccountCreds(creds.AuthScheme, creds.Secret);
         }
 
         public static Api.AddAccountRequest ToApi(this AddAccountRequest request)
