@@ -1,6 +1,8 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core;
@@ -12,31 +14,36 @@ namespace TickTrader.Algo.Server
 {
     internal class RuntimeControlActor : Actor
     {
-        public const int AttachTimeout = 5000;
+        private enum RuntimeState { Stopped, Starting, Connecting, Running, Stopping };
+
+        public const int ConnectTimeout = 5000;
         public const int ShutdownTimeout = 10000;
+        public const int KillTimeout = 2000;
 
         private readonly AlgoServerPrivate _server;
         private readonly RuntimeConfig _config;
+        private readonly PackageInfo _pkgInfo;
         private readonly string _id, _pkgId;
-        private readonly IRuntimeHostProxy _runtimeHost;
         private readonly Dictionary<string, IActorRef> _pluginsMap = new Dictionary<string, IActorRef>();
 
         private IAlgoLogger _logger;
-        private TaskCompletionSource<bool> _startTaskSrc, _connectTaskSrc;
-        private Action<RpcMessage> _onNotification;
+        private RuntimeState _state;
+        private Process _process;
+        private TaskCompletionSource<bool> _startTaskSrc;
+        private TaskCompletionSource<object> _connectTaskSrc, _stopTaskSrc;
+        private CancellationTokenSource _killProcessCancelSrc;
         private IRuntimeProxy _proxy;
         private RpcSession _session;
         private int _activeExecutorsCnt;
         private bool _shutdownWhenIdle;
 
-        public RuntimeControlActor(AlgoServerPrivate server, RuntimeConfig config)
+        public RuntimeControlActor(AlgoServerPrivate server, RuntimeConfig config, PackageInfo pkgInfo)
         {
             _server = server;
             _config = config;
+            _pkgInfo = pkgInfo;
             _id = config.Id;
             _pkgId = config.PackageId;
-
-            _runtimeHost = RuntimeHost.Create(true);
 
             Receive<StartRuntimeCmd, bool>(Start);
             Receive<StopRuntimeCmd>(Stop);
@@ -48,72 +55,164 @@ namespace TickTrader.Algo.Server
             Receive<DetachPluginCmd, bool>(DetachPlugin);
             Receive<GetPluginInfoRequest, PluginInfo>(GetPluginInfo);
             Receive<ExecutorNotificationMsg>(OnExecutorNotification);
+            Receive<ProcessExitedMsg>(OnProcessExited);
         }
 
 
-        public static IActorRef Create(AlgoServerPrivate server, RuntimeConfig config)
+        public static IActorRef Create(AlgoServerPrivate server, RuntimeConfig config, PackageInfo pkgInfo)
         {
-            return ActorSystem.SpawnLocal(() => new RuntimeControlActor(server, config), $"{nameof(RuntimeControlActor)} ({config.Id})");
+            return ActorSystem.SpawnLocal(() => new RuntimeControlActor(server, config, pkgInfo), $"{nameof(RuntimeControlActor)} ({config.Id})");
         }
 
 
         protected override void ActorInit(object initMsg)
         {
             _logger = AlgoLoggerFactory.GetLogger(Name);
+            _state = RuntimeState.Stopped;
         }
 
 
         private async Task<bool> Start(StartRuntimeCmd cmd)
         {
-            if (_startTaskSrc != null)
+            if (_state == RuntimeState.Running)
+                return true;
+            if (_state != RuntimeState.Stopped)
                 return await _startTaskSrc.Task;
 
             _startTaskSrc = new TaskCompletionSource<bool>();
+            var res = await StartInternal();
+            _startTaskSrc.TrySetResult(res);
+            return res;
+        }
 
-            _logger.Debug("Starting...");
-
+        private async Task<bool> StartInternal()
+        {
             try
             {
-                _connectTaskSrc = new TaskCompletionSource<bool>();
-                await _runtimeHost.Start(_server.Address, _server.BoundPort, _id);
+                ChangeState(RuntimeState.Starting);
 
-                TaskExt.Schedule(AttachTimeout, () => _connectTaskSrc?.TrySetResult(false));
-                var connected = await _connectTaskSrc.Task;
-                _connectTaskSrc = null;
+                var started = StartProcess();
+                if (!started)
+                    return false;
 
-                if (connected)
+                ChangeState(RuntimeState.Connecting);
+
+                _connectTaskSrc = new TaskCompletionSource<object>();
+                var connected = await _connectTaskSrc.Task.WaitAsync(ConnectTimeout);
+
+                if (!connected)
                 {
-                    await _proxy.Start(new StartRuntimeRequest { Config = _config });
+                    _logger.Error("Failed to connect runtime process within timeout");
+                    ScheduleKillProcess();
+                    return false;
+                }
 
-                    _startTaskSrc.TrySetResult(true);
-                    _logger.Debug("Started");
-                    return true;
-                }
-                else
-                {
-                    _logger.Error("Failed to connect runtime host");
-                    await _runtimeHost.Stop();
-                }
+                await _proxy.Start(new StartRuntimeRequest { Config = _config });
+
+                ChangeState(RuntimeState.Running);
+                return true;
             }
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to start");
+
+                if (_process != null && !_process.HasExited)
+                    ScheduleKillProcess();
             }
 
-            _startTaskSrc.TrySetResult(false);
             return false;
+        }
+
+        private bool StartProcess()
+        {
+            var startInfo = new ProcessStartInfo(_server.Env.RuntimeExePath)
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                Arguments = string.Join(" ", _server.Address, _server.BoundPort.ToString(), $"\"{_id}\""),
+                WorkingDirectory = _server.Env.AppFolder,
+            };
+
+            _process = Process.Start(startInfo);
+            _process.Exited += OnProcessExit;
+            _process.EnableRaisingEvents = true;
+
+            _logger.Info($"Runtime started in process {_process.Id}");
+
+            if (_process.HasExited) // If event was enabled after actual stop
+            {
+                OnProcessExit(_process, null);
+                return false;
+            }
+
+            return true;
+        }
+
+        private void ScheduleKillProcess()
+        {
+            _killProcessCancelSrc = new CancellationTokenSource();
+            TaskExt.Schedule(KillTimeout, () =>
+            {
+                _logger.Info($"Runtime process didn't stop within timeout. Killing process {_process.Id}...");
+                _process.Kill();
+            }, _killProcessCancelSrc.Token);
+        }
+
+        private void OnProcessExited(ProcessExitedMsg msg)
+        {
+            _process.Exited -= OnProcessExit;
+            _killProcessCancelSrc?.Cancel();
+
+            var crashed = msg.ExitCode != 0 || _state != RuntimeState.Stopping;
+
+            ChangeState(RuntimeState.Stopped);
+            _server.OnRuntimeStopped(_id);
+
+            if (crashed)
+            {
+                //foreach (var plugin in _pluginsMap.Values)
+                //    plugin.Tell(RuntimeCrashedMsg);
+            }
+        }
+
+        private void OnProcessExit(object sender, EventArgs args)
+        {
+            // non-actor context
+            var exitCode = _process.ExitCode;
+            _logger.Info($"Process {_process.Id} exited with exit code {exitCode}");
+            Self.Tell(new ProcessExitedMsg(exitCode));
         }
 
         private async Task Stop(StopRuntimeCmd cmd)
         {
-            if (_startTaskSrc == null)
+            if (_state == RuntimeState.Stopped)
                 return;
+            if (_state == RuntimeState.Stopping)
+            {
+                await _stopTaskSrc.Task;
+                return;
+            }
+            if (_state != RuntimeState.Running)
+            {
+                await _startTaskSrc.Task;
+                await Stop(cmd);
+                return;
+            }
 
-            var reason = cmd.Reason;
-            _logger.Debug($"Stopping. Reason: {reason}");
+            _stopTaskSrc = new TaskCompletionSource<object>();
 
+            await StopInternal(cmd.Reason);
+
+            _stopTaskSrc.TrySetResult(null);
+        }
+
+        private async Task StopInternal(string reason)
+        {
             try
             {
+                _logger.Debug($"Stop reason: {reason}");
+                ChangeState(RuntimeState.Stopping);
+
                 await _startTaskSrc.Task;
                 _startTaskSrc = null;
 
@@ -123,11 +222,8 @@ namespace TickTrader.Algo.Server
 
                 await _session.Disconnect(reason);
                 OnDetached();
-                await _runtimeHost.Stop();
 
-                _server.OnRuntimeStopped(_id);
-
-                _logger.Debug("Stopped");
+                ScheduleKillProcess();
             }
             catch (Exception ex)
             {
@@ -157,18 +253,16 @@ namespace TickTrader.Algo.Server
                 return false;
             }
 
-            _onNotification = session.Tell;
             _proxy = new RemoteRuntimeProxy(session);
             _session = session;
 
-            _connectTaskSrc?.TrySetResult(true);
+            _connectTaskSrc?.TrySetResult(null);
 
             return true;
         }
 
         private void OnDetached()
         {
-            _onNotification = null;
             _proxy = null;
             _session = null;
         }
@@ -292,8 +386,14 @@ namespace TickTrader.Algo.Server
                 throw Errors.RuntimeNotStarted(_id);
         }
 
+        private void ChangeState(RuntimeState newState)
+        {
+            _logger.Debug($"State changed: {_state} -> {newState}");
+            _state = newState;
+        }
 
-        internal class StartRuntimeCmd { }
+
+        internal class StartRuntimeCmd : Singleton<StartRuntimeCmd> { }
 
         internal class StopRuntimeCmd
         {
@@ -305,7 +405,7 @@ namespace TickTrader.Algo.Server
             }
         }
 
-        internal class MarkForShutdownCmd { }
+        internal class MarkForShutdownCmd : Singleton<MarkForShutdownCmd> { }
 
         internal class ConnectSessionCmd
         {
@@ -360,6 +460,16 @@ namespace TickTrader.Algo.Server
             public DetachPluginCmd(string pluginId)
             {
                 PluginId = pluginId;
+            }
+        }
+
+        internal class ProcessExitedMsg
+        {
+            public int ExitCode { get; }
+
+            public ProcessExitedMsg(int exitCode)
+            {
+                ExitCode = exitCode;
             }
         }
     }

@@ -6,9 +6,9 @@ option csharp_namespace = "TickTrader.Algo.Domain";
 
 message Update {
     enum Action {
-        Added = 0;
-        Updated = 1;
-        Removed = 2;
+        ADDED = 0;
+        UPDATED = 1;
+        REMOVED = 2;
     }
 }
 
@@ -38,13 +38,13 @@ message Feed {
 
 message Executor {
     enum State {
-        Stopped = 0;
-        WaitConnect = 1;
-        Starting = 2;
-        Running = 3;
-        WaitReconnect = 4;
-        Stopping = 5;
-        Faulted = 6;
+        STOPPED = 0;
+        WAIT_CONNECT = 1;
+        STARTING = 2;
+        RUNNING = 3;
+        WAIT_RECONNECT = 4;
+        STOPPING = 5;
+        FAULTED = 6;
     }
 }
 

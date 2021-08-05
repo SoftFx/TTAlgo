@@ -60,10 +60,10 @@ namespace TickTrader.Algo.Server
             var pkgId = pkgRef.PkgId;
             var pkgBytes = pkgRef.PkgBytes;
             var pkgBin = pkgBytes == null ? ByteString.Empty : ByteString.CopyFrom(pkgBytes);
-            var config = new RuntimeConfig { Id = id, PackageId = pkgId, PackageBinary = pkgBin, PackageIdentity = pkgRef.PkgInfo.Identity };
+            var config = new RuntimeConfig { Id = id, PackageId = pkgId, PackageBinary = pkgBin };
 
             _pkgRuntimeMap[pkgId] = id;
-            _runtimeMap[id] = RuntimeControlActor.Create(_server, config);
+            _runtimeMap[id] = RuntimeControlActor.Create(_server, config, pkgRef.PkgInfo);
         }
 
 

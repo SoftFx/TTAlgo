@@ -20,7 +20,6 @@ namespace TickTrader.Algo.Runtime
 
         private IAlgoLogger _logger;
         private RuntimeConfig _config;
-        private PackageInfo _pkgInfo;
 
 
         private RuntimeV1Actor(string id, PluginRuntimeV1Handler handler)
@@ -59,21 +58,16 @@ namespace TickTrader.Algo.Runtime
             _config = request.Config;
 
             var pkgId = _config.PackageId;
-            var pkgPath = _config.PackageIdentity.FilePath;
 
-            _logger.Debug($"Loading package '{pkgId}'");
-
-            _logger.Debug($"Scanning package '{pkgId}' at {pkgPath}");
-            if (pkgPath.EndsWith("TickTrader.Algo.Indicators.dll", StringComparison.OrdinalIgnoreCase))
+            _logger.Debug($"Scanning package '{pkgId}'");
+            if (pkgId.EndsWith("TickTrader.Algo.Indicators.dll", StringComparison.OrdinalIgnoreCase))
             {
-                _pkgInfo = PackageExplorer.ScanAssembly(pkgId, typeof(MovingAverage).Assembly);
+                PackageExplorer.ScanAssembly(pkgId, typeof(MovingAverage).Assembly);
             }
             else
             {
-                _pkgInfo = PackageLoadContext.Load(_config.PackageId, _config.PackageBinary.ToByteArray());
+                PackageLoadContext.Load(_config.PackageId, _config.PackageBinary.ToByteArray());
             }
-
-            _pkgInfo.Identity = _config.PackageIdentity;
 
             _logger.Debug("Started successfully");
         }

@@ -8,12 +8,12 @@ namespace TickTrader.Algo.Server
 {
     public static class RuntimeControlModel
     {
-        public static Task<bool> Start(IActorRef actor) => actor.Ask<bool>(new RuntimeControlActor.StartRuntimeCmd());
+        public static Task<bool> Start(IActorRef actor) => actor.Ask<bool>(RuntimeControlActor.StartRuntimeCmd.Instance);
 
         public static Task Stop(IActorRef actor, string reason) => actor.Ask(new RuntimeControlActor.StopRuntimeCmd(reason));
 
 
-        internal static void MarkForShutdown(IActorRef actor) => actor.Tell(new RuntimeControlActor.MarkForShutdownCmd());
+        internal static void MarkForShutdown(IActorRef actor) => actor.Tell(RuntimeControlActor.MarkForShutdownCmd.Instance);
 
         internal static Task<bool> ConnectSession(IActorRef actor, RpcSession session) => actor.Ask<bool>(new RuntimeControlActor.ConnectSessionCmd(session));
 
