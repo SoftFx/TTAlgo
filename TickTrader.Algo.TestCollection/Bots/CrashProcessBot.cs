@@ -40,6 +40,17 @@ namespace TickTrader.Algo.TestCollection.Bots
         }
 
 
-        private void GenerateStackOverflow() => GenerateStackOverflow();
+        private void GenerateStackOverflow()
+        {
+            Print($"42! == {BrokenFactorial(42)}");
+        }
+
+        private long BrokenFactorial(long n)
+        {
+            if (n == 1)
+                return 1;
+
+            return n * BrokenFactorial(n); // feature, not a bug :)
+        }
     }
 }
