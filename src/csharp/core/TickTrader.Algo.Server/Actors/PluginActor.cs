@@ -202,6 +202,9 @@ namespace TickTrader.Algo.Server
 
                 _startTaskSrc?.TrySetResult(false);
                 _stopTaskSrc?.TrySetResult(false);
+
+                _server.Alerts.SendServerAlert($"Process running plugin '{_id}' crashed");
+                _server.SavedState.SetPluginRunning(_id, false).Forget();
             }
         }
 

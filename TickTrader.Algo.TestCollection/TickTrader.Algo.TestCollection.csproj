@@ -65,6 +65,7 @@
     <Compile Include="Bots\ApiCheckerBot.cs" />
     <Compile Include="Bots\BotStatusWriter.cs" />
     <Compile Include="Bots\CheckAlertBot.cs" />
+    <Compile Include="Bots\CrashProcessBot.cs" />
     <Compile Include="Bots\DoingNothingBot.cs" />
     <Compile Include="Bots\GetIndicatorsInfoBot.cs" />
     <Compile Include="Bots\BufferPrintBot.cs" />
