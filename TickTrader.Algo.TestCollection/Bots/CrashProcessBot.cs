@@ -10,6 +10,8 @@ namespace TickTrader.Algo.TestCollection.Bots
     {
         public enum CrashMethod { EnvironmentFailFast, ThreadPoolException, StackOverflow }
 
+        public class SeppukuException : Exception { }
+
 
         public const string Seppuku = "Seppuku!!!";
 
@@ -26,7 +28,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                     Environment.FailFast(Seppuku);
                     break;
                 case CrashMethod.ThreadPoolException:
-                    ThreadPool.QueueUserWorkItem(_ => throw new Exception(Seppuku));
+                    ThreadPool.QueueUserWorkItem(_ => throw new SeppukuException());
                     break;
                 case CrashMethod.StackOverflow:
                     GenerateStackOverflow();
