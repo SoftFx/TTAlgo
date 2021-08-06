@@ -29,7 +29,6 @@ namespace TickTrader.Algo.Server
         private PluginInfo _pluginInfo;
         private string _faultMsg;
         private TaskCompletionSource<bool> _startTaskSrc, _stopTaskSrc, _updateRuntimeTaskSrc;
-        private ExecutorModel _executor;
         private MessageCache<PluginLogRecord> _logsCache;
         private PluginStatusUpdate _lastStatus;
 
@@ -55,6 +54,7 @@ namespace TickTrader.Algo.Server
             Receive<DataSeriesUpdate>(update => _outputEventSrc.DispatchEvent(update));
             Receive<ExecutorStateUpdate>(OnExecutorStateUpdated);
             Receive<PluginExitedMsg>(OnExited);
+            Receive<RuntimeCrashedMsg>(OnRuntimeCrashed);
         }
 
 
@@ -181,9 +181,6 @@ namespace TickTrader.Algo.Server
                 ChangeState(PluginModelInfo.Types.PluginState.Stopped);
             else if (newState.IsWaitReconnect())
                 ChangeState(PluginModelInfo.Types.PluginState.Reconnecting);
-
-            if (newState.IsStopped() || newState.IsFaulted())
-                _executor?.Dispose();
         }
 
         private void OnExited(PluginExitedMsg msg)
@@ -191,6 +188,21 @@ namespace TickTrader.Algo.Server
             _logger.Debug("Received exit notification");
 
             _server.SavedState.SetPluginRunning(_id, false).Forget();
+        }
+
+        private void OnRuntimeCrashed(RuntimeCrashedMsg msg)
+        {
+            if (!_state.IsStopped())
+            {
+                _logger.Info("Runtime crashed during execution");
+
+                ChangeState(PluginModelInfo.Types.PluginState.Faulted);
+
+                _runtime = null;
+
+                _startTaskSrc?.TrySetResult(false);
+                _stopTaskSrc?.TrySetResult(false);
+            }
         }
 
 
@@ -303,7 +315,7 @@ namespace TickTrader.Algo.Server
 
                 if (!await UpdateRuntime())
                 {
-                    _startTaskSrc.SetResult(false);
+                    _startTaskSrc.TrySetResult(false);
                     _startTaskSrc = null;
                     return;
                 }
@@ -314,13 +326,12 @@ namespace TickTrader.Algo.Server
 
                 await RuntimeControlModel.StartExecutor(_runtime, config);
 
-                _startTaskSrc.SetResult(true);
+                _startTaskSrc.TrySetResult(true);
             }
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to start plugin");
-                _executor?.Dispose();
-                _startTaskSrc.SetResult(false);
+                _startTaskSrc.TrySetResult(false);
                 ChangeState(PluginModelInfo.Types.PluginState.Faulted);
             }
 
@@ -341,12 +352,12 @@ namespace TickTrader.Algo.Server
 
                 await RuntimeControlModel.StopExecutor(_runtime, _id);
 
-                _stopTaskSrc.SetResult(true);
+                _stopTaskSrc.TrySetResult(true);
             }
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to stop plugin");
-                _stopTaskSrc.SetResult(false);
+                _stopTaskSrc.TrySetResult(false);
             }
 
             _stopTaskSrc = null;
@@ -416,5 +427,7 @@ namespace TickTrader.Algo.Server
                 OutputSink = outputSink;
             }
         }
+
+        internal class RuntimeCrashedMsg : Singleton<RuntimeCrashedMsg> { }
     }
 }

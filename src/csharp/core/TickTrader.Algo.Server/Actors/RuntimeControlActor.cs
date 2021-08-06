@@ -170,8 +170,8 @@ namespace TickTrader.Algo.Server
 
             if (crashed)
             {
-                //foreach (var plugin in _pluginsMap.Values)
-                //    plugin.Tell(RuntimeCrashedMsg);
+                foreach (var plugin in _pluginsMap.Values)
+                    plugin.Tell(PluginActor.RuntimeCrashedMsg.Instance);
             }
         }
 
@@ -292,7 +292,7 @@ namespace TickTrader.Algo.Server
 
         private PluginInfo GetPluginInfo(GetPluginInfoRequest request)
         {
-            return new PluginInfo(request.Plugin, null);
+            return _pkgInfo.GetPlugin(request.Plugin);
         }
 
         private bool AttachPlugin(AttachPluginCmd cmd)
