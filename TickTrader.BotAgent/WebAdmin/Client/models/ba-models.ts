@@ -1,4 +1,4 @@
-﻿import { Serializable, Guid } from './index';
+﻿import { Serializable } from './index';
 
 export class AccountInfo implements Serializable<AccountInfo>{
     public Symbols: string[];
@@ -354,7 +354,7 @@ export class SetupModel {
     public get Payload() {
 
         return {
-            PackageName: this.PackageId,
+            PackageId: this.PackageId,
             PluginId: this.PluginId,
             InstanceId: this.InstanceId,
             Account: this.Account,

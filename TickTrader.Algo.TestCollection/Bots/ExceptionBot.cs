@@ -17,6 +17,8 @@ namespace TickTrader.Algo.TestCollection.Bots
         {
             Account.BalanceUpdated += () => Throw(ThrowVariants.OnTradeEvents, "BalanceUpdated");
 
+            Account.Assets.Modified += a => Throw(ThrowVariants.OnTradeEvents, "AssetChange");
+
             Account.Orders.Filled += a => Throw(ThrowVariants.OnTradeEvents, "OrderFilled");
             Account.Orders.Opened += a => Throw(ThrowVariants.OnTradeEvents, "OrderOpened");
             Account.Orders.Canceled += a => Throw(ThrowVariants.OnTradeEvents, "OrderCanceled");
@@ -30,7 +32,7 @@ namespace TickTrader.Algo.TestCollection.Bots
             Account.NetPositions.Modified += a => Throw(ThrowVariants.OnTradeEvents, "PositionModified");
 
             Account.Orders.Added += a => Throw(ThrowVariants.OnOrderCollectionsUpdate, "OrderAdded");
-            Account.Orders.Replaced += a => Throw(ThrowVariants.OnOrderCollectionsUpdate, "Orderreplaced");
+            Account.Orders.Replaced += a => Throw(ThrowVariants.OnOrderCollectionsUpdate, "OrderReplaced");
             Account.Orders.Removed += a => Throw(ThrowVariants.OnOrderCollectionsUpdate, "OrderRemoved");
 
             Throw(ThrowVariants.OnInit, nameof(Init));

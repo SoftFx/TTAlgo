@@ -1,8 +1,8 @@
-﻿import { Component, EventEmitter, Output, Input, OnInit, OnDestroy } from '@angular/core';
-import { FormGroup, FormControl, Validators, FormArray, FormBuilder } from '@angular/forms';
+﻿import { Component, EventEmitter, Output, OnInit } from '@angular/core';
+import { FormGroup, Validators, FormBuilder } from '@angular/forms';
 import { Location } from '@angular/common';
 import { Observable, Subject } from "rxjs/Rx";
-import { PackageModel, PluginModel, ParameterDataTypes, AccountModel, SetupModel, TradeBotModel, ResponseStatus, ObservableRequest, AccountInfo, ResponseCode } from '../../models/index';
+import { PackageModel, PluginModel, AccountModel, SetupModel, TradeBotModel, ResponseStatus, ObservableRequest, AccountInfo, ResponseCode } from '../../models/index';
 import { ApiService, ToastrService } from '../../services/index';
 
 @Component({
@@ -51,13 +51,13 @@ export class BotAddComponent implements OnInit {
         if (this.BotSetupForm.valid) {
             this.AddBotRequest = new ObservableRequest(this._api.AddBot(this.Setup))
                 .Subscribe(result => this.OnAdded.emit(result),
-                err => {
-                    if (!err.Handled)
-                        this._toastr.error(err.Message);
-                    else if (err.Code === ResponseCode.DuplicateBot) {
-                        err.Message = `Bot with ID '${this.Setup.InstanceId}' already exists! Please type another ID.`;
-                    }
-                });
+                    err => {
+                        if (!err.Handled)
+                            this._toastr.error(err.Message);
+                        else if (err.Code === ResponseCode.DuplicateBot) {
+                            err.Message = `Bot with ID '${this.Setup.InstanceId}' already exists! Please type another ID.`;
+                        }
+                    });
         }
     }
 
@@ -93,7 +93,6 @@ export class BotAddComponent implements OnInit {
             this.Setup = SetupModel.ForPlugin(plugin);
 
             this.setDefaultAccount();
-
             this.BotSetupForm = this.createSetupForm(this.Setup);
 
             let localBotIdRequestRef = ++this._botIRequestdRef;
