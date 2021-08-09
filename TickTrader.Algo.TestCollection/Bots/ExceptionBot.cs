@@ -4,9 +4,9 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    public enum ThrowVariants { OnInit, OnStart, OnQuote, OnStop, OnAsyncStop, OnTradeEvents }
+    public enum ThrowVariants { OnInit, OnStart, OnQuote, OnStop, OnAsyncStop, OnTradeEvents, OnOrderCollectionsUpdate }
 
-    [TradeBot(DisplayName = "[T] Exception Bot", Version = "1.1", Category = "Test Bot Routine", SetupMainSymbol = false,
+    [TradeBot(DisplayName = "[T] Exception Bot", Version = "1.2", Category = "Test Bot Routine", SetupMainSymbol = false,
         Description = "Throw exception on init, start, stop, new quote, balance update, order filled and order opened")]
     public class ExceptionBot : TradeBot
     {
@@ -16,6 +16,7 @@ namespace TickTrader.Algo.TestCollection.Bots
         protected override void Init()
         {
             Account.BalanceUpdated += () => Throw(ThrowVariants.OnTradeEvents, "BalanceUpdated");
+
             Account.Orders.Filled += a => Throw(ThrowVariants.OnTradeEvents, "OrderFilled");
             Account.Orders.Opened += a => Throw(ThrowVariants.OnTradeEvents, "OrderOpened");
             Account.Orders.Canceled += a => Throw(ThrowVariants.OnTradeEvents, "OrderCanceled");
@@ -25,8 +26,12 @@ namespace TickTrader.Algo.TestCollection.Bots
             Account.Orders.Modified += a => Throw(ThrowVariants.OnTradeEvents, "OrderModified");
             Account.Orders.Replaced += a => Throw(ThrowVariants.OnTradeEvents, "OrderReplaced");
 
-            Account.Orders.Added += a => Throw(ThrowVariants.OnTradeEvents, "OrderAdded");
-            Account.Orders.Removed += a => Throw(ThrowVariants.OnTradeEvents, "OrderRemoved");
+            Account.NetPositions.Splitted += a => Throw(ThrowVariants.OnTradeEvents, "PositionSplitted");
+            Account.NetPositions.Modified += a => Throw(ThrowVariants.OnTradeEvents, "PositionModified");
+
+            Account.Orders.Added += a => Throw(ThrowVariants.OnOrderCollectionsUpdate, "OrderAdded");
+            Account.Orders.Replaced += a => Throw(ThrowVariants.OnOrderCollectionsUpdate, "Orderreplaced");
+            Account.Orders.Removed += a => Throw(ThrowVariants.OnOrderCollectionsUpdate, "OrderRemoved");
 
             Throw(ThrowVariants.OnInit, nameof(Init));
         }
