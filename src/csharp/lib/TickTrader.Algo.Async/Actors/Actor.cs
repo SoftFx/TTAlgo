@@ -17,6 +17,23 @@ namespace TickTrader.Algo.Async.Actors
         protected IActorRef Self { get; private set; }
 
 
+        public ActorLock CreateLock()
+        {
+            if (MsgDispatcher == null)
+                throw Errors.MsgDispatcherRequired();
+
+            return new ActorLock(MsgDispatcher);
+        }
+
+        public ActorGate CreateGate()
+        {
+            if (MsgDispatcher == null)
+                throw Errors.MsgDispatcherRequired();
+
+            return new ActorGate(MsgDispatcher);
+        }
+
+
         internal void Init(string name, IMsgDispatcher msgDispatcher, object initMsg = null)
         {
             Name = name ?? throw Errors.ActorNameRequired();
@@ -68,6 +85,9 @@ namespace TickTrader.Algo.Async.Actors
                 case IAskMsg askMsg:
                     InvokeAskMsg(askMsg);
                     break;
+                case ReusableAsyncToken token:
+                    InvokeAsyncToken(token);
+                    break;
                 case InvokeInitCmd cmd:
                     InvokeInit(cmd.InitMsg);
                     break;
@@ -94,6 +114,18 @@ namespace TickTrader.Algo.Async.Actors
             try
             {
                 msg.Callback.Invoke(msg.State);
+            }
+            catch (Exception ex)
+            {
+                ActorSystem.OnActorError(Name, ex);
+            }
+        }
+
+        private void InvokeAsyncToken(ReusableAsyncToken token)
+        {
+            try
+            {
+                token.SetCompleted();
             }
             catch (Exception ex)
             {
