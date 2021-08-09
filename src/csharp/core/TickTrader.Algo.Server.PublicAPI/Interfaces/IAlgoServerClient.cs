@@ -21,9 +21,7 @@ namespace TickTrader.Algo.Server.PublicAPI
         Task Disconnect();
 
 
-        event Action Connected;
-
-        event Action Disconnected;
+        event Action<ClientStates> ClientStateChanged;
 
         #endregion Connection Management
 

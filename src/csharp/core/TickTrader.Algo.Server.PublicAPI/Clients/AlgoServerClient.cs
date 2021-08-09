@@ -152,7 +152,7 @@ namespace TickTrader.Algo.Server.PublicAPI
                     switch (t.Status)
                     {
                         case TaskStatus.RanToCompletion:
-                            OnLogout(t.Result.Reason.ToString());
+                            OnLogout(t.Result.Reason);
                             break;
                         case TaskStatus.Canceled:
                             OnConnectionError("Logout timeout");

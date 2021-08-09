@@ -72,10 +72,21 @@ namespace TickTrader.BotTerminal
 
             _stateControl.StateChanged += OnStateChanged;
 
-            _protocolClient.Connected += OnClientConnected;
-            _protocolClient.Disconnected += OnClientDisconnected;
+            _protocolClient.ClientStateChanged += ClientStateChanged; ;
         }
 
+        private void ClientStateChanged(ClientStates state)
+        {
+            switch (state)
+            {
+                case ClientStates.Online:
+                    _stateControl.PushEvent(Events.Connected);
+                    break;
+                case ClientStates.Offline:
+                    _stateControl.PushEvent(Events.Disconnected);
+                    break;
+            }
+        }
 
         public void Connect()
         {
@@ -112,17 +123,6 @@ namespace TickTrader.BotTerminal
 
 
         private void OnStateChanged(States from, States to) => StateChanged();
-
-
-        private void OnClientConnected()
-        {
-            _stateControl.PushEvent(Events.Connected);
-        }
-
-        private void OnClientDisconnected()
-        {
-            _stateControl.PushEvent(Events.Disconnected);
-        }
 
         private void StartConnecting()
         {

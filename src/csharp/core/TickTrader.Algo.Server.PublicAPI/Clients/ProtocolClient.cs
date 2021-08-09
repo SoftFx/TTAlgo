@@ -25,8 +25,9 @@ namespace TickTrader.Algo.Server.PublicAPI
         protected IClientSessionSettings SessionSettings { get; private set; }
 
 
-        public event Action Connected = delegate { };
-        public event Action Disconnected = delegate { };
+        //public event Action Connected = delegate { };
+        //public event Action Disconnected = delegate { };
+        public event Action<ClientStates> ClientStateChanged = delegate { };
 
 
         internal ProtocolClient(IAlgoServerEventHandler handler)
@@ -92,17 +93,7 @@ namespace TickTrader.Algo.Server.PublicAPI
             {
                 try
                 {
-                    switch (to)
-                    {
-                        case ClientStates.Online:
-                            Connected();
-                            break;
-                        case ClientStates.Offline:
-                            Disconnected();
-                            break;
-                        default:
-                            break;
-                    }
+                    ClientStateChanged?.Invoke(to);
                 }
                 catch (Exception ex)
                 {
@@ -185,8 +176,8 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         protected void OnConnectionError(string text, Exception ex = null)
         {
-            LastError = $"Connection error: {text}";
-            _logger.Error(ex, LastError);
+            LastError = text;
+            _logger.Error(ex, $"Connection error: {text}");
 
             _stateMachine.PushEvent(ClientEvents.ConnectionError);
         }
@@ -204,9 +195,9 @@ namespace TickTrader.Algo.Server.PublicAPI
             _stateMachine.PushEvent(ClientEvents.LoggedIn);
         }
 
-        protected void OnLogout(string reason)
+        protected void OnLogout(LogoutResponse.Types.LogoutReason reason)
         {
-            LastError = reason;
+            LastError = reason == LogoutResponse.Types.LogoutReason.ClientRequest ? string.Empty : reason.ToString();
 
             AccessManager = new ApiAccessManager(ClientClaims.Types.AccessLevel.Anonymous);
             _serverHandler.AccessLevelChanged();
