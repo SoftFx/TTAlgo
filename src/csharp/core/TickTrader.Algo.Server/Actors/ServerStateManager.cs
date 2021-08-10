@@ -114,7 +114,8 @@ namespace TickTrader.Algo.Server
                     var oldPath = $"{path}.old";
                     if (File.Exists(oldPath))
                         File.Delete(oldPath);
-                    File.Move(path, oldPath);
+                    if (File.Exists(path))
+                        File.Move(path, oldPath);
                     File.Move(newPath, path);
 
                     _lastSavedStateCnt = _stateCnt;
