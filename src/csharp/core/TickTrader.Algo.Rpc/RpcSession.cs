@@ -1,10 +1,10 @@
 ﻿using Google.Protobuf;
 using System;
 using System.Collections.Concurrent;
-using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using TickTrader.Algo.Async;
 using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Rpc
@@ -54,7 +54,7 @@ namespace TickTrader.Algo.Rpc
         private readonly ITransportProxy _transport;
         private readonly IRpcHost _rpcHost;
         private readonly ConcurrentDictionary<string, IRpcResponseContext> _pendingRequests = new ConcurrentDictionary<string, IRpcResponseContext>();
-        private readonly Subject<RpcSessionStateChangedArgs> _sessionStateSubject = new Subject<RpcSessionStateChangedArgs>();
+        private readonly ChannelEventSource<RpcSessionStateChangedArgs> _stateChangedSink = new ChannelEventSource<RpcSessionStateChangedArgs>();
         private readonly Channel<RpcSessionEvent> _eventBus = Channel.CreateUnbounded<RpcSessionEvent>();
 
         private IRpcHandler _rpcHandler;
@@ -73,7 +73,7 @@ namespace TickTrader.Algo.Rpc
 
         public RpcSessionState State { get; private set; }
 
-        public IObservable<RpcSessionStateChangedArgs> ObserveStates => _sessionStateSubject;
+        public IEventSource<RpcSessionStateChangedArgs> StateChanged => _stateChangedSink;
 
 
         public RpcSession(ITransportProxy transport, IRpcHost rpcHost)
@@ -141,8 +141,8 @@ namespace TickTrader.Algo.Rpc
         internal async Task Close()
         {
             ChangeState(RpcSessionState.Disconnected);
-            _sessionStateSubject.OnCompleted();
-            _sessionStateSubject.Dispose();
+            _stateChangedSink.Dispose();
+
             try
             {
                 await _transport.Close();
@@ -252,7 +252,7 @@ namespace TickTrader.Algo.Rpc
         {
             var changeArgs = new RpcSessionStateChangedArgs(this, State, newState);
             State = newState;
-            _sessionStateSubject.OnNext(changeArgs);
+            _stateChangedSink.Send(changeArgs);
         }
 
         //private void SendConnect(ProtocolSpec protocol)

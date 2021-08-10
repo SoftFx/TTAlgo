@@ -270,8 +270,6 @@ namespace TickTrader.Algo.Server
             if (_state == PluginModelInfo.Types.PluginState.Broken)
                 ChangeState(PluginModelInfo.Types.PluginState.Stopped);
 
-            await RuntimeControlModel.Start(_runtime);
-
             _server.SendUpdate(PluginModelUpdate.Updated(_id, GetInfoCopy()));
 
             return true;

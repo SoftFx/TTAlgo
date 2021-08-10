@@ -27,7 +27,7 @@ namespace TickTrader.Algo.Server
         private AccountSavedState _savedState;
         private AccountCreds _creds;
         private IAlgoLogger _logger;
-        private ActorSharp.Lib.AsyncGate _requestGate;
+        private ActorGate _requestGate;
         private AccountModelInfo.Types.ConnectionState _state;
         private ConnectionErrorInfo _lastError;
         private int _refCnt;
@@ -73,7 +73,7 @@ namespace TickTrader.Algo.Server
             _state = AccountModelInfo.Types.ConnectionState.Offline;
             _lastError = ConnectionErrorInfo.Ok;
 
-            _requestGate = new ActorSharp.Lib.AsyncGate();
+            _requestGate = CreateGate();
             _requestGate.OnWait += () => Self.Tell(ManageConnectionCmd.Instance);
             _requestGate.OnExit += () => Self.Tell(ScheduleDisconnectCmd.Instance);
 

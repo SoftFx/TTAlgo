@@ -61,7 +61,8 @@ namespace TickTrader.Algo.Async.Actors
                 var next = _queue.Dequeue();
                 TakenBy = next.WaiterName;
 
-                // we could execute token.SetCompleted() here, but to ensure fairness we should pass it to actor mailbox
+                // despite the fact that we should be in actor context already,
+                // we have to pass continuations through actor mailbox
                 _msgDispatcher.PostMessage(token);
             }
             else

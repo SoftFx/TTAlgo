@@ -1,26 +1,24 @@
 ﻿using Grpc.Core;
-using System;
 using System.Linq;
-using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using TickTrader.Algo.Async;
 
 namespace TickTrader.Algo.Rpc.OverGrpc
 {
     public class GrpcServer : OverGrpc.OverGrpcBase, ITransportServer
     {
-        private readonly Subject<ITransportProxy> _newConnectionSubject;
+        private readonly ChannelEventSource<ITransportProxy> _newConnectionSink = new ChannelEventSource<ITransportProxy>();
         private Server _server;
         private bool _acceptNewRequests;
 
 
-        public IObservable<ITransportProxy> ObserveNewConnections => _newConnectionSubject;
+        public IEventSource<ITransportProxy> NewConnectionAdded => _newConnectionSink;
 
         public int BoundPort { get; private set; }
 
 
         public GrpcServer()
         {
-            _newConnectionSubject = new Subject<ITransportProxy>();
             BoundPort = -1;
         }
 
@@ -42,8 +40,7 @@ namespace TickTrader.Algo.Rpc.OverGrpc
         {
             _acceptNewRequests = false;
             BoundPort = -1;
-            _newConnectionSubject.OnCompleted();
-            _newConnectionSubject.Dispose();
+            _newConnectionSink.Dispose();
 
             return Task.CompletedTask;
         }
@@ -59,7 +56,7 @@ namespace TickTrader.Algo.Rpc.OverGrpc
                 return Task.CompletedTask;
 
             var session = new GrpcSession(requestStream, responseStream);
-            _newConnectionSubject.OnNext(session);
+            _newConnectionSink.Send(session);
             return session.Completion;
         }
     }

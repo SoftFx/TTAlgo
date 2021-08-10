@@ -48,6 +48,8 @@ namespace TickTrader.Algo.Async.Actors
             while (_queue.Count > 0)
             {
                 var token = _queue.Dequeue();
+                // despite the fact that we should be in actor context already,
+                // we have to pass continuations through actor mailbox
                 _msgDispatcher.PostMessage(token);
                 _enteredCount++;
             }

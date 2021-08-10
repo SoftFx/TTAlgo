@@ -43,12 +43,12 @@ namespace TickTrader.Algo.Async.Actors
 
         internal static void OnActorError(string actorName, Exception ex)
         {
-            _actorErrorSink.Writer.TryWrite(new ActorErrorException(actorName, ex));
+            _actorErrorSink.Send(new ActorErrorException(actorName, ex));
         }
 
         internal static void OnActorFailed(string actorName, Exception ex)
         {
-            _actorFailedSink.Writer.TryWrite(new ActorFailedException(actorName, ex));
+            _actorFailedSink.Send(new ActorFailedException(actorName, ex));
         }
 
 

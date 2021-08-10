@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Async
 
     internal class ReusableAsyncToken : IDisposable, IAsyncToken, IAwaiter<IDisposable>
     {
-        private readonly bool _sendSelfToOwner;
+        private readonly bool _returnSelfToOwner;
 
         private bool _isCompleted;
         private Action _callback;
@@ -40,10 +40,10 @@ namespace TickTrader.Algo.Async
             _owner = owner;
         }
 
-        private ReusableAsyncToken(IAsyncTokenOwner owner, bool sendSelfToOwner)
+        private ReusableAsyncToken(IAsyncTokenOwner owner, bool returnSelfToOwner)
         {
             _owner = owner;
-            _sendSelfToOwner = sendSelfToOwner;
+            _returnSelfToOwner = returnSelfToOwner;
         }
 
 
@@ -65,7 +65,7 @@ namespace TickTrader.Algo.Async
 
         public void Dispose()
         {
-            _owner?.Return(_sendSelfToOwner ? this : null);
+            _owner?.Return(_returnSelfToOwner ? this : null);
         }
 
 

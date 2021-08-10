@@ -2,9 +2,9 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
+using TickTrader.Algo.Async;
 
 namespace TickTrader.Algo.Rpc.OverTcp
 {
@@ -13,22 +13,21 @@ namespace TickTrader.Algo.Rpc.OverTcp
 
     public class TcpServer : ITransportServer
     {
-        private readonly Subject<ITransportProxy> _newConnectionSubject;
+        private readonly ChannelEventSource<ITransportProxy> _newConnectionSink = new ChannelEventSource<ITransportProxy>();
+        private readonly Ref<TcpContext> _context;
 
         private Socket _listenSocket;
         private CancellationTokenSource _cancelTokenSrc;
         private Task _acceptTask;
-        private readonly Ref<TcpContext> _context;
 
 
-        public IObservable<ITransportProxy> ObserveNewConnections => _newConnectionSubject;
+        public IEventSource<ITransportProxy> NewConnectionAdded => _newConnectionSink;
 
         public int BoundPort { get; private set; }
 
 
         public TcpServer()
         {
-            _newConnectionSubject = new Subject<ITransportProxy>();
             BoundPort = -1;
             _context = Actor.SpawnLocal<TcpContext>(null, $"TcpServer {Guid.NewGuid().ToString("N")}");
         }
@@ -60,8 +59,7 @@ namespace TickTrader.Algo.Rpc.OverTcp
             catch (SocketException) { }
 
             BoundPort = -1;
-            _newConnectionSubject.OnCompleted();
-            _newConnectionSubject.Dispose();
+            _newConnectionSink.Dispose();
         }
 
         public Task Stop()
@@ -80,7 +78,7 @@ namespace TickTrader.Algo.Rpc.OverTcp
 
                 var session = new TcpSession(clientSocket, _context);
                 await session.Start();
-                _newConnectionSubject.OnNext(session);
+                _newConnectionSink.Send(session);
             }
         }
     }

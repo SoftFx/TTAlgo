@@ -103,6 +103,7 @@ namespace TickTrader.Algo.Server
             _savedState = new ServerStateModel(_stateManager);
             _serverPrivate = new AlgoServerPrivate(Self, _env, _eventBus, _savedState, _alerts);
             _serverPrivate.AccountOptions = Account.ConnectionOptions.CreateForServer(_settings.EnableAccountLogs, _env.LogFolder);
+            _serverPrivate.RuntimeSettings = _settings.RuntimeSettings;
 
             _pkgStorage = new PackageStorage(_eventBus);
             _runtimes = new RuntimeManager(_serverPrivate);
@@ -164,7 +165,7 @@ namespace TickTrader.Algo.Server
 
             var oldRuntime = _runtimes.GetPkgRuntime(pkgId);
             if (oldRuntime != null)
-                RuntimeControlModel.MarkForShutdown(oldRuntime);
+                RuntimeControlModel.MarkObsolete(oldRuntime);
 
             if (string.IsNullOrEmpty(pkgRefId))
                 return;

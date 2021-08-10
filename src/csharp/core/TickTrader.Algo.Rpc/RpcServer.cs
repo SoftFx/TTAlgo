@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 
@@ -32,7 +31,7 @@ namespace TickTrader.Algo.Rpc
         public Task Start(string address, int port)
         {
             _transportServer = _transportFactory.CreateServer();
-            _newConnectionSubscription = _transportServer.ObserveNewConnections.Subscribe(OnNewConnection);
+            _newConnectionSubscription = _transportServer.NewConnectionAdded.Subscribe(t => OnNewConnection(t));
             return _transportServer.Start(address, port);
         }
 
@@ -116,7 +115,7 @@ namespace TickTrader.Algo.Rpc
                 else
                 {
                     _logger.Debug("OnNewConnection failure");
-                    session.Close();
+                    session.Close().Forget();
                 }
             });
         }
@@ -127,7 +126,7 @@ namespace TickTrader.Algo.Rpc
             lock (_lock)
             {
                 _sessions.Add(session);
-                session.ObserveStates.Subscribe(args =>
+                session.StateChanged.Subscribe(args =>
                 {
                     if (args.NewState == RpcSessionState.Disconnected)
                         RemoveSession(args.Session);

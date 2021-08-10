@@ -1,6 +1,6 @@
-﻿using System;
-using System.Threading.Channels;
+﻿using System.Threading.Channels;
 using System.Threading.Tasks;
+using TickTrader.Algo.Async;
 
 namespace TickTrader.Algo.Rpc
 {
@@ -16,7 +16,7 @@ namespace TickTrader.Algo.Rpc
 
     public interface ITransportServer
     {
-        IObservable<ITransportProxy> ObserveNewConnections { get; }
+        IEventSource<ITransportProxy> NewConnectionAdded { get; }
 
         int BoundPort { get; }
 

@@ -28,7 +28,7 @@ namespace TickTrader.Algo.Server
             _logger.Debug("Runtimes stopping...");
 
             await Task.WhenAll(_runtimeMap.Select(r =>
-                RuntimeControlModel.Stop(r.Value, "Server shutdown")
+                RuntimeControlModel.Shutdown(r.Value)
                     .OnException(ex => _logger.Error(ex, $"Failed to stop runtime {r.Key}"))).ToArray());
 
             _logger.Debug("Runtimes stopped");

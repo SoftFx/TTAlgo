@@ -86,7 +86,7 @@ namespace TickTrader.Algo.Runtime
             {
                 proxy.SetSession(_session);
             }
-            _rpcStateSub = session.ObserveStates.Subscribe(OnStateChange);
+            _rpcStateSub = session.StateChanged.Subscribe(OnStateChange);
         }
 
         public void HandleNotification(string proxyId, string callId, Any payload)

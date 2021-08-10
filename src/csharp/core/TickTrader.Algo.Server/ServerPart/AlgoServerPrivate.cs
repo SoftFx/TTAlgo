@@ -23,6 +23,8 @@ namespace TickTrader.Algo.Server
 
         public ConnectionOptions AccountOptions { get; set; }
 
+        public RuntimeSettings RuntimeSettings { get; set; }
+
 
         public AlgoServerPrivate(IActorRef server, EnvService env, IActorRef eventBus, ServerStateModel savedState, AlertManagerModel alerts)
         {

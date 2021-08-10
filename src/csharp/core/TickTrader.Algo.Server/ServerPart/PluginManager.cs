@@ -12,7 +12,7 @@ namespace TickTrader.Algo.Server
 {
     internal class PluginManager
     {
-        private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<RuntimeManager>();
+        private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<PluginManager>();
 
         private readonly AlgoServerPrivate _server;
         private readonly Dictionary<string, IActorRef> _plugins = new Dictionary<string, IActorRef>();

@@ -20,6 +20,8 @@ namespace TickTrader.Algo.Server
         public const int ShutdownTimeout = 10000;
         public const int KillTimeout = 2000;
 
+        private static readonly TimeSpan KeepAliveThreshold = TimeSpan.FromMinutes(2);
+
         private readonly AlgoServerPrivate _server;
         private readonly RuntimeConfig _config;
         private readonly PackageInfo _pkgInfo;
@@ -29,13 +31,17 @@ namespace TickTrader.Algo.Server
         private IAlgoLogger _logger;
         private RuntimeState _state;
         private Process _process;
-        private TaskCompletionSource<bool> _startTaskSrc;
-        private TaskCompletionSource<object> _connectTaskSrc, _stopTaskSrc;
+        private TaskCompletionSource<object> _connectTaskSrc, _shutdownTaskSrc;
         private CancellationTokenSource _killProcessCancelSrc;
         private IRuntimeProxy _proxy;
         private RpcSession _session;
+        private IDisposable _sessionStateChangedSub;
         private int _activeExecutorsCnt;
-        private bool _shutdownWhenIdle;
+        private bool _isObsolete;
+        private DateTime _pendingShutdown;
+        private ActorGate _requestGate;
+        private ActorLock _controlLock;
+        private IDisposable _startLockToken, _shutdownLockToken;
 
         public RuntimeControlActor(AlgoServerPrivate server, RuntimeConfig config, PackageInfo pkgInfo)
         {
@@ -45,9 +51,8 @@ namespace TickTrader.Algo.Server
             _id = config.Id;
             _pkgId = config.PackageId;
 
-            Receive<StartRuntimeCmd, bool>(Start);
-            Receive<StopRuntimeCmd>(Stop);
-            Receive<MarkForShutdownCmd>(MarkForShutdown);
+            Receive<ShutdownCmd>(Shutdown);
+            Receive<MarkObsoleteCmd>(MarkObsolete);
             Receive<ConnectSessionCmd, bool>(ConnectSession);
             Receive<StartExecutorRequest>(StartExecutor);
             Receive<StopExecutorRequest>(StopExecutor);
@@ -56,6 +61,10 @@ namespace TickTrader.Algo.Server
             Receive<GetPluginInfoRequest, PluginInfo>(GetPluginInfo);
             Receive<ExecutorNotificationMsg>(OnExecutorNotification);
             Receive<ProcessExitedMsg>(OnProcessExited);
+
+            Receive<ManageRuntimeCmd>(ManageRuntimeLoop);
+            Receive<ScheduleShutdownCmd>(ScheduleShutdown);
+            Receive<ConnectionLostMsg>(OnConnectionLost);
         }
 
 
@@ -69,31 +78,157 @@ namespace TickTrader.Algo.Server
         {
             _logger = AlgoLoggerFactory.GetLogger(Name);
             _state = RuntimeState.Stopped;
+
+            _controlLock = CreateLock();
+            _requestGate = CreateGate();
+            _requestGate.OnWait += () => Self.Tell(ManageRuntimeCmd.Instance);
+            _requestGate.OnExit += () => Self.Tell(ScheduleShutdownCmd.Instance);
+
+            Self.Tell(ManageRuntimeCmd.Instance);
         }
 
 
-        private async Task<bool> Start(StartRuntimeCmd cmd)
+        private Task Shutdown(ShutdownCmd cmd)
         {
-            if (_state == RuntimeState.Running)
+            if (_shutdownTaskSrc == null)
+            {
+                _shutdownTaskSrc = new TaskCompletionSource<object>();
+                ShutdownInternal("Server shutdown").Forget();
+            }
+
+            return _shutdownTaskSrc.Task;
+        }
+
+        private void MarkObsolete(MarkObsoleteCmd cmd)
+        {
+            _isObsolete = true;
+            _logger.Debug("Marked obsolete");
+
+            if (_state == RuntimeState.Stopped)
+            {
+                _server.OnRuntimeStopped(_id);
+                return;
+            }
+
+            ManageRuntimeInternal();
+
+        }
+
+        private async Task StartExecutor(StartExecutorRequest request)
+        {
+            using (await _requestGate.Enter())
+            {
+                ThrowIfRunning();
+
+                _activeExecutorsCnt++;
+                await _proxy.StartExecutor(request);
+                _logger.Debug($"Executor {request.Config.Id} started. Have {_activeExecutorsCnt} active executors");
+            }
+        }
+
+        private async Task StopExecutor(StopExecutorRequest request)
+        {
+            using (await _requestGate.Enter())
+            {
+                ThrowIfRunning();
+
+                await _proxy.StopExecutor(request);
+            }
+        }
+
+        private PluginInfo GetPluginInfo(GetPluginInfoRequest request)
+        {
+            return _pkgInfo.GetPlugin(request.Plugin);
+        }
+
+        private bool AttachPlugin(AttachPluginCmd cmd)
+        {
+            var id = cmd.PluginId;
+            if (_pluginsMap.ContainsKey(id))
+            {
+                _logger.Error($"Plugin '{id}' already attached");
+                return false;
+            }
+
+            _pluginsMap.Add(id, cmd.Plugin);
+            _logger.Debug($"Attached plugin '{id}'. Have {_pluginsMap.Count} attached plugins");
+            ManageRuntimeInternal();
+            return true;
+        }
+
+        public bool DetachPlugin(DetachPluginCmd cmd)
+        {
+            var id = cmd.PluginId;
+
+            if (_pluginsMap.Remove(id))
+            {
+                _logger.Debug($"Detached plugin '{id}'. Have {_pluginsMap.Count} attached plugins");
+                ManageRuntimeInternal();
                 return true;
-            if (_state != RuntimeState.Stopped)
-                return await _startTaskSrc.Task;
-
-            _startTaskSrc = new TaskCompletionSource<bool>();
-            var res = await StartInternal();
-            _startTaskSrc.TrySetResult(res);
-            return res;
+            }
+            else
+            {
+                _logger.Error($"Plugin '{id}' was not attached");
+                return false;
+            }
         }
 
-        private async Task<bool> StartInternal()
+
+        private void ManageRuntimeLoop(ManageRuntimeCmd cmd)
         {
+            if (_shutdownTaskSrc != null)
+                return;
+
+            ManageRuntimeInternal();
+            TaskExt.Schedule(1000, () => Self.Tell(ManageRuntimeCmd.Instance));
+        }
+
+        private void ScheduleShutdown(ScheduleShutdownCmd cmd)
+        {
+            _pendingShutdown = DateTime.UtcNow + KeepAliveThreshold;
+        }
+
+        private void ManageRuntimeInternal()
+        {
+            if (_state == RuntimeState.Stopped)
+            {
+                var devModeStart = _pluginsMap.Count > 0 && _server.RuntimeSettings.EnableDevMode;
+                var forcedStart = _requestGate.WatingCount > 0;
+
+                if (devModeStart || forcedStart)
+                {
+                    _logger.Debug($"Staring runtime... ({nameof(devModeStart)} = {devModeStart}, {nameof(forcedStart)} = {forcedStart})");
+                    StartInternal().OnException(ex => _logger.Error(ex, "Start failed"));
+                }
+            }
+            else if (_state == RuntimeState.Running)
+            {
+                var shouldBeRunning = _activeExecutorsCnt > 0 || (_pluginsMap.Count > 0 && _server.RuntimeSettings.EnableDevMode);
+                var scheduledShutdown = !shouldBeRunning && _pendingShutdown < DateTime.UtcNow;
+                var obsoleteShutdown = !shouldBeRunning && _isObsolete;
+
+                var reason = string.Empty;
+                if (scheduledShutdown)
+                    reason = "Idle shutdown";
+                else if (obsoleteShutdown)
+                    reason = "Obsolete shutdown";
+
+                if (!shouldBeRunning)
+                    ShutdownInternal(reason).OnException(ex => _logger.Error(ex, "Shutdown failed"));
+            }
+        }
+
+        private async Task StartInternal()
+        {
+            _startLockToken = await _controlLock.GetLock(nameof(StartInternal));
+
             try
             {
                 ChangeState(RuntimeState.Starting);
 
                 var started = StartProcess();
                 if (!started)
-                    return false;
+                    return;
 
                 ChangeState(RuntimeState.Connecting);
 
@@ -104,13 +239,15 @@ namespace TickTrader.Algo.Server
                 {
                     _logger.Error("Failed to connect runtime process within timeout");
                     ScheduleKillProcess();
-                    return false;
+                    return;
                 }
 
                 await _proxy.Start(new StartRuntimeRequest { Config = _config });
 
+                _startLockToken.Dispose();
+                _startLockToken = null;
+
                 ChangeState(RuntimeState.Running);
-                return true;
             }
             catch (Exception ex)
             {
@@ -119,8 +256,6 @@ namespace TickTrader.Algo.Server
                 if (_process != null && !_process.HasExited)
                     ScheduleKillProcess();
             }
-
-            return false;
         }
 
         private bool StartProcess()
@@ -166,10 +301,24 @@ namespace TickTrader.Algo.Server
             var crashed = msg.ExitCode != 0 || _state != RuntimeState.Stopping;
 
             ChangeState(RuntimeState.Stopped);
-            _server.OnRuntimeStopped(_id);
+            _shutdownTaskSrc?.TrySetResult(null);
+            if (_isObsolete)
+                _server.OnRuntimeStopped(_id);
+
+            if (_startLockToken != null)
+            {
+                _startLockToken.Dispose();
+                _startLockToken = null;
+            }
+            if (_shutdownLockToken != null)
+            {
+                _shutdownLockToken.Dispose();
+                _shutdownLockToken = null;
+            }
 
             if (crashed)
             {
+                _activeExecutorsCnt = 0;
                 foreach (var plugin in _pluginsMap.Values)
                     plugin.Tell(PluginActor.RuntimeCrashedMsg.Instance);
             }
@@ -183,60 +332,31 @@ namespace TickTrader.Algo.Server
             Self.Tell(new ProcessExitedMsg(exitCode));
         }
 
-        private async Task Stop(StopRuntimeCmd cmd)
+        private async Task ShutdownInternal(string reason)
         {
+            _shutdownLockToken = await _controlLock.GetLock(nameof(ShutdownInternal));
             if (_state == RuntimeState.Stopped)
-                return;
-            if (_state == RuntimeState.Stopping)
             {
-                await _stopTaskSrc.Task;
-                return;
-            }
-            if (_state != RuntimeState.Running)
-            {
-                await _startTaskSrc.Task;
-                await Stop(cmd);
+                _shutdownTaskSrc?.TrySetResult(null);
                 return;
             }
 
-            _stopTaskSrc = new TaskCompletionSource<object>();
-
-            await StopInternal(cmd.Reason);
-
-            _stopTaskSrc.TrySetResult(null);
-        }
-
-        private async Task StopInternal(string reason)
-        {
             try
             {
-                _logger.Debug($"Stop reason: {reason}");
+                _logger.Debug($"Shutdown reason: {reason}");
                 ChangeState(RuntimeState.Stopping);
-
-                await _startTaskSrc.Task;
-                _startTaskSrc = null;
 
                 var finished = await _proxy.Stop(new StopRuntimeRequest()).WaitAsync(ShutdownTimeout);
                 if (!finished)
                     _logger.Error("No response for stop request. Considering process hanged");
 
                 await _session.Disconnect(reason);
-                OnDetached();
-
-                ScheduleKillProcess();
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failed to stop");
+                _logger.Error(ex, "Failed to shutdown");
+                ScheduleKillProcess();
             }
-        }
-
-        private void MarkForShutdown(MarkForShutdownCmd cmd)
-        {
-            _shutdownWhenIdle = true;
-            _logger.Debug("Marked for shutdown");
-            if (_activeExecutorsCnt == 0)
-                ShutdownInternal();
         }
 
         private bool ConnectSession(ConnectSessionCmd cmd)
@@ -255,73 +375,27 @@ namespace TickTrader.Algo.Server
 
             _proxy = new RemoteRuntimeProxy(session);
             _session = session;
+            _sessionStateChangedSub = session.StateChanged.Subscribe(_ => Self.Tell(ConnectionLostMsg.Instance));
 
             _connectTaskSrc?.TrySetResult(null);
 
             return true;
         }
 
-        private void OnDetached()
+        private void OnConnectionLost(ConnectionLostMsg msg)
         {
+            if (_session == null)
+                return;
+
             _proxy = null;
             _session = null;
-        }
+            _sessionStateChangedSub?.Dispose();
+            _sessionStateChangedSub = null;
 
-        private void ShutdownInternal()
-        {
-            _logger.Debug($"Shutdown initiated");
-            Stop(new StopRuntimeCmd("Idle shutdown"))
-                .OnException(ex => _logger.Error(ex, $"Failed to shutdown"));
-        }
-
-        private async Task StartExecutor(StartExecutorRequest request)
-        {
-            await WhenStarted();
-
-            _activeExecutorsCnt++;
-            await _proxy.StartExecutor(request);
-            _logger.Debug($"Executor {request.Config.Id} started. Have {_activeExecutorsCnt} active executors");
-        }
-
-        private async Task StopExecutor(StopExecutorRequest request)
-        {
-            await WhenStarted();
-
-            await _proxy.StopExecutor(request);
-        }
-
-        private PluginInfo GetPluginInfo(GetPluginInfoRequest request)
-        {
-            return _pkgInfo.GetPlugin(request.Plugin);
-        }
-
-        private bool AttachPlugin(AttachPluginCmd cmd)
-        {
-            var id = cmd.PluginId;
-            if (_pluginsMap.ContainsKey(id))
+            if (_state != RuntimeState.Stopping && _state != RuntimeState.Stopped)
             {
-                _logger.Error($"Plugin '{id}' already attached");
-                return false;
-            }
-
-            _pluginsMap.Add(id, cmd.Plugin);
-            _logger.Debug($"Attached plugin '{id}'. Have {_pluginsMap.Count} attached plugins");
-            return true;
-        }
-
-        public bool DetachPlugin(DetachPluginCmd cmd)
-        {
-            var id = cmd.PluginId;
-
-            if (_pluginsMap.Remove(id))
-            {
-                _logger.Debug($"Detached plugin '{id}'. Have {_pluginsMap.Count} attached plugins");
-                return true;
-            }
-            else
-            {
-                _logger.Error($"Plugin '{id}' was not attached");
-                return false;
+                _logger.Info("Connection to runtime process lost");
+                ScheduleKillProcess();
             }
         }
 
@@ -371,18 +445,13 @@ namespace TickTrader.Algo.Server
             _activeExecutorsCnt--;
             _logger.Debug($"Executor {executorId} stopped. Have {_activeExecutorsCnt} active executors");
 
-            if (_activeExecutorsCnt == 0 && _shutdownWhenIdle)
-                ShutdownInternal();
+            ManageRuntimeInternal();
         }
 
 
-        private async Task WhenStarted()
+        private void ThrowIfRunning()
         {
-            if (_startTaskSrc == null)
-                throw Errors.RuntimeNotStarted(_id);
-
-            var connected = await _startTaskSrc.Task;
-            if (!connected)
+            if (_state != RuntimeState.Running)
                 throw Errors.RuntimeNotStarted(_id);
         }
 
@@ -393,19 +462,9 @@ namespace TickTrader.Algo.Server
         }
 
 
-        internal class StartRuntimeCmd : Singleton<StartRuntimeCmd> { }
+        internal sealed class ShutdownCmd : Singleton<ShutdownCmd> { }
 
-        internal class StopRuntimeCmd
-        {
-            public string Reason { get; }
-
-            public StopRuntimeCmd(string reason)
-            {
-                Reason = reason;
-            }
-        }
-
-        internal class MarkForShutdownCmd : Singleton<MarkForShutdownCmd> { }
+        internal sealed class MarkObsoleteCmd : Singleton<MarkObsoleteCmd> { }
 
         internal class ConnectSessionCmd
         {
@@ -472,5 +531,12 @@ namespace TickTrader.Algo.Server
                 ExitCode = exitCode;
             }
         }
+
+
+        private sealed class ManageRuntimeCmd : Singleton<ManageRuntimeCmd> { }
+
+        private sealed class ScheduleShutdownCmd : Singleton<ScheduleShutdownCmd> { }
+
+        private sealed class ConnectionLostMsg : Singleton<ConnectionLostMsg> { }
     }
 }
