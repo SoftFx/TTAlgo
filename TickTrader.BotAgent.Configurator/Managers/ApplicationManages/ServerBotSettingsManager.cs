@@ -11,7 +11,7 @@ namespace TickTrader.BotAgent.Configurator
 
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private readonly string[] _workingFolders = new string[3] { "AlgoData", "AlgoRepository", "server.config.xml" };
+        private readonly string[] _workingFolders = new string[4] { "AlgoData", "AlgoRepository", "Settings", "server.config.xml" };
 
         private readonly RegistryManager _registry;
 

@@ -66,9 +66,9 @@ namespace TickTrader.BotAgent.Configurator
             _spinner.Stop();
 
             if (result)
-                Application.Current.Dispatcher.BeginInvoke(new Action<string>(MessageBoxManager.OkInfo), $"{messagePath} {(isSaveProcess ? "save" : "load")} was successfully");
+                Application.Current.Dispatcher.BeginInvoke(new Action<string>(MessageBoxManager.OkInfo), $"{messagePath} {(isSaveProcess ? "saved" : "loaded")} successfully");
             else
-                Application.Current.Dispatcher.BeginInvoke(new Action<string>(MessageBoxManager.OkError), $"{messagePath} {(isSaveProcess ? "save" : "load")} has failed");
+                Application.Current.Dispatcher.BeginInvoke(new Action<string>(MessageBoxManager.OkError), $"Failed to {(isSaveProcess ? "save" : "load")} {messagePath}");
         }
     }
 }
