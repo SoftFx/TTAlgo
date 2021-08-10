@@ -217,7 +217,7 @@ namespace TickTrader.Algo.Server.PublicAPI
                         _messageFormatter.LogClientUpdate(_logger, updateInfo);
 
                         if (updateInfo is UpdateInfo<HeartbeatUpdate>)
-                            continue;
+                            RefreshConnectionTimer();
 
                         else if (updateInfo is UpdateInfo<AlertListUpdate> alertUpdate)
                             _serverHandler.OnAlertListUpdate(alertUpdate.Value);

@@ -1,6 +1,7 @@
 ﻿using Machinarium.State;
 using NLog;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Server.Common;
 
@@ -8,9 +9,12 @@ namespace TickTrader.Algo.Server.PublicAPI
 {
     public abstract class ProtocolClient
     {
+        private const int LossConnectionTimeOut = 15000;
+
         protected readonly IAlgoServerEventHandler _serverHandler;
         protected readonly StateMachine<ClientStates> _stateMachine;
 
+        private Timer _lossConnectionTimer;
         protected ILogger _logger;
 
 
@@ -25,8 +29,6 @@ namespace TickTrader.Algo.Server.PublicAPI
         protected IClientSessionSettings SessionSettings { get; private set; }
 
 
-        //public event Action Connected = delegate { };
-        //public event Action Disconnected = delegate { };
         public event Action<ClientStates> ClientStateChanged = delegate { };
 
 
@@ -171,6 +173,7 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         protected void OnDisconnected()
         {
+            StopConnectionTimer();
             _stateMachine.PushEvent(ClientEvents.Disconnected);
         }
 
@@ -207,7 +210,27 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         protected void OnSubscribed()
         {
+            StartConnectionTimer();
+
             _stateMachine.PushEvent(ClientEvents.Initialized);
         }
+
+        protected void StartConnectionTimer()
+        {
+            _lossConnectionTimer = new Timer(BreakServerConnection, null, LossConnectionTimeOut, -1);
+        }
+
+        protected void StopConnectionTimer()
+        {
+            _lossConnectionTimer?.Dispose();
+            _lossConnectionTimer = null;
+        }
+
+        protected void RefreshConnectionTimer()
+        {
+            _lossConnectionTimer?.Change(LossConnectionTimeOut, -1);
+        }
+
+        protected void BreakServerConnection(object obj) => OnConnectionError("Server connection has been lost");
     }
 }
