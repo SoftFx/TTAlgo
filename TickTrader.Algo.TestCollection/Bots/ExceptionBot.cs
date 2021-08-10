@@ -26,7 +26,7 @@ namespace TickTrader.Algo.TestCollection.Bots
             Account.Orders.Expired += a => Throw(ThrowVariants.OnTradeEvents, "OrderExpired");
             Account.Orders.Closed += a => Throw(ThrowVariants.OnTradeEvents, "OrderClosed");
             Account.Orders.Modified += a => Throw(ThrowVariants.OnTradeEvents, "OrderModified");
-            Account.Orders.Replaced += a => Throw(ThrowVariants.OnTradeEvents, "OrderReplaced");
+            Account.Orders.Splitted += a => Throw(ThrowVariants.OnTradeEvents, "OrderSplitted");
 
             Account.NetPositions.Splitted += a => Throw(ThrowVariants.OnTradeEvents, "PositionSplitted");
             Account.NetPositions.Modified += a => Throw(ThrowVariants.OnTradeEvents, "PositionModified");
