@@ -114,7 +114,7 @@ namespace TickTrader.Algo.Async
                     var item = subs[i];
                     if (!ReferenceEquals(item, sub))
                     {
-                        newSubs[j] = sub;
+                        newSubs[j] = item;
                         j++;
                     }
                 }

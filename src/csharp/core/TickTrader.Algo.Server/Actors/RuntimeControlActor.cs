@@ -336,10 +336,18 @@ namespace TickTrader.Algo.Server
 
         private void OnProcessExit(object sender, EventArgs args)
         {
-            // non-actor context
-            var exitCode = _process.ExitCode;
-            _logger.Info($"Process {_process.Id} exited with exit code {exitCode}");
-            Self.Tell(new ProcessExitedMsg(exitCode));
+            // runs directly on thread pool
+            try
+            {
+                // non-actor context
+                var exitCode = _process.ExitCode;
+                _logger.Info($"Process {_process.Id} exited with exit code {exitCode}");
+                Self.Tell(new ProcessExitedMsg(exitCode));
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Process exit handler failed");
+            }
         }
 
         private async Task ManageRequestGate(RuntimeState oldState)
