@@ -213,7 +213,7 @@ namespace TickTrader.Algo.Server
                 else if (obsoleteShutdown)
                     reason = "Obsolete shutdown";
 
-                if (!shouldBeRunning)
+                if (scheduledShutdown || obsoleteShutdown)
                     ShutdownInternal(reason).OnException(ex => _logger.Error(ex, "Shutdown failed"));
             }
         }
@@ -243,6 +243,9 @@ namespace TickTrader.Algo.Server
                 }
 
                 await _proxy.Start(new StartRuntimeRequest { Config = _config });
+
+                ScheduleShutdown(ScheduleShutdownCmd.Instance);
+                _requestGate.Open();
 
                 _startLockToken.Dispose();
                 _startLockToken = null;
