@@ -102,6 +102,15 @@ namespace TickTrader.Algo.Package
                 return;
             }
 
+            if (result.IsLocked)
+            {
+                result.IsLocked = false;
+                if (pkgState.NextAction == null)
+                    pkgState.NextAction = PkgUpdateAction.Upsert;
+                TaskExt.Schedule(100, () => Self.Tell(result));
+                return;
+            }
+
             pkgState.IsLoading = false;
             if (fileUpdate != null)
             {
@@ -258,7 +267,10 @@ namespace TickTrader.Algo.Package
             catch (IOException ioEx)
             {
                 if (ioEx.IsLockException())
+                {
                     logger?.Debug($"Algo package is locked at '{path}'");
+                    res.IsLocked = true;
+                }
                 else
                     logger?.Info($"Can't open Algo package at '{path}': {ioEx.Message}"); // other errors
             }
@@ -333,6 +345,8 @@ namespace TickTrader.Algo.Package
             public string Path { get; }
 
             public PackageFileUpdate FileUpdate { get; set; }
+
+            public bool IsLocked { get; set; }
 
 
             public PackageLoadResult(string path)
