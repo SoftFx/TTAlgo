@@ -12,7 +12,7 @@
         Deinitializing
     };
 
-    public enum ClientEvents
+    internal enum ClientEvents
     {
         Started,
         Connected,

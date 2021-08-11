@@ -175,8 +175,8 @@ namespace TickTrader.Algo.Server.PublicAPI
                 _serverHandler.SetSetupContext(snapshot.SetupContext);
 
                 _serverHandler.InitPackageList(snapshot.Packages.ToList());
-                _serverHandler.InitAccountList(snapshot.Accounts.ToList());
-                _serverHandler.InitBotList(snapshot.Plugins.ToList());
+                _serverHandler.InitAccountModelList(snapshot.Accounts.ToList());
+                _serverHandler.InitPluginModelList(snapshot.Plugins.ToList());
             }
             catch (UnauthorizedException uex)
             {
@@ -229,7 +229,7 @@ namespace TickTrader.Algo.Server.PublicAPI
                         else if (updateInfo is UpdateInfo<PackageUpdate> packageUpdate)
                             _serverHandler.OnPackageUpdate(packageUpdate.Value);
                         else if (updateInfo is UpdateInfo<AccountModelUpdate> accountUpdate)
-                            _serverHandler.OnAccountUpdate(accountUpdate.Value);
+                            _serverHandler.OnAccountModelUpdate(accountUpdate.Value);
                         else if (updateInfo is UpdateInfo<PluginModelUpdate> pluginUpdate)
                             _serverHandler.OnPluginModelUpdate(pluginUpdate.Value);
 

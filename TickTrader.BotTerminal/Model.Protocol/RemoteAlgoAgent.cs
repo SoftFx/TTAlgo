@@ -252,7 +252,7 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void AlgoServerApi.IAlgoServerEventHandler.InitAccountList(List<AlgoServerApi.AccountModelInfo> accounts)
+        void AlgoServerApi.IAlgoServerEventHandler.InitAccountModelList(List<AlgoServerApi.AccountModelInfo> accounts)
         {
             _syncContext.Invoke(() =>
             {
@@ -264,7 +264,7 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void AlgoServerApi.IAlgoServerEventHandler.InitBotList(List<AlgoServerApi.PluginModelInfo> bots)
+        void AlgoServerApi.IAlgoServerEventHandler.InitPluginModelList(List<AlgoServerApi.PluginModelInfo> bots)
         {
             _syncContext.Invoke(() =>
             {
@@ -317,7 +317,7 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void AlgoServerApi.IAlgoServerEventHandler.OnAccountUpdate(AlgoServerApi.AccountModelUpdate acc)
+        void AlgoServerApi.IAlgoServerEventHandler.OnAccountModelUpdate(AlgoServerApi.AccountModelUpdate acc)
         {
             _syncContext.Invoke(() =>
             {

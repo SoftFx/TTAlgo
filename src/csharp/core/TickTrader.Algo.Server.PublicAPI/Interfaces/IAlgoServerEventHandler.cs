@@ -12,9 +12,9 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         void InitPackageList(List<PackageInfo> report);
 
-        void InitAccountList(List<AccountModelInfo> report);
+        void InitAccountModelList(List<AccountModelInfo> report);
 
-        void InitBotList(List<PluginModelInfo> report);
+        void InitPluginModelList(List<PluginModelInfo> report);
 
         void SetApiMetadata(ApiMetadataInfo apiMetadata);
 
@@ -29,7 +29,7 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         void OnPackageUpdate(PackageUpdate update);
 
-        void OnAccountUpdate(AccountModelUpdate update);
+        void OnAccountModelUpdate(AccountModelUpdate update);
 
         void OnPluginModelUpdate(PluginModelUpdate update);
 
