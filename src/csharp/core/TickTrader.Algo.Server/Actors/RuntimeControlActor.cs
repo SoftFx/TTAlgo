@@ -118,7 +118,7 @@ namespace TickTrader.Algo.Server
         {
             using (await _requestGate.Enter())
             {
-                ThrowIfRunning();
+                ThrowIfNotRunning();
 
                 _activeExecutorsCnt++;
                 await _proxy.StartExecutor(request);
@@ -130,7 +130,7 @@ namespace TickTrader.Algo.Server
         {
             using (await _requestGate.Enter())
             {
-                ThrowIfRunning();
+                ThrowIfNotRunning();
 
                 await _proxy.StopExecutor(request);
             }
@@ -192,6 +192,9 @@ namespace TickTrader.Algo.Server
         {
             if (_state == RuntimeState.Stopped)
             {
+                if (!_requestGate.IsClosed)
+                    return;
+
                 var devModeStart = _pluginsMap.Count > 0 && _server.RuntimeSettings.EnableDevMode;
                 var forcedStart = _requestGate.WatingCount > 0;
 
@@ -237,7 +240,7 @@ namespace TickTrader.Algo.Server
 
                 if (!connected)
                 {
-                    _logger.Error("Failed to connect runtime process within timeout");
+                    _logger.Error("Failed to connect runtime host within timeout");
                     ScheduleKillProcess();
                     return;
                 }
@@ -245,12 +248,13 @@ namespace TickTrader.Algo.Server
                 await _proxy.Start(new StartRuntimeRequest { Config = _config });
 
                 ScheduleShutdown(ScheduleShutdownCmd.Instance);
-                _requestGate.Open();
 
                 _startLockToken.Dispose();
                 _startLockToken = null;
 
                 ChangeState(RuntimeState.Running);
+
+                _requestGate.Open();
             }
             catch (Exception ex)
             {
@@ -275,7 +279,7 @@ namespace TickTrader.Algo.Server
             _process.Exited += OnProcessExit;
             _process.EnableRaisingEvents = true;
 
-            _logger.Info($"Runtime started in process {_process.Id}");
+            _logger.Info($"Runtime host started in process {_process.Id}");
 
             if (_process.HasExited) // If event was enabled after actual stop
             {
@@ -291,7 +295,7 @@ namespace TickTrader.Algo.Server
             _killProcessCancelSrc = new CancellationTokenSource();
             TaskExt.Schedule(KillTimeout, () =>
             {
-                _logger.Info($"Runtime process didn't stop within timeout. Killing process {_process.Id}...");
+                _logger.Info($"Runtime host didn't stop within timeout. Killing process {_process.Id}...");
                 _process.Kill();
             }, _killProcessCancelSrc.Token);
         }
@@ -303,7 +307,10 @@ namespace TickTrader.Algo.Server
 
             var crashed = msg.ExitCode != 0 || _state != RuntimeState.Stopping;
 
+            var oldState = _state;
             ChangeState(RuntimeState.Stopped);
+            ManageRequestGate(oldState).Forget();
+
             _shutdownTaskSrc?.TrySetResult(null);
             if (_isObsolete)
                 _server.OnRuntimeStopped(_id);
@@ -335,6 +342,24 @@ namespace TickTrader.Algo.Server
             Self.Tell(new ProcessExitedMsg(exitCode));
         }
 
+        private async Task ManageRequestGate(RuntimeState oldState)
+        {
+            switch (oldState)
+            {
+                case RuntimeState.Starting:
+                case RuntimeState.Connecting:
+                    _logger.Debug("Run queued gate requests...");
+                    await _requestGate.ExecQueuedRequests();
+                    _logger.Debug("Closed gate");
+                    break;
+                case RuntimeState.Running:
+                    _logger.Debug("Closing gate...");
+                    await _requestGate.Close();
+                    _logger.Debug("Closed gate");
+                    break;
+            }
+        }
+
         private async Task ShutdownInternal(string reason)
         {
             _shutdownLockToken = await _controlLock.GetLock(nameof(ShutdownInternal));
@@ -349,10 +374,15 @@ namespace TickTrader.Algo.Server
                 _logger.Debug($"Shutdown reason: {reason}");
                 ChangeState(RuntimeState.Stopping);
 
+                _logger.Debug("Closing gate...");
+                await _requestGate.Close();
+
+                _logger.Debug("Stoppping runtime host...");
                 var finished = await _proxy.Stop(new StopRuntimeRequest()).WaitAsync(ShutdownTimeout);
                 if (!finished)
-                    _logger.Error("No response for stop request. Considering process hanged");
+                    _logger.Error("No response for stop request. Considering runtime host hanged");
 
+                _logger.Debug("Disconnecting...");
                 await _session.Disconnect(reason);
             }
             catch (Exception ex)
@@ -397,7 +427,7 @@ namespace TickTrader.Algo.Server
 
             if (_state != RuntimeState.Stopping && _state != RuntimeState.Stopped)
             {
-                _logger.Info("Connection to runtime process lost");
+                _logger.Info("Connection to runtime host lost");
                 ScheduleKillProcess();
             }
         }
@@ -452,7 +482,7 @@ namespace TickTrader.Algo.Server
         }
 
 
-        private void ThrowIfRunning()
+        private void ThrowIfNotRunning()
         {
             if (_state != RuntimeState.Running)
                 throw Errors.RuntimeNotStarted(_id);

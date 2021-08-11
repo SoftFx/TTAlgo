@@ -198,8 +198,6 @@ namespace TickTrader.Algo.Server
 
                 ChangeState(PluginModelInfo.Types.PluginState.Faulted);
 
-                _runtime = null;
-
                 _startTaskSrc?.TrySetResult(false);
                 _stopTaskSrc?.TrySetResult(false);
 

@@ -17,7 +17,11 @@ namespace TickTrader.Algo.Async.Actors
 
         public int WatingCount => _queue.Count;
 
+        public bool IsOpened => _isOpened;
+
         public int EnteredCount => _enteredCount;
+
+        public bool IsClosed => !_isOpened && _enteredCount == 0;
 
 
         public event Action OnWait;
