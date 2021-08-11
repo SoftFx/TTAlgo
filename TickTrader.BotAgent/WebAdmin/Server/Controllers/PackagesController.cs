@@ -36,7 +36,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             return snapshot.Packages.Select(p => p.ToDto()).ToArray();
         }
 
-        [HttpHead("{name}")]
+        [HttpHead("{pkgName}")]
         public async Task<IActionResult> Head(string pkgName)
         {
             if (await _algoServer.PackageWithNameExists(pkgName))
@@ -77,7 +77,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             return Ok();
         }
 
-        [HttpDelete("{name}")]
+        [HttpDelete("{packageId}")]
         public async Task<IActionResult> Delete(string packageId)
         {
             try
