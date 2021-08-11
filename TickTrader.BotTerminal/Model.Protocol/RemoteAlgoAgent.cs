@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using Machinarium.Qnil;
+﻿using Machinarium.Qnil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +7,6 @@ using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
-using TickTrader.Algo.Server.Common;
 using TickTrader.Algo.ServerControl;
 
 using AlgoServerApi = TickTrader.Algo.Server.PublicAPI;
@@ -108,7 +106,7 @@ namespace TickTrader.BotTerminal
 
         public async Task<SetupMetadata> GetSetupMetadata(string accountId, SetupContextInfo setupContext)
         {
-            var accountMetadata = await _protocolClient.GetAccountMetadata(new AlgoServerApi.AccountMetadataRequest(accountId));
+            var accountMetadata = await _protocolClient.GetAccountMetadata(new AlgoServerApi.AccountMetadataRequest { AccountId = accountId });
             return new SetupMetadata(_apiMetadata, _mappings, accountMetadata.ToServer(), setupContext ?? _setupContext);
         }
 

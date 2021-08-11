@@ -35,19 +35,10 @@ namespace TickTrader.Algo.Server.PublicAPI
 
             if (value == null)
                 secret.Remove(key);
-            else 
+            else
                 secret[key] = value;
 
             return true;
-        }
-    }
-
-
-    public partial class AccountMetadataRequest
-    {
-        public AccountMetadataRequest(string accountId)
-        {
-            AccountId = accountId;
         }
     }
 }
