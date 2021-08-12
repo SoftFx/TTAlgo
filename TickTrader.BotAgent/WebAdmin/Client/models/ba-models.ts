@@ -370,6 +370,7 @@ export class SetupModel {
     public static ForTradeBot(bot: TradeBotModel) {
         let setup = new SetupModel();
         setup.Symbol = bot.Config.Symbol;
+        setup.PackageId = bot.PackageName;
         setup.InstanceId = bot.Id;
         setup.Parameters = bot.Config.Parameters.map(p => new Parameter(p.Id,
             p.Descriptor.DataType === ParameterDataTypes.File ? { FileName: p.Value, Size: 0, Data: null } : p.Value,
