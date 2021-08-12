@@ -6,6 +6,8 @@ option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 
 import "google/protobuf/wrappers.proto";
 
+import "structures/plugin.model.info.proto";
+
 
 message ConnectionErrorInfo {
     enum ErrorCode {
@@ -26,6 +28,17 @@ message ConnectionErrorInfo {
 
     ErrorCode code = 1;
     google.protobuf.StringValue text_message = 2;
+}
+
+message AccountCreds {
+    string auth_scheme = 1;
+    map<string, google.protobuf.StringValue> secret = 2;
+}
+
+message AccountMetadataInfo {
+    string account_id = 1;
+    repeated SymbolConfig symbols = 2;
+    SymbolConfig default_symbol = 3;
 }
 
 message AccountModelInfo {

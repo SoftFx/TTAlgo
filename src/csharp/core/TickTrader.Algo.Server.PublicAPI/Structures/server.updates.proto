@@ -7,7 +7,7 @@ option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/any.proto";
 
-import "requests/base.request.proto";
+import "servermanagement/base.request.proto";
 
 import "structures/package.info.proto";
 import "structures/api.metadata.info.proto";

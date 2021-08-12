@@ -7,13 +7,13 @@ option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 
 import "google/protobuf/any.proto";
 
-import "requests/account.management.proto";
-import "requests/connection.management.proto";
-import "requests/package.management.proto";
-import "requests/plugin.management.proto";
-import "requests/plugin.files.management.proto";
-import "requests/subscribes.management.proto";
-import "requests/unsubscribes.management.proto";
+import "servermanagement/account.management.proto";
+import "servermanagement/connection.management.proto";
+import "servermanagement/package.management.proto";
+import "servermanagement/plugin.management.proto";
+import "servermanagement/plugin.files.management.proto";
+import "servermanagement/subscribes.management.proto";
+import "servermanagement/unsubscribes.management.proto";
 
 import "structures/server.updates.proto";
 

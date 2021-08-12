@@ -6,8 +6,8 @@ option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 
 import "google/protobuf/wrappers.proto";
 
-import "requests/base.request.proto";
-import "requests/package.management.proto";
+import "servermanagement/base.request.proto";
+import "servermanagement/package.management.proto";
 
 message PluginFileInfo {
     string name = 1;

@@ -8,15 +8,8 @@ option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 import "google/protobuf/wrappers.proto";
 
 import "structures/account.model.info.proto";
-import "structures/plugin.model.info.proto";
+import "servermanagement/base.request.proto";
 
-import "requests/base.request.proto";
-
-
-message AccountCreds {
-    string auth_scheme = 1;
-    map<string, google.protobuf.StringValue> secret = 2;
-}
 
 message AccountMetadataRequest {
     string account_id = 1;
@@ -29,11 +22,6 @@ message AccountMetadataResponse {
     RequestResult exec_result = 101;
 }
 
-message AccountMetadataInfo {
-    string account_id = 1;
-    repeated SymbolConfig symbols = 2;
-    SymbolConfig default_symbol = 3;
-}
 
 message AddAccountRequest {
     string server = 1;
@@ -46,6 +34,7 @@ message AddAccountResponse {
     RequestResult exec_result = 101;
 }
 
+
 message RemoveAccountRequest {
     string account_id = 1;
 }
@@ -53,6 +42,7 @@ message RemoveAccountRequest {
 message RemoveAccountResponse {
     RequestResult exec_result = 101;
 }
+
 
 message ChangeAccountRequest {
     string account_id = 1;
@@ -64,6 +54,7 @@ message ChangeAccountResponse {
     RequestResult exec_result = 101;
 }
 
+
 message TestAccountRequest {
     string account_id = 1;
 }
@@ -73,6 +64,7 @@ message TestAccountResponse {
 
     RequestResult exec_result = 101;
 }
+
 
 message TestAccountCredsRequest {
     string server = 1;
