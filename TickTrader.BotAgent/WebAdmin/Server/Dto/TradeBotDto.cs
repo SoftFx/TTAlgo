@@ -10,5 +10,6 @@
         public string FaultMessage { get; set; }
         public TradeBotConfigDto Config { get; set; }
         public PermissionsDto Permissions { get; set; }
+        public string PluginId { get; set; }
     }
 }

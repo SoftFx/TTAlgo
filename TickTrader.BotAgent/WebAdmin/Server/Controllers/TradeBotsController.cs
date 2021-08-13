@@ -1,16 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Linq;
-using Microsoft.AspNetCore.Authorization;
-using TickTrader.BotAgent.WebAdmin.Server.Extensions;
-using TickTrader.BotAgent.WebAdmin.Server.Dto;
-using TickTrader.BotAgent.BA.Models;
 using System.Net;
-using TickTrader.Algo.Domain;
 using System.Threading.Tasks;
-using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
+using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Server;
+using TickTrader.BotAgent.BA.Models;
+using TickTrader.BotAgent.WebAdmin.Server.Dto;
+using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 {
@@ -200,7 +200,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody]PluginSetupDto setup)
+        public async Task<IActionResult> Post([FromBody] PluginSetupDto setup)
         {
             try
             {
@@ -225,14 +225,16 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(string id, [FromBody]PluginSetupDto setup)
+        public async Task<IActionResult> Put(string id, [FromBody] PluginSetupDto setup)
         {
             try
             {
                 var botId = WebUtility.UrlDecode(id);
 
                 var pluginCfg = setup.Parse();
+
                 pluginCfg.InstanceId = botId;
+                pluginCfg.Key = new PluginKey(setup.PackageId, setup.PluginId);
 
                 await _algoServer.UpdatePluginConfig(new ChangePluginConfigRequest(botId, pluginCfg));
                 setup.EnsureFiles(ServerModel.GetWorkingFolderFor(botId));

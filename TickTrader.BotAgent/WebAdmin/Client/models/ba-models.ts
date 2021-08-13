@@ -173,6 +173,7 @@ export class TradeBotLog implements Serializable<TradeBotLog> {
 
 export class TradeBotModel implements Serializable<TradeBotModel>{
     public Id: string;
+    public PluginId: string;
     public Account: AccountModel;
     public State: TradeBotStates;
     public PackageName: string;
@@ -185,6 +186,7 @@ export class TradeBotModel implements Serializable<TradeBotModel>{
 
     public Deserialize(input: any): TradeBotModel {
         this.Id = input.Id;
+        this.PluginId = input.PluginId;
         this.Account = new AccountModel().Deserialize(input.Account);
         this.State = TradeBotStates[input.State as string];
         this.PackageName = input.PackageName;
@@ -371,13 +373,13 @@ export class SetupModel {
         let setup = new SetupModel();
         setup.Symbol = bot.Config.Symbol;
         setup.PackageId = bot.PackageName;
+        setup.PluginId = bot.PluginId;
         setup.InstanceId = bot.Id;
         setup.Parameters = bot.Config.Parameters.map(p => new Parameter(p.Id,
             p.Descriptor.DataType === ParameterDataTypes.File ? { FileName: p.Value, Size: 0, Data: null } : p.Value,
             p.Descriptor));
         setup.Account = bot.Account;
         setup.Permissions = <TradeBotPermissions>bot.Permissions;
-
         return setup;
     }
 

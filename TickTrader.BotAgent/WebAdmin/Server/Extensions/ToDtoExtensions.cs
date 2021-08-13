@@ -34,6 +34,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                 Account = bot.AccountId.ToAccountDto(),
                 State = bot.State.ToString(),
                 PackageName = bot.Config.Key.PackageId,
+                PluginId = bot.Config.Key.DescriptorId,
                 BotName = bot.Descriptor_?.UiDisplayName,
                 FaultMessage = bot.FaultMessage,
                 Config = bot.ToConfigDto(),
