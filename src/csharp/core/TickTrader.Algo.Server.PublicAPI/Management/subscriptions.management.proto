@@ -4,11 +4,9 @@ package ticktrader.algo.server.publicApi;
 
 option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 
-
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/timestamp.proto";
-
-import "servermanagement/base.request.proto";
+import "management/base.request.proto";
 
 
 message SubscribeToUpdatesRequest { }
@@ -30,3 +28,22 @@ message PluginLogsSubscribeRequest {
 message PluginLogsSubscribeResponse {
 	RequestResult exec_result = 101;
 }
+
+
+message PluginStatusUnsubscribeRequest {
+	google.protobuf.StringValue plugin_id = 1;
+}
+
+message PluginStatusUnsubscribeResponse {
+	RequestResult exec_result = 101;
+}
+
+
+message PluginLogsUnsubscribeRequest {
+	google.protobuf.StringValue plugin_id = 1;
+}
+
+message PluginLogsUnsubscribeResponse {
+	RequestResult exec_result = 101;
+}
+

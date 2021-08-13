@@ -4,29 +4,16 @@ package ticktrader.algo.server.publicApi;
 
 option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 
-
-import "google/protobuf/any.proto";
-
-import "servermanagement/account.management.proto";
-import "servermanagement/connection.management.proto";
-import "servermanagement/package.management.proto";
-import "servermanagement/plugin.management.proto";
-import "servermanagement/plugin.files.management.proto";
-import "servermanagement/subscribes.management.proto";
-import "servermanagement/unsubscribes.management.proto";
+import "management/account.management.proto";
+import "management/server.management.proto";
+import "management/connection.management.proto";
+import "management/package.management.proto";
+import "management/plugin.management.proto";
+import "management/plugin.files.management.proto";
+import "management/subscriptions.management.proto";
 
 import "structures/server.updates.proto";
-
-message FileChunk {
-    int32 id = 1;
-    bytes binary = 2;
-    bool is_final = 3;
-}
-
-message FileTransferMsg {
-    google.protobuf.Any header = 1;
-    FileChunk data = 2;
-}
+import "structures/package.structures.proto";
 
 
 service AlgoServerPublic

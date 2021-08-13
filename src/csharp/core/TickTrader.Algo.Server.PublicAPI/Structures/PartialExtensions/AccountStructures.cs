@@ -45,6 +45,6 @@ namespace TickTrader.Algo.Server.PublicAPI
 
     public partial class ConnectionErrorInfo
     {
-        public bool IsOk => Code == Types.ErrorCode.NoConnectionError;
+        public bool IsSuccessful => Code == Types.ErrorCode.NoConnectionError;
     }
 }

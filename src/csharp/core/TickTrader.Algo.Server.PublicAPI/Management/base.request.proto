@@ -5,15 +5,6 @@ package ticktrader.algo.server.publicApi;
 option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 
 
-message ClientClaims {
-    enum AccessLevel {
-        ANONYMOUS = 0;
-        VIEWER = 1;
-        DEALER = 2;
-        ADMIN = 3;
-    }
-}
-
 message RequestResult {
     enum RequestStatus {
         SUCCESS = 0;

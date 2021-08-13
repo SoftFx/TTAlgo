@@ -6,25 +6,10 @@ option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 
 import "google/protobuf/wrappers.proto";
 
-import "servermanagement/base.request.proto";
-import "servermanagement/package.management.proto";
+import "management/base.request.proto";
+import "structures/package.structures.proto";
+import "structures/plugin.structures.proto";
 
-message PluginFileInfo {
-    string name = 1;
-    int64 size = 2;
-}
-
-message PluginFolderInfo {
-    enum PluginFolderId {
-        ALGO_DATA = 0;
-        BOT_LOGS = 1;
-    }
-
-    string plugin_id = 1;
-    PluginFolderId folder_id = 2;
-    google.protobuf.StringValue path = 3;
-    repeated PluginFileInfo files = 4;
-}
 
 message PluginFolderInfoRequest {
     google.protobuf.StringValue plugin_id = 1;
@@ -37,6 +22,7 @@ message PluginFolderInfoResponse {
     RequestResult exec_result = 101;
 }
 
+
 message ClearPluginFolderRequest {
     google.protobuf.StringValue plugin_id = 1;
     PluginFolderInfo.PluginFolderId folder_id = 2;
@@ -45,6 +31,7 @@ message ClearPluginFolderRequest {
 message ClearPluginFolderResponse {
     RequestResult exec_result = 101;
 }
+
 
 message DeletePluginFileRequest {
     google.protobuf.StringValue plugin_id = 1;
@@ -56,6 +43,7 @@ message DeletePluginFileResponse {
     RequestResult exec_result = 101;
 }
 
+
 message DownloadPluginFileRequest {
     google.protobuf.StringValue plugin_id = 1;
     PluginFolderInfo.PluginFolderId folder_id = 2;
@@ -66,6 +54,7 @@ message DownloadPluginFileRequest {
 message DownloadPluginFileResponse {
     RequestResult exec_result = 101;
 }
+
 
 message UploadPluginFileRequest {
     google.protobuf.StringValue plugin_id = 1;

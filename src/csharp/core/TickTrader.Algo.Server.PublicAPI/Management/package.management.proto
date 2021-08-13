@@ -5,14 +5,9 @@ package ticktrader.algo.server.publicApi;
 option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 
 import "google/protobuf/wrappers.proto";
+import "management/base.request.proto";
+import "structures/package.structures.proto";
 
-import "servermanagement/base.request.proto";
-
-
-message FileTransferSettings {
-    int32 chunk_size = 1;
-    int32 chunk_offset = 2;
-}
 
 message UploadPackageRequest {
     google.protobuf.StringValue package_id = 1;
@@ -24,6 +19,7 @@ message UploadPackageResponse {
     RequestResult exec_result = 101;
 }
 
+
 message RemovePackageRequest {
     string package_id = 1;
 }
@@ -31,6 +27,7 @@ message RemovePackageRequest {
 message RemovePackageResponse {
     RequestResult exec_result = 101;
 }
+
 
 message DownloadPackageRequest {
     string package_id = 1;

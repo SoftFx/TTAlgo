@@ -4,6 +4,7 @@ package ticktrader.algo.server.publicApi;
 
 option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 
+import "google/protobuf/any.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
@@ -77,6 +78,22 @@ message Metadata {
         QUOTE_TO_DOUBLE = 4;
         QUOTE_TO_BAR = 5;
     }
+}
+
+message FileChunk {
+    int32 id = 1;
+    bytes binary = 2;
+    bool is_final = 3;
+}
+
+message FileTransferSettings {
+    int32 chunk_size = 1;
+    int32 chunk_offset = 2;
+}
+
+message FileTransferMsg {
+    google.protobuf.Any header = 1;
+    FileChunk data = 2;
 }
 
 message FileFilterEntry {

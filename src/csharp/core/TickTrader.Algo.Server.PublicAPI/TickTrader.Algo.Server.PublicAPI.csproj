@@ -6,18 +6,18 @@
 
   <ItemGroup>
     <None Remove="certs\algo-ca.crt" />
-    <None Remove="ServerManagement\account.management.proto" />
-    <None Remove="ServerManagement\base.request.proto" />
-    <None Remove="ServerManagement\connection.management.proto" />
-    <None Remove="ServerManagement\package.management.proto" />
-    <None Remove="ServerManagement\plugin.files.management.proto" />
-    <None Remove="ServerManagement\plugin.management.proto" />
-    <None Remove="ServerManagement\subscribes.management.proto" />
-    <None Remove="ServerManagement\unsubscribes.management.proto" />
-    <None Remove="Structures\account.model.info.proto" />
+    <None Remove="Management\account.management.proto" />
+    <None Remove="Management\base.request.proto" />
+    <None Remove="Management\connection.management.proto" />
+    <None Remove="Management\package.management.proto" />
+    <None Remove="Management\plugin.files.management.proto" />
+    <None Remove="Management\plugin.management.proto" />
+    <None Remove="Management\server.management.proto" />
+    <None Remove="Management\subscriptions.management.proto" />
+    <None Remove="Structures\account.structures.proto" />
     <None Remove="Structures\api.metadata.info.proto" />
-    <None Remove="Structures\package.info.proto" />
-    <None Remove="Structures\plugin.model.info.proto" />
+    <None Remove="Structures\package.structures.proto" />
+    <None Remove="Structures\plugin.structures.proto" />
     <None Remove="Structures\server.updates.proto" />
   </ItemGroup>
 
@@ -41,21 +41,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="ServerManagement\base.request.proto" GrpcServices="Client" />
-    <Protobuf Include="ServerManagement\account.management.proto" GrpcServices="Client" />
-    <Protobuf Include="ServerManagement\connection.management.proto" GrpcServices="Client" />
-    <Protobuf Include="ServerManagement\subscribes.management.proto" GrpcServices="Client" />
-    <Protobuf Include="ServerManagement\package.management.proto" GrpcServices="Client" />
-    <Protobuf Include="ServerManagement\plugin.files.management.proto" GrpcServices="Client" />
-    <Protobuf Include="ServerManagement\plugin.management.proto" GrpcServices="Client" />
-    <Protobuf Include="ServerManagement\unsubscribes.management.proto" GrpcServices="Client">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Protobuf>
-    <Protobuf Include="Structures\account.model.info.proto" GrpcServices="Client" />
+    <Protobuf Include="Management\base.request.proto" GrpcServices="Client" />
+    <Protobuf Include="Management\account.management.proto" GrpcServices="Client" />
+    <Protobuf Include="Management\connection.management.proto" GrpcServices="Client" />
+    <Protobuf Include="Management\server.management.proto" GrpcServices="Client" />
+    <Protobuf Include="Management\subscriptions.management.proto" GrpcServices="Client" />
+    <Protobuf Include="Management\package.management.proto" GrpcServices="Client" />
+    <Protobuf Include="Management\plugin.files.management.proto" GrpcServices="Client" />
+    <Protobuf Include="Management\plugin.management.proto" GrpcServices="Client" />
+    <Protobuf Include="Structures\account.structures.proto" GrpcServices="Client" />
     <Protobuf Include="Structures\api.metadata.info.proto" GrpcServices="Client" />
-    <Protobuf Include="Structures\package.info.proto" GrpcServices="Client" />
+    <Protobuf Include="Structures\package.structures.proto" GrpcServices="Client" />
     <Protobuf Include="Services\algo.server.publicAPI.proto" GrpcServices="Both" />
-    <Protobuf Include="Structures\plugin.model.info.proto" GrpcServices="Client" />
+    <Protobuf Include="Structures\plugin.structures.proto" GrpcServices="Client" />
     <Protobuf Include="Structures\server.updates.proto" />
   </ItemGroup>
 

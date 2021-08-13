@@ -4,23 +4,9 @@ package ticktrader.algo.server.publicApi;
 
 option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 
-
 import "google/protobuf/wrappers.proto";
-
-import "structures/account.model.info.proto";
-import "servermanagement/base.request.proto";
-
-
-message AccountMetadataRequest {
-    string account_id = 1;
-}
-
-message AccountMetadataResponse {
-    ConnectionErrorInfo error_info = 1;
-    AccountMetadataInfo account_metadata = 2;
-
-    RequestResult exec_result = 101;
-}
+import "management/base.request.proto";
+import "structures/account.structures.proto";
 
 
 message AddAccountRequest {

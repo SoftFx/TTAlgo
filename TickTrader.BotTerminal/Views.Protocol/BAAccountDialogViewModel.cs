@@ -104,8 +104,8 @@ namespace TickTrader.BotTerminal
             {
                 var error = await AlgoServer.Value.Model.TestAccountCreds(new TestAccountCredsRequest(TTServerName.Value, Login.Value, new AccountCreds(Password.Value)));
 
-                SuccessConnect.Value = error.IsOk;
-                Error.Value = error.IsOk ? null : $"{error.Code} - {error.TextMessage}";
+                SuccessConnect.Value = error.IsSuccessful;
+                Error.Value = error.IsSuccessful ? null : $"{error.Code} - {error.TextMessage}";
             }, false);
 
         private async Task TryToRunConnectionRequest(Func<Task> request, bool closeWindow = true)

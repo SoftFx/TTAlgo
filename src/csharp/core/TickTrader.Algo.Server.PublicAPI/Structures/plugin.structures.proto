@@ -7,8 +7,7 @@ option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/any.proto";
-
-import "structures/package.info.proto";
+import "structures/package.structures.proto";
 
 
 message Feed {
@@ -128,6 +127,23 @@ message PluginConfig {
     string instance_id = 6;
     PluginPermissions permissions = 7;
     repeated google.protobuf.Any properties = 8;
+}
+
+message PluginFileInfo {
+    string name = 1;
+    int64 size = 2;
+}
+
+message PluginFolderInfo {
+    enum PluginFolderId {
+        ALGO_DATA = 0;
+        BOT_LOGS = 1;
+    }
+
+    string plugin_id = 1;
+    PluginFolderId folder_id = 2;
+    google.protobuf.StringValue path = 3;
+    repeated PluginFileInfo files = 4;
 }
 
 message PluginModelInfo {

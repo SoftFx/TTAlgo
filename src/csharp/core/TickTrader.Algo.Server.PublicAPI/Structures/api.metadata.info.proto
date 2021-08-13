@@ -6,8 +6,8 @@ option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 
 import "google/protobuf/wrappers.proto";
 
-import "structures/package.info.proto";
-import "structures/plugin.model.info.proto";
+import "structures/package.structures.proto";
+import "structures/plugin.structures.proto";
 
 
 message MappingInfo {
