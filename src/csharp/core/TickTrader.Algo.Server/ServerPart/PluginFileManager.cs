@@ -50,6 +50,8 @@ namespace TickTrader.Algo.Server
                 {
                     var dInfo = new DirectoryInfo(path);
                     dInfo.Delete(true);
+
+                    Directory.CreateDirectory(path); //restore base folder
                 }
                 catch (Exception ex)
                 {
