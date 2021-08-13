@@ -64,9 +64,9 @@ namespace TickTrader.BotTerminal
 
         Task ChangeAccount(ChangeAccountRequest request);
 
-        Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request);
+        Task<AlgoServerPublicApi.ConnectionErrorInfo> TestAccount(TestAccountRequest request);
 
-        Task<ConnectionErrorInfo> TestAccountCreds(TestAccountCredsRequest request);
+        Task<AlgoServerPublicApi.ConnectionErrorInfo> TestAccountCreds(TestAccountCredsRequest request);
 
         Task UploadPackage(string fileName, string srcFilePath, AlgoServerPublicApi.IFileProgressListener progressListener);
 

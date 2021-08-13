@@ -41,4 +41,10 @@ namespace TickTrader.Algo.Server.PublicAPI
             return true;
         }
     }
+
+
+    public partial class ConnectionErrorInfo
+    {
+        public bool IsOk => Code == Types.ErrorCode.NoConnectionError;
+    }
 }

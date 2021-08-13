@@ -170,14 +170,14 @@ namespace TickTrader.BotTerminal
             return _protocolClient.ChangeAccount(request.ToApi());
         }
 
-        public Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request)
+        public Task<AlgoServerApi.ConnectionErrorInfo> TestAccount(TestAccountRequest request)
         {
-            return _protocolClient.TestAccount(request.ToApi()).ContinueWith(u => u.Result.ToServer());
+            return _protocolClient.TestAccount(request.ToApi());
         }
 
-        public Task<ConnectionErrorInfo> TestAccountCreds(TestAccountCredsRequest request)
+        public Task<AlgoServerApi.ConnectionErrorInfo> TestAccountCreds(TestAccountCredsRequest request)
         {
-            return _protocolClient.TestAccountCreds(request.ToApi()).ContinueWith(u => u.Result.ToServer());
+            return _protocolClient.TestAccountCreds(request.ToApi());
         }
 
         public async Task UploadPackage(string fileName, string srcFilePath, AlgoServerApi.IFileProgressListener progressListener)

@@ -273,12 +273,12 @@ namespace TickTrader.BotTerminal
             throw new NotSupportedException();
         }
 
-        public Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request)
+        public Task<AlgoServerPublicApi.ConnectionErrorInfo> TestAccount(TestAccountRequest request)
         {
             throw new NotSupportedException();
         }
 
-        public Task<ConnectionErrorInfo> TestAccountCreds(TestAccountCredsRequest request)
+        public Task<AlgoServerPublicApi.ConnectionErrorInfo> TestAccountCreds(TestAccountCredsRequest request)
         {
             throw new NotSupportedException();
         }
