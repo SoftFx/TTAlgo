@@ -46,4 +46,3 @@ message PluginLogsUnsubscribeRequest {
 message PluginLogsUnsubscribeResponse {
 	RequestResult exec_result = 101;
 }
-

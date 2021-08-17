@@ -11,9 +11,8 @@ import "management/package.management.proto";
 import "management/plugin.management.proto";
 import "management/plugin.files.management.proto";
 import "management/subscriptions.management.proto";
-
-import "structures/server.updates.proto";
-import "structures/package.structures.proto";
+import "updates/base.update.proto";
+import "info/package.info.proto";
 
 
 service AlgoServerPublic

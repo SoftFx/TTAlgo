@@ -1,0 +1,23 @@
+﻿syntax = "proto3";
+
+package ticktrader.algo.server.publicApi;
+
+option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
+
+import "google/protobuf/wrappers.proto";
+import "info/log.record.info.proto";
+
+
+message PluginStatusUpdate {
+    string plugin_id = 1;
+    google.protobuf.StringValue message = 2;
+}
+
+message PluginLogUpdate {
+    google.protobuf.StringValue plugin_id = 1;
+    repeated LogRecordInfo records = 2;
+}
+
+message AlertListUpdate {
+    repeated AlertRecordInfo alerts = 1;
+}

@@ -5,7 +5,7 @@ package ticktrader.algo.server.publicApi;
 option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 
 import "management/base.request.proto";
-import "structures/account.structures.proto";
+import "info/account.info.proto";
 
 
 message AccountMetadataRequest {

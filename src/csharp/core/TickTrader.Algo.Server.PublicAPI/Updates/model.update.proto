@@ -1,0 +1,29 @@
+﻿syntax = "proto3";
+
+package ticktrader.algo.server.publicApi;
+
+option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
+
+import "updates/base.update.proto";
+import "info/package.info.proto";
+import "info/plugin.info.proto";
+import "info/account.info.proto";
+
+
+message PackageUpdate {
+    string id = 1;
+    Update.Action action = 2;
+    PackageInfo package = 3;
+}
+
+message AccountModelUpdate {
+    string id = 1;
+    Update.Action action = 2;
+    AccountModelInfo account = 3;
+}
+
+message PluginModelUpdate {
+    string id = 1;
+    Update.Action action = 2;
+    PluginModelInfo plugin = 3;
+}

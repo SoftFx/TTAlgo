@@ -182,6 +182,11 @@ message ReductionKey {
     string descriptor_id = 2;
 }
 
+message MappingInfo {
+    MappingKey key = 1;
+    google.protobuf.StringValue display_name = 2;
+}
+
 message MappingKey {
     ReductionKey primary_reduction = 1;
     ReductionKey secondary_reduction = 2;

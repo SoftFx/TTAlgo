@@ -4,15 +4,24 @@ package ticktrader.algo.server.publicApi;
 
 option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 
-import "google/protobuf/wrappers.proto";
+import "google/protobuf/any.proto";
+import "management/base.request.proto";
 
-import "structures/package.structures.proto";
-import "structures/plugin.structures.proto";
+import "info/package.info.proto";
+import "info/plugin.info.proto";
+import "info/account.info.proto";
 
 
-message MappingInfo {
-    MappingKey key = 1;
-    google.protobuf.StringValue display_name = 2;
+message AlgoServerMetadataUpdate {
+    ApiMetadataInfo api_metadata = 1;
+    MappingCollectionInfo mappings_collection = 2;
+    SetupContextInfo setup_context = 3;
+
+    repeated PackageInfo packages = 4;
+    repeated AccountModelInfo accounts = 5;
+    repeated PluginModelInfo plugins = 6;
+
+    RequestResult exec_result = 101;
 }
 
 message ApiMetadataInfo {
