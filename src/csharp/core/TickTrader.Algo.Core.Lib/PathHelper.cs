@@ -20,12 +20,11 @@ namespace TickTrader.Algo.Core.Lib
             $"[{InvalidChars}]", RegexOptions.Compiled);
 
 
-        public static void EnsureDirectoryCreated(string path)
+        public static string EnsureDirectoryCreated(string path)
         {
-            if (!Directory.Exists(path))
-            {
-                Directory.CreateDirectory(path);
-            }
+            Directory.CreateDirectory(path); //CreateDirectory already include Directory.Exist
+
+            return path;
         }
 
         public static bool IsPathAbsolute(string path)
