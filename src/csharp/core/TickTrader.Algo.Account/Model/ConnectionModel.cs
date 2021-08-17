@@ -145,6 +145,7 @@ namespace TickTrader.Algo.Account
                     completion = Task.FromResult(ConnectionErrorInfo.Types.ErrorCode.NoConnectionError);
                 else if (State == States.OfflineRetry)
                 {
+                    connectCancelSrc?.Cancel();
                     _stateControl.PushEvent(Events.StopRetryRequested);
                     completion = Task.FromResult(ConnectionErrorInfo.Types.ErrorCode.NoConnectionError);
                 }
