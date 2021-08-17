@@ -11,64 +11,80 @@ namespace TickTrader.BotAgent.Configurator
 
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private readonly string[] _workingFolders = new string[4] { "AlgoData", "AlgoRepository", "Settings", "server.config.xml" };
+        private readonly string[] _archiveFolders = new string[] { "AlgoData", "AlgoRepository", "Settings" };
+        private readonly string[] _archiveFiles = new string[] { "server.config.xml" };
 
         private readonly RegistryManager _registry;
+        private readonly DirectoryInfo _rawFolderInfo;
+
 
         public RegistryNode CurrentServer => _registry.CurrentServer;
 
-        public string RawArchivePath => GetServerFolderPath(RawFileName);
+        private string BackupArchivePath => Path.Combine(ConfiguratorManager.BackupFolder, CurrentServer.BackupArchiveName);
 
 
         public ServerBotSettingsManager(RegistryManager registry)
         {
             _registry = registry;
+            _rawFolderInfo = new DirectoryInfo(ServerPath(RawFileName));
         }
 
-        public bool CreateAlgoServerBotSettingZip(string archiveFolderPath) => InitRawArchiveFolder(() =>
+
+        public bool CreateAlgoServerSnapshot(string archiveFolderPath) => InitRawArchiveFolder(() =>
         {
-            RemoveFile(archiveFolderPath);
+            File.Delete(archiveFolderPath); //delete archive this the same name if that exist
 
-            foreach (var key in _workingFolders)
-            {
-                var serverBotPath = GetServerFolderPath(key);
-                var archiveBotPath = GetArchiveFolderPath(key);
+            MoveArchiveFolders(_archiveFolders, ServerPath, ArchivePath);
+            MoveArchiveFiles(_archiveFiles, ServerPath, ArchivePath);
 
-                if (Directory.Exists(serverBotPath))
-                    CopyAll(new DirectoryInfo(serverBotPath), InitEmptyDirectory(archiveBotPath));
-                else
-                    MoveFile(serverBotPath, archiveBotPath);
-            }
-
-            ZipFile.CreateFromDirectory(RawArchivePath, archiveFolderPath);
+            ZipFile.CreateFromDirectory(_rawFolderInfo.FullName, archiveFolderPath);
         });
 
-        public bool LoadAlgoServerBotSettingZip(string archiveFolderPath) => InitRawArchiveFolder(() =>
+        public bool LoadAlgoServerShapshot(string archiveFolderPath)
         {
-            ZipFile.ExtractToDirectory(archiveFolderPath, RawArchivePath);
+            bool result = CreateAlgoServerSnapshot(BackupArchivePath);
 
-            foreach (var key in _workingFolders)
-            {
-                var serverBotPath = GetServerFolderPath(key);
-                var archiveBotPath = GetArchiveFolderPath(key);
+            return result & InitRawArchiveFolder(() => RestoreArchiveShapshot(archiveFolderPath));
+        }
 
-                if (Directory.Exists(archiveBotPath))
-                {
-                    ClearOrRestoreFolder(serverBotPath);
+        private void RestoreArchiveShapshot(string archivePath)
+        {
+            ZipFile.ExtractToDirectory(archivePath, _rawFolderInfo.FullName);
 
-                    foreach (var archiveSubFolder in new DirectoryInfo(archiveBotPath).GetDirectories())
-                        CopyAll(archiveSubFolder, InitEmptyDirectory(Path.Combine(serverBotPath, archiveSubFolder.Name)));
-                }
-                else
-                    MoveFile(archiveBotPath, serverBotPath);
-            }
-        });
+            MoveArchiveFolders(_archiveFolders, ArchivePath, ServerPath);
+            MoveArchiveFiles(_archiveFiles, ArchivePath, ServerPath);
+        }
+
+        private static DirectoryInfo FolderInfo(string folder) => new DirectoryInfo(folder);
+
+        private string ArchivePath(string path) => Path.Combine(_rawFolderInfo.FullName, path);
+
+        private string ServerPath(string path) => Path.Combine(CurrentServer.FolderPath, path);
+
+
+        private static void MoveArchiveFolders(string[] archiveFolders, Func<string, string> soursePath, Func<string, string> targetPath)
+        {
+            foreach (var folder in archiveFolders)
+                FolderInfo(soursePath(folder)).MergeTo(FolderInfo(targetPath(folder)));
+        }
+
+        private static void MoveArchiveFiles(string[] archiveFiles, Func<string, string> soursePath, Func<string, string> targetPath)
+        {
+            foreach (var file in archiveFiles)
+                MoveFile(soursePath(file), targetPath(file));
+        }
+
+        private static void MoveFile(string source, string target)
+        {
+            if (File.Exists(source))
+                File.Copy(source, target, overwrite: true);
+        }
 
         private bool InitRawArchiveFolder(Action archiveAction)
         {
             try
             {
-                ClearOrRestoreFolder(RawArchivePath, true);
+                _rawFolderInfo.Clear();
 
                 archiveAction();
             }
@@ -80,72 +96,10 @@ namespace TickTrader.BotAgent.Configurator
             }
             finally
             {
-                ClearOrRestoreFolder(RawArchivePath);
+                _rawFolderInfo.CheckAndDelete();
             }
 
             return true;
-        }
-
-        private string GetArchiveFolderPath(string folder) => Path.Combine(RawArchivePath, folder);
-
-        private string GetServerFolderPath(string folder) => Path.Combine(CurrentServer.FolderPath, folder);
-
-        private static void MoveFile(string source, string target)
-        {
-            if (File.Exists(source))
-            {
-                if (File.Exists(target))
-                    File.Delete(target);
-
-                File.Copy(source, target);
-            }
-        }
-
-        private static DirectoryInfo InitEmptyDirectory(string path)
-        {
-            ClearOrRestoreFolder(path, true);
-
-            return new DirectoryInfo(path);
-        }
-
-        private static void RemoveFile(string filePath)
-        {
-            if (File.Exists(filePath))
-                File.Delete(filePath);
-        }
-
-        private static void ClearOrRestoreFolder(string directoryPath, bool restore = false)
-        {
-            if (Directory.Exists(directoryPath))
-                //sometimes Directory.Delete behaves incorretly. Throws a folder delete error
-                ForceCleanFolder(new DirectoryInfo(directoryPath));
-
-            if (restore)
-                Directory.CreateDirectory(directoryPath);
-        }
-
-        private static void CopyAll(DirectoryInfo source, DirectoryInfo target)
-        {
-            foreach (var fileInfo in source.GetFiles())
-                fileInfo.CopyTo(Path.Combine(target.FullName, fileInfo.Name), true);
-
-            foreach (var subFolderInfo in source.GetDirectories())
-                CopyAll(subFolderInfo, target.CreateSubdirectory(subFolderInfo.Name));
-
-            if (target.GetFiles().Length + target.GetDirectories().Length == 0)
-                Directory.Delete(target.FullName);
-        }
-
-        private static void ForceCleanFolder(DirectoryInfo directoryInfo)
-        {
-            foreach (var file in directoryInfo.GetFiles())
-                file.Delete();
-
-            foreach (var subDirectory in directoryInfo.GetDirectories())
-            {
-                ForceCleanFolder(subDirectory);
-                subDirectory.Delete(true);
-            }
         }
     }
 }

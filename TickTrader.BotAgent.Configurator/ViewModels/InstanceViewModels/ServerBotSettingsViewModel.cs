@@ -28,8 +28,8 @@ namespace TickTrader.BotAgent.Configurator
             {
                 var dialog = new SaveFileDialog
                 {
-                    InitialDirectory = _manager.CurrentServer.FolderPath,
-                    FileName = $"{_manager.CurrentServer.ServiceId } ({_manager.CurrentServer.Version }) Bot settings",
+                    InitialDirectory = ConfiguratorManager.BackupFolder,
+                    FileName = _manager.CurrentServer.BackupArchiveName,
                     Filter = FileDialogFilter,
                     DefaultExt = DefaultFileDialogExt
                 };
@@ -43,7 +43,7 @@ namespace TickTrader.BotAgent.Configurator
             {
                 var dialog = new OpenFileDialog
                 {
-                    InitialDirectory = _manager.CurrentServer.FolderPath,
+                    InitialDirectory = ConfiguratorManager.BackupFolder,
                     Filter = FileDialogFilter,
                     DefaultExt = DefaultFileDialogExt,
                     CheckFileExists = true,
@@ -61,7 +61,7 @@ namespace TickTrader.BotAgent.Configurator
             var path = isSaveProcess ? ((SaveFileDialog)o).FileName : ((OpenFileDialog)o).FileName;
             var messagePath = isSaveProcess ? path : ((OpenFileDialog)o).SafeFileName;
 
-            var result = isSaveProcess ? _manager.CreateAlgoServerBotSettingZip(path) : _manager.LoadAlgoServerBotSettingZip(path);
+            var result = isSaveProcess ? _manager.CreateAlgoServerSnapshot(path) : _manager.LoadAlgoServerShapshot(path);
 
             _spinner.Stop();
 

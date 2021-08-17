@@ -63,7 +63,11 @@ namespace TickTrader.BotAgent.Configurator
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
+
         public string FullVersion => $"{Version} ({BuildDate})";
+
+        public string BackupArchiveName => $"{ServiceId} {Version} backup {DateTime.UtcNow:dd.MM.yyyy HH.mm.ss}.zip";
+
 
         public string AppSettingPath { get; }
 
