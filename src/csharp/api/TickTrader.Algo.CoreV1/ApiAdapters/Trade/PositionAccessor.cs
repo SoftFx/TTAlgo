@@ -21,11 +21,12 @@ namespace TickTrader.Algo.CoreV1
             _lotSize = lotSize ?? 1;
 
             Info = info ?? new PositionInfo() { Symbol = symbolName };
-            Info.Short = Short;
-            Info.Long = Long;
 
             if (info != null)
+            {
+                info.BuildPositionSides();
                 Update(Info);
+            }
         }
 
         internal void Update(PositionInfo info)
@@ -40,6 +41,9 @@ namespace TickTrader.Algo.CoreV1
                 Long.Update(0, 0);
                 Short.Update(info.Volume, info.Price);
             }
+
+            Info.Long = info.Long;
+            Info.Short = info.Short;
 
             Changed?.Invoke(this);
         }

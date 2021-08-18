@@ -101,10 +101,18 @@ namespace TickTrader.Algo.Calculator
 
         public void RemovePositionWithoutCalculation(double posAmount, double posPrice)
         {
-            _marginAmount -= -posAmount;
+            _marginAmount -= posAmount;
 
             _profitAmount -= posAmount;
             _totalAmount -= posAmount * posPrice;
+        }
+
+        public void UpdateNetPositionWithoutCalculation(double posAmount, double posPrice)
+        {
+            _marginAmount = posAmount;
+            _profitAmount = posAmount;
+
+            _totalAmount = posAmount * posPrice;
         }
     }
 }

@@ -14,7 +14,7 @@ namespace TickTrader.Algo.CoreV1
         public PositionAccessor UpdatePosition(PositionInfo posInfo)
         {
             PositionAccessor pos = GetOrCreatePosition(posInfo.Symbol, posInfo.Id);
-            pos.Update(posInfo);
+            pos.Update(posInfo.BuildPositionSides());
 
             if (posInfo.Volume <= 0)
                 RemovePosition(posInfo.Symbol);

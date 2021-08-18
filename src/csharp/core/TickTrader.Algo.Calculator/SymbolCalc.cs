@@ -78,7 +78,7 @@ namespace TickTrader.Algo.Calculator
             GetSideCalc(order).RemoveOrder(order);
         }
 
-        public void UpdatePosition(IPositionInfo pos, PositionChangeTypes type, out double swapDelta, out double commDelta)
+        public void UpdateNetPosition(IPositionInfo pos, PositionChangeTypes type, out double swapDelta, out double commDelta)
         {
             pos.Calculator = Calculator;
 
@@ -88,8 +88,8 @@ namespace TickTrader.Algo.Calculator
             _netPosSwap = pos.Swap;
             _netPosComm = pos.Commission;
 
-            Buy.UpdatePosition(pos.Long, type);
-            Sell.UpdatePosition(pos.Short, type);
+            Buy.UpdateNetPosition(pos.Long, type);
+            Sell.UpdateNetPosition(pos.Short, type);
         }
 
         public void Dispose()

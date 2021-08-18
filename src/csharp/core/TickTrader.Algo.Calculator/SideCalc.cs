@@ -45,6 +45,9 @@ namespace TickTrader.Algo.Calculator
 
             Margin += result.MarginDelta;
 
+            if (IsEmpty)
+                Margin = 0;
+
             return result;
         }
 
@@ -71,15 +74,12 @@ namespace TickTrader.Algo.Calculator
             UpdateStats(change);
         }
 
-        public void UpdatePosition(IPositionSide pos, PositionChangeTypes type)
+        public void UpdateNetPosition(IPositionSide pos, PositionChangeTypes type)
         {
-            _positions.RemovePositionWithoutCalculation(_netPosAmount, _netPosPrice);
-
-            _netPosAmount = pos.Amount;
-            _netPosPrice = pos.Price;
-
-            if (type == PositionChangeTypes.AddedModified)
-                _positions.AddPositionWithoutCalculation(_netPosAmount, _netPosPrice);
+            if (type == PositionChangeTypes.Removed)
+                _positions.RemovePositionWithoutCalculation(pos.Amount, pos.Price);
+            else
+                _positions.UpdateNetPositionWithoutCalculation(pos.Amount, pos.Price);
 
             var change = _positions.Recalculate();
             UpdateStats(change);

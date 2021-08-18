@@ -262,7 +262,8 @@ namespace TickTrader.Algo.Calculator
             try
             {
                 var smbCalc = GetOrAddSymbolCalculator(position.Symbol);
-                smbCalc.UpdatePosition(position, type, out var dSwap, out var dComm);
+                smbCalc.UpdateNetPosition(position, type, out var dSwap, out var dComm);
+
                 Swap += dSwap;
                 Commission += dComm;
             }

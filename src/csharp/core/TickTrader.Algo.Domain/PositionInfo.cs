@@ -21,7 +21,7 @@ namespace TickTrader.Algo.Domain
         double IMarginProfitCalc.RemainingAmount => Math.Max(Long.Amount, Short.Amount);
         OrderInfo.Types.Type IMarginProfitCalc.Type => OrderInfo.Types.Type.Position;
 
-        
+
 
         bool IMarginProfitCalc.IsHidden => false;
 
@@ -33,6 +33,23 @@ namespace TickTrader.Algo.Domain
 
 
         public string GetSnapshotString() => ToString();
+
+
+        public PositionInfo BuildPositionSides()
+        {
+            if (Side.IsBuy())
+            {
+                Long = new PositionSide(Volume, Price);
+                Short = new PositionSide(0, 0);
+            }
+            else
+            {
+                Long = new PositionSide(0, 0);
+                Short = new PositionSide(Volume, Price);
+            }
+
+            return this;
+        }
     }
 
     public interface IPositionInfo : IMarginProfitCalc
@@ -49,6 +66,50 @@ namespace TickTrader.Algo.Domain
 
 
         string GetSnapshotString();
+    }
+
+    public class PositionSide : IPositionSide
+    {
+        private double margin;
+        private double profit;
+
+        public double Amount { get; set; }
+        public double Price { get; set; }
+
+        public PositionSide(double amount, double price)
+        {
+            Amount = amount;
+            Price = price;
+        }
+
+        public double Margin
+        {
+            get { return margin; }
+            set
+            {
+                if (margin != value)
+                {
+                    margin = value;
+                    MarginUpdated?.Invoke();
+                }
+            }
+        }
+
+        public double Profit
+        {
+            get { return profit; }
+            set
+            {
+                if (profit != value)
+                {
+                    profit = value;
+                    ProfitUpdated?.Invoke();
+                }
+            }
+        }
+
+        public System.Action ProfitUpdated;
+        public System.Action MarginUpdated;
     }
 
     public interface IPositionSide
