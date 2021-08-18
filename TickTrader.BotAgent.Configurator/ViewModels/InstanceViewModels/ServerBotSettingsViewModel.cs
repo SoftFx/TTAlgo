@@ -12,15 +12,24 @@ namespace TickTrader.BotAgent.Configurator
         private const string DefaultFileDialogExt = ".zip";
 
         private readonly ServerBotSettingsManager _manager;
+        private readonly StateServiceViewModel _service;
         private readonly SpinnerViewModel _spinner;
 
         private DelegateCommand _saveCurrentBotSettingsCommand;
         private DelegateCommand _loadCurrentBotSettingsCommand;
 
-        public ServerBotSettingsViewModel(ServerBotSettingsManager manager, SpinnerViewModel spinner) : base(nameof(ServerBotSettingsViewModel))
+
+        public bool CanCreateArchive { get; private set; }
+
+
+        public ServerBotSettingsViewModel(ServerBotSettingsManager manager, SpinnerViewModel spinner, StateServiceViewModel service) : base(nameof(ServerBotSettingsViewModel))
         {
             _manager = manager;
             _spinner = spinner;
+            _service = service;
+
+            _service.ChangeServiceStatus += DisablePanelHandler;
+            DisablePanelHandler();
         }
 
         public DelegateCommand SaveCurrentBotSettingsCommand => _saveCurrentBotSettingsCommand ?? (
@@ -69,6 +78,13 @@ namespace TickTrader.BotAgent.Configurator
                 Application.Current.Dispatcher.BeginInvoke(new Action<string>(MessageBoxManager.OkInfo), $"{messagePath} {(isSaveProcess ? "saved" : "loaded")} successfully");
             else
                 Application.Current.Dispatcher.BeginInvoke(new Action<string>(MessageBoxManager.OkError), $"Failed to {(isSaveProcess ? "save" : "load")} {messagePath}");
+        }
+
+        private void DisablePanelHandler()
+        {
+            CanCreateArchive = !_service.ServiceRunning;
+
+            OnPropertyChanged(nameof(CanCreateArchive));
         }
     }
 }

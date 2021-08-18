@@ -15,7 +15,7 @@
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left">
+        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left" IsEnabled="{Binding CanCreateArchive, UpdateSourceTrigger=PropertyChanged}">
             <TextBlock Text="Save AlgoServer settings: "/>
             <Button Content="Save" Command="{Binding SaveCurrentBotSettingsCommand}" Style="{StaticResource SaveLoadButton}" ToolTip="Save bot settings of the current AlgoServer to the .zip archive"/>
             <Button Content="Load" Command="{Binding LoadCurrentBotSettingsCommand}" Style="{StaticResource SaveLoadButton}" ToolTip="Load bot settings for the current AlgoServer from the .zip archive"/>
