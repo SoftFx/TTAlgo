@@ -10,6 +10,7 @@
     <None Remove="Info\log.record.info.proto" />
     <None Remove="Info\package.info.proto" />
     <None Remove="Info\plugin.info.proto" />
+    <None Remove="Info\server.metadata.info.proto" />
     <None Remove="Management\account.management.proto" />
     <None Remove="Management\base.request.proto" />
     <None Remove="Management\connection.management.proto" />
@@ -46,6 +47,7 @@
 
   <ItemGroup>
     <Protobuf Include="Info\log.record.info.proto" GrpcServices="Client" />
+    <Protobuf Include="Info\server.metadata.info.proto" GrpcServices="Client" />
     <Protobuf Include="Management\base.request.proto" GrpcServices="Client" />
     <Protobuf Include="Management\account.management.proto" GrpcServices="Client" />
     <Protobuf Include="Management\connection.management.proto" GrpcServices="Client" />

@@ -10,6 +10,7 @@ import "management/base.request.proto";
 import "info/package.info.proto";
 import "info/plugin.info.proto";
 import "info/account.info.proto";
+import "info/server.metadata.info.proto";
 
 
 message AlgoServerMetadataUpdate {
@@ -22,29 +23,4 @@ message AlgoServerMetadataUpdate {
     repeated PluginModelInfo plugins = 6;
 
     RequestResult exec_result = 101;
-}
-
-message ApiMetadataInfo {
-    repeated Feed.Timeframe time_frames = 1;
-    repeated Metadata.LineStyle line_styles = 2;
-    repeated int32 thicknesses = 3;
-    repeated Metadata.MarkerSize marker_sizes = 4;
-}
-
-message MappingCollectionInfo {
-    repeated MappingInfo bar_to_bar_mappings = 1;
-    repeated MappingInfo bar_to_double_mappings = 2;
-    repeated MappingInfo quote_to_bar_mappings = 3;
-    repeated MappingInfo quote_to_double_mappings = 4;
-
-    MappingInfo default_bar_to_bar_mapping = 5;
-    MappingInfo default_bar_to_double_mapping = 6;
-    MappingInfo default_quote_to_bar_mapping = 7;
-    MappingInfo default_quote_to_double_mapping = 8;
-}
-
-message SetupContextInfo {
-    Feed.Timeframe default_time_frame = 1;
-    SymbolConfig default_symbol = 2;
-    MappingKey default_mapping = 3;
 }
