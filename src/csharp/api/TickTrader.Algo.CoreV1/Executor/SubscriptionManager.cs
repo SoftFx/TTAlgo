@@ -64,7 +64,7 @@ namespace TickTrader.Algo.CoreV1
             var node = _marketFixture.Market.GetSymbolNodeOrNull(symbol);
 
             if (node == null)
-                throw new AlgoException($"Symbol {symbol} has not been added for emulation");
+                throw new AlgoException($"Symbol {symbol} not found!");
 
             if (node.SubGroup == null)
                 node.SubGroup = new SubscriptionGroup(symbol);
