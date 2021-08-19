@@ -1028,29 +1028,29 @@ namespace TickTrader.Algo.ServerControl
             };
         }
 
-        public static PluginLogRecord.Types.LogSeverity ToServer(this Api.PluginLogRecord.Types.LogSeverity severity)
+        public static PluginLogRecord.Types.LogSeverity ToServer(this Api.LogRecordInfo.Types.LogSeverity severity)
         {
             switch (severity)
             {
-                case Api.PluginLogRecord.Types.LogSeverity.Info:
+                case Api.LogRecordInfo.Types.LogSeverity.Info:
                     return PluginLogRecord.Types.LogSeverity.Info;
 
-                case Api.PluginLogRecord.Types.LogSeverity.Error:
+                case Api.LogRecordInfo.Types.LogSeverity.Error:
                     return PluginLogRecord.Types.LogSeverity.Error;
 
-                case Api.PluginLogRecord.Types.LogSeverity.Trade:
+                case Api.LogRecordInfo.Types.LogSeverity.Trade:
                     return PluginLogRecord.Types.LogSeverity.Trade;
 
-                case Api.PluginLogRecord.Types.LogSeverity.TradeSuccess:
+                case Api.LogRecordInfo.Types.LogSeverity.TradeSuccess:
                     return PluginLogRecord.Types.LogSeverity.TradeSuccess;
 
-                case Api.PluginLogRecord.Types.LogSeverity.TradeFail:
+                case Api.LogRecordInfo.Types.LogSeverity.TradeFail:
                     return PluginLogRecord.Types.LogSeverity.TradeFail;
 
-                case Api.PluginLogRecord.Types.LogSeverity.Custom:
+                case Api.LogRecordInfo.Types.LogSeverity.Custom:
                     return PluginLogRecord.Types.LogSeverity.Custom;
 
-                case Api.PluginLogRecord.Types.LogSeverity.Alert:
+                case Api.LogRecordInfo.Types.LogSeverity.Alert:
                     return PluginLogRecord.Types.LogSeverity.Alert;
 
                 default:

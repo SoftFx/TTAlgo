@@ -7,7 +7,7 @@
   <ItemGroup>
     <None Remove="certs\algo-ca.crt" />
     <None Remove="Info\account.info.proto" />
-    <None Remove="Info\log.record.info.proto" />
+    <None Remove="Info\log.info.proto" />
     <None Remove="Info\package.info.proto" />
     <None Remove="Info\plugin.info.proto" />
     <None Remove="Info\server.metadata.info.proto" />
@@ -46,7 +46,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="Info\log.record.info.proto" GrpcServices="Client" />
+    <Protobuf Include="Info\log.info.proto" GrpcServices="Client" />
     <Protobuf Include="Info\server.metadata.info.proto" GrpcServices="Client" />
     <Protobuf Include="Management\base.request.proto" GrpcServices="Client" />
     <Protobuf Include="Management\account.management.proto" GrpcServices="Client" />

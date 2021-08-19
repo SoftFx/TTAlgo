@@ -18,13 +18,9 @@ message ApiMetadataInfo {
 message MappingCollectionInfo {
     repeated MappingInfo bar_to_bar_mappings = 1;
     repeated MappingInfo bar_to_double_mappings = 2;
-    repeated MappingInfo quote_to_bar_mappings = 3;
-    repeated MappingInfo quote_to_double_mappings = 4;
 
-    MappingInfo default_bar_to_bar_mapping = 5;
-    MappingInfo default_bar_to_double_mapping = 6;
-    MappingInfo default_quote_to_bar_mapping = 7;
-    MappingInfo default_quote_to_double_mapping = 8;
+    MappingInfo default_bar_to_bar_mapping = 3;
+    MappingInfo default_bar_to_double_mapping = 4;
 }
 
 message SetupContextInfo {

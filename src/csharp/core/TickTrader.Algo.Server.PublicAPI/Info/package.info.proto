@@ -75,8 +75,6 @@ message Metadata {
         BAR_TO_DOUBLE = 1;
         FULL_BAR_TO_DOUBLE = 2;
         FULL_BAR_TO_BAR = 3;
-        QUOTE_TO_DOUBLE = 4;
-        QUOTE_TO_BAR = 5;
     }
 }
 
@@ -96,15 +94,16 @@ message FileTransferMsg {
     FileChunk data = 2;
 }
 
-message FileFilterEntry {
-    string file_type_name = 1;
-    string file_mask = 2;
-}
 
 message PropertyDescriptor {
     string id = 1;
     string display_name = 2;
     Metadata.PropertyErrorCode error_code = 3;
+}
+
+message FileFilterEntry {
+    string file_type_name = 1;
+    string file_mask = 2;
 }
 
 message ParameterDescriptor {
@@ -146,6 +145,55 @@ message OutputDescriptor {
     bool visibility = 12;
 }
 
+
+message MappingInfo {
+    MappingKey key = 1;
+    google.protobuf.StringValue display_name = 2;
+}
+
+message MappingKey {
+    ReductionKey primary_reduction = 1;
+    ReductionKey secondary_reduction = 2;
+}
+
+
+message ReductionDescriptor {
+    string api_version_str = 1;
+    string id = 2;
+    string display_name = 3;
+    Metadata.ReductionType type = 4;
+}
+
+message ReductionInfo {
+    ReductionKey key = 1;
+    ReductionDescriptor descriptor = 2;
+}
+
+message ReductionKey {
+    string package_id = 1;
+    string descriptor_id = 2;
+}
+
+
+message PackageIdentity {
+    string file_name = 1;
+    string file_path = 2;
+    google.protobuf.Timestamp created_utc = 3;
+    google.protobuf.Timestamp last_modified_utc = 4;
+    int64 size = 5;
+    google.protobuf.StringValue hash = 6;
+}
+
+message PackageInfo {
+    string package_id = 1;
+    PackageIdentity identity = 2;
+    bool is_valid = 3;
+    repeated PluginInfo plugins = 4;
+    repeated ReductionInfo reductions = 5;
+    bool is_locked = 6;
+}
+
+
 message PluginDescriptor {
     string api_version_str = 1;
     string id = 2;
@@ -165,57 +213,12 @@ message PluginDescriptor {
     bool setup_main_symbol = 14;
 }
 
-message ReductionDescriptor {
-    string api_version_str = 1;
-    string id = 2;
-    string display_name = 3;
-    Metadata.ReductionType type = 4;
-}
-
-message PluginKey {
-    string package_id = 1;
-    string descriptor_id = 2;
-}
-
-message ReductionKey {
-    string package_id = 1;
-    string descriptor_id = 2;
-}
-
-message MappingInfo {
-    MappingKey key = 1;
-    google.protobuf.StringValue display_name = 2;
-}
-
-message MappingKey {
-    ReductionKey primary_reduction = 1;
-    ReductionKey secondary_reduction = 2;
-}
-
 message PluginInfo {
     PluginKey key = 1;
     PluginDescriptor descriptor = 2;
 }
 
-message ReductionInfo {
-    ReductionKey key = 1;
-    ReductionDescriptor descriptor = 2;
-}
-
-message PackageIdentity {
-    string file_name = 1;
-    string file_path = 2;
-    google.protobuf.Timestamp created_utc = 3;
-    google.protobuf.Timestamp last_modified_utc = 4;
-    int64 size = 5;
-    google.protobuf.StringValue hash = 6;
-}
-
-message PackageInfo {
+message PluginKey {
     string package_id = 1;
-    PackageIdentity identity = 2;
-    bool is_valid = 3;
-    repeated PluginInfo plugins = 4;
-    repeated ReductionInfo reductions = 5;
-    bool is_locked = 6;
+    string descriptor_id = 2;
 }

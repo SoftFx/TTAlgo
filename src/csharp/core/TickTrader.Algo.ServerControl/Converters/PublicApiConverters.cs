@@ -963,30 +963,30 @@ namespace TickTrader.Algo.ServerControl
             }
         }
 
-        public static Api.PluginLogRecord.Types.LogSeverity ToApi(this PluginLogRecord.Types.LogSeverity severity)
+        public static Api.LogRecordInfo.Types.LogSeverity ToApi(this PluginLogRecord.Types.LogSeverity severity)
         {
             switch (severity)
             {
                 case PluginLogRecord.Types.LogSeverity.Info:
-                    return Api.PluginLogRecord.Types.LogSeverity.Info;
+                    return Api.LogRecordInfo.Types.LogSeverity.Info;
 
                 case PluginLogRecord.Types.LogSeverity.Error:
-                    return Api.PluginLogRecord.Types.LogSeverity.Error;
+                    return Api.LogRecordInfo.Types.LogSeverity.Error;
 
                 case PluginLogRecord.Types.LogSeverity.Trade:
-                    return Api.PluginLogRecord.Types.LogSeverity.Trade;
+                    return Api.LogRecordInfo.Types.LogSeverity.Trade;
 
                 case PluginLogRecord.Types.LogSeverity.TradeSuccess:
-                    return Api.PluginLogRecord.Types.LogSeverity.TradeSuccess;
+                    return Api.LogRecordInfo.Types.LogSeverity.TradeSuccess;
 
                 case PluginLogRecord.Types.LogSeverity.TradeFail:
-                    return Api.PluginLogRecord.Types.LogSeverity.TradeFail;
+                    return Api.LogRecordInfo.Types.LogSeverity.TradeFail;
 
                 case PluginLogRecord.Types.LogSeverity.Custom:
-                    return Api.PluginLogRecord.Types.LogSeverity.Custom;
+                    return Api.LogRecordInfo.Types.LogSeverity.Custom;
 
                 case PluginLogRecord.Types.LogSeverity.Alert:
-                    return Api.PluginLogRecord.Types.LogSeverity.Alert;
+                    return Api.LogRecordInfo.Types.LogSeverity.Alert;
 
                 default:
                     throw new ArgumentException();
