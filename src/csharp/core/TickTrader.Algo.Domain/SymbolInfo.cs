@@ -14,6 +14,26 @@ namespace TickTrader.Algo.Domain
 
         public void Update(ISymbolInfo newInfo)
         {
+            if (!(newInfo is SymbolInfo info))
+                return;
+
+            //Name = info.Name; //is key in symbol dicts
+            TradeAllowed = info.TradeAllowed;
+            BaseCurrency = info.BaseCurrency;
+            CounterCurrency = info.CounterCurrency;
+            Digits = info.Digits;
+            LotSize = info.LotSize;
+            MinTradeVolume = info.MinTradeVolume;
+            MaxTradeVolume = info.MaxTradeVolume;
+            TradeVolumeStep = info.TradeVolumeStep;
+            Slippage = info.Slippage;
+            Commission = info.Commission;
+            Margin = info.Margin;
+            Swap = info.Swap;
+            Description = info.Description;
+            Security = info.Security;
+            SortOrder = info.SortOrder;
+            GroupSortOrder = info.GroupSortOrder;
         }
 
         public void UpdateRate(IQuoteInfo quote)

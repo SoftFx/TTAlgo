@@ -1,5 +1,4 @@
 ﻿using TickTrader.Algo.Api;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1

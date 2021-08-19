@@ -128,7 +128,7 @@ namespace TickTrader.Algo.Runtime
             }
             finally
             {
-                _stopTaskSrc.TrySetResult(null);
+                _stopTaskSrc?.TrySetResult(null);
                 _stopTaskSrc = null;
             }
         }

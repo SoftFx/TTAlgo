@@ -4,7 +4,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
 {
-    public sealed class SymbolAccessor : BaseSymbolAccessor<SymbolInfo>,  Symbol
+    public sealed class SymbolAccessor : BaseSymbolAccessor<SymbolInfo>, Symbol
     {
         private readonly CurrenciesCollection _currencies;
         private readonly FeedProvider _feed;
