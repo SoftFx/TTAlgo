@@ -67,14 +67,17 @@ namespace TickTrader.BotAgent.Configurator
             Status = new ServiceController(machineName).Status;
             VisibleRestartMessage = ServiceRunning && (_refresh.Restart || RestartRequired);
 
-            if (oldStatus != 0 && oldStatus != Status)
+            if (oldStatus != Status)
             {
-                InfoMessage = ServiceRunning ? Resources.StartAgentLog : Resources.StopAgentLog;
-
-                if (ServiceRunning)
+                if (oldStatus != 0)
                 {
-                    _refresh.DropRestart();
-                    RestartRequired = false;
+                    InfoMessage = ServiceRunning ? Resources.StartAgentLog : Resources.StopAgentLog;
+
+                    if (ServiceRunning)
+                    {
+                        _refresh.DropRestart();
+                        RestartRequired = false;
+                    }
                 }
 
                 ChangeServiceStatus?.Invoke();
