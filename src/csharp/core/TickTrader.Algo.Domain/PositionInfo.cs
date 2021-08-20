@@ -37,12 +37,13 @@ namespace TickTrader.Algo.Domain
 
         public PositionInfo BuildPositionSides()
         {
-            if (Side.IsBuy())
+            if (Long == null && Side.IsBuy())
             {
                 Long = new PositionSide(Volume, Price);
                 Short = new PositionSide(0, 0);
             }
             else
+            if (Short == null && Side.IsSell())
             {
                 Long = new PositionSide(0, 0);
                 Short = new PositionSide(Volume, Price);

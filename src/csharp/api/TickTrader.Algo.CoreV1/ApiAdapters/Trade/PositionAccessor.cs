@@ -23,27 +23,24 @@ namespace TickTrader.Algo.CoreV1
             Info = info ?? new PositionInfo() { Symbol = symbolName };
 
             if (info != null)
-            {
-                info.BuildPositionSides();
-                Update(Info);
-            }
+                Update(info.BuildPositionSides());
         }
 
         internal void Update(PositionInfo info)
         {
-            if (info.Side == OrderInfo.Types.Side.Buy)
+            if (info.Side.IsBuy())
             {
-                Long.Update(info.Volume, info.Price);
+                Long.Update(info.Long.Amount, info.Long.Price);
                 Short.Update(0, 0);
             }
             else
             {
                 Long.Update(0, 0);
-                Short.Update(info.Volume, info.Price);
+                Short.Update(info.Short.Amount, info.Short.Price);
             }
 
-            Info.Long = info.Long;
-            Info.Short = info.Short;
+            Info.Long = Long;
+            Info.Short = Short;
 
             Changed?.Invoke(this);
         }
