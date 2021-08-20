@@ -96,7 +96,7 @@ namespace TickTrader.Algo.Core
         public override BarBoundaries GetBar(Timestamp timepoint)
         {
             var t = timepoint.ToDateTime();
-            var start = new DateTime(t.Year, t.Month, 1);
+            var start = new DateTime(t.Year, t.Month, 1, 0, 0, 0, DateTimeKind.Utc);
             var end = start.AddMonths(1);
             return new BarBoundaries(start.ToTimestamp().Seconds, end.ToTimestamp().Seconds);
         }
