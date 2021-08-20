@@ -564,72 +564,72 @@ namespace TickTrader.Algo.ServerControl
             };
         }
 
-        public static Api.Metadata.Types.PluginType ToApi(this Metadata.Types.PluginType type)
+        public static Api.PluginDescriptor.Types.PluginType ToApi(this Metadata.Types.PluginType type)
         {
             switch (type)
             {
                 case Metadata.Types.PluginType.Indicator:
-                    return Api.Metadata.Types.PluginType.Indicator;
+                    return Api.PluginDescriptor.Types.PluginType.Indicator;
 
                 case Metadata.Types.PluginType.TradeBot:
-                    return Api.Metadata.Types.PluginType.TradeBot;
+                    return Api.PluginDescriptor.Types.PluginType.TradeBot;
 
                 default:
-                    return Api.Metadata.Types.PluginType.UnknownPluginType;
+                    return Api.PluginDescriptor.Types.PluginType.UnknownPluginType;
             }
         }
 
-        public static Api.Metadata.Types.MetadataErrorCode ToApi(this Metadata.Types.MetadataErrorCode type)
+        public static Api.PluginDescriptor.Types.PluginErrorCode ToApi(this Metadata.Types.MetadataErrorCode type)
         {
             switch (type)
             {
                 case Metadata.Types.MetadataErrorCode.NoMetadataError:
-                    return Api.Metadata.Types.MetadataErrorCode.NoMetadataError;
+                    return Api.PluginDescriptor.Types.PluginErrorCode.NoMetadataError;
 
                 case Metadata.Types.MetadataErrorCode.HasInvalidProperties:
-                    return Api.Metadata.Types.MetadataErrorCode.HasInvalidProperties;
+                    return Api.PluginDescriptor.Types.PluginErrorCode.HasInvalidProperties;
 
                 case Metadata.Types.MetadataErrorCode.UnknownBaseType:
-                    return Api.Metadata.Types.MetadataErrorCode.UnknownBaseType;
+                    return Api.PluginDescriptor.Types.PluginErrorCode.UnknownBaseType;
 
                 case Metadata.Types.MetadataErrorCode.IncompatibleApiNewerVersion:
-                    return Api.Metadata.Types.MetadataErrorCode.IncompatibleApiNewerVersion;
+                    return Api.PluginDescriptor.Types.PluginErrorCode.IncompatibleApiNewerVersion;
 
                 case Metadata.Types.MetadataErrorCode.IncompatibleApiOlderVersion:
-                    return Api.Metadata.Types.MetadataErrorCode.IncompatibleApiOlderVersion;
+                    return Api.PluginDescriptor.Types.PluginErrorCode.IncompatibleApiOlderVersion;
 
                 default:
-                    return Api.Metadata.Types.MetadataErrorCode.UnknownMetadataError;
+                    return Api.PluginDescriptor.Types.PluginErrorCode.UnknownMetadataError;
             }
         }
 
-        public static Api.Metadata.Types.PropertyErrorCode ToApi(this Metadata.Types.PropertyErrorCode type)
+        public static Api.PropertyDescriptor.Types.PropertyErrorCode ToApi(this Metadata.Types.PropertyErrorCode type)
         {
             switch (type)
             {
                 case Metadata.Types.PropertyErrorCode.NoPropertyError:
-                    return Api.Metadata.Types.PropertyErrorCode.NoPropertyError;
+                    return Api.PropertyDescriptor.Types.PropertyErrorCode.NoPropertyError;
 
                 case Metadata.Types.PropertyErrorCode.SetIsNotPublic:
-                    return Api.Metadata.Types.PropertyErrorCode.SetIsNotPublic;
+                    return Api.PropertyDescriptor.Types.PropertyErrorCode.SetIsNotPublic;
 
                 case Metadata.Types.PropertyErrorCode.GetIsNotPublic:
-                    return Api.Metadata.Types.PropertyErrorCode.GetIsNotPublic;
+                    return Api.PropertyDescriptor.Types.PropertyErrorCode.GetIsNotPublic;
 
                 case Metadata.Types.PropertyErrorCode.MultipleAttributes:
-                    return Api.Metadata.Types.PropertyErrorCode.MultipleAttributes;
+                    return Api.PropertyDescriptor.Types.PropertyErrorCode.MultipleAttributes;
 
                 case Metadata.Types.PropertyErrorCode.InputIsNotDataSeries:
-                    return Api.Metadata.Types.PropertyErrorCode.InputIsNotDataSeries;
+                    return Api.PropertyDescriptor.Types.PropertyErrorCode.InputIsNotDataSeries;
 
                 case Metadata.Types.PropertyErrorCode.OutputIsNotDataSeries:
-                    return Api.Metadata.Types.PropertyErrorCode.OutputIsNotDataSeries;
+                    return Api.PropertyDescriptor.Types.PropertyErrorCode.OutputIsNotDataSeries;
 
                 case Metadata.Types.PropertyErrorCode.EmptyEnum:
-                    return Api.Metadata.Types.PropertyErrorCode.EmptyEnum;
+                    return Api.PropertyDescriptor.Types.PropertyErrorCode.EmptyEnum;
 
                 default:
-                    return Api.Metadata.Types.PropertyErrorCode.UnknownPropertyError;
+                    return Api.PropertyDescriptor.Types.PropertyErrorCode.UnknownPropertyError;
             }
         }
 
@@ -774,21 +774,21 @@ namespace TickTrader.Algo.ServerControl
             };
         }
 
-        public static Api.Metadata.Types.ReductionType ToApi(this Metadata.Types.ReductionType type)
+        public static Api.ReductionDescriptor.Types.ReductionType ToApi(this Metadata.Types.ReductionType type)
         {
             switch (type)
             {
                 case Metadata.Types.ReductionType.BarToDouble:
-                    return Api.Metadata.Types.ReductionType.BarToDouble;
+                    return Api.ReductionDescriptor.Types.ReductionType.BarToDouble;
 
                 case Metadata.Types.ReductionType.FullBarToBar:
-                    return Api.Metadata.Types.ReductionType.FullBarToBar;
+                    return Api.ReductionDescriptor.Types.ReductionType.FullBarToBar;
 
                 case Metadata.Types.ReductionType.FullBarToDouble:
-                    return Api.Metadata.Types.ReductionType.FullBarToDouble;
+                    return Api.ReductionDescriptor.Types.ReductionType.FullBarToDouble;
 
                 default:
-                    return Api.Metadata.Types.ReductionType.UnknownReductionType;
+                    return Api.ReductionDescriptor.Types.ReductionType.UnknownReductionType;
             }
         }
 

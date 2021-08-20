@@ -1,0 +1,24 @@
+﻿syntax = "proto3";
+
+package ticktrader.algo.server.publicApi;
+
+option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
+
+import "google/protobuf/any.proto";
+
+
+message FileChunk {
+    int32 id = 1;
+    bytes binary = 2;
+    bool is_final = 3;
+}
+
+message FileTransferSettings {
+    int32 chunk_size = 1;
+    int32 chunk_offset = 2;
+}
+
+message FileTransferMsg {
+    google.protobuf.Any header = 1;
+    FileChunk data = 2;
+}

@@ -1,0 +1,25 @@
+﻿syntax = "proto3";
+
+package ticktrader.algo.server.publicApi;
+
+option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
+
+import "google/protobuf/wrappers.proto";
+import "info/server.metadata.info.proto";
+
+
+message ColoredLineOutputConfig {
+    string property_id = 1;
+    bool is_enabled = 2;
+    uint32 line_color_argb = 3;
+    int32 line_thickness = 4;
+    Metadata.LineStyle line_style = 5;
+}
+
+message MarkerSeriesOutputConfig {
+    string property_id = 1;
+    bool is_enabled = 2;
+    uint32 line_color_argb = 3;
+    int32 line_thickness = 4;
+    Metadata.MarkerSize marker_size = 5;
+}

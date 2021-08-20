@@ -1,0 +1,30 @@
+﻿syntax = "proto3";
+
+package ticktrader.algo.server.publicApi;
+
+option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
+
+
+message ReductionInfo {
+    ReductionKey key = 1;
+    ReductionDescriptor descriptor = 2;
+}
+
+message ReductionKey {
+    string package_id = 1;
+    string descriptor_id = 2;
+}
+
+message ReductionDescriptor {
+    enum ReductionType {
+            UNKNOWN_REDUCTION_TYPE = 0;
+            BAR_TO_DOUBLE = 1;
+            FULL_BAR_TO_DOUBLE = 2;
+            FULL_BAR_TO_BAR = 3;
+        }
+
+    string api_version_str = 1;
+    string id = 2;
+    string display_name = 3;
+    ReductionType type = 4;
+}

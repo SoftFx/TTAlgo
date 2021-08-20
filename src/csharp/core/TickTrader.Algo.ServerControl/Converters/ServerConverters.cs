@@ -586,14 +586,14 @@ namespace TickTrader.Algo.ServerControl
             };
         }
 
-        public static Metadata.Types.PluginType ToServer(this Api.Metadata.Types.PluginType type)
+        public static Metadata.Types.PluginType ToServer(this Api.PluginDescriptor.Types.PluginType type)
         {
             switch (type)
             {
-                case Api.Metadata.Types.PluginType.Indicator:
+                case Api.PluginDescriptor.Types.PluginType.Indicator:
                     return Metadata.Types.PluginType.Indicator;
 
-                case Api.Metadata.Types.PluginType.TradeBot:
+                case Api.PluginDescriptor.Types.PluginType.TradeBot:
                     return Metadata.Types.PluginType.TradeBot;
 
                 default:
@@ -601,29 +601,29 @@ namespace TickTrader.Algo.ServerControl
             }
         }
 
-        public static Metadata.Types.PropertyErrorCode ToServer(this Api.Metadata.Types.PropertyErrorCode type)
+        public static Metadata.Types.PropertyErrorCode ToServer(this Api.PropertyDescriptor.Types.PropertyErrorCode type)
         {
             switch (type)
             {
-                case Api.Metadata.Types.PropertyErrorCode.NoPropertyError:
+                case Api.PropertyDescriptor.Types.PropertyErrorCode.NoPropertyError:
                     return Metadata.Types.PropertyErrorCode.NoPropertyError;
 
-                case Api.Metadata.Types.PropertyErrorCode.SetIsNotPublic:
+                case Api.PropertyDescriptor.Types.PropertyErrorCode.SetIsNotPublic:
                     return Metadata.Types.PropertyErrorCode.SetIsNotPublic;
 
-                case Api.Metadata.Types.PropertyErrorCode.GetIsNotPublic:
+                case Api.PropertyDescriptor.Types.PropertyErrorCode.GetIsNotPublic:
                     return Metadata.Types.PropertyErrorCode.GetIsNotPublic;
 
-                case Api.Metadata.Types.PropertyErrorCode.MultipleAttributes:
+                case Api.PropertyDescriptor.Types.PropertyErrorCode.MultipleAttributes:
                     return Metadata.Types.PropertyErrorCode.MultipleAttributes;
 
-                case Api.Metadata.Types.PropertyErrorCode.InputIsNotDataSeries:
+                case Api.PropertyDescriptor.Types.PropertyErrorCode.InputIsNotDataSeries:
                     return Metadata.Types.PropertyErrorCode.InputIsNotDataSeries;
 
-                case Api.Metadata.Types.PropertyErrorCode.OutputIsNotDataSeries:
+                case Api.PropertyDescriptor.Types.PropertyErrorCode.OutputIsNotDataSeries:
                     return Metadata.Types.PropertyErrorCode.OutputIsNotDataSeries;
 
-                case Api.Metadata.Types.PropertyErrorCode.EmptyEnum:
+                case Api.PropertyDescriptor.Types.PropertyErrorCode.EmptyEnum:
                     return Metadata.Types.PropertyErrorCode.EmptyEnum;
 
                 default:
@@ -631,23 +631,23 @@ namespace TickTrader.Algo.ServerControl
             }
         }
 
-        public static Metadata.Types.MetadataErrorCode ToServer(this Api.Metadata.Types.MetadataErrorCode type)
+        public static Metadata.Types.MetadataErrorCode ToServer(this Api.PluginDescriptor.Types.PluginErrorCode type)
         {
             switch (type)
             {
-                case Api.Metadata.Types.MetadataErrorCode.NoMetadataError:
+                case Api.PluginDescriptor.Types.PluginErrorCode.NoMetadataError:
                     return Metadata.Types.MetadataErrorCode.NoMetadataError;
 
-                case Api.Metadata.Types.MetadataErrorCode.HasInvalidProperties:
+                case Api.PluginDescriptor.Types.PluginErrorCode.HasInvalidProperties:
                     return Metadata.Types.MetadataErrorCode.HasInvalidProperties;
 
-                case Api.Metadata.Types.MetadataErrorCode.UnknownBaseType:
+                case Api.PluginDescriptor.Types.PluginErrorCode.UnknownBaseType:
                     return Metadata.Types.MetadataErrorCode.UnknownBaseType;
 
-                case Api.Metadata.Types.MetadataErrorCode.IncompatibleApiNewerVersion:
+                case Api.PluginDescriptor.Types.PluginErrorCode.IncompatibleApiNewerVersion:
                     return Metadata.Types.MetadataErrorCode.IncompatibleApiNewerVersion;
 
-                case Api.Metadata.Types.MetadataErrorCode.IncompatibleApiOlderVersion:
+                case Api.PluginDescriptor.Types.PluginErrorCode.IncompatibleApiOlderVersion:
                     return Metadata.Types.MetadataErrorCode.IncompatibleApiOlderVersion;
 
                 default:
@@ -818,17 +818,17 @@ namespace TickTrader.Algo.ServerControl
             };
         }
 
-        public static Metadata.Types.ReductionType ToServer(this Api.Metadata.Types.ReductionType type)
+        public static Metadata.Types.ReductionType ToServer(this Api.ReductionDescriptor.Types.ReductionType type)
         {
             switch (type)
             {
-                case Api.Metadata.Types.ReductionType.BarToDouble:
+                case Api.ReductionDescriptor.Types.ReductionType.BarToDouble:
                     return Metadata.Types.ReductionType.BarToDouble;
 
-                case Api.Metadata.Types.ReductionType.FullBarToBar:
+                case Api.ReductionDescriptor.Types.ReductionType.FullBarToBar:
                     return Metadata.Types.ReductionType.FullBarToBar;
 
-                case Api.Metadata.Types.ReductionType.FullBarToDouble:
+                case Api.ReductionDescriptor.Types.ReductionType.FullBarToDouble:
                     return Metadata.Types.ReductionType.FullBarToDouble;
 
                 default:

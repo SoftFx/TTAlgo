@@ -1,0 +1,22 @@
+﻿syntax = "proto3";
+
+package ticktrader.algo.server.publicApi;
+
+option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
+
+import "google/protobuf/wrappers.proto";
+import "info/mappings/mapping.info.proto";
+import "info/server.metadata.info.proto";
+
+
+message BarToBarInputConfig {
+    string property_id = 1;
+    SymbolConfig selected_symbol = 2;
+    MappingKey selected_mapping = 3;
+}
+
+message BarToDoubleInputConfig {
+    string property_id = 1;
+    SymbolConfig selected_symbol = 2;
+    MappingKey selected_mapping = 3;
+}

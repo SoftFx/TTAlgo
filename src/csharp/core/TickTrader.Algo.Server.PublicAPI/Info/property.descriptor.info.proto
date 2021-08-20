@@ -1,0 +1,70 @@
+﻿syntax = "proto3";
+
+package ticktrader.algo.server.publicApi;
+
+option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
+
+import "google/protobuf/wrappers.proto";
+import "info/server.metadata.info.proto";
+
+
+message PropertyDescriptor {
+    enum PropertyErrorCode {
+        NO_PROPERTY_ERROR = 0;
+        UNKNOWN_PROPERTY_ERROR = 1;
+        SET_IS_NOT_PUBLIC = 2;
+        GET_IS_NOT_PUBLIC = 3;
+        MULTIPLE_ATTRIBUTES = 4;
+        INPUT_IS_NOT_DATA_SERIES = 5;
+        OUTPUT_IS_NOT_DATA_SERIES = 6;
+        EMPTY_ENUM = 7;
+    }
+
+    string id = 1;
+    string display_name = 2;
+    PropertyErrorCode error_code = 3;
+}
+
+message InputDescriptor {
+    string id = 1;
+    string display_name = 2;
+    PropertyDescriptor.PropertyErrorCode error_code = 3;
+
+    string data_series_base_type_full_name = 4;
+}
+
+message OutputDescriptor {
+    string id = 1;
+    string display_name = 2;
+    PropertyDescriptor.PropertyErrorCode error_code = 3;
+
+    string data_series_base_type_full_name = 4;
+    double default_thickness = 5;
+    google.protobuf.UInt32Value default_color_argb = 6;
+    Metadata.LineStyle default_line_style = 7;
+    Metadata.PlotType plot_type = 8;
+    Metadata.OutputTarget target = 9;
+    int32 precision = 10;
+    double zero_line = 11;
+    bool visibility = 12;
+}
+
+message ParameterDescriptor {
+    string id = 1;
+    string display_name = 2;
+    PropertyDescriptor.PropertyErrorCode error_code = 3;
+
+    string data_type = 4;
+    google.protobuf.StringValue default_value = 5;
+    bool is_required = 6;
+
+    bool is_enum = 7;
+    repeated string enum_values = 8;
+
+    repeated FileFilterEntry file_filters = 9;
+}
+
+message FileFilterEntry {
+    string file_type_name = 1;
+    string file_mask = 2;
+}

@@ -4,9 +4,80 @@ package ticktrader.algo.server.publicApi;
 
 option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 
-import "info/package.info.proto";
-import "info/plugin.info.proto";
+import "google/protobuf/wrappers.proto";
+import "info/mappings/mapping.info.proto";
 
+
+message Metadata {
+    enum LineStyle {
+        UNKNOWN_LINE_STYLE = 0;
+        SOLID = 1;
+        DOTS = 2;
+        DOTS_RARE = 3;
+        DOTS_VERY_RARE = 4;
+        LINES_DOTS = 5;
+        LINES = 6;
+    }
+
+    enum PlotType {
+        UNKNOWN_PLOT_TYPE = 0;
+        LINE = 1;
+        HISTOGRAM = 2;
+        POINTS = 3;
+        DISCONTINUOUS_LINE = 4;
+    }
+
+    enum OutputTarget {
+        UNKNOWN_OUTPUT_TARGET = 0;
+        OVERLAY = 1;
+        WINDOW1 = 2;
+        WINDOW2 = 3;
+        WINDOW3 = 4;
+        WINDOW4 = 5;
+    }
+
+    enum MarkerSize {
+        UNKNOWN_MARKER_SIZE = 0;
+        LARGE = 1;
+        MEDIUM = 2;
+        SMALL = 3;
+    }
+}
+
+message Feed {
+    enum MarketSide {
+        BID = 0;
+        ASK = 1;
+    }
+
+    enum Timeframe {
+        S1 = 0;
+        S10 = 1;
+        M1 = 2;
+        M5 = 3;
+        M15 = 4;
+        M30 = 5;
+        H1 = 6;
+        H4 = 7;
+        D = 8;
+        W = 9;
+        M_N = 10;
+        TICKS = 11;
+        TICKS_LEVEL2 = 12;
+        TICKS_VWAP = 13;
+    }
+}
+
+message SymbolConfig {
+    enum SymbolOrigin {
+        ONLINE = 0;
+        CUSTOM = 1;
+        TOKEN = 2;
+    }
+
+    string name = 1;
+    SymbolOrigin origin = 2;
+}
 
 message ApiMetadataInfo {
     repeated Feed.Timeframe time_frames = 1;
