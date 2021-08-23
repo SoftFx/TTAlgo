@@ -11,7 +11,13 @@ import "management/package.management.proto";
 import "management/plugin.management.proto";
 import "management/plugin.files.management.proto";
 import "management/subscriptions.management.proto";
+
 import "updates/base.update.proto";
+
+import "info/parameterconfigs/input.parameter.config.proto";
+import "info/parameterconfigs/output.parameter.config.proto";
+import "info/parameterconfigs/parameter.config.proto";
+
 import "info/file.transfer.info.proto";
 
 
