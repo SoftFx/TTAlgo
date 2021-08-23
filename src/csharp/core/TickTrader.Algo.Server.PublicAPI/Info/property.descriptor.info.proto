@@ -8,8 +8,8 @@ import "google/protobuf/wrappers.proto";
 import "info/server.metadata.info.proto";
 
 
-message PropertyDescriptor {
-    enum PropertyErrorCode {
+message ParameterDescriptor {
+    enum ParameterErrorCode {
         NO_PROPERTY_ERROR = 0;
         UNKNOWN_PROPERTY_ERROR = 1;
         SET_IS_NOT_PUBLIC = 2;
@@ -22,13 +22,22 @@ message PropertyDescriptor {
 
     string id = 1;
     string display_name = 2;
-    PropertyErrorCode error_code = 3;
+    ParameterErrorCode error_code = 3;
+
+    string data_type = 4;
+    google.protobuf.StringValue default_value = 5;
+    bool is_required = 6;
+
+    bool is_enum = 7;
+    repeated string enum_values = 8;
+
+    repeated FileFilterEntry file_filters = 9;
 }
 
 message InputDescriptor {
     string id = 1;
     string display_name = 2;
-    PropertyDescriptor.PropertyErrorCode error_code = 3;
+    ParameterDescriptor.ParameterErrorCode error_code = 3;
 
     string data_series_base_type_full_name = 4;
 }
@@ -36,7 +45,7 @@ message InputDescriptor {
 message OutputDescriptor {
     string id = 1;
     string display_name = 2;
-    PropertyDescriptor.PropertyErrorCode error_code = 3;
+    ParameterDescriptor.ParameterErrorCode error_code = 3;
 
     string data_series_base_type_full_name = 4;
     double default_thickness = 5;
@@ -47,21 +56,6 @@ message OutputDescriptor {
     int32 precision = 10;
     double zero_line = 11;
     bool visibility = 12;
-}
-
-message ParameterDescriptor {
-    string id = 1;
-    string display_name = 2;
-    PropertyDescriptor.PropertyErrorCode error_code = 3;
-
-    string data_type = 4;
-    google.protobuf.StringValue default_value = 5;
-    bool is_required = 6;
-
-    bool is_enum = 7;
-    repeated string enum_values = 8;
-
-    repeated FileFilterEntry file_filters = 9;
 }
 
 message FileFilterEntry {

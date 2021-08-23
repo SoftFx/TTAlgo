@@ -603,33 +603,33 @@ namespace TickTrader.Algo.ServerControl
             }
         }
 
-        public static Api.PropertyDescriptor.Types.PropertyErrorCode ToApi(this Metadata.Types.PropertyErrorCode type)
+        public static Api.ParameterDescriptor.Types.ParameterErrorCode ToApi(this Metadata.Types.PropertyErrorCode type)
         {
             switch (type)
             {
                 case Metadata.Types.PropertyErrorCode.NoPropertyError:
-                    return Api.PropertyDescriptor.Types.PropertyErrorCode.NoPropertyError;
+                    return Api.ParameterDescriptor.Types.ParameterErrorCode.NoPropertyError;
 
                 case Metadata.Types.PropertyErrorCode.SetIsNotPublic:
-                    return Api.PropertyDescriptor.Types.PropertyErrorCode.SetIsNotPublic;
+                    return Api.ParameterDescriptor.Types.ParameterErrorCode.SetIsNotPublic;
 
                 case Metadata.Types.PropertyErrorCode.GetIsNotPublic:
-                    return Api.PropertyDescriptor.Types.PropertyErrorCode.GetIsNotPublic;
+                    return Api.ParameterDescriptor.Types.ParameterErrorCode.GetIsNotPublic;
 
                 case Metadata.Types.PropertyErrorCode.MultipleAttributes:
-                    return Api.PropertyDescriptor.Types.PropertyErrorCode.MultipleAttributes;
+                    return Api.ParameterDescriptor.Types.ParameterErrorCode.MultipleAttributes;
 
                 case Metadata.Types.PropertyErrorCode.InputIsNotDataSeries:
-                    return Api.PropertyDescriptor.Types.PropertyErrorCode.InputIsNotDataSeries;
+                    return Api.ParameterDescriptor.Types.ParameterErrorCode.InputIsNotDataSeries;
 
                 case Metadata.Types.PropertyErrorCode.OutputIsNotDataSeries:
-                    return Api.PropertyDescriptor.Types.PropertyErrorCode.OutputIsNotDataSeries;
+                    return Api.ParameterDescriptor.Types.ParameterErrorCode.OutputIsNotDataSeries;
 
                 case Metadata.Types.PropertyErrorCode.EmptyEnum:
-                    return Api.PropertyDescriptor.Types.PropertyErrorCode.EmptyEnum;
+                    return Api.ParameterDescriptor.Types.ParameterErrorCode.EmptyEnum;
 
                 default:
-                    return Api.PropertyDescriptor.Types.PropertyErrorCode.UnknownPropertyError;
+                    return Api.ParameterDescriptor.Types.ParameterErrorCode.UnknownPropertyError;
             }
         }
 
