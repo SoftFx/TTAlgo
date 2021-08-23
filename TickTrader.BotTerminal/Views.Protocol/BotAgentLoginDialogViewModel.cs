@@ -198,7 +198,7 @@ namespace TickTrader.BotTerminal
             if (_server == null)
             {
                 Server = Servers.FirstOrDefault()?.Address;
-                Port = "8443";
+                Port = "15443";
             }
         }
 

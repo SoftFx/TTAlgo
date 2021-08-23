@@ -27,13 +27,13 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
             Fdk = DefaultFdkSettings,
         };
 
-        public static string DefaultServerUrl => @"https://localhost:5001/;http://localhost:5000";
+        public static string DefaultServerUrl => @"https://localhost:15139/;http://localhost:15137";
         public static string RandomSecretKey => new KeyGenerator().GetUniqueKey(128);
         public static ServerCredentials DefaultCredentials => new ServerCredentials("Administrator", "Administrator", "Dealer", "Dealer", "Viewer", "Viewer");
         public static SslSettings DefaultSslSettings => new SslSettings { File = "certificate.pfx", Password = "" };
         public static ProtocolSettings DefaultProtocolSettings => new ProtocolSettings
         {
-            ListeningPort = 8443,
+            ListeningPort = 15443,
             LogDirectoryName = "Logs",
             LogMessages = false,
         };

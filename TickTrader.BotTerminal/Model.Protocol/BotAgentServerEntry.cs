@@ -22,7 +22,7 @@ namespace TickTrader.BotTerminal
         }
 
         public BotAgentServerEntry(string name, string address) :
-            this(name, address, 8443)
+            this(name, address, 15443)
         {
         }
 
