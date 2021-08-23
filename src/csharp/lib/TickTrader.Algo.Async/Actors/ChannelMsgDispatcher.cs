@@ -38,8 +38,8 @@ namespace TickTrader.Algo.Async.Actors
                 if (msg is CallbackMsg)
                     return; // some task continuations are invoked from thread pool and can crash application
 
-                if (msg is IAskMsg)
-                    msg = (msg as IAskMsg).Request;
+                if (msg is IAskMsg askMsg)
+                    msg = askMsg.Request;
 
                 throw Errors.PostMessageFailed(_actorName, msg.GetType().FullName);
             }

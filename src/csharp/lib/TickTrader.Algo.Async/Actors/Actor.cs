@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Async.Actors
@@ -8,6 +9,9 @@ namespace TickTrader.Algo.Async.Actors
     {
         private readonly ConcurrentDictionary<string, IMsgHandler> _handlers = new ConcurrentDictionary<string, IMsgHandler>();
 
+        private CancellationTokenSource _stopTokenSrc;
+        private TaskScheduler _scheduler;
+
         public string Name { get; private set; }
 
 
@@ -15,6 +19,10 @@ namespace TickTrader.Algo.Async.Actors
 
 
         protected IActorRef Self { get; private set; }
+
+        protected CancellationToken StopToken => _stopTokenSrc?.Token ?? throw Errors.ActorNotStarted(Name);
+
+        protected TaskScheduler Scheduler => _scheduler ?? throw Errors.ActorNotStarted(Name);
 
 
         public ActorLock CreateLock()
@@ -39,16 +47,35 @@ namespace TickTrader.Algo.Async.Actors
             Name = name ?? throw Errors.ActorNameRequired();
             MsgDispatcher = msgDispatcher ?? throw Errors.MsgDispatcherRequired();
             Self = new LocalRef(msgDispatcher, Name);
+            _stopTokenSrc = new CancellationTokenSource();
 
             MsgDispatcher.Start(HandleMsg);
-            if (initMsg != null)
-                MsgDispatcher.PostMessage(new InvokeInitCmd(initMsg));
+            MsgDispatcher.PostMessage(new InitCmd(initMsg));
         }
 
         internal async Task Stop()
         {
             if (MsgDispatcher == null)
                 throw Errors.MsgDispatcherRequired();
+
+            try
+            {
+                _stopTokenSrc.Cancel();
+            }
+            catch (Exception ex)
+            {
+                if (ex is AggregateException aggregateEx)
+                {
+                    foreach (var e in aggregateEx.InnerExceptions)
+                    {
+                        ActorSystem.OnActorError(Name, e);
+                    }
+                }
+                else
+                {
+                    ActorSystem.OnActorError(Name, ex);
+                }
+            }
 
             await MsgDispatcher.Stop();
         }
@@ -88,8 +115,8 @@ namespace TickTrader.Algo.Async.Actors
                 case ReusableAsyncToken token:
                     InvokeAsyncToken(token);
                     break;
-                case InvokeInitCmd cmd:
-                    InvokeInit(cmd.InitMsg);
+                case InitCmd cmd:
+                    InitInternal(cmd.InitMsg);
                     break;
                 default:
                     InvokeMsg(msg);
@@ -97,15 +124,20 @@ namespace TickTrader.Algo.Async.Actors
             }
         }
 
-        private void InvokeInit(object initMsg)
+        private void InitInternal(object initMsg)
         {
-            try
+            _scheduler = TaskScheduler.FromCurrentSynchronizationContext();
+
+            if (initMsg != null)
             {
-                ActorInit(initMsg);
-            }
-            catch (Exception ex)
-            {
-                ActorSystem.OnActorFailed(Name, ex);
+                try
+                {
+                    ActorInit(initMsg);
+                }
+                catch (Exception ex)
+                {
+                    ActorSystem.OnActorFailed(Name, ex);
+                }
             }
         }
 
@@ -164,11 +196,11 @@ namespace TickTrader.Algo.Async.Actors
         }
 
 
-        private class InvokeInitCmd
+        private class InitCmd
         {
             public object InitMsg { get; }
 
-            public InvokeInitCmd(object initMsg)
+            public InitCmd(object initMsg)
             {
                 InitMsg = initMsg;
             }

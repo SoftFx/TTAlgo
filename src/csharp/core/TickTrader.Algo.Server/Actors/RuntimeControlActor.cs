@@ -149,6 +149,11 @@ namespace TickTrader.Algo.Server
                 _logger.Error($"Plugin '{id}' already attached");
                 return false;
             }
+            if (_isObsolete)
+            {
+                _logger.Info($"Can't attach plugin '{id}'. Marked as obsolete");
+                return false;
+            }
 
             _pluginsMap.Add(id, cmd.Plugin);
             _logger.Debug($"Attached plugin '{id}'. Have {_pluginsMap.Count} attached plugins");
@@ -180,7 +185,7 @@ namespace TickTrader.Algo.Server
                 return;
 
             ManageRuntimeInternal();
-            TaskExt.Schedule(1000, () => Self.Tell(ManageRuntimeCmd.Instance));
+            TaskExt.Schedule(1000, () => Self.Tell(ManageRuntimeCmd.Instance), StopToken);
         }
 
         private void ScheduleShutdown(ScheduleShutdownCmd cmd)

@@ -1,14 +1,8 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Async.Actors
 {
-    public interface IContextFactory
-    {
-        SynchronizationContext CreateContext();
-    }
-
     public interface IMsgDispatcher
     {
         void PostMessage(object msg);

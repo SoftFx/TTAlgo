@@ -145,7 +145,7 @@ namespace TickTrader.Algo.Server
                 return;
 
             ManageConnectionInternal();
-            TaskExt.Schedule(1000, () => Self.Tell(ManageConnectionCmd.Instance));
+            TaskExt.Schedule(1000, () => Self.Tell(ManageConnectionCmd.Instance), StopToken);
         }
 
         private void OnConnectionLost(ConnectionLostMsg msg)

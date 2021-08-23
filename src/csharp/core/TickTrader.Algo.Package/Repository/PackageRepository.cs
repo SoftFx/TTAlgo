@@ -107,7 +107,7 @@ namespace TickTrader.Algo.Package
                 result.IsLocked = false;
                 if (pkgState.NextAction == null)
                     pkgState.NextAction = PkgUpdateAction.Upsert;
-                TaskExt.Schedule(100, () => Self.Tell(result));
+                TaskExt.Schedule(100, () => Self.Tell(result), StopToken);
                 return;
             }
 

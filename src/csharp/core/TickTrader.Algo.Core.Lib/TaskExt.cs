@@ -45,11 +45,13 @@ namespace TickTrader.Algo.Core.Lib
         }
 
 
-        public static void Schedule(int timeMs, Action action) => Schedule(timeMs, action, CancellationToken.None);
+        public static void Schedule(int timeMs, Action action) => Schedule(timeMs, action, CancellationToken.None, TaskScheduler.Default);
 
-        public static void Schedule(int timeMs, Action action, CancellationToken cancelToken)
+        public static void Schedule(int timeMs, Action action, CancellationToken cancelToken) => Schedule(timeMs, action, cancelToken, TaskScheduler.Default);
+
+        public static void Schedule(int timeMs, Action action, CancellationToken cancelToken, TaskScheduler scheduler)
         {
-            Task.Delay(timeMs, cancelToken).ContinueWith(_ => action(), TaskContinuationOptions.NotOnCanceled);
+            Task.Delay(timeMs, cancelToken).ContinueWith(_ => action(), cancelToken, TaskContinuationOptions.NotOnCanceled, scheduler);
         }
 
         public static Task WrapSyncException(Func<Task> func)
