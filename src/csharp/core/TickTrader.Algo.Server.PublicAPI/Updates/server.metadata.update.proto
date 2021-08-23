@@ -4,7 +4,6 @@ package ticktrader.algo.server.publicApi;
 
 option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 
-import "google/protobuf/any.proto";
 import "management/base.request.proto";
 
 import "info/package.info.proto";
