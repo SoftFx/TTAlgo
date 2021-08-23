@@ -28,16 +28,8 @@ namespace TickTrader.Algo.CoreV1
 
         internal void Update(PositionInfo info)
         {
-            if (info.Side.IsBuy())
-            {
-                Long.Update(info.Long.Amount, info.Long.Price);
-                Short.Update(0, 0);
-            }
-            else
-            {
-                Long.Update(0, 0);
-                Short.Update(info.Short.Amount, info.Short.Price);
-            }
+            Long.Update(info.Long.Amount, info.Long.Price);
+            Short.Update(info.Short.Amount, info.Short.Price);
 
             Info.Long = Long;
             Info.Short = Short;
