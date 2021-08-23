@@ -55,6 +55,7 @@ namespace TickTrader.Algo.Server
             Receive<ExecutorStateUpdate>(OnExecutorStateUpdated);
             Receive<PluginExitedMsg>(OnExited);
             Receive<RuntimeCrashedMsg>(OnRuntimeCrashed);
+            Receive<RuntimeObsoleteMsg>(OnRuntimeObsolete);
         }
 
 
@@ -206,6 +207,16 @@ namespace TickTrader.Algo.Server
             }
         }
 
+        private void OnRuntimeObsolete(RuntimeObsoleteMsg msg)
+        {
+            if (_state.IsStopped())
+            {
+                _logger.Info("Runtime marked obsolete. Updating runtime...");
+
+                var _ = UpdateRuntime();
+            }
+        }
+
 
         private async Task<bool> UpdateRuntime()
         {
@@ -244,26 +255,28 @@ namespace TickTrader.Algo.Server
                 }
             }
 
-            _runtime = await _server.GetPkgRuntime(pkgId);
-            if (_runtime == null)
+            var runtime = await _server.GetPkgRuntime(pkgId);
+            if (runtime == null)
             {
                 BreakBot($"Algo package {pkgId} is not found");
                 return false;
             }
 
-            _pluginInfo = await RuntimeControlModel.GetPluginInfo(_runtime, pluginKey);
+            _pluginInfo = await RuntimeControlModel.GetPluginInfo(runtime, pluginKey);
             if (_pluginInfo == null)
             {
                 BreakBot($"Plugin '{pluginKey.DescriptorId}' is missing in Algo package '{pkgId}'");
                 return false;
             }
 
-            var attached = await RuntimeControlModel.AttachPlugin(_runtime, _id, Self);
+            var attached = await RuntimeControlModel.AttachPlugin(runtime, _id, Self);
             if (!attached)
             {
                 BreakBot($"Can't attach to new runtime");
                 return false;
             }
+
+            _runtime = runtime;
 
             if (_state == PluginModelInfo.Types.PluginState.Broken)
                 ChangeState(PluginModelInfo.Types.PluginState.Stopped);
@@ -316,6 +329,7 @@ namespace TickTrader.Algo.Server
                 {
                     _startTaskSrc.TrySetResult(false);
                     _startTaskSrc = null;
+                    ChangeState(PluginModelInfo.Types.PluginState.Stopped);
                     return;
                 }
 
@@ -428,5 +442,7 @@ namespace TickTrader.Algo.Server
         }
 
         internal class RuntimeCrashedMsg : Singleton<RuntimeCrashedMsg> { }
+
+        internal class RuntimeObsoleteMsg : Singleton<RuntimeObsoleteMsg> { }
     }
 }
