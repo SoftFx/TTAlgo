@@ -50,20 +50,20 @@ message Feed {
     }
 
     enum Timeframe {
-        S1 = 0;
-        S10 = 1;
-        M1 = 2;
-        M5 = 3;
-        M15 = 4;
-        M30 = 5;
-        H1 = 6;
-        H4 = 7;
-        D = 8;
-        W = 9;
-        M_N = 10;
-        TICKS = 11;
-        TICKS_LEVEL2 = 12;
-        TICKS_VWAP = 13;
+        TICKS_LEVEL2 = 0;
+        TICKS_VWAP = 1;
+        TICKS = 2;
+        S1 = 10;
+        S10 = 100;
+        M1 = 600;
+        M5 = 3000;
+        M15 = 9000;
+        M30 = 18000;
+        H1 = 36000;
+        H4 = 144000;
+        D = 864000;
+        W = 6048000;
+        M_N = 26784000;
     }
 }
 

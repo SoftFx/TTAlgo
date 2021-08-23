@@ -11,6 +11,8 @@ using System.Xml;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Package;
+using TickTrader.Algo.ServerControl;
+using AlgoApi = TickTrader.Algo.Server.PublicAPI;
 
 namespace TickTrader.BotTerminal
 {
@@ -28,7 +30,7 @@ namespace TickTrader.BotTerminal
         private List<ParameterSetupViewModel> _parameters;
         private List<InputSetupViewModel> _barBasedInputs;
         private List<OutputSetupViewModel> _outputs;
-        private Feed.Types.Timeframe _selectedTimeFrame;
+        private AlgoApi.Feed.Types.Timeframe _selectedTimeFrame;
         private ISetupSymbolInfo _mainSymbol;
         private MappingInfo _selectedMapping;
         private string _instanceId;
@@ -38,7 +40,7 @@ namespace TickTrader.BotTerminal
         private bool _visible;
         private bool _runBot;
 
-        public IEnumerable<Feed.Types.Timeframe> AvailableTimeFrames { get; private set; }
+        public IEnumerable<AlgoApi.Feed.Types.Timeframe> AvailableTimeFrames { get; private set; }
 
         public bool IsFixedFeed { get; set; }
         public bool IsEmulation { get; set; }
@@ -59,7 +61,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public Feed.Types.Timeframe SelectedTimeFrame
+        public AlgoApi.Feed.Types.Timeframe SelectedTimeFrame
         {
             get { return _selectedTimeFrame; }
             set
@@ -67,16 +69,20 @@ namespace TickTrader.BotTerminal
                 if (_selectedTimeFrame == value)
                     return;
 
-                var changeInputs = _selectedTimeFrame == Feed.Types.Timeframe.Ticks || value == Feed.Types.Timeframe.Ticks;
+                var changeInputs = _selectedTimeFrame == AlgoApi.Feed.Types.Timeframe.Ticks || value == AlgoApi.Feed.Types.Timeframe.Ticks;
+
                 _selectedTimeFrame = value;
                 NotifyOfPropertyChange(nameof(SelectedTimeFrame));
+
                 if (changeInputs)
                 {
                     NotifyOfPropertyChange(nameof(Inputs));
                     NotifyOfPropertyChange(nameof(HasInputs));
                 }
-                AvailableModels.Value = SetupMetadata.Api.TimeFrames.Where(t => t >= value && t != Feed.Types.Timeframe.TicksLevel2).ToList();
-                if (SelectedModel.Value < value)
+
+                AvailableModels.Value = SetupMetadata.Api.TimeFrames.Select(u => u.ToApi()).Where(t => t <= value).OrderBy(u => (int)u).ToList();
+
+                if (SelectedModel.Value > value)
                     SelectedModel.Value = value;
             }
         }
@@ -112,9 +118,9 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public Property<List<Feed.Types.Timeframe>> AvailableModels { get; private set; }
+        public Property<List<AlgoApi.Feed.Types.Timeframe>> AvailableModels { get; private set; }
 
-        public Property<Feed.Types.Timeframe> SelectedModel { get; private set; }
+        public Property<AlgoApi.Feed.Types.Timeframe> SelectedModel { get; private set; }
 
         public IEnumerable<ParameterSetupViewModel> Parameters => _parameters;
 
@@ -225,16 +231,16 @@ namespace TickTrader.BotTerminal
 
             _paramsFileHistory.SetContext(plugin.ToString());
 
-            AvailableModels = _var.AddProperty<List<Feed.Types.Timeframe>>();
-            SelectedModel = _var.AddProperty(Feed.Types.Timeframe.M1);
+            AvailableModels = _var.AddProperty<List<AlgoApi.Feed.Types.Timeframe>>();
+            SelectedModel = _var.AddProperty(AlgoApi.Feed.Types.Timeframe.M1);
 
             Init();
         }
 
         public void Load(PluginConfig cfg)
         {
-            SelectedTimeFrame = cfg.Timeframe;
-            SelectedModel.Value = cfg.ModelTimeframe;
+            SelectedTimeFrame = cfg.Timeframe.ToApi();
+            SelectedModel.Value = cfg.ModelTimeframe.ToApi();
             MainSymbol = AvailableSymbols.GetSymbolOrDefault(cfg.MainSymbol.ToKey()) ?? AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol.ToKey());
 
             if (!IsEmulation)
@@ -260,8 +266,8 @@ namespace TickTrader.BotTerminal
         {
             var cfg = new PluginConfig
             {
-                Timeframe = SelectedTimeFrame,
-                ModelTimeframe = SelectedModel.Value,
+                Timeframe = SelectedTimeFrame.ToServer(),
+                ModelTimeframe = SelectedModel.Value.ToServer(),
                 MainSymbol = MainSymbol.ToConfig(),
                 SelectedMapping = SelectedMapping.Key,
                 InstanceId = InstanceId,
@@ -274,8 +280,8 @@ namespace TickTrader.BotTerminal
 
         public void Reset()
         {
-            SelectedModel.Value = Feed.Types.Timeframe.Ticks;
-            SelectedTimeFrame = SetupMetadata.Context.DefaultTimeFrame;
+            SelectedModel.Value = AlgoApi.Feed.Types.Timeframe.Ticks;
+            SelectedTimeFrame = SetupMetadata.Context.DefaultTimeFrame.ToApi();
             MainSymbol = AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol.ToKey());
             SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(SetupMetadata.Context.DefaultMapping);
             InstanceId = _idProvider.GeneratePluginId(Descriptor);
@@ -394,7 +400,7 @@ namespace TickTrader.BotTerminal
 
         private void Init()
         {
-            AvailableTimeFrames = SetupMetadata.Api.TimeFrames.Where(t => t != Feed.Types.Timeframe.Ticks);
+            AvailableTimeFrames = SetupMetadata.Api.TimeFrames.Where(t => t != Feed.Types.Timeframe.Ticks).Select(u => u.ToApi());
             AvailableSymbols = SetupMetadata.Account.GetAvaliableSymbols(SetupMetadata.Context.DefaultSymbol.ToKey()).Where(u => u.Origin != SymbolConfig.Types.SymbolOrigin.Token).ToList();
             AvailableMappings = SetupMetadata.Mappings.BarToBarMappings;
 

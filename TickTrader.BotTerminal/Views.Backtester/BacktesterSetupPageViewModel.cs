@@ -14,6 +14,7 @@ using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Package;
+using TickTrader.Algo.ServerControl;
 
 namespace TickTrader.BotTerminal
 {
@@ -135,7 +136,7 @@ namespace TickTrader.BotTerminal
                 AvailableModels.Value = EnumHelper.AllValues<Feed.Types.Timeframe>().Where(t => t >= a.New && t != Feed.Types.Timeframe.TicksLevel2).ToList();
 
                 if (_openedPluginSetup != null)
-                    _openedPluginSetup.Setup.SelectedTimeFrame = a.New;
+                    _openedPluginSetup.Setup.SelectedTimeFrame = a.New.ToApi();
 
                 if (SelectedModel.Value < a.New)
                     SelectedModel.Value = a.New;
@@ -328,7 +329,7 @@ namespace TickTrader.BotTerminal
                     : new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.PluginInfo, this, this.GetSetupContextInfo(), PluginConfig);
                 //_localWnd.OpenMdiWindow(wndKey, _openedPluginSetup);
                 _openedPluginSetup.Setup.MainSymbol = MainSymbolSetup.SelectedSymbol.Value.ToSymbolToken();
-                _openedPluginSetup.Setup.SelectedTimeFrame = MainSymbolSetup.SelectedTimeframe.Value;
+                _openedPluginSetup.Setup.SelectedTimeFrame = MainSymbolSetup.SelectedTimeframe.Value.ToApi();
                 _openedPluginSetup.Closed += PluginSetupClosed;
                 _openedPluginSetup.Setup.ConfigLoaded += Setup_ConfigLoaded;
                 return _openedPluginSetup;
@@ -355,7 +356,7 @@ namespace TickTrader.BotTerminal
         {
             MainSymbolSetup.SelectedSymbol.Value = _catalog.GetSymbol(config.MainSymbol);
             MainSymbolSetup.SelectedSymbolName.Value = MainSymbolSetup.SelectedSymbol.Value.Name;
-            MainSymbolSetup.SelectedTimeframe.Value = config.SelectedTimeFrame;
+            MainSymbolSetup.SelectedTimeframe.Value = config.SelectedTimeFrame.ToServer();
         }
 
         #endregion
