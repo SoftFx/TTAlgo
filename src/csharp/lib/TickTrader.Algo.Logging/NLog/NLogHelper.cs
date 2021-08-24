@@ -3,6 +3,7 @@ using NLog.Config;
 using NLog.Layouts;
 using NLog.Targets;
 using NLog.Targets.Wrappers;
+using NLog.Time;
 using System.IO;
 using System.Text;
 
@@ -27,6 +28,10 @@ namespace TickTrader.Algo.Logging
         public const string SimpleLogLayout = "${longdate} | ${message}";
         public const string NormalLogLayout = "${longdate} | ${level} | ${logger} | ${message} ${exception:format=tostring}";
 
+        static NLogHelper()
+        {
+            TimeSource.Current = new FastUtcTimeSource();
+        }
 
         public static FileTarget CreateFileTarget(NLogFileParams p)
         {
@@ -58,7 +63,6 @@ namespace TickTrader.Algo.Logging
         public static LoggingConfiguration CreatePluginConfig(string logDir)
         {
             var logConfig = new LoggingConfiguration();
-
             var p = new NLogFileParams { LogDirectory = logDir, Layout = SimpleLogLayout };
 
             p.FileNameSuffix = "all";

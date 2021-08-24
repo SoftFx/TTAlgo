@@ -196,7 +196,7 @@ namespace TickTrader.Algo.CoreV1
         {
             try
             {
-                var timeKey = _keyGen.NextKey(DateTime.Now);
+                var timeKey = _keyGen.NextKey(DateTime.UtcNow);
                 var record = new Domain.PluginLogRecord(timeKey, logSeverity, message, errorDetails);
 
                 _logWriter?.OnLogRecord(record);
