@@ -4,8 +4,8 @@ namespace TickTrader.Algo.Domain
 {
     public partial class SymbolInfo : ISymbolInfo
     {
-        public double Bid { get; set; }
-        public double Ask { get; set; }
+        public double Bid { get; set; } = double.NaN;
+        public double Ask { get; set; } = double.NaN;
 
 
         public IQuoteInfo LastQuote { get; private set; }
