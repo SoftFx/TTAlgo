@@ -47,7 +47,7 @@ namespace TickTrader.Algo.Server
             Receive<LoadLegacyStateCmd>(cmd => _savedState.LoadSavedState(cmd.SavedState));
 
             Receive<AlgoServerPrivate.RuntimeRequest, IActorRef>(r => _runtimes.GetRuntime(r.Id));
-            Receive<AlgoServerPrivate.PkgRuntimeUpdateRequest>(r => r.Plugin.Tell(new PkgRuntimeUpdate(r.PkgId, _runtimes.GetPkgRuntimeId(r.PkgId))));
+            Receive<AlgoServerPrivate.PkgRuntimeIdRequest, string>(r => _runtimes.GetPkgRuntimeId(r.PkgId));
             Receive<AlgoServerPrivate.RuntimeStoppedMsg>(msg => _runtimes.OnRuntimeStopped(msg.Id));
             Receive<AlgoServerPrivate.AccountControlRequest, AccountControlModel>(r => _accounts.GetAccountControl(r.Id));
 

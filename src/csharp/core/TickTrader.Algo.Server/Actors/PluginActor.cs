@@ -77,7 +77,7 @@ namespace TickTrader.Algo.Server
             _server.SendUpdate(PluginModelUpdate.Added(_id, GetInfoCopy()));
             _runtimeLock = CreateLock();
 
-            _server.SendPkgRuntimeUpdate(_config.Key.PackageId, Self);
+            var _ = InitPkgRuntimeId();
         }
 
 
@@ -219,6 +219,23 @@ namespace TickTrader.Algo.Server
         }
 
 
+        private async Task InitPkgRuntimeId()
+        {
+            try
+            {
+                using (await _runtimeLock.GetLock(nameof(InitPkgRuntimeId)))
+                {
+                    _newestRuntimeId = await _server.GetPkgRuntimeId(_config.Key.PackageId);
+                }
+
+                var _ = UpdateRuntime();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to init package runtime id");
+            }
+        }
+
         private async Task UpdateRuntime()
         {
             using (await _runtimeLock.GetLock(nameof(UpdateRuntime)))
@@ -245,8 +262,16 @@ namespace TickTrader.Algo.Server
 
         private async Task<bool> UpdateRuntimeInternal()
         {
+            var pluginKey = _config.Key;
+            var pkgId = pluginKey.PackageId;
+
             if (_currentRuntimeId == _newestRuntimeId)
-                return _runtime != null;
+            {
+                var res = _runtime != null;
+                if (!res)
+                    BreakBot($"Algo package {pkgId} is not found");
+                return res;
+            }
 
             if (_runtime != null)
             {
@@ -260,9 +285,6 @@ namespace TickTrader.Algo.Server
                 _currentRuntimeId = null;
                 _runtime = null;
             }
-
-            var pluginKey = _config.Key;
-            var pkgId = pluginKey.PackageId;
 
             var runtimeId = _newestRuntimeId;
             if (string.IsNullOrEmpty(runtimeId))
@@ -388,6 +410,7 @@ namespace TickTrader.Algo.Server
             {
                 _logger.Error(ex, "Failed to stop plugin");
                 _stopTaskSrc.TrySetResult(false);
+                ChangeState(PluginModelInfo.Types.PluginState.Faulted);
             }
 
             _stopTaskSrc = null;

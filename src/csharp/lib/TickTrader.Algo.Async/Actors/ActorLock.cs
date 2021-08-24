@@ -63,7 +63,7 @@ namespace TickTrader.Algo.Async.Actors
 
                 // despite the fact that we should be in actor context already,
                 // we have to pass continuations through actor mailbox
-                _msgDispatcher.PostMessage(token);
+                _msgDispatcher.PostMessage(next);
             }
             else
             {
