@@ -104,18 +104,6 @@ namespace TickTrader.Algo.Server
             _isObsolete = true;
             _logger.Debug("Marked obsolete");
 
-            foreach (var plugin in _pluginsMap)
-            {
-                try
-                {
-                    plugin.Value.Tell(PluginActor.RuntimeObsoleteMsg.Instance);
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error(ex, $"Failed to notify plugin '{plugin.Key}' of runtime obsolete state");
-                }
-            }
-
             if (_state == RuntimeState.Stopped)
             {
                 _server.OnRuntimeStopped(_id);

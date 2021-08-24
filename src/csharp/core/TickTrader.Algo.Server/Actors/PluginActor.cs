@@ -27,10 +27,11 @@ namespace TickTrader.Algo.Server
         private PluginModelInfo.Types.PluginState _state;
         private IActorRef _runtime;
         private PluginInfo _pluginInfo;
-        private string _faultMsg;
-        private TaskCompletionSource<bool> _startTaskSrc, _stopTaskSrc, _updateRuntimeTaskSrc;
+        private string _faultMsg, _newestRuntimeId, _currentRuntimeId;
+        private TaskCompletionSource<bool> _startTaskSrc, _stopTaskSrc;
         private MessageCache<PluginLogRecord> _logsCache;
         private PluginStatusUpdate _lastStatus;
+        private ActorLock _runtimeLock;
 
 
         private PluginActor(AlgoServerPrivate server, PluginSavedState savedState)
@@ -55,7 +56,7 @@ namespace TickTrader.Algo.Server
             Receive<ExecutorStateUpdate>(OnExecutorStateUpdated);
             Receive<PluginExitedMsg>(OnExited);
             Receive<RuntimeCrashedMsg>(OnRuntimeCrashed);
-            Receive<RuntimeObsoleteMsg>(OnRuntimeObsolete);
+            Receive<AlgoServerActor.PkgRuntimeUpdate>(OnPkgRuntimeUpdated);
         }
 
 
@@ -74,31 +75,32 @@ namespace TickTrader.Algo.Server
             _config = _savedState.UnpackConfig();
 
             _server.SendUpdate(PluginModelUpdate.Added(_id, GetInfoCopy()));
+            _runtimeLock = CreateLock();
 
-            var _ = UpdateRuntime();
+            _server.SendPkgRuntimeUpdate(_config.Key.PackageId, Self);
         }
 
 
-        private Task Start(StartCmd cmd)
+        private async Task Start(StartCmd cmd)
         {
-            if (_state.IsRunning())
-                return Task.CompletedTask;
+            using (await _runtimeLock.GetLock(nameof(Start)))
+            {
+                if (_state.IsRunning())
+                    return;
 
-            if (_startTaskSrc != null)
-                return _startTaskSrc.Task;
-
-            return StartInternal();
+                await StartInternal();
+            }
         }
 
-        private Task Stop(StopCmd cmd)
+        private async Task Stop(StopCmd cmd)
         {
-            if (_state.IsStopped())
-                return Task.CompletedTask;
+            using (await _runtimeLock.GetLock(nameof(Stop)))
+            {
+                if (_state.IsStopped())
+                    return;
 
-            if (_stopTaskSrc != null)
-                return _stopTaskSrc.Task;
-
-            return StopInternal();
+                await StopInternal();
+            }
         }
 
         private async Task UpdateConfig(UpdateConfigCmd cmd)
@@ -207,43 +209,44 @@ namespace TickTrader.Algo.Server
             }
         }
 
-        private void OnRuntimeObsolete(RuntimeObsoleteMsg msg)
+        private void OnPkgRuntimeUpdated(AlgoServerActor.PkgRuntimeUpdate update)
         {
-            if (_state.IsStopped())
-            {
-                _logger.Info("Runtime marked obsolete. Updating runtime...");
+            if (update.PkgId != _config.Key.PackageId)
+                return;
 
-                var _ = UpdateRuntime();
-            }
+            _newestRuntimeId = update.RuntimeId;
+            var _ = UpdateRuntime();
         }
 
 
-        private async Task<bool> UpdateRuntime()
+        private async Task UpdateRuntime()
         {
-            if (_updateRuntimeTaskSrc != null)
-                return await _updateRuntimeTaskSrc.Task;
-
-            var res = false;
-            _updateRuntimeTaskSrc = new TaskCompletionSource<bool>();
-            try
+            using (await _runtimeLock.GetLock(nameof(UpdateRuntime)))
             {
-                res = await UpdateRuntimeInternal();
-            }
-            catch(Exception ex)
-            {
-                _logger.Error(ex, "Failed to get package runtime");
-            }
+                if (!_state.IsStopped())
+                    return;
 
-            _updateRuntimeTaskSrc.TrySetResult(res);
-            _updateRuntimeTaskSrc = null;
+                if (_currentRuntimeId != _newestRuntimeId)
+                {
+                    _logger.Debug("Updating runtime...");
 
-            return res;
+                    try
+                    {
+                        await UpdateRuntimeInternal();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error(ex, "Failed to update package runtime");
+                        ChangeState(PluginModelInfo.Types.PluginState.Broken, "Runtime update failure");
+                    }
+                }
+            }
         }
 
         private async Task<bool> UpdateRuntimeInternal()
         {
-            var pluginKey = _config.Key;
-            var pkgId = pluginKey.PackageId;
+            if (_currentRuntimeId == _newestRuntimeId)
+                return _runtime != null;
 
             if (_runtime != null)
             {
@@ -253,12 +256,26 @@ namespace TickTrader.Algo.Server
                     BreakBot($"Can't detach from old runtime");
                     return false;
                 }
+
+                _currentRuntimeId = null;
+                _runtime = null;
             }
 
-            var runtime = await _server.GetPkgRuntime(pkgId);
+            var pluginKey = _config.Key;
+            var pkgId = pluginKey.PackageId;
+
+            var runtimeId = _newestRuntimeId;
+            if (string.IsNullOrEmpty(runtimeId))
+            {
+                _currentRuntimeId = runtimeId;
+                BreakBot($"Algo package {pkgId} is not found");
+                return false;
+            }
+
+            var runtime = await _server.GetRuntime(runtimeId);
             if (runtime == null)
             {
-                BreakBot($"Algo package {pkgId} is not found");
+                BreakBot($"Runtime {runtimeId} is not found");
                 return false;
             }
 
@@ -276,6 +293,7 @@ namespace TickTrader.Algo.Server
                 return false;
             }
 
+            _currentRuntimeId = runtimeId;
             _runtime = runtime;
 
             if (_state == PluginModelInfo.Types.PluginState.Broken)
@@ -325,11 +343,10 @@ namespace TickTrader.Algo.Server
             {
                 ChangeState(PluginModelInfo.Types.PluginState.Starting);
 
-                if (!await UpdateRuntime())
+                if (!await UpdateRuntimeInternal())
                 {
                     _startTaskSrc.TrySetResult(false);
                     _startTaskSrc = null;
-                    ChangeState(PluginModelInfo.Types.PluginState.Stopped);
                     return;
                 }
 
@@ -442,7 +459,5 @@ namespace TickTrader.Algo.Server
         }
 
         internal class RuntimeCrashedMsg : Singleton<RuntimeCrashedMsg> { }
-
-        internal class RuntimeObsoleteMsg : Singleton<RuntimeObsoleteMsg> { }
     }
 }

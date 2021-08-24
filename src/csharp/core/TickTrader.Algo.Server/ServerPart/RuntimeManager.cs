@@ -55,6 +55,12 @@ namespace TickTrader.Algo.Server
             return _pkgRuntimeMap.TryGetValue(pkgId, out var runtimeId) ? _runtimeMap[runtimeId] : null;
         }
 
+        public string GetPkgRuntimeId(string pkgId)
+        {
+            _pkgRuntimeMap.TryGetValue(pkgId, out var runtimeId);
+            return runtimeId;
+        }
+
         public void CreateRuntime(string id, PackageRef pkgRef)
         {
             var pkgId = pkgRef.PkgId;

@@ -47,7 +47,7 @@ namespace TickTrader.Algo.Server
             Receive<LoadLegacyStateCmd>(cmd => _savedState.LoadSavedState(cmd.SavedState));
 
             Receive<AlgoServerPrivate.RuntimeRequest, IActorRef>(r => _runtimes.GetRuntime(r.Id));
-            Receive<AlgoServerPrivate.PkgRuntimeRequest, IActorRef>(r => _runtimes.GetPkgRuntime(r.PkgId));
+            Receive<AlgoServerPrivate.PkgRuntimeUpdateRequest>(r => r.Plugin.Tell(new PkgRuntimeUpdate(r.PkgId, _runtimes.GetPkgRuntimeId(r.PkgId))));
             Receive<AlgoServerPrivate.RuntimeStoppedMsg>(msg => _runtimes.OnRuntimeStopped(msg.Id));
             Receive<AlgoServerPrivate.AccountControlRequest, AccountControlModel>(r => _accounts.GetAccountControl(r.Id));
 
@@ -170,10 +170,11 @@ namespace TickTrader.Algo.Server
             if (string.IsNullOrEmpty(pkgRefId))
                 return;
 
-            CreateRuntime(pkgId);
+            var runtimeId = CreatePkgRuntime(pkgId);
+            _plugins.TellAllPlugins(new PkgRuntimeUpdate(pkgId, runtimeId));
         }
 
-        private void CreateRuntime(string pkgId)
+        private string CreatePkgRuntime(string pkgId)
         {
             var pkgRef = _pkgStorage.GetPkgRef(pkgId);
 
@@ -181,10 +182,12 @@ namespace TickTrader.Algo.Server
             if (!pkgInfo.IsValid)
             {
                 _logger.Debug($"Skipped creating runtime for pkg ref '{pkgRef.Id}'");
-                return;
+                return null;
             }
 
-            _runtimes.CreateRuntime(pkgRef.Id.Replace('/', '-'), pkgRef);
+            var runtimeId = pkgRef.Id.Replace('/', '-');
+            _runtimes.CreateRuntime(runtimeId, pkgRef);
+            return runtimeId;
         }
 
         private async Task RemoveAccount(RemoveAccountRequest request)
@@ -213,6 +216,19 @@ namespace TickTrader.Algo.Server
             public LoadLegacyStateCmd(ServerSavedState savedState)
             {
                 SavedState = savedState;
+            }
+        }
+
+        internal class PkgRuntimeUpdate
+        {
+            public string PkgId { get; }
+
+            public string RuntimeId { get; }
+
+            public PkgRuntimeUpdate(string pkgId, string runtimeId)
+            {
+                PkgId = pkgId;
+                RuntimeId = runtimeId;
             }
         }
     }

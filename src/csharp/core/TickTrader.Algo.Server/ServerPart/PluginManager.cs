@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
@@ -142,6 +143,21 @@ namespace TickTrader.Algo.Server
         {
             await Task.WhenAll(_pluginAccountMap.Where(p => p.Value == accId)
                 .Select(p => RemovePluginInternal(p.Key).OnException(ex => _logger.Error(ex, $"Failed to remove plugin {p.Key}"))));
+        }
+
+        public void TellAllPlugins(object msg)
+        {
+            foreach(var plugin in _plugins)
+            {
+                try
+                {
+                    plugin.Value.Tell(msg);
+                }
+                catch(Exception ex)
+                {
+                    _logger.Error(ex, $"Failed to send msg to plugin '{plugin.Key}'");
+                }
+            }
         }
 
 

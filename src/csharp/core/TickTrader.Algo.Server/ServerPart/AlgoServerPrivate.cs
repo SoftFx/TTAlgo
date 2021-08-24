@@ -42,7 +42,7 @@ namespace TickTrader.Algo.Server
 
         internal Task<IActorRef> GetRuntime(string id) => _server.Ask<IActorRef>(new RuntimeRequest(id));
 
-        internal Task<IActorRef> GetPkgRuntime(string pkgId) => _server.Ask<IActorRef>(new PkgRuntimeRequest(pkgId));
+        internal void SendPkgRuntimeUpdate(string pkgId, IActorRef plugin) => _server.Ask<IActorRef>(new PkgRuntimeUpdateRequest(pkgId, plugin));
 
         internal Task<AccountControlModel> GetAccountControl(string accId) => _server.Ask<AccountControlModel>(new AccountControlRequest(accId));
 
@@ -78,13 +78,16 @@ namespace TickTrader.Algo.Server
             }
         }
 
-        internal class PkgRuntimeRequest
+        internal class PkgRuntimeUpdateRequest
         {
             public string PkgId { get; }
 
-            public PkgRuntimeRequest(string pkgId)
+            public IActorRef Plugin { get; }
+
+            public PkgRuntimeUpdateRequest(string pkgId, IActorRef plugin)
             {
                 PkgId = pkgId;
+                Plugin = plugin;
             }
         }
 
