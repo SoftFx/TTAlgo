@@ -19,7 +19,7 @@ namespace TickTrader.Algo.CoreV1.Metadata
         public bool IsHiddenEntity { get; private set; }
 
 
-        protected override IPropertyDescriptor PropDescriptor => Descriptor;
+        public override IPropertyDescriptor PropDescriptor => Descriptor;
 
 
         public OutputMetadata(PropertyInfo reflectionInfo, OutputAttribute attribute)

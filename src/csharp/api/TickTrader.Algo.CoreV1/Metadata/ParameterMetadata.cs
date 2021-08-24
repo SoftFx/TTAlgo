@@ -16,7 +16,7 @@ namespace TickTrader.Algo.CoreV1.Metadata
         public object DefaultValue { get; }
 
 
-        protected override IPropertyDescriptor PropDescriptor => Descriptor;
+        public override IPropertyDescriptor PropDescriptor => Descriptor;
 
 
         public ParameterMetadata(PropertyInfo reflectionInfo, ParameterAttribute attribute)

@@ -79,7 +79,7 @@ namespace TickTrader.Algo.CoreV1.Metadata
         public void Validate()
         {
             if (Descriptor.Error != Domain.Metadata.Types.MetadataErrorCode.NoMetadataError)
-                throw new AlgoMetadataException(Descriptor.Error, _allProperties.Where(p => !p.IsValid));
+                throw new AlgoMetadataException(Descriptor.Error, _allProperties.Where(p => !p.IsValid).Select(p => p.PropDescriptor));
         }
 
         public object CreateInstance()

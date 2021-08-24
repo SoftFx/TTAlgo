@@ -17,7 +17,7 @@ namespace TickTrader.Algo.CoreV1.Metadata
         public bool IsShortDefinition { get; private set; }
 
 
-        protected override IPropertyDescriptor PropDescriptor => Descriptor;
+        public override IPropertyDescriptor PropDescriptor => Descriptor;
 
 
         public InputMetadata(PropertyInfo reflectionInfo, InputAttribute attribute)

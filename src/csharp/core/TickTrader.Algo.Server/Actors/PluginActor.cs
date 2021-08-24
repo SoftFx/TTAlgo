@@ -308,6 +308,13 @@ namespace TickTrader.Algo.Server
                 return false;
             }
 
+            var descriptor = _pluginInfo.Descriptor_;
+            if (descriptor.Error != Metadata.Types.MetadataErrorCode.NoMetadataError)
+            {
+                BreakBot(AlgoMetadataException.CreateMessageDescription(descriptor.Error, null));
+                return false;
+            }
+
             var attached = await RuntimeControlModel.AttachPlugin(runtime, _id, Self);
             if (!attached)
             {

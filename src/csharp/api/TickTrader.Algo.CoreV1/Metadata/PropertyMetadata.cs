@@ -11,7 +11,7 @@ namespace TickTrader.Algo.CoreV1.Metadata
 
         protected PropertyInfo ReflectionInfo => _reflectionInfo;
 
-        protected abstract IPropertyDescriptor PropDescriptor { get; }
+        public abstract IPropertyDescriptor PropDescriptor { get; }
 
         public string Id => PropDescriptor.Id;
 
@@ -70,7 +70,7 @@ namespace TickTrader.Algo.CoreV1.Metadata
         public IPropertyDescriptor Descriptor { get; }
 
 
-        protected override IPropertyDescriptor PropDescriptor => Descriptor;
+        public override IPropertyDescriptor PropDescriptor => Descriptor;
 
 
         public PropertyMetadata(PropertyInfo reflectionInfo, Domain.Metadata.Types.PropertyErrorCode error)

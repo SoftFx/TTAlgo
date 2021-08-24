@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.CoreV1.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
 {
