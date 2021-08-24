@@ -40,5 +40,14 @@ namespace TickTrader.BotTerminal.Properties {
                 return ((bool)(this["EnablePluginIsolation"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool EnableDevMode {
+            get {
+                return ((bool)(this["EnableDevMode"]));
+            }
+        }
     }
 }

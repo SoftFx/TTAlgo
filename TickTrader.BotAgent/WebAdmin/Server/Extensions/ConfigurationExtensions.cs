@@ -52,6 +52,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             return configuration.GetSection(nameof(AppSettings.Fdk)).Get<FdkSettings>();
         }
 
+        public static AlgoSettings GetAlgoSettings(this IConfiguration configuration)
+        {
+            return configuration.GetSection(nameof(AppSettings.Algo)).Get<AlgoSettings>();
+        }
+
         public static X509Certificate2 GetCertificate(this IConfiguration config, string contentRoot)
         {
             return _cert;

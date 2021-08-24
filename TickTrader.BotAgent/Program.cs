@@ -10,13 +10,11 @@ using TickTrader.BotAgent.WebAdmin.Server.Models;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 using NLog;
 using System.Globalization;
-using ActorSharp;
 using NLog.Web;
 using NLog.Extensions.Logging;
 using System.Collections.Generic;
 using TickTrader.BotAgent.Hosting;
 using TickTrader.Algo.Server;
-using TickTrader.Algo.ServerControl;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.Isolation.NetFx;
@@ -173,6 +171,11 @@ namespace TickTrader.BotAgent
             if (currentSettings.Fdk == null)
             {
                 currentSettings.Fdk = AppSettings.Default.Fdk;
+                anyChanges = true;
+            }
+            if (currentSettings.Algo == null)
+            {
+                currentSettings.Algo = AppSettings.Default.Algo;
                 anyChanges = true;
             }
 

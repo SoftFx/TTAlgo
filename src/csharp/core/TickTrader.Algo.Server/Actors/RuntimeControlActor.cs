@@ -104,11 +104,7 @@ namespace TickTrader.Algo.Server
             _isObsolete = true;
             _logger.Debug("Marked obsolete");
 
-            if (_state == RuntimeState.Stopped)
-            {
-                _server.OnRuntimeStopped(_id);
-                return;
-            }
+            NotifyServerOfCompleteShutdown();
 
             ManageRuntimeInternal();
         }
@@ -316,8 +312,7 @@ namespace TickTrader.Algo.Server
             ManageRequestGate(oldState).Forget();
 
             _shutdownTaskSrc?.TrySetResult(null);
-            if (_isObsolete)
-                _server.OnRuntimeStopped(_id);
+            NotifyServerOfCompleteShutdown();
 
             if (_startLockToken != null)
             {
@@ -504,6 +499,14 @@ namespace TickTrader.Algo.Server
         {
             _logger.Debug($"State changed: {_state} -> {newState}");
             _state = newState;
+        }
+
+        private void NotifyServerOfCompleteShutdown()
+        {
+            if (_isObsolete && _state == RuntimeState.Stopped && _pluginsMap.Count == 0)
+            {
+                _server.OnRuntimeStopped(_id);
+            }
         }
 
 

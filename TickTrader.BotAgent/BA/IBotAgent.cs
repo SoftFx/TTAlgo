@@ -1,11 +1,11 @@
-﻿using System.Threading.Tasks;
-using TickTrader.BotAgent.WebAdmin.Server.Models;
+﻿using Microsoft.Extensions.Configuration;
+using System.Threading.Tasks;
 
 namespace TickTrader.BotAgent.BA
 {
     public interface IBotAgent
     {
-        Task InitAsync(FdkSettings fdkSettings);
+        Task InitAsync(IConfiguration config);
 
         Task ShutdownAsync();
     }

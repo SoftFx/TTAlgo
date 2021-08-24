@@ -2,6 +2,6 @@
 {
     public class RuntimeSettings
     {
-        public bool EnableDevMode { get; set; } = true;
+        public bool EnableDevMode { get; set; }
     }
 }

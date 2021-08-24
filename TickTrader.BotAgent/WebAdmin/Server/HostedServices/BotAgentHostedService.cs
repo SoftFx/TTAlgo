@@ -5,7 +5,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TickTrader.BotAgent.BA;
-using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.HostedServices
 {
@@ -31,7 +30,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.HostedServices
                 return;
 
             _logger.LogInformation("Starting algo server...");
-            await _botAgent.InitAsync(_config.GetFdkSettings());
+            await _botAgent.InitAsync(_config);
             _started = true;
             _logger.LogInformation("Started algo server...");
         }

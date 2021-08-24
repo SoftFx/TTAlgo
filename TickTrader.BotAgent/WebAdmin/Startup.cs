@@ -54,7 +54,6 @@ namespace TickTrader.BotAgent.WebAdmin
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             services.AddSwaggerGen(c => c.SwaggerDoc("v1", new Swashbuckle.AspNetCore.Swagger.Info { Title = "AlgoServer WebAPI", Version = "v1" }));
-            services.AddStorageOptions(Configuration.GetSection("PackageStorage"));
 
             services.AddAuthentication(options =>
             {
