@@ -34,6 +34,8 @@ namespace TickTrader.Algo.Domain
             Security = info.Security;
             SortOrder = info.SortOrder;
             GroupSortOrder = info.GroupSortOrder;
+
+            UpdateRate(info.LastQuote);
         }
 
         public void UpdateRate(IQuoteInfo quote)
