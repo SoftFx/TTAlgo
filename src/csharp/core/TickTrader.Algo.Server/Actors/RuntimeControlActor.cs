@@ -309,6 +309,7 @@ namespace TickTrader.Algo.Server
             var oldState = _state;
             ChangeState(RuntimeState.Stopped);
             ManageRequestGate(oldState).Forget();
+            DeinitSession();
 
             _shutdownTaskSrc?.TrySetResult(null);
             NotifyServerOfCompleteShutdown();
@@ -423,19 +424,26 @@ namespace TickTrader.Algo.Server
 
         private void OnConnectionLost(ConnectionLostMsg msg)
         {
-            if (_session == null)
-                return;
-
-            _proxy = null;
-            _session = null;
-            _sessionStateChangedSub?.Dispose();
-            _sessionStateChangedSub = null;
+            DeinitSession();
 
             if (_state != RuntimeState.Stopping && _state != RuntimeState.Stopped)
             {
                 _logger.Info("Connection to runtime host lost");
                 ScheduleKillProcess();
             }
+        }
+
+        private void DeinitSession()
+        {
+            if (_session == null)
+                return;
+
+            _logger.Debug("Deinit session");
+
+            _proxy = null;
+            _session = null;
+            _sessionStateChangedSub?.Dispose();
+            _sessionStateChangedSub = null;
         }
 
         private void OnExecutorNotification(ExecutorNotificationMsg msg)

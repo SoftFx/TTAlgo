@@ -267,6 +267,9 @@ namespace TickTrader.Algo.Rpc
         private async Task DisconnectRoutine(bool isExpected, bool fast)
         {
             ChangeState(RpcSessionState.Disconnecting);
+
+            _logger.Debug($"Disconnect reason: {_disconnectReason}");
+
             if (_heartbeatTask != null)
             {
                 _heartbeatCancelTokenSrc?.Cancel();
