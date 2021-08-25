@@ -191,7 +191,7 @@ namespace TickTrader.Algo.Server
 
         private async Task ShutdownPluginInternal(string id, IActorRef plugin)
         {
-            await plugin.Ask(PluginActor.StopCmd.Instance)
+            await plugin.Ask(PluginActor.ShutdownCmd.Instance)
                 .OnException(ex => _logger.Error(ex, $"Failed to stop plugin {id}"));
 
             await ActorSystem.StopActor(plugin)

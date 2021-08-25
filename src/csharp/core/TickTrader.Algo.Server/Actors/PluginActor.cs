@@ -43,6 +43,7 @@ namespace TickTrader.Algo.Server
 
             Receive<StartCmd>(Start);
             Receive<StopCmd>(Stop);
+            Receive<ShutdownCmd>(Shutdown);
             Receive<UpdateConfigCmd>(UpdateConfig);
             Receive<AttachLogsChannelCmd>(AttachLogsChannel);
             Receive<AttachStatusChannelCmd>(AttachStatusChannel);
@@ -100,6 +101,24 @@ namespace TickTrader.Algo.Server
                     return;
 
                 await StopInternal();
+            }
+        }
+
+        private async Task Shutdown(ShutdownCmd cmd)
+        {
+            using (await _runtimeLock.GetLock(nameof(ShutdownCmd)))
+            {
+                _logger.Debug("Shutting down...");
+
+                if (_state.IsRunning())
+                    await StopInternal();
+
+                if (_runtime != null)
+                {
+                    var detached = await RuntimeControlModel.DetachPlugin(_runtime, _id);
+                    if (!detached)
+                        _logger.Error($"Failed to detach runtime");
+                }
             }
         }
 
@@ -441,6 +460,8 @@ namespace TickTrader.Algo.Server
         internal class StartCmd : Singleton<StartCmd> { }
 
         internal class StopCmd : Singleton<StopCmd> { }
+
+        internal class ShutdownCmd : Singleton<ShutdownCmd> { }
 
         internal class UpdateConfigCmd
         {
