@@ -269,8 +269,7 @@ namespace TickTrader.Algo.Server
         {
             var startInfo = new ProcessStartInfo(_server.Env.RuntimeExePath)
             {
-                UseShellExecute = false,
-                CreateNoWindow = true,
+                UseShellExecute = true,
                 Arguments = string.Join(" ", _server.Address, _server.BoundPort.ToString(), $"\"{_id}\""),
                 WorkingDirectory = _server.Env.AppFolder,
             };
