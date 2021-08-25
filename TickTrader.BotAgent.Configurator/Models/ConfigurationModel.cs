@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public enum SectionNames { None, Credentials, Ssl, Protocol, Fdk, Server, MultipleAgentProvider }
+    public enum SectionNames { None, Credentials, Ssl, Protocol, Fdk, Server, MultipleAgentProvider, Algo }
 
     public class ConfigurationModel
     {
@@ -42,6 +42,8 @@ namespace TickTrader.BotAgent.Configurator
 
         public ServerBotSettingsManager BotSettingsManager { get; private set; }
 
+        public AlgoServerSettingsManager AlgoServerManager { get; private set; }
+
 
         public ConfigurationModel()
         {
@@ -66,10 +68,19 @@ namespace TickTrader.BotAgent.Configurator
             SslManager = new SslManager(SectionNames.Ssl);
             ProtocolManager = new ProtocolManager(SectionNames.Protocol, _portsManager);
             FdkManager = new FdkManager(SectionNames.Fdk);
+            AlgoServerManager = new AlgoServerSettingsManager(SectionNames.Algo);
             ServerManager = new ServerManager(_portsManager);
             Logs = new LogsManager(CurrentAgent.LogsFilePath);
 
-            _workingModels = new List<IWorkingManager>() { CredentialsManager, SslManager, ProtocolManager, ServerManager, FdkManager };
+            _workingModels = new List<IWorkingManager>()
+            {
+                CredentialsManager,
+                SslManager,
+                ProtocolManager,
+                ServerManager,
+                FdkManager,
+                AlgoServerManager,
+            };
 
             LoadConfiguration();
             SaveChanges();
@@ -125,10 +136,20 @@ namespace TickTrader.BotAgent.Configurator
             if (_configurationObject == null)
                 return;
 
+            if (!string.IsNullOrEmpty(model.SectionName) && !_configurationObject.ContainsKey(model.SectionName))
+            {
+                model.EnableManager = false;
+                return;
+            }
+
             try
             {
-                var args = model.SectionName == "" ? _configurationObject.Values<JProperty>() : _configurationObject[model.SectionName].Children<JProperty>();
+                var args = string.IsNullOrEmpty(model.SectionName) ?
+                           _configurationObject.Values<JProperty>() :
+                           _configurationObject[model.SectionName].Children<JProperty>();
+
                 model.UploadModels(args.ToList());
+                model.EnableManager = true;
             }
             catch (NullReferenceException ex)
             {
@@ -147,6 +168,8 @@ namespace TickTrader.BotAgent.Configurator
     public interface IWorkingManager
     {
         string SectionName { get; }
+
+        bool EnableManager { get; set; }
 
         void UploadModels(List<JProperty> prop);
 

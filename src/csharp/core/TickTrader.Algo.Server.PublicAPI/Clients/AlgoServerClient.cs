@@ -204,11 +204,11 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         private async void ListenToUpdates(AsyncServerStreamingCall<UpdateInfo> updateCall)
         {
-            _updateStreamCancelTokenSrc = new CancellationTokenSource();
-
             try
             {
                 var updateStream = updateCall.ResponseStream;
+                _updateStreamCancelTokenSrc = new CancellationTokenSource();
+
                 while (await updateStream.MoveNext(_updateStreamCancelTokenSrc.Token))
                 {
                     var update = updateStream.Current;

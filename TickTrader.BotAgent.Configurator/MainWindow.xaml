@@ -142,6 +142,8 @@
                             <c:AdvancedPanel Style="{StaticResource AdvancedControlPanel}"/>
                             <c:FdkPanel DataContext="{Binding FdkModel}" Style="{StaticResource FdkControlPanel}"/>
                             <c:ServerBotSettingsPanel DataContext="{Binding ServerBotSettingsModel}" Style="{StaticResource ServerBotSettingsControlPanel}"/>
+                            <c:AlgoServerSettingsPanel DataContext="{Binding AlgoServerSettingsModel}"
+                                                       Style="{StaticResource AlgoServerSettingsControlPanel}"/>
                         </StackPanel>
                     </DockPanel>
                 </TabItem.Content>

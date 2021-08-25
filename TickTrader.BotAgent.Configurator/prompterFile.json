@@ -23,5 +23,8 @@
   "MultipleAgentProvider": {
     "AgentConfigurationPaths": "Selected AlgoServer installation folder.",
     "ManagingBotSettingsOnServer": "Allows you to transfer bot and account settings between servers"
+  },
+  "Algo": {
+    "EnableDevMode": "If Develop mode is enabled, package runtimes rise when some plugin has been added to AlgoServer, else runtimes rise only if plugin is running."
   }
 }

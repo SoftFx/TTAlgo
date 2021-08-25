@@ -67,6 +67,8 @@ namespace TickTrader.BotAgent.Configurator
 
         public LogsViewModel LogsModel { get; set; }
 
+        public AlgoServerSettingsViewModel AlgoServerSettingsModel { get; set; }
+
         public RefreshCounter RefreshCounter { get; }
 
         public SpinnerViewModel Spinner { get; }
@@ -156,7 +158,23 @@ namespace TickTrader.BotAgent.Configurator
                 ModelDescription = _model.Prompts.GetPrompt(SectionNames.MultipleAgentProvider, ServerBotSettingsManager.ServerBotSettingsProperty),
             };
 
-            _viewModels = new List<BaseContentViewModel>() { AdminModel, DealerModel, ViewerModel, ProtocolModel, ServerModel, FdkModel, AdvancedModel };
+            AlgoServerSettingsModel = new AlgoServerSettingsViewModel(_model.AlgoServerManager, RefreshCounter)
+            {
+                ModelDescription = _model.Prompts.GetPrompt(SectionNames.Algo, AlgoServerSettingsManager.EnableDevModeProperty),
+            };
+
+            _viewModels = new List<BaseContentViewModel>()
+            {
+                AdminModel,
+                DealerModel,
+                ViewerModel,
+                ProtocolModel,
+                ServerModel,
+                FdkModel,
+                AdvancedModel,
+                ServerBotSettingsModel,
+            };
+
             _runnignApplication = true;
 
             ProtocolModel.ChangeListeningPortEvent += () => ServerModel.RefreshModel();
@@ -276,6 +294,8 @@ namespace TickTrader.BotAgent.Configurator
             OnPropertyChanged(nameof(ServerModel));
             OnPropertyChanged(nameof(FdkModel));
             OnPropertyChanged(nameof(AdvancedModel));
+            OnPropertyChanged(nameof(ServerBotSettingsModel));
+            OnPropertyChanged(nameof(AlgoServerSettingsModel));
 
             OnPropertyChanged(nameof(LogsModel));
             OnPropertyChanged(nameof(StateServiceModel));
