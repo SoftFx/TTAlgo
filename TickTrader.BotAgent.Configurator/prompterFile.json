@@ -25,6 +25,6 @@
     "ManagingBotSettingsOnServer": "Allows you to transfer bot and account settings between servers"
   },
   "Algo": {
-    "EnableDevMode": "If Develop mode is enabled, package runtimes rise when some plugin has been added to AlgoServer, else runtimes rise only if plugin is running."
+    "EnableDevMode": "If Dev mode is enabled package runtime process is started when any plugin instance from this package is created on AlgoServer, otherwise runtime process is started only when any plugin from respective package is starting."
   }
 }
