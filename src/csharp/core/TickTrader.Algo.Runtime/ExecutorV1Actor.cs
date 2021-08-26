@@ -187,7 +187,7 @@ namespace TickTrader.Algo.Runtime
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to start executor");
-                ChangeState(Executor.Types.State.Faulted);
+                OnStopped(false);
             }
         }
 

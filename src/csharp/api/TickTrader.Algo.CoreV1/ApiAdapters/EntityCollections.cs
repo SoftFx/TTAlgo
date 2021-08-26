@@ -56,7 +56,7 @@ namespace TickTrader.Algo.CoreV1
 
         public void AddOrUpdate(InfoType newInfo)
         {
-            var oldEntity = GetOrNull(newInfo.Name);
+            var oldEntity = base.GetOrNull(newInfo.Name);
 
             if (oldEntity == null)
                 Add(newInfo);
