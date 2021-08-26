@@ -3,6 +3,7 @@ using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using NLog;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -63,11 +64,11 @@ namespace TickTrader.Algo.ServerControl.Grpc
         private const int HeartbeatUpdateTimeout = 1000;
         private const int HeartbeatTimeout = 10000;
 
-        private readonly Dictionary<string, Timestamp> _subscribedPluginsToLogs;
-        private readonly HashSet<string> _subscribedPluginsToStatus;
+        private readonly ConcurrentDictionary<string, Timestamp> _subscribedPluginsToLogs;
+        private readonly ConcurrentDictionary<string, bool> _subscribedPluginsToStatus;
 
-        private readonly HashSet<string> _unsubscribeStatusList;
-        private readonly HashSet<string> _unsubscribeLogList;
+        private readonly HashSet<string> _unsubscribeStatusList; //change to concurrent collection
+        private readonly HashSet<string> _unsubscribeLogList; //change to concurrent collection
 
         private readonly UpdateInfo<AlgoServerApi.HeartbeatUpdate> _heartbeat;
 
@@ -80,7 +81,8 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
         private Timer _pluginStatusTimer, _pluginLogsTimer, _alertTimer, _heartbeatTimer;
         private Timestamp _lastAlertTimeUtc;
-        private Timestamp _lastLogTimeUtc;
+
+        private Timestamp _unixTime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).ToTimestamp();
 
 
         public BotAgentServerImpl(IAlgoServerProvider algoServer, IJwtProvider jwtProvider, ILogger logger, bool logMessages, VersionSpec version)
@@ -110,8 +112,8 @@ namespace TickTrader.Algo.ServerControl.Grpc
             _heartbeatTimer = new Timer(HeartbeatUpdate, null, HeartbeatTimeout, -1);
             _alertTimer = new Timer(OnAlertsUpdate, null, AlertsUpdateTimeout, -1);
 
-            _subscribedPluginsToStatus = new HashSet<string>();
-            _subscribedPluginsToLogs = new Dictionary<string, Timestamp>();
+            _subscribedPluginsToStatus = new ConcurrentDictionary<string, bool>();
+            _subscribedPluginsToLogs = new ConcurrentDictionary<string, Timestamp>();
 
             _unsubscribeStatusList = new HashSet<string>();
             _unsubscribeLogList = new HashSet<string>();
@@ -647,7 +649,9 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 if (_pluginStatusTimer == null)
                     _pluginStatusTimer = new Timer(OnPluginStatusUpdate, null, PluginStatusUpdateTimeout, -1);
 
-                _subscribedPluginsToStatus.Add(request.PluginId);
+                if (!_subscribedPluginsToStatus.ContainsKey(request.PluginId))
+                    _subscribedPluginsToStatus.TryAdd(request.PluginId, true);
+
                 _unsubscribeStatusList.Remove(request.PluginId);
             }
 
@@ -666,9 +670,9 @@ namespace TickTrader.Algo.ServerControl.Grpc
                     _pluginLogsTimer = new Timer(OnPluginLogsUpdate, null, PluginLogsUpdateTimeout, -1);
 
                 if (!_subscribedPluginsToLogs.ContainsKey(request.PluginId))
-                    _subscribedPluginsToLogs.Add(request.PluginId, null);
-                else
-                    _subscribedPluginsToLogs[request.PluginId] = null;
+                    _subscribedPluginsToLogs.TryAdd(request.PluginId, _unixTime);
+                //else
+                //    _subscribedPluginsToLogs[request.PluginId] = null;
 
                 _unsubscribeLogList.Remove(request.PluginId);
             }
@@ -1411,7 +1415,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
         {
             _pluginStatusTimer?.Change(-1, -1);
 
-            foreach (var pluginKey in _subscribedPluginsToStatus.ToList())
+            foreach (var pluginKey in _subscribedPluginsToStatus.Keys.ToList())
                 try
                 {
                     var update = new AlgoServerApi.PluginStatusUpdate
@@ -1430,8 +1434,8 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 }
 
             foreach (var pluginId in _unsubscribeStatusList)
-                if (_subscribedPluginsToStatus.Contains(pluginId))
-                    _subscribedPluginsToStatus.Remove(pluginId);
+                if (_subscribedPluginsToStatus.ContainsKey(pluginId))
+                    _subscribedPluginsToStatus.TryRemove(pluginId, out _);
 
             _unsubscribeStatusList.Clear();
 
@@ -1479,7 +1483,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             foreach (var pluginId in _unsubscribeLogList)
                 if (_subscribedPluginsToLogs.ContainsKey(pluginId))
-                    _subscribedPluginsToLogs.Remove(pluginId);
+                    _subscribedPluginsToLogs.TryRemove(pluginId, out _);
 
             _unsubscribeLogList.Clear();
 
