@@ -174,6 +174,9 @@ namespace TickTrader.Algo.Server
             if (!_plugins.TryGetValue(id, out var plugin))
                 throw Errors.PluginNotFound(id);
 
+            await plugin.Ask(PluginActor.StopCmd.Instance)
+                .OnException(ex => _logger.Error(ex, $"Failed to stop plugin {id}"));
+
             await _server.SavedState.RemovePlugin(id);
 
             _plugins.Remove(id);
@@ -192,7 +195,7 @@ namespace TickTrader.Algo.Server
         private async Task ShutdownPluginInternal(string id, IActorRef plugin)
         {
             await plugin.Ask(PluginActor.ShutdownCmd.Instance)
-                .OnException(ex => _logger.Error(ex, $"Failed to stop plugin {id}"));
+                .OnException(ex => _logger.Error(ex, $"Failed to shutdown plugin {id}"));
 
             await ActorSystem.StopActor(plugin)
                     .OnException(ex => _logger.Error(ex, $"Failed to stop actor {plugin.Name}"));
