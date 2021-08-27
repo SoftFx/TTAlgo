@@ -367,10 +367,9 @@ namespace TickTrader.Algo.Account
                 logger.Debug("Stopped feed stream.");
 
                 await _feedHistory.Stop();
+                logger.Debug("Stopped feed history.");
 
                 _rootDistributor.Stop(false);
-
-                logger.Debug("Stopped feed history.");
 
                 await FlushListeners();
 

@@ -94,7 +94,7 @@ namespace TickTrader.Algo.Util
         public async Task Stop(bool finish = true)
         {
             if (!_isStarted)
-                throw new Exception($"{Name} is not started!");
+                return;
 
             _isStopPending = true;
             _doProcessing = finish;
