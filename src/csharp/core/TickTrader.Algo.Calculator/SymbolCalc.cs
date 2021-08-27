@@ -88,8 +88,14 @@ namespace TickTrader.Algo.Calculator
             _netPosSwap = pos.Swap;
             _netPosComm = pos.Commission;
 
-            Buy.UpdateNetPosition(pos.Long, type);
-            Sell.UpdateNetPosition(pos.Short, type);
+            double buyVolume = pos.Side.IsBuy() ? pos.Volume : 0.0;
+            double sellVolume = pos.Side.IsSell() ? pos.Volume : 0.0;
+
+            double buyPrice = pos.Side.IsBuy() ? pos.Price : 0.0;
+            double sellPrice = pos.Side.IsSell() ? pos.Price : 0.0;
+
+            Buy.UpdateNetPosition(buyVolume, buyPrice, type);
+            Sell.UpdateNetPosition(sellVolume, sellPrice, type);
         }
 
         public void Dispose()

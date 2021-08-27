@@ -249,7 +249,7 @@ namespace TickTrader.Algo.CoreV1
             var oldPos = positions.GetOrNull(position.Symbol);
             var clone = oldPos?.Clone() ?? new PositionAccessor(position.Symbol, _symbols.GetOrNull(position.Symbol));
             var pos = positions.UpdatePosition(position);
-            var isClosed = action == OrderExecReport.Types.ExecAction.Closed || pos.IsEmpty;
+            var isClosed = action == OrderExecReport.Types.ExecAction.Closed || pos.Info.IsEmpty;
 
             if (action == OrderExecReport.Types.ExecAction.Splitted)
             {

@@ -671,8 +671,8 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
                 if (!_subscribedPluginsToLogs.ContainsKey(request.PluginId))
                     _subscribedPluginsToLogs.TryAdd(request.PluginId, _unixTime);
-                //else
-                //    _subscribedPluginsToLogs[request.PluginId] = null;
+                else
+                    _subscribedPluginsToLogs[request.PluginId] = _unixTime;
 
                 _unsubscribeLogList.Remove(request.PluginId);
             }

@@ -997,23 +997,18 @@ namespace TickTrader.Algo.Account.Fdk2
             Domain.OrderInfo.Types.Side side;
             double price;
             double amount;
-            PositionSide buy, sell;
 
             if (p.BuyAmount > 0)
             {
                 side = Domain.OrderInfo.Types.Side.Buy;
                 price = p.BuyPrice ?? 0;
                 amount = p.BuyAmount;
-                buy = new PositionSide(amount, price);
-                sell = new PositionSide(0, 0);
             }
             else
             {
                 side = Domain.OrderInfo.Types.Side.Sell;
                 price = p.SellPrice ?? 0;
                 amount = p.SellAmount;
-                buy = new PositionSide(0, 0);
-                sell = new PositionSide(amount, price);
             }
 
             return new Domain.PositionInfo
@@ -1026,8 +1021,6 @@ namespace TickTrader.Algo.Account.Fdk2
                 Commission = p.Commission,
                 Swap = p.Swap,
                 Modified = p.Modified?.ToTimestamp(),
-                Long = buy,
-                Short = sell,
             };
         }
 

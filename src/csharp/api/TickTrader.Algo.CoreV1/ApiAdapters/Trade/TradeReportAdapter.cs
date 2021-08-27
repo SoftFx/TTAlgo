@@ -177,12 +177,12 @@ namespace TickTrader.Algo.CoreV1
         public TradeReportAdapter FillPosData(PositionAccessor position, double openPrice, double? openConversionRate)
         {
             //Entity.PositionId = position.Id;
-            if (!position.IsEmpty)
+            if (!position.Info.IsEmpty)
             {
                 //Entity.PositionQuantity = position.VolumeUnits;
-                Entity.PositionLeavesQuantity = position.Amount;
-                Entity.PositionRemainingPrice = position.Price;
-                Entity.PositionRemainingSide = position.Side;
+                Entity.PositionLeavesQuantity = position.Info.Volume;
+                Entity.PositionRemainingPrice = position.Info.Price;
+                Entity.PositionRemainingSide = position.Info.Side;
                 Entity.PositionModified = position.Info.Modified;
             }
             else

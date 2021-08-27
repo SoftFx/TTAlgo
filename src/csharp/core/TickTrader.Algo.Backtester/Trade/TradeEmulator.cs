@@ -1359,7 +1359,7 @@ namespace TickTrader.Algo.Backtester
         {
             var smb = fromOrder.SymbolInfo;
             var position = _acc.NetPositions.GetOrCreatePosition(smb.Name, NewOrderId());
-            position.Increase(fillAmount, fillPrice, fromOrder.Info.Side);
+            //position.Increase(fillAmount, fillPrice, fromOrder.Info.Side);
             position.Info.Modified = _scheduler.UnsafeVirtualTimePoint.ToTimestamp();
 
             var charges = new TradeChargesInfo();
@@ -1408,21 +1408,21 @@ namespace TickTrader.Algo.Backtester
 
         public NetPositionCloseInfo DoNetSettlement(PositionAccessor position, TradeReportAdapter report, OrderInfo.Types.Side fillSide = OrderInfo.Types.Side.Buy)
         {
-            var oneSideClosingAmount = Math.Min(position.Short.Amount, position.Long.Amount);
-            var oneSideClosableAmount = Math.Max(position.Short.Amount, position.Long.Amount);
+            var oneSideClosingAmount = 0.0; //Math.Min(position.Short.Amount, position.Long.Amount);
+            var oneSideClosableAmount = position.Info.Volume; // Math.Max(position.Short.Amount, position.Long.Amount);
             var balanceMovement = 0.0;
             var closePrice = 0.0;
             //NetAccountModel acc = position.Acc;
 
             var copy = position.Clone();
-            var isClosed = position.IsEmpty;
+            var isClosed = position.Info.IsEmpty;
 
             if (oneSideClosingAmount > 0)
             {
                 var k = oneSideClosingAmount / oneSideClosableAmount;
                 var closeSwap = RoundMoney(k * position.Info.Swap, _calcFixture.RoundingDigits);
-                var openPrice = fillSide == OrderInfo.Types.Side.Buy ? position.Long.Price : position.Short.Price;
-                closePrice = fillSide == OrderInfo.Types.Side.Buy ? position.Short.Price : position.Long.Price;
+                //var openPrice = fillSide == OrderInfo.Types.Side.Buy ? position.Long.Price : position.Short.Price;
+                //closePrice = fillSide == OrderInfo.Types.Side.Buy ? position.Short.Price : position.Long.Price;
 
                 double profit = 0.0;
                 var error = CalculationError.None;
@@ -1432,17 +1432,17 @@ namespace TickTrader.Algo.Backtester
                 if (error != CalculationError.None)
                     throw new Exception();
 
-                position.DecreaseBothSides(oneSideClosingAmount);
+                //position.DecreaseBothSides(oneSideClosingAmount);
 
                 position.Info.Swap -= (double)closeSwap;
                 balanceMovement = profit + closeSwap;
 
-                if (position.IsEmpty)
-                    _acc.NetPositions.RemovePosition(position.Symbol);
+                //if (position.IsEmpty)
+                //    _acc.NetPositions.RemovePosition(position.Symbol);
 
                 report.Entity.TransactionAmount += (double)balanceMovement;
                 report.Entity.PositionClosed = ExecutionTime.ToTimestamp();
-                report.Entity.PositionOpenPrice = (double)openPrice;
+                //report.Entity.PositionOpenPrice = (double)openPrice;
                 report.Entity.PositionClosePrice = (double)closePrice;
                 report.Entity.PositionCloseQuantity = (double)oneSideClosingAmount;
                 report.Entity.Swap += (double)closeSwap;
@@ -1869,7 +1869,7 @@ namespace TickTrader.Algo.Backtester
                 {
                     using (JournalScope())
                     {
-                        OpenOrder(pos.Info.Calculator, OrderInfo.Types.Type.Market, pos.Side.Revert(), pos.Amount, null, null, null, null, null, "",
+                        OpenOrder(pos.Info.Calculator, OrderInfo.Types.Type.Market, pos.Info.Side.Revert(), pos.Info.Volume, null, null, null, null, null, "",
                             Domain.OrderExecOptions.None, null, null, OpenOrderOptions.SkipDealing | OpenOrderOptions.FakeOrder);
                     }
                 }

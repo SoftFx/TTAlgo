@@ -1,6 +1,6 @@
 ﻿using System;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
@@ -14,9 +14,9 @@ namespace TickTrader.Algo.CoreV1
         public PositionAccessor UpdatePosition(PositionInfo posInfo)
         {
             PositionAccessor pos = GetOrCreatePosition(posInfo.Symbol, posInfo.Id);
-            pos.Update(posInfo.BuildPositionSides());
+            pos.Update(posInfo);
 
-            if (posInfo.Volume <= 0)
+            if (posInfo.Volume.Lte(0.0))
                 RemovePosition(posInfo.Symbol);
 
             return pos;
@@ -28,7 +28,7 @@ namespace TickTrader.Algo.CoreV1
 
             if (pos == null)
             {
-                var smbInfo = _builder.Symbols.GetOrNull(symbol) ?? throw new OrderValidationError("Symbol Not Found:  " + symbol, OrderCmdResultCodes.SymbolNotFound);
+                var smbInfo = _builder.Symbols.GetOrNull(symbol) ?? throw new OrderValidationError($"Symbol Not Found: {symbol}", OrderCmdResultCodes.SymbolNotFound);
 
                 pos = _entities.GetOrAdd(symbol, _ => new PositionAccessor(symbol, _builder.Symbols.GetOrNull(symbol)));
                 pos.Info.Id = posId;

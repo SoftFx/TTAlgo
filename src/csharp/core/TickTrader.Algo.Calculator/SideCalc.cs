@@ -74,12 +74,12 @@ namespace TickTrader.Algo.Calculator
             UpdateStats(change);
         }
 
-        public void UpdateNetPosition(IPositionSide pos, PositionChangeTypes type)
+        public void UpdateNetPosition(double amount, double price, PositionChangeTypes type)
         {
             if (type == PositionChangeTypes.Removed)
-                _positions.RemovePositionWithoutCalculation(pos.Amount, pos.Price);
+                _positions.RemovePositionWithoutCalculation(amount, price);
             else
-                _positions.UpdateNetPositionWithoutCalculation(pos.Amount, pos.Price);
+                _positions.UpdateNetPositionWithoutCalculation(amount, price);
 
             var change = _positions.Recalculate();
             UpdateStats(change);

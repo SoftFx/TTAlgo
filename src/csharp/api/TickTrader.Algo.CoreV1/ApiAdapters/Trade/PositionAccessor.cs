@@ -7,129 +7,58 @@ namespace TickTrader.Algo.CoreV1
 {
     public sealed class PositionAccessor : NetPosition
     {
+        private readonly SymbolAccessor _symbol;
         private readonly string _symbolName;
-        private readonly double _lotSize;
 
-        internal PositionAccessor(string symbolName, Symbol symbol, PositionInfo info = null)
-            : this(symbolName, symbol?.ContractSize, info)
-        {
-        }
 
-        private PositionAccessor(string symbolName, double? lotSize, PositionInfo info = null)
+        public PositionInfo Info { get; private set; }
+
+
+        internal event Action<PositionAccessor> Changed;
+
+
+        internal PositionAccessor(string symbolName, SymbolAccessor symbolInfo, PositionInfo posInfo = null)
         {
             _symbolName = symbolName;
-            _lotSize = lotSize ?? 1;
+            _symbol = symbolInfo;
 
-            Info = info ?? new PositionInfo() { Symbol = symbolName };
-
-            if (info != null)
-                Update(info.BuildPositionSides());
+            Update(posInfo);
         }
 
         internal void Update(PositionInfo info)
         {
-            Long.Update(info.Long.Amount, info.Long.Price);
-            Short.Update(info.Short.Amount, info.Short.Price);
-
-            Info.Long = Long;
-            Info.Short = Short;
+            Info = info ?? new PositionInfo() { Symbol = _symbolName };
 
             Changed?.Invoke(this);
         }
 
-        public PositionAccessor Clone() => new PositionAccessor(_symbolName, _lotSize, Info);
+        internal PositionAccessor Clone() => new PositionAccessor(_symbolName, _symbol, Info);
 
-        public double Price => (double)(Side == OrderInfo.Types.Side.Buy ? Long.Price : Short.Price);
 
-        public OrderInfo.Types.Side Side => Long.Amount > Short.Amount ? OrderInfo.Types.Side.Buy : OrderInfo.Types.Side.Sell;
+        string NetPosition.Id => Info.Id;
 
-        public string Id => Info.Id;
-        public bool IsEmpty => Amount == 0;
-        public string Symbol => _symbolName;
-        public double Amount => Math.Max(Long.Amount, Short.Amount);
+        double NetPosition.Price => Info.Price;
 
-        public PositionInfo Info { get; }
+        string NetPosition.Symbol => Info.Symbol;
 
-        public SideProxy Long { get; } = new SideProxy();
-        public SideProxy Short { get; } = new SideProxy();
+        OrderSide NetPosition.Side => Info.Side.ToApiEnum();
 
-        double NetPosition.Volume => (double)Amount / _lotSize;
-        double NetPosition.Margin => ProcessResponse(Info.Calculator?.Margin?.Calculate(Info));
-        double NetPosition.Profit => ProcessResponse(Info.Calculator?.Profit?.Calculate(Info));
-        double NetPosition.Swap => (double)Info.Swap;
-        double NetPosition.Commission => (double)Info.Commission;
-        OrderSide NetPosition.Side => Side.ToApiEnum();
         DateTime? NetPosition.Modified => Info.Modified?.ToDateTime();
 
-        internal event Action<PositionAccessor> Changed;
+        double NetPosition.Swap => Info.Swap;
+
+        double NetPosition.Commission => Info.Commission;
+
+        double NetPosition.Volume => Info.Volume / _symbol?.Info?.LotSize ?? 1;
+
+        double NetPosition.Margin => ProcessResponse(Info.Calculator?.Margin?.Calculate(Info));
+
+        double NetPosition.Profit => ProcessResponse(Info.Calculator?.Profit?.Calculate(Info));
+
 
         private static double ProcessResponse(ICalculateResponse<double> response)
         {
             return response != null && response.IsCompleted ? response.Value : double.NaN;
-        }
-
-        #region Emulator
-
-        internal void Increase(double amount, double price, OrderInfo.Types.Side side)
-        {
-            if (side == OrderInfo.Types.Side.Buy)
-                Long.Increase(amount, price);
-            else
-                Short.Increase(amount, price);
-
-            Changed?.Invoke(this);
-        }
-
-        internal void DecreaseBothSides(double byAmount)
-        {
-            Long.Decrease(byAmount);
-            Short.Decrease(byAmount);
-
-            Changed?.Invoke(this);
-        }
-
-        #endregion
-
-        public class SideProxy : IPositionSide
-        {
-            public SideProxy()
-            {
-            }
-
-            internal void Update(double amount, double price)
-            {
-                Amount = amount;
-                Price = price;
-                Profit = 0;
-                Margin = 0;
-            }
-
-            internal void Increase(double amount, double price)
-            {
-                Price = CalculatePositionAvgPrice(this, price, amount);
-                Amount += amount;
-            }
-
-            internal void Decrease(double byAmount)
-            {
-                Amount -= byAmount;
-            }
-
-            public double Amount { get; private set; }
-            public double Price { get; private set; }
-            public double Margin { get; set; }
-            public double Profit { get; set; }
-
-            private static double CalculatePositionAvgPrice(IPositionSide side, double price2, double amount2)
-            {
-                // some optimization
-                if (side.Amount == 0)
-                    return price2;
-                else if (amount2 == 0)
-                    return side.Price;
-
-                return (side.Price * side.Amount + price2 * amount2) / (side.Amount + amount2);
-            }
         }
     }
 }
