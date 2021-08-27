@@ -122,6 +122,8 @@ namespace TickTrader.Algo.Server
 
         private async Task<AccountMetadataInfo> GetMetadata(AccountMetadataRequest request)
         {
+            _logger.Debug($"{nameof(GetMetadata)} trigger request gate");
+
             using (await _requestGate.Enter())
             {
                 if (!_lastError.IsOk)
@@ -135,6 +137,8 @@ namespace TickTrader.Algo.Server
 
         private async Task<ConnectionErrorInfo> TestConnection(TestAccountRequest request)
         {
+            _logger.Debug($"{nameof(TestConnection)} trigger request gate");
+
             using (await _requestGate.Enter())
                 return _lastError;
         }
@@ -172,7 +176,10 @@ namespace TickTrader.Algo.Server
                 var scheduledConnect = _refCnt > 0 && _pendingReconnect < DateTime.UtcNow;
 
                 if (forcedConnect || scheduledConnect)
+                {
+                    _logger.Debug($"Connecting account... {nameof(forcedConnect)} = {forcedConnect}, {nameof(scheduledConnect)} = {scheduledConnect}");
                     ConnectInternal().OnException(ex => _logger.Error(ex, "Connect failed"));
+                }
             }
             else if (_state == AccountModelInfo.Types.ConnectionState.Online)
             {
@@ -180,7 +187,10 @@ namespace TickTrader.Algo.Server
                 var scheduledDisconnect = _refCnt == 0 && _pendingDisconnect < DateTime.UtcNow;
 
                 if (forcedDisconnect || scheduledDisconnect)
+                {
+                    _logger.Debug($"Disconnecting account... {nameof(forcedDisconnect)} = {forcedDisconnect}, {nameof(scheduledDisconnect)} = {scheduledDisconnect}");
                     DisconnectInternal().OnException(ex => _logger.Error(ex, "Disconnect failed"));
+                }
             }
         }
 
