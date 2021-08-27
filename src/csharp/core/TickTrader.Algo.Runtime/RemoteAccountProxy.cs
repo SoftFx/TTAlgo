@@ -330,7 +330,7 @@ namespace TickTrader.Algo.Runtime
             return true;
         }
 
-        private bool TradeHistoryPageResponseHandler(TaskCompletionSource<Domain.TradeReportInfo[]> taskSrc, Any payload)
+        private bool TradeHistoryPageResponseHandler(TaskCompletionSource<List<TradeReportInfo>> taskSrc, Any payload)
         {
             if (payload.TryGetError(out var ex))
             {
@@ -339,10 +339,9 @@ namespace TickTrader.Algo.Runtime
             else
             {
                 var response = payload.Unpack<TradeHistoryPageResponse>();
-                var res = new TradeReportInfo[response.Reports.Count];
-                response.Reports.CopyTo(res, 0);
-                taskSrc.TrySetResult(res);
-                if (res.Length != 0)
+                var res = new List<TradeReportInfo>(response.Reports);
+                var res2 = taskSrc.TrySetResult(res);
+                if (response.Reports.Count != 0)
                     return false;
             }
 
@@ -351,16 +350,16 @@ namespace TickTrader.Algo.Runtime
 
         private class PagedEnumeratorAdapter<T> : IAsyncPagedEnumerator<T>, IRpcResponseContext
         {
-            private TaskCompletionSource<T[]> _pageTaskSrc;
+            private TaskCompletionSource<List<T>> _pageTaskSrc;
 
-            Func<TaskCompletionSource<T[]>, Any, bool> ResponseHandler { get; }
+            Func<TaskCompletionSource<List<T>>, Any, bool> ResponseHandler { get; }
 
             Action GetNextPageHandler { get; }
 
             Action DisposeHandler { get; }
 
 
-            public PagedEnumeratorAdapter(Func<TaskCompletionSource<T[]>, Any, bool> responseHandler, Action getNextPageHandler, Action disposeHandler)
+            public PagedEnumeratorAdapter(Func<TaskCompletionSource<List<T>>, Any, bool> responseHandler, Action getNextPageHandler, Action disposeHandler)
             {
                 ResponseHandler = responseHandler;
                 GetNextPageHandler = getNextPageHandler;
@@ -374,12 +373,12 @@ namespace TickTrader.Algo.Runtime
                 DisposeHandler();
             }
 
-            public Task<T[]> GetNextPage()
+            public Task<List<T>> GetNextPage()
             {
                 if (_pageTaskSrc != null)
                     throw new Exception("Can't get more than one page at a time");
 
-                _pageTaskSrc = new TaskCompletionSource<T[]>();
+                _pageTaskSrc = new TaskCompletionSource<List<T>>();
                 var res = _pageTaskSrc.Task;
                 GetNextPageHandler();
                 return res;

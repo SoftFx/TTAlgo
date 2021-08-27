@@ -68,7 +68,7 @@ namespace TickTrader.Algo.Rpc.OverGrpc
                         break;
 
                     var page = new MessagePage();
-                    for (var cnt = 0; reader.TryRead(out var msg) && cnt < MessagePageSize; cnt++) page.Messages.Add(msg.ToByteString());
+                    for (var cnt = 0; cnt < MessagePageSize && reader.TryRead(out var msg); cnt++) page.Messages.Add(msg.ToByteString());
 
                     await _writer.WriteAsync(page).ConfigureAwait(false);
                 }

@@ -191,7 +191,7 @@ namespace TickTrader.Algo.Server
             var enumerator = (IAsyncPagedEnumerator<TradeReportInfo>)state;
             var page = await enumerator.GetNextPage();
             var response = new TradeHistoryPageResponse();
-            if (page == null || page.Length == 0)
+            if (page == null || page.Count == 0)
             {
                 _pendingRequestHandlers.TryRemove(callId, out _);
                 enumerator.Dispose();

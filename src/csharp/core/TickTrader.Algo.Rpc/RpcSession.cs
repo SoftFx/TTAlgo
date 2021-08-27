@@ -135,7 +135,8 @@ namespace TickTrader.Algo.Rpc
         internal void SendMessage(RpcMessage msg)
         {
             //_logger.Debug("Send msg: {msg}", new { msg.Flags, msg.CallId, msg.ProxyId, Payload = new { msg.Payload.TypeUrl, msg.Payload.Value } });
-            _transport.WriteChannel.TryWrite(msg);
+            if (!_transport.WriteChannel.TryWrite(msg))
+                _logger.Error($"Failed to send msg: {msg.Flags}, {msg.CallId}, {msg.ProxyId}");
         }
 
         internal async Task Close()

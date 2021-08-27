@@ -1,5 +1,5 @@
-﻿using ActorSharp;
-using System;
+﻿using System;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.FDK.Common;
@@ -32,9 +32,9 @@ namespace TickTrader.Algo.Account.Fdk2
             _tradeCapture.SubscribeTradesResultEndEvent += (c, d) => SfxTaskAdapter.SetCompleted(d);
             _tradeCapture.SubscribeTradesErrorEvent += (c, d, ex) => SfxTaskAdapter.SetFailed(d, ex);
 
-            _tradeCapture.DownloadTradesResultEvent += (c, d, r) => ((BlockingChannel<Domain.TradeReportInfo>)d).Write(SfxInterop.Convert(r));
-            _tradeCapture.DownloadTradesResultEndEvent += (c, d) => ((BlockingChannel<Domain.TradeReportInfo>)d).Close();
-            _tradeCapture.DownloadTradesErrorEvent += (c, d, ex) => ((BlockingChannel<Domain.TradeReportInfo>)d).Close(ex);
+            _tradeCapture.DownloadTradesResultEvent += (c, d, r) => ((ChannelWriter<Domain.TradeReportInfo>)d).TryWrite(SfxInterop.Convert(r));
+            _tradeCapture.DownloadTradesResultEndEvent += (c, d) => ((ChannelWriter<Domain.TradeReportInfo>)d).TryComplete();
+            _tradeCapture.DownloadTradesErrorEvent += (c, d, ex) => ((ChannelWriter<Domain.TradeReportInfo>)d).TryComplete(ex);
         }
 
 
@@ -81,7 +81,7 @@ namespace TickTrader.Algo.Account.Fdk2
         }
 
         public void DownloadTradesAsync(TimeDirection timeDirection, DateTime? from, DateTime? to, bool skipCancel,
-            BlockingChannel<Domain.TradeReportInfo> stream)
+            ChannelWriter<Domain.TradeReportInfo> stream)
         {
             _tradeCapture.DownloadTradesAsync(stream, timeDirection, from, to, skipCancel);
         }

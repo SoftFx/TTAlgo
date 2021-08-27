@@ -2,7 +2,9 @@
 using ActorSharp.Lib;
 using System;
 using System.Collections.Generic;
+using System.Threading.Channels;
 using System.Threading.Tasks;
+using TickTrader.Algo.Async;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 
@@ -44,7 +46,7 @@ namespace TickTrader.Algo.Account
             ContextSend(() => _updateQueue.Enqueue(report));
         }
 
-        private async void GetTradeHistory(ActorChannel<Domain.TradeReportInfo> txChannel, DateTime? from, DateTime? to, bool skipCanceledOrders, bool backwards)
+        private void GetTradeHistory(Channel<Domain.TradeReportInfo> txChannel, DateTime? from, DateTime? to, bool skipCanceledOrders, bool backwards)
         {
             try
             {
@@ -57,23 +59,11 @@ namespace TickTrader.Algo.Account
                     to = to ?? DateTime.UtcNow + TimeSpan.FromDays(2);
                 }
 
-                var rxChannel = ActorChannel.NewInput<Domain.TradeReportInfo>(1000);
-                _connection.TradeProxy.GetTradeHistory(CreateBlockingChannel(rxChannel), from, to, skipCanceledOrders, backwards);
-
-                while (await rxChannel.ReadNext())
-                {
-                    if (!await txChannel.Write(rxChannel.Current))
-                    {
-                        await rxChannel.Close();
-                        return;
-                    }
-                }
-
-                await txChannel.Close();
+                _connection.TradeProxy.GetTradeHistory(txChannel.Writer, from, to, skipCanceledOrders, backwards);
             }
             catch (Exception ex)
             {
-                await txChannel.Close(ex);
+                txChannel.Writer.TryComplete(ex);
             }
         }
 
@@ -153,25 +143,25 @@ namespace TickTrader.Algo.Account
 
             public event Action<Domain.TradeReportInfo> OnTradeReport;
 
-            public ActorChannel<Domain.TradeReportInfo> GetTradeHistory(bool skipCancelOrders)
+            public Channel<Domain.TradeReportInfo> GetTradeHistory(bool skipCancelOrders)
             {
                 return GetTradeHistoryInternal(null, null, skipCancelOrders);
             }
 
-            public ActorChannel<Domain.TradeReportInfo> GetTradeHistory(DateTime? from, DateTime? to, bool skipCancelOrders)
+            public Channel<Domain.TradeReportInfo> GetTradeHistory(DateTime? from, DateTime? to, bool skipCancelOrders)
             {
                 return GetTradeHistoryInternal(from, to, skipCancelOrders);
             }
 
-            public ActorChannel<Domain.TradeReportInfo> GetTradeHistory(DateTime to, bool skipCancelOrders)
+            public Channel<Domain.TradeReportInfo> GetTradeHistory(DateTime to, bool skipCancelOrders)
             {
                 return GetTradeHistoryInternal(null, to, skipCancelOrders);
             }
 
-            private ActorChannel<Domain.TradeReportInfo> GetTradeHistoryInternal(DateTime? from, DateTime? to, bool skipCancelOrders)
+            private Channel<Domain.TradeReportInfo> GetTradeHistoryInternal(DateTime? from, DateTime? to, bool skipCancelOrders)
             {
-                var channel = ActorChannel.NewOutput<Domain.TradeReportInfo>(1000);
-                Actor.OpenChannel(channel, (a, c) => a.GetTradeHistory(c, from, to, skipCancelOrders, true));
+                var channel = DefaultChannelFactory.CreateUnbounded<Domain.TradeReportInfo>();
+                Actor.Call(a => a.GetTradeHistory(channel, from, to, skipCancelOrders, true));
                 return channel;
             }
 
@@ -196,8 +186,9 @@ namespace TickTrader.Algo.Account
                 bool skipCancels = options.HasFlag(Domain.TradeHistoryRequestOptions.SkipCanceled);
                 bool backwards = options.HasFlag(Domain.TradeHistoryRequestOptions.Backwards);
 
-                return _ref.OpenBlockingChannel<TradeHistoryProvider, Domain.TradeReportInfo>(ChannelDirections.Out, 1000,
-                    (a, c) => a.GetTradeHistory(c, from, to, skipCancels, backwards)).AsPagedEnumerator();
+                var channel = DefaultChannelFactory.CreateUnbounded<Domain.TradeReportInfo>();
+                _ref.Call(a => a.GetTradeHistory(channel, from, to, skipCancels, backwards));
+                return channel.AsPagedEnumerator();
             }
         }
     }

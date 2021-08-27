@@ -7,7 +7,6 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-using STC = System.Threading.Channels;
 
 namespace TickTrader.Algo.Rpc.OverTcp
 {
@@ -16,12 +15,11 @@ namespace TickTrader.Algo.Rpc.OverTcp
         private const int MsgLengthPrefixSize = 4;
         private const int WriteBatchSize = 8;
 
-
         private readonly Socket _socket;
         private readonly Ref<TcpContext> _tcpContext;
         private readonly Pipe _listenPipe, _sendPipe;
         private readonly byte[] _recieveBuffer;
-        private readonly STC.Channel<RpcMessage> _readChannel, _writeChannel;
+        private readonly Channel<RpcMessage> _readChannel, _writeChannel;
 
         private Task _listenTask, _sendTask, _readTask, _writeTask;
         private CancellationTokenSource _cancelTokenSrc;
@@ -40,8 +38,8 @@ namespace TickTrader.Algo.Rpc.OverTcp
             _listenPipe = new Pipe(options);
             _sendPipe = new Pipe(options);
 
-            _readChannel = STC.Channel.CreateUnbounded<RpcMessage>(new UnboundedChannelOptions { AllowSynchronousContinuations = false, SingleWriter = true });
-            _writeChannel = STC.Channel.CreateUnbounded<RpcMessage>(new UnboundedChannelOptions { AllowSynchronousContinuations = false, SingleReader = true });
+            _readChannel = Channel.CreateUnbounded<RpcMessage>(new UnboundedChannelOptions { AllowSynchronousContinuations = false, SingleWriter = true });
+            _writeChannel = Channel.CreateUnbounded<RpcMessage>(new UnboundedChannelOptions { AllowSynchronousContinuations = false, SingleReader = true });
 
             ReadChannel = _readChannel.Reader;
             WriteChannel = _writeChannel.Writer;
@@ -80,7 +78,7 @@ namespace TickTrader.Algo.Rpc.OverTcp
                 }
                 catch (Exception) { }
             });
-            
+
 
             await _listenTask;
             await _readTask;
@@ -158,7 +156,7 @@ namespace TickTrader.Algo.Rpc.OverTcp
                     if (!canRead)
                         break;
 
-                    for (var cnt = 0; reader.TryRead(out var msg) && cnt < WriteBatchSize; cnt++)
+                    for (var cnt = 0; cnt < WriteBatchSize && reader.TryRead(out var msg); cnt++)
                     {
                         var msgSize = msg.CalculateSize();
                         var len = msgSize + MsgLengthPrefixSize;

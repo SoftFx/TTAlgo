@@ -1,21 +1,23 @@
 ﻿using ActorSharp;
 using System;
+using System.Collections.Generic;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Core.Lib
 {
     public static class ActorSharpExt
     {
-        public static IAsyncPagedEnumerator<T> AsPagedEnumerator<T>(this BlockingChannel<T> channel)
+        public static IAsyncPagedEnumerator<T> AsPagedEnumerator<T>(this Channel<T> channel, int pageSize = 1000)
             where T : class
         {
-            return new PagedAdapter<T>(channel);
+            return new PagedAdapter<T>(channel, pageSize);
         }
 
-        public static IAsyncPagedEnumerator<TOut> AsPagedEnumerator<TIn, TOut>(this BlockingChannel<TIn> channel, Func<TIn, TOut> selector)
+        public static IAsyncPagedEnumerator<TOut> AsPagedEnumerator<TIn, TOut>(this Channel<TIn> channel, Func<TIn, TOut> selector, int pageSize = 1000)
             where TOut : class
         {
-            return new PagedSelectAdapter<TIn, TOut>(channel, selector);
+            return new PagedSelectAdapter<TIn, TOut>(channel, selector, pageSize);
         }
 
         public static ISyncContext GetSyncContext<TActor>(this Ref<TActor> target)
@@ -72,58 +74,68 @@ namespace TickTrader.Algo.Core.Lib
         private class PagedAdapter<T> : IAsyncPagedEnumerator<T>
             where T : class
         {
-            private BlockingChannel<T> _channel;
+            private Channel<T> _channel;
+            private int _pageSize;
 
-            public PagedAdapter(BlockingChannel<T> channel)
+            public PagedAdapter(Channel<T> channel, int pageSize)
             {
                 _channel = channel;
+                _pageSize = pageSize;
             }
 
-            public Task<T[]> GetNextPage()
+            public async Task<List<T>> GetNextPage()
             {
-                return Task.FromResult(_channel.ReadPage());
+                var reader = _channel.Reader;
+                var canRead = await reader.WaitToReadAsync();
+                if (!canRead)
+                    return null;
+
+                var page = new List<T>(_pageSize);
+                while (page.Count < page.Capacity && reader.TryRead(out var item))
+                {
+                    page.Add(item);
+                }
+                return page;
             }
 
             public void Dispose()
             {
-                _channel.Close();
+                _channel.Writer.TryComplete();
             }
         }
 
         private class PagedSelectAdapter<TIn, TOut> : IAsyncPagedEnumerator<TOut>
             where TOut : class
         {
-            private BlockingChannel<TIn> _channel;
+            private Channel<TIn> _channel;
             private Func<TIn, TOut> _selector;
+            private int _pageSize;
 
-            public PagedSelectAdapter(BlockingChannel<TIn> channel, Func<TIn, TOut> selector)
+            public PagedSelectAdapter(Channel<TIn> channel, Func<TIn, TOut> selector, int pageSize)
             {
                 _channel = channel;
                 _selector = selector;
+                _pageSize = pageSize;
             }
 
-            public Task<TOut[]> GetNextPage()
+            public async Task<List<TOut>> GetNextPage()
             {
-                var page = _channel.ReadPage();
-                return Task.FromResult(Select(page));
-            }
-
-            private TOut[] Select(TIn[] page)
-            {
-                if (page == null)
+                var reader = _channel.Reader;
+                var canRead = await reader.WaitToReadAsync();
+                if (!canRead)
                     return null;
 
-                var result = new TOut[page.Length];
-
-                for (int i = 0; i < page.Length; i++)
-                    result[i] = _selector(page[i]);
-
-                return result;
+                var page = new List<TOut>(_pageSize);
+                while (page.Count < page.Capacity && reader.TryRead(out var item))
+                {
+                    page.Add(_selector(item));
+                }
+                return page;
             }
 
             public void Dispose()
             {
-                _channel.Close();
+                _channel.Writer.TryComplete();
             }
         }
     }

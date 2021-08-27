@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using ActorSharp;
 using TickTrader.Algo.Domain;
 using Google.Protobuf.WellKnownTypes;
+using System.Threading.Channels;
 
 namespace TickTrader.Algo.Account
 {
@@ -28,7 +29,7 @@ namespace TickTrader.Algo.Account
         Task<PositionInfo[]> GetPositions();
 
         void GetTradeRecords(BlockingChannel<OrderInfo> rxStream);
-        void GetTradeHistory(BlockingChannel<TradeReportInfo> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders, bool backwards);
+        void GetTradeHistory(ChannelWriter<TradeReportInfo> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders, bool backwards);
 
         event Action<PositionExecReport> PositionReport;
         event Action<ExecutionReport> ExecutionReport;

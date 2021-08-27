@@ -8,6 +8,7 @@ using System.Net.Security;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
@@ -444,7 +445,7 @@ namespace TickTrader.Algo.Account.Fdk2
                 .ContinueWith(t => t.Result.Select(Convert).ToArray());
         }
 
-        public void GetTradeHistory(BlockingChannel<Domain.TradeReportInfo> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders, bool backwards)
+        public void GetTradeHistory(ChannelWriter<Domain.TradeReportInfo> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders, bool backwards)
         {
             var direction = backwards ? TimeDirection.Backward : TimeDirection.Forward;
 

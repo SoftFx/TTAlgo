@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
 
@@ -28,6 +29,6 @@ namespace TickTrader.Algo.Core
 
     public interface IAsyncPagedEnumerator<T> : IDisposable
     {
-        Task<T[]> GetNextPage();
+        Task<List<T>> GetNextPage();
     }
 }

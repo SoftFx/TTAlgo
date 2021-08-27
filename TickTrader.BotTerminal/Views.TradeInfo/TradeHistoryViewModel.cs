@@ -252,7 +252,7 @@ namespace TickTrader.BotTerminal
             {
                 _tradesList.Clear();
 
-                var downloadTask = DownloadingHistoryAsync(from?.ToUniversalTime(), to?.ToUniversalTime(), SkipCancel, cToken);
+                var downloadTask = Task.Run(() => DownloadingHistoryAsync(from?.ToUniversalTime(), to?.ToUniversalTime(), SkipCancel, cToken));
                 DownloadObserver = new ObservableTask<int>(downloadTask);
 
                 await downloadTask;
@@ -267,22 +267,35 @@ namespace TickTrader.BotTerminal
 
         private async Task<int> DownloadingHistoryAsync(DateTime? from, DateTime? to, bool skipCancel, CancellationToken token)
         {
+            const int batchSize = 32;
+
             if (token.IsCancellationRequested)
                 return 0;
 
             var historyStream = _tradeClient.TradeHistory.GetTradeHistory(from, to, skipCancel);
 
-            while (await historyStream.ReadNext())
+            var buffer = new TransactionReport[batchSize];
+
+            while (await historyStream.Reader.WaitToReadAsync())
             {
                 if (token.IsCancellationRequested)
                 {
-                    await historyStream.Close();
+                    historyStream.Writer.TryComplete();
                     break;
                 }
 
-                var report = historyStream.Current;
-                var historyItem = CreateReportModel(report);
-                AddToList(historyItem);
+                var cnt = 0;
+                while (cnt < batchSize && historyStream.Reader.TryRead(out var report))
+                {
+                    // create on thread pool thread, add on UI thread
+                    buffer[cnt++] = CreateReportModel(report);
+                }
+
+                var taskSrc = new TaskCompletionSource<object>();
+
+                OnUIThread(() => AddToList(buffer, cnt, taskSrc));
+
+                await taskSrc.Task;
             }
 
             return 0;
@@ -329,6 +342,22 @@ namespace TickTrader.BotTerminal
             {
                 logger.Error(ex);
             }
+        }
+
+        private void AddToList(TransactionReport[] transactions, int cnt, TaskCompletionSource<object> completion)
+        {
+            try
+            {
+                for (var i = 0; i < cnt; i++)
+                {
+                    AddToList(transactions[i]);
+                }
+            }
+            catch(Exception ex)
+            {
+                logger.Error(ex);
+            }
+            completion.TrySetResult(null);
         }
 
         private bool MatchesCurrentFilter(TradeReportInfo tradeTransaction)

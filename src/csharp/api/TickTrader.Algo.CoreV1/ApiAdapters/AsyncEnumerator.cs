@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
@@ -49,7 +48,7 @@ namespace TickTrader.Algo.Core.Lib
             private static readonly Task<bool> FalseResult = Task.FromResult(false);
 
             private IAsyncPagedEnumerator<T> _proxy;
-            private T[] _page;
+            private List<T> _page;
             private int _index;
 
             public T Current { get; private set; }
@@ -62,7 +61,7 @@ namespace TickTrader.Algo.Core.Lib
             private async Task<bool> GetNextPage()
             {
                 _page = await _proxy.GetNextPage();
-                if (_page != null && _page.Length > 0)
+                if (_page != null && _page.Count > 0)
                 {
                     _index = 1;
                     Current = _page[0];
@@ -85,7 +84,7 @@ namespace TickTrader.Algo.Core.Lib
                 if (_index == -1)
                     return FalseResult;
 
-                if (_page == null || _index >= _page.Length)
+                if (_page == null || _index >= _page.Count)
                     return GetNextPage();
 
                 Current = _page[_index++];
@@ -197,7 +196,7 @@ namespace TickTrader.Algo.Core.Lib
 
                 if (_page == null || _position == _page.Count - 1)
                 {
-                    _page = _enumerator.GetNextPage().GetAwaiter().GetResult()?.ToList();
+                    _page = _enumerator.GetNextPage().GetAwaiter().GetResult();
                     _position = -1;
 
                     if (_page == null)
