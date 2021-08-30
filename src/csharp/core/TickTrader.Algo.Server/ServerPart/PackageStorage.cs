@@ -143,7 +143,7 @@ namespace TickTrader.Algo.Server
             return _pkgIdToRefMap.TryGetValue(pkgId, out _);
         }
 
-        public void UploadPackage(UploadPackageRequest request, string pkgFilePath)
+        public string UploadPackage(UploadPackageRequest request, string pkgFilePath)
         {
             (var pkgId, var filename) = request;
 
@@ -185,6 +185,8 @@ namespace TickTrader.Algo.Server
             {
                 _logger.Error(ex, $"Error saving Algo package '{pkgId}' at '{pkgPath}'");
             }
+
+            return pkgId;
         }
 
         public void RemovePackage(RemovePackageRequest request)

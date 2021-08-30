@@ -126,7 +126,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return _algoServer.UpdatePluginConfig(request);
         }
 
-        public Task AddAccount(AddAccountRequest request)
+        public Task<string> AddAccount(AddAccountRequest request)
         {
             return _algoServer.AddAccount(request);
         }
@@ -156,7 +156,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return _algoServer.RemovePackage(request);
         }
 
-        public Task UploadPackage(UploadPackageRequest request, string pkgFilePath)
+        public Task<string> UploadPackage(UploadPackageRequest request, string pkgFilePath)
         {
             return _algoServer.UploadPackage(request, pkgFilePath);
         }

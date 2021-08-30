@@ -53,11 +53,11 @@ namespace TickTrader.Algo.Server
 
             Receive<LocalAlgoServer.PkgFileExistsRequest, bool>(r => _pkgStorage.PackageFileExists(r.PkgName));
             Receive<LocalAlgoServer.PkgBinaryRequest, byte[]>(r => _pkgStorage.GetPackageBinary(r.Id));
-            Receive<LocalAlgoServer.UploadPackageCmd>(cmd => _pkgStorage.UploadPackage(cmd.Request, cmd.FilePath));
+            Receive<LocalAlgoServer.UploadPackageCmd, string>(cmd => _pkgStorage.UploadPackage(cmd.Request, cmd.FilePath));
             Receive<RemovePackageRequest>(r => _pkgStorage.RemovePackage(r));
             Receive<MappingsInfoRequest, MappingCollectionInfo>(_ => _mappings);
 
-            Receive<AddAccountRequest>(r => _accounts.AddAccount(r));
+            Receive<AddAccountRequest, string>(r => _accounts.AddAccount(r));
             Receive<ChangeAccountRequest>(r => _accounts.ChangeAccount(r));
             Receive<RemoveAccountRequest>(RemoveAccount);
             Receive<TestAccountRequest>(r => _accounts.TestAccount(r));

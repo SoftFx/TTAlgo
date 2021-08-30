@@ -16,6 +16,7 @@ message UploadPackageRequest {
 }
 
 message UploadPackageResponse {
+    google.protobuf.StringValue package_id = 1;
     RequestResult exec_result = 101;
 }
 

@@ -69,7 +69,7 @@ namespace TickTrader.Algo.ServerControl
 
         Task ChangeBotConfig(ChangePluginConfigRequest request);
 
-        Task AddAccount(AddAccountRequest request);
+        Task<string> AddAccount(AddAccountRequest request);
 
         Task RemoveAccount(RemoveAccountRequest request);
 
@@ -81,7 +81,7 @@ namespace TickTrader.Algo.ServerControl
 
         Task RemovePackage(RemovePackageRequest request);
 
-        Task UploadPackage(UploadPackageRequest request, string pkgFilePath);
+        Task<string> UploadPackage(UploadPackageRequest request, string pkgFilePath);
 
         Task<byte[]> GetPackageBinary(DownloadPackageRequest request);
 

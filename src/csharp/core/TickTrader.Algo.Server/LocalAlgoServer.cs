@@ -18,13 +18,13 @@ namespace TickTrader.Algo.Server
 
         Task<PackageListSnapshot> GetPackageSnapshot();
         Task<bool> PackageWithNameExists(string pkgName);
-        Task UploadPackage(UploadPackageRequest request, string pkgFilePath);
+        Task<string> UploadPackage(UploadPackageRequest request, string pkgFilePath);
         Task<byte[]> GetPackageBinary(string pkgId);
         Task RemovePackage(RemovePackageRequest request);
         Task<MappingCollectionInfo> GetMappingsInfo(MappingsInfoRequest request);
 
         Task<AccountListSnapshot> GetAccounts();
-        Task AddAccount(AddAccountRequest request);
+        Task<string> AddAccount(AddAccountRequest request);
         Task ChangeAccount(ChangeAccountRequest request);
         Task RemoveAccount(RemoveAccountRequest request);
         Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request);
@@ -77,13 +77,13 @@ namespace TickTrader.Algo.Server
 
         public Task<PackageListSnapshot> GetPackageSnapshot() => EventBus.GetPackageSnapshot();
         public Task<bool> PackageWithNameExists(string pkgName) => _server.Ask<bool>(new PkgFileExistsRequest(pkgName));
-        public Task UploadPackage(UploadPackageRequest request, string pkgFilePath) => _server.Ask(new UploadPackageCmd(request, pkgFilePath));
+        public Task<string> UploadPackage(UploadPackageRequest request, string pkgFilePath) => _server.Ask<string>(new UploadPackageCmd(request, pkgFilePath));
         public Task<byte[]> GetPackageBinary(string pkgId) => _server.Ask<byte[]>(new PkgBinaryRequest(pkgId));
         public Task RemovePackage(RemovePackageRequest request) => _server.Ask<RemovePackageRequest>(request);
         public Task<MappingCollectionInfo> GetMappingsInfo(MappingsInfoRequest request) => _server.Ask<MappingCollectionInfo>(request);
 
         public Task<AccountListSnapshot> GetAccounts() => EventBus.GetAccountSnapshot();
-        public Task AddAccount(AddAccountRequest request) => _server.Ask(request);
+        public Task<string> AddAccount(AddAccountRequest request) => _server.Ask<string>(request);
         public Task ChangeAccount(ChangeAccountRequest request) => _server.Ask(request);
         public Task RemoveAccount(RemoveAccountRequest request) => _server.Ask(request);
         public Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request) => _server.Ask<ConnectionErrorInfo>(request);

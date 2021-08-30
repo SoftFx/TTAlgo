@@ -851,7 +851,8 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             try
             {
-                await _algoServer.AddAccount(request.ToServer());
+                var accId = await _algoServer.AddAccount(request.ToServer());
+                res.AccountId = accId;
             }
             catch (Exception ex)
             {
@@ -1007,7 +1008,8 @@ namespace TickTrader.Algo.ServerControl.Grpc
                     }
                 }
 
-                await _algoServer.UploadPackage(request.ToServer(), tmpPath);
+                var pkgId = await _algoServer.UploadPackage(request.ToServer(), tmpPath);
+                res.PackageId = pkgId;
             }
             catch (Exception ex)
             {

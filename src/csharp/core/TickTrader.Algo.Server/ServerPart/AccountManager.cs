@@ -55,7 +55,7 @@ namespace TickTrader.Algo.Server
             return new AccountControlModel(GetAccountRefOrThrow(accId));
         }
 
-        public async Task AddAccount(AddAccountRequest request)
+        public async Task<string> AddAccount(AddAccountRequest request)
         {
             var server = request.Server;
             var userId = request.UserId;
@@ -86,6 +86,8 @@ namespace TickTrader.Algo.Server
             await _server.SavedState.AddAccount(savedState);
 
             CreateAccountInternal(savedState);
+
+            return accId;
         }
 
         public async Task ChangeAccount(ChangeAccountRequest request)

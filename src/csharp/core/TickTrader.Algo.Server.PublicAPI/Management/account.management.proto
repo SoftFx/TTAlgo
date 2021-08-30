@@ -17,6 +17,7 @@ message AddAccountRequest {
 }
 
 message AddAccountResponse {
+    google.protobuf.StringValue account_id = 1;
     RequestResult exec_result = 101;
 }
 
