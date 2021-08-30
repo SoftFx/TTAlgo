@@ -4,21 +4,18 @@ package ticktrader.algo.server.publicApi;
 
 option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
 
+import "info/mappings/mapping.info.proto";
 import "info/server.metadata.info.proto";
 
 
-message ColoredLineOutputConfig {
+message BarToBarInputConfig {
     string property_id = 1;
-    bool is_enabled = 2;
-    uint32 line_color_argb = 3;
-    int32 line_thickness = 4;
-    Metadata.LineStyle line_style = 5;
+    SymbolConfig selected_symbol = 2;
+    MappingKey selected_mapping = 3;
 }
 
-message MarkerSeriesOutputConfig {
+message BarToDoubleInputConfig {
     string property_id = 1;
-    bool is_enabled = 2;
-    uint32 line_color_argb = 3;
-    int32 line_thickness = 4;
-    Metadata.MarkerSize marker_size = 5;
+    SymbolConfig selected_symbol = 2;
+    MappingKey selected_mapping = 3;
 }
