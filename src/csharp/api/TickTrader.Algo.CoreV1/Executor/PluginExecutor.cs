@@ -415,11 +415,14 @@ namespace TickTrader.Algo.CoreV1
             lock (_sync)
             {
                 if (state == States.Running)
+                {
+                    (accFixture as TradingFixture)?.ConnectionLost();
+
                     iStrategy.EnqueueCustomInvoke(b =>
                     {
-                        (accFixture as TradingFixture)?.ConnectionLost();
                         _builder.FireDisconnectedEvent();
                     });
+                }
             }
         }
 
@@ -429,6 +432,7 @@ namespace TickTrader.Algo.CoreV1
             {
                 if (state == States.Running)
                 {
+                    iStrategy.Reinit();
                     iStrategy.EnqueueCustomInvoke(b =>
                     {
                         _calcFixture.PreRestart();
