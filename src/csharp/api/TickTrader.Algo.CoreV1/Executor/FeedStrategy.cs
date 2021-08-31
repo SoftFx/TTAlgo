@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Calculator;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Infrastructure;
 using TickTrader.Algo.Core.Lib;

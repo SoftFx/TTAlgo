@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
@@ -18,8 +16,8 @@ namespace TickTrader.Algo.CoreV1
         private SymbolsCollection _symbols;
         private ITradeExecutor _executor;
         private IAccountInfoProvider _dataProvider;
-        private bool _isStarted;
-        private bool _isRestart;
+        private bool _isInited;
+        private bool _isReinit;
         private bool _connected;
 
         private Dictionary<string, Action<OrderExecReport>> reportListeners = new Dictionary<string, Action<OrderExecReport>>();
@@ -42,7 +40,7 @@ namespace TickTrader.Algo.CoreV1
 
         public void LazyInit()
         {
-            if (!_isStarted && _dataProvider != null)
+            if (!_isInited && _dataProvider != null)
             {
                 LazyInitIniternal();
             }
@@ -50,17 +48,17 @@ namespace TickTrader.Algo.CoreV1
 
         public void PreRestart()
         {
-            if (_dataProvider != null && _isStarted)
+            if (_dataProvider != null)
             {
-                _isRestart = true;
+                _isReinit = _isInited;
             }
         }
 
         public void PostRestart()
         {
-            if (_isRestart)
+            if (_isReinit)
             {
-                _isRestart = false;
+                _isReinit = false;
                 LazyInitIniternal();
             }
         }
@@ -78,10 +76,10 @@ namespace TickTrader.Algo.CoreV1
 
         private void Init()
         {
-            if (_isStarted)
+            if (_isInited)
                 return;
 
-            _isStarted = true;
+            _isInited = true;
 
             var builder = context.Builder;
 
@@ -100,7 +98,7 @@ namespace TickTrader.Algo.CoreV1
 
         public void Stop()
         {
-            if (_dataProvider != null && _isStarted)
+            if (_dataProvider != null && _isInited)
             {
                 _dataProvider.SyncInvoke(Deinit);
             }
@@ -108,10 +106,10 @@ namespace TickTrader.Algo.CoreV1
 
         private void Deinit()
         {
-            if (!_isStarted)
+            if (!_isInited)
                 return;
 
-            _isStarted = false;
+            _isInited = false;
 
             _connected = false;
 
@@ -127,6 +125,8 @@ namespace TickTrader.Algo.CoreV1
         public void ConnectionLost()
         {
             _connected = false;
+
+            CleanupListeners();
         }
 
         private void CleanupListeners()
@@ -541,31 +541,6 @@ namespace TickTrader.Algo.CoreV1
             }
 
             return await resultTask.Task;
-        }
-
-        private double ConvertVolume(double volumeInLots, Symbol smbMetadata)
-        {
-            return smbMetadata.ContractSize * volumeInLots;
-        }
-
-        private double RoundVolume(double volumeInLots, Symbol smbMetadata)
-        {
-            return volumeInLots.Floor(smbMetadata.TradeVolumeStep);
-        }
-
-        private double? RoundVolume(double? volumeInLots, Symbol smbMetadata)
-        {
-            return volumeInLots.Floor(smbMetadata.TradeVolumeStep);
-        }
-
-        private double RoundPrice(double price, Symbol smbMetadata, OrderSide side)
-        {
-            return side == OrderSide.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
-        }
-
-        private double? RoundPrice(double? price, Symbol smbMetadata, OrderSide side)
-        {
-            return side == OrderSide.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
         }
     }
 }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Calculator;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 
@@ -24,6 +23,11 @@ namespace TickTrader.Algo.CoreV1
             OnInit();
         }
 
+        public virtual void Reinit()
+        {
+            OnReinit();
+        }
+
         protected PluginBuilder Builder { get; private set; }
         protected FeedStrategy FStartegy { get; private set; }
 
@@ -39,6 +43,8 @@ namespace TickTrader.Algo.CoreV1
         public abstract void ProcessNextTrade();
 
         protected virtual void OnInit() { }
+
+        protected virtual void OnReinit() { }
 
         internal BufferUpdateResult OnFeedUpdate(IRateInfo update)
         {
@@ -74,6 +80,15 @@ namespace TickTrader.Algo.CoreV1
             eventQueue = new Queue<Action<PluginBuilder>>();
         }
 
+        protected override void OnReinit()
+        {
+            lock (syncObj)
+            {
+                if (isStarted && currentThread != null && currentTask.Status == TaskStatus.Running && isProcessingTrades)
+                    UnlockTradeUpdate();
+            }
+        }
+
         public override int FeedQueueSize { get { return 0; } }
 
         public override void EnqueueQuote(Domain.QuoteInfo update)
@@ -96,6 +111,15 @@ namespace TickTrader.Algo.CoreV1
                     return;
 
                 tradeQueue.Enqueue(a);
+
+                UnlockTradeUpdate();
+            }
+        }
+
+        private void UnlockTradeUpdate()
+        {
+            lock (syncObj)
+            {
                 if (isProcessingTrades)
                     Monitor.Pulse(syncObj);
                 else
@@ -208,10 +232,10 @@ namespace TickTrader.Algo.CoreV1
         {
             try
             {
-                if (item is IRateInfo)
-                    OnFeedUpdate((IRateInfo)item);
-                else if (item is Action<PluginBuilder>)
-                    ((Action<PluginBuilder>)item)(Builder);
+                if (item is IRateInfo rateInfo)
+                    OnFeedUpdate(rateInfo);
+                else if (item is Action<PluginBuilder> action)
+                    action(Builder);
             }
             catch (ThreadAbortException) { }
             catch (Exception ex)
