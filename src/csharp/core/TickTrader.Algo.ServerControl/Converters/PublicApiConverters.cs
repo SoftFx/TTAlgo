@@ -967,24 +967,6 @@ namespace TickTrader.Algo.ServerControl
             };
         }
 
-        public static Api.Update.Types.Action ToApi(this UpdateInfo.Types.UpdateType type)
-        {
-            switch (type)
-            {
-                case UpdateInfo.Types.UpdateType.Added:
-                    return Api.Update.Types.Action.Added;
-
-                case UpdateInfo.Types.UpdateType.Replaced:
-                    return Api.Update.Types.Action.Updated;
-
-                case UpdateInfo.Types.UpdateType.Removed:
-                    return Api.Update.Types.Action.Removed;
-
-                default:
-                    throw new ArgumentException();
-            }
-        }
-
         public static Api.Update.Types.Action ToApi(this Update.Types.Action type)
         {
             switch (type)

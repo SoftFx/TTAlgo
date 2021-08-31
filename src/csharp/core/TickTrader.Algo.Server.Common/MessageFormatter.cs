@@ -29,7 +29,7 @@ namespace TickTrader.Algo.Server.Common
 
         public string ToJson(IMessage message)
         {
-            return $"{message.GetType().Name}: {Format(message)}";
+            return $"{message.Descriptor.Name}: {Format(message)}";
         }
 
         public void LogClientRequest(ILogger logger, IMessage request)
@@ -64,11 +64,11 @@ namespace TickTrader.Algo.Server.Common
             }
         }
 
-        public void LogServerUpdate(ILogger logger, IUpdateInfo updateInfo)
+        public void LogServerUpdate(ILogger logger, IMessage update)
         {
             if (LogMessages && logger != null)
             {
-                logger.Info($"server > {updateInfo.ValueMsg.Descriptor.Name}: {{ Type = {updateInfo.Type}, Value = {Format(updateInfo.ValueMsg)} }}");
+                logger.Info($"server > {update.Descriptor.Name}: {Format(update)}");
             }
         }
 

@@ -29,26 +29,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         public event Action DealerCredsChanged = delegate { };
         public event Action ViewerCredsChanged = delegate { };
 
-        public event Action<UpdateInfo<PackageInfo>> PackageUpdated = delegate { };
-        public event Action<UpdateInfo<AccountModelInfo>> AccountUpdated = delegate { };
-        public event Action<UpdateInfo<PluginModelInfo>> BotUpdated = delegate { };
-        public event Action<PackageStateUpdate> PackageStateUpdated = delegate { };
-        public event Action<PluginStateUpdate> BotStateUpdated = delegate { };
-        public event Action<AccountStateUpdate> AccountStateUpdated = delegate { };
-
 
         public BotAgentServerAdapter(IAlgoServerLocal algoServer, IAuthManager authManager)
         {
             _algoServer = algoServer;
             _authManager = authManager;
-
-            var eventBus = algoServer.EventBus;
-            eventBus.PackageUpdated.Subscribe(OnPackageUpdated);
-            eventBus.AccountUpdated.Subscribe(OnAccountUpdated);
-            eventBus.PluginUpdated.Subscribe(OnPluginUpdated);
-            eventBus.PackageStateUpdated.Subscribe(OnPackageStateUpdated);
-            eventBus.AccountStateUpdated.Subscribe(OnAccountStateUpdated);
-            eventBus.PluginStateUpdated.Subscribe(OnPluginStateUpdated);
 
             _authManager.AdminCredsChanged += OnAdminCredsChanged;
             _authManager.DealerCredsChanged += OnDealerCredsChanged;
@@ -224,106 +209,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         }
 
 
-        private UpdateInfo.Types.UpdateType Convert(Update.Types.Action action)
-        {
-            switch (action)
-            {
-                case Update.Types.Action.Added:
-                    return UpdateInfo.Types.UpdateType.Added;
-                case Update.Types.Action.Updated:
-                    return UpdateInfo.Types.UpdateType.Replaced;
-                case Update.Types.Action.Removed:
-                    return UpdateInfo.Types.UpdateType.Removed;
-                default:
-                    throw new ArgumentException();
-            }
-        }
-
         #region Event handlers
-
-        private void OnAccountUpdated(AccountModelUpdate update)
-        {
-            try
-            {
-                var acc = update.Account;
-                if (update.Action == Update.Types.Action.Removed)
-                    acc = new AccountModelInfo { AccountId = update.Id }; // backwards compatibility
-
-                AccountUpdated(new UpdateInfo<AccountModelInfo>(Convert(update.Action), acc));
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, $"Failed to send update: {ex.Message}");
-            }
-        }
-
-        private void OnPluginUpdated(PluginModelUpdate update)
-        {
-            try
-            {
-                var plugin = update.Plugin;
-                if (update.Action == Update.Types.Action.Removed)
-                    plugin = new PluginModelInfo { InstanceId = update.Id }; // backwards compatibility
-
-                BotUpdated(new UpdateInfo<PluginModelInfo>(Convert(update.Action), plugin));
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, $"Failed to send update: {ex.Message}");
-            }
-        }
-
-        private void OnPackageUpdated(PackageUpdate update)
-        {
-            try
-            {
-                var pkg = update.Package;
-                if (update.Action == Update.Types.Action.Removed)
-                    pkg = new PackageInfo { PackageId = update.Id }; // backwards compatibility
-
-                PackageUpdated(new UpdateInfo<PackageInfo>(Convert(update.Action), pkg));
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, $"Failed to send update: {ex.Message}");
-            }
-        }
-
-        private void OnPluginStateUpdated(PluginStateUpdate bot)
-        {
-            try
-            {
-                BotStateUpdated(bot);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, $"Failed to send update: {ex.Message}");
-            }
-        }
-
-        private void OnAccountStateUpdated(AccountStateUpdate account)
-        {
-            try
-            {
-                AccountStateUpdated(account);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, $"Failed to send update: {ex.Message}");
-            }
-        }
-
-        private void OnPackageStateUpdated(PackageStateUpdate package)
-        {
-            try
-            {
-                PackageStateUpdated(package);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, $"Failed to send update: {ex.Message}");
-            }
-        }
 
         private void OnAdminCredsChanged()
         {

@@ -168,13 +168,13 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 _logger.Debug($"Send snapshot: cnt = {cnt}");
             }
 
+            _messageFormatter.LogServerUpdate(_logger, update);
             if (!AlgoServerApi.UpdateInfo.TryPack(update, out var packedUpdate, true))
             {
                 _logger.Error("Failed to pack server metadata");
                 CancelUpdateStream();
                 return;
             }
-            _messageFormatter.LogServerResponse(_logger, packedUpdate);
             await _updateStream.WriteAsync(packedUpdate);
         }
 
@@ -189,7 +189,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                     return;
                 }
 
-                _messageFormatter.LogServerResponse(_logger, apiUpdate);
+                _messageFormatter.LogServerUpdate(_logger, apiUpdate);
                 if (!AlgoServerApi.UpdateInfo.TryPack(apiUpdate, out var packedUpdate))
                 {
                     _logger.Error($"Failed to pack msg '{apiUpdate.Descriptor.Name}'");
@@ -218,23 +218,6 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 case PluginStateUpdate pluginStateUpdate: apiUpdate = pluginStateUpdate.ToApi(); break;
             }
             return apiUpdate;
-        }
-
-        private void SendUpdate(IUpdateInfo update)
-        {
-            if (_updateStream == null)
-                return;
-
-            try
-            {
-                //_updateStream.WriteAsync(update.Pack().ToApi()).Wait();
-                _messageFormatter.LogServerUpdate(_logger, update);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, $"Failed to send update: {update}");
-                _isFaulted = true;
-            }
         }
 
         private void CloseUpdateStream() // client disconnect

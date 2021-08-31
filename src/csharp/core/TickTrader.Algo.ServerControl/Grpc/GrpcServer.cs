@@ -9,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Server.Common;
 using TickTrader.Algo.Server.Common.Grpc;
@@ -94,13 +93,6 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             _messageFormatter = new MessageFormatter(AlgoServerApi.AlgoServerPublicAPIReflection.Descriptor) { LogMessages = logMessages };
             _sessions = new Dictionary<string, ServerSession.Handler>();
-
-            //_algoServer.PackageUpdated += OnPackageUpdate;
-            //_algoServer.PackageStateUpdated += OnPackageStateUpdate;
-            //_algoServer.AccountUpdated += OnAccountUpdate;
-            //_algoServer.AccountStateUpdated += OnAccountStateUpdate;
-            //_algoServer.BotUpdated += OnBotUpdate;
-            //_algoServer.BotStateUpdated += OnBotStateUpdate;
 
             _algoServer.AdminCredsChanged += OnAdminCredsChanged;
             _algoServer.DealerCredsChanged += OnDealerCredsChanged;

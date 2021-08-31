@@ -38,18 +38,6 @@ namespace TickTrader.Algo.ServerControl
 
         Task AttachSessionChannel(Channel<IMessage> channel);
 
-        event Action<UpdateInfo<PackageInfo>> PackageUpdated;
-
-        event Action<UpdateInfo<AccountModelInfo>> AccountUpdated;
-
-        event Action<UpdateInfo<PluginModelInfo>> BotUpdated;
-
-        event Action<PackageStateUpdate> PackageStateUpdated;
-
-        event Action<PluginStateUpdate> BotStateUpdated;
-
-        event Action<AccountStateUpdate> AccountStateUpdated;
-
         #endregion Updates
 
 

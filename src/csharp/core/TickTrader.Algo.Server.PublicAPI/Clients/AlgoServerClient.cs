@@ -212,46 +212,20 @@ namespace TickTrader.Algo.Server.PublicAPI
 
                 while (await updateStream.MoveNext(cancelToken))
                 {
-                    var update = updateStream.Current;
-                    if (update.Type == UpdateInfo.Types.PayloadType.Heartbeat)
+                    var updateInfo = updateStream.Current;
+                    if (updateInfo.Type == UpdateInfo.Types.PayloadType.Heartbeat)
                     {
                         _messageFormatter.LogHeartbeat(_logger);
                         RefreshConnectionTimer();
                     }
-                    else if (update.TryUnpack(out var updateInfo))
+                    else if (updateInfo.TryUnpack(out var update))
                     {
-                        _messageFormatter.LogClientUpdate(_logger, updateInfo);
-
-                        if (updateInfo is UpdateInfo<AlertListUpdate> alertUpdate)
-                            _serverHandler.OnAlertListUpdate(alertUpdate.Value);
-                        else if (updateInfo is UpdateInfo<PluginStatusUpdate> pluginStatusUpdate)
-                            _serverHandler.OnPluginStatusUpdate(pluginStatusUpdate.Value);
-                        else if (updateInfo is UpdateInfo<PluginLogUpdate> logUpdate)
-                            _serverHandler.OnPluginLogUpdate(logUpdate.Value);
-
-                        else if (updateInfo is UpdateInfo<PackageUpdate> packageUpdate)
-                            _serverHandler.OnPackageUpdate(packageUpdate.Value);
-                        else if (updateInfo is UpdateInfo<AccountModelUpdate> accountUpdate)
-                            _serverHandler.OnAccountModelUpdate(accountUpdate.Value);
-                        else if (updateInfo is UpdateInfo<PluginModelUpdate> pluginUpdate)
-                            _serverHandler.OnPluginModelUpdate(pluginUpdate.Value);
-
-                        else if (updateInfo is UpdateInfo<PackageStateUpdate> packageStateUpdate)
-                            _serverHandler.OnPackageStateUpdate(packageStateUpdate.Value);
-                        else if (updateInfo is UpdateInfo<AccountStateUpdate> accountStateUpdate)
-                            _serverHandler.OnAccountStateUpdate(accountStateUpdate.Value);
-                        else if (updateInfo is UpdateInfo<PluginStateUpdate> pluginStateUpdate)
-                            _serverHandler.OnPluginStateUpdate(pluginStateUpdate.Value);
-
-                        else if (updateInfo is UpdateInfo<AlgoServerMetadataUpdate> serverMetadata)
-                            ApplyAlgoServerMetadata(serverMetadata.Value);
-
-                        else
-                            _logger.Error($"Failed to dispatch update of type: {updateInfo.ValueMsg.Descriptor.Name}");
+                        _messageFormatter.LogClientUpdate(_logger, update);
+                        DispatchUpdate(update);
                     }
                     else
                     {
-                        _logger.Error($"Failed to unpack update of type: {update.Type}");
+                        _logger.Error($"Failed to unpack update of type: {updateInfo.Type}");
                     }
                 }
                 if (State != ClientStates.LoggingOut)
@@ -265,6 +239,35 @@ namespace TickTrader.Algo.Server.PublicAPI
             finally
             {
                 updateCall.Dispose();
+            }
+        }
+
+        public void DispatchUpdate(IMessage update)
+        {
+            try
+            {
+                switch (update)
+                {
+                    case AlertListUpdate alertUpdate: _serverHandler.OnAlertListUpdate(alertUpdate); break;
+                    case PluginStatusUpdate pluginStatusUpdate: _serverHandler.OnPluginStatusUpdate(pluginStatusUpdate); break;
+                    case PluginLogUpdate logUpdate: _serverHandler.OnPluginLogUpdate(logUpdate); break;
+
+                    case PackageUpdate packageUpdate: _serverHandler.OnPackageUpdate(packageUpdate); break;
+                    case AccountModelUpdate accountUpdate: _serverHandler.OnAccountModelUpdate(accountUpdate); break;
+                    case PluginModelUpdate pluginUpdate: _serverHandler.OnPluginModelUpdate(pluginUpdate); break;
+
+                    case PackageStateUpdate packageStateUpdate: _serverHandler.OnPackageStateUpdate(packageStateUpdate); break;
+                    case AccountStateUpdate accountStateUpdate: _serverHandler.OnAccountStateUpdate(accountStateUpdate); break;
+                    case PluginStateUpdate pluginStateUpdate: _serverHandler.OnPluginStateUpdate(pluginStateUpdate); break;
+
+                    case AlgoServerMetadataUpdate serverMetadata: ApplyAlgoServerMetadata(serverMetadata); break;
+
+                    default: _logger.Error($"Can't dispatch update of type: {update.Descriptor.Name}"); break;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Failed to dispatch update of type: {update.Descriptor.Name}");
             }
         }
 

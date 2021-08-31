@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Server.PublicAPI
         private static readonly Dictionary<string, Types.PayloadType> _updateTypeMap = new Dictionary<string, Types.PayloadType>();
 
 
-        public bool TryUnpack(out IUpdateInfo update)
+        public bool TryUnpack(out IMessage update)
         {
             InitDescriptorCache();
 
@@ -24,26 +24,7 @@ namespace TickTrader.Algo.Server.PublicAPI
             if (!_updateDescriptorMap.TryGetValue(type, out var decriptor))
                 return false;
 
-            var msg = UnpackPayload(decriptor);
-            switch (type)
-            {
-                case Types.PayloadType.Heartbeat: update = UpdateInfo<HeartbeatUpdate>.Unpack(msg); break;
-
-                case Types.PayloadType.ServerMetadataUpdate: update = UpdateInfo<AlgoServerMetadataUpdate>.Unpack(msg); break;
-
-                case Types.PayloadType.PackageUpdate: update = UpdateInfo<PackageUpdate>.Unpack(msg); break;
-                case Types.PayloadType.PackageStateUpdate: update = UpdateInfo<PackageStateUpdate>.Unpack(msg); break;
-
-                case Types.PayloadType.AccountModelUpdate: update = UpdateInfo<AccountModelUpdate>.Unpack(msg); break;
-                case Types.PayloadType.AccountStateUpdate: update = UpdateInfo<AccountStateUpdate>.Unpack(msg); break;
-
-                case Types.PayloadType.PluginModelUpdate: update = UpdateInfo<PluginModelUpdate>.Unpack(msg); break;
-                case Types.PayloadType.PluginStateUpdate: update = UpdateInfo<PluginStateUpdate>.Unpack(msg); break;
-                case Types.PayloadType.PluginLogUpdate: update = UpdateInfo<PluginLogUpdate>.Unpack(msg); break;
-                case Types.PayloadType.PluginStatusUpdate: update = UpdateInfo<PluginStatusUpdate>.Unpack(msg); break;
-
-                case Types.PayloadType.AlertListUpdate: update = UpdateInfo<AlertListUpdate>.Unpack(msg); break;
-            }
+            update = UnpackPayload(decriptor);
 
             return update != null;
         }
@@ -150,33 +131,6 @@ namespace TickTrader.Algo.Server.PublicAPI
             {
                 ArrayPool<byte>.Shared.Return(packedBytes);
             }
-        }
-    }
-
-
-    public interface IUpdateInfo
-    {
-        IMessage ValueMsg { get; }
-    }
-
-
-    public class UpdateInfo<T> : IUpdateInfo
-        where T : IMessage, new()
-    {
-        public T Value { get; }
-
-        public IMessage ValueMsg => Value;
-
-
-        public UpdateInfo(T value)
-        {
-            Value = value;
-        }
-
-
-        public static UpdateInfo<T> Unpack(IMessage msg)
-        {
-            return new UpdateInfo<T>((T)msg);
         }
     }
 }

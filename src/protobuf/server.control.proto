@@ -92,17 +92,6 @@ message SnapshotResponse {
 
 message SubscribeToUpdatesRequest { }
 
-message UpdateInfo {
-    enum UpdateType {
-        ADDED = 0;
-        REPLACED = 1;
-        REMOVED = 2;
-    }
-
-    UpdateType type = 1;
-    google.protobuf.Any payload = 2;
-}
-
 
 message ApiMetadataRequest { }
 

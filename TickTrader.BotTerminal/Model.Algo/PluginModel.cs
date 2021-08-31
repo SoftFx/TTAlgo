@@ -202,14 +202,6 @@ namespace TickTrader.BotTerminal
             OnRefsUpdated();
         }
 
-        private void Library_PluginUpdated(UpdateInfo<PluginInfo> update)
-        {
-            if (update.Type != UpdateInfo.Types.UpdateType.Removed && update.Value.Key.Equals(Config.Key))
-            {
-                OnPluginUpdated();
-            }
-        }
-
         private void CreateOutputs(ExecutorModel executor)
         {
             try

@@ -1,4 +1,5 @@
-﻿using Google.Protobuf.Reflection;
+﻿using Google.Protobuf;
+using Google.Protobuf.Reflection;
 using NLog;
 using TickTrader.Algo.Server.Common;
 
@@ -9,11 +10,11 @@ namespace TickTrader.Algo.Server.PublicAPI
         public ApiMessageFormatter(FileDescriptor serviceDescriptor) : base(serviceDescriptor) { }
 
 
-        public void LogClientUpdate(ILogger logger, IUpdateInfo updateInfo)
+        public void LogClientUpdate(ILogger logger, IMessage update)
         {
             if (LogMessages && logger != null)
             {
-                logger.Info($"client < {updateInfo.ValueMsg.Descriptor.Name}: {{ Value = {Format(updateInfo.ValueMsg)} }}");
+                logger.Info($"client < {update.Descriptor.Name}: {Format(update)}");
             }
         }
 
