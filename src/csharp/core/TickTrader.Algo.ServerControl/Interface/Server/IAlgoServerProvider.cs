@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Google.Protobuf;
+using System;
 using System.Collections.Generic;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
@@ -33,6 +35,8 @@ namespace TickTrader.Algo.ServerControl
 
 
         #region Updates
+
+        Task AttachSessionChannel(Channel<IMessage> channel);
 
         event Action<UpdateInfo<PackageInfo>> PackageUpdated;
 

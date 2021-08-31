@@ -212,14 +212,16 @@ namespace TickTrader.Algo.Server.PublicAPI
                 while (await updateStream.MoveNext(_updateStreamCancelTokenSrc.Token))
                 {
                     var update = updateStream.Current;
-                    if (update.TryUnpack(out var updateInfo))
+                    if (update.Type == UpdateInfo.Types.PayloadType.Heartbeat)
+                    {
+                        _messageFormatter.LogHeartbeat(_logger);
+                        RefreshConnectionTimer();
+                    }
+                    else if (update.TryUnpack(out var updateInfo))
                     {
                         _messageFormatter.LogClientUpdate(_logger, updateInfo);
 
-                        if (updateInfo is UpdateInfo<HeartbeatUpdate>)
-                            RefreshConnectionTimer();
-
-                        else if (updateInfo is UpdateInfo<AlertListUpdate> alertUpdate)
+                        if (updateInfo is UpdateInfo<AlertListUpdate> alertUpdate)
                             _serverHandler.OnAlertListUpdate(alertUpdate.Value);
                         else if (updateInfo is UpdateInfo<PluginStatusUpdate> pluginStatusUpdate)
                             _serverHandler.OnPluginStatusUpdate(pluginStatusUpdate.Value);
@@ -244,11 +246,11 @@ namespace TickTrader.Algo.Server.PublicAPI
                             ApplyAlgoServerMetadata(serverMetadata.Value);
 
                         else
-                            _logger.Error($"Failed to dispatch update of type: {update.Payload.TypeUrl}");
+                            _logger.Error($"Failed to dispatch update of type: {updateInfo.ValueMsg.Descriptor.Name}");
                     }
                     else
                     {
-                        _logger.Error($"Failed to unpack update of type: {update.Payload.TypeUrl}");
+                        _logger.Error($"Failed to unpack update of type: {update.Type}");
                     }
                 }
                 if (State != ClientStates.LoggingOut)

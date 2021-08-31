@@ -36,21 +36,18 @@ namespace TickTrader.Algo.Server
             _logger.Debug("Stopped");
         }
 
-        public async Task Restore(ServerSavedState savedState)
+        public void Restore(ServerSavedState savedState)
         {
             _logger.Debug("Restoring saved state...");
 
-            var startTasks = new List<Task>(savedState.Plugins.Count);
             foreach (var p in savedState.Plugins)
             {
                 var id = p.Key;
                 var plugin = CreatePluginIntenal(id, p.Value);
                 if (p.Value.IsRunning)
-                    startTasks.Add(plugin.Ask(PluginActor.StartCmd.Instance)
-                        .OnException(ex => _logger.Error(ex, $"Failed to start plugin {id}")));
+                    plugin.Ask(PluginActor.StartCmd.Instance)
+                        .OnException(ex => _logger.Error(ex, $"Failed to start plugin on restore {id}"));
             }
-
-            await Task.WhenAll(startTasks);
 
             _logger.Debug("Restored saved state");
         }

@@ -36,7 +36,7 @@ namespace TickTrader.Algo.Server.Common
         {
             if (LogMessages && logger != null)
             {
-                logger.Info($"client > {request.GetType().Name}: {Format(request)}");
+                logger.Info($"client > {request.Descriptor.Name}: {Format(request)}");
             }
         }
 
@@ -44,7 +44,7 @@ namespace TickTrader.Algo.Server.Common
         {
             if (LogMessages && logger != null)
             {
-                logger.Info($"client < {request.GetType().Name}: {Format(request)}");
+                logger.Info($"client < {request.Descriptor.Name}: {Format(request)}");
             }
         }
 
@@ -52,7 +52,7 @@ namespace TickTrader.Algo.Server.Common
         {
             if (LogMessages && logger != null)
             {
-                logger.Info($"server < {request.GetType().Name}: {Format(request)}");
+                logger.Info($"server < {request.Descriptor.Name}: {Format(request)}");
             }
         }
 
@@ -60,7 +60,7 @@ namespace TickTrader.Algo.Server.Common
         {
             if (LogMessages && logger != null)
             {
-                logger.Info($"server > {request.GetType().Name}: {Format(request)}");
+                logger.Info($"server > {request.Descriptor.Name}: {Format(request)}");
             }
         }
 

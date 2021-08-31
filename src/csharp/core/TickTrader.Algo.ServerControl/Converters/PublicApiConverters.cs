@@ -453,14 +453,6 @@ namespace TickTrader.Algo.ServerControl
             };
         }
 
-        public static Api.UpdateInfo ToApi(this UpdateInfo info)
-        {
-            return new Api.UpdateInfo
-            {
-                Payload = info.Payload,
-            };
-        }
-
         public static Api.Metadata.Types.LineStyle ToApi(this Metadata.Types.LineStyle type)
         {
             switch (type)
@@ -916,6 +908,36 @@ namespace TickTrader.Algo.ServerControl
             return response;
         }
 
+        public static Api.PackageUpdate ToApi(this PackageUpdate update)
+        {
+            return new Api.PackageUpdate
+            {
+                Id = update.Id,
+                Action = update.Action.ToApi(),
+                Package = update.Package.ToApi(),
+            };
+        }
+
+        public static Api.AccountModelUpdate ToApi(this AccountModelUpdate update)
+        {
+            return new Api.AccountModelUpdate
+            {
+                Id = update.Id,
+                Action = update.Action.ToApi(),
+                Account = update.Account.ToApi(),
+            };
+        }
+
+        public static Api.PluginModelUpdate ToApi(this PluginModelUpdate update)
+        {
+            return new Api.PluginModelUpdate
+            {
+                Id = update.Id,
+                Action = update.Action.ToApi(),
+                Plugin = update.Plugin.ToApi(),
+            };
+        }
+
         public static Api.PackageStateUpdate ToApi(this PackageStateUpdate update)
         {
             return new Api.PackageStateUpdate
@@ -956,6 +978,24 @@ namespace TickTrader.Algo.ServerControl
                     return Api.Update.Types.Action.Updated;
 
                 case UpdateInfo.Types.UpdateType.Removed:
+                    return Api.Update.Types.Action.Removed;
+
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
+        public static Api.Update.Types.Action ToApi(this Update.Types.Action type)
+        {
+            switch (type)
+            {
+                case Update.Types.Action.Added:
+                    return Api.Update.Types.Action.Added;
+
+                case Update.Types.Action.Updated:
+                    return Api.Update.Types.Action.Updated;
+
+                case Update.Types.Action.Removed:
                     return Api.Update.Types.Action.Removed;
 
                 default:

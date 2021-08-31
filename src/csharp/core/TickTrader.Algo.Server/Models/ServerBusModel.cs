@@ -1,4 +1,5 @@
 ﻿using Google.Protobuf;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async;
 using TickTrader.Algo.Async.Actors;
@@ -57,6 +58,9 @@ namespace TickTrader.Algo.Server
         public Task<PluginListSnapshot> GetPluginSnapshot() => _ref.Ask<PluginListSnapshot>(ServerBusActor.PluginSnapshotRequest.Instance);
 
         public Task<PluginModelInfo> GetPluginInfo(string pluginId) => _ref.Ask<PluginModelInfo>(new ServerBusActor.PluginInfoRequest(pluginId));
+
+        public Task SubscribeToUpdates(ChannelWriter<IMessage> updateSink, bool sendSnapshot) => _ref.Ask(new ServerBusActor.SubscribeToUpdatesRequest(updateSink, sendSnapshot));
+
 
         internal void Init(IActorRef actor)
         {

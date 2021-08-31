@@ -133,7 +133,7 @@ namespace TickTrader.Algo.Server
 
             _accounts.Restore(stateSnapshot);
 
-            await _plugins.Restore(stateSnapshot);
+            _plugins.Restore(stateSnapshot);
 
             _logger.Debug("Started");
         }

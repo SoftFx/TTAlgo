@@ -1,44 +1,92 @@
 ﻿using Google.Protobuf;
-using Google.Protobuf.WellKnownTypes;
+using Google.Protobuf.Reflection;
+using System.Collections.Generic;
 
 namespace TickTrader.Algo.Server.PublicAPI
 {
     public partial class UpdateInfo
     {
+        private static readonly Dictionary<Types.PayloadType, MessageDescriptor> _updateDescriptorMap = new Dictionary<Types.PayloadType, MessageDescriptor>();
+        private static readonly Dictionary<string, Types.PayloadType> _updateTypeMap = new Dictionary<string, Types.PayloadType>();
+
+
         public bool TryUnpack(out IUpdateInfo update)
         {
+            InitDescriptorCache();
+
             update = null;
 
-            var payload = Payload;
+            var type = Type;
 
-            if (payload.Is(AlgoServerMetadataUpdate.Descriptor))
-                update = UpdateInfo<AlgoServerMetadataUpdate>.Unpack(this);
+            if (!_updateDescriptorMap.TryGetValue(type, out var decriptor))
+                return false;
 
-            else if (payload.Is(PackageUpdate.Descriptor))
-                update = UpdateInfo<PackageUpdate>.Unpack(this);
-            else if (payload.Is(AccountModelUpdate.Descriptor))
-                update = UpdateInfo<AccountModelUpdate>.Unpack(this);
-            else if (payload.Is(PluginModelUpdate.Descriptor))
-                update = UpdateInfo<PluginModelUpdate>.Unpack(this);
+            var msg = decriptor.Parser.ParseFrom(Payload);
+            switch (type)
+            {
+                case Types.PayloadType.Heartbeat: update = UpdateInfo<HeartbeatUpdate>.Unpack(msg); break;
 
-            else if (payload.Is(PackageStateUpdate.Descriptor))
-                update = UpdateInfo<PackageStateUpdate>.Unpack(this);
-            else if (payload.Is(AccountStateUpdate.Descriptor))
-                update = UpdateInfo<AccountStateUpdate>.Unpack(this);
-            else if (payload.Is(PluginStateUpdate.Descriptor))
-                update = UpdateInfo<PluginStateUpdate>.Unpack(this);
+                case Types.PayloadType.ServerMetadataUpdate: update = UpdateInfo<AlgoServerMetadataUpdate>.Unpack(msg); break;
 
-            else if (payload.Is(PluginStatusUpdate.Descriptor))
-                update = UpdateInfo<PluginStatusUpdate>.Unpack(this);
-            else if (payload.Is(PluginLogUpdate.Descriptor))
-                update = UpdateInfo<PluginLogUpdate>.Unpack(this);
-            else if (payload.Is(AlertListUpdate.Descriptor))
-                update = UpdateInfo<AlertListUpdate>.Unpack(this);
+                case Types.PayloadType.PackageUpdate: update = UpdateInfo<PackageUpdate>.Unpack(msg); break;
+                case Types.PayloadType.PackageStateUpdate: update = UpdateInfo<PackageStateUpdate>.Unpack(msg); break;
 
-            else if (payload.Is(HeartbeatUpdate.Descriptor))
-                update = UpdateInfo<HeartbeatUpdate>.Unpack(this);
+                case Types.PayloadType.AccountModelUpdate: update = UpdateInfo<AccountModelUpdate>.Unpack(msg); break;
+                case Types.PayloadType.AccountStateUpdate: update = UpdateInfo<AccountStateUpdate>.Unpack(msg); break;
+
+                case Types.PayloadType.PluginModelUpdate: update = UpdateInfo<PluginModelUpdate>.Unpack(msg); break;
+                case Types.PayloadType.PluginStateUpdate: update = UpdateInfo<PluginStateUpdate>.Unpack(msg); break;
+                case Types.PayloadType.PluginLogUpdate: update = UpdateInfo<PluginLogUpdate>.Unpack(msg); break;
+                case Types.PayloadType.PluginStatusUpdate: update = UpdateInfo<PluginStatusUpdate>.Unpack(msg); break;
+
+                case Types.PayloadType.AlertListUpdate: update = UpdateInfo<AlertListUpdate>.Unpack(msg); break;
+            }
 
             return update != null;
+        }
+
+        public static bool TryPack(IMessage msg, out UpdateInfo update)
+        {
+            InitDescriptorCache();
+
+            if (msg is UpdateInfo updateInfo)
+            {
+                update = updateInfo;
+                return true;
+            }
+
+            update = null;
+            if (!_updateTypeMap.TryGetValue(msg.Descriptor.FullName, out var type))
+                return false;
+
+            update = new UpdateInfo { Type = type, Payload = msg.ToByteString(), };
+            return true;
+        }
+
+
+        private static void InitDescriptorCache()
+        {
+            // protobuf code gen uses static ctor to init Descriptor property
+
+            if (_updateDescriptorMap.Count > 0)
+                return;
+
+            RegisterDescriptor(HeartbeatUpdate.Descriptor, Types.PayloadType.Heartbeat);
+            RegisterDescriptor(AlgoServerMetadataUpdate.Descriptor, Types.PayloadType.ServerMetadataUpdate);
+            RegisterDescriptor(PackageUpdate.Descriptor, Types.PayloadType.PackageUpdate);
+            RegisterDescriptor(PackageStateUpdate.Descriptor, Types.PayloadType.PackageStateUpdate);
+            RegisterDescriptor(AccountModelUpdate.Descriptor, Types.PayloadType.AccountModelUpdate);
+            RegisterDescriptor(AccountStateUpdate.Descriptor, Types.PayloadType.AccountStateUpdate);
+            RegisterDescriptor(PluginModelUpdate.Descriptor, Types.PayloadType.PluginModelUpdate);
+            RegisterDescriptor(PluginStateUpdate.Descriptor, Types.PayloadType.PluginStateUpdate);
+            RegisterDescriptor(PluginLogUpdate.Descriptor, Types.PayloadType.PluginLogUpdate);
+            RegisterDescriptor(PluginStatusUpdate.Descriptor, Types.PayloadType.PluginStatusUpdate);
+        }
+
+        private static void RegisterDescriptor(MessageDescriptor descriptor, Types.PayloadType type)
+        {
+            _updateDescriptorMap[type] = descriptor;
+            _updateTypeMap[descriptor.FullName] = type;
         }
     }
 
@@ -46,32 +94,15 @@ namespace TickTrader.Algo.Server.PublicAPI
     public interface IUpdateInfo
     {
         IMessage ValueMsg { get; }
-
-
-        UpdateInfo Pack();
     }
 
 
     public class UpdateInfo<T> : IUpdateInfo
         where T : IMessage, new()
     {
-        private Any _packedValue;
-
-
         public T Value { get; }
 
         public IMessage ValueMsg => Value;
-
-        public Any PackedValue
-        {
-            get
-            {
-                if (_packedValue == null)
-                    _packedValue = Any.Pack(Value);
-
-                return _packedValue;
-            }
-        }
 
 
         public UpdateInfo(T value)
@@ -80,22 +111,9 @@ namespace TickTrader.Algo.Server.PublicAPI
         }
 
 
-        public static UpdateInfo<T> Unpack(UpdateInfo update)
+        public static UpdateInfo<T> Unpack(IMessage msg)
         {
-            var payload = update.Payload;
-            var value = payload.Unpack<T>();
-            return new UpdateInfo<T>(value) { _packedValue = payload };
-        }
-
-
-        public override string ToString()
-        {
-            return $"{{ ValueType = {Value.Descriptor.Name}, Value = {ValueMsg} }}";
-        }
-
-        public UpdateInfo Pack()
-        {
-            return new UpdateInfo { Payload = PackedValue };
+            return new UpdateInfo<T>((T)msg);
         }
     }
 }

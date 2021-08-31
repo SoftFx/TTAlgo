@@ -9,6 +9,8 @@ using TickTrader.Algo.ServerControl;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.Server;
+using System.Threading.Channels;
+using Google.Protobuf;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
 {
@@ -66,6 +68,14 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return ClientClaims.Types.AccessLevel.Anonymous;
         }
 
+        public async Task AttachSessionChannel(Channel<IMessage> channel)
+        {
+            channel.Writer.TryWrite(ApiMetadataInfo.Current);
+            channel.Writer.TryWrite(_agentContext);
+            channel.Writer.TryWrite(await _algoServer.GetMappingsInfo(new MappingsInfoRequest()));
+            await _algoServer.EventBus.SubscribeToUpdates(channel.Writer, true);
+        }
+
         public async Task<List<AccountModelInfo>> GetAccountList()
         {
             return (await _algoServer.GetAccounts()).Accounts.ToList();
@@ -83,7 +93,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
 
         public Task<ApiMetadataInfo> GetApiMetadata()
         {
-            return Task.FromResult(ApiMetadataInfo.CreateCurrentMetadata());
+            return Task.FromResult(ApiMetadataInfo.Current);
         }
 
         public Task<MappingCollectionInfo> GetMappingsInfo(MappingsInfoRequest request)

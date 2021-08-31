@@ -16,5 +16,13 @@ namespace TickTrader.Algo.Server.PublicAPI
                 logger.Info($"client < {updateInfo.ValueMsg.Descriptor.Name}: {{ Value = {Format(updateInfo.ValueMsg)} }}");
             }
         }
+
+        public void LogHeartbeat(ILogger logger)
+        {
+            if (LogMessages && logger != null)
+            {
+                logger.Info($"client < {HeartbeatUpdate.Descriptor.Name}");
+            }
+        }
     }
 }

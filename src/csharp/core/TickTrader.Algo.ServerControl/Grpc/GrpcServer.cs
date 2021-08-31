@@ -64,13 +64,13 @@ namespace TickTrader.Algo.ServerControl.Grpc
         private const int HeartbeatUpdateTimeout = 1000;
         private const int HeartbeatTimeout = 10000;
 
+        private static readonly AlgoServerApi.UpdateInfo _heartbeat = new AlgoServerApi.UpdateInfo { Type = AlgoServerApi.UpdateInfo.Types.PayloadType.Heartbeat, Payload = ByteString.Empty };
+
         private readonly ConcurrentDictionary<string, Timestamp> _subscribedPluginsToLogs;
         private readonly ConcurrentDictionary<string, bool> _subscribedPluginsToStatus;
 
         private readonly HashSet<string> _unsubscribeStatusList; //change to concurrent collection
         private readonly HashSet<string> _unsubscribeLogList; //change to concurrent collection
-
-        private readonly UpdateInfo<AlgoServerApi.HeartbeatUpdate> _heartbeat;
 
         private IAlgoServerProvider _algoServer;
         private IJwtProvider _jwtProvider;
@@ -95,18 +95,17 @@ namespace TickTrader.Algo.ServerControl.Grpc
             _messageFormatter = new MessageFormatter(AlgoServerApi.AlgoServerPublicAPIReflection.Descriptor) { LogMessages = logMessages };
             _sessions = new Dictionary<string, ServerSession.Handler>();
 
-            _algoServer.PackageUpdated += OnPackageUpdate;
-            _algoServer.PackageStateUpdated += OnPackageStateUpdate;
-            _algoServer.AccountUpdated += OnAccountUpdate;
-            _algoServer.AccountStateUpdated += OnAccountStateUpdate;
-            _algoServer.BotUpdated += OnBotUpdate;
-            _algoServer.BotStateUpdated += OnBotStateUpdate;
+            //_algoServer.PackageUpdated += OnPackageUpdate;
+            //_algoServer.PackageStateUpdated += OnPackageStateUpdate;
+            //_algoServer.AccountUpdated += OnAccountUpdate;
+            //_algoServer.AccountStateUpdated += OnAccountStateUpdate;
+            //_algoServer.BotUpdated += OnBotUpdate;
+            //_algoServer.BotStateUpdated += OnBotStateUpdate;
 
             _algoServer.AdminCredsChanged += OnAdminCredsChanged;
             _algoServer.DealerCredsChanged += OnDealerCredsChanged;
             _algoServer.ViewerCredsChanged += OnViewerCredsChanged;
 
-            _heartbeat = new UpdateInfo<AlgoServerApi.HeartbeatUpdate>(UpdateInfo.Types.UpdateType.Replaced, new AlgoServerApi.HeartbeatUpdate());
             _lastAlertTimeUtc = DateTime.UtcNow.ToTimestamp();
 
             _heartbeatTimer = new Timer(HeartbeatUpdate, null, HeartbeatTimeout, -1);
@@ -712,9 +711,9 @@ namespace TickTrader.Algo.ServerControl.Grpc
             if (!session.AccessManager.CanSubscribeToUpdates())
                 return Task.FromResult(this);
 
-            var task = session.SetupUpdateStream(responseStream);
+            var task = session.SetupUpdateStream(responseStream, _algoServer.AttachSessionChannel);
 
-            Task.Run(() => OnAlgoServerMetadataUpdate());
+            //Task.Run(() => OnAlgoServerMetadataUpdate());
 
             return task;
         }
@@ -1300,90 +1299,6 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
         #region Updates
 
-        private async Task OnAlgoServerMetadataUpdate()
-        {
-            var update = new AlgoServerApi.AlgoServerMetadataUpdate
-            {
-                ExecResult = CreateSuccessResult(),
-            };
-
-            try
-            {
-                update.ApiMetadata = await _algoServer.GetApiMetadata().ContinueWith(u => u.Result.ToApi());
-                update.MappingsCollection = await _algoServer.GetMappingsInfo(new MappingsInfoRequest()).ContinueWith(u => u.Result.ToApi());
-                update.SetupContext = await _algoServer.GetSetupContext().ContinueWith(u => u.Result.ToApi());
-
-                var packages = await _algoServer.GetPackageList();
-                update.Packages.AddRange(packages.Select(u => u.ToApi()));
-
-                var accounts = await _algoServer.GetAccountList();
-                update.Accounts.AddRange(accounts.Select(u => u.ToApi()));
-
-                var plugins = await _algoServer.GetBotList();
-                update.Plugins.AddRange(plugins.Select(u => u.ToApi()));
-            }
-            catch (Exception ex)
-            {
-                update.ExecResult = CreateErrorResult(ex);
-                _logger.Error(ex);
-            }
-            finally
-            {
-                SendUpdate(new UpdateInfo<AlgoServerApi.AlgoServerMetadataUpdate>(UpdateInfo.Types.UpdateType.Added, update));
-            }
-        }
-
-        private void OnPackageUpdate(UpdateInfo<PackageInfo> packageUpdate)
-        {
-            var apiUpdate = new AlgoServerApi.PackageUpdate
-            {
-                Id = packageUpdate.Value.PackageId,
-                Action = packageUpdate.Type.ToApi(),
-                Package = packageUpdate.Value.ToApi(),
-            };
-
-            SendUpdate(new UpdateInfo<AlgoServerApi.PackageUpdate>(packageUpdate.Type, apiUpdate));
-        }
-
-        private void OnAccountUpdate(UpdateInfo<AccountModelInfo> accountUpdate)
-        {
-            var apiUpdate = new AlgoServerApi.AccountModelUpdate
-            {
-                Id = accountUpdate.Value.AccountId,
-                Action = accountUpdate.Type.ToApi(),
-                Account = accountUpdate.Value.ToApi(),
-            };
-
-            SendUpdate(new UpdateInfo<AlgoServerApi.AccountModelUpdate>(accountUpdate.Type, apiUpdate));
-        }
-
-        private void OnBotUpdate(UpdateInfo<PluginModelInfo> update)
-        {
-            var apiUpdate = new AlgoServerApi.PluginModelUpdate
-            {
-                Id = update.Value.InstanceId,
-                Action = update.Type.ToApi(),
-                Plugin = update.Value.ToApi(),
-            };
-
-            SendUpdate(new UpdateInfo<AlgoServerApi.PluginModelUpdate>(update.Type, apiUpdate));
-        }
-
-        private void OnPackageStateUpdate(PackageStateUpdate stateUpdate)
-        {
-            SendUpdate(new UpdateInfo<AlgoServerApi.PackageStateUpdate>(UpdateInfo.Types.UpdateType.Replaced, stateUpdate.ToApi()));
-        }
-
-        private void OnAccountStateUpdate(AccountStateUpdate stateUpdate)
-        {
-            SendUpdate(new UpdateInfo<AlgoServerApi.AccountStateUpdate>(UpdateInfo.Types.UpdateType.Replaced, stateUpdate.ToApi()));
-        }
-
-        private void OnBotStateUpdate(PluginStateUpdate stateUpdate)
-        {
-            SendUpdate(new UpdateInfo<AlgoServerApi.PluginStateUpdate>(UpdateInfo.Types.UpdateType.Replaced, stateUpdate.ToApi()));
-        }
-
         private async void OnAlertsUpdate(object obj)
         {
             _alertTimer?.Change(-1, -1);
@@ -1403,7 +1318,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 _lastAlertTimeUtc = alerts.Max(u => u.TimeUtc) ?? _lastAlertTimeUtc;
 
                 if (alerts.Length > 0)
-                    SendUpdate(new UpdateInfo<AlgoServerApi.AlertListUpdate>(UpdateInfo.Types.UpdateType.Replaced, update));
+                    SendUpdate(update);
             }
             catch (Exception ex)
             {
@@ -1428,7 +1343,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                     update.Message = await _algoServer.GetBotStatusAsync(new PluginStatusRequest { PluginId = pluginKey });
 
                     if (!string.IsNullOrEmpty(update.Message))
-                        SendUpdate(new UpdateInfo<AlgoServerApi.PluginStatusUpdate>(UpdateInfo.Types.UpdateType.Replaced, update));
+                        SendUpdate(update);
                 }
                 catch (Exception ex)
                 {
@@ -1476,7 +1391,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                     update.Records.AddRange(records.Select(u => u.ToApi()));
 
                     if (records.Length > 0)
-                        SendUpdate(new UpdateInfo<AlgoServerApi.PluginLogUpdate>(UpdateInfo.Types.UpdateType.Replaced, update));
+                        SendUpdate(update);
                 }
                 catch (Exception ex)
                 {
@@ -1498,8 +1413,25 @@ namespace TickTrader.Algo.ServerControl.Grpc
             _pluginLogsTimer?.Change(PluginLogsUpdateTimeout, -1);
         }
 
-        private void SendUpdate(IUpdateInfo update)
+        private void SendUpdate(IMessage update)
         {
+            AlgoServerApi.UpdateInfo packedUpdate;
+
+            try
+            {
+                if (!AlgoServerApi.UpdateInfo.TryPack(update, out packedUpdate))
+                {
+                    _logger.Error($"Failed to pack msg '{update.Descriptor.Name}'");
+                    return;
+                }
+
+            }
+            catch(Exception ex)
+            {
+                _logger.Error(ex, $"Failed to pack msg '{update.Descriptor.Name}'");
+                return;
+            }
+
             lock (_sessions)
             {
                 try
@@ -1507,7 +1439,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                     var sessionsToRemove = new List<string>();
                     foreach (var session in _sessions.Values)
                     {
-                        session.SendUpdate(update);
+                        session.SendUpdate(packedUpdate);
                         if (session.IsFaulted)
                             sessionsToRemove.Add(session.SessionId);
                     }
