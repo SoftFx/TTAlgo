@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Infrastructure
@@ -6,14 +6,14 @@ namespace TickTrader.Algo.Core.Infrastructure
     public class SubscriptionGroup
     {
         public int Depth { get; internal set; } = -1;
-        public Dictionary<Subscription, int> Subscriptions { get; } = new Dictionary<Subscription, int>();
+        public ConcurrentDictionary<Subscription, int> Subscriptions { get; } = new ConcurrentDictionary<Subscription, int>();
         public string Symbol { get; private set; }
         public QuoteInfo LastQuote { get; private set; }
-        
+
         public SubscriptionGroup(string symbol)
         {
             this.Symbol = symbol;
-            Subscriptions = new Dictionary<Subscription, int>();
+            Subscriptions = new ConcurrentDictionary<Subscription, int>();
         }
 
         public void UpdateRate(QuoteInfo tick)
@@ -48,7 +48,7 @@ namespace TickTrader.Algo.Core.Infrastructure
 
         internal void Remove(Subscription subscription)
         {
-            Subscriptions.Remove(subscription);
+            Subscriptions.TryRemove(subscription, out _);
         }
     }
 }

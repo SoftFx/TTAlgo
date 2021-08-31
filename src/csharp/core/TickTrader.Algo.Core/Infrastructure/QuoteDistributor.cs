@@ -1,16 +1,17 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using TickTrader.Algo.Core.Lib;
+using System.Linq;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Infrastructure
 {
     public class QuoteDistributor
     {
-        private readonly Dictionary<string, SubscriptionGroup> _groups = new Dictionary<string, SubscriptionGroup>();
+        private readonly ConcurrentDictionary<string, SubscriptionGroup> _groups = new ConcurrentDictionary<string, SubscriptionGroup>();
         private IFeedSubscription _src;
         //private bool _isSubscribedForAll;
-        private HashSet<string> _availableSymbols;
+        private ConcurrentDictionary<string, bool> _availableSymbols;
 
         public IFeedSubscription AddSubscription(Action<QuoteInfo> handler)
         {
@@ -41,7 +42,8 @@ namespace TickTrader.Algo.Core.Infrastructure
 
         public virtual void Start(IFeedSubscription src, IEnumerable<string> avaialbleSymbols = null, bool subscribeOnStart = true)
         {
-            _availableSymbols = avaialbleSymbols?.ToSet();
+            if (avaialbleSymbols != null)
+                _availableSymbols = new ConcurrentDictionary<string, bool>(avaialbleSymbols?.ToDictionary(key => key, value => true));
 
             _src = src;
 
@@ -138,7 +140,7 @@ namespace TickTrader.Algo.Core.Infrastructure
 
         private bool GetUpdate(string symbol, out FeedSubscriptionUpdate update)
         {
-            if (_availableSymbols == null || _availableSymbols.Contains(symbol))
+            if (_availableSymbols == null || _availableSymbols.ContainsKey(symbol))
             {
                 var group = GetOrAddGroup(symbol);
                 if (group != null)
@@ -179,7 +181,7 @@ namespace TickTrader.Algo.Core.Infrastructure
                 if (!_groups.TryGetValue(symbol, out var group))
                 {
                     group = new SubscriptionGroup(symbol);
-                    _groups.Add(symbol, group);
+                    _groups.TryAdd(symbol, group);
                 }
                 return group;
             }

@@ -79,7 +79,7 @@ namespace TickTrader.Algo.Core.Infrastructure
                     var group = _parent.GetGroupOrDefault(update.Symbol);
                     if (group != null)
                     {
-                        group.Subscriptions.Remove(this);
+                        group.Subscriptions.TryRemove(this, out _);
                         //_parent.AdjustGroupSubscription(symbol);
                         return true;
                     }
@@ -104,7 +104,7 @@ namespace TickTrader.Algo.Core.Infrastructure
             {
                 var group = _parent.GetGroupOrDefault(symbol);
                 if (group != null)
-                    group.Subscriptions.Remove(this);
+                    group.Subscriptions.TryRemove(this, out _);
             }
 
             if (symbols.Count > 0)

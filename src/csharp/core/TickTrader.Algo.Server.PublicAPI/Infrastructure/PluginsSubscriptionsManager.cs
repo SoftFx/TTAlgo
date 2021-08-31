@@ -8,6 +8,8 @@ namespace TickTrader.Algo.Server.PublicAPI
         private readonly HashSet<string> _logsSubscriptions;
         private readonly HashSet<string> _statusSubscriptions;
 
+        private readonly object _syncLock = new object();
+
 
         internal int LogsSubscriptionsCount => _logsSubscriptions.Count;
 
@@ -23,77 +25,90 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         internal bool TryAddLogsSubscription(string pluginId)
         {
-            if (_logsSubscriptions.Contains(pluginId))
-                return false;
+            lock (_syncLock)
+            {
+                if (_logsSubscriptions.Contains(pluginId))
+                    return false;
 
-            _logsSubscriptions.Add(pluginId);
+                _logsSubscriptions.Add(pluginId);
 
-            return true;
+                return true;
+            }
         }
 
         internal bool TryRemoveLogsSubscription(string pluginId)
         {
-            if (!_logsSubscriptions.Contains(pluginId))
-                return false;
+            lock (_syncLock)
+            {
+                if (!_logsSubscriptions.Contains(pluginId))
+                    return false;
 
-            _logsSubscriptions.Remove(pluginId);
+                _logsSubscriptions.Remove(pluginId);
 
-            return true;
+                return true;
+            }
         }
 
         internal List<PluginLogsSubscribeRequest> BuildLogsSubscriptionRequests()
         {
-            var requests = new List<PluginLogsSubscribeRequest>(LogsSubscriptionsCount);
-
-            foreach (var pluginId in _logsSubscriptions.ToList())
+            lock (_syncLock)
             {
-                requests.Add(new PluginLogsSubscribeRequest
+                var requests = new List<PluginLogsSubscribeRequest>(LogsSubscriptionsCount);
+
+                foreach (var pluginId in _logsSubscriptions.ToList())
                 {
-                    PluginId = pluginId,
-                });
+                    requests.Add(new PluginLogsSubscribeRequest
+                    {
+                        PluginId = pluginId,
+                    });
+                }
+
+                _logsSubscriptions.Clear();
+
+                return requests;
             }
-
-            _logsSubscriptions.Clear();
-
-            return requests;
         }
 
 
         internal bool TryAddStatusSubscription(string pluginId)
         {
-            if (_statusSubscriptions.Contains(pluginId))
-                return false;
+            lock (_syncLock)
+            {
+                if (_statusSubscriptions.Contains(pluginId))
+                    return false;
 
-            _statusSubscriptions.Add(pluginId);
+                _statusSubscriptions.Add(pluginId);
 
-            return true;
+                return true;
+            }
         }
 
         internal bool TryRemoveStatusSubscription(string pluginId)
         {
-            if (!_statusSubscriptions.Contains(pluginId))
-                return false;
+            lock (_syncLock)
+            {
+                if (!_statusSubscriptions.Contains(pluginId))
+                    return false;
 
-            _statusSubscriptions.Remove(pluginId);
+                _statusSubscriptions.Remove(pluginId);
 
-            return true;
-        }
+                return true;
+            }        }
 
         internal List<PluginStatusSubscribeRequest> BuildStatusSubscriptionRequests()
         {
-            var requests = new List<PluginStatusSubscribeRequest>(StatusSubscriptionsCount);
-
-            foreach (var pluginId in _statusSubscriptions.ToList())
+            lock (_syncLock)
             {
-                requests.Add(new PluginStatusSubscribeRequest
+                var requests = new List<PluginStatusSubscribeRequest>(StatusSubscriptionsCount);
+
+                foreach (var pluginId in _statusSubscriptions.ToList())
                 {
-                    PluginId = pluginId,
-                });
-            }
+                    requests.Add(new PluginStatusSubscribeRequest { PluginId = pluginId });
+                }
 
-            _statusSubscriptions.Clear();
+                _statusSubscriptions.Clear();
 
-            return requests;
-        }
+                return requests;
+            }        }
     }
 }
