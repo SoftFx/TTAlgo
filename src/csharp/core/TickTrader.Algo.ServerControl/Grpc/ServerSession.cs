@@ -1,6 +1,5 @@
 ﻿using ActorSharp;
 using Google.Protobuf;
-using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using NLog;
 using System;
@@ -169,7 +168,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 _logger.Debug($"Send snapshot: cnt = {cnt}");
             }
 
-            if (!AlgoServerApi.UpdateInfo.TryPack(update, out var packedUpdate))
+            if (!AlgoServerApi.UpdateInfo.TryPack(update, out var packedUpdate, true))
             {
                 _logger.Error("Failed to pack server metadata");
                 CancelUpdateStream();

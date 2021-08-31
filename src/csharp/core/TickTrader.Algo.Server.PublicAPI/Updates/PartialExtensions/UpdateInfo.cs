@@ -1,6 +1,9 @@
 ﻿using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using System.Collections.Generic;
+using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
+using System.IO;
+using System.Buffers;
 
 namespace TickTrader.Algo.Server.PublicAPI
 {
@@ -21,7 +24,7 @@ namespace TickTrader.Algo.Server.PublicAPI
             if (!_updateDescriptorMap.TryGetValue(type, out var decriptor))
                 return false;
 
-            var msg = decriptor.Parser.ParseFrom(Payload);
+            var msg = UnpackPayload(decriptor);
             switch (type)
             {
                 case Types.PayloadType.Heartbeat: update = UpdateInfo<HeartbeatUpdate>.Unpack(msg); break;
@@ -45,7 +48,7 @@ namespace TickTrader.Algo.Server.PublicAPI
             return update != null;
         }
 
-        public static bool TryPack(IMessage msg, out UpdateInfo update)
+        public static bool TryPack(IMessage msg, out UpdateInfo update, bool compress = false)
         {
             InitDescriptorCache();
 
@@ -59,7 +62,7 @@ namespace TickTrader.Algo.Server.PublicAPI
             if (!_updateTypeMap.TryGetValue(msg.Descriptor.FullName, out var type))
                 return false;
 
-            update = new UpdateInfo { Type = type, Payload = msg.ToByteString(), };
+            update = new UpdateInfo { Type = type, Payload = PackPayload(msg, compress), Compressed = compress };
             return true;
         }
 
@@ -87,6 +90,66 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             _updateDescriptorMap[type] = descriptor;
             _updateTypeMap[descriptor.FullName] = type;
+        }
+
+        private static ByteString PackPayload(IMessage msg, bool compress)
+        {
+            if (!compress)
+                return msg.ToByteString();
+
+            var size = msg.CalculateSize();
+            var rawBytes = ArrayPool<byte>.Shared.Rent(size);
+            try
+            {
+                using (var protobufStream = new CodedOutputStream(rawBytes))
+                {
+                    msg.WriteTo(protobufStream);
+                }
+
+                using (var packedStream = new MemoryStream(8192))
+                {
+                    using (var deflater = new DeflaterOutputStream(packedStream))
+                    {
+                        deflater.Write(rawBytes, 0, size);
+                    }
+
+                    return ByteString.CopyFrom(packedStream.ToArray());
+                }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(rawBytes);
+            }
+        }
+
+
+        private IMessage UnpackPayload(MessageDescriptor descriptor)
+        {
+            var payload = Payload;
+
+            if (!Compressed)
+                return descriptor.Parser.ParseFrom(payload);
+
+            var packedBytes = ArrayPool<byte>.Shared.Rent(payload.Length);
+            try
+            {
+                payload.Span.CopyTo(packedBytes);
+                using (var rawStream = new MemoryStream(16384))
+                {
+                    using (var packedStream = new MemoryStream(packedBytes))
+                    using (var inflater = new InflaterInputStream(packedStream))
+                    {
+                        inflater.CopyTo(rawStream);
+                    }
+
+                    rawStream.Seek(0, SeekOrigin.Begin);
+                    return descriptor.Parser.ParseFrom(rawStream);
+                }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(packedBytes);
+            }
         }
     }
 

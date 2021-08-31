@@ -1318,7 +1318,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 _lastAlertTimeUtc = alerts.Max(u => u.TimeUtc) ?? _lastAlertTimeUtc;
 
                 if (alerts.Length > 0)
-                    SendUpdate(update);
+                    SendUpdate(update, true);
             }
             catch (Exception ex)
             {
@@ -1343,7 +1343,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                     update.Message = await _algoServer.GetBotStatusAsync(new PluginStatusRequest { PluginId = pluginKey });
 
                     if (!string.IsNullOrEmpty(update.Message))
-                        SendUpdate(update);
+                        SendUpdate(update, true);
                 }
                 catch (Exception ex)
                 {
@@ -1391,7 +1391,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                     update.Records.AddRange(records.Select(u => u.ToApi()));
 
                     if (records.Length > 0)
-                        SendUpdate(update);
+                        SendUpdate(update, true);
                 }
                 catch (Exception ex)
                 {
@@ -1413,13 +1413,13 @@ namespace TickTrader.Algo.ServerControl.Grpc
             _pluginLogsTimer?.Change(PluginLogsUpdateTimeout, -1);
         }
 
-        private void SendUpdate(IMessage update)
+        private void SendUpdate(IMessage update, bool compress = false)
         {
             AlgoServerApi.UpdateInfo packedUpdate;
 
             try
             {
-                if (!AlgoServerApi.UpdateInfo.TryPack(update, out packedUpdate))
+                if (!AlgoServerApi.UpdateInfo.TryPack(update, out packedUpdate, compress))
                 {
                     _logger.Error($"Failed to pack msg '{update.Descriptor.Name}'");
                     return;

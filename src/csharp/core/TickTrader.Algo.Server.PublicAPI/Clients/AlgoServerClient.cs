@@ -208,8 +208,9 @@ namespace TickTrader.Algo.Server.PublicAPI
             {
                 var updateStream = updateCall.ResponseStream;
                 _updateStreamCancelTokenSrc = new CancellationTokenSource();
+                var cancelToken = _updateStreamCancelTokenSrc.Token;
 
-                while (await updateStream.MoveNext(_updateStreamCancelTokenSrc.Token))
+                while (await updateStream.MoveNext(cancelToken))
                 {
                     var update = updateStream.Current;
                     if (update.Type == UpdateInfo.Types.PayloadType.Heartbeat)
