@@ -147,6 +147,7 @@ namespace TickTrader.Algo.CoreV1
                 case Domain.OrderExecReport.Types.CmdResultCode.OcoRelatedOrderAlreadyExists: return OrderCmdResultCodes.OCORelatedOrderAlreadyExists;
                 case Domain.OrderExecReport.Types.CmdResultCode.IncorrectSymbol: return OrderCmdResultCodes.IncorrectSymbol;
                 case Domain.OrderExecReport.Types.CmdResultCode.OcoAlreadyExists: return OrderCmdResultCodes.OCOAlreadyExists;
+                case Domain.OrderExecReport.Types.CmdResultCode.ExceededOrderLimit: return OrderCmdResultCodes.ExceededOrderLimit;
 
                 default: throw new ArgumentException($"Unsupported code {code}");
             }

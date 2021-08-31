@@ -82,5 +82,6 @@ namespace TickTrader.Algo.Api
         IncorrectSymbol = 130,
         OCOAlreadyExists = 131,
         PositionNotFound = 132,
+        ExceededOrderLimit = 133,
     }
 }

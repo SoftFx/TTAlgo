@@ -182,6 +182,7 @@ message OrderExecReport {
         OCO_RELATED_ORDER_ALREADY_EXISTS = 129;
         INCORRECT_SYMBOL = 130;
         OCO_ALREADY_EXISTS = 131;
+        EXCEEDED_ORDER_LIMIT = 132;
     }
 
     google.protobuf.StringValue operation_id = 1;
