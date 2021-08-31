@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,9 +9,9 @@ namespace TickTrader.Algo.Core.Infrastructure
 {
     public class Subscription : IFeedSubscription
     {
+        private readonly ConcurrentDictionary<string, int> _bySymbol = new ConcurrentDictionary<string, int>();
         private readonly QuoteDistributor _parent;
         private readonly Action<QuoteInfo> _handler;
-        private Dictionary<string, int> bySymbol = new Dictionary<string, int>();
 
         public Subscription(Action<QuoteInfo> handler, QuoteDistributor parent)
         {
@@ -25,7 +26,7 @@ namespace TickTrader.Algo.Core.Infrastructure
 
         protected QuoteInfo TruncateQuote(QuoteInfo quote)
         {
-            if (bySymbol.TryGetValue(quote.Symbol, out var depth) && depth == 0)
+            if (_bySymbol.TryGetValue(quote.Symbol, out var depth) && depth == 0)
             {
                 return quote;
             }
@@ -68,12 +69,12 @@ namespace TickTrader.Algo.Core.Infrastructure
                 if (isNewSub && group.LastQuote != null)
                     snapshot.Add(group.LastQuote);
                 //_parent.AdjustGroupSubscription(symbol);
-                bySymbol[update.Symbol] = update.Depth;
+                _bySymbol.AddOrUpdate(update.Symbol, update.Depth, (key, value) => update.Depth);
                 return true;
             }
             else if (update.IsRemoveAction)
             {
-                if (bySymbol.Remove(update.Symbol))
+                if (_bySymbol.TryRemove(update.Symbol, out _))
                 {
                     var group = _parent.GetGroupOrDefault(update.Symbol);
                     if (group != null)
@@ -96,8 +97,8 @@ namespace TickTrader.Algo.Core.Infrastructure
             //    _parent.AdjustAllSymbolsSubscription();
             //}
 
-            var symbols = bySymbol.Keys.ToList();
-            bySymbol.Clear();
+            var symbols = _bySymbol.Keys.ToList();
+            _bySymbol.Clear();
 
             foreach (var symbol in symbols)
             {
