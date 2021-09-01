@@ -247,7 +247,7 @@ namespace TickTrader.Algo.Server
                     _newestRuntimeId = await _server.GetPkgRuntimeId(_config.Key.PackageId);
                 }
 
-                var _ = UpdateRuntime();
+                var _ = UpdateRuntime(true);
             }
             catch (Exception ex)
             {
@@ -255,14 +255,14 @@ namespace TickTrader.Algo.Server
             }
         }
 
-        private async Task UpdateRuntime()
+        private async Task UpdateRuntime(bool isInit = false)
         {
             using (await _runtimeLock.GetLock(nameof(UpdateRuntime)))
             {
                 if (!_state.IsStopped())
                     return;
 
-                if (_currentRuntimeId != _newestRuntimeId)
+                if (isInit || _currentRuntimeId != _newestRuntimeId)
                 {
                     _logger.Debug("Updating runtime...");
 

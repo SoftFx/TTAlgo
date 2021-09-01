@@ -5,7 +5,6 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TickTrader.Algo.Domain.ServerControl;
 
 namespace TickTrader.Algo.Server.Common
 {
