@@ -20,6 +20,8 @@ namespace TickTrader.Algo.Server
         private readonly Dictionary<string, string> _pluginAccountMap = new Dictionary<string, string>();
         private readonly PluginIdHelper _pluginIdHelper = new PluginIdHelper();
 
+        private bool _isShutdown = false;
+
 
         public PluginManager(AlgoServerPrivate server)
         {
@@ -30,6 +32,8 @@ namespace TickTrader.Algo.Server
         public async Task Shutdown()
         {
             _logger.Debug("Stopping...");
+
+            _isShutdown = true;
 
             await Task.WhenAll(_plugins.Select(p => ShutdownPluginInternal(p.Key, p.Value)));
 
@@ -101,6 +105,9 @@ namespace TickTrader.Algo.Server
 
         public Task<PluginLogRecord[]> GetPluginLogs(PluginLogsRequest request)
         {
+            if (_isShutdown)
+                return Task.FromResult(new PluginLogRecord[0]);
+
             var id = request.PluginId;
             if (!_plugins.TryGetValue(id, out var plugin))
                 return Task.FromException<PluginLogRecord[]>(Errors.PluginNotFound(id));
@@ -110,6 +117,9 @@ namespace TickTrader.Algo.Server
 
         public Task<string> GetPluginStatus(PluginStatusRequest request)
         {
+            if (_isShutdown)
+                return Task.FromResult(string.Empty);
+
             var id = request.PluginId;
             if (!_plugins.TryGetValue(id, out var plugin))
                 return Task.FromException<string>(Errors.PluginNotFound(id));
