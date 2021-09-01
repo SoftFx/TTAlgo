@@ -173,6 +173,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
             {
                 _logger.Error("Failed to pack server metadata");
                 CancelUpdateStream();
+                _isFaulted = true;
                 return;
             }
             await _updateStream.WriteAsync(packedUpdate);
@@ -180,6 +181,9 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
         private async Task SendUpdate(IMessage update)
         {
+            if (_isFaulted)
+                return;
+
             try
             {
                 var apiUpdate = ConvertToApiUpdate(update);
@@ -199,7 +203,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Failed to send update: {update}");
+                _logger.Error(ex, $"Failed to send update: {update.Descriptor.Name} {update}");
                 _isFaulted = true;
             }
         }

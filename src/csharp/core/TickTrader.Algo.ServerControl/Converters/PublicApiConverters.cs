@@ -914,7 +914,7 @@ namespace TickTrader.Algo.ServerControl
             {
                 Id = update.Id,
                 Action = update.Action.ToApi(),
-                Package = update.Package.ToApi(),
+                Package = update.Package?.ToApi(),
             };
         }
 
@@ -924,7 +924,7 @@ namespace TickTrader.Algo.ServerControl
             {
                 Id = update.Id,
                 Action = update.Action.ToApi(),
-                Account = update.Account.ToApi(),
+                Account = update.Account?.ToApi(),
             };
         }
 
@@ -934,7 +934,7 @@ namespace TickTrader.Algo.ServerControl
             {
                 Id = update.Id,
                 Action = update.Action.ToApi(),
-                Plugin = update.Plugin.ToApi(),
+                Plugin = update.Plugin?.ToApi(),
             };
         }
 
