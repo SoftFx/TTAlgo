@@ -337,8 +337,7 @@ namespace TickTrader.Algo.CoreV1
                     });
 
                     // Start
-
-                    _pluginLoggerFixture?.Start();
+                    _pluginLoggerFixture?.Start(); // should be after builder initializing
                     _statusFixture.Start();
                     _timerFixture.Start();
                     _fStrategy.Start(); // enqueue build action
@@ -354,15 +353,18 @@ namespace TickTrader.Algo.CoreV1
                 }
                 catch (AlgoMetadataException ex)
                 {
+                    _pluginLogger?.OnError(ex);
                     throw new Exception(ex.Message); // save formatted message
                 }
                 catch (AlgoException ex)
                 {
+                    _pluginLogger?.OnError(ex);
                     throw new Exception(ex.Message);
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception("Exception of type " + ex.GetType().Name + " has been thrown: " + ex.ToString());
+                    _pluginLogger?.OnError(ex.InnerException ?? ex);
+                    throw new Exception($"Exception of type {ex.GetType().Name} has been thrown: {ex}");
                 }
             }
         }
