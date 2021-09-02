@@ -87,7 +87,7 @@ namespace TickTrader.Algo.Account.Fdk2
         public Task DisconnectAsync(string text)
         {
             var taskSrc = new TaskCompletionSource<string>();
-            if (!_tradeProxy.DisconnectAsync(taskSrc, text))
+            if (!_tradeProxy.DisconnectAsync(taskSrc, SoftFX.Net.Core.Reason.ClientRequest(text)))
                 taskSrc.SetResult("Already disconnected!");
             return taskSrc.Task;
         }
@@ -116,7 +116,7 @@ namespace TickTrader.Algo.Account.Fdk2
             double? takeProfit, string comment, string tag, int? magic, bool immediateOrCancel, double? slippage, bool oneCancelsTheOtherFlag, bool ocoEqualQty, long? relatedOrderId)
         {
             var taskSrc = new OrderResultSource(_execReportHandler);
-            _tradeProxy.NewOrderAsync(taskSrc, clientOrderId, symbol, type, side, qty, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, comment, tag, magic, immediateOrCancel, slippage, oneCancelsTheOtherFlag, ocoEqualQty, relatedOrderId);
+            _tradeProxy.NewOrderAsync(taskSrc, clientOrderId, symbol, type, side, qty, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, comment, tag, magic, immediateOrCancel, slippage, oneCancelsTheOtherFlag, ocoEqualQty, relatedOrderId, ContingentOrderTriggerTypes.None, null, null);
             return taskSrc.Task;
         }
 

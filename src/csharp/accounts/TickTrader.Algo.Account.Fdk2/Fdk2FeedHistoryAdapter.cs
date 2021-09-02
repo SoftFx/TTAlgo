@@ -68,7 +68,7 @@ namespace TickTrader.Algo.Account.Fdk2
         public Task DisconnectAsync(string text)
         {
             var taskSrc = new TaskCompletionSource<string>();
-            if (!_feedHistoryProxy.DisconnectAsync(taskSrc, text))
+            if (!_feedHistoryProxy.DisconnectAsync(taskSrc, SoftFX.Net.Core.Reason.ClientRequest(text)))
                 taskSrc.SetResult("Already disconnected!");
             return taskSrc.Task;
         }

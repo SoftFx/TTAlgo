@@ -926,10 +926,8 @@ namespace TickTrader.Algo.Account.Fdk2
                 case RejectReason.UnknownOrder: return Domain.OrderExecReport.Types.CmdResultCode.OrderNotFound;
                 case RejectReason.IncorrectQuantity: return Domain.OrderExecReport.Types.CmdResultCode.IncorrectVolume;
                 case RejectReason.OffQuotes: return Domain.OrderExecReport.Types.CmdResultCode.OffQuotes;
-                case RejectReason.OrderExceedsLImit:
-                    if (message.StartsWith("Account exceeds limit by orders"))
-                        return Domain.OrderExecReport.Types.CmdResultCode.ExceededOrderLimit;
-                    return Domain.OrderExecReport.Types.CmdResultCode.NotEnoughMoney; // open market order with low acc balance
+                case RejectReason.OrderExceedsLimit: return Domain.OrderExecReport.Types.CmdResultCode.NotEnoughMoney; // open market order with low acc balance
+                case RejectReason.OrdersLimitExceeded: return Domain.OrderExecReport.Types.CmdResultCode.ExceededOrderLimit;
                 case RejectReason.CloseOnly: return Domain.OrderExecReport.Types.CmdResultCode.CloseOnlyTrading;
                 case RejectReason.ThrottlingLimits: return Domain.OrderExecReport.Types.CmdResultCode.ThrottlingError;
                 case RejectReason.Other:
