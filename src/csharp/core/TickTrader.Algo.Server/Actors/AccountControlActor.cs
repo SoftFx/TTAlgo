@@ -25,7 +25,6 @@ namespace TickTrader.Algo.Server
         private readonly Dictionary<string, RpcSession> _sessions = new Dictionary<string, RpcSession>();
 
         private AccountSavedState _savedState;
-        private AccountCreds _creds;
         private IAlgoLogger _logger;
         private ActorGate _requestGate;
         private AccountModelInfo.Types.ConnectionState _state;
@@ -43,7 +42,6 @@ namespace TickTrader.Algo.Server
             _server = server;
             _savedState = savedState;
             _id = savedState.Id;
-            _creds = savedState.UnpackCreds();
 
             Receive<ShutdownCmd>(Shutdown);
             Receive<ChangeAccountRequest>(Change);
@@ -103,9 +101,9 @@ namespace TickTrader.Algo.Server
                 _savedState.DisplayName = request.DisplayName;
                 changed = true;
             }
-            if (request.Creds != null && _creds.Merge(request.Creds))
+            if (request.Creds != null)
             {
-                _savedState.PackCreds(_creds);
+                _savedState.PackCreds(request.Creds);
                 changed = true;
                 _credsChanged = true;
             }
@@ -264,8 +262,7 @@ namespace TickTrader.Algo.Server
             ChangeState(AccountModelInfo.Types.ConnectionState.Connecting);
             _credsChanged = false;
 
-            var savedState = _savedState;
-            _lastError = await _core.Connection.Connect(savedState.UserId, _creds.GetPassword(), savedState.Server, CancellationToken.None);
+            _lastError = await StartConnection();
 
             if (_lastError.Code == ConnectionErrorInfo.Types.ErrorCode.NoConnectionError)
             {
@@ -282,6 +279,23 @@ namespace TickTrader.Algo.Server
                 ScheduleReconnect(_lastError.Code == ConnectionErrorInfo.Types.ErrorCode.BlockedAccount || _lastError.Code == ConnectionErrorInfo.Types.ErrorCode.InvalidCredentials);
                 ChangeState(AccountModelInfo.Types.ConnectionState.Offline);
             }
+        }
+
+        private async Task<ConnectionErrorInfo> StartConnection()
+        {
+            var savedState = _savedState;
+            AccountCreds creds = null;
+            try
+            {
+                creds = savedState.UnpackCreds();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to unpack creds");
+                return new ConnectionErrorInfo(ConnectionErrorInfo.Types.ErrorCode.InvalidCredentials, "Can't read creds from saved state");
+            }
+
+            return await _core.Connection.Connect(savedState.UserId, creds.GetPassword(), savedState.Server, CancellationToken.None);
         }
 
         private async Task DisconnectInternal()

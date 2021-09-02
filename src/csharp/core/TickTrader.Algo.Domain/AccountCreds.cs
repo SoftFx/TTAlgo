@@ -13,25 +13,6 @@
         }
 
 
-        public bool Merge(AccountCreds other)
-        {
-            var changed = false;
-
-            if (!string.IsNullOrEmpty(other.AuthScheme))
-            {
-                AuthScheme = other.AuthScheme;
-                changed = true;
-            }
-            foreach (var entry in other.Secret)
-            {
-                if (UpdateSecret(entry.Key, entry.Value))
-                    changed = true;
-            }
-
-            return changed;
-        }
-
-
         public string GetPassword()
         {
             return GetSecret(PasswordKey);

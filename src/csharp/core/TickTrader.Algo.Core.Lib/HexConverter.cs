@@ -9,47 +9,92 @@ namespace TickTrader.Algo.Core.Lib
         private static readonly char[] CharCache = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
 
 
-        public static string BytesToString(byte[] data)
+        public static string BytesToString(Span<byte> dataSpan)
         {
-            var n = data.Length;
+            var n = dataSpan.Length;
             var chars = ArrayPool<char>.Shared.Rent(2 * n);
 
-            var dataSpan = data.AsSpan();
-            var charSpan = chars.AsSpan();
-
-            while (dataSpan.Length > 3)
+            string res = null;
+            try
             {
-                ConvertByte(dataSpan, 3, charSpan, 7, 6);
-                ConvertByte(dataSpan, 2, charSpan, 5, 4);
-                ConvertByte(dataSpan, 1, charSpan, 3, 2);
-                ConvertByte(dataSpan, 0, charSpan, 1, 0);
+                var charSpan = chars.AsSpan();
 
-                dataSpan = dataSpan.Slice(4);
-                charSpan = charSpan.Slice(8);
+                while (dataSpan.Length > 3)
+                {
+                    WriteByte(dataSpan, 3, charSpan, 7, 6);
+                    WriteByte(dataSpan, 2, charSpan, 5, 4);
+                    WriteByte(dataSpan, 1, charSpan, 3, 2);
+                    WriteByte(dataSpan, 0, charSpan, 1, 0);
 
+                    dataSpan = dataSpan.Slice(4);
+                    charSpan = charSpan.Slice(8);
+                }
+
+                while (dataSpan.Length > 0)
+                {
+                    WriteByte(dataSpan, 0, charSpan, 1, 0);
+
+                    dataSpan = dataSpan.Slice(1);
+                    charSpan = charSpan.Slice(2);
+                }
+
+                res = new string(chars, 0, 2 * n);
+            }
+            finally
+            {
+                ArrayPool<char>.Shared.Return(chars);
             }
 
-            while (dataSpan.Length > 0)
-            {
-                ConvertByte(dataSpan, 0, charSpan, 1, 0);
+            return res;
+        }
 
-                dataSpan = dataSpan.Slice(1);
+        public static void StringToBytes(string data, byte[] buffer)
+        {
+            if (data.Length != 2 * buffer.Length)
+                throw new ArgumentException("Incorrect buffer length");
+
+            var charSpan = data.AsSpan();
+            var bufferSpan = buffer.AsSpan();
+
+            while (charSpan.Length > 6)
+            {
+                bufferSpan[3] = ReadByte(charSpan, 7, 6);
+                bufferSpan[2] = ReadByte(charSpan, 5, 4);
+                bufferSpan[1] = ReadByte(charSpan, 3, 2);
+                bufferSpan[0] = ReadByte(charSpan, 1, 0);
+
+                bufferSpan = bufferSpan.Slice(4);
+                charSpan = charSpan.Slice(8);
+            }
+
+            while (charSpan.Length > 0)
+            {
+                bufferSpan[0] = ReadByte(charSpan, 1, 0);
+
+                bufferSpan = bufferSpan.Slice(1);
                 charSpan = charSpan.Slice(2);
             }
-
-            var res = new string(chars);
-            ArrayPool<char>.Shared.Return(chars);
-            return res;
         }
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void ConvertByte(Span<byte> dataSpan, int i, Span<char> charSpan, int j1, int j0)
+        private static void WriteByte(Span<byte> dataSpan, int i, Span<char> charSpan, int j1, int j0)
         {
             var b = dataSpan[i];
             charSpan[j1] = CharCache[b & 0b1111];
             b = (byte)(b >> 4);
             charSpan[j0] = CharCache[b];
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static byte ReadByte(ReadOnlySpan<char> charSpan, int i1, int i0)
+        {
+            return (byte)((ConvertHexChar(charSpan[i0]) << 4) | ConvertHexChar(charSpan[i1]));
+        }
+
+        private static byte ConvertHexChar(char c)
+        {
+            return (byte)(c < 'a' ? c - '0' : c - 'a' + 10);
         }
     }
 }
