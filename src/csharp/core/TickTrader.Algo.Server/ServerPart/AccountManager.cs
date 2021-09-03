@@ -81,7 +81,15 @@ namespace TickTrader.Algo.Server
                 UserId = userId,
                 DisplayName = displayName,
             };
-            savedState.PackCreds(request.Creds);
+            try
+            {
+                savedState.PackCreds(request.Creds);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to encrypt creds");
+                throw new AlgoException("Failed to encrypt creds");
+            }
 
             await _server.SavedState.AddAccount(savedState);
 

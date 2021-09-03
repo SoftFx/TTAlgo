@@ -103,7 +103,15 @@ namespace TickTrader.Algo.Server
             }
             if (request.Creds != null)
             {
-                _savedState.PackCreds(request.Creds);
+                try
+                {
+                    _savedState.PackCreds(request.Creds);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, "Failed to encrypt creds");
+                    throw new AlgoException("Failed to encrypt creds");
+                }
                 changed = true;
                 _credsChanged = true;
             }
