@@ -36,10 +36,7 @@ namespace TickTrader.Algo.Server.Persistence
                         {
                             rng.GetNonZeroBytes(buffer);
                         }
-                        using (var file = File.OpenRead(_secretKeyPath))
-                        {
-                            file.Write(buffer, 0, buffer.Length);
-                        }
+                        File.WriteAllBytes(_secretKeyPath, buffer);
                     }
                 }
             }
