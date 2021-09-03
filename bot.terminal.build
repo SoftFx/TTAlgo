@@ -28,10 +28,11 @@
   <property name="TerminalZipFile"     value="${OutputFolder}AlgoTerminal ${Build}.x64.zip" />
   <property name="AlgoServerZipFile"        value="${OutputFolder}AlgoServer ${Build}.x64.zip" />
 
-  <property name="ServerControlSrcDir"        value="${SourcesDir}\src\csharp\core\TickTrader.Algo.ServerControl\" />
-  <property name="ServerControlProject"        value="${ServerControlSrcDir}TickTrader.Algo.ServerControl.csproj" />
-  <property name="ServerControlBinDir"        value="${ServerControlSrcDir}\bin\publish" />
-  <property name="ServerControlZipFile"     value="${OutputFolder}ServerControl ${Build}.zip" />
+  <property name="PublicAPISrcDir"        value="${SourcesDir}\src\csharp\core\TickTrader.Algo.Server.PublicAPI\" />
+  <property name="PublicAPIProject"        value="${PublicAPISrcDir}TickTrader.Algo.Server.PublicAPI.csproj" />
+  <property name="PublicAPIBinDir1"        value="${PublicAPISrcDir}\bin\publish-mix" />
+  <property name="PublicAPIBinDir2"        value="${PublicAPISrcDir}\bin\publish-any" />
+  <property name="PublicAPIZipFile"     value="${OutputFolder}PublicAPI ${Build}.zip" />
 
   <property name="SetupDir"            value="${SourcesDir}TickTrader.Algo.Setup" />
   <property name="SetupUtilName"       value="TickTrader.Algo.SetupUtil" />
@@ -54,7 +55,7 @@
 
     <call target="BuildSolution" />
     <call target="PublishAlgoServer" />
-    <call target="PublishServerControl" />
+    <call target="PublishPublicAPI" />
 
     <call target="CreatePackages" />
     <call target="CreateZipArtifacts" />
@@ -167,23 +168,37 @@
 
   </target>
 
-  <target name="PublishServerControl">
+  <target name="PublishPublicAPI">
 
     <exec program="dotnet">
       <arg line="publish" />
-      <arg line="${ServerControlProject}" />
-      <arg line="-o ${ServerControlBinDir}" />
+      <arg line="${PublicAPIProject}" />
+      <arg line="-o ${PublicAPIBinDir1}" />
       <arg line="-c ${Configuration}" />
       <arg line="-r win-x86" />
     </exec>
 
     <exec program="dotnet">
       <arg line="publish" />
-      <arg line="${ServerControlProject}" />
-      <arg line="-o ${ServerControlBinDir}" />
+      <arg line="${PublicAPIProject}" />
+      <arg line="-o ${PublicAPIBinDir1}" />
       <arg line="-c ${Configuration}" />
       <arg line="-r win-x64" />
     </exec>
+
+    <exec program="dotnet">
+      <arg line="publish" />
+      <arg line="${PublicAPIProject}" />
+      <arg line="-o ${PublicAPIBinDir2}" />
+      <arg line="-c ${Configuration}" />
+      <arg line="-r any" />
+    </exec>
+
+    <copy todir="${PublicAPIBinDir2}">
+      <fileset basedir="${PublicAPIBinDir1}">
+        <include name ="grpc_csharp_ext*.dll" />
+      </fileset>
+    </copy>
 
   </target>
 
@@ -260,8 +275,8 @@
     <property name="Zip.DstFile" value="${AlgoServerZipFile}" />
     <call target="ZipDirectory" />
 
-    <property name="Zip.SrcDir" value="${ServerControlBinDir}" />
-    <property name="Zip.DstFile" value="${ServerControlZipFile}" />
+    <property name="Zip.SrcDir" value="${PublicAPIBinDir2}" />
+    <property name="Zip.DstFile" value="${PublicAPIZipFile}" />
     <call target="ZipDirectory" />
 
 
