@@ -48,30 +48,29 @@ namespace TickTrader.Algo.Core.Lib
             return res;
         }
 
-        public static void StringToBytes(string data, byte[] buffer)
+        public static void StringToBytes(string data, Span<byte> buffer)
         {
             if (data.Length != 2 * buffer.Length)
                 throw new ArgumentException("Incorrect buffer length");
 
             var charSpan = data.AsSpan();
-            var bufferSpan = buffer.AsSpan();
 
             while (charSpan.Length > 6)
             {
-                bufferSpan[3] = ReadByte(charSpan, 7, 6);
-                bufferSpan[2] = ReadByte(charSpan, 5, 4);
-                bufferSpan[1] = ReadByte(charSpan, 3, 2);
-                bufferSpan[0] = ReadByte(charSpan, 1, 0);
+                buffer[3] = ReadByte(charSpan, 7, 6);
+                buffer[2] = ReadByte(charSpan, 5, 4);
+                buffer[1] = ReadByte(charSpan, 3, 2);
+                buffer[0] = ReadByte(charSpan, 1, 0);
 
-                bufferSpan = bufferSpan.Slice(4);
+                buffer = buffer.Slice(4);
                 charSpan = charSpan.Slice(8);
             }
 
             while (charSpan.Length > 0)
             {
-                bufferSpan[0] = ReadByte(charSpan, 1, 0);
+                buffer[0] = ReadByte(charSpan, 1, 0);
 
-                bufferSpan = bufferSpan.Slice(1);
+                buffer = buffer.Slice(1);
                 charSpan = charSpan.Slice(2);
             }
         }

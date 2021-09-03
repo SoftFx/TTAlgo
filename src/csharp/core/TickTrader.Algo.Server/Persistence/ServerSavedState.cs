@@ -5,7 +5,7 @@ namespace TickTrader.Algo.Server.Persistence
 {
     public class ServerSavedState
     {
-        public string Version { get; set; }
+        public string Version { get; set; } = "v1";
 
         public Dictionary<string, AccountSavedState> Accounts { get; set; } = new Dictionary<string, AccountSavedState>();
 

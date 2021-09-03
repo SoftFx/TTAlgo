@@ -1,6 +1,6 @@
 ﻿using Google.Protobuf;
 using System;
-using System.Security.Cryptography;
+using System.Buffers;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
@@ -18,6 +18,8 @@ namespace TickTrader.Algo.Server.Persistence
 
         public string CredsUri { get; set; }
 
+        public string CredsVersion { get; set; }
+
         public string CredsData { get; set; }
 
 
@@ -30,6 +32,7 @@ namespace TickTrader.Algo.Server.Persistence
                 UserId = UserId,
                 DisplayName = DisplayName,
                 CredsUri = CredsUri,
+                CredsVersion = CredsVersion,
                 CredsData = CredsData,
             };
         }
@@ -37,19 +40,14 @@ namespace TickTrader.Algo.Server.Persistence
 
         public AccountCreds UnpackCreds()
         {
-            if (CredsUri == AccountCreds.Descriptor.FullName)
+            var version = string.IsNullOrEmpty(CredsVersion) ? "v0" : CredsVersion;
+
+            switch (version)
             {
-                try
-                {
-                    var protectedBuffer = new byte[CredsData.Length / 2];
-                    HexConverter.StringToBytes(CredsData, protectedBuffer);
-                    var rawBuffer = ProtectedData.Unprotect(protectedBuffer, null, DataProtectionScope.CurrentUser);
-                    return AccountCreds.Parser.ParseFrom(rawBuffer);
-                }
-                catch (SystemException ex) when (ex is PlatformNotSupportedException || ex is CryptographicException)
-                {
-                    return AccountCreds.Parser.ParseFrom(Convert.FromBase64String(CredsData));
-                }
+                case "v0": return AccountCreds.Parser.ParseFrom(Convert.FromBase64String(CredsData));
+                case "v1":
+                    var plainData = CipherV1Helper.Decrypt(CipherOptionsStorage.V1, CredsData);
+                    return AccountCreds.Parser.ParseFrom(plainData);
             }
 
             return null;
@@ -59,15 +57,18 @@ namespace TickTrader.Algo.Server.Persistence
         {
             CredsUri = AccountCreds.Descriptor.FullName;
 
-            var rawBuffer = creds.ToByteArray();
+            var size = creds.CalculateSize();
+            var buffer = ArrayPool<byte>.Shared.Rent(size);
             try
             {
-                var protectedBuffer = ProtectedData.Protect(rawBuffer, null, DataProtectionScope.CurrentUser);
-                CredsData = HexConverter.BytesToString(protectedBuffer);
+                var plainData = new ArraySegment<byte>(buffer, 0, size);
+                creds.WriteTo(plainData);
+                CredsData = CipherV1Helper.Encrypt(CipherOptionsStorage.V1, plainData);
+                CredsVersion = "v1";
             }
-            catch (PlatformNotSupportedException)
+            finally
             {
-                CredsData = Convert.ToBase64String(rawBuffer);
+                ArrayPool<byte>.Shared.Return(buffer);
             }
         }
     }
