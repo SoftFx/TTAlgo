@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
 
@@ -11,6 +8,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
     public class OrderTemplate : TestParamsSet
     {
         private string _id;
+        private DateTime? _expiration;
 
 
         public Order RealOrder => Orders[Id];
@@ -58,9 +56,17 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         public double? Slippage { get; set; }
 
-        public DateTime? Expiration { get; set; }
-
         public string Comment { get; set; }
+
+        public DateTime? Expiration
+        {
+            get => _expiration;
+
+            set
+            {
+                _expiration = value?.AddMilliseconds(-value.Value.Millisecond); //TTS reset milliseconds
+            }
+        }
 
 
         public OrderTemplate() { }

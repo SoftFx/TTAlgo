@@ -30,6 +30,9 @@ namespace TickTrader.Algo.TestCollection.Bots.Trade
             var group = 0;
             var systemTime = 0;
             var countRequestPerSec = 0;
+            var totalWorkingTime = 0L;
+
+            var tasks = new Task[countInGroup];
 
             while (_run)
             {
@@ -52,20 +55,27 @@ namespace TickTrader.Algo.TestCollection.Bots.Trade
                 {
                     await Task.Delay(Math.Max(100 - systemTime, 0));
 
-                    _stopwatch.Restart();
-
                     if (++group == 10)
                     {
                         Status.WriteLine($"Operations per sec: {countRequestPerSec}");
+                        Status.WriteLine($"Total request time: {totalWorkingTime} ms");
+
                         side = side == OrderSide.Buy ? OrderSide.Sell : OrderSide.Buy;
                         group = 0;
                         countRequestPerSec = 0;
+                        totalWorkingTime = 0L;
                     }
 
+                    _stopwatch.Restart();
+
                     for (int i = 0; i < countInGroup; ++i, ++countRequestPerSec)
-                        SendRequest(side);
+                        tasks[i] = SendRequest(side);
+
+                    //Task.WaitAll(tasks);
 
                     _stopwatch.Stop();
+
+                    totalWorkingTime += _stopwatch.ElapsedMilliseconds;
                     systemTime = (int)_stopwatch.ElapsedMilliseconds;
                 }
             }
@@ -76,7 +86,7 @@ namespace TickTrader.Algo.TestCollection.Bots.Trade
             _run = false;
         }
 
-        private void SendRequest(OrderSide side) => OpenOrderAsync(OpenOrderRequest.Template.Create().WithParams(Symbol.Name, side, OrderType.Market, 1.0, 0.1, null).MakeRequest());
+        private Task SendRequest(OrderSide side) => OpenOrderAsync(OpenOrderRequest.Template.Create().WithParams(Symbol.Name, side, OrderType.Market, 1.0, 0.1, null).MakeRequest());
     }
 
     public enum OpenMode { Uniform, Exponential }
