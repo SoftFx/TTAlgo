@@ -65,6 +65,7 @@ namespace TickTrader.Algo.Server.PublicAPI
             RegisterDescriptor(PluginStateUpdate.Descriptor, Types.PayloadType.PluginStateUpdate);
             RegisterDescriptor(PluginLogUpdate.Descriptor, Types.PayloadType.PluginLogUpdate);
             RegisterDescriptor(PluginStatusUpdate.Descriptor, Types.PayloadType.PluginStatusUpdate);
+            RegisterDescriptor(AlertListUpdate.Descriptor, Types.PayloadType.AlertListUpdate);
         }
 
         private static void RegisterDescriptor(MessageDescriptor descriptor, Types.PayloadType type)
