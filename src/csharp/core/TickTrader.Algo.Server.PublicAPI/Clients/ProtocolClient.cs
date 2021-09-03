@@ -173,7 +173,6 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         protected void OnDisconnected()
         {
-            StopConnectionTimer();
             _stateMachine.PushEvent(ClientEvents.Disconnected);
         }
 

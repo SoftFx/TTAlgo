@@ -77,6 +77,7 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             _messageFormatter.LogMessages = false;
 
+            StopConnectionTimer();
             _updateStreamCancelTokenSrc?.Cancel();
             _updateStreamCancelTokenSrc = null;
 
