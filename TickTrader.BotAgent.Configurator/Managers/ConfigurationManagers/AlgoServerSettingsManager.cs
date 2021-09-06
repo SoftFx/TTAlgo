@@ -15,6 +15,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public AlgoServerSettingsManager(SectionNames sectionName = SectionNames.None) : base(sectionName)
         {
+            EnableManager = true; // for the first start, if appsettings.json not found
             AlgoServerModel = new AlgoServerSettingsModel();
         }
 
