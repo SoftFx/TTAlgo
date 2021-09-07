@@ -1,0 +1,19 @@
+﻿syntax = "proto3";
+
+package ticktrader.algo.server.publicApi;
+
+option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
+
+import "google/protobuf/wrappers.proto";
+import "info/mappings/reduction.info.proto";
+
+
+message MappingInfo {
+    MappingKey key = 1;
+    google.protobuf.StringValue display_name = 2;
+}
+
+message MappingKey {
+    ReductionKey primary_reduction = 1;
+    ReductionKey secondary_reduction = 2;
+}

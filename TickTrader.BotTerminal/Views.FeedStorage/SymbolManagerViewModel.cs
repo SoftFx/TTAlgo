@@ -3,16 +3,14 @@ using Machinarium.Qnil;
 using Machinarium.Var;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Lib;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.Account;
+using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Core.Setup;
+using TickTrader.Algo.Domain;
+using TickTrader.FeedStorage;
 
 namespace TickTrader.BotTerminal
 {
@@ -24,7 +22,7 @@ namespace TickTrader.BotTerminal
         private WindowManager _wndManager;
         private SymbolCatalog _catalog;
         private VarContext _varContext = new VarContext();
-        private VarDictionary<string, SymbolModel> _onlineSymbols = new VarDictionary<string, SymbolModel>();
+        private VarDictionary<string, SymbolInfo> _onlineSymbols = new VarDictionary<string, SymbolInfo>();
         private IVarSet<SymbolKey, ManagedSymbolViewModel> _customManagedSymbols;
         private IVarSet<SymbolKey, ManagedSymbolViewModel> _onlineManagedSymbols;
 
@@ -66,7 +64,7 @@ namespace TickTrader.BotTerminal
             {
                 _onlineSymbols.Clear();
                 foreach (var i in clientModel.Symbols.Snapshot)
-                    _onlineSymbols.Add(i.Key, (SymbolModel)i.Value);
+                    _onlineSymbols.Add(i.Key, i.Value);
             });
 
             _onlineManagedSymbols.EnableAutodispose();
@@ -144,7 +142,7 @@ namespace TickTrader.BotTerminal
         {
             var model = new SymbolCfgEditorViewModel(null, _clientModel.SortedCurrenciesNames, HasSymbol);
 
-            if (_wndManager.ShowDialog(model, this) == true)
+            if (_wndManager.ShowDialog(model, this).Result == true)
             {
                 var actionModel = new ActionDialogViewModel("Adding symbol...", () => _catalog.AddCustomSymbol(model.GetResultingSymbol()));
                 _wndManager.ShowDialog(actionModel, this);
@@ -155,7 +153,7 @@ namespace TickTrader.BotTerminal
         {
             var model = new SymbolCfgEditorViewModel(((CustomSymbolData)symbol).Entity, _clientModel.SortedCurrenciesNames, HasSymbol);
 
-            if (_wndManager.ShowDialog(model, this) == true)
+            if (_wndManager.ShowDialog(model, this).Result == true)
             {
                 var actionModel = new ActionDialogViewModel("Saving symbol settings...", () => _catalog.Update(model.GetResultingSymbol()));
                 _wndManager.ShowDialog(actionModel, this);
@@ -176,7 +174,7 @@ namespace TickTrader.BotTerminal
 
             var model = new SymbolCfgEditorViewModel(smb, _clientModel.SortedCurrenciesNames, HasSymbol, true);
 
-            if (_wndManager.ShowDialog(model, this) == true)
+            if (_wndManager.ShowDialog(model, this).Result == true)
             {
                 var actionModel = new ActionDialogViewModel("Saving symbol settings...", () => _catalog.AddCustomSymbol(model.GetResultingSymbol()));
                 _wndManager.ShowDialog(actionModel, this);
@@ -220,7 +218,8 @@ namespace TickTrader.BotTerminal
         private bool HasSymbol(string smbName)
         {
             smbName = smbName.Trim();
-            return _onlineManagedSymbols.Snapshot.ContainsKey(new SymbolKey(smbName, SymbolOrigin.Online)) || _customManagedSymbols.Snapshot.ContainsKey(new SymbolKey(smbName, SymbolOrigin.Custom));
+            return _onlineManagedSymbols.Snapshot.ContainsKey(new SymbolKey(smbName, SymbolConfig.Types.SymbolOrigin.Online))
+                || _customManagedSymbols.Snapshot.ContainsKey(new SymbolKey(smbName, SymbolConfig.Types.SymbolOrigin.Custom));
         }
     }
 
@@ -234,7 +233,7 @@ namespace TickTrader.BotTerminal
             Model = series;
             Key = series.Key;
             Symbol = Key.Symbol;
-            Cfg = Key.Frame + " " + Key.PriceType;
+            Cfg = Key.TimeFrame + " " + Key.MarketSide;
         }
 
         public FeedCacheKey Key { get; }
@@ -319,7 +318,7 @@ namespace TickTrader.BotTerminal
         {
             DiskSize = null;
             NotifyOfPropertyChange(nameof(DiskSize));
-            Series.Foreach(s => s.ResetSize());
+            Series.ForEach(s => s.ResetSize());
         }
 
         public void Download()

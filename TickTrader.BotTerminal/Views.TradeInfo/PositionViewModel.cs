@@ -1,36 +1,39 @@
-﻿using Caliburn.Micro;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common;
-using TickTrader.Algo.Common.Model;
+﻿using TickTrader.Algo.Account;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
-    class PositionViewModel : PropertyChangedBase, IDisposable
+    internal sealed class PositionViewModel : BaseTransactionViewModel
     {
-        public PositionViewModel(PositionModel position, AccountModel account)
-        {
-            Position = position;
+        private readonly PositionInfo _position;
 
-            PriceDigits = position?.SymbolModel?.PriceDigits ?? 5;
-            ProfitDigits = account.BalanceDigits;
-            SortedNumber = GetSortedNumber(position);
+
+        public PositionViewModel(PositionInfo position, AccountModel account) : base(account.GetSymbolOrNull(position.Symbol), account.BalanceDigits)
+        {
+            _position = position;
+
+            Update();
         }
 
-        public int PriceDigits { get; private set; }
-        public int ProfitDigits { get; private set; }
-        public PositionModel Position { get; private set; }
-        public RateDirectionTracker CurrentPrice => Position.Side == OrderSide.Buy ? Position?.SymbolModel?.BidTracker : Position?.SymbolModel?.AskTracker;
-        public string SortedNumber { get; }
+        public override string Id => _position.Id;
 
-        public void Dispose()
+        public override double Profit => _position?.Calculator?.Profit.Calculate(_position)?.Value ?? 0.0;
+
+
+        protected override void Update()
         {
-        }
+            Modified.Value = _position.Modified?.ToDateTime();
 
-        private string GetSortedNumber(PositionModel position) => $"{position.Modified?.ToString("dd.MM.yyyyHH:mm:ss.fff")}-{position.Id}";
+            Price.Value = _position.Price;
+            Volume.Value = _position.Volume;
+
+            Side.Value = _position.Side;
+            Type.Value = OrderInfo.Types.Type.Position;
+
+            Swap.Value = _position.Swap;
+            Commission.Value = _position.Commission;
+
+            RateUpdate(_symbol);
+        }
     }
 }

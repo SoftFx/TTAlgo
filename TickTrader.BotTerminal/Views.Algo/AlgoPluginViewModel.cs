@@ -1,13 +1,10 @@
 ﻿using System;
 using System.IO;
 using Caliburn.Micro;
-using Machinarium.Qnil;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Core.Repository;
-using TickTrader.Algo.Core.Metadata;
 using System.Diagnostics;
 using System.Windows;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -21,8 +18,6 @@ namespace TickTrader.BotTerminal
         public const string BotLevelHeader = nameof(DisplayName);
 
 
-        public enum FolderType { Common, Local, Embedded }
-
         public enum GroupType { Unknown, Indicators, Bots }
 
         public PluginInfo PluginInfo { get; }
@@ -31,11 +26,11 @@ namespace TickTrader.BotTerminal
 
         public AlgoAgentViewModel Agent { get; }
 
-        public PluginKey Key => PluginInfo.Key;
+        public PluginKey Key { get; }
 
-        public PluginDescriptor Descriptor => PluginInfo.Descriptor;
+        public PluginDescriptor Descriptor { get; }
 
-        public string DisplayName => PluginInfo.Descriptor.UiDisplayName;
+        public string DisplayName => Descriptor.UiDisplayName;
 
         public string PackageName { get; }
 
@@ -45,30 +40,36 @@ namespace TickTrader.BotTerminal
 
         public string DisplayPackagePath { get; }
 
-        public AlgoTypes Type => PluginInfo.Descriptor.Type;
-
-        public FolderType Folder { get; }
+        public Metadata.Types.PluginType Type => Descriptor.Type;
 
         public string Description { get; }
 
         public GroupType CurrentGroup { get; }
 
-        public string Category => PluginInfo.Descriptor.Category; //used in ContextMenu AddIndicator/AddBot
+        public string Category => Descriptor.Category; //used in ContextMenu AddIndicator/AddBot
 
         public bool IsRemote => Agent.Model.IsRemote;
 
         public bool IsLocal => !Agent.Model.IsRemote;
+
+        public bool IsTradeBot => Descriptor.IsTradeBot;
+
+        public bool IsIndicator => Descriptor.IsIndicator;
 
         public AlgoPluginViewModel(PluginInfo info, AlgoAgentViewModel agent)
         {
             PluginInfo = info;
             Agent = agent;
 
-            PackageName = PluginInfo.Key.PackageName;
+            Key = info.Key;
+            Descriptor = info.Descriptor_;
+
+            PackageId.Unpack(Key.PackageId, out var pkgId);
+            PackageName = pkgId.PackageName;
             PackageDirectory = UnknownPath;
             CurrentGroup = (GroupType)Type;
 
-            if (Agent.Model.Packages.Snapshot.TryGetValue(info.Key.GetPackageKey(), out var packageInfo))
+            if (Agent.Model.Packages.Snapshot.TryGetValue(info.Key.PackageId, out var packageInfo))
             {
                 PackageInfo = packageInfo;
 
@@ -77,38 +78,24 @@ namespace TickTrader.BotTerminal
 
                 PackageDirectory = Path.GetDirectoryName(FullPackagePath);
 
-                DisplayPackagePath = $"Full path: {FullPackagePath}{Environment.NewLine}Last modified: {PackageInfo.Identity.LastModifiedUtc} (UTC)";
-                Description = string.Join(Environment.NewLine, PluginInfo.Descriptor.Description, string.Empty, $"Package {PackageName} at {PackageDirectory}").Trim();
-            }
-
-            switch (PluginInfo.Key.PackageLocation)
-            {
-                case RepositoryLocation.LocalRepository:
-                case RepositoryLocation.LocalExtensions:
-                    Folder = FolderType.Local;
-                    break;
-                case RepositoryLocation.Embedded:
-                    Folder = FolderType.Embedded;
-                    break;
-                default:
-                    Folder = FolderType.Common;
-                    break;
+                DisplayPackagePath = $"Full path: {FullPackagePath}{Environment.NewLine}Last modified: {PackageInfo.Identity.LastModifiedUtc.ToDateTime()} (UTC)";
+                Description = string.Join(Environment.NewLine, Descriptor.Description, string.Empty, $"Algo Package {PackageName} at {PackageDirectory}").Trim();
             }
         }
 
         public void RemovePackage()
         {
-            Agent.RemovePackage(PackageInfo.Key).Forget();
+            Agent.RemovePackage(PackageInfo.PackageId).Forget();
         }
 
         public void UploadPackage()
         {
-            Agent.OpenUploadPackageDialog(PackageInfo.Key);
+            Agent.OpenUploadPackageDialog(PackageInfo.PackageId);
         }
 
         public void DownloadPackage()
         {
-            Agent.OpenDownloadPackageDialog(PackageInfo.Key);
+            Agent.OpenDownloadPackageDialog(PackageInfo.PackageId);
         }
 
         public void OpenFolder()

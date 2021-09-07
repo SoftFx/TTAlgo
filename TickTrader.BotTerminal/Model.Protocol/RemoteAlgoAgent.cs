@@ -1,30 +1,28 @@
 ﻿using Machinarium.Qnil;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Core.Repository;
-using TickTrader.Algo.Protocol;
+using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Core.Setup;
+using TickTrader.Algo.Domain;
+using TickTrader.Algo.Domain.ServerControl;
+using TickTrader.Algo.ServerControl;
+
+using AlgoServerApi = TickTrader.Algo.Server.PublicAPI;
 
 namespace TickTrader.BotTerminal
 {
-    internal class RemoteAlgoAgent : IAlgoAgent, IBotAgentClient
+    internal class RemoteAlgoAgent : IAlgoAgent, AlgoServerApi.IAlgoServerEventHandler, IAsyncDisposable
     {
-        private const int DefaultChunkSize = 512 * 1024;
 
         private ISyncContext _syncContext;
-        private VarDictionary<PackageKey, PackageInfo> _packages;
+        private VarDictionary<string, PackageInfo> _packages;
         private VarDictionary<PluginKey, PluginInfo> _plugins;
-        private VarDictionary<AccountKey, AccountModelInfo> _accounts;
+        private VarDictionary<string, AccountModelInfo> _accounts;
         private VarDictionary<string, RemoteTradeBot> _bots;
         private PluginIdProvider _idProvider;
-        private ProtocolClient _protocolClient;
+        private AlgoServerApi.IAlgoServerClient _protocolClient;
         private ApiMetadataInfo _apiMetadata;
         private MappingCollectionInfo _mappings;
         private SetupContextInfo _setupContext;
@@ -34,11 +32,11 @@ namespace TickTrader.BotTerminal
 
         public bool IsRemote => true;
 
-        public IVarSet<PackageKey, PackageInfo> Packages => _packages;
+        public IVarSet<string, PackageInfo> Packages => _packages;
 
         public IVarSet<PluginKey, PluginInfo> Plugins => _plugins;
 
-        public IVarSet<AccountKey, AccountModelInfo> Accounts => _accounts;
+        public IVarSet<string, AccountModelInfo> Accounts => _accounts;
 
         public IVarSet<string, ITradeBot> Bots { get; }
 
@@ -48,9 +46,10 @@ namespace TickTrader.BotTerminal
 
         public bool SupportsAccountManagement => true;
 
-        public AccessManager AccessManager => _protocolClient.AccessManager;
+        public AlgoServerApi.IAccessManager AccessManager => _protocolClient.AccessManager;
 
         public IAlertModel AlertModel { get; }
+
 
         public event Action<PackageInfo> PackageStateChanged = delegate { };
 
@@ -69,9 +68,9 @@ namespace TickTrader.BotTerminal
 
             _syncContext = new DispatcherSync();
 
-            _packages = new VarDictionary<PackageKey, PackageInfo>();
+            _packages = new VarDictionary<string, PackageInfo>();
             _plugins = new VarDictionary<PluginKey, PluginInfo>();
-            _accounts = new VarDictionary<AccountKey, AccountModelInfo>();
+            _accounts = new VarDictionary<string, AccountModelInfo>();
             _bots = new VarDictionary<string, RemoteTradeBot>();
 
             Bots = _bots.Select((k, v) => (ITradeBot)v);
@@ -98,136 +97,135 @@ namespace TickTrader.BotTerminal
         }
 
 
-        internal void SetProtocolClient(ProtocolClient client)
+        internal void SetProtocolClient(AlgoServerApi.IAlgoServerClient client)
         {
             _protocolClient = client;
         }
 
-        internal Task<string> GetBotStatus(string botId)
-        {
-            if (_protocolClient.State == ClientStates.Online)
-                return _protocolClient.GetBotStatus(botId);
-            return Task.FromResult("Disconnected!");
-        }
-
-        internal Task<LogRecordInfo[]> GetBotLogs(string botId, DateTime lastLogTimeUtc, int maxCount = 1000)
-        {
-            if (_protocolClient.State == ClientStates.Online)
-                return _protocolClient.GetBotLogs(botId, lastLogTimeUtc, maxCount);
-            return Task.FromResult(new LogRecordInfo[0]);
-        }
-
-        internal Task<AlertRecordInfo[]> GetAlerts(DateTime lastLogTimeUtc, int maxCount = 1000)
-        {
-            if (_protocolClient.State == ClientStates.Online)
-                return _protocolClient.GetAlerts(lastLogTimeUtc, maxCount);
-            return Task.FromResult(new AlertRecordInfo[0]);
-        }
-
         #region IAlgoAgent implementation
 
-        public async Task<SetupMetadata> GetSetupMetadata(AccountKey account, SetupContextInfo setupContext)
+        public async Task<SetupMetadata> GetSetupMetadata(string accountId, SetupContextInfo setupContext)
         {
-            var accountMetadata = await _protocolClient.GetAccountMetadata(account);
-            return new SetupMetadata(_apiMetadata, _mappings, accountMetadata, setupContext ?? _setupContext);
+            var accountMetadata = await _protocolClient.GetAccountMetadata(new AlgoServerApi.AccountMetadataRequest { AccountId = accountId });
+            return new SetupMetadata(_apiMetadata, _mappings, accountMetadata.ToServer(), setupContext ?? _setupContext);
+        }
+
+        public Task SubscribeToPluginStatus(string instanceId)
+        {
+            return _protocolClient.SubscribeToPluginStatus(new AlgoServerApi.PluginStatusSubscribeRequest { PluginId = instanceId });
+        }
+
+        public Task SubscribeToPluginLogs(string instanceId)
+        {
+            return _protocolClient.SubscribeToPluginLogs(new AlgoServerApi.PluginLogsSubscribeRequest { PluginId = instanceId });
+        }
+
+        public Task UnsubscribeToPluginStatus(string instanceId)
+        {
+            return _protocolClient.UnsubscribeToPluginStatus(new AlgoServerApi.PluginStatusUnsubscribeRequest { PluginId = instanceId });
+        }
+
+        public Task UnsubscribeToPluginLogs(string instanceId)
+        {
+            return _protocolClient.UnsubscribeToPluginLogs(new AlgoServerApi.PluginLogsUnsubscribeRequest { PluginId = instanceId });
         }
 
         public Task StartBot(string instanceId)
         {
-            return _protocolClient.StartBot(instanceId);
+            return _protocolClient.StartPlugin(new AlgoServerApi.StartPluginRequest(instanceId));
         }
 
         public Task StopBot(string instanceId)
         {
-            return _protocolClient.StopBot(instanceId);
+            return _protocolClient.StopPlugin(new AlgoServerApi.StopPluginRequest(instanceId));
         }
 
-        public Task AddBot(AccountKey account, PluginConfig config)
+        public Task AddBot(string accountId, PluginConfig config)
         {
-            return _protocolClient.AddBot(account, config);
+            return _protocolClient.AddPlugin(new AlgoServerApi.AddPluginRequest(accountId, config.ToApi()));
         }
 
         public Task RemoveBot(string instanceId, bool cleanLog = false, bool cleanAlgoData = false)
         {
-            return _protocolClient.RemoveBot(instanceId, cleanLog, cleanAlgoData);
+            return _protocolClient.RemovePlugin(new AlgoServerApi.RemovePluginRequest(instanceId, cleanLog, cleanAlgoData));
         }
 
         public Task ChangeBotConfig(string instanceId, PluginConfig newConfig)
         {
-            return _protocolClient.ChangeBotConfig(instanceId, newConfig);
+            return _protocolClient.ChangePluginConfig(new AlgoServerApi.ChangePluginConfigRequest(instanceId, newConfig.ToApi()));
         }
 
-        public Task AddAccount(AccountKey account, string password)
+        public Task AddAccount(AddAccountRequest request)
         {
-            return _protocolClient.AddAccount(account, password);
+            return _protocolClient.AddAccount(request.ToApi());
         }
 
-        public Task RemoveAccount(AccountKey account)
+        public Task RemoveAccount(RemoveAccountRequest request)
         {
-            return _protocolClient.RemoveAccount(account);
+            return _protocolClient.RemoveAccount(request.ToApi());
         }
 
-        public Task ChangeAccount(AccountKey account, string password)
+        public Task ChangeAccount(ChangeAccountRequest request)
         {
-            return _protocolClient.ChangeAccount(account, password);
+            return _protocolClient.ChangeAccount(request.ToApi());
         }
 
-        public Task<ConnectionErrorInfo> TestAccount(AccountKey account)
+        public Task<AlgoServerApi.ConnectionErrorInfo> TestAccount(TestAccountRequest request)
         {
-            return _protocolClient.TestAccount(account);
+            return _protocolClient.TestAccount(request.ToApi());
         }
 
-        public Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password)
+        public Task<AlgoServerApi.ConnectionErrorInfo> TestAccountCreds(TestAccountCredsRequest request)
         {
-            return _protocolClient.TestAccountCreds(account, password);
+            return _protocolClient.TestAccountCreds(request.ToApi());
         }
 
-        public async Task UploadPackage(string fileName, string srcFilePath, IFileProgressListener progressListener)
+        public async Task UploadPackage(string fileName, string srcFilePath, AlgoServerApi.IFileProgressListener progressListener)
         {
-            await Task.Run(() => _protocolClient.UploadPackage(new PackageKey(fileName, Algo.Core.Repository.RepositoryLocation.LocalRepository), srcFilePath, DefaultChunkSize, 0, progressListener));
+            await Task.Run(() => _protocolClient.UploadPackage(new AlgoServerApi.UploadPackageRequest(null, fileName), srcFilePath, progressListener));
         }
 
-        public Task RemovePackage(PackageKey package)
+        public Task RemovePackage(string packageId)
         {
-            return _protocolClient.RemovePackage(package);
+            return _protocolClient.RemovePackage(new AlgoServerApi.RemovePackageRequest(packageId));
         }
 
-        public async Task DownloadPackage(PackageKey package, string dstFilePath, IFileProgressListener progressListener)
+        public async Task DownloadPackage(string packageId, string dstFilePath, AlgoServerApi.IFileProgressListener progressListener)
         {
-            await Task.Run(() => _protocolClient.DownloadPackage(package, dstFilePath, DefaultChunkSize, 0, progressListener));
+            await Task.Run(() => _protocolClient.DownloadPackage(new AlgoServerApi.DownloadPackageRequest(packageId), dstFilePath, progressListener));
         }
 
-        public Task<BotFolderInfo> GetBotFolderInfo(string botId, BotFolderId folderId)
+        public Task<PluginFolderInfo> GetBotFolderInfo(string botId, PluginFolderInfo.Types.PluginFolderId folderId)
         {
-            return _protocolClient.GetBotFolderInfo(botId, folderId);
+            return _protocolClient.GetPluginFolderInfo(new AlgoServerApi.PluginFolderInfoRequest(botId, folderId.ToApi())).ContinueWith(u => u.Result.ToServer());
         }
 
-        public Task ClearBotFolder(string botId, BotFolderId folderId)
+        public Task ClearBotFolder(string botId, PluginFolderInfo.Types.PluginFolderId folderId)
         {
-            return _protocolClient.ClearBotFolder(botId, folderId);
+            return _protocolClient.ClearPluginFolder(new AlgoServerApi.ClearPluginFolderRequest(botId, folderId.ToApi()));
         }
 
-        public Task DeleteBotFile(string botId, BotFolderId folderId, string fileName)
+        public Task DeleteBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName)
         {
-            return _protocolClient.DeleteBotFile(botId, folderId, fileName);
+            return _protocolClient.DeletePluginFile(new AlgoServerApi.DeletePluginFileRequest(botId, folderId.ToApi(), fileName));
         }
 
-        public async Task DownloadBotFile(string botId, BotFolderId folderId, string fileName, string dstPath, IFileProgressListener progressListener)
+        public async Task DownloadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string dstPath, AlgoServerApi.IFileProgressListener progressListener)
         {
-            await Task.Run(() => _protocolClient.DownloadBotFile(botId, folderId, fileName, dstPath, DefaultChunkSize, 0, progressListener));
+            await Task.Run(() => _protocolClient.DownloadPluginFile(new AlgoServerApi.DownloadPluginFileRequest(botId, folderId.ToApi(), fileName), dstPath, progressListener));
         }
 
-        public async Task UploadBotFile(string botId, BotFolderId folderId, string fileName, string srcPath, IFileProgressListener progressListener)
+        public async Task UploadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string srcPath, AlgoServerApi.IFileProgressListener progressListener)
         {
-            await Task.Run(() => _protocolClient.UploadBotFile(botId, folderId, fileName, srcPath, DefaultChunkSize, 0, progressListener));
+            await Task.Run(() => _protocolClient.UploadPluginFile(new AlgoServerApi.UploadPluginFileRequest(botId, folderId.ToApi(), fileName), srcPath, progressListener));
         }
 
         #endregion
 
 
-        #region IBotAgentClient implementation
+        #region IAlgoServerClient implementation
 
-        void IBotAgentClient.AccessLevelChanged()
+        void AlgoServerApi.IAlgoServerEventHandler.AccessLevelChanged()
         {
             _syncContext.Invoke(() =>
             {
@@ -235,7 +233,7 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IBotAgentClient.InitPackageList(List<PackageInfo> packages)
+        void AlgoServerApi.IAlgoServerEventHandler.InitPackageList(List<AlgoServerApi.PackageInfo> packages)
         {
             _syncContext.Invoke(() =>
             {
@@ -243,25 +241,28 @@ namespace TickTrader.BotTerminal
                 _plugins.Clear();
                 packages.ForEach(package =>
                 {
-                    _packages.Add(package.Key, package);
-                    package.Plugins.ForEach(plugin => _plugins.Add(plugin.Key, plugin));
+                    _packages.Add(package.PackageId, package.ToServer());
+                    foreach (var plugin in package.Plugins)
+                    {
+                        _plugins.Add(plugin.Key.ToServer(), plugin.ToServer());
+                    }
                 });
             });
         }
 
-        void IBotAgentClient.InitAccountList(List<AccountModelInfo> accounts)
+        void AlgoServerApi.IAlgoServerEventHandler.InitAccountModelList(List<AlgoServerApi.AccountModelInfo> accounts)
         {
             _syncContext.Invoke(() =>
             {
                 _accounts.Clear();
                 foreach (var acc in accounts)
                 {
-                    _accounts.Add(acc.Key, acc);
+                    _accounts.Add(acc.AccountId, acc.ToServer());
                 }
             });
         }
 
-        void IBotAgentClient.InitBotList(List<BotModelInfo> bots)
+        void AlgoServerApi.IAlgoServerEventHandler.InitPluginModelList(List<AlgoServerApi.PluginModelInfo> bots)
         {
             _syncContext.Invoke(() =>
             {
@@ -270,141 +271,165 @@ namespace TickTrader.BotTerminal
                 foreach (var bot in bots)
                 {
                     _idProvider.RegisterPluginId(bot.InstanceId);
-                    _bots.Add(bot.InstanceId, new RemoteTradeBot(bot, this));
+                    _bots.Add(bot.InstanceId, new RemoteTradeBot(bot.ToServer(), this));
                 }
             });
         }
 
-        void IBotAgentClient.UpdatePackage(UpdateInfo<PackageInfo> update)
+        void AlgoServerApi.IAlgoServerEventHandler.SetApiMetadata(AlgoServerApi.ApiMetadataInfo apiMetadata)
+        {
+            _apiMetadata = apiMetadata.ToServer();
+        }
+
+        void AlgoServerApi.IAlgoServerEventHandler.SetMappingsInfo(AlgoServerApi.MappingCollectionInfo mappings)
+        {
+            _mappings = mappings.ToServer();
+        }
+
+        void AlgoServerApi.IAlgoServerEventHandler.SetSetupContext(AlgoServerApi.SetupContextInfo setupContext)
+        {
+            _setupContext = setupContext.ToServer();
+        }
+
+        void AlgoServerApi.IAlgoServerEventHandler.OnPackageUpdate(AlgoServerApi.PackageUpdate update)
         {
             _syncContext.Invoke(() =>
             {
-                var package = update.Value;
-                switch (update.Type)
+                _packages.TryGetValue(update.Id, out var oldPackage);
+
+                switch (update.Action)
                 {
-                    case UpdateType.Added:
-                        _packages.Add(package.Key, package);
-                        MergePlugins(package);
+                    case AlgoServerApi.Update.Types.Action.Added:
+                        _packages.Add(update.Id, update.Package.ToServer());
+                        MergePlugins(oldPackage, update.Package.ToServer());
                         break;
-                    case UpdateType.Replaced:
-                        _packages[package.Key] = package;
-                        MergePlugins(package);
+                    case AlgoServerApi.Update.Types.Action.Updated:
+                        _packages[update.Id] = update.Package.ToServer();
+                        MergePlugins(oldPackage, update.Package.ToServer());
                         break;
-                    case UpdateType.Removed:
-                        _packages.Remove(package.Key);
-                        MergePlugins(new PackageInfo { Key = package.Key });
+                    case AlgoServerApi.Update.Types.Action.Removed:
+                        _packages.Remove(update.Id);
+                        MergePlugins(oldPackage, new PackageInfo { PackageId = update.Id });
                         break;
                 }
             });
         }
 
-        void IBotAgentClient.UpdateAccount(UpdateInfo<AccountModelInfo> update)
+        void AlgoServerApi.IAlgoServerEventHandler.OnAccountModelUpdate(AlgoServerApi.AccountModelUpdate acc)
         {
             _syncContext.Invoke(() =>
             {
-                var acc = update.Value;
-                switch (update.Type)
+                switch (acc.Action)
                 {
-                    case UpdateType.Added:
-                    case UpdateType.Replaced:
-                        _accounts[acc.Key] = acc;
+                    case AlgoServerApi.Update.Types.Action.Added:
+                    case AlgoServerApi.Update.Types.Action.Updated:
+                        _accounts[acc.Id] = acc.Account.ToServer();
                         break;
-                    case UpdateType.Removed:
-                        if (_accounts.ContainsKey(acc.Key))
-                            _accounts.Remove(acc.Key);
+                    case AlgoServerApi.Update.Types.Action.Removed:
+                        if (_accounts.ContainsKey(acc.Id))
+                            _accounts.Remove(acc.Id);
                         break;
                 }
             });
         }
 
-        void IBotAgentClient.UpdateBot(UpdateInfo<BotModelInfo> update)
+        void AlgoServerApi.IAlgoServerEventHandler.OnPluginModelUpdate(AlgoServerApi.PluginModelUpdate update)
         {
             _syncContext.Invoke(() =>
             {
-                var bot = update.Value;
-                switch (update.Type)
+                switch (update.Action)
                 {
-                    case UpdateType.Added:
-                        _idProvider.RegisterPluginId(bot.InstanceId);
-                        _bots.Add(bot.InstanceId, new RemoteTradeBot(bot, this));
+                    case AlgoServerApi.Update.Types.Action.Added:
+                        _idProvider.RegisterPluginId(update.Id);
+                        _bots.Add(update.Id, new RemoteTradeBot(update.Plugin.ToServer(), this));
                         break;
-                    case UpdateType.Replaced:
-                        _bots[bot.InstanceId].Update(bot);
-                        BotUpdated(_bots[bot.InstanceId]);
+                    case AlgoServerApi.Update.Types.Action.Updated:
+                        _bots[update.Id].Update(update.Plugin.ToServer());
+                        BotUpdated(_bots[update.Id]);
                         break;
-                    case UpdateType.Removed:
-                        if (_bots.ContainsKey(bot.InstanceId))
+                    case AlgoServerApi.Update.Types.Action.Removed:
+                        if (_bots.ContainsKey(update.Id))
                         {
-                            _idProvider.UnregisterPlugin(bot.InstanceId);
-                            _bots.Remove(bot.InstanceId);
+                            _idProvider.UnregisterPlugin(update.Id);
+                            _bots.Remove(update.Id);
                         }
                         break;
                 }
             });
         }
 
-        void IBotAgentClient.SetApiMetadata(ApiMetadataInfo apiMetadata)
-        {
-            _apiMetadata = apiMetadata;
-        }
-
-        void IBotAgentClient.SetMappingsInfo(MappingCollectionInfo mappings)
-        {
-            _mappings = mappings;
-        }
-
-        void IBotAgentClient.SetSetupContext(SetupContextInfo setupContext)
-        {
-            _setupContext = setupContext;
-        }
-
-        void IBotAgentClient.UpdatePackageState(UpdateInfo<PackageInfo> update)
+        void AlgoServerApi.IAlgoServerEventHandler.OnPackageStateUpdate(AlgoServerApi.PackageStateUpdate update)
         {
             _syncContext.Invoke(() =>
             {
-                var package = update.Value;
-                if (_packages.TryGetValue(package.Key, out var packageModel))
+                if (_packages.TryGetValue(update.Id, out var packageModel))
                 {
-                    packageModel.IsValid = package.IsValid;
-                    packageModel.IsObsolete = package.IsObsolete;
-                    packageModel.IsLocked = package.IsLocked;
+                    packageModel.IsLocked = update.IsLocked;
                     PackageStateChanged(packageModel);
                 }
             });
         }
 
-        void IBotAgentClient.UpdateAccountState(UpdateInfo<AccountModelInfo> update)
+        void AlgoServerApi.IAlgoServerEventHandler.OnAccountStateUpdate(AlgoServerApi.AccountStateUpdate update)
         {
             _syncContext.Invoke(() =>
             {
-                var account = update.Value;
-                if (_accounts.TryGetValue(account.Key, out var accountModel))
+                if (_accounts.TryGetValue(update.Id, out var accountModel))
                 {
-                    accountModel.ConnectionState = account.ConnectionState;
-                    accountModel.LastError = account.LastError;
+                    accountModel.ConnectionState = update.ConnectionState.ToServer();
+                    accountModel.LastError = update.LastError.ToServer();
                     AccountStateChanged(accountModel);
                 }
             });
         }
 
-        void IBotAgentClient.UpdateBotState(UpdateInfo<BotModelInfo> update)
+        void AlgoServerApi.IAlgoServerEventHandler.OnPluginStateUpdate(AlgoServerApi.PluginStateUpdate update)
         {
             _syncContext.Invoke(() =>
             {
-                var bot = update.Value;
-                if (_bots.TryGetValue(bot.InstanceId, out var botModel))
+                if (_bots.TryGetValue(update.Id, out var botModel))
                 {
-                    botModel.UpdateState(bot);
+                    botModel.UpdateState(update.ToServer());
                     BotStateChanged(botModel);
                 }
             });
         }
 
-
-        private void MergePlugins(PackageInfo package)
+        void AlgoServerApi.IAlgoServerEventHandler.OnPluginStatusUpdate(AlgoServerApi.PluginStatusUpdate update)
         {
+            _syncContext.Invoke(() =>
+            {
+                if (_bots.TryGetValue(update.PluginId, out var botModel))
+                {
+                    botModel.UpdateStatus(update.Message);
+                }
+            });
+        }
+
+        void AlgoServerApi.IAlgoServerEventHandler.OnPluginLogUpdate(AlgoServerApi.PluginLogUpdate update)
+        {
+            _syncContext.Invoke(() =>
+            {
+                if (_bots.TryGetValue(update.PluginId, out var botModel))
+                {
+                    botModel.UpdateLogs(update.Records.Select(u => u.ToServer()).ToList());
+                }
+            });
+        }
+
+        void AlgoServerApi.IAlgoServerEventHandler.OnAlertListUpdate(AlgoServerApi.AlertListUpdate update)
+        {
+            _syncContext.Invoke(() =>
+            {
+                AlertModel.UpdateRemoteAlert(update.Alerts.Select(u => u.ToServer()).ToList());
+            });
+        }
+
+        private void MergePlugins(PackageInfo oldPackage, PackageInfo newPackage)
+        {
+            var newPlugins = newPackage?.Plugins ?? Enumerable.Empty<PluginInfo>();
             // upsert
-            foreach (var plugin in package.Plugins)
+            foreach (var plugin in newPlugins)
             {
                 if (!_plugins.ContainsKey(plugin.Key))
                 {
@@ -416,15 +441,23 @@ namespace TickTrader.BotTerminal
                 }
             }
 
-            // remove
-            var newPluginsLookup = package.Plugins.ToDictionary(p => p.Key);
-            foreach (var plugin in _plugins.Values.Where(p => p.Key.IsFromPackage(package.Key)).ToList())
+            if (oldPackage != null)
             {
-                if (!newPluginsLookup.ContainsKey(plugin.Key))
+                // remove
+                var newPluginsLookup = newPlugins.ToDictionary(p => p.Key);
+                foreach (var plugin in oldPackage.Plugins)
                 {
-                    _plugins.Remove(plugin.Key);
+                    if (!newPluginsLookup.ContainsKey(plugin.Key))
+                    {
+                        _plugins.Remove(plugin.Key);
+                    }
                 }
             }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            //await UnsubscribeToAlerts();
         }
 
         #endregion

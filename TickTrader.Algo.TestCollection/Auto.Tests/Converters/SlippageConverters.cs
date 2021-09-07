@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Auto.Tests
@@ -22,7 +18,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             }
         }
 
-        public static double SlippagePipsToPercent(double slippage,double price, Symbol symbol)
+        public static double SlippagePipsToPercent(double slippage, double price, Symbol symbol)
         {
             switch (symbol.SlippageType)
             {

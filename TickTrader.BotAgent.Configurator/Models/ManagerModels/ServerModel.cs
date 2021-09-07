@@ -6,7 +6,7 @@ namespace TickTrader.BotAgent.Configurator
 {
     public class ServerModel : IWorkingModel
     {
-        private const string DefaultUrls = "https://localhost:5000/;http://localhost:5001";
+        private const string DefaultUrls = "https://localhost:15137/;http://localhost:15139";
 
         private string _urlsString;
 

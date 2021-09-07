@@ -1,8 +1,6 @@
-﻿using TickTrader.Algo.Protocol;
-
-namespace TickTrader.BotAgent.WebAdmin.Server.Models
+﻿namespace TickTrader.BotAgent.WebAdmin.Server.Models
 {
-    public class ProtocolSettings : IProtocolSettings
+    public class ProtocolSettings
     {
         public int ListeningPort { get; set; }
 

@@ -1,20 +1,14 @@
 ﻿using Machinarium.Qnil;
-using Machinarium.State;
 using NLog;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Model;
-using TickTrader.BotTerminal.Lib;
-using TickTrader.Algo.Common.Lib;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Lib;
 using System.Configuration;
+using TickTrader.Algo.Domain;
+using TickTrader.Algo.Account;
 
 namespace TickTrader.BotTerminal
 {
@@ -51,13 +45,13 @@ namespace TickTrader.BotTerminal
                     journal.Info("{0}: logout from {1}", GetLast().Login, GetLast().Server.Name);
                 else if (IsFailedConnection(from, to))
                 {
-                    if (Connection.LastErrorCode == ConnectionErrorCodes.Unknown && !string.IsNullOrEmpty(Connection.LastError.TextMessage))
+                    if (Connection.LastErrorCode == ConnectionErrorInfo.Types.ErrorCode.UnknownConnectionError && !string.IsNullOrEmpty(Connection.LastError.TextMessage))
                         journal.Error("{0}: connect failed - {1}", Creds.Login, Connection.LastError.TextMessage);
                     else journal.Error("{0}: connect failed [{1}]", Creds.Login, Connection.LastErrorCode);
                 }
                 else if (IsUnexpectedDisconnect(from, to))
                 {
-                    if (Connection.LastErrorCode == ConnectionErrorCodes.Unknown && !string.IsNullOrEmpty(Connection.LastError.TextMessage))
+                    if (Connection.LastErrorCode == ConnectionErrorInfo.Types.ErrorCode.UnknownConnectionError && !string.IsNullOrEmpty(Connection.LastError.TextMessage))
                         journal.Error("{0}: connection to {1} lost - {2}", GetLast().Login, GetLast().Server.Name, Connection.LastError.TextMessage);
                     else journal.Error("{0}: connection to {1} lost [{2}]", GetLast().Login, GetLast().Server.Name, Connection.LastErrorCode);
                 }
@@ -141,7 +135,7 @@ namespace TickTrader.BotTerminal
 
                 var result = await Connection.Connect(login, password, server, cToken);
 
-                if (result.Code == ConnectionErrorCodes.None)
+                if (result.IsOk)
                 {
                     SaveLogin(newCreds);
                     SetLoggedIn(true);
@@ -206,7 +200,7 @@ namespace TickTrader.BotTerminal
             foreach (var acc in authStorage.Accounts.Values)
                 Accounts.Add(CreateEntry(acc));
 
-            Accounts.Select(u => u.Server.Address).Distinct().Except(Servers.Select(u => u.Address)).Foreach(u => SaveNewServer(u)); //add cached servers
+            Accounts.Select(u => u.Server.Address).Distinct().Except(Servers.Select(u => u.Address)).ForEach(u => SaveNewServer(u)); //add cached servers
         }
 
         private void SaveLogin(AccountAuthEntry entry)

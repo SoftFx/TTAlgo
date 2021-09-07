@@ -1,14 +1,11 @@
-﻿using Caliburn.Micro;
-using Machinarium.Var;
+﻿using Machinarium.Var;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Backtester;
+using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -68,7 +65,7 @@ namespace TickTrader.BotTerminal
         public ObservableCollection<ParamSeekSetupModel> Parameters { get; } = new ObservableCollection<ParamSeekSetupModel>();
         public IEnumerable<int> AvailableParallelismList { get; }
         public IntProperty ParallelismProp { get; } = new IntProperty();
-        public IEnumerable<OptimizationAlgorithms> AvailableAlgorithms => EnumHelper.AllValues<OptimizationAlgorithms>() ;
+        public IEnumerable<OptimizationAlgorithms> AvailableAlgorithms => EnumHelper.AllValues<OptimizationAlgorithms>();
         public Property<OptimizationAlgorithms> AlgorithmProp { get; } = new Property<OptimizationAlgorithms>();
         public Dictionary<string, MetricProvider> AvailableMetrics => MetricSelectors;
         public Property<KeyValuePair<string, MetricProvider>> SelectedMetric { get; } = new Property<KeyValuePair<string, MetricProvider>>();
@@ -90,13 +87,13 @@ namespace TickTrader.BotTerminal
                 case OptimizationAlgorithms.Genetic:
                     optimizer.SetSeekStrategy(new GeneticStrategy(_genConfig));
                     break;
-                //case OptimizationAlgorithms.Annealing:
-                //    optimizer.SetSeekStrategy(new AnnealingStrategy(_annConfig, _descriptor.Parameters.Count));
-                //    break;
+                    //case OptimizationAlgorithms.Annealing:
+                    //    optimizer.SetSeekStrategy(new AnnealingStrategy(_annConfig, _descriptor.Parameters.Count));
+                    //    break;
             }
         }
 
-        public void SetPluign(PluginDescriptor descriptor, PluginSetupModel setup)
+        public void SetPluign(PluginDescriptor descriptor, PluginConfig config)
         {
             _descriptor = descriptor;
 
@@ -104,11 +101,12 @@ namespace TickTrader.BotTerminal
 
             //var canOptimize = false;
 
-            if (descriptor.Type == AlgoTypes.Robot)
+            if (descriptor.IsTradeBot)
             {
+                var properties = config.UnpackProperties();
                 foreach (var p in descriptor.Parameters)
                 {
-                    var pSetup = setup.Parameters.FirstOrDefault(ps => ps.Id == p.Id);
+                    var pSetup = properties.FirstOrDefault(ps => ps.PropertyId == p.Id) as IParameterConfig;
                     var model = ParamSeekSetModel.Create(p);
                     if (model != null)
                         Parameters.Add(new ParamSeekSetupModel(this, model, p, pSetup));
@@ -144,22 +142,18 @@ namespace TickTrader.BotTerminal
                 setup.UpdateModel(setupWndModel.Model);
         }
 
-        protected override void OnDeactivate(bool close)
-        {
-            base.OnDeactivate(close);
-        }
 
         public class ParamSeekSetupModel : EntityBase
         {
             private BacktesterOptimizerViewModel _parent;
             private Property<ParamSeekSetModel> _modelProp;
-            private ParameterSetupModel _setup;
+            private IParameterConfig _config;
             private Property<string> _descriptionProp;
 
-            public ParamSeekSetupModel(BacktesterOptimizerViewModel parent, ParamSeekSetModel model, ParameterDescriptor descriptor, ParameterSetupModel setup)
+            public ParamSeekSetupModel(BacktesterOptimizerViewModel parent, ParamSeekSetModel model, ParameterDescriptor descriptor, IParameterConfig config)
             {
                 _parent = parent;
-                _setup = setup;
+                _config = config;
                 Descriptor = descriptor;
                 _modelProp = AddProperty(model);
                 _descriptionProp = AddProperty<string>();
@@ -205,7 +199,7 @@ namespace TickTrader.BotTerminal
                 }
                 else
                 {
-                    _descriptionProp.Value = _setup?.ValueAsText;
+                    _descriptionProp.Value = _config.ValObj?.ToString();
                     CaseCountProp.Value = 1;
                 }
             }

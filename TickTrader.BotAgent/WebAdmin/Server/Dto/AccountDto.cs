@@ -1,4 +1,4 @@
-﻿using TickTrader.Algo.Common.Info;
+﻿using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Dto
 {
@@ -8,6 +8,6 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Dto
         public string Password { get; set; }
         public string Server { get; set; }
 
-        public ConnectionErrorCodes LastConnectionStatus { get; set; }
+        public ConnectionErrorInfo.Types.ErrorCode LastConnectionStatus { get; set; }
     }
 }

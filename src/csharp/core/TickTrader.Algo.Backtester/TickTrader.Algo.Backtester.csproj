@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>algo.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="C5" Version="2.5.3" />
+    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="4.11.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\api\TickTrader.Algo.CoreV1\TickTrader.Algo.CoreV1.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.Calculator\TickTrader.Algo.Calculator.csproj" />
+    <ProjectReference Include="..\TickTrader.FeedStorage\TickTrader.FeedStorage.csproj" />
+  </ItemGroup>
+
+</Project>

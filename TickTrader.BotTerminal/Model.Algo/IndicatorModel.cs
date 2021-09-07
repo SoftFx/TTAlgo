@@ -1,26 +1,22 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Threading;
+using TickTrader.Algo.Domain;
+using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Core;
-using SciChart.Charting.Model.DataSeries;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Api;
-using System.Linq;
-using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.BotTerminal
 {
     internal class IndicatorModel : PluginModel, IIndicatorWriter
     {
-        private IndicatorListenerProxy _indicatorListener;
         private EventJournal _journal;
+        private IAlgoPluginHost _host;
 
         public IndicatorModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext)
             : base(config, agent, host, setupContext)
         {
             _journal = agent.Shell.EventJournal;
 
+            _host = host;
             host.StartEvent += Host_StartEvent;
             host.StopEvent += Host_StopEvent;
 
@@ -29,20 +25,18 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public override void Dispose()
+        public void Dispose()
         {
-            base.Dispose();
-
             Host.StartEvent -= Host_StartEvent;
             Host.StopEvent -= Host_StopEvent;
-            if (State == PluginStates.Running)
+            if (State == PluginModelInfo.Types.PluginState.Running)
                 StopIndicator().ContinueWith(t => { /* TO DO: log errors */ });
         }
 
 
         protected override async void OnPluginUpdated()
         {
-            if (State == PluginStates.Running)
+            if (State == PluginModelInfo.Types.PluginState.Running)
             {
                 await StopIndicator();
                 UpdateRefs();
@@ -50,30 +44,22 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        protected override PluginExecutor CreateExecutor()
-        {
-            var executor = base.CreateExecutor();
-
-            _indicatorListener = new IndicatorListenerProxy(executor, this);
-
-            return executor;
-        }
-
         private void StartIndicator()
         {
-            if (PluginStateHelper.CanStart(State))
+            if (State.CanStart())
             {
-                if (StartExcecutor())
-                    ChangeState(PluginStates.Running);
+                _host.EnqueueStartAction(() => StartExcecutor().ContinueWith(t => { if (t.Result) ChangeState(PluginModelInfo.Types.PluginState.Running); }));
+                //if (StartExcecutor())
+                //    ChangeState(PluginModelInfo.Types.PluginState.Running);
             }
         }
 
         private async Task StopIndicator()
         {
-            if (State == PluginStates.Running)
+            if (State.IsRunning())
             {
                 if (await StopExecutor())
-                    ChangeState(PluginStates.Stopped);
+                    ChangeState(PluginModelInfo.Types.PluginState.Stopped);
             }
         }
 
@@ -91,12 +77,12 @@ namespace TickTrader.BotTerminal
         {
             switch (record.Severity)
             {
-                case LogSeverities.Info:
-                case LogSeverities.Error:
-                case LogSeverities.Custom:
+                case PluginLogRecord.Types.LogSeverity.Info:
+                case PluginLogRecord.Types.LogSeverity.Error:
+                case PluginLogRecord.Types.LogSeverity.Custom:
                     _journal.Add(EventMessage.Create(record));
                     break;
-                case LogSeverities.Alert:
+                case PluginLogRecord.Types.LogSeverity.Alert:
                     AlertModel.AddAlert(InstanceId, record);
                     break;
                 default:

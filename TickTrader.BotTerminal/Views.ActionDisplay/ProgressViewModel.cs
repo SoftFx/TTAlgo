@@ -1,12 +1,7 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Var;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotTerminal
 {
@@ -17,9 +12,9 @@ namespace TickTrader.BotTerminal
             Message = AddProperty("");
             IsIndeterminate = AddBoolProperty();
             IsError = AddBoolProperty();
-            ProgressMin = AddProperty(0D, "ProgressMin");
-            ProgressMax = AddProperty(100D, "ProgressMax");
-            Progress = AddProperty(0D, "Progress");
+            ProgressMin = AddProperty(0D, notifyName: "ProgressMin");
+            ProgressMax = AddProperty(100D, notifyName: "ProgressMax");
+            Progress = AddProperty(0D, notifyName: "Progress");
 
             //TriggerOnChange(ProgressMin.Var, a => System.Diagnostics.Debug.WriteLine("Min = " + a.New));
             //TriggerOnChange(ProgressMax.Var, a => System.Diagnostics.Debug.WriteLine("Max = " + a.New));

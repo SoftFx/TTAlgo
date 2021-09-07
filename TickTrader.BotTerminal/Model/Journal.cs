@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using Google.Protobuf.WellKnownTypes;
 using Machinarium.Qnil;
 using System;
 using System.Collections.Generic;
@@ -9,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -67,9 +69,9 @@ namespace TickTrader.BotTerminal
             TimeKey = new TimeKey(DateTime.UtcNow, 0);
         }
 
-        public BaseJournalMessage(TimeKey time)
+        public BaseJournalMessage(Timestamp time)
         {
-            TimeKey = time;
+            TimeKey = new TimeKey(time);
         }
 
         public TimeKey TimeKey { get; set; }
@@ -80,17 +82,17 @@ namespace TickTrader.BotTerminal
             return Message;
         }
 
-        internal static JournalMessageType Convert(LogSeverities severity)
+        internal static JournalMessageType Convert(PluginLogRecord.Types.LogSeverity severity)
         {
             switch (severity)
             {
-                case LogSeverities.Info: return JournalMessageType.Info;
-                case LogSeverities.Error: return JournalMessageType.Error;
-                case LogSeverities.Custom: return JournalMessageType.Custom;
-                case LogSeverities.Trade: return JournalMessageType.Trading;
-                case LogSeverities.TradeSuccess: return JournalMessageType.TradingSuccess;
-                case LogSeverities.TradeFail: return JournalMessageType.TradingFail;
-                case LogSeverities.Alert: return JournalMessageType.Alert;
+                case PluginLogRecord.Types.LogSeverity.Info: return JournalMessageType.Info;
+                case PluginLogRecord.Types.LogSeverity.Error: return JournalMessageType.Error;
+                case PluginLogRecord.Types.LogSeverity.Custom: return JournalMessageType.Custom;
+                case PluginLogRecord.Types.LogSeverity.Trade: return JournalMessageType.Trading;
+                case PluginLogRecord.Types.LogSeverity.TradeSuccess: return JournalMessageType.TradingSuccess;
+                case PluginLogRecord.Types.LogSeverity.TradeFail: return JournalMessageType.TradingFail;
+                case PluginLogRecord.Types.LogSeverity.Alert: return JournalMessageType.Alert;
                 default: return JournalMessageType.Info;
             }
         }

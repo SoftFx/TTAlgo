@@ -6,11 +6,11 @@ namespace TickTrader.BotAgent.Configurator
 {
     public class UriChecker
     {
+        private const string Protocol = "https";
+
         public static List<Uri> GetEncodedUrls(List<Uri> urls)
         {
-            var sc = "https";
-
-            var busyUrls = new List<Uri>();
+            var busyUrls = new List<Uri>(1 << 4);
 
             foreach (var url in urls)
             {
@@ -18,13 +18,13 @@ namespace TickTrader.BotAgent.Configurator
                 {
                     if (url.IsLoopback)
                     {
-                        busyUrls.Add(new UriBuilder(sc, IPAddress.Loopback.ToString(), url.Port).Uri);
-                        busyUrls.Add(new UriBuilder(sc, IPAddress.IPv6Loopback.ToString(), url.Port).Uri);
+                        busyUrls.Add(new UriBuilder(Protocol, IPAddress.Loopback.ToString(), url.Port).Uri);
+                        busyUrls.Add(new UriBuilder(Protocol, IPAddress.IPv6Loopback.ToString(), url.Port).Uri);
                     }
                     else
                     {
-                        busyUrls.Add(new UriBuilder(sc, IPAddress.Any.ToString(), url.Port).Uri);
-                        busyUrls.Add(new UriBuilder(sc, IPAddress.IPv6Any.ToString(), url.Port).Uri);
+                        busyUrls.Add(new UriBuilder(Protocol, IPAddress.Any.ToString(), url.Port).Uri);
+                        busyUrls.Add(new UriBuilder(Protocol, IPAddress.IPv6Any.ToString(), url.Port).Uri);
                     }
                 }
                 else
@@ -39,8 +39,8 @@ namespace TickTrader.BotAgent.Configurator
             if (uri.HostNameType != UriHostNameType.Dns)
                 return null;
 
-            return uri.IsLoopback ? new Tuple<string, string>(IPAddress.Loopback.ToString(), $"[{IPAddress.IPv6Loopback.ToString()}]") :
-                new Tuple<string, string>(IPAddress.Any.ToString(), $"[{IPAddress.IPv6Any.ToString()}]");
+            return uri.IsLoopback ? new Tuple<string, string>(IPAddress.Loopback.ToString(), $"[{IPAddress.IPv6Loopback}]") :
+                new Tuple<string, string>(IPAddress.Any.ToString(), $"[{IPAddress.IPv6Any}]");
         }
 
         public static void CompareUriWithWarnings(Uri first, Uri second, string message = "")

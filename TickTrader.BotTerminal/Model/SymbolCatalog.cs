@@ -2,11 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core.Setup;
+using TickTrader.Algo.Domain;
+using TickTrader.FeedStorage;
 
 namespace TickTrader.BotTerminal
 {
@@ -60,21 +59,21 @@ namespace TickTrader.BotTerminal
             return _customStorage.Update(customSymbol);
         }
 
-        public SymbolData GetSymbol(ISymbolInfo info)
+        public SymbolData GetSymbol(ISetupSymbolInfo info)
         {
             var key = new SymbolKey(info.Name, info.Origin);
 
-            if (info.Origin == Algo.Common.Info.SymbolOrigin.Online)
+            if (info.Origin == SymbolConfig.Types.SymbolOrigin.Online)
                 return OnlineSymbols.Snapshot[key];
-            else if (info.Origin == Algo.Common.Info.SymbolOrigin.Custom)
+            else if (info.Origin == SymbolConfig.Types.SymbolOrigin.Custom)
                 return CustomSymbols.Snapshot[key];
 
             throw new Exception("Unsupported symbol origin: " + info.Origin);
         }
 
-        private KeyValuePair<SymbolKey, SymbolData> CreateSymbolData(SymbolModel smb, TraderClientModel client)
+        private KeyValuePair<SymbolKey, SymbolData> CreateSymbolData(SymbolInfo smb, TraderClientModel client)
         {
-            var key = new SymbolKey(smb.Name, SymbolOrigin.Online);
+            var key = new SymbolKey(smb.Name, SymbolConfig.Types.SymbolOrigin.Online);
             var data = new OnlineSymbolData(smb, client);
             return new KeyValuePair<SymbolKey, SymbolData>(key, data);
 

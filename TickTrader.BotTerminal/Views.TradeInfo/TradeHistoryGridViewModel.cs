@@ -2,13 +2,9 @@
 using Machinarium.Var;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Data;
-using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -21,11 +17,11 @@ namespace TickTrader.BotTerminal
         {
             Items = new Property<ICollectionView>();
             Items.Value = CollectionViewSource.GetDefaultView(src);
-            AccType = new Property<AccountTypes?>();
+            AccType = new Property<AccountInfo.Types.Type?>();
 
-            IsGrossAccount = AccType.Var == AccountTypes.Gross;
-            IsNetAccount = AccType.Var == AccountTypes.Net;
-            IsCachAccount = AccType.Var == AccountTypes.Cash;
+            IsGrossAccount = AccType.Var == AccountInfo.Types.Type.Gross;
+            IsNetAccount = AccType.Var == AccountInfo.Types.Type.Net;
+            IsCachAccount = AccType.Var == AccountInfo.Types.Type.Cash;
             IsMarginAccount = IsGrossAccount | IsNetAccount;
             IsAccTypeSet = AccType.Var.IsNotNull();
 
@@ -43,7 +39,7 @@ namespace TickTrader.BotTerminal
         }
 
         public Property<ICollectionView> Items { get; }
-        public Property<AccountTypes?> AccType { get; }
+        public Property<AccountInfo.Types.Type?> AccType { get; }
         public Predicate<object> Filter { get => Items.Value.Filter; set => Items.Value.Filter = value; } 
 
         public BoolVar IsNetAccount { get; }
@@ -56,7 +52,7 @@ namespace TickTrader.BotTerminal
         public bool AutoSizeColumns { get; private set; }
         public bool ConvertTimeToLocal { get; set; }
 
-        public AccountTypes GetAccTypeValue() => AccType.Value.Value;
+        public AccountInfo.Types.Type GetAccTypeValue() => AccType.Value.Value;
         public ViewModelStorageEntry StateProvider { get; private set; }
 
         public void RefreshItems()

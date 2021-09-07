@@ -1,8 +1,5 @@
-﻿using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Core.Repository;
+﻿using TickTrader.Algo.Domain;
+using TickTrader.Algo.Package;
 
 namespace TickTrader.BotTerminal
 {
@@ -22,18 +19,18 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public override void Load(Property srcProperty)
+        public override void Load(IPropertyConfig srcProperty)
         {
-            var input = srcProperty as BarToBarInput;
+            var input = srcProperty as BarToBarInputConfig;
             if (input != null)
             {
                 LoadConfig(input);
             }
         }
 
-        public override Property Save()
+        public override IPropertyConfig Save()
         {
-            var input = new BarToBarInput();
+            var input = new BarToBarInputConfig();
             SaveConfig(input);
             return input;
         }

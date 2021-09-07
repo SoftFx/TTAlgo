@@ -6,7 +6,7 @@ import { Subject } from "rxjs/Subject";
 
 import * as signalR from '@aspnet/signalr';
 
-import { FeedSignalR, FeedProxy, FeedServer, FeedClient, ConnectionStatus, PackageModel, AccountModel, TradeBotStateModel, TradeBotModel } from '../models/index';
+import { FeedProxy, FeedServer, FeedClient, ConnectionStatus, PackageModel, AccountModel, TradeBotStateModel, TradeBotModel } from '../models/index';
 import { setTimeout } from 'timers';
 
 

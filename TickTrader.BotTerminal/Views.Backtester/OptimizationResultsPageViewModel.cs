@@ -1,17 +1,14 @@
-﻿using Caliburn.Micro;
-using Machinarium.Var;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Backtester;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -28,7 +25,7 @@ namespace TickTrader.BotTerminal
             DisplayName = "Optimization Results";
             IsVisible = false;
 
-            DataView = Data.AsDataView();
+            //DataView = Data.AsDataView();
         }
 
         public DataTable Data { get; } = new DataTable();
@@ -111,15 +108,14 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public Task SaveReportAsync(PluginSetupModel pluginSetup, IActionObserver observer)
+        public Task SaveReportAsync(PluginDescriptor pDescriptor, IActionObserver observer)
         {
-            return Task.Run(() => SaveReport(pluginSetup, observer));
+            return Task.Run(() => SaveReport(pDescriptor, observer));
         }
 
-        private void SaveReport(PluginSetupModel pluginSetup, IActionObserver observer)
+        private void SaveReport(PluginDescriptor pDescriptor, IActionObserver observer)
         {
-            var dPlugin = pluginSetup.PluginRef.Metadata.Descriptor;
-            var fileName = "Optimization of " + dPlugin.DisplayName + " " + DateTime.Now.ToString("yyyy-dd-M HH-mm-ss") + ".zip";
+            var fileName = "Optimization of " + pDescriptor.DisplayName + " " + DateTime.Now.ToString("yyyy-dd-M HH-mm-ss") + ".zip";
             var filePath = System.IO.Path.Combine(EnvService.Instance.BacktestResultsFolder, fileName);
 
             observer.StartIndeterminateProgress();
@@ -151,7 +147,7 @@ namespace TickTrader.BotTerminal
 
                         var summaryEntry = archive.CreateEntry(repFolder + "report.txt", CompressionLevel.Optimal);
                         using (var entryStream = summaryEntry.Open())
-                            BacktesterReportViewModel.SaveAsText(entryStream, dPlugin.Type, rep.Stats);
+                            BacktesterReportViewModel.SaveAsText(entryStream, pDescriptor.IsTradeBot, rep.Stats);
 
                         observer.SetProgress(repNo++);
                     }

@@ -19,7 +19,7 @@
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <Label Grid.Row="0" Content="Bot Agent"/>
+                <Label Grid.Row="0" Content="Algo Server"/>
                 <ComboBox Grid.Row="1"
                       ItemsSource="{Binding Agents}"
                       DisplayMemberPath="Name"

@@ -1,8 +1,5 @@
-﻿using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Core.Repository;
+﻿using TickTrader.Algo.Domain;
+using TickTrader.Algo.Package;
 
 namespace TickTrader.BotTerminal
 {
@@ -15,22 +12,22 @@ namespace TickTrader.BotTerminal
         public BarToDoubleInputSetupViewModel(InputDescriptor descriptor, SetupMetadata setupMetadata)
             : base(descriptor, setupMetadata)
         {
-            _defaultMapping = new MappingKey(setupMetadata.Context.DefaultMapping, setupMetadata.Mappings.DefaultBarToDoubleReduction);
+            _defaultMapping = setupMetadata.Mappings.DefaultBarToDoubleMapping.Key;
             AvailableMappings = setupMetadata.Mappings.BarToDoubleMappings;
         }
 
-        public override void Load(Property srcProperty)
+        public override void Load(IPropertyConfig srcProperty)
         {
-            var input = srcProperty as BarToDoubleInput;
+            var input = srcProperty as BarToDoubleInputConfig;
             if (input != null)
             {
                 LoadConfig(input);
             }
         }
 
-        public override Property Save()
+        public override IPropertyConfig Save()
         {
-            var input = new BarToDoubleInput();
+            var input = new BarToDoubleInputConfig();
             SaveConfig(input);
             return input;
         }

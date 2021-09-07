@@ -1,151 +1,80 @@
-﻿using Caliburn.Micro;
+﻿using Machinarium.Var;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Media;
-using TickTrader.Algo.Common;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Infrastructure;
+using TickTrader.Algo.Domain;
+using TickTrader.BotTerminal.Converters;
+using TickTrader.BotTerminal.Converters.Machinarium.Converters;
 
 namespace TickTrader.BotTerminal
 {
-    class SymbolViewModel : PropertyChangedBase
+    public enum RateChangeDirections
     {
-        public enum States { Collapsed, Expanded, ExpandedWithLevel2 }
+        Unknown,
+        Up,
+        Down,
+    }
 
-        private SymbolModel _model;
-        private bool isSelected;
-        private States currentState;
-        private IShell _shell;
-        private DateTime _quoteTime;
-        private IFeedSubscription subscription;
+    internal sealed class SymbolViewModel
+    {
+        private readonly VarContext _varContext = new VarContext();
+        private readonly PricePrecisionConverter<double> _symbolPrecision;
 
-        public SymbolViewModel(SymbolModel model, QuoteDistributor distributor, IShell shell, bool showLocalTime)
+        private readonly SymbolInfo _model;
+
+        public SymbolViewModel(SymbolInfo model, QuoteDistributor distributor)
         {
             _model = model;
-            _shell = shell;
-            ShowLocalTime = showLocalTime;
-            subscription = distributor.AddSubscription(OnRateUpdate, model.Name);
-            //subscription.NewQuote += ;
+            _symbolPrecision = new PricePrecisionConverter<double>(model?.Digits ?? 2);
 
-            Bid = model.BidTracker;
-            Ask = model.AskTracker;
+            distributor.AddSubscription(OnRateUpdate, model.Name);
 
-            OnInfoUpdated(_model);
-            _model.InfoUpdated += OnInfoUpdated;
+            Bid = new RateViewModel(_symbolPrecision);
+            Ask = new RateViewModel(_symbolPrecision);
 
-            DetailsPanel = new SymbolDetailsViewModel(Ask, Bid);
-            Level2Panel = new SymbolLevel2ViewModel();
+            QuoteTime = _varContext.AddProperty(default, new DateTimeToUtc());
+        }
 
-            Color = model.Descriptor.Color;
+        public string SymbolName => _model.Name;
 
-            if (_shell != null)
+        public Property<DateTime?> QuoteTime { get; private set; }
+
+        public RateViewModel Bid { get; private set; }
+
+        public RateViewModel Ask { get; private set; }
+
+        private void OnRateUpdate(QuoteInfo tick)
+        {
+            QuoteTime.Value = tick.Time;
+
+            Bid.RateUpdate(tick.Bid);
+            Ask.RateUpdate(tick.Ask);
+        }
+
+        internal sealed class RateViewModel
+        {
+            private readonly VarContext _varContext = new VarContext();
+
+            public Property<double> Rate { get; }
+
+            public Property<RateChangeDirections> Direction { get; }
+
+            internal RateViewModel(IDisplayValueConverter<double> precisionConverter)
             {
-                this.DetailsPanel.OnBuyClick = () => _shell.OrderCommands.OpenMarkerOrder(model.Name);
-                this.DetailsPanel.OnSellClick = () => _shell.OrderCommands.OpenMarkerOrder(model.Name);
+                Rate = _varContext.AddProperty(displayConverter: precisionConverter);
+                Direction = _varContext.AddProperty(default(RateChangeDirections));
             }
-        }
 
-        public string SymbolName { get { return _model.Name; } }
-        public string Group { get { return "Forex"; } }
-        public int Color { get; private set; }
-        public bool ShowLocalTime { get; }
-        public bool CanOpenChart => _shell != null;
-
-        public RateDirectionTracker Bid { get; private set; }
-        public RateDirectionTracker Ask { get; private set; }
-        public DateTime QuoteTime
-        {
-            get { return _quoteTime; }
-            private set
+            public void RateUpdate(double rate)
             {
-                if (_quoteTime != value)
-                {
-                    _quoteTime = value;
-                    NotifyOfPropertyChange(nameof(QuoteTime));
-                }
+                if (double.IsNaN(rate))
+                    Direction.Value = RateChangeDirections.Unknown;
+                else if (Rate.Value < rate)
+                    Direction.Value = RateChangeDirections.Up;
+                else if (Rate.Value > rate)
+                    Direction.Value = RateChangeDirections.Down;
+
+                Rate.Value = rate;
             }
-        }
-        public int Depth { get; private set; }
-        public SymbolDetailsViewModel DetailsPanel { get; private set; }
-        public SymbolLevel2ViewModel Level2Panel { get; private set; }
-
-        #region State Management
-
-        public bool IsSelected
-        {
-            get { return isSelected; }
-            set
-            {
-                if (isSelected != value)
-                {
-                    isSelected = value;
-                    NotifyOfPropertyChange("IsSelected");
-                    if (value)
-                        State = States.Expanded;
-                    else
-                        State = States.Collapsed;
-                }
-            }
-        }
-
-        public States State
-        {
-            get { return currentState; }
-            set
-            {
-                this.currentState = value;
-                NotifyOfPropertyChange("State");
-                NotifyOfPropertyChange("IsExpanded");
-                NotifyOfPropertyChange("IsLevel2Visible");
-            }
-        }
-
-        public bool IsExpanded { get { return (State == States.Expanded || State == States.ExpandedWithLevel2); } }
-        public bool IsLevel2Visible { get { return State == States.ExpandedWithLevel2; } }
-
-        public void TriggerState()
-        {
-            if (!isSelected)
-                return;
-
-            if (State == States.Collapsed)
-                State = States.Expanded;
-            else if (State == States.Expanded)
-                State = States.ExpandedWithLevel2;
-            else if (State == States.ExpandedWithLevel2)
-                State = States.Collapsed;
-        }
-
-        #endregion
-
-        private void OnRateUpdate(QuoteEntity tick)
-        {
-            QuoteTime = tick.CreatingTime;
-        }
-
-        private void OnInfoUpdated(SymbolModel symbol)
-        {
-            Bid.Precision = symbol.Descriptor.Precision;
-            Ask.Precision = symbol.Descriptor.Precision;
-        }
-
-        public void OpenOrder()
-        {
-            _shell.OrderCommands.OpenMarkerOrder(_model.Name);
-        }
-
-        public void OpenChart()
-        {
-            _shell?.OpenChart(SymbolName);
-        }
-
-        public void Close()
-        {
-            subscription.CancelAll();
         }
     }
 }

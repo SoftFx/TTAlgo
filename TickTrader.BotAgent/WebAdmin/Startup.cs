@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SpaServices.Webpack;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc.Razor;
 using TickTrader.BotAgent.WebAdmin.Server.Core;
 using Newtonsoft.Json.Serialization;
@@ -14,7 +13,6 @@ using TickTrader.BotAgent.WebAdmin.Server.Core.Auth;
 using System;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
 using Microsoft.AspNetCore.Http;
-using TickTrader.Algo.Protocol;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using TickTrader.BotAgent.WebAdmin.Server.Hubs;
@@ -43,7 +41,6 @@ namespace TickTrader.BotAgent.WebAdmin
             var tokenProvider = new JwtSecurityTokenProvider(Configuration);
             services.AddSingleton<ISecurityTokenProvider, JwtSecurityTokenProvider>(s => tokenProvider);
             services.AddSingleton<IAuthManager, AuthManager>();
-            services.AddSingleton<IFdkOptionsProvider, FdkOptionsProvider>();
 
             services.AddSignalR(options => options.EnableDetailedErrors = true)
                 .AddJsonProtocol(o => o.PayloadSerializerSettings.ContractResolver = new DefaultContractResolver());
@@ -56,8 +53,7 @@ namespace TickTrader.BotAgent.WebAdmin
                 })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
-            services.AddSwaggerGen(c => c.SwaggerDoc("v1", new Swashbuckle.AspNetCore.Swagger.Info { Title = "BotAgent WebAPI", Version = "v1" }));
-            services.AddStorageOptions(Configuration.GetSection("PackageStorage"));
+            services.AddSwaggerGen(c => c.SwaggerDoc("v1", new Swashbuckle.AspNetCore.Swagger.Info { Title = "AlgoServer WebAPI", Version = "v1" }));
 
             services.AddAuthentication(options =>
             {
@@ -84,7 +80,7 @@ namespace TickTrader.BotAgent.WebAdmin
                     ConfigFile = "./WebAdmin/webpack.config"
                 });
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "BotAgent WebAPI v1"));
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "AlgoServer WebAPI v1"));
             }
             else
             {
@@ -97,7 +93,6 @@ namespace TickTrader.BotAgent.WebAdmin
             app.UseJwtAuthentication();
 
             app.ObserveBotAgent();
-            app.UseWardenOverBots();
 
             app.UseAuthentication();
 

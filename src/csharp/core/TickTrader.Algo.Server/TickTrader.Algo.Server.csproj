@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="certs\bot-agent.crt" />
+    <None Remove="certs\bot-agent.key" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="certs\bot-agent.crt" />
+    <EmbeddedResource Include="certs\bot-agent.key" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Text.Json" Version="5.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\accounts\TickTrader.Algo.Account.Fdk2\TickTrader.Algo.Account.Fdk2.csproj" />
+    <ProjectReference Include="..\..\lib\TickTrader.Algo.Async\TickTrader.Algo.Async.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.Account\TickTrader.Algo.Account.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.Package\TickTrader.Algo.Package.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.Rpc.OverTcp\TickTrader.Algo.Rpc.OverTcp.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.Rpc\TickTrader.Algo.Rpc.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.Runtime\TickTrader.Algo.Runtime.csproj" />
+  </ItemGroup>
+
+</Project>

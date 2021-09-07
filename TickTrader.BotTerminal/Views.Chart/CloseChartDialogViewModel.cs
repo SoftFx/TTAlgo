@@ -26,13 +26,13 @@ namespace TickTrader.BotTerminal
         public void Ok()
         {
             IsConfirmed = true;
-            TryClose();
+            TryCloseAsync();
         }
 
         public void Cancel()
         {
             IsConfirmed = false;
-            TryClose();
+            TryCloseAsync();
         }
     }
 }

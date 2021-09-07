@@ -7,6 +7,9 @@ namespace TickTrader.BotAgent.Configurator
     {
         public virtual string SectionName { get; }
 
+        public bool EnableManager { get; set; }
+
+
         public ContentManager(SectionNames sectionName)
         {
             SectionName = sectionName == SectionNames.None ? string.Empty : sectionName.ToString();

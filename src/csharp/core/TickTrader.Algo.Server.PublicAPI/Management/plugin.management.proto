@@ -1,0 +1,58 @@
+﻿syntax = "proto3";
+
+package ticktrader.algo.server.publicApi;
+
+option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
+
+import "google/protobuf/wrappers.proto";
+import "management/base.request.proto";
+import "info/plugin.info.proto";
+
+
+message AddPluginRequest {
+    string account_id = 1;
+    PluginConfig config = 2;
+}
+
+message AddPluginResponse {
+    RequestResult exec_result = 101;
+}
+
+
+message RemovePluginRequest {
+    google.protobuf.StringValue plugin_id = 1;
+    bool clean_log = 2;
+    bool clean_algo_data = 3;
+}
+
+message RemovePluginResponse {
+    RequestResult exec_result = 101;
+}
+
+
+message StartPluginRequest {
+    google.protobuf.StringValue plugin_id = 1;
+}
+
+message StartPluginResponse {
+    RequestResult exec_result = 101;
+}
+
+
+message StopPluginRequest {
+    google.protobuf.StringValue plugin_id = 1;
+}
+
+message StopPluginResponse {
+    RequestResult exec_result = 101;
+}
+
+
+message ChangePluginConfigRequest {
+    google.protobuf.StringValue plugin_id = 1;
+    PluginConfig new_config = 2;
+}
+
+message ChangePluginConfigResponse {
+    RequestResult exec_result = 101;
+}

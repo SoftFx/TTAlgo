@@ -1,317 +1,52 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{55E667BC-D245-4CAD-9FDC-79BA2438F709}</ProjectGuid>
+    <TargetFramework>net472</TargetFramework>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>TickTrader.BotAgent.Configurator</RootNamespace>
-    <AssemblyName>TickTrader.BotAgent.Configurator</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <WarningLevel>4</WarningLevel>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Deterministic>false</Deterministic>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <PublishUrl>C:\testPublish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <AssemblyName>TickTrader.AlgoServer.Configurator</AssemblyName>
+    <PlatformTarget>x64</PlatformTarget>
     <UseApplicationTrust>false</UseApplicationTrust>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup />
-  <PropertyGroup>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <UseWPF>true</UseWPF>
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
     <ApplicationIcon>configuration.ico</ApplicationIcon>
-  </PropertyGroup>
-  <PropertyGroup>
-    <TargetZone>LocalIntranet</TargetZone>
-  </PropertyGroup>
-  <PropertyGroup>
-    <GenerateManifests>false</GenerateManifests>
-  </PropertyGroup>
-  <PropertyGroup>
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
   </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="FontAwesome.WPF, Version=4.7.0.37774, Culture=neutral, PublicKeyToken=0758b07a11a4f466, processorArchitecture=MSIL">
-      <HintPath>..\packages\FontAwesome.WPF.4.7.0.9\lib\net40\FontAwesome.WPF.dll</HintPath>
-    </Reference>
     <Reference Include="Interop.NetFwTypeLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <EmbedInteropTypes>True</EmbedInteropTypes>
       <HintPath>.\Interop.NetFwTypeLib.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
-      <HintPath>..\packages\NLog.4.6.5\lib\net45\NLog.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Data" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Management" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.ServiceModel" />
     <Reference Include="System.ServiceProcess" />
-    <Reference Include="System.Transactions" />
-    <Reference Include="System.Xml" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xaml">
-      <RequiredTargetFramework>4.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="WindowsBase" />
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
   </ItemGroup>
+
   <ItemGroup>
-    <ApplicationDefinition Include="App.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </ApplicationDefinition>
-    <Compile Include="Helpers\Instance\AppInstanceRestrictor.cs" />
-    <Compile Include="Helpers\Instance\IPHelper.cs" />
-    <Compile Include="Helpers\Static\UriChecker.cs" />
-    <Compile Include="Infrastructure\Commands\AsyncCommand.cs" />
-    <Compile Include="Helpers\Static\IoHelper.cs" />
-    <Compile Include="Managers\ApplicationManages\CacheManager.cs" />
-    <Compile Include="ViewModels\InfrastructureViewModels\ModelErrorCounter.cs" />
-    <Compile Include="Helpers\Static\CryptoManager.cs" />
-    <Compile Include="Managers\ApplicationManages\LogsManager.cs" />
-    <Compile Include="Managers\ApplicationManages\PrompterManager.cs" />
-    <Compile Include="Managers\ApplicationManages\ServiceManager.cs" />
-    <Compile Include="Managers\ApplicationManages\ConfigManager.cs" />
-    <Compile Include="Managers\ConfigurationManagers\FdkManager.cs" />
-    <Compile Include="Controls\Panels\AdvancedPanel.xaml.cs">
-      <DependentUpon>AdvancedPanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\Panels\CredentialPanel.xaml.cs">
-      <DependentUpon>CredentialPanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\Panels\FdkPanel.xaml.cs">
-      <DependentUpon>FdkPanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\Panels\ProtocolPanel.xaml.cs">
-      <DependentUpon>ProtocolPanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\Panels\ServerPanel.xaml.cs">
-      <DependentUpon>ServerPanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\UserControls\MultipleURLsControl.xaml.cs">
-      <DependentUpon>MultipleURLsControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\UserControls\ServiceStateControl.xaml.cs">
-      <DependentUpon>ServiceStateControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\Panels\SslPanel.xaml.cs">
-      <DependentUpon>SslPanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Managers\ConfigurationManagers\ContentManager.cs" />
-    <Compile Include="Managers\ConfigurationManagers\CredentialsManager.cs" />
-    <Compile Include="Helpers\Static\MessageBoxManager.cs" />
-    <Compile Include="Managers\ConfigurationManagers\ProtocolManager.cs" />
-    <Compile Include="Managers\ApplicationManages\RegistryManager.cs" />
-    <Compile Include="Managers\ConfigurationManagers\ServerManager.cs" />
-    <Compile Include="Managers\ConfigurationManagers\SslManager.cs" />
-    <Compile Include="Infrastructure\Converters\ServiceStateToColorConverter.cs" />
-    <Compile Include="Infrastructure\Exceptions\WarningException.cs" />
-    <Compile Include="Managers\ApplicationManages\PortsManager.cs" />
-    <Compile Include="Infrastructure\Commands\DelegateCommand.cs" />
-    <Compile Include="Models\ManagerModels\CredentialModel.cs" />
-    <Compile Include="Models\ManagerModels\FdkModel.cs" />
-    <Compile Include="Models\ManagerModels\ProtocolModel.cs" />
-    <Compile Include="Models\ManagerModels\ServerModel.cs" />
-    <Compile Include="Models\ManagerModels\SslModel.cs" />
-    <Compile Include="ViewModels\ControlViewModels\SpinnerViewModel.cs" />
-    <Compile Include="ViewModels\InfrastructureViewModels\RefreshCounter.cs" />
-    <Compile Include="ViewModels\InstanceViewModels\BaseViewModel.cs" />
-    <Compile Include="ViewModels\InstanceViewModels\LogsViewModel.cs" />
-    <Compile Include="ViewModels\InstanceViewModels\UriViewModel.cs" />
-    <Compile Include="Windows\NewUrlWindow.xaml.cs">
-      <DependentUpon>NewUrlWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ViewModels\InstanceViewModels\AdvancedViewModel.cs" />
-    <Compile Include="ViewModels\InstanceViewModels\CredentialViewModel.cs" />
-    <Compile Include="ViewModels\InstanceViewModels\FdkViewModel.cs" />
-    <Compile Include="ViewModels\InstanceViewModels\ProtocolViewModel.cs" />
-    <Compile Include="ViewModels\InstanceViewModels\ServerViewModel.cs" />
-    <Compile Include="ViewModels\InstanceViewModels\SslViewModel.cs" />
-    <Compile Include="ViewModels\ControlViewModels\StateServiceViewModel.cs" />
-    <Page Include="Controls\Panels\AdvancedPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Controls\Panels\CredentialPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Controls\Panels\FdkPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Controls\Panels\ProtocolPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Controls\Panels\ServerPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Controls\UserControls\MultipleURLsControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Controls\UserControls\ServiceStateControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Controls\Panels\SslPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Compile Include="App.xaml.cs">
-      <DependentUpon>App.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Models\ConfigurationModel.cs" />
-    <Compile Include="ViewModels\ConfigurationViewModel.cs" />
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Page Include="Resx\Styles\AddNewUrlWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resx\Styles\AdvancedStyles.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resx\Styles\CredentialsStyles.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resx\Styles\ProtocolStyles.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resx\Styles\ServerStyles.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Windows\NewUrlWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resx\Converters.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resx\Styles\StyleDictionary.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Core.Lib\TickTrader.Algo.Core.Lib.csproj" />
+    <ProjectReference Include="..\TickTrader.WpfWindowsSupportLibrary\TickTrader.WpfWindowsSupportLibrary.csproj" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    <PackageReference Include="FontAwesome.WPF" Version="4.7.0.9" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="NLog.Config" Version="4.7.7" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Resource Include="configuration.ico" />
     <Content Include="NLog.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Include="NLog.xsd">
+    <None Update="NLog.xsd">
       <SubType>Designer</SubType>
     </None>
-    <None Include="packages.config" />
-    <None Include="prompterFile.json">
+    <None Update="prompterFile.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Properties\app.manifest">
+    <None Update="Properties\app.manifest">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.6.1">
-      <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4.6.1 %28x86 and x64%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\TickTrader.BotAgent.Common\TickTrader.BotAgent.Common.csproj">
-      <Project>{E54D1888-6449-41AF-8226-5A5BDC93715A}</Project>
-      <Name>TickTrader.BotAgent.Common</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -2,7 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:cal="http://www.caliburnproject.org"
                     xmlns:l="clr-namespace:TickTrader.BotTerminal"
-                    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity">
+                    xmlns:i="http://schemas.microsoft.com/xaml/behaviors">
 
     <ControlTemplate x:Key="UploadPackageView.Classic">
         <Border Background="{TemplateBinding Background}">
@@ -26,62 +26,62 @@
 
                 <Grid Grid.Row="1">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="70"/>
+                        <ColumnDefinition Width="80"/>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
 
-                    <Label Content="Bot Agent:"/>
-                    <Label Grid.Column="1" Content="{Binding SelectedBotAgent.Name}"/>
+                    <Label Content="Algo Server:"/>
+                    <Label Grid.Column="1" Content="{Binding SelectedAlgoServer.Name}"/>
                 </Grid>
 
-                <Label Grid.Row="2" Content="Package" VerticalAlignment="Bottom"/>
+                <Label Grid.Row="2" Content="Algo package:" VerticalAlignment="Bottom"/>
                 <Grid Grid.Row="3" IsEnabled="{Binding IsEnabled}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <ComboBox Text="{Binding FileNameSource}" 
+                    <ComboBox Text="{Binding SourcePackageName.DisplayValue, Mode=OneWay}"
+                              SelectedItem="{Binding SourcePackageName.Value}"
                               HorizontalAlignment="Stretch" 
                               Margin="5 0 0 0"
                               Foreground="{DynamicResource Shell_PrimaryForeground}" 
-                              ItemsSource="{Binding Packages}" 
-                              DisplayMemberPath="FileName"  
-                              ToolTip="{Binding SelectedFolder}"/>
+                              ItemsSource="{Binding SourcePackageCollectionView}"
+                              ToolTip="{Binding SelectedFolder.Value}"/>
 
                     <l:FlatButton Grid.Column="1" 
                                   Content="..." 
                                   Style="{DynamicResource ParamUtilityButtonStyle}" 
                                   Padding="3 0 3 0">
                         <i:Interaction.Behaviors>
-                            <l:OpenFileDialogBehavior FilePath="{Binding SelectedFolder}" FileName="{Binding FileNameSource}"/>
+                            <l:OpenFileDialogBehavior FilePath="{Binding SelectedFolder.Value}" FileName="{Binding SourcePackageName.Value}"/>
                         </i:Interaction.Behaviors>
                     </l:FlatButton>
                 </Grid>
 
                 <Grid Grid.Row="4" Margin="0 5">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="70"/>
+                        <ColumnDefinition Width="80"/>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
 
                     <Label Content="File Name:"/>
-                    <Label Grid.Column="1" Content="{Binding FileNameTarget}" />
+                    <Label Grid.Column="1" Content="{Binding TargetPackageName.DisplayValue, Mode=OneWay}" />
                 </Grid>
 
                 <TextBlock Grid.Row="6"
                            HorizontalAlignment="Stretch"
                            VerticalAlignment="Bottom"
-                           Text="{Binding Error}"
+                           Text="{Binding Error.DisplayValue}"
                            TextWrapping="Wrap"
                            TextTrimming="CharacterEllipsis"
                            Foreground="{DynamicResource Shell_WarningForeground}"
                            Margin="10 5"
-                           Visibility="{Binding HasError, Converter={StaticResource BoolToVis}}"/>
+                           Visibility="{Binding Error.HasValue, Converter={StaticResource BoolToVis}}"/>
 
                 <ContentControl Grid.Row="7"
                                 cal:View.Model="{Binding UploadProgress}"
-                                Visibility="{Binding IsEnabled, Converter={StaticResource BoolToVisInv}}"/>
+                                Visibility="{Binding IsEnabled.Value, Converter={StaticResource BoolToVisInv}}"/>
 
                 <Grid Grid.Row="8">
                     <Grid.ColumnDefinitions>
@@ -92,7 +92,7 @@
                                   cal:Message.Attach="Ok" Content="Ok"
                                   Background="{DynamicResource Dialog_OkButtonBackground}"
                                   HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}"
-                                  IsEnabled="{Binding IsEnabled}"/>
+                                  IsEnabled="{Binding IsEnabled.Value}"/>
                     <l:FlatButton Grid.Column="1" Margin="8 0"
                                   cal:Message.Attach="Cancel" Content="Cancel" 
                                   Background="{DynamicResource Dialog_ButtonBackground}"

@@ -1,13 +1,9 @@
-﻿using SciChart.Charting.Model.DataSeries;
+﻿using Google.Protobuf.WellKnownTypes;
+using SciChart.Charting.Model.DataSeries;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -21,17 +17,18 @@ namespace TickTrader.BotTerminal
 
         public string PluginId { get; private set; }
 
-        public OutputSetupModel Setup { get; private set; }
+        public IOutputConfig Config { get; private set; }
 
         public abstract IXyDataSeries SeriesData { get; }
 
-        protected void Init(IPluginModel plugin, OutputSetupModel setup)
+        protected void Init(IPluginModel plugin, IOutputConfig config, OutputDescriptor descriptor)
         {
-            Id = setup.Metadata.Id;
-            DisplayName = setup.Metadata.DisplayName;
-            Descriptor = setup.Metadata.Descriptor;
+            Config = config;
+            Descriptor = descriptor;
+
+            Id = descriptor.Id;
+            DisplayName = descriptor.DisplayName;
             PluginId = plugin.InstanceId;
-            Setup = setup;
         }
 
         public abstract void Dispose();
@@ -40,15 +37,15 @@ namespace TickTrader.BotTerminal
     internal abstract class OutputSeriesModel<T> : OutputSeriesModel
     {
         private IPluginDataChartModel _host;
-        private IOutputCollector<T> _collector;
+        private IOutputCollector _collector;
         private OutputSynchronizer<T> _synchronizer;
 
-        public OutputSeriesModel(IOutputCollector collector, IPluginDataChartModel host, bool isEnabled)
+        public OutputSeriesModel(IOutputCollector collector, IPluginDataChartModel host)
         {
-            _collector = (IOutputCollector<T>)collector;
+            _collector = collector;
             _host = host;
 
-            if (!isEnabled)
+            if (!collector.OutputConfig.IsEnabled)
                 return;
 
             _host.StartEvent += Start;
@@ -92,33 +89,33 @@ namespace TickTrader.BotTerminal
             _collector.SnapshotAppended -= _collector_SnapshotAppended;
             _collector.Truncated -= _collector_Truncated;
 
-            return CompletedTask.Default;
+            return Task.CompletedTask;
         }
 
-        private void Append(OutputPoint<T> point)
+        private void Append(OutputPoint point)
         {
             if (_synchronizer != null)
                 _synchronizer.Append(point);
             else
-                AppendInternal(point.TimeCoordinate.Value, point.Value);
+                AppendInternal(point.Time.ToDateTime(), point.Value);
         }
 
-        private void Update(OutputPoint<T> point)
+        private void Update(OutputPoint point)
         {
             if (_synchronizer != null)
                 _synchronizer.Update(point);
             else
-                UpdateInternal(point.Index, point.TimeCoordinate.Value, point.Value);
+                UpdateInternal(point.Index, point.Time.ToDateTime(), point.Value);
         }
 
-        private void _collector_SnapshotAppended(OutputPoint<T>[] points)
+        private void _collector_SnapshotAppended(OutputPointRange range)
         {
             if (_synchronizer != null)
-                _synchronizer.AppendSnapshot(points);
+                _synchronizer.AppendSnapshot(range.Points);
             else
             {
-                foreach (var p in points)
-                    AppendInternal(p.TimeCoordinate.Value, p.Value);
+                foreach (var p in range.Points)
+                    AppendInternal(p.Time.ToDateTime(), p.Value);
             }
         }
 
@@ -129,8 +126,8 @@ namespace TickTrader.BotTerminal
 
         protected abstract T NanValue { get; }
 
-        protected abstract void AppendInternal(DateTime time, T data);
-        protected abstract void UpdateInternal(int index, DateTime time, T data);
+        protected abstract void AppendInternal(DateTime time, Any data);
+        protected abstract void UpdateInternal(int index, DateTime time, Any data);
         protected abstract void Clear();
 
         public override void Dispose()

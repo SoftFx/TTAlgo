@@ -1,9 +1,5 @@
 ﻿using Caliburn.Micro;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TickTrader.BotTerminal
 {
@@ -33,7 +29,7 @@ namespace TickTrader.BotTerminal
             if (conductor != null && conductor.ActiveItem == this)
             {
                 var switchToPage = conductor.Items.FirstOrDefault(i => i.IsVisible);
-                conductor.ActivateItem(switchToPage);
+                conductor.ActivateItemAsync(switchToPage);
             }
         }
     }

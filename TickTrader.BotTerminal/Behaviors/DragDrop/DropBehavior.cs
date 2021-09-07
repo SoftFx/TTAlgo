@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Xaml.Behaviors;
 using System.Windows;
-using System.Windows.Interactivity;
 
 namespace TickTrader.BotTerminal
 {
-    internal class DropBehavior : Behavior<FrameworkElement>
+    internal sealed class DropBehavior : Behavior<FrameworkElement>
     {
         private bool _canHandleDrop;
 

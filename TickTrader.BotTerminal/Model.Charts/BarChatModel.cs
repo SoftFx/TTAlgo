@@ -1,29 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Core;
-using Api = TickTrader.Algo.Api;
-using SciChart.Charting.Model.DataSeries;
-using SciChart.Charting.Visuals.RenderableSeries;
-using Machinarium.Qnil;
 using SciChart.Charting.Model.ChartSeries;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.BotTerminal.Lib;
+using TickTrader.Algo.Domain;
+using Google.Protobuf.WellKnownTypes;
+using TickTrader.Algo.Server;
 
 namespace TickTrader.BotTerminal
 {
     internal class BarChartModel : ChartModelBase
     {
-        private readonly ChartBarVector _barVector = new ChartBarVector(Api.TimeFrames.M1);
+        private readonly ChartBarVector _barVector = new ChartBarVector(Feed.Types.Timeframe.M1);
 
-        public BarChartModel(SymbolModel symbol, AlgoEnvironment algoEnv)
+        public BarChartModel(SymbolInfo symbol, AlgoEnvironment algoEnv)
             : base(symbol, algoEnv)
         {
             Support(SelectableChartTypes.OHLC);
@@ -36,7 +28,7 @@ namespace TickTrader.BotTerminal
             SelectedChartType = SelectableChartTypes.Candle;
         }
 
-        public void Activate(Api.TimeFrames timeframe)
+        public void Activate(Feed.Types.Timeframe timeframe)
         {
             TimeFrame = timeframe;
             base.Activate();
@@ -52,7 +44,7 @@ namespace TickTrader.BotTerminal
         protected async override Task LoadData(CancellationToken cToken)
         {
             var aproximateTimeRef = DateTime.Now + TimeSpan.FromDays(1) - TimeSpan.FromMinutes(15);
-            var barArray = await ClientModel.FeedHistory.GetBarPage(SymbolCode, Api.BarPriceType.Bid, TimeFrame, aproximateTimeRef, -4000);
+            var barArray = await ClientModel.FeedHistory.GetBarPage(SymbolCode, Feed.Types.MarketSide.Bid, TimeFrame, aproximateTimeRef.ToUniversalTime().ToTimestamp(), -4000);
 
             cToken.ThrowIfCancellationRequested();
 
@@ -61,7 +53,7 @@ namespace TickTrader.BotTerminal
             _barVector.AppendRange(barArray);
 
             if (barArray.Length > 0)
-                InitBoundaries(barArray.Length, barArray.First().OpenTime, barArray.Last().OpenTime);
+                InitBoundaries(barArray.Length, barArray.First().OpenTime.ToDateTime(), barArray.Last().OpenTime.ToDateTime());
         }
 
         protected override IndicatorModel CreateIndicator(PluginConfig config)
@@ -69,28 +61,20 @@ namespace TickTrader.BotTerminal
             return new IndicatorModel(config, Agent, this, this);
         }
 
-        public override void InitializePlugin(PluginExecutor plugin)
+        public override void InitializePlugin(ExecutorConfig config)
         {
-            base.InitializePlugin(plugin);
-            var feed = new PluginFeedProvider(ClientModel.Cache, ClientModel.Distributor, ClientModel.FeedHistory, new DispatcherSync());
-            plugin.Feed = feed;
-            plugin.FeedHistory = feed;
-            plugin.Config.InitBarStrategy(Algo.Api.BarPriceType.Bid);
-            plugin.Metadata = feed;
+            base.InitializePlugin(config);
+
+            config.InitBarStrategy(Feed.Types.MarketSide.Bid);
+            config.SetMainSeries(_barVector);
         }
 
-        public override void UpdatePlugin(PluginExecutor plugin)
-        {
-            base.UpdatePlugin(plugin);
-            plugin.Config.GetFeedStrategy<BarStrategy>().SetMainSeries(_barVector.ToList());
-        }
-
-        protected override void ApplyUpdate(QuoteEntity quote)
+        protected override void ApplyUpdate(QuoteInfo quote)
         {
             if (quote.HasBid)
             {
-                _barVector.TryAppendQuote(quote.CreatingTime, quote.Bid, 1);
-                ExtendBoundaries(_barVector.Count, quote.CreatingTime);
+                _barVector.TryAppendQuote(quote.Timestamp, quote.Bid, 1);
+                ExtendBoundaries(_barVector.Count, quote.Time);
             }
         }
 

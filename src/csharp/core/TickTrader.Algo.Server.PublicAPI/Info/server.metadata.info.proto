@@ -1,0 +1,100 @@
+﻿syntax = "proto3";
+
+package ticktrader.algo.server.publicApi;
+
+option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
+
+import "info/mappings/mapping.info.proto";
+
+
+message Metadata {
+    enum LineStyle {
+        UNKNOWN_LINE_STYLE = 0;
+        SOLID = 1;
+        DOTS = 2;
+        DOTS_RARE = 3;
+        DOTS_VERY_RARE = 4;
+        LINES_DOTS = 5;
+        LINES = 6;
+    }
+
+    enum PlotType {
+        UNKNOWN_PLOT_TYPE = 0;
+        LINE = 1;
+        HISTOGRAM = 2;
+        POINTS = 3;
+        DISCONTINUOUS_LINE = 4;
+    }
+
+    enum OutputTarget {
+        UNKNOWN_OUTPUT_TARGET = 0;
+        OVERLAY = 1;
+        WINDOW1 = 2;
+        WINDOW2 = 3;
+        WINDOW3 = 4;
+        WINDOW4 = 5;
+    }
+
+    enum MarkerSize {
+        UNKNOWN_MARKER_SIZE = 0;
+        LARGE = 1;
+        MEDIUM = 2;
+        SMALL = 3;
+    }
+}
+
+message Feed {
+    enum MarketSide {
+        BID = 0;
+        ASK = 1;
+    }
+
+    enum Timeframe {
+        TICKS_LEVEL2 = 0;
+        TICKS_VWAP = 1;
+        TICKS = 2;
+        S1 = 10;
+        S10 = 100;
+        M1 = 600;
+        M5 = 3000;
+        M15 = 9000;
+        M30 = 18000;
+        H1 = 36000;
+        H4 = 144000;
+        D = 864000;
+        W = 6048000;
+        M_N = 26784000;
+    }
+}
+
+message SymbolConfig {
+    enum SymbolOrigin {
+        ONLINE = 0;
+        CUSTOM = 1;
+        TOKEN = 2;
+    }
+
+    string name = 1;
+    SymbolOrigin origin = 2;
+}
+
+message ApiMetadataInfo {
+    repeated Feed.Timeframe time_frames = 1;
+    repeated Metadata.LineStyle line_styles = 2;
+    repeated int32 thicknesses = 3;
+    repeated Metadata.MarkerSize marker_sizes = 4;
+}
+
+message MappingCollectionInfo {
+    repeated MappingInfo bar_to_bar_mappings = 1;
+    repeated MappingInfo bar_to_double_mappings = 2;
+
+    MappingInfo default_bar_to_bar_mapping = 3;
+    MappingInfo default_bar_to_double_mapping = 4;
+}
+
+message SetupContextInfo {
+    Feed.Timeframe default_time_frame = 1;
+    SymbolConfig default_symbol = 2;
+    MappingKey default_mapping = 3;
+}

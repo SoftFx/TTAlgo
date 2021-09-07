@@ -36,51 +36,43 @@
                         <Setter Property="ToolTip" >
                             <Setter.Value>
                                 <StackPanel Orientation="Vertical">
-                                    <StackPanel Orientation="Horizontal" Visibility="{Binding Order.InstanceId, Converter={StaticResource NullOrEmptyToVis}}">
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding InstanceId.Value, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Instance ID: " VerticalAlignment="Center" />
-                                        <TextBlock Text="{Binding Order.InstanceId}" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding InstanceId.DisplayValue}" VerticalAlignment="Center" />
                                     </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Visibility="{Binding Order.LimitPrice, Converter={StaticResource NullOrEmptyToVis}}">
+
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding LimitPrice.Value, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Limit Price: " VerticalAlignment="Center" />
-                                        <TextBlock VerticalAlignment="Center" >
-                                            <TextBlock.Text>
-                                                <MultiBinding Converter="{StaticResource PriceConverter}" >
-                                                    <Binding Path="Order.LimitPrice"/>
-                                                    <Binding Path="PriceDigits"/>
-                                                </MultiBinding>
-                                            </TextBlock.Text>
-                                        </TextBlock>
+                                        <TextBlock Text="{Binding LimitPrice.DisplayValue}" VerticalAlignment="Center"/>
                                     </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Visibility="{Binding Order.StopPrice, Converter={StaticResource NullOrEmptyToVis}}">
+
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding StopPrice.Value, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Stop Price: " VerticalAlignment="Center" />
-                                        <TextBlock VerticalAlignment="Center" >
-                                            <TextBlock.Text>
-                                                <MultiBinding Converter="{StaticResource PriceConverter}" >
-                                                    <Binding Path="Order.StopPrice"/>
-                                                    <Binding Path="PriceDigits"/>
-                                                </MultiBinding>
-                                            </TextBlock.Text>
-                                        </TextBlock>
+                                        <TextBlock Text="{Binding StopPrice.DisplayValue}" VerticalAlignment="Center"/>
                                     </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Visibility="{Binding Order.MaxVisibleVolume, Converter={StaticResource NullOrEmptyToVis}}">
+
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding MaxVisibleVolume.Value, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Max Visible Volume: " VerticalAlignment="Center" />
-                                        <TextBlock Text="{Binding Order.MaxVisibleVolumeToLots}" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding MaxVisibleVolume.DisplayValue}" VerticalAlignment="Center" />
                                     </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Visibility="{Binding Order.Expiration, Converter={StaticResource NullOrEmptyToVis}}">
+
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding Expiration.Value, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Expiration: " VerticalAlignment="Center" />
-                                        <TextBlock Text="{Binding Order.Expiration, Converter={StaticResource FullDateTimeFormat}}" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Expiration.Value, Converter={StaticResource FullDateTimeFormat}}" VerticalAlignment="Center" />
                                     </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Visibility="{Binding Order.OrderExecutionOptionsStr, Converter={StaticResource NullOrEmptyToVis}}">
+
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding OrderExecutionOptions.Value, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Options: " VerticalAlignment="Center" />
-                                        <TextBlock Text="{Binding Order.OrderExecutionOptionsStr}" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding OrderExecutionOptions.DisplayValue}" VerticalAlignment="Center" />
                                     </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Visibility="{Binding Order.Slippage, Converter={StaticResource NullOrEmptyToVis}}">
+
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding Slippage.Value, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Slippage: " VerticalAlignment="Center" />
-                                        <TextBlock Text="{Binding Order.Slippage, Converter={StaticResource Round}}" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Slippage.DisplayValue, Converter={StaticResource Round}}" VerticalAlignment="Center" />
                                     </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Visibility="{Binding Order.OCORelatedOrderId, Converter={StaticResource NullOrEmptyToVis}}">
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding RelatedOrderId.Value, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Related Order Id: " VerticalAlignment="Center" />
-                                        <TextBlock Text="{Binding Order.OCORelatedOrderId}" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding RelatedOrderId.DisplayValue}" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </StackPanel>
                             </Setter.Value>
@@ -88,60 +80,44 @@
                     </Style>
                 </DataGrid.RowStyle>
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="ID" Width="100" Binding="{Binding Order.Id}">
-                        <DataGridTextColumn.CellStyle>
+                    <DataGridTextColumn Header="ID" Width="100" Binding="{Binding Id}">
+                        <!--<DataGridTextColumn.CellStyle>
                             <Style TargetType="DataGridCell">
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding Order.HasError}" Value="True">
                                         <Setter Property="Foreground" Value="{DynamicResource Shell_ErrorForeground}"/>
-                                        <!--<Setter Property="ToolTip" Value="{Binding Order.CalculationError.Description}" />-->
+                                        --><!--<Setter Property="ToolTip" Value="{Binding Order.CalculationError.Description}" />--><!--
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
-                        </DataGridTextColumn.CellStyle>
+                        </DataGridTextColumn.CellStyle>-->
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="{l:Resx Order_Symbol}" Width="100" Binding="{Binding Order.Symbol}"/>
-                    <DataGridTextColumn Header="Time" Width="100" Binding="{Binding Order.Created, Converter={StaticResource FullDateTimeFormat}}" Visibility="{Binding Visibility, Source={StaticResource TimeShow}}"/>
-                    <DataGridTextColumn Header="Modified Time" Width="100" Binding="{Binding Order.Modified, Converter={StaticResource FullDateTimeFormat}}" SortMemberPath="{Binding SortedNumber}"/>
-                    <DataGridTextColumn Header="Type" Width="100" Binding="{Binding Order.AggregatedType, Converter={StaticResource PascalSplitString}}"/>
+                    <DataGridTextColumn Header="{l:Resx Order_Symbol}" Width="100" Binding="{Binding Symbol}"/>
+                    <DataGridTextColumn Header="Time" Width="100" Binding="{Binding Created.Value, Converter={StaticResource FullDateTimeFormat}}" Visibility="{Binding Visibility, Source={StaticResource TimeShow}}"/>
+                    <DataGridTextColumn Header="Modified Time" Width="100" Binding="{Binding Modified.Value, Converter={StaticResource FullDateTimeFormat}}" SortMemberPath="{Binding SortedNumber}"/>
+                    <DataGridTextColumn Header="Type" Width="100" Binding="{Binding AggregatedType.Value, Converter={StaticResource PascalSplitString}}"/>
+
                     <DataGridTextColumn Header="{l:Resx Order_Volume}" Width="100">
                         <DataGridTextColumn.Binding>
                             <MultiBinding ConverterParameter=" {0}/{1}" Converter="{StaticResource StringFormat}">
-                                <Binding Path="Order.RemainingAmountLots" />
-                                <Binding Path="Order.AmountLots" />
+                                <Binding Path="RemainingVolume.DisplayValue" />
+                                <Binding Path="Volume.DisplayValue" />
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="{l:Resx Order_OpenPrice}" Width="100">
-                        <DataGridTextColumn.Binding>
-                            <MultiBinding Converter="{StaticResource PriceConverter}" >
-                                <Binding Path="Price"/>
-                                <Binding Path="PriceDigits"/>
-                            </MultiBinding>
-                        </DataGridTextColumn.Binding>
-                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="{l:Resx Order_OpenPrice}" Width="100" Binding="{Binding Price.DisplayValue}"/>
 
-                    <DataGridTextColumn Header="Current price" Width="100" SortMemberPath="CurrentPrice.Rate"  Visibility="{Binding Visibility, Source={StaticResource CurrentPriceShow}}">
-                        <DataGridTextColumn.Binding>
-                            <MultiBinding Converter="{StaticResource PriceConverter}" >
-                                <Binding Path="CurrentPrice.Rate"/>
-                                <Binding Path="PriceDigits"/>
-                            </MultiBinding>
-                        </DataGridTextColumn.Binding>
-                    </DataGridTextColumn>
-                    <DataGridTextColumn Header="Price Deviation" Width="100">
-                        <DataGridTextColumn.Binding>
-                            <MultiBinding Converter="{StaticResource PriceConverter}">
-                                <Binding Path="DeviationPrice"/>
-                                <Binding Path="PriceDigits"/>
-                            </MultiBinding>
-                        </DataGridTextColumn.Binding>
-                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Current price" Width="100" Binding="{Binding CurrentPrice.DisplayValue}" Visibility="{Binding Visibility, Source={StaticResource CurrentPriceShow}}"/>
 
-                    <DataGridTextColumn Header="T/P" Width="100" Binding="{Binding Order.TakeProfit}" Visibility="{Binding Data.IsGrossAccount, Source={StaticResource ProxyElement}, Converter={StaticResource BoolToVis}}"/>
-                    <DataGridTextColumn Header="S/L" Width="100" Binding="{Binding Order.StopLoss}" Visibility="{Binding Data.IsGrossAccount, Source={StaticResource ProxyElement}, Converter={StaticResource BoolToVis}}" />
-                    <DataGridTextColumn Header="Tag" Width="100" Binding="{Binding Order.Tag}" Visibility="{Binding Visibility, Source={StaticResource TagShow}}"/>
-                    <DataGridTextColumn Header="Comment" Width="100" Binding="{Binding Order.Comment}" Visibility="{Binding Visibility, Source={StaticResource CommentShow}}"/>
+                    <DataGridTextColumn Header="Price Deviation" Width="100" Binding="{Binding DeviationPrice.DisplayValue}"/>
+
+                    <DataGridTextColumn Header="T/P" Width="100" Binding="{Binding TakeProfit.Value}" Visibility="{Binding Data.IsGrossAccount, Source={StaticResource ProxyElement}, Converter={StaticResource BoolToVis}}"/>
+
+                    <DataGridTextColumn Header="S/L" Width="100" Binding="{Binding StopLoss.Value}" Visibility="{Binding Data.IsGrossAccount, Source={StaticResource ProxyElement}, Converter={StaticResource BoolToVis}}" />
+
+                    <DataGridTextColumn Header="Tag" Width="100" Binding="{Binding Tag.Value}" Visibility="{Binding Visibility, Source={StaticResource TagShow}}"/>
+
+                    <DataGridTextColumn Header="Comment" Width="100" Binding="{Binding Comment.Value}" Visibility="{Binding Visibility, Source={StaticResource CommentShow}}"/>
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>

@@ -76,7 +76,7 @@ namespace TickTrader.BotTerminal
             foreach (var view in _anchorableViews.Values)
             {
                 view.PropertyChanged -= OnLayoutAnchorablePropertyChanged;
-                (view.Content as IScreen)?.Deactivate(true);
+                (view.Content as IScreen)?.DeactivateAsync(true);
             }
 
             _anchorableViews.Clear();
@@ -87,7 +87,7 @@ namespace TickTrader.BotTerminal
                 if (view.IsVisible)
                 {
                     //InitView(view);
-                    (view.Content as IScreen)?.Activate();
+                    (view.Content as IScreen)?.ActivateAsync();
                 }
                 view.PropertyChanged += OnLayoutAnchorablePropertyChanged;
             }
@@ -126,11 +126,11 @@ namespace TickTrader.BotTerminal
                 {
                     if (isHidden)
                     {
-                        screen.Deactivate(false);
+                        screen.DeactivateAsync(false);
                     }
                     else
                     {
-                        screen.Activate();
+                        screen.ActivateAsync();
                     }
                 }
             }
@@ -267,7 +267,7 @@ namespace TickTrader.BotTerminal
                 var view = _anchorableViews[contentId];
                 view.Parent.RemoveChild(view);
                 view.PropertyChanged -= OnLayoutAnchorablePropertyChanged;
-                (view.Content as IScreen)?.Deactivate(true);
+                (view.Content as IScreen)?.DeactivateAsync(true);
                 _anchorableViews.Remove(contentId);
             }
         }
@@ -278,7 +278,7 @@ namespace TickTrader.BotTerminal
             foreach (var view in viewsToClose)
             {
                 view.PropertyChanged -= OnLayoutAnchorablePropertyChanged;
-                (view.Content as IScreen)?.Deactivate(true);
+                (view.Content as IScreen)?.DeactivateAsync(true);
                 _anchorableViews.Remove(view.ContentId);
                 view.Close();
             }

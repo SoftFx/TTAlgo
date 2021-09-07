@@ -1,12 +1,9 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Protocol;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -16,24 +13,22 @@ namespace TickTrader.BotTerminal
 
         private const int AlertsUpdateTimeout = 1000;
 
-        private readonly Timer _timer;
+        private Timer _timer;
         private readonly object _locker = new object();
 
         private List<IAlertUpdateEventArgs> _buffer = new List<IAlertUpdateEventArgs>();
         private bool _newAlerts = false;
 
         private RemoteAlgoAgent _remoteAgent;
-        private DateTime _lastAlertTimeUtc;
-        private Timer _alertTimer;
+        private Timestamp _lastAlertTimeUtc;
 
         public AlgoAlertModel(string name, RemoteAlgoAgent remoteAgent = null)
         {
             Name = name;
 
+            _lastAlertTimeUtc = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).ToTimestamp();
             _remoteAgent = remoteAgent;
             _timer = new Timer(SendAlerts, null, 0, AlertsUpdateTimeout);
-
-            SubscribeToRemoteAgent();
         }
 
         public string Name { get; }
@@ -44,7 +39,7 @@ namespace TickTrader.BotTerminal
         {
             lock (_locker)
             {
-                _buffer.Add(new AlertUpdateEventArgsImpl(instanceId, Name, record.Time.Timestamp, record.Message, _remoteAgent != null));
+                _buffer.Add(new AlertUpdateEventArgsImpl(instanceId, Name, record.TimeUtc, record.Message, _remoteAgent != null));
                 _newAlerts = true;
             }
         }
@@ -73,51 +68,31 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void SubscribeToRemoteAgent()
+        public void SubscribeToRemoteAgent()
         {
             if (_remoteAgent == null)
                 return;
 
-            if (_alertTimer == null)
+            //_remoteAgent.SubscribeToAlerts(_lastAlertTimeUtc);
+        }
+
+        public void UpdateRemoteAlert(List<AlertRecordInfo> alerts)
+        {
+            if (alerts.Count > 0)
             {
-                _lastAlertTimeUtc = new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-                _alertTimer = new Timer(UpdateRemoteAlert, null, AlertsUpdateTimeout, -1);
+                AddAlerts(alerts.Select(Convert).ToList<IAlertUpdateEventArgs>());
+                _lastAlertTimeUtc = alerts.Max(u => u.TimeUtc);
             }
         }
 
-        private async void UpdateRemoteAlert(object state)
+        private AlertUpdateEventArgsImpl Convert(AlertRecordInfo rec) => new AlertUpdateEventArgsImpl(rec.PluginId, Name, rec.TimeUtc, rec.Message, _remoteAgent != null);
+
+        public void Dispose()
         {
-            _alertTimer?.Change(-1, -1);
-
-            try
+            if (_timer != null)
             {
-                var alerts = await _remoteAgent.GetAlerts(_lastAlertTimeUtc);
-                if (alerts.Length > 0)
-                {
-                    _lastAlertTimeUtc = alerts.Max(l => l.TimeUtc).Timestamp;
-                    AddAlerts(alerts.Select(Convert).ToList<IAlertUpdateEventArgs>());
-                }
-            }
-            catch (BAException baex)
-            {
-                _logger.Error($"Failed to get alerts at {Name}: {baex.Message}");
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, $"Failed to get alerts at {Name}");
-            }
-
-            _alertTimer?.Change(AlertsUpdateTimeout, -1);
-        }
-
-        private AlertUpdateEventArgsImpl Convert(AlertRecordInfo rec) => new AlertUpdateEventArgsImpl(rec.BotId, Name,rec.TimeUtc.Timestamp, rec.Message, _remoteAgent != null);
-
-        public void Dispose() //add dispose storage to remote agent
-        {
-            if (_alertTimer != null)
-            {
-                _alertTimer.Dispose();
-                _alertTimer = null;
+                _timer.Dispose();
+                _timer = null;
             }
         }
     }
@@ -131,11 +106,15 @@ namespace TickTrader.BotTerminal
         void AddAlert(string instanceId, PluginLogRecord record);
 
         void AddAlerts(List<IAlertUpdateEventArgs> records);
+
+        void UpdateRemoteAlert(List<AlertRecordInfo> alerts);
+
+        void SubscribeToRemoteAgent();
     }
 
     public class AlertUpdateEventArgsImpl : IAlertUpdateEventArgs
     {
-        public DateTime Time { get; }
+        public TimeKey Time { get; }
 
         public string InstanceId { get; }
 
@@ -145,14 +124,14 @@ namespace TickTrader.BotTerminal
 
         public bool IsRemoteAgent { get; }
 
-        public AlertUpdateEventArgsImpl(string id, string agent, DateTime time, string message, bool isRemote = false) : this(id, agent, message, isRemote)
+        public AlertUpdateEventArgsImpl(string id, string agent, Timestamp time, string message, bool isRemote = false) : this(id, agent, message, isRemote)
         {
-            Time = time.ToUniversalTime();
+            Time = new TimeKey(time);
         }
 
         public AlertUpdateEventArgsImpl(string id, string agent, string message, bool isRemote)
         {
-            Time = DateTime.MinValue;
+            Time = new TimeKey(DateTime.MinValue, 0);
             InstanceId = id;
             AgentName = agent;
             Message = message;
@@ -164,7 +143,7 @@ namespace TickTrader.BotTerminal
 
     public interface IAlertUpdateEventArgs
     {
-        DateTime Time { get; }
+        TimeKey Time { get; }
 
         string InstanceId { get; }
 

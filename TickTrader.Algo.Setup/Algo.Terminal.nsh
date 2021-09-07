@@ -1,14 +1,15 @@
 ;--------------------------
 ; Parameters
 
-!define TERMINAL_NAME "BotTerminal"
+!define TERMINAL_NAME "AlgoTerminal"
 !define TERMINAL_DISPLAY_NAME "${BASE_NAME} ${TERMINAL_NAME}"
-!define TERMINAL_BINDIR "..\TickTrader.BotTerminal\bin\Release\"
-!define TERMINAL_EXE "TickTrader.BotTerminal.exe"
+!define TERMINAL_BINDIR "..\TickTrader.BotTerminal\bin\Release\net472"
+!define TERMINAL_EXE "TickTrader.AlgoTerminal.exe"
 !define TERMINAL_LOCK_FILE "applock"
 
 !define REPOSITORY_DIR "AlgoRepository"
 
+!define TERMINAL_LEGACY_NAME "BotTerminal"
 
 ;--------------------------
 ; Variables
@@ -21,6 +22,7 @@ var Terminal_StartMenuSelected
 var Terminal_InstDir
 var Terminal_ShortcutName
 var Terminal_RegKey
+var Terminal_LegacyRegKey
 var Terminal_UninstallRegKey
 var Terminal_Installed
 
@@ -36,6 +38,7 @@ var TestCollection_Selected
     StrCpy $Terminal_ShortcutName "${TERMINAL_DISPLAY_NAME}"
 
     StrCpy $Terminal_RegKey "${REG_KEY_BASE}\${TERMINAL_NAME}"
+    StrCpy $Terminal_LegacyRegKey "${REG_KEY_BASE}\${TERMINAL_LEGACY_NAME}"
     StrCpy $Terminal_UninstallRegKey "${REG_UNINSTALL_KEY_BASE}\${BASE_NAME} ${TERMINAL_NAME}"
 
     StrCpy $Terminal_Id ${EMPTY_APPID}
@@ -57,7 +60,7 @@ var TestCollection_Selected
 
 !macro _UnpackTerminal
 
-    ${Log} "Unpacking BotTerminal files to $Terminal_InstDir"
+    ${Log} "Unpacking AlgoTerminal files to $Terminal_InstDir"
     SetOutPath $Terminal_InstDir
 !ifdef DEBUG
     Sleep 3000
@@ -71,7 +74,7 @@ var TestCollection_Selected
 
 !macro _DeleteTerminalFiles
 
-    ${Log} "Removing BotTerminal files to $Terminal_InstDir"
+    ${Log} "Removing AlgoTerminal files to $Terminal_InstDir"
     StrCpy $INSTDIR $Terminal_InstDir
 !ifdef DEBUG
     Delete "$INSTDIR\${TERMINAL_EXE}"
@@ -89,7 +92,7 @@ var TestCollection_Selected
     SetOutPath "$Terminal_InstDir\${REPOSITORY_DIR}"
     File "${OUTPUT_DIR}\TickTrader.Algo.TestCollection.ttalgo"
     File "${OUTPUT_DIR}\TickTrader.Algo.VersionTest.ttalgo"
-    
+
 !macroend
 
 !macro _DeleteTestCollectionFiles
@@ -128,7 +131,7 @@ var TestCollection_Selected
 
 !macro _DeleteTerminalShortcuts
 
-    ${Log} "Deleting BotTerminal shortcuts with name: $Terminal_ShortcutName"
+    ${Log} "Deleting AlgoTerminal shortcuts with name: $Terminal_ShortcutName"
     Delete "$DESKTOP\$Terminal_ShortcutName.lnk"
     Delete "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\$Terminal_Id\$Terminal_ShortcutName.lnk"
     RMDir "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\$Terminal_Id\"
@@ -148,6 +151,7 @@ var TestCollection_Selected
 !macro _InitTerminalRegKeys
 
     StrCpy $Terminal_RegKey "${REG_KEY_BASE}\${TERMINAL_NAME}\$Terminal_Id"
+    StrCpy $Terminal_LegacyRegKey "${REG_KEY_BASE}\${TERMINAL_LEGACY_NAME}\$Terminal_Id"
     StrCpy $Terminal_UninstallRegKey "${REG_UNINSTALL_KEY_BASE}\${BASE_NAME} ${TERMINAL_NAME} $Terminal_Id"
 
 !macroend
@@ -155,6 +159,13 @@ var TestCollection_Selected
 !macro _RegReadTerminal
 
     ReadRegStr $Terminal_ShortcutName HKLM "$Terminal_RegKey" "${REG_SHORTCUT_NAME}"
+
+    ${Log} "Terminal Icon Name $Terminal_ShortcutName"
+
+    ${If} $Terminal_ShortcutName == ""
+         ReadRegStr $Terminal_ShortcutName HKLM "$Terminal_LegacyRegKey" "${REG_SHORTCUT_NAME}"
+         ${Log} "Terminal Icon Name Legacy $Terminal_ShortcutName"
+    ${EndIf}
 
 !macroend
 
@@ -207,13 +218,17 @@ var TestCollection_Selected
     ${FindAppIdByPath} terminal_id $Terminal_Id "${REG_KEY_BASE}\${TERMINAL_NAME}" ${REG_PATH_KEY} $Terminal_InstDir
 
     ${If} $Terminal_Id == ${EMPTY_APPID}
+        ${FindAppIdByPath} terminal_legacy_id $Terminal_Id "${REG_KEY_BASE}\${TERMINAL_LEGACY_NAME}" ${REG_PATH_KEY} $Terminal_InstDir
+    ${EndIf}
+
+    ${If} $Terminal_Id == ${EMPTY_APPID}
         ${If} ${Mode} == "Install"
             ${CreateAppId} $Terminal_Id
             ${Terminal_InitRegKeys}
-            ${Log} "Created BotTerminal Id: $Terminal_Id"
+            ${Log} "Created AlgoTerminal Id: $Terminal_Id"
         ${EndIf}
     ${Else}
-        ${Log} "Found BotTerminal Id: $Terminal_Id"
+        ${Log} "Found AlgoTerminal Id: $Terminal_Id"
         ${Terminal_InitRegKeys}
         ${Terminal_RegRead}
     ${EndIf}
@@ -232,7 +247,7 @@ var TestCollection_Selected
     ${If} ${FileExists} "$Terminal_InstDir\*"
         ${GetFileLock} $3 "$Terminal_InstDir\${TERMINAL_LOCK_FILE}"
         ${IF} $3 == ${FILE_LOCKED}
-            ${Log} "BotTerminal is running ($Terminal_InstDir)"
+            ${Log} "AlgoTerminal is running ($Terminal_InstDir)"
             MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION ${Msg} IDRETRY ${Retry} IDCANCEL ${Cancel}
         ${EndIf}
     ${EndIf}

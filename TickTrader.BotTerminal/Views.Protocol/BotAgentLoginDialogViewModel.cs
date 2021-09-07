@@ -2,6 +2,7 @@
 using NLog;
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace TickTrader.BotTerminal
 {
@@ -145,7 +146,7 @@ namespace TickTrader.BotTerminal
         {
             _botAgentManager = botAgentManager;
 
-            DisplayName = "BotAgent Log In";
+            DisplayName = "AlgoServer Log In";
 
             Init(creds);
         }
@@ -160,7 +161,7 @@ namespace TickTrader.BotTerminal
                 Error = await _botAgentManager.Connect(_agentName.Trim(), _login.Trim(), _password, _server.Trim(), int.Parse(_port));
                 if (!HasError)
                 {
-                    TryClose();
+                    TryCloseAsync();
                 }
                 else
                 {
@@ -197,7 +198,7 @@ namespace TickTrader.BotTerminal
             if (_server == null)
             {
                 Server = Servers.FirstOrDefault()?.Address;
-                Port = "8443";
+                Port = "15443";
             }
         }
 

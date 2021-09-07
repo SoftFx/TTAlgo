@@ -1,21 +1,15 @@
-﻿using Caliburn.Micro;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Machinarium.Qnil;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Common.Lib;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.Account;
+using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
-    class AssetsViewModel : AccountBasedViewModel
+    sealed class AssetsViewModel : AccountBasedViewModel
     {
-        public AssetsViewModel(AccountModel model, IReadOnlyDictionary<string, CurrencyEntity> currencies, IConnectionStatusInfo connection)
+        public AssetsViewModel(AccountModel model, IReadOnlyDictionary<string, CurrencyInfo> currencies, IConnectionStatusInfo connection)
             : base(model, connection)
         {
             Assets = model.Assets
@@ -24,9 +18,9 @@ namespace TickTrader.BotTerminal
                 .AsObservable();
         }
 
-        protected override bool SupportsAccount(AccountTypes accType)
+        protected override bool SupportsAccount(AccountInfo.Types.Type accType)
         {
-            return accType == AccountTypes.Cash;
+            return accType == AccountInfo.Types.Type.Cash;
         }
 
         public IObservableList<AssetViewModel> Assets { get; private set; }

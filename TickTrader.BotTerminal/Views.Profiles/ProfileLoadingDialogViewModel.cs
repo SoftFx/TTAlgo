@@ -3,7 +3,6 @@ using NLog;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
 {
@@ -31,12 +30,19 @@ namespace TickTrader.BotTerminal
             _dockManagerService = dockManagerService;
         }
 
-        protected override void OnInitialize()
+        protected override Task OnInitializeAsync(CancellationToken cancellationToken)
         {
-            base.OnInitialize();
-
             ApplyProfile();
+
+            return base.OnInitializeAsync(cancellationToken);
         }
+
+        //protected override void OnInitialize()
+        //{
+        //    base.OnInitialize();
+
+        //    ApplyProfile();
+        //}
 
         private async void ApplyProfile()
         {
@@ -50,7 +56,7 @@ namespace TickTrader.BotTerminal
 
                 _token.ThrowIfCancellationRequested();
 
-                await _agent.Library.WaitInit();
+                //await _agent.AlgoServer.PkgStorage.WaitLoaded();
 
                 _token.ThrowIfCancellationRequested();
 
@@ -58,7 +64,7 @@ namespace TickTrader.BotTerminal
 
                 if (_profileManager.CurrentProfile.Charts == null)
                 {
-                    TryClose();
+                    await TryCloseAsync();
                     return;
                 }
 
@@ -81,7 +87,7 @@ namespace TickTrader.BotTerminal
                 _logger.Error(ex, "Failed to apply profile");
             }
 
-            TryClose();
+            await TryCloseAsync();
         }
     }
 }

@@ -1,0 +1,178 @@
+syntax = "proto3";
+
+package ticktrader.algo.domain;
+
+option csharp_namespace = "TickTrader.Algo.Domain";
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
+
+import "common.proto";
+import "runtime.package.proto";
+
+
+message PluginLogRecord {
+    enum LogSeverity {
+        INFO = 0;
+        ERROR = 1;
+        TRADE = 2;
+        TRADE_SUCCESS = 3;
+        TRADE_FAIL = 4;
+        CUSTOM = 5;
+        ALERT = 6;
+    }
+
+    google.protobuf.Timestamp time_utc = 1;
+    LogSeverity severity = 2;
+    google.protobuf.StringValue message = 3;
+    google.protobuf.StringValue details = 4;
+}
+
+message PluginStatusUpdate {
+    string plugin_id = 1;
+    google.protobuf.StringValue message = 2;
+}
+
+message OutputPoint {
+    google.protobuf.Timestamp time = 1;
+    int32 index = 2;
+    google.protobuf.Any value = 3;
+}
+
+message OutputPointRange {
+    repeated OutputPoint points = 1;
+}
+
+message DataSeriesUpdate {
+    enum Type {
+        OUTPUT = 0;
+        SYMBOL_RATE = 1;
+        NAMED_STREAM = 2;
+    }
+
+    enum UpdateAction {
+        APPEND = 0;
+        UPDATE = 1;
+    }
+
+    Type series_type = 1;
+    google.protobuf.StringValue series_id = 2;
+    UpdateAction update_action = 3;
+    google.protobuf.Any value = 4;
+    int32 buffer_truncated_by = 5;
+}
+
+message MarkerInfo {
+    enum IconType {
+        CIRCLE = 0;
+        UP_ARROW = 1;
+        DOWN_ARROW = 2;
+        UP_TRIANGLE = 3;
+        DOWN_TRIANGLE = 4;
+        DIAMOND = 5;
+        SQUARE = 6;
+    }
+
+    double y = 1;
+    google.protobuf.StringValue display_text = 2;
+    IconType icon = 3;
+    uint32 color_argb = 4;
+}
+
+
+message BoolParameterConfig {
+    string property_id = 1;
+    bool value = 2;
+}
+
+message Int32ParameterConfig {
+    string property_id = 1;
+    int32 value = 2;
+}
+
+message NullableInt32ParameterConfig {
+    string property_id = 1;
+    google.protobuf.Int32Value value = 2;
+}
+
+message DoubleParameterConfig {
+    string property_id = 1;
+    double value = 2;
+}
+
+message NullableDoubleParameterConfig {
+    string property_id = 1;
+    google.protobuf.DoubleValue value = 2;
+}
+
+message StringParameterConfig {
+    string property_id = 1;
+    string value = 2;
+}
+
+message EnumParameterConfig {
+    string property_id = 1;
+    string value = 2;
+}
+
+message FileParameterConfig {
+    string property_id = 1;
+    string file_name = 2;
+}
+
+
+message SymbolConfig {
+    enum SymbolOrigin {
+        ONLINE = 0;
+        CUSTOM = 1;
+        TOKEN = 2;
+    }
+
+    string name = 1;
+    SymbolOrigin origin = 2;
+}
+
+message BarToBarInputConfig {
+    string property_id = 1;
+    SymbolConfig selected_symbol = 2;
+    MappingKey selected_mapping = 3;
+}
+
+message BarToDoubleInputConfig {
+    string property_id = 1;
+    SymbolConfig selected_symbol = 2;
+    MappingKey selected_mapping = 3;
+}
+
+message ColoredLineOutputConfig {
+    string property_id = 1;
+    bool is_enabled = 2;
+    uint32 line_color_argb = 3;
+    int32 line_thickness = 4;
+    Metadata.LineStyle line_style = 5;
+}
+
+message MarkerSeriesOutputConfig {
+    string property_id = 1;
+    bool is_enabled = 2;
+    uint32 line_color_argb = 3;
+    int32 line_thickness = 4;
+    Metadata.MarkerSize marker_size = 5;
+}
+
+message PluginPermissions {
+    bool trade_allowed = 1;
+    bool isolated = 2;
+}
+
+message PluginConfig {
+    PluginKey key = 1;
+    Feed.Timeframe timeframe = 2;
+    Feed.Timeframe model_timeframe = 3;
+    SymbolConfig main_symbol = 4;
+    MappingKey selected_mapping = 5;
+    string instance_id = 6;
+    PluginPermissions permissions = 7;
+    repeated google.protobuf.Any properties = 8;
+}

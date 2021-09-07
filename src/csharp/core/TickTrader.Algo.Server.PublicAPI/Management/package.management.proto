@@ -1,0 +1,40 @@
+﻿syntax = "proto3";
+
+package ticktrader.algo.server.publicApi;
+
+option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
+
+import "google/protobuf/wrappers.proto";
+import "management/base.request.proto";
+import "info/file.transfer.info.proto";
+
+
+message UploadPackageRequest {
+    google.protobuf.StringValue package_id = 1;
+    google.protobuf.StringValue filename = 2;
+    FileTransferSettings transfer_settings = 3;
+}
+
+message UploadPackageResponse {
+    google.protobuf.StringValue package_id = 1;
+    RequestResult exec_result = 101;
+}
+
+
+message RemovePackageRequest {
+    string package_id = 1;
+}
+
+message RemovePackageResponse {
+    RequestResult exec_result = 101;
+}
+
+
+message DownloadPackageRequest {
+    string package_id = 1;
+    FileTransferSettings transfer_settings = 2;
+}
+
+message DownloadPackageResponse {
+    RequestResult exec_result = 101;
+}

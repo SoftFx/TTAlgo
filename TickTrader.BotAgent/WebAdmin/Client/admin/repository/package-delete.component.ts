@@ -24,7 +24,7 @@ export class PacakgeDeleteComponent implements OnInit {
     }
 
     public Delete() {
-        this.DeleteRequest = new ObservableRequest(this._api.DeletePackage(this.Package.Name))
+        this.DeleteRequest = new ObservableRequest(this._api.DeletePackage(this.Package.Id))
             .Subscribe(ok => this.OnDeleted.emit(this.Package),
             err => {
                 if (!err.Handled) {

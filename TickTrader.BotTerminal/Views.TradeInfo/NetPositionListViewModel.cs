@@ -1,13 +1,7 @@
-﻿using Caliburn.Micro;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using Machinarium.Qnil;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
+using TickTrader.Algo.Account;
 
 namespace TickTrader.BotTerminal
 {
@@ -16,7 +10,7 @@ namespace TickTrader.BotTerminal
         private ProfileManager _profileManager;
         private bool _isBacktester;
 
-        public NetPositionListViewModel(AccountModel model, IVarSet<string, SymbolModel> symbols, IConnectionStatusInfo connection, ProfileManager profile = null, bool isBacktester = false)
+        public NetPositionListViewModel(AccountModel model, IConnectionStatusInfo connection, ProfileManager profile = null, bool isBacktester = false)
             : base(model, connection)
         {
             Positions = model.Positions
@@ -38,9 +32,9 @@ namespace TickTrader.BotTerminal
         public ViewModelStorageEntry StateProvider { get; private set; }
         public bool AutoSizeColumns { get; set; }
 
-        protected override bool SupportsAccount(AccountTypes accType)
+        protected override bool SupportsAccount(AccountInfo.Types.Type accType)
         {
-            return accType == AccountTypes.Net;
+            return accType == AccountInfo.Types.Type.Net;
         }
 
         public IObservableList<PositionViewModel> Positions { get; private set; }

@@ -29,7 +29,7 @@ namespace TickTrader.BotAgent.Configurator
             ServiceCloseDelay = new TimeSpan(0, 0, 90);
         }
 
-        public async void ServiceStart(int listeningPort)
+        public async Task ServiceStart(int listeningPort)
         {
             if (IsServiceRunning)
             {
@@ -47,11 +47,13 @@ namespace TickTrader.BotAgent.Configurator
                 service.Start();
                 service.WaitForStatus(ServiceControllerStatus.Running);
             }
-            catch (Exception ex)
-            {
-                _logger.Error(ex);
-                throw new Exception($"{Resources.CannotStartServiceEx} {MachineServiceName}");
-            }
+            //catch (Exception ex)
+            //{
+            //    _logger.Error(ex);
+            //    //throw new Exception($"{Resources.CannotStartServiceEx} {MachineServiceName}");
+            //    throw ex;
+            //}
+            finally { }
         }
 
         public void ServiceStop()
@@ -81,12 +83,13 @@ namespace TickTrader.BotAgent.Configurator
                     process.WaitForExit(DelayKillProcess);
                 }
             }
-            catch (Exception ex)
-            {
-                _logger.Error(ex);
-                //throw new Exception($"{Resources.CannotStopServiceEx} {MachineServiceName}");
-                throw ex;
-            }
+            //catch (Exception ex)
+            //{
+            //    _logger.Error(ex);
+            //    //throw new Exception($"{Resources.CannotStopServiceEx} {MachineServiceName}");
+            //    throw ex;
+            //}
+            finally { }
         }
 
         private static int GetProcessIdByServiceName(string serviceName)

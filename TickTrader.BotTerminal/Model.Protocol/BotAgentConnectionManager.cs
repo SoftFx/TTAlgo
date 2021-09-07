@@ -1,9 +1,8 @@
 ﻿using Machinarium.State;
 using NLog;
 using System;
-using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Protocol;
+using TickTrader.Algo.Server.PublicAPI;
 using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal
@@ -19,12 +18,12 @@ namespace TickTrader.BotTerminal
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
 
-        private ProtocolClient _protocolClient;
+        private IAlgoServerClient _protocolClient;
         private StateMachine<States> _stateControl;
         private bool _needReconnect;
 
 
-        public AccessLevels AccessLevel => _protocolClient.AccessManager.Level;
+        public ClientClaims.Types.AccessLevel AccessLevel => _protocolClient.AccessManager.Level;
 
         public States State => _stateControl.Current;
 
@@ -47,11 +46,8 @@ namespace TickTrader.BotTerminal
             Creds = botAgentCreds;
 
             RemoteAgent = new RemoteAlgoAgent(Creds.Name);
-            _protocolClient = new Algo.Protocol.Grpc.GrpcClient(RemoteAgent);
+            _protocolClient = AlgoServerClient.Create(RemoteAgent);
             RemoteAgent.SetProtocolClient(_protocolClient);
-
-            _protocolClient.Connected += ClientOnConnected;
-            _protocolClient.Disconnected += ClientOnDisconnected;
 
             _stateControl = new StateMachine<States>(new DispatcherStateMachineSync());
             _stateControl.AddTransition(States.Offline, Events.ConnectRequest, States.Connecting);
@@ -75,8 +71,22 @@ namespace TickTrader.BotTerminal
             _stateControl.OnEnter(States.Offline, () => RemoteAgent.ClearCache());
 
             _stateControl.StateChanged += OnStateChanged;
+
+            _protocolClient.ClientStateChanged += ClientStateChanged; ;
         }
 
+        private void ClientStateChanged(ClientStates state)
+        {
+            switch (state)
+            {
+                case ClientStates.Online:
+                    _stateControl.PushEvent(Events.Connected);
+                    break;
+                case ClientStates.Offline:
+                    _stateControl.PushEvent(Events.Disconnected);
+                    break;
+            }
+        }
 
         public void Connect()
         {
@@ -104,34 +114,24 @@ namespace TickTrader.BotTerminal
 
         public Task WaitDisconnect()
         {
+            if (_stateControl.Current != States.Online)
+                return Task.CompletedTask;
+
             Disconnect();
             return _stateControl.AsyncWait(States.Offline);
         }
 
 
-        private void OnStateChanged(States from, States to)
-        {
-            StateChanged();
-        }
-
-        private void ClientOnConnected()
-        {
-            _stateControl.PushEvent(Events.Connected);
-        }
-
-        private void ClientOnDisconnected()
-        {
-            _stateControl.PushEvent(Events.Disconnected);
-        }
+        private void OnStateChanged(States from, States to) => StateChanged();
 
         private void StartConnecting()
         {
-            _protocolClient.TriggerConnect(Creds.ToClientSettings());
+            _protocolClient.Connect(Creds);
         }
 
         private void StartDisconnecting()
         {
-            _protocolClient.TriggerDisconnect();
+            _protocolClient.Disconnect();
         }
     }
 }

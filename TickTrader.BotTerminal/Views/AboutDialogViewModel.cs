@@ -1,11 +1,6 @@
 ﻿using Caliburn.Micro;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Common.Lib;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotTerminal
 {
@@ -34,7 +29,7 @@ namespace TickTrader.BotTerminal
 
         public void Ok()
         {
-            TryClose();
+            TryCloseAsync();
         }
     }
 }

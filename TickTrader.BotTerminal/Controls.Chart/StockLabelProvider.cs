@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SciChart.Charting.Visuals.Axes;
 using SciChart.Charting.Visuals.Axes.LabelProviders;
-using SciChart.Data.Model;
-using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -16,7 +10,7 @@ namespace TickTrader.BotTerminal
         private DateTime _prevValue;
         //private LabelLevels _level;
 
-        public TimeFrames Timeframe { get; set; } = TimeFrames.M1;
+        public Feed.Types.Timeframe Timeframe { get; set; } = Feed.Types.Timeframe.M1;
 
         public override string FormatCursorLabel(IComparable dataValue)
         {
@@ -47,19 +41,19 @@ namespace TickTrader.BotTerminal
         {
             switch (Timeframe)
             {
-                case TimeFrames.MN: return MonthWithYearFormat;
-                case TimeFrames.W:
-                case TimeFrames.D: return DayWithYearFormat;
-                case TimeFrames.H4:
-                case TimeFrames.H1:
-                case TimeFrames.M30:
-                case TimeFrames.M15:
-                case TimeFrames.M5:
-                case TimeFrames.M1: //return DayWithTimeFormat;
-                case TimeFrames.S10:
-                case TimeFrames.S1:
-                case TimeFrames.Ticks:
-                case TimeFrames.TicksLevel2: return DayWithTimeFormat;
+                case Feed.Types.Timeframe.MN: return MonthWithYearFormat;
+                case Feed.Types.Timeframe.W:
+                case Feed.Types.Timeframe.D: return DayWithYearFormat;
+                case Feed.Types.Timeframe.H4:
+                case Feed.Types.Timeframe.H1:
+                case Feed.Types.Timeframe.M30:
+                case Feed.Types.Timeframe.M15:
+                case Feed.Types.Timeframe.M5:
+                case Feed.Types.Timeframe.M1: //return DayWithTimeFormat;
+                case Feed.Types.Timeframe.S10:
+                case Feed.Types.Timeframe.S1:
+                case Feed.Types.Timeframe.Ticks:
+                case Feed.Types.Timeframe.TicksLevel2: return DayWithTimeFormat;
                 default: return FullDateTimeFormat;
             }
         }
@@ -68,31 +62,31 @@ namespace TickTrader.BotTerminal
         {
             switch (Timeframe)
             {
-                case TimeFrames.MN:
+                case Feed.Types.Timeframe.MN:
                     {
                         if (newVal.Year != _prevValue.Year)
                             return MonthWithYearFormat;
                         else
                             return MonthFormat;
                     }
-                case TimeFrames.W:
-                case TimeFrames.D:
+                case Feed.Types.Timeframe.W:
+                case Feed.Types.Timeframe.D:
                     {
                         if (newVal.Year != _prevValue.Year)
                             return DayWithYearFormat;
                         else
                             return DayOnlyFormat;
                     }
-                case TimeFrames.H4:
-                case TimeFrames.H1:
-                case TimeFrames.M30:
-                case TimeFrames.M15:
-                case TimeFrames.M5:
-                case TimeFrames.M1:
-                case TimeFrames.S10:
-                case TimeFrames.S1:
-                case TimeFrames.Ticks:
-                case TimeFrames.TicksLevel2:
+                case Feed.Types.Timeframe.H4:
+                case Feed.Types.Timeframe.H1:
+                case Feed.Types.Timeframe.M30:
+                case Feed.Types.Timeframe.M15:
+                case Feed.Types.Timeframe.M5:
+                case Feed.Types.Timeframe.M1:
+                case Feed.Types.Timeframe.S10:
+                case Feed.Types.Timeframe.S1:
+                case Feed.Types.Timeframe.Ticks:
+                case Feed.Types.Timeframe.TicksLevel2:
                     {
                         if (newVal.Day != _prevValue.Day)
                             return DayWithTimeFormat;

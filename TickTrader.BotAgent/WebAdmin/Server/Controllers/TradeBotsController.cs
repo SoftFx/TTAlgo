@@ -1,17 +1,16 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using TickTrader.BotAgent.BA;
 using System.Linq;
-using Microsoft.AspNetCore.Authorization;
-using TickTrader.BotAgent.BA.Exceptions;
-using TickTrader.BotAgent.WebAdmin.Server.Extensions;
-using TickTrader.BotAgent.WebAdmin.Server.Dto;
-using TickTrader.BotAgent.BA.Models;
 using System.Net;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Core.Repository;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
+using TickTrader.Algo.Domain.ServerControl;
+using TickTrader.Algo.Server;
+using TickTrader.BotAgent.BA.Models;
+using TickTrader.BotAgent.WebAdmin.Server.Dto;
+using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 {
@@ -20,19 +19,19 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
     public class TradeBotsController : Controller
     {
         private readonly ILogger<TradeBotsController> _logger;
-        private readonly IBotAgent _botAgent;
+        private readonly IAlgoServerLocal _algoServer;
 
-        public TradeBotsController(IBotAgent ddServer, ILogger<TradeBotsController> logger)
+        public TradeBotsController(IAlgoServerLocal algoServer, ILogger<TradeBotsController> logger)
         {
-            _botAgent = ddServer;
+            _algoServer = algoServer;
             _logger = logger;
         }
 
         [HttpGet]
         public async Task<TradeBotDto[]> Get()
         {
-            var bots = await _botAgent.GetBots();
-            return bots.Select(b => b.ToDto()).ToArray();
+            var snapshot = await _algoServer.GetPlugins();
+            return snapshot.Plugins.Select(b => b.ToDto()).ToArray();
         }
 
         [HttpGet("{id}")]
@@ -40,14 +39,14 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                var tradeBot = await _botAgent.GetBotInfo(WebUtility.UrlDecode(id));
+                var tradeBot = await _algoServer.GetPluginInfo(WebUtility.UrlDecode(id));
 
                 return Ok(tradeBot.ToDto());
             }
-            catch (BAException ex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(ex.Message);
-                return BadRequest(ex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
         }
 
@@ -58,15 +57,14 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             try
             {
                 var botId = WebUtility.UrlDecode(id);
-                var log = await _botAgent.GetBotLog(botId);
-                log.Clear();
+                await _algoServer.ClearPluginFolder(new ClearPluginFolderRequest(botId, PluginFolderInfo.Types.PluginFolderId.BotLogs));
 
                 return Ok();
             }
-            catch (BAException ex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(ex.Message);
-                return BadRequest(ex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
         }
 
@@ -76,14 +74,22 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             try
             {
                 var botId = WebUtility.UrlDecode(id);
-                var log = await _botAgent.GetBotLog(botId);
 
-                return Ok(log.ToDto());
+                var logs = await _algoServer.GetPluginLogs(new PluginLogsRequest { PluginId = botId, MaxCount = 100 });
+                var folderInfo = await _algoServer.GetPluginFolderInfo(new PluginFolderInfoRequest(botId, PluginFolderInfo.Types.PluginFolderId.BotLogs));
+
+                var res = new TradeBotLogDto
+                {
+                    Snapshot = logs.OrderByDescending(le => le.TimeUtc).Select(e => e.ToDto()).ToArray(),
+                    Files = folderInfo.Files.Select(f => f.ToDto()).ToArray(),
+                };
+
+                return Ok(res);
             }
-            catch (BAException ex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(ex.Message);
-                return BadRequest(ex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
         }
 
@@ -93,17 +99,16 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             try
             {
                 var botId = WebUtility.UrlDecode(id);
-                var log = await _botAgent.GetBotLog(botId);
-
                 var decodedFile = WebUtility.UrlDecode(file);
-                var readOnlyFile = log.GetFile(decodedFile);
 
-                return File(readOnlyFile.OpenRead(), MimeMipping.GetContentType(decodedFile), decodedFile);
+                var filePath = await _algoServer.GetPluginFileReadPath(new DownloadPluginFileRequest(botId, PluginFolderInfo.Types.PluginFolderId.BotLogs, decodedFile));
+
+                return File(FileHelper.OpenSharedRead(filePath), MimeMipping.GetContentType(decodedFile), decodedFile);
             }
-            catch (BAException ex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(ex.Message);
-                return BadRequest(ex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
         }
 
@@ -113,15 +118,15 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             try
             {
                 var botId = WebUtility.UrlDecode(id);
-                var log = await _botAgent.GetBotLog(botId);
-                log.DeleteFile(WebUtility.UrlDecode(file));
+                var decodedFile = WebUtility.UrlDecode(file);
+                await _algoServer.DeletePluginFile(new DeletePluginFileRequest(botId, PluginFolderInfo.Types.PluginFolderId.BotLogs, decodedFile));
 
                 return Ok();
             }
-            catch (BAException ex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(ex.Message);
-                return BadRequest(ex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
         }
         #endregion
@@ -133,16 +138,17 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             try
             {
                 var botId = WebUtility.UrlDecode(id);
-                var algoData = await _botAgent.GetAlgoData(botId);
 
-                var files = algoData.Files.Select(f => f.ToDto()).ToArray();
+                var folderInfo = await _algoServer.GetPluginFolderInfo(new PluginFolderInfoRequest(botId, PluginFolderInfo.Types.PluginFolderId.AlgoData));
+
+                var files = folderInfo.Files.Select(f => f.ToDto()).ToArray();
 
                 return Ok(files);
             }
-            catch (BAException ex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(ex.Message);
-                return BadRequest(ex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
         }
 
@@ -152,17 +158,16 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             try
             {
                 var botId = WebUtility.UrlDecode(id);
-                var algoData = await _botAgent.GetAlgoData(botId);
-
                 var decodedFile = WebUtility.UrlDecode(file);
-                var readOnlyFile = algoData.GetFile(decodedFile);
 
-                return File(readOnlyFile.OpenRead(), MimeMipping.GetContentType(decodedFile), decodedFile);
+                var filePath = await _algoServer.GetPluginFileReadPath(new DownloadPluginFileRequest(botId, PluginFolderInfo.Types.PluginFolderId.AlgoData, decodedFile));
+
+                return File(FileHelper.OpenSharedRead(filePath), MimeMipping.GetContentType(decodedFile), decodedFile);
             }
-            catch (BAException ex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(ex.Message);
-                return BadRequest(ex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
         }
         #endregion
@@ -173,68 +178,73 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             try
             {
                 var botId = WebUtility.UrlDecode(id);
-                var log = await _botAgent.GetBotLog(botId);
+                var status = await _algoServer.GetPluginStatus(new PluginStatusRequest { PluginId = botId });
 
                 return Ok(new BotStatusDto
                 {
-                    Status = log.Status,
-                    BotId = botId
+                    Status = status,
+                    BotId = botId,
                 });
             }
-            catch (BAException ex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(ex.Message);
-                return BadRequest(ex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
         }
 
         [HttpGet("{botName}/[action]")]
         public Task<string> BotId(string botName)
         {
-            return _botAgent.GenerateBotId(WebUtility.UrlDecode(botName));
+            return _algoServer.GeneratePluginId(WebUtility.UrlDecode(botName));
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody]PluginSetupDto setup)
+        public async Task<IActionResult> Post([FromBody] PluginSetupDto setup)
         {
             try
             {
                 var pluginCfg = setup.Parse();
-                var accountKey = new AccountKey(setup.Account.Server, setup.Account.Login);
+                var accountId = AccountId.Pack(setup.Account.Server, setup.Account.Login);
 
-                pluginCfg.Key = new PluginKey(setup.PackageName.ToLowerInvariant(), RepositoryLocation.LocalRepository, setup.PluginId);
+                pluginCfg.Key = new PluginKey(setup.PackageId, setup.PluginId);
 
-                var tradeBot = await _botAgent.AddBot(accountKey, pluginCfg);
-                setup.EnsureFiles(ServerModel.GetWorkingFolderFor(tradeBot.InstanceId));
+                await _algoServer.AddPlugin(new AddPluginRequest(accountId, pluginCfg));
+                var botId = setup.InstanceId;
+                setup.EnsureFiles(ServerModel.GetWorkingFolderFor(botId));
+
+                var tradeBot = await _algoServer.GetPluginInfo(botId);
 
                 return Ok(tradeBot.ToDto());
             }
-            catch (BAException ex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(ex.Message);
-                return BadRequest(ex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(string id, [FromBody]PluginSetupDto setup)
+        public async Task<IActionResult> Put(string id, [FromBody] PluginSetupDto setup)
         {
             try
             {
                 var botId = WebUtility.UrlDecode(id);
 
                 var pluginCfg = setup.Parse();
-                pluginCfg.InstanceId = botId;
 
-                await _botAgent.ChangeBotConfig(botId, pluginCfg);
+                pluginCfg.InstanceId = botId;
+                pluginCfg.Key = new PluginKey(setup.PackageId, setup.PluginId);
+
+                await _algoServer.UpdatePluginConfig(new ChangePluginConfigRequest(botId, pluginCfg));
                 setup.EnsureFiles(ServerModel.GetWorkingFolderFor(botId));
 
                 return Ok();
             }
-            catch (BAException ex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(ex.Message);
-                return BadRequest(ex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
         }
 
@@ -243,14 +253,14 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                await _botAgent.RemoveBot(WebUtility.UrlDecode(id), clean_log, clean_algodata);
+                await _algoServer.RemovePlugin(new RemovePluginRequest(WebUtility.UrlDecode(id), clean_log, clean_algodata));
 
                 return Ok();
             }
-            catch (BAException ex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(ex.Message);
-                return BadRequest(ex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
         }
 
@@ -259,14 +269,14 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                await _botAgent.StartBot(WebUtility.UrlDecode(id));
+                await _algoServer.StartPlugin(new StartPluginRequest(WebUtility.UrlDecode(id)));
 
                 return Ok();
             }
-            catch (BAException ex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(ex.Message);
-                return BadRequest(ex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
         }
 
@@ -275,14 +285,14 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                _botAgent.StopBotAsync(WebUtility.UrlDecode(id));
+                _algoServer.StopPlugin(new StopPluginRequest(WebUtility.UrlDecode(id)));
 
                 return Ok();
             }
-            catch (BAException ex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(ex.Message);
-                return BadRequest(ex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
         }
     }

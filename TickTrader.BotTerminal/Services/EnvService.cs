@@ -1,10 +1,6 @@
 ﻿using NLog;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TickTrader.BotTerminal
 {
@@ -14,51 +10,50 @@ namespace TickTrader.BotTerminal
 
         private EnvService()
         {
-
-            ApplicationName = "BotTrader";
+            ApplicationName = "AlgoTerminal";
 
             AppFolder = AppDomain.CurrentDomain.BaseDirectory;
             var myDocumentsFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             var appDocumentsFolder = Path.Combine(myDocumentsFolder, ApplicationName);
 
-            if (System.Deployment.Application.ApplicationDeployment.IsNetworkDeployed)
-            {
-                // ------- Click Once Mode -------------
+            //if (System.Deployment.Application.ApplicationDeployment.IsNetworkDeployed)
+            //{
+            //    // ------- Click Once Mode -------------
 
-                BotLogFolder = Path.Combine(appDocumentsFolder, "BotLogs");
-                LogFolder = Path.Combine(appDocumentsFolder, "Logs");
-                JournalFolder = Path.Combine(appDocumentsFolder, "Journals");
-                AlgoRepositoryFolder = Path.Combine(appDocumentsFolder, "AlgoRepository");
-                AlgoExtFolder = Path.Combine(appDocumentsFolder, "AlgoExt");
-                AlgoCommonRepositoryFolder = null;
-                AlgoWorkingFolder = Path.Combine(appDocumentsFolder, "AlgoData");
-                FeedHistoryCacheFolder = Path.Combine(appDocumentsFolder, "QuoteCache");
-                CustomFeedCacheFolder = Path.Combine(appDocumentsFolder, "CustomQuoteCache");
-                AppDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                AppLockFilePath = Path.Combine(AppDataFolder, "applock");
-                UserProfilesFolder = Path.Combine(appDocumentsFolder, "Profiles");
-                ProfilesCacheFolder = Path.Combine(UserProfilesFolder, "Cache");
-                BacktestResultsFolder = Path.Combine(appDocumentsFolder, "Backtest Results");
-            }
-            else
-            {
-                // ------- Portable Mode -------------
+            //    BotLogFolder = Path.Combine(appDocumentsFolder, "BotLogs");
+            //    LogFolder = Path.Combine(appDocumentsFolder, "Logs");
+            //    JournalFolder = Path.Combine(appDocumentsFolder, "Journals");
+            //    AlgoRepositoryFolder = Path.Combine(appDocumentsFolder, "AlgoRepository");
+            //    AlgoExtFolder = Path.Combine(appDocumentsFolder, "AlgoExt");
+            //    AlgoCommonRepositoryFolder = null;
+            //    AlgoWorkingFolder = Path.Combine(appDocumentsFolder, "AlgoData");
+            //    FeedHistoryCacheFolder = Path.Combine(appDocumentsFolder, "QuoteCache");
+            //    CustomFeedCacheFolder = Path.Combine(appDocumentsFolder, "CustomQuoteCache");
+            //    AppDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            //    AppLockFilePath = Path.Combine(AppDataFolder, "applock");
+            //    UserProfilesFolder = Path.Combine(appDocumentsFolder, "Profiles");
+            //    ProfilesCacheFolder = Path.Combine(UserProfilesFolder, "Cache");
+            //    BacktestResultsFolder = Path.Combine(appDocumentsFolder, "Backtest Results");
+            //}
+            //else
+            //{
+            // ------- Portable Mode -------------
 
-                BotLogFolder = Path.Combine(AppFolder, "BotLogs");
-                LogFolder = Path.Combine(AppFolder, "Logs");
-                JournalFolder = Path.Combine(AppFolder, "Journal");
-                AlgoRepositoryFolder = Path.Combine(AppFolder, "AlgoRepository");
-                AlgoExtFolder = Path.Combine(AppFolder, "AlgoExt");
-                AlgoCommonRepositoryFolder = Path.Combine(appDocumentsFolder, "AlgoRepository");
-                AlgoWorkingFolder = Path.Combine(AppFolder, "AlgoData");
-                FeedHistoryCacheFolder = Path.Combine(AppFolder, "FeedCache");
-                CustomFeedCacheFolder = Path.Combine(AppFolder, "CustomQuoteCache");
-                AppDataFolder = Path.Combine(AppFolder, "Settings");
-                AppLockFilePath = Path.Combine(AppFolder, "applock");
-                UserProfilesFolder = Path.Combine(AppFolder, "Profiles");
-                ProfilesCacheFolder = Path.Combine(UserProfilesFolder, "Cache");
-                BacktestResultsFolder = Path.Combine(AppFolder, "Backtest Results");
-            }
+            BotLogFolder = Path.Combine(AppFolder, "BotLogs");
+            LogFolder = Path.Combine(AppFolder, "Logs");
+            JournalFolder = Path.Combine(AppFolder, "Journal");
+            AlgoRepositoryFolder = Path.Combine(AppFolder, "AlgoRepository");
+            AlgoExtFolder = Path.Combine(AppFolder, "AlgoExt");
+            AlgoCommonRepositoryFolder = Path.Combine(appDocumentsFolder, "AlgoRepository");
+            AlgoWorkingFolder = Path.Combine(AppFolder, "AlgoData");
+            FeedHistoryCacheFolder = Path.Combine(AppFolder, "FeedCache");
+            CustomFeedCacheFolder = Path.Combine(AppFolder, "CustomQuoteCache");
+            AppDataFolder = Path.Combine(AppFolder, "Settings");
+            AppLockFilePath = Path.Combine(AppFolder, "applock");
+            UserProfilesFolder = Path.Combine(AppFolder, "Profiles");
+            ProfilesCacheFolder = Path.Combine(UserProfilesFolder, "Cache");
+            BacktestResultsFolder = Path.Combine(AppFolder, "Backtest Results");
+            //}
 
             try
             {

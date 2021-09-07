@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
@@ -93,6 +94,7 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         private void PrintAccountInfo()
         {
+            Status.WriteLine($"Current UTC time: {DateTime.UtcNow}");
             Status.WriteLine("Account Id: {0}", Account.Id);
             Status.WriteLine("Account Type: {0}", Account.Type);
         }

@@ -1,23 +1,43 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Core;
+﻿using Machinarium.Var;
+using TickTrader.Algo.Domain;
+using TickTrader.BotTerminal.Converters;
 
 namespace TickTrader.BotTerminal
 {
-    class AssetViewModel
+    sealed class AssetViewModel
     {
-        public AssetViewModel(AssetModel asset, CurrencyEntity info)
+        private readonly VarContext _varContext = new VarContext();
+
+        private readonly PricePrecisionConverter<double> _currencyConverter;
+        private readonly IAssetInfo _asset;
+
+        public AssetViewModel(AssetInfo asset, CurrencyInfo info)
         {
-            Asset = asset;
-            CurrencyDigits = info?.Digits ?? 2;
+            _asset = asset;
+
+            _currencyConverter = new PricePrecisionConverter<double>(info?.Digits ?? 2);
+
+            _asset.MarginUpdate += Update;
+
+            Currency = _varContext.AddProperty(_asset.Currency);
+            Amount = _varContext.AddProperty(_asset.Amount, displayConverter: _currencyConverter);
+            Margin = _varContext.AddProperty(_asset.Margin, displayConverter: _currencyConverter);
+            FreeAmount = _varContext.AddProperty(displayConverter: _currencyConverter);
+
+            Update();
         }
 
-        public AssetModel Asset { get; private set; }
+        public Property<string> Currency { get; }
+        public Property<double> Amount { get; }
+        public Property<double> Margin { get; }
+        public Property<double> FreeAmount { get; }
 
-        public int CurrencyDigits { get; private set; }
+        private void Update()
+        {
+            Currency.Value = _asset.Currency;
+            Amount.Value = _asset.Amount;
+            Margin.Value = _asset.Margin;
+            FreeAmount.Value = _asset.FreeAmount;
+        }
     }
 }

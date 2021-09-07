@@ -17,7 +17,7 @@
     <l:DateTimeConverter x:Key="UtcExtDateTimeFormat" Format="GExt" ConvertToLocal="False" />
     <l:DateTimeConverter x:Key="UtcFullDateTimeFormat" Format="G" ConvertToLocal="False" />
     <l:DateTimeConverter x:Key="UtcShortDateTimeFormat" Format="g" ConvertToLocal="False" />
-    <l:KindAwareDateTimeConverter x:Key="KindAwareFullDateTime"/>
+    <l:KindAwareDateTimeConverter x:Key="KindAwareFullDateTime" Format="GExt"/>
     <l:KindAwareDateTimeConverter x:Key="KindAwareTime"/>
     <l:FullTimeConverter x:Key="FullTimeFormat" />
     <l:NumberConverter x:Key="PriceConverter" Type="Price" />
@@ -35,4 +35,5 @@
     <l:TextLengthComparisonConverter x:Key="TextLengthComparison"/>
     <l:BackTrimStringConverter x:Key="TrimValue"/>
     <l:GetFileNameFromPath x:Key="GetFileName"/>
+    <l:CheckValueConverter x:Key="CheckValue"/>
 </ResourceDictionary>

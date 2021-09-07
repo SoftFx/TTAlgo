@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Interactivity;
 using TickTrader.BotTerminal.Lib;
 using Microsoft.Win32;
 using System.Windows.Data;
 using System.IO;
-using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Package;
+using Microsoft.Xaml.Behaviors;
 
 namespace TickTrader.BotTerminal
 {
@@ -35,7 +30,7 @@ namespace TickTrader.BotTerminal
         public static readonly DependencyProperty FilterProperty = DependencyProperty.Register("Filter", typeof(string), typeof(OpenFileDialogBehavior),
             new FrameworkPropertyMetadata()
             {
-                DefaultValue = PackageWatcher.GetPackageExtensions,
+                DefaultValue = PackageHelper.GetPackageExtensions,
             });
 
         public OpenFileDialogBehavior()

@@ -156,7 +156,7 @@ namespace TickTrader.BotTerminal
 
         public void Ok()
         {
-            TryClose();
+            TryCloseAsync();
         }
 
         public void UpdateBotAgents(DictionaryUpdateArgs<string, BotAgentConnectionManager> args)
@@ -202,7 +202,7 @@ namespace TickTrader.BotTerminal
                         if (_lockBuffer.Count >= MaxBufferSize)
                             _lockBuffer.RemoveFirst();
 
-                        _lockBuffer.Add(a);
+                        _lockBuffer.AddLast(a);
                     }
                 }
 

@@ -2,15 +2,25 @@
 using Caliburn.Micro;
 using NLog;
 using NLog.Config;
-using NLog.Filters;
-using NLog.Targets;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
-using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Account;
+using TickTrader.Algo.Account.Fdk2;
+using TickTrader.Algo.Async.Actors;
+using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.CoreV1;
+using TickTrader.Algo.Isolation.NetFx;
+using TickTrader.Algo.Logging;
+using TickTrader.Algo.Package;
+using TickTrader.Algo.Server;
+using TickTrader.Algo.Server.Common;
+using TickTrader.FeedStorage;
+using TickTrader.WpfWindowsSupportLibrary;
 
 namespace TickTrader.BotTerminal
 {
@@ -21,7 +31,7 @@ namespace TickTrader.BotTerminal
 
         public static CultureInfo CultureCache { get; private set; }
 
-        private AppInstanceRestrictor _instanceRestrictor = new AppInstanceRestrictor();
+        private AppInstanceRestrictor _instanceRestrictor = new AppInstanceRestrictor(EnvService.Instance.AppLockFilePath);
         private SimpleContainer _container = new SimpleContainer();
         private ShellViewModel _shell;
         private bool _hasWriteAccess;
@@ -43,6 +53,10 @@ namespace TickTrader.BotTerminal
                 ConfigureCaliburn();
                 ConfigurateLogger();
                 ConfigureGlobalExceptionHandling();
+
+                PackageLoadContext.Init(PackageLoadContextProvider.Create);
+                PackageExplorer.Init(PackageV1Explorer.Create());
+                PluginLogWriter.Init(NLogPluginLogWriter.Create);
             }
         }
 
@@ -108,120 +122,53 @@ namespace TickTrader.BotTerminal
                 logger.Error(e.Exception, "Unhandled Exception on Dispatcher level!");
             };
 
-            Actor.UnhandledException += (e) =>
+            ActorSharp.Actor.UnhandledException += (e) =>
             {
                 logger.Error(e, "Unhandled Exception on Actor level!");
             };
+
+            ActorSystem.ActorErrors.Subscribe(ex => logger.Error(ex));
+            ActorSystem.ActorFailed.Subscribe(ex => logger.Fatal(ex));
         }
 
         private void ConfigurateLogger()
         {
-            NonBlockingFileCompressor.Setup();
-
-            ConfigurationItemFactory.Default.LayoutRenderers.RegisterDefinition("botName", typeof(BotNameLayoutRenderer));
-
-            var debuggerTarget = new DebuggerTarget() { Layout = "${logger} -> ${message} ${exception:format=tostring}" };
-
-            var logTarget = new FileTarget()
-            {
-                Layout = "${longdate} | ${logger} -> ${message} ${exception:format=tostring}",
-                FileName = Path.Combine(EnvService.Instance.LogFolder, "terminal.log"),
-                Encoding = Encoding.UTF8,
-                ArchiveFileName = Path.Combine(EnvService.Instance.LogFolder, "Archives", "terminal-{#}.zip"),
-                ArchiveEvery = FileArchivePeriod.Day,
-                ArchiveNumbering = ArchiveNumberingMode.Date,
-                EnableArchiveFileCompression = true,
-            };
-
-            var alertTarget = new FileTarget()
-            {
-                Layout = "${longdate} | ${message} ${exception:format=tostring}",
-                FileName = Path.Combine(EnvService.Instance.LogFolder, "alert.log"),
-                Encoding = Encoding.UTF8,
-                ArchiveFileName = Path.Combine(EnvService.Instance.LogFolder, "Archives", "alerts-{#}.zip"),
-                ArchiveEvery = FileArchivePeriod.Day,
-                ArchiveNumbering = ArchiveNumberingMode.Date,
-                EnableArchiveFileCompression = true,
-            };
-
-            var journalTarget = new FileTarget()
-            {
-                FileName = Path.Combine(EnvService.Instance.JournalFolder, "Journal-${shortdate}.txt"),
-                Layout = "${longdate} | ${message}",
-                Encoding = Encoding.UTF8,
-            };
-
-            var botInfoTarget = new FileTarget()
-            {
-                FileName = Path.Combine(EnvService.Instance.BotLogFolder, "${botName}/Log.txt"),
-                Layout = "${longdate} | ${message}",
-                Encoding = Encoding.UTF8,
-                ArchiveFileName = Path.Combine(Path.Combine(EnvService.Instance.BotLogFolder, "${botName}", "Archives"), "Log-{#}.zip"),
-                ArchiveEvery = FileArchivePeriod.Day,
-                ArchiveNumbering = ArchiveNumberingMode.Date,
-                EnableArchiveFileCompression = true
-            };
-
-            var botErrorTarget = new FileTarget()
-            {
-                FileName = Path.Combine(EnvService.Instance.BotLogFolder, "${botName}/Error.txt"),
-                Layout = "${longdate} | ${message}",
-                Encoding = Encoding.UTF8,
-                ArchiveFileName = Path.Combine(EnvService.Instance.BotLogFolder, "${botName}", "Archives", "Error-{#}.zip"),
-                ArchiveEvery = FileArchivePeriod.Day,
-                ArchiveNumbering = ArchiveNumberingMode.Date,
-                EnableArchiveFileCompression = true
-            };
-
-            var botStatusTarget = new FileTarget()
-            {
-                FileName = Path.Combine(EnvService.Instance.BotLogFolder, "${botName}/Status.txt"),
-                Layout = "${longdate} | ${message}",
-                Encoding = Encoding.UTF8,
-                ArchiveFileName = Path.Combine(EnvService.Instance.BotLogFolder, "${botName}", "Archives", "Status-{#}.zip"),
-                ArchiveEvery = FileArchivePeriod.Day,
-                ArchiveNumbering = ArchiveNumberingMode.Date,
-                EnableArchiveFileCompression = true
-            };
-
-            var ruleForJournalTarget = new LoggingRule(string.Concat("*", nameof(EventJournal)), LogLevel.Trace, journalTarget) { Final = true };
-            var ruleForBotInfoTarget = new LoggingRule(string.Concat(LoggerHelper.LoggerNamePrefix, "*"), LogLevel.Debug, botInfoTarget) { Final = true };
-            var ruleForBotErrorTarget = new LoggingRule(string.Concat(LoggerHelper.LoggerNamePrefix, "*"), LogLevel.Error, botErrorTarget);
-            var ruleForBotStatusTarget = new LoggingRule(string.Concat(LoggerHelper.LoggerNamePrefix, "*"), LogLevel.Trace, LogLevel.Trace, botStatusTarget) { Final = true };
-            var ruleForAlertTarget = new LoggingRule(string.Concat("*", nameof(AlertViewModel)), LogLevel.Trace, alertTarget);
-            var ruleForLogTarget = new LoggingRule();
-            ruleForLogTarget.LoggerNamePattern = "*";
-
-            ruleForLogTarget.Filters.Add(new ConditionBasedFilter()
-            {
-                Condition = "contains('${logger}','AlertViewModel')",
-                Action = FilterResult.Ignore
-            });
-
-            ruleForLogTarget.EnableLoggingForLevels(LogLevel.Debug, LogLevel.Fatal);
-            ruleForLogTarget.Targets.Add(debuggerTarget);
-            ruleForLogTarget.Targets.Add(logTarget);
-
             var config = new LoggingConfiguration();
 
-            config.LoggingRules.Add(ruleForAlertTarget);
-            config.LoggingRules.Add(ruleForJournalTarget);
-            config.LoggingRules.Add(ruleForBotStatusTarget);
-            config.LoggingRules.Add(ruleForBotErrorTarget);
-            config.LoggingRules.Add(ruleForBotInfoTarget);
-            config.LoggingRules.Add(ruleForLogTarget);
+            var p = new NLogFileParams { LogDirectory = EnvService.Instance.JournalFolder, Layout = NLogHelper.SimpleLogLayout };
+
+            p.FileNameSuffix = "journal";
+            var journalTarget = NLogHelper.CreateAsyncFileTarget(p, 500, 10000);
+            config.AddRule(LogLevel.Trace, LogLevel.Trace, journalTarget, string.Concat("*", nameof(EventJournal)), true);
+
+            p.LogDirectory = EnvService.Instance.LogFolder;
+
+            p.FileNameSuffix = "alert";
+            var alertTarget = NLogHelper.CreateAsyncFileTarget(p, 100, 1000);
+            config.AddRule(LogLevel.Trace, LogLevel.Trace, alertTarget, string.Concat("*", nameof(AlertViewModel)), true);
+
+            p.Layout = NLogHelper.NormalLogLayout;
+
+            p.FileNameSuffix = "terminal";
+            var logTarget = NLogHelper.CreateAsyncFileTarget(p, 500, 10000);
+            config.AddRule(LogLevel.Debug, LogLevel.Fatal, logTarget);
+
+            p.FileNameSuffix = "terminal-error";
+            var errTarget = NLogHelper.CreateAsyncFileTarget(p, 200, 1000);
+            config.AddRule(LogLevel.Error, LogLevel.Fatal, errTarget);
 
             NLog.LogManager.Configuration = config;
 
-            Algo.Core.CoreLoggerFactory.Init(s => new AlgoLogAdapter(s));
+            AlgoLoggerFactory.Init(NLogLoggerAdapter.Create);
+            NonBlockingFileCompressor.Setup();
         }
 
-        //protected override void OnExit(object sender, EventArgs e)
-        //{
-        //    base.OnExit(sender, e);
+        protected override void OnExit(object sender, EventArgs e)
+        {
+            base.OnExit(sender, e);
 
-
-        //}
+            NLog.LogManager.Shutdown();
+        }
 
         protected override object GetInstance(Type service, string key)
         {
@@ -250,19 +197,15 @@ namespace TickTrader.BotTerminal
                 Application.Current.Shutdown();
             else
             {
-                var connectionOptions = new ConnectionOptions()
-                {
-                    AutoReconnect = true,
-                    EnableLogs = BotTerminal.Properties.Settings.Default.EnableConnectionLogs,
-                    LogsFolder = EnvService.Instance.LogFolder,
-                    Type = AppType.BotTerminal,
-                };
+                CertificateProvider.InitServer(SslImport.LoadServerCertificate(), SslImport.LoadServerPrivateKey());
 
-                var clientHandler = new ClientModel.ControlHandler(connectionOptions, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy, 0);
+                var connectionOptions = ConnectionOptions.CreateForTerminal(Properties.Settings.Default.EnableConnectionLogs, EnvService.Instance.LogFolder);
+
+                var clientHandler = new ClientModel.ControlHandler((options, loggerId) => new SfxInterop(options, loggerId),connectionOptions, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy, "0");
                 var dataHandler = clientHandler.CreateDataHandler();
                 await dataHandler.Init();
 
-                var customStorage = new CustomFeedStorage.Handler(Actor.SpawnLocal<CustomFeedStorage>());
+                var customStorage = new CustomFeedStorage.Handler(ActorSharp.Actor.SpawnLocal<CustomFeedStorage>());
                 await customStorage.SyncData();
                 await customStorage.Start(EnvService.Instance.CustomFeedCacheFolder);
 
@@ -273,13 +216,13 @@ namespace TickTrader.BotTerminal
                 _container.Singleton<ShellViewModel>();
 
                 _shell = _container.GetInstance<ShellViewModel>();
-                _shell.Deactivated += Shell_Deactivated;
+                _shell.Deactivated += Shell_Deactivated; ;
 
-                DisplayRootViewFor<ShellViewModel>();
+                await DisplayRootViewFor<ShellViewModel>();
             }
         }
 
-        private async void Shell_Deactivated(object sender, DeactivationEventArgs e)
+        private async Task Shell_Deactivated(object sender, DeactivationEventArgs e)
         {
             if (e.WasClosed)
             {
@@ -288,6 +231,16 @@ namespace TickTrader.BotTerminal
                 App.Current.Shutdown();
             }
         }
+
+        //private async void Shell_Deactivated(object sender, DeactivationEventArgs e)
+        //{
+        //    if (e.WasClosed)
+        //    {
+        //        await _shell.Shutdown();
+        //        _instanceRestrictor.Dispose();
+        //        App.Current.Shutdown();
+        //    }
+        //}
 
         private bool HasWriteAccess()
         {

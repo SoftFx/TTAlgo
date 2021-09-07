@@ -16,11 +16,11 @@ namespace TickTrader.BotAgent.Configurator
 
         private const int MaxPort = (1 << 16) - 1;
 
-        private readonly RegistryNode _currentAgent;
+        private readonly RegistryNode _currentServer;
         private readonly IPHelperWrapper _helper;
         private readonly ServiceManager _service;
 
-        private readonly INetFwMgr _firewallManager;
+        //private readonly INetFwMgr _firewallManager;
         private readonly INetFwPolicy2 _firewallPolicy;
 
         public PortsManager(RegistryNode agent, ServiceManager service)
@@ -28,15 +28,15 @@ namespace TickTrader.BotAgent.Configurator
             _helper = new IPHelperWrapper();
 
             _service = service;
-            _currentAgent = agent;
+            _currentServer = agent;
 
-            _firewallManager = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr", false));
+            //_firewallManager = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr", false));
             _firewallPolicy = (INetFwPolicy2)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwPolicy2", true));
         }
 
-        public void RegisterRuleInFirewall(string nameApp, string application, string porst)
+        public void RegisterRuleInFirewall(string ports)
         {
-            string name = $"{nameApp} Access";
+            string name = $"{_currentServer.NodeName} Access";
 
             INetFwRule firewallRule = null;
 
@@ -57,10 +57,10 @@ namespace TickTrader.BotAgent.Configurator
             firewallRule.Protocol = (int)NET_FW_IP_PROTOCOL_.NET_FW_IP_PROTOCOL_TCP;
             firewallRule.Profiles = 7; // Profiles == ALL
             firewallRule.Action = NET_FW_ACTION_.NET_FW_ACTION_ALLOW;
-            firewallRule.Description = "Bot Agent Custom Rules";
-            firewallRule.LocalPorts = porst;
+            firewallRule.Description = "Algo Server Custom Rules";
+            firewallRule.LocalPorts = ports;
             firewallRule.Enabled = true;
-            firewallRule.ApplicationName = application;
+            firewallRule.ApplicationName = _currentServer.ExePath;
 
             if (newRule)
                 _firewallPolicy.Rules.Add(firewallRule);
@@ -166,7 +166,7 @@ namespace TickTrader.BotAgent.Configurator
 
             var process = Process.GetProcessById((int)processId);
 
-            return _service.IsServiceRunning && process.MainModule.FileName == _currentAgent.ExePath;
+            return _service.IsServiceRunning && process.MainModule.FileName == _currentServer.ExePath;
         }
     }
 }

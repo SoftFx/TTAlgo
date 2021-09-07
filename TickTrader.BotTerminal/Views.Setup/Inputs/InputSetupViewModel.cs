@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Core.Setup;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -44,7 +42,7 @@ namespace TickTrader.BotTerminal
         }
 
         public InputSetupViewModel(InputDescriptor descriptor, SetupMetadata setupMetadata, SymbolKey _mainSymbol = null)
-            : this(descriptor, setupMetadata.DefaultSymbol)
+            : this(descriptor, setupMetadata.DefaultSymbol.ToKey())
         {
             SetupMetadata = setupMetadata;
 
@@ -58,15 +56,15 @@ namespace TickTrader.BotTerminal
         }
 
 
-        protected virtual void LoadConfig(Input input)
+        protected virtual void LoadConfig(IInputConfig input)
         {
-            SelectedSymbol = AvailableSymbols.GetSymbolOrDefault(input.SelectedSymbol)
+            SelectedSymbol = AvailableSymbols.GetSymbolOrDefault(input.SelectedSymbol.ToKey())
                 ?? AvailableSymbols.GetSymbolOrAny(_defaultSymbol);
         }
 
-        protected virtual void SaveConfig(Input input)
+        protected virtual void SaveConfig(IInputConfig input)
         {
-            input.Id = Id;
+            input.PropertyId = Id;
             input.SelectedSymbol = _selectedSymbol.ToConfig();
         }
 
@@ -77,17 +75,17 @@ namespace TickTrader.BotTerminal
                 : base(descriptor, (SymbolKey)null)
             {
                 if (error == null)
-                    Error = new ErrorMsgModel(descriptor.Error);
+                    Error = new ErrorMsgModel(descriptor.ErrorCode);
                 else
                     Error = new ErrorMsgModel(error);
             }
 
 
-            public override void Load(Property srcProperty)
+            public override void Load(IPropertyConfig srcProperty)
             {
             }
 
-            public override Property Save()
+            public override IPropertyConfig Save()
             {
                 throw new Exception("Cannot save invalid input!");
             }

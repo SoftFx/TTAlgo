@@ -4,11 +4,10 @@ using NLog;
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
+using TickTrader.Algo.ServerControl;
 
 namespace TickTrader.BotTerminal
 {
@@ -69,7 +68,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public bool IsInstanceIdValid => _selectedAgent != null && !string.IsNullOrEmpty(InstanceId) && _selectedAgent.Model.IdProvider.IsValidPluginId(AlgoTypes.Robot, InstanceId);
+        public bool IsInstanceIdValid => _selectedAgent != null && !string.IsNullOrEmpty(InstanceId) && _selectedAgent.Model.IdProvider.IsValidPluginId(Metadata.Types.PluginType.TradeBot, InstanceId);
 
         public bool HasPendingRequest
         {
@@ -104,8 +103,8 @@ namespace TickTrader.BotTerminal
 
         public bool CanOk => !_hasPendingRequest && _isValid
             && _selectedAgent.Model.AccessManager.CanUploadPackage()
-            && _selectedAgent.Model.AccessManager.CanAddBot()
-            && _selectedAgent.Model.AccessManager.CanGetBotFolderInfo(BotFolderId.AlgoData)
+            && _selectedAgent.Model.AccessManager.CanAddPlugin()
+            && _selectedAgent.Model.AccessManager.CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId.AlgoData.ToApi())
             && _selectedAgent.Model.AccessManager.CanUploadBotFile();
 
         public bool HasError => !string.IsNullOrEmpty(_error);
@@ -167,18 +166,18 @@ namespace TickTrader.BotTerminal
                 }
                 else
                 {
-                    _logger.Info("Both agents are local. No package resolving required");
+                    _logger.Info("Both agents are local. No Algo package resolving required");
                 }
 
                 dstConfig.InstanceId = InstanceId;
-                await _selectedAgent.Model.AddBot(_selectedAccount.Key, dstConfig);
+                await _selectedAgent.Model.AddBot(_selectedAccount.AccountId, dstConfig);
                 _logger.Info($"Created bot {dstConfig.InstanceId} on {_selectedAgent.Name}");
 
                 await ResolveBotFiles(srcBot, dstConfig);
 
                 _selectedAgent.OpenBotState(dstConfig.InstanceId);
 
-                TryClose();
+                await TryCloseAsync();
             }
             catch (Exception ex)
             {
@@ -190,17 +189,24 @@ namespace TickTrader.BotTerminal
 
         public void Cancel()
         {
-            TryClose();
+            TryCloseAsync();
         }
 
 
-        protected override void OnDeactivate(bool close)
+        protected override Task OnDeactivateAsync(bool close, CancellationToken cancellationToken)
         {
             DeinitAlgoAgent(_selectedAgent);
             _fromAgent.Model.Bots.Updated -= FromAgentOnBotsUpdated;
-
-            base.OnDeactivate(close);
+            return base.OnDeactivateAsync(close, cancellationToken);
         }
+
+        //protected override void OnDeactivate(bool close)
+        //{
+        //    DeinitAlgoAgent(_selectedAgent);
+        //    _fromAgent.Model.Bots.Updated -= FromAgentOnBotsUpdated;
+
+        //    base.OnDeactivate(close);
+        //}
 
 
         private void Validate()
@@ -256,23 +262,23 @@ namespace TickTrader.BotTerminal
 
         private async Task ResolvePackage(ITradeBot srcBot, PluginConfig dstConfig)
         {
-            if (!_fromAgent.Model.Packages.Snapshot.TryGetValue(srcBot.Config.Key.GetPackageKey(), out var srcPackage))
-                throw new ArgumentException("Can't find bot package");
+            if (!_fromAgent.Model.Packages.Snapshot.TryGetValue(srcBot.Config.Key.PackageId, out var srcPackage))
+                throw new ArgumentException("Can't find bot Algo package");
 
             var uploadSrcPackage = false;
-            var dstPackageKey = dstConfig.Key.GetPackageKey();
-            dstPackageKey.Location = RepositoryLocation.LocalRepository; //remote bot agents have only local package location
+            PackageId.Unpack(dstConfig.Key.PackageId, out var dstPkgId);
+            var dstPackageId = PackageId.Pack(SharedConstants.LocalRepositoryId, dstPkgId.PackageName);// remote algo servers have only local Algo package locations
             var dstPackage = _selectedAgent.Model.Packages.Snapshot.Values.Where(p => p.Identity.Size == srcPackage.Identity.Size && p.Identity.Hash == srcPackage.Identity.Hash)
-                .OrderBy(p => p.Key.Location == dstPackageKey.Location ? 0 : 1).ThenBy(p => p.Key.Name == dstPackageKey.Name ? 0 : 1).FirstOrDefault();
+                .OrderBy(p => p.PackageId == dstPackageId ? 0 : 1).FirstOrDefault();
             if (dstPackage != null)
             {
-                _logger.Info($"'{_selectedAgent.Name}' has matching package {dstPackage.Key.Name}({dstPackage.Key.Location})");
-                _logger.Info($"Src package: {srcPackage.Identity.Hash}; Dst package: {dstPackage.Identity.Hash}");
-                dstPackageKey = dstPackage.Key;
+                _logger.Info($"'{_selectedAgent.Name}' has matching Algo package {dstPackage.PackageId}");
+                _logger.Info($"Src package: {srcPackage.Identity.Hash}; Dst Algo package: {dstPackage.Identity.Hash}");
+                dstPackageId = dstPackage.PackageId;
             }
             else
             {
-                _logger.Info($"'{_selectedAgent.Name}' has no matching package.");
+                _logger.Info($"'{_selectedAgent.Name}' has no matching Algo package.");
                 uploadSrcPackage = true;
             }
 
@@ -280,30 +286,33 @@ namespace TickTrader.BotTerminal
             {
                 var progressListener = new FileProgressListenerAdapter(CopyProgress, srcPackage.Identity.Size);
 
+                var dstPackageFileName = srcPackage.Identity.FileName;
                 var srcPath = "";
                 if (!_fromAgent.Model.IsRemote)
                 {
                     srcPath = srcPackage.Identity.FilePath;
-                    _logger.Info($"Package is local. Using path: {srcPath}");
+                    _logger.Info($"Algo package is local. Using path: {srcPath}");
                 }
                 else
                 {
                     srcPath = Path.GetTempFileName();
-                    CopyProgress.SetMessage($"Downloading package {srcPackage.Key.Name} from {_fromAgent.Name}");
-                    await _fromAgent.Model.DownloadPackage(srcPackage.Key, srcPath, progressListener);
-                    _logger.Info($"Downloaded remote package to: {srcPath}");
+                    CopyProgress.SetMessage($"Downloading package {srcPackage.PackageId} from {_fromAgent.Name}");
+                    await _fromAgent.Model.DownloadPackage(srcPackage.PackageId, srcPath, progressListener);
+                    _logger.Info($"Downloaded remote Algo package to: {srcPath}");
                 }
-                if (_selectedAgent.Model.Packages.Snapshot.ContainsKey(dstPackageKey))
+                if (_selectedAgent.Model.Packages.Snapshot.ContainsKey(dstPackageId))
                 {
-                    var dstPackageName = Path.GetFileNameWithoutExtension(dstPackageKey.Name);
-                    for (var i = 1; _selectedAgent.Model.Packages.Snapshot.ContainsKey(dstPackageKey); i++)
+                    var srcPackageName = Path.GetFileNameWithoutExtension(srcPackage.Identity.FileName);
+                    for (var i = 1; _selectedAgent.Model.Packages.Snapshot.ContainsKey(dstPackageId); i++)
                     {
-                        dstPackageKey.Name = $"{dstPackageName} ({i}).ttalgo";
+                        dstPackageFileName = $"{srcPackageName} ({i}).ttalgo";
+                        dstPkgId = new PackageId(SharedConstants.LocalRepositoryId, $"{srcPackageName} ({i}).ttalgo");// remote algo servers have only local Algo package locations
+                        dstPackageId = dstPkgId.PackedStr;
                     }
                 }
-                CopyProgress.SetMessage($"Uploading package {dstPackageKey.Name} to {_selectedAgent.Name}");
-                await _selectedAgent.Model.UploadPackage(dstPackageKey.Name, srcPath, progressListener);
-                _logger.Info($"Uploaded remote package to as {dstPackageKey.Name} to {_selectedAgent.Name}");
+                CopyProgress.SetMessage($"Uploading Algo package {dstPackageId} to {_selectedAgent.Name}");
+                await _selectedAgent.Model.UploadPackage(dstPackageFileName, srcPath, progressListener);
+                _logger.Info($"Uploaded remote Algo package to as {dstPackageId} to {_selectedAgent.Name}");
                 if (_fromAgent.Model.IsRemote)
                     File.Delete(srcPath);
 
@@ -315,16 +324,16 @@ namespace TickTrader.BotTerminal
                 }
             }
 
-            dstConfig.Key.PackageName = dstPackageKey.Name;
-            dstConfig.Key.PackageLocation = dstPackageKey.Location;
+            dstConfig.Key.PackageId = dstPackageId;
         }
 
         private async Task ResolveBotFiles(ITradeBot srcBot, PluginConfig dstConfig)
         {
-            var srcAlgoDataDir = await _fromAgent.Model.GetBotFolderInfo(srcBot.InstanceId, BotFolderId.AlgoData);
-            var dstAlgoDataDir = await _selectedAgent.Model.GetBotFolderInfo(dstConfig.InstanceId, BotFolderId.AlgoData);
-            foreach (FileParameter fileParam in dstConfig.Properties.Where(p => p is FileParameter))
+            var srcAlgoDataDir = await _fromAgent.Model.GetBotFolderInfo(srcBot.InstanceId, PluginFolderInfo.Types.PluginFolderId.AlgoData);
+            var dstAlgoDataDir = await _selectedAgent.Model.GetBotFolderInfo(dstConfig.InstanceId, PluginFolderInfo.Types.PluginFolderId.AlgoData);
+            foreach (var prop in dstConfig.Properties.Where(p => p.Is(FileParameterConfig.Descriptor)))
             {
+                var fileParam = prop.Unpack<FileParameterConfig>();
                 var fileName = Path.GetFileName(fileParam.FileName);
                 var srcPath = "";
                 if (!_fromAgent.Model.IsRemote)
@@ -341,7 +350,7 @@ namespace TickTrader.BotTerminal
                     srcPath = Path.GetTempFileName();
                     CopyProgress.SetMessage($"Downloading bot file {fileName} from {_fromAgent.Name}");
                     var progressListener = new FileProgressListenerAdapter(CopyProgress, srcAlgoDataDir.Files.First(f => f.Name == fileName).Size);
-                    await _fromAgent.Model.DownloadBotFile(srcBot.InstanceId, BotFolderId.AlgoData, fileName, srcPath, progressListener);
+                    await _fromAgent.Model.DownloadBotFile(srcBot.InstanceId, PluginFolderInfo.Types.PluginFolderId.AlgoData, fileName, srcPath, progressListener);
                     _logger.Info($"Downloaded bot file to: {srcPath}");
                 }
 
@@ -365,7 +374,7 @@ namespace TickTrader.BotTerminal
                     var fileInfo = new FileInfo(srcPath);
                     CopyProgress.SetMessage($"Uploading bot file {fileName} to {_selectedAgent.Model.Name}");
                     var progressListener = new FileProgressListenerAdapter(CopyProgress, fileInfo.Length);
-                    await _selectedAgent.Model.UploadBotFile(dstConfig.InstanceId, BotFolderId.AlgoData, fileName, srcPath, progressListener);
+                    await _selectedAgent.Model.UploadBotFile(dstConfig.InstanceId, PluginFolderInfo.Types.PluginFolderId.AlgoData, fileName, srcPath, progressListener);
                     _logger.Info($"Downloaded bot file {fileName} to {_selectedAgent.Model.Name}");
                 }
 

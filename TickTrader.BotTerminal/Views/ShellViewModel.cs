@@ -1,26 +1,23 @@
 ﻿using ActorSharp;
 using Caliburn.Micro;
 using Machinarium.Qnil;
-using Machinarium.Var;
 using NLog;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
-using System.Windows.Controls;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Account;
+using TickTrader.FeedStorage;
 
 namespace TickTrader.BotTerminal
 {
-    internal class ShellViewModel : Screen, iOrderUi, IShell, IProfileLoader
+    internal class ShellViewModel : Screen, IShell, IProfileLoader
     {
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
+        private readonly SoundsNotificationCenter _soundCenter;
 
         private ConnectionManager cManager;
         private TraderClientModel clientModel;
@@ -28,7 +25,6 @@ namespace TickTrader.BotTerminal
         private PersistModel storage;
         private EventJournal eventJournal;
         private bool isClosed;
-        private INotificationCenter notificationCenter;
         private AlgoEnvironment algoEnv;
         private SymbolManagerViewModel _smbManager;
         private SymbolCatalog _symbolsData;
@@ -41,9 +37,6 @@ namespace TickTrader.BotTerminal
 
             DisplayName = EnvService.Instance.ApplicationName;
 
-            //var botNameAggregator = new BotNameAggregator();
-
-            notificationCenter = new NotificationCenter(new PopupNotification(), new SoundNotification());
             eventJournal = new EventJournal(1000);
             storage = new PersistModel();
             ThemeSelector.Instance.InitializeSettings(storage);
@@ -52,7 +45,9 @@ namespace TickTrader.BotTerminal
             wndManager = new WindowManager(this);
 
             cManager = new ConnectionManager(commonClient, storage, eventJournal);
-            clientModel = new TraderClientModel(commonClient, eventJournal);
+            clientModel = new TraderClientModel(commonClient);
+
+            _soundCenter = new SoundsNotificationCenter(cManager, storage);
 
             Agent = new LocalAlgoAgent(this, clientModel, storage);
 
@@ -61,7 +56,7 @@ namespace TickTrader.BotTerminal
             algoEnv = new AlgoEnvironment(this, Agent, _botAgentManager);
 
             AlgoList = new AlgoListViewModel(algoEnv);
-            SymbolList = new SymbolListViewModel(clientModel.Symbols, commonClient.Distributor, this, false);
+            SymbolList = new SymbolListViewModel(clientModel.Symbols, commonClient.Distributor, this);
 
             ProfileManager = new ProfileManagerViewModel(this, storage);
 
@@ -70,8 +65,6 @@ namespace TickTrader.BotTerminal
             _symbolsData = new SymbolCatalog(customFeedStorage, clientModel);
 
             TradeHistory = new TradeHistoryViewModel(clientModel, cManager, storage.ProfileManager);
-
-            Notifications = new NotificationsViewModel(notificationCenter, clientModel.Account, cManager, storage);
 
             Charts = new ChartCollectionViewModel(clientModel, this, algoEnv);
 
@@ -199,11 +192,11 @@ namespace TickTrader.BotTerminal
                 isConfirmed = exit.DialogResult == DialogResult.OK;
 
                 if (isConfirmed)
-                    StopTerminal();
+                    StopTerminal(false);
             }
         }
 
-        public override void CanClose(Action<bool> callback)
+        public override Task<bool> CanCloseAsync(CancellationToken cancellationToken = default)
         {
             bool hasRunningBots = algoEnv.LocalAgent.HasRunningBots;
 
@@ -213,30 +206,45 @@ namespace TickTrader.BotTerminal
             var isConfirmed = exit.DialogResult == DialogResult.OK;
 
             if (isConfirmed)
-                StopTerminal();
+                StopTerminal(true);
 
-            callback(isConfirmed);
+            return Task.FromResult(isConfirmed);
         }
 
-        private void StopTerminal()
+        //public override void CanClose(Action<bool> callback)
+        //{
+        //    bool hasRunningBots = algoEnv.LocalAgent.HasRunningBots;
+
+        //    var exit = new ConfirmationDialogViewModel(DialogButton.YesNo, hasRunningBots ? DialogMode.Warning : DialogMode.Question, DialogMessages.ExitTitle, DialogMessages.ExitMessage, algoEnv.LocalAgent.HasRunningBots ? DialogMessages.BotsWorkError : null);
+        //    wndManager.ShowDialog(exit, this);
+
+        //    var isConfirmed = exit.DialogResult == DialogResult.OK;
+
+        //    if (isConfirmed)
+        //        StopTerminal(true);
+
+        //    callback(isConfirmed);
+        //}
+
+        private async void StopTerminal(bool stopAlgoServer)
         {
-            storage.ProfileManager.Stop();
+            //await storage.ProfileManager.Stop();
+            await storage.ProfileManager.StopCurrentProfile();
 
-            if (algoEnv.LocalAgent.HasRunningBots)
-            {
-                var shutdown = new ShutdownDialogViewModel(algoEnv.LocalAgent);
-                wndManager.ShowDialog(shutdown, this);
-            }
+            var shutdown = new ShutdownDialogViewModel(algoEnv.LocalAgent, stopAlgoServer);
+
+            if (IsActive)
+                await wndManager.ShowDialog(shutdown, this);
         }
 
-        public void Connect(AccountAuthEntry creds = null)
+        public async void Connect(AccountAuthEntry creds = null)
         {
             try
             {
                 if (creds == null || !creds.HasPassword)
                 {
                     LoginDialogViewModel model = new LoginDialogViewModel(cManager, creds);
-                    wndManager.ShowDialog(model, this);
+                    await wndManager.ShowDialog(model, this);
                 }
                 else
                     cManager.TriggerConnect(creds);
@@ -255,7 +263,7 @@ namespace TickTrader.BotTerminal
 
         public void Exit()
         {
-            TryClose();
+            TryCloseAsync();
         }
 
         public void OpenChart(string smb)
@@ -284,7 +292,6 @@ namespace TickTrader.BotTerminal
         public AccountPaneViewModel AccountPane { get; private set; }
         public JournalViewModel Journal { get; set; }
         //public BotJournalViewModel BotJournal { get; set; }
-        public iOrderUi OrderCommands { get { return this; } }
         public UiLock ConnectionLock { get; private set; }
         public IProfileLoader ProfileLoader => this;
         public ProfileManagerViewModel ProfileManager { get; private set; }
@@ -300,7 +307,7 @@ namespace TickTrader.BotTerminal
         public string ProtocolName => cManager.Connection.CurrentProtocol;
         public EventJournal EventJournal => eventJournal;
 
-        public NotificationsViewModel Notifications { get; private set; }
+        //public NotificationsViewModel Notifications { get; private set; }
 
         public AlertViewModel AlertsManager { get; }
 
@@ -323,7 +330,7 @@ namespace TickTrader.BotTerminal
 
         protected override void OnViewLoaded(object view)
         {
-            eventJournal.Info("BotTrader started");
+            eventJournal.Info("AlgoTerminal started");
             PrintSystemInfo();
 
             App.Current.Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new System.Action(OnLoaded));
@@ -422,11 +429,19 @@ namespace TickTrader.BotTerminal
             wndManager.OpenMdiWindow(Backtester);
         }
 
-        private void Backtester_Deactivated(object sender, DeactivationEventArgs e)
+        private Task Backtester_Deactivated(object sender, DeactivationEventArgs e)
         {
             Backtester.Deactivated -= Backtester_Deactivated;
             Backtester = null;
+
+            return Task.CompletedTask;
         }
+
+        //private void Backtester_Deactivated(object sender, DeactivationEventArgs e)
+        //{
+        //    Backtester.Deactivated -= Backtester_Deactivated;
+        //    Backtester = null;
+        //}
 
         public void CloseChart(object chart)
         {
@@ -445,28 +460,6 @@ namespace TickTrader.BotTerminal
                 logger.Error(ex, "Failed to save profile snapshot");
             }
         }
-
-        #region OrderUi implementation
-
-        public void OpenMarkerOrder(string symbol)
-        {
-            try
-            {
-                using (var openOrderModel = new OpenOrderDialogViewModel(clientModel, symbol))
-                    wndManager.OpenMdiWindow(openOrderModel);
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex);
-            }
-        }
-
-        public void OpenMarkerOrder(string symbol, decimal volume, OrderSide side)
-        {
-
-        }
-
-        #endregion
 
         #region IProfileLoader implementation
 

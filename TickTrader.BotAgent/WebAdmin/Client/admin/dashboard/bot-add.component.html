@@ -10,7 +10,7 @@
                 <div class="form-group">
                     <label>Bot</label>
                     <select class="form-control" [(ngModel)]="SelectedPlugin" (ngModelChange)="OnPluginChanged($event)">
-                        <optgroup *ngFor="let Package of (PackagesRequest.Result | orderBy: ['Name'])" label="{{Package.Name}}">
+                        <optgroup *ngFor="let Package of (PackagesRequest.Result | orderBy: ['DisplayName'])" label="{{Package.DisplayName}}">
                             <option *ngFor="let Plugin of (Package.Plugins | orderBy: ['DisplayName'])" [ngValue]="Plugin">{{Plugin.DisplayName}}</option>
                         </optgroup>
                     </select>

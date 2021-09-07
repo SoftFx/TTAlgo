@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Threading;
 using TickTrader.BotAgent.Configurator.Properties;
+using TickTrader.WpfWindowsSupportLibrary;
 
 namespace TickTrader.BotAgent.Configurator
 {
@@ -20,7 +19,7 @@ namespace TickTrader.BotAgent.Configurator
 
         private Window _mainWindow;
         private ConfigurationModel _model;
-        private AppInstanceRestrictor _appRestrictor = new AppInstanceRestrictor();
+        private AppInstanceRestrictor _appRestrictor = new AppInstanceRestrictor(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "applock"));
 
         private bool _runnignApplication;
         private string _title;
@@ -41,7 +40,7 @@ namespace TickTrader.BotAgent.Configurator
                 if (_title == value)
                     return;
 
-                _title = $"BotAgent Configurator: {value}";
+                _title = $"AlgoServer Configurator: {value}";
                 OnPropertyChanged(nameof(Title));
             }
         }
@@ -58,6 +57,8 @@ namespace TickTrader.BotAgent.Configurator
 
         public ServerViewModel ServerModel { get; set; }
 
+        public ServerBotSettingsViewModel ServerBotSettingsModel { get; set; }
+
         public StateServiceViewModel StateServiceModel { get; set; }
 
         public FdkViewModel FdkModel { get; set; }
@@ -66,13 +67,15 @@ namespace TickTrader.BotAgent.Configurator
 
         public LogsViewModel LogsModel { get; set; }
 
+        public AlgoServerSettingsViewModel AlgoServerSettingsModel { get; set; }
+
         public RefreshCounter RefreshCounter { get; }
 
         public SpinnerViewModel Spinner { get; }
 
+
         public bool WasUpdate => RefreshCounter.Update;
 
-        public bool IsDeveloperVersion => _model.Settings.IsDeveloper;
 
         public ConfigurationViewModel()
         {
@@ -84,7 +87,7 @@ namespace TickTrader.BotAgent.Configurator
                 _mainWindow = Application.Current.MainWindow;
                 _model = new ConfigurationModel();
 
-                Title = _model.CurrentAgent.FullVersionWithDeveloper;
+                Title = _model.CurrentAgent.FullVersion;
 
                 RefreshCounter = new RefreshCounter();
                 StateServiceModel = new StateServiceViewModel(RefreshCounter);
@@ -150,7 +153,28 @@ namespace TickTrader.BotAgent.Configurator
                 ModelDescription = _model.Prompts.GetPrompt(SectionNames.MultipleAgentProvider, RegistryManager.AgentPathNameProperty),
             };
 
-            _viewModels = new List<BaseContentViewModel>() { AdminModel, DealerModel, ViewerModel, ProtocolModel, ServerModel, FdkModel, AdvancedModel };
+            ServerBotSettingsModel = new ServerBotSettingsViewModel(_model.BotSettingsManager, Spinner, StateServiceModel)
+            {
+                ModelDescription = _model.Prompts.GetPrompt(SectionNames.MultipleAgentProvider, ServerBotSettingsManager.ServerBotSettingsProperty),
+            };
+
+            AlgoServerSettingsModel = new AlgoServerSettingsViewModel(_model.AlgoServerManager, RefreshCounter)
+            {
+                ModelDescription = _model.Prompts.GetPrompt(SectionNames.Algo, AlgoServerSettingsManager.EnableDevModeProperty),
+            };
+
+            _viewModels = new List<BaseContentViewModel>()
+            {
+                AdminModel,
+                DealerModel,
+                ViewerModel,
+                ProtocolModel,
+                ServerModel,
+                FdkModel,
+                AdvancedModel,
+                ServerBotSettingsModel,
+            };
+
             _runnignApplication = true;
 
             ProtocolModel.ChangeListeningPortEvent += () => ServerModel.RefreshModel();
@@ -252,7 +276,12 @@ namespace TickTrader.BotAgent.Configurator
         public DelegateCommand OpenLogsFolder => _openLogsFolder ?? (
             _openLogsFolder = new DelegateCommand(obj =>
             {
-                Process.Start(Path.GetDirectoryName(_model.Logs.LogsFilePath));
+                string path = Path.GetDirectoryName(_model.Logs.LogsFilePath);
+
+                if (Directory.Exists(path))
+                    Process.Start(path);
+                else
+                    MessageBoxManager.OkError($"{path} folder path not found");
             }));
 
         public void RefreshModels()
@@ -265,6 +294,8 @@ namespace TickTrader.BotAgent.Configurator
             OnPropertyChanged(nameof(ServerModel));
             OnPropertyChanged(nameof(FdkModel));
             OnPropertyChanged(nameof(AdvancedModel));
+            OnPropertyChanged(nameof(ServerBotSettingsModel));
+            OnPropertyChanged(nameof(AlgoServerSettingsModel));
 
             OnPropertyChanged(nameof(LogsModel));
             OnPropertyChanged(nameof(StateServiceModel));
@@ -299,7 +330,7 @@ namespace TickTrader.BotAgent.Configurator
             catch (WarningException ex)
             {
                 _logger.Warn(ex);
-                Application.Current.Dispatcher.BeginInvoke(new Action<string>(MessageBoxManager.WarningBox), ex.Message);
+                Application.Current.Dispatcher.BeginInvoke(new Action<string>(MessageBoxManager.OkWarningBox), ex.Message);
             }
             catch (Exception exx)
             {

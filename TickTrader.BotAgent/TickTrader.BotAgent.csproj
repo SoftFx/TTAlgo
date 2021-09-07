@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
-    <AssemblyName>TickTrader.BotAgent</AssemblyName>
+    <AssemblyName>TickTrader.AlgoServer</AssemblyName>
     <OutputType>Exe</OutputType>
     <PackageId>TickTrader.BotAgent</PackageId>
     <RuntimeIdentifiers>win7-x64;win7-x86</RuntimeIdentifiers>
@@ -35,17 +35,15 @@
     <None Update="WebAdmin\Server\Views\**\*;WebAdmin\wwwroot\**\*">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
-    <ProjectReference Include="..\ActorSharp\ActorSharp.csproj" />
-    <ProjectReference Include="..\Machinarium\Machinarium.csproj" />
-    <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj" />
-    <ProjectReference Include="..\TickTrader.Algo.Common\TickTrader.Algo.Common.csproj" />
-    <ProjectReference Include="..\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj" />
-    <ProjectReference Include="..\TickTrader.Algo.Ext\TickTrader.Algo.Ext.csproj" />
-    <ProjectReference Include="..\TickTrader.Algo.Protocol\TickTrader.Algo.Protocol.csproj" />
-    <ProjectReference Include="..\TickTrader.BotAgent.Common\TickTrader.BotAgent.Common.csproj" />
+    <ProjectReference Include="..\src\csharp\accounts\TickTrader.Algo.Account.Fdk2\TickTrader.Algo.Account.Fdk2.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Account\TickTrader.Algo.Account.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Isolation.NetFx\TickTrader.Algo.Isolation.NetFx.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.ServerControl\TickTrader.Algo.ServerControl.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server\TickTrader.Algo.Server.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Grpc.Core" Version="2.36.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.HttpsPolicy" Version="2.2.0" />
@@ -66,13 +64,13 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="2.2.1" />
-    <PackageReference Include="NLog.Web.AspNetCore" Version="4.8.1" />
+    <PackageReference Include="NLog" Version="4.7.7" />
+    <PackageReference Include="NLog.Web.AspNetCore" Version="4.10.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="4.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="4.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="4.0.1" />
-    <PackageReference Include="System.Net.Http" Version="4.3.1" />
-    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="4.5.24" />
-    <PackageReference Include="TickTrader.Common.Dlls" Version="1.37.6" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <PackageReference Include="System.Threading.Channels" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
@@ -98,6 +96,30 @@
       <WebpackGeneratedContent Include="WebAdmin\wwwroot\**" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);@(_ContentIncludedByDefault)" />
       <ContentWithTargetPath Include="@(WebpackGeneratedContent)" TargetPath="%(Identity)" CopyToPublishDirectory="PreserveNewest" />
     </ItemGroup>
+  </Target>
+
+  <Target Name="CopyBinaries" AfterTargets="Build">
+    <ItemGroup>
+      <RuntimeV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.RuntimeV1Host.NetFx\bin\$(Configuration)\net472\*.*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(TargetDir)AlgoRuntime\" SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="CopyBinariesForPublish" AfterTargets="AfterPublish">
+    <ItemGroup>
+      <RuntimeV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.RuntimeV1Host.NetFx\bin\$(Configuration)\net472\*.*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(PublishDir)\AlgoRuntime\" SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="RemoveLinuxLibs" AfterTargets="Build">
+    <Delete Files="$(TargetDir)\libgrpc_csharp_ext.x64.dylib;$(TargetDir)\libgrpc_csharp_ext.x64.so" />
+  </Target>
+
+  <Target Name="RemoveLinuxLibsForPublish" AfterTargets="AfterPublish">
+    <Delete Files="$(PublishDir)\libgrpc_csharp_ext.x64.dylib;$(PublishDir)\libgrpc_csharp_ext.x64.so" />
   </Target>
 
   <ItemGroup>

@@ -11,9 +11,9 @@ namespace TickTrader.BotTerminal
     {
         public const int Delay = 500;
 
+        public static readonly TimeSpan WaitTimeout = TimeSpan.FromSeconds(120);
 
-        public static readonly TimeSpan WaitTimeout = TimeSpan.FromSeconds(60);
-
+        private readonly bool _stopAlgoServer;
 
         private LocalAlgoAgent _algoAgent;
         private int _totalBots;
@@ -41,9 +41,10 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public ShutdownDialogViewModel(LocalAlgoAgent algoAgent)
+        public ShutdownDialogViewModel(LocalAlgoAgent algoAgent, bool stopAlgoServer)
         {
             _algoAgent = algoAgent;
+            _stopAlgoServer = stopAlgoServer;
 
             DisplayName = $"Shutting down - {EnvService.Instance.ApplicationName}";
             TotalBots = _algoAgent.RunningBotsCnt;
@@ -55,23 +56,23 @@ namespace TickTrader.BotTerminal
         {
             base.OnViewLoaded(view);
 
-            StopBots();
+            Task.Run(() => StopBots());
         }
 
 
-        private async void StopBots()
+        private async Task StopBots()
         {
-            _algoAgent.StopBots();
+            var shutdownTask = _algoAgent.Shutdown(_stopAlgoServer);
 
             StoppedBots = TotalBots - _algoAgent.RunningBotsCnt;
             var startTime = DateTime.Now;
-            while (_algoAgent.HasRunningBots && DateTime.Now - startTime < WaitTimeout)
+            while (!shutdownTask.IsCompleted && DateTime.Now - startTime < WaitTimeout)
             {
                 await Task.Delay(Delay);
                 StoppedBots = TotalBots - _algoAgent.RunningBotsCnt;
             }
 
-            TryClose();
+            await TryCloseAsync ();
         }
     }
 }

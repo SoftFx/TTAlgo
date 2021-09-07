@@ -1,7 +1,5 @@
-﻿using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core.Repository;
+﻿using TickTrader.Algo.Core.Setup;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -11,9 +9,9 @@ namespace TickTrader.BotTerminal
         private SymbolToken _token;
 
 
-        public TimeFrames DefaultTimeFrame => _info.DefaultTimeFrame;
+        public Feed.Types.Timeframe DefaultTimeFrame => _info.DefaultTimeFrame;
 
-        public ISymbolInfo DefaultSymbol => _token;
+        public ISetupSymbolInfo DefaultSymbol => _token;
 
         public MappingKey DefaultMapping => _info.DefaultMapping;
 

@@ -1,4 +1,4 @@
-﻿import { Serializable, Guid } from './index';
+﻿import { Serializable } from './index';
 
 export class AccountInfo implements Serializable<AccountInfo>{
     public Symbols: string[];
@@ -39,7 +39,7 @@ export class AccountModel implements Serializable<AccountModel> {
 }
 
 export class PackageModel implements Serializable<PackageModel> {
-    public Name: string;
+    public Id: string;
     public DisplayName: string;
     public Created: Date;
     public IsValid: boolean;
@@ -52,9 +52,9 @@ export class PackageModel implements Serializable<PackageModel> {
     public Deserialize(input: any): PackageModel {
         this.Created = input.Created;
         this.IsValid = input.IsValid;
-        this.Name = input.Name;
+        this.Id = input.Id;
         this.DisplayName = input.DisplayName;
-        this.Plugins = input.Plugins ? input.Plugins.map(p => new PluginModel(input.Name).Deserialize(p)) : input.Plugins;
+        this.Plugins = input.Plugins ? input.Plugins.map(p => new PluginModel(input.Id).Deserialize(p)) : input.Plugins;
 
         return this;
     }
@@ -66,10 +66,10 @@ export class PluginModel implements Serializable<PluginModel>{
     public UserDisplayName: string;
     public Type: string;
     public ParamDescriptors: ParameterDescriptor[];
-    public Package: string;
+    public PackageId: string;
 
-    constructor(packageName?: string) {
-        this.Package = packageName;
+    constructor(packageId?: string) {
+        this.PackageId = packageId;
     }
 
     public get IsIndicator() {
@@ -100,7 +100,7 @@ export class PluginModel implements Serializable<PluginModel>{
     }
 }
 
-export enum LogEntryTypes { Info, Trading, Error, Custom, TradingSuccess, TradingFail, Alert }
+export enum LogEntryTypes { Info, Trade, Error, Custom, TradeSuccess, TradeFail, Alert }
 
 export class LogEntry implements Serializable<LogEntry> {
     public Time: Date;
@@ -173,6 +173,7 @@ export class TradeBotLog implements Serializable<TradeBotLog> {
 
 export class TradeBotModel implements Serializable<TradeBotModel>{
     public Id: string;
+    public PluginId: string;
     public Account: AccountModel;
     public State: TradeBotStates;
     public PackageName: string;
@@ -185,6 +186,7 @@ export class TradeBotModel implements Serializable<TradeBotModel>{
 
     public Deserialize(input: any): TradeBotModel {
         this.Id = input.Id;
+        this.PluginId = input.PluginId;
         this.Account = new AccountModel().Deserialize(input.Account);
         this.State = TradeBotStates[input.State as string];
         this.PackageName = input.PackageName;
@@ -341,7 +343,7 @@ export enum ParameterDataTypes {
 }
 
 export class SetupModel {
-    public PackageName: string;
+    public PackageId: string;
     public PluginId: string;
     public InstanceId: string;
     public Account: AccountModel;
@@ -354,7 +356,7 @@ export class SetupModel {
     public get Payload() {
 
         return {
-            PackageName: this.PackageName,
+            PackageId: this.PackageId,
             PluginId: this.PluginId,
             InstanceId: this.InstanceId,
             Account: this.Account,
@@ -370,19 +372,20 @@ export class SetupModel {
     public static ForTradeBot(bot: TradeBotModel) {
         let setup = new SetupModel();
         setup.Symbol = bot.Config.Symbol;
+        setup.PackageId = bot.PackageName;
+        setup.PluginId = bot.PluginId;
         setup.InstanceId = bot.Id;
         setup.Parameters = bot.Config.Parameters.map(p => new Parameter(p.Id,
             p.Descriptor.DataType === ParameterDataTypes.File ? { FileName: p.Value, Size: 0, Data: null } : p.Value,
             p.Descriptor));
         setup.Account = bot.Account;
         setup.Permissions = <TradeBotPermissions>bot.Permissions;
-
         return setup;
     }
 
     public static ForPlugin(plugin: PluginModel) {
         let setup = new SetupModel();
-        setup.PackageName = plugin.Package;
+        setup.PackageId = plugin.PackageId;
         setup.PluginId = plugin.Id;
         setup.Parameters = plugin.ParamDescriptors.map(pDescriptor =>
             new Parameter(pDescriptor.Id,

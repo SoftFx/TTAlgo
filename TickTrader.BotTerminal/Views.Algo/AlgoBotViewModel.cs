@@ -1,9 +1,10 @@
 ﻿using Caliburn.Micro;
 using System.Diagnostics;
 using System.IO;
-using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Domain;
+using TickTrader.Algo.ServerControl;
 
 namespace TickTrader.BotTerminal
 {
@@ -15,33 +16,34 @@ namespace TickTrader.BotTerminal
 
         public string InstanceId => Model.InstanceId;
 
-        public AccountKey Account => Model.Account;
+        public string AccountId => Model.AccountId;
 
-        public PluginStates State => Model.State;
+        public PluginModelInfo.Types.PluginState State => Model.State;
 
         public PluginKey Plugin => Model.Config.Key;
 
-        public bool IsRunning => PluginStateHelper.IsRunning(Model.State) || Agent.Model.IsRemote && Model.State == PluginStates.Starting;
+        public bool IsRunning => Model.State.IsRunning() || Agent.Model.IsRemote && Model.State == PluginModelInfo.Types.PluginState.Starting;
 
-        public bool IsStopped => PluginStateHelper.IsStopped(Model.State);
+        public bool IsStopped => Model.State.IsStopped();
 
-        public bool CanStart => IsStopped && Agent.Model.AccessManager.CanStartBot();
+        public bool CanStart => IsStopped && Agent.Model.AccessManager.CanStartPlugin();
 
-        public bool CanStop => IsRunning && Agent.Model.AccessManager.CanStopBot();
+        public bool CanStop => IsRunning && Agent.Model.AccessManager.CanStopPlugin();
 
         public bool CanStartStop => CanStart || CanStop;
 
-        public bool CanRemove => PluginStateHelper.IsStopped(Model.State) && Agent.Model.AccessManager.CanRemoveBot();
+        public bool CanRemove => Model.State.IsStopped() && Agent.Model.AccessManager.CanRemovePlugin();
 
         public bool CanOpenChart => !Model.IsRemote && (Model.Descriptor?.SetupMainSymbol ?? false);
 
         public string Status => Model.Status;
 
-        public bool CanBrowse => !Model.IsRemote || Agent.Model.AccessManager.CanGetBotFolderInfo(BotFolderId.BotLogs);
+        public bool CanBrowse => !Model.IsRemote || Agent.Model.AccessManager.CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId.BotLogs.ToApi());
 
-        public bool CanCopyTo => Agent.Model.AccessManager.CanDownloadPackage() && Agent.Model.AccessManager.CanGetBotFolderInfo(BotFolderId.AlgoData) && Agent.Model.AccessManager.CanDownloadBotFile(BotFolderId.AlgoData);
+        public bool CanCopyTo => Agent.Model.AccessManager.CanDownloadPackage() && Agent.Model.AccessManager.CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId.AlgoData.ToApi())
+            && Agent.Model.AccessManager.CanDownloadBotFile(PluginFolderInfo.Types.PluginFolderId.AlgoData.ToApi());
 
-        public bool CanAddBot => Agent.Model.AccessManager.CanAddBot();
+        public bool CanAddBot => Agent.Model.AccessManager.CanAddPlugin();
 
         public AlgoBotViewModel(ITradeBot bot, AlgoAgentViewModel agent)
         {
@@ -97,11 +99,11 @@ namespace TickTrader.BotTerminal
         {
             if (Model.IsRemote)
             {
-                Agent.OpenManageBotFilesDialog(InstanceId, BotFolderId.BotLogs);
+                Agent.OpenManageBotFilesDialog(InstanceId, PluginFolderInfo.Types.PluginFolderId.BotLogs);
             }
             else
             {
-                var logDir = Path.Combine(EnvService.Instance.BotLogFolder, PathHelper.GetSafeFileName(InstanceId));
+                var logDir = Path.Combine(EnvService.Instance.BotLogFolder, PathHelper.Escape(InstanceId));
 
                 if (!Directory.Exists(logDir))
                     Directory.CreateDirectory(logDir);
@@ -116,7 +118,7 @@ namespace TickTrader.BotTerminal
 
         public void AddBot()
         {
-            Agent.OpenBotSetup(Model.Account, Model.Config.Key);
+            Agent.OpenBotSetup(Model.AccountId, Model.Config.Key);
         }
 
 

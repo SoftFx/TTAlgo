@@ -2,8 +2,6 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:cal="http://www.caliburnproject.org"
-    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
-    xmlns:c="clr-namespace:TickTrader.Algo.Common;assembly=TickTrader.Algo.Common"
     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
     <ControlTemplate x:Key="SymbolListView.Old">
@@ -58,10 +56,10 @@
     <Style x:Key="BidTextStyle.Classic" TargetType="TextBlock" BasedOn="{StaticResource DataGridCell.Text.Classic}">
         <Setter Property="HorizontalAlignment" Value="Right"/>
         <Style.Triggers>
-            <DataTrigger Binding="{Binding Bid.Direction}" Value="{x:Static c:RateChangeDirections.Up}">
+            <DataTrigger Binding="{Binding Bid.Direction.Value}" Value="{x:Static l:RateChangeDirections.Up}">
                 <Setter Property="Foreground" Value="{DynamicResource RateUpColor}"/>
             </DataTrigger>
-            <DataTrigger Binding="{Binding Bid.Direction}" Value="{x:Static c:RateChangeDirections.Down}">
+            <DataTrigger Binding="{Binding Bid.Direction.Value}" Value="{x:Static l:RateChangeDirections.Down}">
                 <Setter Property="Foreground" Value="{DynamicResource RateDownColor}"/>
             </DataTrigger>
         </Style.Triggers>
@@ -70,10 +68,10 @@
     <Style x:Key="AskTextStyle.Classic" TargetType="TextBlock" BasedOn="{StaticResource DataGridCell.Text.Classic}">
         <Setter Property="HorizontalAlignment" Value="Right"/>
         <Style.Triggers>
-            <DataTrigger Binding="{Binding Ask.Direction}" Value="{x:Static c:RateChangeDirections.Up}">
+            <DataTrigger Binding="{Binding Ask.Direction.Value}" Value="{x:Static l:RateChangeDirections.Up}">
                 <Setter Property="Foreground" Value="{DynamicResource RateUpColor}"/>
             </DataTrigger>
-            <DataTrigger Binding="{Binding Ask.Direction}" Value="{x:Static c:RateChangeDirections.Down}">
+            <DataTrigger Binding="{Binding Ask.Direction.Value}" Value="{x:Static l:RateChangeDirections.Down}">
                 <Setter Property="Foreground" Value="{DynamicResource RateDownColor}"/>
             </DataTrigger>
         </Style.Triggers>
@@ -102,34 +100,18 @@
 
     <ControlTemplate x:Key="SymbolListView.Classic">
         <DataGrid FrozenColumnCount="1" ItemsSource="{Binding Symbols}" Style="{DynamicResource DataGrid_Style}" CellStyle="{StaticResource DataGridCell.Classic}"
-                  cal:Message.Attach="[Event MouseDoubleClick] = [Action OpenChart($originalsourcecontext)]">
+                  cal:Message.Attach="[Event MouseDoubleClick] = [Action OpenNewChart()]" SelectedItem="{Binding SelectedSymbol.Value}">
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding SymbolName}" Header="Symbol" Width="Auto" ElementStyle="{StaticResource DataGridCell.SymbolName.Classic}" CanUserResize="False" />
-                <DataGridTextColumn Header="Bid" Width="Auto" ElementStyle="{StaticResource BidTextStyle.Classic}" CanUserResize="False">
-                    <DataGridTextColumn.Binding>
-                        <MultiBinding Converter="{StaticResource PriceConverter}" >
-                            <Binding Path="Bid.Rate"/>
-                            <Binding Path="Bid.Precision"/>
-                        </MultiBinding>
-                    </DataGridTextColumn.Binding>
-                </DataGridTextColumn>
-                <DataGridTextColumn Header="Ask" Width="Auto" ElementStyle="{StaticResource AskTextStyle.Classic}" CanUserResize="False">
-                    <DataGridTextColumn.Binding>
-                        <MultiBinding Converter="{StaticResource PriceConverter}" >
-                            <Binding Path="Ask.Rate"/>
-                            <Binding Path="Ask.Precision"/>
-                        </MultiBinding>
-                    </DataGridTextColumn.Binding>
-                </DataGridTextColumn>
-                <DataGridTextColumn x:Name="timeCol" Header="Time" Width="Auto" ElementStyle="{StaticResource DataGridCell.Text.Classic}" CanUserResize="False">
-                    <DataGridTextColumn.Binding>
-                        <MultiBinding Converter="{StaticResource KindAwareTime}">
-                            <Binding Path="QuoteTime"/>
-                            <Binding Path="ShowLocalTime"/>
-                        </MultiBinding>
-                    </DataGridTextColumn.Binding>
-                </DataGridTextColumn>
+                <DataGridTextColumn Header="Bid" Width="Auto" Binding="{Binding Bid.Rate.DisplayValue}" CanUserSort="False" SortMemberPath="{Binding Bid.Rate.Value}" ElementStyle="{StaticResource BidTextStyle.Classic}" CanUserResize="False"/>
+                <DataGridTextColumn Header="Ask" Width="Auto" Binding="{Binding Ask.Rate.DisplayValue}" CanUserSort="False" SortMemberPath="{Binding Ask.Rate.Value}" ElementStyle="{StaticResource AskTextStyle.Classic}" CanUserResize="False"/>
+                <DataGridTextColumn Header="Time" Width="Auto" Binding="{Binding QuoteTime.DisplayValue}" CanUserSort="False" SortMemberPath="{Binding QuoteTime.Value}" ElementStyle="{StaticResource DataGridCell.Text.Classic}" CanUserResize="False"/>
             </DataGrid.Columns>
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="{l:Resx ContextMenu_NewChart}" cal:Message.Attach="[Event Click] = [Action OpenNewChart()]"/>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
         </DataGrid>
     </ControlTemplate>
 
@@ -137,22 +119,7 @@
         <Setter Property="Template" Value="{StaticResource SymbolListView.Old}"/>
     </Style>
 
-    <ContextMenu x:Key="RowContextmenu.Classic" 
-                 cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}">
-        <MenuItem Header="{l:Resx ContextMenu_NewChart}" cal:Message.Attach="OpenChart"/>
-    </ContextMenu>
-
     <Style x:Key="SymbolListViewStyle.Classic" TargetType="UserControl">
         <Setter Property="Template" Value="{StaticResource SymbolListView.Classic}"/>
-        <Style.Resources>
-            <Style TargetType="{x:Type DataGridRow}">
-                <Style.Triggers>
-                    <DataTrigger Binding="{Binding CanOpenChart}" Value="True">
-                        <Setter Property="ContextMenu" Value="{StaticResource RowContextmenu.Classic}"/>
-                    </DataTrigger>
-                </Style.Triggers>
-            </Style>
-        </Style.Resources>
     </Style>
-
 </ResourceDictionary>

@@ -1,0 +1,25 @@
+﻿syntax = "proto3";
+
+package ticktrader.algo.server.publicApi;
+
+option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
+
+import "google/protobuf/wrappers.proto";
+
+
+message PluginFileInfo {
+    string name = 1;
+    int64 size = 2;
+}
+
+message PluginFolderInfo {
+    enum PluginFolderId {
+        ALGO_DATA = 0;
+        BOT_LOGS = 1;
+    }
+
+    string plugin_id = 1;
+    PluginFolderId folder_id = 2;
+    google.protobuf.StringValue path = 3;
+    repeated PluginFileInfo files = 4;
+}

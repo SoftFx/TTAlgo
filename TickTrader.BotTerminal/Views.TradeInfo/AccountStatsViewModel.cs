@@ -1,12 +1,8 @@
 ﻿using Caliburn.Micro;
 using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Account;
+using TickTrader.Algo.Calculator;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -22,25 +18,39 @@ namespace TickTrader.BotTerminal
 
             cManager.Connected += () =>
             {
-                if (account.Calc != null)
-                    account.Calc.Updated += Calc_Updated;
                 currencyFormatStr = NumberFormat.GetCurrencyFormatString(account.BalanceDigits, account.BalanceCurrency);
-                IsStatsVisible = account.Type != AccountTypes.Cash;
+                IsStatsVisible = account.Type != AccountInfo.Types.Type.Cash;
+
+                acc.BalanceUpdate += BalanceUpdate;
+
+                if (account.MarginCalculator != null)
+                {
+                    account.MarginCalculator.Updated += Calc_Updated;
+                    Calc_Updated(account.MarginCalculator);
+                }
+
                 NotifyOfPropertyChange(nameof(IsStatsVisible));
-                Calc_Updated(account.Calc);
             };
 
             cManager.Disconnected += () =>
             {
-                if (account.Calc != null)
-                    account.Calc.Updated -= Calc_Updated;
+                account.BalanceUpdate -= BalanceUpdate;
+
+                if (account.MarginCalculator != null)
+                    account.MarginCalculator.Updated -= Calc_Updated;
 
                 IsStatsVisible = false;
                 NotifyOfPropertyChange(nameof(IsStatsVisible));
             };
         }
 
-        private void Calc_Updated(AccountCalculatorModel calc)
+        private void BalanceUpdate()
+        {
+            if (account.MarginCalculator != null)
+                Calc_Updated(account.MarginCalculator);
+        }
+
+        private void Calc_Updated(MarginAccountCalculator calc)
         {
             Balance = FormatNumber(FloorNumber(account.Balance, account.BalanceDigits));
             NotifyOfPropertyChange(nameof(Balance));
@@ -48,12 +58,13 @@ namespace TickTrader.BotTerminal
             if (calc != null)
             {
                 Equity = FormatNumber(FloorNumber(calc.Equity, account.BalanceDigits));
-                Margin = FormatNumber(CeilNumber(calc.Margin, account.BalanceDigits));
+                if (!double.IsInfinity(calc.Margin))
+                    Margin = FormatNumber(CeilNumber((decimal)calc.Margin, account.BalanceDigits));
                 Profit = FormatNumber(FloorNumber(calc.Profit, account.BalanceDigits));
                 Floating = FormatNumber(FloorNumber(calc.Floating, account.BalanceDigits));
 
                 var marginLevel = FloorNumber(calc.MarginLevel, 2);
-                MarginLevel = Math.Abs(marginLevel) >= 1e-3m ? FormatPrecent(marginLevel) : "-";
+                MarginLevel = Math.Abs(marginLevel) >= 1e-3 ? FormatPrecent((decimal)marginLevel) : "-";
 
                 FreeMargin = FormatNumber(FloorNumber(calc.Equity - calc.Margin, account.BalanceDigits));
                 Swap = FormatNumber(calc.Swap);

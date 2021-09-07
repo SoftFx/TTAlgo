@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Reflection;
-using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Core.Setup;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -40,17 +39,17 @@ namespace TickTrader.BotTerminal
                 : base(descriptor)
             {
                 if (error == null)
-                    Error = new ErrorMsgModel(descriptor.Error);
+                    Error = new ErrorMsgModel(descriptor.ErrorCode);
                 else
                     Error = new ErrorMsgModel(error);
             }
 
 
-            public override void Load(Property srcProperty)
+            public override void Load(IPropertyConfig srcProperty)
             {
             }
 
-            public override Property Save()
+            public override IPropertyConfig Save()
             {
                 throw new Exception("Invalid parameter cannot be saved!");
             }

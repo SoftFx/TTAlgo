@@ -9,7 +9,7 @@ namespace TickTrader.BotAgent.Configurator
         private readonly PortsManager _portManager;
 
         private const string DefaultDirectoryName = "Logs";
-        private const int DefaultPort = 8443;
+        private const int DefaultPort = 15443;
 
         public ProtocolModel(PortsManager manager)
         {

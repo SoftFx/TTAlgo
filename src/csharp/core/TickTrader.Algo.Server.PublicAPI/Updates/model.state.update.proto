@@ -1,0 +1,27 @@
+﻿syntax = "proto3";
+
+package ticktrader.algo.server.publicApi;
+
+option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
+
+import "google/protobuf/wrappers.proto";
+import "info/plugin.info.proto";
+import "info/account.info.proto";
+
+
+message PackageStateUpdate {
+    string id = 1;
+    bool is_locked = 2;
+}
+
+message AccountStateUpdate {
+    string id = 1;
+    AccountModelInfo.ConnectionState connection_state = 2;
+    ConnectionErrorInfo last_error = 3;
+}
+
+message PluginStateUpdate {
+    string id = 1;
+    PluginModelInfo.PluginState state = 2;
+    google.protobuf.StringValue fault_message = 3;
+}

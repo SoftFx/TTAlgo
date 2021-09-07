@@ -1,46 +1,27 @@
-﻿using Machinarium.Qnil;
-using NLog;
-using System.Collections.Generic;
+﻿using Google.Protobuf.WellKnownTypes;
 using System;
-using TickTrader.Algo.Core;
+using System.Collections.Generic;
+using System.Linq;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
     internal class BotJournal : Journal<BotMessage>
     {
-        private Logger _logger;
-        private bool _writeToLogger;
-
         public BotMessageTypeCounter MessageCount { get; }
 
-        public BotJournal(string botId, bool writeToLogger) : this(botId, writeToLogger, 1000) { }
+        public TimeKey TimeLastClearedMessage { get; private set; }
 
-        public BotJournal(string botId, bool writeToLogger, int journalSize)
-            : base(1000)
+
+        public BotJournal(string botId) : this(botId, 1000) { }
+
+        public BotJournal(string botId, int journalSize)
+            : base(journalSize)
         {
-            _writeToLogger = writeToLogger;
-
-            _logger = LogManager.GetLogger(LoggerHelper.GetBotLoggerName(botId));
             MessageCount = new BotMessageTypeCounter();
+            TimeLastClearedMessage = new TimeKey(DateTime.MinValue, 0);
         }
 
-        public override void Add(BotMessage item)
-        {
-            base.Add(item);
-            WriteToLogger(item);
-        }
-
-        public override void Add(List<BotMessage> items)
-        {
-            base.Add(items);
-
-            WriteToLogger(items);
-        }
-
-        public void LogStatus(string status)
-        {
-            _logger.Trace(status);
-        }
 
         protected override void OnAppended(BotMessage item)
         {
@@ -52,45 +33,24 @@ namespace TickTrader.BotTerminal
             MessageCount.Removed(item);
         }
 
+        public void ForceClear()
+        {
+            if (Records.Count > 0)
+                TimeLastClearedMessage = Records.Max(u => u.TimeKey);
+
+            Clear();
+        }
+
         public override void Clear()
         {
             MessageCount.Reset();
             base.Clear();
         }
-
-        private void WriteToLogger(BotMessage message)
-        {
-            if (!_writeToLogger)
-                return;
-
-            if (message.Type != JournalMessageType.Error)
-                _logger.Info(message.ToString());
-            else
-            {
-                _logger.Error(message.ToString());
-                if (message.Details != null)
-                    _logger.Error(message.Details);
-            }
-        }
-
-        private void WriteToLogger(List<BotMessage> items)
-        {
-            if (!_writeToLogger)
-                return;
-
-            foreach (var item in items)
-                WriteToLogger(item);
-        }
-
-        private void LogError(BotMessage message)
-        {
-            _logger.Error(message.ToString());
-        }
     }
 
     internal class BotMessage : BaseJournalMessage
     {
-        public BotMessage(TimeKey time, string botName, string message, JournalMessageType type) : base(time)
+        public BotMessage(Timestamp time, string botName, string message, JournalMessageType type) : base(time)
         {
             Type = type;
             Message = message;
@@ -107,7 +67,7 @@ namespace TickTrader.BotTerminal
 
         public static BotMessage Create(PluginLogRecord record, string instanceId)
         {
-            return new BotMessage(record.Time, instanceId, record.Message, Convert(record.Severity)) { Details = record.Details };
+            return new BotMessage(record.TimeUtc, instanceId, record.Message, Convert(record.Severity)) { Details = record.Details };
         }
     }
 
@@ -120,7 +80,7 @@ namespace TickTrader.BotTerminal
         public BotMessageTypeCounter()
         {
             _messagesCnt = new Dictionary<JournalMessageType, int>();
-            foreach (JournalMessageType type in Enum.GetValues(typeof(JournalMessageType)))
+            foreach (JournalMessageType type in System.Enum.GetValues(typeof(JournalMessageType)))
             {
                 _messagesCnt.Add(type, 0);
             }
@@ -138,7 +98,7 @@ namespace TickTrader.BotTerminal
 
         public void Reset()
         {
-            foreach (JournalMessageType type in Enum.GetValues(typeof(JournalMessageType)))
+            foreach (JournalMessageType type in System.Enum.GetValues(typeof(JournalMessageType)))
             {
                 _messagesCnt[type] = 0;
             }

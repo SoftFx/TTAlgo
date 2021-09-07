@@ -1,0 +1,191 @@
+syntax = "proto3";
+
+package ticktrader.algo.domain;
+
+option csharp_namespace = "TickTrader.Algo.Domain";
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+
+import "common.proto";
+
+message CurrencyInfo {
+    string name = 1;
+    int32 digits = 2;
+    int32 sort_order = 3;
+    string type = 4;
+}
+
+message CurrencyListRequest { }
+
+message CurrencyListResponse {
+    repeated CurrencyInfo currencies = 1;
+}
+
+message CommissonInfo {
+    enum ValueType {
+        POINTS = 0;
+        PERCENTAGE = 1;
+        MONEY = 2;
+    }
+
+    double commission = 1;
+    double limits_commission = 2;
+    ValueType value_type = 3;
+    double min_commission = 5;
+    string min_commission_currency = 6;
+}
+
+message MarginInfo {
+    enum CalculationMode {
+        FOREX = 0;
+        CFD = 1;
+        FUTURES = 2;
+        CFD_INDEX = 3;
+        CFD_LEVERAGE = 4;
+    }
+
+    CalculationMode mode = 1;
+    double factor = 2;
+    double hedged = 3;
+    google.protobuf.DoubleValue stop_order_reduction = 4;
+    google.protobuf.DoubleValue hidden_limit_order_reduction = 5;
+}
+
+message SwapInfo {
+    enum Type {
+        POINTS = 0;
+        PERCENT_PER_YEAR = 1;
+    }
+
+    bool enabled = 1;
+    Type type = 2;
+    google.protobuf.DoubleValue size_long = 3;
+    google.protobuf.DoubleValue size_short = 4;
+    int32 triple_swap_day = 5;
+}
+
+message SlippageInfo {
+    enum Type {
+        PIPS = 0;
+        PERCENT = 1;
+    }
+
+    google.protobuf.DoubleValue default_value = 1;
+    Type type = 2;
+}
+
+message SymbolInfo {
+    string name = 1;
+    bool trade_allowed = 2;
+    string base_currency = 3;
+    string counter_currency = 4;
+    int32 digits = 5;
+    double lot_size = 6;
+    double min_trade_volume = 7;
+    double max_trade_volume = 8;
+    double trade_volume_step = 9;
+    SlippageInfo slippage = 10;
+    CommissonInfo commission = 11;
+    MarginInfo margin = 12;
+    SwapInfo swap = 13;
+    google.protobuf.StringValue description = 14;
+    google.protobuf.StringValue security = 16;
+    int32 sort_order = 17;
+    int32 group_sort_order = 18;
+}
+
+message SymbolListRequest { }
+
+message SymbolListResponse {
+    repeated SymbolInfo symbols = 1;
+}
+
+message LastQuoteListRequest { }
+
+message LastQuoteListResponse {
+    repeated FullQuoteInfo quotes = 1;
+}
+
+message FullQuoteInfo {
+    string symbol = 1;
+    QuoteData data = 2;
+}
+
+message QuoteData {
+    google.protobuf.Timestamp time = 1;
+    bool is_bid_indicative = 2;
+    bool is_ask_indicative = 3;
+    bytes bid_bytes = 4;
+    bytes ask_bytes = 5;
+}
+
+message QuotePage {
+    repeated FullQuoteInfo quotes = 1;
+}
+
+message QuoteChunk {
+    string symbol = 1;
+    repeated QuoteData quotes = 2;
+}
+
+message FeedSnapshotRequest { } // returns QuotePage
+
+message FeedSubscriptionUpdate {
+    string symbol = 1;
+    int32 depth = 2;
+}
+
+message ModifyFeedSubscriptionRequest { // returns QuotePage
+    repeated FeedSubscriptionUpdate updates = 1;
+}
+
+message CancelAllFeedSubscriptionsRequest { }
+
+message BarInfo {
+    string symbol = 1;
+    Feed.MarketSide market_side = 2;
+    Feed.Timeframe timeframe = 3;
+    BarData data = 4;
+}
+
+message BarData {
+    google.protobuf.Timestamp open_time = 1;
+    google.protobuf.Timestamp close_time = 2;
+    double open = 3;
+    double close = 4;
+    double high = 5;
+    double low = 6;
+    double real_volume = 7;
+    int64 tick_volume = 8;
+}
+
+message BarPage {
+    repeated BarInfo bars = 1;
+}
+
+message BarChunk {
+    string symbol = 1;
+    Feed.MarketSide market_side = 2;
+    Feed.Timeframe timeframe = 3;
+    repeated BarData bars = 4;
+}
+
+message BarListRequest {
+    string symbol = 1;
+    Feed.MarketSide market_side = 2;
+    Feed.Timeframe timeframe = 3;
+    google.protobuf.Timestamp from = 4;
+    google.protobuf.Timestamp to = 5;
+    google.protobuf.Int32Value count = 6;
+}
+
+message EndOfListResponse { }
+
+message QuoteListRequest {
+    string symbol = 1;
+    bool level2 = 2;
+    google.protobuf.Timestamp from = 3;
+    google.protobuf.Timestamp to = 4;
+    google.protobuf.Int32Value count = 5;
+}

@@ -1,13 +1,7 @@
-﻿using Caliburn.Micro;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using Machinarium.Qnil;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Api;
+using TickTrader.Algo.Domain;
+using TickTrader.Algo.Account;
 
 namespace TickTrader.BotTerminal
 {
@@ -16,16 +10,16 @@ namespace TickTrader.BotTerminal
         private readonly bool _isBacktester;
         private ProfileManager _profileManager;
 
-        public GrossPositionListViewModel(AccountModel model, IVarSet<string, SymbolModel> symbols, IConnectionStatusInfo connection, ProfileManager profileManager, bool isBacktester)
+        public GrossPositionListViewModel(AccountModel model, IVarSet<string, SymbolInfo> symbols, IConnectionStatusInfo connection, ProfileManager profileManager, bool isBacktester)
             : base(model, connection)
         {
             _profileManager = profileManager;
             _isBacktester = isBacktester;
 
             Positions = model.Orders
-                .Where((id, order) => order.OrderType == OrderType.Position)
+                .Where((id, order) => order.Type == Algo.Domain.OrderInfo.Types.Type.Position)
                 .OrderBy((id, order) => id)
-                .Select(o => new OrderViewModel(o, symbols.GetOrDefault(o.Symbol), model))
+                .Select(o => new OrderViewModel(o, symbols.GetOrDefault(o.Symbol), model.BalanceDigits))
                 .AsObservable();
 
             Positions.CollectionChanged += PositionsCollectionChanged;
@@ -37,9 +31,9 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        protected override bool SupportsAccount(AccountTypes accType)
+        protected override bool SupportsAccount(AccountInfo.Types.Type accType)
         {
-            return accType == AccountTypes.Gross;
+            return accType == AccountInfo.Types.Type.Gross;
         }
 
         public IObservableList<OrderViewModel> Positions { get; private set; }

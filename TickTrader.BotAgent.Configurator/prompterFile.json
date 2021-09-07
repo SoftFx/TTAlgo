@@ -1,26 +1,30 @@
 {
   "Server": {
-    "server.urls": "Web server will listen to certain ports and protocols. Server has auto https redirect so setting both http(ex. 80) and https(ex. 443) ports is recomended for easier browser access.",
-    "SecretKey": "Secret key is used for singing auth tokens. Changing it makes all existing tokens invalid, all users will have relogin. It is not recomended to change it unless it becomes compromised."
+    "server.urls": "Web server will listen to certain ports and protocols. Server has auto https redirect so http(ex.80) and https(ex.443) port setting are recommended for easier browser access.",
+    "SecretKey": "Secret key is used for signing auth tokens. Its changing makes all existing tokens invalid, all users will have to relogin. It is not recommended to change the secret key unless it becomes compromised."
   },
   "Credentials": {
-    "Admin": "User that has full rights to modify bot agent state. Avaliable both in browser and BotTerminal.",
-    "Dealer": "User that has same access as viewer, but can start and stop bots. Available only in BotTerminal.",
-    "Viewer": "User that has readonly access to agent state. He can see packages, accounts, bots, their status, logs. But he can't see AlgoData and download packages. Also viewer can download logs. Available only in BotTerminal."
+    "Admin": "Has full rights to modify AlgoServer state. Available both in browser and AlgoTerminal.",
+    "Dealer": "Has the same access as Viewer, but can start and stop bots. Available only in AlgoTerminal.",
+    "Viewer": "Has readonly access to AlgoServer state. A user can download logs and see packages, accounts, logs, bots and their status. A user cant see AlgoData and downloaded packages. Available only in AlgoTerminal."
   },
   "Ssl": {
     "File": "PKCS#12 file containing private and public keys for web server certificate, that are protected by password. Since we don't have own certificate authority server, this feature is disabled now.",
     "Password": "Password to required to open PKCS#12 file."
   },
   "Protocol": {
-    "ListeningPort": "Port that is used for BotTerminal connection. It should be different from web server ports.",
-    "LogDirectoryName": "Directory where BotTermianl connection logs will be stored.",
-    "LogMessages": "Enables writing messages sent over BotTerminal connection to logs. Only for troubleshooting, has severe impact on performance."
+    "ListeningPort": "Port that is used for AlgoTerminal connection. It should be different from web server ports.",
+    "LogDirectoryName": "Directory where AlgoTermianl connection logs will be stored.",
+    "LogMessages": "Enables writing messages sent over AlgoTerminal connection to logs. Only for troubleshooting, has severe impact on performance."
   },
   "Fdk": {
     "EnableLogs": "Enables writing messages sent over trade server connection to logs. Only for troubleshooting, has severe impact on performance."
   },
   "MultipleAgentProvider": {
-    "AgentConfigurationPaths": "Agent installation folder."
+    "AgentConfigurationPaths": "Selected AlgoServer installation folder.",
+    "ManagingBotSettingsOnServer": "Allows you to transfer bot and account settings between servers"
+  },
+  "Algo": {
+    "EnableDevMode": "If Dev mode is enabled package runtime process is started when any plugin instance from this package is created on AlgoServer, otherwise runtime process is started only when any plugin from respective package is starting."
   }
 }

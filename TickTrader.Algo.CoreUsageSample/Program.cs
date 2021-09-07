@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Reflection;
 using System.Xml.Serialization;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.CoreV1;
+using TickTrader.Algo.CoreV1.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreUsageSample
 {
@@ -50,30 +48,31 @@ namespace TickTrader.Algo.CoreUsageSample
 
             //Serialize(setup.Serialize(), "Alligator.cfg");
 
-            var dataModel = new FeedModel(TimeFrames.M1);
+            var dataModel = new FeedModel(Feed.Types.Timeframe.M1);
             dataModel.Fill("EURUSD", TTQuoteFileReader.ReadFile("EURUSD-M1-bids.txt"));
 
-            var descriptor = AlgoAssemblyInspector.GetPlugin(typeof(Alligator));
-            var executor = new PluginExecutorCore(descriptor.Id);
+            var pkgId = "bin/sample";
+            var pkg = PackageMetadataCache.ExamineAssembly(pkgId, Assembly.GetExecutingAssembly());
+            var executor = new PluginExecutorCore(new PluginKey (pkgId, typeof(Alligator).FullName));
             executor.MainSymbolCode = "EURUSD";
             executor.InvokeStrategy = new PriorityInvokeStartegy();
             executor.TimeFrame = dataModel.TimeFrame;
-            executor.ModelTimeFrame = TimeFrames.Ticks;
+            executor.ModelTimeFrame = Feed.Types.Timeframe.Ticks;
             executor.InitTimeSpanBuffering(DateTime.Parse("2015.11.02 00:25:00"), DateTime.Parse("2015.11.03 3:00:00"));
 
             executor.Feed = dataModel;
             executor.FeedHistory = dataModel;
 
-            var feedCfg = executor.InitBarStrategy(BarPriceType.Bid);
-            feedCfg.MapInput("Input", "EURUSD", BarPriceType.Bid);
+            var feedCfg = executor.InitBarStrategy(Feed.Types.MarketSide.Bid);
+            feedCfg.MapInput("Input", "EURUSD", Feed.Types.MarketSide.Bid);
 
             executor.Start();
 
-            dataModel.Update(new QuoteEntity("EURUSD", DateTime.Parse("2015.11.03 00:00:24"), 1.10145, 1.10145));
-            dataModel.Update(new QuoteEntity("EURUSD", DateTime.Parse("2015.11.03 00:00:28"), 1.10148, 1.10151));
-            dataModel.Update(new QuoteEntity("EURUSD", DateTime.Parse("2015.11.03 00:00:31"), 1.10149, 1.10149));
+            dataModel.Update(new QuoteInfo("EURUSD", DateTime.Parse("2015.11.03 00:00:24"), 1.10145, 1.10145));
+            dataModel.Update(new QuoteInfo("EURUSD", DateTime.Parse("2015.11.03 00:00:28"), 1.10148, 1.10151));
+            dataModel.Update(new QuoteInfo("EURUSD", DateTime.Parse("2015.11.03 00:00:31"), 1.10149, 1.10149));
 
-            executor.Stop();
+            executor.Stop()?.Wait();
 
             //executor.Reset();
 

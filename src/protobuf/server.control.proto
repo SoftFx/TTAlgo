@@ -1,0 +1,388 @@
+syntax = "proto3";
+
+package ticktrader.algo.domain.serverControl;
+
+option csharp_namespace = "TickTrader.Algo.Domain.ServerControl";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
+import "google/protobuf/wrappers.proto";
+import "runtime.package.proto";
+import "runtime.plugin.proto";
+import "server.data.proto";
+
+message RequestResult {
+    enum RequestStatus {
+        SUCCESS = 0;
+        INTERNAL_SERVER_ERROR = 1;
+        UNAUTHORIZED = 2;
+        REJECT = 3;
+        NOT_ALLOWED = 4;
+    }
+
+    RequestStatus status = 1;
+    string message = 2;
+}
+
+message ClientClaims {
+    enum AccessLevel {
+        ANONYMOUS = 0;
+        VIEWER = 1;
+        DEALER = 2;
+        ADMIN = 3;
+    }
+}
+
+message LoginRequest {
+    google.protobuf.StringValue login = 1;
+    google.protobuf.StringValue password = 2;
+    int32 major_version = 3; // client version
+    int32 minor_version = 4; // client version
+}
+
+message LoginResponse {
+    enum LoginError {
+        NONE = 0;
+        INVALID_CREDENTIALS = 1;
+        VERSION_MISMATCH = 2;
+    }
+
+    LoginError error = 1;
+    int32 major_version = 2; // server version
+    int32 minor_version = 3; // server version
+    google.protobuf.StringValue session_id = 4;
+    google.protobuf.StringValue access_token = 5;
+    ClientClaims.AccessLevel access_level = 6;
+
+    RequestResult exec_result = 101;
+}
+
+message LogoutRequest { }
+
+message LogoutResponse {
+    enum LogoutReason {
+        CLIENT_REQUEST = 0;
+        SERVER_LOGOUT = 1;
+    }
+
+    LogoutReason reason = 1;
+    google.protobuf.StringValue text = 2;
+
+    RequestResult exec_result = 101;
+}
+
+message HeartbeatRequest { }
+
+message HeartbeatResponse {
+    RequestResult exec_result = 101;
+}
+
+message SnapshotRequest { }
+
+message SnapshotResponse {
+    ApiMetadataResponse api_metadata = 1;
+    MappingsInfoResponse mappings_info = 2;
+    SetupContextResponse setup_context = 3;
+    PackageListResponse package_list = 4;
+    AccountListResponse account_list = 5;
+    PluginListResponse plugin_list = 6;
+
+    RequestResult exec_result = 101;
+}
+
+message SubscribeToUpdatesRequest { }
+
+
+message ApiMetadataRequest { }
+
+message ApiMetadataResponse {
+    ApiMetadataInfo api_metadata = 1;
+
+    RequestResult exec_result = 101;
+}
+
+message MappingsInfoRequest { }
+
+message MappingsInfoResponse {
+    MappingCollectionInfo mappings = 1;
+
+    RequestResult exec_result = 101;
+}
+
+message SetupContextRequest { }
+
+message SetupContextResponse {
+    SetupContextInfo setup_context = 1;
+
+    RequestResult exec_result = 101;
+}
+
+message AccountMetadataRequest {
+    string account_id = 1;
+}
+
+message AccountMetadataResponse {
+    ConnectionErrorInfo error_info = 1;
+    AccountMetadataInfo account_metadata = 2;
+
+    RequestResult exec_result = 101;
+}
+
+
+message PluginListRequest { }
+
+message PluginListResponse {
+    repeated PluginModelInfo plugins = 1;
+
+    RequestResult exec_result = 101;
+}
+
+message AddPluginRequest {
+    string account_id = 1;
+    PluginConfig config = 2;
+}
+
+message AddPluginResponse {
+    RequestResult exec_result = 101;
+}
+
+message RemovePluginRequest {
+    google.protobuf.StringValue plugin_id = 1;
+    bool clean_log = 2;
+    bool clean_algo_data = 3;
+}
+
+message RemovePluginResponse {
+    RequestResult exec_result = 101;
+}
+
+message StartPluginRequest {
+    google.protobuf.StringValue plugin_id = 1;
+}
+
+message StartPluginResponse {
+    RequestResult exec_result = 101;
+}
+
+message StopPluginRequest {
+    google.protobuf.StringValue plugin_id = 1;
+}
+
+message StopPluginResponse {
+    RequestResult exec_result = 101;
+}
+
+message ChangePluginConfigRequest {
+    google.protobuf.StringValue plugin_id = 1;
+    PluginConfig new_config = 2;
+}
+
+message ChangePluginConfigResponse {
+    RequestResult exec_result = 101;
+}
+
+
+message AccountListRequest { }
+
+message AccountListResponse {
+    repeated AccountModelInfo accounts = 1;
+
+    RequestResult exec_result = 101;
+}
+
+message AddAccountRequest {
+    string server = 1;
+    string user_id = 2;
+    AccountCreds creds = 3;
+    google.protobuf.StringValue display_name = 4;
+}
+
+message AddAccountResponse {
+    RequestResult exec_result = 101;
+}
+
+message RemoveAccountRequest {
+    string account_id = 1;
+}
+
+message RemoveAccountResponse {
+    RequestResult exec_result = 101;
+}
+
+message ChangeAccountRequest {
+    string account_id = 1;
+    AccountCreds creds = 2;
+    google.protobuf.StringValue display_name = 3;
+}
+
+message ChangeAccountResponse {
+    RequestResult exec_result = 101;
+}
+
+message TestAccountRequest {
+    string account_id = 1;
+}
+
+message TestAccountResponse {
+    ConnectionErrorInfo error_info = 1;
+
+    RequestResult exec_result = 101;
+}
+
+message TestAccountCredsRequest {
+    string server = 1;
+    string user_id = 2;
+    AccountCreds creds = 3;
+}
+
+message TestAccountCredsResponse {
+    ConnectionErrorInfo error_info = 1;
+
+    RequestResult exec_result = 101;
+}
+
+
+message PackageListRequest { }
+
+message PackageListResponse {
+    repeated PackageInfo packages = 1;
+
+    RequestResult exec_result = 101;
+}
+
+message FileTransferSettings {
+    int32 chunk_size = 1;
+    int32 chunk_offset = 2;
+}
+
+message FileChunk {
+    int32 id = 1;
+    bytes binary = 2;
+    bool is_final = 3;
+}
+
+message FileTransferMsg {
+    google.protobuf.Any header = 1;
+    FileChunk data = 2;
+}
+
+message UploadPackageRequest {
+    google.protobuf.StringValue package_id = 1;
+    google.protobuf.StringValue filename = 2;
+    FileTransferSettings transfer_settings = 3;
+}
+
+message UploadPackageResponse {
+    RequestResult exec_result = 101;
+}
+
+message RemovePackageRequest {
+    string package_id = 1;
+}
+
+message RemovePackageResponse {
+    RequestResult exec_result = 101;
+}
+
+message DownloadPackageRequest {
+    string package_id = 1;
+    FileTransferSettings transfer_settings = 2;
+}
+
+message DownloadPackageResponse {
+    RequestResult exec_result = 101;
+}
+
+message PluginStatusRequest {
+    google.protobuf.StringValue plugin_id = 1;
+}
+
+message PluginStatusResponse {
+    google.protobuf.StringValue plugin_id = 1;
+    google.protobuf.StringValue status = 2;
+
+    RequestResult exec_result = 101;
+}
+
+message PluginLogsRequest {
+    google.protobuf.StringValue plugin_id = 1;
+    google.protobuf.Timestamp last_log_time_utc = 2;
+    int32 max_count = 3;
+}
+
+message PluginLogsResponse {
+    google.protobuf.StringValue plugin_id = 1;
+    repeated LogRecordInfo logs = 2;
+
+    RequestResult exec_result = 101;
+}
+
+message PluginAlertsRequest {
+    google.protobuf.Timestamp last_log_time_utc = 1;
+    int32 max_count = 2;
+}
+
+message PluginAlertsResponse {
+    repeated AlertRecordInfo alerts = 1;
+
+    RequestResult exec_result = 101;
+}
+
+message PluginFolderInfoRequest {
+    google.protobuf.StringValue plugin_id = 1;
+    PluginFolderInfo.PluginFolderId folder_id = 2;
+}
+
+message PluginFolderInfoResponse {
+    PluginFolderInfo folder_info = 1;
+
+    RequestResult exec_result = 101;
+}
+
+message ClearPluginFolderRequest {
+    google.protobuf.StringValue plugin_id = 1;
+    PluginFolderInfo.PluginFolderId folder_id = 2;
+}
+
+message ClearPluginFolderResponse {
+    RequestResult exec_result = 101;
+}
+
+message DeletePluginFileRequest {
+    google.protobuf.StringValue plugin_id = 1;
+    PluginFolderInfo.PluginFolderId folder_id = 2;
+    google.protobuf.StringValue file_name = 3;
+}
+
+message DeletePluginFileResponse {
+    RequestResult exec_result = 101;
+}
+
+message PluginFileDetails {
+    google.protobuf.StringValue plugin_id = 1;
+    PluginFolderInfo.PluginFolderId folder_id = 2;
+    google.protobuf.StringValue file_name = 3;
+    FileTransferSettings transfer_settings = 4;
+}
+
+message DownloadPluginFileRequest {
+    google.protobuf.StringValue plugin_id = 1;
+    PluginFolderInfo.PluginFolderId folder_id = 2;
+    google.protobuf.StringValue file_name = 3;
+    FileTransferSettings transfer_settings = 4;
+}
+
+message DownloadPluginFileResponse {
+    RequestResult exec_result = 101;
+}
+
+message UploadPluginFileRequest {
+    google.protobuf.StringValue plugin_id = 1;
+    PluginFolderInfo.PluginFolderId folder_id = 2;
+    google.protobuf.StringValue file_name = 3;
+    FileTransferSettings transfer_settings = 4;
+}
+
+message UploadPluginFileResponse {
+    RequestResult exec_result = 101;
+}

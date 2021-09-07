@@ -1,14 +1,9 @@
 ﻿using System.Linq;
-using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Common.Model.Config;
-using TickTrader.BotAgent.BA;
 using TickTrader.BotAgent.WebAdmin.Server.Dto;
-using TickTrader.BotAgent.BA.Models;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
-using TickTrader.Algo.Core;
 using System.Reflection;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Core.Setup;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
 {
@@ -31,15 +26,16 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             };
         }
 
-        public static TradeBotDto ToDto(this BotModelInfo bot)
+        public static TradeBotDto ToDto(this PluginModelInfo bot)
         {
             return new TradeBotDto()
             {
                 Id = bot.InstanceId,
-                Account = bot.Account.ToDto(),
+                Account = bot.AccountId.ToAccountDto(),
                 State = bot.State.ToString(),
-                PackageName = bot.Config.Key.PackageName,
-                BotName = bot.Descriptor?.UiDisplayName,
+                PackageName = bot.Config.Key.PackageId,
+                PluginId = bot.Config.Key.DescriptorId,
+                BotName = bot.Descriptor_?.UiDisplayName,
                 FaultMessage = bot.FaultMessage,
                 Config = bot.ToConfigDto(),
                 Permissions = bot.Config.Permissions.ToDto(),
@@ -55,41 +51,32 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             };
         }
 
-        public static TradeBotLogDto ToDto(this IBotLog botlog)
-        {
-            return new TradeBotLogDto
-            {
-                Snapshot = botlog.Messages.OrderByDescending(le => le.TimeUtc).Select(e => e.ToDto()).ToArray(),
-                Files = botlog.Files.Select(fm => fm.ToDto()).ToArray()
-            };
-        }
-
-        public static FileDto ToDto(this IFile file)
+        public static FileDto ToDto(this PluginFileInfo file)
         {
             return new FileDto { Name = file.Name, Size = file.Size };
         }
 
-        public static LogEntryDto ToDto(this ILogEntry entry)
+        public static LogEntryDto ToDto(this PluginLogRecord entry)
         {
             return new LogEntryDto
             {
-                Time = entry.TimeUtc.Timestamp,
-                Type = entry.Type.ToString(),
-                Message = entry.Message
+                Time = entry.TimeUtc.ToDateTime(),
+                Type = entry.Severity.ToString(),
+                Message = entry.Message,
             };
         }
 
-        public static TradeBotConfigDto ToConfigDto(this BotModelInfo bot)
+        public static TradeBotConfigDto ToConfigDto(this PluginModelInfo bot)
         {
             var config = new TradeBotConfigDto()
             {
                 Symbol = bot.Config.MainSymbol.Name,
-                Parameters = bot.Config.Properties.Where(p => p is Parameter).Select(p =>
+                Parameters = bot.Config.UnpackProperties().Where(p => p is IParameterConfig).Select(p =>
                      new ParameterDto()
                      {
-                         Id = p.Id,
-                         Value = ((Parameter)p).ValObj,
-                         Descriptor = bot.Descriptor?.Parameters.FirstOrDefault(dp => dp.Id == p.Id)?.ToDto()
+                         Id = p.PropertyId,
+                         Value = ((IParameterConfig)p).ValObj,
+                         Descriptor = bot.Descriptor_?.Parameters.FirstOrDefault(dp => dp.Id == p.PropertyId)?.ToDto()
                      }).ToArray()
             };
             return config;
@@ -99,52 +86,55 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
         {
             return new PackageDto()
             {
-                Name = package.Key.Name,
+                Id = package.PackageId,
                 DisplayName = package.Identity.FileName,
-                Created = package.Identity.LastModifiedUtc.ToLocalTime(),
-                Plugins = package.Plugins.Where(p => p.Descriptor.Type == AlgoTypes.Robot).Select(p => p.ToPluginDto()).ToArray(),
+                Created = package.Identity.LastModifiedUtc.ToDateTime().ToLocalTime(),
+                Plugins = package.Plugins.Where(p => p.Descriptor_.IsTradeBot).Select(p => p.ToPluginDto()).ToArray(),
                 IsValid = package.IsValid
             };
         }
 
         public static PluginDto ToPluginDto(this PluginInfo plugin)
         {
+            var descriptor = plugin.Descriptor_;
             return new PluginDto()
             {
-                Id = plugin.Descriptor.Id,
-                DisplayName = plugin.Descriptor.UiDisplayName,
-                UserDisplayName = plugin.Descriptor.DisplayName,
-                Type = plugin.Descriptor.Type.ToString(),
-                Parameters = plugin.Descriptor.Parameters.Select(p => p.ToDto())
+                Id = descriptor.Id,
+                DisplayName = descriptor.UiDisplayName,
+                UserDisplayName = descriptor.DisplayName,
+                Type = descriptor.Type.ToString(),
+                Parameters = descriptor.Parameters.Select(p => p.ToDto())
             };
         }
 
-        public static BotStateDto ToBotStateDto(this BotModelInfo bot)
+        public static BotStateDto ToBotStateDto(this PluginStateUpdate bot)
         {
             return new BotStateDto
             {
-                Id = bot.InstanceId,
+                Id = bot.Id,
                 State = bot.State.ToString(),
-                FaultMessage = bot.FaultMessage
+                FaultMessage = bot.FaultMessage,
             };
         }
 
-        public static AccountDto ToDto(this AccountKey account)
+        public static AccountDto ToAccountDto(this string accountId)
         {
+            AccountId.Unpack(accountId, out var accId);
             return new AccountDto()
             {
-                Server = account.Server,
-                Login = account.Login,
+                Server = accId.Server,
+                Login = accId.UserId,
             };
         }
 
         public static AccountDto ToDto(this AccountModelInfo account)
         {
+            AccountId.Unpack(account.AccountId, out var accId);
             return new AccountDto()
             {
-                Server = account.Key.Server,
-                Login = account.Key.Login,
-                LastConnectionStatus = ConnectionErrorCodes.None,
+                Server = accId.Server,
+                Login = accId.UserId,
+                LastConnectionStatus = ConnectionErrorInfo.Types.ErrorCode.NoConnectionError,
             };
         }
 
@@ -156,7 +146,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                 DisplayName = parameter.DisplayName,
                 DataType = GetDataType(parameter),
                 DefaultValue = ConvertDefaultValue(parameter),
-                EnumValues = parameter.EnumValues,
+                EnumValues = parameter.EnumValues.ToList(),
                 IsEnum = parameter.IsEnum,
                 IsRequired = parameter.IsRequired,
                 FileFilter = string.Join("|", parameter.FileFilters.Select(f => f.FileMask))

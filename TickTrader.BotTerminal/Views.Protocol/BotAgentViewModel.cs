@@ -1,8 +1,4 @@
 ﻿using Caliburn.Micro;
-using Machinarium.Qnil;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Protocol;
 
 namespace TickTrader.BotTerminal
 {
@@ -18,15 +14,15 @@ namespace TickTrader.BotTerminal
         public AlgoAgentViewModel Agent { get; }
 
         public string DisplayName =>
-            Connection.State == BotAgentConnectionManager.States.Online
-            ? $"{Connection.Creds.Name} - {Connection.AccessLevel} ({Connection.Creds.ServerAddress}:{Connection.Creds.Port})"
-            : $"{Connection.Creds.Name} ({Connection.Creds.ServerAddress}:{Connection.Creds.Port})";
+            Connection.State == BotAgentConnectionManager.States.Online ? $"{Connection.Creds.Name} - {Connection.AccessLevel}" : $"{Connection.Creds.Name}";
+
+        public string ToolTipInformation => $"{Connection.Creds.ServerAddress}:{Connection.Creds.Port}, status = {Status}";
 
         public bool CanConnectBotAgent => Connection.State == BotAgentConnectionManager.States.Offline || Connection.State == BotAgentConnectionManager.States.WaitReconnect;
 
         public bool CanDisconnectBotAgent => Connection.State == BotAgentConnectionManager.States.Connecting || Connection.State == BotAgentConnectionManager.States.Online || Connection.State == BotAgentConnectionManager.States.WaitReconnect;
 
-        public bool CanAddBot => Agent.Model.AccessManager.CanAddBot();
+        public bool CanAddBot => Agent.Model.AccessManager.CanAddPlugin();
 
         public bool CanAddAccount => Agent.Model.AccessManager.CanAddAccount();
 
@@ -49,30 +45,21 @@ namespace TickTrader.BotTerminal
 
         public void Drop(object o)
         {
-            var algoBot = o as AlgoPluginViewModel;
-            if (algoBot != null)
-            {
-                Agent.OpenBotSetup(null, algoBot.PluginInfo.Key);
-            }
-            var algoPackage = o as AlgoPackageViewModel;
-            if (algoPackage != null)
-            {
-                Agent.OpenUploadPackageDialog(algoPackage.Key, Agent.Name);
-            }
+            if (o is AlgoPluginViewModel algoBot)
+                Agent.OpenBotSetup(null, algoBot.Key);
+
+            if (o is AlgoPackageViewModel algoPackage)
+                Agent.OpenUploadPackageDialog(algoPackage.Key, Agent);
         }
 
         public bool CanDrop(object o)
         {
-            var algoBot = o as AlgoPluginViewModel;
-            if (algoBot != null && algoBot.Agent.Name == Agent.Name && algoBot.Type == AlgoTypes.Robot)
-            {
+            if (o is AlgoPluginViewModel algoBot && algoBot.Agent.Name == Agent.Name && algoBot.IsTradeBot)
                 return true;
-            }
-            var algoPackage = o as AlgoPackageViewModel;
-            if (algoPackage != null && algoPackage.CanUploadPackage && CanUploadPackage)
-            {
+
+            if (o is AlgoPackageViewModel algoPackage && algoPackage.CanUploadPackage && CanUploadPackage)
                 return true;
-            }
+
             return false;
         }
 
@@ -84,7 +71,7 @@ namespace TickTrader.BotTerminal
 
         public void RemoveBotAgent()
         {
-            var result = _algoEnv.Shell.ShowDialog(DialogButton.YesNo, DialogMode.Question, DialogMessages.GetRemoveTitle("agent"), DialogMessages.GetRemoveMessage("agent"));
+            var result = _algoEnv.Shell.ShowDialog(DialogButton.YesNo, DialogMode.Question, DialogMessages.GetRemoveTitle("server"), DialogMessages.GetRemoveMessage("server"));
 
             if (result != DialogResult.OK)
                 return;
@@ -137,6 +124,7 @@ namespace TickTrader.BotTerminal
                 || Connection.State == BotAgentConnectionManager.States.Offline
                 || Connection.State == BotAgentConnectionManager.States.Connecting)
                 NotifyOfPropertyChange(nameof(DisplayName));
+            NotifyOfPropertyChange(nameof(ToolTipInformation));
         }
 
         private void OnAccessLevelChanged()

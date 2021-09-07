@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Core.Repository;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Core.Metadata;
+﻿using System.Linq;
 using Machinarium.Qnil;
 
 namespace TickTrader.BotTerminal
@@ -29,6 +20,7 @@ namespace TickTrader.BotTerminal
 
         public IVarList<AlgoAgentViewModel> Agents { get; }
 
+        public IObservableList<AlgoAgentViewModel> AgentsList { get; }
 
         public AlgoEnvironment(IShell shell, LocalAlgoAgent localAgent, BotAgentManager botAgentManager)
         {
@@ -36,13 +28,12 @@ namespace TickTrader.BotTerminal
             LocalAgent = localAgent;
             BotAgentManager = botAgentManager;
 
-            ProfileResolver.Mappings = LocalAgent.Mappings;
-
             LocalAgentVM = new AlgoAgentViewModel(LocalAgent, this);
             _localAgentStub = new VarList<AlgoAgentViewModel>();
             _localAgentStub.Add(LocalAgentVM);
             BotAgents = BotAgentManager.BotAgents.OrderBy((k, v) => k).Select(v => new BotAgentViewModel(v, this));
             Agents = VarCollection.CombineChained(_localAgentStub, BotAgents.Select(b => b.Agent));
+            AgentsList = Agents.AsObservable();
         }
     }
 }

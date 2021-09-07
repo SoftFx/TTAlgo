@@ -1,17 +1,16 @@
 ﻿using Machinarium.Var;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Metadata;
+using System.Reflection;
+using TickTrader.Algo.Backtester;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
     internal abstract class ParamSeekSetModel : EntityBase
     {
+        private static readonly string NullableIntTypeName = typeof(int?).GetTypeInfo().FullName;
+        private static readonly string NullableDoubleTypeName = typeof(double?).GetTypeInfo().FullName;
+
+
         public ParamSeekSetModel()
         {
             //SizeProp = AddIntProperty();
@@ -32,9 +31,9 @@ namespace TickTrader.BotTerminal
 
             if (descriptor.IsEnum)
                 return new EnumSetModel(descriptor.EnumValues);
-            if (descriptor.DataType == ParameterSetupModel.NullableIntTypeName)
+            if (descriptor.DataType == NullableIntTypeName)
                 return new Int32RangeSet();
-            if (descriptor.DataType == ParameterSetupModel.NullableDoubleTypeName)
+            if (descriptor.DataType == NullableDoubleTypeName)
                 return new DoubleRangeSet();
 
             switch (descriptor.DataType)

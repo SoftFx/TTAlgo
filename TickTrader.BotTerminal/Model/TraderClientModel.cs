@@ -1,19 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.BotTerminal.Lib;
 using Machinarium.Qnil;
-using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Api;
 using Machinarium.Var;
-using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core.Infrastructure;
+using TickTrader.Algo.Domain;
+using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Account;
 
 namespace TickTrader.BotTerminal
 {
@@ -22,11 +17,9 @@ namespace TickTrader.BotTerminal
         private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
         private ClientModel.Data _core;
 
-        private AccountModel _accountInfo;
-        private EventJournal _journal;
         private BoolProperty _isConnected;
 
-        public TraderClientModel(ClientModel.Data client, EventJournal journal)
+        public TraderClientModel(ClientModel.Data client)
         {
             _core = client;
             Connection = client.Connection;
@@ -39,15 +32,28 @@ namespace TickTrader.BotTerminal
 
             Account = _core.Cache.Account;
             Symbols = _core.Symbols;
-            SortedSymbols = Symbols.Select((k, v)=> (SymbolModel)v).OrderBy((k, v) => k).AsObservable();
+            SortedSymbols = Symbols.Select((k, v)=> v).OrderBy((k, v) => k).AsObservable();
 
             var orderedCurrencies = Currencies.OrderBy((k, v) => k);
             SortedCurrencies = orderedCurrencies.AsObservable();
             SortedCurrenciesNames = orderedCurrencies.Select(c => c.Name).AsObservable();
             //this.History = new FeedHistoryProviderModel(connection, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy);
+        }
 
-            _accountInfo = Account;
-            _journal = journal;
+        public IAccountProxy GetAccountProxy()
+        {
+            var sync = new DispatcherSync();
+            var accInfoProvider = new PluginTradeInfoProvider(Cache, sync);
+            var feedProvider = new PluginFeedProvider(Cache, Distributor, FeedHistory, sync);
+            return new LocalAccountProxy(_core.Id)
+            {
+                Feed = feedProvider,
+                FeedHistory = feedProvider,
+                Metadata = feedProvider,
+                AccInfoProvider = accInfoProvider,
+                TradeExecutor = _core.TradeApi,
+                TradeHistoryProvider = _core.TradeHistory.AlgoAdapter,
+            };
         }
 
         private void State_StateChanged(ConnectionModel.States oldState, ConnectionModel.States newState)
@@ -116,60 +122,6 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void Account_BalanceUpdated(BalanceOperationReport report)
-        {
-            string action = report.Type == BalanceOperationType.Dividend ? "Devidend" : report.Amount > 0 ? "Deposit" : "Withdrawal";
-            _journal.Trading($"{action} {report.Amount} {report.CurrencyCode}. Balance: {report.Balance} {report.CurrencyCode}");
-        }
-
-        private void Account_OrderUpdated(OrderUpdateInfo updateInfo)
-        {
-            var order = updateInfo.Order;
-
-            switch(updateInfo.ExecAction)
-            {
-                case OrderExecAction.Opened:
-                    switch (order.OrderType)
-                    {
-                        case OrderType.Position:
-                            _journal.Trading($"Order #{order.Id} was opened: {order.Side} {order.Symbol} {order.RemainingAmountLots} lots at {order.Price}");
-                            break;
-                        case OrderType.Limit:
-                        case OrderType.Stop:
-                            _journal.Trading($"Order #{order.Id} was placed: {order.Side} {order.OrderType} {order.Symbol} {order.RemainingAmountLots} lots at {order.Price}");
-                            break;
-                    }
-                    break;
-                case OrderExecAction.Modified:
-                    switch (order.OrderType)
-                    {
-                        case OrderType.Position:
-                            _journal.Trading($"Order #{order.Id} was modified: {order.Side} {order.Symbol} {order.RemainingAmountLots} lots at {order.Price}");
-                            break;
-                        case OrderType.Limit:
-                        case OrderType.Stop:
-                            _journal.Trading($"Order #{order.Id} was modified: {order.Side} {order.OrderType} {order.Symbol} {order.RemainingAmountLots} lots at {order.Price}");
-                            break;
-                    }
-                    break;
-                case OrderExecAction.Closed:
-                    if (order.OrderType == Algo.Api.OrderType.Position)
-                    {
-                        _journal.Trading($"Order #{order.Id} was closed: {order.Side} {order.Symbol} {order.LastFillAmountLots} lots at {order.LastFillPrice}");
-                    }
-                    break;
-                case OrderExecAction.Canceled:
-                    _journal.Trading($"Order #{order.Id} was canceled: {order.Side} {order.OrderType} {order.Symbol} {order.RemainingAmountLots} lots at {order.Price}");
-                    break;
-                case OrderExecAction.Expired:
-                    _journal.Trading($"Order #{order.Id} has expired: {order.Side} {order.OrderType} {order.Symbol} {order.RemainingAmountLots} lots at {order.Price}");
-                    break;
-                case OrderExecAction.Filled:
-                    _journal.Trading($"Order #{order.Id} was filled: {order.Side} {order.OrderType} {order.Symbol} {order.LastFillAmountLots} lots at {order.LastFillPrice}");
-                    break;
-            }
-        }
-
         public bool IsConnecting { get; private set; }
         public BoolVar IsConnected => _isConnected.Var;
 
@@ -179,17 +131,18 @@ namespace TickTrader.BotTerminal
         public event AsyncEventHandler Deinitializing;
         public event Action Disconnected;
 
+        public string Id => _core.Id;
         public ConnectionModel.Handler Connection { get; private set; }
         public ITradeExecutor TradeApi => _core.TradeApi;
         public AccountModel Account { get; private set; }
         public TradeHistoryProvider.Handler TradeHistory => _core.TradeHistory;
-        public IVarSet<string, SymbolModel> Symbols { get; private set; }
+        public IVarSet<string, SymbolInfo> Symbols { get; private set; }
         public EntityCache Cache => _core.Cache;
-        public IObservableList<SymbolModel> SortedSymbols { get; }
+        public IObservableList<SymbolInfo> SortedSymbols { get; }
         public QuoteDistributor Distributor => _core.Distributor;
         public FeedHistoryProviderModel.Handler FeedHistory => _core.FeedHistory;
-        public IVarSet<string, CurrencyEntity> Currencies => _core.Currencies;
-        public IObservableList<CurrencyEntity> SortedCurrencies { get; }
+        public IVarSet<string, CurrencyInfo> Currencies => _core.Currencies;
+        public IObservableList<CurrencyInfo> SortedCurrencies { get; }
         public IObservableList<string> SortedCurrenciesNames { get; }
     }
 }

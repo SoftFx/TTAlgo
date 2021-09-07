@@ -2,25 +2,26 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Repository;
-using TickTrader.Algo.Protocol;
-using TickTrader.BotAgent.BA;
-using TickTrader.BotAgent.BA.Models;
+using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
+using TickTrader.Algo.Domain.ServerControl;
+using TickTrader.Algo.ServerControl;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
+using TickTrader.Algo.Package;
+using TickTrader.Algo.Server;
+using System.Threading.Channels;
+using Google.Protobuf;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
 {
-    public class BotAgentServerAdapter : IBotAgentServer
+    public class BotAgentServerAdapter : IAlgoServerProvider
     {
-        private static IAlgoCoreLogger _logger = CoreLoggerFactory.GetLogger<BotAgentServerAdapter>();
-        private static readonly SetupContext _agentContext = new SetupContext();
+        private static IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<BotAgentServerAdapter>();
+        private static readonly SetupContextInfo _agentContext = new SetupContextInfo(Feed.Types.Timeframe.M1,
+            new SymbolConfig("none", SymbolConfig.Types.SymbolOrigin.Online), MappingDefaults.DefaultBarToBarMapping.Key);
 
 
-        private readonly IBotAgent _botAgent;
+        private readonly IAlgoServerLocal _algoServer;
         private readonly IAuthManager _authManager;
 
 
@@ -28,25 +29,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         public event Action DealerCredsChanged = delegate { };
         public event Action ViewerCredsChanged = delegate { };
 
-        public event Action<UpdateInfo<PackageInfo>> PackageUpdated = delegate { };
-        public event Action<UpdateInfo<AccountModelInfo>> AccountUpdated = delegate { };
-        public event Action<UpdateInfo<BotModelInfo>> BotUpdated = delegate { };
-        public event Action<PackageInfo> PackageStateUpdated = delegate { };
-        public event Action<BotModelInfo> BotStateUpdated = delegate { };
-        public event Action<AccountModelInfo> AccountStateUpdated = delegate { };
 
-
-        public BotAgentServerAdapter(IBotAgent botAgent, IAuthManager authManager)
+        public BotAgentServerAdapter(IAlgoServerLocal algoServer, IAuthManager authManager)
         {
-            _botAgent = botAgent;
+            _algoServer = algoServer;
             _authManager = authManager;
-
-            _botAgent.AccountChanged += OnAccountChanged;
-            _botAgent.BotChanged += OnBotChanged;
-            _botAgent.PackageChanged += OnPackageChanged;
-            _botAgent.BotStateChanged += OnBotStateChanged;
-            _botAgent.AccountStateChanged += OnAccountStateChanged;
-            _botAgent.PackageStateChanged += OnPackageStateChanged;
 
             _authManager.AdminCredsChanged += OnAdminCredsChanged;
             _authManager.DealerCredsChanged += OnDealerCredsChanged;
@@ -54,331 +41,175 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         }
 
 
-        public AccessLevels ValidateCreds(string login, string password)
+        public ClientClaims.Types.AccessLevel ValidateCreds(string login, string password)
         {
             if (_authManager.ValidViewerCreds(login, password))
-                return AccessLevels.Viewer;
+                return ClientClaims.Types.AccessLevel.Viewer;
             if (_authManager.ValidDealerCreds(login, password))
-                return AccessLevels.Dealer;
+                return ClientClaims.Types.AccessLevel.Dealer;
             if (_authManager.ValidAdminCreds(login, password))
-                return AccessLevels.Admin;
+                return ClientClaims.Types.AccessLevel.Admin;
 
-            return AccessLevels.Anonymous;
+            return ClientClaims.Types.AccessLevel.Anonymous;
         }
 
-        public Task<List<AccountModelInfo>> GetAccountList()
+        public async Task AttachSessionChannel(Channel<IMessage> channel)
         {
-            return _botAgent.GetAccounts();
+            channel.Writer.TryWrite(ApiMetadataInfo.Current);
+            channel.Writer.TryWrite(_agentContext);
+            channel.Writer.TryWrite(await _algoServer.GetMappingsInfo(new MappingsInfoRequest()));
+            await _algoServer.EventBus.SubscribeToUpdates(channel.Writer, true);
         }
 
-        public Task<List<BotModelInfo>> GetBotList()
+        public async Task<List<AccountModelInfo>> GetAccountList()
         {
-            return _botAgent.GetBots();
+            return (await _algoServer.GetAccounts()).Accounts.ToList();
         }
 
-        public Task<List<PackageInfo>> GetPackageList()
+        public async Task<List<PluginModelInfo>> GetBotList()
         {
-            return _botAgent.GetPackages();
+            return (await _algoServer.GetPlugins()).Plugins.ToList();
+        }
+
+        public async Task<List<PackageInfo>> GetPackageList()
+        {
+            return (await _algoServer.GetPackageSnapshot()).Packages.ToList();
         }
 
         public Task<ApiMetadataInfo> GetApiMetadata()
         {
-            return Task.FromResult(ApiMetadataInfo.CreateCurrentMetadata());
+            return Task.FromResult(ApiMetadataInfo.Current);
         }
 
-        public Task<MappingCollectionInfo> GetMappingsInfo()
+        public Task<MappingCollectionInfo> GetMappingsInfo(MappingsInfoRequest request)
         {
-            return _botAgent.GetMappingsInfo();
+            return _algoServer.GetMappingsInfo(request);
         }
 
         public Task<SetupContextInfo> GetSetupContext()
         {
-            return Task.FromResult(new SetupContextInfo(_agentContext.DefaultTimeFrame, _agentContext.DefaultSymbol.ToInfo(), _agentContext.DefaultMapping));
+            return Task.FromResult(_agentContext);
         }
 
-        public async Task<AccountMetadataInfo> GetAccountMetadata(AccountKey account)
+        public Task<AccountMetadataInfo> GetAccountMetadata(AccountMetadataRequest request)
         {
-            var (error, accMetadata) = await _botAgent.GetAccountMetadata(account);
-            if (error.Code != ConnectionErrorCodes.None)
-                throw new Exception($"Account {account.Login} at {account.Server} failed to connect");
-            return accMetadata;
+            return _algoServer.GetAccountMetadata(request);
         }
 
-        public Task StartBot(string botId)
+        public Task StartBot(StartPluginRequest request)
         {
-            return _botAgent.StartBot(botId);
+            return _algoServer.StartPlugin(request);
         }
 
-        public Task StopBot(string botId)
+        public Task StopBot(StopPluginRequest request)
         {
-            return _botAgent.StopBotAsync(botId);
+            return _algoServer.StopPlugin(request);
         }
 
-        public Task AddBot(AccountKey account, PluginConfig config)
+        public Task AddBot(AddPluginRequest request)
         {
-            return _botAgent.AddBot(account, config);
+            return _algoServer.AddPlugin(request);
         }
 
-        public Task RemoveBot(string botId, bool cleanLog, bool cleanAlgoData)
+        public Task RemoveBot(RemovePluginRequest request)
         {
-            return _botAgent.RemoveBot(botId, cleanLog, cleanAlgoData);
+            return _algoServer.RemovePlugin(request);
         }
 
-        public Task ChangeBotConfig(string botId, PluginConfig newConfig)
+        public Task ChangeBotConfig(ChangePluginConfigRequest request)
         {
-            return _botAgent.ChangeBotConfig(botId, newConfig);
+            return _algoServer.UpdatePluginConfig(request);
         }
 
-        public Task AddAccount(AccountKey account, string password)
+        public Task<string> AddAccount(AddAccountRequest request)
         {
-            return _botAgent.AddAccount(account, password);
+            return _algoServer.AddAccount(request);
         }
 
-        public Task RemoveAccount(AccountKey account)
+        public Task RemoveAccount(RemoveAccountRequest request)
         {
-            return _botAgent.RemoveAccount(account);
+            return _algoServer.RemoveAccount(request);
         }
 
-        public Task ChangeAccount(AccountKey account, string password)
+        public Task ChangeAccount(ChangeAccountRequest request)
         {
-            return _botAgent.ChangeAccount(account, password);
+            return _algoServer.ChangeAccount(request);
         }
 
-        public Task<ConnectionErrorInfo> TestAccount(AccountKey account)
+        public Task<ConnectionErrorInfo> TestAccount(TestAccountRequest request)
         {
-            return _botAgent.TestAccount(account);
+            return _algoServer.TestAccount(request);
         }
 
-        public Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password)
+        public Task<ConnectionErrorInfo> TestAccountCreds(TestAccountCredsRequest request)
         {
-            return _botAgent.TestCreds(account, password);
+            return _algoServer.TestCreds(request);
         }
 
-        public Task RemovePackage(PackageKey package)
+        public Task RemovePackage(RemovePackageRequest request)
         {
-            return _botAgent.RemovePackage(package);
+            return _algoServer.RemovePackage(request);
         }
 
-        public Task<string> GetPackageReadPath(PackageKey package)
+        public Task<string> UploadPackage(UploadPackageRequest request, string pkgFilePath)
         {
-            return _botAgent.GetPackageReadPath(package);
+            return _algoServer.UploadPackage(request, pkgFilePath);
         }
 
-        public Task<string> GetPackageWritePath(PackageKey package)
+        public Task<byte[]> GetPackageBinary(DownloadPackageRequest request)
         {
-            return _botAgent.GetPackageWritePath(package);
+            return _algoServer.GetPackageBinary(request.PackageId);
         }
 
-        public async Task<string> GetBotStatusAsync(string botId)
+        public Task<string> GetBotStatusAsync(PluginStatusRequest request)
         {
-            var log = await _botAgent.GetBotLog(botId);
-            return await log.GetStatusAsync();
+            return _algoServer.GetPluginStatus(request);
         }
 
-        public async Task<LogRecordInfo[]> GetBotLogsAsync(string botId, DateTime lastLogTimeUtc, int maxCount)
+        public async Task<LogRecordInfo[]> GetBotLogsAsync(PluginLogsRequest request)
         {
-            var log = await _botAgent.GetBotLog(botId);
-            var msgs = await log.QueryMessagesAsync(lastLogTimeUtc, maxCount);
+            var msgs = await _algoServer.GetPluginLogs(request);
 
             return msgs.Select(e => new LogRecordInfo
             {
                 TimeUtc = e.TimeUtc,
-                Severity = Convert(e.Type),
+                Severity = e.Severity,
                 Message = e.Message,
             }).ToArray();
         }
 
-        public async Task<AlertRecordInfo[]> GetAlertsAsync(DateTime lastLogTimeUtc, int maxCount)
+        public Task<AlertRecordInfo[]> GetAlertsAsync(PluginAlertsRequest request)
         {
-            var storage = await _botAgent.GetAlertStorage();
-            var alerts = await storage.QueryAlertsAsync(lastLogTimeUtc, maxCount);
-
-            return alerts.Select(e => new AlertRecordInfo
-            {
-                TimeUtc = e.TimeUtc,
-                Message = e.Message,
-                BotId = e.BotId,
-            }).ToArray();
+            return _algoServer.GetAlerts(request);
         }
 
-        public async Task<BotFolderInfo> GetBotFolderInfo(string botId, BotFolderId folderId)
+        public Task<PluginFolderInfo> GetBotFolderInfo(PluginFolderInfoRequest request)
         {
-            var botFolder = await GetBotFolder(botId, folderId);
-
-            return new BotFolderInfo
-            {
-                BotId = botId,
-                FolderId = folderId,
-                Path = botFolder.Folder,
-                Files = botFolder.Files.Select(f => new BotFileInfo { Name = f.Name, Size = f.Size }).ToList(),
-            };
+            return _algoServer.GetPluginFolderInfo(request);
         }
 
-        public async Task ClearBotFolder(string botId, BotFolderId folderId)
+        public Task ClearBotFolder(ClearPluginFolderRequest request)
         {
-            var botFolder = await GetBotFolder(botId, folderId);
-
-            botFolder.Clear();
+            return _algoServer.ClearPluginFolder(request);
         }
 
-        public async Task DeleteBotFile(string botId, BotFolderId folderId, string fileName)
+        public Task DeleteBotFile(DeletePluginFileRequest request)
         {
-            var botFolder = await GetBotFolder(botId, folderId);
-
-            botFolder.DeleteFile(fileName);
+            return _algoServer.DeletePluginFile(request);
         }
 
-        public async Task<string> GetBotFileReadPath(string botId, BotFolderId folderId, string fileName)
+        public Task<string> GetBotFileReadPath(DownloadPluginFileRequest request)
         {
-            var botFolder = await GetBotFolder(botId, folderId);
-
-            return botFolder.GetFileReadPath(fileName);
+            return _algoServer.GetPluginFileReadPath(request);
         }
 
-        public async Task<string> GetBotFileWritePath(string botId, BotFolderId folderId, string fileName)
+        public Task<string> GetBotFileWritePath(UploadPluginFileRequest request)
         {
-            var botFolder = await GetBotFolder(botId, folderId);
-
-            return botFolder.GetFileWritePath(fileName);
+            return _algoServer.GetPluginFileWritePath(request);
         }
 
-
-        private UpdateType Convert(ChangeAction action)
-        {
-            switch (action)
-            {
-                case ChangeAction.Added:
-                    return UpdateType.Added;
-                case ChangeAction.Modified:
-                    return UpdateType.Replaced;
-                case ChangeAction.Removed:
-                    return UpdateType.Removed;
-                default:
-                    throw new ArgumentException();
-            }
-        }
-
-        private LogSeverity Convert(LogEntryType entryType)
-        {
-            switch (entryType)
-            {
-                case LogEntryType.Info:
-                    return LogSeverity.Info;
-                case LogEntryType.Error:
-                    return LogSeverity.Error;
-                case LogEntryType.Trading:
-                    return LogSeverity.Trade;
-                case LogEntryType.TradingSuccess:
-                    return LogSeverity.TradeSuccess;
-                case LogEntryType.TradingFail:
-                    return LogSeverity.TradeFail;
-                case LogEntryType.Custom:
-                    return LogSeverity.Custom;
-                case LogEntryType.Alert:
-                    return LogSeverity.Alert;
-                default:
-                    throw new ArgumentException();
-            }
-        }
-
-        private async Task<IBotFolder> GetBotFolder(string botId, BotFolderId folderId)
-        {
-            switch (folderId)
-            {
-                case BotFolderId.AlgoData:
-                    return await _botAgent.GetAlgoData(botId);
-                case BotFolderId.BotLogs:
-                    return await _botAgent.GetBotLog(botId);
-                default:
-                    throw new ArgumentException();
-            }
-        }
 
         #region Event handlers
-
-        private void OnAccountChanged(AccountModelInfo account, ChangeAction action)
-        {
-            try
-            {
-                AccountUpdated(new UpdateInfo<AccountModelInfo>
-                {
-                    Type = Convert(action),
-                    Value = account,
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.Error($"Failed to send update: {ex.Message}", ex);
-            }
-        }
-
-        private void OnBotChanged(BotModelInfo bot, ChangeAction action)
-        {
-            try
-            {
-                BotUpdated(new UpdateInfo<BotModelInfo>
-                {
-                    Type = Convert(action),
-                    Value = bot,
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.Error($"Failed to send update: {ex.Message}", ex);
-            }
-        }
-
-        private void OnPackageChanged(PackageInfo package, ChangeAction action)
-        {
-            try
-            {
-                PackageUpdated(new UpdateInfo<PackageInfo>
-                {
-                    Type = Convert(action),
-                    Value = package,
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.Error($"Failed to send update: {ex.Message}", ex);
-            }
-        }
-
-        private void OnBotStateChanged(BotModelInfo bot)
-        {
-            try
-            {
-                BotStateUpdated(bot);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error($"Failed to send update: {ex.Message}", ex);
-            }
-        }
-
-        private void OnAccountStateChanged(AccountModelInfo account)
-        {
-            try
-            {
-                AccountStateUpdated(account);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error($"Failed to send update: {ex.Message}", ex);
-            }
-        }
-
-        private void OnPackageStateChanged(PackageInfo package)
-        {
-            try
-            {
-                PackageStateUpdated(package);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error($"Failed to send update: {ex.Message}", ex);
-            }
-        }
 
         private void OnAdminCredsChanged()
         {

@@ -1,0 +1,25 @@
+﻿syntax = "proto3";
+
+package ticktrader.algo.server.publicApi;
+
+option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
+
+import "management/base.request.proto";
+
+import "info/package.info.proto";
+import "info/plugin.info.proto";
+import "info/account.info.proto";
+import "info/server.metadata.info.proto";
+
+
+message AlgoServerMetadataUpdate {
+    ApiMetadataInfo api_metadata = 1;
+    MappingCollectionInfo mappings_collection = 2;
+    SetupContextInfo setup_context = 3;
+
+    repeated PackageInfo packages = 4;
+    repeated AccountModelInfo accounts = 5;
+    repeated PluginModelInfo plugins = 6;
+
+    RequestResult exec_result = 101;
+}

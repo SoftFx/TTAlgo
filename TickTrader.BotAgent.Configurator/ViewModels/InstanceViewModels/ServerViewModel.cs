@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using TickTrader.BotAgent.Configurator.Properties;
+using TickTrader.WpfWindowsSupportLibrary;
 
 namespace TickTrader.BotAgent.Configurator
 {
@@ -38,9 +39,7 @@ namespace TickTrader.BotAgent.Configurator
             {
                 var urls = _model.Urls.Select(u => new UriWithValidation(u, _model.PortsManager, _protocolModel));
 
-                int busyPortsCount = urls.Where(u => u.HasWarning).Count();
-
-                if (busyPortsCount != 0)
+                if (urls.Any(u => u.HasWarning))
                     ErrorCounter.AddWarning(_urlsKey);
                 else
                     ErrorCounter.DeleteWarning(_urlsKey);

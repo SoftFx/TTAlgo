@@ -1,8 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
-using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core;
+﻿using System.Runtime.Serialization;
+using TickTrader.Algo.Core.Config;
 
 namespace TickTrader.BotTerminal
 {

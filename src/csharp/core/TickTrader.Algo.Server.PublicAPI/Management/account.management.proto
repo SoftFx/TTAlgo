@@ -1,0 +1,66 @@
+﻿syntax = "proto3";
+
+package ticktrader.algo.server.publicApi;
+
+option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
+
+import "google/protobuf/wrappers.proto";
+import "management/base.request.proto";
+import "info/account.info.proto";
+
+
+message AddAccountRequest {
+    string server = 1;
+    string user_id = 2;
+    AccountCreds creds = 3;
+    google.protobuf.StringValue display_name = 4;
+}
+
+message AddAccountResponse {
+    google.protobuf.StringValue account_id = 1;
+    RequestResult exec_result = 101;
+}
+
+
+message RemoveAccountRequest {
+    string account_id = 1;
+}
+
+message RemoveAccountResponse {
+    RequestResult exec_result = 101;
+}
+
+
+message ChangeAccountRequest {
+    string account_id = 1;
+    AccountCreds creds = 2;
+    google.protobuf.StringValue display_name = 3;
+}
+
+message ChangeAccountResponse {
+    RequestResult exec_result = 101;
+}
+
+
+message TestAccountRequest {
+    string account_id = 1;
+}
+
+message TestAccountResponse {
+    ConnectionErrorInfo error_info = 1;
+
+    RequestResult exec_result = 101;
+}
+
+
+message TestAccountCredsRequest {
+    string server = 1;
+    string user_id = 2;
+    AccountCreds creds = 3;
+}
+
+message TestAccountCredsResponse {
+    ConnectionErrorInfo error_info = 1;
+
+    RequestResult exec_result = 101;
+}

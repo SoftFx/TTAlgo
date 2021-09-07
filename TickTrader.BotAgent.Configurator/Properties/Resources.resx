@@ -121,7 +121,7 @@
     <value>Add URL</value>
   </data>
   <data name="AgentNotFoundEx" xml:space="preserve">
-    <value>Please, install TickTrader BotAgent!</value>
+    <value>Please, install TickTrader AlgoServer!</value>
   </data>
   <data name="ApplyNewSettingMes" xml:space="preserve">
     <value>To apply new settings restart the service.</value>
@@ -190,31 +190,31 @@
     <value>Firewall: Rule is not found. A new rule will be created.</value>
   </data>
   <data name="SaveBeforeStartQuestion" xml:space="preserve">
-    <value>To start the agent you need to save new settings. Do you want to proceed?</value>
+    <value>To start the server you need to save new settings. Do you want to proceed?</value>
   </data>
   <data name="SaveChangesLog" xml:space="preserve">
     <value>Changes have been saved.</value>
   </data>
   <data name="SaveChangesQuestion" xml:space="preserve">
-    <value>Do you want to save new changes for current agent?</value>
+    <value>Do you want to save new changes for current server?</value>
   </data>
   <data name="SaveIsFailedEx" xml:space="preserve">
     <value>Save procedure is failed</value>
   </data>
   <data name="SelectAgentMes_" xml:space="preserve">
-    <value>Agent</value>
+    <value>Server</value>
   </data>
   <data name="StartAgentLog" xml:space="preserve">
-    <value>Agent has been started!</value>
+    <value>Server has been started!</value>
   </data>
   <data name="StartServiceEx" xml:space="preserve">
     <value>Service is alredy started</value>
   </data>
   <data name="StopAgentLog" xml:space="preserve">
-    <value>Agent has been stopped!</value>
+    <value>Server has been stopped!</value>
   </data>
   <data name="StopAgentQuestion" xml:space="preserve">
-    <value>The current agent will be stopped. Do you want to proceed?</value>
+    <value>The current server will be stopped. Do you want to proceed?</value>
   </data>
   <data name="StopServiceEx" xml:space="preserve">
     <value>Service is alredy stopped</value>

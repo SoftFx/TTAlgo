@@ -40,6 +40,7 @@
     <Style x:Key="GenerateSecretKeyButton" BasedOn="{StaticResource SecondaryButton}" TargetType="Button">
         <Setter Property="HorizontalAlignment" Value="Right"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Padding" Value="3 0"/>
     </Style>
 
     <Style x:Key="UrlItemStyle" TargetType="ListViewItem">

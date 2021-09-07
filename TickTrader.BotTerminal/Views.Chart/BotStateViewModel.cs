@@ -3,18 +3,13 @@ using Machinarium.Qnil;
 using NLog;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Data;
-using TickTrader.Algo.Common.Info;
-using Xceed.Wpf.AvalonDock.Controls;
-using Xceed.Wpf.AvalonDock.Layout;
+using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
+using TickTrader.Algo.ServerControl;
 
 namespace TickTrader.BotTerminal
 {
@@ -45,18 +40,24 @@ namespace TickTrader.BotTerminal
         public AlgoBotViewModel Bot { get; private set; }
         public bool IsRunning => Bot?.IsRunning ?? false;
         public bool CanStartStop => Bot?.CanStartStop ?? false;
-        public bool CanBrowse => !(Bot?.Model.IsRemote ?? true) || Bot.Agent.Model.AccessManager.CanGetBotFolderInfo(BotFolderId.BotLogs);
+        public bool CanBrowse => !(Bot?.Model.IsRemote ?? true) || Bot.Agent.Model.AccessManager.CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId.BotLogs.ToApi());
         public string ExecStatus { get; private set; }
         public string BotInfo => string.Join(Environment.NewLine, GetBotInfo());
         public int ErrorsCount => Bot?.Model.Journal.MessageCount[JournalMessageType.Error] ?? 0;
         public BotJournalViewModel BotJournal { get; private set; }
         public bool IsRemote => Bot?.Model.IsRemote ?? true;
 
-        public override void TryClose(bool? dialogResult = default(bool?))
-        {
-            base.TryClose(dialogResult);
+        //public override void TryClose(bool? dialogResult = default(bool?))
+        //{
+        //    base.TryClose(dialogResult);
 
+        //    Deinit();
+        //}
+
+        public override Task TryCloseAsync(bool? dialogResult = null)
+        {
             Deinit();
+            return base.TryCloseAsync(dialogResult);
         }
 
         public void StartStop()
@@ -79,21 +80,19 @@ namespace TickTrader.BotTerminal
             Bot.Browse();
         }
 
-        protected override void OnActivate()
+        protected override async Task OnActivateAsync(CancellationToken cancellationToken)
         {
-            base.OnActivate();
+            await base.OnActivateAsync(cancellationToken);
 
             _isActivated = true;
-
             Init();
         }
 
-        protected override void OnDeactivate(bool close)
+        protected override async Task OnDeactivateAsync(bool close, CancellationToken cancellationToken)
         {
-            base.OnDeactivate(close);
+            await base.OnDeactivateAsync(close, cancellationToken);
 
             _isActivated = false;
-
             Deinit();
         }
 
@@ -168,13 +167,13 @@ namespace TickTrader.BotTerminal
         {
             switch (bot.State)
             {
-                case PluginStates.Stopping: ExecStatus = "Stopping..."; break;
-                case PluginStates.Stopped: ExecStatus = "Stopped"; break;
-                case PluginStates.Running: ExecStatus = "Running"; break;
-                case PluginStates.Starting: ExecStatus = "Starting..."; break;
-                case PluginStates.Faulted: ExecStatus = "Faulted"; break;
-                case PluginStates.Broken: ExecStatus = "Broken"; break;
-                case PluginStates.Reconnecting: ExecStatus = "Reconnecting..."; break;
+                case PluginModelInfo.Types.PluginState.Stopping: ExecStatus = "Stopping..."; break;
+                case PluginModelInfo.Types.PluginState.Stopped: ExecStatus = "Stopped"; break;
+                case PluginModelInfo.Types.PluginState.Running: ExecStatus = "Running"; break;
+                case PluginModelInfo.Types.PluginState.Starting: ExecStatus = "Starting..."; break;
+                case PluginModelInfo.Types.PluginState.Faulted: ExecStatus = "Faulted"; break;
+                case PluginModelInfo.Types.PluginState.Broken: ExecStatus = "Broken"; break;
+                case PluginModelInfo.Types.PluginState.Reconnecting: ExecStatus = "Reconnecting..."; break;
             }
 
             NotifyOfPropertyChange(nameof(ExecStatus));
@@ -193,13 +192,13 @@ namespace TickTrader.BotTerminal
                 return Enumerable.Empty<string>();
 
             var res = new List<string>();
-            res.Add($"Agent: {Bot.Agent.Name}");
-            if (Bot.Agent.Model.Accounts.Snapshot.TryGetValue(Bot.Account, out var acc))
-                res.Add($"Account: {acc.Key.Server} - {acc.Key.Login}");
-            else res.Add($"Account: {Bot.Account.Server} - {Bot.Account.Login}");
+            res.Add($"AlgoServer: {Bot.Agent.Name}");
+            if (Bot.Agent.Model.Accounts.Snapshot.TryGetValue(Bot.AccountId, out var acc))
+                res.Add($"Account: {acc.DisplayName}");
+            else res.Add($"Account Id: {Bot.AccountId}");
             res.Add($"Instance Id: {Bot.InstanceId}");
             res.Add("------------ Permissions ------------");
-            res.Add(Bot.Model.Config.Permissions.ToString());
+            Bot.Model.Config.Permissions.ToPermissionsList().ForEach(p => res.Add(p));
             if (Bot.Model.Descriptor != null)
             {
                 res.Add("------------ Plugin Info ------------");
@@ -208,18 +207,21 @@ namespace TickTrader.BotTerminal
             }
             if (Bot.Model.Config != null)
             {
-                res.Add($"Package Name: {Bot.Model.Config.Key.PackageName}");
-                res.Add($"Package Location: {Bot.Model.Config.Key.PackageLocation}");
-                res.Add($"Symbol: {Bot.Model.Config.MainSymbol.Name}");
-                res.Add($"Timeframe: {Bot.Model.Config.TimeFrame}");
-                res.Add($"Model: {Bot.Model.Config.ModelTimeFrame}");
-                res.Add($"Show on chart: {Bot.Model.Descriptor.SetupMainSymbol}");
-                if (Bot.Model.Config.Properties.Any())
+                var config = Bot.Model.Config;
+                res.Add("------------ Plugin Config ------------");
+                res.Add($"Algo Package Id: {config.Key.PackageId}");
+                res.Add($"Symbol: {config.MainSymbol.Name}");
+                res.Add($"Timeframe: {config.Timeframe}");
+                res.Add($"Model: {config.ModelTimeframe}");
+                if (Bot.Model.Descriptor != null)
+                    res.Add($"Show on chart: {Bot.Model.Descriptor.SetupMainSymbol}");
+                var properties = config.UnpackProperties();
+                if (properties.Any())
                 {
                     res.Add("");
                     res.Add("------------ Parameters ------------");
-                    res.AddRange(Bot.Model.Config.Properties.Select(x => x as Algo.Common.Model.Config.Parameter).Where(x => x != null)
-                        .Select(x => $"{x.Id}: {x.ValObj}").OrderBy(x => x).ToArray());
+                    res.AddRange(properties.Select(x => x as IParameterConfig).Where(x => x != null)
+                        .Select(x => $"{x.PropertyId}: {x.ValObj}").OrderBy(x => x).ToArray());
                 }
             }
             return res;
@@ -244,7 +246,6 @@ namespace TickTrader.BotTerminal
                         Deinit();
                     break;
             }
-
         }
 
         private void BotJournal_CollectionChanged(object sender, NotifyCollectionChangedEventArgs args)

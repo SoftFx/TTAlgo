@@ -1,0 +1,31 @@
+﻿syntax = "proto3";
+
+package ticktrader.algo.server.publicApi;
+
+option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+
+
+message LogRecordInfo {
+    enum LogSeverity {
+        INFO = 0;
+        ERROR = 1;
+        TRADE = 2;
+        TRADE_SUCCESS = 3;
+        TRADE_FAIL = 4;
+        CUSTOM = 5;
+        ALERT = 6;
+    }
+
+    google.protobuf.Timestamp time_utc = 1;
+    LogSeverity severity = 2;
+    google.protobuf.StringValue message = 3;
+}
+
+message AlertRecordInfo {
+    google.protobuf.Timestamp time_utc = 1;
+    google.protobuf.StringValue message = 2;
+    string plugin_id = 3;
+}

@@ -1,6 +1,5 @@
 ﻿using System.Globalization;
 using System.Resources;
-using TickTrader.Algo.Common.Model.Setup;
 
 namespace TickTrader.BotTerminal
 {

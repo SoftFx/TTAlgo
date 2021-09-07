@@ -1,5 +1,6 @@
-﻿using NLog;
-using TickTrader.Algo.Core;
+﻿using Google.Protobuf.WellKnownTypes;
+using NLog;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -7,7 +8,6 @@ namespace TickTrader.BotTerminal
     {
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public EventJournal() : this(500) { }
         public EventJournal(int journalSize) : base(journalSize) { }
 
         public void Info(string message)
@@ -46,19 +46,21 @@ namespace TickTrader.BotTerminal
 
     internal class EventMessage : BaseJournalMessage
     {
-        public EventMessage(string message)
+        public EventMessage(string message, JournalMessageType type) : base()
         {
             Message = message;
+            Type = type;
         }
 
-        public EventMessage(string message, JournalMessageType type) : this(message)
+        public EventMessage(Timestamp time, string message, JournalMessageType type) : base(time)
         {
+            Message = message;
             Type = type;
         }
 
         public static EventMessage Create(PluginLogRecord record)
         {
-            return new EventMessage(record.Message) { TimeKey = record.Time, Type = Convert(record.Severity) };
+            return new EventMessage(record.TimeUtc, record.Message, Convert(record.Severity));
         }
     }
 

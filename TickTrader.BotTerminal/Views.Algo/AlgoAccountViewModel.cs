@@ -1,34 +1,36 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
 using System.Linq;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
+using TickTrader.Algo.ServerControl;
 
 namespace TickTrader.BotTerminal
 {
     internal class AlgoAccountViewModel : PropertyChangedBase, IDropHandler
     {
+        public const string ServerLevelHeader = nameof(Server);
+
         public AccountModelInfo Info { get; }
 
-        public AccountKey Key => Info.Key;
+        public string AccountId => Info.AccountId;
 
         public AlgoAgentViewModel Agent { get; }
 
         public bool CanInteract => Agent.Model.SupportsAccountManagement;
 
 
-        public string Login => Info.Key.Login;
+        public string Login { get; }
 
-        public string Server => Info.Key.Server;
+        public string Server { get; }
 
         public string Status
         {
             get
             {
-                if (Info.LastError.Code == ConnectionErrorCodes.None)
+                if (Info.LastError.IsOk)
                     return $"{Info.ConnectionState}";
-                if (Info.LastError.Code == ConnectionErrorCodes.Unknown)
+                if (Info.LastError.Code == ConnectionErrorInfo.Types.ErrorCode.UnknownConnectionError)
                     return $"{Info.ConnectionState} - {Info.LastError.TextMessage}";
                 return $"{Info.ConnectionState} - {Info.LastError.Code}";
             }
@@ -44,9 +46,9 @@ namespace TickTrader.BotTerminal
 
         public bool CanTestAccount => Agent.Model.AccessManager.CanTestAccount();
 
-        public bool CanAddBot => Agent.Model.AccessManager.CanAddBot();
+        public bool CanAddBot => Agent.Model.AccessManager.CanAddPlugin();
 
-        public bool CanManageFiles => Agent.Model.AccessManager.CanGetBotFolderInfo(BotFolderId.BotLogs);
+        public bool CanManageFiles => Agent.Model.AccessManager.CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId.BotLogs.ToApi());
 
         public bool HasRunningBots => Bots.Any(b => b.IsRunning);
 
@@ -54,13 +56,19 @@ namespace TickTrader.BotTerminal
 
         public string DisplayNameWithAgent => $"{AgentName} - {DisplayName}";
 
+        public string AccountTooltip => $"{Server} - {Login}, status = {Status}";
+
 
         public AlgoAccountViewModel(AccountModelInfo info, AlgoAgentViewModel agent)
         {
             Info = info;
             Agent = agent;
 
-            DisplayName = $"{Info.Key.Server} - {Info.Key.Login}";
+            Algo.Domain.AccountId.Unpack(info.AccountId, out var accId);
+            Server = accId.Server;
+            Login = accId.UserId;
+
+            DisplayName = $"{Info.DisplayName}";
             Bots = Agent.Bots.Where(b => BotIsAttachedToAccount(b)).AsObservable();
 
             Agent.Model.AccountStateChanged += OnAccountStateChanged;
@@ -69,6 +77,11 @@ namespace TickTrader.BotTerminal
         }
 
 
+        public void AddAccount()
+        {
+            Agent.OpenAccountSetup(null, Server);
+        }
+
         public void ChangeAccount()
         {
             Agent.OpenAccountSetup(Info);
@@ -76,17 +89,17 @@ namespace TickTrader.BotTerminal
 
         public void RemoveAccount()
         {
-            Agent.RemoveAccount(Info.Key).Forget();
+            Agent.RemoveAccount(Info.AccountId).Forget();
         }
 
         public void TestAccount()
         {
-            Agent.TestAccount(Info.Key).Forget();
+            Agent.TestAccount(Info.AccountId).Forget();
         }
 
         public void AddBot()
         {
-            Agent.OpenBotSetup(Info.Key);
+            Agent.OpenBotSetup(Info.AccountId);
         }
 
         public void ManageFiles()
@@ -97,20 +110,21 @@ namespace TickTrader.BotTerminal
 
         private void OnAccountStateChanged(AccountModelInfo account)
         {
-            if (Info.Key.Equals(account.Key))
+            if (Info.AccountId.Equals(account.AccountId))
             {
                 NotifyOfPropertyChange(nameof(Status));
+                NotifyOfPropertyChange(nameof(AccountTooltip));
             }
         }
 
         private bool BotIsAttachedToAccount(AlgoBotViewModel bot)
         {
-            return Info.Key.Equals(bot.Account);
+            return Info.AccountId.Equals(bot.AccountId);
         }
 
         private void OnBotStateChanged(ITradeBot bot)
         {
-            if (Info.Key.Equals(bot.Account))
+            if (Info.AccountId.Equals(bot.AccountId))
             {
                 NotifyOfPropertyChange(nameof(HasRunningBots));
                 NotifyOfPropertyChange(nameof(CanRemoveAccount));
@@ -131,14 +145,14 @@ namespace TickTrader.BotTerminal
             var algoBot = o as AlgoPluginViewModel;
             if (algoBot != null)
             {
-                Agent.OpenBotSetup(Info.Key, algoBot.PluginInfo.Key);
+                Agent.OpenBotSetup(Info.AccountId, algoBot.Key);
             }
         }
 
         public bool CanDrop(object o)
         {
             var algoBot = o as AlgoPluginViewModel;
-            if (algoBot != null && algoBot.Agent.Name == Agent.Name && algoBot.Type == AlgoTypes.Robot)
+            if (algoBot != null && algoBot.Agent.Name == Agent.Name && algoBot.IsTradeBot)
             {
                 return true;
             }

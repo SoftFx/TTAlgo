@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\api\TickTrader.Algo.CoreV1\TickTrader.Algo.CoreV1.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.Package\TickTrader.Algo.Package.csproj" />
+  </ItemGroup>
+
+</Project>

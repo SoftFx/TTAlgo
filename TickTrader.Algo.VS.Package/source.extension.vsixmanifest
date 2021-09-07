@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="TickTrader.Algo.VS.Package.Company.9322a68f-8411-42e8-8caf-41d5557e5af1" Version="1.10" Language="en-US" Publisher="Soft-FX" />
+        <Identity Id="TickTrader.Algo.VS.Package.Company.9322a68f-8411-42e8-8caf-41d5557e5af1" Version="1.11" Language="en-US" Publisher="Soft-FX" />
         <DisplayName>TT Algo Visual Studio Extension</DisplayName>
         <Description xml:space="preserve">Visual Studio Extension for TT Algo developers. Provides tools for developing custom indicators and automatic traders on C# or Visual Basic.</Description>
         <Icon>softfx.ico</Icon>
@@ -10,7 +10,7 @@
         <InstallationTarget Version="[14.0,17.0)" Id="Microsoft.VisualStudio.Community" />
     </Installation>
     <Dependencies>
-        <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
+        <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.7.2,)" />
     </Dependencies>
     <Prerequisites>
         <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0,17.0)" DisplayName="Visual Studio core editor" />
@@ -18,6 +18,6 @@
     <Assets>
         <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
         <Asset Type="Microsoft.VisualStudio.ProjectTemplate" d:Source="Project" d:ProjectName="TickTrader.Algo.VS.Templates" d:TargetPath="|TickTrader.Algo.VS.Templates;TemplateProjectOutputGroup|" Path="ProjectTemplates" d:VsixSubPath="ProjectTemplates" />
-        <Asset Type="TickTrader.Algo.Api.1.1.4.nupkg" d:Source="File" Path="Packages\TickTrader.Algo.Api.1.1.4.nupkg" d:VsixSubPath="Packages" />
+        <Asset Type="TickTrader.Algo.Api.1.3.7.nupkg" d:Source="File" Path="Packages\TickTrader.Algo.Api.1.3.7.nupkg" d:VsixSubPath="Packages" />
     </Assets>
 </PackageManifest>

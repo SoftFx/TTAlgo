@@ -1,21 +1,13 @@
 ﻿using SciChart.Charting.Model.DataSeries;
-using SciChart.Charting.Visuals.PointMarkers;
-using SciChart.Charting.Visuals.RenderableSeries;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Media;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Core.Repository;
-using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using SciChart.Charting.Model.ChartSeries;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Domain;
+using Google.Protobuf.WellKnownTypes;
+using TickTrader.Algo.Server;
 
 namespace TickTrader.BotTerminal
 {
@@ -23,9 +15,9 @@ namespace TickTrader.BotTerminal
     {
         private XyDataSeries<DateTime, double> askData = new XyDataSeries<DateTime, double>();
         private XyDataSeries<DateTime, double> bidData = new XyDataSeries<DateTime, double>();
-        private QuoteEntity lastSeriesQuote;
+        private QuoteInfo lastSeriesQuote;
 
-        public TickChartModel(SymbolModel symbol, AlgoEnvironment algoEnv)
+        public TickChartModel(SymbolInfo symbol, AlgoEnvironment algoEnv)
             : base(symbol, algoEnv)
         {
             Support(SelectableChartTypes.Line);
@@ -33,7 +25,7 @@ namespace TickTrader.BotTerminal
             Support(SelectableChartTypes.DigitalLine);
             Support(SelectableChartTypes.Scatter);
 
-            TimeFrame = TimeFrames.Ticks;
+            TimeFrame = Feed.Types.Timeframe.Ticks;
 
             Navigator = new RealTimeChartNavigator();
             SelectedChartType = SelectableChartTypes.DigitalLine;
@@ -58,13 +50,13 @@ namespace TickTrader.BotTerminal
 
             if (Model.LastQuote != null)
             {
-                DateTime timeMargin = Model.LastQuote.CreatingTime;
+                DateTime timeMargin = Model.LastQuote.Time.ToUniversalTime();
 
-                var ticks = new QuoteEntity[0];
+                var ticks = new QuoteInfo[0];
 
                 try
                 {
-                    ticks = await ClientModel.FeedHistory.GetQuotePage(SymbolCode, timeMargin + TimeSpan.FromMinutes(15), -100, false);
+                    ticks = await ClientModel.FeedHistory.GetQuotePage(SymbolCode, (timeMargin + TimeSpan.FromMinutes(15)).ToTimestamp(), -100, false);
                 }
                 catch (Exception)
                 {
@@ -78,30 +70,30 @@ namespace TickTrader.BotTerminal
                 //}
 
                 askData.Append(
-                    ticks.Select(t => t.CreatingTime),
+                    ticks.Select(t => t.Time),
                     ticks.Select(t => t.Ask));
                 bidData.Append(
-                    ticks.Select(t => t.CreatingTime),
+                    ticks.Select(t => t.Time),
                     ticks.Select(t => t.Bid));
 
                 if (ticks.Length > 0)
                 {
                     lastSeriesQuote = ticks.Last();
 
-                    var start = ticks.First().CreatingTime;
-                    var end = ticks.Last().CreatingTime;
+                    var start = ticks.First().Time;
+                    var end = ticks.Last().Time;
                     InitBoundaries(ticks.Length, start, end);
                 }
             }
         }
 
-        protected override void ApplyUpdate(QuoteEntity update)
+        protected override void ApplyUpdate(QuoteInfo update)
         {
-            if (lastSeriesQuote == null || update.CreatingTime > lastSeriesQuote.CreatingTime)
+            if (lastSeriesQuote == null || update.Time > lastSeriesQuote.Time)
             {
-                askData.Append(update.CreatingTime, update.Ask);
-                bidData.Append(update.CreatingTime, update.Bid);
-                ExtendBoundaries(askData.Count, update.CreatingTime);
+                askData.Append(update.Time, update.Ask);
+                bidData.Append(update.Time, update.Bid);
+                ExtendBoundaries(askData.Count, update.Time);
             }
         }
 
@@ -110,21 +102,11 @@ namespace TickTrader.BotTerminal
             return new IndicatorModel(config, Agent, this, this);
         }
 
-        public override void InitializePlugin(PluginExecutor plugin)
+        public override void InitializePlugin(ExecutorConfig config)
         {
-            base.InitializePlugin(plugin);
+            base.InitializePlugin(config);
 
-            var feedProvider = new PluginFeedProvider(ClientModel.Cache, ClientModel.Distributor, ClientModel.FeedHistory, new DispatcherSync());
-            plugin.Feed = feedProvider;
-            plugin.FeedHistory = feedProvider;
-            plugin.Config.InitQuoteStrategy();
-            plugin.Metadata = feedProvider;
-        }
-
-        public override void UpdatePlugin(PluginExecutor plugin)
-        {
-            base.UpdatePlugin(plugin);
-            //TO DO: plugin.GetFeedStrategy<QuoteStrategy>().SetMainSeries();
+            config.InitQuoteStrategy();
         }
 
         protected override void UpdateSeries()

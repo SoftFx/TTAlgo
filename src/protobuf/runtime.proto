@@ -1,0 +1,106 @@
+syntax = "proto3";
+
+package ticktrader.algo.domain;
+
+option csharp_namespace = "TickTrader.Algo.Domain";
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
+
+import "common.proto";
+
+message AttachRuntimeRequest {
+    string id = 1;
+}
+
+message AttachRuntimeResponse {
+    bool success = 1;
+}
+
+message StartRuntimeRequest { // void response
+    RuntimeConfig config = 1;
+}
+
+message StopRuntimeRequest { } // void response
+
+message RuntimeConfig {
+    string id = 1;
+    string package_id = 2;
+    bytes package_binary = 3;
+}
+
+message StartExecutorRequest { // void response
+    ExecutorConfig config = 1;
+}
+
+message StopExecutorRequest { // void response
+    string executor_id = 1;
+}
+
+message ExecutorConfig {
+    string id = 1;
+    string working_directory = 2;
+    bool is_logging_enabled = 3;
+    google.protobuf.StringValue log_directory = 4;
+    google.protobuf.Any plugin_config = 5;
+    google.protobuf.Any feed_strategy_config = 6;
+    google.protobuf.Any buffer_strategy_config = 7;
+    google.protobuf.Any invoke_strategy_config = 8;
+    google.protobuf.Any main_series = 9;
+    string account_id = 10;
+}
+
+message BarStratefyConfig {
+    Feed.MarketSide market_side = 1;
+}
+
+message QuoteStrategyConfig { }
+
+message SlidingBufferStrategyConfig {
+    int32 size = 1;
+}
+
+message TimeSpanStrategyConfig {
+    google.protobuf.Timestamp from = 1;
+    google.protobuf.Timestamp to = 2;
+}
+
+message PriorityInvokeStrategyConfig { }
+
+message ConnectionInfoRequest { }
+
+message ConnectionInfoResponse {
+    string connection_info = 1;
+}
+
+message AttachAccountRequest { // void response
+    string account_id = 1;
+}
+
+message DetachAccountRequest { // void response
+    string account_id = 1;
+}
+
+message ExecutorStateUpdate {
+    string executor_id = 1;
+    Executor.State old_state = 2;
+    Executor.State new_state = 3;
+}
+
+message ExecutorErrorMsg {
+    string id = 1;
+    string message = 2;
+    string exception_type = 3;
+    string stacktrace = 4;
+}
+
+message ConnectionStateUpdate {
+    string account_id = 1;
+    Account.ConnectionState old_state = 2;
+    Account.ConnectionState new_state = 3;
+}
+
+message PluginExitedMsg {
+    string id = 1;
+}

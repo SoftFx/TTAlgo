@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.Backtester;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -14,7 +10,7 @@ namespace TickTrader.BotTerminal
         public double InitialBalance { get; set; } = 10000;
         public string BalanceCurrency { get; set; } = "USD";
         public int Leverage { get; set; } = 100;
-        public AccountTypes AccType { get; set; } = AccountTypes.Gross;
+        public AccountInfo.Types.Type AccType { get; set; } = AccountInfo.Types.Type.Gross;
 
         public int ServerPingMs { get; set; } = 200;
         public int WarmupValue { get; set; } = 10;
@@ -46,7 +42,7 @@ namespace TickTrader.BotTerminal
             if (compact)
             {
                 writer.Append("Account: type=").Append(AccType);
-                if (AccType == AccountTypes.Net || AccType == AccountTypes.Gross)
+                if (AccType == AccountInfo.Types.Type.Net || AccType == AccountInfo.Types.Type.Gross)
                 {
                     writer
                         .Append(", balance=").Append(InitialBalance).Append(' ').Append(BalanceCurrency)
@@ -59,7 +55,7 @@ namespace TickTrader.BotTerminal
             else
             {
                 writer.AppendFormat("Account: {0}", AccType).AppendLine();
-                if (AccType == AccountTypes.Net || AccType == AccountTypes.Gross)
+                if (AccType == AccountInfo.Types.Type.Net || AccType == AccountInfo.Types.Type.Gross)
                 {
                     writer.AppendFormat("Initial balance: {0} {1}", InitialBalance, BalanceCurrency).AppendLine();
                     writer.AppendFormat("Leverage: {0}", Leverage).AppendLine();

@@ -1,17 +1,12 @@
 ﻿using Caliburn.Micro;
 using System;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Common.Model.Setup;
 using System.IO;
-using System.Threading.Tasks.Dataflow;
-using System.Linq;
-using System.Collections.Generic;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
+using TickTrader.Algo.Server;
+using TickTrader.Algo.Core.Setup;
+using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
@@ -23,7 +18,7 @@ namespace TickTrader.BotTerminal
 
         PluginConfig Config { get; }
 
-        PluginStates State { get; }
+        PluginModelInfo.Types.PluginState State { get; }
 
         string FaultMessage { get; }
 
@@ -33,7 +28,7 @@ namespace TickTrader.BotTerminal
 
         BotJournal Journal { get; }
 
-        AccountKey Account { get; }
+        string AccountId { get; }
 
 
         event Action<ITradeBot> Updated;
@@ -50,76 +45,80 @@ namespace TickTrader.BotTerminal
         void UnsubscribeFromLogs();
     }
 
-    internal class TradeBotModel : PluginModel, IBotWriter, ITradeBot
+    internal class TradeBotModel : PluginModel, ITradeBot
     {
-        private BotListenerProxy _botListener;
+        private IDisposable _logSub, _statusSub;
 
         public bool IsRemote => false;
         public string Status { get; private set; }
         public BotJournal Journal { get; }
-        public AccountKey Account { get; }
+        public string AccountId { get; }
 
         public event Action<ITradeBot> StatusChanged = delegate { };
         public event Action<ITradeBot> StateChanged = delegate { };
         public event Action<ITradeBot> Updated = delegate { };
 
-        public TradeBotModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext, AccountKey account)
+        public TradeBotModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext, string accountId)
             : base(config, agent, host, setupContext)
         {
-            Account = account;
-            Journal = new BotJournal(InstanceId, true);
+            AccountId = accountId;
+            Journal = new BotJournal(InstanceId);
             host.Connected += Host_Connected;
             host.Disconnected += Host_Disconnected;
         }
 
         internal void Abort()
         {
-            if (State == PluginStates.Stopping)
+            if (State == PluginModelInfo.Types.PluginState.Stopping)
                 AbortExecutor();
         }
 
-        public void Start()
+        public async Task Start()
         {
-            if (!PluginStateHelper.CanStart(State))
+            if (!State.CanStart())
                 return;
 
-            if (StartExcecutor())
+            if (await StartExcecutor())
             {
-                _botListener?.Start();
-                ChangeState(PluginStates.Running);
+                ChangeState(PluginModelInfo.Types.PluginState.Running);
             }
         }
 
         public async Task Stop()
         {
-            if (!PluginStateHelper.CanStop(State))
+            if (!State.CanStop())
                 return;
 
             if (await StopExecutor())
             {
-                _botListener?.Stop();
-                ChangeState(PluginStates.Stopped);
+                _logSub?.Dispose();
+                _statusSub?.Dispose();
+                ChangeState(PluginModelInfo.Types.PluginState.Stopped);
             }
         }
 
-        protected override PluginExecutor CreateExecutor()
+        protected override void FillExectorConfig(ExecutorConfig config)
         {
-            var executor = base.CreateExecutor();
-            executor.TradeExecutor = Host.GetTradeApi();
-            executor.Config.WorkingFolder = Path.Combine(EnvService.Instance.AlgoWorkingFolder, PathHelper.GetSafeFileName(InstanceId));
-            executor.Config.BotWorkingFolder = executor.Config.WorkingFolder;
-            EnvService.Instance.EnsureFolder(executor.Config.WorkingFolder);
+            //config.WorkingDirectory = Agent.AlgoServer.Env.GetPluginWorkingFolder(InstanceId);
+            EnvService.Instance.EnsureFolder(config.WorkingDirectory);
+        }
 
-            _botListener = new BotListenerProxy(executor, OnBotExited, this);
+        protected override async Task<ExecutorModel> CreateExecutor()
+        {
+            var executor = await base.CreateExecutor();
+
+            _logSub = executor.LogUpdated.Subscribe(LogMesssage);
+            _statusSub = executor.StatusUpdated.Subscribe(UpdateStatus);
+
             return executor;
         }
 
         internal override void Configurate(PluginConfig config)
         {
-            if (State == PluginStates.Broken)
+            if (State == PluginModelInfo.Types.PluginState.Broken)
                 return;
 
-            if (PluginStateHelper.IsStopped(State))
+            if (State.IsStopped())
             {
                 base.Configurate(config);
 
@@ -129,7 +128,7 @@ namespace TickTrader.BotTerminal
                 throw new InvalidOperationException("Make sure that the bot is stopped before setting a new configuration");
         }
 
-        protected override void ChangeState(PluginStates state, string faultMessage = null)
+        protected override void ChangeState(PluginModelInfo.Types.PluginState state, string faultMessage = null)
         {
             base.ChangeState(state, faultMessage);
             StateChanged(this);
@@ -137,7 +136,7 @@ namespace TickTrader.BotTerminal
 
         protected override void OnPluginUpdated()
         {
-            if (PluginStateHelper.IsStopped(State))
+            if (State.IsStopped())
             {
                 UpdateRefs();
             }
@@ -160,44 +159,32 @@ namespace TickTrader.BotTerminal
             Updated?.Invoke(this);
         }
 
-        protected override IOutputCollector CreateOutputCollector<T>(PluginExecutor executor, OutputSetupModel outputSetup)
+        protected override IOutputCollector CreateOutputCollector<T>(ExecutorModel executor, IOutputConfig config, OutputDescriptor descriptor)
         {
-            return new CachingOutputCollector<T>(outputSetup, executor);
+            return new CachingOutputCollector<T>(executor, config, descriptor);
         }
 
         private void Host_Connected()
         {
-            if (State == PluginStates.Reconnecting)
+            if (State == PluginModelInfo.Types.PluginState.Reconnecting)
             {
                 HandleReconnect();
-                ChangeState(PluginStates.Running);
+                ChangeState(PluginModelInfo.Types.PluginState.Running);
             }
         }
 
         private void Host_Disconnected()
         {
-            if (State == PluginStates.Running)
+            if (State == PluginModelInfo.Types.PluginState.Running)
             {
                 HandleDisconnect();
-                ChangeState(PluginStates.Reconnecting);
+                ChangeState(PluginModelInfo.Types.PluginState.Reconnecting);
             }
         }
 
         private BotMessage Convert(PluginLogRecord record)
         {
             return BotMessage.Create(record, InstanceId);
-        }
-
-        private void OnBotExited()
-        {
-            Execute.OnUIThread(() =>
-            {
-                if (State == PluginStates.Running)
-                {
-                    ChangeState(PluginStates.Stopped);
-                    UnlockResources();
-                }
-            });
         }
 
         #region ITradeBot stubs
@@ -216,27 +203,18 @@ namespace TickTrader.BotTerminal
 
         #endregion
 
-        #region IBotWriter implementation
-
-        void IBotWriter.LogMesssage(PluginLogRecord rec)
+        private void LogMesssage(PluginLogRecord rec)
         {
             Journal.Add(Convert(rec));
 
-            if (rec.Severity == LogSeverities.Alert)
+            if (rec.Severity == PluginLogRecord.Types.LogSeverity.Alert)
                 AlertModel.AddAlert(InstanceId, rec);
         }
 
-        void IBotWriter.UpdateStatus(string status)
+        private void UpdateStatus(PluginStatusUpdate update)
         {
-            Status = status;
+            Status = update.Message;
             StatusChanged?.Invoke(this);
         }
-
-        void IBotWriter.Trace(string status)
-        {
-            Journal.LogStatus(status);
-        }
-
-        #endregion IBotWriter implementation
     }
 }

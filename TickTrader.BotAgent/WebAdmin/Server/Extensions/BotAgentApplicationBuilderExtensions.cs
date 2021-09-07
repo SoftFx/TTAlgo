@@ -1,11 +1,10 @@
 ﻿using Microsoft.AspNetCore.Builder;
-using TickTrader.BotAgent.BA;
 using Microsoft.Extensions.DependencyInjection;
-using TickTrader.BotAgent.BA.Models;
 using System;
 using TickTrader.BotAgent.WebAdmin.Server.Hubs;
-using TickTrader.Algo.Common.Info;
 using Microsoft.AspNetCore.SignalR;
+using TickTrader.Algo.Domain;
+using TickTrader.Algo.Server;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
 {
@@ -23,16 +22,6 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
         }
 
 
-        public static IApplicationBuilder UseWardenOverBots(this IApplicationBuilder app)
-        {
-            _services = app.ApplicationServices;
-            var botAgent = _services.GetService<IBotAgent>();
-
-            var warden = new BotsWarden(botAgent);
-
-            return app;
-        }
-
         /// <summary>
         /// Use SignalR Hubs to notify clients about server changes
         /// </summary>
@@ -41,60 +30,60 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
         public static IApplicationBuilder ObserveBotAgent(this IApplicationBuilder app)
         {
             _services = app.ApplicationServices;
-            var botAgent = _services.GetService<IBotAgent>();
+            var eventBus = _services.GetService<IAlgoServerLocal>().EventBus;
 
-            botAgent.PackageChanged += OnPackageChanged;
-            botAgent.AccountChanged += OnAccountChanged;
-            botAgent.BotStateChanged += OnBotStateChanged;
-            botAgent.BotChanged += OnBotChaged;
+            eventBus.PackageUpdated.Subscribe(OnPackageUpdated);
+            eventBus.AccountUpdated.Subscribe(OnAccountUpdated);
+            eventBus.PluginUpdated.Subscribe(OnPluginUpdated);
+            eventBus.PluginStateUpdated.Subscribe(OnPluginStateUpdated);
 
             return app;
         }
 
-        private static void OnBotChaged(BotModelInfo bot, ChangeAction action)
+        private static void OnPluginUpdated(PluginModelUpdate update)
         {
-            switch (action)
+            switch (update.Action)
             {
-                case ChangeAction.Added:
-                    Hub.Clients.All.AddBot(bot.ToDto());
+                case Update.Types.Action.Added:
+                    Hub.Clients.All.AddBot(update.Plugin.ToDto());
                     break;
-                case ChangeAction.Removed:
-                    Hub.Clients.All.DeleteBot(bot.InstanceId);
+                case Update.Types.Action.Removed:
+                    Hub.Clients.All.DeleteBot(update.Id);
                     break;
-                case ChangeAction.Modified:
-                    Hub.Clients.All.UpdateBot(bot.ToDto());
+                case Update.Types.Action.Updated:
+                    Hub.Clients.All.UpdateBot(update.Plugin.ToDto());
                     break;
             }
         }
 
-        private static void OnBotStateChanged(BotModelInfo bot)
+        private static void OnPluginStateUpdated(PluginStateUpdate bot)
         {
             Hub.Clients.All.ChangeBotState(bot.ToBotStateDto());
         }
 
-        private static void OnAccountChanged(AccountModelInfo account, ChangeAction action)
+        private static void OnAccountUpdated(AccountModelUpdate update)
         {
-            switch (action)
+            switch (update.Action)
             {
-                case ChangeAction.Added:
-                    Hub.Clients.All.AddAccount(account.ToDto());
+                case Update.Types.Action.Added:
+                    Hub.Clients.All.AddAccount(update.Account.ToDto());
                     break;
-                case ChangeAction.Removed:
-                    Hub.Clients.All.DeleteAccount(account.ToDto());
+                case Update.Types.Action.Removed:
+                    Hub.Clients.All.DeleteAccount(update.Id.ToAccountDto());
                     break;
             }
         }
 
-        private static void OnPackageChanged(PackageInfo package, ChangeAction action)
+        private static void OnPackageUpdated(PackageUpdate update)
         {
-            switch (action)
+            switch (update.Action)
             {
-                case ChangeAction.Added:
-                case ChangeAction.Modified:
-                    Hub.Clients.All.AddOrUpdatePackage(package.ToDto());
+                case Update.Types.Action.Added:
+                case Update.Types.Action.Updated:
+                    Hub.Clients.All.AddOrUpdatePackage(update.Package.ToDto());
                     break;
-                case ChangeAction.Removed:
-                    Hub.Clients.All.DeletePackage(package.Key.Name);
+                case Update.Types.Action.Removed:
+                    Hub.Clients.All.DeletePackage(update.Id);
                     break;
             }
         }

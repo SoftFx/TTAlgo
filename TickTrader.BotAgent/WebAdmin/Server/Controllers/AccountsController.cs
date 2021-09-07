@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Linq;
-using TickTrader.BotAgent.BA;
-using TickTrader.BotAgent.BA.Exceptions;
 using TickTrader.BotAgent.WebAdmin.Server.Dto;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using System.Net;
-using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Domain;
 using System.Threading.Tasks;
+using TickTrader.Algo.Domain.ServerControl;
+using TickTrader.Algo.Server;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 {
@@ -17,19 +17,19 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
     public class AccountsController : Controller
     {
         private readonly ILogger<PackagesController> _logger;
-        private readonly IBotAgent _botAgent;
+        private readonly IAlgoServerLocal _algoServer;
 
-        public AccountsController(IBotAgent ddServer, ILogger<PackagesController> logger)
+        public AccountsController(IAlgoServerLocal algoServer, ILogger<PackagesController> logger)
         {
-            _botAgent = ddServer;
+            _algoServer = algoServer;
             _logger = logger;
         }
 
         [HttpGet]
         public async Task<AccountDto[]> Get()
         {
-            var accounts = await _botAgent.GetAccounts();
-            return accounts.Select(a => a.ToDto()).ToArray();
+            var snapshot = await _algoServer.GetAccounts();
+            return snapshot.Accounts.Select(a => a.ToDto()).ToArray();
         }
 
         [HttpGet("{server}/{login}/[action]")]
@@ -37,27 +37,14 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                var res = await _botAgent.GetAccountMetadata(new AccountKey(WebUtility.UrlDecode(server), WebUtility.UrlDecode(login)));
-                var connError = res.Item1;
-                var info = res.Item2;
-
-                if (connError.Code == ConnectionErrorCodes.None)
-                {
-                    return Ok(info.ToDto());
-                }
-                else
-                {
-                    var communicationExc = new CommunicationException($"Connection error: {connError.Code}", connError.Code);
-
-                    _logger.LogError(communicationExc.Message);
-
-                    return BadRequest(communicationExc.ToBadResult());
-                }
+                var accId = AccountId.Pack(WebUtility.UrlDecode(server), WebUtility.UrlDecode(login));
+                var res = await _algoServer.GetAccountMetadata(new AccountMetadataRequest(accId));
+                return Ok(res.ToDto());
             }
-            catch (BAException dsex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(dsex.Message);
-                return BadRequest(dsex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
         }
 
@@ -66,12 +53,13 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                await _botAgent.AddAccount(new AccountKey(account.Server, account.Login), account.Password);
+                var request = new AddAccountRequest(account.Server, account.Login, account.Password);
+                await _algoServer.AddAccount(request);
             }
-            catch (BAException dsex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(dsex.Message);
-                return BadRequest(dsex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
 
             return Ok();
@@ -82,12 +70,13 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                await _botAgent.RemoveAccount(new AccountKey(server ?? "", login ?? ""));
+                var accId = AccountId.Pack(server, login);
+                await _algoServer.RemoveAccount(new RemoveAccountRequest(accId));
             }
-            catch (BAException dsex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(dsex.Message);
-                return BadRequest(dsex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
 
             return Ok();
@@ -98,12 +87,14 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                await _botAgent.ChangeAccountPassword(new AccountKey(account.Server, account.Login), account.Password);
+                var accId = AccountId.Pack(account.Server, account.Login);
+                var request = new ChangeAccountRequest(accId, new AccountCreds(account.Password));
+                await _algoServer.ChangeAccount(request);
             }
-            catch (BAException dsex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(dsex.Message);
-                return BadRequest(dsex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
 
             return Ok();
@@ -115,15 +106,15 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             try
             {
                 var testResult = string.IsNullOrWhiteSpace(password) ?
-                    _botAgent.TestAccount(new AccountKey(server, login)) :
-                    _botAgent.TestCreds(new AccountKey(server, login), password);
+                    _algoServer.TestAccount(new TestAccountRequest(AccountId.Pack(server, login))) :
+                    _algoServer.TestCreds(new TestAccountCredsRequest(server, login, new AccountCreds(password)));
 
                 return Ok(await testResult);
             }
-            catch (BAException dsex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(dsex.Message);
-                return BadRequest(dsex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
         }
     }

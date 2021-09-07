@@ -5,13 +5,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using System.Security;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Common.Model.Interop;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -87,7 +82,7 @@ namespace TickTrader.BotTerminal
         }
 
         public ObservableCollection<ServerAuthEntry> Servers { get { return cManager.Servers; } }
-        public IEnumerable<AccountAuthEntry> Accounts => cManager.Accounts.Where(u => u.Server.Address == ResolveServerAddress()).OrderBy(u => long.Parse(u.Login));
+        public IEnumerable<AccountAuthEntry> Accounts => cManager.Accounts.Where(u => u.Server.Address == ResolveServerAddress()).OrderBy(u => u.Login.Length).ThenBy(u => u.Login);
 
         public bool SavePassword
         {
@@ -118,7 +113,7 @@ namespace TickTrader.BotTerminal
 
         public bool ShowErrorCode { get; private set; }
         public bool ShowErrorText { get; private set; }
-        public ConnectionErrorCodes ErrorCode => error?.Code ?? ConnectionErrorCodes.None;
+        public ConnectionErrorInfo.Types.ErrorCode ErrorCode => error?.Code ?? ConnectionErrorInfo.Types.ErrorCode.NoConnectionError;
         public string ErrorText => error?.TextMessage;
 
         public ConnectionErrorInfo Error
@@ -133,7 +128,7 @@ namespace TickTrader.BotTerminal
                     ShowErrorCode = false;
                     ShowErrorText = false;
                 }
-                else if (error.Code == ConnectionErrorCodes.Unknown && !string.IsNullOrWhiteSpace(error.TextMessage))
+                else if (error.Code == ConnectionErrorInfo.Types.ErrorCode.UnknownConnectionError && !string.IsNullOrWhiteSpace(error.TextMessage))
                 {
                     ShowErrorCode = false;
                     ShowErrorText = true;
@@ -187,10 +182,10 @@ namespace TickTrader.BotTerminal
 
         public event System.Action Done = delegate { };
 
-        public override void CanClose(Action<bool> callback)
-        {
-            base.CanClose(callback);
-        }
+        //public override void CanClose(Action<bool> callback)
+        //{
+        //    base.CanClose(callback);
+        //}
 
         public async void Connect()
         {
@@ -203,7 +198,7 @@ namespace TickTrader.BotTerminal
             {
                 string address = ResolveServerAddress();
                 Error = await cManager.Connect(login, password, address, savePassword, CancellationToken.None);
-                if (Error.Code == ConnectionErrorCodes.None)
+                if (Error.IsOk)
                 {
                     cManager.SaveNewServer(address);
                     Done();

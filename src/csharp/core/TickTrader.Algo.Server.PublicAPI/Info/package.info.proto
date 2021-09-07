@@ -1,0 +1,30 @@
+﻿syntax = "proto3";
+
+package ticktrader.algo.server.publicApi;
+
+option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+import "info/mappings/reduction.info.proto";
+import "info/plugin.info.proto";
+
+
+message PackageInfo {
+    string package_id = 1;
+    PackageIdentity identity = 2;
+    bool is_valid = 3;
+    repeated PluginInfo plugins = 4;
+    repeated ReductionInfo reductions = 5;
+    bool is_locked = 6;
+}
+
+message PackageIdentity {
+    string file_name = 1;
+    string file_path = 2;
+    google.protobuf.Timestamp created_utc = 3;
+    google.protobuf.Timestamp last_modified_utc = 4;
+    int64 size = 5;
+    google.protobuf.StringValue hash = 6;
+}

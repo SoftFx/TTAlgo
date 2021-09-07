@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>algo.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.IO.Pipelines" Version="5.0.1" />
+    <PackageReference Include="System.Threading.Channels" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\lib\ActorSharp\ActorSharp.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.Rpc\TickTrader.Algo.Rpc.csproj" />
+  </ItemGroup>
+
+</Project>

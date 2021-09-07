@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
@@ -39,6 +37,9 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         [Parameter]
         public bool IncludeADCases { get; set; }
 
+        [Parameter]
+        public bool LoadAllHistory { get; set; }
+
         [Parameter(DefaultValue = 3)]
         public int TestCaseAttempts { get; set; }
 
@@ -66,7 +67,6 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             foreach (OrderSide orderSide in Enum.GetValues(typeof(OrderSide)))
                 foreach (OrderType orderType in Enum.GetValues(typeof(OrderType)))
                     if (orderType != OrderType.Position)
-                    //if (orderType == OrderType.Stop)
                     {
                         var testSet = new TestParamsSet(orderType, orderSide);
 
@@ -80,10 +80,10 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
                         while (testSet.SwitchAsyncMode());
                     }
 
-            Print("Waiting for trade reports to load...");
-            await Delay(PauseBeforeAndAfterTests);
+            //Print("Waiting for trade reports to load...");
+            //await Delay(PauseBeforeAndAfterTests);
 
-            //History test
+            ////History test
             await TryPerformTest(() => FullHistoryTestRun(), 1);
 
             UnsubscribeEventListening();
@@ -103,8 +103,8 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             {
                 await PerfomOpenModifyTests(GenerateTemplate(test));
 
-                if (test.Async && test.Type != OrderType.Market) //incorrect for Gross Market
-                    await ModifyCancelTest(GenerateTemplate(test));
+                //if (test.Async && test.Type != OrderType.Market) //incorrect for Gross Market
+                //    await ModifyCancelTest(GenerateTemplate(test));
             }
 
             await PerformExecutionTests(test);
@@ -274,6 +274,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         private async Task RunOpenWithCloseEvent(OrderTemplate template)
         {
             await TryPerformTest(() => TestOpenOrder(template));
+
             await WaitAndStoreEvent<OrderClosedEventArgs>(template, TPSLEventTimeout);
         }
 
@@ -492,15 +493,17 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         private async Task FullHistoryTestRun()
         {
-            ReportsIteratorTest();
+            if (LoadAllHistory)
+                ReportsIteratorTest();
+
             await DoQueryTests(false);
             await DoQueryTests(true);
         }
 
         private async Task DoQueryTests(bool async)
         {
-            var from = _historyStorage.First().TradeReportTimestamp;
-            var to = _historyStorage.Last().TradeReportTimestamp;
+            var from = _historyStorage.First().TradeReportTimestamp.AddSeconds(-1);
+            var to = _historyStorage.Last().TradeReportTimestamp.AddSeconds(1);
 
             await QuerySegmentTest(from, to, async, ThQueryOptions.None);
             await QuerySegmentTest(from, to, async, ThQueryOptions.Backwards);
@@ -648,10 +651,10 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
             var argsObj = await eventTask;
 
-            if (argsObj is TArgs)
+            if (argsObj is TArgs args)
             {
                 PrintLog($"Event received: {argsObj.GetType().Name}");
-                return (TArgs)argsObj;
+                return args;
             }
 
             throw new Exception($"Unexpected event: Received {argsObj.GetType().Name} while expecting {typeof(TArgs).Name}");

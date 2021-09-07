@@ -172,10 +172,10 @@
 
     <Style x:Key="ToolBarAgentStartButton" TargetType="Button" BasedOn="{StaticResource ToolBarButton}">
         <Setter Property="IsEnabled" Value="False"/>
-        <Setter Property="ToolTip" Value="Start Agent"/>
+        <Setter Property="ToolTip" Value="Start Server"/>
         <Style.Triggers>
             <DataTrigger Binding="{Binding StateServiceModel.ServiceRunning}" Value="True">
-                <Setter Property="ToolTip" Value="Restart Agent"/>
+                <Setter Property="ToolTip" Value="Restart Server"/>
             </DataTrigger>
             <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>
@@ -190,7 +190,7 @@
 
     <Style x:Key="ToolBarStopButton" TargetType="Button" BasedOn="{StaticResource ToolBarButton}">
         <Setter Property="IsEnabled" Value="False"/>
-        <Setter Property="ToolTip" Value="Stop Agent"/>
+        <Setter Property="ToolTip" Value="Stop Server"/>
         <Style.Triggers>
             <DataTrigger Binding="{Binding StateServiceModel.ServiceRunning}" Value="True">
                 <Setter Property="IsEnabled" Value="True"/>

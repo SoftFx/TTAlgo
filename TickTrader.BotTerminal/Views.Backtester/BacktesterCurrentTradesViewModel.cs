@@ -1,14 +1,7 @@
-﻿using Caliburn.Micro;
-using Machinarium.Qnil;
-using Machinarium.Var;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Common.Lib;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Core;
+﻿using System.Collections.Generic;
+using TickTrader.Algo.Account;
+using TickTrader.Algo.Backtester;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -24,7 +17,7 @@ namespace TickTrader.BotTerminal
 
             _client = new MockClient();
             Trades = new TradeInfoViewModel(_client.Acc, _client.Symbols, _client.Currencies, _connection, false, profile, true);
-            Rates = new SymbolListViewModel(_client.Symbols, _client.Distributor, null, false);
+            Rates = new SymbolListViewModel(_client.Symbols, _client.Distributor, null);
         }
 
         public TradeInfoViewModel Trades { get; }
@@ -35,12 +28,10 @@ namespace TickTrader.BotTerminal
             _client.Clear();
         }
 
-        public void Start(Backtester backtester, IEnumerable<CurrencyEntity> currencies, IEnumerable<SymbolEntity> symbols)
+        public void Start(Backtester backtester, IEnumerable<CurrencyInfo> currencies, IEnumerable<SymbolInfo> symbols)
         {
-            var accInfo = new AccountEntity();
             var settings = backtester.CommonSettings;
-            accInfo.Balance = settings.InitialBalance;
-            accInfo.BalanceCurrency = settings.BalanceCurrency;
+            var accInfo = new AccountInfo(settings.InitialBalance, settings.BalanceCurrency, null);
             accInfo.Leverage = settings.Leverage;
             accInfo.Id = "1";
             accInfo.Type = settings.AccountType;
@@ -62,22 +53,22 @@ namespace TickTrader.BotTerminal
             _client.Deinit();
         }
 
-        private void Executor_SymbolRateUpdated(Algo.Api.RateUpdate update)
+        private void Executor_SymbolRateUpdated(IRateInfo update)
         {
-            _client.OnRateUpdate((QuoteEntity)update.LastQuote);
+            _client.OnRateUpdate(update.LastQuote);
         }
 
         private void Executor_TradesUpdated(TesterTradeTransaction tt)
         {
-            if (tt.OrderEntityAction != OrderEntityAction.None)
-                _client.Acc.UpdateOrder(tt.OrderExecAction, tt.OrderEntityAction, tt.OrderUpdate);
+            if (tt.OrderEntityAction != Algo.Domain.OrderExecReport.Types.EntityAction.NoAction)
+                _client.Acc.UpdateOrderCollection(tt.OrderEntityAction, tt.OrderUpdate);
 
-            if (tt.PositionEntityAction != OrderEntityAction.None)
-                _client.Acc.UpdateOrder(tt.PositionExecAction, tt.PositionEntityAction, tt.PositionUpdate);
+            if (tt.PositionEntityAction != Algo.Domain.OrderExecReport.Types.EntityAction.NoAction)
+                _client.Acc.UpdateOrderCollection(tt.PositionEntityAction, tt.PositionUpdate);
 
             if (tt.NetPositionUpdate != null)
             {
-                if (tt.NetPositionUpdate.Volume == 0)
+                if (tt.NetPositionUpdate.PositionCopy.IsEmpty)
                     _client.Acc.RemovePosition(tt.NetPositionUpdate, true);
                 else
                     _client.Acc.UpdatePosition(tt.NetPositionUpdate, true);

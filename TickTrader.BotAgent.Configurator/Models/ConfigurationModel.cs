@@ -3,28 +3,26 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public enum SectionNames { None, Credentials, Ssl, Protocol, Fdk, Server, MultipleAgentProvider }
+    public enum SectionNames { None, Credentials, Ssl, Protocol, Fdk, Server, MultipleAgentProvider, Algo }
 
     public class ConfigurationModel
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private ConfigManager _configManager;
         private PortsManager _portsManager;
         private JObject _configurationObject;
 
         private List<IWorkingManager> _workingModels;
 
-        public RegistryNode CurrentAgent => RegistryManager?.CurrentAgent;
+        public RegistryNode CurrentAgent => RegistryManager?.CurrentServer;
 
         public RegistryManager RegistryManager { get; }
 
         public PrompterManager Prompts { get; }
-
-        public ConfigurationProperies Settings { get; }
 
         public ServiceManager ServiceManager { get; private set; }
 
@@ -42,13 +40,16 @@ namespace TickTrader.BotAgent.Configurator
 
         //public CacheManager CacheManager { get; private set; }
 
+        public ServerBotSettingsManager BotSettingsManager { get; private set; }
+
+        public AlgoServerSettingsManager AlgoServerManager { get; private set; }
+
+
         public ConfigurationModel()
         {
-            _configManager = new ConfigManager();
-
-            Settings = _configManager.Properties;
             Prompts = new PrompterManager();
-            RegistryManager = new RegistryManager(Settings[AppProperties.RegistryAppName], Settings[AppProperties.AppSettings], Settings.IsDeveloper, Settings[AppProperties.ApplicationName]);
+            RegistryManager = new RegistryManager();
+            BotSettingsManager = new ServerBotSettingsManager(RegistryManager);
 
             RefreshModel();
         }
@@ -60,26 +61,35 @@ namespace TickTrader.BotAgent.Configurator
             ServiceManager = new ServiceManager(CurrentAgent.ServiceId);
             //CacheManager = new CacheManager(CurrentAgent);
 
-            _portsManager = new PortsManager(RegistryManager.CurrentAgent, ServiceManager);
+            _portsManager = new PortsManager(RegistryManager.CurrentServer, ServiceManager);
             _configurationObject = null;
 
             CredentialsManager = new CredentialsManager(SectionNames.Credentials);
             SslManager = new SslManager(SectionNames.Ssl);
             ProtocolManager = new ProtocolManager(SectionNames.Protocol, _portsManager);
             FdkManager = new FdkManager(SectionNames.Fdk);
+            AlgoServerManager = new AlgoServerSettingsManager(SectionNames.Algo);
             ServerManager = new ServerManager(_portsManager);
-            Logs = new LogsManager(CurrentAgent.Path, Settings[AppProperties.LogsPath]);
+            Logs = new LogsManager(CurrentAgent.LogsFilePath);
 
-            _workingModels = new List<IWorkingManager>() { CredentialsManager, SslManager, ProtocolManager, ServerManager, FdkManager };
+            _workingModels = new List<IWorkingManager>()
+            {
+                CredentialsManager,
+                SslManager,
+                ProtocolManager,
+                ServerManager,
+                FdkManager,
+                AlgoServerManager,
+            };
 
             LoadConfiguration();
             SaveChanges();
         }
 
-        public void StartAgent()
+        public async Task StartAgent()
         {
             RegisterAgentInFirewall();
-            ServiceManager.ServiceStart(ProtocolManager.ProtocolModel.ListeningPort.Value);
+            await ServiceManager.ServiceStart(ProtocolManager.ProtocolModel.ListeningPort.Value);
         }
 
         public void StopAgent()
@@ -126,10 +136,20 @@ namespace TickTrader.BotAgent.Configurator
             if (_configurationObject == null)
                 return;
 
+            if (!string.IsNullOrEmpty(model.SectionName) && !_configurationObject.ContainsKey(model.SectionName))
+            {
+                model.EnableManager = false;
+                return;
+            }
+
             try
             {
-                var args = model.SectionName == "" ? _configurationObject.Values<JProperty>() : _configurationObject[model.SectionName].Children<JProperty>();
+                var args = string.IsNullOrEmpty(model.SectionName) ?
+                           _configurationObject.Values<JProperty>() :
+                           _configurationObject[model.SectionName].Children<JProperty>();
+
                 model.UploadModels(args.ToList());
+                model.EnableManager = true;
             }
             catch (NullReferenceException ex)
             {
@@ -141,13 +161,15 @@ namespace TickTrader.BotAgent.Configurator
         {
             string ports = $"{string.Join(",", ServerManager.ServerModel.Urls.Select(u => u.Port.ToString()))},{ProtocolManager.ProtocolModel.ListeningPort}";
 
-            _portsManager.RegisterRuleInFirewall(Settings[AppProperties.ApplicationName], Path.Combine(CurrentAgent.Path, $"{Settings[AppProperties.ApplicationName]}.exe"), ports);
+            _portsManager.RegisterRuleInFirewall(ports);
         }
     }
 
     public interface IWorkingManager
     {
         string SectionName { get; }
+
+        bool EnableManager { get; set; }
 
         void UploadModels(List<JProperty> prop);
 

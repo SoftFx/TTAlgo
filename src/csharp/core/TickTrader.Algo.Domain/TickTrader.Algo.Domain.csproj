@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>algo.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Protobuf Include="..\..\..\protobuf\common.proto">
+      <Link>protos\common.proto</Link>
+    </Protobuf>
+    <Protobuf Include="..\..\..\protobuf\runtime.feed.proto">
+      <Link>protos\runtime.feed.proto</Link>
+    </Protobuf>
+    <Protobuf Include="..\..\..\protobuf\runtime.package.proto">
+      <Link>protos\runtime.package.proto</Link>
+    </Protobuf>
+    <Protobuf Include="..\..\..\protobuf\runtime.plugin.proto">
+      <Link>protos\runtime.plugin.proto</Link>
+    </Protobuf>
+    <Protobuf Include="..\..\..\protobuf\runtime.proto">
+      <Link>protos\runtime.proto</Link>
+    </Protobuf>
+    <Protobuf Include="..\..\..\protobuf\runtime.trade.proto">
+      <Link>protos\runtime.trade.proto</Link>
+    </Protobuf>
+    <Protobuf Include="..\..\..\protobuf\server.control.proto">
+      <Link>protos\server.control.proto</Link>
+    </Protobuf>
+    <Protobuf Include="..\..\..\protobuf\server.data.proto">
+      <Link>protos\server.data.proto</Link>
+    </Protobuf>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.15.5" />
+    <PackageReference Include="Grpc.Tools" Version="2.36.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+
+</Project>

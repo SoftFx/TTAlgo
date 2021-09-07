@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 
 namespace TickTrader.BotAgent.Configurator
 {
@@ -9,7 +9,9 @@ namespace TickTrader.BotAgent.Configurator
 
         public const string EnableLogsNameProperty = "EnableLogs";
 
+
         public FdkModel FdkModel { get; }
+
 
         public FdkManager(SectionNames sectionName = SectionNames.None) : base(sectionName)
         {

@@ -2,15 +2,12 @@
 using Machinarium.Qnil;
 using Machinarium.Var;
 using SciChart.Charting.Model.ChartSeries;
-using SciChart.Charting.Visuals.Annotations;
 using SciChart.Charting.Visuals.Axes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -18,10 +15,10 @@ namespace TickTrader.BotTerminal
     {
         private VarContext _var = new VarContext();
         private IntProperty _precisionProp = new IntProperty();
-        private Property<RateUpdate> _currentRateProp = new Property<RateUpdate>();
+        private Property<IRateInfo> _currentRateProp = new Property<IRateInfo>();
         private Property<double?> _askProp = new Property<double?>();
         private Property<double?> _bidProp = new Property<double?>();
-        private Property<TimeFrames> _timeframeProp = new Property<TimeFrames>();
+        private Property<Feed.Types.Timeframe> _timeframeProp = new Property<Feed.Types.Timeframe>();
         private IDisposable _axisBind;
         private IDisposable _currentRateBind;
 
@@ -62,18 +59,18 @@ namespace TickTrader.BotTerminal
         public BoolProperty IsCrosshairEnabled { get; } = new BoolProperty();
         public Var<double?> CurrentAsk => _askProp.Var;
         public Var<double?> CurrentBid => _bidProp.Var;
-        public Property<SymbolEntity> SymbolInfo { get; } = new Property<SymbolEntity>();
+        public Property<SymbolInfo> SymbolInfo { get; } = new Property<SymbolInfo>();
         public int Precision { get; private set; }
         public Property<string> YAxisLabelFormat { get; } = new Property<string>();
-        public Var<TimeFrames> Timeframe => _timeframeProp.Var;
+        public Var<Feed.Types.Timeframe> Timeframe => _timeframeProp.Var;
 
-        public void BindCurrentRate(Var<RateUpdate> rateSrc)
+        public void BindCurrentRate(Var<IRateInfo> rateSrc)
         {
             _currentRateBind?.Dispose();
             _currentRateBind = _var.TriggerOnChange(rateSrc, a => _currentRateProp.Value = a.New);
         }
 
-        public void SetCurrentRate(RateUpdate rate)
+        public void SetCurrentRate(IRateInfo rate)
         {
             _currentRateProp.Value = rate;
         }
@@ -84,7 +81,7 @@ namespace TickTrader.BotTerminal
             _axisBind = _var.TriggerOnChange(axis, a => TimeAxis.Value = a.New);
         }
 
-        public void SetTimeframe(TimeFrames timeframe)
+        public void SetTimeframe(Feed.Types.Timeframe timeframe)
         {
             _timeframeProp.Value = timeframe;
         }
@@ -162,7 +159,7 @@ namespace TickTrader.BotTerminal
 
         private void UpdatePrecision()
         {
-            Precision = SymbolInfo.Value?.Precision ?? 2;
+            Precision = SymbolInfo.Value?.Digits ?? 2;
             foreach (var o in OutputGroups.Values)
             {
                 Precision = Math.Max(Precision, o.Precision);

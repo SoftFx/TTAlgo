@@ -2,9 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.Backtester;
 
 namespace TickTrader.BotTerminal
 {
@@ -15,7 +13,7 @@ namespace TickTrader.BotTerminal
         private IntProperty _size;
         private BoolVar _isValid;
 
-        public EnumSetModel(List<string> values)
+        public EnumSetModel(IEnumerable<string> values)
         {
             Init(values.Select(v => new Item(this, v)));
         }

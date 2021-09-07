@@ -2,12 +2,11 @@
 using Machinarium.Qnil;
 using NLog;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core.Metadata;
+using System.Threading;
+using System.Threading.Tasks;
+using TickTrader.Algo.Core.Setup;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -51,7 +50,7 @@ namespace TickTrader.BotTerminal
         public BacktesterPluginSetupViewModel(LocalAlgoAgent agent, PluginInfo info, IAlgoSetupMetadata setupMetadata, SetupContextInfo setupContext)
             : this(agent, info, setupMetadata, setupContext, PluginSetupMode.New)
         {
-            DisplayName = $"Setting - {info.Descriptor.DisplayName}";
+            DisplayName = $"Setting - {info.Descriptor_.DisplayName}";
 
             UpdateSetup();
         }
@@ -71,24 +70,31 @@ namespace TickTrader.BotTerminal
             Setup.Reset();
         }
 
-        public void Ok()
+        public async void Ok()
         {
             _dlgResult = true;
-            TryClose();
+            await TryCloseAsync();
         }
 
-        public void Cancel()
+        public async void Cancel()
         {
             _dlgResult = false;
-            TryClose();
+            await TryCloseAsync();
         }
 
-        public override void CanClose(Action<bool> callback)
+        public override Task<bool> CanCloseAsync(CancellationToken cancellationToken = default)
         {
-            callback(true);
             Closed(this, _dlgResult);
             Dispose();
+            return base.CanCloseAsync(cancellationToken);
         }
+
+        //public override void CanClose(Action<bool> callback)
+        //{
+        //    callback(true);
+        //    Closed(this, _dlgResult);
+        //    Dispose();
+        //}
 
         public PluginConfig GetConfig()
         {
@@ -126,7 +132,7 @@ namespace TickTrader.BotTerminal
             else if (args.Action == DLinqAction.Remove)
             {
                 if (args.OldItem.Key.Equals(Info.Key))
-                    TryClose();
+                    TryCloseAsync();
             }
         }
 
@@ -138,12 +144,12 @@ namespace TickTrader.BotTerminal
                 Setup.ValidityChanged -= Validate;
         }
 
-        private string GetPluginTypeDisplayName(AlgoTypes type)
+        private string GetPluginTypeDisplayName(Metadata.Types.PluginType type)
         {
             switch (type)
             {
-                case AlgoTypes.Robot: return "Bot";
-                case AlgoTypes.Indicator: return "Indicator";
+                case Metadata.Types.PluginType.TradeBot: return "Bot";
+                case Metadata.Types.PluginType.Indicator: return "Indicator";
                 default: return "PluginType";
             }
         }
@@ -173,8 +179,8 @@ namespace TickTrader.BotTerminal
         {
             var agentMetadata = Agent.GetSetupMetadata(null, null).Result;
 
-            var accMetadata = new AccountMetadataInfo { Key = new AccountKey("backtester", "backtester") };
-            accMetadata.Symbols.AddRange(SetupMetadata.Symbols.Select(s => s.ToInfo()));
+            var accMetadata = new AccountMetadataInfo { AccountId = AccountId.Pack("backtester", "backtester") };
+            accMetadata.Symbols.AddRange(SetupMetadata.Symbols.Select(s => s.ToConfig()));
 
             return new SetupMetadata(agentMetadata, accMetadata, SetupContext);
         }

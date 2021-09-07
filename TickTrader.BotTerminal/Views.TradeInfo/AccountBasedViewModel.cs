@@ -1,11 +1,6 @@
 ﻿using Caliburn.Micro;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Account;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -37,7 +32,7 @@ namespace TickTrader.BotTerminal
         public bool IsBusy { get; private set; }
         public bool IsEnabled { get; private set; }
 
-        protected virtual bool SupportsAccount(AccountTypes accType)
+        protected virtual bool SupportsAccount(AccountInfo.Types.Type accType)
         {
             return true;
         }

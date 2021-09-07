@@ -7,8 +7,9 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using TickTrader.BotAgent.BA;
-using TickTrader.BotAgent.BA.Exceptions;
+using TickTrader.Algo.Domain;
+using TickTrader.Algo.Domain.ServerControl;
+using TickTrader.Algo.Server;
 using TickTrader.BotAgent.WebAdmin.Server.Dto;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 
@@ -19,28 +20,26 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
     public class PackagesController : Controller
     {
         private readonly ILogger<PackagesController> _logger;
-        private readonly IBotAgent _botAgent;
+        private readonly IAlgoServerLocal _algoServer;
 
-        public PackagesController(IBotAgent ddServer, ILogger<PackagesController> logger)
+        public PackagesController(IAlgoServerLocal algoServer, ILogger<PackagesController> logger)
         {
-            _botAgent = ddServer;
+            _algoServer = algoServer;
             _logger = logger;
         }
 
         [HttpGet]
         public async Task<PackageDto[]> Get()
         {
-            var packages = await _botAgent.GetPackages();
+            var snapshot = await _algoServer.GetPackageSnapshot();
 
-            return packages.Select(p => p.ToDto()).ToArray();
+            return snapshot.Packages.Select(p => p.ToDto()).ToArray();
         }
 
-        [HttpHead("{name}")]
-        public async Task<IActionResult> Head(string name)
+        [HttpHead("{pkgName}")]
+        public async Task<IActionResult> Head(string pkgName)
         {
-            var package = await _botAgent.GetPackage(name);
-
-            if (package != null)
+            if (await _algoServer.PackageWithNameExists(pkgName))
                 return Ok();
 
             return NotFound();
@@ -52,37 +51,43 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             if (file == null) throw new ArgumentNullException("File is null");
             if (file.Length == 0) throw new ArgumentException("File is empty");
 
-            using (var stream = file.OpenReadStream())
+            try
             {
-                using (var binaryReader = new BinaryReader(stream))
+                var tmpFile = Path.GetTempFileName();
+                using (var fileStream = System.IO.File.OpenWrite(tmpFile))
                 {
-                    var fileContent = binaryReader.ReadBytes((int)file.Length);
-                    try
-                    {
-                        await _botAgent.UpdatePackage(fileContent, file.FileName);
-                    }
-                    catch (BAException dsex)
-                    {
-                        _logger.LogError(dsex.Message);
-                        return BadRequest(dsex.ToBadResult());
-                    }
+                    await file.CopyToAsync(fileStream);
                 }
+
+                await _algoServer.UploadPackage(new UploadPackageRequest(null, file.FileName), tmpFile);
+
+                if (System.IO.File.Exists(tmpFile))
+                    System.IO.File.Delete(tmpFile);
+            }
+            catch (AlgoException algoEx)
+            {
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Package upload failed");
             }
 
             return Ok();
         }
 
-        [HttpDelete("{name}")]
-        public async Task<IActionResult> Delete(string name)
+        [HttpDelete("{packageId}")]
+        public async Task<IActionResult> Delete(string packageId)
         {
             try
             {
-                await _botAgent.RemovePackage(WebUtility.UrlDecode(name));
+                await _algoServer.RemovePackage(new RemovePackageRequest(WebUtility.UrlDecode(packageId)));
             }
-            catch (BAException dsex)
+            catch (AlgoException algoEx)
             {
-                _logger.LogError(dsex.Message);
-                return BadRequest(dsex.ToBadResult());
+                _logger.LogError(algoEx.Message);
+                return BadRequest(algoEx.ToBadResult());
             }
 
             return Ok();

@@ -1,0 +1,182 @@
+syntax = "proto3";
+
+package ticktrader.algo.domain;
+
+option csharp_namespace = "TickTrader.Algo.Domain";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "runtime.package.proto";
+import "runtime.plugin.proto";
+import "common.proto";
+
+message MappingInfo {
+    MappingKey key = 1;
+    google.protobuf.StringValue display_name = 2;
+}
+
+message MappingCollectionInfo {
+    repeated MappingInfo bar_to_bar_mappings = 1;
+    repeated MappingInfo bar_to_double_mappings = 2;
+    repeated MappingInfo quote_to_bar_mappings = 3;
+    repeated MappingInfo quote_to_double_mappings = 4;
+
+    MappingInfo default_bar_to_bar_mapping = 5;
+    MappingInfo default_bar_to_double_mapping = 6;
+    MappingInfo default_quote_to_bar_mapping = 7;
+    MappingInfo default_quote_to_double_mapping = 8;
+}
+
+message ApiMetadataInfo {
+    repeated Feed.Timeframe time_frames = 1;
+    repeated Metadata.LineStyle line_styles = 2;
+    repeated int32 thicknesses = 3;
+    repeated Metadata.MarkerSize marker_sizes = 4;
+}
+
+message SetupContextInfo {
+    Feed.Timeframe default_time_frame = 1;
+    SymbolConfig default_symbol = 2;
+    MappingKey default_mapping = 3;
+}
+
+message AccountMetadataInfo {
+    string account_id = 1;
+    repeated SymbolConfig symbols = 2;
+    SymbolConfig default_symbol = 3;
+}
+
+message ConnectionErrorInfo {
+    enum ErrorCode {
+        NO_CONNECTION_ERROR = 0;
+        UNKNOWN_CONNECTION_ERROR = 1;
+        NETWORK_ERROR = 2;
+        TIMEOUT = 3;
+        BLOCKED_ACCOUNT = 4;
+        CLIENT_INITIATED = 5;
+        INVALID_CREDENTIALS = 6;
+        SLOW_CONNECTION = 7;
+        SERVER_ERROR = 8;
+        LOGIN_DELETED = 9;
+        SERVER_LOGOUT = 10;
+        CANCELED = 11;
+        REJECTED_BY_SERVER = 12;
+    }
+
+    ErrorCode code = 1;
+    google.protobuf.StringValue text_message = 2;
+}
+
+message AccountCreds {
+    string auth_scheme = 1;
+    map<string, google.protobuf.StringValue> secret = 2;
+}
+
+message AccountModelInfo {
+    enum ConnectionState {
+        OFFLINE = 0;
+        CONNECTING = 1;
+        ONLINE = 2;
+        DISCONNECTING = 3;
+    }
+
+    string account_id = 1;
+    ConnectionState connection_state = 2;
+    ConnectionErrorInfo last_error = 3;
+    google.protobuf.StringValue display_name = 4;
+}
+
+message PluginModelInfo {
+    enum PluginState {
+        STOPPED = 0;
+        STARTING = 1;
+        FAULTED = 2;
+        RUNNING = 3;
+        STOPPING = 4;
+        BROKEN = 5;
+        RECONNECTING = 6;
+    }
+
+    string instance_id = 1;
+    string account_id = 2;
+    PluginState state = 3;
+    google.protobuf.StringValue fault_message = 4;
+    PluginConfig config = 5;
+    PluginDescriptor descriptor = 6;
+}
+
+message LogRecordInfo {
+    google.protobuf.Timestamp time_utc = 1;
+    PluginLogRecord.LogSeverity severity = 2;
+    google.protobuf.StringValue message = 3;
+}
+
+message AlertRecordInfo {
+    google.protobuf.Timestamp time_utc = 1;
+    google.protobuf.StringValue message = 2;
+    string plugin_id = 3;
+}
+
+message PluginFileInfo {
+    string name = 1;
+    int64 size = 2;
+}
+
+message PluginFolderInfo {
+    enum PluginFolderId {
+        ALGO_DATA = 0;
+        BOT_LOGS = 1;
+    }
+
+    string plugin_id = 1;
+    PluginFolderId folder_id = 2;
+    google.protobuf.StringValue path = 3;
+    repeated PluginFileInfo files = 4;
+}
+
+message PackageUpdate {
+    string id = 1;
+    Update.Action action = 2;
+    PackageInfo package = 3;
+}
+
+message PackageStateUpdate {
+    string id = 1;
+    bool is_locked = 2;
+}
+
+message AccountModelUpdate {
+    string id = 1;
+    Update.Action action = 2;
+    AccountModelInfo account = 3;
+}
+
+message AccountStateUpdate {
+    string id = 1;
+    AccountModelInfo.ConnectionState connection_state = 2;
+    ConnectionErrorInfo last_error = 3;
+}
+
+message PluginModelUpdate {
+    string id = 1;
+    Update.Action action = 2;
+    PluginModelInfo plugin = 3;
+}
+
+message PluginStateUpdate {
+    string id = 1;
+    PluginModelInfo.PluginState state = 2;
+    google.protobuf.StringValue fault_message = 3;
+}
+
+message PackageListSnapshot {
+    repeated PackageInfo packages = 1;
+}
+
+message AccountListSnapshot {
+    repeated AccountModelInfo accounts = 1;
+}
+
+message PluginListSnapshot {
+    repeated PluginModelInfo plugins = 1;
+}

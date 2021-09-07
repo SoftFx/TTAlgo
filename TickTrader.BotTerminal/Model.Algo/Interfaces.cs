@@ -1,17 +1,16 @@
 ﻿using Machinarium.Qnil;
+using SciChart.Charting.Visuals.Axes;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.BotTerminal.Lib;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Protocol;
-using TickTrader.Algo.Core.Repository;
-using System.Collections.Generic;
-using SciChart.Charting.Visuals.Axes;
-using TickTrader.Algo.Common.Lib;
+using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Core.Setup;
+using TickTrader.Algo.Domain;
+using TickTrader.Algo.Domain.ServerControl;
+
+using AlgoServerPublicApi = TickTrader.Algo.Server.PublicAPI;
+
 
 namespace TickTrader.BotTerminal
 {
@@ -21,11 +20,11 @@ namespace TickTrader.BotTerminal
 
         bool IsRemote { get; }
 
-        IVarSet<PackageKey, PackageInfo> Packages { get; }
+        IVarSet<string, PackageInfo> Packages { get; }
 
         IVarSet<PluginKey, PluginInfo> Plugins { get; }
 
-        IVarSet<AccountKey, AccountModelInfo> Accounts { get; }
+        IVarSet<string, AccountModelInfo> Accounts { get; }
 
         IVarSet<string, ITradeBot> Bots { get; }
 
@@ -35,7 +34,7 @@ namespace TickTrader.BotTerminal
 
         bool SupportsAccountManagement { get; }
 
-        AccessManager AccessManager { get; }
+        AlgoServerPublicApi.IAccessManager AccessManager { get; }
 
         IAlertModel AlertModel { get; }
 
@@ -47,43 +46,43 @@ namespace TickTrader.BotTerminal
         event Action AccessLevelChanged;
 
 
-        Task<SetupMetadata> GetSetupMetadata(AccountKey account, SetupContextInfo setupContext);
+        Task<SetupMetadata> GetSetupMetadata(string accountId, SetupContextInfo setupContext);
 
         Task StartBot(string botId);
 
         Task StopBot(string botId);
 
-        Task AddBot(AccountKey account, PluginConfig config);
+        Task AddBot(string accountId, PluginConfig config);
 
         Task RemoveBot(string botId, bool cleanLog, bool cleanAlgoData);
 
         Task ChangeBotConfig(string botId, PluginConfig newConfig);
 
-        Task AddAccount(AccountKey account, string password);
+        Task AddAccount(AddAccountRequest request);
 
-        Task RemoveAccount(AccountKey account);
+        Task RemoveAccount(RemoveAccountRequest request);
 
-        Task ChangeAccount(AccountKey account, string password);
+        Task ChangeAccount(ChangeAccountRequest request);
 
-        Task<ConnectionErrorInfo> TestAccount(AccountKey account);
+        Task<AlgoServerPublicApi.ConnectionErrorInfo> TestAccount(TestAccountRequest request);
 
-        Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password);
+        Task<AlgoServerPublicApi.ConnectionErrorInfo> TestAccountCreds(TestAccountCredsRequest request);
 
-        Task UploadPackage(string fileName, string srcFilePath, IFileProgressListener progressListener);
+        Task UploadPackage(string fileName, string srcFilePath, AlgoServerPublicApi.IFileProgressListener progressListener);
 
-        Task RemovePackage(PackageKey package);
+        Task RemovePackage(string packageId);
 
-        Task DownloadPackage(PackageKey package, string dstFilePath, IFileProgressListener progressListener);
+        Task DownloadPackage(string packageId, string dstFilePath, AlgoServerPublicApi.IFileProgressListener progressListener);
 
-        Task<BotFolderInfo> GetBotFolderInfo(string botId, BotFolderId folderId);
+        Task<PluginFolderInfo> GetBotFolderInfo(string botId, PluginFolderInfo.Types.PluginFolderId folderId);
 
-        Task ClearBotFolder(string botId, BotFolderId folderId);
+        Task ClearBotFolder(string botId, PluginFolderInfo.Types.PluginFolderId folderId);
 
-        Task DeleteBotFile(string botId, BotFolderId folderId, string fileName);
+        Task DeleteBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName);
 
-        Task DownloadBotFile(string botId, BotFolderId folderId, string fileName, string dstPath, IFileProgressListener progressListener);
+        Task DownloadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string dstPath, AlgoServerPublicApi.IFileProgressListener progressListener);
 
-        Task UploadBotFile(string botId, BotFolderId folderId, string fileName, string srcPath, IFileProgressListener progressListener);
+        Task UploadBotFile(string botId, PluginFolderInfo.Types.PluginFolderId folderId, string fileName, string srcPath, AlgoServerPublicApi.IFileProgressListener progressListener);
     }
 
     internal interface IExecStateObservable
@@ -106,8 +105,8 @@ namespace TickTrader.BotTerminal
         void Lock();
         void Unlock();
 
-        void InitializePlugin(PluginExecutor plugin);
-        void UpdatePlugin(PluginExecutor plugin);
+        void InitializePlugin(ExecutorConfig config);
+        void EnqueueStartAction(Action action);
 
         ITradeExecutor GetTradeApi();
         ITradeHistoryProvider GetTradeHistoryApi();

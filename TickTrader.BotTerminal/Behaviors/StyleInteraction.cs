@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.Xaml.Behaviors;
+using System.Collections.Generic;
 using System.Windows;
-using System.Windows.Interactivity;
 
 namespace TickTrader.BotTerminal
 {
@@ -8,7 +8,7 @@ namespace TickTrader.BotTerminal
     {
     }
 
-    internal class Triggers : List<System.Windows.Interactivity.TriggerBase>
+    internal class Triggers : List<Microsoft.Xaml.Behaviors.TriggerBase>
     {
     }
 
@@ -46,7 +46,7 @@ namespace TickTrader.BotTerminal
         {
             var behaviors = Interaction.GetBehaviors(d);
             foreach (var behavior in e.NewValue as Behaviors)
-                behaviors.Add(behavior);
+               behaviors.Add(behavior);
         }
 
         private static void OnPropertyTriggersChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

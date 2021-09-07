@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json;
-using TickTrader.BotAgent.Common;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Models
 {
@@ -16,6 +16,8 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
         public ProtocolSettings Protocol { get; set; }
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public FdkSettings Fdk { get; set; }
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public AlgoSettings Algo { get; set; }
 
         public static AppSettings Default => new AppSettings
         {
@@ -25,21 +27,26 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
             Ssl = DefaultSslSettings,
             Protocol = DefaultProtocolSettings,
             Fdk = DefaultFdkSettings,
+            Algo = DefaultAlgoSettigns,
         };
 
-        public static string DefaultServerUrl => @"https://localhost:5001/;http://localhost:5000";
+        public static string DefaultServerUrl => @"https://localhost:15139/;http://localhost:15137";
         public static string RandomSecretKey => new KeyGenerator().GetUniqueKey(128);
         public static ServerCredentials DefaultCredentials => new ServerCredentials("Administrator", "Administrator", "Dealer", "Dealer", "Viewer", "Viewer");
         public static SslSettings DefaultSslSettings => new SslSettings { File = "certificate.pfx", Password = "" };
         public static ProtocolSettings DefaultProtocolSettings => new ProtocolSettings
         {
-            ListeningPort = 8443,
+            ListeningPort = 15443,
             LogDirectoryName = "Logs",
             LogMessages = false,
         };
         public static FdkSettings DefaultFdkSettings => new FdkSettings
         {
             EnableLogs = false,
+        };
+        public static AlgoSettings DefaultAlgoSettigns => new AlgoSettings
+        {
+            EnableDevMode = false,
         };
     }
 }

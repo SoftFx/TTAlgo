@@ -18,13 +18,13 @@ namespace TickTrader.BotTerminal
         public virtual void Ok()
         {
             _resultSrc.SetResult(true);
-            TryClose();
+            TryCloseAsync();
         }
 
         public virtual void Cancel()
         {
             _resultSrc.SetResult(false);
-            TryClose();
+            TryCloseAsync();
         }
     }
 }

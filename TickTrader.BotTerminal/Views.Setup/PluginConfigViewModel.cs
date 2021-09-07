@@ -8,13 +8,11 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Xml;
-using System.Xml.Serialization;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Core.Setup;
+using TickTrader.Algo.Domain;
+using TickTrader.Algo.Package;
+using TickTrader.Algo.ServerControl;
+using AlgoApi = TickTrader.Algo.Server.PublicAPI;
 
 namespace TickTrader.BotTerminal
 {
@@ -31,10 +29,9 @@ namespace TickTrader.BotTerminal
         private List<PropertySetupViewModel> _allProperties;
         private List<ParameterSetupViewModel> _parameters;
         private List<InputSetupViewModel> _barBasedInputs;
-        private List<InputSetupViewModel> _tickBasedInputs;
         private List<OutputSetupViewModel> _outputs;
-        private TimeFrames _selectedTimeFrame;
-        private ISymbolInfo _mainSymbol;
+        private AlgoApi.Feed.Types.Timeframe _selectedTimeFrame;
+        private ISetupSymbolInfo _mainSymbol;
         private MappingInfo _selectedMapping;
         private string _instanceId;
         private IPluginIdProvider _idProvider;
@@ -43,7 +40,7 @@ namespace TickTrader.BotTerminal
         private bool _visible;
         private bool _runBot;
 
-        public IEnumerable<TimeFrames> AvailableTimeFrames { get; private set; }
+        public IEnumerable<AlgoApi.Feed.Types.Timeframe> AvailableTimeFrames { get; private set; }
 
         public bool IsFixedFeed { get; set; }
         public bool IsEmulation { get; set; }
@@ -64,7 +61,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public TimeFrames SelectedTimeFrame
+        public AlgoApi.Feed.Types.Timeframe SelectedTimeFrame
         {
             get { return _selectedTimeFrame; }
             set
@@ -72,23 +69,27 @@ namespace TickTrader.BotTerminal
                 if (_selectedTimeFrame == value)
                     return;
 
-                var changeInputs = _selectedTimeFrame == TimeFrames.Ticks || value == TimeFrames.Ticks;
+                var changeInputs = _selectedTimeFrame == AlgoApi.Feed.Types.Timeframe.Ticks || value == AlgoApi.Feed.Types.Timeframe.Ticks;
+
                 _selectedTimeFrame = value;
                 NotifyOfPropertyChange(nameof(SelectedTimeFrame));
+
                 if (changeInputs)
                 {
                     NotifyOfPropertyChange(nameof(Inputs));
                     NotifyOfPropertyChange(nameof(HasInputs));
                 }
-                AvailableModels.Value = SetupMetadata.Api.TimeFrames.Where(t => t >= value && t != TimeFrames.TicksLevel2).ToList();
-                if (SelectedModel.Value < value)
+
+                AvailableModels.Value = SetupMetadata.Api.TimeFrames.Select(u => u.ToApi()).Where(t => t <= value).OrderBy(u => (int)u).ToList();
+
+                if (SelectedModel.Value > value)
                     SelectedModel.Value = value;
             }
         }
 
         public IReadOnlyList<SymbolKey> AvailableSymbols { get; private set; }
 
-        public ISymbolInfo MainSymbol
+        public ISetupSymbolInfo MainSymbol
         {
             get { return _mainSymbol; }
             set
@@ -117,9 +118,9 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public Property<List<TimeFrames>> AvailableModels { get; private set; }
+        public Property<List<AlgoApi.Feed.Types.Timeframe>> AvailableModels { get; private set; }
 
-        public Property<TimeFrames> SelectedModel { get; private set; }
+        public Property<AlgoApi.Feed.Types.Timeframe> SelectedModel { get; private set; }
 
         public IEnumerable<ParameterSetupViewModel> Parameters => _parameters;
 
@@ -151,9 +152,9 @@ namespace TickTrader.BotTerminal
 
         public bool IsEditMode => Mode == PluginSetupMode.Edit;
 
-        public bool CanBeSkipped => IsEmpty && Descriptor.IsValid && Descriptor.Type != AlgoTypes.Robot;
+        public bool CanBeSkipped => IsEmpty && Descriptor.IsValid && !Descriptor.IsTradeBot;
 
-        public bool IsBot => Descriptor.Type == AlgoTypes.Robot;
+        public bool IsBot => Descriptor.IsTradeBot;
 
         public string InstanceId
         {
@@ -170,7 +171,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public bool IsInstanceIdValid => Mode == PluginSetupMode.Edit ? true : _idProvider.IsValidPluginId(Descriptor.Type, InstanceId);
+        public bool IsInstanceIdValid => Mode == PluginSetupMode.Edit || _idProvider.IsValidPluginId(Descriptor.Type, InstanceId);
 
         public bool AllowTrade
         {
@@ -211,7 +212,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private List<InputSetupViewModel> ActiveInputs => _selectedTimeFrame == TimeFrames.Ticks ? _tickBasedInputs : _barBasedInputs;
+        private List<InputSetupViewModel> ActiveInputs => _barBasedInputs;
 
         public event System.Action ValidityChanged = delegate { };
 
@@ -220,27 +221,27 @@ namespace TickTrader.BotTerminal
         public PluginConfigViewModel(PluginInfo plugin, SetupMetadata setupMetadata, IPluginIdProvider idProvider, PluginSetupMode mode)
         {
             Plugin = plugin;
-            Descriptor = plugin.Descriptor;
+            Descriptor = plugin.Descriptor_;
             SetupMetadata = setupMetadata;
             _idProvider = idProvider;
             Mode = mode;
-            MainSymbol = setupMetadata.DefaultSymbol;
+            MainSymbol = setupMetadata.DefaultSymbol.ToKey();
             Visible = true;
             RunBot = true;
 
             _paramsFileHistory.SetContext(plugin.ToString());
 
-            AvailableModels = _var.AddProperty<List<TimeFrames>>();
-            SelectedModel = _var.AddProperty<TimeFrames>(TimeFrames.M1);
+            AvailableModels = _var.AddProperty<List<AlgoApi.Feed.Types.Timeframe>>();
+            SelectedModel = _var.AddProperty(AlgoApi.Feed.Types.Timeframe.M1);
 
             Init();
         }
 
         public void Load(PluginConfig cfg)
         {
-            SelectedModel.Value = cfg.ModelTimeFrame;
-            SelectedTimeFrame = cfg.TimeFrame;
-            MainSymbol = AvailableSymbols.GetSymbolOrDefault(cfg.MainSymbol) ?? AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol);
+            SelectedTimeFrame = cfg.Timeframe.ToApi();
+            SelectedModel.Value = cfg.ModelTimeframe.ToApi();
+            MainSymbol = AvailableSymbols.GetSymbolOrDefault(cfg.MainSymbol.ToKey()) ?? AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol.ToKey());
 
             if (!IsEmulation)
             {
@@ -251,9 +252,9 @@ namespace TickTrader.BotTerminal
                 Isolated = cfg.Permissions.Isolated;
             }
 
-            foreach (var scrProperty in cfg.Properties)
+            foreach (var scrProperty in cfg.UnpackProperties())
             {
-                var thisProperty = _allProperties.FirstOrDefault(p => p.Id == scrProperty.Id);
+                var thisProperty = _allProperties.FirstOrDefault(p => p.Id == scrProperty.PropertyId);
                 if (thisProperty != null)
                     thisProperty.Load(scrProperty);
             }
@@ -263,29 +264,25 @@ namespace TickTrader.BotTerminal
 
         public PluginConfig Save()
         {
-            var cfg = new PluginConfig();
-            cfg.TimeFrame = SelectedTimeFrame;
-            cfg.ModelTimeFrame = SelectedModel.Value;
-            cfg.MainSymbol = MainSymbol.ToConfig();
-            cfg.SelectedMapping = SelectedMapping.Key;
-            cfg.InstanceId = InstanceId;
-            cfg.Permissions = new PluginPermissions();
-            cfg.Permissions.TradeAllowed = _allowTrade;
-            cfg.Permissions.Isolated = _isolate;
-            foreach (var propertyModel in _allProperties)
+            var cfg = new PluginConfig
             {
-                var prop = propertyModel.Save();
-                if (prop != null)
-                    cfg.Properties.Add(prop);
-            }
+                Timeframe = SelectedTimeFrame.ToServer(),
+                ModelTimeframe = SelectedModel.Value.ToServer(),
+                MainSymbol = MainSymbol.ToConfig(),
+                SelectedMapping = SelectedMapping.Key,
+                InstanceId = InstanceId,
+                Permissions = new PluginPermissions { TradeAllowed = _allowTrade, Isolated = _isolate }
+            };
+
+            cfg.PackProperties(_allProperties.Select(p => p.Save()));
             return cfg;
         }
 
         public void Reset()
         {
-            SelectedModel.Value = TimeFrames.Ticks;
-            SelectedTimeFrame = SetupMetadata.Context.DefaultTimeFrame;
-            MainSymbol = AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol);
+            SelectedModel.Value = AlgoApi.Feed.Types.Timeframe.Ticks;
+            SelectedTimeFrame = SetupMetadata.Context.DefaultTimeFrame.ToApi();
+            MainSymbol = AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol.ToKey());
             SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(SetupMetadata.Context.DefaultMapping);
             InstanceId = _idProvider.GeneratePluginId(Descriptor);
 
@@ -313,7 +310,7 @@ namespace TickTrader.BotTerminal
         public IEnumerable<IResult> SaveParams()
         {
             var dialog = new SaveFileDialog();
-            dialog.FileName = Plugin.Descriptor.DisplayName + ".apr";
+            dialog.FileName = Descriptor.DisplayName + ".apr";
             dialog.Filter = ParamsFileFilter;
 
             var showAction = VmActions.ShowWin32Dialog(dialog);
@@ -398,22 +395,21 @@ namespace TickTrader.BotTerminal
 
         private bool CheckValidity()
         {
-            return Descriptor.Error == AlgoMetadataErrors.None && _allProperties.All(p => !p.HasError) && IsInstanceIdValid;
+            return Descriptor.Error == Metadata.Types.MetadataErrorCode.NoMetadataError && _allProperties.All(p => !p.HasError) && IsInstanceIdValid;
         }
 
         private void Init()
         {
-            AvailableTimeFrames = SetupMetadata.Api.TimeFrames.Where(t => t != TimeFrames.Ticks);
-            AvailableSymbols = SetupMetadata.Account.GetAvaliableSymbols(SetupMetadata.Context.DefaultSymbol).Where(u => u.Origin != SymbolOrigin.Token).ToList();
+            AvailableTimeFrames = SetupMetadata.Api.TimeFrames.Where(t => t != Feed.Types.Timeframe.Ticks).Select(u => u.ToApi());
+            AvailableSymbols = SetupMetadata.Account.GetAvaliableSymbols(SetupMetadata.Context.DefaultSymbol.ToKey()).Where(u => u.Origin != SymbolConfig.Types.SymbolOrigin.Token).ToList();
             AvailableMappings = SetupMetadata.Mappings.BarToBarMappings;
 
 
             _parameters = Descriptor.Parameters.Select(CreateParameter).ToList();
             _barBasedInputs = Descriptor.Inputs.Select(CreateBarBasedInput).ToList();
-            _tickBasedInputs = Descriptor.Inputs.Select(CreateTickBasedInput).ToList();
             _outputs = Descriptor.Outputs.Select(CreateOutput).ToList();
 
-            _allProperties = _parameters.Concat<PropertySetupViewModel>(_barBasedInputs).Concat(_tickBasedInputs).Concat(_outputs).ToList();
+            _allProperties = _parameters.Concat<PropertySetupViewModel>(_barBasedInputs).Concat(_outputs).ToList();
             _allProperties.ForEach(p => p.ErrorChanged += s => Validate());
 
             IsEmpty = _allProperties.Count == 0 && !Descriptor.SetupMainSymbol;
@@ -454,23 +450,6 @@ namespace TickTrader.BotTerminal
             {
                 case "System.Double": return new BarToDoubleInputSetupViewModel(descriptor, SetupMetadata);
                 case "TickTrader.Algo.Api.Bar": return new BarToBarInputSetupViewModel(descriptor, SetupMetadata);
-                //case "TickTrader.Algo.Api.Quote": return new QuoteInputSetupModel(descriptor, Metadata, DefaultSymbolCode, false);
-                //case "TickTrader.Algo.Api.QuoteL2": return new QuoteInputSetupModel(descriptor, Metadata, DefaultSymbolCode, true);
-                default: return new InputSetupViewModel.Invalid(descriptor, ErrorMsgCodes.UnsupportedInputType);
-            }
-        }
-
-        private InputSetupViewModel CreateTickBasedInput(InputDescriptor descriptor)
-        {
-            if (!descriptor.IsValid)
-                return new InputSetupViewModel.Invalid(descriptor);
-
-            switch (descriptor.DataSeriesBaseTypeFullName)
-            {
-                case "System.Double": return new QuoteToDoubleInputSetupViewModel(descriptor, SetupMetadata);
-                case "TickTrader.Algo.Api.Bar": return new QuoteToBarInputSetupViewModel(descriptor, SetupMetadata);
-                case "TickTrader.Algo.Api.Quote": return new QuoteInputSetupViewModel(descriptor, SetupMetadata, false);
-                case "TickTrader.Algo.Api.QuoteL2": return new QuoteInputSetupViewModel(descriptor, SetupMetadata, true);
                 default: return new InputSetupViewModel.Invalid(descriptor, ErrorMsgCodes.UnsupportedInputType);
             }
         }

@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Grpc\protos\**" />
+    <EmbeddedResource Remove="Grpc\protos\**" />
+    <None Remove="Grpc\protos\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="algo-ca.crt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="certs\algo-ca.crt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.15.5" />
+    <PackageReference Include="Grpc" Version="2.36.1" />
+    <PackageReference Include="Grpc.Tools" Version="2.36.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="NLog" Version="4.7.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\lib\ActorSharp\ActorSharp.csproj" />
+    <ProjectReference Include="..\..\lib\Machinarium\Machinarium.csproj" />
+    <ProjectReference Include="..\..\lib\TickTrader.Algo.Async\TickTrader.Algo.Async.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.Domain\TickTrader.Algo.Domain.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.Server.PublicAPI\TickTrader.Algo.Server.PublicAPI.csproj" />
+  </ItemGroup>
+
+</Project>

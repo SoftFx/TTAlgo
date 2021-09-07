@@ -2,9 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotTerminal
 {
@@ -22,22 +22,23 @@ namespace TickTrader.BotTerminal
             _adapter = new CaliburnAdapter();
         }
 
-        public void OpenWindow(IScreen wndModel)
+        public async void OpenWindow(IScreen wndModel)
         {
-            var wnd = _adapter.GetOrCreateMdiWindow(wndModel);
-            wnd.Show();
-            wnd.Activate();
+            var window = await _adapter.GetOrCreateMdiWindow(wndModel);
+            window.Show();
+            window.Activate();
         }
 
-        public void OpenMdiWindow(IScreen wndModel)
+        public async void OpenMdiWindow(IScreen wndModel)
         {
-            _adapter.GetOrCreateMdiWindow(wndModel, MdiSetup).Show();
+            var window = await _adapter.GetOrCreateMdiWindow(wndModel, MdiSetup);
+            window.Show();
         }
 
-        public static void OpenWindow(IScreen wndModel, IViewAware parent)
-        {
-            staticManager.ShowWindow(wndModel);
-        }
+        //public static void OpenWindow(IScreen wndModel, IViewAware parent)
+        //{
+        //    staticManager.ShowWindow(wndModel);
+        //}
 
         public static void ShowError(string message, IViewAware contextModel = null, string caption = null)
         {
@@ -73,9 +74,9 @@ namespace TickTrader.BotTerminal
             if (existing != null)
             {
                 if (existing != wndModel)
-                    existing.TryClose();
+                    existing.TryCloseAsync();
                 else
-                    existing.Activate();
+                    existing.ActivateAsync();
             }
             wndModel.Deactivated += WndModel_Deactivated;
             _wndModels[wndKey] = wndModel;
@@ -84,10 +85,10 @@ namespace TickTrader.BotTerminal
 
         private IScreen GetWindowModel(object key)
         {
-            return _wndModels.GetValueOrDefault(key);
+            return _wndModels.GetOrDefault(key);
         }
 
-        private void WndModel_Deactivated(object sender, DeactivationEventArgs e)
+        private Task WndModel_Deactivated(object sender, DeactivationEventArgs e)
         {
             if (e.WasClosed)
             {
@@ -98,23 +99,28 @@ namespace TickTrader.BotTerminal
                 if (keyValue.Key != null)
                     _wndModels.Remove(keyValue.Key);
             }
+
+            return Task.CompletedTask;
         }
 
         public void CloseWindowByKey(object wndKey)
         {
-            GetWindowModel(wndKey)?.TryClose();
+            GetWindowModel(wndKey)?.TryCloseAsync();
             _wndModels.Remove(wndKey);
         }
 
-        public bool? ShowDialog(IScreen dlgModel, IViewAware parent = null)
+        public async Task<bool?> ShowDialog(IScreen dlgModel, IViewAware parent = null)
         {
-            var wnd = _adapter.CreateWindow(dlgModel);
+            var wnd = await _adapter.CreateWindow(dlgModel);
             if (parent != null)
             {
                 wnd.ShowInTaskbar = false;
                 wnd.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                 wnd.Owner = (Window)parent.GetView();
             }
+            else
+                wnd.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+
             return wnd.ShowDialog();
         }
 
@@ -138,12 +144,12 @@ namespace TickTrader.BotTerminal
                 return _windows.GetOrDefault(rootModel);
             }
 
-            public Window GetOrCreateMdiWindow(object rootModel, Action<Window> setupAction = null)
+            public async Task<Window> GetOrCreateMdiWindow(object rootModel, Action<Window> setupAction = null)
             {
                 var wnd = _windows.GetOrDefault(rootModel);
                 if (wnd == null)
                 {
-                    wnd = base.CreateWindow(rootModel, false, null, null);
+                    wnd = await base.CreateWindowAsync(rootModel, false, null, null);
                     setupAction?.Invoke(wnd);
                     _windows.Add(rootModel, wnd);
 
@@ -159,15 +165,16 @@ namespace TickTrader.BotTerminal
                 return wnd;
             }
 
-            public Window CreateWindow(object rootModel)
+            public async Task<Window> CreateWindow(object rootModel)
             {
-                return base.CreateWindow(rootModel, false, null, null);
+                var window = await base.CreateWindowAsync(rootModel, false, null, null);
+                return window;
             }
 
-            protected override Window CreateWindow(object rootModel, bool isDialog, object context, IDictionary<string, object> settings)
-            {
-                return base.CreateWindow(rootModel, isDialog, context, settings);
-            }
+            //protected override Window CreateWindow(object rootModel, bool isDialog, object context, IDictionary<string, object> settings)
+            //{
+            //    return base.CreateWindow(rootModel, isDialog, context, settings);
+            //}
         }
     }
 }

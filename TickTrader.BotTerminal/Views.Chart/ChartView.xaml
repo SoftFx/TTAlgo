@@ -4,7 +4,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:cal="http://www.caliburnproject.org"
     xmlns:s="http://schemas.abtsoftware.co.uk/scichart"
-    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:l="clr-namespace:TickTrader.BotTerminal"
     xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase">
 
@@ -84,7 +84,7 @@
             </MenuItem.Style>
         </MenuItem>
 
-        <MenuItem Header="Add Bot Trader" IsEnabled="{Binding CanAddBot}"
+        <MenuItem Header="Add Bot" IsEnabled="{Binding CanAddBot}"
                   Visibility="{Binding Converter={StaticResource boolToVisibilityConverter}, Path=Chart.HasAvailableBotTraders}"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
                   cal:Message.Attach="OpenPlugin($originalsourcecontext)">

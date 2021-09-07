@@ -1,25 +1,14 @@
-﻿using ActorSharp.Lib;
-using Caliburn.Micro;
+﻿using Caliburn.Micro;
+using Google.Protobuf.WellKnownTypes;
 using Machinarium.Qnil;
 using NLog;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
-using System.Windows;
-using System.Windows.Data;
 using System.Windows.Threading;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Core;
-using TickTrader.BotTerminal.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -263,7 +252,7 @@ namespace TickTrader.BotTerminal
             {
                 _tradesList.Clear();
 
-                var downloadTask = DownloadingHistoryAsync(from?.ToUniversalTime(), to?.ToUniversalTime(), SkipCancel, cToken);
+                var downloadTask = Task.Run(() => DownloadingHistoryAsync(from?.ToUniversalTime(), to?.ToUniversalTime(), SkipCancel, cToken));
                 DownloadObserver = new ObservableTask<int>(downloadTask);
 
                 await downloadTask;
@@ -278,35 +267,48 @@ namespace TickTrader.BotTerminal
 
         private async Task<int> DownloadingHistoryAsync(DateTime? from, DateTime? to, bool skipCancel, CancellationToken token)
         {
+            const int batchSize = 32;
+
             if (token.IsCancellationRequested)
                 return 0;
 
             var historyStream = _tradeClient.TradeHistory.GetTradeHistory(from, to, skipCancel);
 
-            while (await historyStream.ReadNext())
+            var buffer = new TransactionReport[batchSize];
+
+            while (await historyStream.Reader.WaitToReadAsync())
             {
                 if (token.IsCancellationRequested)
                 {
-                    await historyStream.Close();
+                    historyStream.Writer.TryComplete();
                     break;
                 }
 
-                var report = historyStream.Current;
-                var historyItem = CreateReportModel(report);
-                AddToList(historyItem);
+                var cnt = 0;
+                while (cnt < batchSize && historyStream.Reader.TryRead(out var report))
+                {
+                    // create on thread pool thread, add on UI thread
+                    buffer[cnt++] = CreateReportModel(report);
+                }
+
+                var taskSrc = new TaskCompletionSource<object>();
+
+                OnUIThread(() => AddToList(buffer, cnt, taskSrc));
+
+                await taskSrc.Task;
             }
 
             return 0;
         }
 
-        private TransactionReport CreateReportModel(TradeReportEntity tTransaction)
+        private TransactionReport CreateReportModel(TradeReportInfo tTransaction)
         {
             return TransactionReport.Create(_tradeClient.Account.Type.Value, tTransaction, _tradeClient.Account.BalanceDigits, GetSymbolFor(tTransaction));
         }
 
-        private SymbolModel GetSymbolFor(TradeReportEntity transaction)
+        private SymbolInfo GetSymbolFor(TradeReportInfo transaction)
         {
-            SymbolModel symbolModel = null;
+            SymbolInfo symbolModel = null;
             if (!IsBalanceOperation(transaction))
             {
                 symbolModel = _tradeClient.Symbols.GetOrDefault(transaction.Symbol);
@@ -318,9 +320,9 @@ namespace TickTrader.BotTerminal
             return symbolModel;
         }
 
-        private bool IsBalanceOperation(TradeReportEntity item)
+        private bool IsBalanceOperation(TradeReportInfo item)
         {
-            return item.TradeTransactionReportType == TradeExecActions.BalanceTransaction;
+            return item.ReportType == TradeReportInfo.Types.ReportType.BalanceTransaction;
         }
 
         public void Close()
@@ -342,18 +344,34 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private bool MatchesCurrentFilter(TradeReportEntity tradeTransaction)
+        private void AddToList(TransactionReport[] transactions, int cnt, TaskCompletionSource<object> completion)
         {
-            if (_skipCancel && (tradeTransaction.TradeTransactionReportType == TradeExecActions.OrderCanceled
-                || tradeTransaction.TradeTransactionReportType == TradeExecActions.OrderExpired
-                || tradeTransaction.TradeTransactionReportType == TradeExecActions.OrderActivated))
+            try
+            {
+                for (var i = 0; i < cnt; i++)
+                {
+                    AddToList(transactions[i]);
+                }
+            }
+            catch(Exception ex)
+            {
+                logger.Error(ex);
+            }
+            completion.TrySetResult(null);
+        }
+
+        private bool MatchesCurrentFilter(TradeReportInfo tradeTransaction)
+        {
+            if (_skipCancel && (tradeTransaction.ReportType == TradeReportInfo.Types.ReportType.OrderCanceled
+                || tradeTransaction.ReportType == TradeReportInfo.Types.ReportType.OrderExpired
+                || tradeTransaction.ReportType == TradeReportInfo.Types.ReportType.OrderActivated))
                 return false;
             return MatchesCurrentBoundaries(tradeTransaction.CloseTime);
         }
 
-        private bool MatchesCurrentBoundaries(DateTime reportTime)
+        private bool MatchesCurrentBoundaries(Timestamp reportTime)
         {
-            var localTime = reportTime.ToLocalTime();
+            var localTime = reportTime.ToDateTime().ToLocalTime();
 
             return (_currenFrom == null || localTime >= _currenFrom)
                 && (_currenTo == null || localTime < _currenTo);
@@ -434,7 +452,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void OnReport(TradeReportEntity tradeTransaction)
+        private void OnReport(TradeReportInfo tradeTransaction)
         {
             if (_tradeClient.Account.Type.HasValue && MatchesCurrentFilter(tradeTransaction))
                 AddToList(CreateReportModel(tradeTransaction));
@@ -442,7 +460,7 @@ namespace TickTrader.BotTerminal
 
         private void AccountTypeChanged()
         {
-            GridView.AccType.Value = _tradeClient.Account.Type ?? AccountTypes.Gross;
+            GridView.AccType.Value = _tradeClient.Account.Type ?? AccountInfo.Types.Type.Gross;
         }
 
         private async Task TruncateHistoryAsync(DateTime from, CancellationToken cToken)
@@ -483,7 +501,7 @@ namespace TickTrader.BotTerminal
                 _skipCancel = true;
 
             var periodProp = _viewPropertyStorage.GetProperty(nameof(Period));
-            if (!Enum.TryParse(periodProp?.State, out _period))
+            if (!System.Enum.TryParse(periodProp?.State, out _period))
                 _period = TimePeriod.LastHour;
 
             var fromProp = _viewPropertyStorage.GetProperty(nameof(From));

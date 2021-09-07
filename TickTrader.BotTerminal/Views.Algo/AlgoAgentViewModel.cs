@@ -1,21 +1,17 @@
-﻿using Caliburn.Micro;
-using Machinarium.Qnil;
+﻿using Machinarium.Qnil;
 using NLog;
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Common.Model.Setup;
+using System.Windows.Data;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Core.Repository;
-using Xceed.Wpf.AvalonDock.Layout;
+using TickTrader.Algo.Domain;
+using TickTrader.Algo.Domain.ServerControl;
 
 namespace TickTrader.BotTerminal
 {
-    internal class AlgoAgentViewModel : PropertyChangedBase
+    internal class AlgoAgentViewModel
     {
         private static readonly ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -42,13 +38,15 @@ namespace TickTrader.BotTerminal
 
         public IObservableList<AlgoAccountViewModel> AccountList { get; }
 
+        public ICollectionView ServerViews { get; }
+
 
         public AlgoAgentViewModel(IAlgoAgent agentModel, AlgoEnvironment algoEnv)
         {
             _agentModel = agentModel;
             _algoEnv = algoEnv;
 
-            Plugins = _agentModel.Plugins.OrderBy((k, v) => v.Descriptor.UiDisplayName).Select(p => new AlgoPluginViewModel(p, this));
+            Plugins = _agentModel.Plugins.OrderBy((k, v) => v.Descriptor_.UiDisplayName).Select(p => new AlgoPluginViewModel(p, this));
             Packages = _agentModel.Packages.OrderBy((k, v) => k).Select(p => new AlgoPackageViewModel(p, this));
             Bots = _agentModel.Bots.OrderBy((k, v) => k).Select(p => new AlgoBotViewModel(p, this));
             Accounts = _agentModel.Accounts.OrderBy((k, v) => k).Select(p => new AlgoAccountViewModel(p, this));
@@ -57,6 +55,9 @@ namespace TickTrader.BotTerminal
             PackageList = Packages.AsObservable();
             BotList = Bots.AsObservable();
             AccountList = Accounts.AsObservable();
+
+            ServerViews = CollectionViewSource.GetDefaultView(AccountList);
+            ServerViews.GroupDescriptions.Add(new PropertyGroupDescription(AlgoAccountViewModel.ServerLevelHeader));
         }
 
 
@@ -84,11 +85,11 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public async Task AddBot(AccountKey account, PluginConfig config)
+        public async Task AddBot(string accountId, PluginConfig config)
         {
             try
             {
-                await _agentModel.AddBot(account, config);
+                await _agentModel.AddBot(accountId, config);
                 OpenBotState(config.InstanceId);
             }
             catch (Exception ex)
@@ -118,7 +119,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public async Task RemoveAccount(AccountKey account)
+        public async Task RemoveAccount(string accountId)
         {
             try
             {
@@ -127,7 +128,7 @@ namespace TickTrader.BotTerminal
                 if (result != DialogResult.OK)
                     return;
 
-                await _agentModel.RemoveAccount(account);
+                await _agentModel.RemoveAccount(new RemoveAccountRequest(accountId));
             }
             catch (Exception ex)
             {
@@ -135,11 +136,11 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public async Task TestAccount(AccountKey account)
+        public async Task TestAccount(string accountId)
         {
             try
             {
-                await _agentModel.TestAccount(account);
+                await _agentModel.TestAccount(new TestAccountRequest(accountId));
             }
             catch (Exception ex)
             {
@@ -147,7 +148,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public async Task RemovePackage(PackageKey package)
+        public async Task RemovePackage(string packageId)
         {
             try
             {
@@ -156,7 +157,7 @@ namespace TickTrader.BotTerminal
                 if (result != DialogResult.OK)
                     return;
 
-                var bots = Bots.Where(u => u.Plugin.IsFromPackage(package)).AsObservable();
+                var bots = Bots.Where(u => u.Plugin.PackageId == packageId).AsObservable();
 
                 if (bots.Any(u => u.IsRunning))
                 {
@@ -167,7 +168,7 @@ namespace TickTrader.BotTerminal
                 foreach (var id in bots.Select(u => u.InstanceId).ToList())
                     RemoveBot(id, showDialog: false).Forget();
 
-                await _agentModel.RemovePackage(package);
+                await _agentModel.RemovePackage(packageId);
             }
             catch (Exception ex)
             {
@@ -176,12 +177,28 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public void OpenAccountSetup(AccountModelInfo account, AgentPluginSetupViewModel selectedPlugin = null, bool allowedChangeAgentKey = true)
+        public void OpenAccountSetup(AccountModelInfo account, string serverName = null)
         {
             try
             {
-                var model = new BAAccountDialogViewModel(_algoEnv, account, Name, selectedPlugin, allowedChangeAgentKey);
-                _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AccountSetupWindow", model);
+                var model = new BAAccountDialogViewModel(_algoEnv, account, this, serverName);
+
+                _algoEnv.Shell.ToolWndManager.ShowDialog(model, _algoEnv.Shell);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to open account setup");
+            }
+        }
+
+        public void UpdatePluginAccountSettings(AgentPluginSetupViewModel plugin)
+        {
+            try
+            {
+                var model = new BAAccountDialogViewModel(_algoEnv, null, this);
+
+                if (_algoEnv.Shell.ToolWndManager.ShowDialog(model, plugin).Result == true && plugin.SelectedAgent == model.AlgoServer.Value)
+                    plugin.SetNewAccount(model.Login.Value);
             }
             catch (Exception ex)
             {
@@ -206,7 +223,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                var model = new AgentPluginSetupViewModel(_algoEnv, Name, null, plugin.Key, plugin.Descriptor.Type, setupContext);
+                var model = new AgentPluginSetupViewModel(_algoEnv, Name, null, plugin.Key, plugin.Descriptor_.Type, setupContext);
                 _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
             }
             catch (Exception ex)
@@ -215,11 +232,11 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void OpenBotSetup(AccountKey account = null, PluginKey pluginKey = null)
+        public void OpenBotSetup(string accountId = null, PluginKey pluginKey = null)
         {
             try
             {
-                var model = new AgentPluginSetupViewModel(_algoEnv, Name, account, pluginKey, AlgoTypes.Robot, null);
+                var model = new AgentPluginSetupViewModel(_algoEnv, Name, accountId, pluginKey, Metadata.Types.PluginType.TradeBot, null);
                 _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
             }
             catch (Exception ex)
@@ -228,29 +245,29 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void OpenUploadPackageDialog(PackageKey package = null, string agentName = null)
+        public void OpenUploadPackageDialog(string packageId = null, AlgoAgentViewModel selectedAlgoServer = null)
         {
             try
             {
-                var model = new UploadPackageViewModel(_algoEnv, agentName ?? Name, package);
+                var model = new UploadPackageViewModel(selectedAlgoServer ?? this, packageId);
                 _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoUploadPackageWindow", model);
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failed to open upload package dialog");
+                _logger.Error(ex, "Failed to open upload Algo package dialog");
             }
         }
 
-        public void OpenDownloadPackageDialog(PackageKey packageKey = null)
+        public void OpenDownloadPackageDialog(string packageId = null)
         {
             try
             {
-                var model = new DownloadPackageViewModel(_algoEnv, Name, packageKey);
+                var model = new DownloadPackageViewModel(this, packageId);
                 _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoDownloadPackageWindow", model);
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failed to open download package dialog");
+                _logger.Error(ex, "Failed to open download Algo package dialog");
             }
         }
 
@@ -267,7 +284,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void OpenManageBotFilesDialog(string botId, BotFolderId folderId)
+        public void OpenManageBotFilesDialog(string botId, PluginFolderInfo.Types.PluginFolderId folderId)
         {
             try
             {
@@ -288,7 +305,7 @@ namespace TickTrader.BotTerminal
 
             try
             {
-                _algoEnv.Shell.ShowChart(bot.Config.MainSymbol.Name, bot.Config.TimeFrame.Convert());
+                _algoEnv.Shell.ShowChart(bot.Config.MainSymbol.Name, bot.Config.Timeframe.Convert());
             }
             catch (Exception ex)
             {
@@ -320,5 +337,9 @@ namespace TickTrader.BotTerminal
                 _logger.Error(ex, "Failed to open copy bot instance dialog");
             }
         }
+
+        public override bool Equals(object obj) => obj is AlgoAgentViewModel second ? Name == second.Name : base.Equals(obj);
+
+        public override int GetHashCode() => Name.GetHashCode();
     }
 }

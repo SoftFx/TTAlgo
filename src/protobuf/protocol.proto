@@ -1,0 +1,53 @@
+﻿syntax = "proto3";
+
+package ticktrader.algo.rpc;
+
+option csharp_namespace = "TickTrader.Algo.Rpc";
+
+import "google/protobuf/any.proto";
+
+enum RpcFlags {
+    NOTIFICATION = 0;
+    REQUEST = 1;
+    RESPONSE = 2;
+}
+
+message RpcMessage {
+    RpcFlags flags = 1;
+    string call_id = 2;
+    google.protobuf.Any payload = 3;
+    string proxy_id = 4;
+}
+
+message ErrorResponse {
+    string message = 1;
+    string details = 2;
+}
+
+message VoidResponse { }
+
+message Heartbeat { }
+
+message ProtocolSpec {
+    string url = 1;
+    int32 major_verion = 2;
+    int32 minor_verion = 3;
+}
+
+message ConnectRequest {
+    ProtocolSpec protocol = 1;
+}
+
+message ConnectResponse {
+    ProtocolSpec protocol = 1;
+}
+
+message DisconnectMsg {
+    string reason = 1;
+}
+
+message ShutdownRequest {
+    string reason = 1;
+}
+
+message ShutdownResponse { }

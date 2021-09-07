@@ -12,7 +12,6 @@ export class OrderByPipe implements PipeTransform {
             a = +a;
             b = +b;
         }
-
         if ((isNaN(parseFloat(a)) || !isFinite(a)) || (isNaN(parseFloat(b)) || !isFinite(b))) {
             if (a.toLowerCase() < b.toLowerCase()) return -1;
             if (a.toLowerCase() > b.toLowerCase()) return 1;
@@ -41,7 +40,6 @@ export class OrderByPipe implements PipeTransform {
                 var property: string = propertyToCheck.substr(0, 1) == '+' || propertyToCheck.substr(0, 1) == '-'
                     ? propertyToCheck.substr(1)
                     : propertyToCheck;
-
                 return input.sort(function (a: any, b: any) {
                     return !desc ? OrderByPipe._orderByComparator(a[property], b[property])
                         : -OrderByPipe._orderByComparator(a[property], b[property]);

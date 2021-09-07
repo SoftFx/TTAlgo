@@ -1,12 +1,10 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Var;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotTerminal
 {

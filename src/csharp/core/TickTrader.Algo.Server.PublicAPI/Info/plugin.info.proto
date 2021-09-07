@@ -1,0 +1,92 @@
+﻿syntax = "proto3";
+
+package ticktrader.algo.server.publicApi;
+
+option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/any.proto";
+
+import "info/server.metadata.info.proto";
+import "info/mappings/mapping.info.proto";
+import "info/property.descriptor.info.proto";
+
+
+message PluginInfo {
+    PluginKey key = 1;
+    PluginDescriptor descriptor = 2;
+}
+
+message PluginModelInfo {
+    enum PluginState {
+        STOPPED = 0;
+        STARTING = 1;
+        FAULTED = 2;
+        RUNNING = 3;
+        STOPPING = 4;
+        BROKEN = 5;
+        RECONNECTING = 6;
+    }
+
+    string instance_id = 1;
+    string account_id = 2;
+    PluginState state = 3;
+    google.protobuf.StringValue fault_message = 4;
+    PluginConfig config = 5;
+    PluginDescriptor descriptor = 6;
+}
+
+message PluginConfig {
+    PluginKey key = 1;
+    Feed.Timeframe timeframe = 2;
+    Feed.Timeframe model_timeframe = 3;
+    SymbolConfig main_symbol = 4;
+    MappingKey selected_mapping = 5;
+    string instance_id = 6;
+    PluginPermissions permissions = 7;
+    repeated google.protobuf.Any properties = 8;
+}
+
+message PluginDescriptor {
+    enum PluginType {
+        UNKNOWN_PLUGIN_TYPE = 0;
+        INDICATOR = 1;
+        TRADE_BOT = 2;
+    }
+
+    enum PluginErrorCode {
+        NO_METADATA_ERROR = 0;
+        UNKNOWN_METADATA_ERROR = 1;
+        HAS_INVALID_PROPERTIES = 2;
+        UNKNOWN_BASE_TYPE = 3;
+        INCOMPATIBLE_API_NEWER_VERSION = 4;
+        INCOMPATIBLE_API_OLDER_VERSION = 5;
+    }
+
+    string api_version_str = 1;
+    string id = 2;
+    string display_name = 3;
+    PluginType type = 4;
+    PluginErrorCode error = 5;
+    google.protobuf.StringValue ui_display_name = 6;
+    google.protobuf.StringValue category = 7;
+    google.protobuf.StringValue version = 8;
+    google.protobuf.StringValue description = 9;
+    google.protobuf.StringValue copyright = 10;
+
+    repeated ParameterDescriptor parameters = 11;
+    repeated InputDescriptor inputs = 12;
+    repeated OutputDescriptor outputs = 13;
+
+    bool setup_main_symbol = 14;
+}
+
+message PluginPermissions {
+    bool trade_allowed = 1;
+    bool isolated = 2;
+}
+
+message PluginKey {
+    string package_id = 1;
+    string descriptor_id = 2;
+}

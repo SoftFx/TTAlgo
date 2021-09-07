@@ -1,15 +1,9 @@
-﻿using Caliburn.Micro;
-using Machinarium.Var;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Lib;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -59,7 +53,7 @@ namespace TickTrader.BotTerminal
                             var record = records[i];
                             var sevString = TxtFormat(record.Severity);
 
-                            writer.Write(record.Time.Timestamp.ToString(InvariantFormat.DateFormat));
+                            writer.Write(record.TimeUtc.ToDateTime().ToString(InvariantFormat.DateFormat));
                             writer.Write(" [{0}] ", sevString);
 
                             var nextLineSpaceSize = InvariantFormat.DateFormatFixedLength + 4 + sevString.Length;
@@ -81,11 +75,11 @@ namespace TickTrader.BotTerminal
             observer.StartProgress(0, records.Count);
         }
 
-        private string TxtFormat(LogSeverities severity)
+        private string TxtFormat(PluginLogRecord.Types.LogSeverity severity)
         {
             switch (severity)
             {
-                case LogSeverities.TradeSuccess: return "Trade";
+                case PluginLogRecord.Types.LogSeverity.TradeSuccess: return "Trade";
                 default: return severity.ToString();
             }
         }

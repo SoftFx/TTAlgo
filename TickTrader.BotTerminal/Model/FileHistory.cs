@@ -1,11 +1,7 @@
-﻿using Machinarium.Qnil;
-using Machinarium.Var;
-using System;
+﻿using Machinarium.Var;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotTerminal
 {

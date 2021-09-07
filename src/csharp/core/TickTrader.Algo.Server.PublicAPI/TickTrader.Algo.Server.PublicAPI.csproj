@@ -1,0 +1,87 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="certs\algo-ca.crt" />
+    <None Remove="Info\account.info.proto" />
+    <None Remove="Info\ParameterConfigs\input.parameter.config.proto" />
+    <None Remove="Info\ParameterConfigs\output.parameter.config.proto" />
+    <None Remove="Info\ParameterConfigs\parameter.config.proto" />
+    <None Remove="Info\file.transfer.info.proto" />
+    <None Remove="Info\log.info.proto" />
+    <None Remove="Info\Mappings\mapping.info.proto" />
+    <None Remove="Info\Mappings\reduction.info.proto" />
+    <None Remove="Info\package.info.proto" />
+    <None Remove="Info\plugin.folder.info.proto" />
+    <None Remove="Info\plugin.info.proto" />
+    <None Remove="Info\property.descriptor.info.proto" />
+    <None Remove="Info\server.metadata.info.proto" />
+    <None Remove="Management\account.management.proto" />
+    <None Remove="Management\base.request.proto" />
+    <None Remove="Management\connection.management.proto" />
+    <None Remove="Management\package.management.proto" />
+    <None Remove="Management\plugin.files.management.proto" />
+    <None Remove="Management\plugin.management.proto" />
+    <None Remove="Management\server.management.proto" />
+    <None Remove="Management\subscriptions.management.proto" />
+    <None Remove="Updates\base.update.proto" />
+    <None Remove="Updates\log.record.update.proto" />
+    <None Remove="Updates\model.state.update.proto" />
+    <None Remove="Updates\model.update.proto" />
+    <None Remove="Updates\server.metadata.update.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="certs\algo-ca.crt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.15.5" />
+    <PackageReference Include="Grpc" Version="2.36.1" />
+    <PackageReference Include="Grpc.Tools" Version="2.36.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="NLog" Version="4.7.7" />
+    <PackageReference Include="SharpZipLib" Version="1.3.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\lib\Machinarium\Machinarium.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.Server.Common\TickTrader.Algo.Server.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="Info\ParameterConfigs\input.parameter.config.proto" GrpcServices="Client" />
+    <Protobuf Include="Info\ParameterConfigs\output.parameter.config.proto" GrpcServices="Client" />
+    <Protobuf Include="Info\ParameterConfigs\parameter.config.proto" GrpcServices="Client" />
+    <Protobuf Include="Info\property.descriptor.info.proto" GrpcServices="Client" />
+    <Protobuf Include="Info\file.transfer.info.proto" GrpcServices="Client" />
+    <Protobuf Include="Info\log.info.proto" GrpcServices="Client" />
+    <Protobuf Include="Info\Mappings\mapping.info.proto" GrpcServices="Client" />
+    <Protobuf Include="Info\Mappings\reduction.info.proto" GrpcServices="Client" />
+    <Protobuf Include="Info\plugin.folder.info.proto" GrpcServices="Client" />
+    <Protobuf Include="Info\server.metadata.info.proto" GrpcServices="Client" />
+    <Protobuf Include="Management\base.request.proto" GrpcServices="Client" />
+    <Protobuf Include="Management\account.management.proto" GrpcServices="Client" />
+    <Protobuf Include="Management\connection.management.proto" GrpcServices="Client" />
+    <Protobuf Include="Management\server.management.proto" GrpcServices="Client" />
+    <Protobuf Include="Management\subscriptions.management.proto" GrpcServices="Client" />
+    <Protobuf Include="Management\package.management.proto" GrpcServices="Client" />
+    <Protobuf Include="Management\plugin.files.management.proto" GrpcServices="Client" />
+    <Protobuf Include="Management\plugin.management.proto" GrpcServices="Client" />
+    <Protobuf Include="Info\account.info.proto" GrpcServices="Client" />
+    <Protobuf Include="Info\package.info.proto" GrpcServices="Client" />
+    <Protobuf Include="Services\algo.server.publicAPI.proto" GrpcServices="Both" />
+    <Protobuf Include="Info\plugin.info.proto" GrpcServices="Client" />
+    <Protobuf Include="Updates\server.metadata.update.proto" GrpcServices="Client" />
+    <Protobuf Include="Updates\base.update.proto" GrpcServices="Client" />
+    <Protobuf Include="Updates\log.record.update.proto" GrpcServices="Client" />
+    <Protobuf Include="Updates\model.state.update.proto" GrpcServices="Client" />
+    <Protobuf Include="Updates\model.update.proto" GrpcServices="Client" />
+  </ItemGroup>
+
+</Project>

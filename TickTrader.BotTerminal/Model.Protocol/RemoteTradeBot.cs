@@ -1,31 +1,22 @@
-﻿using NLog;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Protocol;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
-    internal class RemoteTradeBot : ITradeBot, IDisposable
+    internal sealed class RemoteTradeBot : ITradeBot
     {
-        private static readonly ILogger _logger = LogManager.GetCurrentClassLogger();
+        private readonly RemoteAlgoAgent _agent;
 
-        private const int StatusUpdateTimeout = 1000;
-        private const int LogsUpdateTimeout = 1000;
-
-
-        private RemoteAlgoAgent _agent;
         private int _statusSubscriptionCnt;
         private int _logsSubscriptionCnt;
-        private Timer _statusTimer;
-        private Timer _logsTimer;
-        private DateTime _lastLogTimeUtc;
+
+        private bool _subscribeStatusEnable = false;
+        private bool _subscribeLogsEnable = false;
 
 
-        public BotModelInfo Info { get; private set; }
+        public PluginModelInfo Info { get; private set; }
 
 
         public bool IsRemote => true;
@@ -34,17 +25,17 @@ namespace TickTrader.BotTerminal
 
         public PluginConfig Config => Info.Config;
 
-        public PluginStates State => Info.State;
+        public PluginModelInfo.Types.PluginState State => Info.State;
 
         public string FaultMessage => Info.FaultMessage;
 
-        public PluginDescriptor Descriptor => Info.Descriptor;
+        public PluginDescriptor Descriptor => Info.Descriptor_;
 
         public string Status { get; private set; }
 
         public BotJournal Journal { get; }
 
-        public AccountKey Account => Info.Account;
+        public string AccountId => Info.AccountId;
 
 
         public event Action<ITradeBot> Updated;
@@ -52,166 +43,145 @@ namespace TickTrader.BotTerminal
         public event Action<ITradeBot> StatusChanged;
 
 
-        public RemoteTradeBot(BotModelInfo info, RemoteAlgoAgent agent)
+        public RemoteTradeBot(PluginModelInfo info, RemoteAlgoAgent agent)
         {
             Info = info;
+
             _agent = agent;
 
             _statusSubscriptionCnt = 0;
             _logsSubscriptionCnt = 0;
-            Journal = new BotJournal(info.InstanceId, false);
-            ResetJournal();
+            Journal = new BotJournal(info.InstanceId);
+
+            Journal.Clear();
         }
 
 
-        public void Update(BotModelInfo info)
+        public void Update(PluginModelInfo info)
         {
             Info = info;
             Updated?.Invoke(this);
         }
 
-        public void UpdateState(BotModelInfo info)
+        public void UpdateState(PluginStateUpdate update)
         {
-            Info.State = info.State;
-            Info.FaultMessage = info.FaultMessage;
+            Info.State = update.State;
+            Info.FaultMessage = update.FaultMessage;
             StateChanged?.Invoke(this);
+        }
+
+        public void UpdateStatus(string status)
+        {
+            if (status != Status)
+            {
+                Status = status;
+                StatusChanged?.Invoke(this);
+            }
+        }
+
+        public void UpdateLogs(List<LogRecordInfo> logs)
+        {
+            if (_subscribeLogsEnable)
+                Journal.Add(logs.Where(ApplyNewRecordsFilter).Select(Convert).ToList());
         }
 
         public void SubscribeToStatus()
         {
             _statusSubscriptionCnt++;
-            ManageStatusTimer();
+            ManageSubscribeToStatus();
         }
 
         public void UnsubscribeFromStatus()
         {
             _statusSubscriptionCnt--;
-            ManageStatusTimer();
+            ManageSubscribeToStatus();
         }
 
         public void SubscribeToLogs()
         {
             _logsSubscriptionCnt++;
-            ManageLogsTimer();
+            ManageSubscribeToLogs();
         }
 
         public void UnsubscribeFromLogs()
         {
             _logsSubscriptionCnt--;
-            ManageLogsTimer();
+            ManageSubscribeToLogs();
         }
 
-        public void Dispose()
-        {
-            _statusTimer.Dispose();
-            _logsTimer.Dispose();
-        }
-
-
-        private void ManageStatusTimer()
+        private async void ManageSubscribeToStatus()
         {
             if (_statusSubscriptionCnt < 0)
                 _statusSubscriptionCnt = 0;
 
-            if (_statusSubscriptionCnt > 0 && _statusTimer == null)
+            if (_statusSubscriptionCnt > 0 && !_subscribeStatusEnable)
             {
-                _statusTimer = new Timer(UpdateStatus, null, StatusUpdateTimeout, -1);
+                _subscribeStatusEnable = true;
+
+                await _agent.SubscribeToPluginStatus(InstanceId);
             }
-            else if (_statusSubscriptionCnt == 0 && _statusTimer != null)
+            else
+            if (_statusSubscriptionCnt == 0 && _subscribeStatusEnable)
             {
-                _statusTimer.Dispose();
-                _statusTimer = null;
+                _subscribeStatusEnable = false;
+
+                await _agent.UnsubscribeToPluginStatus(InstanceId);
             }
         }
 
-        private void ManageLogsTimer()
+        private async void ManageSubscribeToLogs()
         {
             if (_logsSubscriptionCnt < 0)
                 _logsSubscriptionCnt = 0;
 
-            if (_logsSubscriptionCnt > 0 && _logsTimer == null)
+            if (_logsSubscriptionCnt > 0 && !_subscribeLogsEnable)
             {
-                _logsTimer = new Timer(UpdateLogs, null, LogsUpdateTimeout, -1);
-            }
-            else if (_logsSubscriptionCnt == 0 && _logsTimer != null)
-            {
-                _logsTimer.Dispose();
-                _logsTimer = null;
-            }
-        }
+                _subscribeLogsEnable = true;
 
-        private void ResetJournal()
-        {
-            _lastLogTimeUtc = new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-            Journal.Clear();
-        }
+                await _agent.SubscribeToPluginLogs(InstanceId);
+            }
+            else
+            if (_logsSubscriptionCnt == 0 && _subscribeLogsEnable)
+            {
+                _subscribeLogsEnable = false;
 
-        private async void UpdateStatus(object state)
-        {
-            _statusTimer?.Change(-1, -1);
-            try
-            {
-                var status = await _agent.GetBotStatus(InstanceId);
-                if (status != Status)
-                {
-                    Status = status;
-                    StatusChanged?.Invoke(this);
-                }
-            }
-            catch(BAException baex)
-            {
-                _logger.Error($"Failed to get bot status {InstanceId} at {_agent.Name}: {baex.Message}");
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, $"Failed to get bot status {InstanceId} at {_agent.Name}");
-            }
-            _statusTimer?.Change(StatusUpdateTimeout, -1);
-        }
+                await _agent.UnsubscribeToPluginLogs(InstanceId);
 
-        private async void UpdateLogs(object state)
-        {
-            _logsTimer?.Change(-1, -1);
-            try
-            {
-                var logs = await _agent.GetBotLogs(InstanceId, _lastLogTimeUtc);
-                if (logs.Length > 0)
-                {
-                    _lastLogTimeUtc = logs.Max(l => l.TimeUtc).Timestamp;
-
-                    Journal.Add(logs.Select(Convert).ToList());
-                }
+                Journal.Clear();
             }
-            catch (BAException baex)
-            {
-                _logger.Error($"Failed to get bot logs {InstanceId} at {_agent.Name}: {baex.Message}");
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, $"Failed to get bot logs {InstanceId} at {_agent.Name}");
-            }
-
-            _logsTimer?.Change(LogsUpdateTimeout, -1);
         }
 
         private BotMessage Convert(LogRecordInfo record)
         {
-            return new BotMessage(record.TimeUtc.ToLocalTime(), InstanceId, record.Message, Convert(record.Severity));
+            return new BotMessage(record.TimeUtc, InstanceId, record.Message, Convert(record.Severity));
         }
 
-        private JournalMessageType Convert(LogSeverity severity)
+        private static JournalMessageType Convert(PluginLogRecord.Types.LogSeverity severity)
         {
             switch (severity)
             {
-                case LogSeverity.Info: return JournalMessageType.Info;
-                case LogSeverity.Error: return JournalMessageType.Error;
-                case LogSeverity.Custom: return JournalMessageType.Custom;
-                case LogSeverity.Trade: return JournalMessageType.Trading;
-                case LogSeverity.TradeSuccess: return JournalMessageType.TradingSuccess;
-                case LogSeverity.TradeFail: return JournalMessageType.TradingFail;
-                case LogSeverity.Alert: return JournalMessageType.Alert;
+                case PluginLogRecord.Types.LogSeverity.Info: return JournalMessageType.Info;
+                case PluginLogRecord.Types.LogSeverity.Error: return JournalMessageType.Error;
+                case PluginLogRecord.Types.LogSeverity.Custom: return JournalMessageType.Custom;
+                case PluginLogRecord.Types.LogSeverity.Trade: return JournalMessageType.Trading;
+                case PluginLogRecord.Types.LogSeverity.TradeSuccess: return JournalMessageType.TradingSuccess;
+                case PluginLogRecord.Types.LogSeverity.TradeFail: return JournalMessageType.TradingFail;
+                case PluginLogRecord.Types.LogSeverity.Alert: return JournalMessageType.Alert;
                 default: return JournalMessageType.Info;
             }
+        }
+
+        private bool ApplyNewRecordsFilter(LogRecordInfo info)
+        {
+            var timeKey = new TimeKey(info.TimeUtc);
+
+            var isTailMessage = true;
+            var isClearedMessage = timeKey.CompareTo(Journal.TimeLastClearedMessage) != 1;
+
+            if (Journal.Records.Count > 0)
+                isTailMessage = timeKey.CompareTo(Journal.Records.Last().TimeKey) == 1;
+
+            return isTailMessage && !isClearedMessage;
         }
     }
 }

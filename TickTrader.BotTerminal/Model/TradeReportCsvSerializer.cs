@@ -1,13 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -70,21 +65,21 @@ namespace TickTrader.BotTerminal
             addAction(_grossSerializer);
         }
 
-        public static void Serialize(IEnumerable<TransactionReport> reports, Stream toStream, AccountTypes accType)
+        public static void Serialize(IEnumerable<TransactionReport> reports, Stream toStream, AccountInfo.Types.Type accType)
         {
             GetByAccType(accType).Serialize(reports, toStream);
         }
 
-        public static void Serialize(IEnumerable<TransactionReport> reports, Stream toStream, AccountTypes accType, Action<long> progressCallback)
+        public static void Serialize(IEnumerable<TransactionReport> reports, Stream toStream, AccountInfo.Types.Type accType, Action<long> progressCallback)
         {
             GetByAccType(accType).Serialize(reports, toStream, progressCallback);
         }
 
-        private static CsvSerializer<TransactionReport> GetByAccType(AccountTypes accType)
+        private static CsvSerializer<TransactionReport> GetByAccType(AccountInfo.Types.Type accType)
         {
-            if (accType == AccountTypes.Net)
+            if (accType == AccountInfo.Types.Type.Net)
                 return _netSerializer;
-            else if (accType == AccountTypes.Gross)
+            else if (accType == AccountInfo.Types.Type.Gross)
                 return _grossSerializer;
             else
                 throw new Exception("Unsupported account type: " + accType);

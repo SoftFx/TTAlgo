@@ -1,13 +1,10 @@
 ﻿using Caliburn.Micro;
-using Machinarium.Qnil;
 using NLog;
 using System;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Windows.Data;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
+using TickTrader.Algo.ServerControl;
 
 namespace TickTrader.BotTerminal
 {
@@ -62,13 +59,13 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public bool CanBrowse => !_bot.Model.IsRemote || _bot.Agent.Model.AccessManager.CanGetBotFolderInfo(BotFolderId.BotLogs);
+        public bool CanBrowse => !_bot.Model.IsRemote || _bot.Agent.Model.AccessManager.CanGetBotFolderInfo(PluginFolderInfo.Types.PluginFolderId.BotLogs.ToApi());
 
         public bool IsRemote => _bot.Model.IsRemote;
 
         public void Clear()
         {
-            _bot.Model.Journal.Clear();
+            _bot.Model.Journal.ForceClear();
         }
 
         public void Browse()

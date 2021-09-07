@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Data;
+﻿using System.Linq;
 using Machinarium.Qnil;
-using Caliburn.Micro;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Api;
+using TickTrader.Algo.Account;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -18,13 +10,13 @@ namespace TickTrader.BotTerminal
         private ProfileManager _profileManager;
         private bool _isBacktester;
 
-        public OrderListViewModel(AccountModel model, IVarSet<string, SymbolModel> symbols, IConnectionStatusInfo connection, ProfileManager profile = null, bool isBacktester = false)
+        public OrderListViewModel(AccountModel model, IVarSet<string, SymbolInfo> symbols, IConnectionStatusInfo connection, ProfileManager profile = null, bool isBacktester = false)
             : base(model, connection)
         {
             Orders = model.Orders
-                .Where((id, order) => order.OrderType != OrderType.Position)
+                .Where((id, order) => order.Type != Algo.Domain.OrderInfo.Types.Type.Position)
                 .OrderBy((id, order) => id)
-                .Select(o => new OrderViewModel(o, symbols.GetOrDefault(o.Symbol), model))
+                .Select(o => new OrderViewModel(o, symbols.GetOrDefault(o.Symbol), model.BalanceDigits))
                 .AsObservable();
 
             _profileManager = profile;
@@ -42,7 +34,7 @@ namespace TickTrader.BotTerminal
 
         public ViewModelStorageEntry StateProvider { get; private set; }
         public IObservableList<OrderViewModel> Orders { get; private set; }
-        public bool IsGrossAccount => Account.Type == AccountTypes.Gross;
+        public bool IsGrossAccount => Account.Type == AccountInfo.Types.Type.Gross;
         public bool AutoSizeColumns { get; set; }
 
         private void UpdateProvider()

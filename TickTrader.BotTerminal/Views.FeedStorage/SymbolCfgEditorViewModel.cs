@@ -1,15 +1,10 @@
 ﻿using Caliburn.Micro;
+using Machinarium.Qnil;
 using Machinarium.Var;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Common.Model;
-using Machinarium.Qnil;
-using BO = TickTrader.BusinessObjects;
-using BL = TickTrader.BusinessLogic;
-using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Lib;
+using TickTrader.FeedStorage;
 
 namespace TickTrader.BotTerminal
 {
@@ -42,14 +37,14 @@ namespace TickTrader.BotTerminal
                     MinCommissionCurr = "USD",
 
                     SwapEnabled = true,
-                    SwapType = BO.SwapType.Points,
+                    SwapType = Algo.Domain.SwapInfo.Types.Type.Points,
                     SwapSizeShort = 1.08,
                     SwapSizeLong = -4.38,
                     TripleSwap = false,
 
-                    ProfitMode = BO.ProfitCalculationModes.Forex,
+                    ProfitMode = Algo.Domain.MarginInfo.Types.CalculationMode.Forex,
 
-                    MarginMode = BO.MarginCalculationModes.Forex,
+                    MarginMode = Algo.Domain.MarginInfo.Types.CalculationMode.Forex,
                     MarginHedged = 0.5,
                     MarginFactor = 3,
                     StopOrderMarginReduction = 1,
@@ -92,7 +87,7 @@ namespace TickTrader.BotTerminal
             SelectedMinCommissionCurr = _varContext.AddValidable(symbol.MinCommissionCurr);
 
 
-            var percentConverter = new StringToDouble(Math.Max(Digits.Value + 1, 6), symbol.SwapType == BO.SwapType.PercentPerYear);
+            var percentConverter = new StringToDouble(Math.Max(Digits.Value + 1, 6), symbol.SwapType == Algo.Domain.SwapInfo.Types.Type.PercentPerYear);
 
             SwapEnabled = _varContext.AddBoolValidable(symbol.SwapEnabled);
             TripleSwap = _varContext.AddBoolValidable(symbol.TripleSwap);
@@ -174,12 +169,12 @@ namespace TickTrader.BotTerminal
             _varContext.TriggerOnChange(LimitsCommissionStr.Var, validate);
             _varContext.TriggerOnChange(SelectedSwapType.Var, (a) =>
             {
-                if (a.New == BO.SwapType.PercentPerYear)
+                if (a.New == Algo.Domain.SwapInfo.Types.Type.PercentPerYear)
                     SwapRange.Update(-1, 1, true);
                 else
                     SwapRange.Update(-1e7, 1e7);
 
-                percentConverter.Percent = a.New == BO.SwapType.PercentPerYear;
+                percentConverter.Percent = a.New == Algo.Domain.SwapInfo.Types.Type.PercentPerYear;
 
                 SwapSizeShortStr.Validate();
                 SwapSizeLongStr.Validate();
@@ -244,8 +239,8 @@ namespace TickTrader.BotTerminal
         public IObservableList<string> AvailableCurrencies { get; }
 
         public BoolValidable SwapEnabled { get; }
-        public Validable<BO.SwapType> SelectedSwapType { get; }
-        public IEnumerable<BO.SwapType> SwapTypes => EnumHelper.AllValues<BO.SwapType>();
+        public Validable<Algo.Domain.SwapInfo.Types.Type> SelectedSwapType { get; }
+        public IEnumerable<Algo.Domain.SwapInfo.Types.Type> SwapTypes => EnumHelper.AllValues<Algo.Domain.SwapInfo.Types.Type>();
         public DoubleValidable SwapSizeShort { get; }
         public PropConverter<double, string> SwapSizeShortStr { get; }
         public DoubleValidable SwapSizeLong { get; }
@@ -253,11 +248,11 @@ namespace TickTrader.BotTerminal
         public BoolValidable TripleSwap { get; }
 
         public Validable<string> ProfitCurr { get; }
-        public Validable<BO.ProfitCalculationModes> SelectedProfitMode { get; }
-        public IEnumerable<BO.ProfitCalculationModes> ProfitModes => EnumHelper.AllValues<BO.ProfitCalculationModes>();
+        public Validable<Algo.Domain.MarginInfo.Types.CalculationMode> SelectedProfitMode { get; }
+        public IEnumerable<Algo.Domain.MarginInfo.Types.CalculationMode> ProfitModes => EnumHelper.AllValues<Algo.Domain.MarginInfo.Types.CalculationMode>();
 
-        public Validable<BO.MarginCalculationModes> SelectedMarginMode { get; }
-        public IEnumerable<BO.MarginCalculationModes> MarginModes => EnumHelper.AllValues<BO.MarginCalculationModes>();
+        public Validable<Algo.Domain.MarginInfo.Types.CalculationMode> SelectedMarginMode { get; }
+        public IEnumerable<Algo.Domain.MarginInfo.Types.CalculationMode> MarginModes => EnumHelper.AllValues<Algo.Domain.MarginInfo.Types.CalculationMode>();
         public DoubleValidable MarginHedged { get; }
         public IValidable<string> MarginHedgedStr { get; }
         public DoubleValidable MarginFactor { get; }
@@ -286,12 +281,12 @@ namespace TickTrader.BotTerminal
 
         public void Ok()
         {
-            TryClose(true);
+            TryCloseAsync(true);
         }
 
         public void Cancel()
         {
-            TryClose(false);
+            TryCloseAsync(false);
         }
 
         private Func<string> GetErrorRangeMessage(ValidationRange range, string prop) => () => $"{prop} must be between in range [{range.MinToErr:R}..{range.MaxtoErr:R}]";

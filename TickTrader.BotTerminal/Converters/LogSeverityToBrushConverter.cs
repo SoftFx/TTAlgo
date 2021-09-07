@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Media;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -14,16 +15,16 @@ namespace TickTrader.BotTerminal
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            var level = (LogSeverities)value;
+            var level = (PluginLogRecord.Types.LogSeverity)value;
             switch (level)
             {
-                case LogSeverities.Info: return new SolidColorBrush(Colors.Gray);
-                case LogSeverities.Trade: return new SolidColorBrush(Colors.SkyBlue);
-                case LogSeverities.TradeSuccess: return new SolidColorBrush(Colors.Green);
-                case LogSeverities.TradeFail: return new SolidColorBrush(Colors.DarkOrange);
-                case LogSeverities.Error: return new SolidColorBrush(Colors.Red);
-                case LogSeverities.Custom: return new SolidColorBrush(Colors.Violet);
-                case LogSeverities.Alert: return new SolidColorBrush(Colors.Khaki);
+                case PluginLogRecord.Types.LogSeverity.Info: return new SolidColorBrush(Colors.Gray);
+                case PluginLogRecord.Types.LogSeverity.Trade: return new SolidColorBrush(Colors.SkyBlue);
+                case PluginLogRecord.Types.LogSeverity.TradeSuccess: return new SolidColorBrush(Colors.Green);
+                case PluginLogRecord.Types.LogSeverity.TradeFail: return new SolidColorBrush(Colors.DarkOrange);
+                case PluginLogRecord.Types.LogSeverity.Error: return new SolidColorBrush(Colors.Red);
+                case PluginLogRecord.Types.LogSeverity.Custom: return new SolidColorBrush(Colors.Violet);
+                case PluginLogRecord.Types.LogSeverity.Alert: return new SolidColorBrush(Colors.Khaki);
                 default: return null;
             }
         }

@@ -4,12 +4,8 @@ using SciChart.Drawing.Common;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
-using TickTrader.Algo.Api;
 
 namespace TickTrader.BotTerminal
 {
@@ -225,9 +221,9 @@ namespace TickTrader.BotTerminal
 
     internal class PosMarkerKey : IComparable<PosMarkerKey>
     {
-        public PosMarkerKey(long orderId, string actionId = null)
+        public PosMarkerKey(string orderId, string actionId = null)
         {
-            OrderId = orderId;
+            OrderId = long.Parse(orderId);
             ActionId = actionId;
         }
 

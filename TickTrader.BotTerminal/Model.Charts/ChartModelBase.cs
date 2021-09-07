@@ -1,35 +1,25 @@
 ﻿using Caliburn.Micro;
-using Machinarium.State;
 using Machinarium.Qnil;
 using NLog;
-using SciChart.Charting.Model.DataSeries;
 using SciChart.Charting.Visuals.Axes;
-using SciChart.Charting.Visuals.RenderableSeries;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Data;
-using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Core.Repository;
-using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.BotTerminal.Lib;
-using Api = TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using SciChart.Charting.Model.ChartSeries;
-using TickTrader.Algo.Common.Model;
 using System.Collections.Specialized;
-using TickTrader.Algo.Common.Model.Interop;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Config;
 using Machinarium.Var;
 using SM = Machinarium.State;
-using TickTrader.Algo.Common.Lib;
-using TickTrader.Algo.Core.Infrastructure;
+using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
+using TickTrader.Algo.Server;
+using TickTrader.Algo.Package;
+using TickTrader.Algo.Core.Setup;
+using TickTrader.Algo.Account;
 
 namespace TickTrader.BotTerminal
 {
@@ -56,19 +46,19 @@ namespace TickTrader.BotTerminal
         private long indicatorNextId = 1;
         private Property<AxisBase> _timeAxis = new Property<AxisBase>();
         private string dateAxisLabelFormat;
-        private List<QuoteEntity> updateQueue;
+        private List<QuoteInfo> updateQueue;
         private IFeedSubscription subscription;
-        private Property<Api.RateUpdate> _currentRateProp = new Property<Api.RateUpdate>();
-        private Api.TimeFrames _timeframe;
+        private Property<IRateInfo> _currentRateProp = new Property<IRateInfo>();
+        private Feed.Types.Timeframe _timeframe;
 
-        public ChartModelBase(SymbolModel symbol, AlgoEnvironment algoEnv)
+        public ChartModelBase(SymbolInfo symbol, AlgoEnvironment algoEnv)
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
             AlgoEnv = algoEnv;
             this.Model = symbol;
 
-            AvailableIndicators = AlgoEnv.LocalAgentVM.Plugins.Where(p => p.Descriptor.Type == AlgoTypes.Indicator).AsObservable();
-            AvailableBotTraders = AlgoEnv.LocalAgentVM.Plugins.Where(p => p.Descriptor.Type == AlgoTypes.Robot).AsObservable();
+            AvailableIndicators = AlgoEnv.LocalAgentVM.Plugins.Where(p => p.Descriptor.IsIndicator).AsObservable();
+            AvailableBotTraders = AlgoEnv.LocalAgentVM.Plugins.Where(p => p.Descriptor.IsTradeBot).AsObservable();
 
             AvailableIndicators.CollectionChanged += AvailableIndicators_CollectionChanged;
             AvailableBotTraders.CollectionChanged += AvailableBotTraders_CollectionChanged;
@@ -81,7 +71,7 @@ namespace TickTrader.BotTerminal
             subscription = ClientModel.Distributor.AddSubscription(OnRateUpdate, symbol.Name);
             //subscription.NewQuote += ;
 
-            _currentRateProp.Value = symbol.LastQuote;
+            _currentRateProp.Value = (IRateInfo)symbol.LastQuote;
 
             Func<bool> isReadyToStart = () => isConnected && !_isDisposed;
             Func<bool> isNotReadyToStart = () => !isReadyToStart();
@@ -103,13 +93,13 @@ namespace TickTrader.BotTerminal
         }
 
         protected LocalAlgoAgent Agent => AlgoEnv.LocalAgent;
-        protected SymbolModel Model { get; private set; }
+        protected SymbolInfo Model { get; private set; }
         protected TraderClientModel ClientModel => Agent.ClientModel;
         protected AlgoEnvironment AlgoEnv { get; }
         protected ConnectionModel.Handler Connection { get { return ClientModel.Connection; } }
         protected VarList<IRenderableSeriesViewModel> SeriesCollection { get { return seriesCollection; } }
 
-        public Api.TimeFrames TimeFrame
+        public Feed.Types.Timeframe TimeFrame
         {
             get => _timeframe;
             set
@@ -131,7 +121,7 @@ namespace TickTrader.BotTerminal
         public IVarList<IndicatorModel> Indicators { get { return indicators; } }
         public IEnumerable<SelectableChartTypes> ChartTypes { get { return supportedChartTypes; } }
         public string SymbolCode { get { return Model.Name; } }
-        public Var<Api.RateUpdate> CurrentRate => _currentRateProp.Var;
+        public Var<IRateInfo> CurrentRate => _currentRateProp.Var;
         public bool IsIndicatorsOnline => isIndicatorsOnline;
 
         public event System.Action TimeframeChanged;
@@ -243,7 +233,7 @@ namespace TickTrader.BotTerminal
         protected abstract void UpdateSeries();
         protected abstract Task LoadData(CancellationToken cToken);
         protected abstract IndicatorModel CreateIndicator(PluginConfig config);
-        protected abstract void ApplyUpdate(QuoteEntity update);
+        protected abstract void ApplyUpdate(QuoteInfo update);
 
         protected void Support(SelectableChartTypes chartType)
         {
@@ -258,7 +248,7 @@ namespace TickTrader.BotTerminal
             {
                 isUpdateRequired = false;
                 ClearData();
-                updateQueue = new List<QuoteEntity>();
+                updateQueue = new List<QuoteInfo>();
                 await LoadData(cToken);
                 ApplyQueue();
                 stateController.PushEvent(Events.Loaded);
@@ -340,7 +330,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        protected virtual void OnRateUpdate(QuoteEntity tick)
+        protected virtual void OnRateUpdate(QuoteInfo tick)
         {
             if (stateController.Current == States.LoadingData)
                 updateQueue.Add(tick);
@@ -388,6 +378,11 @@ namespace TickTrader.BotTerminal
             ParamsUnlocked();
         }
 
+        void IAlgoPluginHost.EnqueueStartAction(System.Action action)
+        {
+            ((IAlgoPluginHost)AlgoEnv.LocalAgent).EnqueueStartAction(action);
+        }
+
         ITradeExecutor IAlgoPluginHost.GetTradeApi()
         {
             return ClientModel.TradeApi;
@@ -403,24 +398,18 @@ namespace TickTrader.BotTerminal
             return $"account {ClientModel.Connection.CurrentLogin} on {ClientModel.Connection.CurrentServer} using {ClientModel.Connection.CurrentProtocol}";
         }
 
-        public virtual void InitializePlugin(PluginExecutor plugin)
+        public virtual void InitializePlugin(ExecutorConfig config)
         {
-            plugin.Config.InvokeStrategy = new PriorityInvokeStartegy();
-            plugin.AccInfoProvider = new PluginTradeInfoProvider(ClientModel.Cache, new DispatcherSync());
-        }
-
-        public virtual void UpdatePlugin(PluginExecutor plugin)
-        {
-            plugin.Config.TimeFrame = TimeFrame;
-            plugin.Config.MainSymbolCode = SymbolCode;
-            plugin.Config.InitTimeSpanBuffering(TimelineStart, DateTime.Now + TimeSpan.FromDays(100));
+            config.InitPriorityInvokeStrategy();
+            config.InitTimeSpanBuffering(TimelineStart, DateTime.Now + TimeSpan.FromDays(100));
+            //runtime.AccInfoProvider = new PluginTradeInfoProvider(ClientModel.Cache, new DispatcherSync());
         }
 
         bool IExecStateObservable.IsStarted { get { return isIndicatorsOnline; } }
 
         public event System.Action ParamsChanged = delegate { };
         public event System.Action StartEvent = delegate { };
-        public event AsyncEventHandler StopEvent = delegate { return CompletedTask.Default; };
+        public event AsyncEventHandler StopEvent = delegate { return Task.CompletedTask; };
         public event System.Action Connected;
         public event System.Action Disconnected;
 
@@ -428,11 +417,11 @@ namespace TickTrader.BotTerminal
 
         #region IAlgoSetupContext
 
-        Api.TimeFrames IAlgoSetupContext.DefaultTimeFrame => TimeFrame;
+        Feed.Types.Timeframe IAlgoSetupContext.DefaultTimeFrame => TimeFrame;
 
-        ISymbolInfo IAlgoSetupContext.DefaultSymbol => new SymbolToken(SymbolCode);
+        ISetupSymbolInfo IAlgoSetupContext.DefaultSymbol => new SymbolToken(SymbolCode);
 
-        MappingKey IAlgoSetupContext.DefaultMapping => new MappingKey(MappingCollection.DefaultFullBarToBarReduction);
+        MappingKey IAlgoSetupContext.DefaultMapping => MappingDefaults.DefaultBarToBarMapping.Key;
 
         #endregion
     }

@@ -1,0 +1,395 @@
+syntax = "proto3";
+
+package ticktrader.algo.domain;
+
+option csharp_namespace = "TickTrader.Algo.Domain";
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+
+message AssetInfo {
+    google.protobuf.StringValue currency = 1;
+    double balance = 2;
+}
+
+message AccountInfo {
+    enum Type {
+        GROSS = 0;
+        NET = 1;
+        CASH = 2;
+    }
+
+    google.protobuf.StringValue id = 1;
+    Type type = 2;
+    int32 leverage = 3;
+    repeated AssetInfo assets = 4;
+}
+
+message AccountInfoRequest { }
+
+message AccountInfoResponse {
+    AccountInfo account = 1;
+}
+
+message OrderInfo {
+    enum Type {
+        MARKET = 0;
+        POSITION = 1;
+        LIMIT = 2;
+        STOP = 3;
+        STOP_LIMIT = 4;
+    }
+
+    enum Side {
+        BUY = 0;
+        SELL = 1;
+    }
+
+    // flags
+    enum Options {
+        NONE = 0;
+        IMMEDIATE_OR_CANCEL = 1;
+        MARKET_WITH_SLIPPAGE = 2;
+        HIDDEN_ICEBERG = 4;
+        ONE_CANCELS_THE_OTHER = 8;
+    }
+
+    string id = 1;
+    string symbol = 2;
+    Type initial_type = 3;
+    Type type = 4;
+    Side side = 5;
+    double requested_amount = 6;
+    double remaining_amount = 7;
+    google.protobuf.DoubleValue max_visible_amount = 8;
+    google.protobuf.DoubleValue price = 9;
+    google.protobuf.DoubleValue stop_price = 10;
+    google.protobuf.DoubleValue stop_loss = 11;
+    google.protobuf.DoubleValue take_profit = 12;
+    google.protobuf.Timestamp expiration = 13;
+    google.protobuf.Timestamp created = 14;
+    google.protobuf.Timestamp modified = 15;
+    google.protobuf.StringValue comment = 16;
+    google.protobuf.StringValue user_tag = 17;
+    google.protobuf.StringValue instance_id = 18;
+    google.protobuf.DoubleValue exec_price = 19;
+    google.protobuf.DoubleValue exec_amount = 20;
+    google.protobuf.DoubleValue last_fill_price = 21;
+    google.protobuf.DoubleValue last_fill_amount = 22;
+    double swap = 23;
+    double commission = 24;
+    int32 options_bitmask = 25;
+    google.protobuf.DoubleValue slippage = 26;
+    google.protobuf.DoubleValue requested_open_price = 27;
+    google.protobuf.StringValue parent_order_id = 28;
+    google.protobuf.StringValue oco_related_order_id = 29;
+}
+
+message OrderListRequest { }
+
+message OrderListResponse {
+    repeated OrderInfo orders = 1;
+    bool is_final = 2;
+}
+
+message PositionInfo {
+    string id = 1;
+    string symbol = 2;
+    OrderInfo.Side side = 3;
+    double volume = 4;
+    double price = 5;
+    double commission = 6;
+    double swap = 7;
+    google.protobuf.Timestamp modified = 8;
+}
+
+message PositionListRequest { }
+
+message PositionListResponse {
+    repeated PositionInfo positions = 1;
+    bool is_final = 2;
+}
+
+message BalanceOperation {
+    enum Type {
+        DepositWithdrawal = 0;
+        Dividend = 1;
+    }
+
+    double transaction_amount = 1;
+    string currency = 2;
+    double balance = 3;
+    Type type = 4;
+}
+
+message OrderExecReport {
+    enum ExecAction {
+        NONE = 0;
+        OPENED = 1;
+        MODIFIED = 2;
+        CANCELED = 3;
+        CLOSED = 4;
+        FILLED = 5;
+        EXPIRED = 6;
+        REJECTED = 7;
+        ACTIVATED = 8;
+        SPLITTED = 9;
+    }
+
+    enum EntityAction {
+        NO_ACTION = 0;
+        ADDED = 1;
+        UPDATED = 2;
+        REMOVED = 3;
+    }
+
+    enum CmdResultCode {
+        OK = 0;
+        UNKNOWN_ERROR = 1;
+        INTERNAL_ERROR = 5;
+        CONNECTION_ERROR = 6;
+        TIMEOUT = 7;
+        TRADE_SERVER_ERROR = 8;
+        DEALER_REJECT = 100;
+        UNSUPPORTED = 101;
+        SYMBOL_NOT_FOUND = 102;
+        ORDER_NOT_FOUND = 103;
+        INCORRECT_VOLUME = 104;
+        OFF_QUOTES = 105;
+        INCORRECT_ORDER_ID = 106;
+        INCORRECT_PRICE = 107;
+        INCORRECT_TP = 108;
+        INCORRECT_SL = 109;
+        NOT_ENOUGH_MONEY = 110;
+        TRADE_NOT_ALLOWED = 111;
+        INCORRECT_STOP_PRICE = 112;
+        INCORRECT_MAX_VISIBLE_VOLUME = 113;
+        INCORRECT_EXPIRATION = 114;
+        DEALING_TIMEOUT = 115;
+        MISCONFIGURATION = 116;
+        ORDER_LOCKED = 117;
+        INCORRECT_PRICE_PRECISION = 118;
+        CLOSE_ONLY_TRADING = 119;
+        MARKET_WITH_MAX_VISIBLE_VOLUME = 120;
+        INVALID_AMOUNT_CHANGE = 121;
+        CANNOT_BE_MODIFIED = 122;
+        MAX_VISIBLE_VOLUME_NOT_SUPPORTED = 123;
+        READ_ONLY_ACCOUNT = 124;
+        INCORRECT_SLIPPAGE = 125;
+        INCORRECT_TYPE = 126;
+        THROTTLING_ERROR = 127;
+        OCO_RELATED_ID_NOT_FOUND = 128;
+        OCO_RELATED_ORDER_ALREADY_EXISTS = 129;
+        INCORRECT_SYMBOL = 130;
+        OCO_ALREADY_EXISTS = 131;
+        EXCEEDED_ORDER_LIMIT = 132;
+    }
+
+    google.protobuf.StringValue operation_id = 1;
+    CmdResultCode result_code = 2;
+    ExecAction exec_action = 3;
+    EntityAction entity_action = 4;
+    google.protobuf.DoubleValue new_balance = 5;
+    repeated AssetInfo assets = 6;
+    OrderInfo order_copy = 7;
+    PositionInfo net_position_copy = 8;
+}
+
+message PositionExecReport {
+    PositionInfo position_copy = 1;
+    OrderExecReport.ExecAction exec_action = 2;
+}
+
+message OrderRequest {
+    // flags
+    enum ExecOptions {
+        NONE = 0;
+        IMMEDIATE_OR_CANCEL = 1;
+        ONE_CANCELS_THE_OTHER = 2;
+    }
+}
+
+message OpenOrderRequest {
+    string operation_id = 1;
+    string symbol = 2;
+    OrderInfo.Type type = 3;
+    OrderInfo.Side side = 4;
+    double amount = 5;
+    google.protobuf.DoubleValue max_visible_amount = 6;
+    google.protobuf.DoubleValue price = 7;
+    google.protobuf.DoubleValue stop_price = 8;
+    google.protobuf.DoubleValue stop_loss = 9;
+    google.protobuf.DoubleValue take_profit = 10;
+    google.protobuf.DoubleValue slippage = 11;
+    google.protobuf.Timestamp expiration = 12;
+    google.protobuf.StringValue comment = 13;
+    google.protobuf.StringValue tag = 14;
+    int32 exec_options_bitmask = 15;
+    google.protobuf.StringValue oco_related_order_id = 16;
+    bool oco_equal_volume = 17;
+}
+
+message ModifyOrderRequest {
+    string operation_id = 1;
+    string order_id = 2;
+    string symbol = 3;
+    OrderInfo.Type type = 4;
+    OrderInfo.Side side = 5;
+    double current_amount = 6;
+    google.protobuf.DoubleValue new_amount = 7;
+    double amount_change = 8;
+    google.protobuf.DoubleValue max_visible_amount = 9;
+    google.protobuf.DoubleValue price = 10;
+    google.protobuf.DoubleValue stop_price = 11;
+    google.protobuf.DoubleValue stop_loss = 12;
+    google.protobuf.DoubleValue take_profit = 13;
+    google.protobuf.DoubleValue slippage = 14;
+    google.protobuf.Timestamp expiration = 15;
+    google.protobuf.StringValue comment = 16;
+    google.protobuf.StringValue tag = 17;
+    google.protobuf.Int32Value exec_options_bitmask = 18;
+    google.protobuf.StringValue oco_related_order_id = 19;
+    google.protobuf.BoolValue oco_equal_volume = 20;
+}
+
+message CancelOrderRequest {
+    string operation_id = 1;
+    string order_id = 2;
+}
+
+message CloseOrderRequest {
+    string operation_id = 1;
+    string order_id = 2;
+    google.protobuf.DoubleValue amount = 3;
+    google.protobuf.DoubleValue slippage = 4;
+    google.protobuf.StringValue by_order_id = 5;
+}
+
+message TradeResultInfo {
+    OrderExecReport.CmdResultCode result_code = 1;
+    OrderInfo resulting_order = 2;
+}
+
+message TradeReportInfo {
+    enum ReportType {
+        NO_TYPE = 0;
+        ORDER_OPENED = 1;
+        ORDER_CANCELED = 2;
+        ORDER_EXPIRED = 3;
+        ORDER_FILLED = 4;
+        POSITION_CLOSED = 5;
+        BALANCE_TRANSACTION = 6;
+        CREDIT = 7;
+        POSITION_OPENED = 8;
+        ORDER_ACTIVATED = 9;
+        TRADE_MODIFIED = 10;
+    }
+
+    enum Reason {
+        NO_REASON = 0;
+        CLIENT_REQUEST = 1;
+        PENDING_ORDER_ACTIVATION = 2;
+        STOP_OUT = 3;
+        STOP_LOSS_ACTIVATION = 4;
+        TAKE_PROFIT_ACTIVATION = 5;
+        DEALER_DECISION = 6;
+        ROLLOVER = 7;
+        DELETE_ACCOUNT = 8;
+        EXPIRED = 9;
+        TRANSFER_MONEY = 10;
+        SPLIT = 11;
+        DIVIDEND = 12;
+        ONE_CANCELS_THE_OTHER = 13;
+    }
+
+    string id = 1;
+    bool is_emulated = 2;
+
+    ReportType report_type = 3;
+    Reason transaction_reason = 4;
+    int32 action_id = 5;
+
+    google.protobuf.StringValue order_id = 6;
+    string symbol = 7;
+    OrderInfo.Side order_side = 8;
+    OrderInfo.Type order_type = 9;
+    double open_quantity = 10;
+    google.protobuf.DoubleValue max_visible_quantity = 11;
+    double remaining_quantity = 12;
+    double price = 13;
+    double stop_price = 14;
+    double stop_loss = 15;
+    double take_profit = 16;
+    double swap = 17;
+    double commission = 18;
+    google.protobuf.StringValue commission_currency = 19;
+    google.protobuf.StringValue comment = 20;
+    google.protobuf.StringValue tag = 21;
+    google.protobuf.Timestamp order_opened = 22;
+    google.protobuf.Timestamp order_modified = 23;
+    google.protobuf.Timestamp expiration = 24;
+    google.protobuf.DoubleValue slippage = 25;
+    int32 order_options_bitmask = 26;
+    google.protobuf.DoubleValue order_last_fill_amount = 27;
+    google.protobuf.DoubleValue order_fill_price = 28;
+    google.protobuf.DoubleValue split_ratio = 29;
+    double tax = 30;
+
+    google.protobuf.StringValue position_id = 31;
+    google.protobuf.StringValue position_by_id = 32;
+    double position_quantity = 33;
+    double position_open_price = 34;
+    double position_close_price = 35;
+    double position_close_quantity = 36;
+    OrderInfo.Side position_remaining_side = 37;
+    double position_leaves_quantity = 38;
+    google.protobuf.DoubleValue position_remaining_price = 39;
+    google.protobuf.Timestamp position_opened = 40;
+    google.protobuf.Timestamp position_modified = 41;
+    google.protobuf.Timestamp position_closed = 42;
+
+    OrderInfo.Type requested_order_type = 43;
+    google.protobuf.DoubleValue requested_open_price = 44;
+    google.protobuf.DoubleValue requested_open_quantity = 45;
+    google.protobuf.DoubleValue requested_close_price = 46;
+    google.protobuf.DoubleValue requested_close_quantity = 47;
+
+    google.protobuf.Timestamp transaction_time = 48;
+    double account_balance = 49;
+    double transaction_amount = 50;
+    google.protobuf.StringValue transaction_currency = 51;
+    google.protobuf.StringValue profit_currency = 52;
+    google.protobuf.StringValue margin_currency = 53;
+
+    google.protobuf.StringValue src_asset_currency = 54;
+    google.protobuf.StringValue dst_asset_currency = 55;
+    google.protobuf.DoubleValue src_asset_movement = 56;
+    google.protobuf.DoubleValue dst_asset_movement = 57;
+    google.protobuf.DoubleValue dst_asset_amount = 58;
+    google.protobuf.DoubleValue src_asset_amount = 59;
+
+    google.protobuf.StringValue oco_related_order_id = 60;
+    google.protobuf.StringValue instance_id = 61;
+}
+
+message TradeHistoryRequest {
+    enum Options {
+        NO_OPTIONS = 0;
+        SKIP_CANCELED = 1;
+        BACKWARD = 2;
+    }
+
+    google.protobuf.Timestamp from = 1;
+    google.protobuf.Timestamp to = 2;
+    int32 options_bitmask = 3;
+}
+
+message TradeHistoryRequestNextPage {
+}
+
+message TradeHistoryRequestDispose {
+}
+
+message TradeHistoryPageResponse {
+    repeated TradeReportInfo reports = 1;
+}

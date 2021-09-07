@@ -1,5 +1,4 @@
-﻿using Caliburn.Micro;
-using Machinarium.Qnil;
+﻿using Machinarium.Qnil;
 using Machinarium.Var;
 using System;
 using System.Collections.Generic;
@@ -10,13 +9,12 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Backtester;
+using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Core.Setup;
+using TickTrader.Algo.Domain;
+using TickTrader.Algo.Package;
+using TickTrader.Algo.ServerControl;
 
 namespace TickTrader.BotTerminal
 {
@@ -31,8 +29,8 @@ namespace TickTrader.BotTerminal
         private readonly BoolProperty _allSymbolsValid;
         private readonly BoolVar _isPluginValid;
         private readonly SymbolToken _mainSymbolToken;
-        private readonly IReadOnlyList<ISymbolInfo> _observableSymbolTokens;
-        private readonly IVarSet<SymbolKey, ISymbolInfo> _symbolTokens;
+        private readonly IReadOnlyList<ISetupSymbolInfo> _observableSymbolTokens;
+        private readonly IVarSet<SymbolKey, ISetupSymbolInfo> _symbolTokens;
         private BacktesterPluginSetupViewModel _openedPluginSetup;
         private readonly OptionalItem<TesterModes> _optModeItem;
 
@@ -57,8 +55,8 @@ namespace TickTrader.BotTerminal
             DateRange = new DateRangeSelectionViewModel(false);
             IsUpdatingRange = new BoolProperty();
             _isDateRangeValid = new BoolProperty();
-            MainTimeFrame = new Property<TimeFrames>();
-            MainTimeFrame.Value = TimeFrames.M1;
+            MainTimeFrame = new Property<Feed.Types.Timeframe>();
+            MainTimeFrame.Value = Feed.Types.Timeframe.M1;
 
             SaveResultsToFile = new BoolProperty();
             SaveResultsToFile.Set();
@@ -70,15 +68,15 @@ namespace TickTrader.BotTerminal
             FeedSymbols.Add(MainSymbolShadowSetup);
             UpdateSymbolsState();
 
-            AvailableModels = _var.AddProperty<List<TimeFrames>>();
-            SelectedModel = _var.AddProperty<TimeFrames>(TimeFrames.M1);
+            AvailableModels = _var.AddProperty<List<Feed.Types.Timeframe>>();
+            SelectedModel = _var.AddProperty<Feed.Types.Timeframe>(Feed.Types.Timeframe.M1);
 
             ModeProp = _var.AddProperty<OptionalItem<TesterModes>>();
             PluginErrorProp = _var.AddProperty<string>();
 
             SelectedPlugin = new Property<AlgoPluginViewModel>();
             IsPluginSelected = SelectedPlugin.Var.IsNotNull();
-            IsTradeBotSelected = SelectedPlugin.Var.Check(p => p != null && p.Descriptor.Type == AlgoTypes.Robot);
+            IsTradeBotSelected = SelectedPlugin.Var.Check(p => p != null && p.Descriptor.IsTradeBot);
             //IsRunning = ActionOverlay.IsRunning;
             //IsStopping = ActionOverlay.IsCancelling;
             _isPluginValid = PluginErrorProp.Var.IsNull();
@@ -87,7 +85,7 @@ namespace TickTrader.BotTerminal
             //CanStop = ActionOverlay.CanCancel;
             //CanSave = !IsRunning & _hasDataToSave.Var;
             //IsVisualizationEnabled = _var.AddBoolProperty();
-            
+
 
             Plugins = env.LocalAgentVM.PluginList;
 
@@ -95,10 +93,10 @@ namespace TickTrader.BotTerminal
 
             _mainSymbolToken = SpecialSymbols.MainSymbolPlaceholder;
             //var predefinedSymbolTokens = new VarList<ISymbolInfo>(new ISymbolInfo[] { _mainSymbolToken });
-            var predefinedSymbolTokens = new VarDictionary<SymbolKey, ISymbolInfo>();
+            var predefinedSymbolTokens = new VarDictionary<SymbolKey, ISetupSymbolInfo>();
             predefinedSymbolTokens.Add(_mainSymbolToken.GetKey(), _mainSymbolToken);
 
-            var existingSymbolTokens = _catalog.AllSymbols.Select((k, s) => (ISymbolInfo)s.ToSymbolToken());
+            var existingSymbolTokens = _catalog.AllSymbols.Select((k, s) => (ISetupSymbolInfo)s.ToSymbolToken());
             _symbolTokens = VarCollection.Combine(predefinedSymbolTokens, existingSymbolTokens);
 
             var sortedSymbolTokens = _symbolTokens.OrderBy((k, v) => k, new SymbolKeyComparer());
@@ -123,22 +121,22 @@ namespace TickTrader.BotTerminal
             {
                 if (a.New != null)
                 {
-                    var pluginRef = env.LocalAgent.Library.GetPluginRef(a.New.Key);
-                    UpdateOptimizationState(pluginRef.Metadata.Descriptor);
-                    UpdatePluginState(pluginRef.Metadata.Descriptor);
-                    PluginSetup = new PluginSetupModel(pluginRef, this, this);
+                    var plugin = env.LocalAgent.Plugins.GetOrDefault(a.New.Key);
+                    UpdateOptimizationState(plugin.Descriptor_);
+                    UpdatePluginState(plugin.Descriptor_);
+                    PluginConfig = null;
                     PluginSelected?.Invoke();
                 }
                 else
-                    PluginSetup = null;
+                    PluginConfig = null;
             });
 
             _var.TriggerOnChange(MainSymbolSetup.SelectedTimeframe, a =>
             {
-                AvailableModels.Value = EnumHelper.AllValues<TimeFrames>().Where(t => t >= a.New && t != TimeFrames.TicksLevel2).ToList();
+                AvailableModels.Value = EnumHelper.AllValues<Feed.Types.Timeframe>().Where(t => t >= a.New && t != Feed.Types.Timeframe.TicksLevel2).ToList();
 
                 if (_openedPluginSetup != null)
-                    _openedPluginSetup.Setup.SelectedTimeFrame = a.New;
+                    _openedPluginSetup.Setup.SelectedTimeFrame = a.New.ToApi();
 
                 if (SelectedModel.Value < a.New)
                     SelectedModel.Value = a.New;
@@ -159,7 +157,7 @@ namespace TickTrader.BotTerminal
 
             client.Connected += () =>
             {
-                FeedSymbols.Foreach(s => s.Reset());
+                FeedSymbols.ForEach(s => s.Reset());
             };
 
             UpdateTradeSummary();
@@ -169,14 +167,14 @@ namespace TickTrader.BotTerminal
         public BoolVar IsSetupValid { get; }
         public BacktesterSettings Settings { get; private set; } = new BacktesterSettings();
         public IObservableList<AlgoPluginViewModel> Plugins { get; private set; }
-        public Property<List<TimeFrames>> AvailableModels { get; private set; }
-        public Property<TimeFrames> SelectedModel { get; private set; }
+        public Property<List<Feed.Types.Timeframe>> AvailableModels { get; private set; }
+        public Property<Feed.Types.Timeframe> SelectedModel { get; private set; }
         public Property<AlgoPluginViewModel> SelectedPlugin { get; private set; }
         public Property<string> PluginErrorProp { get; }
-        public Property<TimeFrames> MainTimeFrame { get; private set; }
+        public Property<Feed.Types.Timeframe> MainTimeFrame { get; private set; }
         public BacktesterSymbolSetupViewModel MainSymbolSetup { get; private set; }
         public BacktesterSymbolSetupViewModel MainSymbolShadowSetup { get; private set; }
-        public PluginSetupModel PluginSetup { get; private set; }
+        public PluginConfig PluginConfig { get; private set; }
         //public PluginConfig PluginConfig { get; private set; }
         public Property<string> TradeSettingsSummary { get; private set; }
         //public BoolProperty IsVisualizationEnabled { get; }
@@ -247,19 +245,17 @@ namespace TickTrader.BotTerminal
 
         #region Saving Results
 
-        public void SaveTestSetupAsText(PluginSetupModel setup, System.IO.Stream stream, DateTime from, DateTime to)
+        public void SaveTestSetupAsText(PluginDescriptor pDescriptor, PluginConfig config, System.IO.Stream stream, DateTime from, DateTime to)
         {
-            var dPlugin = setup.Metadata.Descriptor;
-
             using (var writer = new System.IO.StreamWriter(stream))
             {
-                writer.WriteLine(FeedSetupToText(setup, from, to));
+                writer.WriteLine(FeedSetupToText(from, to));
                 writer.WriteLine(TradeSetupToText());
-                writer.WriteLine(PluginSetupToText(setup, false));
+                writer.WriteLine(PluginSetupToText(pDescriptor, config, false));
             }
         }
 
-        private string FeedSetupToText(PluginSetupModel setup, DateTime from, DateTime to)
+        private string FeedSetupToText(DateTime from, DateTime to)
         {
             var writer = new StringBuilder();
 
@@ -280,35 +276,34 @@ namespace TickTrader.BotTerminal
             return Settings.ToText(false);
         }
 
-        private string PluginSetupToText(PluginSetupModel setup, bool compact)
+        private string PluginSetupToText(PluginDescriptor pDescriptor, PluginConfig config, bool compact)
         {
             var writer = new StringBuilder();
-            var dPlugin = setup.Metadata.Descriptor;
 
-            if (dPlugin.Type == AlgoTypes.Indicator)
-                writer.AppendFormat("Indicator: {0} v{1}", dPlugin.DisplayName, dPlugin.Version).AppendLine();
-            else if (dPlugin.Type == AlgoTypes.Robot)
-                writer.AppendFormat("Trade Bot: {0} v{1}", dPlugin.DisplayName, dPlugin.Version).AppendLine();
+            if (pDescriptor.IsIndicator)
+                writer.AppendFormat("Indicator: {0} v{1}", pDescriptor.DisplayName, pDescriptor.Version).AppendLine();
+            else if (pDescriptor.IsTradeBot)
+                writer.AppendFormat("Trade Bot: {0} v{1}", pDescriptor.DisplayName, pDescriptor.Version).AppendLine();
 
-            int count = 0;
-            foreach (var param in setup.Parameters)
-            {
-                if (compact && count > 0)
-                    writer.Append(", ");
-                writer.AppendFormat("{0}={1}", param.DisplayName, param.GetQuotedValue());
-                if (!compact)
-                    writer.AppendLine();
-                count++;
-            }
+            //int count = 0;
+            //foreach (var param in setup.Parameters)
+            //{
+            //    if (compact && count > 0)
+            //        writer.Append(", ");
+            //    writer.AppendFormat("{0}={1}", param.DisplayName, param.GetQuotedValue());
+            //    if (!compact)
+            //        writer.AppendLine();
+            //    count++;
+            //}
 
-            foreach (var input in setup.Inputs)
-            {
-                if (compact)
-                    writer.Append(' ');
-                writer.AppendFormat("{0} = {1}", input.DisplayName, input.ValueAsText);
-                if (!compact)
-                    writer.AppendLine();
-            }
+            //foreach (var input in setup.Inputs)
+            //{
+            //    if (compact)
+            //        writer.Append(' ');
+            //    writer.AppendFormat("{0} = {1}", input.DisplayName, input.ValueAsText);
+            //    if (!compact)
+            //        writer.AppendLine();
+            //}
 
             return writer.ToString();
         }
@@ -329,12 +324,12 @@ namespace TickTrader.BotTerminal
         {
             _localWnd.OpenOrActivateWindow(SetupWndKey, () =>
             {
-                _openedPluginSetup = PluginSetup == null
+                _openedPluginSetup = PluginConfig == null
                     ? new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.PluginInfo, this, this.GetSetupContextInfo())
-                    : new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.PluginInfo, this, this.GetSetupContextInfo(), PluginSetup.Save());
+                    : new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.PluginInfo, this, this.GetSetupContextInfo(), PluginConfig);
                 //_localWnd.OpenMdiWindow(wndKey, _openedPluginSetup);
                 _openedPluginSetup.Setup.MainSymbol = MainSymbolSetup.SelectedSymbol.Value.ToSymbolToken();
-                _openedPluginSetup.Setup.SelectedTimeFrame = MainSymbolSetup.SelectedTimeframe.Value;
+                _openedPluginSetup.Setup.SelectedTimeFrame = MainSymbolSetup.SelectedTimeframe.Value.ToApi();
                 _openedPluginSetup.Closed += PluginSetupClosed;
                 _openedPluginSetup.Setup.ConfigLoaded += Setup_ConfigLoaded;
                 return _openedPluginSetup;
@@ -349,7 +344,7 @@ namespace TickTrader.BotTerminal
         private void PluginSetupClosed(BacktesterPluginSetupViewModel setup, bool dlgResult)
         {
             if (dlgResult)
-                PluginSetup.Load(setup.GetConfig());
+                PluginConfig = setup.GetConfig();
 
             setup.Closed -= PluginSetupClosed;
             setup.Setup.ConfigLoaded -= Setup_ConfigLoaded;
@@ -361,7 +356,7 @@ namespace TickTrader.BotTerminal
         {
             MainSymbolSetup.SelectedSymbol.Value = _catalog.GetSymbol(config.MainSymbol);
             MainSymbolSetup.SelectedSymbolName.Value = MainSymbolSetup.SelectedSymbol.Value.Name;
-            MainSymbolSetup.SelectedTimeframe.Value = config.SelectedTimeFrame;
+            MainSymbolSetup.SelectedTimeframe.Value = config.SelectedTimeFrame.ToServer();
         }
 
         #endregion
@@ -459,21 +454,27 @@ namespace TickTrader.BotTerminal
 
         private void UpdateTradeSummary()
         {
-            if (Settings.AccType == AccountTypes.Gross || Settings.AccType == AccountTypes.Net)
+            if (Settings.AccType == AccountInfo.Types.Type.Gross || Settings.AccType == AccountInfo.Types.Type.Net)
                 TradeSettingsSummary.Value = string.Format("{0} {1} {2} L={3}, D={4}, {5}ms", Settings.AccType,
                     Settings.InitialBalance, Settings.BalanceCurrency, Settings.Leverage, "Default", Settings.ServerPingMs);
         }
 
-        public override void TryClose(bool? dialogResult = null)
+        public override Task<bool> CanCloseAsync(CancellationToken cancellationToken = default)
         {
-            base.TryClose(dialogResult);
-
             _var.Dispose();
+            return base.CanCloseAsync(cancellationToken);
         }
+
+        //public override void TryClose(bool? dialogResult = null)
+        //{
+        //    base.TryClose(dialogResult);
+
+        //    _var.Dispose();
+        //}
 
         private void UpdateOptimizationState(PluginDescriptor descriptor)
         {
-            _optModeItem.IsEnabled = descriptor.Type == AlgoTypes.Robot;
+            _optModeItem.IsEnabled = descriptor.IsTradeBot;
             if (ModeProp.Value == _optModeItem)
                 ModeProp.Value = Modes[0];
         }
@@ -489,9 +490,9 @@ namespace TickTrader.BotTerminal
 
         #region IAlgoSetupMetadata
 
-        IReadOnlyList<ISymbolInfo> IAlgoSetupMetadata.Symbols => _observableSymbolTokens;
+        IReadOnlyList<ISetupSymbolInfo> IAlgoSetupMetadata.Symbols => _observableSymbolTokens;
 
-        MappingCollection IAlgoSetupMetadata.Mappings => _env.LocalAgent.Mappings;
+        MappingCollectionInfo IAlgoSetupMetadata.Mappings => _env.LocalAgent.Mappings;
 
         IPluginIdProvider IAlgoSetupMetadata.IdProvider => this;
 
@@ -504,7 +505,7 @@ namespace TickTrader.BotTerminal
             return descriptor.DisplayName;
         }
 
-        bool IPluginIdProvider.IsValidPluginId(AlgoTypes pluginType, string pluginId)
+        bool IPluginIdProvider.IsValidPluginId(Metadata.Types.PluginType pluginType, string pluginId)
         {
             return true;
         }
@@ -518,13 +519,39 @@ namespace TickTrader.BotTerminal
 
         #region IAlgoSetupContext
 
-        TimeFrames IAlgoSetupContext.DefaultTimeFrame => MainTimeFrame.Value;
+        Feed.Types.Timeframe IAlgoSetupContext.DefaultTimeFrame => MainTimeFrame.Value;
 
-        ISymbolInfo IAlgoSetupContext.DefaultSymbol => _mainSymbolToken;
+        ISetupSymbolInfo IAlgoSetupContext.DefaultSymbol => _mainSymbolToken;
 
-        MappingKey IAlgoSetupContext.DefaultMapping => new MappingKey(MappingCollection.DefaultFullBarToBarReduction);
+        MappingKey IAlgoSetupContext.DefaultMapping => MappingDefaults.DefaultBarToBarMapping.Key;
 
         #endregion IAlgoSetupContext
+    }
+
+    public class OptionalItem<T> : ObservableObject
+    {
+        private bool _enabled;
+
+        public OptionalItem(T value, bool enabled = true)
+        {
+            Value = value;
+            _enabled = enabled;
+        }
+
+        public T Value { get; }
+
+        public bool IsEnabled
+        {
+            get => _enabled;
+            set
+            {
+                if (_enabled != value)
+                {
+                    _enabled = value;
+                    NotifyOfPropertyChange(nameof(IsEnabled));
+                }
+            }
+        }
     }
 
     public enum TesterModes

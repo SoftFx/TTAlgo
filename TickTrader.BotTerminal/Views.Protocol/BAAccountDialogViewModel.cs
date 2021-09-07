@@ -1,310 +1,172 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
+using Machinarium.Var;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using TickTrader.Algo.Common.Info;
+using System.Threading.Tasks;
+using TickTrader.Algo.Domain;
+using TickTrader.Algo.Domain.ServerControl;
 
 namespace TickTrader.BotTerminal
 {
-    internal class BAAccountDialogViewModel : Screen, IWindowModel, IPasswordContainer
+    internal sealed class BAAccountDialogViewModel : Screen, IWindowModel
     {
-        private AlgoEnvironment _algoEnv;
-        private AlgoAgentViewModel _selectedAgent;
-        private AgentPluginSetupViewModel _selectedPlugin;
-        private string _login;
-        private string _password;
-        private string _server;
-        private bool _isValid;
-        private AccountModelInfo _account;
-        private bool _isEditable;
-        private string _error;
-        private string _success;
+        private readonly VarContext _context = new VarContext();
+        private readonly AlgoEnvironment _algoEnv;
+        private readonly AccountModelInfo _account;
+
+        private readonly BoolVar _canAddAccount, _canChangeAccount, _canTestAccountCreds;
 
 
-        public IObservableList<AlgoAgentViewModel> Agents { get; }
+        public IObservableList<AlgoAgentViewModel> AlgoServersList { get; }
 
-        public AlgoAgentViewModel SelectedAgent
-        {
-            get { return _selectedAgent; }
-            set
-            {
-                if (_selectedAgent == value)
-                    return;
+        public IEnumerable<AccountAuthEntry> LocalAccounts => _algoEnv.Shell.ConnectionManager.Accounts.Where(u => u.Server.Address == TTServerName?.Value)?.OrderBy(u => u.Login.Length).ThenBy(u => u.Login);
 
-                DeinitAlgoAgent(_selectedAgent);
-                _selectedAgent = value;
-                InitAlgoAgent(_selectedAgent);
-                NotifyOfPropertyChange(nameof(SelectedAgent));
-                ValidateState();
-            }
-        }
+        public IEnumerable<AlgoAccountViewModel> ServerAccounts => AlgoServer?.Value?.AccountList.Where(u => u.Server == TTServerName?.Value && u.Info != _account);
 
-        public string Login
-        {
-            get { return _login; }
-            set
-            {
-                if (_login == value)
-                    return;
-
-                _login = value;
-
-                if (!Accounts.Any(u => u.Login == Login && u.Server.Address == Server))
-                    _password = null;
-
-                NotifyOfPropertyChange(nameof(Login));
-                NotifyOfPropertyChange(nameof(Password));
-                ValidateState();
-            }
-        }
-
-        public string Password
-        {
-            get { return _password; }
-            set
-            {
-                if (_password == value)
-                    return;
-
-                _password = value;
-                NotifyOfPropertyChange(nameof(Password));
-                ValidateState();
-            }
-        }
-
-        public string Server
-        {
-            get { return _server; }
-            set
-            {
-                if (_server == value)
-                    return;
-
-                _server = value;
-                NotifyOfPropertyChange(nameof(Server));
-                NotifyOfPropertyChange(nameof(Accounts));
-
-                SelectedAccount = Accounts.FirstOrDefault();
-
-                ValidateState();
-            }
-        }
-
-        public bool IsEditable
-        {
-            get { return _isEditable; }
-            set
-            {
-                if (_isEditable == value)
-                    return;
-
-                _isEditable = value;
-                NotifyOfPropertyChange(nameof(IsEditable));
-                NotifyOfPropertyChange(nameof(CanChangeAccountKey));
-                NotifyOfPropertyChange(nameof(CanOk));
-                NotifyOfPropertyChange(nameof(CanTest));
-            }
-        }
-
-        public bool AllowedChangeAgentKey { get; }
-
-        public bool IsNewMode { get; }
-
-        public bool CanChangeAgentKey => AllowedChangeAgentKey && CanChangeAccountKey;
-
-        public bool CanChangeAccountKey => IsNewMode && IsEditable;
-
-        public bool CanOk => _isValid && IsEditable
-            && (IsNewMode ? SelectedAgent.Model.AccessManager.CanAddAccount() : SelectedAgent.Model.AccessManager.CanChangeAccount());
-
-        public bool CanTest => _isValid && IsEditable && !string.IsNullOrEmpty(_password) && SelectedAgent.Model.AccessManager.CanTestAccountCreds();
-
-        public string Error
-        {
-            get { return _error; }
-            set
-            {
-                if (_error == value)
-                    return;
-
-                _error = value;
-                _success = null;
-                NotifyOfPropertyChange(nameof(Error));
-                NotifyOfPropertyChange(nameof(HasError));
-                NotifyOfPropertyChange(nameof(Success));
-                NotifyOfPropertyChange(nameof(HasSuccess));
-            }
-        }
-
-        public bool HasError => !string.IsNullOrEmpty(_error);
-
-        public string Success
-        {
-            get { return _success; }
-            set
-            {
-                if (_success == value)
-                    return;
-
-                _success = value;
-                _error = null;
-                NotifyOfPropertyChange(nameof(Success));
-                NotifyOfPropertyChange(nameof(HasSuccess));
-                NotifyOfPropertyChange(nameof(Error));
-                NotifyOfPropertyChange(nameof(HasError));
-            }
-        }
-
-        public bool HasSuccess => !string.IsNullOrEmpty(_success);
-
-        public ObservableCollection<ServerAuthEntry> Servers => _algoEnv.Shell.ConnectionManager.Servers;
-
-        public ServerAuthEntry SelectedServer
-        {
-            get { return null; } // This is a magic trick to make ComboBox reselect already selected items. Do not remove this.
-            set
-            {
-                if (value != null)
-                {
-                    Server = value.Address;
-                }
-                NotifyOfPropertyChange(nameof(SelectedServer));
-            }
-        }
-
-        public IEnumerable<AccountAuthEntry> Accounts => _algoEnv.Shell.ConnectionManager.Accounts.Where(u => u.Server.Address == Server).OrderBy(u => long.Parse(u.Login));
-
-        public AccountAuthEntry SelectedAccount
-        {
-            get { return null; } // This is a magic trick to make ComboBox reselect already selected items. Do not remove this.
-            set
-            {
-                if (value != null)
-                {
-                    Login = value.Login;
-                    Password = value.Password;
-                }
-                else
-                {
-                    Login = "";
-                    Password = "";
-                }
-
-                NotifyOfPropertyChange(nameof(SelectedAccount));
-            }
-        }
+        public ObservableCollection<ServerAuthEntry> TTServersList => _algoEnv.Shell.ConnectionManager.Servers;
 
 
-        public BAAccountDialogViewModel(AlgoEnvironment algoEnv, AccountModelInfo account, string agentName, AgentPluginSetupViewModel plugin = null, bool allowedChangeAgentKey = true)
+        public Property<AlgoAgentViewModel> AlgoServer { get; }
+
+        public Property<string> TTServerName { get; }
+
+        public Property<string> Error { get; }
+
+        public Validable<string> Login { get; }
+
+        public Validable<string> Password { get; }
+
+        public Validable<string> DisplayAccountName { get; }
+
+
+        public BoolVar CanOk { get; }
+
+        public BoolVar CanTest { get; }
+
+        public BoolVar IsEnabled { get; }
+
+        public BoolVar SuccessConnect { get; }
+
+
+        public bool IsNewAccountMode { get; }
+
+
+        public BAAccountDialogViewModel(AlgoEnvironment algoEnv, AccountModelInfo account, AlgoAgentViewModel algoServer, string serverName = null)
         {
             _algoEnv = algoEnv;
             _account = account;
-            _selectedPlugin = plugin;
 
-            IsEditable = true;
-            AllowedChangeAgentKey = allowedChangeAgentKey;
+            _canAddAccount = new BoolVar();
+            _canChangeAccount = new BoolVar();
+            _canTestAccountCreds = new BoolVar();
 
-            Agents = _algoEnv.BotAgents.Select(b => b.Agent).AsObservable();
-            SelectedAgent = Agents.FirstOrDefault(a => a.Name == agentName);
+            IsNewAccountMode = account == null;
+            DisplayName = $"{(IsNewAccountMode ? "Add" : "Edit")} account";
 
-            if (_account == null)
-            {
-                IsNewMode = true;
-                DisplayName = "Add account";
+            AlgoServersList = algoEnv.BotAgents.Select(u => u.Agent).AsObservable();
 
-                SelectedServer = Servers.FirstOrDefault();
-            }
-            else
-            {
-                IsNewMode = false;
-                DisplayName = "Edit account";
+            var login = LocalAccounts.FirstOrDefault()?.Login;
+            var server = serverName ?? TTServersList.FirstOrDefault()?.Address;
 
-                Login = _account.Key.Login;
-                Server = _account.Key.Server;
-            }
+            if (!IsNewAccountMode)
+                AccountId.Unpack(_account.AccountId, out login, out server);
+
+            AlgoServer = _context.AddProperty(algoServer).AddPreTrigger(DeinitAlgoAgent);
+            TTServerName = _context.AddProperty(server).AddPostTrigger(InitTTServerTrigger);
+            Login = _context.AddValidable(login).AddPostTrigger(InitLoginTrigger).MustBeNotEmpty();
+            DisplayAccountName = _context.AddValidable(_account?.DisplayName ?? login);
+            Password = _context.AddValidable<string>().MustBeNotEmpty();
+            Error = _context.AddProperty<string>();
+
+            IsEnabled = new BoolVar(true);
+            SuccessConnect = new BoolVar();
+
+            CanTest = IsEnabled & !_context.HasError & _canTestAccountCreds;
+            CanOk = IsEnabled & !_context.HasError & (IsNewAccountMode ? _canAddAccount : _canChangeAccount);
+
+            AlgoServer.AddPostTrigger(InitAlgoAgent); //should be after AlgoServer initialization
+            Login.AddValidationRule((newLogin) => !ServerAccounts?.Any(u => u.Login == newLogin) ?? false, "This value is already in use");
+            DisplayAccountName.AddValidationRule((newName) => !ServerAccounts?.Any(u => u.DisplayName == newName) ?? false, "This value is already in use");
         }
 
+        public async void Ok() => await TryToRunConnectionRequest(async () =>
+            {
+                if (IsNewAccountMode)
+                    await AlgoServer.Value.Model.AddAccount(new AddAccountRequest(TTServerName.Value, Login.Value, Password.Value, DisplayAccountName.Value));
+                else
+                    await AlgoServer.Value.Model.ChangeAccount(new ChangeAccountRequest(_account.AccountId, Password.Value, DisplayAccountName.Value));
+            });
 
-        public async void Ok()
+        public async void Test() => await TryToRunConnectionRequest(async () =>
+            {
+                var error = await AlgoServer.Value.Model.TestAccountCreds(new TestAccountCredsRequest(TTServerName.Value, Login.Value, new AccountCreds(Password.Value)));
+
+                SuccessConnect.Value = error.IsSuccessful;
+                Error.Value = error.IsSuccessful ? null : $"{error.Code} - {error.TextMessage}";
+            }, false);
+
+        private async Task TryToRunConnectionRequest(Func<Task> request, bool closeWindow = true)
         {
-            IsEditable = false;
-            Error = null;
             try
             {
-                if (_account == null)
-                    await SelectedAgent.Model.AddAccount(new AccountKey(Server, Login), Password);
-                else await SelectedAgent.Model.ChangeAccount(_account.Key, Password);
+                IsEnabled.Value = false;
+                Error.Value = null;
 
-                if (_selectedPlugin != null && _selectedPlugin.SelectedAgent.Name == SelectedAgent.Name)
-                {
-                    _selectedPlugin.SelectedAccount = _selectedPlugin.Accounts.FirstOrDefault(a => a.Login == Login) ?? (_selectedPlugin.Accounts.Any() ? _selectedPlugin.Accounts.First() : null);
-                }
+                await request();
             }
             catch (Exception ex)
             {
-                Error = ex.Message;
+                Error.Value = ex.Message;
             }
-            IsEditable = true;
-            if (!HasError)
-                TryClose();
+
+            IsEnabled.Value = true;
+
+            if (!Error.HasValue && closeWindow)
+                await TryCloseAsync(true);
         }
 
-        public async void Test()
+        private void InitAlgoAgent(AlgoAgentViewModel model)
         {
-            IsEditable = false;
-            Error = null;
-            try
-            {
-                var error = await SelectedAgent.Model.TestAccountCreds(new AccountKey(Server, Login), Password);
-                if (error.Code == ConnectionErrorCodes.None)
-                    Success = "Successfully connected";
-                else Error = string.IsNullOrEmpty(error.TextMessage) ? $"{error.Code}" : $"{error.Code} - {error.TextMessage}";
-            }
-            catch (Exception ex)
-            {
-                Error = ex.Message;
-            }
-            IsEditable = true;
+            if (model != null)
+                model.Model.AccessLevelChanged += OnAccessLevelChanged;
+
+            Login?.Validate();
+            DisplayAccountName?.Validate();
+            OnAccessLevelChanged();
         }
 
-        public void Cancel()
+        private void DeinitAlgoAgent(AlgoAgentViewModel model)
         {
-            TryClose();
+            if (model != null)
+                model.Model.AccessLevelChanged -= OnAccessLevelChanged;
         }
 
-
-        private void ValidateState()
+        private void InitTTServerTrigger(string newTTServer)
         {
-            _isValid = _selectedAgent != null
-                && !string.IsNullOrWhiteSpace(_login)
-                && !string.IsNullOrWhiteSpace(_server)
-                && (!string.IsNullOrEmpty(_password) || _account != null);
-            NotifyOfPropertyChange(nameof(CanOk));
-            NotifyOfPropertyChange(nameof(CanTest));
+            SetProperty(Login, LocalAccounts.FirstOrDefault()?.Login);
+            NotifyOfPropertyChange(nameof(LocalAccounts));
         }
 
-        private void InitAlgoAgent(AlgoAgentViewModel agent)
+        private void InitLoginTrigger(string newLogin)
         {
-            if (agent != null)
-            {
-                agent.Model.AccessLevelChanged += OnAccessLevelChanged;
-            }
-        }
-
-        private void DeinitAlgoAgent(AlgoAgentViewModel agent)
-        {
-            if (agent != null)
-            {
-                agent.Model.AccessLevelChanged -= OnAccessLevelChanged;
-            }
+            SetProperty(DisplayAccountName, newLogin);
+            SetProperty(Password, LocalAccounts.FirstOrDefault(u => u.Login == newLogin)?.Password);
         }
 
         private void OnAccessLevelChanged()
         {
-            NotifyOfPropertyChange(nameof(CanOk));
-            NotifyOfPropertyChange(nameof(CanTest));
+            _canAddAccount.Value = AlgoServer?.Value?.Model.AccessManager.CanAddAccount() ?? false;
+            _canChangeAccount.Value = AlgoServer?.Value?.Model.AccessManager.CanChangeAccount() ?? false;
+            _canTestAccountCreds.Value = AlgoServer?.Value?.Model.AccessManager.CanTestAccountCreds() ?? false;
+        }
+
+        private static void SetProperty<T>(IProperty<T> prop, T value)
+        {
+            if (prop != null)
+                prop.Value = value;
         }
     }
 }

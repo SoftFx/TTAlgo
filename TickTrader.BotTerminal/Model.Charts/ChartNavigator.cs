@@ -1,14 +1,8 @@
 ﻿using Caliburn.Micro;
 using SciChart.Charting.Visuals.Axes;
-using SciChart.Charting.Visuals.Axes.LabelProviders;
 using SciChart.Data.Model;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Data;
-using TickTrader.Algo.Api;
 
 namespace TickTrader.BotTerminal
 {

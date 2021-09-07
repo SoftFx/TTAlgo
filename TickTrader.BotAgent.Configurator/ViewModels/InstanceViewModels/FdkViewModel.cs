@@ -3,9 +3,9 @@
     public class FdkViewModel : BaseContentViewModel
     {
         private readonly RefreshCounter _refreshManager;
+        private readonly FdkModel _model;
         private readonly string _keyLogs;
 
-        private FdkModel _model;
 
         public FdkViewModel(FdkModel model, RefreshCounter refManager = null) : base(nameof(FdkViewModel))
         {

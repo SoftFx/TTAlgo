@@ -1,17 +1,10 @@
-﻿using System;
-using System.Linq;
-using Caliburn.Micro;
-using TickTrader.Algo.Core.Metadata;
-using Machinarium.Qnil;
-using NLog;
+﻿using Machinarium.Qnil;
 
 namespace TickTrader.BotTerminal
 {
-    internal class BotListViewModel : PropertyChangedBase, IDropHandler
+    internal sealed class BotListViewModel : IDropHandler
     {
-        private static readonly ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
-
-        private AlgoEnvironment _algoEnv;
+        private readonly AlgoEnvironment _algoEnv;
 
 
         public IObservableList<AlgoBotViewModel> LocalBots { get; }
@@ -24,7 +17,6 @@ namespace TickTrader.BotTerminal
             _algoEnv = algoEnv;
 
             LocalBots = _algoEnv.LocalAgentVM.Bots.AsObservable();
-
             BotAgents = _algoEnv.BotAgents.AsObservable();
         }
 
@@ -37,31 +29,10 @@ namespace TickTrader.BotTerminal
 
         public void Drop(object o)
         {
-            var algoBot = o as AlgoPluginViewModel;
-            if (algoBot != null)
-            {
-                _algoEnv.LocalAgentVM.OpenBotSetup(null, algoBot.PluginInfo.Key);
-            }
-            var algoPackage = o as AlgoPackageViewModel;
-            if (algoPackage != null)
-            {
-                algoPackage.Agent.OpenDownloadPackageDialog(algoPackage.Key);
-            }
+            if (o is AlgoPluginViewModel algoBot)
+                _algoEnv.LocalAgentVM.OpenBotSetup(null, algoBot.Key);
         }
 
-        public bool CanDrop(object o)
-        {
-            var algoBot = o as AlgoPluginViewModel;
-            if (algoBot != null && algoBot.Agent.Name == _algoEnv.LocalAgentVM.Name && algoBot.Type == AlgoTypes.Robot)
-            {
-                return true;
-            }
-            var algoPackage = o as AlgoPackageViewModel;
-            if (algoPackage != null && algoPackage.CanDownloadPackage)
-            {
-                return true;
-            }
-            return false;
-        }
+        public bool CanDrop(object o) => o is AlgoPluginViewModel algoBot && algoBot.Agent.Name == _algoEnv.LocalAgentVM.Name && algoBot.IsTradeBot;
     }
 }

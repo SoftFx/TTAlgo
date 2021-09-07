@@ -1,18 +1,14 @@
-﻿using Caliburn.Micro;
-using Machinarium.Var;
+﻿using Machinarium.Var;
 using SciChart.Charting.Model.DataSeries;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Lib;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.Backtester;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -52,9 +48,9 @@ namespace TickTrader.BotTerminal
             SaveProps(file, StatProperties.Value);
         }
 
-        public static void SaveAsText(Stream file, AlgoTypes pluginType, TestingStatistics stats)
+        public static void SaveAsText(Stream file, bool isTradeBot, TestingStatistics stats)
         {
-            var props = FormatStats(pluginType, stats);
+            var props = FormatStats(isTradeBot, stats);
             SaveProps(file, props);
         }
 
@@ -92,7 +88,7 @@ namespace TickTrader.BotTerminal
             
         }
 
-        public static void SaveCsv(Stream entryStream, IEnumerable<BarEntity> data)
+        public static void SaveCsv(Stream entryStream, IEnumerable<BarData> data)
         {
             using (var writer = new StreamWriter(entryStream))
             {
@@ -101,7 +97,7 @@ namespace TickTrader.BotTerminal
                 foreach (var bar in data)
                 {
                     writer.WriteLine();
-                    writer.Write("{0},{1},{2},{3},{4}", InvariantFormat.CsvFormat(bar.OpenTime), bar.Open, bar.High, bar.Low, bar.Close);
+                    writer.Write("{0},{1},{2},{3},{4}", InvariantFormat.CsvFormat(bar.OpenTime.ToDateTime()), bar.Open, bar.High, bar.Low, bar.Close);
                 }
             }
         }
@@ -125,11 +121,11 @@ namespace TickTrader.BotTerminal
             IsVisible = true;
             UpdateHeader(id);
 
-            var pluginType = descriptor.Type;
+            var isTradeBot = descriptor.IsTradeBot;
 
-            _statProperties.Value = FormatStats(pluginType, newStats);
+            _statProperties.Value = FormatStats(isTradeBot, newStats);
 
-            if (pluginType == AlgoTypes.Robot)
+            if (isTradeBot)
             {
                 SmallCharts.Add(new BacktesterStatChartViewModel("Profits and losses by hours", ReportDiagramTypes.CategoryHistogram)
                     .AddStackedColumns(newStats.ProfitByHours, ReportSeriesStyles.ProfitColumns, false)
@@ -141,7 +137,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private static Dictionary<string, string> FormatStats(AlgoTypes pluginType, TestingStatistics stats)
+        private static Dictionary<string, string> FormatStats(bool isTradeBot, TestingStatistics stats)
         {
             var props = new Dictionary<string, string>();
             var balanceNumbersFormat = FormatExtentions.CreateTradeFormatInfo(stats.AccBalanceDigits);
@@ -149,7 +145,7 @@ namespace TickTrader.BotTerminal
             props.Add("Bars", stats.BarsCount.ToString());
             props.Add("Ticks", stats.TicksCount.ToString());
 
-            if (pluginType == AlgoTypes.Robot)
+            if (isTradeBot)
             {
                 props.Add("Initial deposit", stats.InitialBalance.FormatPlain(balanceNumbersFormat));
                 props.Add("Final equity", stats.FinalBalance.FormatPlain(balanceNumbersFormat));
@@ -168,7 +164,7 @@ namespace TickTrader.BotTerminal
 
             props.Add("Testing speed (tps)", tickPerSecond);
 
-            if (pluginType == AlgoTypes.Robot)
+            if (isTradeBot)
             {
                 props.Add("Orders opened", stats.OrdersOpened.ToString());
                 props.Add("Orders rejected", stats.OrdersRejected.ToString());

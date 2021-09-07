@@ -1,12 +1,6 @@
-﻿using Caliburn.Micro;
+﻿using Google.Protobuf.WellKnownTypes;
 using SciChart.Charting.Model.DataSeries;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
@@ -17,28 +11,29 @@ namespace TickTrader.BotTerminal
         public override IXyDataSeries SeriesData => _seriesData;
         protected override double NanValue => double.NaN;
 
-        public DoubleSeriesModel(IPluginModel plugin, IPluginDataChartModel outputHost, IOutputCollector collector, ColoredLineOutputSetupModel setup)
-            : base(collector, outputHost, setup.IsEnabled)
+        public DoubleSeriesModel(IPluginModel plugin, IPluginDataChartModel outputHost, IOutputCollector collector)
+            : base(collector, outputHost)
         {
             _seriesData = new XyDataSeries<DateTime, double>();
 
-            Init(plugin, setup);
+            var config = collector.OutputConfig;
+            Init(plugin, config, collector.OutputDescriptor);
 
-            if (setup.IsEnabled)
+            if (config.IsEnabled)
             {
                 _seriesData.SeriesName = DisplayName;
                 Enable();
             }
         }
 
-        protected override void AppendInternal(DateTime time, double data)
+        protected override void AppendInternal(DateTime time, Any data)
         {
-            _seriesData.Append(time, data);
+            _seriesData.Append(time, UnpackValue(data));
         }
 
-        protected override void UpdateInternal(int index, DateTime time, double data)
+        protected override void UpdateInternal(int index, DateTime time, Any data)
         {
-            _seriesData.Update(index, data);
+            _seriesData.Update(index, UnpackValue(data));
         }
 
         protected override void Clear()
@@ -46,13 +41,12 @@ namespace TickTrader.BotTerminal
             _seriesData.Clear();
         }
 
-        //protected override void CopyAllInternal(OutputFixture<double>.Point[] points)
-        //{
-        //    Execute.OnUIThread(() =>
-        //    {
-                
-        //        _seriesData.Append(points.Select(p => p.TimeCoordinate.Value), points.Select(p => p.Value));
-        //    });
-        //}
+        private double UnpackValue(Any data)
+        {
+            var y = NanValue;
+            if (data != null)
+                y = data.Unpack<DoubleValue>().Value;
+            return y;
+        }
     }
 }

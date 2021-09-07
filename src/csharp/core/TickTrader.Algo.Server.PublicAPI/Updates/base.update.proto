@@ -1,0 +1,41 @@
+﻿syntax = "proto3";
+
+package ticktrader.algo.server.publicApi;
+
+option csharp_namespace = "TickTrader.Algo.Server.PublicAPI";
+
+import "google/protobuf/any.proto";
+import "management/base.request.proto";
+
+
+message Update {
+    enum Action {
+        Added = 0;
+        Updated = 1;
+        Removed = 2;
+    }
+}
+
+message UpdateInfo {
+    enum PayloadType {
+        Heartbeat = 0;
+        ServerMetadataUpdate = 10;
+        PackageUpdate = 20;
+        PackageStateUpdate = 21;
+        AccountModelUpdate = 30;
+        AccountStateUpdate = 31;
+        PluginModelUpdate = 40;
+        PluginStateUpdate = 41;
+        PluginLogUpdate = 42;
+        PluginStatusUpdate = 43;
+        AlertListUpdate = 50;
+    }
+
+    PayloadType type = 1;
+    bytes payload = 2;
+    bool compressed = 3;
+}
+
+message HeartbeatUpdate {
+    RequestResult exec_result = 101;
+}

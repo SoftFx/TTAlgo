@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package ticktrader.algo.domain;
+
+option csharp_namespace = "TickTrader.Algo.Domain";
+
+message Update {
+    enum Action {
+        ADDED = 0;
+        UPDATED = 1;
+        REMOVED = 2;
+    }
+}
+
+message Feed {
+    enum MarketSide {
+        BID = 0;
+        ASK = 1;
+    }
+
+    enum Timeframe {
+        S1 = 0;
+        S10 = 1;
+        M1 = 2;
+        M5 = 3;
+        M15 = 4;
+        M30 = 5;
+        H1 = 6;
+        H4 = 7;
+        D = 8;
+        W = 9;
+        M_N = 10;
+        TICKS = 11;
+        TICKS_LEVEL2 = 12;
+        TICKS_VWAP = 13;
+    }
+}
+
+message Executor {
+    enum State {
+        STOPPED = 0;
+        WAIT_CONNECT = 1;
+        STARTING = 2;
+        RUNNING = 3;
+        WAIT_RECONNECT = 4;
+        STOPPING = 5;
+        FAULTED = 6;
+    }
+}
+
+message Account {
+    enum ConnectionState {
+        OFFLINE = 0;
+        CONNECTING = 1;
+        ONLINE = 2;
+        DISCONNECTING = 3;
+    }
+}

@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package ticktrader.algo.domain.serverControl;
+
+option csharp_namespace = "TickTrader.Algo.Domain.ServerControl";
+
+import "server.control.proto";
+
+service AlgoServerPublic
+{
+    rpc Login(LoginRequest) returns (LoginResponse);
+    rpc Logout(LogoutRequest) returns (LogoutResponse);
+
+    rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+
+    rpc GetSnapshot(SnapshotRequest) returns (SnapshotResponse);
+    rpc SubscribeToUpdates(SubscribeToUpdatesRequest) returns (stream UpdateInfo);
+
+    rpc GetApiMetadata(ApiMetadataRequest) returns (ApiMetadataResponse);
+    rpc GetMappingsInfo(MappingsInfoRequest) returns (MappingsInfoResponse);
+    rpc GetSetupContext(SetupContextRequest) returns (SetupContextResponse);
+    rpc GetAccountMetadata(AccountMetadataRequest) returns (AccountMetadataResponse);
+
+    rpc GetPluginList(PluginListRequest) returns (PluginListResponse);
+    rpc AddPlugin(AddPluginRequest) returns (AddPluginResponse);
+    rpc RemovePlugin(RemovePluginRequest) returns (RemovePluginResponse);
+    rpc StartPlugin(StartPluginRequest) returns (StartPluginResponse);
+    rpc StopPlugin(StopPluginRequest) returns (StopPluginResponse);
+    rpc ChangePluginConfig(ChangePluginConfigRequest) returns (ChangePluginConfigResponse);
+
+    rpc GetAccountList(AccountListRequest) returns (AccountListResponse);
+    rpc AddAccount(AddAccountRequest) returns (AddAccountResponse);
+    rpc RemoveAccount(RemoveAccountRequest) returns (RemoveAccountResponse);
+    rpc ChangeAccount(ChangeAccountRequest) returns (ChangeAccountResponse);
+    rpc TestAccount(TestAccountRequest) returns (TestAccountResponse);
+    rpc TestAccountCreds(TestAccountCredsRequest) returns (TestAccountCredsResponse);
+
+    rpc GetPackageList(PackageListRequest) returns (PackageListResponse);
+    rpc UploadPackage(stream FileTransferMsg) returns (UploadPackageResponse);
+    rpc RemovePackage(RemovePackageRequest) returns (RemovePackageResponse);
+    rpc DownloadPackage(DownloadPackageRequest) returns (stream FileTransferMsg);
+
+    rpc GetPluginStatus(PluginStatusRequest) returns (PluginStatusResponse);
+    rpc GetPluginLogs(PluginLogsRequest) returns (PluginLogsResponse);
+    rpc GetAlerts(PluginAlertsRequest) returns (PluginAlertsResponse);
+
+    rpc GetPluginFolderInfo(PluginFolderInfoRequest) returns (PluginFolderInfoResponse);
+    rpc ClearPluginFolder(ClearPluginFolderRequest) returns (ClearPluginFolderResponse);
+    rpc DeletePluginFile(DeletePluginFileRequest) returns (DeletePluginFileResponse);
+    rpc DownloadPluginFile(DownloadPluginFileRequest) returns (stream FileTransferMsg);
+    rpc UploadPluginFile(stream FileTransferMsg) returns (UploadPluginFileResponse);
+}
+

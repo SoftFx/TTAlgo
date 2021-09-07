@@ -1,11 +1,8 @@
 ﻿using Caliburn.Micro;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotTerminal
 {
@@ -70,7 +67,8 @@ namespace TickTrader.BotTerminal
             }
 
             _isCompleted = true;
-            TryClose();
+
+            await TryCloseAsync();
         }
 
         public void Cancel()
@@ -78,10 +76,17 @@ namespace TickTrader.BotTerminal
             _cancelSrc?.Cancel();
         }
 
-        public override void CanClose(Action<bool> callback)
+        public override Task<bool> CanCloseAsync(CancellationToken cancellationToken = default)
         {
-            callback(_isCompleted);
+            if (!_isCompleted)
+                return base.CanCloseAsync(cancellationToken);
+            else
+                return Task.FromResult(false);
         }
+        //public override void CanCloseAsync(Action<bool> callback)
+        //{
+        //    callback(_isCompleted);
+        //}
 
         public bool IsCancellable => _cancelSrc != null;
         public bool IsIndeterminate => Progress == null;

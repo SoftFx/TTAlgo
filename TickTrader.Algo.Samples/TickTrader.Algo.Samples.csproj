@@ -53,13 +53,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
-      <Project>{8901c84d-fb62-433c-a25f-4d24255b9453}</Project>
+    <ProjectReference Include="..\src\csharp\api\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
+      <Project>{9D9CF1B3-7E57-4971-A479-5803C658A7D0}</Project>
       <Name>TickTrader.Algo.Api</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj">
-      <Project>{8bab901c-10bb-4eb7-b81e-716fa05b6957}</Project>
-      <Name>TickTrader.Algo.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

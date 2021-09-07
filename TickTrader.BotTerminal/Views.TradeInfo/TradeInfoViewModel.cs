@@ -1,12 +1,7 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.Account;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -17,10 +12,10 @@ namespace TickTrader.BotTerminal
         {
         }
 
-        public TradeInfoViewModel(AccountModel accModel, IVarSet<string, SymbolModel> symbols,
-            IVarSet<string, CurrencyEntity> currencies, IConnectionStatusInfo connectionInfo, bool autoSizeColumns, ProfileManager profile = null, bool isBacktester = false)
+        public TradeInfoViewModel(AccountModel accModel, IVarSet<string, SymbolInfo> symbols,
+            IVarSet<string, CurrencyInfo> currencies, IConnectionStatusInfo connectionInfo, bool autoSizeColumns, ProfileManager profile = null, bool isBacktester = false)
         {
-            var netPositions = new NetPositionListViewModel(accModel, symbols, connectionInfo, profile, isBacktester);
+            var netPositions = new NetPositionListViewModel(accModel, connectionInfo, profile, isBacktester);
             var grossPositions = new GrossPositionListViewModel(accModel, symbols, connectionInfo, profile, isBacktester);
             Positions = new PositionListViewModel(netPositions, grossPositions);
             Orders = new OrderListViewModel(accModel, symbols, connectionInfo, profile, isBacktester);

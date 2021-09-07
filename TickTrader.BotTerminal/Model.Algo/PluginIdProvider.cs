@@ -1,47 +1,42 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using TickTrader.Algo.Common.Lib;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core.Metadata;
+﻿using System.Collections.Generic;
+using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Setup;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
     internal class PluginIdProvider : IPluginIdProvider
     {
-        private BotIdHelper _pluginsIdHelper;
+        private PluginIdHelper _pluginsIdHelper;
         private Dictionary<string, int> _plugins;
 
 
         public PluginIdProvider()
         {
             _plugins = new Dictionary<string, int>();
-            _pluginsIdHelper = new BotIdHelper();
+            _pluginsIdHelper = new PluginIdHelper();
         }
 
         public string GeneratePluginId(PluginDescriptor descriptor)
         {
             switch (descriptor.Type)
             {
-                case AlgoTypes.Indicator:
-                case AlgoTypes.Robot:
+                case Metadata.Types.PluginType.Indicator:
+                case Metadata.Types.PluginType.TradeBot:
                     return GeneratePluginId(descriptor.DisplayName);
                 default:
                     return GenerateId(descriptor.DisplayName);
             }
         }
 
-        public bool IsValidPluginId(AlgoTypes pluginType, string pluginId)
+        public bool IsValidPluginId(Metadata.Types.PluginType pluginType, string pluginId)
         {
             if (!_pluginsIdHelper.Validate(pluginId))
             {
                 return false;
             }
 
-            return pluginType == AlgoTypes.Indicator || pluginType == AlgoTypes.Robot ? !_plugins.ContainsKey(pluginId) : true;
+            return pluginType == Metadata.Types.PluginType.Indicator || pluginType == Metadata.Types.PluginType.TradeBot ? !_plugins.ContainsKey(pluginId) : true;
         }
 
         public void RegisterPluginId(string pluginId)

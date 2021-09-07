@@ -1,40 +1,40 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Infrastructure;
+using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreUsageSample
 {
-    internal class FeedModel : IFeedProvider, IFeedHistoryProvider, ISynchronizationContext
+    internal class FeedModel : IFeedProvider, IFeedHistoryProvider, ISyncContext
     {
-        private Action<QuoteEntity[]> FeedUpdated;
+        private Action<QuoteInfo[]> FeedUpdated;
         private Dictionary<string, SymbolDataModel> dataBySymbol = new Dictionary<string, SymbolDataModel>();
 
-        public event Action<QuoteEntity> RateUpdated;
-        public event Action<List<QuoteEntity>> RatesUpdated;
+        public event Action<QuoteInfo> RateUpdated;
+        public event Action<List<QuoteInfo>> RatesUpdated;
 
-        public TimeFrames TimeFrame { get; private set; }
+        public Feed.Types.Timeframe TimeFrame { get; private set; }
 
-        public ISynchronizationContext Sync { get { return this; } }
+        public ISyncContext Sync { get { return this; } }
 
-        public FeedModel(TimeFrames timeFrame)
+        public FeedModel(Feed.Types.Timeframe timeFrame)
         {
             this.TimeFrame = timeFrame;
         }
 
-        public void Fill(string symbol, IEnumerable<BarEntity> data)
+        public void Fill(string symbol, IEnumerable<BarData> data)
         {
             GetSymbolData(symbol).Fill(data);
         }
 
-        public void Update(QuoteEntity update)
+        public void Update(QuoteInfo update)
         {
             GetSymbolData(update.Symbol).Update(update);
-            FeedUpdated?.Invoke(new QuoteEntity[] { update });
+            FeedUpdated?.Invoke(new QuoteInfo[] { update });
         }
 
         private SymbolDataModel GetSymbolData(string smbCode)
@@ -48,42 +48,82 @@ namespace TickTrader.Algo.CoreUsageSample
             return data;
         }
 
-        List<BarEntity> IFeedHistoryProvider.QueryBars(string symbolCode, BarPriceType priceType, DateTime from, DateTime to, TimeFrames timeFrame)
+        List<BarData> IFeedHistoryProvider.QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
         {
-            return GetSymbolData(symbolCode).QueryBars(from, to, timeFrame).ToList();
+            return GetSymbolData(symbol).QueryBars(from, to, timeframe).ToList();
         }
 
-        List<QuoteEntity> IFeedHistoryProvider.QueryTicks(string symbolCode, DateTime from, DateTime to, bool level2)
+        Task<List<BarData>> IFeedHistoryProvider.QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, Timestamp to)
+        {
+            return Task.FromResult(GetSymbolData(symbol).QueryBars(from, to, timeframe).ToList());
+        }
+
+        List<QuoteInfo> IFeedHistoryProvider.QueryQuotes(string symbol, Timestamp from, Timestamp to, bool level2)
         {
             return null;
         }
 
-        List<BarEntity> IFeedHistoryProvider.QueryBars(string symbolCode, BarPriceType priceType, DateTime from, int size, TimeFrames timeFrame)
+        Task<List<QuoteInfo>> IFeedHistoryProvider.QueryQuotesAsync(string symbol, Timestamp from, Timestamp to, bool level2)
+        {
+            return null;
+        }
+
+        List<BarData> IFeedHistoryProvider.QueryBars(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count)
         {
             throw new NotImplementedException();
         }
 
-        List<QuoteEntity> IFeedHistoryProvider.QueryTicks(string symbolCode, DateTime from, int count, bool level2)
+        Task<List<BarData>> IFeedHistoryProvider.QueryBarsAsync(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe, Timestamp from, int count)
         {
             throw new NotImplementedException();
         }
 
-        IEnumerable<QuoteEntity> IFeedProvider.GetSnapshot()
+        List<QuoteInfo> IFeedHistoryProvider.QueryQuotes(string symbol, Timestamp from, int count, bool level2)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<List<QuoteInfo>> IFeedHistoryProvider.QueryQuotesAsync(string symbol, Timestamp from, int count, bool level2)
+        {
+            throw new NotImplementedException();
+        }
+
+        List<QuoteInfo> IFeedProvider.GetSnapshot()
         {
             return dataBySymbol.Values.Where(d => d.LastQuote != null).Select(d => d.LastQuote).ToList();
         }
 
+        Task<List<QuoteInfo>> IFeedProvider.GetSnapshotAsync()
+        {
+            return Task.FromResult(dataBySymbol.Values.Where(d => d.LastQuote != null).Select(d => d.LastQuote).ToList());
+        }
 
-        List<QuoteEntity> IFeedSubscription.Modify(List<FeedSubscriptionUpdate> updates)
+        IFeedSubscription IFeedProvider.GetSubscription()
+        {
+            return this;
+        }
+
+
+        List<QuoteInfo> IFeedSubscription.Modify(List<FeedSubscriptionUpdate> updates)
         {
             return null;
+        }
+
+        Task<List<QuoteInfo>> IFeedSubscription.ModifyAsync(List<FeedSubscriptionUpdate> updates)
+        {
+            return Task.FromResult<List<QuoteInfo>>(null);
         }
 
         void IFeedSubscription.CancelAll()
         {
         }
 
-        public IEnumerable<SymbolEntity> GetSymbolMetadata()
+        Task IFeedSubscription.CancelAllAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        public IEnumerable<SymbolInfo> GetSymbolMetadata()
         {
             return null;
         }
@@ -103,21 +143,31 @@ namespace TickTrader.Algo.CoreUsageSample
             action(arg);
         }
 
+        public T Invoke<T>(Func<T> syncFunc)
+        {
+            return syncFunc();
+        }
+
+        public TOut Invoke<TIn, TOut>(Func<TIn, TOut> syncFunc, TIn args)
+        {
+            return syncFunc(args);
+        }
+
         private class SymbolDataModel
         {
-            private List<BarEntity> data = new List<BarEntity>();
-            private TimeFrames timeFrame;
+            private List<BarData> data = new List<BarData>();
+            private Feed.Types.Timeframe timeFrame;
             private BarSampler sampler;
 
-            public SymbolDataModel(TimeFrames timeFrame)
+            public SymbolDataModel(Feed.Types.Timeframe timeFrame)
             {
                 this.timeFrame = timeFrame;
                 sampler = BarSampler.Get(timeFrame);
             }
 
-            public QuoteEntity LastQuote { get; private set; }
+            public QuoteInfo LastQuote { get; private set; }
 
-            public void Fill(IEnumerable<BarEntity> data)
+            public void Fill(IEnumerable<BarData> data)
             {
                 if (this.data.Count > 0)
                     throw new InvalidOperationException("Already filled!");
@@ -125,9 +175,9 @@ namespace TickTrader.Algo.CoreUsageSample
                 this.data.AddRange(data);
             }
 
-            public void Update(QuoteEntity quote)
+            public void Update(QuoteInfo quote)
             {
-                var barBoundaries = sampler.GetBar(quote.Time);
+                var barBoundaries = sampler.GetBar(quote.Timestamp);
                 var barOpenTime = barBoundaries.Open;
 
                 if (data.Count > 0)
@@ -144,14 +194,14 @@ namespace TickTrader.Algo.CoreUsageSample
                     }
                 }
 
-                data.Add(new BarEntity(barOpenTime, barBoundaries.Close, quote.Bid, 1));
+                data.Add(new BarData(barOpenTime, barBoundaries.Close, quote.Bid, 1));
 
                 LastQuote = quote;
             }
 
-            public IEnumerable<BarEntity> QueryBars(DateTime from, DateTime to, TimeFrames timeFrame)
+            public IEnumerable<BarData> QueryBars(Timestamp from, Timestamp to, Feed.Types.Timeframe timeframe)
             {
-                if (timeFrame != this.timeFrame)
+                if (timeframe != this.timeFrame)
                     return null;
 
                 return data.Where(b => b.OpenTime >= from && b.OpenTime < to);
