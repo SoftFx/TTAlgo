@@ -45,7 +45,7 @@ namespace TickTrader.Algo.ServerControl
 
         Task<ApiMetadataInfo> GetApiMetadata();
 
-        Task<MappingCollectionInfo> GetMappingsInfo(MappingsInfoRequest request);
+        Task<MappingCollectionInfo> GetMappingsInfo();
 
         Task<SetupContextInfo> GetSetupContext();
 

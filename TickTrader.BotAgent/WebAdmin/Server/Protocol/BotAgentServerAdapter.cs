@@ -81,9 +81,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return Task.FromResult(ApiMetadataInfo.Current);
         }
 
-        public Task<MappingCollectionInfo> GetMappingsInfo(MappingsInfoRequest request)
+        public Task<MappingCollectionInfo> GetMappingsInfo()
         {
-            return _algoServer.GetMappingsInfo(request);
+            return _algoServer.GetMappingsInfo(new MappingsInfoRequest());
         }
 
         public Task<SetupContextInfo> GetSetupContext()

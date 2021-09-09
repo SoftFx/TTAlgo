@@ -19,6 +19,11 @@ namespace TickTrader.Algo.Server.Common
         }
 
 
+        public static ILogger GetSessionLogger(LogFactory logFactory, string sessionId)
+        {
+            return logFactory.GetLogger($"{SessionLoggerPrefix}{sessionId}");
+        }
+        
         public static ILogger GetLogger(string loggerName, string logsDir, string folderName)
         {
             var logTargetName = $"all-{folderName}";
