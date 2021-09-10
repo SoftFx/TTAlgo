@@ -26,7 +26,7 @@ namespace TickTrader.Algo.Calculator
             _isHidden = isHidden;
         }
 
-        public StatsChange Recalculate()
+        public StatsChangeToken Recalculate()
         {
             var oldMargin = _currentMargin;
             var oldProfit = _currentProfit;
@@ -64,16 +64,16 @@ namespace TickTrader.Algo.Calculator
                     _currentProfit = 0;
             }
 
-            return new StatsChange(_currentMargin - oldMargin, _currentProfit - oldProfit, _errorsCount - oldErros);
+            return new StatsChangeToken(_currentMargin - oldMargin, _currentProfit - oldProfit, _errorsCount - oldErros);
         }
 
-        public StatsChange AddOrder(double remAmount, double? price)
+        public StatsChangeToken AddOrder(double remAmount, double? price)
         {
             AddOrderWithoutCalculation(remAmount, price);
             return Recalculate();
         }
 
-        public StatsChange RemoveOrder(double remAmount, double? price)
+        public StatsChangeToken RemoveOrder(double remAmount, double? price)
         {
             if (_type.IsPosition())
                 RemovePositionWithoutCalculation(remAmount, price ?? 0.0);

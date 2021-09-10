@@ -303,7 +303,7 @@ namespace TickTrader.Algo.Calculator
             return calc;
         }
 
-        private void Calc_StatsChanged(StatsChange args)
+        private void Calc_StatsChanged(StatsChangeToken args)
         {
             Profit += args.ProfitDelta;
             Margin += args.MarginDelta;

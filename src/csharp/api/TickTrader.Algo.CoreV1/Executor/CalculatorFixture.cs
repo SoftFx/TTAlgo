@@ -380,7 +380,7 @@ namespace TickTrader.Algo.CoreV1
         {
             if (code == CalculationError.NoCrossSymbol && OnFatalError != null)
             {
-                var error = new MisconfigException("No cross symbol to convert from " + symbol + " to " + Acc.BalanceCurrency + "!");
+                var error = new MisconfigException($"No cross symbol to convert from {symbol} to {Acc.BalanceCurrency}!");
                 OnFatalError(error);
                 throw error;
             }

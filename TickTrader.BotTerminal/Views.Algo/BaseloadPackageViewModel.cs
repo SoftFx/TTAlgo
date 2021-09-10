@@ -36,6 +36,7 @@ namespace TickTrader.BotTerminal
 
         private FileSystemWatcher _watcher;
 
+
         public AlgoAgentViewModel SelectedAlgoServer { get; }
 
         public ICollectionView SourcePackageCollectionView { get; }

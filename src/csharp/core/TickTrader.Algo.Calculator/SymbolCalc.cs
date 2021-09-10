@@ -40,25 +40,11 @@ namespace TickTrader.Algo.Calculator
 
         public ISymbolCalculator Calculator { get; }
 
-        public event Action<StatsChange> StatsChanged;
+        public event Action<StatsChangeToken> StatsChanged;
 
         public void Recalculate(ISymbolInfo smb)
         {
-            StatsChange change;
-
-            if (!Buy.IsEmpty)
-            {
-                if (!Sell.IsEmpty)
-                    change = Buy.Recalculate() + Sell.Recalculate();
-                else
-                    change = Buy.Recalculate();
-            }
-            else if (!Sell.IsEmpty)
-                change = Sell.Recalculate();
-            else
-                return;
-
-            OnStatsChange(change);
+            OnStatsChange(Buy.Recalculate() + Sell.Recalculate());
         }
 
         public void AddOrder(IOrderCalcInfo order)
@@ -113,16 +99,19 @@ namespace TickTrader.Algo.Calculator
 
             Margin = Math.Max(sellMargin, buyMargin) + _hedgeFormulPart * Math.Min(sellMargin, buyMargin);
 
-            if (Buy.IsEmpty && Sell.IsEmpty)
+            if (IsEmpty)
                 Margin = 0;
         }
 
-        internal void OnStatsChange(StatsChange args)
+        internal void OnStatsChange(StatsChangeToken args)
         {
+            if (args == StatsChangeToken.EmptyToken)
+                return;
+
             var oldMargin = Margin;
             UpdateMargin();
             var delta = Margin - oldMargin;
-            StatsChanged?.Invoke(new StatsChange(delta, args.ProfitDelta, args.ErrorDelta));
+            StatsChanged?.Invoke(new StatsChangeToken(delta, args.ProfitDelta, args.ErrorDelta));
         }
     }
 }
