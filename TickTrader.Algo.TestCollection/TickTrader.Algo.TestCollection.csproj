@@ -48,10 +48,6 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="TickTrader.Algo.Api, Version=1.5.0.0, Culture=neutral, PublicKeyToken=90b5c26c2d37a2da, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>.\TickTrader.Algo.Api.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Auto.Tests\Converters\SlippageConverters.cs" />
@@ -126,6 +122,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\src\csharp\api\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
+      <Project>{9d9cf1b3-7e57-4971-a479-5803c658a7d0}</Project>
+      <Name>TickTrader.Algo.Api</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

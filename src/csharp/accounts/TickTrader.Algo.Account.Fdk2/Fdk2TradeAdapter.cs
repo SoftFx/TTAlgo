@@ -113,10 +113,11 @@ namespace TickTrader.Algo.Account.Fdk2
 
         public Task<List<FDK2.ExecutionReport>> NewOrderAsync(string clientOrderId, string symbol, OrderType type, OrderSide side,
             double qty, double? maxVisibleQty, double? price, double? stopPrice, OrderTimeInForce? timeInForce, DateTime? expireTime, double? stopLoss,
-            double? takeProfit, string comment, string tag, int? magic, bool immediateOrCancel, double? slippage, bool oneCancelsTheOtherFlag, bool ocoEqualQty, long? relatedOrderId)
+            double? takeProfit, string comment, string tag, int? magic, bool immediateOrCancel, double? slippage, bool oneCancelsTheOtherFlag, bool ocoEqualQty, long? relatedOrderId, 
+            ContingentOrderTriggerTypes otoTriggerType, DateTime? otoTriggerTime, long? otoTriggereById)
         {
             var taskSrc = new OrderResultSource(_execReportHandler);
-            _tradeProxy.NewOrderAsync(taskSrc, clientOrderId, symbol, type, side, qty, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, comment, tag, magic, immediateOrCancel, slippage, oneCancelsTheOtherFlag, ocoEqualQty, relatedOrderId, ContingentOrderTriggerTypes.None, null, null);
+            _tradeProxy.NewOrderAsync(taskSrc, clientOrderId, symbol, type, side, qty, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, comment, tag, magic, immediateOrCancel, slippage, oneCancelsTheOtherFlag, ocoEqualQty, relatedOrderId, otoTriggerType, otoTriggerTime, otoTriggereById);
             return taskSrc.Task;
         }
 

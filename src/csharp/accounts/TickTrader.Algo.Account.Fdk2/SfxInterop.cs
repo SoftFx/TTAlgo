@@ -461,10 +461,12 @@ namespace TickTrader.Algo.Account.Fdk2
                 var oco = GetOCO(r.ExecOptions);
 
                 long.TryParse(r.OcoRelatedOrderId, out var relatedOrderId);
+                long.TryParse(r.OtoTrigger.OrderIdTriggeredBy, out var otoTriggeredById);
 
                 return _tradeProxyAdapter.NewOrderAsync(r.OperationId, r.Symbol, Convert(r.Type), Convert(r.Side), r.Amount, r.MaxVisibleAmount,
                     r.Price, r.StopPrice, timeInForce, r.Expiration?.ToDateTime(), r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, ioc, r.Slippage,
-                    oco, r.OcoEqualVolume, relatedOrderId != 0 ? (long?)relatedOrderId : null);
+                    oco, r.OcoEqualVolume, relatedOrderId != 0 ? (long?)relatedOrderId : null, Convert(r.OtoTrigger.Type), r.OtoTrigger.TriggerTime?.ToDateTime(),
+                    otoTriggeredById != 0 ? (long?)otoTriggeredById : null);
             });
         }
 
@@ -916,6 +918,11 @@ namespace TickTrader.Algo.Account.Fdk2
             return (OrderStatus)status;
         }
 
+        private static ContingentOrderTriggerTypes Convert(Domain.ContingentOrderTrigger.Types.TriggerType type)
+        {
+            return (ContingentOrderTriggerTypes)type;
+        }
+
         private static Domain.OrderExecReport.Types.CmdResultCode Convert(RejectReason reason, string message)
         {
             switch (reason)
@@ -1291,7 +1298,6 @@ namespace TickTrader.Algo.Account.Fdk2
                 default: return ConnectionErrorInfo.Types.ErrorCode.UnknownConnectionError;
             }
         }
-
         #endregion
     }
 }

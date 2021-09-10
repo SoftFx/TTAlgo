@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Api
 {
@@ -40,6 +36,8 @@ namespace TickTrader.Algo.Api
 
         public string OcoRelatedOrderId { get; private set; }
 
+        public ContingentOrderTrigger OtoTrigger { get; private set; }
+
 
         private OpenOrderRequest() { }
 
@@ -63,6 +61,9 @@ namespace TickTrader.Algo.Api
 
             private bool _ocoEqualVolume;
             private string _ocoRelatedOrderId;
+
+            private ContingentOrderTrigger _otoTrigger;
+
 
             private Template() { }
 
@@ -91,6 +92,7 @@ namespace TickTrader.Algo.Api
                     Tag = _tag,
                     OcoEqualVolume = _ocoEqualVolume,
                     OcoRelatedOrderId = _ocoRelatedOrderId,
+                    OtoTrigger = _otoTrigger,
                 };
             }
 
@@ -243,6 +245,12 @@ namespace TickTrader.Algo.Api
             public Template WithOCORelatedOrderId(string relatedId)
             {
                 _ocoRelatedOrderId = relatedId;
+                return this;
+            }
+
+            public Template WithContigentOrderTrigger(ContingentOrderTrigger otoTrigger)
+            {
+                _otoTrigger = otoTrigger;
                 return this;
             }
         }

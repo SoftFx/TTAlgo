@@ -3,7 +3,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Open Order Script", Version = "2.7", Category = "Test Orders",
+    [TradeBot(DisplayName = "[T] Open Order Script", Version = "2.8", Category = "Test Orders",
         Description = "Opens order for current chart symbol with specified volume, price, side, stopPrice, type, options, tag, SL," +
         " TP, expiration, slippage, comment, maxVisibleVolume. Prints order execution result to bot status window.")]
     public class OpenOrder : TradeBotCommon
@@ -47,21 +47,38 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter(DefaultValue = "Open Order Bot Comment")]
         public string Comment { get; set; }
 
+
         [Parameter]
         public bool OcoEqualVolume { get; set; }
 
         [Parameter]
         public string OcoRelatedOrderId { get; set; }
 
+
+        [Parameter]
+        public ContingentOrderTrigger.TriggerType OtoTriggerType { get; set; }
+
+        [Parameter(DisplayName = "OtoTriggerTime Timeout(s)", DefaultValue = null, IsRequired = false)]
+        public int? OtoTriggerTimeTimeout { get; set; }
+
+        [Parameter]
+        public string OtoTriggeredById { get; set; }
+
+
         protected override void OnStart()
         {
+            var otoTrigger = ContingentOrderTrigger.Create(OtoTriggerType)
+                .WithTriggerTime(OtoTriggerTimeTimeout.HasValue ? DateTime.Now + TimeSpan.FromSeconds(OtoTriggerTimeTimeout.Value) : (DateTime?)null)
+                .WithOrderIdTriggeredBy(OtoTriggeredById);
+
             var request = OpenOrderRequest.Template.Create()
                 .WithSymbol(Symbol.Name).WithStopPrice(StopPrice).WithStopLoss(StopLoss)
                 .WithSide(Side).WithType(Type).WithVolume(Volume).WithPrice(Price)
                 .WithMaxVisibleVolume(MaxVisibleVolume).WithTakeProfit(TakeProfit)
                 .WithComment(Comment).WithOptions(Options).WithTag(Tag)
                 .WithExpiration(ExpirationTimeout.HasValue ? DateTime.Now + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null)
-                .WithSlippage(Slippage).WithOCOEqualVolume(OcoEqualVolume).WithOCORelatedOrderId(OcoRelatedOrderId).MakeRequest();
+                .WithSlippage(Slippage).WithOCOEqualVolume(OcoEqualVolume).WithOCORelatedOrderId(OcoRelatedOrderId)
+                .WithContigentOrderTrigger(otoTrigger).MakeRequest();
 
             var res = OpenOrder(request);
 

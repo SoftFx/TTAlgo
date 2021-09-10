@@ -209,6 +209,19 @@ message OrderRequest {
     }
 }
 
+message ContingentOrderTrigger {
+    enum TriggerType {
+        NONE = 0;
+        ON_PENDING_ORDER_EXPIRED = 1;
+        ON_PENDING_ORDER_PARTIALLY_FILLED = 2;
+        ON_TIME = 3;
+    }
+
+    TriggerType type = 1;
+    google.protobuf.Timestamp trigger_time = 2;
+    google.protobuf.StringValue order_id_triggered_by = 3;
+}
+
 message OpenOrderRequest {
     string operation_id = 1;
     string symbol = 2;
@@ -227,6 +240,7 @@ message OpenOrderRequest {
     int32 exec_options_bitmask = 15;
     google.protobuf.StringValue oco_related_order_id = 16;
     bool oco_equal_volume = 17;
+    ContingentOrderTrigger oto_trigger = 18;
 }
 
 message ModifyOrderRequest {

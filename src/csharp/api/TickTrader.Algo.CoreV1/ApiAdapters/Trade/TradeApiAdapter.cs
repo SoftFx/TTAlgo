@@ -74,6 +74,7 @@ namespace TickTrader.Algo.CoreV1
                 Expiration = apiRequest.Expiration?.ToUniversalTime().ToTimestamp(),
                 OcoRelatedOrderId = apiRequest.OcoRelatedOrderId,
                 OcoEqualVolume = apiRequest.OcoEqualVolume,
+                OtoTrigger = apiRequest.OtoTrigger.ToDomain(),
             };
 
             PreprocessAndValidateOpenOrderRequest(domainRequest, out var smbMetadata, ref code);
