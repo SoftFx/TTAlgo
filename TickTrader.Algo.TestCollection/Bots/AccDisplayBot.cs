@@ -95,8 +95,9 @@ namespace TickTrader.Algo.TestCollection.Bots
         private void PrintAccountInfo()
         {
             Status.WriteLine($"Current UTC time: {DateTime.UtcNow}");
-            Status.WriteLine("Account Id: {0}", Account.Id);
-            Status.WriteLine("Account Type: {0}", Account.Type);
+            Status.WriteLine($"Account Id: {Account.Id}");
+            Status.WriteLine($"Account Type: {Account.Type}");
+            Status.WriteLine($"Leverage: {Account.Leverage}");
         }
 
         private void PrintPendingOrders()
