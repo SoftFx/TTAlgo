@@ -12,9 +12,9 @@ namespace TickTrader.Algo.ServerControl.Model
     internal sealed class SessionHandler
     {
         private readonly ILogger _logger;
-        private readonly Channel<UpdateInfo> _channel;
-        private readonly ChannelWriter<UpdateInfo> _writer;
 
+        private Channel<UpdateInfo> _channel;
+        private ChannelWriter<UpdateInfo> _writer;
         private IServerStreamWriter<UpdateInfo> _networkStream;
         private CancellationTokenSource _closeTokenSrc;
         private Task _dispatchTask;
@@ -23,18 +23,17 @@ namespace TickTrader.Algo.ServerControl.Model
 
         public SessionInfo Info { get; }
 
+        public bool IsClosed => _closeFlag != 0;
+
 
         public SessionHandler(SessionInfo info)
         {
             Info = info;
             _logger = info.Logger;
-
-            _channel = DefaultChannelFactory.CreateForSingleConsumer<UpdateInfo>();
-            _writer = _channel.Writer;
         }
 
 
-        public bool TryWrite(UpdateInfo info) => _writer.TryWrite(info);
+        public bool TryWrite(UpdateInfo info) => _writer?.TryWrite(info) ?? true;
 
         public void Close(string reason)
         {
@@ -49,8 +48,14 @@ namespace TickTrader.Algo.ServerControl.Model
 
         public Task Open(IServerStreamWriter<UpdateInfo> networkStream)
         {
-            if (_closeTokenSrc != null)
+            if (IsClosed)
+                throw new Domain.AlgoException("Session already closed");
+
+            if (_channel != null)
                 throw new Domain.AlgoException("Session already opened");
+
+            _channel = DefaultChannelFactory.CreateForSingleConsumer<UpdateInfo>();
+            _writer = _channel.Writer;
 
             _closeTokenSrc = new CancellationTokenSource();
             _networkStream = networkStream;
@@ -69,6 +74,7 @@ namespace TickTrader.Algo.ServerControl.Model
             catch (Exception ex)
             {
                 _logger.Error(ex, $"Failed to dispatch update: Type == {update.Type}");
+                Close("Dispatch failed");
             }
         }
     }

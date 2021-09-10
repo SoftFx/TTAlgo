@@ -1,4 +1,5 @@
 ﻿using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -18,17 +19,21 @@ namespace TickTrader.Algo.ServerControl.Model
     /// </summary>
     internal sealed class ServerUpdateDistributor
     {
+        private const int AlertsUpdateTimeout = 1000;
+
         private readonly ILogger _logger;
+        private readonly IAlgoServerProvider _server;
         private readonly MessageFormatter _msgFormatter;
         private readonly Task<bool> _initTask;
         private readonly CancellationTokenSource _stopTokenSrc;
-        private readonly LinkedList<Channel<UpdateInfo>> _sessions;
+        private readonly LinkedList<SessionHandler> _sessions;
 
         private ApiMetadataInfo _apiMetadata;
         private SetupContextInfo _setupContext;
         private MappingCollectionInfo _mappings;
         private Channel<IMessage> _updateChannel;
-        private Task _consumeUpdatesTask;
+        private Task _consumeUpdatesTask, _dispatchAlertsTask;
+        private Timestamp _lastAlertTimeUtc;
         private ulong _metadataVersion, _metadataSnapshotVersion;
         private UpdateInfo _metadataSnapshot;
         private Dictionary<string, PackageInfo> _packages = new Dictionary<string, PackageInfo>();
@@ -38,6 +43,7 @@ namespace TickTrader.Algo.ServerControl.Model
 
         public ServerUpdateDistributor(IAlgoServerProvider server, ILogger logger, MessageFormatter msgFormatter)
         {
+            _server = server;
             _logger = logger;
             _msgFormatter = msgFormatter;
             _stopTokenSrc = new CancellationTokenSource();
@@ -53,16 +59,18 @@ namespace TickTrader.Algo.ServerControl.Model
             _updateChannel?.Writer.TryComplete();
             if (_consumeUpdatesTask != null)
                 await _consumeUpdatesTask;
+            if (_dispatchAlertsTask != null)
+                await _dispatchAlertsTask;
         }
 
-        public async Task AttachSession(Channel<UpdateInfo> session)
+        public async Task AttachSession(SessionHandler session)
         {
             var initSuccess = await _initTask;
             if (!initSuccess)
                 throw new Domain.AlgoException("Update distributor not initialized");
 
             var metadata = GetMetadataUpdate();
-            if (!session.Writer.TryWrite(metadata))
+            if (!session.TryWrite(metadata))
                 throw new Domain.AlgoException("Failed to send metadata");
             _sessions.AddLast(session);
         }
@@ -97,6 +105,7 @@ namespace TickTrader.Algo.ServerControl.Model
                 _metadataVersion++;
 
                 _consumeUpdatesTask = _updateChannel.Consume(ProcessUpdate, 1, 1, _stopTokenSrc.Token);
+                _dispatchAlertsTask = DispatchAlertsLoop(_stopTokenSrc.Token);
             }
             catch (Exception ex)
             {
@@ -267,9 +276,9 @@ namespace TickTrader.Algo.ServerControl.Model
             return (true, update);
         }
 
-        private void DispatchUpdate(IMessage update)
+        private void DispatchUpdate(IMessage update, bool compress = false)
         {
-            if (!UpdateInfo.TryPack(update, out var packedUpdate))
+            if (!UpdateInfo.TryPack(update, out var packedUpdate, compress))
             {
                 _logger.Error($"Failed to pack msg '{update.Descriptor.Name}'");
                 return;
@@ -280,12 +289,48 @@ namespace TickTrader.Algo.ServerControl.Model
             {
                 var session = node.Value;
                 var nextNode = node.Next;
-                if (!session.Writer.TryWrite(packedUpdate))
+                if (!session.TryWrite(packedUpdate))
                 {
-                    session.Writer.TryComplete();
                     _sessions.Remove(node);
                 }
                 node = nextNode;
+            }
+        }
+
+        private async Task DispatchAlertsLoop(CancellationToken stopToken)
+        {
+            _lastAlertTimeUtc = DateTime.UtcNow.ToTimestamp();
+
+            while (!stopToken.IsCancellationRequested)
+            {
+                await DispatchAlerts();
+
+                await Task.Delay(AlertsUpdateTimeout);
+            }
+        }
+
+        private async Task DispatchAlerts()
+        {
+            try
+            {
+                var update = new AlertListUpdate();
+
+                var alerts = await _server.GetAlertsAsync(new Domain.ServerControl.PluginAlertsRequest
+                {
+                    MaxCount = 1000,
+                    LastLogTimeUtc = _lastAlertTimeUtc,
+                });
+
+                update.Alerts.AddRange(alerts.Select(u => u.ToApi()));
+
+                _lastAlertTimeUtc = alerts.Max(u => u.TimeUtc) ?? _lastAlertTimeUtc;
+
+                if (alerts.Length > 0)
+                    DispatchUpdate(update, true);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to dispatch alerts");
             }
         }
     }
