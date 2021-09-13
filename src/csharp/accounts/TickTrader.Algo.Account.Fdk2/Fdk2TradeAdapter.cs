@@ -142,7 +142,7 @@ namespace TickTrader.Algo.Account.Fdk2
             double? takeProfit, string comment, string tag, int? magic, bool? immediateOrCancel, double? slippage, bool? isOneCancelsTheOther, bool? ocoEqualQty, long? relatedId)
         {
             var taskSrc = new OrderResultSource(_execReportHandler);
-            _tradeProxy.ReplaceOrderAsync(taskSrc, clientOrderId, origClientOrderId, orderId, symbol, type, side, qtyChange, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, comment, tag, magic, immediateOrCancel, slippage, isOneCancelsTheOther, ocoEqualQty, relatedId);
+            _tradeProxy.ReplaceOrderAsync(taskSrc, clientOrderId, origClientOrderId, orderId, symbol, type, side, qtyChange, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, comment, tag, magic, immediateOrCancel, slippage, isOneCancelsTheOther, ocoEqualQty, relatedId, null, null, null);
             return taskSrc.Task;
         }
 
