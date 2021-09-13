@@ -78,7 +78,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 .WithComment(Comment).WithOptions(Options).WithTag(Tag)
                 .WithExpiration(ExpirationTimeout.HasValue ? DateTime.Now + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null)
                 .WithSlippage(Slippage).WithOCOEqualVolume(OcoEqualVolume).WithOCORelatedOrderId(OcoRelatedOrderId)
-                .WithContigentOrderTrigger(otoTrigger).MakeRequest();
+                .WithContingentOrderTrigger(otoTrigger).MakeRequest();
 
             var res = OpenOrder(request);
 

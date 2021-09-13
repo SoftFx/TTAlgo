@@ -248,7 +248,7 @@ namespace TickTrader.Algo.Api
                 return this;
             }
 
-            public Template WithContigentOrderTrigger(ContingentOrderTrigger otoTrigger)
+            public Template WithContingentOrderTrigger(ContingentOrderTrigger otoTrigger)
             {
                 _otoTrigger = otoTrigger;
                 return this;
