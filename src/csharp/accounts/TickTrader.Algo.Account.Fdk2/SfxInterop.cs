@@ -459,14 +459,20 @@ namespace TickTrader.Algo.Account.Fdk2
                 var timeInForce = GetTimeInForce(r.Expiration);
                 var ioc = GetIoC(r.ExecOptions);
                 var oco = GetOCO(r.ExecOptions);
+                long? otoTriggeredById = null;
 
                 long.TryParse(r.OcoRelatedOrderId, out var relatedOrderId);
-                long.TryParse(r.OtoTrigger.OrderIdTriggeredBy, out var otoTriggeredById);
 
-                return _tradeProxyAdapter.NewOrderAsync(r.OperationId, r.Symbol, Convert(r.Type), Convert(r.Side), r.Amount, r.MaxVisibleAmount,
+                if (request.OtoTrigger != null)
+                {
+                    if (long.TryParse(r.OtoTrigger.OrderIdTriggeredBy, out var otoParsedId))
+                        otoTriggeredById = otoParsedId;
+                }
+
+                return _tradeProxyAdapter.NewOrderAsync(r.OperationId, r.Symbol, Convert(r.Type, request.OtoTrigger), Convert(r.Side), r.Amount, r.MaxVisibleAmount,
                     r.Price, r.StopPrice, timeInForce, r.Expiration?.ToDateTime(), r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, ioc, r.Slippage,
-                    oco, r.OcoEqualVolume, relatedOrderId != 0 ? (long?)relatedOrderId : null, Convert(r.OtoTrigger.Type), r.OtoTrigger.TriggerTime?.ToDateTime(),
-                    otoTriggeredById != 0 ? (long?)otoTriggeredById : null);
+                    oco, r.OcoEqualVolume, relatedOrderId != 0 ? (long?)relatedOrderId : null, Convert(r.OtoTrigger.Type), r.OtoTrigger?.TriggerTime?.ToDateTime(),
+                    otoTriggeredById);
             });
         }
 
@@ -481,14 +487,31 @@ namespace TickTrader.Algo.Account.Fdk2
             {
                 long.TryParse(request.OcoRelatedOrderId, out var relatedOrderId);
 
+                ContingentOrderTriggerTypes? otoTriggerType = null;
+                DateTime? otoTriggerTime = null;
+                long? otoTriggerById = null;
+
+                if (request.OtoTrigger != null)
+                {
+                    otoTriggerType = Convert(request.OtoTrigger.Type);
+                    otoTriggerTime = request.OtoTrigger?.TriggerTime?.ToDateTime();
+
+                    if (!string.IsNullOrEmpty(request.OtoTrigger.OrderIdTriggeredBy))
+                    {
+                        if (long.TryParse(request.OtoTrigger.OrderIdTriggeredBy, out var parsedOtoId))
+                            otoTriggerById = parsedOtoId;
+                    }
+                }
+
                 return ExecuteOrderOperation(request, r => _tradeProxyAdapter.ReplaceOrderAsync(r.OperationId, "",
-                    r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.AmountChange,
+                    r.OrderId, r.Symbol, Convert(r.Type, request.OtoTrigger), Convert(r.Side), r.AmountChange,
                     r.MaxVisibleAmount, r.Price, r.StopPrice, GetTimeInForceReplace(r.ExecOptions, r.Expiration), r.Expiration?.ToDateTime(),
                     r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, GetIoCReplace(r.ExecOptions), r.Slippage,
-                    GetOCOReplace(r.ExecOptions), r.OcoEqualVolume, relatedOrderId != 0 ? (long?)relatedOrderId : null));
+                    GetOCOReplace(r.ExecOptions), r.OcoEqualVolume, relatedOrderId != 0 ? (long?)relatedOrderId : null,
+                    otoTriggerType, otoTriggerTime, otoTriggerById));
             }
             return ExecuteOrderOperation(request, r => _tradeProxyAdapter.ReplaceOrderAsync(r.OperationId, "",
-                r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.NewAmount ?? r.CurrentAmount, r.CurrentAmount,
+                r.OrderId, r.Symbol, Convert(r.Type, request.OtoTrigger), Convert(r.Side), r.NewAmount ?? r.CurrentAmount, r.CurrentAmount,
                 r.MaxVisibleAmount, r.Price, r.StopPrice, GetTimeInForceReplace(r.ExecOptions, r.Expiration), r.Expiration?.ToDateTime(),
                 r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, GetIoCReplace(r.ExecOptions), r.Slippage));
         }
@@ -712,20 +735,26 @@ namespace TickTrader.Algo.Account.Fdk2
                 case SFX.OrderType.Position: return Domain.OrderInfo.Types.Type.Position;
                 case SFX.OrderType.Stop: return Domain.OrderInfo.Types.Type.Stop;
                 case SFX.OrderType.StopLimit: return Domain.OrderInfo.Types.Type.StopLimit;
+                case SFX.OrderType.ContingentLimit: return Domain.OrderInfo.Types.Type.Limit;
+                case SFX.OrderType.ContingentStop: return Domain.OrderInfo.Types.Type.Stop;
 
                 default: throw new ArgumentException("Unsupported order type: " + fdkType);
             }
         }
 
-        private static SFX.OrderType Convert(Domain.OrderInfo.Types.Type type)
+        private static SFX.OrderType Convert(Domain.OrderInfo.Types.Type type, ContingentOrderTrigger otoTrigger)
         {
+            var useOtoTypes = otoTrigger != null && otoTrigger.Type != ContingentOrderTrigger.Types.TriggerType.None;
+
             switch (type)
             {
-                case Domain.OrderInfo.Types.Type.Limit: return SFX.OrderType.Limit;
                 case Domain.OrderInfo.Types.Type.Market: return SFX.OrderType.Market;
                 case Domain.OrderInfo.Types.Type.Position: return SFX.OrderType.Position;
-                case Domain.OrderInfo.Types.Type.Stop: return SFX.OrderType.Stop;
                 case Domain.OrderInfo.Types.Type.StopLimit: return SFX.OrderType.StopLimit;
+                case Domain.OrderInfo.Types.Type.Limit:
+                    return useOtoTypes ? SFX.OrderType.ContingentLimit : SFX.OrderType.Limit;
+                case Domain.OrderInfo.Types.Type.Stop:
+                    return useOtoTypes ? SFX.OrderType.ContingentStop : SFX.OrderType.Stop;
 
                 default: throw new ArgumentException("Unsupported order type: " + type);
             }

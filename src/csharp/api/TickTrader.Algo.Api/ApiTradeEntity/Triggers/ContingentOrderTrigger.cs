@@ -33,6 +33,8 @@ namespace TickTrader.Algo.Api
 
         public static ContingentOrderTrigger Create(TriggerType type, string orderIdTriggeredBy) => new ContingentOrderTrigger(type, orderId: orderIdTriggeredBy);
 
+        public static ContingentOrderTrigger Create(TriggerType type, DateTime? triggerTime, string orderIdTriggeredBy) => new ContingentOrderTrigger(type, triggerTime, orderIdTriggeredBy);
+
 
         public ContingentOrderTrigger WithTriggerTime(DateTime? triggerTime)
         {

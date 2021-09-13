@@ -264,6 +264,7 @@ message ModifyOrderRequest {
     google.protobuf.Int32Value exec_options_bitmask = 18;
     google.protobuf.StringValue oco_related_order_id = 19;
     google.protobuf.BoolValue oco_equal_volume = 20;
+    ContingentOrderTrigger oto_trigger = 21;
 }
 
 message CancelOrderRequest {

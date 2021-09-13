@@ -30,6 +30,8 @@ namespace TickTrader.Algo.Api
 
         public string OcoRelatedOrderId { get; private set; }
 
+        public ContingentOrderTrigger OtoTrigger { get; private set; }
+
 
         private ModifyOrderRequest() { }
 
@@ -49,6 +51,9 @@ namespace TickTrader.Algo.Api
 
             private bool? _ocoEqualVolume;
             private string _ocoRelatedOrderId;
+
+            private ContingentOrderTrigger _otoTrigger;
+
 
             private Template() { }
 
@@ -74,6 +79,7 @@ namespace TickTrader.Algo.Api
                     Comment = _comment,
                     OcoEqualVolume = _ocoEqualVolume,
                     OcoRelatedOrderId = _ocoRelatedOrderId,
+                    OtoTrigger = _otoTrigger,
                 };
             }
 
@@ -191,6 +197,12 @@ namespace TickTrader.Algo.Api
                     _options = _options | OrderExecOptions.OneCancelsTheOther ?? OrderExecOptions.OneCancelsTheOther;
 
                 _ocoRelatedOrderId = relatedId;
+                return this;
+            }
+
+            public Template WithContingentOrderTrigger(ContingentOrderTrigger otoTrigger)
+            {
+                _otoTrigger = otoTrigger;
                 return this;
             }
         }

@@ -74,7 +74,7 @@ namespace TickTrader.Algo.CoreV1
                 Expiration = apiRequest.Expiration?.ToUniversalTime().ToTimestamp(),
                 OcoRelatedOrderId = apiRequest.OcoRelatedOrderId,
                 OcoEqualVolume = apiRequest.OcoEqualVolume,
-                OtoTrigger = apiRequest.OtoTrigger.ToDomain(),
+                OtoTrigger = apiRequest.OtoTrigger?.ToDomain(),
             };
 
             PreprocessAndValidateOpenOrderRequest(domainRequest, out var smbMetadata, ref code);
@@ -250,6 +250,7 @@ namespace TickTrader.Algo.CoreV1
                 ExecOptions = request.Options?.ToDomainEnum(),
                 OcoRelatedOrderId = request.OcoRelatedOrderId,
                 OcoEqualVolume = request.OcoEqualVolume,
+                OtoTrigger = request.OtoTrigger?.ToDomain(),
             };
 
             var code = OrderCmdResultCodes.Ok;

@@ -139,10 +139,11 @@ namespace TickTrader.Algo.Account.Fdk2
 
         public Task<List<FDK2.ExecutionReport>> ReplaceOrderAsync(string clientOrderId, string origClientOrderId, string orderId, string symbol, OrderType type,
             OrderSide side, double qtyChange, double? maxVisibleQty, double? price, double? stopPrice, OrderTimeInForce? timeInForce, DateTime? expireTime, double? stopLoss,
-            double? takeProfit, string comment, string tag, int? magic, bool? immediateOrCancel, double? slippage, bool? isOneCancelsTheOther, bool? ocoEqualQty, long? relatedId)
+            double? takeProfit, string comment, string tag, int? magic, bool? immediateOrCancel, double? slippage, bool? isOneCancelsTheOther, bool? ocoEqualQty, long? relatedId,
+            ContingentOrderTriggerTypes? otoTriggerType, DateTime? otoTriggerTime, long? otoTriggerById)
         {
             var taskSrc = new OrderResultSource(_execReportHandler);
-            _tradeProxy.ReplaceOrderAsync(taskSrc, clientOrderId, origClientOrderId, orderId, symbol, type, side, qtyChange, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, comment, tag, magic, immediateOrCancel, slippage, isOneCancelsTheOther, ocoEqualQty, relatedId, null, null, null);
+            _tradeProxy.ReplaceOrderAsync(taskSrc, clientOrderId, origClientOrderId, orderId, symbol, type, side, qtyChange, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, comment, tag, magic, immediateOrCancel, slippage, isOneCancelsTheOther, ocoEqualQty, relatedId, otoTriggerType, otoTriggerTime, otoTriggerById);
             return taskSrc.Task;
         }
 
