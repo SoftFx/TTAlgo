@@ -23,12 +23,15 @@ namespace TickTrader.Algo.ServerControl.Model
 
         public SessionInfo Info { get; }
 
+        public string Id { get; }
+
         public bool IsClosed => _closeFlag != 0;
 
 
         public SessionHandler(SessionInfo info)
         {
             Info = info;
+            Id = info.Id;
             _logger = info.Logger;
         }
 

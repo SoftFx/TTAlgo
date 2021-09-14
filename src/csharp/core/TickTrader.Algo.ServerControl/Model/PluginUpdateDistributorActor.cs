@@ -7,11 +7,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
-using AlgoServerApi = TickTrader.Algo.Server.PublicAPI;
+using TickTrader.Algo.Server.PublicAPI;
 
-namespace TickTrader.Algo.ServerControl.Grpc
+namespace TickTrader.Algo.ServerControl.Model
 {
-    internal sealed class UpdateDistributorActor : Actor
+    internal sealed class PluginUpdateDistributorActor : Actor
     {
         private readonly IAlgoServerProvider _server;
         private readonly ILogger _logger;
@@ -19,21 +19,21 @@ namespace TickTrader.Algo.ServerControl.Grpc
         private readonly Dictionary<string, PluginSubNode> _statusSubs = new Dictionary<string, PluginSubNode>();
 
 
-        private UpdateDistributorActor(IAlgoServerProvider server, ILogger logger)
+        private PluginUpdateDistributorActor(IAlgoServerProvider server, ILogger logger)
         {
             _server = server;
             _logger = logger;
 
-            Receive<UpdateDistributorController.AddPluginLogsSubRequest>(r => AddSession(_logSubs, r.PluginId, r.Session));
-            Receive<UpdateDistributorController.RemovePluginLogsSubRequest>(r => RemoveSession(_logSubs, r.PluginId, r.SessionId));
-            Receive<UpdateDistributorController.AddPluginStatusSubRequest>(r => AddSession(_statusSubs, r.PluginId, r.Session));
-            Receive<UpdateDistributorController.RemovePluginStatusSubRequest>(r => RemoveSession(_statusSubs, r.PluginId, r.SessionId));
+            Receive<PluginUpdateDistributor.AddPluginLogsSubRequest>(r => AddSession(_logSubs, r.PluginId, r.Session));
+            Receive<PluginUpdateDistributor.RemovePluginLogsSubRequest>(r => RemoveSession(_logSubs, r.PluginId, r.SessionId));
+            Receive<PluginUpdateDistributor.AddPluginStatusSubRequest>(r => AddSession(_statusSubs, r.PluginId, r.Session));
+            Receive<PluginUpdateDistributor.RemovePluginStatusSubRequest>(r => RemoveSession(_statusSubs, r.PluginId, r.SessionId));
         }
 
 
         public static IActorRef Create(IAlgoServerProvider server, ILogger logger)
         {
-            return ActorSystem.SpawnLocal(() => new UpdateDistributorActor(server, logger), nameof(UpdateDistributorActor));
+            return ActorSystem.SpawnLocal(() => new PluginUpdateDistributorActor(server, logger), nameof(PluginUpdateDistributorActor));
         }
 
 
@@ -43,7 +43,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
         }
 
 
-        private static void AddSession(Dictionary<string, PluginSubNode> map, string pluginId, ServerSession.Handler session)
+        private static void AddSession(Dictionary<string, PluginSubNode> map, string pluginId, SessionHandler session)
         {
             if (!map.TryGetValue(pluginId, out var subNode))
             {
@@ -99,9 +99,13 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
                 if (!string.IsNullOrEmpty(status))
                 {
-                    var update = new AlgoServerApi.PluginStatusUpdate { PluginId = id, Message = status };
+                    var update = new PluginStatusUpdate { PluginId = id, Message = status };
                     if (TryPackUpdate(update, out var packedUpdate, true))
-                        node.DispatchMessage(packedUpdate);
+                        node.DispatchUpdate(packedUpdate);
+                }
+                else
+                {
+                    node.CleanupSessions();
                 }
             }
             catch (Exception ex)
@@ -123,10 +127,14 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 if (logs.Length > 0)
                 {
                     node.LastRequestTime = logs[logs.Length - 1].TimeUtc;
-                    var update = new AlgoServerApi.PluginLogUpdate { PluginId = id };
+                    var update = new PluginLogUpdate { PluginId = id };
                     update.Records.AddRange(logs.Select(lr => lr.ToApi()));
                     if (TryPackUpdate(update, out var packedUpdate, true))
-                        node.DispatchMessage(packedUpdate);
+                        node.DispatchUpdate(packedUpdate);
+                }
+                else
+                {
+                    node.CleanupSessions();
                 }
             }
             catch (Exception ex)
@@ -135,13 +143,13 @@ namespace TickTrader.Algo.ServerControl.Grpc
             }
         }
 
-        private bool TryPackUpdate(IMessage update, out AlgoServerApi.UpdateInfo packedUpdate, bool compress = false)
+        private bool TryPackUpdate(IMessage update, out UpdateInfo packedUpdate, bool compress = false)
         {
             packedUpdate = null;
 
             try
             {
-                if (!AlgoServerApi.UpdateInfo.TryPack(update, out packedUpdate, compress))
+                if (!UpdateInfo.TryPack(update, out packedUpdate, compress))
                 {
                     _logger.Error($"Failed to pack msg '{update.Descriptor.Name}'");
                     return false;
@@ -158,7 +166,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
         private class PluginSubNode
         {
-            private readonly LinkedList<ServerSession.Handler> _sessions = new LinkedList<ServerSession.Handler>();
+            private readonly LinkedList<SessionHandler> _sessions = new LinkedList<SessionHandler>();
 
 
             public string PluginId { get; }
@@ -175,7 +183,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
             }
 
 
-            public void AddSession(ServerSession.Handler session)
+            public void AddSession(SessionHandler session)
             {
                 _sessions.AddLast(session);
             }
@@ -185,7 +193,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 var node = _sessions.First;
                 while (node != null)
                 {
-                    if (node.Value.SessionId == sessionId)
+                    if (node.Value.Id == sessionId)
                         break;
 
                     node = node.Next;
@@ -197,21 +205,30 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 }
             }
 
-            public void DispatchMessage(IMessage msg)
+            public void DispatchUpdate(UpdateInfo update)
             {
                 var node = _sessions.First;
                 while (node != null)
                 {
                     var session = node.Value;
                     var nextNode = node.Next;
-                    if (!session.IsFaulted)
-                    {
-                        session.SendUpdate(msg);
-                    }
-                    else
-                    {
+                    if (!session.TryWrite(update))
                         _sessions.Remove(node);
-                    }
+
+                    node = nextNode;
+                }
+            }
+
+            public void CleanupSessions()
+            {
+                var node = _sessions.First;
+                while (node != null)
+                {
+                    var session = node.Value;
+                    var nextNode = node.Next;
+                    if (session.IsClosed)
+                        _sessions.Remove(node);
+
                     node = nextNode;
                 }
             }

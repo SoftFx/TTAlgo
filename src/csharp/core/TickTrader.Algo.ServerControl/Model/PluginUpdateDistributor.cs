@@ -1,26 +1,26 @@
 ﻿using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 
-namespace TickTrader.Algo.ServerControl.Grpc
+namespace TickTrader.Algo.ServerControl.Model
 {
-    internal static class UpdateDistributorController
+    internal static class PluginUpdateDistributor
     {
-        public static Task AddPluginLogsSub(IActorRef actor, ServerSession.Handler session, string pluginId) => actor.Ask(new AddPluginLogsSubRequest(session, pluginId));
+        public static Task AddPluginLogsSub(IActorRef actor, SessionHandler session, string pluginId) => actor.Ask(new AddPluginLogsSubRequest(session, pluginId));
 
         public static Task RemovePluginLogsSub(IActorRef actor, string sessionId, string pluginId) => actor.Ask(new RemovePluginLogsSubRequest(sessionId, pluginId));
 
-        public static Task AddPluginStatusSub(IActorRef actor, ServerSession.Handler session, string pluginId) => actor.Ask(new AddPluginStatusSubRequest(session, pluginId));
+        public static Task AddPluginStatusSub(IActorRef actor, SessionHandler session, string pluginId) => actor.Ask(new AddPluginStatusSubRequest(session, pluginId));
 
         public static Task RemovePluginStatusSub(IActorRef actor, string sessionId, string pluginId) => actor.Ask(new RemovePluginStatusSubRequest(sessionId, pluginId));
 
 
         public class AddPluginLogsSubRequest
         {
-            public ServerSession.Handler Session { get; }
+            public SessionHandler Session { get; }
 
             public string PluginId { get; }
 
-            public AddPluginLogsSubRequest(ServerSession.Handler session, string pluginId)
+            public AddPluginLogsSubRequest(SessionHandler session, string pluginId)
             {
                 Session = session;
                 PluginId = pluginId;
@@ -42,11 +42,11 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
         public class AddPluginStatusSubRequest
         {
-            public ServerSession.Handler Session { get; }
+            public SessionHandler Session { get; }
 
             public string PluginId { get; }
 
-            public AddPluginStatusSubRequest(ServerSession.Handler session, string pluginId)
+            public AddPluginStatusSubRequest(SessionHandler session, string pluginId)
             {
                 Session = session;
                 PluginId = pluginId;

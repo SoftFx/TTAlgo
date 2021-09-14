@@ -26,7 +26,7 @@ namespace TickTrader.Algo.ServerControl.Model
         private readonly MessageFormatter _msgFormatter;
         private readonly Task<bool> _initTask;
         private readonly CancellationTokenSource _stopTokenSrc;
-        private readonly LinkedList<SessionHandler> _sessions;
+        private readonly LinkedList<SessionHandler> _sessions = new LinkedList<SessionHandler>();
 
         private ApiMetadataInfo _apiMetadata;
         private SetupContextInfo _setupContext;
@@ -36,9 +36,9 @@ namespace TickTrader.Algo.ServerControl.Model
         private Timestamp _lastAlertTimeUtc;
         private ulong _metadataVersion, _metadataSnapshotVersion;
         private UpdateInfo _metadataSnapshot;
-        private Dictionary<string, PackageInfo> _packages = new Dictionary<string, PackageInfo>();
-        private Dictionary<string, AccountModelInfo> _accounts = new Dictionary<string, AccountModelInfo>();
-        private Dictionary<string, PluginModelInfo> _plugins = new Dictionary<string, PluginModelInfo>();
+        private Dictionary<string, PackageInfo> _packages;
+        private Dictionary<string, AccountModelInfo> _accounts;
+        private Dictionary<string, PluginModelInfo> _plugins;
 
 
         public ServerUpdateDistributor(IAlgoServerProvider server, ILogger logger, MessageFormatter msgFormatter)

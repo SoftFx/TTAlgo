@@ -25,6 +25,7 @@ namespace TickTrader.Algo.ServerControl.Model
         private readonly Dictionary<string, SessionHandler> _sessions = new Dictionary<string, SessionHandler>();
 
         private ServerUpdateDistributor _updateDistributor;
+        private IActorRef _pluginUpdateDistributorRef;
 
 
         private SessionControlActor(IAlgoServerProvider server, ILogger logger, MessageFormatter msgFormatter)
@@ -38,6 +39,11 @@ namespace TickTrader.Algo.ServerControl.Model
             Receive<SessionControl.SessionInfoRequest, SessionInfo>(GetSessionInfo);
             Receive<SessionControl.RemoveSessionCmd>(RemoveSession);
             Receive<SessionControl.OpenUpdatesChannelCmd, Task>(OpenUpdatesChannel);
+
+            Receive<SessionControl.AddPluginLogsSubRequest>(r => PluginUpdateDistributor.AddPluginLogsSub(_pluginUpdateDistributorRef, GetSessionOrThrow(r.SessionId), r.PluginId));
+            Receive<SessionControl.RemovePluginLogsSubRequest>(r => PluginUpdateDistributor.RemovePluginLogsSub(_pluginUpdateDistributorRef, r.SessionId, r.PluginId));
+            Receive<SessionControl.AddPluginStatusSubRequest>(r => PluginUpdateDistributor.AddPluginStatusSub(_pluginUpdateDistributorRef, GetSessionOrThrow(r.SessionId), r.PluginId));
+            Receive<SessionControl.RemovePluginStatusSubRequest>(r => PluginUpdateDistributor.RemovePluginStatusSub(_pluginUpdateDistributorRef, r.SessionId, r.PluginId));
 
             Receive<HeartbeatMsg>(OnHeartbeat);
             Receive<CredsChangedMsg>(OnCredsChanged);
@@ -53,6 +59,7 @@ namespace TickTrader.Algo.ServerControl.Model
         protected override void ActorInit(object initMsg)
         {
             _updateDistributor = new ServerUpdateDistributor(_server, _logger, _msgFormatter);
+            _pluginUpdateDistributorRef = PluginUpdateDistributorActor.Create(_server, _logger);
 
             _server.AdminCredsChanged += OnAdminCredsChanged;
             _server.DealerCredsChanged += OnDealerCredsChanged;
@@ -107,13 +114,19 @@ namespace TickTrader.Algo.ServerControl.Model
 
         private async Task<Task> OpenUpdatesChannel(SessionControl.OpenUpdatesChannelCmd cmd)
         {
-            var id = cmd.SessionId;
-            if (!_sessions.TryGetValue(id, out var session))
-                throw new Domain.AlgoException("Session not found");
+            var session = GetSessionOrThrow(cmd.SessionId);
 
             var res = session.Open(cmd.NetworkStream);
             await _updateDistributor.AttachSession(session);
             return res;
+        }
+
+        private SessionHandler GetSessionOrThrow(string id)
+        {
+            if (!_sessions.TryGetValue(id, out var session))
+                throw new Domain.AlgoException("Session not found");
+
+            return session;
         }
 
 
@@ -129,7 +142,7 @@ namespace TickTrader.Algo.ServerControl.Model
                         foreach (var session in sessionsToRemove)
                         {
                             session.Close("Heartbeat error");
-                            _sessions.Remove(session.Info.Id);
+                            _sessions.Remove(session.Id);
                         }
                     }
                     catch (Exception ex)
@@ -159,7 +172,7 @@ namespace TickTrader.Algo.ServerControl.Model
             foreach (var session in sessionsToRemove)
             {
                 session.Close("Creds changed");
-                _sessions.Remove(session.Info.Id);
+                _sessions.Remove(session.Id);
             }
         }
 

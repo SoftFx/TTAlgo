@@ -21,6 +21,14 @@ namespace TickTrader.Algo.ServerControl.Model
         public static Task<Task> OpenUpdatesChannel(IActorRef actor, string sessionId, IServerStreamWriter<UpdateInfo> networkStream)
             => actor.Ask<Task>(new OpenUpdatesChannelCmd(sessionId, networkStream));
 
+        public static Task AddPluginLogsSub(IActorRef actor, string sessionId, string pluginId) => actor.Ask(new AddPluginLogsSubRequest(sessionId, pluginId));
+
+        public static Task RemovePluginLogsSub(IActorRef actor, string sessionId, string pluginId) => actor.Ask(new RemovePluginLogsSubRequest(sessionId, pluginId));
+
+        public static Task AddPluginStatusSub(IActorRef actor, string sessionId, string pluginId) => actor.Ask(new AddPluginStatusSubRequest(sessionId, pluginId));
+
+        public static Task RemovePluginStatusSub(IActorRef actor, string sessionId, string pluginId) => actor.Ask(new RemovePluginStatusSubRequest(sessionId, pluginId));
+
 
         public class ShutdownCmd : Singleton<ShutdownCmd> { }
 
@@ -71,6 +79,58 @@ namespace TickTrader.Algo.ServerControl.Model
             {
                 SessionId = sessionId;
                 NetworkStream = networkStream;
+            }
+        }
+
+        public class AddPluginLogsSubRequest
+        {
+            public string SessionId { get; }
+
+            public string PluginId { get; }
+
+            public AddPluginLogsSubRequest(string sessionId, string pluginId)
+            {
+                SessionId = sessionId;
+                PluginId = pluginId;
+            }
+        }
+
+        public class RemovePluginLogsSubRequest
+        {
+            public string SessionId { get; }
+
+            public string PluginId { get; }
+
+            public RemovePluginLogsSubRequest(string sessionId, string pluginId)
+            {
+                SessionId = sessionId;
+                PluginId = pluginId;
+            }
+        }
+
+        public class AddPluginStatusSubRequest
+        {
+            public string SessionId { get; }
+
+            public string PluginId { get; }
+
+            public AddPluginStatusSubRequest(string sessionId, string pluginId)
+            {
+                SessionId = sessionId;
+                PluginId = pluginId;
+            }
+        }
+
+        public class RemovePluginStatusSubRequest
+        {
+            public string SessionId { get; }
+
+            public string PluginId { get; }
+
+            public RemovePluginStatusSubRequest(string sessionId, string pluginId)
+            {
+                SessionId = sessionId;
+                PluginId = pluginId;
             }
         }
     }

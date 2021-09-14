@@ -33,12 +33,6 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             InitDescriptorCache();
 
-            if (msg is UpdateInfo updateInfo)
-            {
-                update = updateInfo;
-                return true;
-            }
-
             update = null;
             if (!_updateTypeMap.TryGetValue(msg.Descriptor.FullName, out var type))
                 return false;

@@ -5,7 +5,6 @@ using NLog;
 using System;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
@@ -59,7 +58,6 @@ namespace TickTrader.Algo.ServerControl.Grpc
     internal class BotAgentServerImpl : AlgoServerApi.AlgoServerPublic.AlgoServerPublicBase
     {
         private readonly IActorRef _sessionsRef;
-        private readonly IActorRef _updateDistributor;
 
         private IAlgoServerProvider _algoServer;
         private IJwtProvider _jwtProvider;
@@ -77,8 +75,6 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             _messageFormatter = new MessageFormatter(AlgoServerApi.AlgoServerPublicAPIReflection.Descriptor) { LogMessages = logMessages };
             _sessionsRef = SessionControlActor.Create(algoServer, logger, _messageFormatter);
-
-            _updateDistributor = UpdateDistributorActor.Create(algoServer, logger);
         }
 
 
@@ -497,11 +493,11 @@ namespace TickTrader.Algo.ServerControl.Grpc
                             _logger.Error(ex, $"Failed to create access token: {ex.Message}");
                         }
 
-                        res.SessionId = session.Id;
-                        res.AccessLevel = session.AccessManager.Level.ToApi();
-
-                        if (!string.IsNullOrWhiteSpace(res.AccessToken))
+                        if (!string.IsNullOrWhiteSpace(accessToken))
                         {
+                            res.SessionId = session.Id;
+                            res.AccessLevel = session.AccessManager.Level.ToApi();
+                            res.AccessToken = accessToken;
 
                             await SessionControl.AddSession(_sessionsRef, session, _logger.Factory);
                             session.Logger.Info($"Server version - {VersionSpec.LatestVersion}; Client version - {request.MajorVersion}.{request.MinorVersion}");
@@ -568,8 +564,8 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             if (!session.AccessManager.CanGetPluginStatus())
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-            //else
-            //    await UpdateDistributorController.AddPluginStatusSub(_updateDistributor, session, request.PluginId);
+            else
+                await SessionControl.AddPluginStatusSub(_sessionsRef, session.Id, request.PluginId);
 
             return res;
         }
@@ -580,8 +576,8 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             if (!session.AccessManager.CanGetPluginLogs())
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-            //else
-            //    await UpdateDistributorController.AddPluginLogsSub(_updateDistributor, session, request.PluginId);
+            else
+                await SessionControl.AddPluginLogsSub(_sessionsRef, session.Id, request.PluginId);
 
             return res;
         }
@@ -592,8 +588,8 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             if (!session.AccessManager.CanGetPluginStatus())
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-            //else
-            //    await UpdateDistributorController.RemovePluginStatusSub(_updateDistributor, session.Id, request.PluginId);
+            else
+                await SessionControl.RemovePluginStatusSub(_sessionsRef, session.Id, request.PluginId);
 
             return res;
         }
@@ -604,8 +600,8 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
             if (!session.AccessManager.CanGetPluginLogs())
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-            //else
-            //    await UpdateDistributorController.RemovePluginLogsSub(_updateDistributor, session.Id, request.PluginId);
+            else
+                await SessionControl.RemovePluginLogsSub(_sessionsRef, session.Id, request.PluginId);
 
             return res;
         }

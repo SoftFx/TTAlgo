@@ -55,9 +55,6 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
 
         public async Task AttachSessionChannel(Channel<IMessage> channel)
         {
-            channel.Writer.TryWrite(ApiMetadataInfo.Current);
-            channel.Writer.TryWrite(_agentContext);
-            channel.Writer.TryWrite(await _algoServer.GetMappingsInfo(new MappingsInfoRequest()));
             await _algoServer.EventBus.SubscribeToUpdates(channel.Writer, true);
         }
 
