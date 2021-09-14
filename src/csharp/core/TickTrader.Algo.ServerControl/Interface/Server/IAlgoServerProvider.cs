@@ -77,11 +77,11 @@ namespace TickTrader.Algo.ServerControl
 
         Task<byte[]> GetPackageBinary(DownloadPackageRequest request);
 
-        Task<string> GetBotStatusAsync(PluginStatusRequest request);
+        Task<PluginStatusResponse> GetBotStatusAsync(PluginStatusRequest request);
 
         Task<AlertRecordInfo[]> GetAlertsAsync(PluginAlertsRequest request);
 
-        Task<LogRecordInfo[]> GetBotLogsAsync(PluginLogsRequest request);
+        Task<PluginLogsResponse> GetBotLogsAsync(PluginLogsRequest request);
 
         Task<PluginFolderInfo> GetBotFolderInfo(PluginFolderInfoRequest request);
 

@@ -158,21 +158,14 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return _algoServer.GetPackageBinary(request.PackageId);
         }
 
-        public Task<string> GetBotStatusAsync(PluginStatusRequest request)
+        public Task<PluginStatusResponse> GetBotStatusAsync(PluginStatusRequest request)
         {
             return _algoServer.GetPluginStatus(request);
         }
 
-        public async Task<LogRecordInfo[]> GetBotLogsAsync(PluginLogsRequest request)
+        public Task<PluginLogsResponse> GetBotLogsAsync(PluginLogsRequest request)
         {
-            var msgs = await _algoServer.GetPluginLogs(request);
-
-            return msgs.Select(e => new LogRecordInfo
-            {
-                TimeUtc = e.TimeUtc,
-                Severity = e.Severity,
-                Message = e.Message,
-            }).ToArray();
+            return _algoServer.GetPluginLogs(request);
         }
 
         public Task<AlertRecordInfo[]> GetAlertsAsync(PluginAlertsRequest request)

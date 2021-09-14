@@ -56,7 +56,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             return new FileDto { Name = file.Name, Size = file.Size };
         }
 
-        public static LogEntryDto ToDto(this PluginLogRecord entry)
+        public static LogEntryDto ToDto(this LogRecordInfo entry)
         {
             return new LogEntryDto
             {

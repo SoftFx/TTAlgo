@@ -103,28 +103,34 @@ namespace TickTrader.Algo.Server
             return plugin.Ask(PluginActor.StopCmd.Instance);
         }
 
-        public Task<PluginLogRecord[]> GetPluginLogs(PluginLogsRequest request)
+        public async Task<PluginLogsResponse> GetPluginLogs(PluginLogsRequest request)
         {
+            var emptyRes = new PluginLogsResponse();
+
             if (_isShutdown)
-                return Task.FromResult(new PluginLogRecord[0]);
+                return emptyRes;
 
             var id = request.PluginId;
             if (!_plugins.TryGetValue(id, out var plugin))
-                return Task.FromException<PluginLogRecord[]>(Errors.PluginNotFound(id));
+                //throw Errors.PluginNotFound(id);
+                return emptyRes;
 
-            return plugin.Ask<PluginLogRecord[]>(request);
+            return await plugin.Ask<PluginLogsResponse>(request);
         }
 
-        public Task<string> GetPluginStatus(PluginStatusRequest request)
+        public async Task<PluginStatusResponse> GetPluginStatus(PluginStatusRequest request)
         {
+            var emptyRes = new PluginStatusResponse();
+
             if (_isShutdown)
-                return Task.FromResult(string.Empty);
+                return emptyRes;
 
             var id = request.PluginId;
             if (!_plugins.TryGetValue(id, out var plugin))
-                return Task.FromException<string>(Errors.PluginNotFound(id));
+                //throw Errors.PluginNotFound(id);
+                return emptyRes;
 
-            return plugin.Ask<string>(request);
+            return await plugin.Ask<PluginStatusResponse>(request);
         }
 
         public bool PluginExists(string pluginId)

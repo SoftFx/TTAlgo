@@ -92,11 +92,18 @@ namespace TickTrader.Algo.ServerControl.Model
             var id = node.PluginId;
             try
             {
-                var status = await _server.GetBotStatusAsync(new Domain.ServerControl.PluginStatusRequest { PluginId = id });
+                var statusRes = await _server.GetBotStatusAsync(new Domain.ServerControl.PluginStatusRequest { PluginId = id });
+
+                if (string.IsNullOrEmpty(statusRes.PluginId))
+                {
+                    node.RemoveAllSessions();
+                    return;
+                }
 
                 if (node.IsEmpty || StopToken.IsCancellationRequested)
                     return;
 
+                var status = statusRes.Status;
                 if (!string.IsNullOrEmpty(status))
                 {
                     var update = new PluginStatusUpdate { PluginId = id, Message = status };
@@ -119,14 +126,21 @@ namespace TickTrader.Algo.ServerControl.Model
             var id = node.PluginId;
             try
             {
-                var logs = await _server.GetBotLogsAsync(new Domain.ServerControl.PluginLogsRequest { PluginId = id, MaxCount = 100, LastLogTimeUtc = node.LastRequestTime });
+                var logsRes = await _server.GetBotLogsAsync(new Domain.ServerControl.PluginLogsRequest { PluginId = id, MaxCount = 100, LastLogTimeUtc = node.LastRequestTime });
+
+                if (string.IsNullOrEmpty(logsRes.PluginId))
+                {
+                    node.RemoveAllSessions();
+                    return;
+                }
 
                 if (node.IsEmpty || StopToken.IsCancellationRequested)
                     return;
 
-                if (logs.Length > 0)
+                var logs = logsRes.Logs;
+                if (logs.Count > 0)
                 {
-                    node.LastRequestTime = logs[logs.Length - 1].TimeUtc;
+                    node.LastRequestTime = logs[logs.Count - 1].TimeUtc;
                     var update = new PluginLogUpdate { PluginId = id };
                     update.Records.AddRange(logs.Select(lr => lr.ToApi()));
                     if (TryPackUpdate(update, out var packedUpdate, true))
@@ -232,6 +246,8 @@ namespace TickTrader.Algo.ServerControl.Model
                     node = nextNode;
                 }
             }
+
+            public void RemoveAllSessions() => _sessions.Clear();
         }
     }
 }
