@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Server.Common;
 using TickTrader.Algo.Server.PublicAPI;
 
 namespace TickTrader.Algo.ServerControl.Model
@@ -15,14 +16,16 @@ namespace TickTrader.Algo.ServerControl.Model
     {
         private readonly IAlgoServerProvider _server;
         private readonly ILogger _logger;
+        private readonly MessageFormatter _msgFormatter;
         private readonly Dictionary<string, PluginSubNode> _logSubs = new Dictionary<string, PluginSubNode>();
         private readonly Dictionary<string, PluginSubNode> _statusSubs = new Dictionary<string, PluginSubNode>();
 
 
-        private PluginUpdateDistributorActor(IAlgoServerProvider server, ILogger logger)
+        private PluginUpdateDistributorActor(IAlgoServerProvider server, ILogger logger, MessageFormatter msgFormatter)
         {
             _server = server;
             _logger = logger;
+            _msgFormatter = msgFormatter;
 
             Receive<PluginUpdateDistributor.AddPluginLogsSubRequest>(r => AddSession(_logSubs, r.PluginId, r.Session));
             Receive<PluginUpdateDistributor.RemovePluginLogsSubRequest>(r => RemoveSession(_logSubs, r.PluginId, r.SessionId));
@@ -31,9 +34,9 @@ namespace TickTrader.Algo.ServerControl.Model
         }
 
 
-        public static IActorRef Create(IAlgoServerProvider server, ILogger logger)
+        public static IActorRef Create(IAlgoServerProvider server, ILogger logger, MessageFormatter msgFormatter)
         {
-            return ActorSystem.SpawnLocal(() => new PluginUpdateDistributorActor(server, logger), nameof(PluginUpdateDistributorActor));
+            return ActorSystem.SpawnLocal(() => new PluginUpdateDistributorActor(server, logger, msgFormatter), nameof(PluginUpdateDistributorActor));
         }
 
 
@@ -108,7 +111,10 @@ namespace TickTrader.Algo.ServerControl.Model
                 {
                     var update = new PluginStatusUpdate { PluginId = id, Message = status };
                     if (TryPackUpdate(update, out var packedUpdate, true))
-                        node.DispatchUpdate(packedUpdate);
+                    {
+                        var logMsg = _msgFormatter.FormatServerUpdate(update, packedUpdate.Payload.Length, packedUpdate.Compressed);
+                        node.DispatchUpdate(packedUpdate, logMsg);
+                    }
                 }
                 else
                 {
@@ -144,7 +150,10 @@ namespace TickTrader.Algo.ServerControl.Model
                     var update = new PluginLogUpdate { PluginId = id };
                     update.Records.AddRange(logs.Select(lr => lr.ToApi()));
                     if (TryPackUpdate(update, out var packedUpdate, true))
-                        node.DispatchUpdate(packedUpdate);
+                    {
+                        var logMsg = _msgFormatter.FormatServerUpdate(update, packedUpdate.Payload.Length, packedUpdate.Compressed);
+                        node.DispatchUpdate(packedUpdate, logMsg);
+                    }
                 }
                 else
                 {
@@ -219,14 +228,14 @@ namespace TickTrader.Algo.ServerControl.Model
                 }
             }
 
-            public void DispatchUpdate(UpdateInfo update)
+            public void DispatchUpdate(UpdateInfo update, string logMsg)
             {
                 var node = _sessions.First;
                 while (node != null)
                 {
                     var session = node.Value;
                     var nextNode = node.Next;
-                    if (!session.TryWrite(update))
+                    if (!session.TryWrite(update, logMsg))
                         _sessions.Remove(node);
 
                     node = nextNode;

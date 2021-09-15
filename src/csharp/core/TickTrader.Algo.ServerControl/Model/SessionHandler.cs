@@ -36,7 +36,16 @@ namespace TickTrader.Algo.ServerControl.Model
         }
 
 
-        public bool TryWrite(UpdateInfo info) => _writer?.TryWrite(info) ?? true;
+        public bool TryWrite(UpdateInfo info, string logMsg)
+        {
+            if (_writer == null)
+                return true;
+
+            var res = _writer.TryWrite(info);
+            if (logMsg != null)
+                Info.Logger.Info(logMsg);
+            return res;
+        }
 
         public void Close(string reason)
         {

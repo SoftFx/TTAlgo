@@ -36,6 +36,7 @@ namespace TickTrader.Algo.ServerControl.Model
         private Timestamp _lastAlertTimeUtc;
         private ulong _metadataVersion, _metadataSnapshotVersion;
         private UpdateInfo _metadataSnapshot;
+        private string _metadataSnapshotLogMsg;
         private Dictionary<string, PackageInfo> _packages;
         private Dictionary<string, AccountModelInfo> _accounts;
         private Dictionary<string, PluginModelInfo> _plugins;
@@ -69,8 +70,9 @@ namespace TickTrader.Algo.ServerControl.Model
             if (!initSuccess)
                 throw new Domain.AlgoException("Update distributor not initialized");
 
-            var metadata = GetMetadataUpdate();
-            if (!session.TryWrite(metadata))
+            if (!UpdateMetadataSnapshot())
+                throw new Domain.AlgoException("Failed to update metadata snapshot");
+            if (!session.TryWrite(_metadataSnapshot, _metadataSnapshotLogMsg))
                 throw new Domain.AlgoException("Failed to send metadata");
             _sessions.AddLast(session);
         }
@@ -129,10 +131,10 @@ namespace TickTrader.Algo.ServerControl.Model
             }
         }
 
-        private UpdateInfo GetMetadataUpdate()
+        private bool UpdateMetadataSnapshot()
         {
             if (_metadataVersion == _metadataSnapshotVersion)
-                return _metadataSnapshot;
+                return true;
 
             var update = new AlgoServerMetadataUpdate
             {
@@ -147,9 +149,14 @@ namespace TickTrader.Algo.ServerControl.Model
             update.Plugins.AddRange(_plugins.Values);
 
             if (UpdateInfo.TryPack(update, out _metadataSnapshot, true))
+            {
+                _metadataSnapshotLogMsg = _msgFormatter.FormatServerUpdate(update, _metadataSnapshot.Payload.Length, _metadataSnapshot.Compressed);
                 _metadataSnapshotVersion = _metadataVersion;
 
-            return _metadataSnapshot;
+                return true;
+            }
+
+            return false;
         }
 
         private void ProcessUpdate(IMessage update)
@@ -284,12 +291,14 @@ namespace TickTrader.Algo.ServerControl.Model
                 return;
             }
 
+            var logMsg = _msgFormatter.FormatServerUpdate(update, packedUpdate.Payload.Length, packedUpdate.Compressed);
+
             var node = _sessions.First;
             while (node != null)
             {
                 var session = node.Value;
                 var nextNode = node.Next;
-                if (!session.TryWrite(packedUpdate))
+                if (!session.TryWrite(packedUpdate, logMsg))
                 {
                     _sessions.Remove(node);
                 }

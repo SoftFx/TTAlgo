@@ -23,6 +23,7 @@ namespace TickTrader.Algo.ServerControl.Model
         private readonly ILogger _logger;
         private readonly MessageFormatter _msgFormatter;
         private readonly Dictionary<string, SessionHandler> _sessions = new Dictionary<string, SessionHandler>();
+        private readonly string _heartbeatLogMsg;
 
         private ServerUpdateDistributor _updateDistributor;
         private IActorRef _pluginUpdateDistributorRef;
@@ -33,6 +34,8 @@ namespace TickTrader.Algo.ServerControl.Model
             _server = server;
             _logger = logger;
             _msgFormatter = msgFormatter;
+
+            _heartbeatLogMsg = _msgFormatter.LogMessages ? "server > hearbeat" : null;
 
             Receive<SessionControl.ShutdownCmd>(Shutdown);
             Receive<SessionControl.AddSessionRequest>(AddSession);
@@ -59,7 +62,7 @@ namespace TickTrader.Algo.ServerControl.Model
         protected override void ActorInit(object initMsg)
         {
             _updateDistributor = new ServerUpdateDistributor(_server, _logger, _msgFormatter);
-            _pluginUpdateDistributorRef = PluginUpdateDistributorActor.Create(_server, _logger);
+            _pluginUpdateDistributorRef = PluginUpdateDistributorActor.Create(_server, _logger, _msgFormatter);
 
             _server.AdminCredsChanged += OnAdminCredsChanged;
             _server.DealerCredsChanged += OnDealerCredsChanged;
@@ -134,7 +137,7 @@ namespace TickTrader.Algo.ServerControl.Model
         {
             try
             {
-                var sessionsToRemove = _sessions.Where(s => !s.Value.TryWrite(_heartbeat)).Select(s => s.Value).ToList();
+                var sessionsToRemove = _sessions.Where(s => !s.Value.TryWrite(_heartbeat, _heartbeatLogMsg)).Select(s => s.Value).ToList();
                 if (sessionsToRemove.Count > 0)
                 {
                     try
