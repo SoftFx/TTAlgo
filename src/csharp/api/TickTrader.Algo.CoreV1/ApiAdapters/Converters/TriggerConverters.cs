@@ -35,5 +35,31 @@ namespace TickTrader.Algo.CoreV1
                     throw new ArgumentException($"Unsupported trigger type: {type}");
             }
         }
+
+        public static Api.IContingentOrderTrigger ToApi(this Domain.ContingentOrderTrigger trigger)
+        {
+            return new ContingentOrderTriggerAccessor(trigger);
+        }
+
+        public static Api.ContingentOrderTrigger.TriggerType ToApi(this Domain.ContingentOrderTrigger.Types.TriggerType type)
+        {
+            switch (type)
+            {
+                case Domain.ContingentOrderTrigger.Types.TriggerType.None:
+                    return Api.ContingentOrderTrigger.TriggerType.None;
+
+                case Domain.ContingentOrderTrigger.Types.TriggerType.OnPendingOrderExpired:
+                    return Api.ContingentOrderTrigger.TriggerType.OnPendingOrderExpired;
+
+                case Domain.ContingentOrderTrigger.Types.TriggerType.OnPendingOrderPartiallyFilled:
+                    return Api.ContingentOrderTrigger.TriggerType.OnPendingOrderPartiallyFilled;
+
+                case Domain.ContingentOrderTrigger.Types.TriggerType.OnTime:
+                    return Api.ContingentOrderTrigger.TriggerType.OnTime;
+
+                default:
+                    throw new ArgumentException($"Unsupported trigger type: {type}");
+            }
+        }
     }
 }

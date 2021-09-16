@@ -32,6 +32,7 @@ namespace TickTrader.Algo.Api
         double Profit { get; }
         OrderOptions Options { get; }
         string OcoRelatedOrderId { get; }
+        IContingentOrderTrigger ContingentTrigger { get; }
     }
 
     public enum OrderType { Market, Limit, Stop, StopLimit, Position }

@@ -83,6 +83,7 @@ message OrderInfo {
     google.protobuf.DoubleValue requested_open_price = 27;
     google.protobuf.StringValue parent_order_id = 28;
     google.protobuf.StringValue oco_related_order_id = 29;
+    ContingentOrderTrigger oto_trigger = 30;
 }
 
 message OrderListRequest { }

@@ -224,6 +224,7 @@ namespace TickTrader.Algo.CoreV1
         public double Profit => double.NaN;
         public OrderOptions Options => OrderOptions.None;
         public string OcoRelatedOrderId => string.Empty;
+        public IContingentOrderTrigger ContingentTrigger => null;
     }
 
     [Serializable]

@@ -29,6 +29,7 @@ namespace TickTrader.Algo.CoreV1
                 Info.Update(info);
 
             Entity = new WriteEntity(info.SymbolInfo);
+            ContingentTrigger = info.OtoTrigger?.ToApi();
         }
 
         string Order.Id => Info.Id;
@@ -94,6 +95,8 @@ namespace TickTrader.Algo.CoreV1
         public OrderAccessor Clone() => new OrderAccessor(SymbolInfo, Info);
 
         public static bool IsHiddenOrder(double? maxVisibleVolume) => maxVisibleVolume != null && maxVisibleVolume.Value.E(0.0);
+
+        public IContingentOrderTrigger ContingentTrigger { get; }
 
 
         private static double ProcessResponse(ICalculateResponse<double> response)
@@ -251,6 +254,8 @@ namespace TickTrader.Algo.CoreV1
             double IProfitCalculateRequest.Volume => RemainingAmount;
 
             OrderInfo.Types.Side IProfitCalculateRequest.Side => Side;
+
+            public IContingentOrderTrigger ContingentTrigger => null;
 
             #endregion
 

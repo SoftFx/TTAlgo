@@ -2,7 +2,17 @@
 
 namespace TickTrader.Algo.Api
 {
-    public class ContingentOrderTrigger
+    public interface IContingentOrderTrigger
+    {
+        ContingentOrderTrigger.TriggerType Type { get; }
+
+        DateTime? TriggerTime { get; }
+
+        string OrderIdTriggeredBy { get; }
+    }
+
+
+    public class ContingentOrderTrigger : IContingentOrderTrigger
     {
         public enum TriggerType
         {

@@ -90,12 +90,19 @@ namespace TickTrader.Algo.Account
             if (IsOneCancelsTheOther)
                 options |= Domain.OrderOptions.OneCancelsTheOther;
 
+            if (IsContingentOrder)
+                options |= Domain.OrderOptions.ContingentOrder;
+
             return options;
         }
 
         public bool IsOneCancelsTheOther { get; set; }
 
         public string OcoRelatedOrderId { get; set; }
+
+        public bool IsContingentOrder { get; set; }
+
+        public Domain.ContingentOrderTrigger OtoTrigger { get; set; }
     }
 
     public enum ExecutionType

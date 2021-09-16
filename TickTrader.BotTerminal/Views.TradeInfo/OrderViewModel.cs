@@ -37,6 +37,10 @@ namespace TickTrader.BotTerminal
             StopLoss = _varContext.AddProperty(order.StopLoss);
             Slippage = _varContext.AddProperty(order.Slippage);
 
+            OtoTriggerType = _varContext.AddProperty(order.OtoTrigger?.Type.ToString());
+            OtoTime = _varContext.AddProperty(order.OtoTrigger?.TriggerTime?.ToDateTime());
+            OtoTriggeredById = _varContext.AddProperty(order.OtoTrigger?.OrderIdTriggeredBy);
+
             order.EssentialsChanged += o => Update();
 
             Update();
@@ -68,6 +72,10 @@ namespace TickTrader.BotTerminal
         public Property<double?> TakeProfit { get; }
         public Property<double?> StopLoss { get; }
         public Property<double?> Slippage { get; }
+
+        public Property<string> OtoTriggerType { get; }
+        public Property<DateTime?> OtoTime { get; }
+        public Property<string> OtoTriggeredById { get; }
 
 
         protected override void Update()
@@ -112,6 +120,10 @@ namespace TickTrader.BotTerminal
             TakeProfit.Value = _order.TakeProfit;
             StopLoss.Value = _order.StopLoss;
             Slippage.Value = _order.Slippage;
+
+            OtoTriggerType.Value = _order.OtoTrigger?.Type.ToString();
+            OtoTime.Value = _order.OtoTrigger?.TriggerTime?.ToDateTime();
+            OtoTriggeredById.Value = _order.OtoTrigger?.OrderIdTriggeredBy;
 
             RateUpdate(_symbol);
         }

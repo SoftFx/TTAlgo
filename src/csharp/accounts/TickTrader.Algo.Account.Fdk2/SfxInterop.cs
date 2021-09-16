@@ -476,7 +476,7 @@ namespace TickTrader.Algo.Account.Fdk2
 
                 if (isOco && request.SubOpenRequests?.Count > 0)
                 {
-                    const int operationTimeout = 60000;
+                    const int operationTimeout = 120000;
                     //const int operationTimeout = 10000;
 
                     var sub = request.SubOpenRequests[0];
@@ -490,12 +490,12 @@ namespace TickTrader.Algo.Account.Fdk2
                            sub.OperationId, Convert(sub.Type), Convert(sub.Side), sub.Amount, sub.MaxVisibleAmount, sub.Price, sub.StopPrice,
                            subTimeInForce, sub.Expiration?.ToDateTime(), sub.StopLoss, sub.TakeProfit, sub.Comment, sub.Tag, null, sub.Slippage,
 
-                           Convert(r.OtoTrigger.Type), r.OtoTrigger?.TriggerTime?.ToDateTime(), otoTriggeredById);
+                           ConvertToServer(r.OtoTrigger?.Type), r.OtoTrigger?.TriggerTime?.ToDateTime(), otoTriggeredById);
                 }
 
                 return _tradeProxyAdapter.NewOrderAsync(r.OperationId, r.Symbol, Convert(r.Type), Convert(r.Side), r.Amount, r.MaxVisibleAmount,
                        r.Price, r.StopPrice, timeInForce, r.Expiration?.ToDateTime(), r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, isIoc, r.Slippage,
-                       isOco, r.OcoEqualVolume, ocoRelatedOrderId, Convert(r.OtoTrigger.Type), r.OtoTrigger?.TriggerTime?.ToDateTime(),
+                       isOco, r.OcoEqualVolume, ocoRelatedOrderId, ConvertToServer(r.OtoTrigger?.Type), r.OtoTrigger?.TriggerTime?.ToDateTime(),
                        otoTriggeredById);
             });
         }
@@ -520,7 +520,7 @@ namespace TickTrader.Algo.Account.Fdk2
 
                 if (request.OtoTrigger != null)
                 {
-                    otoTriggerType = Convert(request.OtoTrigger.Type);
+                    otoTriggerType = ConvertToServer(request.OtoTrigger.Type);
                     otoTriggerTime = request.OtoTrigger?.TriggerTime?.ToDateTime();
 
                     if (!string.IsNullOrEmpty(request.OtoTrigger.OrderIdTriggeredBy))
@@ -878,6 +878,7 @@ namespace TickTrader.Algo.Account.Fdk2
                 LastFillAmount = record.TradeAmount,
                 ParentOrderId = record.ParentOrderId,
                 OcoRelatedOrderId = record.RelatedOrderId?.ToString(),
+                OtoTrigger = GetOtoTrigger(record),
             };
         }
 
@@ -898,7 +899,23 @@ namespace TickTrader.Algo.Account.Fdk2
             if (record.OneCancelsTheOtherFlag)
                 result |= Domain.OrderOptions.OneCancelsTheOther;
 
+            if (record.ContingentOrderFlag)
+                result |= Domain.OrderOptions.ContingentOrder;
+
             return result;
+        }
+
+        private static Domain.ContingentOrderTrigger GetOtoTrigger(SFX.ExecutionReport report)
+        {
+            if (!report.ContingentOrderFlag)
+                return null;
+
+            return new Domain.ContingentOrderTrigger
+            {
+                Type = ConvertToAlgo(report.TriggerType.Value),
+                TriggerTime = report.TriggerTime?.ToTimestamp(),
+                OrderIdTriggeredBy = report.OrderIdTriggeredBy?.ToString(),
+            };
         }
 
         private static List<ExecutionReport> ConvertToEr(List<SFX.ExecutionReport> reports)
@@ -961,6 +978,8 @@ namespace TickTrader.Algo.Account.Fdk2
                 Balance = report.Balance ?? double.NaN,
                 IsOneCancelsTheOther = report.OneCancelsTheOtherFlag,
                 OcoRelatedOrderId = report.RelatedOrderId?.ToString(),
+                IsContingentOrder = report.ContingentOrderFlag,
+                OtoTrigger = GetOtoTrigger(report),
             };
         }
 
@@ -974,9 +993,14 @@ namespace TickTrader.Algo.Account.Fdk2
             return (OrderStatus)status;
         }
 
-        private static ContingentOrderTriggerType Convert(Domain.ContingentOrderTrigger.Types.TriggerType type)
+        private static ContingentOrderTriggerType? ConvertToServer(Domain.ContingentOrderTrigger.Types.TriggerType? type)
         {
-            return (ContingentOrderTriggerType)type;
+            return type.HasValue ? (ContingentOrderTriggerType?)type.Value : null;
+        }
+
+        private static Domain.ContingentOrderTrigger.Types.TriggerType ConvertToAlgo(ContingentOrderTriggerType type)
+        {
+            return (Domain.ContingentOrderTrigger.Types.TriggerType)type;
         }
 
         private static Domain.OrderExecReport.Types.CmdResultCode Convert(RejectReason reason, string message)
