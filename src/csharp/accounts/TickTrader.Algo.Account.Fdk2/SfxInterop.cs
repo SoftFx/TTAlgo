@@ -484,16 +484,16 @@ namespace TickTrader.Algo.Account.Fdk2
 
                     return _tradeProxyAdapter.NewOcoOrdersAsync(r.Symbol, operationTimeout,
 
-                           r.OperationId, Convert(r.Type, request.OtoTrigger), Convert(r.Side), r.Amount, r.MaxVisibleAmount, r.Price, r.StopPrice,
+                           r.OperationId, Convert(r.Type), Convert(r.Side), r.Amount, r.MaxVisibleAmount, r.Price, r.StopPrice,
                            timeInForce, r.Expiration?.ToDateTime(), r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, r.Slippage,
 
-                           sub.OperationId, Convert(sub.Type, sub.OtoTrigger), Convert(sub.Side), sub.Amount, sub.MaxVisibleAmount, sub.Price, sub.StopPrice,
+                           sub.OperationId, Convert(sub.Type), Convert(sub.Side), sub.Amount, sub.MaxVisibleAmount, sub.Price, sub.StopPrice,
                            subTimeInForce, sub.Expiration?.ToDateTime(), sub.StopLoss, sub.TakeProfit, sub.Comment, sub.Tag, null, sub.Slippage,
 
                            Convert(r.OtoTrigger.Type), r.OtoTrigger?.TriggerTime?.ToDateTime(), otoTriggeredById);
                 }
 
-                return _tradeProxyAdapter.NewOrderAsync(r.OperationId, r.Symbol, Convert(r.Type, request.OtoTrigger), Convert(r.Side), r.Amount, r.MaxVisibleAmount,
+                return _tradeProxyAdapter.NewOrderAsync(r.OperationId, r.Symbol, Convert(r.Type), Convert(r.Side), r.Amount, r.MaxVisibleAmount,
                        r.Price, r.StopPrice, timeInForce, r.Expiration?.ToDateTime(), r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, isIoc, r.Slippage,
                        isOco, r.OcoEqualVolume, ocoRelatedOrderId, Convert(r.OtoTrigger.Type), r.OtoTrigger?.TriggerTime?.ToDateTime(),
                        otoTriggeredById);
@@ -514,7 +514,7 @@ namespace TickTrader.Algo.Account.Fdk2
                 if (long.TryParse(request.OcoRelatedOrderId, out var ocoOrderId))
                     ocoRelatedOrderId = ocoOrderId;
 
-                ContingentOrderTriggerTypes? otoTriggerType = null;
+                ContingentOrderTriggerType? otoTriggerType = null;
                 DateTime? otoTriggerTime = null;
                 long? otoTriggerById = null;
 
@@ -531,14 +531,14 @@ namespace TickTrader.Algo.Account.Fdk2
                 }
 
                 return ExecuteOrderOperation(request, r => _tradeProxyAdapter.ReplaceOrderAsync(r.OperationId, "",
-                    r.OrderId, r.Symbol, Convert(r.Type, request.OtoTrigger), Convert(r.Side), r.AmountChange,
+                    r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.AmountChange,
                     r.MaxVisibleAmount, r.Price, r.StopPrice, GetTimeInForceReplace(r.ExecOptions, r.Expiration), r.Expiration?.ToDateTime(),
                     r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, GetIoCReplace(r.ExecOptions), r.Slippage,
                     GetOCOReplace(r.ExecOptions), r.OcoEqualVolume, ocoRelatedOrderId,
                     otoTriggerType, otoTriggerTime, otoTriggerById));
             }
             return ExecuteOrderOperation(request, r => _tradeProxyAdapter.ReplaceOrderAsync(r.OperationId, "",
-                r.OrderId, r.Symbol, Convert(r.Type, request.OtoTrigger), Convert(r.Side), r.NewAmount ?? r.CurrentAmount, r.CurrentAmount,
+                r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.NewAmount ?? r.CurrentAmount, r.CurrentAmount,
                 r.MaxVisibleAmount, r.Price, r.StopPrice, GetTimeInForceReplace(r.ExecOptions, r.Expiration), r.Expiration?.ToDateTime(),
                 r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, GetIoCReplace(r.ExecOptions), r.Slippage));
         }
@@ -766,26 +766,20 @@ namespace TickTrader.Algo.Account.Fdk2
                 case SFX.OrderType.Position: return Domain.OrderInfo.Types.Type.Position;
                 case SFX.OrderType.Stop: return Domain.OrderInfo.Types.Type.Stop;
                 case SFX.OrderType.StopLimit: return Domain.OrderInfo.Types.Type.StopLimit;
-                case SFX.OrderType.ContingentLimit: return Domain.OrderInfo.Types.Type.Limit;
-                case SFX.OrderType.ContingentStop: return Domain.OrderInfo.Types.Type.Stop;
 
                 default: throw new ArgumentException("Unsupported order type: " + fdkType);
             }
         }
 
-        private static SFX.OrderType Convert(Domain.OrderInfo.Types.Type type, ContingentOrderTrigger otoTrigger)
+        private static SFX.OrderType Convert(Domain.OrderInfo.Types.Type type)
         {
-            var useOtoTypes = otoTrigger != null && otoTrigger.Type != ContingentOrderTrigger.Types.TriggerType.None;
-
             switch (type)
             {
                 case Domain.OrderInfo.Types.Type.Market: return SFX.OrderType.Market;
                 case Domain.OrderInfo.Types.Type.Position: return SFX.OrderType.Position;
                 case Domain.OrderInfo.Types.Type.StopLimit: return SFX.OrderType.StopLimit;
-                case Domain.OrderInfo.Types.Type.Limit:
-                    return useOtoTypes ? SFX.OrderType.ContingentLimit : SFX.OrderType.Limit;
-                case Domain.OrderInfo.Types.Type.Stop:
-                    return useOtoTypes ? SFX.OrderType.ContingentStop : SFX.OrderType.Stop;
+                case Domain.OrderInfo.Types.Type.Limit: return SFX.OrderType.Limit;
+                case Domain.OrderInfo.Types.Type.Stop: return SFX.OrderType.Stop;
 
                 default: throw new ArgumentException("Unsupported order type: " + type);
             }
@@ -980,9 +974,9 @@ namespace TickTrader.Algo.Account.Fdk2
             return (OrderStatus)status;
         }
 
-        private static ContingentOrderTriggerTypes Convert(Domain.ContingentOrderTrigger.Types.TriggerType type)
+        private static ContingentOrderTriggerType Convert(Domain.ContingentOrderTrigger.Types.TriggerType type)
         {
-            return (ContingentOrderTriggerTypes)type;
+            return (ContingentOrderTriggerType)type;
         }
 
         private static Domain.OrderExecReport.Types.CmdResultCode Convert(RejectReason reason, string message)

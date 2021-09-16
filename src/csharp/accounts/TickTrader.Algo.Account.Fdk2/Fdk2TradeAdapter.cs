@@ -115,7 +115,7 @@ namespace TickTrader.Algo.Account.Fdk2
         public Task<List<FDK2.ExecutionReport>> NewOrderAsync(string clientOrderId, string symbol, OrderType type, OrderSide side,
             double qty, double? maxVisibleQty, double? price, double? stopPrice, OrderTimeInForce? timeInForce, DateTime? expireTime, double? stopLoss,
             double? takeProfit, string comment, string tag, int? magic, bool immediateOrCancel, double? slippage, bool oneCancelsTheOtherFlag, bool ocoEqualQty, long? relatedOrderId,
-            ContingentOrderTriggerTypes otoTriggerType, DateTime? otoTriggerTime, long? otoTriggereById)
+            ContingentOrderTriggerType otoTriggerType, DateTime? otoTriggerTime, long? otoTriggereById)
         {
             var taskSrc = new OrderResultSource(_execReportHandler);
             _tradeProxy.NewOrderAsync(taskSrc, clientOrderId, symbol, type, side, qty, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, comment, tag, magic, immediateOrCancel, slippage, oneCancelsTheOtherFlag, ocoEqualQty, relatedOrderId, otoTriggerType, otoTriggerTime, otoTriggereById);
@@ -130,7 +130,7 @@ namespace TickTrader.Algo.Account.Fdk2
             string clientOrderId2, OrderType type2, OrderSide side2, double qty2, double? maxVisibleQty2, double? price2, double? stopPrice2,
             OrderTimeInForce? timeInForce2, DateTime? expireTime2, double? stopLoss2, double? takeProfit2, string comment2, string tag2, int? magic2, double? slippage2,
 
-            ContingentOrderTriggerTypes otoTriggerType, DateTime? otoTriggerTime, long? otoTriggereById)
+            ContingentOrderTriggerType otoTriggerType, DateTime? otoTriggerTime, long? otoTriggereById)
         {
             var taskSrc = new OrderResultSource(_execReportHandler);
 
@@ -162,7 +162,7 @@ namespace TickTrader.Algo.Account.Fdk2
         public Task<List<FDK2.ExecutionReport>> ReplaceOrderAsync(string clientOrderId, string origClientOrderId, string orderId, string symbol, OrderType type,
             OrderSide side, double qtyChange, double? maxVisibleQty, double? price, double? stopPrice, OrderTimeInForce? timeInForce, DateTime? expireTime, double? stopLoss,
             double? takeProfit, string comment, string tag, int? magic, bool? immediateOrCancel, double? slippage, bool? isOneCancelsTheOther, bool? ocoEqualQty, long? relatedId,
-            ContingentOrderTriggerTypes? otoTriggerType, DateTime? otoTriggerTime, long? otoTriggerById)
+            ContingentOrderTriggerType? otoTriggerType, DateTime? otoTriggerTime, long? otoTriggerById)
         {
             var taskSrc = new OrderResultSource(_execReportHandler);
             _tradeProxy.ReplaceOrderAsync(taskSrc, clientOrderId, origClientOrderId, orderId, symbol, type, side, qtyChange, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, comment, tag, magic, immediateOrCancel, slippage, isOneCancelsTheOther, ocoEqualQty, relatedId, otoTriggerType, otoTriggerTime, otoTriggerById);
