@@ -473,35 +473,43 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 }
                 else
                 {
-                    var accessLevel = _algoServer.ValidateCreds(request.Login, request.Password);
-                    if (accessLevel == ClientClaims.Types.AccessLevel.Anonymous)
+                    var authResult = _algoServer.ValidateCreds(request.Login, request.Password);
+                    if (!authResult.Success)
                     {
                         res.ExecResult = CreateRejectResult();
                         res.Error = AlgoServerApi.LoginResponse.Types.LoginError.InvalidCredentials;
                     }
                     else
                     {
-                        var session = SessionInfo.Create(request.Login, request.MinorVersion, accessLevel, _logger.Factory);
-                        var accessToken = string.Empty;
-                        try
+                        if (authResult.Requires2FA)
                         {
-                            accessToken = _jwtProvider.CreateToken(session.GetJwtPayload());
+                            res.ExecResult = CreateRejectResult("2FA is not supported on current version");
+                            res.Error = AlgoServerApi.LoginResponse.Types.LoginError.None;
                         }
-                        catch (Exception ex)
+                        else
                         {
-                            res.ExecResult = CreateErrorResult("Failed to create access token");
-                            _logger.Error(ex, $"Failed to create access token: {ex.Message}");
-                        }
+                            var session = SessionInfo.Create(request.Login, request.MinorVersion, authResult.AccessLevel, _logger.Factory);
+                            var accessToken = string.Empty;
+                            try
+                            {
+                                accessToken = _jwtProvider.CreateToken(session.GetJwtPayload());
+                            }
+                            catch (Exception ex)
+                            {
+                                res.ExecResult = CreateErrorResult("Failed to create access token");
+                                _logger.Error(ex, $"Failed to create access token: {ex.Message}");
+                            }
 
-                        if (!string.IsNullOrWhiteSpace(accessToken))
-                        {
-                            res.SessionId = session.Id;
-                            res.AccessLevel = session.AccessManager.Level.ToApi();
-                            res.AccessToken = accessToken;
+                            if (!string.IsNullOrWhiteSpace(accessToken))
+                            {
+                                res.SessionId = session.Id;
+                                res.AccessLevel = session.AccessManager.Level.ToApi();
+                                res.AccessToken = accessToken;
 
-                            await SessionControl.AddSession(_sessionsRef, session, _logger.Factory);
-                            session.Logger.Info($"Server version - {VersionSpec.LatestVersion}; Client version - {request.MajorVersion}.{request.MinorVersion}");
-                            session.Logger.Info($"Current version set to {session.VersionSpec.CurrentVersionStr}");
+                                await SessionControl.AddSession(_sessionsRef, session, _logger.Factory);
+                                session.Logger.Info($"Server version - {VersionSpec.LatestVersion}; Client version - {request.MajorVersion}.{request.MinorVersion}");
+                                session.Logger.Info($"Current version set to {session.VersionSpec.CurrentVersionStr}");
+                            }
                         }
                     }
                 }

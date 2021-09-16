@@ -41,17 +41,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         }
 
 
-        public ClientClaims.Types.AccessLevel ValidateCreds(string login, string password)
-        {
-            if (_authManager.ValidViewerCreds(login, password))
-                return ClientClaims.Types.AccessLevel.Viewer;
-            if (_authManager.ValidDealerCreds(login, password))
-                return ClientClaims.Types.AccessLevel.Dealer;
-            if (_authManager.ValidAdminCreds(login, password))
-                return ClientClaims.Types.AccessLevel.Admin;
+        public AuthResult ValidateCreds(string login, string password) => _authManager.Auth(login, password);
 
-            return ClientClaims.Types.AccessLevel.Anonymous;
-        }
+        public bool Validate2FA(string login, string oneTimePassword) => _authManager.Auth2FA(login, oneTimePassword);
 
         public async Task AttachSessionChannel(Channel<IMessage> channel)
         {

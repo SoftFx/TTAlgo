@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Options;
+using OtpNet;
 using System;
 using System.Security.Claims;
 using System.Security.Principal;
+using TickTrader.Algo.ServerControl;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Models
 {
@@ -16,11 +18,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
 
         ClaimsIdentity Login(string login, string password);
 
-        bool ValidAdminCreds(string login, string password);
+        AuthResult Auth(string login, string password);
 
-        bool ValidDealerCreds(string login, string password);
-
-        bool ValidViewerCreds(string login, string password);
+        bool Auth2FA(string login, string oneTimePassword);
     }
 
 
@@ -60,35 +60,42 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
                 default(ClaimsIdentity);
         }
 
-        public bool ValidAdminCreds(string login, string password)
+        public AuthResult Auth(string login, string password)
         {
-            return login == Credentials.AdminLogin && password == Credentials.AdminPassword;
+            var creds = Credentials;
+            if (login == creds.AdminLogin && password == creds.AdminPassword)
+                return AuthResult.CreateAdminResult(!string.IsNullOrEmpty(creds.AdminOtpSecret));
+            else if (login == creds.DealerLogin && password == creds.DealerPassword)
+                return AuthResult.CreateDealerResult(!string.IsNullOrEmpty(creds.DealerOtpSecret));
+            else if (login == creds.ViewerLogin && password == creds.ViewerPassword)
+                return AuthResult.CreateViewerResult(!string.IsNullOrEmpty(creds.ViewerOtpSecret));
+
+            return AuthResult.CreateFailedResult();
         }
 
-        public bool ValidDealerCreds(string login, string password)
+        public bool Auth2FA(string login, string oneTimePassword)
         {
-            return login == Credentials.DealerLogin && password == Credentials.DealerPassword;
-        }
+            var otpValidator = GetOtpValidator(login);
+            if (otpValidator == null)
+                return false;
 
-        public bool ValidViewerCreds(string login, string password)
-        {
-            return login == Credentials.ViewerLogin && password == Credentials.ViewerPassword;
+            return otpValidator.VerifyTotp(oneTimePassword, out var _);
         }
 
 
         private void OnCredsChanged(ServerCredentials creds, string propertyName)
         {
-            if (_cachedCreds.AdminLogin != creds.AdminLogin || _cachedCreds.AdminPassword != creds.AdminPassword)
+            if (_cachedCreds.AdminLogin != creds.AdminLogin || _cachedCreds.AdminPassword != creds.AdminPassword || _cachedCreds.AdminOtpSecret != creds.AdminOtpSecret)
             {
                 OnAdminCredsChanged();
             }
 
-            if (_cachedCreds.DealerLogin != creds.DealerLogin || _cachedCreds.DealerPassword != creds.DealerPassword)
+            if (_cachedCreds.DealerLogin != creds.DealerLogin || _cachedCreds.DealerPassword != creds.DealerPassword || _cachedCreds.DealerOtpSecret != creds.DealerOtpSecret)
             {
                 OnDealerCredsChanged();
             }
 
-            if (_cachedCreds.ViewerLogin != creds.ViewerLogin || _cachedCreds.ViewerPassword != creds.ViewerPassword)
+            if (_cachedCreds.ViewerLogin != creds.ViewerLogin || _cachedCreds.ViewerPassword != creds.ViewerPassword || _cachedCreds.ViewerOtpSecret != creds.ViewerOtpSecret)
             {
                 OnViewerCredsChanged();
             }
@@ -109,6 +116,24 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
         private void OnViewerCredsChanged()
         {
             ViewerCredsChanged?.Invoke();
+        }
+
+        private Totp GetOtpValidator(string login)
+        {
+            var creds = Credentials;
+            
+            string otpSecret = null;
+            if (login == creds.AdminLogin)
+                otpSecret = creds.AdminOtpSecret;
+            else if (login == creds.DealerLogin)
+                otpSecret = creds.DealerOtpSecret;
+            else if (login == creds.ViewerLogin)
+                otpSecret = creds.ViewerOtpSecret;
+
+            if (otpSecret == null)
+                return null;
+
+            return new Totp(Base32Encoding.ToBytes(otpSecret));
         }
     }
 }
