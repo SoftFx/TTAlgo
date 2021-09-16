@@ -459,7 +459,10 @@ namespace TickTrader.Algo.Account
                     return OnOrderUpdated(report, Domain.OrderExecReport.Types.ExecAction.Splitted);
 
                 case ExecutionType.Replace:
-                    return OnOrderUpdated(report, Domain.OrderExecReport.Types.ExecAction.Modified);
+                    if (report.OrderStatus != OrderStatus.Executing)
+                        return OnOrderUpdated(report, Domain.OrderExecReport.Types.ExecAction.Modified);
+                    else
+                        break;
 
                 case ExecutionType.Expired:
                     return OnOrderRemoved(report, Domain.OrderExecReport.Types.ExecAction.Expired);

@@ -83,5 +83,6 @@ namespace TickTrader.Algo.Api
         OCOAlreadyExists = 131,
         PositionNotFound = 132,
         ExceededOrderLimit = 133,
+        OCOFlagNotFound = 134,
     }
 }

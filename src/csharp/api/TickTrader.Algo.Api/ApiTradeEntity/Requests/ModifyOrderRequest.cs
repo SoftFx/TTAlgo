@@ -184,9 +184,6 @@ namespace TickTrader.Algo.Api
 
             public Template WithOCOEqualVolume(bool? equalVolume)
             {
-                if (equalVolume != null)
-                    _options = _options | OrderExecOptions.OneCancelsTheOther ?? OrderExecOptions.OneCancelsTheOther;
-
                 _ocoEqualVolume = equalVolume;
                 return this;
             }

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace TickTrader.Algo.Domain
 {
@@ -9,6 +11,8 @@ namespace TickTrader.Algo.Domain
         string OrderId { get; }
 
         string LogDetails { get; }
+
+        List<ITradeRequest> SubRequests { get; }
     }
 
     [Flags]
@@ -32,6 +36,8 @@ namespace TickTrader.Algo.Domain
 
         public string LogDetails => string.Empty;
 
+        public List<ITradeRequest> SubRequests => SubOpenRequests.Select(r => (ITradeRequest)r).ToList();
+
         double? IOrderLogDetailsInfo.Amount => Amount;
     }
 
@@ -47,17 +53,23 @@ namespace TickTrader.Algo.Domain
         public string LogDetails => string.Empty;
 
         double? IOrderLogDetailsInfo.Amount => NewAmount ?? CurrentAmount;
+
+        public List<ITradeRequest> SubRequests => null;
     }
 
 
     public partial class CloseOrderRequest : ITradeRequest
     {
         public string LogDetails => ByOrderId != null ? $"{(Amount.HasValue && Amount != 0 ? Amount.ToString() : "")}" : $"{ByOrderId}";
+
+        public List<ITradeRequest> SubRequests => null;
     }
 
 
     public partial class CancelOrderRequest : ITradeRequest
     {
         public string LogDetails => string.Empty;
+
+        public List<ITradeRequest> SubRequests => null;
     }
 }

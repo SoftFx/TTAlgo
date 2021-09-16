@@ -457,11 +457,16 @@ namespace TickTrader.Algo.Account.Fdk2
             return ExecuteOrderOperation(request, r =>
             {
                 var timeInForce = GetTimeInForce(r.Expiration);
-                var ioc = GetIoC(r.ExecOptions);
-                var oco = GetOCO(r.ExecOptions);
+                var isIoc = GetIoC(r.ExecOptions);
+                var isOco = GetOCO(r.ExecOptions);
+                long? ocoRelatedOrderId = null;
                 long? otoTriggeredById = null;
 
-                long.TryParse(r.OcoRelatedOrderId, out var relatedOrderId);
+                if (isOco)
+                {
+                    if (long.TryParse(r.OcoRelatedOrderId, out var ocoParsedId))
+                        ocoRelatedOrderId = ocoParsedId;
+                }
 
                 if (request.OtoTrigger != null)
                 {
@@ -469,10 +474,29 @@ namespace TickTrader.Algo.Account.Fdk2
                         otoTriggeredById = otoParsedId;
                 }
 
+                if (isOco && request.SubOpenRequests?.Count > 0)
+                {
+                    const int operationTimeout = 60000;
+                    //const int operationTimeout = 10000;
+
+                    var sub = request.SubOpenRequests[0];
+                    var subTimeInForce = GetTimeInForce(sub.Expiration);
+
+                    return _tradeProxyAdapter.NewOcoOrdersAsync(r.Symbol, operationTimeout,
+
+                           r.OperationId, Convert(r.Type, request.OtoTrigger), Convert(r.Side), r.Amount, r.MaxVisibleAmount, r.Price, r.StopPrice,
+                           timeInForce, r.Expiration?.ToDateTime(), r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, r.Slippage,
+
+                           sub.OperationId, Convert(sub.Type, sub.OtoTrigger), Convert(sub.Side), sub.Amount, sub.MaxVisibleAmount, sub.Price, sub.StopPrice,
+                           subTimeInForce, sub.Expiration?.ToDateTime(), sub.StopLoss, sub.TakeProfit, sub.Comment, sub.Tag, null, sub.Slippage,
+
+                           Convert(r.OtoTrigger.Type), r.OtoTrigger?.TriggerTime?.ToDateTime(), otoTriggeredById);
+                }
+
                 return _tradeProxyAdapter.NewOrderAsync(r.OperationId, r.Symbol, Convert(r.Type, request.OtoTrigger), Convert(r.Side), r.Amount, r.MaxVisibleAmount,
-                    r.Price, r.StopPrice, timeInForce, r.Expiration?.ToDateTime(), r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, ioc, r.Slippage,
-                    oco, r.OcoEqualVolume, relatedOrderId != 0 ? (long?)relatedOrderId : null, Convert(r.OtoTrigger.Type), r.OtoTrigger?.TriggerTime?.ToDateTime(),
-                    otoTriggeredById);
+                       r.Price, r.StopPrice, timeInForce, r.Expiration?.ToDateTime(), r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, isIoc, r.Slippage,
+                       isOco, r.OcoEqualVolume, ocoRelatedOrderId, Convert(r.OtoTrigger.Type), r.OtoTrigger?.TriggerTime?.ToDateTime(),
+                       otoTriggeredById);
             });
         }
 
@@ -485,7 +509,10 @@ namespace TickTrader.Algo.Account.Fdk2
         {
             if (_tradeProxy.ProtocolSpec.SupportsOrderReplaceQtyChange)
             {
-                long.TryParse(request.OcoRelatedOrderId, out var relatedOrderId);
+                long? ocoRelatedOrderId = null;
+
+                if (long.TryParse(request.OcoRelatedOrderId, out var ocoOrderId))
+                    ocoRelatedOrderId = ocoOrderId;
 
                 ContingentOrderTriggerTypes? otoTriggerType = null;
                 DateTime? otoTriggerTime = null;
@@ -507,7 +534,7 @@ namespace TickTrader.Algo.Account.Fdk2
                     r.OrderId, r.Symbol, Convert(r.Type, request.OtoTrigger), Convert(r.Side), r.AmountChange,
                     r.MaxVisibleAmount, r.Price, r.StopPrice, GetTimeInForceReplace(r.ExecOptions, r.Expiration), r.Expiration?.ToDateTime(),
                     r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, GetIoCReplace(r.ExecOptions), r.Slippage,
-                    GetOCOReplace(r.ExecOptions), r.OcoEqualVolume, relatedOrderId != 0 ? (long?)relatedOrderId : null,
+                    GetOCOReplace(r.ExecOptions), r.OcoEqualVolume, ocoRelatedOrderId,
                     otoTriggerType, otoTriggerTime, otoTriggerById));
             }
             return ExecuteOrderOperation(request, r => _tradeProxyAdapter.ReplaceOrderAsync(r.OperationId, "",
@@ -535,7 +562,7 @@ namespace TickTrader.Algo.Account.Fdk2
             try
             {
                 var result = await operationDef(request);
-                return new OrderInteropResult(Domain.OrderExecReport.Types.CmdResultCode.Ok, ConvertToEr(result, operationId));
+                return new OrderInteropResult(Domain.OrderExecReport.Types.CmdResultCode.Ok, ConvertToEr(result));
             }
             catch (ExecutionException ex)
             {
@@ -554,6 +581,10 @@ namespace TickTrader.Algo.Account.Fdk2
             catch (NotSupportedException)
             {
                 return new OrderInteropResult(Domain.OrderExecReport.Types.CmdResultCode.Unsupported);
+            }
+            catch (SFX.TimeoutException)
+            {
+                return new OrderInteropResult(Domain.OrderExecReport.Types.CmdResultCode.DealingTimeout);
             }
             catch (Exception ex)
             {
@@ -876,11 +907,13 @@ namespace TickTrader.Algo.Account.Fdk2
             return result;
         }
 
-        private static List<ExecutionReport> ConvertToEr(List<SFX.ExecutionReport> reports, string operationId = null)
+        private static List<ExecutionReport> ConvertToEr(List<SFX.ExecutionReport> reports)
         {
             var result = new List<ExecutionReport>(reports.Count);
+
             for (int i = 0; i < reports.Count; i++)
-                result.Add(ConvertToEr(reports[i], operationId));
+                result.Add(ConvertToEr(reports[i], reports[i].OrigClientOrderId));
+
             return result;
         }
 
@@ -915,7 +948,7 @@ namespace TickTrader.Algo.Account.Fdk2
                 Assets = report.Assets.Select(Convert).ToArray(),
                 StopPrice = report.StopPrice,
                 AveragePrice = report.AveragePrice,
-                ClientOrderId = report.ClientOrderId,
+                ClientOrderId = report.OrigClientOrderId,
                 OrderStatus = Convert(report.OrderStatus),
                 ExecutionType = Convert(report.ExecutionType),
                 Symbol = report.Symbol,

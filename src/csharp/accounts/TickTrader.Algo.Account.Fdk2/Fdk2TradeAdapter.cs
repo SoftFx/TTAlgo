@@ -1,6 +1,7 @@
 ﻿using ActorSharp;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.FDK.Common;
 using FDK2 = TickTrader.FDK.Common;
@@ -113,11 +114,32 @@ namespace TickTrader.Algo.Account.Fdk2
 
         public Task<List<FDK2.ExecutionReport>> NewOrderAsync(string clientOrderId, string symbol, OrderType type, OrderSide side,
             double qty, double? maxVisibleQty, double? price, double? stopPrice, OrderTimeInForce? timeInForce, DateTime? expireTime, double? stopLoss,
-            double? takeProfit, string comment, string tag, int? magic, bool immediateOrCancel, double? slippage, bool oneCancelsTheOtherFlag, bool ocoEqualQty, long? relatedOrderId, 
+            double? takeProfit, string comment, string tag, int? magic, bool immediateOrCancel, double? slippage, bool oneCancelsTheOtherFlag, bool ocoEqualQty, long? relatedOrderId,
             ContingentOrderTriggerTypes otoTriggerType, DateTime? otoTriggerTime, long? otoTriggereById)
         {
             var taskSrc = new OrderResultSource(_execReportHandler);
             _tradeProxy.NewOrderAsync(taskSrc, clientOrderId, symbol, type, side, qty, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, comment, tag, magic, immediateOrCancel, slippage, oneCancelsTheOtherFlag, ocoEqualQty, relatedOrderId, otoTriggerType, otoTriggerTime, otoTriggereById);
+            return taskSrc.Task;
+        }
+
+        public Task<List<FDK2.ExecutionReport>> NewOcoOrdersAsync(string symbol, int timeout,
+
+            string clientOrderId, OrderType type, OrderSide side, double qty, double? maxVisibleQty, double? price, double? stopPrice,
+            OrderTimeInForce? timeInForce, DateTime? expireTime, double? stopLoss, double? takeProfit, string comment, string tag, int? magic, double? slippage,
+
+            string clientOrderId2, OrderType type2, OrderSide side2, double qty2, double? maxVisibleQty2, double? price2, double? stopPrice2,
+            OrderTimeInForce? timeInForce2, DateTime? expireTime2, double? stopLoss2, double? takeProfit2, string comment2, string tag2, int? magic2, double? slippage2,
+
+            ContingentOrderTriggerTypes otoTriggerType, DateTime? otoTriggerTime, long? otoTriggereById)
+        {
+            var taskSrc = new OrderResultSource(_execReportHandler);
+
+            var ttsReports = _tradeProxy.OpenOcoOrders(symbol, clientOrderId, type, side, qty, maxVisibleQty, price, stopPrice, timeInForce, expireTime, stopLoss,
+                takeProfit, comment, tag, magic, slippage, clientOrderId2, type2, side2, qty2, maxVisibleQty2, price2, stopPrice2, timeInForce2, expireTime2, stopLoss2,
+                takeProfit2, comment2, tag2, magic2, slippage2, timeout, otoTriggerType, otoTriggerTime, otoTriggereById);
+
+            taskSrc.OnMultipleReports(ttsReports);
+
             return taskSrc.Task;
         }
 
@@ -199,9 +221,19 @@ namespace TickTrader.Algo.Account.Fdk2
             public void OnReport(FDK2.ExecutionReport report)
             {
                 _execReportHandler?.Invoke(report);
-                //_reports.Add(report);
+
                 if (report.Last)
                     SetResult(_reports);
+            }
+
+            public void OnMultipleReports(FDK2.ExecutionReport[] reports)
+            {
+                _reports = reports.ToList();
+
+                foreach (var report in _reports)
+                    _execReportHandler?.Invoke(report);
+
+                SetResult(_reports);
             }
         }
 

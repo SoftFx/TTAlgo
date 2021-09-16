@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Account
         public string TradeRequestId { get; set; }
         public OrderStatus OrderStatus { get; set; }
         public ExecutionType ExecutionType { get; set; }
-        public string Symbol { get; set; }
+        public string Symbol { get; set; } = string.Empty;
         public double ExecutedVolume { get; set; }
         public double? InitialVolume { get; set; }
         public double LeavesVolume { get; set; }

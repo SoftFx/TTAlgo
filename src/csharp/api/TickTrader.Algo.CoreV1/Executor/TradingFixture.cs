@@ -441,27 +441,27 @@ namespace TickTrader.Algo.CoreV1
 
         #region TradeCommands impl
 
-        public Task<TradeResultInfo> OpenOrder(bool isAysnc, Domain.OpenOrderRequest request)
+        public Task<TradeResultInfo> OpenOrder(bool isAsync, Domain.OpenOrderRequest request)
         {
-            return ExecTradeRequest(isAysnc, request, (r, e) => e.SendOpenOrder(r));
+            return ExecTradeRequest(isAsync, request, (r, e) => e.SendOpenOrder(r));
         }
 
-        public Task<TradeResultInfo> CancelOrder(bool isAysnc, CancelOrderRequest request)
+        public Task<TradeResultInfo> CancelOrder(bool isAsync, CancelOrderRequest request)
         {
-            return ExecTradeRequest(isAysnc, request, (r, e) => e.SendCancelOrder(r));
+            return ExecTradeRequest(isAsync, request, (r, e) => e.SendCancelOrder(r));
         }
 
-        public Task<TradeResultInfo> ModifyOrder(bool isAysnc, Domain.ModifyOrderRequest request)
+        public Task<TradeResultInfo> ModifyOrder(bool isAsync, Domain.ModifyOrderRequest request)
         {
-            return ExecTradeRequest(isAysnc, request, (r, e) => e.SendModifyOrder(r));
+            return ExecTradeRequest(isAsync, request, (r, e) => e.SendModifyOrder(r));
         }
 
-        public Task<TradeResultInfo> CloseOrder(bool isAysnc, Domain.CloseOrderRequest request)
+        public Task<TradeResultInfo> CloseOrder(bool isAsync, Domain.CloseOrderRequest request)
         {
             if (request.ByOrderId != null)
-                return ExecDoubleOrderTradeRequest(isAysnc, request, (r, e) => e.SendCloseOrder(r));
+                return ExecDoubleOrderTradeRequest(isAsync, request, (r, e) => e.SendCloseOrder(r));
             else
-                return ExecTradeRequest(isAysnc, request, (r, e) => e.SendCloseOrder(r));
+                return ExecTradeRequest(isAsync, request, (r, e) => e.SendCloseOrder(r));
         }
 
         #endregion
@@ -490,6 +490,8 @@ namespace TickTrader.Algo.CoreV1
             });
 
             orderRequest.OperationId = operationId;
+
+            GenerateSubOperationIds(orderRequest);
 
             executorInvoke(orderRequest, _executor);
 
@@ -541,6 +543,16 @@ namespace TickTrader.Algo.CoreV1
             }
 
             return await resultTask.Task;
+        }
+
+        private static void GenerateSubOperationIds(ITradeRequest request)
+        {
+            if (string.IsNullOrEmpty(request.OperationId))
+                request.OperationId = Guid.NewGuid().ToString();
+
+            if (request.SubRequests != null)
+                foreach (var subRequest in request.SubRequests)
+                    GenerateSubOperationIds(subRequest);
         }
     }
 }

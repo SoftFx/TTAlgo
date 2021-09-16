@@ -241,6 +241,8 @@ message OpenOrderRequest {
     google.protobuf.StringValue oco_related_order_id = 16;
     bool oco_equal_volume = 17;
     ContingentOrderTrigger oto_trigger = 18;
+
+    repeated OpenOrderRequest sub_open_requests = 19;
 }
 
 message ModifyOrderRequest {
