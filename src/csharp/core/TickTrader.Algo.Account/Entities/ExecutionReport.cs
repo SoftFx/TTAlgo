@@ -30,6 +30,7 @@ namespace TickTrader.Algo.Account
         public double? StopPrice { get; set; }
         public double? AveragePrice { get; set; }
         public string ClientOrderId { get; set; }
+        public string OrigClientOrderId { get; set; }
         public string TradeRequestId { get; set; }
         public OrderStatus OrderStatus { get; set; }
         public ExecutionType ExecutionType { get; set; }

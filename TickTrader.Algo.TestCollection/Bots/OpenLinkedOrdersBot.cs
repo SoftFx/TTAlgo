@@ -52,7 +52,7 @@ namespace TickTrader.Algo.TestCollection.Bots
 
 
         [Parameter]
-        public ContingentOrderTrigger.TriggerType OtoType { get; set; }
+        public OtoTriggerOpenType OtoType { get; set; }
 
         [Parameter(DefaultValue = null, DisplayName = "OTO timeout(sec)")]
         public int? OtoTimeTimeout { get; set; }
@@ -80,7 +80,12 @@ namespace TickTrader.Algo.TestCollection.Bots
                 .WithExpiration(GetDateTime(ExpirationTimeout2))
                 .WithTag(nameof(OpenLinkedOrdersBot));
 
-            var otoTrigger = ContingentOrderTrigger.Create(OtoType, GetDateTime(OtoTimeTimeout), OtoTriggeredById);
+            ContingentOrderTrigger otoTrigger = null;
+
+            if (OtoType != OtoTriggerOpenType.None)
+            {
+                otoTrigger = ContingentOrderTrigger.Create(Convert(OtoType), GetDateTime(OtoTimeTimeout), OtoTriggeredById);
+            }
 
             var mainOrder = OpenOrderRequest.Template.Create()
                 .WithParams(Symbol.Name, Side, Type, Volume, Price, StopPrice, MainOrderComment)
@@ -94,16 +99,13 @@ namespace TickTrader.Algo.TestCollection.Bots
 
             if (answer.ResultCode == OrderCmdResultCodes.Ok)
                 Print(ToObjectPropertiesString("MainOrderResult", answer.ResultingOrder));
-            else
-                Exit();
+
+            Exit();
         }
 
         private static DateTime? GetDateTime(int? timeout)
         {
-            if (timeout.HasValue)
-                return DateTime.Now + TimeSpan.FromSeconds(timeout.Value);
-
-            return null;
+            return timeout.HasValue ? (DateTime?)(DateTime.Now + TimeSpan.FromSeconds(timeout.Value)) : null;
         }
 
         protected override void OnStop()
@@ -129,6 +131,30 @@ namespace TickTrader.Algo.TestCollection.Bots
             {
                 Print(ToObjectPropertiesString(nameof(doubleOrder.OldOrder), doubleOrder.OldOrder));
                 Print(ToObjectPropertiesString(nameof(doubleOrder.NewOrder), doubleOrder.NewOrder));
+            }
+        }
+
+        public enum OtoTriggerOpenType
+        {
+            None,
+            OnPendingOrderExpired,
+            OnPendingOrderPartiallyFilled,
+            OnTime,
+        }
+
+        public static ContingentOrderTrigger.TriggerType Convert(OtoTriggerOpenType type)
+        {
+            switch (type)
+            {
+                case OtoTriggerOpenType.OnPendingOrderExpired:
+                    return ContingentOrderTrigger.TriggerType.OnPendingOrderExpired;
+                case OtoTriggerOpenType.OnPendingOrderPartiallyFilled:
+                    return ContingentOrderTrigger.TriggerType.OnPendingOrderPartiallyFilled;
+                case OtoTriggerOpenType.OnTime:
+                    return ContingentOrderTrigger.TriggerType.OnTime;
+
+                default:
+                    throw new Exception($"Unsupported type: {type}");
             }
         }
     }

@@ -938,7 +938,7 @@ namespace TickTrader.Algo.Account.Fdk2
                 Id = report.OrderId,
                 ParentOrderId = report.ParentOrderId,
                 // ExecTime = report.???
-                TradeRequestId = operationId,
+                TradeRequestId = operationId ?? report.ClientOrderId,
                 Expiration = report.Expiration,
                 Created = report.Created,
                 Modified = report.Modified,
@@ -960,6 +960,7 @@ namespace TickTrader.Algo.Account.Fdk2
                 StopPrice = report.StopPrice,
                 AveragePrice = report.AveragePrice,
                 ClientOrderId = report.ClientOrderId,
+                OrigClientOrderId = report.OrigClientOrderId,
                 OrderStatus = Convert(report.OrderStatus),
                 ExecutionType = Convert(report.ExecutionType),
                 Symbol = report.Symbol,
