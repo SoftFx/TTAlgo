@@ -17,12 +17,10 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         public bool IsStopOrder => Type == OrderType.Stop || Type == OrderType.StopLimit;
 
-        public bool IsImmediateFill => Type == OrderType.Market || IsIoc;
+        public bool IsImmediateFill => Type == OrderType.Market || (Type == OrderType.Limit && Options.HasFlag(OrderExecOptions.ImmediateOrCancel));
 
 
         public double SlippagePrecision { get; }
-
-        public bool IsIoc { get; }
 
         public OrderType InitType { get; protected set; }
 
@@ -76,7 +74,6 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         {
             Mode = mode;
             Options = test.Options;
-            IsIoc = Type == OrderType.Limit && Options.HasFlag(OrderExecOptions.ImmediateOrCancel);
 
             InitType = Type;
             SlippagePrecision = Math.Pow(10, Math.Max(Symbol.Digits, 4));
