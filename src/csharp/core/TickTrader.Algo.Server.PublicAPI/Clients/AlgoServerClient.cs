@@ -98,17 +98,21 @@ namespace TickTrader.Algo.Server.PublicAPI
                 {
                     case TaskStatus.RanToCompletion:
                         {
-                            var taskResult = t.Result;
-
-                            if (taskResult.Error == LoginResponse.Types.LoginError.None)
+                            var loginResponse = t.Result;
+                            if (loginResponse.Error != LoginResponse.Types.LoginError.None)
+                                OnConnectionError(loginResponse.Error.ToString());
+                            else if (loginResponse.ExecResult.Status != RequestResult.Types.RequestStatus.Success)
                             {
-                                _accessToken = taskResult.AccessToken;
-                                _logger.Info($"Server session id: {taskResult.SessionId}");
-
-                                OnLogin(taskResult.MajorVersion, taskResult.MinorVersion, taskResult.AccessLevel);
+                                var res = loginResponse.ExecResult;
+                                OnConnectionError($"{res.Status}{(string.IsNullOrEmpty(res.Message) ? "" : $" ({res.Message})")}");
                             }
                             else
-                                OnConnectionError(taskResult.Error.ToString());
+                            {
+                                _accessToken = loginResponse.AccessToken;
+                                _logger.Info($"Server session id: {loginResponse.SessionId}");
+
+                                OnLogin(loginResponse.MajorVersion, loginResponse.MinorVersion, loginResponse.AccessLevel);
+                            }
 
                             break;
                         }
