@@ -995,7 +995,18 @@ namespace TickTrader.Algo.Account.Fdk2
 
         private static ContingentOrderTriggerType? ConvertToServer(Domain.ContingentOrderTrigger.Types.TriggerType? type)
         {
-            return type.HasValue ? (ContingentOrderTriggerType?)type.Value : null;
+            switch (type)
+            {
+                case ContingentOrderTrigger.Types.TriggerType.OnPendingOrderExpired:
+                    return ContingentOrderTriggerType.OnPendingOrderExpired;
+                case ContingentOrderTrigger.Types.TriggerType.OnPendingOrderPartiallyFilled:
+                    return ContingentOrderTriggerType.OnPendingOrderPartiallyFilled;
+                case ContingentOrderTrigger.Types.TriggerType.OnTime:
+                    return ContingentOrderTriggerType.OnTime;
+
+                default:
+                    return null;
+            }
         }
 
         private static Domain.ContingentOrderTrigger.Types.TriggerType ConvertToAlgo(ContingentOrderTriggerType type)

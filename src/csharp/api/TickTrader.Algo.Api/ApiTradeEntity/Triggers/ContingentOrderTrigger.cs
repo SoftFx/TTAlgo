@@ -16,7 +16,6 @@ namespace TickTrader.Algo.Api
     {
         public enum TriggerType
         {
-            None,
             OnPendingOrderExpired,
             OnPendingOrderPartiallyFilled,
             OnTime,

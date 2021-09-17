@@ -19,9 +19,6 @@ namespace TickTrader.Algo.CoreV1
         {
             switch (type)
             {
-                case Api.ContingentOrderTrigger.TriggerType.None:
-                    return Domain.ContingentOrderTrigger.Types.TriggerType.None;
-
                 case Api.ContingentOrderTrigger.TriggerType.OnPendingOrderExpired:
                     return Domain.ContingentOrderTrigger.Types.TriggerType.OnPendingOrderExpired;
 
@@ -45,9 +42,6 @@ namespace TickTrader.Algo.CoreV1
         {
             switch (type)
             {
-                case Domain.ContingentOrderTrigger.Types.TriggerType.None:
-                    return Api.ContingentOrderTrigger.TriggerType.None;
-
                 case Domain.ContingentOrderTrigger.Types.TriggerType.OnPendingOrderExpired:
                     return Api.ContingentOrderTrigger.TriggerType.OnPendingOrderExpired;
 

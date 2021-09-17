@@ -212,10 +212,9 @@ message OrderRequest {
 
 message ContingentOrderTrigger {
     enum TriggerType {
-        NONE = 0;
-        ON_PENDING_ORDER_EXPIRED = 1;
-        ON_PENDING_ORDER_PARTIALLY_FILLED = 2;
-        ON_TIME = 3;
+        ON_PENDING_ORDER_EXPIRED = 0;
+        ON_PENDING_ORDER_PARTIALLY_FILLED = 1;
+        ON_TIME = 2;
     }
 
     TriggerType type = 1;

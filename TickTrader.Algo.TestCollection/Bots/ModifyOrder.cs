@@ -4,7 +4,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Modify Order Script", Version = "1.4", Category = "Test Orders",
+    [TradeBot(DisplayName = "[T] Modify Order Script", Version = "1.5", Category = "Test Orders",
         SetupMainSymbol = false, Description = "Modifies order by OrderId. Prints order execution result to bot status window.")]
     public class ModifyOrder : TradeBotCommon
     {
@@ -110,8 +110,6 @@ namespace TickTrader.Algo.TestCollection.Bots
         {
             switch (type)
             {
-                case OtoTriggerModifyType.None:
-                    return ContingentOrderTrigger.TriggerType.None;
                 case OtoTriggerModifyType.OnPendingOrderExpired:
                     return ContingentOrderTrigger.TriggerType.OnPendingOrderExpired;
                 case OtoTriggerModifyType.OnPendingOrderPartiallyFilled:
@@ -132,7 +130,6 @@ namespace TickTrader.Algo.TestCollection.Bots
     public enum OtoTriggerModifyType
     {
         DoNotModify,
-        None,
         OnPendingOrderExpired,
         OnPendingOrderPartiallyFilled,
         OnTime,
