@@ -562,7 +562,7 @@ namespace TickTrader.Algo.Account.Fdk2
             try
             {
                 var result = await operationDef(request);
-                return new OrderInteropResult(Domain.OrderExecReport.Types.CmdResultCode.Ok, ConvertToEr(result));
+                return new OrderInteropResult(Domain.OrderExecReport.Types.CmdResultCode.Ok, ConvertToEr(result, operationId));
             }
             catch (ExecutionException ex)
             {
@@ -918,12 +918,12 @@ namespace TickTrader.Algo.Account.Fdk2
             };
         }
 
-        private static List<ExecutionReport> ConvertToEr(List<SFX.ExecutionReport> reports)
+        private static List<ExecutionReport> ConvertToEr(List<SFX.ExecutionReport> reports, string operationId)
         {
             var result = new List<ExecutionReport>(reports.Count);
 
             for (int i = 0; i < reports.Count; i++)
-                result.Add(ConvertToEr(reports[i], reports[i].OrigClientOrderId));
+                result.Add(ConvertToEr(reports[i], operationId));
 
             return result;
         }
@@ -959,7 +959,7 @@ namespace TickTrader.Algo.Account.Fdk2
                 Assets = report.Assets.Select(Convert).ToArray(),
                 StopPrice = report.StopPrice,
                 AveragePrice = report.AveragePrice,
-                ClientOrderId = report.OrigClientOrderId,
+                ClientOrderId = report.ClientOrderId,
                 OrderStatus = Convert(report.OrderStatus),
                 ExecutionType = Convert(report.ExecutionType),
                 Symbol = report.Symbol,
