@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Server.Common;
 using TickTrader.Algo.Server.Common.Grpc;
 using TickTrader.Algo.ServerControl.Model;
@@ -481,12 +480,26 @@ namespace TickTrader.Algo.ServerControl.Grpc
                     }
                     else
                     {
+                        var authPassed = !authResult.Requires2FA;
                         if (authResult.Requires2FA)
                         {
-                            res.ExecResult = CreateRejectResult("2FA is not supported on current version");
-                            res.Error = AlgoServerApi.LoginResponse.Types.LoginError.None;
+                            if (!VersionSpec.ClientSupports2FA(request.MinorVersion))
+                            {
+                                res.ExecResult = CreateRejectResult("2FA is not supported on current version");
+                                res.Error = AlgoServerApi.LoginResponse.Types.LoginError.None;
+                            }
+                            else
+                            {
+                                authPassed = _algoServer.Validate2FA(request.Login, request.OneTimePassword);
+                                if (!authPassed)
+                                {
+                                    res.ExecResult = CreateRejectResult();
+                                    res.Error = AlgoServerApi.LoginResponse.Types.LoginError.Invalid2FaCode;
+                                }
+                            }
                         }
-                        else
+
+                        if (authPassed)
                         {
                             var session = SessionInfo.Create(request.Login, request.MinorVersion, authResult.AccessLevel, _logger.Factory);
                             var accessToken = string.Empty;

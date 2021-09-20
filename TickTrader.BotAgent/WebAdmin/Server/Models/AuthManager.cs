@@ -75,6 +75,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
 
         public bool Auth2FA(string login, string oneTimePassword)
         {
+            if (login == null || oneTimePassword == null)
+                return false;
+
             var otpValidator = GetOtpValidator(login);
             if (otpValidator == null)
                 return false;
