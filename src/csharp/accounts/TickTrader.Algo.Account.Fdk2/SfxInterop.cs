@@ -923,7 +923,7 @@ namespace TickTrader.Algo.Account.Fdk2
             var result = new List<ExecutionReport>(reports.Count);
 
             for (int i = 0; i < reports.Count; i++)
-                result.Add(ConvertToEr(reports[i], operationId));
+                result.Add(ConvertToEr(reports[i], reports[i].OrigClientOrderId));
 
             return result;
         }
@@ -938,7 +938,7 @@ namespace TickTrader.Algo.Account.Fdk2
                 Id = report.OrderId,
                 ParentOrderId = report.ParentOrderId,
                 // ExecTime = report.???
-                TradeRequestId = operationId ?? report.ClientOrderId,
+                TradeRequestId = operationId,
                 Expiration = report.Expiration,
                 Created = report.Created,
                 Modified = report.Modified,

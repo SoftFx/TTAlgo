@@ -83,7 +83,7 @@
 
                                     <StackPanel Orientation="Horizontal" Visibility="{Binding OtoTime.Value, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Trigger Time: " VerticalAlignment="Center" />
-                                        <TextBlock Text="{Binding OtoTime.DisplayValue, Converter={StaticResource FullDateTimeFormat}}" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding OtoTime.Value, Converter={StaticResource FullDateTimeFormat}}" VerticalAlignment="Center" />
                                     </StackPanel>
 
                                     <StackPanel Orientation="Horizontal" Visibility="{Binding OtoTriggeredById.Value, Converter={StaticResource NullOrEmptyToVis}}">

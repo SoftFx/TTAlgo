@@ -64,7 +64,7 @@ namespace TickTrader.Algo.Account
                 return report.ClosePositionRequestId;
             if (!string.IsNullOrEmpty(report.TradeRequestId))
                 return report.TradeRequestId;
-            return report.OrigClientOrderId;
+            return report.ClientOrderId;
         }
 
         public void Dispose()

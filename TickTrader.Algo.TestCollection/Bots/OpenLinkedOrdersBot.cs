@@ -31,6 +31,9 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter(DefaultValue = null, DisplayName = "Expiration timeout (s)")]
         public int? ExpirationTimeout { get; set; }
 
+        [Parameter]
+        public double? MaxVisibleVolume { get; set; }
+
 
         [Parameter(DefaultValue = 1.0)]
         public double? PriceSecond { get; set; }
@@ -49,6 +52,9 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         [Parameter(DefaultValue = null, DisplayName = "ExpirationSecond timeout (s)")]
         public int? ExpirationTimeout2 { get; set; }
+
+        [Parameter]
+        public double? MaxVisibleVolume2 { get; set; }
 
 
         [Parameter]
@@ -78,6 +84,7 @@ namespace TickTrader.Algo.TestCollection.Bots
             var linkedOrder = OpenOrderRequest.Template.Create()
                 .WithParams(Symbol.Name, SideSecond, TypeSecond, VolumeSecond, PriceSecond, StopPriceSecond, LinkedOrderComment)
                 .WithExpiration(GetDateTime(ExpirationTimeout2))
+                .WithMaxVisibleVolume(MaxVisibleVolume2)
                 .WithTag(nameof(OpenLinkedOrdersBot));
 
             ContingentOrderTrigger otoTrigger = null;
@@ -90,6 +97,7 @@ namespace TickTrader.Algo.TestCollection.Bots
             var mainOrder = OpenOrderRequest.Template.Create()
                 .WithParams(Symbol.Name, Side, Type, Volume, Price, StopPrice, MainOrderComment)
                 .WithExpiration(GetDateTime(ExpirationTimeout))
+                .WithMaxVisibleVolume(MaxVisibleVolume)
                 .WithOptions(Options)
                 .WithTag(nameof(OpenLinkedOrdersBot))
                 .WithSubOpenRequests(linkedOrder.MakeRequest())
