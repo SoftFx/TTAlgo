@@ -561,13 +561,16 @@ namespace TickTrader.Algo.Account.Fdk2
 
             try
             {
-                var result = await operationDef(request);
-                return new OrderInteropResult(Domain.OrderExecReport.Types.CmdResultCode.Ok, ConvertToEr(result, operationId));
-            }
-            catch (ExecutionException ex)
-            {
-                var reason = Convert(ex.Report.RejectReason, ex.Message);
-                return new OrderInteropResult(reason, ConvertToEr(ex.Report, operationId));
+                try
+                {
+                    var result = await operationDef(request);
+                    return new OrderInteropResult(Domain.OrderExecReport.Types.CmdResultCode.Ok, ConvertToEr(result, operationId));
+                }
+                catch (ExecutionException ex)
+                {
+                    var reason = Convert(ex.Report.RejectReason, ex.Message);
+                    return new OrderInteropResult(reason, ConvertToEr(ex.Report, operationId)); //ConvertToEr may throw an exception
+                }
             }
             catch (DisconnectException)
             {
