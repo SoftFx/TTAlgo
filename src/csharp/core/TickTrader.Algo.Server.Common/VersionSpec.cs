@@ -35,11 +35,11 @@
                 return false;
             }
 
-            if (MinorVersion > clientMinorVersion)
-            {
-                error = "Server doesn't support older clients";
-                return false;
-            }
+            //if (MinorVersion > clientMinorVersion)
+            //{
+            //    error = "Server doesn't support older clients";
+            //    return false;
+            //}
 
             return true;
         }
