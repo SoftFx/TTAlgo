@@ -47,7 +47,7 @@ namespace TickTrader.Algo.Account
         public Domain.OrderInfo.Types.Type Type { get; set; }
         public Domain.OrderInfo.Types.Side Side { get; set; }
         public double? Price { get; set; }
-        double IMarginProfitCalc.Price => Price ?? 0;
+        double IMarginProfitCalc.Price => Price ?? double.NaN;
         public double Balance { get; set; }
         public double? RequestedOpenPrice { get; set; }
 
