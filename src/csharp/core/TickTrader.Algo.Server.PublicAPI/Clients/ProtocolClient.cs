@@ -47,6 +47,11 @@ namespace TickTrader.Algo.Server.PublicAPI
             _stateMachine.AddTransition(ClientStates.LoggingIn, ClientEvents.LoginReject, ClientStates.Disconnecting);
             _stateMachine.AddTransition(ClientStates.LoggingIn, ClientEvents.ConnectionError, ClientStates.Deinitializing);
             _stateMachine.AddTransition(ClientStates.LoggingIn, ClientEvents.Disconnected, ClientStates.Deinitializing);
+            _stateMachine.AddTransition(ClientStates.LoggingIn, ClientEvents.Requires2FA, ClientStates.LoggingIn2FA);
+            _stateMachine.AddTransition(ClientStates.LoggingIn2FA, ClientEvents.LoggedIn, ClientStates.Initializing);
+            _stateMachine.AddTransition(ClientStates.LoggingIn2FA, ClientEvents.LoginReject, ClientStates.Disconnecting);
+            _stateMachine.AddTransition(ClientStates.LoggingIn2FA, ClientEvents.ConnectionError, ClientStates.Deinitializing);
+            _stateMachine.AddTransition(ClientStates.LoggingIn2FA, ClientEvents.Disconnected, ClientStates.Deinitializing);
             _stateMachine.AddTransition(ClientStates.Initializing, ClientEvents.Initialized, ClientStates.Online);
             _stateMachine.AddTransition(ClientStates.Initializing, ClientEvents.ConnectionError, ClientStates.Deinitializing);
             _stateMachine.AddTransition(ClientStates.Initializing, ClientEvents.Disconnected, ClientStates.Deinitializing);
@@ -65,6 +70,7 @@ namespace TickTrader.Algo.Server.PublicAPI
 
             _stateMachine.OnEnter(ClientStates.Connecting, StartConnecting);
             _stateMachine.OnEnter(ClientStates.LoggingIn, SendLogin);
+            _stateMachine.OnEnter(ClientStates.LoggingIn2FA, Send2FALogin);
             _stateMachine.OnEnter(ClientStates.Initializing, Init);
             _stateMachine.OnEnter(ClientStates.LoggingOut, SendLogout);
             _stateMachine.OnEnter(ClientStates.Disconnecting, SendDisconnect);
@@ -159,6 +165,8 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         public abstract void SendLogin();
 
+        public abstract void Send2FALogin();
+
         public abstract void SendLogout();
 
         public abstract void SendDisconnect();
@@ -195,6 +203,13 @@ namespace TickTrader.Algo.Server.PublicAPI
             _logger.Info($"Current version set to {VersionSpec.MajorVersion}.{VersionSpec.CurrentVersion}");
 
             _stateMachine.PushEvent(ClientEvents.LoggedIn);
+        }
+
+        protected void On2FALogin()
+        {
+            _logger.Info("Server requires 2FA");
+
+            _stateMachine.PushEvent(ClientEvents.Requires2FA);
         }
 
         protected void OnLogout(LogoutResponse.Types.LogoutReason reason)

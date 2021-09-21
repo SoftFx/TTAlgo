@@ -107,6 +107,10 @@ namespace TickTrader.Algo.Server.PublicAPI
 
                                 OnLogin(taskResult.MajorVersion, taskResult.MinorVersion, taskResult.AccessLevel);
                             }
+                            else if (taskResult.Error == LoginResponse.Types.LoginError.Invalid2FaCode)
+                            {
+                                On2FALogin();
+                            }
                             else
                                 OnConnectionError(taskResult.Error.ToString());
 
@@ -120,6 +124,58 @@ namespace TickTrader.Algo.Server.PublicAPI
                         break;
                 }
             });
+        }
+
+        public override void Send2FALogin()
+        {
+            Login2FAAsync().ContinueWith(t =>
+            {
+                switch (t.Status)
+                {
+                    case TaskStatus.RanToCompletion: HandleLoginResponse(t.Result); break;
+                    case TaskStatus.Canceled: OnConnectionError("Login request time out"); break;
+                    case TaskStatus.Faulted: OnConnectionError("Login failed"); break;
+                }
+            });
+        }
+
+        private async Task<LoginResponse> LoginAsync()
+        {
+            return await ExecuteUnaryRequest(LoginInternal, GetLoginRequest());
+        }
+
+        private async Task<LoginResponse> Login2FAAsync()
+        {
+            var otp = await _serverHandler.Get2FACode();
+
+            var request = GetLoginRequest();
+            request.OneTimePassword = otp;
+
+            return await ExecuteUnaryRequest(LoginInternal, request);
+        }
+
+        private LoginRequest GetLoginRequest()
+        {
+            return new LoginRequest
+            {
+                Login = SessionSettings.Login,
+                Password = SessionSettings.Password,
+                MajorVersion = VersionSpec.MajorVersion,
+                MinorVersion = VersionSpec.MinorVersion,
+            };
+        }
+
+        private void HandleLoginResponse(LoginResponse response)
+        {
+            if (response.Error == LoginResponse.Types.LoginError.None)
+            {
+                _accessToken = response.AccessToken;
+                _logger.Info($"Server session id: {response.SessionId}");
+
+                OnLogin(response.MajorVersion, response.MinorVersion, response.AccessLevel);
+            }
+            else
+                OnConnectionError(response.Error.ToString());
         }
 
         public override void Init()
