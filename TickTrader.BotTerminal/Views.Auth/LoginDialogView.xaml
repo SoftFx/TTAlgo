@@ -7,6 +7,7 @@
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:cal="http://www.caliburnproject.org"
         mc:Ignorable="d"
+        Icon="{StaticResource MainAppIcon}"
         Height="420" Width="450"
         ResizeMode="NoResize"
         Background="{DynamicResource Dialog_Background}">

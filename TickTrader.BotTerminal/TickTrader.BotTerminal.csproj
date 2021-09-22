@@ -10,7 +10,7 @@
     <UseApplicationTrust>false</UseApplicationTrust>
     <UseWPF>true</UseWPF>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
-    <ApplicationIcon>Resx\Logo\algoStudioLogo64.ico</ApplicationIcon>
+    <ApplicationIcon>Resx\Logo\algoLogoLight.ico</ApplicationIcon>
     <Deterministic>false</Deterministic>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
@@ -66,11 +66,13 @@
 
   <ItemGroup>
     <Content Include="Resx\Sounds\Negative1.wav" />
-    <Resource Include="Resx\Logo\algoStudioLogo128.ico" />
-    <Resource Include="Resx\Logo\algoStudioLogo64.ico" />
+    <Resource Include="Resx\Logo\algoLogoDark128.ico" />
+    <Resource Include="Resx\Logo\algoLogoDark.ico" />
     <Resource Include="Resx\Fonts\password.ttf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="Resx\Logo\algoLogoLight.ico" />
+    <Resource Include="Resx\Logo\algoLogoLight128.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -87,8 +89,10 @@
     <Compile Remove="Model.Profiles\Version1\ProfileStorageModel.cs" />
     <Compile Remove="Model\BotAggregator.cs" />
     <Compile Remove="Views.Chart\PluginSetupViewModel.cs" />
-    <None Remove="Resx\Logo\algoStudioLogo128.ico" />
-    <None Remove="Resx\Logo\algoStudioLogo64.ico" />
+    <None Remove="Resx\Logo\algoLogoDark.ico" />
+    <None Remove="Resx\Logo\algoLogoDark128.ico" />
+    <None Remove="Resx\Logo\algoLogoLight.ico" />
+    <None Remove="Resx\Logo\algoLogoLight128.ico" />
     <Page Remove="Resx\Styles.SystemDefault\ComboBox.Msdn.xaml" />
     <Page Remove="Resx\Styles.SystemDefault\ComboBox.xaml" />
     <Page Remove="Resx\Styles.SystemDefault\ComboBoxItem.xaml" />
