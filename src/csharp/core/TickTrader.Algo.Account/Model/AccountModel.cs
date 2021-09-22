@@ -437,7 +437,7 @@ namespace TickTrader.Algo.Account
                     break;
 
                 case ExecutionType.Calculated:
-                    bool ignoreCalculate = (_accType == Domain.AccountInfo.Types.Type.Gross && report.Type == Domain.OrderInfo.Types.Type.Market) || report.OrderStatus == OrderStatus.Executing;
+                    bool ignoreCalculate = (_accType == Domain.AccountInfo.Types.Type.Gross && report.Type == Domain.OrderInfo.Types.Type.Market && !report.IsContingentOrder) || report.OrderStatus == OrderStatus.Executing;
                     if (!ignoreCalculate)
                     {
                         if (_orders.TryGetValue(report.Id, out var order))
