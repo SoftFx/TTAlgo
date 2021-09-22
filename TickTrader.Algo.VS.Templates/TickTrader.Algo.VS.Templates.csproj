@@ -96,7 +96,7 @@
     <None Include="ProjectTemplate.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="softfx.ico" />
+    <Content Include="algoStudioLogo64.ico" />
     <VSTemplate Include="TradeBot.vstemplate">
       <OutputSubPath>TT Algo</OutputSubPath>
     </VSTemplate>

@@ -14,7 +14,7 @@
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
     <Deterministic>false</Deterministic>
-    <ApplicationIcon>agent.ico</ApplicationIcon>
+    <ApplicationIcon>algoStudioLogo64.ico</ApplicationIcon>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -27,8 +27,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="algoStudioLogo64.ico" />
     <None Remove="bot-agent.pfx" />
     <None Remove="Properties\PublishProfiles\local.pubxml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="algoStudioLogo64.ico" />
   </ItemGroup>
 
   <ItemGroup>

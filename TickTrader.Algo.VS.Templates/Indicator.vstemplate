@@ -3,7 +3,7 @@
   <TemplateData>
     <Name>Indicator</Name>
     <Description>Creates custom indicator (ttalgo stub for vs2019 search)</Description>
-    <Icon>softfx.ico</Icon>
+    <Icon>algoStudioLogo64.ico</Icon>
     <ProjectType>CSharp</ProjectType>
     <RequiredFrameworkVersion>4.7.2</RequiredFrameworkVersion>
     <SortOrder>1000</SortOrder>

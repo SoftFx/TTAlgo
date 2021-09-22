@@ -4,7 +4,7 @@
         <Identity Id="TickTrader.Algo.VS.Package.Company.9322a68f-8411-42e8-8caf-41d5557e5af1" Version="1.11" Language="en-US" Publisher="Soft-FX" />
         <DisplayName>TT Algo Visual Studio Extension</DisplayName>
         <Description xml:space="preserve">Visual Studio Extension for TT Algo developers. Provides tools for developing custom indicators and automatic traders on C# or Visual Basic.</Description>
-        <Icon>softfx.ico</Icon>
+        <Icon>algoStudioLogo64.ico</Icon>
     </Metadata>
     <Installation>
         <InstallationTarget Version="[14.0,17.0)" Id="Microsoft.VisualStudio.Community" />
