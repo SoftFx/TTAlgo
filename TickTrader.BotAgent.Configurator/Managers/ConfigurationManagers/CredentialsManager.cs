@@ -7,7 +7,7 @@ namespace TickTrader.BotAgent.Configurator
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        public enum Properties { Login, Password }
+        public enum Properties { Login, Password, OtpSecret }
 
         public CredentialModel Dealer { get; }
 
@@ -34,18 +34,17 @@ namespace TickTrader.BotAgent.Configurator
 
                 if (prop.Name.StartsWith(Admin.Name))
                     cred = Admin;
-                else
-                if (prop.Name.StartsWith(Dealer.Name))
+                else if (prop.Name.StartsWith(Dealer.Name))
                     cred = Dealer;
-                else
-                if (prop.Name.StartsWith(Viewer.Name))
+                else if (prop.Name.StartsWith(Viewer.Name))
                     cred = Viewer;
 
                 if (prop.Name.EndsWith(Properties.Login.ToString()))
                     cred.Login = prop.Value.ToString();
-                else
-                if (prop.Name.EndsWith(Properties.Password.ToString()))
+                else if (prop.Name.EndsWith(Properties.Password.ToString()))
                     cred.Password = prop.Value.ToString();
+                else if (prop.Name.EndsWith(Properties.OtpSecret.ToString()))
+                    cred.OtpSecret = prop.Value.ToString();
             }
 
             SetDefaultModelValues();
@@ -74,6 +73,8 @@ namespace TickTrader.BotAgent.Configurator
         {
             SaveProperty(root, $"{model.Name}Login", model.Login, model.CurrentLogin, _logger);
             SaveProperty(root, $"{model.Name}Password", model.Password, model.CurrentPassword, _logger, true);
+            if (!string.IsNullOrEmpty(model.OtpSecret))
+                SaveProperty(root, $"{model.Name}OtpSecret", model.OtpSecret, model.CurrentOtpSecret, _logger, true);
         }
     }
 }

@@ -12,7 +12,8 @@ namespace TickTrader.BotTerminal
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
 
-        private BotAgentStorageModel _botAgentStorage;
+        private readonly BotAgentStorageModel _botAgentStorage;
+        private readonly IShell _shell;
 
 
         public ObservableCollection<BotAgentServerEntry> PredefinedServers { get; set; }
@@ -20,9 +21,10 @@ namespace TickTrader.BotTerminal
         public VarDictionary<string, BotAgentConnectionManager> BotAgents { get; set; }
 
 
-        public BotAgentManager(PersistModel appStorage)
+        public BotAgentManager(PersistModel appStorage, IShell shell)
         {
             _botAgentStorage = appStorage.BotAgentStorage;
+            _shell = shell;
 
             PredefinedServers = new ObservableCollection<BotAgentServerEntry>();
             var cfgSection = ProtocolConfigSection.GetCfgSection();
@@ -38,7 +40,7 @@ namespace TickTrader.BotTerminal
                 {
                     agent.PatchName();
                 }
-                BotAgents.Add(agent.Name, new BotAgentConnectionManager(agent));
+                BotAgents.Add(agent.Name, new BotAgentConnectionManager(agent, _shell));
             }
         }
 
@@ -50,7 +52,7 @@ namespace TickTrader.BotTerminal
 
             if (!BotAgents.TryGetValue(agentName, out var connection))
             {
-                connection = new BotAgentConnectionManager(creds);
+                connection = new BotAgentConnectionManager(creds, _shell);
                 BotAgents.Add(agentName, connection);
             }
             await connection.WaitConnect();

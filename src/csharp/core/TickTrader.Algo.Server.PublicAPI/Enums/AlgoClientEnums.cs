@@ -9,7 +9,8 @@
         LoggingIn,
         LoggingOut,
         Initializing,
-        Deinitializing
+        Deinitializing,
+        LoggingIn2FA,
     };
 
     internal enum ClientEvents
@@ -23,6 +24,7 @@
         LoginReject,
         Initialized,
         Deinitialized,
-        LogoutRequest
+        LogoutRequest,
+        Requires2FA,
     }
 }

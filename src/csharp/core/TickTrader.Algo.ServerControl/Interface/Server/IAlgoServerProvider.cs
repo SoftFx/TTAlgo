@@ -18,7 +18,9 @@ namespace TickTrader.Algo.ServerControl
 
         event Action ViewerCredsChanged;
 
-        ClientClaims.Types.AccessLevel ValidateCreds(string login, string password);
+        AuthResult ValidateCreds(string login, string password);
+
+        bool Validate2FA(string login, string oneTimePassword);
 
         #endregion Credentials
 

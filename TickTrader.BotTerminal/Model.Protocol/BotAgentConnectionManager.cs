@@ -17,9 +17,9 @@ namespace TickTrader.BotTerminal
 
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
+        private readonly IAlgoServerClient _protocolClient;
+        private readonly StateMachine<States> _stateControl;
 
-        private IAlgoServerClient _protocolClient;
-        private StateMachine<States> _stateControl;
         private bool _needReconnect;
 
 
@@ -41,11 +41,11 @@ namespace TickTrader.BotTerminal
         public event Action StateChanged = delegate { };
 
 
-        public BotAgentConnectionManager(BotAgentStorageEntry botAgentCreds)
+        public BotAgentConnectionManager(BotAgentStorageEntry botAgentCreds, IShell shell)
         {
             Creds = botAgentCreds;
 
-            RemoteAgent = new RemoteAlgoAgent(Creds.Name);
+            RemoteAgent = new RemoteAlgoAgent(Creds.Name, Creds.Login, shell);
             _protocolClient = AlgoServerClient.Create(RemoteAgent);
             RemoteAgent.SetProtocolClient(_protocolClient);
 
@@ -72,7 +72,7 @@ namespace TickTrader.BotTerminal
 
             _stateControl.StateChanged += OnStateChanged;
 
-            _protocolClient.ClientStateChanged += ClientStateChanged; ;
+            _protocolClient.ClientStateChanged += ClientStateChanged;
         }
 
         private void ClientStateChanged(ClientStates state)

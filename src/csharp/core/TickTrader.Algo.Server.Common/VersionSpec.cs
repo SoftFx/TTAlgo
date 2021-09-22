@@ -4,7 +4,7 @@
     {
         public static int MajorVersion => 2;
 
-        public static int MinorVersion => 0;
+        public static int MinorVersion => 1;
 
         public static string LatestVersion => $"{MajorVersion}.{MinorVersion}";
 
@@ -35,14 +35,16 @@
                 return false;
             }
 
-            if (MinorVersion > clientMinorVersion)
-            {
-                error = "Server doesn't support older clients";
-                return false;
-            }
+            //if (MinorVersion > clientMinorVersion)
+            //{
+            //    error = "Server doesn't support older clients";
+            //    return false;
+            //}
 
             return true;
         }
+
+        public static bool ClientSupports2FA(int clientVersion) => clientVersion >= 1;
 
 
         public bool SupportsBlackjack => CurrentVersion == MinorVersion;
