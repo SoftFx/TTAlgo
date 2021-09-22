@@ -99,24 +99,10 @@ namespace TickTrader.Algo.Server.PublicAPI
                     case TaskStatus.RanToCompletion:
                         {
                             var loginResponse = t.Result;
-                            if (loginResponse.Error != LoginResponse.Types.LoginError.None)
-                                OnConnectionError(loginResponse.Error.ToString());
-                            else if (loginResponse.ExecResult.Status != RequestResult.Types.RequestStatus.Success)
-                            {
-                                var res = loginResponse.ExecResult;
-                                OnConnectionError($"{res.Status}{(string.IsNullOrEmpty(res.Message) ? "" : $" ({res.Message})")}");
-                            }
-                            else if (taskResult.Error == LoginResponse.Types.LoginError.Invalid2FaCode)
-                            {
+                            if (loginResponse.Error == LoginResponse.Types.LoginError.Invalid2FaCode)
                                 On2FALogin();
-                            }
                             else
-                            {
-                                _accessToken = loginResponse.AccessToken;
-                                _logger.Info($"Server session id: {loginResponse.SessionId}");
-
-                                OnLogin(loginResponse.MajorVersion, loginResponse.MinorVersion, loginResponse.AccessLevel);
-                            }
+                                HandleLoginResponse(loginResponse);
 
                             break;
                         }
@@ -171,15 +157,20 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         private void HandleLoginResponse(LoginResponse response)
         {
-            if (response.Error == LoginResponse.Types.LoginError.None)
+            if (response.Error != LoginResponse.Types.LoginError.None)
+                OnConnectionError(response.Error.ToString());
+            else if (response.ExecResult.Status != RequestResult.Types.RequestStatus.Success)
+            {
+                var res = response.ExecResult;
+                OnConnectionError($"{res.Status}{(string.IsNullOrEmpty(res.Message) ? "" : $" ({res.Message})")}");
+            }
+            else
             {
                 _accessToken = response.AccessToken;
                 _logger.Info($"Server session id: {response.SessionId}");
 
                 OnLogin(response.MajorVersion, response.MinorVersion, response.AccessLevel);
             }
-            else
-                OnConnectionError(response.Error.ToString());
         }
 
         public override void Init()
