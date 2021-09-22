@@ -11,7 +11,7 @@ namespace TickTrader.BotAgent.Configurator
 
         private DelegateCommand _generateLogin;
         private DelegateCommand _generatePassword;
-        private DelegateCommand _toggleOtp, _showOtpSecret;
+        private DelegateCommand _toggleOtp;
 
         public CredentialViewModel(CredentialModel model, RefreshCounter refManager = null) : base(nameof(CredentialViewModel))
         {
@@ -62,6 +62,8 @@ namespace TickTrader.BotAgent.Configurator
         public bool OtpEnabled => _model.OtpEnabled;
 
         public string OtpStateText => _model.OtpEnabled ? "Enabled" : "Disabled";
+
+        public string OtpSecret => _model.OtpSecret;
 
         public override string this[string columnName]
         {
@@ -117,21 +119,16 @@ namespace TickTrader.BotAgent.Configurator
 
                 _refreshManager?.CheckUpdate(_model.OtpSecret, _model.CurrentOtpSecret, _keyOtpSecret, false);
 
+                OnPropertyChanged(nameof(OtpSecret));
                 OnPropertyChanged(nameof(OtpEnabled));
                 OnPropertyChanged(nameof(OtpStateText));
-            }));
-
-        public DelegateCommand ShowOtpSecret => _showOtpSecret ?? (
-            _showOtpSecret = new DelegateCommand(_ =>
-            {
-                var dlg = new Show2FACodeDialog(_model.OtpSecret, _model.Login);
-                dlg.ShowDialog();
             }));
 
         public override void RefreshModel()
         {
             OnPropertyChanged(nameof(Login));
             OnPropertyChanged(nameof(Password));
+            OnPropertyChanged(nameof(OtpSecret));
             OnPropertyChanged(nameof(OtpEnabled));
             OnPropertyChanged(nameof(OtpStateText));
         }
