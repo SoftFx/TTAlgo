@@ -84,5 +84,8 @@ namespace TickTrader.Algo.Api
         PositionNotFound = 132,
         ExceededOrderLimit = 133,
         OCOFlagNotFound = 134,
+        IncorrectTriggerTime = 135,
+        IncorrectTriggerOrderId = 136,
+        IncorrectTriggerOrderType = 137,
     }
 }

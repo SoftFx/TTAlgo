@@ -184,6 +184,9 @@ message OrderExecReport {
         INCORRECT_SYMBOL = 130;
         OCO_ALREADY_EXISTS = 131;
         EXCEEDED_ORDER_LIMIT = 132;
+        INCORRECT_TRIGGER_TIME = 133;
+        INCORRECT_TRIGGER_ORDER_ID = 134;
+        INCORRECT_TRIGGER_ORDER_TYPE = 135;
     }
 
     google.protobuf.StringValue operation_id = 1;

@@ -1082,6 +1082,15 @@ namespace TickTrader.Algo.Account.Fdk2
                                 return Domain.OrderExecReport.Types.CmdResultCode.OcoAlreadyExists;
                             else if (message.StartsWith("No Dealer"))
                                 return Domain.OrderExecReport.Types.CmdResultCode.DealerReject;
+                            else if (message.StartsWith("Trigger time cannot"))
+                                return Domain.OrderExecReport.Types.CmdResultCode.IncorrectTriggerTime;
+                            else if (message.StartsWith("Trigger Order Id"))
+                                return Domain.OrderExecReport.Types.CmdResultCode.IncorrectTriggerOrderId;
+                            else if ((message.Contains("Trigger Order") && message.Contains("Type must be")) ||
+                                      message.StartsWith("Contingent orders with type") && message.EndsWith("are not supported."))
+                                return Domain.OrderExecReport.Types.CmdResultCode.IncorrectTriggerOrderType;
+                            else if (message.Contains("Trigger Order") && message.Contains("Expired"))
+                                return Domain.OrderExecReport.Types.CmdResultCode.IncorrectExpiration;
                         }
                         break;
                     }

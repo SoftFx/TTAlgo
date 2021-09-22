@@ -148,10 +148,11 @@ namespace TickTrader.Algo.CoreV1
                 case Domain.OrderExecReport.Types.CmdResultCode.IncorrectSymbol: return OrderCmdResultCodes.IncorrectSymbol;
                 case Domain.OrderExecReport.Types.CmdResultCode.OcoAlreadyExists: return OrderCmdResultCodes.OCOAlreadyExists;
                 case Domain.OrderExecReport.Types.CmdResultCode.ExceededOrderLimit: return OrderCmdResultCodes.ExceededOrderLimit;
-
+                case Domain.OrderExecReport.Types.CmdResultCode.IncorrectTriggerTime: return OrderCmdResultCodes.IncorrectTriggerTime;
+                case Domain.OrderExecReport.Types.CmdResultCode.IncorrectTriggerOrderId: return OrderCmdResultCodes.IncorrectTriggerOrderId;
+                case Domain.OrderExecReport.Types.CmdResultCode.IncorrectTriggerOrderType: return OrderCmdResultCodes.IncorrectTriggerOrderType;
                 default: throw new ArgumentException($"Unsupported code {code}");
             }
-
         }
 
         public static Domain.TradeHistoryRequestOptions ToDomainEnum(this ThQueryOptions options)
