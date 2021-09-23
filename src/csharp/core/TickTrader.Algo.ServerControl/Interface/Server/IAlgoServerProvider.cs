@@ -18,9 +18,9 @@ namespace TickTrader.Algo.ServerControl
 
         event Action ViewerCredsChanged;
 
-        AuthResult ValidateCreds(string login, string password);
+        Task<AuthResult> ValidateCreds(string login, string password);
 
-        bool Validate2FA(string login, string oneTimePassword);
+        Task<AuthResult> Validate2FA(string login, string oneTimePassword);
 
         #endregion Credentials
 

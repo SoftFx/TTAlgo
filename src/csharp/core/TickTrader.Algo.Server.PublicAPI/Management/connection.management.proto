@@ -23,6 +23,7 @@ message LoginResponse {
         INVALID_CREDENTIALS = 1;
         VERSION_MISMATCH = 2;
         INVALID_2FA_CODE = 3;
+        TEMPORARILY_LOCKED = 4;
     }
 
     LoginError error = 1;

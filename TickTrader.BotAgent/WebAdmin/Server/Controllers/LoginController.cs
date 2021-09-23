@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 using TickTrader.BotAgent.WebAdmin.Server.Core.Auth;
 using TickTrader.BotAgent.WebAdmin.Server.Dto;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
@@ -20,9 +21,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 
 
         [HttpPost]
-        public IActionResult Post([FromBody]LoginDataDto loginData)
+        public async Task<IActionResult> Post([FromBody]LoginDataDto loginData)
         {
-            var identity = _authManager.Login(loginData.Login, loginData.Password);
+            var identity = await _authManager.Login(loginData.Login, loginData.Password);
             if (identity == null)
             {
                 return BadRequest(new BadRequestResultDto(ExceptionCodes.InvalidCredentials, "Invalid username or password"));

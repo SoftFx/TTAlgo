@@ -41,9 +41,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         }
 
 
-        public AuthResult ValidateCreds(string login, string password) => _authManager.Auth(login, password);
+        public Task<AuthResult> ValidateCreds(string login, string password) => _authManager.Auth(login, password);
 
-        public bool Validate2FA(string login, string oneTimePassword) => _authManager.Auth2FA(login, oneTimePassword);
+        public Task<AuthResult> Validate2FA(string login, string oneTimePassword) => _authManager.Auth2FA(login, oneTimePassword);
 
         public async Task AttachSessionChannel(Channel<IMessage> channel)
         {

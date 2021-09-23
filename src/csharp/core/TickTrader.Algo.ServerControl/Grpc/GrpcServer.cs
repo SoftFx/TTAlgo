@@ -472,11 +472,13 @@ namespace TickTrader.Algo.ServerControl.Grpc
                 }
                 else
                 {
-                    var authResult = _algoServer.ValidateCreds(request.Login, request.Password);
+                    var authResult = await _algoServer.ValidateCreds(request.Login, request.Password);
                     if (!authResult.Success)
                     {
                         res.ExecResult = CreateRejectResult();
-                        res.Error = AlgoServerApi.LoginResponse.Types.LoginError.InvalidCredentials;
+                        res.Error = authResult.TemporarilyLocked
+                            ? AlgoServerApi.LoginResponse.Types.LoginError.TemporarilyLocked
+                            : AlgoServerApi.LoginResponse.Types.LoginError.InvalidCredentials;
                     }
                     else
                     {
@@ -490,11 +492,14 @@ namespace TickTrader.Algo.ServerControl.Grpc
                             }
                             else
                             {
-                                authPassed = _algoServer.Validate2FA(request.Login, request.OneTimePassword);
-                                if (!authPassed)
+                                authResult = await _algoServer.Validate2FA(request.Login, request.OneTimePassword);
+                                authPassed = authResult.Success;
+                                if (!authResult.Success)
                                 {
                                     res.ExecResult = CreateRejectResult();
-                                    res.Error = AlgoServerApi.LoginResponse.Types.LoginError.Invalid2FaCode;
+                                    res.Error = authResult.TemporarilyLocked
+                                        ? AlgoServerApi.LoginResponse.Types.LoginError.TemporarilyLocked
+                                        : AlgoServerApi.LoginResponse.Types.LoginError.Invalid2FaCode;
                                 }
                             }
                         }
@@ -640,7 +645,7 @@ namespace TickTrader.Algo.ServerControl.Grpc
             {
                 await t;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.Error(ex, "Update stream internal error");
             }

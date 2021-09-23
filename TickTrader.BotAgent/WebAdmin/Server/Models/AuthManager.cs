@@ -3,6 +3,11 @@ using OtpNet;
 using System;
 using System.Security.Claims;
 using System.Security.Principal;
+using System.Threading.Channels;
+using System.Threading.Tasks;
+using TickTrader.Algo.Async;
+using TickTrader.Algo.Async.Actors;
+using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.ServerControl;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Models
@@ -16,22 +21,35 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
         event Action ViewerCredsChanged;
 
 
-        ClaimsIdentity Login(string login, string password);
+        Task<ClaimsIdentity> Login(string login, string password);
 
-        AuthResult Auth(string login, string password);
+        Task<AuthResult> Auth(string login, string password);
 
-        bool Auth2FA(string login, string oneTimePassword);
+        Task<AuthResult> Auth2FA(string login, string oneTimePassword);
+    }
+
+
+    public class CredsChangedEvent
+    {
+        public ClientClaims.Types.AccessLevel AccessLevel { get; }
+
+
+        public CredsChangedEvent(ClientClaims.Types.AccessLevel accessLevel)
+        {
+            AccessLevel = accessLevel;
+        }
     }
 
 
     public class AuthManager : IAuthManager, IDisposable
     {
-        private readonly IOptionsMonitor<ServerCredentials> _creds;
-        private readonly IDisposable _changeSubscription;
-        private IServerCredentials _cachedCreds;
+        public const int MaxFailedAttempts = 20;
+        public const int LockedTimeoutInSeconds = 300;
 
 
-        public IServerCredentials Credentials => _creds.CurrentValue;
+        private readonly IDisposable _changeSub;
+        private readonly IActorRef _ref;
+        private readonly ChannelEventSource<CredsChangedEvent> _credsChangedSrc = new ChannelEventSource<CredsChangedEvent>();
 
 
         public event Action AdminCredsChanged;
@@ -41,102 +59,240 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
 
         public AuthManager(IOptionsMonitor<ServerCredentials> credentials)
         {
-            _creds = credentials;
+            _ref = AuthManagerActor.Create(credentials.CurrentValue, _credsChangedSrc.Writer);
+            _changeSub = credentials.OnChange(creds => _ref.Tell(creds.Clone()));
 
-            _cachedCreds = Credentials.Clone();
-            _changeSubscription = _creds.OnChange(OnCredsChanged);
+            _credsChangedSrc.Subscribe(OnCredsChanged);
         }
 
 
         public void Dispose()
         {
-            _changeSubscription.Dispose();
+            _changeSub.Dispose();
+            _credsChangedSrc.Dispose();
+            var _ = ActorSystem.StopActor(_ref);
         }
 
-        public ClaimsIdentity Login(string login, string password)
+        public Task<ClaimsIdentity> Login(string login, string password) => _ref.Ask<ClaimsIdentity>(new LoginRequest(login, password));
+
+        public Task<AuthResult> Auth(string login, string password) => _ref.Ask<AuthResult>(new AuthRequest(login, password));
+
+        public Task<AuthResult> Auth2FA(string login, string oneTimePassword) => _ref.Ask<AuthResult>(new Auth2FARequest(login, oneTimePassword));
+
+
+        private void OnCredsChanged(CredsChangedEvent credsChanged)
         {
-            return login == Credentials.AdminLogin && password == Credentials.AdminPassword ?
-                new ClaimsIdentity(new GenericIdentity(login, "LoginToken")) :
-                default(ClaimsIdentity);
-        }
-
-        public AuthResult Auth(string login, string password)
-        {
-            var creds = Credentials;
-            if (login == creds.AdminLogin && password == creds.AdminPassword)
-                return AuthResult.CreateAdminResult(!string.IsNullOrEmpty(creds.AdminOtpSecret));
-            else if (login == creds.DealerLogin && password == creds.DealerPassword)
-                return AuthResult.CreateDealerResult(!string.IsNullOrEmpty(creds.DealerOtpSecret));
-            else if (login == creds.ViewerLogin && password == creds.ViewerPassword)
-                return AuthResult.CreateViewerResult(!string.IsNullOrEmpty(creds.ViewerOtpSecret));
-
-            return AuthResult.CreateFailedResult();
-        }
-
-        public bool Auth2FA(string login, string oneTimePassword)
-        {
-            if (login == null || oneTimePassword == null)
-                return false;
-
-            var otpValidator = GetOtpValidator(login);
-            if (otpValidator == null)
-                return false;
-
-            return otpValidator.VerifyTotp(oneTimePassword, out var _);
-        }
-
-
-        private void OnCredsChanged(ServerCredentials creds, string propertyName)
-        {
-            if (_cachedCreds.AdminLogin != creds.AdminLogin || _cachedCreds.AdminPassword != creds.AdminPassword || _cachedCreds.AdminOtpSecret != creds.AdminOtpSecret)
+            switch (credsChanged.AccessLevel)
             {
-                OnAdminCredsChanged();
+                case ClientClaims.Types.AccessLevel.Viewer: ViewerCredsChanged?.Invoke(); break;
+                case ClientClaims.Types.AccessLevel.Dealer: DealerCredsChanged?.Invoke(); break;
+                case ClientClaims.Types.AccessLevel.Admin: AdminCredsChanged?.Invoke(); break;
+            }
+        }
+
+
+        private class LoginRequest
+        {
+            public string Login { get; set; }
+
+            public string Password { get; set; }
+
+
+            public LoginRequest(string login, string password)
+            {
+                Login = login;
+                Password = password;
+            }
+        }
+
+        private class AuthRequest
+        {
+            public string Login { get; set; }
+
+            public string Password { get; set; }
+
+
+            public AuthRequest(string login, string password)
+            {
+                Login = login;
+                Password = password;
+            }
+        }
+
+        private class Auth2FARequest
+        {
+            public string Login { get; set; }
+
+            public string OneTimePassword { get; set; }
+
+
+            public Auth2FARequest(string login, string oneTimePassword)
+            {
+                Login = login;
+                OneTimePassword = oneTimePassword;
+            }
+        }
+
+
+        private class AuthManagerActor : Actor
+        {
+            private readonly CredsModel _admin, _dealer, _viewer;
+            private readonly ChannelWriter<CredsChangedEvent> _credsChangedSink;
+
+
+            private AuthManagerActor(IServerCredentials creds, ChannelWriter<CredsChangedEvent> credsChangedSink)
+            {
+                _credsChangedSink = credsChangedSink;
+
+                _admin = new CredsModel(creds.AdminLogin, creds.AdminPassword, creds.AdminOtpSecret, ClientClaims.Types.AccessLevel.Admin);
+                _dealer = new CredsModel(creds.DealerLogin, creds.DealerPassword, creds.DealerOtpSecret, ClientClaims.Types.AccessLevel.Dealer);
+                _viewer = new CredsModel(creds.ViewerLogin, creds.ViewerPassword, creds.ViewerOtpSecret, ClientClaims.Types.AccessLevel.Viewer);
+
+
+                Receive<IServerCredentials>(OnCredsChanged);
+                Receive<LoginRequest, ClaimsIdentity>(Login);
+                Receive<AuthRequest, AuthResult>(Auth);
+                Receive<Auth2FARequest, AuthResult>(Auth2FA);
             }
 
-            if (_cachedCreds.DealerLogin != creds.DealerLogin || _cachedCreds.DealerPassword != creds.DealerPassword || _cachedCreds.DealerOtpSecret != creds.DealerOtpSecret)
+
+            public static IActorRef Create(IServerCredentials credentials, ChannelWriter<CredsChangedEvent> credsChangedSink)
             {
-                OnDealerCredsChanged();
+                return ActorSystem.SpawnLocal(() => new AuthManagerActor(credentials, credsChangedSink), nameof(AuthManagerActor));
             }
 
-            if (_cachedCreds.ViewerLogin != creds.ViewerLogin || _cachedCreds.ViewerPassword != creds.ViewerPassword || _cachedCreds.ViewerOtpSecret != creds.ViewerOtpSecret)
+
+            private void OnCredsChanged(IServerCredentials creds)
             {
-                OnViewerCredsChanged();
+                if (_admin.TryUpdate(creds.AdminLogin, creds.AdminPassword, creds.AdminOtpSecret))
+                    _credsChangedSink.TryWrite(new CredsChangedEvent(_admin.AccessLevel));
+
+                if (_dealer.TryUpdate(creds.DealerLogin, creds.DealerPassword, creds.DealerOtpSecret))
+                    _credsChangedSink.TryWrite(new CredsChangedEvent(_dealer.AccessLevel));
+
+                if (_viewer.TryUpdate(creds.ViewerLogin, creds.ViewerPassword, creds.ViewerOtpSecret))
+                    _credsChangedSink.TryWrite(new CredsChangedEvent(_viewer.AccessLevel));
             }
 
-            _cachedCreds = Credentials.Clone();
-        }
+            private ClaimsIdentity Login(LoginRequest request)
+            {
+                return _admin.Login == request.Login && _admin.VerifyPassword(request.Password).Success ?
+                    new ClaimsIdentity(new GenericIdentity(request.Login, "LoginToken")) :
+                    default(ClaimsIdentity);
+            }
 
-        private void OnAdminCredsChanged()
-        {
-            AdminCredsChanged?.Invoke();
-        }
+            public AuthResult Auth(AuthRequest request)
+            {
+                var creds = GetCreds(request.Login);
+                if (creds == null)
+                    return AuthResult.CreateFailedResult(false);
 
-        private void OnDealerCredsChanged()
-        {
-            DealerCredsChanged?.Invoke();
-        }
+                return creds.VerifyPassword(request.Password);
+            }
 
-        private void OnViewerCredsChanged()
-        {
-            ViewerCredsChanged?.Invoke();
-        }
+            public AuthResult Auth2FA(Auth2FARequest request)
+            {
+                var creds = GetCreds(request.Login);
+                if (creds == null)
+                    return AuthResult.CreateFailedResult(false);
 
-        private Totp GetOtpValidator(string login)
-        {
-            var creds = Credentials;
-            
-            string otpSecret = null;
-            if (login == creds.AdminLogin)
-                otpSecret = creds.AdminOtpSecret;
-            else if (login == creds.DealerLogin)
-                otpSecret = creds.DealerOtpSecret;
-            else if (login == creds.ViewerLogin)
-                otpSecret = creds.ViewerOtpSecret;
+                return creds.VerifyOtp(request.OneTimePassword);
+            }
 
-            if (otpSecret == null)
+            private CredsModel GetCreds(string login)
+            {
+                if (login == _admin.Login)
+                    return _admin;
+                if (login == _dealer.Login)
+                    return _dealer;
+                if (login == _viewer.Login)
+                    return _viewer;
+
                 return null;
+            }
 
-            return new Totp(Base32Encoding.ToBytes(otpSecret));
+
+            private class CredsModel
+            {
+                public string Login { get; set; }
+
+                public string Password { get; set; }
+
+                public string OtpSecret { get; set; }
+
+                public ClientClaims.Types.AccessLevel AccessLevel { get; }
+
+                public int FailedAttempts { get; private set; }
+
+                public DateTime? LockedUntil { get; private set; }
+
+                public bool IsLocked => LockedUntil.HasValue && LockedUntil.Value > DateTime.UtcNow;
+
+
+                public CredsModel(string login, string password, string otpSecret, ClientClaims.Types.AccessLevel accessLevel)
+                {
+                    Login = login;
+                    Password = password;
+                    OtpSecret = otpSecret;
+                    AccessLevel = accessLevel;
+                }
+
+
+                public bool TryUpdate(string login, string password, string otpSecret)
+                {
+                    if (Login == login && Password == password && OtpSecret == otpSecret)
+                        return false;
+
+                    Login = login;
+                    Password = password;
+                    OtpSecret = otpSecret;
+
+                    return true;
+                }
+
+                public AuthResult VerifyPassword(string password)
+                {
+                    if (IsLocked)
+                        return AuthResult.CreateFailedResult(true);
+
+                    if (Password != password)
+                    {
+                        OnAuthFailed();
+                        return AuthResult.CreateFailedResult(false);
+                    }
+
+                    return AuthResult.CreateSuccessResult(AccessLevel, !string.IsNullOrEmpty(OtpSecret));
+                }
+
+                public AuthResult VerifyOtp(string oneTimePassword)
+                {
+                    if (IsLocked)
+                        return AuthResult.CreateFailedResult(true);
+
+                    if (string.IsNullOrEmpty(oneTimePassword) || string.IsNullOrEmpty(OtpSecret))
+                        return AuthResult.CreateFailedResult(false);
+
+                    var otpValidator = new Totp(Base32Encoding.ToBytes(OtpSecret));
+                    if (!otpValidator.VerifyTotp(oneTimePassword, out var _, VerificationWindow.RfcSpecifiedNetworkDelay))
+                    {
+                        OnAuthFailed();
+                        return AuthResult.CreateFailedResult(false);
+                    }
+
+                    return AuthResult.CreateSuccessResult(AccessLevel, false);
+                }
+
+
+                private void OnAuthFailed()
+                {
+                    FailedAttempts++;
+                    if (FailedAttempts >= MaxFailedAttempts)
+                    {
+                        FailedAttempts = 0;
+                        LockedUntil = DateTime.UtcNow.AddSeconds(LockedTimeoutInSeconds);
+                    }
+                }
+            }
         }
     }
 }
