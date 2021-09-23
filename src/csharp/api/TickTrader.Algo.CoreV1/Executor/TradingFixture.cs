@@ -170,7 +170,7 @@ namespace TickTrader.Algo.CoreV1
 
             var instantOrder = orderType == OrderInfo.Types.Type.Market;
 
-            if (instantOrder && accProxy.Type == AccountInfo.Types.Type.Gross) // workaround for Gross accounts
+            if (instantOrder && accProxy.Type == AccountInfo.Types.Type.Gross && !eReport.OrderCopy.IsContingentOrder) // workaround for Gross accounts
             {
                 eReport.OrderCopy.Type = OrderInfo.Types.Type.Position;
                 if (eReport.ExecAction != OrderExecReport.Types.ExecAction.Canceled)

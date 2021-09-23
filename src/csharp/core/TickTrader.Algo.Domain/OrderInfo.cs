@@ -26,6 +26,8 @@ namespace TickTrader.Algo.Domain
 
         public bool IsImmediateOrCancel => Options.HasFlag(OrderOptions.ImmediateOrCancel);
 
+        public bool IsContingentOrder => Options.HasFlag(OrderOptions.ContingentOrder);
+
         public bool MarketWithSlippdage => Options.HasFlag(OrderOptions.MarketWithSlippage);
 
         public bool HiddenIceberg => Options.HasFlag(OrderOptions.HiddenIceberg);
