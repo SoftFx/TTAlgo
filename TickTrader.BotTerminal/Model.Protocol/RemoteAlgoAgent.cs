@@ -1,5 +1,4 @@
-﻿using Caliburn.Micro;
-using Machinarium.Qnil;
+﻿using Machinarium.Qnil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +16,7 @@ namespace TickTrader.BotTerminal
     internal class RemoteAlgoAgent : IAlgoAgent, AlgoServerApi.IAlgoServerEventHandler, IAsyncDisposable
     {
         private readonly string _login;
-        private readonly IShell _shell;
+        private readonly Func<Task<string>> _get2FAHandler;
 
         private ISyncContext _syncContext;
         private VarDictionary<string, PackageInfo> _packages;
@@ -65,11 +64,11 @@ namespace TickTrader.BotTerminal
         public event System.Action AccessLevelChanged = delegate { };
 
 
-        public RemoteAlgoAgent(string name, string login, IShell shell)
+        public RemoteAlgoAgent(string name, string login, Func<Task<string>> get2FAHandler)
         {
             Name = name;
             _login = login;
-            _shell = shell;
+            _get2FAHandler = get2FAHandler;
 
             _syncContext = new DispatcherSync();
 
@@ -240,10 +239,7 @@ namespace TickTrader.BotTerminal
 
         async Task<string> AlgoServerApi.IAlgoServerEventHandler.Get2FACode()
         {
-            var model = new TwoFactorCodeDialogViewModel(Name, _login);
-            bool? res = null;
-            await Execute.OnUIThreadAsync(async () => res = await _shell.ToolWndManager.ShowDialog(model, _shell));
-            return (res ?? false) ? model.Code.Value : string.Empty;
+            return await _get2FAHandler();
         }
 
         void AlgoServerApi.IAlgoServerEventHandler.InitPackageList(List<AlgoServerApi.PackageInfo> packages)

@@ -86,13 +86,7 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         public override void SendLogin()
         {
-            ExecuteUnaryRequest(LoginInternal, new LoginRequest
-            {
-                Login = SessionSettings.Login,
-                Password = SessionSettings.Password,
-                MajorVersion = VersionSpec.MajorVersion,
-                MinorVersion = VersionSpec.MinorVersion
-            }).ContinueWith(t =>
+            LoginAsync().ContinueWith(t =>
             {
                 switch (t.Status)
                 {
@@ -106,12 +100,8 @@ namespace TickTrader.Algo.Server.PublicAPI
 
                             break;
                         }
-                    case TaskStatus.Canceled:
-                        OnConnectionError("Login request time out");
-                        break;
-                    case TaskStatus.Faulted:
-                        OnConnectionError("Login failed");
-                        break;
+                    case TaskStatus.Canceled: OnConnectionError("Login request time out"); break;
+                    case TaskStatus.Faulted: OnConnectionError("Login failed"); break;
                 }
             });
         }
@@ -138,6 +128,13 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             var otp = await _serverHandler.Get2FACode();
 
+            if (string.IsNullOrEmpty(otp))
+            {
+                _logger.Info("2FA challenge cancelled");
+                OnDisconnected();
+                return null;
+            }
+
             var request = GetLoginRequest();
             request.OneTimePassword = otp;
 
@@ -157,6 +154,9 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         private void HandleLoginResponse(LoginResponse response)
         {
+            if (response == null)
+                return;
+
             if (response.Error != LoginResponse.Types.LoginError.None)
                 OnConnectionError(response.Error.ToString());
             else if (response.ExecResult.Status != RequestResult.Types.RequestStatus.Success)

@@ -1,4 +1,5 @@
-﻿using Machinarium.State;
+﻿using Caliburn.Micro;
+using Machinarium.State;
 using NLog;
 using System;
 using System.Threading.Tasks;
@@ -15,10 +16,11 @@ namespace TickTrader.BotTerminal
         public enum Events { ConnectRequest, Connected, DisconnectRequest, Disconnected, Reconnect }
 
 
-        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+        private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
         private readonly IAlgoServerClient _protocolClient;
         private readonly StateMachine<States> _stateControl;
+        private readonly IShell _shell;
 
         private bool _needReconnect;
 
@@ -38,14 +40,15 @@ namespace TickTrader.BotTerminal
         public RemoteAlgoAgent RemoteAgent { get; }
 
 
-        public event Action StateChanged = delegate { };
+        public event System.Action StateChanged = delegate { };
 
 
         public BotAgentConnectionManager(BotAgentStorageEntry botAgentCreds, IShell shell)
         {
             Creds = botAgentCreds;
+            _shell = shell;
 
-            RemoteAgent = new RemoteAlgoAgent(Creds.Name, Creds.Login, shell);
+            RemoteAgent = new RemoteAlgoAgent(Creds.Name, Creds.Login, Get2FACode);
             _protocolClient = AlgoServerClient.Create(RemoteAgent);
             RemoteAgent.SetProtocolClient(_protocolClient);
 
@@ -132,6 +135,21 @@ namespace TickTrader.BotTerminal
         private void StartDisconnecting()
         {
             _protocolClient.Disconnect();
+        }
+
+
+        private async Task<string> Get2FACode()
+        {
+            var model = new TwoFactorCodeDialogViewModel(RemoteAgent.Name, Creds.Login);
+            
+            bool? res = null;
+            await Execute.OnUIThreadAsync(async () => res = await _shell.ToolWndManager.ShowDialog(model, _shell));
+            
+            var isCodeEntered = res ?? false;
+            if (!isCodeEntered)
+                _stateControl.ModifyConditions(() => _needReconnect = false);
+
+            return isCodeEntered ? model.Code.Value : string.Empty;
         }
     }
 }
