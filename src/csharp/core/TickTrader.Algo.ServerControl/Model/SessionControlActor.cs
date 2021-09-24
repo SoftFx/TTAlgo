@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Server.Common;
 
 using AlgoServerApi = TickTrader.Algo.Server.PublicAPI;
@@ -27,6 +26,7 @@ namespace TickTrader.Algo.ServerControl.Model
 
         private ServerUpdateDistributor _updateDistributor;
         private IActorRef _pluginUpdateDistributorRef;
+        private IDisposable _credsChangedSub;
 
 
         private SessionControlActor(IAlgoServerProvider server, ILogger logger, MessageFormatter msgFormatter)
@@ -49,7 +49,7 @@ namespace TickTrader.Algo.ServerControl.Model
             Receive<SessionControl.RemovePluginStatusSubRequest>(r => PluginUpdateDistributor.RemovePluginStatusSub(_pluginUpdateDistributorRef, r.SessionId, r.PluginId));
 
             Receive<HeartbeatMsg>(OnHeartbeat);
-            Receive<CredsChangedMsg>(OnCredsChanged);
+            Receive<CredsChangedEvent>(OnCredsChanged);
         }
 
 
@@ -64,9 +64,7 @@ namespace TickTrader.Algo.ServerControl.Model
             _updateDistributor = new ServerUpdateDistributor(_server, _logger, _msgFormatter);
             _pluginUpdateDistributorRef = PluginUpdateDistributorActor.Create(_server, _logger, _msgFormatter);
 
-            _server.AdminCredsChanged += OnAdminCredsChanged;
-            _server.DealerCredsChanged += OnDealerCredsChanged;
-            _server.ViewerCredsChanged += OnViewerCredsChanged;
+            _credsChangedSub = _server.CredsChanged.Subscribe(Self);
 
             Self.Tell(HeartbeatMsg.Instance);
         }
@@ -80,9 +78,7 @@ namespace TickTrader.Algo.ServerControl.Model
             }
             _sessions.Clear();
 
-            _server.AdminCredsChanged -= OnAdminCredsChanged;
-            _server.DealerCredsChanged -= OnDealerCredsChanged;
-            _server.ViewerCredsChanged -= OnViewerCredsChanged;
+            _credsChangedSub.Dispose();
 
             await _updateDistributor.Shudown();
         }
@@ -162,13 +158,7 @@ namespace TickTrader.Algo.ServerControl.Model
             TaskExt.Schedule(HeartbeatTimeout, () => Self.Tell(HeartbeatMsg.Instance), StopToken);
         }
 
-
-        private class HeartbeatMsg : Singleton<HeartbeatMsg> { }
-
-
-        #region Credentials handlers
-
-        private void OnCredsChanged(CredsChangedMsg msg)
+        private void OnCredsChanged(CredsChangedEvent msg)
         {
             var level = msg.AccessLevel;
             var sessionsToRemove = _sessions.Values.Where(s => s.Info.AccessManager.Level == level).ToList();
@@ -179,24 +169,7 @@ namespace TickTrader.Algo.ServerControl.Model
             }
         }
 
-        private void OnAdminCredsChanged() => Self.Tell(new CredsChangedMsg(ClientClaims.Types.AccessLevel.Admin));
 
-        private void OnDealerCredsChanged() => Self.Tell(new CredsChangedMsg(ClientClaims.Types.AccessLevel.Dealer));
-
-        private void OnViewerCredsChanged() => Self.Tell(new CredsChangedMsg(ClientClaims.Types.AccessLevel.Viewer));
-
-
-        private class CredsChangedMsg
-        {
-            public ClientClaims.Types.AccessLevel AccessLevel { get; }
-
-
-            public CredsChangedMsg(ClientClaims.Types.AccessLevel accessLevel)
-            {
-                AccessLevel = accessLevel;
-            }
-        }
-
-        #endregion
+        private class HeartbeatMsg : Singleton<HeartbeatMsg> { }
     }
 }

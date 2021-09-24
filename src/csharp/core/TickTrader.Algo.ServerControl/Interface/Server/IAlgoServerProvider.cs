@@ -1,8 +1,8 @@
 ﻿using Google.Protobuf;
-using System;
 using System.Collections.Generic;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using TickTrader.Algo.Async;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 
@@ -12,11 +12,8 @@ namespace TickTrader.Algo.ServerControl
     {
         #region Credentials
 
-        event Action AdminCredsChanged;
+        IEventSource<CredsChangedEvent> CredsChanged { get; }
 
-        event Action DealerCredsChanged;
-
-        event Action ViewerCredsChanged;
 
         Task<AuthResult> ValidateCreds(string login, string password);
 

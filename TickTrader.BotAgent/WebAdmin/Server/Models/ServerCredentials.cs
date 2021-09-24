@@ -60,10 +60,13 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
                 Password = Password,
                 AdminLogin = AdminLogin,
                 AdminPassword = AdminPassword,
+                AdminOtpSecret = AdminOtpSecret,
                 DealerLogin = DealerLogin,
                 DealerPassword = DealerPassword,
+                DealerOtpSecret = DealerOtpSecret,
                 ViewerLogin = ViewerLogin,
                 ViewerPassword = ViewerPassword,
+                ViewerOtpSecret = ViewerOtpSecret,
             };
         }
     }

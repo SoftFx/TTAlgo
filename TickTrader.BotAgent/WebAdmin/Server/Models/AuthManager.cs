@@ -14,11 +14,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
 {
     public interface IAuthManager
     {
-        event Action AdminCredsChanged;
-
-        event Action DealerCredsChanged;
-
-        event Action ViewerCredsChanged;
+        IEventSource<CredsChangedEvent> CredsChanged { get; }
 
 
         Task<ClaimsIdentity> Login(string login, string password);
@@ -26,18 +22,6 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
         Task<AuthResult> Auth(string login, string password);
 
         Task<AuthResult> Auth2FA(string login, string oneTimePassword);
-    }
-
-
-    public class CredsChangedEvent
-    {
-        public ClientClaims.Types.AccessLevel AccessLevel { get; }
-
-
-        public CredsChangedEvent(ClientClaims.Types.AccessLevel accessLevel)
-        {
-            AccessLevel = accessLevel;
-        }
     }
 
 
@@ -52,17 +36,13 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
         private readonly ChannelEventSource<CredsChangedEvent> _credsChangedSrc = new ChannelEventSource<CredsChangedEvent>();
 
 
-        public event Action AdminCredsChanged;
-        public event Action DealerCredsChanged;
-        public event Action ViewerCredsChanged;
+        public IEventSource<CredsChangedEvent> CredsChanged => _credsChangedSrc;
 
 
         public AuthManager(IOptionsMonitor<ServerCredentials> credentials)
         {
             _ref = AuthManagerActor.Create(credentials.CurrentValue, _credsChangedSrc.Writer);
             _changeSub = credentials.OnChange(creds => _ref.Tell(creds.Clone()));
-
-            _credsChangedSrc.Subscribe(OnCredsChanged);
         }
 
 
@@ -78,17 +58,6 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
         public Task<AuthResult> Auth(string login, string password) => _ref.Ask<AuthResult>(new AuthRequest(login, password));
 
         public Task<AuthResult> Auth2FA(string login, string oneTimePassword) => _ref.Ask<AuthResult>(new Auth2FARequest(login, oneTimePassword));
-
-
-        private void OnCredsChanged(CredsChangedEvent credsChanged)
-        {
-            switch (credsChanged.AccessLevel)
-            {
-                case ClientClaims.Types.AccessLevel.Viewer: ViewerCredsChanged?.Invoke(); break;
-                case ClientClaims.Types.AccessLevel.Dealer: DealerCredsChanged?.Invoke(); break;
-                case ClientClaims.Types.AccessLevel.Admin: AdminCredsChanged?.Invoke(); break;
-            }
-        }
 
 
         private class LoginRequest
@@ -149,7 +118,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
                 _viewer = new CredsModel(creds.ViewerLogin, creds.ViewerPassword, creds.ViewerOtpSecret, ClientClaims.Types.AccessLevel.Viewer);
 
 
-                Receive<IServerCredentials>(OnCredsChanged);
+                Receive<ServerCredentials>(OnCredsChanged);
                 Receive<LoginRequest, ClaimsIdentity>(Login);
                 Receive<AuthRequest, AuthResult>(Auth);
                 Receive<Auth2FARequest, AuthResult>(Auth2FA);
@@ -162,7 +131,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
             }
 
 
-            private void OnCredsChanged(IServerCredentials creds)
+            private void OnCredsChanged(ServerCredentials creds)
             {
                 if (_admin.TryUpdate(creds.AdminLogin, creds.AdminPassword, creds.AdminOtpSecret))
                     _credsChangedSink.TryWrite(new CredsChangedEvent(_admin.AccessLevel));

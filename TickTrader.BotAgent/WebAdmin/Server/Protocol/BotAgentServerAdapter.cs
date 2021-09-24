@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
@@ -11,6 +10,7 @@ using TickTrader.Algo.Package;
 using TickTrader.Algo.Server;
 using System.Threading.Channels;
 using Google.Protobuf;
+using TickTrader.Algo.Async;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
 {
@@ -25,19 +25,13 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         private readonly IAuthManager _authManager;
 
 
-        public event Action AdminCredsChanged = delegate { };
-        public event Action DealerCredsChanged = delegate { };
-        public event Action ViewerCredsChanged = delegate { };
+        public IEventSource<CredsChangedEvent> CredsChanged => _authManager.CredsChanged;
 
 
         public BotAgentServerAdapter(IAlgoServerLocal algoServer, IAuthManager authManager)
         {
             _algoServer = algoServer;
             _authManager = authManager;
-
-            _authManager.AdminCredsChanged += OnAdminCredsChanged;
-            _authManager.DealerCredsChanged += OnDealerCredsChanged;
-            _authManager.ViewerCredsChanged += OnViewerCredsChanged;
         }
 
 
@@ -189,25 +183,5 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         {
             return _algoServer.GetPluginFileWritePath(request);
         }
-
-
-        #region Event handlers
-
-        private void OnAdminCredsChanged()
-        {
-            AdminCredsChanged?.Invoke();
-        }
-
-        private void OnDealerCredsChanged()
-        {
-            DealerCredsChanged?.Invoke();
-        }
-
-        private void OnViewerCredsChanged()
-        {
-            ViewerCredsChanged?.Invoke();
-        }
-
-        #endregion Event handlers
     }
 }
