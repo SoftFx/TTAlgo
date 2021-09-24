@@ -5,9 +5,12 @@ namespace TickTrader.BotAgent.Configurator
 {
     public class CredentialsManager : ContentManager, IWorkingManager
     {
+        public enum Properties { Login, Password, OtpSecret }
+
+
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        public enum Properties { Login, Password, OtpSecret }
+        private readonly List<CredentialModel> _models;
 
         public CredentialModel Dealer { get; }
 
@@ -15,7 +18,6 @@ namespace TickTrader.BotAgent.Configurator
 
         public CredentialModel Viewer { get; }
 
-        private readonly List<IWorkingModel> _models;
 
         public CredentialsManager(SectionNames sectionName = SectionNames.None) : base(sectionName)
         {
@@ -23,11 +25,13 @@ namespace TickTrader.BotAgent.Configurator
             Dealer = new CredentialModel(nameof(Dealer));
             Viewer = new CredentialModel(nameof(Viewer));
 
-            _models = new List<IWorkingModel>() { Admin, Dealer, Viewer };
+            _models = new List<CredentialModel>() { Admin, Dealer, Viewer };
         }
 
         public void UploadModels(List<JProperty> credentialsProp)
         {
+            RestModelValues();
+
             foreach (var prop in credentialsProp)
             {
                 CredentialModel cred = null;
@@ -63,10 +67,16 @@ namespace TickTrader.BotAgent.Configurator
                 model.UpdateCurrentFields();
         }
 
+        public void RestModelValues()
+        {
+            foreach (var model in _models)
+                model.ResetValues();
+        }
+
         public void SaveConfigurationModels(JObject obj)
         {
             foreach (var model in _models)
-                SaveModels(obj, (CredentialModel)model);
+                SaveModels(obj, model);
         }
 
         private void SaveModels(JObject root, CredentialModel model)

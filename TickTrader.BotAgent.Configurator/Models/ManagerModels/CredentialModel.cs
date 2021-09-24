@@ -1,9 +1,7 @@
 ﻿namespace TickTrader.BotAgent.Configurator
 {
-    public class CredentialModel : IWorkingModel
+    public class CredentialModel
     {
-        private const int PasswordLength = 10;
-
         public string Name { get; }
 
         public string Login { get; set; }
@@ -29,7 +27,6 @@
         {
             Login = Login ?? Name;
             Password = Password ?? Name;
-            // OtpSecret = OtpSecret;
         }
 
         public void UpdateCurrentFields()
@@ -37,6 +34,13 @@
             CurrentLogin = Login;
             CurrentPassword = Password;
             CurrentOtpSecret = OtpSecret;
+        }
+
+        public void ResetValues()
+        {
+            Login = null;
+            Password = null;
+            OtpSecret = null;
         }
 
         public void GeneratePassword()
