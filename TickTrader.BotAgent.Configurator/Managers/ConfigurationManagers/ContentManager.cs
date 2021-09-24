@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json.Linq;
-using System.Linq;
 
 namespace TickTrader.BotAgent.Configurator
 {
@@ -17,44 +16,50 @@ namespace TickTrader.BotAgent.Configurator
 
         protected virtual void SaveProperty(JObject root, string property, object newValue, object oldValue, NLog.Logger logger, bool secret = false)
         {
-            if (!string.IsNullOrEmpty(SectionName))
-            {
-                InsertSection(root, new JProperty(SectionName, new JObject()));
-                if (!InsertSection(root[SectionName] as JObject, new JProperty(property, newValue)))
-                    root[SectionName][property] = JToken.FromObject(newValue);
-            }
-            else
-            {
-                if (!InsertSection(root, new JProperty(property, newValue)))
-                    root[property] = JToken.FromObject(newValue);
-            }
+            var target = GetTargetSection(root);
+
+            var newValueToken = JToken.FromObject(newValue);
+            if (!TryAddProperty(target, property, newValueToken))
+                target[property] = newValueToken;
 
             if (!newValue.Equals(oldValue))
-            {
-                if (!secret)
-                    logger.Info(GetChangeMessage(property, oldValue, newValue));
-                else
-                    logger.Info(GetChangeMessage(property));
-            }
+                logger.Info(secret ? GetChangeMessage(property) : GetChangeMessage(property, oldValue, newValue));
         }
 
-        private string GetChangeMessage(string property, object oldVal, object newVal)
+        protected virtual void RemoveProperty(JObject root, string property, NLog.Logger logger)
         {
-            return $"Property {property} was changed: {oldVal} to {newVal}";
+            var target = GetTargetSection(root);
+
+            target.Remove(property);
+
+            logger.Info(GetRemoveMessage(property));
         }
 
-        private string GetChangeMessage(string property)
+
+        private JObject GetTargetSection(JObject root)
         {
-            return $"Property {property} was changed";
+            if (string.IsNullOrEmpty(SectionName))
+                return root;
+
+            TryAddProperty(root, SectionName, new JObject());
+            return root[SectionName] as JObject;
         }
 
-        private bool InsertSection(JObject root, JProperty prop)
+        private bool TryAddProperty(JObject root, string propName, JToken value)
         {
-            if (root.Children<JProperty>().Where(p => p.Name == prop.Name).Count() > 0)
+            var prop = root.Property(propName);
+            if (prop != null)
                 return false;
 
-            root.Add(prop);
+            root.Add(new JProperty(propName, value));
+
             return true;
         }
+
+        private string GetChangeMessage(string property, object oldVal, object newVal) => $"Property {property} was changed: {oldVal} to {newVal}";
+
+        private string GetChangeMessage(string property) => $"Property {property} was changed";
+
+        private string GetRemoveMessage(string property) => $"Property {property} was removed";
     }
 }

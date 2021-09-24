@@ -85,6 +85,8 @@ namespace TickTrader.BotAgent.Configurator
             SaveProperty(root, $"{model.Name}Password", model.Password, model.CurrentPassword, _logger, true);
             if (!string.IsNullOrEmpty(model.OtpSecret))
                 SaveProperty(root, $"{model.Name}OtpSecret", model.OtpSecret, model.CurrentOtpSecret, _logger, true);
+            else
+                RemoveProperty(root, $"{model.Name}OtpSecret", _logger);
         }
     }
 }
