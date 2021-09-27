@@ -15,8 +15,7 @@ namespace TickTrader.BotTerminal
 {
     internal class RemoteAlgoAgent : IAlgoAgent, AlgoServerApi.IAlgoServerEventHandler, IAsyncDisposable
     {
-        private readonly string _login;
-        private readonly Func<Task<string>> _get2FAHandler;
+        private readonly Func<string, Task<string>> _get2FAHandler;
 
         private ISyncContext _syncContext;
         private VarDictionary<string, PackageInfo> _packages;
@@ -61,13 +60,12 @@ namespace TickTrader.BotTerminal
 
         public event Action<ITradeBot> BotUpdated = delegate { };
 
-        public event System.Action AccessLevelChanged = delegate { };
+        public event Action AccessLevelChanged = delegate { };
 
 
-        public RemoteAlgoAgent(string name, string login, Func<Task<string>> get2FAHandler)
+        public RemoteAlgoAgent(string name, Func<string, Task<string>> get2FAHandler)
         {
             Name = name;
-            _login = login;
             _get2FAHandler = get2FAHandler;
 
             _syncContext = new DispatcherSync();
@@ -239,7 +237,7 @@ namespace TickTrader.BotTerminal
 
         async Task<string> AlgoServerApi.IAlgoServerEventHandler.Get2FACode()
         {
-            return await _get2FAHandler();
+            return await _get2FAHandler(Name);
         }
 
         void AlgoServerApi.IAlgoServerEventHandler.InitPackageList(List<AlgoServerApi.PackageInfo> packages)

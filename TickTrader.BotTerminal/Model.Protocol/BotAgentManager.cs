@@ -1,4 +1,5 @@
-﻿using Machinarium.Qnil;
+﻿using Caliburn.Micro;
+using Machinarium.Qnil;
 using NLog;
 using System;
 using System.Collections.ObjectModel;
@@ -9,7 +10,7 @@ namespace TickTrader.BotTerminal
 {
     internal class BotAgentManager
     {
-        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+        private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
 
         private readonly BotAgentStorageModel _botAgentStorage;
@@ -40,7 +41,7 @@ namespace TickTrader.BotTerminal
                 {
                     agent.PatchName();
                 }
-                BotAgents.Add(agent.Name, new BotAgentConnectionManager(agent, _shell));
+                BotAgents.Add(agent.Name, new BotAgentConnectionManager(agent, Get2FACode));
             }
         }
 
@@ -52,7 +53,7 @@ namespace TickTrader.BotTerminal
 
             if (!BotAgents.TryGetValue(agentName, out var connection))
             {
-                connection = new BotAgentConnectionManager(creds, _shell);
+                connection = new BotAgentConnectionManager(creds, Get2FACode);
                 BotAgents.Add(agentName, connection);
             }
             await connection.WaitConnect();
@@ -129,6 +130,24 @@ namespace TickTrader.BotTerminal
         public Task ShutdownDisconnect()
         {
             return Task.WhenAll(BotAgents.Snapshot.Values.Select(c => c.WaitDisconnect()));
+        }
+
+
+        private async Task<string> Get2FACode(string agentName)
+        {
+            if (!BotAgents.TryGetValue(agentName, out var connection))
+                return string.Empty;
+
+            var model = new TwoFactorCodeDialogViewModel(agentName, connection.Creds.Login);
+
+            bool? res = null;
+            await Execute.OnUIThreadAsync(async () => res = await _shell.ToolWndManager.ShowDialog(model, _shell));
+
+            var isCodeEntered = res ?? false;
+            if (!isCodeEntered)
+                Disconnect(agentName);
+
+            return isCodeEntered ? model.Code.Value : string.Empty;
         }
     }
 }
