@@ -17,7 +17,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
         IEventSource<CredsChangedEvent> CredsChanged { get; }
 
 
-        Task<ClaimsIdentity> Login(string login, string password);
+        Task<AuthResult> Login(string login, string password);
 
         Task<AuthResult> Auth(string login, string password);
 
@@ -53,7 +53,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
             var _ = ActorSystem.StopActor(_ref);
         }
 
-        public Task<ClaimsIdentity> Login(string login, string password) => _ref.Ask<ClaimsIdentity>(new LoginRequest(login, password));
+        public Task<AuthResult> Login(string login, string password) => _ref.Ask<AuthResult>(new LoginRequest(login, password));
 
         public Task<AuthResult> Auth(string login, string password) => _ref.Ask<AuthResult>(new AuthRequest(login, password));
 
@@ -119,7 +119,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
 
 
                 Receive<ServerCredentials>(OnCredsChanged);
-                Receive<LoginRequest, ClaimsIdentity>(Login);
+                Receive<LoginRequest, AuthResult>(Login);
                 Receive<AuthRequest, AuthResult>(Auth);
                 Receive<Auth2FARequest, AuthResult>(Auth2FA);
             }
@@ -143,11 +143,12 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
                     _credsChangedSink.TryWrite(new CredsChangedEvent(_viewer.AccessLevel));
             }
 
-            private ClaimsIdentity Login(LoginRequest request)
+            private AuthResult Login(LoginRequest request)
             {
-                return _admin.Login == request.Login && _admin.VerifyPassword(request.Password).Success ?
-                    new ClaimsIdentity(new GenericIdentity(request.Login, "LoginToken")) :
-                    default(ClaimsIdentity);
+                if (_admin.Login != request.Login)
+                    return AuthResult.CreateFailedResult(false);
+
+                return _admin.VerifyPassword(request.Password);
             }
 
             public AuthResult Auth(AuthRequest request)

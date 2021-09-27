@@ -26,7 +26,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] LoginDataDto loginData)
         {
-            var authRes = await _authManager.Auth(loginData.Login, loginData.Password);
+            var authRes = await _authManager.Login(loginData.Login, loginData.Password);
             if (!authRes.Success)
             {
                 return BadRequest(authRes.TemporarilyLocked
