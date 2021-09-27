@@ -36,6 +36,7 @@ export enum ResponseCode {
     None = -1,
     Unknown = 0,
     InvalidCredentials = 100,
+    Requires2FA = 101,
     PackageNotFound = 1001,
     PackageIsLocked = 1002,
     DuplicateAccount = 2000,

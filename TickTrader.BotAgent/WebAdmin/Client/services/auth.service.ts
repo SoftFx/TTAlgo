@@ -43,8 +43,8 @@ export class AuthService {
         return authData;
     }
 
-    public LogIn(login: string, password: string) {
-        return this._http.post(this._loginUrl, { Login: login, Password: password })
+    public LogIn(login: string, password: string, secretCode: string) {
+        return this._http.post(this._loginUrl, { Login: login, Password: password, SecretCode: secretCode })
             .map((response: Response) => new AuthData().Deserialize(response.json()))
             .do(authData => {
                 if (authData && authData.Token) {
