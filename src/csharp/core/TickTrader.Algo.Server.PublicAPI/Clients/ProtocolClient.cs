@@ -28,6 +28,8 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         protected IClientSessionSettings SessionSettings { get; private set; }
 
+        public bool Only2FAFailed { get; protected set; }
+
 
         public event Action<ClientStates> ClientStateChanged = delegate { };
 
@@ -115,6 +117,7 @@ namespace TickTrader.Algo.Server.PublicAPI
             _logger = LoggerHelper.GetLogger(GetType().Name, System.IO.Path.Combine(SessionSettings.LogDirectory, GetType().Name), SessionSettings.ServerAddress);
 
             LastError = null;
+            Only2FAFailed = false;
 
             try
             {

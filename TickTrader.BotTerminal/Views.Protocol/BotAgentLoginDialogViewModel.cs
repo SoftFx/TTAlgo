@@ -158,8 +158,9 @@ namespace TickTrader.BotTerminal
 
             try
             {
-                Error = await _botAgentManager.Connect(_agentName.Trim(), _login.Trim(), _password, _server.Trim(), int.Parse(_port));
-                if (!HasError)
+                var connection = await _botAgentManager.Connect(_agentName.Trim(), _login.Trim(), _password, _server.Trim(), int.Parse(_port));
+                Error = connection.LastError;
+                if (connection.Only2FAFailed || !HasError)
                 {
                     TryCloseAsync();
                 }

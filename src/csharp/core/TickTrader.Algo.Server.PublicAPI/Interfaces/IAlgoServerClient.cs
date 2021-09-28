@@ -15,6 +15,8 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         IAccessManager AccessManager { get; }
 
+        bool Only2FAFailed { get; }
+
 
         Task Connect(IClientSessionSettings settings);
 

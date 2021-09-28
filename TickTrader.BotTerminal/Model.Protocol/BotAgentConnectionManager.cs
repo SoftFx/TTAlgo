@@ -31,6 +31,8 @@ namespace TickTrader.BotTerminal
 
         public string LastError => _protocolClient.LastError;
 
+        public bool Only2FAFailed => _protocolClient.Only2FAFailed;
+
         public string Status => string.IsNullOrEmpty(_protocolClient.LastError) ? $"{_stateControl.Current}" : $"{_stateControl.Current} - {_protocolClient.LastError}";
 
         public BotAgentStorageEntry Creds { get; }

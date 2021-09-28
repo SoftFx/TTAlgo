@@ -158,7 +158,10 @@ namespace TickTrader.Algo.Server.PublicAPI
                 return;
 
             if (response.Error != LoginResponse.Types.LoginError.None)
+            {
+                Only2FAFailed = response.Error == LoginResponse.Types.LoginError.Invalid2FaCode;
                 OnConnectionError(response.Error.ToString());
+            }
             else if (response.ExecResult.Status != RequestResult.Types.RequestStatus.Success)
             {
                 var res = response.ExecResult;
