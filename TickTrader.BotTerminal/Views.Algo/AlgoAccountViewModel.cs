@@ -77,11 +77,6 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public void AddAccount()
-        {
-            Agent.OpenAccountSetup(null, Server);
-        }
-
         public void ChangeAccount()
         {
             Agent.OpenAccountSetup(Info);

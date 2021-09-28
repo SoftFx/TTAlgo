@@ -38,6 +38,8 @@ namespace TickTrader.BotTerminal
 
         public IObservableList<AlgoAccountViewModel> AccountList { get; }
 
+        public IObservableList<AccountServerViewModel> AccountServerList { get; }
+
         public ICollectionView ServerViews { get; }
 
 
@@ -55,6 +57,8 @@ namespace TickTrader.BotTerminal
             PackageList = Packages.AsObservable();
             BotList = Bots.AsObservable();
             AccountList = Accounts.AsObservable();
+            AccountServerList = _agentModel.Accounts.GroupBy((k, v) => GetServerAddress(v)).OrderBy((k, g) => k).Select(g => g.GroupKey)
+                .Select(s => new AccountServerViewModel(s, this)).AsObservable();
 
             ServerViews = CollectionViewSource.GetDefaultView(AccountList);
             ServerViews.GroupDescriptions.Add(new PropertyGroupDescription(AlgoAccountViewModel.ServerLevelHeader));
@@ -341,5 +345,14 @@ namespace TickTrader.BotTerminal
         public override bool Equals(object obj) => obj is AlgoAgentViewModel second ? Name == second.Name : base.Equals(obj);
 
         public override int GetHashCode() => Name.GetHashCode();
+
+
+        private string GetServerAddress(AccountModelInfo acc)
+        {
+            if (AccountId.TryUnpack(acc.AccountId, out var accId))
+                return accId.Server;
+
+            return acc.AccountId;
+        }
     }
 }

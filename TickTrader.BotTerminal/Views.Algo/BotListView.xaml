@@ -176,7 +176,7 @@
                     </TreeViewItem.ItemContainerStyle>
 
                     <TreeViewItem.ItemTemplate>
-                        <HierarchicalDataTemplate ItemsSource="{Binding Agent.ServerViews.Groups}">
+                        <HierarchicalDataTemplate ItemsSource="{Binding Agent.AccountServerList}">
 
                             <StackPanel Orientation="Horizontal">
                                 <Ellipse Style="{DynamicResource BotAgentStatusEllipseStyle}" />
@@ -184,15 +184,15 @@
                             </StackPanel>
 
                             <HierarchicalDataTemplate.ItemTemplate>
-                                <HierarchicalDataTemplate ItemsSource="{Binding Items}">
+                                <HierarchicalDataTemplate ItemsSource="{Binding Accounts}">
 
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding Name}"/>
+                                        <TextBlock Text="{Binding Server}"/>
 
                                         <StackPanel.ContextMenu>
                                             <ContextMenu>
                                                 <MenuItem Header="Add account..." 
-                                                    cal:Bind.ModelWithoutContext="{Binding Path=DataContext.Items[0], RelativeSource={RelativeSource Self}}"
+                                                    cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
                                                     cal:Message.Attach="AddAccount"/>
                                             </ContextMenu>
                                         </StackPanel.ContextMenu>
