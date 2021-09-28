@@ -249,5 +249,7 @@ namespace TickTrader.Algo.Server.PublicAPI
         }
 
         protected void BreakServerConnection(object obj) => OnConnectionError("Server connection has been lost");
+
+        protected bool CanSendPluginSubRequests() => State == ClientStates.Online || State == ClientStates.Initializing;
     }
 }

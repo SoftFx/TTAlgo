@@ -607,6 +607,9 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             if (_subscriptions.TryAddStatusSubscription(request.PluginId))
             {
+                if (!CanSendPluginSubRequests())
+                    return;
+
                 var response = await ExecuteUnaryRequestAuthorized(SubscribeToPluginStatusInternal, request);
                 FailForNonSuccess(response.ExecResult);
             }
@@ -616,6 +619,9 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             if (_subscriptions.TryRemoveStatusSubscription(request.PluginId))
             {
+                if (!CanSendPluginSubRequests())
+                    return;
+
                 var response = await ExecuteUnaryRequestAuthorized(UnsubscribeToPluginStatusInternal, request);
                 FailForNonSuccess(response.ExecResult);
             }
@@ -626,6 +632,9 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             if (_subscriptions.TryAddLogsSubscription(request.PluginId))
             {
+                if (!CanSendPluginSubRequests())
+                    return;
+
                 var response = await ExecuteUnaryRequestAuthorized(SubscribeToPluginLogsInternal, request);
                 FailForNonSuccess(response.ExecResult);
             }
@@ -635,6 +644,9 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             if (_subscriptions.TryRemoveLogsSubscription(request.PluginId))
             {
+                if (!CanSendPluginSubRequests())
+                    return;
+
                 var response = await ExecuteUnaryRequestAuthorized(UnsubscribeToPluginLogsInternal, request);
                 FailForNonSuccess(response.ExecResult);
             }
