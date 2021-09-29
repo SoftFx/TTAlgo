@@ -1,0 +1,41 @@
+﻿<Window x:Class="TickTrader.BotTerminal.TwoFactorCodeDialogView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:l="clr-namespace:TickTrader.BotTerminal"
+        mc:Ignorable="d"
+        Icon="{StaticResource MainAppIcon}"
+        Width="400" Height="185"
+        ResizeMode="NoResize"
+        FocusManager.FocusedElement="{Binding ElementName=CodeInput}"
+        Background="{DynamicResource Dialog_Background}">
+    
+    <Grid Margin="5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Label Grid.Row="0" Grid.ColumnSpan="2" Content="AlgoServer 2FA code" FontSize="26" VerticalAlignment="Center" Style="{DynamicResource DialogPageTitleLabelStyle}"/>
+        <Label Grid.Row="1" Grid.ColumnSpan="2" Content="{Binding QueryText}"/>
+        <TextBox x:Name="CodeInput" Grid.Row="2" Grid.ColumnSpan="2" Margin="5,0"
+                 Text="{l:ValidationBinding Code.Value}" />
+        
+        <l:FlatButton Grid.Row="3" Grid.Column="0" Margin="8"
+                      x:Name="Ok" Content="Ok" IsDefault="True" IsEnabled="{Binding CanOk.Value}"
+                      Background="{DynamicResource Dialog_OkButtonBackground}"
+                      HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}"/>
+        
+        <l:FlatButton Grid.Row="3" Grid.Column="1" Margin="8"
+                      x:Name="Cancel" Content="Cancel" IsCancel="True"
+                      Background="{DynamicResource Dialog_OkButtonBackground}"
+                      HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}"/>
+    </Grid>
+</Window>

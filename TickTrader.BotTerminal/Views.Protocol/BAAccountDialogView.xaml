@@ -54,7 +54,7 @@
                   ItemsSource="{Binding LocalAccounts}" ItemTemplate="{DynamicResource AccountAuthInfoTemplate}" TextSearch.TextPath="Login"
                   IsEditable="True" IsEnabled="{Binding IsNewAccountMode}"/>
 
-        <Label Grid.Row="7" Content="Display Name"/>
+        <Label Grid.Row="7" Content="Account Display Name"/>
         <TextBox Grid.Row="8" Text="{l:ValidationBinding DisplayAccountName.Value, Converter={StaticResource TrimValue}}"/>
 
         <Label Grid.Row="9" Content="Password"/>

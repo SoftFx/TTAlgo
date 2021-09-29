@@ -15,11 +15,11 @@ namespace TickTrader.BotTerminal
         public enum Events { ConnectRequest, Connected, DisconnectRequest, Disconnected, Reconnect }
 
 
-        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+        private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
+        private readonly IAlgoServerClient _protocolClient;
+        private readonly StateMachine<States> _stateControl;
 
-        private IAlgoServerClient _protocolClient;
-        private StateMachine<States> _stateControl;
         private bool _needReconnect;
 
 
@@ -31,6 +31,8 @@ namespace TickTrader.BotTerminal
 
         public string LastError => _protocolClient.LastError;
 
+        public bool Only2FAFailed => _protocolClient.Only2FAFailed;
+
         public string Status => string.IsNullOrEmpty(_protocolClient.LastError) ? $"{_stateControl.Current}" : $"{_stateControl.Current} - {_protocolClient.LastError}";
 
         public BotAgentStorageEntry Creds { get; }
@@ -38,14 +40,14 @@ namespace TickTrader.BotTerminal
         public RemoteAlgoAgent RemoteAgent { get; }
 
 
-        public event Action StateChanged = delegate { };
+        public event System.Action StateChanged = delegate { };
 
 
-        public BotAgentConnectionManager(BotAgentStorageEntry botAgentCreds)
+        public BotAgentConnectionManager(BotAgentStorageEntry botAgentCreds, Func<string, Task<string>> get2FAHandler)
         {
             Creds = botAgentCreds;
 
-            RemoteAgent = new RemoteAlgoAgent(Creds.Name);
+            RemoteAgent = new RemoteAlgoAgent(Creds.Name, get2FAHandler);
             _protocolClient = AlgoServerClient.Create(RemoteAgent);
             RemoteAgent.SetProtocolClient(_protocolClient);
 
@@ -72,7 +74,7 @@ namespace TickTrader.BotTerminal
 
             _stateControl.StateChanged += OnStateChanged;
 
-            _protocolClient.ClientStateChanged += ClientStateChanged; ;
+            _protocolClient.ClientStateChanged += ClientStateChanged;
         }
 
         private void ClientStateChanged(ClientStates state)

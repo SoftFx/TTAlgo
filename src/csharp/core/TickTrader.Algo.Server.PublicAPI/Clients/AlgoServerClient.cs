@@ -77,6 +77,8 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             _messageFormatter.LogMessages = false;
 
+            ChangeAccessLevel(ClientClaims.Types.AccessLevel.Anonymous);
+
             StopConnectionTimer();
             _updateStreamCancelTokenSrc?.Cancel();
             _updateStreamCancelTokenSrc = null;
@@ -86,44 +88,94 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         public override void SendLogin()
         {
-            ExecuteUnaryRequest(LoginInternal, new LoginRequest
-            {
-                Login = SessionSettings.Login,
-                Password = SessionSettings.Password,
-                MajorVersion = VersionSpec.MajorVersion,
-                MinorVersion = VersionSpec.MinorVersion
-            }).ContinueWith(t =>
+            LoginAsync().ContinueWith(t =>
             {
                 switch (t.Status)
                 {
                     case TaskStatus.RanToCompletion:
                         {
                             var loginResponse = t.Result;
-                            if (loginResponse.Error != LoginResponse.Types.LoginError.None)
-                                OnConnectionError(loginResponse.Error.ToString());
-                            else if (loginResponse.ExecResult.Status != RequestResult.Types.RequestStatus.Success)
-                            {
-                                var res = loginResponse.ExecResult;
-                                OnConnectionError($"{res.Status}{(string.IsNullOrEmpty(res.Message) ? "" : $" ({res.Message})")}");
-                            }
+                            if (loginResponse.Error == LoginResponse.Types.LoginError.Invalid2FaCode)
+                                On2FALogin();
                             else
-                            {
-                                _accessToken = loginResponse.AccessToken;
-                                _logger.Info($"Server session id: {loginResponse.SessionId}");
-
-                                OnLogin(loginResponse.MajorVersion, loginResponse.MinorVersion, loginResponse.AccessLevel);
-                            }
+                                HandleLoginResponse(loginResponse);
 
                             break;
                         }
-                    case TaskStatus.Canceled:
-                        OnConnectionError("Login request time out");
-                        break;
-                    case TaskStatus.Faulted:
-                        OnConnectionError("Login failed");
-                        break;
+                    case TaskStatus.Canceled: OnConnectionError("Login request time out"); break;
+                    case TaskStatus.Faulted: OnConnectionError("Login failed"); break;
                 }
             });
+        }
+
+        public override void Send2FALogin()
+        {
+            Login2FAAsync().ContinueWith(t =>
+            {
+                switch (t.Status)
+                {
+                    case TaskStatus.RanToCompletion: HandleLoginResponse(t.Result); break;
+                    case TaskStatus.Canceled: OnConnectionError("Login request time out"); break;
+                    case TaskStatus.Faulted: OnConnectionError("Login failed"); break;
+                }
+            });
+        }
+
+        private async Task<LoginResponse> LoginAsync()
+        {
+            return await ExecuteUnaryRequest(LoginInternal, GetLoginRequest());
+        }
+
+        private async Task<LoginResponse> Login2FAAsync()
+        {
+            var otp = await _serverHandler.Get2FACode();
+
+            if (string.IsNullOrEmpty(otp))
+            {
+                _logger.Info("2FA challenge cancelled");
+                OnDisconnected();
+                return null;
+            }
+
+            var request = GetLoginRequest();
+            request.OneTimePassword = otp;
+
+            return await ExecuteUnaryRequest(LoginInternal, request);
+        }
+
+        private LoginRequest GetLoginRequest()
+        {
+            return new LoginRequest
+            {
+                Login = SessionSettings.Login,
+                Password = SessionSettings.Password,
+                MajorVersion = VersionSpec.MajorVersion,
+                MinorVersion = VersionSpec.MinorVersion,
+            };
+        }
+
+        private void HandleLoginResponse(LoginResponse response)
+        {
+            if (response == null)
+                return;
+
+            if (response.Error != LoginResponse.Types.LoginError.None)
+            {
+                Only2FAFailed = response.Error == LoginResponse.Types.LoginError.Invalid2FaCode;
+                OnConnectionError(response.Error.ToString());
+            }
+            else if (response.ExecResult.Status != RequestResult.Types.RequestStatus.Success)
+            {
+                var res = response.ExecResult;
+                OnConnectionError($"{res.Status}{(string.IsNullOrEmpty(res.Message) ? "" : $" ({res.Message})")}");
+            }
+            else
+            {
+                _accessToken = response.AccessToken;
+                _logger.Info($"Server session id: {response.SessionId}");
+
+                OnLogin(response.MajorVersion, response.MinorVersion, response.AccessLevel);
+            }
         }
 
         public override void Init()
@@ -557,6 +609,9 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             if (_subscriptions.TryAddStatusSubscription(request.PluginId))
             {
+                if (!CanSendPluginSubRequests())
+                    return;
+
                 var response = await ExecuteUnaryRequestAuthorized(SubscribeToPluginStatusInternal, request);
                 FailForNonSuccess(response.ExecResult);
             }
@@ -566,6 +621,9 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             if (_subscriptions.TryRemoveStatusSubscription(request.PluginId))
             {
+                if (!CanSendPluginSubRequests())
+                    return;
+
                 var response = await ExecuteUnaryRequestAuthorized(UnsubscribeToPluginStatusInternal, request);
                 FailForNonSuccess(response.ExecResult);
             }
@@ -576,6 +634,9 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             if (_subscriptions.TryAddLogsSubscription(request.PluginId))
             {
+                if (!CanSendPluginSubRequests())
+                    return;
+
                 var response = await ExecuteUnaryRequestAuthorized(SubscribeToPluginLogsInternal, request);
                 FailForNonSuccess(response.ExecResult);
             }
@@ -585,6 +646,9 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             if (_subscriptions.TryRemoveLogsSubscription(request.PluginId))
             {
+                if (!CanSendPluginSubRequests())
+                    return;
+
                 var response = await ExecuteUnaryRequestAuthorized(UnsubscribeToPluginLogsInternal, request);
                 FailForNonSuccess(response.ExecResult);
             }

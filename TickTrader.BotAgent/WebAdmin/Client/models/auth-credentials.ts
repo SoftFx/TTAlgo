@@ -3,10 +3,12 @@
 export class AuthCredentials {
     Login: string;
     Password: string;
+    SecretCode: string;
 
-    constructor(login: string = "", password: string = "") {
+    constructor(login: string = "", password: string = "", secretCode: string = "") {
         this.Login = login;
         this.Password = password;
+        this.SecretCode = secretCode;
     }
 }
 

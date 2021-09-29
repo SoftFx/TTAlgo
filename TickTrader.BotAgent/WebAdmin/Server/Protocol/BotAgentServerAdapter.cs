@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
@@ -11,6 +10,7 @@ using TickTrader.Algo.Package;
 using TickTrader.Algo.Server;
 using System.Threading.Channels;
 using Google.Protobuf;
+using TickTrader.Algo.Async;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
 {
@@ -25,39 +25,22 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         private readonly IAuthManager _authManager;
 
 
-        public event Action AdminCredsChanged = delegate { };
-        public event Action DealerCredsChanged = delegate { };
-        public event Action ViewerCredsChanged = delegate { };
+        public IEventSource<CredsChangedEvent> CredsChanged => _authManager.CredsChanged;
 
 
         public BotAgentServerAdapter(IAlgoServerLocal algoServer, IAuthManager authManager)
         {
             _algoServer = algoServer;
             _authManager = authManager;
-
-            _authManager.AdminCredsChanged += OnAdminCredsChanged;
-            _authManager.DealerCredsChanged += OnDealerCredsChanged;
-            _authManager.ViewerCredsChanged += OnViewerCredsChanged;
         }
 
 
-        public ClientClaims.Types.AccessLevel ValidateCreds(string login, string password)
-        {
-            if (_authManager.ValidViewerCreds(login, password))
-                return ClientClaims.Types.AccessLevel.Viewer;
-            if (_authManager.ValidDealerCreds(login, password))
-                return ClientClaims.Types.AccessLevel.Dealer;
-            if (_authManager.ValidAdminCreds(login, password))
-                return ClientClaims.Types.AccessLevel.Admin;
+        public Task<AuthResult> ValidateCreds(string login, string password) => _authManager.Auth(login, password);
 
-            return ClientClaims.Types.AccessLevel.Anonymous;
-        }
+        public Task<AuthResult> Validate2FA(string login, string oneTimePassword) => _authManager.Auth2FA(login, oneTimePassword);
 
         public async Task AttachSessionChannel(Channel<IMessage> channel)
         {
-            channel.Writer.TryWrite(ApiMetadataInfo.Current);
-            channel.Writer.TryWrite(_agentContext);
-            channel.Writer.TryWrite(await _algoServer.GetMappingsInfo(new MappingsInfoRequest()));
             await _algoServer.EventBus.SubscribeToUpdates(channel.Writer, true);
         }
 
@@ -81,9 +64,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return Task.FromResult(ApiMetadataInfo.Current);
         }
 
-        public Task<MappingCollectionInfo> GetMappingsInfo(MappingsInfoRequest request)
+        public Task<MappingCollectionInfo> GetMappingsInfo()
         {
-            return _algoServer.GetMappingsInfo(request);
+            return _algoServer.GetMappingsInfo(new MappingsInfoRequest());
         }
 
         public Task<SetupContextInfo> GetSetupContext()
@@ -161,21 +144,14 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return _algoServer.GetPackageBinary(request.PackageId);
         }
 
-        public Task<string> GetBotStatusAsync(PluginStatusRequest request)
+        public Task<PluginStatusResponse> GetBotStatusAsync(PluginStatusRequest request)
         {
             return _algoServer.GetPluginStatus(request);
         }
 
-        public async Task<LogRecordInfo[]> GetBotLogsAsync(PluginLogsRequest request)
+        public Task<PluginLogsResponse> GetBotLogsAsync(PluginLogsRequest request)
         {
-            var msgs = await _algoServer.GetPluginLogs(request);
-
-            return msgs.Select(e => new LogRecordInfo
-            {
-                TimeUtc = e.TimeUtc,
-                Severity = e.Severity,
-                Message = e.Message,
-            }).ToArray();
+            return _algoServer.GetPluginLogs(request);
         }
 
         public Task<AlertRecordInfo[]> GetAlertsAsync(PluginAlertsRequest request)
@@ -207,25 +183,5 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         {
             return _algoServer.GetPluginFileWritePath(request);
         }
-
-
-        #region Event handlers
-
-        private void OnAdminCredsChanged()
-        {
-            AdminCredsChanged?.Invoke();
-        }
-
-        private void OnDealerCredsChanged()
-        {
-            DealerCredsChanged?.Invoke();
-        }
-
-        private void OnViewerCredsChanged()
-        {
-            ViewerCredsChanged?.Invoke();
-        }
-
-        #endregion Event handlers
     }
 }

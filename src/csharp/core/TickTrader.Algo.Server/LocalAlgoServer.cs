@@ -40,8 +40,8 @@ namespace TickTrader.Algo.Server
         Task RemovePlugin(RemovePluginRequest request);
         Task StartPlugin(StartPluginRequest request);
         Task StopPlugin(StopPluginRequest request);
-        Task<PluginLogRecord[]> GetPluginLogs(PluginLogsRequest request);
-        Task<string> GetPluginStatus(PluginStatusRequest request);
+        Task<PluginLogsResponse> GetPluginLogs(PluginLogsRequest request);
+        Task<PluginStatusResponse> GetPluginStatus(PluginStatusRequest request);
 
         Task<PluginFolderInfo> GetPluginFolderInfo(PluginFolderInfoRequest request);
         Task ClearPluginFolder(ClearPluginFolderRequest request);
@@ -99,8 +99,8 @@ namespace TickTrader.Algo.Server
         public Task RemovePlugin(RemovePluginRequest request) => _server.Ask(request);
         public Task StartPlugin(StartPluginRequest request) => _server.Ask(request);
         public Task StopPlugin(StopPluginRequest request) => _server.Ask(request);
-        public Task<PluginLogRecord[]> GetPluginLogs(PluginLogsRequest request) => _server.Ask<PluginLogRecord[]>(request);
-        public Task<string> GetPluginStatus(PluginStatusRequest request) => _server.Ask<string>(request);
+        public Task<PluginLogsResponse> GetPluginLogs(PluginLogsRequest request) => _server.Ask<PluginLogsResponse>(request);
+        public Task<PluginStatusResponse> GetPluginStatus(PluginStatusRequest request) => _server.Ask<PluginStatusResponse>(request);
 
         public Task<PluginFolderInfo> GetPluginFolderInfo(PluginFolderInfoRequest request) => _server.Ask<PluginFolderInfo>(request);
         public Task ClearPluginFolder(ClearPluginFolderRequest request) => _server.Ask(request);

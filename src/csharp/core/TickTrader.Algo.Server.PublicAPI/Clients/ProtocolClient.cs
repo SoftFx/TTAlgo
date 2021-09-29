@@ -28,6 +28,8 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         protected IClientSessionSettings SessionSettings { get; private set; }
 
+        public bool Only2FAFailed { get; protected set; }
+
 
         public event Action<ClientStates> ClientStateChanged = delegate { };
 
@@ -47,6 +49,11 @@ namespace TickTrader.Algo.Server.PublicAPI
             _stateMachine.AddTransition(ClientStates.LoggingIn, ClientEvents.LoginReject, ClientStates.Disconnecting);
             _stateMachine.AddTransition(ClientStates.LoggingIn, ClientEvents.ConnectionError, ClientStates.Deinitializing);
             _stateMachine.AddTransition(ClientStates.LoggingIn, ClientEvents.Disconnected, ClientStates.Deinitializing);
+            _stateMachine.AddTransition(ClientStates.LoggingIn, ClientEvents.Requires2FA, ClientStates.LoggingIn2FA);
+            _stateMachine.AddTransition(ClientStates.LoggingIn2FA, ClientEvents.LoggedIn, ClientStates.Initializing);
+            _stateMachine.AddTransition(ClientStates.LoggingIn2FA, ClientEvents.LoginReject, ClientStates.Disconnecting);
+            _stateMachine.AddTransition(ClientStates.LoggingIn2FA, ClientEvents.ConnectionError, ClientStates.Deinitializing);
+            _stateMachine.AddTransition(ClientStates.LoggingIn2FA, ClientEvents.Disconnected, ClientStates.Deinitializing);
             _stateMachine.AddTransition(ClientStates.Initializing, ClientEvents.Initialized, ClientStates.Online);
             _stateMachine.AddTransition(ClientStates.Initializing, ClientEvents.ConnectionError, ClientStates.Deinitializing);
             _stateMachine.AddTransition(ClientStates.Initializing, ClientEvents.Disconnected, ClientStates.Deinitializing);
@@ -65,6 +72,7 @@ namespace TickTrader.Algo.Server.PublicAPI
 
             _stateMachine.OnEnter(ClientStates.Connecting, StartConnecting);
             _stateMachine.OnEnter(ClientStates.LoggingIn, SendLogin);
+            _stateMachine.OnEnter(ClientStates.LoggingIn2FA, Send2FALogin);
             _stateMachine.OnEnter(ClientStates.Initializing, Init);
             _stateMachine.OnEnter(ClientStates.LoggingOut, SendLogout);
             _stateMachine.OnEnter(ClientStates.Disconnecting, SendDisconnect);
@@ -109,6 +117,7 @@ namespace TickTrader.Algo.Server.PublicAPI
             _logger = LoggerHelper.GetLogger(GetType().Name, System.IO.Path.Combine(SessionSettings.LogDirectory, GetType().Name), SessionSettings.ServerAddress);
 
             LastError = null;
+            Only2FAFailed = false;
 
             try
             {
@@ -159,6 +168,8 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         public abstract void SendLogin();
 
+        public abstract void Send2FALogin();
+
         public abstract void SendLogout();
 
         public abstract void SendDisconnect();
@@ -187,9 +198,8 @@ namespace TickTrader.Algo.Server.PublicAPI
         protected void OnLogin(int serverMajorVersion, int serverMinorVersion, ClientClaims.Types.AccessLevel accessLevel)
         {
             VersionSpec = new ApiVersionSpec(serverMinorVersion);
-            AccessManager = new ApiAccessManager(accessLevel);
 
-            _serverHandler.AccessLevelChanged();
+            ChangeAccessLevel(accessLevel);
 
             _logger.Info($"Client version - {VersionSpec.MajorVersion}.{VersionSpec.MinorVersion}; Server version - {serverMajorVersion}.{serverMinorVersion}");
             _logger.Info($"Current version set to {VersionSpec.MajorVersion}.{VersionSpec.CurrentVersion}");
@@ -197,12 +207,18 @@ namespace TickTrader.Algo.Server.PublicAPI
             _stateMachine.PushEvent(ClientEvents.LoggedIn);
         }
 
+        protected void On2FALogin()
+        {
+            _logger.Info("Server requires 2FA");
+
+            _stateMachine.PushEvent(ClientEvents.Requires2FA);
+        }
+
         protected void OnLogout(LogoutResponse.Types.LogoutReason reason)
         {
             LastError = reason == LogoutResponse.Types.LogoutReason.ClientRequest ? string.Empty : reason.ToString();
 
-            AccessManager = new ApiAccessManager(ClientClaims.Types.AccessLevel.Anonymous);
-            _serverHandler.AccessLevelChanged();
+            ChangeAccessLevel(ClientClaims.Types.AccessLevel.Anonymous);
 
             _stateMachine.PushEvent(ClientEvents.LoggedOut);
         }
@@ -231,5 +247,16 @@ namespace TickTrader.Algo.Server.PublicAPI
         }
 
         protected void BreakServerConnection(object obj) => OnConnectionError("Server connection has been lost");
+
+        protected bool CanSendPluginSubRequests() => State == ClientStates.Online || State == ClientStates.Initializing;
+
+        protected void ChangeAccessLevel(ClientClaims.Types.AccessLevel accessLevel)
+        {
+            if (AccessManager.Level == accessLevel)
+                return;
+
+            AccessManager = new ApiAccessManager(accessLevel);
+            _serverHandler.AccessLevelChanged();
+        }
     }
 }

@@ -4,7 +4,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Modify Order Script", Version = "1.4", Category = "Test Orders",
+    [TradeBot(DisplayName = "[T] Modify Order Script", Version = "1.5", Category = "Test Orders",
         SetupMainSymbol = false, Description = "Modifies order by OrderId. Prints order execution result to bot status window.")]
     public class ModifyOrder : TradeBotCommon
     {
@@ -41,11 +41,23 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter(DisplayName = "Options", DefaultValue = OptionsTypes.DoNotModify, IsRequired = false)]
         public OptionsTypes Options { get; set; }
 
+
         [Parameter(DisplayName = "OCO Equals Volume", DefaultValue = BoolTypes.DoNotModify, IsRequired = false)]
         public BoolTypes OCOEqualsVolume { get; set; }
 
         [Parameter(DisplayName = "OCO Related Id", DefaultValue = null, IsRequired = false)]
         public string OCORelatedId { get; set; }
+
+
+        [Parameter(DisplayName = "OTO Trigger Type", DefaultValue = null)]
+        public OtoTriggerModifyType OtoTriggerType { get; set; }
+
+        [Parameter(DisplayName = "OTO TriggerTime Timeout(s)", DefaultValue = null, IsRequired = false)]
+        public int? OtoTriggerTimeTimeout { get; set; }
+
+        [Parameter(DisplayName = "OTO Triggered By Id")]
+        public string OtoTriggeredById { get; set; }
+
 
         protected override void OnStart()
         {
@@ -63,6 +75,17 @@ namespace TickTrader.Algo.TestCollection.Bots
             if (OCOEqualsVolume == BoolTypes.True)
                 ocoEqualsVolume = true;
 
+            ContingentOrderTrigger otoTrigger = null;
+
+            if (OtoTriggerType != OtoTriggerModifyType.DoNotModify)
+            {
+                var otoType = ConvertToApi(OtoTriggerType);
+                var otoTime = OtoTriggerTimeTimeout.HasValue ? DateTime.Now + TimeSpan.FromSeconds(OtoTriggerTimeTimeout.Value) : (DateTime?)null;
+                var otoId = OtoTriggeredById;
+
+                otoTrigger = ContingentOrderTrigger.Create(otoType, otoTime, otoId);
+            }
+
             var comment = string.IsNullOrWhiteSpace(Comment) ? null : Comment;
 
             if (string.IsNullOrWhiteSpace(OrderId))
@@ -72,7 +95,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 .WithPrice(Price).WithStopPrice(StopPrice).WithMaxVisibleVolume(MaxVisibleVolume)
                 .WithStopLoss(StopLoss).WithTakeProfit(TakeProfit).WithComment(comment)
                 .WithExpiration(ExpirationTimeout.HasValue ? DateTime.Now + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null)
-                .WithVolume(Volume).WithOptions(options).WithSlippage(Slippage).WithOCOEqualVolume(ocoEqualsVolume).WithOCORelatedOrderId(OCORelatedId).MakeRequest();
+                .WithVolume(Volume).WithOptions(options).WithSlippage(Slippage).WithOCOEqualVolume(ocoEqualsVolume).WithOCORelatedOrderId(OCORelatedId).WithContingentOrderTrigger(otoTrigger).MakeRequest();
 
             var result = ModifyOrder(request);
 
@@ -82,8 +105,33 @@ namespace TickTrader.Algo.TestCollection.Bots
 
             Exit();
         }
+
+        private static ContingentOrderTrigger.TriggerType ConvertToApi(OtoTriggerModifyType type)
+        {
+            switch (type)
+            {
+                case OtoTriggerModifyType.OnPendingOrderExpired:
+                    return ContingentOrderTrigger.TriggerType.OnPendingOrderExpired;
+                case OtoTriggerModifyType.OnPendingOrderPartiallyFilled:
+                    return ContingentOrderTrigger.TriggerType.OnPendingOrderPartiallyFilled;
+                case OtoTriggerModifyType.OnTime:
+                    return ContingentOrderTrigger.TriggerType.OnTime;
+
+                default:
+                    throw new Exception($"Unsupported type {type}");
+            }
+        }
     }
 
     public enum OptionsTypes { DoNotModify, None, IoC, OCO }
-    public enum BoolTypes { DoNotModify, True, False}
+
+    public enum BoolTypes { DoNotModify, True, False }
+
+    public enum OtoTriggerModifyType
+    {
+        DoNotModify,
+        OnPendingOrderExpired,
+        OnPendingOrderPartiallyFilled,
+        OnTime,
+    }
 }

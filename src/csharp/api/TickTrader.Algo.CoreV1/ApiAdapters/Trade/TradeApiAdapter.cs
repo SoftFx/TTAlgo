@@ -56,25 +56,7 @@ namespace TickTrader.Algo.CoreV1
             OrderResultEntity resultEntity;
             var code = OrderCmdResultCodes.Ok;
 
-            var domainRequest = new Domain.OpenOrderRequest
-            {
-                Symbol = apiRequest.Symbol,
-                Type = apiRequest.Type.ToDomainEnum(),
-                Side = apiRequest.Side.ToDomainEnum(),
-                Amount = apiRequest.Volume,
-                MaxVisibleAmount = apiRequest.MaxVisibleVolume,
-                Price = apiRequest.Price,
-                StopPrice = apiRequest.StopPrice,
-                StopLoss = apiRequest.StopLoss,
-                TakeProfit = apiRequest.TakeProfit,
-                Comment = apiRequest.Comment,
-                Slippage = apiRequest.Slippage,
-                ExecOptions = apiRequest.Options.ToDomainEnum(),
-                Tag = CompositeTag.NewTag(IsolationTag, apiRequest.Tag),
-                Expiration = apiRequest.Expiration?.ToUniversalTime().ToTimestamp(),
-                OcoRelatedOrderId = apiRequest.OcoRelatedOrderId,
-                OcoEqualVolume = apiRequest.OcoEqualVolume,
-            };
+            var domainRequest = apiRequest.ToDomain(IsolationTag);
 
             PreprocessAndValidateOpenOrderRequest(domainRequest, out var smbMetadata, ref code);
 
@@ -249,6 +231,7 @@ namespace TickTrader.Algo.CoreV1
                 ExecOptions = request.Options?.ToDomainEnum(),
                 OcoRelatedOrderId = request.OcoRelatedOrderId,
                 OcoEqualVolume = request.OcoEqualVolume,
+                OtoTrigger = request.OtoTrigger?.ToDomain(),
             };
 
             var code = OrderCmdResultCodes.Ok;
@@ -312,18 +295,12 @@ namespace TickTrader.Algo.CoreV1
                 return;
             if (!ValidateMaxVisibleVolumeLots(request.MaxVisibleAmount, smbMetadata, type, request.Amount, ref code))
                 return;
-            if (!ValidateOCO(request.ExecOptions, request.OcoRelatedOrderId, ref code))
+            if (!ValidateOCO(request.ExecOptions, request.OcoRelatedOrderId, request.SubOpenRequests?.Count ?? 0, ref code))
+                return;
+            if (!ValidateSubOpenRequests(request.ExecOptions, request.SubOpenRequests?.Count ?? 0, ref code))
                 return;
 
-
-            request.Amount = RoundVolume(request.Amount, smbMetadata);
-            request.MaxVisibleAmount = RoundVolume(request.MaxVisibleAmount, smbMetadata);
-            request.Amount = ConvertVolume(request.Amount, smbMetadata);
-            request.MaxVisibleAmount = ConvertNullableVolume(request.MaxVisibleAmount, smbMetadata);
-            request.Price = RoundPrice(request.Price, smbMetadata, side);
-            request.StopPrice = RoundPrice(request.StopPrice, smbMetadata, side);
-            request.StopLoss = RoundPrice(request.StopLoss, smbMetadata, side);
-            request.TakeProfit = RoundPrice(request.TakeProfit, smbMetadata, side);
+            ApplyConversionRules(request, smbMetadata);
 
             if (type == Domain.OrderInfo.Types.Type.Market && request.Price == null)
             {
@@ -349,6 +326,24 @@ namespace TickTrader.Algo.CoreV1
 
             //if (!ValidateMargin(request, smbMetadata, ref code)) //incorrect behavior when Margine Call
             //    return;
+        }
+
+        private static void ApplyConversionRules(Domain.OpenOrderRequest request, SymbolInfo smbMetadata)
+        {
+            var side = request.Side;
+
+            request.Amount = RoundVolume(request.Amount, smbMetadata);
+            request.MaxVisibleAmount = RoundVolume(request.MaxVisibleAmount, smbMetadata);
+            request.Amount = ConvertVolume(request.Amount, smbMetadata);
+            request.MaxVisibleAmount = ConvertNullableVolume(request.MaxVisibleAmount, smbMetadata);
+            request.Price = RoundPrice(request.Price, smbMetadata, side);
+            request.StopPrice = RoundPrice(request.StopPrice, smbMetadata, side);
+            request.StopLoss = RoundPrice(request.StopLoss, smbMetadata, side);
+            request.TakeProfit = RoundPrice(request.TakeProfit, smbMetadata, side);
+
+            if (request.SubOpenRequests != null)
+                foreach (var subRequest in request.SubOpenRequests)
+                    ApplyConversionRules(subRequest, smbMetadata);
         }
 
         private void PreprocessAndValidateCancelOrderRequest(Domain.CancelOrderRequest request, out Order orderToCancel, ref OrderCmdResultCodes code)
@@ -498,15 +493,16 @@ namespace TickTrader.Algo.CoreV1
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double? ConvertNullableVolume(double? volumeInLots, SymbolInfo smbMetadata)
+        private static double? ConvertNullableVolume(double? volumeInLots, SymbolInfo smbMetadata)
         {
             if (volumeInLots == null)
                 return null;
+
             return ConvertVolume(volumeInLots.Value, smbMetadata);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double ConvertVolume(double volumeInLots, SymbolInfo smbMetadata)
+        private static double ConvertVolume(double volumeInLots, SymbolInfo smbMetadata)
         {
             var res = smbMetadata.LotSize * volumeInLots;
             var amountDigits = 6; //smbMetadata.AmountDigits;
@@ -522,25 +518,25 @@ namespace TickTrader.Algo.CoreV1
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double RoundVolume(double volumeInLots, SymbolInfo smbMetadata)
+        private static double RoundVolume(double volumeInLots, SymbolInfo smbMetadata)
         {
             return volumeInLots.Floor(smbMetadata.TradeVolumeStep);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double? RoundVolume(double? volumeInLots, SymbolInfo smbMetadata)
+        private static double? RoundVolume(double? volumeInLots, SymbolInfo smbMetadata)
         {
             return volumeInLots.Floor(smbMetadata.TradeVolumeStep);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double RoundPrice(double price, SymbolInfo smbMetadata, Domain.OrderInfo.Types.Side side)
+        private static double RoundPrice(double price, SymbolInfo smbMetadata, Domain.OrderInfo.Types.Side side)
         {
             return side == Domain.OrderInfo.Types.Side.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double? RoundPrice(double? price, SymbolInfo smbMetadata, Domain.OrderInfo.Types.Side side)
+        private static double? RoundPrice(double? price, SymbolInfo smbMetadata, Domain.OrderInfo.Types.Side side)
         {
             return side == Domain.OrderInfo.Types.Side.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
         }
@@ -854,14 +850,29 @@ namespace TickTrader.Algo.CoreV1
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool ValidateOCO(Domain.OrderExecOptions? options, string relatedOrderId, ref OrderCmdResultCodes code)
+        private bool ValidateOCO(Domain.OrderExecOptions? options, string relatedOrderId, int subCnt, ref OrderCmdResultCodes code)
         {
             if (options == null || !options.Value.HasFlag(Domain.OrderExecOptions.OneCancelsTheOther))
                 return true;
 
-            if (string.IsNullOrEmpty(relatedOrderId))
+            if (subCnt == 0 && string.IsNullOrEmpty(relatedOrderId))
             {
                 code = OrderCmdResultCodes.OCORelatedIdNotFound;
+                return false;
+            }
+
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool ValidateSubOpenRequests(Domain.OrderExecOptions? options, int subCnt, ref OrderCmdResultCodes code)
+        {
+            if (options == null || subCnt == 0)
+                return true;
+
+            if (!options.Value.HasFlag(Domain.OrderExecOptions.OneCancelsTheOther))
+            {
+                code = OrderCmdResultCodes.OCOFlagNotFound;
                 return false;
             }
 

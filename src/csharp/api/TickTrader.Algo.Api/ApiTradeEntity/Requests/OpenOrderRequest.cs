@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Api
 {
@@ -40,6 +37,10 @@ namespace TickTrader.Algo.Api
 
         public string OcoRelatedOrderId { get; private set; }
 
+        public ContingentOrderTrigger OtoTrigger { get; private set; }
+
+        public List<OpenOrderRequest> SubOpenRequests { get; private set; }
+
 
         private OpenOrderRequest() { }
 
@@ -64,7 +65,15 @@ namespace TickTrader.Algo.Api
             private bool _ocoEqualVolume;
             private string _ocoRelatedOrderId;
 
-            private Template() { }
+            private ContingentOrderTrigger _otoTrigger;
+
+            private List<OpenOrderRequest> _subOpenRequests;
+
+
+            private Template()
+            {
+                _subOpenRequests = new List<OpenOrderRequest>();
+            }
 
 
             public static Template Create() => new Template();
@@ -91,6 +100,8 @@ namespace TickTrader.Algo.Api
                     Tag = _tag,
                     OcoEqualVolume = _ocoEqualVolume,
                     OcoRelatedOrderId = _ocoRelatedOrderId,
+                    OtoTrigger = _otoTrigger,
+                    SubOpenRequests = _subOpenRequests,
                 };
             }
 
@@ -244,6 +255,23 @@ namespace TickTrader.Algo.Api
             {
                 _ocoRelatedOrderId = relatedId;
                 return this;
+            }
+
+            public Template WithContingentOrderTrigger(ContingentOrderTrigger otoTrigger)
+            {
+                _otoTrigger = otoTrigger;
+                return this;
+            }
+
+            public Template WithSubOpenRequests(params OpenOrderRequest[] openRequests)
+            {
+                _subOpenRequests.AddRange(openRequests);
+                return this;
+            }
+
+            public void ClearSubOpenRequests()
+            {
+                _subOpenRequests.Clear();
             }
         }
     }

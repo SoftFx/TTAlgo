@@ -29,6 +29,7 @@ namespace TickTrader.Algo.CoreV1
                 Info.Update(info);
 
             Entity = new WriteEntity(info.SymbolInfo);
+            ContingentTrigger = info.OtoTrigger?.ToApi();
         }
 
         string Order.Id => Info.Id;
@@ -83,6 +84,7 @@ namespace TickTrader.Algo.CoreV1
 
         Api.OrderOptions Order.Options => Info.Options.ToApiEnum();
 
+        string Order.OcoRelatedOrderId => Info.OcoRelatedOrderId;
 
         internal bool IsSameOrderId(OrderAccessor other) => other != null && string.Equals(Info.Id, other.Info.Id);
 
@@ -93,6 +95,8 @@ namespace TickTrader.Algo.CoreV1
         public OrderAccessor Clone() => new OrderAccessor(SymbolInfo, Info);
 
         public static bool IsHiddenOrder(double? maxVisibleVolume) => maxVisibleVolume != null && maxVisibleVolume.Value.E(0.0);
+
+        public IContingentOrderTrigger ContingentTrigger { get; }
 
 
         private static double ProcessResponse(ICalculateResponse<double> response)
@@ -199,7 +203,7 @@ namespace TickTrader.Algo.CoreV1
             public double? OpenConversionRate { get; internal set; }
             public double? ClosePrice { get; set; }
             internal DateTime PositionCreated { get; set; }
-
+            public string OcoRelatedOrderId { get; internal set; }
             #region API Order
 
             public bool IsNull => false;
@@ -250,6 +254,8 @@ namespace TickTrader.Algo.CoreV1
             double IProfitCalculateRequest.Volume => RemainingAmount;
 
             OrderInfo.Types.Side IProfitCalculateRequest.Side => Side;
+
+            public IContingentOrderTrigger ContingentTrigger => null;
 
             #endregion
 

@@ -457,14 +457,46 @@ namespace TickTrader.Algo.Account.Fdk2
             return ExecuteOrderOperation(request, r =>
             {
                 var timeInForce = GetTimeInForce(r.Expiration);
-                var ioc = GetIoC(r.ExecOptions);
-                var oco = GetOCO(r.ExecOptions);
+                var isIoc = GetIoC(r.ExecOptions);
+                var isOco = GetOCO(r.ExecOptions);
+                long? ocoRelatedOrderId = null;
+                long? otoTriggeredById = null;
 
-                long.TryParse(r.OcoRelatedOrderId, out var relatedOrderId);
+                if (isOco)
+                {
+                    if (long.TryParse(r.OcoRelatedOrderId, out var ocoParsedId))
+                        ocoRelatedOrderId = ocoParsedId;
+                }
+
+                if (request.OtoTrigger != null)
+                {
+                    if (long.TryParse(r.OtoTrigger.OrderIdTriggeredBy, out var otoParsedId))
+                        otoTriggeredById = otoParsedId;
+                }
+
+                if (isOco && request.SubOpenRequests?.Count > 0)
+                {
+                    const int operationTimeout = 120000;
+                    //const int operationTimeout = 10000;
+
+                    var sub = request.SubOpenRequests[0];
+                    var subTimeInForce = GetTimeInForce(sub.Expiration);
+
+                    return _tradeProxyAdapter.NewOcoOrdersAsync(r.Symbol, operationTimeout,
+
+                           r.OperationId, Convert(r.Type), Convert(r.Side), r.Amount, r.MaxVisibleAmount, r.Price, r.StopPrice,
+                           timeInForce, r.Expiration?.ToDateTime(), r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, r.Slippage,
+
+                           sub.OperationId, Convert(sub.Type), Convert(sub.Side), sub.Amount, sub.MaxVisibleAmount, sub.Price, sub.StopPrice,
+                           subTimeInForce, sub.Expiration?.ToDateTime(), sub.StopLoss, sub.TakeProfit, sub.Comment, sub.Tag, null, sub.Slippage,
+
+                           ConvertToServer(r.OtoTrigger?.Type), r.OtoTrigger?.TriggerTime?.ToDateTime(), otoTriggeredById);
+                }
 
                 return _tradeProxyAdapter.NewOrderAsync(r.OperationId, r.Symbol, Convert(r.Type), Convert(r.Side), r.Amount, r.MaxVisibleAmount,
-                    r.Price, r.StopPrice, timeInForce, r.Expiration?.ToDateTime(), r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, ioc, r.Slippage,
-                    oco, r.OcoEqualVolume, relatedOrderId != 0 ? (long?)relatedOrderId : null);
+                       r.Price, r.StopPrice, timeInForce, r.Expiration?.ToDateTime(), r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, isIoc, r.Slippage,
+                       isOco, r.OcoEqualVolume, ocoRelatedOrderId, ConvertToServer(r.OtoTrigger?.Type), r.OtoTrigger?.TriggerTime?.ToDateTime(),
+                       otoTriggeredById);
             });
         }
 
@@ -477,13 +509,33 @@ namespace TickTrader.Algo.Account.Fdk2
         {
             if (_tradeProxy.ProtocolSpec.SupportsOrderReplaceQtyChange)
             {
-                long.TryParse(request.OcoRelatedOrderId, out var relatedOrderId);
+                long? ocoRelatedOrderId = null;
+
+                if (long.TryParse(request.OcoRelatedOrderId, out var ocoOrderId))
+                    ocoRelatedOrderId = ocoOrderId;
+
+                ContingentOrderTriggerType? otoTriggerType = null;
+                DateTime? otoTriggerTime = null;
+                long? otoTriggerById = null;
+
+                if (request.OtoTrigger != null)
+                {
+                    otoTriggerType = ConvertToServer(request.OtoTrigger.Type);
+                    otoTriggerTime = request.OtoTrigger?.TriggerTime?.ToDateTime();
+
+                    if (!string.IsNullOrEmpty(request.OtoTrigger.OrderIdTriggeredBy))
+                    {
+                        if (long.TryParse(request.OtoTrigger.OrderIdTriggeredBy, out var parsedOtoId))
+                            otoTriggerById = parsedOtoId;
+                    }
+                }
 
                 return ExecuteOrderOperation(request, r => _tradeProxyAdapter.ReplaceOrderAsync(r.OperationId, "",
                     r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.AmountChange,
                     r.MaxVisibleAmount, r.Price, r.StopPrice, GetTimeInForceReplace(r.ExecOptions, r.Expiration), r.Expiration?.ToDateTime(),
                     r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, GetIoCReplace(r.ExecOptions), r.Slippage,
-                    GetOCOReplace(r.ExecOptions), r.OcoEqualVolume, relatedOrderId != 0 ? (long?)relatedOrderId : null));
+                    GetOCOReplace(r.ExecOptions), r.OcoEqualVolume, ocoRelatedOrderId,
+                    otoTriggerType, otoTriggerTime, otoTriggerById));
             }
             return ExecuteOrderOperation(request, r => _tradeProxyAdapter.ReplaceOrderAsync(r.OperationId, "",
                 r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.NewAmount ?? r.CurrentAmount, r.CurrentAmount,
@@ -509,13 +561,16 @@ namespace TickTrader.Algo.Account.Fdk2
 
             try
             {
-                var result = await operationDef(request);
-                return new OrderInteropResult(Domain.OrderExecReport.Types.CmdResultCode.Ok, ConvertToEr(result, operationId));
-            }
-            catch (ExecutionException ex)
-            {
-                var reason = Convert(ex.Report.RejectReason, ex.Message);
-                return new OrderInteropResult(reason, ConvertToEr(ex.Report, operationId));
+                try
+                {
+                    var result = await operationDef(request);
+                    return new OrderInteropResult(Domain.OrderExecReport.Types.CmdResultCode.Ok, ConvertToEr(result, operationId));
+                }
+                catch (ExecutionException ex)
+                {
+                    var reason = Convert(ex.Report.RejectReason, ex.Message);
+                    return new OrderInteropResult(reason, ConvertToEr(ex.Report, operationId)); //ConvertToEr may throw an exception
+                }
             }
             catch (DisconnectException)
             {
@@ -529,6 +584,10 @@ namespace TickTrader.Algo.Account.Fdk2
             catch (NotSupportedException)
             {
                 return new OrderInteropResult(Domain.OrderExecReport.Types.CmdResultCode.Unsupported);
+            }
+            catch (SFX.TimeoutException)
+            {
+                return new OrderInteropResult(Domain.OrderExecReport.Types.CmdResultCode.DealingTimeout);
             }
             catch (Exception ex)
             {
@@ -719,11 +778,11 @@ namespace TickTrader.Algo.Account.Fdk2
         {
             switch (type)
             {
-                case Domain.OrderInfo.Types.Type.Limit: return SFX.OrderType.Limit;
                 case Domain.OrderInfo.Types.Type.Market: return SFX.OrderType.Market;
                 case Domain.OrderInfo.Types.Type.Position: return SFX.OrderType.Position;
-                case Domain.OrderInfo.Types.Type.Stop: return SFX.OrderType.Stop;
                 case Domain.OrderInfo.Types.Type.StopLimit: return SFX.OrderType.StopLimit;
+                case Domain.OrderInfo.Types.Type.Limit: return SFX.OrderType.Limit;
+                case Domain.OrderInfo.Types.Type.Stop: return SFX.OrderType.Stop;
 
                 default: throw new ArgumentException("Unsupported order type: " + type);
             }
@@ -822,6 +881,7 @@ namespace TickTrader.Algo.Account.Fdk2
                 LastFillAmount = record.TradeAmount,
                 ParentOrderId = record.ParentOrderId,
                 OcoRelatedOrderId = record.RelatedOrderId?.ToString(),
+                OtoTrigger = GetOtoTrigger(record),
             };
         }
 
@@ -842,14 +902,32 @@ namespace TickTrader.Algo.Account.Fdk2
             if (record.OneCancelsTheOtherFlag)
                 result |= Domain.OrderOptions.OneCancelsTheOther;
 
+            if (record.ContingentOrderFlag)
+                result |= Domain.OrderOptions.ContingentOrder;
+
             return result;
         }
 
-        private static List<ExecutionReport> ConvertToEr(List<SFX.ExecutionReport> reports, string operationId = null)
+        private static Domain.ContingentOrderTrigger GetOtoTrigger(SFX.ExecutionReport report)
+        {
+            if (!report.ContingentOrderFlag)
+                return null;
+
+            return new Domain.ContingentOrderTrigger
+            {
+                Type = ConvertToAlgo(report.TriggerType.Value),
+                TriggerTime = report.TriggerTime?.ToTimestamp(),
+                OrderIdTriggeredBy = report.OrderIdTriggeredBy?.ToString(),
+            };
+        }
+
+        private static List<ExecutionReport> ConvertToEr(List<SFX.ExecutionReport> reports, string operationId)
         {
             var result = new List<ExecutionReport>(reports.Count);
+
             for (int i = 0; i < reports.Count; i++)
-                result.Add(ConvertToEr(reports[i], operationId));
+                result.Add(ConvertToEr(reports[i], reports[i].OrigClientOrderId));
+
             return result;
         }
 
@@ -885,6 +963,7 @@ namespace TickTrader.Algo.Account.Fdk2
                 StopPrice = report.StopPrice,
                 AveragePrice = report.AveragePrice,
                 ClientOrderId = report.ClientOrderId,
+                OrigClientOrderId = report.OrigClientOrderId,
                 OrderStatus = Convert(report.OrderStatus),
                 ExecutionType = Convert(report.ExecutionType),
                 Symbol = report.Symbol,
@@ -903,6 +982,8 @@ namespace TickTrader.Algo.Account.Fdk2
                 Balance = report.Balance ?? double.NaN,
                 IsOneCancelsTheOther = report.OneCancelsTheOtherFlag,
                 OcoRelatedOrderId = report.RelatedOrderId?.ToString(),
+                IsContingentOrder = report.ContingentOrderFlag,
+                OtoTrigger = GetOtoTrigger(report),
             };
         }
 
@@ -914,6 +995,27 @@ namespace TickTrader.Algo.Account.Fdk2
         private static OrderStatus Convert(SFX.OrderStatus status)
         {
             return (OrderStatus)status;
+        }
+
+        private static ContingentOrderTriggerType? ConvertToServer(Domain.ContingentOrderTrigger.Types.TriggerType? type)
+        {
+            switch (type)
+            {
+                case ContingentOrderTrigger.Types.TriggerType.OnPendingOrderExpired:
+                    return ContingentOrderTriggerType.OnPendingOrderExpired;
+                case ContingentOrderTrigger.Types.TriggerType.OnPendingOrderPartiallyFilled:
+                    return ContingentOrderTriggerType.OnPendingOrderPartiallyFilled;
+                case ContingentOrderTrigger.Types.TriggerType.OnTime:
+                    return ContingentOrderTriggerType.OnTime;
+
+                default:
+                    return null;
+            }
+        }
+
+        private static Domain.ContingentOrderTrigger.Types.TriggerType ConvertToAlgo(ContingentOrderTriggerType type)
+        {
+            return (Domain.ContingentOrderTrigger.Types.TriggerType)type;
         }
 
         private static Domain.OrderExecReport.Types.CmdResultCode Convert(RejectReason reason, string message)
@@ -980,6 +1082,15 @@ namespace TickTrader.Algo.Account.Fdk2
                                 return Domain.OrderExecReport.Types.CmdResultCode.OcoAlreadyExists;
                             else if (message.StartsWith("No Dealer"))
                                 return Domain.OrderExecReport.Types.CmdResultCode.DealerReject;
+                            else if (message.StartsWith("Trigger time cannot"))
+                                return Domain.OrderExecReport.Types.CmdResultCode.IncorrectTriggerTime;
+                            else if (message.StartsWith("Trigger Order Id"))
+                                return Domain.OrderExecReport.Types.CmdResultCode.IncorrectTriggerOrderId;
+                            else if ((message.Contains("Trigger Order") && message.Contains("Type must be")) ||
+                                      message.StartsWith("Contingent orders with type") && message.EndsWith("are not supported."))
+                                return Domain.OrderExecReport.Types.CmdResultCode.IncorrectTriggerOrderType;
+                            else if (message.Contains("Trigger Order") && message.Contains("Expired"))
+                                return Domain.OrderExecReport.Types.CmdResultCode.IncorrectExpiration;
                         }
                         break;
                     }
@@ -1291,7 +1402,6 @@ namespace TickTrader.Algo.Account.Fdk2
                 default: return ConnectionErrorInfo.Types.ErrorCode.UnknownConnectionError;
             }
         }
-
         #endregion
     }
 }

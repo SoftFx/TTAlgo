@@ -11,6 +11,7 @@ using TickTrader.Algo.Server;
 using TickTrader.BotAgent.BA.Models;
 using TickTrader.BotAgent.WebAdmin.Server.Dto;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
+using TickTrader.BotAgent.WebAdmin.Server.Models;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 {
@@ -75,12 +76,15 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             {
                 var botId = WebUtility.UrlDecode(id);
 
-                var logs = await _algoServer.GetPluginLogs(new PluginLogsRequest { PluginId = botId, MaxCount = 100 });
+                var logsRes = await _algoServer.GetPluginLogs(new PluginLogsRequest { PluginId = botId, MaxCount = 100 });
                 var folderInfo = await _algoServer.GetPluginFolderInfo(new PluginFolderInfoRequest(botId, PluginFolderInfo.Types.PluginFolderId.BotLogs));
+
+                if (string.IsNullOrEmpty(logsRes.PluginId))
+                    return BadRequest(new BadRequestResultDto(0, $"Bot '{botId}' not found"));
 
                 var res = new TradeBotLogDto
                 {
-                    Snapshot = logs.OrderByDescending(le => le.TimeUtc).Select(e => e.ToDto()).ToArray(),
+                    Snapshot = logsRes.Logs.OrderByDescending(le => le.TimeUtc).Select(e => e.ToDto()).ToArray(),
                     Files = folderInfo.Files.Select(f => f.ToDto()).ToArray(),
                 };
 
@@ -178,11 +182,14 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             try
             {
                 var botId = WebUtility.UrlDecode(id);
-                var status = await _algoServer.GetPluginStatus(new PluginStatusRequest { PluginId = botId });
+                var statusRes = await _algoServer.GetPluginStatus(new PluginStatusRequest { PluginId = botId });
+
+                if (string.IsNullOrEmpty(statusRes.PluginId))
+                    return BadRequest(new BadRequestResultDto(0, $"Bot '{botId}' not found"));
 
                 return Ok(new BotStatusDto
                 {
-                    Status = status,
+                    Status = statusRes.Status,
                     BotId = botId,
                 });
             }

@@ -71,8 +71,8 @@ namespace TickTrader.Algo.Server
             Receive<RemovePluginRequest>(r => _plugins.RemovePlugin(r));
             Receive<StartPluginRequest>(r => _plugins.StartPlugin(r));
             Receive<StopPluginRequest>(r => _plugins.StopPlugin(r));
-            Receive<PluginLogsRequest, PluginLogRecord[]>(r => _plugins.GetPluginLogs(r));
-            Receive<PluginStatusRequest, string>(r => _plugins.GetPluginStatus(r));
+            Receive<PluginLogsRequest, PluginLogsResponse>(r => _plugins.GetPluginLogs(r));
+            Receive<PluginStatusRequest, PluginStatusResponse>(r => _plugins.GetPluginStatus(r));
 
             Receive<PluginFolderInfoRequest, PluginFolderInfo>(r => _pluginFiles.GetFolderInfo(r));
             Receive<ClearPluginFolderRequest>(r => _pluginFiles.ClearFolder(r));

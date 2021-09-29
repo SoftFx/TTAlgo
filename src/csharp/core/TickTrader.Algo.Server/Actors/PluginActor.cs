@@ -48,8 +48,8 @@ namespace TickTrader.Algo.Server
             Receive<AttachLogsChannelCmd>(AttachLogsChannel);
             Receive<AttachStatusChannelCmd>(AttachStatusChannel);
             Receive<AttachOutputsChannelCmd>(cmd => _outputEventSrc.Subscribe(cmd.OutputSink));
-            Receive<PluginLogsRequest, PluginLogRecord[]>(GetLogs);
-            Receive<PluginStatusRequest, string>(GetStatus);
+            Receive<PluginLogsRequest, PluginLogsResponse>(GetLogs);
+            Receive<PluginStatusRequest, PluginStatusResponse>(GetStatus);
 
             Receive<PluginLogRecord>(OnLogUpdated);
             Receive<PluginStatusUpdate>(OnStatusUpdated);
@@ -158,14 +158,16 @@ namespace TickTrader.Algo.Server
             _statusEventSrc.Subscribe(sink);
         }
 
-        private PluginLogRecord[] GetLogs(PluginLogsRequest request)
+        private PluginLogsResponse GetLogs(PluginLogsRequest request)
         {
-            return _logsCache.Where(u => u.TimeUtc > request.LastLogTimeUtc).Take(request.MaxCount).ToArray();
+            var res = new PluginLogsResponse { PluginId = _id };
+            res.Logs.AddRange(_logsCache.Where(u => u.TimeUtc > request.LastLogTimeUtc).Take(request.MaxCount).Select(r => new LogRecordInfo {TimeUtc = r.TimeUtc, Severity = r.Severity, Message = r.Message }));
+            return res;
         }
 
-        private string GetStatus(PluginStatusRequest request)
+        private PluginStatusResponse GetStatus(PluginStatusRequest request)
         {
-            return _lastStatus.Message;
+            return new PluginStatusResponse { PluginId = _id, Status = _lastStatus.Message };
         }
 
         private void OnLogUpdated(PluginLogRecord log)

@@ -8,7 +8,6 @@ using System.Security.Cryptography;
 using System.Text;
 using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Server.Common;
-using TickTrader.Algo.ServerControl;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Core.Auth

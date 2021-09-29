@@ -235,7 +235,7 @@ namespace TickTrader.BotAgent.Configurator
                 try
                 {
                     RefreshCounter.DropRefresh();
-                    StateServiceModel.RestartRequired = true;
+                    StateServiceModel.RestartRequired = RefreshCounter.Restart;
                     _model.SaveChanges();
 
                     _logger.Info(Resources.SaveChangesLog);

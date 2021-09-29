@@ -101,7 +101,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             AssertEquals(nameof(report.TradeRecordType), Type, report.TradeRecordType);
             AssertEquals(nameof(report.Tag), Tag, report.Tag);
 
-            if (IsSlippageSupported)
+            if (IsSupportedSlippage)
                 CheckSlippage(report.Slippage.Value, (realSlippage, expectedSlippage) => AssertEquals(nameof(Slippage), expectedSlippage, realSlippage));
 
             TestReqOpenPrice(report);

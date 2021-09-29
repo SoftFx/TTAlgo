@@ -9,8 +9,6 @@ namespace TickTrader.BotTerminal
 {
     internal class AlgoAccountViewModel : PropertyChangedBase, IDropHandler
     {
-        public const string ServerLevelHeader = nameof(Server);
-
         public AccountModelInfo Info { get; }
 
         public string AccountId => Info.AccountId;
@@ -76,11 +74,6 @@ namespace TickTrader.BotTerminal
             Agent.Model.AccessLevelChanged += OnAccessLevelChanged;
         }
 
-
-        public void AddAccount()
-        {
-            Agent.OpenAccountSetup(null, Server);
-        }
 
         public void ChangeAccount()
         {

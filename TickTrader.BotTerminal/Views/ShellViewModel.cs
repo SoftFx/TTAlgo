@@ -51,7 +51,7 @@ namespace TickTrader.BotTerminal
 
             Agent = new LocalAlgoAgent(this, clientModel, storage);
 
-            _botAgentManager = new BotAgentManager(storage);
+            _botAgentManager = new BotAgentManager(storage, this);
 
             algoEnv = new AlgoEnvironment(this, Agent, _botAgentManager);
 

@@ -70,9 +70,25 @@
                                         <TextBlock Text="Slippage: " VerticalAlignment="Center" />
                                         <TextBlock Text="{Binding Slippage.DisplayValue, Converter={StaticResource Round}}" VerticalAlignment="Center" />
                                     </StackPanel>
+
                                     <StackPanel Orientation="Horizontal" Visibility="{Binding RelatedOrderId.Value, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Related Order Id: " VerticalAlignment="Center" />
                                         <TextBlock Text="{Binding RelatedOrderId.DisplayValue}" VerticalAlignment="Center" />
+                                    </StackPanel>
+
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding OtoTriggerType.Value, Converter={StaticResource NullOrEmptyToVis}}">
+                                        <TextBlock Text="Trigger Type: " VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding OtoTriggerType.DisplayValue}" VerticalAlignment="Center" />
+                                    </StackPanel>
+
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding OtoTime.Value, Converter={StaticResource NullOrEmptyToVis}}">
+                                        <TextBlock Text="Trigger Time: " VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding OtoTime.Value, Converter={StaticResource FullDateTimeFormat}}" VerticalAlignment="Center" />
+                                    </StackPanel>
+
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding OtoTriggeredById.Value, Converter={StaticResource NullOrEmptyToVis}}">
+                                        <TextBlock Text="Order Id Triggered By: " VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding OtoTriggeredById.DisplayValue}" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </StackPanel>
                             </Setter.Value>
@@ -86,7 +102,9 @@
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding Order.HasError}" Value="True">
                                         <Setter Property="Foreground" Value="{DynamicResource Shell_ErrorForeground}"/>
-                                        --><!--<Setter Property="ToolTip" Value="{Binding Order.CalculationError.Description}" />--><!--
+                                        -->
+                        <!--<Setter Property="ToolTip" Value="{Binding Order.CalculationError.Description}" />-->
+                        <!--
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>

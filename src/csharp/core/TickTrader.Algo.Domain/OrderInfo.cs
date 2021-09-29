@@ -12,6 +12,7 @@ namespace TickTrader.Algo.Domain
         MarketWithSlippage = 2,
         HiddenIceberg = 4,
         OneCancelsTheOther = 8,
+        ContingentOrder = 16,
     }
 
 
@@ -24,6 +25,8 @@ namespace TickTrader.Algo.Domain
         }
 
         public bool IsImmediateOrCancel => Options.HasFlag(OrderOptions.ImmediateOrCancel);
+
+        public bool IsContingentOrder => Options.HasFlag(OrderOptions.ContingentOrder);
 
         public bool MarketWithSlippdage => Options.HasFlag(OrderOptions.MarketWithSlippage);
 
@@ -118,6 +121,7 @@ namespace TickTrader.Algo.Domain
             LastFillPrice = info.LastFillPrice;
             LastFillAmount = info.LastFillAmount;
             OcoRelatedOrderId = info.OcoRelatedOrderId;
+            OtoTrigger = info.OtoTrigger;
 
             if (CompositeTag.TryParse(info.UserTag, out CompositeTag compositeTag))
             {
@@ -199,6 +203,7 @@ namespace TickTrader.Algo.Domain
         double? LastFillPrice { get; }
         double? LastFillAmount { get; }
         string OcoRelatedOrderId { get; }
+        ContingentOrderTrigger OtoTrigger { get; }
     }
 
     public interface IOrderCommonInfo : IMarginProfitCalc

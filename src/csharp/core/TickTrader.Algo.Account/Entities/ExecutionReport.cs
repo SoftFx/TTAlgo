@@ -30,10 +30,11 @@ namespace TickTrader.Algo.Account
         public double? StopPrice { get; set; }
         public double? AveragePrice { get; set; }
         public string ClientOrderId { get; set; }
+        public string OrigClientOrderId { get; set; }
         public string TradeRequestId { get; set; }
         public OrderStatus OrderStatus { get; set; }
         public ExecutionType ExecutionType { get; set; }
-        public string Symbol { get; set; }
+        public string Symbol { get; set; } = string.Empty;
         public double ExecutedVolume { get; set; }
         public double? InitialVolume { get; set; }
         public double LeavesVolume { get; set; }
@@ -46,7 +47,7 @@ namespace TickTrader.Algo.Account
         public Domain.OrderInfo.Types.Type Type { get; set; }
         public Domain.OrderInfo.Types.Side Side { get; set; }
         public double? Price { get; set; }
-        double IMarginProfitCalc.Price => Price ?? 0;
+        double IMarginProfitCalc.Price => Price ?? double.NaN;
         public double Balance { get; set; }
         public double? RequestedOpenPrice { get; set; }
 
@@ -90,12 +91,19 @@ namespace TickTrader.Algo.Account
             if (IsOneCancelsTheOther)
                 options |= Domain.OrderOptions.OneCancelsTheOther;
 
+            if (IsContingentOrder)
+                options |= Domain.OrderOptions.ContingentOrder;
+
             return options;
         }
 
         public bool IsOneCancelsTheOther { get; set; }
 
         public string OcoRelatedOrderId { get; set; }
+
+        public bool IsContingentOrder { get; set; }
+
+        public Domain.ContingentOrderTrigger OtoTrigger { get; set; }
     }
 
     public enum ExecutionType

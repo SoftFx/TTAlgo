@@ -17,13 +17,10 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         public bool IsStopOrder => Type == OrderType.Stop || Type == OrderType.StopLimit;
 
-        public bool IsImmediateFill => (Type == OrderType.Market) || (Type == OrderType.Limit && Options.HasFlag(OrderExecOptions.ImmediateOrCancel));
-
+        public bool IsImmediateFill => Type == OrderType.Market || (Type == OrderType.Limit && Options.HasFlag(OrderExecOptions.ImmediateOrCancel));
 
 
         public double SlippagePrecision { get; }
-
-        public bool IsIoc { get; }
 
         public OrderType InitType { get; protected set; }
 
@@ -68,6 +65,8 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             }
         }
 
+        public string OcoRelatedOrderId { get; set; }
+
 
         public OrderTemplate() { }
 
@@ -75,7 +74,6 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         {
             Mode = mode;
             Options = test.Options;
-            IsIoc = Type == OrderType.Limit && Options.HasFlag(OrderExecOptions.ImmediateOrCancel);
 
             InitType = Type;
             SlippagePrecision = Math.Pow(10, Math.Max(Symbol.Digits, 4));
@@ -125,12 +123,16 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             if (!RealOrder.StopLoss.EI(SL) && !0.0.EI(SL) && !double.IsNaN(RealOrder.StopLoss))
                 ThrowVerificationException(nameof(RealOrder.StopLoss), SL, RealOrder.StopLoss);
 
-            if (IsSlippageSupported)
+            if (IsSupportedSlippage)
                 CheckSlippage(RealOrder.Slippage, (realSlippage, expectedSlippage) =>
                 {
                     if (!realSlippage.E(expectedSlippage))
                         ThrowVerificationException(nameof(RealOrder.Slippage), expectedSlippage, realSlippage);
                 });
+
+            if (IsSupportedOCO)
+                if (OcoRelatedOrderId != RealOrder.OcoRelatedOrderId)
+                    ThrowVerificationException(nameof(RealOrder.OcoRelatedOrderId), OcoRelatedOrderId, RealOrder.OcoRelatedOrderId);
 
             if (Comment != null && RealOrder.Comment != Comment)
                 ThrowVerificationException(nameof(RealOrder.Comment), Comment, RealOrder.Comment);
@@ -198,6 +200,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
             SetProperty(str, Expiration, nameof(Expiration));
             SetProperty(str, Comment, nameof(Comment));
+            SetProperty(str, OcoRelatedOrderId, nameof(OcoRelatedOrderId));
 
             str.Append($", options={Options}");
             str.Append($", async={Async}.");

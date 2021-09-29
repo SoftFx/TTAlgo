@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
-
+using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Server.PublicAPI
 {
     public interface IAlgoServerEventHandler
     {
         void AccessLevelChanged();
+
+        Task<string> Get2FACode();
 
 
         #region Connection init

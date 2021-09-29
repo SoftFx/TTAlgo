@@ -63,12 +63,12 @@ namespace TickTrader.Algo.Server.Common
             }
         }
 
-        public void LogServerUpdate(ILogger logger, IMessage update)
+        public string FormatServerUpdate(IMessage update, int packedSize, bool compressed)
         {
-            if (LogMessages && logger != null)
-            {
-                logger.Info($"server > {update.Descriptor.Name}: {Format(update)}");
-            }
+            if (!LogMessages)
+                return null;
+
+            return $"server > {update.Descriptor.Name}({packedSize} bytes{(compressed ? ", compressed" : "")}): {Format(update)}";
         }
 
 

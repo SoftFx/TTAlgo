@@ -1,10 +1,8 @@
 ﻿using Machinarium.Qnil;
 using NLog;
 using System;
-using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Data;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
@@ -38,7 +36,7 @@ namespace TickTrader.BotTerminal
 
         public IObservableList<AlgoAccountViewModel> AccountList { get; }
 
-        public ICollectionView ServerViews { get; }
+        public IObservableList<AccountServerViewModel> AccountServerList { get; }
 
 
         public AlgoAgentViewModel(IAlgoAgent agentModel, AlgoEnvironment algoEnv)
@@ -55,9 +53,8 @@ namespace TickTrader.BotTerminal
             PackageList = Packages.AsObservable();
             BotList = Bots.AsObservable();
             AccountList = Accounts.AsObservable();
-
-            ServerViews = CollectionViewSource.GetDefaultView(AccountList);
-            ServerViews.GroupDescriptions.Add(new PropertyGroupDescription(AlgoAccountViewModel.ServerLevelHeader));
+            AccountServerList = _agentModel.Accounts.GroupBy((k, v) => GetServerAddress(v)).OrderBy((k, g) => k).Select(g => g.GroupKey)
+                .Select(s => new AccountServerViewModel(s, this)).AsObservable();
         }
 
 
@@ -341,5 +338,14 @@ namespace TickTrader.BotTerminal
         public override bool Equals(object obj) => obj is AlgoAgentViewModel second ? Name == second.Name : base.Equals(obj);
 
         public override int GetHashCode() => Name.GetHashCode();
+
+
+        private string GetServerAddress(AccountModelInfo acc)
+        {
+            if (AccountId.TryUnpack(acc.AccountId, out var accId))
+                return accId.Server;
+
+            return acc.AccountId;
+        }
     }
 }

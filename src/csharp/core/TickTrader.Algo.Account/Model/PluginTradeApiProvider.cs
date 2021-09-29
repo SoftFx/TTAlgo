@@ -72,6 +72,7 @@ namespace TickTrader.Algo.Account
         {
             var rep = new ExecutionReport
             {
+                ExecutionType = ExecutionType.Rejected,
                 ClientOrderId = operationId,
                 OrderStatus = OrderStatus.Rejected,
                 RejectReason = rejectCode,

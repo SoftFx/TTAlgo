@@ -1,4 +1,5 @@
-﻿using Machinarium.Qnil;
+﻿using Caliburn.Micro;
+using Machinarium.Qnil;
 using NLog;
 using System;
 using System.Collections.ObjectModel;
@@ -9,10 +10,11 @@ namespace TickTrader.BotTerminal
 {
     internal class BotAgentManager
     {
-        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+        private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
 
-        private BotAgentStorageModel _botAgentStorage;
+        private readonly BotAgentStorageModel _botAgentStorage;
+        private readonly IShell _shell;
 
 
         public ObservableCollection<BotAgentServerEntry> PredefinedServers { get; set; }
@@ -20,9 +22,10 @@ namespace TickTrader.BotTerminal
         public VarDictionary<string, BotAgentConnectionManager> BotAgents { get; set; }
 
 
-        public BotAgentManager(PersistModel appStorage)
+        public BotAgentManager(PersistModel appStorage, IShell shell)
         {
             _botAgentStorage = appStorage.BotAgentStorage;
+            _shell = shell;
 
             PredefinedServers = new ObservableCollection<BotAgentServerEntry>();
             var cfgSection = ProtocolConfigSection.GetCfgSection();
@@ -38,19 +41,19 @@ namespace TickTrader.BotTerminal
                 {
                     agent.PatchName();
                 }
-                BotAgents.Add(agent.Name, new BotAgentConnectionManager(agent));
+                BotAgents.Add(agent.Name, new BotAgentConnectionManager(agent, Get2FACode));
             }
         }
 
 
-        public async Task<string> Connect(string agentName, string login, string password, string server, int port)
+        public async Task<BotAgentConnectionManager> Connect(string agentName, string login, string password, string server, int port)
         {
             var creds = _botAgentStorage.Update(agentName, login, password, server, port);
             _botAgentStorage.Save();
 
             if (!BotAgents.TryGetValue(agentName, out var connection))
             {
-                connection = new BotAgentConnectionManager(creds);
+                connection = new BotAgentConnectionManager(creds, Get2FACode);
                 BotAgents.Add(agentName, connection);
             }
             await connection.WaitConnect();
@@ -61,7 +64,7 @@ namespace TickTrader.BotTerminal
                 _botAgentStorage.Save();
             }
 
-            return connection.LastError;
+            return connection;
         }
 
         public void Connect(string agentName)
@@ -127,6 +130,24 @@ namespace TickTrader.BotTerminal
         public Task ShutdownDisconnect()
         {
             return Task.WhenAll(BotAgents.Snapshot.Values.Select(c => c.WaitDisconnect()));
+        }
+
+
+        private async Task<string> Get2FACode(string agentName)
+        {
+            if (!BotAgents.TryGetValue(agentName, out var connection))
+                return string.Empty;
+
+            var model = new TwoFactorCodeDialogViewModel(agentName, connection.Creds.Login);
+
+            bool? res = null;
+            await Execute.OnUIThreadAsync(async () => res = await _shell.ToolWndManager.ShowDialog(model, _shell));
+
+            var isCodeEntered = res ?? false;
+            if (!isCodeEntered)
+                Disconnect(agentName);
+
+            return isCodeEntered ? model.Code.Value : string.Empty;
         }
     }
 }

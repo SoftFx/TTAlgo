@@ -14,6 +14,7 @@ message LoginRequest {
     google.protobuf.StringValue password = 2;
     int32 major_version = 3; // client version
     int32 minor_version = 4; // client version
+    google.protobuf.StringValue one_time_password = 5;
 }
 
 message LoginResponse {
@@ -21,6 +22,8 @@ message LoginResponse {
         NONE = 0;
         INVALID_CREDENTIALS = 1;
         VERSION_MISMATCH = 2;
+        INVALID_2FA_CODE = 3;
+        TEMPORARILY_LOCKED = 4;
     }
 
     LoginError error = 1;

@@ -4,13 +4,14 @@ namespace TickTrader.BotAgent.Configurator
 {
     public class CredentialViewModel : BaseContentViewModel
     {
-        private readonly string _keyLogin, _keyPassword;
+        private readonly string _keyLogin, _keyPassword, _keyOtpSecret;
         private readonly RefreshCounter _refreshManager;
 
         private CredentialModel _model;
 
         private DelegateCommand _generateLogin;
         private DelegateCommand _generatePassword;
+        private DelegateCommand _toggleOtp;
 
         public CredentialViewModel(CredentialModel model, RefreshCounter refManager = null) : base(nameof(CredentialViewModel))
         {
@@ -19,6 +20,7 @@ namespace TickTrader.BotAgent.Configurator
 
             _keyLogin = $"{_model.Name}{nameof(Login)}";
             _keyPassword = $"{_model.Name}{nameof(Password)}";
+            _keyOtpSecret = $"{_model.Name}{nameof(_model.OtpSecret)}";
         }
 
         public string Name => _model.Name;
@@ -57,6 +59,12 @@ namespace TickTrader.BotAgent.Configurator
             }
         }
 
+        public bool OtpEnabled => _model.OtpEnabled;
+
+        public string OtpStateText => _model.OtpEnabled ? "Enabled" : "Disabled";
+
+        public string OtpSecret => _model.OtpSecret;
+
         public override string this[string columnName]
         {
             get
@@ -84,27 +92,45 @@ namespace TickTrader.BotAgent.Configurator
         }
 
         public DelegateCommand GeneratePassword => _generatePassword ?? (
-            _generatePassword = new DelegateCommand(obj =>
+            _generatePassword = new DelegateCommand(_ =>
             {
                 _model.GeneratePassword();
-                _refreshManager?.AddUpdate(_keyPassword);
+                _refreshManager?.AddUpdate(_keyPassword, false);
 
                 OnPropertyChanged(nameof(Password));
             }));
 
         public DelegateCommand GenerateLogin => _generateLogin ?? (
-            _generateLogin = new DelegateCommand(obj =>
+            _generateLogin = new DelegateCommand(_ =>
             {
                 _model.GenerateNewLogin();
-                _refreshManager?.AddUpdate(_keyLogin);
+                _refreshManager?.AddUpdate(_keyLogin, false);
 
                 OnPropertyChanged(nameof(Login));
+            }));
+
+        public DelegateCommand ToggleOtp => _toggleOtp ?? (
+            _toggleOtp = new DelegateCommand(_ =>
+            {
+                if (_model.OtpEnabled)
+                    _model.RemoveOtpSecret();
+                else
+                    _model.GenerateNewOtpSecret();
+
+                _refreshManager?.CheckUpdate(_model.OtpSecret, _model.CurrentOtpSecret, _keyOtpSecret, false);
+
+                OnPropertyChanged(nameof(OtpSecret));
+                OnPropertyChanged(nameof(OtpEnabled));
+                OnPropertyChanged(nameof(OtpStateText));
             }));
 
         public override void RefreshModel()
         {
             OnPropertyChanged(nameof(Login));
             OnPropertyChanged(nameof(Password));
+            OnPropertyChanged(nameof(OtpSecret));
+            OnPropertyChanged(nameof(OtpEnabled));
+            OnPropertyChanged(nameof(OtpStateText));
         }
     }
 }

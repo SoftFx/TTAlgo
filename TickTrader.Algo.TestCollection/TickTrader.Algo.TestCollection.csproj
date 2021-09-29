@@ -48,10 +48,6 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="TickTrader.Algo.Api, Version=1.4.2.0, Culture=neutral, PublicKeyToken=90b5c26c2d37a2da, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>.\TickTrader.Algo.Api.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Auto.Tests\Converters\SlippageConverters.cs" />
@@ -78,6 +74,7 @@
     <Compile Include="Bots\NestedPrintIndicatorBot.cs" />
     <Compile Include="Bots\OnModelTickBot.cs" />
     <Compile Include="Bots\OpenCloseBot.cs" />
+    <Compile Include="Bots\OpenLinkedOrdersBot.cs" />
     <Compile Include="Bots\QuotePrintBot.cs" />
     <Compile Include="Bots\SplitViewBot.cs" />
     <Compile Include="Bots\TestBotOutputs.cs" />
@@ -127,6 +124,12 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\src\csharp\api\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
+      <Project>{9d9cf1b3-7e57-4971-a479-5803c658a7d0}</Project>
+      <Name>TickTrader.Algo.Api</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
     <VisualStudio>
@@ -138,7 +141,7 @@
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>

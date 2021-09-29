@@ -22,6 +22,7 @@ namespace TickTrader.Algo.Api
         double Margin { get; }
         double MarginLevel { get; }
         double Profit { get; }
+        int Leverage { get; }
         AccountTypes Type { get; }
         OrderList Orders { get; }
         NetPositionList NetPositions { get; }

@@ -83,6 +83,7 @@ message OrderInfo {
     google.protobuf.DoubleValue requested_open_price = 27;
     google.protobuf.StringValue parent_order_id = 28;
     google.protobuf.StringValue oco_related_order_id = 29;
+    ContingentOrderTrigger oto_trigger = 30;
 }
 
 message OrderListRequest { }
@@ -183,6 +184,9 @@ message OrderExecReport {
         INCORRECT_SYMBOL = 130;
         OCO_ALREADY_EXISTS = 131;
         EXCEEDED_ORDER_LIMIT = 132;
+        INCORRECT_TRIGGER_TIME = 133;
+        INCORRECT_TRIGGER_ORDER_ID = 134;
+        INCORRECT_TRIGGER_ORDER_TYPE = 135;
     }
 
     google.protobuf.StringValue operation_id = 1;
@@ -209,6 +213,18 @@ message OrderRequest {
     }
 }
 
+message ContingentOrderTrigger {
+    enum TriggerType {
+        ON_PENDING_ORDER_EXPIRED = 0;
+        ON_PENDING_ORDER_PARTIALLY_FILLED = 1;
+        ON_TIME = 2;
+    }
+
+    TriggerType type = 1;
+    google.protobuf.Timestamp trigger_time = 2;
+    google.protobuf.StringValue order_id_triggered_by = 3;
+}
+
 message OpenOrderRequest {
     string operation_id = 1;
     string symbol = 2;
@@ -227,6 +243,9 @@ message OpenOrderRequest {
     int32 exec_options_bitmask = 15;
     google.protobuf.StringValue oco_related_order_id = 16;
     bool oco_equal_volume = 17;
+    ContingentOrderTrigger oto_trigger = 18;
+
+    repeated OpenOrderRequest sub_open_requests = 19;
 }
 
 message ModifyOrderRequest {
@@ -250,6 +269,7 @@ message ModifyOrderRequest {
     google.protobuf.Int32Value exec_options_bitmask = 18;
     google.protobuf.StringValue oco_related_order_id = 19;
     google.protobuf.BoolValue oco_equal_volume = 20;
+    ContingentOrderTrigger oto_trigger = 21;
 }
 
 message CancelOrderRequest {
