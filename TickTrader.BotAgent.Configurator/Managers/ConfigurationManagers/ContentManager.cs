@@ -30,9 +30,8 @@ namespace TickTrader.BotAgent.Configurator
         {
             var target = GetTargetSection(root);
 
-            target.Remove(property);
-
-            logger.Info(GetRemoveMessage(property));
+            if (target.Remove(property))
+                logger.Info(GetRemoveMessage(property));
         }
 
 
