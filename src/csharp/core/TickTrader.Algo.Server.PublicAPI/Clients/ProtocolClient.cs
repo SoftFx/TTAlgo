@@ -198,9 +198,8 @@ namespace TickTrader.Algo.Server.PublicAPI
         protected void OnLogin(int serverMajorVersion, int serverMinorVersion, ClientClaims.Types.AccessLevel accessLevel)
         {
             VersionSpec = new ApiVersionSpec(serverMinorVersion);
-            AccessManager = new ApiAccessManager(accessLevel);
 
-            _serverHandler.AccessLevelChanged();
+            ChangeAccessLevel(accessLevel);
 
             _logger.Info($"Client version - {VersionSpec.MajorVersion}.{VersionSpec.MinorVersion}; Server version - {serverMajorVersion}.{serverMinorVersion}");
             _logger.Info($"Current version set to {VersionSpec.MajorVersion}.{VersionSpec.CurrentVersion}");
@@ -219,8 +218,7 @@ namespace TickTrader.Algo.Server.PublicAPI
         {
             LastError = reason == LogoutResponse.Types.LogoutReason.ClientRequest ? string.Empty : reason.ToString();
 
-            AccessManager = new ApiAccessManager(ClientClaims.Types.AccessLevel.Anonymous);
-            _serverHandler.AccessLevelChanged();
+            ChangeAccessLevel(ClientClaims.Types.AccessLevel.Anonymous);
 
             _stateMachine.PushEvent(ClientEvents.LoggedOut);
         }
@@ -251,5 +249,14 @@ namespace TickTrader.Algo.Server.PublicAPI
         protected void BreakServerConnection(object obj) => OnConnectionError("Server connection has been lost");
 
         protected bool CanSendPluginSubRequests() => State == ClientStates.Online || State == ClientStates.Initializing;
+
+        protected void ChangeAccessLevel(ClientClaims.Types.AccessLevel accessLevel)
+        {
+            if (AccessManager.Level == accessLevel)
+                return;
+
+            AccessManager = new ApiAccessManager(accessLevel);
+            _serverHandler.AccessLevelChanged();
+        }
     }
 }
