@@ -4,8 +4,9 @@ namespace TickTrader.Algo.Domain
 {
     public partial class SymbolInfo : ISymbolInfo
     {
-        public double Bid { get; set; } = double.NaN;
-        public double Ask { get; set; } = double.NaN;
+        public double Bid { get; private set; } = double.NaN;
+
+        public double Ask { get; private set; } = double.NaN;
 
 
         public IQuoteInfo LastQuote { get; private set; }
@@ -89,8 +90,8 @@ namespace TickTrader.Algo.Domain
     {
         double DefaultSlippage { get; }
         double Point { get; }
-        double Bid { get; set; }
-        double Ask { get; set; }
+        double Bid { get; }
+        double Ask { get; }
         bool HasBid { get; }
         bool HasAsk { get; }
         int Digits { get; }

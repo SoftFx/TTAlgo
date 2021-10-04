@@ -85,7 +85,7 @@ namespace TickTrader.Algo.Domain
         public void Update(IOrderUpdateInfo info)
         {
             var oldAmount = RequestedAmount;
-            var oldPrice = Type.IsStop() ? StopPrice : Price;
+            var oldPrice = Type.IsStop() ? StopPrice : Price; //? why not just price
             var oldStopPrice = StopPrice;
             var oldType = Type;
             var oldSwap = Swap;
@@ -101,7 +101,6 @@ namespace TickTrader.Algo.Domain
             InitialType = info.InitialType;
             Side = info.Side;
             MaxVisibleAmount = info.MaxVisibleAmount;
-            //Price = isStopOrder ? info.StopPrice : info.Price;
             Price = info.Price;
             StopPrice = info.StopPrice;
             Created = info.Created;
@@ -111,8 +110,8 @@ namespace TickTrader.Algo.Domain
             StopLoss = info.StopLoss;
             TakeProfit = info.TakeProfit;
             Slippage = info.Slippage;
-            Swap = (double)info.Swap;
-            Commission = (double)info.Commission;
+            Swap = info.Swap;
+            Commission = info.Commission;
             Options = info.Options;
             RequestedOpenPrice = info.RequestedOpenPrice;
             ParentOrderId = info.ParentOrderId;

@@ -26,7 +26,7 @@ namespace TickTrader.Algo.Calculator
             _isHidden = isHidden;
         }
 
-        public StatsChange Recalculate()
+        public StatsChangeToken Recalculate()
         {
             var oldMargin = _currentMargin;
             var oldProfit = _currentProfit;
@@ -34,46 +34,38 @@ namespace TickTrader.Algo.Calculator
 
             _errorsCount = 0;
 
-            if (IsEmpty)
+            if (_marginAmount > 0.0)
             {
-                _currentMargin = 0;
-                _currentProfit = 0;
+                var response = _calculator?.Margin?.Calculate(new MarginRequest(_marginAmount, _type, _isHidden));
+                _currentMargin = response?.Value ?? 0.0;
+
+                if (response == null || response.IsFailed)
+                    _errorsCount++;
             }
             else
+                _currentMargin = 0;
+
+            if (_profitAmount > 0.0)
             {
-                if (_marginAmount > 0.0)
-                {
-                    var response = _calculator?.Margin?.Calculate(new MarginRequest(_marginAmount, _type, _isHidden));
-                    _currentMargin = response?.Value ?? 0.0;
+                var response = _calculator?.Profit?.Calculate(new ProfitRequest(_totalAmount / _profitAmount, _profitAmount, _side));
+                _currentProfit = response?.Value ?? 0.0;
 
-                    if (response == null || response.IsFailed)
-                        _errorsCount++;
-                }
-                else
-                    _currentMargin = 0;
-
-                if (_profitAmount > 0.0)
-                {
-                    var response = _calculator?.Profit?.Calculate(new ProfitRequest(_totalAmount / _profitAmount, _profitAmount, _side));
-                    _currentProfit = response?.Value ?? 0.0;
-
-                    if (response == null || response.IsFailed)
-                        _errorsCount++;
-                }
-                else
-                    _currentProfit = 0;
+                if (response == null || response.IsFailed)
+                    _errorsCount++;
             }
+            else
+                _currentProfit = 0;
 
-            return new StatsChange(_currentMargin - oldMargin, _currentProfit - oldProfit, _errorsCount - oldErros);
+            return new StatsChangeToken(_currentMargin - oldMargin, _currentProfit - oldProfit, _errorsCount - oldErros);
         }
 
-        public StatsChange AddOrder(double remAmount, double? price)
+        public StatsChangeToken AddOrder(double remAmount, double? price)
         {
             AddOrderWithoutCalculation(remAmount, price);
             return Recalculate();
         }
 
-        public StatsChange RemoveOrder(double remAmount, double? price)
+        public StatsChangeToken RemoveOrder(double remAmount, double? price)
         {
             if (_type.IsPosition())
                 RemovePositionWithoutCalculation(remAmount, price ?? 0.0);
