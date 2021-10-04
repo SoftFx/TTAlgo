@@ -39,7 +39,7 @@
   <ItemGroup>
     <Resource Include="configuration.ico" />
     <Content Include="NLog.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Update="NLog.xsd">
       <SubType>Designer</SubType>

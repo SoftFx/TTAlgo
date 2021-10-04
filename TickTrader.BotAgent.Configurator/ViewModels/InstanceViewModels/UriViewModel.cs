@@ -14,9 +14,9 @@ namespace TickTrader.BotAgent.Configurator
         private readonly List<string> _correctHosts = new List<string>()
         {
             IPAddress.Any.ToString(),
-            $"[{IPAddress.IPv6Any.ToString()}]",
+            $"[{IPAddress.IPv6Any}]",
             IPAddress.Loopback.ToString(),
-            $"[{IPAddress.IPv6Loopback.ToString()}]"
+            $"[{IPAddress.IPv6Loopback}]"
         };
 
         private readonly PortsManager _portsManager;
@@ -163,15 +163,15 @@ namespace TickTrader.BotAgent.Configurator
             {
                 var hosts = UriChecker.GetEncodedDnsHosts(uri);
 
-                if (encodedUrls.Where(u => u.Host == hosts.Item1 && u.Port == uri.Port).Count() > 0)
+                if (encodedUrls.Any(u => u.Host == hosts.Item1 && u.Port == uri.Port))
                     throw new ArgumentException(Resources.ExistingUrlEx);
 
-                if (encodedUrls.Where(u => u.Host == hosts.Item2 && u.Port == uri.Port).Count() > 0)
+                if (encodedUrls.Any(u => u.Host == hosts.Item2 && u.Port == uri.Port))
                     throw new ArgumentException(Resources.ExistingUrlEx);
             }
             else
             {
-                if (encodedUrls.Where(u => u.Host == Host && u.Port == _port).Count() > 0)
+                if (encodedUrls.Any(u => u.Host == Host && u.Port == _port))
                     throw new ArgumentException(Resources.ExistingUrlEx);
             }
 
