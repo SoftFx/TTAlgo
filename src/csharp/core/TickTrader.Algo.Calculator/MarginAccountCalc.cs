@@ -8,9 +8,8 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Calculator
 {
-    public class MarginAccountCalculator
+    public sealed class MarginAccountCalculator
     {
-
         private readonly Dictionary<string, SymbolCalc> _bySymbolMap = new Dictionary<string, SymbolCalc>();
         private readonly Action<Exception, string> _onLogError;
         private readonly AlgoMarketState _market;
@@ -174,6 +173,9 @@ namespace TickTrader.Algo.Calculator
 
         private void AddOrder(IOrderCalcInfo order)
         {
+            if (order.IgnoreCalculation)
+                return;
+
             try
             {
                 AddInternal(order);
@@ -191,6 +193,9 @@ namespace TickTrader.Algo.Calculator
 
         private void AddOrderWithoutCalculation(IOrderCalcInfo order)
         {
+            if (order.IgnoreCalculation)
+                return;
+
             try
             {
                 AddInternal(order);
@@ -217,7 +222,8 @@ namespace TickTrader.Algo.Calculator
         private void AddOrdersBunch(IEnumerable<IOrderCalcInfo> bunch)
         {
             foreach (var order in bunch)
-                AddOrderWithoutCalculation(order);
+                if (!order.IgnoreCalculation)
+                    AddOrderWithoutCalculation(order);
 
             foreach (var smb in _bySymbolMap.Values)
                 smb.Recalculate(null);
@@ -225,6 +231,9 @@ namespace TickTrader.Algo.Calculator
 
         private void RemoveOrder(IOrderCalcInfo order)
         {
+            if (order.IgnoreCalculation)
+                return;
+
             try
             {
                 Swap -= order.Swap;

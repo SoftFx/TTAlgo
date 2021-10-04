@@ -257,6 +257,8 @@ namespace TickTrader.Algo.CoreV1
 
             public IContingentOrderTrigger ContingentTrigger => null;
 
+            public bool IgnoreCalculation => false;
+
             #endregion
 
             internal void SetSwap(double swap)

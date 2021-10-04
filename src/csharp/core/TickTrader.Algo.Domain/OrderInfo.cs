@@ -34,6 +34,8 @@ namespace TickTrader.Algo.Domain
 
         public bool IsHidden => MaxVisibleAmount.HasValue && MaxVisibleAmount.Value < 1e-9;
 
+        public bool IgnoreCalculation => IsContingentOrder;
+
 
         public ISymbolCalculator Calculator { get; set; }
 
@@ -62,7 +64,6 @@ namespace TickTrader.Algo.Domain
         double IProfitCalculateRequest.Volume => RemainingAmount;
 
         Types.Side IProfitCalculateRequest.Side => Side;
-
 
 
         public event Action<OrderEssentialsChangeArgs> EssentialsChanged;
@@ -157,6 +158,8 @@ namespace TickTrader.Algo.Domain
         double CashMargin { get; set; }
 
         SymbolInfo SymbolInfo { get; }
+
+        bool IgnoreCalculation { get; }
 
         event Action<OrderEssentialsChangeArgs> EssentialsChanged;
         event Action<OrderPropArgs<double>> SwapChanged;
