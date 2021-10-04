@@ -1052,7 +1052,7 @@ namespace TickTrader.Algo.Account.Fdk2
                                 return Domain.OrderExecReport.Types.CmdResultCode.IncorrectPricePrecision;
                             else if (message.EndsWith("because close-only mode on"))
                                 return Domain.OrderExecReport.Types.CmdResultCode.CloseOnlyTrading;
-                            else if (message == "Max visible amount is not valid for market orders" || message.StartsWith("Max visible amount is valid only for"))
+                            else if (message.StartsWith("Max visible amount is not valid for") || message.StartsWith("Max visible amount is valid only for"))
                                 return Domain.OrderExecReport.Types.CmdResultCode.MaxVisibleVolumeNotSupported;
                             else if (message.StartsWith("Order Not Found") || message.EndsWith("was not found."))
                                 return Domain.OrderExecReport.Types.CmdResultCode.OrderNotFound;
@@ -1082,15 +1082,23 @@ namespace TickTrader.Algo.Account.Fdk2
                                 return Domain.OrderExecReport.Types.CmdResultCode.OcoAlreadyExists;
                             else if (message.StartsWith("No Dealer"))
                                 return Domain.OrderExecReport.Types.CmdResultCode.DealerReject;
-                            else if (message.StartsWith("Trigger time cannot"))
+                            else if (message.StartsWith("Trigger time cannot") ||
+                                     message.Contains("must have the same trigger time"))
                                 return Domain.OrderExecReport.Types.CmdResultCode.IncorrectTriggerTime;
                             else if (message.StartsWith("Trigger Order Id"))
                                 return Domain.OrderExecReport.Types.CmdResultCode.IncorrectTriggerOrderId;
                             else if ((message.Contains("Trigger Order") && message.Contains("Type must be")) ||
-                                      message.StartsWith("Contingent orders with type") && message.EndsWith("are not supported."))
+                                      message.StartsWith("Contingent orders with type") && message.EndsWith("are not supported.") ||
+                                      message.Contains("must have the same trigger type"))
                                 return Domain.OrderExecReport.Types.CmdResultCode.IncorrectTriggerOrderType;
                             else if (message.Contains("Trigger Order") && message.Contains("Expired"))
                                 return Domain.OrderExecReport.Types.CmdResultCode.IncorrectExpiration;
+                            else if (message.EndsWith("cannot be Contingent order"))
+                                return Domain.OrderExecReport.Types.CmdResultCode.IncorrectConditionsForTrigger;
+                            else if (message.StartsWith("Cannot create OCO relation between"))
+                                return Domain.OrderExecReport.Types.CmdResultCode.OcoRelatedOrderIncorrectOptions;
+                            else if (message.StartsWith("OCO order cannot be related to itself"))
+                                return Domain.OrderExecReport.Types.CmdResultCode.OcoIncorrectRelatedId;
                         }
                         break;
                     }

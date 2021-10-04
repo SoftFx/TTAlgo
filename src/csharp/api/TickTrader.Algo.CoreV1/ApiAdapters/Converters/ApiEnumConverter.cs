@@ -151,6 +151,9 @@ namespace TickTrader.Algo.CoreV1
                 case Domain.OrderExecReport.Types.CmdResultCode.IncorrectTriggerTime: return OrderCmdResultCodes.IncorrectTriggerTime;
                 case Domain.OrderExecReport.Types.CmdResultCode.IncorrectTriggerOrderId: return OrderCmdResultCodes.IncorrectTriggerOrderId;
                 case Domain.OrderExecReport.Types.CmdResultCode.IncorrectTriggerOrderType: return OrderCmdResultCodes.IncorrectTriggerOrderType;
+                case Domain.OrderExecReport.Types.CmdResultCode.IncorrectConditionsForTrigger: return OrderCmdResultCodes.IncorrectConditionsForTrigger;
+                case Domain.OrderExecReport.Types.CmdResultCode.OcoRelatedOrderIncorrectOptions: return OrderCmdResultCodes.OCORelatedOrderIncorrectOptions;
+                case Domain.OrderExecReport.Types.CmdResultCode.OcoIncorrectRelatedId: return OrderCmdResultCodes.OCOIncorrectRelatedId;
                 default: throw new ArgumentException($"Unsupported code {code}");
             }
         }

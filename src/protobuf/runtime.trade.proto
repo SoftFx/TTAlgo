@@ -187,6 +187,9 @@ message OrderExecReport {
         INCORRECT_TRIGGER_TIME = 133;
         INCORRECT_TRIGGER_ORDER_ID = 134;
         INCORRECT_TRIGGER_ORDER_TYPE = 135;
+        INCORRECT_CONDITIONS_FOR_TRIGGER = 136;
+        OCO_RELATED_ORDER_INCORRECT_OPTIONS = 137;
+        OCO_INCORRECT_RELATED_ID = 138;
     }
 
     google.protobuf.StringValue operation_id = 1;
