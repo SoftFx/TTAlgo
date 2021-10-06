@@ -224,6 +224,16 @@ namespace TickTrader.Algo.Runtime
             return context;
         }
 
+        internal IAsyncPagedEnumerator<TriggerReportInfo> GetTriggerHistory(TriggerHistoryRequest request)
+        {
+            var callId = RpcMessage.GenerateCallId();
+            var context = new PagedEnumeratorAdapter<TriggerReportInfo>(TriggerHistoryPageResponseHandler,
+                () => _session.Tell(RpcMessage.Request(Id, callId, new TriggerHistoryRequestNextPage())),
+                () => _session.Tell(RpcMessage.Request(Id, callId, new TriggerHistoryRequestDispose())));
+            _session.Ask(RpcMessage.Request(Id, callId, request), context);
+            return context;
+        }
+
         internal async Task<List<QuoteInfo>> GetFeedSnapshotAsync()
         {
             var context = new RpcResponseTaskContext<QuotePage>(RpcHandler.SingleReponseHandler);
@@ -340,7 +350,29 @@ namespace TickTrader.Algo.Runtime
             {
                 var response = payload.Unpack<TradeHistoryPageResponse>();
                 var res = new List<TradeReportInfo>(response.Reports);
-                var res2 = taskSrc.TrySetResult(res);
+
+                taskSrc.TrySetResult(res);
+
+                if (response.Reports.Count != 0)
+                    return false;
+            }
+
+            return true;
+        }
+
+        private bool TriggerHistoryPageResponseHandler(TaskCompletionSource<List<TriggerReportInfo>> taskSrc, Any payload)
+        {
+            if (payload.TryGetError(out var ex))
+            {
+                taskSrc.TrySetException(ex);
+            }
+            else
+            {
+                var response = payload.Unpack<TriggerHistoryPageResponse>();
+                var res = new List<TriggerReportInfo>(response.Reports);
+
+                taskSrc.TrySetResult(res);
+
                 if (response.Reports.Count != 0)
                     return false;
             }

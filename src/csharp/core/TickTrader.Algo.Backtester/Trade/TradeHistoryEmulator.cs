@@ -10,7 +10,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Backtester
 {
-    internal class TradeHistoryEmulator : TradeHistory
+    internal class TradeHistoryEmulator : IHistoryProvider
     {
         private List<TradeReportAdapter> _history = new List<TradeReportAdapter>();
         private TimeKeyGenerator _idGenerator = new TimeKeyGenerator();
@@ -40,7 +40,7 @@ namespace TickTrader.Algo.Backtester
         {
             const int pageSize = 4000;
 
-            return _history.Select(r => r.Entity).GetPagedEnumerator(pageSize);
+            return _history.Select(r => r.Info).GetPagedEnumerator(pageSize);
         }
 
         #region TradeHistory implementation
@@ -140,8 +140,43 @@ namespace TickTrader.Algo.Backtester
         private static IEnumerable<TradeReport> SkipCancelReports(IEnumerable<TradeReportAdapter> src, ThQueryOptions options)
         {
             if (options.HasFlag(ThQueryOptions.SkipCanceled))
-                return src.Where(r => r.Entity.ReportType != Domain.TradeReportInfo.Types.ReportType.OrderCanceled && r.Entity.ReportType != Domain.TradeReportInfo.Types.ReportType.OrderExpired);
+                return src.Where(r => r.Info.ReportType != Domain.TradeReportInfo.Types.ReportType.OrderCanceled && r.Info.ReportType != Domain.TradeReportInfo.Types.ReportType.OrderExpired);
             return src;
+        }
+
+        IEnumerable<TriggerReport> TriggerHistory.Get(ThQueryOptions options)
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerable<TriggerReport> TriggerHistory.GetRange(DateTime from, DateTime to, ThQueryOptions options)
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerable<TriggerReport> TriggerHistory.GetRange(DateTime to, ThQueryOptions options)
+        {
+            throw new NotImplementedException();
+        }
+
+        IAsyncEnumerator<TriggerReport> TriggerHistory.GetAsync(ThQueryOptions options)
+        {
+            throw new NotImplementedException();
+        }
+
+        IAsyncEnumerator<TriggerReport> TriggerHistory.GetRangeAsync(DateTime from, DateTime to, ThQueryOptions options)
+        {
+            throw new NotImplementedException();
+        }
+
+        IAsyncEnumerator<TriggerReport> TriggerHistory.GetRangeAsync(DateTime to, ThQueryOptions options)
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerator<TriggerReport> IEnumerable<TriggerReport>.GetEnumerator()
+        {
+            throw new NotImplementedException();
         }
     }
 }

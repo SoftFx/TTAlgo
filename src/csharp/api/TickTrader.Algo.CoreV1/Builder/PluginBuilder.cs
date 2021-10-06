@@ -79,7 +79,7 @@ namespace TickTrader.Algo.CoreV1
             }
         }
         public IPluginLogger Logger { get { return logAdapter.Logger; } set { logAdapter.Logger = value; } }
-        public TradeHistory TradeHistoryProvider { get { return Account.HistoryProvider; } set { Account.HistoryProvider = value; } }
+        internal IHistoryProvider TradeHistoryProvider { get { return Account.HistoryProvider; } set { Account.HistoryProvider = value; } }
         public CustomFeedProvider CustomFeedProvider { get { return marketData.CustomCommds; } set { marketData.CustomCommds = value; } }
         public Action<Exception> OnException { get; set; }
         public Action<Exception> OnInitFailed { get; set; }

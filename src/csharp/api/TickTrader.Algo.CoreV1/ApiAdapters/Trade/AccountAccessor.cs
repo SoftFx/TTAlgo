@@ -60,7 +60,7 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public TradeHistory HistoryProvider { get; set; }
+        internal IHistoryProvider HistoryProvider { get; set; }
 
         public string Id
         {
@@ -240,7 +240,7 @@ namespace TickTrader.Algo.CoreV1
         AssetList AccountDataProvider.Assets => Assets;
         NetPositionList AccountDataProvider.NetPositions => NetPositions;
         TradeHistory AccountDataProvider.TradeHistory => HistoryProvider;
-
+        TriggerHistory AccountDataProvider.TriggerHistory => HistoryProvider;
         internal MarginAccountCalculator MarginCalc { get; set; }
         public double Equity => GetCalc()?.Equity ?? double.NaN;
         public double Margin => GetCalc()?.Margin ?? double.NaN;

@@ -157,9 +157,14 @@ namespace TickTrader.Algo.Runtime
 
         #region ITradeHistoryProvider
 
-        public IAsyncPagedEnumerator<TradeReportInfo> GetTradeHistory(DateTime? from, DateTime? to, TradeHistoryRequestOptions options)
+        public IAsyncPagedEnumerator<TradeReportInfo> GetTradeHistory(DateTime? from, DateTime? to, HistoryRequestOptions options)
         {
             return _account.GetTradeHistory(new TradeHistoryRequest { From = from?.ToUniversalTime().ToTimestamp(), To = to?.ToUniversalTime().ToTimestamp(), Options = options });
+        }
+
+        public IAsyncPagedEnumerator<TriggerReportInfo> GetTriggerHistory(DateTime? from, DateTime? to, HistoryRequestOptions options)
+        {
+            return _account.GetTriggerHistory(new TriggerHistoryRequest { From = from?.ToUniversalTime().ToTimestamp(), To = to?.ToUniversalTime().ToTimestamp(), Options = options });
         }
 
         #endregion ITradeHistoryProvider

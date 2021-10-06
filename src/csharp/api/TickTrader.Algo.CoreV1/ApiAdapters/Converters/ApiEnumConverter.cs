@@ -158,14 +158,14 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public static Domain.TradeHistoryRequestOptions ToDomainEnum(this ThQueryOptions options)
+        public static Domain.HistoryRequestOptions ToDomainEnum(this ThQueryOptions options)
         {
-            var res = Domain.TradeHistoryRequestOptions.NoOptions;
+            var res = Domain.HistoryRequestOptions.NoOptions;
 
             if (options.HasFlag(ThQueryOptions.SkipCanceled))
-                res |= Domain.TradeHistoryRequestOptions.SkipCanceled;
+                res |= Domain.HistoryRequestOptions.SkipCanceled;
             if (options.HasFlag(ThQueryOptions.Backwards))
-                res |= Domain.TradeHistoryRequestOptions.Backwards;
+                res |= Domain.HistoryRequestOptions.Backwards;
 
             return res;
         }

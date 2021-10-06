@@ -10,7 +10,7 @@ namespace TickTrader.Algo.TestCollection.Bots
         SetupMainSymbol = false, Description = "Prints account trade history records.")]
     public class TradeHistoryBot : TradeBot
     {
-        private StringBuilder _builder = new StringBuilder();
+        private readonly StringBuilder _builder = new StringBuilder(1 << 10);
         private int count;
 
         [Parameter(DisplayName = "Execution")]
@@ -20,60 +20,111 @@ namespace TickTrader.Algo.TestCollection.Bots
         public TradeHistoryFilters Filter { get; set; }
 
         [Parameter]
+        public HistoryType HistoryType { get; set; }
+
+        [Parameter]
         public bool SkipCancelOrders { get; set; }
 
-        protected async override void OnStart()
+        protected override async void OnStart()
         {
-            var builder = new StringBuilder();
-
             var options = SkipCancelOrders ? ThQueryOptions.SkipCanceled : ThQueryOptions.None;
 
             try
             {
                 if (ExecType == SyncOrAsync.Sync)
                 {
-                    if (Filter == TradeHistoryFilters.All)
-                        Print(Account.TradeHistory.Get(options));
-                    else if (Filter == TradeHistoryFilters.Today)
-                        Print(Account.TradeHistory.GetRange(DateTime.Today, DateTime.Today + TimeSpan.FromDays(1), options));
-                    else if (Filter == TradeHistoryFilters.Yesterday)
-                        Print(Account.TradeHistory.GetRange(DateTime.Today - TimeSpan.FromDays(1), DateTime.Today, options));
-                    else if (Filter == TradeHistoryFilters.ThisYear)
+                    switch (Filter)
                     {
-                        var from = new DateTime(DateTime.Now.Year, 1, 1);
-                        var to = new DateTime(DateTime.Now.Year + 1, 1, 1);
-                        Print(Account.TradeHistory.GetRange(from, to, options));
-                    }
-                    else if (Filter == TradeHistoryFilters.PreviousYear)
-                    {
-                        var from = new DateTime(DateTime.Now.Year - 1, 1, 1);
-                        var to = new DateTime(DateTime.Now.Year, 1, 1);
-                        Print(Account.TradeHistory.GetRange(from, to, options));
+                        case TradeHistoryFilters.All:
+                            if (HistoryType == HistoryType.Trades)
+                                PrintList(Account.TradeHistory.Get(options));
+                            else
+                                PrintList(Account.TriggerHistory.Get(options));
+                            break;
+
+                        case TradeHistoryFilters.Today:
+                            if (HistoryType == HistoryType.Trades)
+                                PrintList(Account.TradeHistory.GetRange(DateTime.Today, DateTime.Today + TimeSpan.FromDays(1), options));
+                            else
+                                PrintList(Account.TriggerHistory.GetRange(DateTime.Today, DateTime.Today + TimeSpan.FromDays(1), options));
+                            break;
+
+                        case TradeHistoryFilters.Yesterday:
+                            if (HistoryType == HistoryType.Trades)
+                                PrintList(Account.TradeHistory.GetRange(DateTime.Today - TimeSpan.FromDays(1), DateTime.Today, options));
+                            else
+                                PrintList(Account.TriggerHistory.GetRange(DateTime.Today - TimeSpan.FromDays(1), DateTime.Today, options));
+                            break;
+
+                        case TradeHistoryFilters.ThisYear:
+                            var from = new DateTime(DateTime.Now.Year, 1, 1);
+                            var to = new DateTime(DateTime.Now.Year + 1, 1, 1);
+
+                            if (HistoryType == HistoryType.Trades)
+                                PrintList(Account.TradeHistory.GetRange(from, to, options));
+                            else
+                                PrintList(Account.TriggerHistory.GetRange(from, to, options));
+                            break;
+
+                        case TradeHistoryFilters.PreviousYear:
+                            from = new DateTime(DateTime.Now.Year - 1, 1, 1);
+                            to = new DateTime(DateTime.Now.Year, 1, 1);
+
+                            if (HistoryType == HistoryType.Trades)
+                                PrintList(Account.TradeHistory.GetRange(from, to, options));
+                            else
+                                PrintList(Account.TradeHistory.GetRange(from, to, options));
+                            break;
                     }
                 }
                 else
                 {
-                    if (Filter == TradeHistoryFilters.All)
-                        await Print(Account.TradeHistory.GetAsync(options));
-                    else if (Filter == TradeHistoryFilters.Today)
-                        await Print(Account.TradeHistory.GetRangeAsync(DateTime.Today, DateTime.Today + TimeSpan.FromDays(1), options));
-                    else if (Filter == TradeHistoryFilters.Yesterday)
-                        await Print(Account.TradeHistory.GetRangeAsync(DateTime.Today - TimeSpan.FromDays(1), DateTime.Today, options));
-                    else if (Filter == TradeHistoryFilters.ThisYear)
+                    switch (Filter)
                     {
-                        var from = new DateTime(DateTime.Now.Year, 1, 1);
-                        var to = new DateTime(DateTime.Now.Year + 1, 1, 1);
-                        await Print(Account.TradeHistory.GetRangeAsync(from, to, options));
-                    }
-                    else if (Filter == TradeHistoryFilters.PreviousYear)
-                    {
-                        var from = new DateTime(DateTime.Now.Year - 1, 1, 1);
-                        var to = new DateTime(DateTime.Now.Year, 1, 1);
-                        await Print(Account.TradeHistory.GetRangeAsync(from, to, options));
+                        case TradeHistoryFilters.All:
+                            if (HistoryType == HistoryType.Trades)
+                                await PrintList(Account.TradeHistory.GetAsync(options));
+                            else
+                                await PrintList(Account.TriggerHistory.GetAsync(options));
+                            break;
+
+                        case TradeHistoryFilters.Today:
+                            if (HistoryType == HistoryType.Trades)
+                                await PrintList(Account.TradeHistory.GetRangeAsync(DateTime.Today, DateTime.Today + TimeSpan.FromDays(1), options));
+                            else
+                                await PrintList(Account.TriggerHistory.GetRangeAsync(DateTime.Today, DateTime.Today + TimeSpan.FromDays(1), options));
+                            break;
+
+                        case TradeHistoryFilters.Yesterday:
+                            if (HistoryType == HistoryType.Trades)
+                                await PrintList(Account.TradeHistory.GetRangeAsync(DateTime.Today - TimeSpan.FromDays(1), DateTime.Today, options));
+                            else
+                                await PrintList(Account.TriggerHistory.GetRangeAsync(DateTime.Today - TimeSpan.FromDays(1), DateTime.Today, options));
+                            break;
+
+                        case TradeHistoryFilters.ThisYear:
+                            var from = new DateTime(DateTime.Now.Year, 1, 1);
+                            var to = new DateTime(DateTime.Now.Year + 1, 1, 1);
+
+                            if (HistoryType == HistoryType.Trades)
+                                await PrintList(Account.TradeHistory.GetRangeAsync(from, to, options));
+                            else
+                                await PrintList(Account.TriggerHistory.GetRangeAsync(from, to, options));
+                            break;
+
+                        case TradeHistoryFilters.PreviousYear:
+                            from = new DateTime(DateTime.Now.Year - 1, 1, 1);
+                            to = new DateTime(DateTime.Now.Year, 1, 1);
+
+                            if (HistoryType == HistoryType.Trades)
+                                await PrintList(Account.TradeHistory.GetRangeAsync(from, to, options));
+                            else
+                                await PrintList(Account.TradeHistory.GetRangeAsync(from, to, options));
+                            break;
                     }
                 }
 
-                Status.WriteLine("Done! Printed {0} history records.", count);
+                Status.WriteLine($"Done! Printed {count} history records.");
             }
             catch (Exception ex)
             {
@@ -83,35 +134,59 @@ namespace TickTrader.Algo.TestCollection.Bots
             Exit();
         }
 
-        private void Print(IEnumerable<TradeReport> reports)
+        private void PrintList<T>(IEnumerable<T> reports)
         {
             foreach (var item in reports)
             {
-                Print(item);
+                PrintRecord(item);
                 count++;
             }
         }
 
-        private async Task Print(IAsyncEnumerator<TradeReport> e)
+        private async Task PrintList<T>(IAsyncEnumerator<T> e) where T : class
         {
             while (await e.Next())
             {
-                Print(e.Current);
+                PrintRecord(e.Current);
                 count++;
             }
         }
 
-        private void Print(TradeReport item)
+        private void PrintRecord(object item)
         {
             _builder.Clear();
-            _builder.Append(item.ReportId).Append(" ");
-            _builder.Append(item.ReportTime).Append(" ");
-            _builder.Append(item.ActionType).Append(" ");
 
-            if (item.Type != TradeRecordTypes.Unknown && item.Type != TradeRecordTypes.Withdrawal)
-                _builder.Append(item.Symbol).Append(" ");
+            switch (item)
+            {
+                case TradeReport tradeReport:
+                    PrintTrade(tradeReport);
+                    break;
+
+                case TriggerReport triggerReport:
+                    PrintTrigger(triggerReport);
+                    break;
+            }
 
             Print(_builder.ToString());
+        }
+
+        private void PrintTrade(TradeReport item)
+        {
+            _builder.Append(item.ReportId).Append(' ')
+                    .Append(item.ReportTime).Append(' ')
+                    .Append(item.ActionType).Append(' ');
+
+            if (item.Type != TradeRecordTypes.Unknown && item.Type != TradeRecordTypes.Withdrawal)
+                _builder.Append(item.Symbol).Append(' ');
+        }
+
+        private void PrintTrigger(TriggerReport item)
+        {
+            _builder.Append(item.ContingentOrderId).Append(' ')
+                    .Append(item.TriggerType).Append(' ')
+                    .Append($"{item.TransactionTime:yyyy/MM/dd HH:mm:ss.fff}").Append(' ')
+                    .Append(item.Symbol).Append(' ')
+                    .Append(item.TriggerState);
         }
     }
 
@@ -119,6 +194,12 @@ namespace TickTrader.Algo.TestCollection.Bots
     {
         Sync,
         Async
+    }
+
+    public enum HistoryType
+    {
+        Trades,
+        Triggers,
     }
 
     public enum TradeHistoryFilters

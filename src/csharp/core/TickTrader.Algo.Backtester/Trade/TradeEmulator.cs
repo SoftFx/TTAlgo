@@ -991,8 +991,8 @@ namespace TickTrader.Algo.Backtester
             if (tradeReport != null)
             {
                 tradeReport.FillGenericOrderData(_calcFixture, order);
-                tradeReport.Entity.OrderLastFillAmount = (double?)fillAmount;
-                tradeReport.Entity.OrderFillPrice = (double?)fillPrice;
+                tradeReport.Info.OrderLastFillAmount = (double?)fillAmount;
+                tradeReport.Info.OrderFillPrice = (double?)fillPrice;
 
                 if (_acc.IsMarginType)
                 {
@@ -1091,8 +1091,8 @@ namespace TickTrader.Algo.Backtester
             var report = _history.Create(_scheduler.UnsafeVirtualTimePoint, order.SymbolInfo, trReason == TradeReportInfo.Types.Reason.Expired ? TradeReportInfo.Types.ReportType.OrderExpired : TradeReportInfo.Types.ReportType.OrderCanceled, trReason);
             report.FillGenericOrderData(_calcFixture, order);
             report.FillAccountSpecificFields(_calcFixture);
-            report.Entity.RemainingQuantity = 0;
-            report.Entity.MaxVisibleQuantity = (double?)order.Entity.MaxVisibleAmount;
+            report.Info.RemainingQuantity = 0;
+            report.Info.MaxVisibleQuantity = (double?)order.Entity.MaxVisibleAmount;
 
             if (_acc.IsMarginType)
             {
@@ -1367,13 +1367,13 @@ namespace TickTrader.Algo.Backtester
             // commission
             CommisionEmulator.OnNetPositionOpened(fromOrder, position, fillAmount, smb, charges, _calcFixture);
 
-            tradeReport.Entity.Commission = (double)charges.Commission;
+            tradeReport.Info.Commission = (double)charges.Commission;
             //tradeReport.Entity.AgentCommission = (double)charges.AgentCommission;
             //tradeReport.Entity.MinCommissionCurrency = (double)charges.MinCommissionCurrency;
             //tradeReport.Entity.MinCommissionConversionRate =  (double)charges.MinCommissionConversionRate;
 
             var balanceMovement = charges.Total;
-            tradeReport.Entity.TransactionAmount = (double)balanceMovement;
+            tradeReport.Info.TransactionAmount = (double)balanceMovement;
 
             if (fromOrder.Info.Type == OrderInfo.Types.Type.Market || fromOrder.Info.RemainingAmount == 0)
                 _acc.Orders.Remove(fromOrder.Info);
@@ -1389,7 +1389,7 @@ namespace TickTrader.Algo.Backtester
 
             tradeReport.FillAccountSpecificFields(_calcFixture);
             tradeReport.FillPosData(position, fillPrice, 0/*fromOrder.MarginRateCurrent*/);
-            tradeReport.Entity.PositionOpened = _scheduler.UnsafeVirtualTimePoint.ToTimestamp();
+            tradeReport.Info.PositionOpened = _scheduler.UnsafeVirtualTimePoint.ToTimestamp();
             //tradeReport.Entity.OpenConversionRate = (double?)fromOrder.MarginRateCurrent;
 
             //LogTransactionDetails(() => "Final position: " + position.GetBriefInfo(), JournalEntrySeverities.Info, TransactDetails.Create(position.Id, position.Symbol));
@@ -1440,12 +1440,12 @@ namespace TickTrader.Algo.Backtester
                 //if (position.IsEmpty)
                 //    _acc.NetPositions.RemovePosition(position.Symbol);
 
-                report.Entity.TransactionAmount += (double)balanceMovement;
-                report.Entity.PositionClosed = ExecutionTime.ToTimestamp();
+                report.Info.TransactionAmount += (double)balanceMovement;
+                report.Info.PositionClosed = ExecutionTime.ToTimestamp();
                 //report.Entity.PositionOpenPrice = (double)openPrice;
-                report.Entity.PositionClosePrice = (double)closePrice;
-                report.Entity.PositionCloseQuantity = (double)oneSideClosingAmount;
-                report.Entity.Swap += (double)closeSwap;
+                report.Info.PositionClosePrice = (double)closePrice;
+                report.Info.PositionCloseQuantity = (double)oneSideClosingAmount;
+                report.Info.Swap += (double)closeSwap;
                 //report.Entity.CloseConversionRate = (double)profitRate;
 
                 //LogTransactionDetails(() => "Position closed: symbol=" + position.Symbol + " amount=" + oneSideClosingAmount + " open=" + openPrice + " close=" + closePrice

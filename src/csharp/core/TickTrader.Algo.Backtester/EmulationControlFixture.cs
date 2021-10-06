@@ -103,7 +103,7 @@ namespace TickTrader.Algo.Backtester
 
         private void TradeHistory_OnReportAdded(TradeReportAdapter rep)
         {
-            Executor.OnUpdate(rep.Entity);
+            Executor.OnUpdate(rep.Info);
         }
 
         private Exception WrapException(Exception ex)

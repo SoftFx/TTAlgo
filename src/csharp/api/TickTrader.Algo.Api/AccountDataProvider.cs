@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Api
 {
@@ -28,7 +24,7 @@ namespace TickTrader.Algo.Api
         NetPositionList NetPositions { get; }
         AssetList Assets { get; }
         TradeHistory TradeHistory { get; }
-
+        TriggerHistory TriggerHistory { get; }
         OrderList OrdersByTag(string orderTag);
         OrderList OrdersBySymbol(string symbol);
         OrderList OrdersBy(Predicate<Order> customCondition);

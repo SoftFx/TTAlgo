@@ -230,13 +230,23 @@ namespace TickTrader.Algo.Account
                 _ref = historyRef;
             }
 
-            public IAsyncPagedEnumerator<Domain.TradeReportInfo> GetTradeHistory(DateTime? from, DateTime? to, Domain.TradeHistoryRequestOptions options)
+            public IAsyncPagedEnumerator<Domain.TradeReportInfo> GetTradeHistory(DateTime? from, DateTime? to, Domain.HistoryRequestOptions options)
             {
-                bool skipCancels = options.HasFlag(Domain.TradeHistoryRequestOptions.SkipCanceled);
-                bool backwards = options.HasFlag(Domain.TradeHistoryRequestOptions.Backwards);
+                bool skipCancels = options.HasFlag(Domain.HistoryRequestOptions.SkipCanceled);
+                bool backwards = options.HasFlag(Domain.HistoryRequestOptions.Backwards);
 
                 var channel = DefaultChannelFactory.CreateUnbounded<Domain.TradeReportInfo>();
                 _ref.Call(a => a.GetTradeHistory(channel, from, to, skipCancels, backwards));
+                return channel.AsPagedEnumerator();
+            }
+
+            public IAsyncPagedEnumerator<Domain.TriggerReportInfo> GetTriggerHistory(DateTime? from, DateTime? to, Domain.HistoryRequestOptions options)
+            {
+                bool skipCancels = options.HasFlag(Domain.HistoryRequestOptions.SkipCanceled);
+                bool backwards = options.HasFlag(Domain.HistoryRequestOptions.Backwards);
+
+                var channel = DefaultChannelFactory.CreateUnbounded<Domain.TriggerReportInfo>();
+                _ref.Call(a => a.GetTriggerReportsHistory(channel, from, to, skipCancels, backwards));
                 return channel.AsPagedEnumerator();
             }
         }
