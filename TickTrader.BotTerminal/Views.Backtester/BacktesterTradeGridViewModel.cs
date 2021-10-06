@@ -10,13 +10,13 @@ namespace TickTrader.BotTerminal
 {
     class BacktesterTradeGridViewModel : Page
     {
-        private ObservableCollection<TransactionReport> _reports = new ObservableCollection<TransactionReport>();
+        private ObservableCollection<BaseTransactionModel> _reports = new ObservableCollection<BaseTransactionModel>();
 
         public BacktesterTradeGridViewModel(ProfileManager profile = null)
         {
             DisplayName = "Trade History";
 
-            GridView = new TradeHistoryGridViewModel(new List<TransactionReport>(), profile, true);
+            GridView = new TradeHistoryGridViewModel(new List<BaseTransactionModel>(), profile, true);
             GridView.ConvertTimeToLocal = false;
             GridView.IsSlippageSupported = false;
             GridView.AccType.Value = AccountInfo.Types.Type.Gross;
@@ -31,7 +31,7 @@ namespace TickTrader.BotTerminal
             GridView.AccType.Value = newAccType;
         }
 
-        public void Append(TransactionReport report)
+        public void Append(BaseTransactionModel report)
         {
             _reports.Add(report);
         }

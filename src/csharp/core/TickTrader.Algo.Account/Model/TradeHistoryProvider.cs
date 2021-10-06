@@ -12,36 +12,38 @@ namespace TickTrader.Algo.Account
 {
     public class TradeHistoryProvider : ActorPart
     {
-        private IAlgoLogger logger;
+        private readonly Dictionary<Ref<Handler>, ActorChannel<object>> _listeners = new Dictionary<Ref<Handler>, ActorChannel<object>>();
 
-        private ConnectionModel _connection;
-        private AsyncLock _updateLock = new AsyncLock();
-        private AsyncQueue<Domain.TradeReportInfo> _updateQueue;
-        private Dictionary<Ref<Handler>, ActorChannel<Domain.TradeReportInfo>> _listeners = new Dictionary<Ref<Handler>, ActorChannel<Domain.TradeReportInfo>>();
+        private readonly AsyncLock _updateLock = new AsyncLock();
+        private readonly ConnectionModel _connection;
+        private readonly IAlgoLogger _logger;
+
+        private AsyncQueue<object> _updateQueue;
         private bool _isStarted;
 
         public TradeHistoryProvider(ConnectionModel connection, string loggerId)
         {
-            logger = AlgoLoggerFactory.GetLogger<TradeHistoryProvider>(loggerId);
+            _logger = AlgoLoggerFactory.GetLogger<TradeHistoryProvider>(loggerId);
 
             _connection = connection;
             _connection.InitProxies += () =>
             {
-                _updateQueue = new AsyncQueue<Domain.TradeReportInfo>();
+                _updateQueue = new AsyncQueue<object>();
 
-                _connection.TradeProxy.TradeTransactionReport += TradeProxy_TradeTransactionReport;
+                _connection.TradeProxy.TradeTransactionReport += SendHistoryUpdate;
+                _connection.TradeProxy.TriggerTransactionReport += SendHistoryUpdate;
             };
 
             _connection.AsyncInitalizing += (s, c) => Start();
             _connection.AsyncDisconnected += (s, c) =>
             {
-                _connection.TradeProxy.TradeTransactionReport -= TradeProxy_TradeTransactionReport;
-
+                _connection.TradeProxy.TradeTransactionReport -= SendHistoryUpdate;
+                _connection.TradeProxy.TriggerTransactionReport -= SendHistoryUpdate;
                 return Stop();
             };
         }
 
-        private void TradeProxy_TradeTransactionReport(Domain.TradeReportInfo report)
+        private void SendHistoryUpdate(object report)
         {
             ContextSend(() => _updateQueue.Enqueue(report));
         }
@@ -67,6 +69,26 @@ namespace TickTrader.Algo.Account
             }
         }
 
+        private void GetTriggerReportsHistory(Channel<Domain.TriggerReportInfo> txChannel, DateTime? from, DateTime? to, bool skipCanceledOrders, bool backwards)
+        {
+            try
+            {
+                if (!_isStarted)
+                    throw new InvalidOperationException("No connection!");
+
+                if (from != null || to != null)
+                {
+                    from = from ?? new DateTime(1870, 0, 0);
+                    to = to ?? DateTime.UtcNow + TimeSpan.FromDays(2);
+                }
+
+                _connection.TradeProxy.GetTriggerReportsHistory(txChannel.Writer, from, to, skipCanceledOrders, backwards);
+            }
+            catch (Exception ex)
+            {
+                txChannel.Writer.TryComplete(ex);
+            }
+        }
 
         private Task Start()
         {
@@ -74,30 +96,30 @@ namespace TickTrader.Algo.Account
 
             UpdateLoop();
 
-            logger.Debug("Started.");
+            _logger.Debug("Started.");
 
             return Task.FromResult(this);
         }
 
         private async Task Stop()
         {
-            logger.Debug("Stopping...");
+            _logger.Debug("Stopping...");
 
             _updateQueue.Close();
 
-            logger.Debug("Queue is closed.");
+            _logger.Debug("Queue is closed.");
 
             using (await _updateLock.GetLock("stop")) { }; // wait till update loop is stopped
             _updateQueue = null;
 
             _isStarted = false;
 
-            logger.Debug("Stopped.");
+            _logger.Debug("Stopped.");
         }
 
         private async void UpdateLoop()
         {
-            logger.Debug("UpdateLoop() enter");
+            _logger.Debug("UpdateLoop() enter");
 
             using (await _updateLock.GetLock("loop"))
             {
@@ -109,13 +131,13 @@ namespace TickTrader.Algo.Account
                         await channel.Write(update);
                 }
 
-                logger.Debug("UpdateLoop() stopped, flushing...");
+                _logger.Debug("UpdateLoop() stopped, flushing...");
 
                 foreach (var channel in _listeners.Values) // flush all channels
                     await channel.ConfirmRead();
             }
 
-            logger.Debug("UpdateLoop() exit");
+            _logger.Debug("UpdateLoop() exit");
         }
 
         public class Handler : Handler<TradeHistoryProvider>
@@ -128,6 +150,10 @@ namespace TickTrader.Algo.Account
 
             public ITradeHistoryProvider AlgoAdapter { get; private set; }
 
+            public event Action<Domain.TradeReportInfo> OnTradeReport;
+            public event Action<Domain.TriggerReportInfo> OnTriggerHistoryReport;
+
+
             protected override void ActorInit()
             {
                 _ref = this.GetRef();
@@ -136,12 +162,10 @@ namespace TickTrader.Algo.Account
             internal async Task Init()
             {
                 AlgoAdapter = new PagedEnumeratorAdapter(Actor);
-                var reportStream = ActorChannel.NewOutput<Domain.TradeReportInfo>(1000);
+                var reportStream = ActorChannel.NewOutput<object>(1000);
                 await Actor.OpenChannel(reportStream, (a, c) => a._listeners.Add(_ref, c));
                 ReadUpdatesLoop(reportStream);
             }
-
-            public event Action<Domain.TradeReportInfo> OnTradeReport;
 
             public Channel<Domain.TradeReportInfo> GetTradeHistory(bool skipCancelOrders)
             {
@@ -165,10 +189,35 @@ namespace TickTrader.Algo.Account
                 return channel;
             }
 
-            private async void ReadUpdatesLoop(ActorChannel<Domain.TradeReportInfo> updateStream)
+            public Channel<Domain.TriggerReportInfo> GetTriggerReportsHistory(DateTime? from, DateTime? to, bool skipCancelReports)
+            {
+                return GetTriggerHistoryInternal(from, to, skipCancelReports);
+            }
+
+            private Channel<Domain.TriggerReportInfo> GetTriggerHistoryInternal(DateTime? from, DateTime? to, bool skipCancelOrders)
+            {
+                var channel = DefaultChannelFactory.CreateUnbounded<Domain.TriggerReportInfo>();
+                Actor.Call(a => a.GetTriggerReportsHistory(channel, from, to, skipCancelOrders, true));
+                return channel;
+            }
+
+            private async void ReadUpdatesLoop(ActorChannel<object> updateStream)
             {
                 while (await updateStream.ReadNext())
-                    OnTradeReport?.Invoke(updateStream.Current);
+                {
+                    var update = updateStream.Current;
+
+                    switch (update)
+                    {
+                        case Domain.TradeReportInfo tradeHistoryUpdate:
+                            OnTradeReport?.Invoke(tradeHistoryUpdate);
+                            break;
+
+                        case Domain.TriggerReportInfo triggerHistoryUpdate:
+                            OnTriggerHistoryReport?.Invoke(triggerHistoryUpdate);
+                            break;
+                    }
+                }
             }
         }
 

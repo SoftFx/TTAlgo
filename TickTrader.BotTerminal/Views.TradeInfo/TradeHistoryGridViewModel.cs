@@ -13,10 +13,12 @@ namespace TickTrader.BotTerminal
         private readonly bool _isBacktester;
         private ProfileManager _profileManager;
         
-        public TradeHistoryGridViewModel(ICollection<TransactionReport> src, ProfileManager profile = null, bool isBacktester = false)
+        public TradeHistoryGridViewModel(ICollection<BaseTransactionModel> src, ProfileManager profile = null, bool isBacktester = false)
         {
             Items = new Property<ICollectionView>();
             Items.Value = CollectionViewSource.GetDefaultView(src);
+            Items.Value.SortDescriptions.Add(new SortDescription(nameof(BaseTransactionModel.UniqueId), ListSortDirection.Descending));
+
             AccType = new Property<AccountInfo.Types.Type?>();
 
             IsGrossAccount = AccType.Var == AccountInfo.Types.Type.Gross;
@@ -60,7 +62,7 @@ namespace TickTrader.BotTerminal
             Items.Value.Refresh();
         }
 
-        public void SetCollection(ICollection<TransactionReport> src)
+        public void SetCollection(ICollection<BaseTransactionModel> src)
         {
             var filterCopy = Items.Value.Filter;
 

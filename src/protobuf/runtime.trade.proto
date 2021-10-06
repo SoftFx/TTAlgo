@@ -306,6 +306,7 @@ message TradeReportInfo {
         POSITION_OPENED = 8;
         ORDER_ACTIVATED = 9;
         TRADE_MODIFIED = 10;
+        TRIGGER_ACTIVATED = 11;
     }
 
     enum Reason {
@@ -415,4 +416,26 @@ message TradeHistoryRequestDispose {
 
 message TradeHistoryPageResponse {
     repeated TradeReportInfo reports = 1;
+}
+
+message TriggerReportInfo {
+    enum TriggerResultState {
+        FAILED = 0;
+        SUCCESSFUL = 1;
+    }
+
+    google.protobuf.StringValue id = 1;
+    google.protobuf.StringValue contingent_order_id = 2;
+    google.protobuf.Timestamp transaction_time = 3;
+    ContingentOrderTrigger.TriggerType trigger_type = 4;
+    TriggerResultState trigger_state = 5;
+    google.protobuf.Timestamp trigger_time = 6;
+    google.protobuf.StringValue order_id_triggered_by = 7;
+    string symbol = 8;
+    OrderInfo.Type type = 9;
+    OrderInfo.Side side = 10;
+    google.protobuf.DoubleValue price = 11;
+    google.protobuf.DoubleValue stop_price = 12;
+    double amount = 13;
+    google.protobuf.StringValue related_order_id = 14;
 }

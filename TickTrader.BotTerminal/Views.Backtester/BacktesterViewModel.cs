@@ -392,7 +392,7 @@ namespace TickTrader.BotTerminal
             var symbols = _testingSymbols.Select(kv => kv.Value).ToDictionary(m => m.Name);
 
             var accType = SetupPage.Settings.AccType;
-            var trRep = TransactionReport.Create(accType, record, 5, symbols.GetOrDefault(record.Symbol));
+            var trRep = BaseTransactionModel.Create(accType, record, 5, symbols.GetOrDefault(record.Symbol));
             TradeHistoryPage.Append(trRep);
             ChartPage.Append(accType, trRep);
         }

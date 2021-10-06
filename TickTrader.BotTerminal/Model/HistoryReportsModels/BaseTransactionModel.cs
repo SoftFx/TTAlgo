@@ -3,7 +3,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
-    abstract class TransactionReport
+    internal abstract class BaseTransactionModel
     {
         public enum AggregatedTransactionType
         {
@@ -15,13 +15,22 @@ namespace TickTrader.BotTerminal
 
         public enum Reasons { None = -1, DealerDecision, StopOut, Activated, CanceledByDealer, Expired, OcoRelatedOrder }
 
-        public TransactionReport() { }
+        public enum TriggerResult { Success, Failed }
 
-        public TransactionReport(TradeReportInfo transaction, SymbolInfo symbol, int profitDigits)
+        public enum TriggerTypes { OnPendingOrderExpired, OnPendingOrderPartiallyFilled, OnTime }
+
+        public BaseTransactionModel() { }
+
+        protected BaseTransactionModel(SymbolInfo symbol)
         {
             PriceDigits = symbol?.Digits ?? -1;
-            ProfitDigits = profitDigits;
             LotSize = symbol?.LotSize ?? 1;
+            ProfitDigits = -1;
+        }
+
+        public BaseTransactionModel(TradeReportInfo transaction, SymbolInfo symbol, int profitDigits) : this(symbol)
+        {
+            ProfitDigits = profitDigits;
 
             IsPosition = transaction.OrderType == OrderInfo.Types.Type.Position;
             IsMarket = transaction.OrderType == OrderInfo.Types.Type.Market;
@@ -91,7 +100,12 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public static TransactionReport Create(AccountInfo.Types.Type accountType, TradeReportInfo tTransaction, int balanceDigits, SymbolInfo symbol = null)
+        public static TriggerTransactionModel Create(TriggerReportInfo triggerReport, SymbolInfo symbol = null)
+        {
+            return new TriggerTransactionModel(triggerReport, symbol);
+        }
+
+        public static BaseTransactionModel Create(AccountInfo.Types.Type accountType, TradeReportInfo tTransaction, int balanceDigits, SymbolInfo symbol = null)
         {
             switch (accountType)
             {
@@ -133,7 +147,7 @@ namespace TickTrader.BotTerminal
         public int PriceDigits { get; protected set; }
         public int ProfitDigits { get; protected set; }
         public double? GrossProfitLoss { get; protected set; }
-        public double NetProfitLoss { get; protected set; }
+        public double? NetProfitLoss { get; protected set; }
         public bool IsPosition { get; protected set; }
         public bool IsMarket { get; protected set; }
         public bool IsPending { get; protected set; }
@@ -172,6 +186,12 @@ namespace TickTrader.BotTerminal
         public double? Fees { get; protected set; }
         public string OCORelatedOrderId { get; protected set; }
 
+        public TriggerTypes? TriggerType { get; protected set; }
+        public string TriggeredByOrder { get; protected set; }
+        public DateTime? TriggerTime { get; protected set; }
+        public TriggerResult? TriggerState { get; protected set; }
+
+
         protected virtual AggregatedTransactionType GetTransactionType(TradeReportInfo transaction)
         {
             if (transaction.ReportType == TradeReportInfo.Types.ReportType.BalanceTransaction)
@@ -198,17 +218,22 @@ namespace TickTrader.BotTerminal
                     return transaction.OrderSide == OrderInfo.Types.Side.Buy ? AggregatedTransactionType.SplitBuy : AggregatedTransactionType.SplitSell;
             }
 
-            switch (transaction.OrderType)
+            return GetOrderType(transaction.OrderType, transaction.OrderSide);
+        }
+
+        protected static AggregatedTransactionType GetOrderType(OrderInfo.Types.Type type, OrderInfo.Types.Side side)
+        {
+            switch (type)
             {
                 case OrderInfo.Types.Type.Market:
                 case OrderInfo.Types.Type.Position:
-                    return transaction.OrderSide == OrderInfo.Types.Side.Buy ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
+                    return side.IsBuy() ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
                 case OrderInfo.Types.Type.Limit:
-                    return transaction.OrderSide == OrderInfo.Types.Side.Buy ? AggregatedTransactionType.BuyLimit : AggregatedTransactionType.SellLimit;
+                    return side.IsBuy() ? AggregatedTransactionType.BuyLimit : AggregatedTransactionType.SellLimit;
                 case OrderInfo.Types.Type.StopLimit:
-                    return transaction.OrderSide == OrderInfo.Types.Side.Buy ? AggregatedTransactionType.BuyStopLimit : AggregatedTransactionType.SellStopLimit;
+                    return side.IsBuy() ? AggregatedTransactionType.BuyStopLimit : AggregatedTransactionType.SellStopLimit;
                 case OrderInfo.Types.Type.Stop:
-                    return transaction.OrderSide == OrderInfo.Types.Side.Buy ? AggregatedTransactionType.BuyStop : AggregatedTransactionType.SellStop;
+                    return side.IsBuy() ? AggregatedTransactionType.BuyStop : AggregatedTransactionType.SellStop;
                 default:
                     return AggregatedTransactionType.Unknown;
             }
@@ -499,235 +524,10 @@ namespace TickTrader.BotTerminal
         protected virtual double? GetSplitReqVolume(double? volume) => volume / SplitRatio;
 
 
-        protected string GetOpenSortedNumber() => $"{OpenTime.ToString("dd.MM.yyyyHH:mm:ss.fff")}-{UniqueId}";
+        protected string GetOpenSortedNumber() => $"{OpenTime:dd.MM.yyyyHH:mm:ss.fff}-{UniqueId}";
 
-        protected string GetCloseSortedNumber() => $"{CloseTime.ToString("dd.MM.yyyyHH:mm:ss.fff")}-{UniqueId}";
+        protected string GetCloseSortedNumber() => $"{CloseTime:dd.MM.yyyyHH:mm:ss.fff}-{UniqueId}";
 
         private bool OrderWasCanceled() => Type.ToString().Contains("Canceled");
-    }
-
-    class NetTransactionModel : TransactionReport
-    {
-        public NetTransactionModel(TradeReportInfo transaction, SymbolInfo model, int profitDigits) : base(transaction, model, profitDigits) { }
-
-        protected override double? GetOpenPrice(TradeReportInfo transaction)
-        {
-            if (IsBalanceTransaction)
-                return null;
-
-            if (IsSplitTransaction)
-            {
-                if (transaction.OrderType == Algo.Domain.OrderInfo.Types.Type.Stop || transaction.OrderType == Algo.Domain.OrderInfo.Types.Type.StopLimit)
-                    return transaction.StopPrice;
-                else
-                    return transaction.PositionRemainingPrice ?? transaction.Price;
-            }
-
-            if (transaction.OrderType == Algo.Domain.OrderInfo.Types.Type.Stop)
-                return transaction.OrderFillPrice;
-
-            if (transaction.OrderType == Algo.Domain.OrderInfo.Types.Type.StopLimit)
-                return transaction.StopPrice;
-
-            return transaction.PositionOpenPrice == 0 ? transaction.Price : transaction.PositionOpenPrice;
-        }
-
-        //protected override AggregatedTransactionType GetTransactionType(TradeReportInfo transaction)
-        //{
-        //    var type = base.GetTransactionType(transaction);
-
-        //    if (transaction.TradeTransactionReportType == TradeExecActions.BalanceTransaction)
-        //    {
-        //        if (transaction.TradeTransactionReason == TradeTransactionReason.Dividend)
-        //            type = AggregatedTransactionType.Dividend;
-
-        //        if (transaction.TradeTransactionReason == TradeTransactionReason.TransferMoney)
-        //            type = AggregatedTransactionType.TransferFunds;
-        //    }
-
-        //    if (transaction.TradeTransactionReportType == TradeExecActions.TradeModified)
-        //    {
-        //        if (transaction.TradeTransactionReason == TradeTransactionReason.Split)
-        //            type = transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.SplitBuy : AggregatedTransactionType.SplitSell;
-        //    }
-
-        //    return type;
-        //}
-    }
-
-    class GrossTransactionModel : TransactionReport
-    {
-        public GrossTransactionModel(TradeReportInfo transaction, SymbolInfo symbol, int profitDigits) : base(transaction, symbol, profitDigits)
-        {
-            if (transaction.PositionId != null)
-            {
-                UniqueId = GetUniqueId(transaction, transaction.PositionId, out _);
-
-                if (!transaction.IsEmulated) //from Backtester grids OrderId is invalid
-                    ParentOrderId = OrderId;
-            }
-
-            if (UniqueId.ActionNo != null && !transaction.IsEmulated) //from Backtester grids OrderId is invalid
-                ParentOrderId = OrderId;
-        }
-
-        public string ParentOrderId { get; protected set; }
-
-        protected override double? GetOpenQuntity(TradeReportInfo transaction)
-        {
-            if (IsBalanceTransaction)
-                return null;
-
-            if (IsSplitTransaction)
-                return GetSplitReqVolume(CloseQuantity);
-
-            return (IsPosition ? transaction.PositionQuantity : transaction.Quantity) / LotSize;
-        }
-
-        protected override double? GetOpenPrice(TradeReportInfo transaction)
-        {
-            if (IsBalanceTransaction)
-                return null;
-
-            if (IsSplitTransaction)
-                return GetSplitReqPrice(ClosePrice);
-
-            if (IsPosition)
-                return transaction.PositionOpenPrice;
-
-            return transaction.OrderType == Algo.Domain.OrderInfo.Types.Type.Stop || transaction.OrderType == Algo.Domain.OrderInfo.Types.Type.StopLimit ? transaction.StopPrice : transaction.Price;
-        }
-
-        protected override double? GetRemainingQuantity(TradeReportInfo transaction)
-        {
-            if (IsBalanceTransaction)
-                return null;
-
-            if (IsSplitTransaction)
-                return transaction.RemainingQuantity / LotSize;
-
-            return (IsPosition ? transaction.PositionLeavesQuantity : transaction.RemainingQuantity) / LotSize;
-        }
-
-        protected override double? GetClosePrice(TradeReportInfo transaction) => IsSplitTransaction ? transaction.OpenPrice : base.GetClosePrice(transaction);
-
-        protected override double? GetCloseQuantity(TradeReportInfo transaction) => IsSplitTransaction ? transaction.OpenQuantity / LotSize : base.GetCloseQuantity(transaction);
-    }
-
-    class CashTransactionModel : TransactionReport
-    {
-        public CashTransactionModel(TradeReportInfo transaction, SymbolInfo symbol, int profitDigits) : base(transaction, symbol, profitDigits)
-        {
-            ProfitDigits = symbol?.ProfitDigits ?? -1;
-
-            if (GetTransactionSide(transaction) == TransactionSide.Buy)
-            {
-                AssetI = transaction.DstAssetMovement ?? 0;
-                AssetICurrency = transaction.DstAssetCurrency;
-
-                AssetII = transaction.SrcAssetMovement ?? 0;
-                AssetIICurrency = transaction.SrcAssetCurrency;
-            }
-            else if (GetTransactionSide(transaction) == TransactionSide.Sell)
-            {
-                AssetII = transaction.DstAssetMovement ?? 0;
-                AssetIICurrency = transaction.DstAssetCurrency;
-
-                AssetI = transaction.SrcAssetMovement ?? 0;
-                AssetICurrency = transaction.SrcAssetCurrency;
-            }
-            else if (IsBalanceTransaction)
-            {
-                AssetI = transaction.TransactionAmount / LotSize;
-                AssetICurrency = transaction.TransactionCurrency;
-
-                AssetII = 0;
-                AssetIICurrency = "";
-            }
-
-            UpdateFieldsAfterSplit(transaction);
-        }
-
-        public double AssetI { get; private set; }
-        public double AssetII { get; private set; }
-        public string AssetICurrency { get; set; }
-        public string AssetIICurrency { get; set; }
-
-        protected override string GetCommissionCurrency(TradeReportInfo transaction)
-        {
-            switch (GetTransactionSide(transaction))
-            {
-                case TransactionSide.Sell:
-                case TransactionSide.Buy:
-                    return transaction.CommissionCurrency ?? transaction.DstAssetCurrency;
-                case TransactionSide.None: return "";
-                default: throw new NotSupportedException(GetTransactionSide(transaction).ToString());
-            }
-        }
-
-        protected override double? GetOpenPrice(TradeReportInfo transaction)
-        {
-            if (IsBalanceTransaction)
-                return null;
-
-            if (IsSplitTransaction)
-            {
-                if (transaction.OrderType == Algo.Domain.OrderInfo.Types.Type.Stop || transaction.OrderType == Algo.Domain.OrderInfo.Types.Type.StopLimit)
-                    return transaction.StopPrice;
-            }
-
-            return transaction.Price;
-        }
-
-        //protected override AggregatedTransactionType GetTransactionType(TradeReportInfo transaction) //after creation Splits and Dividends on Grosses make common
-        //{
-        //    var type = base.GetTransactionType(transaction);
-
-        //    if (transaction.TradeTransactionReportType == TradeExecActions.BalanceTransaction)
-        //    {
-        //        if (transaction.TradeTransactionReason == TradeTransactionReason.Dividend)
-        //            type = AggregatedTransactionType.Dividend;
-
-        //        if (transaction.TradeTransactionReason == TradeTransactionReason.TransferMoney)
-        //            type = AggregatedTransactionType.TransferFunds;
-        //    }
-
-        //    if (transaction.TradeTransactionReportType == TradeExecActions.BalanceTransaction && transaction.TradeTransactionReason == TradeTransactionReason.Split)
-        //        type = AggregatedTransactionType.Split;
-
-        //    if (transaction.TradeTransactionReportType == TradeExecActions.TradeModified)
-        //    {
-        //        if (transaction.TradeTransactionReason == TradeTransactionReason.Split)
-        //            type = transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.SplitBuy : AggregatedTransactionType.SplitSell;
-        //    }
-
-        //    return type;
-        //}
-
-        protected override double? GetClosePrice(TradeReportInfo transaction)
-        {
-            return IsBalanceTransaction ? (double?)null : transaction.OrderFillPrice;
-        }
-
-        protected override double? GetCloseQuantity(TradeReportInfo transaction)
-        {
-            return IsBalanceTransaction ? (double?)null : transaction.OrderLastFillAmount / LotSize;
-        }
-
-        protected override double? GetOpenQuntity(TradeReportInfo transaction)
-        {
-            return IsBalanceTransaction ? transaction.TransactionAmount / LotSize : base.GetOpenQuntity(transaction);
-        }
-
-        protected override void UpdateFieldsAfterSplit(TradeReportInfo transaction)
-        {
-            if (transaction.TransactionReason != TradeReportInfo.Types.Reason.Split)
-                return;
-
-            ClosePrice = OpenPrice;
-            CloseQuantity = OpenQuantity;
-            OpenPrice = null;
-            OpenQuantity = null;
-        }
     }
 }

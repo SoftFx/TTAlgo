@@ -32,9 +32,16 @@ namespace TickTrader.Algo.Account.Fdk2
             _tradeCapture.SubscribeTradesResultEndEvent += (c, d) => SfxTaskAdapter.SetCompleted(d);
             _tradeCapture.SubscribeTradesErrorEvent += (c, d, ex) => SfxTaskAdapter.SetFailed(d, ex);
 
+            _tradeCapture.SubscribeTriggerReportResultEndEvent += (c, d) => SfxTaskAdapter.SetCompleted(d);
+            _tradeCapture.SubscribeTriggerReportErrorEvent += (c, d, ex) => SfxTaskAdapter.SetFailed(d, ex);
+
             _tradeCapture.DownloadTradesResultEvent += (c, d, r) => ((ChannelWriter<Domain.TradeReportInfo>)d).TryWrite(SfxInterop.Convert(r));
             _tradeCapture.DownloadTradesResultEndEvent += (c, d) => ((ChannelWriter<Domain.TradeReportInfo>)d).TryComplete();
             _tradeCapture.DownloadTradesErrorEvent += (c, d, ex) => ((ChannelWriter<Domain.TradeReportInfo>)d).TryComplete(ex);
+
+            _tradeCapture.DownloadTriggerReportResultEvent += (c, d, r) => ((ChannelWriter<Domain.TriggerReportInfo>)d).TryWrite(SfxInterop.Convert(r));
+            _tradeCapture.DownloadTriggerReportResultEndEvent += (c, d) => ((ChannelWriter<Domain.TriggerReportInfo>)d).TryComplete();
+            _tradeCapture.DownloadTriggerReportErrorEvent += (c, d, ex) => ((ChannelWriter<Domain.TriggerReportInfo>)d).TryComplete(ex);
         }
 
 
@@ -80,10 +87,23 @@ namespace TickTrader.Algo.Account.Fdk2
             return taskSrc.WithTimeout();
         }
 
+        public Task SubscribeTriggersAsync(bool skipCancel)
+        {
+            var taskSrc = new TaskCompletionSource<object>();
+            _tradeCapture.SubscribeTriggerReportsAsync(taskSrc, DateTime.UtcNow.AddMinutes(5), skipCancel);
+            return taskSrc.WithTimeout();
+        }
+
         public void DownloadTradesAsync(TimeDirection timeDirection, DateTime? from, DateTime? to, bool skipCancel,
             ChannelWriter<Domain.TradeReportInfo> stream)
         {
             _tradeCapture.DownloadTradesAsync(stream, timeDirection, from, to, skipCancel);
+        }
+
+        public void DownloadTriggerReportsAsync(TimeDirection timeDirection, DateTime? from, DateTime? to, bool skipCancel,
+            ChannelWriter<Domain.TriggerReportInfo> stream)
+        {
+            _tradeCapture.DownloadTriggerReportsAsync(stream, timeDirection, from, to, skipCancel);
         }
     }
 }

@@ -30,10 +30,12 @@ namespace TickTrader.Algo.Account
 
         void GetTradeRecords(BlockingChannel<OrderInfo> rxStream);
         void GetTradeHistory(ChannelWriter<TradeReportInfo> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders, bool backwards);
+        void GetTriggerReportsHistory(ChannelWriter<TriggerReportInfo> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders, bool backwards);
 
         event Action<PositionExecReport> PositionReport;
         event Action<ExecutionReport> ExecutionReport;
         event Action<TradeReportInfo> TradeTransactionReport;
+        event Action<TriggerReportInfo> TriggerTransactionReport;
         event Action<BalanceOperation> BalanceOperation;
 
         Task<OrderInteropResult> SendModifyOrder(ModifyOrderRequest request);

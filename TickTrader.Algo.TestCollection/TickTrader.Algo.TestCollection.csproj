@@ -50,13 +50,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Auto.Tests\Converters\SlippageConverters.cs" />
-    <Compile Include="Auto.Tests\Extensions.cs" />
-    <Compile Include="Auto.Tests\OrderTemplate.cs" />
-    <Compile Include="Auto.Tests\TestParamsSet.cs" />
-    <Compile Include="Auto.Tests\CommentModel.cs" />
-    <Compile Include="Auto.Tests\CompositeTradeApiTest.cs" />
-    <Compile Include="Auto.Tests\HistoryOrderTemplate.cs" />
+    <Compile Include="CompositeApiTests\Converters\SlippageConverters.cs" />
+    <Compile Include="CompositeApiTests\Extensions.cs" />
+    <Compile Include="CompositeApiTests\OrderTemplate.cs" />
+    <Compile Include="CompositeApiTests\TestParamsSet.cs" />
+    <Compile Include="CompositeApiTests\CommentModel.cs" />
+    <Compile Include="CompositeApiTests\CompositeTradeApiTest.cs" />
+    <Compile Include="CompositeApiTests\HistoryOrderTemplate.cs" />
     <Compile Include="Bots\AccDisplayBot.cs" />
     <Compile Include="Bots\ApiCheckerBot.cs" />
     <Compile Include="Bots\BotStatusWriter.cs" />
@@ -129,6 +129,9 @@
       <Project>{9d9cf1b3-7e57-4971-a479-5803c658a7d0}</Project>
       <Name>TickTrader.Algo.Api</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="CompositeApiTests\Tests\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

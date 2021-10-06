@@ -93,6 +93,7 @@ namespace TickTrader.Algo.Account.Fdk2
             _tradeHistoryProxy.LogoutEvent += (c, m) => OnLogout(m);
             _tradeHistoryProxy.DisconnectEvent += (c, m) => OnDisconnect(m);
             _tradeHistoryProxy.TradeUpdateEvent += (c, rep) => TradeTransactionReport?.Invoke(Convert(rep));
+            _tradeHistoryProxy.TriggerReportUpdateEvent += (c, rep) => TriggerTransactionReport?.Invoke(Convert(rep));
             _feedHistoryProxy.LogoutEvent += (c, m) => OnLogout(m);
             _feedHistoryProxy.DisconnectEvent += (c, m) => OnDisconnect(m);
 
@@ -185,7 +186,9 @@ namespace TickTrader.Algo.Account.Fdk2
             await _tradeHistoryProxyAdapter.LoginAsync(login, password, "", _appType.ToString(), Guid.NewGuid().ToString());
             logger.Debug("Trade.History: Logged in.");
             await _tradeHistoryProxyAdapter.SubscribeTradesAsync(false);
-            logger.Debug("Trade.History: Subscribed.");
+            logger.Debug("Trade.History: Trades Subscribed.");
+            await _tradeHistoryProxyAdapter.SubscribeTriggersAsync(false);
+            logger.Debug("Trade.History: Triggers Subscribed.");
         }
 
         private bool ValidateCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
@@ -424,6 +427,7 @@ namespace TickTrader.Algo.Account.Fdk2
         public event Action<Domain.PositionExecReport> PositionReport;
         public event Action<ExecutionReport> ExecutionReport;
         public event Action<Domain.TradeReportInfo> TradeTransactionReport;
+        public event Action<Domain.TriggerReportInfo> TriggerTransactionReport;
         public event Action<Domain.BalanceOperation> BalanceOperation;
         public event Action<Domain.SymbolInfo[]> SymbolInfo { add { } remove { } }
         public event Action<Domain.CurrencyInfo[]> CurrencyInfo { add { } remove { } }
@@ -450,6 +454,13 @@ namespace TickTrader.Algo.Account.Fdk2
             var direction = backwards ? TimeDirection.Backward : TimeDirection.Forward;
 
             _tradeHistoryProxyAdapter.DownloadTradesAsync(direction, from?.ToUniversalTime(), to?.ToUniversalTime(), skipCancelOrders, rxStream);
+        }
+
+        public void GetTriggerReportsHistory(ChannelWriter<Domain.TriggerReportInfo> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders, bool backwards)
+        {
+            var direction = backwards ? TimeDirection.Backward : TimeDirection.Forward;
+
+            _tradeHistoryProxyAdapter.DownloadTriggerReportsAsync(direction, from?.ToUniversalTime(), to?.ToUniversalTime(), skipCancelOrders, rxStream);
         }
 
         public Task<OrderInteropResult> SendOpenOrder(Domain.OpenOrderRequest request)
@@ -1360,6 +1371,32 @@ namespace TickTrader.Algo.Account.Fdk2
                 res |= Domain.OrderOptions.OneCancelsTheOther;
 
             return res;
+        }
+
+        public static Domain.TriggerReportInfo Convert(SFX.ContingentOrderTriggerReport report)
+        {
+            return new Domain.TriggerReportInfo
+            {
+                Id = report.Id,
+                ContingentOrderId = report.ContingentOrderId.ToString(),
+                TransactionTime = report.TransactionTime.ToTimestamp(),
+                TriggerType = ConvertToAlgo(report.TriggerType),
+                TriggerState = Convert(report.TriggerState),
+                TriggerTime = report.TriggerTime?.ToTimestamp(),
+                OrderIdTriggeredBy = report.OrderIdTriggeredBy?.ToString(),
+                Symbol = report.Symbol,
+                Type = Convert(report.Type),
+                Side = Convert(report.Side),
+                Price = report.Price,
+                StopPrice = report.StopPrice,
+                Amount = report.Amount,
+                RelatedOrderId = report.RelatedOrderId?.ToString(),
+            };
+        }
+
+        public static Domain.TriggerReportInfo.Types.TriggerResultState Convert(TriggerResultState state)
+        {
+            return (Domain.TriggerReportInfo.Types.TriggerResultState)state;
         }
 
         public static Domain.BalanceOperation Convert(SFX.BalanceOperation op)

@@ -10,7 +10,7 @@ using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.BotTerminal.Lib;
-using static TickTrader.BotTerminal.TransactionReport;
+using static TickTrader.BotTerminal.BaseTransactionModel;
 
 namespace TickTrader.BotTerminal
 {
@@ -140,7 +140,7 @@ namespace TickTrader.BotTerminal
             ChartControlModel.OutputGroups.Clear();
         }
 
-        public void Append(AccountInfo.Types.Type acctype, TransactionReport trRep)
+        public void Append(AccountInfo.Types.Type acctype, BaseTransactionModel trRep)
         {
             if (_visualizing || trRep.Symbol != _mainSymbol)
                 return;

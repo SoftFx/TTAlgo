@@ -6,6 +6,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using TickTrader.Algo.Domain;
@@ -23,7 +24,7 @@ namespace TickTrader.BotTerminal
         public enum TimePeriod { All, LastHour, Today, Yesterday, CurrentMonth, PreviousMonth, LastThreeMonths, LastSixMonths, LastYear, Custom }
         public enum TradeDirection { All = 1, Buy, Sell }
 
-        private ObservableCollection<TransactionReport> _tradesList;
+        private ObservableCollection<BaseTransactionModel> _tradesList;
         private ObservableTask<int> _downloadObserver;
         private TraderClientModel _tradeClient;
         private DateTime _from;
@@ -49,13 +50,14 @@ namespace TickTrader.BotTerminal
             _skipCancel = true;
             _profileManager = profileManager;
 
-            _tradesList = new ObservableCollection<TransactionReport>();
+            _tradesList = new ObservableCollection<BaseTransactionModel>();
             GridView = new TradeHistoryGridViewModel(_tradesList, profileManager);
             GridView.Filter = new Predicate<object>(FilterTradesList);
 
             _tradeClient = tradeClient;
             _tradeClient.Account.AccountTypeChanged += AccountTypeChanged;
-            _tradeClient.TradeHistory.OnTradeReport += OnReport;
+            _tradeClient.TradeHistory.OnTradeReport += OnTradeReport;
+            _tradeClient.TradeHistory.OnTriggerHistoryReport += OnTriggerReport;
 
             tradeClient.Connected += () =>
             {
@@ -213,8 +215,7 @@ namespace TickTrader.BotTerminal
             if (!_tradeClient.IsConnected.Value)
                 return;
 
-            DateTime? newFrom, newTo;
-            CalculateTimeBoundaries(out newFrom, out newTo);
+            CalculateTimeBoundaries(out DateTime? newFrom, out DateTime? newTo);
 
             var globalChange = _currentSkipCanceled != SkipCancel || _isNewConnection;
 
@@ -252,7 +253,7 @@ namespace TickTrader.BotTerminal
             {
                 _tradesList.Clear();
 
-                var downloadTask = Task.Run(() => DownloadingHistoryAsync(from?.ToUniversalTime(), to?.ToUniversalTime(), SkipCancel, cToken));
+                var downloadTask = Task.Run(() => DownloadingFullHistoryAsync(from?.ToUniversalTime(), to?.ToUniversalTime(), SkipCancel, cToken));
                 DownloadObserver = new ObservableTask<int>(downloadTask);
 
                 await downloadTask;
@@ -265,16 +266,27 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private async Task<int> DownloadingHistoryAsync(DateTime? from, DateTime? to, bool skipCancel, CancellationToken token)
+        private async Task<int> DownloadingFullHistoryAsync(DateTime? from, DateTime? to, bool skipCancel, CancellationToken token)
+        {
+            var ans = 0;
+
+            var tradeStream = _tradeClient.TradeHistory.GetTradeHistory(from, to, skipCancel);
+            var triggerStream = _tradeClient.TradeHistory.GetTriggerReportsHistory(from, to, skipCancel);
+
+            ans += await DownloadingHistoryRecords(tradeStream, token);
+            ans += await DownloadingHistoryRecords(triggerStream, token);
+
+            return ans;
+        }
+
+        private async Task<int> DownloadingHistoryRecords<T>(Channel<T> historyStream, CancellationToken token)
         {
             const int batchSize = 32;
 
             if (token.IsCancellationRequested)
                 return 0;
 
-            var historyStream = _tradeClient.TradeHistory.GetTradeHistory(from, to, skipCancel);
-
-            var buffer = new TransactionReport[batchSize];
+            var buffer = new BaseTransactionModel[batchSize];
 
             while (await historyStream.Reader.WaitToReadAsync())
             {
@@ -301,21 +313,37 @@ namespace TickTrader.BotTerminal
             return 0;
         }
 
-        private TransactionReport CreateReportModel(TradeReportInfo tTransaction)
+        private BaseTransactionModel CreateReportModel<T>(T tTransaction)
         {
-            return TransactionReport.Create(_tradeClient.Account.Type.Value, tTransaction, _tradeClient.Account.BalanceDigits, GetSymbolFor(tTransaction));
+            switch (tTransaction)
+            {
+                case TradeReportInfo tradeInfo:
+                    return BaseTransactionModel.Create(_tradeClient.Account.Type.Value, tradeInfo, _tradeClient.Account.BalanceDigits, GetSymbolInfo(tradeInfo));
+
+                case TriggerReportInfo triggerInfo:
+                    return BaseTransactionModel.Create(triggerInfo, GetSymbolInfo(triggerInfo));
+
+                default:
+                    throw new Exception($"Invalid transaction type {nameof(T)}");
+            }
         }
 
-        private SymbolInfo GetSymbolFor(TradeReportInfo transaction)
+        private SymbolInfo GetSymbolInfo(TradeReportInfo transaction)
         {
-            SymbolInfo symbolModel = null;
-            if (!IsBalanceOperation(transaction))
-            {
-                symbolModel = _tradeClient.Symbols.GetOrDefault(transaction.Symbol);
+            var symbolModel = _tradeClient.Symbols.GetOrDefault(transaction.Symbol);
 
-                if (symbolModel == null)
-                    logger.Warn("Symbol {0} not found for TradeTransactionID {1}.", transaction.Symbol, transaction.Id);
-            }
+            if (symbolModel == null)
+                logger.Warn($"Symbol {transaction.Symbol} not found for TradeTransactionID {transaction.Id}.");
+
+            return IsBalanceOperation(transaction) ? null : symbolModel;
+        }
+
+        private SymbolInfo GetSymbolInfo(TriggerReportInfo transaction)
+        {
+            var symbolModel = _tradeClient.Symbols.GetOrDefault(transaction.Symbol);
+
+            if (symbolModel == null)
+                logger.Warn($"Symbol {transaction.Symbol} not found for TriggerTransactionID {transaction.Id}.");
 
             return symbolModel;
         }
@@ -329,10 +357,11 @@ namespace TickTrader.BotTerminal
         {
             _tradeClient.Account.AccountTypeChanged -= AccountTypeChanged;
             _tradeClient.Connected -= RefreshHistory;
-            _tradeClient.TradeHistory.OnTradeReport -= OnReport;
+            _tradeClient.TradeHistory.OnTradeReport -= OnTradeReport;
+            _tradeClient.TradeHistory.OnTriggerHistoryReport -= OnTriggerReport;
         }
 
-        private void AddToList(TransactionReport tradeTransaction)
+        private void AddToList(BaseTransactionModel tradeTransaction)
         {
             try
             {
@@ -344,7 +373,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void AddToList(TransactionReport[] transactions, int cnt, TaskCompletionSource<object> completion)
+        private void AddToList(BaseTransactionModel[] transactions, int cnt, TaskCompletionSource<object> completion)
         {
             try
             {
@@ -353,7 +382,7 @@ namespace TickTrader.BotTerminal
                     AddToList(transactions[i]);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logger.Error(ex);
             }
@@ -371,7 +400,7 @@ namespace TickTrader.BotTerminal
 
         private bool MatchesCurrentBoundaries(Timestamp reportTime)
         {
-            var localTime = reportTime.ToDateTime().ToLocalTime();
+            var localTime = reportTime.ToDateTime().ToUniversalTime();
 
             return (_currenFrom == null || localTime >= _currenFrom)
                 && (_currenTo == null || localTime < _currenTo);
@@ -436,26 +465,32 @@ namespace TickTrader.BotTerminal
         {
             if (o != null)
             {
-                var tradeT = (TransactionReport)o;
+                var tradeT = (BaseTransactionModel)o;
                 return TradeDirectionFilter == TradeDirection.All || TradeDirectionFilter == Convert(tradeT.Side);
             }
             return false;
         }
 
-        private TradeDirection Convert(TransactionReport.TransactionSide side)
+        private TradeDirection Convert(BaseTransactionModel.TransactionSide side)
         {
             switch (side)
             {
-                case TransactionReport.TransactionSide.Buy: return TradeDirection.Buy;
-                case TransactionReport.TransactionSide.Sell: return TradeDirection.Sell;
+                case BaseTransactionModel.TransactionSide.Buy: return TradeDirection.Buy;
+                case BaseTransactionModel.TransactionSide.Sell: return TradeDirection.Sell;
                 default: return TradeDirection.All;
             }
         }
 
-        private void OnReport(TradeReportInfo tradeTransaction)
+        private void OnTradeReport(TradeReportInfo tradeTransaction)
         {
             if (_tradeClient.Account.Type.HasValue && MatchesCurrentFilter(tradeTransaction))
                 AddToList(CreateReportModel(tradeTransaction));
+        }
+
+        private void OnTriggerReport(TriggerReportInfo triggerTransaction)
+        {
+            if (_tradeClient.Account.Type.HasValue && MatchesCurrentBoundaries(triggerTransaction.TransactionTime))
+                AddToList(CreateReportModel(triggerTransaction));
         }
 
         private void AccountTypeChanged()

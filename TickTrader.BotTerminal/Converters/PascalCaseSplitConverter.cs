@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Data;
 
 namespace TickTrader.BotTerminal
 {
-    public class PascalCaseSplitConverter : IValueConverter
+    public class PascalCaseSplitConverter : IValueConverter, IMultiValueConverter
     {
-        private static Dictionary<string, string> _caсhedValues = new Dictionary<string, string>()
+        private static readonly Dictionary<string, string> _caсhedValues = new Dictionary<string, string>(5)
         {
             {"BuyStopLimit", "Buy StopLimit" },
             {"SellStopLimit", "Sell StopLimit" },
@@ -39,7 +37,7 @@ namespace TickTrader.BotTerminal
 
         private static string SetCorrectValue(string key)
         {
-            var ans = new StringBuilder();
+            var ans = new StringBuilder(1 << 4);
 
             foreach (var c in key)
             {
@@ -51,6 +49,18 @@ namespace TickTrader.BotTerminal
             _caсhedValues.Add(key, ans.ToString().TrimStart());
 
             return _caсhedValues[key];
+        }
+
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            var orderType = Convert(values[0], targetType, parameter, culture);
+
+            return values.Length == 1 || values[1] is null ? orderType : $"{values[1]}/{orderType}";
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
         }
     }
 }
