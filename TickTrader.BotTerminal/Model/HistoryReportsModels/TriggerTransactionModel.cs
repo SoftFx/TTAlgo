@@ -4,7 +4,7 @@ namespace TickTrader.BotTerminal
 {
     internal sealed class TriggerTransactionModel : BaseTransactionModel
     {
-        public TriggerTransactionModel(TriggerReportInfo report, SymbolInfo symbol) : base(symbol)
+        public TriggerTransactionModel(TriggerReportInfo report, SymbolInfo symbol, AccountInfo.Types.Type accType) : base(symbol)
         {
             TriggeredByOrder = report.OrderIdTriggeredBy;
             OCORelatedOrderId = report.RelatedOrderId;
@@ -19,8 +19,24 @@ namespace TickTrader.BotTerminal
             CloseTime = report.TransactionTime.ToDateTime();
             TriggerTime = report.TriggerTime?.ToDateTime();
 
-            Volume = report.Amount / LotSize;
             OpenPrice = report.Type.IsStop() ? report.StopPrice : report.Price;
+
+            var triggerVolume = report.Amount / LotSize;
+
+            switch (accType)
+            {
+                case AccountInfo.Types.Type.Cash:
+                    CloseQuantity = triggerVolume;
+                    break;
+
+                case AccountInfo.Types.Type.Net:
+                    Volume = triggerVolume;
+                    break;
+
+                case AccountInfo.Types.Type.Gross:
+                    OpenQuantity = triggerVolume;
+                    break;
+            }
 
             UniqueId = new TradeReportKey(long.Parse(report.ContingentOrderId), null);
         }

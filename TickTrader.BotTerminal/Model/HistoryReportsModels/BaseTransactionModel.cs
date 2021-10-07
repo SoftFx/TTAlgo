@@ -100,19 +100,31 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public static TriggerTransactionModel Create(TriggerReportInfo triggerReport, SymbolInfo symbol = null)
+        public static BaseTransactionModel Create<T>(AccountInfo.Types.Type accountType, T tTransaction, int balanceDigits, SymbolInfo symbol = null)
         {
-            return new TriggerTransactionModel(triggerReport, symbol);
-        }
-
-        public static BaseTransactionModel Create(AccountInfo.Types.Type accountType, TradeReportInfo tTransaction, int balanceDigits, SymbolInfo symbol = null)
-        {
-            switch (accountType)
+            switch (tTransaction)
             {
-                case AccountInfo.Types.Type.Gross: return new GrossTransactionModel(tTransaction, symbol, balanceDigits);
-                case AccountInfo.Types.Type.Net: return new NetTransactionModel(tTransaction, symbol, balanceDigits);
-                case AccountInfo.Types.Type.Cash: return new CashTransactionModel(tTransaction, symbol, balanceDigits);
-                default: throw new NotSupportedException(accountType.ToString());
+                case TriggerReportInfo triggerReport:
+                    return new TriggerTransactionModel(triggerReport, symbol, accountType);
+
+                case TradeReportInfo tradeReport:
+                    switch (accountType)
+                    {
+                        case AccountInfo.Types.Type.Gross:
+                            return new GrossTransactionModel(tradeReport, symbol, balanceDigits);
+
+                        case AccountInfo.Types.Type.Net:
+                            return new NetTransactionModel(tradeReport, symbol, balanceDigits);
+
+                        case AccountInfo.Types.Type.Cash:
+                            return new CashTransactionModel(tradeReport, symbol, balanceDigits);
+
+                        default:
+                            throw new NotSupportedException(accountType.ToString());
+                    }
+
+                default:
+                    throw new NotSupportedException(nameof(T));
             }
         }
 

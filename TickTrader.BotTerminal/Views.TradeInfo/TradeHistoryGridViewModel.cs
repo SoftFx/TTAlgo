@@ -10,8 +10,8 @@ namespace TickTrader.BotTerminal
 {
     internal class TradeHistoryGridViewModel : PropertyChangedBase
     {
+        private readonly ProfileManager _profileManager;
         private readonly bool _isBacktester;
-        private ProfileManager _profileManager;
         
         public TradeHistoryGridViewModel(ICollection<BaseTransactionModel> src, ProfileManager profile = null, bool isBacktester = false)
         {

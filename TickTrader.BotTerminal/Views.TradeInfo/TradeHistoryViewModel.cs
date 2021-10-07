@@ -33,12 +33,14 @@ namespace TickTrader.BotTerminal
         private DateTime? _currenTo;
         private bool _isNewConnection;
         private bool _currentSkipCanceled;
+        private bool _currentSkipTriggers;
         private TimePeriod _period;
         private bool _isRefreshing;
         private bool _isConditionsChanged;
         private TradeDirection _tradeDirectionFilter;
         private bool _skipCancel;
         private bool _clearFlag;
+        private bool _skipTriggers;
         private CancellationTokenSource _cancelUpdateSrc;
         private ProfileManager _profileManager;
         private ViewModelStorageEntry _viewPropertyStorage;
@@ -166,6 +168,25 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public bool SkipTriggers
+        {
+            get => _skipTriggers;
+
+            set
+            {
+                if (_skipTriggers == value)
+                    return;
+
+                _skipTriggers = value;
+
+                if (_profileManager != null)
+                    _viewPropertyStorage.ChangeProperty(nameof(SkipTriggers), value.ToString());
+
+                NotifyOfPropertyChange();
+                RefreshHistory();
+            }
+        }
+
         public TradeHistoryGridViewModel GridView { get; }
 
         public ObservableTask<int> DownloadObserver
@@ -217,7 +238,7 @@ namespace TickTrader.BotTerminal
 
             CalculateTimeBoundaries(out DateTime? newFrom, out DateTime? newTo);
 
-            var globalChange = _currentSkipCanceled != SkipCancel || _isNewConnection;
+            var globalChange = _currentSkipCanceled != SkipCancel || _currentSkipTriggers != SkipTriggers || _isNewConnection;
 
             if (newFrom == _currenFrom && newTo == _currenTo && !globalChange)
                 return;
@@ -231,6 +252,7 @@ namespace TickTrader.BotTerminal
             _currenFrom = newFrom;
             _currenTo = newTo;
             _currentSkipCanceled = SkipCancel;
+            _currentSkipTriggers = SkipTriggers;
             _isNewConnection = false;
 
             if (truncate)
@@ -253,7 +275,7 @@ namespace TickTrader.BotTerminal
             {
                 _tradesList.Clear();
 
-                var downloadTask = Task.Run(() => DownloadingFullHistoryAsync(from?.ToUniversalTime(), to?.ToUniversalTime(), SkipCancel, cToken));
+                var downloadTask = Task.Run(() => DownloadingFullHistoryAsync(from?.ToUniversalTime(), to?.ToUniversalTime(), SkipCancel, SkipTriggers, cToken));
                 DownloadObserver = new ObservableTask<int>(downloadTask);
 
                 await downloadTask;
@@ -266,15 +288,18 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private async Task<int> DownloadingFullHistoryAsync(DateTime? from, DateTime? to, bool skipCancel, CancellationToken token)
+        private async Task<int> DownloadingFullHistoryAsync(DateTime? from, DateTime? to, bool skipCancel, bool skipTriggers, CancellationToken token)
         {
             var ans = 0;
 
             var tradeStream = _tradeClient.TradeHistory.GetTradeHistory(from, to, skipCancel);
-            var triggerStream = _tradeClient.TradeHistory.GetTriggerReportsHistory(from, to, skipCancel);
-
             ans += await DownloadingHistoryRecords(tradeStream, token);
-            ans += await DownloadingHistoryRecords(triggerStream, token);
+
+            if (!skipTriggers)
+            {
+                var triggerStream = _tradeClient.TradeHistory.GetTriggerReportsHistory(from, to, skipCancel);
+                ans += await DownloadingHistoryRecords(triggerStream, token);
+            }
 
             return ans;
         }
@@ -315,17 +340,23 @@ namespace TickTrader.BotTerminal
 
         private BaseTransactionModel CreateReportModel<T>(T tTransaction)
         {
+            SymbolInfo symbolInfo;
+
             switch (tTransaction)
             {
                 case TradeReportInfo tradeInfo:
-                    return BaseTransactionModel.Create(_tradeClient.Account.Type.Value, tradeInfo, _tradeClient.Account.BalanceDigits, GetSymbolInfo(tradeInfo));
+                    symbolInfo = GetSymbolInfo(tradeInfo);
+                    break;
 
                 case TriggerReportInfo triggerInfo:
-                    return BaseTransactionModel.Create(triggerInfo, GetSymbolInfo(triggerInfo));
+                    symbolInfo = GetSymbolInfo(triggerInfo);
+                    break;
 
                 default:
                     throw new Exception($"Invalid transaction type {nameof(T)}");
             }
+
+            return BaseTransactionModel.Create(_tradeClient.Account.Type.Value, tTransaction, _tradeClient.Account.BalanceDigits, symbolInfo);
         }
 
         private SymbolInfo GetSymbolInfo(TradeReportInfo transaction)
@@ -348,7 +379,7 @@ namespace TickTrader.BotTerminal
             return symbolModel;
         }
 
-        private bool IsBalanceOperation(TradeReportInfo item)
+        private static bool IsBalanceOperation(TradeReportInfo item)
         {
             return item.ReportType == TradeReportInfo.Types.ReportType.BalanceTransaction;
         }

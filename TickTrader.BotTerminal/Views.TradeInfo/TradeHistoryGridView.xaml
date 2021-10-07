@@ -42,6 +42,11 @@
                 </DataGrid.ContextMenu>
                 <DataGrid.RowStyle>
                     <Style TargetType="DataGridRow">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding TriggerType, Converter={StaticResource NullOrEmptyToBool}}" Value="False">
+                                <Setter Property="Background" Value="#e4e4e4"/>
+                            </DataTrigger>
+                        </Style.Triggers>
                         <Setter Property="ToolTipService.IsEnabled">
                             <Setter.Value>
                                 <MultiBinding Converter="{StaticResource NullOrEmptyToBool}" >
@@ -290,6 +295,11 @@
                 </DataGrid.ContextMenu>
                 <DataGrid.RowStyle>
                     <Style TargetType="DataGridRow">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding TriggerType, Converter={StaticResource NullOrEmptyToBool}}" Value="False">
+                                <Setter Property="Background" Value="#e4e4e4"/>
+                            </DataTrigger>
+                        </Style.Triggers>
                         <Setter Property="ToolTipService.IsEnabled">
                             <Setter.Value>
                                 <MultiBinding Converter="{StaticResource NullOrEmptyToBool}" >
@@ -515,6 +525,11 @@
                 </DataGrid.ContextMenu>
                 <DataGrid.RowStyle>
                     <Style TargetType="DataGridRow">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding TriggerType, Converter={StaticResource NullOrEmptyToBool}}" Value="False">
+                                <Setter Property="Background" Value="#e4e4e4"/>
+                            </DataTrigger>
+                        </Style.Triggers>
                         <Setter Property="ToolTipService.IsEnabled">
                             <Setter.Value>
                                 <MultiBinding Converter="{StaticResource NullOrEmptyToBool}" >
