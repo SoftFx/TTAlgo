@@ -50,13 +50,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CompositeApiTests\Converters\SlippageConverters.cs" />
-    <Compile Include="CompositeApiTests\Extensions.cs" />
-    <Compile Include="CompositeApiTests\OrderTemplate.cs" />
-    <Compile Include="CompositeApiTests\TestParamsSet.cs" />
-    <Compile Include="CompositeApiTests\CommentModel.cs" />
-    <Compile Include="CompositeApiTests\CompositeTradeApiTest.cs" />
-    <Compile Include="CompositeApiTests\HistoryOrderTemplate.cs" />
+    <Compile Include="CompositeApiTest\Bases\TestGroupBase.cs" />
+    <Compile Include="CompositeApiTest\Converters\SlippageConverters.cs" />
+    <Compile Include="CompositeApiTest\Extensions.cs" />
+    <Compile Include="CompositeApiTest\GroupTestResult.cs" />
+    <Compile Include="CompositeApiTest\OrderTemplate.cs" />
+    <Compile Include="CompositeApiTest\TestParamsSet.cs" />
+    <Compile Include="CompositeApiTest\CommentModel.cs" />
+    <Compile Include="CompositeApiTest\CompositeTradeApiTest.cs" />
+    <Compile Include="CompositeApiTest\HistoryOrderTemplate.cs" />
     <Compile Include="Bots\AccDisplayBot.cs" />
     <Compile Include="Bots\ApiCheckerBot.cs" />
     <Compile Include="Bots\BotStatusWriter.cs" />
@@ -109,6 +111,13 @@
     <Compile Include="Bots\Trade\ExecuteLimits.cs" />
     <Compile Include="Bots\Trade\FastTradingBot.cs" />
     <Compile Include="Bots\Trade\OpenRequestsInSecond.cs" />
+    <Compile Include="CompositeApiTest\Tests\ADTests.cs" />
+    <Compile Include="CompositeApiTest\Tests\CloseByTests.cs" />
+    <Compile Include="CompositeApiTest\Tests\ExecutionTests.cs" />
+    <Compile Include="CompositeApiTest\Tests\ModificationTests.cs" />
+    <Compile Include="CompositeApiTest\Tests\OCOTests.cs" />
+    <Compile Include="CompositeApiTest\Tests\OTOTests.cs" />
+    <Compile Include="CompositeApiTest\Tests\SlippageTests.cs" />
     <Compile Include="Indicators\AlertIndicator.cs" />
     <Compile Include="Indicators\BarSeriesIndicator.cs" />
     <Compile Include="Indicators\CustomHistogramIndicator.cs" />
@@ -130,9 +139,7 @@
       <Name>TickTrader.Algo.Api</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="CompositeApiTests\Tests\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
     <VisualStudio>
