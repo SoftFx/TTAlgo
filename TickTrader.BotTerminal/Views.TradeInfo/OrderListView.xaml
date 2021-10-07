@@ -33,6 +33,11 @@
                 </DataGrid.ContextMenu>
                 <DataGrid.RowStyle>
                     <Style TargetType="DataGridRow" >
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding OtoTriggerType.Value, Converter={StaticResource NullOrEmptyToBool}, UpdateSourceTrigger=PropertyChanged}" Value="False">
+                                <Setter Property="Background" Value="#e4e4e4"/>
+                            </DataTrigger>
+                        </Style.Triggers>
                         <Setter Property="ToolTip" >
                             <Setter.Value>
                                 <StackPanel Orientation="Vertical">
