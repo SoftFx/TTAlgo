@@ -456,11 +456,11 @@ namespace TickTrader.Algo.Account.Fdk2
             _tradeHistoryProxyAdapter.DownloadTradesAsync(direction, from?.ToUniversalTime(), to?.ToUniversalTime(), skipCancelOrders, rxStream);
         }
 
-        public void GetTriggerReportsHistory(ChannelWriter<Domain.TriggerReportInfo> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders, bool backwards)
+        public void GetTriggerReportsHistory(ChannelWriter<Domain.TriggerReportInfo> rxStream, DateTime? from, DateTime? to, bool skipFailedTriggers, bool backwards)
         {
             var direction = backwards ? TimeDirection.Backward : TimeDirection.Forward;
 
-            _tradeHistoryProxyAdapter.DownloadTriggerReportsAsync(direction, from?.ToUniversalTime(), to?.ToUniversalTime(), skipCancelOrders, rxStream);
+            _tradeHistoryProxyAdapter.DownloadTriggerReportsAsync(direction, from?.ToUniversalTime(), to?.ToUniversalTime(), skipFailedTriggers, rxStream);
         }
 
         public Task<OrderInteropResult> SendOpenOrder(Domain.OpenOrderRequest request)

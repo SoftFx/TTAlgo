@@ -443,7 +443,7 @@ message TriggerReportInfo {
 message TriggerHistoryRequest {
     enum Options {
         NO_OPTIONS = 0;
-        SKIP_CANCELED = 1;
+        SKIP_FAILED = 1;
         BACKWARD = 2;
     }
 

@@ -22,12 +22,12 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter]
         public HistoryType HistoryType { get; set; }
 
-        [Parameter]
-        public bool SkipCancelOrders { get; set; }
+        [Parameter(DisplayName = "Skip Failed or Cancel")]
+        public bool Skip { get; set; }
 
         protected override async void OnStart()
         {
-            var options = SkipCancelOrders ? ThQueryOptions.SkipCanceled : ThQueryOptions.None;
+            var options = Skip ? HistoryType == HistoryType.Trades ? ThQueryOptions.SkipCanceled : ThQueryOptions.SkipFailed : ThQueryOptions.None;
 
             try
             {

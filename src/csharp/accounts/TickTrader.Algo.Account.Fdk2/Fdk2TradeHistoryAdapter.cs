@@ -100,10 +100,10 @@ namespace TickTrader.Algo.Account.Fdk2
             _tradeCapture.DownloadTradesAsync(stream, timeDirection, from, to, skipCancel);
         }
 
-        public void DownloadTriggerReportsAsync(TimeDirection timeDirection, DateTime? from, DateTime? to, bool skipCancel,
+        public void DownloadTriggerReportsAsync(TimeDirection timeDirection, DateTime? from, DateTime? to, bool skipFailed,
             ChannelWriter<Domain.TriggerReportInfo> stream)
         {
-            _tradeCapture.DownloadTriggerReportsAsync(stream, timeDirection, from, to, skipCancel);
+            _tradeCapture.DownloadTriggerReportsAsync(stream, timeDirection, from, to, skipFailed);
         }
     }
 }

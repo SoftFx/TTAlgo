@@ -166,6 +166,8 @@ namespace TickTrader.Algo.CoreV1
                 res |= Domain.HistoryRequestOptions.SkipCanceled;
             if (options.HasFlag(ThQueryOptions.Backwards))
                 res |= Domain.HistoryRequestOptions.Backwards;
+            if (options.HasFlag(ThQueryOptions.SkipFailed))
+                res |= Domain.HistoryRequestOptions.SkipFailed;
 
             return res;
         }

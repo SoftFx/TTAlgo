@@ -8,6 +8,7 @@ namespace TickTrader.Algo.Domain
         NoOptions = 0x0,
         SkipCanceled = 0x1,
         Backwards = 0x2,
+        SkipFailed = 0x4,
     }
 
     public partial class TradeHistoryRequest

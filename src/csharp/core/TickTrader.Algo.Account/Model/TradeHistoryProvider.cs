@@ -69,7 +69,7 @@ namespace TickTrader.Algo.Account
             }
         }
 
-        private void GetTriggerReportsHistory(Channel<Domain.TriggerReportInfo> txChannel, DateTime? from, DateTime? to, bool skipCanceledOrders, bool backwards)
+        private void GetTriggerReportsHistory(Channel<Domain.TriggerReportInfo> txChannel, DateTime? from, DateTime? to, bool skipFailedTriggers, bool backwards)
         {
             try
             {
@@ -82,7 +82,7 @@ namespace TickTrader.Algo.Account
                     to = to ?? DateTime.UtcNow + TimeSpan.FromDays(2);
                 }
 
-                _connection.TradeProxy.GetTriggerReportsHistory(txChannel.Writer, from, to, skipCanceledOrders, backwards);
+                _connection.TradeProxy.GetTriggerReportsHistory(txChannel.Writer, from, to, skipFailedTriggers, backwards);
             }
             catch (Exception ex)
             {
@@ -189,15 +189,15 @@ namespace TickTrader.Algo.Account
                 return channel;
             }
 
-            public Channel<Domain.TriggerReportInfo> GetTriggerReportsHistory(DateTime? from, DateTime? to, bool skipCancelReports)
+            public Channel<Domain.TriggerReportInfo> GetTriggerReportsHistory(DateTime? from, DateTime? to, bool skipFailedTriggers)
             {
-                return GetTriggerHistoryInternal(from, to, skipCancelReports);
+                return GetTriggerHistoryInternal(from, to, skipFailedTriggers);
             }
 
-            private Channel<Domain.TriggerReportInfo> GetTriggerHistoryInternal(DateTime? from, DateTime? to, bool skipCancelOrders)
+            private Channel<Domain.TriggerReportInfo> GetTriggerHistoryInternal(DateTime? from, DateTime? to, bool skipFailedTriggers)
             {
                 var channel = DefaultChannelFactory.CreateUnbounded<Domain.TriggerReportInfo>();
-                Actor.Call(a => a.GetTriggerReportsHistory(channel, from, to, skipCancelOrders, true));
+                Actor.Call(a => a.GetTriggerReportsHistory(channel, from, to, skipFailedTriggers, true));
                 return channel;
             }
 
@@ -242,11 +242,11 @@ namespace TickTrader.Algo.Account
 
             public IAsyncPagedEnumerator<Domain.TriggerReportInfo> GetTriggerHistory(DateTime? from, DateTime? to, Domain.HistoryRequestOptions options)
             {
-                bool skipCancels = options.HasFlag(Domain.HistoryRequestOptions.SkipCanceled);
+                bool skipFailed = options.HasFlag(Domain.HistoryRequestOptions.SkipFailed);
                 bool backwards = options.HasFlag(Domain.HistoryRequestOptions.Backwards);
 
                 var channel = DefaultChannelFactory.CreateUnbounded<Domain.TriggerReportInfo>();
-                _ref.Call(a => a.GetTriggerReportsHistory(channel, from, to, skipCancels, backwards));
+                _ref.Call(a => a.GetTriggerReportsHistory(channel, from, to, skipFailed, backwards));
                 return channel.AsPagedEnumerator();
             }
         }
