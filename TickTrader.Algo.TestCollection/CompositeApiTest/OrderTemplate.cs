@@ -11,7 +11,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         private DateTime? _expiration;
 
 
-        public Order RealOrder => Orders[Id];
+        public Order RealOrder { get; private set; }/*=> Orders[Id];*/
 
         public bool IsCloseOrder => RealOrder.Type == OrderType.Position || RealOrder.Type == OrderType.Market;
 
@@ -146,6 +146,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                    .WithVolume(Volume)
                    .WithTakeProfit(TP)
                    .WithStopLoss(SL)
+                   .WithTag(Tag)
                    .MakeRequest();
         }
 
@@ -161,6 +162,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         public void UpdateTemplate(Order order, bool activate = false, bool position = false)
         {
             Id = order.Id;
+            RealOrder = Orders[Id];
 
             if (activate && Type == OrderType.StopLimit)
                 Type = OrderType.Limit;

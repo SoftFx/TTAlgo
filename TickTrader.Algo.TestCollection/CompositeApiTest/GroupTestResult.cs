@@ -33,7 +33,7 @@
 
         public override string ToString()
         {
-            return $"Tests count: {TestCount}, Failed: {FailedCount}, Succ: {PercentSucc:F3}%, Time: {TotalMilliseconds / 1000:F3}s";
+            return $"Tests count: {TestCount}, Failed: {FailedCount}, Succ: {PercentSucc}%, Time: {TotalMilliseconds / 1000:F3}s";
         }
     }
 }

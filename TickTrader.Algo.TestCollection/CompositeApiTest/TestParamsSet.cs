@@ -48,11 +48,15 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         public bool IsSupportedSlippage => Type == OrderType.Stop || Type == OrderType.Market;
 
+        public bool IsSupportedStopPrice => Type == OrderType.StopLimit || Type == OrderType.Stop;
+
         public bool IsSupportedOCO => (Type == OrderType.Stop || Type == OrderType.Limit) && !IsGrossAcc;
 
-        public bool IsPosition => Type == OrderType.Position;
-
         public bool IsLimit => Type == OrderType.StopLimit || Type == OrderType.Limit;
+
+        public bool IsStopLimit => Type == OrderType.StopLimit;
+
+        public bool IsPosition => Type == OrderType.Position;
 
 
         public TestParamsSet() { }
@@ -90,5 +94,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         public string Info(TestAcion action) => $"{(Async ? "Async " : "")}{action} {Side} {Type} order ({Options})";
 
         protected virtual string GetInfo() => $"{(Async ? "Async " : "")}{TestOrderAction.Open} {Side} {Type} order (options: {Options})";
+
+        public override string ToString() => $"{nameof(TestParamsSet)}: Type {Type}, Side {Side}";
     }
 }

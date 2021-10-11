@@ -19,5 +19,10 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             _errorMessages.Add(message);
         }
+
+        internal void ClearStorage()
+        {
+            _errorMessages.Clear();
+        }
     }
 }

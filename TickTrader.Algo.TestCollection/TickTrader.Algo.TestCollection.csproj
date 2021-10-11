@@ -55,6 +55,7 @@
     <Compile Include="CompositeApiTest\Extensions.cs" />
     <Compile Include="CompositeApiTest\GroupTestResult.cs" />
     <Compile Include="CompositeApiTest\Infrastructure\ErrorStorage.cs" />
+    <Compile Include="CompositeApiTest\Infrastructure\EventManager.cs" />
     <Compile Include="CompositeApiTest\Infrastructure\StatisticManager.cs" />
     <Compile Include="CompositeApiTest\OrderTemplate.cs" />
     <Compile Include="CompositeApiTest\TestParamsSet.cs" />

@@ -417,7 +417,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private async Task TestOpenOrder(OrderTemplate template, bool activate = true, bool fill = true)
         {
-            PrintLog(template.GetInfo(TestOrderAction.Open));
+            PrintDebug(template.GetInfo(TestOrderAction.Open));
 
             var request = OpenOrderRequest.Template.Create().WithParams(Symbol.Name, template.Side, template.Type, template.Volume,
                 template.Price, template.StopPrice, template.MaxVisibleVolume, template.TP, template.SL, template.Comment, template.Options,
@@ -445,7 +445,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private async Task TestCancelOrder(OrderTemplate template)
         {
-            PrintLog(template.GetInfo(TestOrderAction.Cancel));
+            PrintDebug(template.GetInfo(TestOrderAction.Cancel));
 
             var response = template.Async ? await CancelOrderAsync(template.Id) : CancelOrder(template.Id);
 
@@ -456,7 +456,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private async Task TestCloseOrder(OrderTemplate template, double? volume = null)
         {
-            PrintLog(template.GetInfo(TestOrderAction.Close));
+            PrintDebug(template.GetInfo(TestOrderAction.Close));
 
             var request = CloseOrderRequest.Template.Create().WithParams(template.Id, volume, template.GetSlippageInPercent()).MakeRequest();
 
@@ -471,7 +471,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private async Task TestCloseBy(OrderTemplate template, OrderTemplate inversed)
         {
-            PrintLog(template.GetInfo(TestOrderAction.CloseBy));
+            PrintDebug(template.GetInfo(TestOrderAction.CloseBy));
 
             var resultCopy = template.Volume < inversed.Volume ? inversed.Copy() : template.Copy();
 
@@ -491,7 +491,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private async Task TestModifyOrder(OrderTemplate template)
         {
-            PrintLog(template.GetInfo(TestOrderAction.Modify));
+            PrintDebug(template.GetInfo(TestOrderAction.Modify));
 
             var request = GetModifyRequest(template);
 
@@ -642,7 +642,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             if (Account.Type == AccountTypes.Gross)
             {
-                PrintLog("To Position");
+                PrintDebug("To Position");
                 await WaitOpenAndUpdateTemplate(template, true, true);
             }
         }
@@ -674,7 +674,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             if (argsObj is TArgs args)
             {
-                PrintLog($"Event received: {argsObj.GetType().Name}");
+                PrintDebug($"Event received: {argsObj.GetType().Name}");
                 return args;
             }
 
@@ -722,7 +722,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             Status.Flush();
         }
 
-        private void PrintLog(string message)
+        internal void PrintDebug(string message)
         {
             if (UseDebug)
                 Print(message);
