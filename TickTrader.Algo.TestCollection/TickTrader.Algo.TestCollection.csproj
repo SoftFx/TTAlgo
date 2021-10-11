@@ -54,6 +54,8 @@
     <Compile Include="CompositeApiTest\Converters\SlippageConverters.cs" />
     <Compile Include="CompositeApiTest\Extensions.cs" />
     <Compile Include="CompositeApiTest\GroupTestResult.cs" />
+    <Compile Include="CompositeApiTest\Infrastructure\ErrorStorage.cs" />
+    <Compile Include="CompositeApiTest\Infrastructure\StatisticManager.cs" />
     <Compile Include="CompositeApiTest\OrderTemplate.cs" />
     <Compile Include="CompositeApiTest\TestParamsSet.cs" />
     <Compile Include="CompositeApiTest\CommentModel.cs" />
@@ -111,13 +113,13 @@
     <Compile Include="Bots\Trade\ExecuteLimits.cs" />
     <Compile Include="Bots\Trade\FastTradingBot.cs" />
     <Compile Include="Bots\Trade\OpenRequestsInSecond.cs" />
-    <Compile Include="CompositeApiTest\Tests\ADTests.cs" />
-    <Compile Include="CompositeApiTest\Tests\CloseByTests.cs" />
-    <Compile Include="CompositeApiTest\Tests\ExecutionTests.cs" />
-    <Compile Include="CompositeApiTest\Tests\ModificationTests.cs" />
-    <Compile Include="CompositeApiTest\Tests\OCOTests.cs" />
-    <Compile Include="CompositeApiTest\Tests\OTOTests.cs" />
-    <Compile Include="CompositeApiTest\Tests\SlippageTests.cs" />
+    <Compile Include="CompositeApiTest\TradeTests\ADTests.cs" />
+    <Compile Include="CompositeApiTest\TradeTests\CloseByTests.cs" />
+    <Compile Include="CompositeApiTest\TradeTests\ExecutionTests.cs" />
+    <Compile Include="CompositeApiTest\TradeTests\ModificationTests.cs" />
+    <Compile Include="CompositeApiTest\TradeTests\OCOTests.cs" />
+    <Compile Include="CompositeApiTest\TradeTests\OTOTests.cs" />
+    <Compile Include="CompositeApiTest\TradeTests\SlippageTests.cs" />
     <Compile Include="Indicators\AlertIndicator.cs" />
     <Compile Include="Indicators\BarSeriesIndicator.cs" />
     <Compile Include="Indicators\CustomHistogramIndicator.cs" />
@@ -139,7 +141,9 @@
       <Name>TickTrader.Algo.Api</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="HistoryTests\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
     <VisualStudio>

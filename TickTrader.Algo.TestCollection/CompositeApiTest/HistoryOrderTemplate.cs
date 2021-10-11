@@ -2,7 +2,7 @@
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
 
-namespace TickTrader.Algo.TestCollection.Auto.Tests
+namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
     internal sealed class HistoryOrderTemplate : OrderTemplate
     {
@@ -128,6 +128,15 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             if (!expected.E(current))
                 throw new HistoryVerificationException(property, current, expected);
         }
+    }
+
+    public class ServerRequestException : Exception
+    {
+        public static ServerRequestException ServerException { get; } = new ServerRequestException();
+
+        private ServerRequestException() : base($"TTS not response") { }
+
+        public ServerRequestException(string message) : base($"{nameof(ServerRequestException)}: {message}") { }
     }
 
     public class VerificationException : Exception

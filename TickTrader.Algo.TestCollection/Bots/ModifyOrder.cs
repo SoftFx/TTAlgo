@@ -26,6 +26,9 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter(DefaultValue = "")]
         public string Comment { get; set; }
 
+        [Parameter(DefaultValue = "")]
+        public string Tag { get; set; }
+
         [Parameter(DisplayName = "Stop Loss", DefaultValue = null, IsRequired = false)]
         public double? StopLoss { get; set; }
 
@@ -87,13 +90,14 @@ namespace TickTrader.Algo.TestCollection.Bots
             }
 
             var comment = string.IsNullOrWhiteSpace(Comment) ? null : Comment;
+            var tag = string.IsNullOrWhiteSpace(Tag) ? null : Tag;
 
             if (string.IsNullOrWhiteSpace(OrderId))
                 OrderId = Account.Orders.FirstOrDefault()?.Id;
 
             var request = ModifyOrderRequest.Template.Create().WithOrderId(OrderId)
                 .WithPrice(Price).WithStopPrice(StopPrice).WithMaxVisibleVolume(MaxVisibleVolume)
-                .WithStopLoss(StopLoss).WithTakeProfit(TakeProfit).WithComment(comment)
+                .WithStopLoss(StopLoss).WithTakeProfit(TakeProfit).WithComment(comment).WithTag(tag)
                 .WithExpiration(ExpirationTimeout.HasValue ? DateTime.Now + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null)
                 .WithVolume(Volume).WithOptions(options).WithSlippage(Slippage).WithOCOEqualVolume(ocoEqualsVolume).WithOCORelatedOrderId(OCORelatedId).WithContingentOrderTrigger(otoTrigger).MakeRequest();
 

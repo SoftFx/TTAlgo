@@ -1,7 +1,7 @@
 ﻿using System;
 using TickTrader.Algo.Api;
 
-namespace TickTrader.Algo.TestCollection.Auto.Tests
+namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
     public static class SlippageConverters
     {

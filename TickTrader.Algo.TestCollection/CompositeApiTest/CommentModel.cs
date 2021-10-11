@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace TickTrader.Algo.TestCollection.Auto.Tests
+namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
     internal class CommentActionModel
     {

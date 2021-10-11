@@ -2,20 +2,38 @@
 {
     internal readonly struct GroupTestResult
     {
-        public int TotalMilliseconds { get; }
+        public static GroupTestResult Empty { get; } = new GroupTestResult(0, 0, 0);
+
+
+        public long TotalMilliseconds { get; }
 
         public int TestCount { get; }
 
-        public int ErrorCount { get; }
+        public int FailedCount { get; }
 
-        public int SuccCount => TestCount - ErrorCount;
+        public int SuccCount => TestCount - FailedCount;
+
+        public double PercentSucc => SuccCount / TestCount * 100;
 
 
-        public GroupTestResult(int milliseconds, int testCount, int errors)
+        public GroupTestResult(int testCount, int failed, long milliseconds)
         {
             TotalMilliseconds = milliseconds;
             TestCount = testCount;
-            ErrorCount = errors;
+            FailedCount = failed;
+        }
+
+        public static GroupTestResult operator +(GroupTestResult first, GroupTestResult second)
+        {
+            return new GroupTestResult(
+                first.TestCount + second.TestCount,
+                first.FailedCount + second.FailedCount,
+                first.TotalMilliseconds + second.TotalMilliseconds);
+        }
+
+        public override string ToString()
+        {
+            return $"Tests count: {TestCount}, Failed: {FailedCount}, Succ: {PercentSucc:F3}%, Time: {TotalMilliseconds / 1000:F3}s";
         }
     }
 }

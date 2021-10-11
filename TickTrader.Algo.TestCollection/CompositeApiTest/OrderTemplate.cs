@@ -3,7 +3,7 @@ using System.Text;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
 
-namespace TickTrader.Algo.TestCollection.Auto.Tests
+namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
     public class OrderTemplate : TestParamsSet
     {
@@ -36,7 +36,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             }
         }
 
-        public OrderExecutionMode Mode { get; set; }
+        public Behavior Mode { get; set; }
 
 
         public double? Price { get; set; }
@@ -49,11 +49,13 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         public double? TP { get; set; }
 
-        public double? Volume { get; set; }
+        public double Volume { get; set; }
 
         public double? Slippage { get; set; }
 
         public string Comment { get; set; }
+
+        public string Tag { get; set; }
 
         public DateTime? Expiration
         {
@@ -70,14 +72,91 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         public OrderTemplate() { }
 
-        public OrderTemplate(TestParamsSet test, OrderExecutionMode mode) : base(test.Type, test.Side, test.Async)
+        public OrderTemplate(TestParamsSet test) : base(test.Type, test.Side, test.Async)
         {
-            Mode = mode;
+            //Mode = mode;
             Options = test.Options;
 
             InitType = Type;
             SlippagePrecision = Math.Pow(10, Math.Max(Symbol.Digits, 4));
         }
+
+        public OrderTemplate ForPending(int coef = 3)
+        {
+            Price = CalculatePrice(Behavior.Pending, coef);
+            StopPrice = CalculatePrice(Behavior.Pending, coef);
+
+            return this;
+        }
+
+        public OrderTemplate ForExecuting()
+        {
+            Price = CalculatePrice(Behavior.Execution, 2);
+            StopPrice = CalculatePrice(Behavior.Execution, -1);
+
+            return this;
+        }
+
+        internal double? CalculatePrice(Behavior mode, int coef = 1) //check all cases in Price
+        {
+            if (mode == Behavior.Pending)
+            {
+                if (IsInstantOrder)
+                    return CalculatePrice(coef > 0 ? 1 : -1);
+
+                if (Type == OrderType.Limit)
+                    return CalculatePrice(-coef);
+            }
+
+            return CalculatePrice(coef);
+        }
+
+        internal double? CalculatePrice(int coef) // check coef
+        {
+            var delta = coef * PriceDelta * Symbol.Point * Math.Max(1, 10 - Symbol.Digits);
+
+            return Side.IsBuy() ? Symbol.Ask.Round(Symbol.Digits) + delta : Symbol.Bid.Round(Symbol.Digits) - delta;
+        }
+
+        internal OpenOrderRequest GetOpenRequest()
+        {
+            return OpenOrderRequest.Template.Create()
+                   .WithParams(Symbol.Name, Side, Type, Volume, Price, StopPrice)
+                   .WithMaxVisibleVolume(MaxVisibleVolume)
+                   .WithSlippage(GetSlippageInPercent())
+                   .WithExpiration(Expiration)
+                   .WithComment(Comment)
+                   .WithOptions(Options)
+                   .WithTakeProfit(TP)
+                   .WithStopLoss(SL)
+                   .WithTag(Tag)
+                   .MakeRequest();
+        }
+
+        internal ModifyOrderRequest GetModifyRequest()
+        {
+            return ModifyOrderRequest.Template.Create()
+                   .WithParams(Id, Price)
+                   .WithMaxVisibleVolume(MaxVisibleVolume)
+                   .WithSlippage(GetSlippageInPercent())
+                   .WithExpiration(Expiration)
+                   .WithStopPrice(StopPrice)
+                   .WithComment(Comment)
+                   .WithOptions(Options)
+                   .WithVolume(Volume)
+                   .WithTakeProfit(TP)
+                   .WithStopLoss(SL)
+                   .MakeRequest();
+        }
+
+        internal CloseOrderRequest GetCloseRequest(double? volume = null)
+        {
+            return CloseOrderRequest.Template.Create()
+                   .WithParams(Id, volume)
+                   .WithSlippage(GetSlippageInPercent())
+                   .MakeRequest();
+        }
+
 
         public void UpdateTemplate(Order order, bool activate = false, bool position = false)
         {

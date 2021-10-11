@@ -227,6 +227,7 @@ namespace TickTrader.Algo.CoreV1
                 TakeProfit = request.TakeProfit,
                 Slippage = request.Slippage,
                 Comment = request.Comment,
+                Tag = request.Tag,
                 Expiration = request.Expiration?.ToUniversalTime().ToTimestamp(),
                 ExecOptions = request.Options?.ToDomainEnum(),
                 OcoRelatedOrderId = request.OcoRelatedOrderId,
