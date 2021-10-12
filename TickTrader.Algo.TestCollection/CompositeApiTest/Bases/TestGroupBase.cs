@@ -99,7 +99,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         protected async Task RemovePendingOrder(OrderTemplate template)
         {
-            if (template.IsCloseOrder)
+            if (template.CanCloseOrder)
                 await TestCloseOrder(template);
             else
                 await TestCancelOrder(template);

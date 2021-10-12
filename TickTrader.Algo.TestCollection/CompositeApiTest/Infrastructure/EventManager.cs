@@ -13,7 +13,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             [typeof(OrderFilledEventArgs)] = TimeSpan.FromSeconds(10),
             [typeof(OrderExpiredEventArgs)] = TimeSpan.FromSeconds(25),
             [typeof(OrderActivatedEventArgs)] = TimeSpan.FromSeconds(10),
-            [typeof(OrderModifiedEventArgs)] = TimeSpan.FromSeconds(20),
+            [typeof(OrderModifiedEventArgs)] = TimeSpan.FromSeconds(10),
             [typeof(OrderCanceledEventArgs)] = TimeSpan.FromSeconds(5),
             [typeof(OrderClosedEventArgs)] = TimeSpan.FromSeconds(5),
         };

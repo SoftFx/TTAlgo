@@ -27,7 +27,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await TestOpenOrder(template).WithTimeoutAfter(WaitOpenOrderTimeout);
 
             await RunCommentModifyTests(template);
-            //await RunTagModifyTests(template);
+            await RunTagModifyTests(template);
 
             if (!template.IsPosition)
             {

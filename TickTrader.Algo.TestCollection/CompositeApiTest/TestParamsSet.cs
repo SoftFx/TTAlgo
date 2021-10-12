@@ -13,7 +13,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
     public enum TestOrderAction { Open, Modify, Close, Cancel, CloseBy };
 
-    public enum TestPropertyAction { Add, Modify, Delete };
 
     public class TestParamsSet
     {
@@ -65,7 +64,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             Type = type;
             Side = side;
-            Async = async;
         }
 
         public static void FillBaseParameters(CompositeTradeApiTest bot)
@@ -83,12 +81,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             {
                 Volume = BaseOrderVolume,
             };
-        }
-
-        public bool SwitchAsyncMode()
-        {
-            Async = !Async;
-            return Async;
         }
 
         public string Info(TestAcion action) => $"{(Async ? "Async " : "")}{action} {Side} {Type} order ({Options})";

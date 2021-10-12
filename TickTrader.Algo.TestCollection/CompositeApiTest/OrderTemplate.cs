@@ -13,7 +13,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         public Order RealOrder { get; private set; }/*=> Orders[Id];*/
 
-        public bool IsCloseOrder => RealOrder.Type == OrderType.Position || RealOrder.Type == OrderType.Market;
+        public bool CanCloseOrder => RealOrder.Type == OrderType.Position || RealOrder.Type == OrderType.Market;
 
         public bool IsStopOrder => Type == OrderType.Stop || Type == OrderType.StopLimit;
 
@@ -234,11 +234,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             return Slippage;
         }
 
-        public string GetInfo(TestPropertyAction action, string property) => $"{action} {property}{GetAllProperties()}";
 
         public string GetInfo(TestOrderAction action) => action != TestOrderAction.Open ? $"{action}{GetAllProperties()}" : base.GetInfo();
-
-        public string GetAction(TestPropertyAction action, string property) => $"{(Async ? "Async " : "")}{action} {property} {Type} {(Options == OrderExecOptions.ImmediateOrCancel ? "IoC" : "")} {Side} to order {Id}";
 
         private void ThrowVerificationException(string property, object expected, object current) => throw new VerificationException(RealOrder.Id, property, expected, current);
 

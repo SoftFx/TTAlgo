@@ -140,39 +140,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await PerformOCOTests(test);
         }
 
-        private async Task PerfomOpenModifyTests(OrderTemplate template)
-        {
-            await TryPerformTest(() => TestOpenOrder(template, false));
-
-            if (Account.Type == AccountTypes.Gross)
-            {
-                await PerformTakeProfitModifyTests(template);
-                await PerformStopLossModifyTests(template);
-            }
-
-            if (template.Type != OrderType.Position)
-            {
-                await PerformVolumeModifyTests(template, DefaultOrderVolume * 2);
-                await PerformExpirationModifyTests(template);
-            }
-
-            if (template.Type != OrderType.Stop && template.Type != OrderType.Position)
-            {
-                await PerformMaxVisibleVolumeModifyTests(template);
-                await PerformPriceModifyTests(template, CalculatePrice(template));
-            }
-
-            if (template.IsStopOrder)
-                await PerformStopPriceModifyTests(template, CalculatePrice(template, 4));
-
-            if (template.Type == OrderType.StopLimit)
-                await PerformOptionsModifyTests(template);
-
-            await PerformCommentModifyTests(template);
-            await PerformSlippageModifyTest(template); //should be last, if slippage = 0 server behavior is unpredictable
-
-            //await RemovePendingOrder(template);
-        }
 
         private async Task PerformExecutionTests(TestParamsSet test)
         {
@@ -741,28 +708,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             PrintStatus();
         }
 
-        private void SubscribeEventListening()
-        {
-            Account.Orders.Opened += OnEventFired;
-            Account.Orders.Filled += OnEventFired;
-            Account.Orders.Closed += OnEventFired;
-            Account.Orders.Expired += OnEventFired;
-            Account.Orders.Canceled += OnEventFired;
-            Account.Orders.Activated += OnEventFired;
-            Account.Orders.Modified += OnEventFired;
-        }
-
-        private void UnsubscribeEventListening()
-        {
-            Account.Orders.Opened -= OnEventFired;
-            Account.Orders.Filled -= OnEventFired;
-            Account.Orders.Closed -= OnEventFired;
-            Account.Orders.Expired -= OnEventFired;
-            Account.Orders.Canceled -= OnEventFired;
-            Account.Orders.Activated -= OnEventFired;
-            Account.Orders.Modified -= OnEventFired;
-        }
-
         private async Task TryPerformTest(Func<Task> func, int? count = null)
         {
             int attemptsFailed = 0;
@@ -792,133 +737,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
         #endregion
 
-        #region Add/Modify test
-
-        private async Task PerformCommentModifyTests(OrderTemplate test)
-        {
-            await RunCommentTest(test, TestPropertyAction.Add, "New_comment");
-            await RunCommentTest(test, TestPropertyAction.Modify, "Replace_Comment");
-            await RunCommentTest(test, TestPropertyAction.Delete, string.Empty);
-        }
-
-        private async Task PerformSlippageModifyTest(OrderTemplate template)
-        {
-            await RunSlippageTest(template, TestPropertyAction.Add, TestParamsSet.Symbol.Slippage / 2);
-            await RunSlippageTest(template, TestPropertyAction.Modify, TestParamsSet.Symbol.Slippage * 2);
-            await RunSlippageTest(template, TestPropertyAction.Delete, 0);
-        }
-
-        private async Task PerformTakeProfitModifyTests(OrderTemplate template)
-        {
-            await RunTakeProfitTest(template, TestPropertyAction.Add, CalculatePrice(template, 4));
-            await RunTakeProfitTest(template, TestPropertyAction.Modify, CalculatePrice(template, 5));
-            await RunTakeProfitTest(template, TestPropertyAction.Delete, 0);
-        }
-
-        private async Task PerformStopLossModifyTests(OrderTemplate template)
-        {
-            await RunStopLossTest(template, TestPropertyAction.Add, CalculatePrice(template, -4));
-            await RunStopLossTest(template, TestPropertyAction.Modify, CalculatePrice(template, -5));
-            await RunStopLossTest(template, TestPropertyAction.Delete, 0);
-        }
-
-        private async Task PerformExpirationModifyTests(OrderTemplate template)
-        {
-            await RunExpirationTest(template, TestPropertyAction.Add, DateTime.Now.AddYears(1));
-            await RunExpirationTest(template, TestPropertyAction.Modify, DateTime.Now.AddYears(2));
-            await RunExpirationTest(template, TestPropertyAction.Delete, DateTime.MinValue);
-        }
-
-        private async Task PerformMaxVisibleVolumeModifyTests(OrderTemplate template)
-        {
-            await RunMaxVisibleVolumeTest(template, TestPropertyAction.Add, DefaultOrderVolume);
-            await RunMaxVisibleVolumeTest(template, TestPropertyAction.Modify, Symbol.MinTradeVolume);
-            await RunMaxVisibleVolumeTest(template, TestPropertyAction.Delete, -1);
-        }
-
-        private async Task PerformOptionsModifyTests(OrderTemplate template)
-        {
-            await RunOptionsTest(template, TestPropertyAction.Add, OrderExecOptions.ImmediateOrCancel);
-            await RunOptionsTest(template, TestPropertyAction.Delete, OrderExecOptions.None);
-        }
-
-        private async Task PerformVolumeModifyTests(OrderTemplate template, double value)
-        {
-            template.Volume = value;
-
-            await RunModifyTest(template, TestPropertyAction.Modify, nameof(template.Volume));
-        }
-
-        private async Task PerformPriceModifyTests(OrderTemplate template, double? value)
-        {
-            template.Price = value;
-
-            await RunModifyTest(template, TestPropertyAction.Modify, nameof(template.Price));
-        }
-
-        private async Task PerformStopPriceModifyTests(OrderTemplate template, double? value)
-        {
-            template.StopPrice = value;
-
-            await RunModifyTest(template, TestPropertyAction.Modify, nameof(template.StopPrice));
-        }
-
-        private async Task RunCommentTest(OrderTemplate template, TestPropertyAction action, string comment)
-        {
-            template.Comment = comment;
-
-            await RunModifyTest(template, action, nameof(template.Comment));
-        }
-
-        private async Task RunSlippageTest(OrderTemplate template, TestPropertyAction action, double? value)
-        {
-            template.Slippage = value;
-
-            await RunModifyTest(template, action, nameof(template.Slippage));
-        }
-
-        private async Task RunTakeProfitTest(OrderTemplate template, TestPropertyAction action, double? value)
-        {
-            template.TP = value;
-
-            await RunModifyTest(template, action, nameof(template.TP));
-        }
-
-        private async Task RunStopLossTest(OrderTemplate template, TestPropertyAction action, double? value)
-        {
-            template.SL = value;
-
-            await RunModifyTest(template, action, nameof(template.SL));
-        }
-
-        private async Task RunExpirationTest(OrderTemplate template, TestPropertyAction action, DateTime? value)
-        {
-            template.Expiration = value;
-
-            await RunModifyTest(template, action, nameof(template.Expiration));
-        }
-
-        private async Task RunMaxVisibleVolumeTest(OrderTemplate template, TestPropertyAction action, double value)
-        {
-            template.MaxVisibleVolume = value;
-
-            await RunModifyTest(template, action, nameof(template.MaxVisibleVolume));
-        }
-
-        private async Task RunOptionsTest(OrderTemplate template, TestPropertyAction action, OrderExecOptions value)
-        {
-            template.Options = value;
-
-            await RunModifyTest(template, action, nameof(template.Options));
-        }
-
-        private async Task RunModifyTest(OrderTemplate template, TestPropertyAction action, string property)
-        {
-            WriteTest(template.GetAction(action, property));
-
-            await TryPerformTest(() => TestModifyOrder(template));
-        }
-        #endregion
 
         #region AD Comments test
 
