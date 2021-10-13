@@ -5,24 +5,16 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
-    internal interface ITestGroup
-    {
-        Task Run(TestParamsSet set);
-
-        event Action<GroupTestResult> TestsFinishedEvent;
-    }
-
-    internal abstract class TestGroupBase : ITestGroup
+    internal abstract class TestGroupBase
     {
         private const int MaxAttemptsCount = 5;
 
         private readonly TimeSpan DelayBetweenServerRequests = TimeSpan.FromSeconds(1);
 
-        private readonly Stopwatch _groupWatcher = new Stopwatch();
-        private readonly ErrorStorage _errorStorage = new ErrorStorage();
+        private readonly GroupStatManager _statsManager;
         private readonly EventManager _eventManager;
 
-        private int _testsCount;
+        //private int _testsCount;
         private bool _asyncMode;
 
 
@@ -33,46 +25,15 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         internal static CompositeTradeApiTest Bot { get; set; }
 
 
-        public event Action<GroupTestResult> TestsFinishedEvent;
+        public event Action<GroupTestReport> TestsFinishedEvent;
 
 
         public TestGroupBase()
         {
+            _statsManager = StatManagerFactory.GetGroupStatManager();
             _eventManager = new EventManager(Bot);
         }
 
-
-        public async Task Run(TestParamsSet set)
-        {
-            try
-            {
-                Bot.Print($"Group: {GroupName} {set}");
-
-                _testsCount = 0;
-
-                _eventManager.SubscribeToOrderEvents();
-                _errorStorage.ClearStorage();
-                _groupWatcher.Restart();
-
-                _asyncMode = false;
-                await RunTestGroup(set);
-
-                _asyncMode = true;
-                await RunTestGroup(set);
-
-                _groupWatcher.Stop();
-                _eventManager.UnsubscribeToOrderEvents();
-
-                TestsFinishedEvent?.Invoke(
-                    new GroupTestResult(_testsCount, _errorStorage.ErrorsCount, _groupWatcher.ElapsedMilliseconds));
-            }
-            catch (Exception ex)
-            {
-                _groupWatcher.Stop();
-
-                Bot.PrintError($"{GroupName} group error: {ex.Message}");
-            }
-        }
 
         protected abstract Task RunTestGroup(TestParamsSet set);
 
@@ -80,9 +41,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             try
             {
-                Bot.Print($"Test #{++_testsCount}: {CurrentTestDatails} {(_asyncMode ? "Async" : "Sync")}");
-
                 _eventManager.ClearEventsQueue();
+                _statsManager.StartNewTest(CurrentTestDatails, _asyncMode);
 
                 await test();
                 await _eventManager.WaitAllEvents();
@@ -91,9 +51,29 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             }
             catch (Exception ex)
             {
-                _errorStorage.AddError(ex.Message);
+                _statsManager.TestError(ex.Message);
+            }
+        }
 
-                Bot.PrintError(ex.Message);
+        public async Task Run(TestParamsSet set)
+        {
+            try
+            {
+                _eventManager.SubscribeToOrderEvents();
+                _statsManager.StartTestGroupWatch(GroupName, set);
+
+                _asyncMode = false;
+                await RunTestGroup(set);
+
+                _asyncMode = true;
+                await RunTestGroup(set);
+
+                _statsManager.StopTestGroupWatch();
+                _eventManager.UnsubscribeToOrderEvents();
+            }
+            catch (Exception ex)
+            {
+                _statsManager.FatalGroupError(ex.Message);
             }
         }
 
@@ -118,7 +98,10 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             var result = await WaitSuccessfulServerRequest<OrderOpenedEventArgs>(OpenCommand);
 
-            template.UpdateTemplate(result);
+            if (template.Mode == Behavior.Execution)
+                _eventManager.AddEvent<OrderFilledEventArgs>();
+            else
+                template.UpdateTemplate(result);
             //response.ThrowIfFailed(TestOrderAction.Open);
 
             //await WaitOpenAndUpdateTemplate(template);

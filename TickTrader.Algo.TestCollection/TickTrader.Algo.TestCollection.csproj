@@ -53,10 +53,11 @@
     <Compile Include="CompositeApiTest\Bases\TestGroupBase.cs" />
     <Compile Include="CompositeApiTest\Converters\SlippageConverters.cs" />
     <Compile Include="CompositeApiTest\Extensions.cs" />
-    <Compile Include="CompositeApiTest\GroupTestResult.cs" />
-    <Compile Include="CompositeApiTest\Infrastructure\ErrorStorage.cs" />
+    <Compile Include="CompositeApiTest\Statistic\GroupStatManager.cs" />
+    <Compile Include="CompositeApiTest\Statistic\GroupTestReport.cs" />
+    <Compile Include="CompositeApiTest\Statistic\GroupTestSatatistic.cs" />
     <Compile Include="CompositeApiTest\Infrastructure\EventManager.cs" />
-    <Compile Include="CompositeApiTest\Infrastructure\StatisticManager.cs" />
+    <Compile Include="CompositeApiTest\Statistic\StatManagerFactory.cs" />
     <Compile Include="CompositeApiTest\OrderTemplate.cs" />
     <Compile Include="CompositeApiTest\TestParamsSet.cs" />
     <Compile Include="CompositeApiTest\CommentModel.cs" />

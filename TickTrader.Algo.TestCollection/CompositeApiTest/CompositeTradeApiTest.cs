@@ -19,15 +19,14 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         private readonly TimeSpan CloseEventTimeout = TimeSpan.FromSeconds(5);
         private readonly TimeSpan ExpirationEventTimeout = TimeSpan.FromSeconds(25);
         private readonly TimeSpan PauseBetweenOrders = TimeSpan.FromMilliseconds(500);
-        private readonly TimeSpan PauseBeforeAndAfterTests = TimeSpan.FromSeconds(2);
+        //private readonly TimeSpan PauseBeforeAndAfterTests = TimeSpan.FromSeconds(2);
         private readonly TimeSpan TimeToExpire = TimeSpan.FromSeconds(3);
 
         private readonly List<HistoryOrderTemplate> _historyStorage = new List<HistoryOrderTemplate>();
         private TaskCompletionSource<object> _eventWaiter;
 
-        private readonly StatisticManager _statisticManager = new StatisticManager();
-
-        private ITestGroup _modificationTests;
+        private ModificationTests _modificationTests;
+        private ExecutionTests _executionTests;
 
 
         private int _testCount = 0;
@@ -42,29 +41,28 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         [Parameter(DefaultValue = 100)]
         public int PriceDelta { get; set; }
 
-        [Parameter(DisplayName = "Include Modification Tests", DefaultValue = true)]
-        public bool UseModificationTests { get; set; }
-
-        [Parameter]
-        public bool IncludeADCases { get; set; }
-
         [Parameter]
         public bool LoadAllHistory { get; set; }
 
+        [Parameter(DefaultValue = true)]
+        public bool UseModificationTests { get; set; }
+
+        [Parameter(DefaultValue = true)]
+        public bool UseExecutionTests { get; set; }
+
+        [Parameter]
+        public bool UseADCases { get; set; }
 
 
         protected override void Init()
         {
             TestParamsSet.FillBaseParameters(this);
             TestGroupBase.Bot = this;
+            StatManagerFactory.Bot = this;
         }
 
         protected async override void OnStart()
         {
-            //CleanUp();
-
-            //await Delay(PauseBeforeAndAfterTests);
-
             PrepareWorkspace();
 
             foreach (OrderSide orderSide in Enum.GetValues(typeof(OrderSide)))
@@ -79,20 +77,12 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                         //    await FullTestRun(testSet, OrderExecOptions.ImmediateOrCancel);
                     }
 
-            Status.WriteLine($"{_statisticManager}");
-
             //Print("Waiting for trade reports to load...");
             //await Delay(PauseBeforeAndAfterTests);
 
             ////History test
             //await TryPerformTest(() => FullHistoryTestRun(), 1);
 
-            //UnsubscribeEventListening();
-
-            //if (CleanUpOrdersAfterTests)
-            //    CleanUp();
-
-            //PrintStatus();
             Exit();
         }
 
@@ -100,18 +90,19 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             CleanUpWorkspace();
 
-            if (UseModificationTests)
-                _modificationTests = _statisticManager.RegistryTestGroup<ModificationTests>();
-
-            //SubscribeEventListening();
+            _modificationTests = new ModificationTests();
+            _executionTests = new ExecutionTests();
         }
 
         private async Task RunAllTestGroups(TestParamsSet set, OrderExecOptions options)
         {
             set.Options = options;
 
-            if (!set.IsInstantOrder)
-                await _modificationTests?.Run(set);
+            if (UseModificationTests && !set.IsInstantOrder)
+                await _modificationTests.Run(set);
+
+            if (UseExecutionTests)
+                await _executionTests.Run(set);
 
             //if (!test.IsInstantOrder)
             //{
@@ -682,10 +673,9 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             }
         }
 
-        private void PrintStatus()
+        private void UpdateStatus()
         {
-            Status.WriteLine($"Tests: {_testCount}, Errors: {_errorCount}");
-            Status.WriteLine($"See logs for more details");
+            //Status.WriteLine($"{_statisticManager}");
             Status.Flush();
         }
 
@@ -698,14 +688,14 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         private void WriteTest(string message)
         {
             Print($"Test №{++_testCount} {message}");
-            PrintStatus();
+            UpdateStatus();
         }
 
         private void WriteError(Exception ex)
         {
             ++_errorCount;
             PrintError(ex.Message);
-            PrintStatus();
+            UpdateStatus();
         }
 
         private async Task TryPerformTest(Func<Task> func, int? count = null)
