@@ -25,7 +25,10 @@ namespace TickTrader.Algo.TestCollection.Bots.Trade
 
         protected async override void OnStart()
         {
-            int countInGroup = RequestCount / 10;
+            int countInGroup = Math.Max(RequestCount / 10, 1);
+            int updateFreq = Math.Min(RequestCount, 10);
+            int timePeriod = 1000 / updateFreq;
+
             var side = OrderSide.Buy;
             var group = 0;
             var systemTime = 0;
@@ -53,12 +56,12 @@ namespace TickTrader.Algo.TestCollection.Bots.Trade
                 }
                 else
                 {
-                    await Task.Delay(Math.Max(100 - systemTime, 0));
+                    await Task.Delay(Math.Max(timePeriod - systemTime, 0));
 
-                    if (++group == 10)
+                    if (++group == updateFreq)
                     {
                         Status.WriteLine($"Operations per sec: {countRequestPerSec}");
-                        Status.WriteLine($"Total request time: {totalWorkingTime} ms");
+                        //Status.WriteLine($"Total request time: {totalWorkingTime} ms");
 
                         side = side == OrderSide.Buy ? OrderSide.Sell : OrderSide.Buy;
                         group = 0;
