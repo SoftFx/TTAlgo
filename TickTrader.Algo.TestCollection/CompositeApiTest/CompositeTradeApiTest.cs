@@ -14,23 +14,25 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         private readonly TimeSpan ActivateEventTimeout = TimeSpan.FromSeconds(10);
         private readonly TimeSpan FillEventTimeout = TimeSpan.FromSeconds(10);
         private readonly TimeSpan ModifyEventTimeout = TimeSpan.FromSeconds(10);
-        private readonly TimeSpan TPSLEventTimeout = TimeSpan.FromSeconds(20);
+        //private readonly TimeSpan TPSLEventTimeout = TimeSpan.FromSeconds(20);
         private readonly TimeSpan CancelEventTimeout = TimeSpan.FromSeconds(5);
         private readonly TimeSpan CloseEventTimeout = TimeSpan.FromSeconds(5);
-        private readonly TimeSpan ExpirationEventTimeout = TimeSpan.FromSeconds(25);
+        //private readonly TimeSpan ExpirationEventTimeout = TimeSpan.FromSeconds(25);
         private readonly TimeSpan PauseBetweenOrders = TimeSpan.FromMilliseconds(500);
         //private readonly TimeSpan PauseBeforeAndAfterTests = TimeSpan.FromSeconds(2);
-        private readonly TimeSpan TimeToExpire = TimeSpan.FromSeconds(3);
+        //private readonly TimeSpan TimeToExpire = TimeSpan.FromSeconds(3);
 
         private readonly List<HistoryOrderTemplate> _historyStorage = new List<HistoryOrderTemplate>();
         private TaskCompletionSource<object> _eventWaiter;
 
+        //private List<TestGroupBase> _testGroups;
+
         private ModificationTests _modificationTests;
         private ExecutionTests _executionTests;
-
+        private SlippageTests _slippageTests;
 
         private int _testCount = 0;
-        private int _errorCount = 0;
+        //private int _errorCount = 0;
 
         [Parameter(DefaultValue = false)]
         public bool UseDebug { get; set; }
@@ -44,14 +46,21 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         [Parameter]
         public bool LoadAllHistory { get; set; }
 
+
         [Parameter(DefaultValue = true)]
         public bool UseModificationTests { get; set; }
 
         [Parameter(DefaultValue = true)]
         public bool UseExecutionTests { get; set; }
 
+        [Parameter(DefaultValue = true)]
+        public bool UseSlippageTests { get; set; }
+
         [Parameter]
         public bool UseADCases { get; set; }
+
+
+        internal StatManagerFactory StatManager { get; private set; }
 
 
         protected override void Init()
@@ -63,10 +72,10 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         protected async override void OnStart()
         {
-            PrepareWorkspace();
+            await PrepareWorkspace();
 
-            foreach (OrderSide orderSide in Enum.GetValues(typeof(OrderSide)))
-                foreach (OrderType orderType in Enum.GetValues(typeof(OrderType)))
+            foreach (OrderType orderType in Enum.GetValues(typeof(OrderType)))
+                foreach (OrderSide orderSide in Enum.GetValues(typeof(OrderSide)))
                     if (orderType != OrderType.Position)
                     {
                         var testSet = new TestParamsSet(orderType, orderSide);
@@ -83,15 +92,33 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             ////History test
             //await TryPerformTest(() => FullHistoryTestRun(), 1);
 
+            OnStop();
+        }
+
+        protected override void OnStop()
+        {
+            //_testGroups.ForEach(u => u.Dispose());
+            GroupTestReport.ResetStaticFields();
             Exit();
         }
 
-        private void PrepareWorkspace()
+        private async Task PrepareWorkspace()
         {
             CleanUpWorkspace();
 
+            StatManager = new StatManagerFactory();
+
             _modificationTests = new ModificationTests();
             _executionTests = new ExecutionTests();
+            _slippageTests = new SlippageTests();
+
+            //_testGroups = new List<TestGroupBase>
+            //{
+            //    _modificationTests,
+            //    _executionTests,
+            //};
+
+            await Task.Delay(2000);
         }
 
         private async Task RunAllTestGroups(TestParamsSet set, OrderExecOptions options)
@@ -103,6 +130,9 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             if (UseExecutionTests)
                 await _executionTests.Run(set);
+
+            if (UseSlippageTests && set.IsSupportedSlippage)
+                await _slippageTests.Run(set);
 
             //if (!test.IsInstantOrder)
             //{
@@ -132,26 +162,26 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
 
 
-        private async Task PerformExecutionTests(TestParamsSet test)
-        {
-            await PrepareAndRun(TestAcion.Fill, PerformOrderFillExecutionTest, test, Behavior.Execution);
+        //private async Task PerformExecutionTests(TestParamsSet test)
+        //{
+        //    await PrepareAndRun(TestAcion.Fill, PerformOrderFillExecutionTest, test, Behavior.Execution);
 
-            if (test.IsLimitIoC) //Market order was ignored on server side
-                await PrepareAndRun(TestAcion.RejectIoC, PerformRejectIocExecutionTest, test, Behavior.Execution);
+        //    if (test.IsLimitIoC) //Market order was ignored on server side
+        //        await PrepareAndRun(TestAcion.RejectIoC, PerformRejectIocExecutionTest, test, Behavior.Execution);
 
-            if (Account.Type == AccountTypes.Gross)
-            {
-                await PrepareAndRun(TestAcion.ExecutionTP, PerformTakeProfitExecutionTest, test, Behavior.Execution);
-                await PrepareAndRun(TestAcion.ExecutionSL, PerformStopLossExecutionTest, test, Behavior.Execution);
-            }
+        //    if (Account.Type == AccountTypes.Gross)
+        //    {
+        //        await PrepareAndRun(TestAcion.ExecutionTP, PerformTakeProfitExecutionTest, test, Behavior.Execution);
+        //        await PrepareAndRun(TestAcion.ExecutionSL, PerformStopLossExecutionTest, test, Behavior.Execution);
+        //    }
 
-            if (!test.IsInstantOrder && Account.Type != AccountTypes.Gross)
-            {
-                await PrepareAndRun(TestAcion.FillByModify, PerformFillByModifyExecutionTest, test);
-                await PrepareAndRun(TestAcion.Expiration, PerformExpirationExecutionTest, test);
-                await PrepareAndRun(TestAcion.Cancel, PerformCancelExecutionTest, test);
-            }
-        }
+        //    if (!test.IsInstantOrder && Account.Type != AccountTypes.Gross)
+        //    {
+        //        await PrepareAndRun(TestAcion.FillByModify, PerformFillByModifyExecutionTest, test);
+        //        await PrepareAndRun(TestAcion.Expiration, PerformExpirationExecutionTest, test);
+        //        await PrepareAndRun(TestAcion.Cancel, PerformCancelExecutionTest, test);
+        //    }
+        //}
 
         private async Task PerformCloseByTests(TestParamsSet test)
         {
@@ -179,83 +209,98 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await func(TestParamsSet.Symbol.Slippage * 2, test);
         }
 
+        //private async Task PrepareOpenSlippageTest(double? slippage, TestParamsSet test)
+        //{
+        //    async Task func(OrderTemplate template)
+        //    {
+        //        template.Slippage = slippage;
+
+        //        //    if (template.Type == OrderType.Market)
+        //        //        await PerformOrderFillExecutionTest(template);
+        //        //    else
+        //        //        await PerformCancelExecutionTest(template);
+        //    }
+
+        //    await PrepareAndRun(TestAcion.OpenSlippage, func, test, test.Type == OrderType.Market ? Behavior.Execution : Behavior.Pending);
+        //}
+
         #region Tests
 
-        private async Task PerformOrderFillExecutionTest(OrderTemplate template)
-        {
-            template.Volume = 4 * DefaultOrderVolume;
+        //private async Task PerformOrderFillExecutionTest(OrderTemplate template)
+        //{
+        //    template.Volume = 4 * DefaultOrderVolume;
 
-            await TryPerformTest(() => TestOpenOrder(template));
+        //    await TryPerformTest(() => TestOpenOrder(template));
 
-            if (Account.Type == AccountTypes.Gross)
-            {
-                await TryPerformTest(() => TestCloseOrder(template, template.Volume / 4));
-                await TryPerformTest(() => TestCloseOrder(template));
-            }
-        }
+        //    if (Account.Type == AccountTypes.Gross)
+        //    {
+        //        await TryPerformTest(() => TestCloseOrder(template, template.Volume / 4));
+        //        await TryPerformTest(() => TestCloseOrder(template));
+        //    }
+        //}
 
-        private async Task PerformRejectIocExecutionTest(OrderTemplate template)
-        {
-            template.Price = CalculatePrice(template, -5);
+        //private async Task PerformRejectIocExecutionTest(OrderTemplate template)
+        //{
+        //    template.Price = CalculatePrice(template, -5);
 
-            await TryCatchOrderReject(template);
-        }
+        //    await TryCatchOrderReject(template);
+        //}
 
-        private async Task PerformFillByModifyExecutionTest(OrderTemplate template)
-        {
-            template.Volume = 4 * DefaultOrderVolume;
-            template.Price = CalculatePrice(template.Side, -5);
+        //private async Task PerformFillByModifyExecutionTest(OrderTemplate template)
+        //{
+        //    template.Volume = 4 * DefaultOrderVolume;
+        //    template.Price = CalculatePrice(template.Side, -5);
 
-            await TryPerformTest(() => TestOpenOrder(template, fill: false));
+        //    await TryPerformTest(() => TestOpenOrder(template, fill: false));
 
-            template.Price = CalculatePrice(template.Side, 2);
-            template.StopPrice = CalculatePrice(template.Side, -1);
+        //    template.Price = CalculatePrice(template.Side, 2);
+        //    template.StopPrice = CalculatePrice(template.Side, -1);
 
-            await TryPerformTest(() => TestModifyOrder(template));
-            await TryPerformTest(() => TestEventFillOrder(template), 1);
+        //    await TryPerformTest(() => TestModifyOrder(template));
+        //    await TryPerformTest(() => TestEventFillOrder(template), 1);
 
-            if (Account.Type == AccountTypes.Gross)
-            {
-                await TryPerformTest(() => TestCloseOrder(template, template.Volume / 4));
-                await TryPerformTest(() => TestCloseOrder(template));
-            }
-        }
+        //    if (Account.Type == AccountTypes.Gross)
+        //    {
+        //        await TryPerformTest(() => TestCloseOrder(template, template.Volume / 4));
+        //        await TryPerformTest(() => TestCloseOrder(template));
+        //    }
+        //}
 
-        private async Task PerformCancelExecutionTest(OrderTemplate template)
-        {
-            await TryPerformTest(() => TestOpenOrder(template, false));
-            await TryPerformTest(() => TestCancelOrder(template));
-        }
+        //private async Task PerformCancelExecutionTest(OrderTemplate template)
+        //{
+        //    await TryPerformTest(() => TestOpenOrder(template, false));
+        //    await TryPerformTest(() => TestCancelOrder(template));
+        //}
 
-        private async Task PerformExpirationExecutionTest(OrderTemplate template)
-        {
-            template.Expiration = DateTime.Now + TimeToExpire;
+        //private async Task PerformExpirationExecutionTest(OrderTemplate template)
+        //{
+        //    template.Expiration = DateTime.Now + TimeToExpire;
 
-            await TryPerformTest(() => TestOpenOrder(template, false));
+        //    await TryPerformTest(() => TestOpenOrder(template, false));
 
-            await WaitAndStoreEvent<OrderExpiredEventArgs>(template, ExpirationEventTimeout + TimeToExpire);
-        }
+        //    await WaitAndStoreEvent<OrderExpiredEventArgs>(template, ExpirationEventTimeout + TimeToExpire);
+        //}
 
-        private async Task PerformTakeProfitExecutionTest(OrderTemplate template)
-        {
-            template.TP = CalculatePrice(template, -2);
+        //private async Task PerformTakeProfitExecutionTest(OrderTemplate template)
+        //{
+        //    template.TP = CalculatePrice(template, -2);
 
-            await RunOpenWithCloseEvent(template);
-        }
+        //    await RunOpenWithCloseEvent(template);
+        //}
 
-        private async Task PerformStopLossExecutionTest(OrderTemplate template)
-        {
-            template.SL = CalculatePrice(template, 2);
+        //private async Task PerformStopLossExecutionTest(OrderTemplate template)
+        //{
+        //    template.SL = CalculatePrice(template, 2);
 
-            await RunOpenWithCloseEvent(template);
-        }
+        //    await RunOpenWithCloseEvent(template);
+        //}
 
-        private async Task RunOpenWithCloseEvent(OrderTemplate template)
-        {
-            await TryPerformTest(() => TestOpenOrder(template));
+        //private async Task RunOpenWithCloseEvent(OrderTemplate template)
+        //{
+        //    await TryPerformTest(() => TestOpenOrder(template));
 
-            await WaitAndStoreEvent<OrderClosedEventArgs>(template, TPSLEventTimeout);
-        }
+        //    await WaitAndStoreEvent<OrderClosedEventArgs>(template, TPSLEventTimeout);
+        //}
 
         private async Task PrepareCloseByTest(TestAcion action, double? closeVolume, TestParamsSet test)
         {
@@ -278,21 +323,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             }
 
             await PrepareAndRun(action, func, test, Behavior.Execution);
-        }
-
-        private async Task PrepareOpenSlippageTest(double? slippage, TestParamsSet test)
-        {
-            async Task func(OrderTemplate template)
-            {
-                template.Slippage = slippage;
-
-                if (template.Type == OrderType.Market)
-                    await PerformOrderFillExecutionTest(template);
-                else
-                    await PerformCancelExecutionTest(template);
-            }
-
-            await PrepareAndRun(TestAcion.OpenSlippage, func, test, test.Type == OrderType.Market ? Behavior.Execution : Behavior.Pending);
         }
 
         private async Task TryCatchOrderReject(OrderTemplate template)
@@ -350,14 +380,14 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private double? CalculatePrice(OrderTemplate template, int coef = 1)
         {
-            if (template.Mode == Behavior.Pending)
-            {
-                if (template.IsInstantOrder)
-                    return CalculatePrice(template.Side, coef > 0 ? 1 : -1);
+            //if (template.Mode == Behavior.Pending)
+            //{
+            //    if (template.IsInstantOrder)
+            //        return CalculatePrice(template.Side, coef > 0 ? 1 : -1);
 
-                if (template.Type == OrderType.Limit)
-                    return CalculatePrice(template.Side, -coef);
-            }
+            //    if (template.Type == OrderType.Limit)
+            //        return CalculatePrice(template.Side, -coef);
+            //}
 
             return CalculatePrice(template.Side, coef);
         }
@@ -639,17 +669,17 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             throw new Exception($"Unexpected event: Received {argsObj.GetType().Name} while expecting {typeof(TArgs).Name}");
         }
 
-        private void OnEventFired<TArgs>(TArgs args)
-        {
-            if (_eventWaiter != null)
-            {
-                var waiterCopy = _eventWaiter;
-                _eventWaiter = null;
-                waiterCopy.SetResult(args); // note: function may start wating for new event inside SetResult(), so _eventWaiter = null should be before SetResult()
-            }
-            else
-                throw new Exception($"Unexpected event: {args.GetType().Name}");
-        }
+        //private void OnEventFired<TArgs>(TArgs args)
+        //{
+        //    if (_eventWaiter != null)
+        //    {
+        //        var waiterCopy = _eventWaiter;
+        //        _eventWaiter = null;
+        //        waiterCopy.SetResult(args); // note: function may start wating for new event inside SetResult(), so _eventWaiter = null should be before SetResult()
+        //    }
+        //    else
+        //        throw new Exception($"Unexpected event: {args.GetType().Name}");
+        //}
 
         #endregion
 
@@ -659,7 +689,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private void CleanUpWorkspace()
         {
-            Print("Cleaning up...");
+            Status.WriteLine("Cleaning up...");
 
             foreach (var netPosition in Account.NetPositions.ToList())
                 CloseNetPosition(CloseNetPositionRequest.Template.Create().WithParams(netPosition.Symbol).MakeRequest());
@@ -693,7 +723,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private void WriteError(Exception ex)
         {
-            ++_errorCount;
+            //++_errorCount;
             PrintError(ex.Message);
             UpdateStatus();
         }

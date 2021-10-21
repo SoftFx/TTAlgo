@@ -11,7 +11,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         private DateTime? _expiration;
 
 
-        public Order RealOrder { get; private set; }/*=> Orders[Id];*/
+        public Order RealOrder { get; private set; }
 
         public bool CanCloseOrder => RealOrder.Type == OrderType.Position || RealOrder.Type == OrderType.Market;
 
@@ -36,7 +36,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             }
         }
 
-        public Behavior Mode { get; set; }
+        //public Behavior Mode { get; set; }
 
 
         public double? Price { get; set; }
@@ -81,41 +81,31 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             SlippagePrecision = Math.Pow(10, Math.Max(Symbol.Digits, 4));
         }
 
+
         public OrderTemplate ForPending(int coef = 3)
         {
-            Price = CalculatePrice(Behavior.Pending, coef);
-            StopPrice = CalculatePrice(Behavior.Pending, coef);
+            //if (IsInstantOrder)
+            //    return CalculatePrice(coef > 0 ? 1 : -1);
+
+            Price = CalculatePrice(coef);
+            StopPrice = CalculatePrice(-coef);
 
             return this;
         }
 
         public OrderTemplate ForExecuting()
         {
-            Price = CalculatePrice(Behavior.Execution, 2);
-            StopPrice = CalculatePrice(Behavior.Execution, -1);
+            Price = CalculatePrice(-3);
+            StopPrice = CalculatePrice(3);
 
             return this;
         }
 
-        internal double? CalculatePrice(Behavior mode, int coef = 1) //check all cases in Price
-        {
-            if (mode == Behavior.Pending)
-            {
-                if (IsInstantOrder)
-                    return CalculatePrice(coef > 0 ? 1 : -1);
-
-                if (Type == OrderType.Limit)
-                    return CalculatePrice(-coef);
-            }
-
-            return CalculatePrice(coef);
-        }
-
         internal double? CalculatePrice(int coef) // check coef
         {
-            var delta = coef * PriceDelta * Symbol.Point * Math.Max(1, 10 - Symbol.Digits);
+            var delta = coef * PriceDelta * Symbol.Point;
 
-            return Side.IsBuy() ? Symbol.Ask.Round(Symbol.Digits) + delta : Symbol.Bid.Round(Symbol.Digits) - delta;
+            return Side.IsBuy() ? Symbol.Ask - delta : Symbol.Bid + delta;
         }
 
         internal OpenOrderRequest GetOpenRequest()
@@ -158,6 +148,27 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                    .MakeRequest();
         }
 
+        internal void ToOpen(Order order)
+        {
+            Id = order.Id;
+            RealOrder = Orders[Id];
+        }
+
+        internal OrderTemplate ToOpen(string orderId)
+        {
+            Id = orderId;
+            RealOrder = Orders[Id];
+
+            return this;
+        }
+
+        internal OrderTemplate ToActivate(string orderId)
+        {
+            InitType = OrderType.StopLimit;
+            Type = OrderType.Limit;
+
+            return ToOpen(orderId);
+        }
 
         public void UpdateTemplate(Order order, bool activate = false, bool position = false)
         {
@@ -211,7 +222,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                         ThrowVerificationException(nameof(RealOrder.Slippage), expectedSlippage, realSlippage);
                 });
 
-            if (IsSupportedOCO)
+            if (IsSupportedOcO)
                 if (OcoRelatedOrderId != RealOrder.OcoRelatedOrderId)
                     ThrowVerificationException(nameof(RealOrder.OcoRelatedOrderId), OcoRelatedOrderId, RealOrder.OcoRelatedOrderId);
 
@@ -298,6 +309,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 str.Append($", {name}={value}");
         }
 
+        //add deep copy trigger property later
         public OrderTemplate Copy() => (OrderTemplate)MemberwiseClone();
 
         public OrderTemplate InversedCopy(double? volume = null)

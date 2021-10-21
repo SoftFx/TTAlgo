@@ -134,7 +134,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
     {
         public static ServerRequestException ServerException { get; } = new ServerRequestException();
 
-        private ServerRequestException() : base($"TTS not response") { }
+        private ServerRequestException() : base($"TTS unexpected behavior") { }
 
         public ServerRequestException(string message) : base($"{nameof(ServerRequestException)}: {message}") { }
     }

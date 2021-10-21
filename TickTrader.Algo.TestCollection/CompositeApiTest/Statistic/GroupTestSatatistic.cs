@@ -10,7 +10,7 @@
 
         public int SuccCount => TestCount - FailedCount;
 
-        public double PercentSucc => (double)SuccCount / TestCount * 100.0;
+        public double PercentSucc => TestCount > 0 ? (double)SuccCount / TestCount * 100.0 : 0;
 
 
         public GroupTestStatistic(int testCount, int failed, long milliseconds)
@@ -30,7 +30,7 @@
 
         public override string ToString()
         {
-            return $"Tests count: {TestCount}, Failed: {FailedCount}, Succ: {PercentSucc:F3}%, Time: {TotalMilliseconds / 1000:F3}s";
+            return $"Tests count: {TestCount}, Failed: {FailedCount}, Succ: {PercentSucc:F3}%, Time: {(double)TotalMilliseconds / 1000:F3}s";
         }
     }
 }

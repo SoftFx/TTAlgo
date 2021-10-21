@@ -39,7 +39,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         public bool IsGrossAcc => AccountType == AccountTypes.Gross;
 
 
-        public bool IsInstantOrder => (Type == OrderType.Market && !IsGrossAcc) || IsLimitIoC;
+        public bool IsInstantOrder => Type == OrderType.Market || IsLimitIoC;
 
         public bool IsLimitIoC => Type == OrderType.Limit && Options.HasFlag(OrderExecOptions.ImmediateOrCancel);
 
@@ -49,9 +49,9 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         public bool IsSupportedStopPrice => Type == OrderType.StopLimit || Type == OrderType.Stop;
 
-        public bool IsSupportedOCO => (Type == OrderType.Stop || Type == OrderType.Limit) && !IsGrossAcc;
+        public bool IsSupportedIoC => Type == OrderType.StopLimit || Type == OrderType.Limit;
 
-        public bool IsLimit => Type == OrderType.StopLimit || Type == OrderType.Limit;
+        public bool IsSupportedOcO => (Type == OrderType.Stop || Type == OrderType.Limit) && !IsGrossAcc;
 
         public bool IsStopLimit => Type == OrderType.StopLimit;
 
@@ -87,6 +87,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         protected virtual string GetInfo() => $"{(Async ? "Async " : "")}{TestOrderAction.Open} {Side} {Type} order (options: {Options})";
 
-        public override string ToString() => $"{nameof(TestParamsSet)}: Type {Type}, Side {Side}";
+        public override string ToString() => $"Type={Type} Side={Side}";
     }
 }

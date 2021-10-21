@@ -52,14 +52,19 @@
   <ItemGroup>
     <Compile Include="CompositeApiTest\Bases\TestGroupBase.cs" />
     <Compile Include="CompositeApiTest\Converters\SlippageConverters.cs" />
-    <Compile Include="CompositeApiTest\Extensions.cs" />
+    <Compile Include="CompositeApiTest\Infrastructure\Extensions.cs" />
+    <Compile Include="CompositeApiTest\Events\EventsQueue.cs" />
+    <Compile Include="CompositeApiTest\Events\EventsQueueNode.cs" />
+    <Compile Include="CompositeApiTest\Infrastructure\Exceptions.cs" />
+    <Compile Include="CompositeApiTest\Infrastructure\OrderComparator.cs" />
+    <Compile Include="CompositeApiTest\Events\OrderEvents.cs" />
     <Compile Include="CompositeApiTest\Statistic\GroupStatManager.cs" />
     <Compile Include="CompositeApiTest\Statistic\GroupTestReport.cs" />
     <Compile Include="CompositeApiTest\Statistic\GroupTestSatatistic.cs" />
-    <Compile Include="CompositeApiTest\Infrastructure\EventManager.cs" />
+    <Compile Include="CompositeApiTest\Events\EventsQueueManager.cs" />
     <Compile Include="CompositeApiTest\Statistic\StatManagerFactory.cs" />
-    <Compile Include="CompositeApiTest\OrderTemplate.cs" />
-    <Compile Include="CompositeApiTest\TestParamsSet.cs" />
+    <Compile Include="CompositeApiTest\Bases\OrderTemplate.cs" />
+    <Compile Include="CompositeApiTest\Bases\TestParamsSet.cs" />
     <Compile Include="CompositeApiTest\CommentModel.cs" />
     <Compile Include="CompositeApiTest\CompositeTradeApiTest.cs" />
     <Compile Include="CompositeApiTest\HistoryOrderTemplate.cs" />
@@ -143,9 +148,7 @@
       <Name>TickTrader.Algo.Api</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="HistoryTests\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
     <VisualStudio>

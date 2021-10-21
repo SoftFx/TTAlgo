@@ -9,36 +9,27 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
     {
         private enum TestAction { Add, Modify, Delete };
 
-        private readonly TimeSpan WaitOpenOrderTimeout = TimeSpan.FromMilliseconds(500);
+        private readonly TimeSpan WaitEventsTimeout = TimeSpan.FromMilliseconds(500);
 
 
         protected override string GroupName => nameof(ModificationTests);
-
-        protected override string CurrentTestDatails { get; set; }
-
-
-        public ModificationTests() { }
 
 
         protected override async Task RunTestGroup(TestParamsSet set)
         {
             var template = set.BuildOrder().ForPending();
 
-            await TestOpenOrder(template).WithTimeoutAfter(WaitOpenOrderTimeout);
+            await TestOpenOrder(template).WithTimeoutAfter(WaitEventsTimeout);
 
-            await RunCommentModifyTests(template);
+            await VolumeModifyTests(template, 2);
             await RunTagModifyTests(template);
-
-            if (!template.IsPosition)
-            {
-                await VolumeModifyTests(template, 2);
-                await RunExpirationModifyTests(template);
-            }
+            await RunCommentModifyTests(template);
+            await RunExpirationModifyTests(template);
 
             if (template.IsSupportedMaxVisibleVolume)
             {
                 await RunMaxVisibleVolumeModifyTests(template);
-                await PriceModifyTests(template, 2);
+                await PriceModifyTests(template, 4);
             }
 
             if (template.IsSupportedStopPrice)
@@ -56,7 +47,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             if (template.IsSupportedSlippage) //should be last, if slippage = 0 server behavior is unpredictable
                 await RunSlippageModifyTest(template);
 
-            await RemovePendingOrder(template);
+            await RemoveOrder(template).WithTimeoutAfter(WaitEventsTimeout); ;
         }
 
 
@@ -195,9 +186,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private async Task RunModifyTest(OrderTemplate template, TestAction action = TestAction.Modify, [CallerMemberName] string testName = "")
         {
-            CurrentTestDatails = $"{action} {testName}";
-
-            await RunTest(() => TestModifyOrder(template));
+            await RunTest(TestModifyOrder, null, template, $"{action} {testName}");
         }
     }
 }

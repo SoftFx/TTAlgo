@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
@@ -30,6 +32,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 case OrderCmdResultCodes.OrderLocked:
                 case OrderCmdResultCodes.ThrottlingError:
                 case OrderCmdResultCodes.Timeout:
+                case OrderCmdResultCodes.OrderNotFound:
                     return true;
 
                 default:

@@ -3,24 +3,24 @@ using System.Text;
 
 namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
-    internal static class StatManagerFactory
+    internal class StatManagerFactory
     {
-        private static readonly List<GroupStatManager> _statManagers = new List<GroupStatManager>(1 << 4);
+        private readonly List<GroupStatManager> _statManagers = new List<GroupStatManager>(1 << 4);
 
-        private static readonly StringBuilder _fullReportBuilder;
+        private readonly StringBuilder _fullReportBuilder;
 
-        private static GroupTestStatistic _fullStats;
-        private static string _fullErrorReport;
+        private GroupTestStatistic _fullStats;
+        private string _fullErrorReport;
 
         internal static CompositeTradeApiTest Bot { get; set; }
 
 
-        static StatManagerFactory()
+        internal StatManagerFactory()
         {
             _fullReportBuilder = new StringBuilder(1 << 10);
         }
 
-        internal static GroupStatManager GetGroupStatManager()
+        internal GroupStatManager GetGroupStatManager()
         {
             var manager = new GroupStatManager(Bot);
 
@@ -31,17 +31,12 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             return manager;
         }
 
-        private static void StoreGroupStat(GroupTestReport result)
+        private void StoreGroupStat(GroupTestReport result)
         {
             _fullStats += result.GroupStats;
 
             if (result.HasError)
-            {
-                _fullReportBuilder.AppendLine()
-                                  .AppendLine($"{result}");
-
-                _fullErrorReport = _fullReportBuilder.ToString();
-            }
+                _fullErrorReport = _fullReportBuilder.AppendLine($"\n{result}").ToString();
 
             Bot.Status.Write($"Full statistics: {_fullStats}\n{_fullErrorReport}");
             Bot.Status.Flush();

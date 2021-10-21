@@ -1,38 +1,81 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
     internal sealed class ExecutionTests : TestGroupBase
     {
-        private enum TestAcion { Fill, FillByModify, RejectIoC, ExecutionTP, ExecutionSL, Cancel, Expiration }
+        private readonly TimeSpan TimeToExpire = TimeSpan.FromSeconds(4);
 
 
         protected override string GroupName => nameof(ExecutionTests);
 
-        protected override string CurrentTestDatails { get; set; }
-
 
         protected override async Task RunTestGroup(TestParamsSet set)
         {
-            var template = set.BuildOrder().ForExecuting();
+            await RunTest(FillExecutionTest, set);
 
-            await FillTest(template);
+            if (set.IsSupportedIoC)
+                await RunTest(FillIoCExecutionTest, set);
+            //add rejectIocTest
+
+            if (!set.IsInstantOrder)
+            {
+                await RunTest(FillByModifyExecutionTest, set);
+                await RunTest(ExpirationExecutionTest, set);
+                await RunTest(CancelExecutionTest, set);
+            }
+
+            if (set.IsGrossAcc)
+            {
+                await RunTest(TakeProfitExecutionTest, set);
+                await RunTest(StopLossExecutionTest, set);
+            }
         }
 
-        private async Task FillTest(OrderTemplate template)
+        private async Task FillExecutionTest(OrderTemplate template)
         {
-            //async Task OpenExecutionOrder
-
-            await RunExecutionTest(TestAcion.Fill, () => TestOpenOrder(template));
+            await OpenExecutionOrder(template);
         }
 
-        private async Task RunExecutionTest(TestAcion action, Func<Task> test, [CallerMemberName] string testName = "")
+        private async Task FillIoCExecutionTest(OrderTemplate template)
         {
-            CurrentTestDatails = $"{action} {testName}";
+            template.Options = Api.OrderExecOptions.ImmediateOrCancel;
 
-            await RunTest(test);
+            await OpenExecutionOrder(template);
+        }
+
+        private async Task FillByModifyExecutionTest(OrderTemplate template)
+        {
+            await TestOpenOrder(template.ForPending());
+            await ModifyForExecutionOrder(template);
+        }
+
+        private async Task ExpirationExecutionTest(OrderTemplate template)
+        {
+            template.Expiration = DateTime.Now + TimeToExpire;
+
+            await TestOpenOrder(template.ForPending(), OrderEvents.Expire);
+        }
+
+        private async Task CancelExecutionTest(OrderTemplate template)
+        {
+            await TestOpenOrder(template.ForPending());
+            await TestCancelOrder(template);
+        }
+
+        private async Task TakeProfitExecutionTest(OrderTemplate template)
+        {
+            template.TP = template.CalculatePrice(-2);
+
+            await OpenExecutionOrder(template);
+        }
+
+        private async Task StopLossExecutionTest(OrderTemplate template)
+        {
+            template.SL = template.CalculatePrice(2);
+
+            await OpenExecutionOrder(template);
         }
     }
 }

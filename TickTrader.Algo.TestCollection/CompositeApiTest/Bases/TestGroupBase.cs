@@ -1,57 +1,66 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
-    internal abstract class TestGroupBase
+    internal abstract class TestGroupBase : IDisposable
     {
         private const int MaxAttemptsCount = 5;
 
-        private readonly TimeSpan DelayBetweenServerRequests = TimeSpan.FromSeconds(1);
+        private readonly TimeSpan DelayBetweenServerRequests = TimeSpan.FromSeconds(5);
+        private readonly TimeSpan WaitToUpdateGrossPositions = TimeSpan.FromSeconds(1);
+        private readonly TimeSpan WaitAllFailedTestEvents = TimeSpan.FromSeconds(5);
 
         private readonly GroupStatManager _statsManager;
-        private readonly EventManager _eventManager;
+        private readonly EventsQueueManager _eventManager;
 
-        //private int _testsCount;
         private bool _asyncMode;
-
-
-        protected abstract string GroupName { get; }
-
-        protected abstract string CurrentTestDatails { get; set; }
 
         internal static CompositeTradeApiTest Bot { get; set; }
 
 
-        public event Action<GroupTestReport> TestsFinishedEvent;
+        protected abstract string GroupName { get; }
 
 
         public TestGroupBase()
         {
-            _statsManager = StatManagerFactory.GetGroupStatManager();
-            _eventManager = new EventManager(Bot);
+            _statsManager = Bot.StatManager.GetGroupStatManager();
+            _eventManager = new EventsQueueManager(Bot);
+        }
+
+
+        public void Dispose()
+        {
+            _eventManager.UnsubscribeToOrderEvents();
         }
 
 
         protected abstract Task RunTestGroup(TestParamsSet set);
 
-        protected async Task RunTest(Func<Task> test)
+        protected async Task RunTest(Func<OrderTemplate, Task> test, TestParamsSet set, OrderTemplate template = null,
+            string testInfo = null)
         {
             try
             {
-                _eventManager.ClearEventsQueue();
-                _statsManager.StartNewTest(CurrentTestDatails, _asyncMode);
+                Bot.PrintDebug("Start test");
 
-                await test();
+                template = template ?? set.BuildOrder();
+
+                _eventManager.SetNewTestTemplate(template);
+                _statsManager.StartNewTest(testInfo ?? test.Method.Name, _asyncMode);
+
+                await test(template);
                 await _eventManager.WaitAllEvents();
 
-                return;
+                Bot.PrintDebug("Stop test");
             }
             catch (Exception ex)
             {
                 _statsManager.TestError(ex.Message);
+
+                if (ex is EventException)
+                    await Task.Delay(WaitAllFailedTestEvents);
             }
         }
 
@@ -69,15 +78,54 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 await RunTestGroup(set);
 
                 _statsManager.StopTestGroupWatch();
-                _eventManager.UnsubscribeToOrderEvents();
             }
             catch (Exception ex)
             {
                 _statsManager.FatalGroupError(ex.Message);
             }
+            finally
+            {
+                _eventManager.UnsubscribeToOrderEvents();
+            }
         }
 
-        protected async Task RemovePendingOrder(OrderTemplate template)
+
+        protected async Task OpenExecutionOrder(OrderTemplate template)
+        {
+            await TestOpenOrder(template.ForExecuting(), GetExecutionEvents(template));
+            await ClearTestEnviroment(template);
+        }
+
+        protected async Task ModifyForExecutionOrder(OrderTemplate template)
+        {
+            await TestModifyOrder(template.ForExecuting());
+
+            _eventManager.AddExpectedEvents(GetExecutionEvents(template));
+
+            await ClearTestEnviroment(template);
+        }
+
+        private static Type[] GetExecutionEvents(OrderTemplate template)
+        {
+            var isGross = template.IsGrossAcc;
+            var events = isGross ? OrderEvents.FillOnGrossOrderEvents : OrderEvents.FillOrderEvents;
+
+            if (template.IsStopLimit)
+                events = isGross ? OrderEvents.FillOnGrossStopLimitEvents : OrderEvents.FillStopLimitEvents;
+
+            return events;
+        }
+
+        private async Task ClearTestEnviroment(OrderTemplate template)
+        {
+            if (template.IsGrossAcc)
+            {
+                await Task.Delay(WaitToUpdateGrossPositions);
+                await RemoveOrder(template);
+            }
+        }
+
+        protected async Task RemoveOrder(OrderTemplate template)
         {
             if (template.CanCloseOrder)
                 await TestCloseOrder(template);
@@ -85,39 +133,15 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 await TestCancelOrder(template);
         }
 
-        protected async Task TestOpenOrder(OrderTemplate template, bool activate = true, bool fill = true)
-        {
-            //PrintLog(template.GetInfo(TestOrderAction.Open));
 
+        protected async Task TestOpenOrder(OrderTemplate template, params Type[] eventsAfterOpen)
+        {
             var request = template.GetOpenRequest();
 
             async Task<OrderCmdResult> OpenCommand() =>
                 _asyncMode ? await Bot.OpenOrderAsync(request) : Bot.OpenOrder(request);
 
-            //_eventManager.AddEvent<OrderOpenedEventArgs>();
-
-            var result = await WaitSuccessfulServerRequest<OrderOpenedEventArgs>(OpenCommand);
-
-            if (template.Mode == Behavior.Execution)
-                _eventManager.AddEvent<OrderFilledEventArgs>();
-            else
-                template.UpdateTemplate(result);
-            //response.ThrowIfFailed(TestOrderAction.Open);
-
-            //await WaitOpenAndUpdateTemplate(template);
-
-            //if (!activate && !template.IsImmediateFill)
-            //    try
-            //    {
-            //        template.Verification();
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        PrintError(ex.Message);
-            //    }
-
-            //if ((activate && fill) || template.IsImmediateFill)
-            //    await TryPerformTest(() => TestEventFillOrder(template), 1);
+            template.ToOpen(await WaitSuccServerRequest(OpenCommand, OrderEvents.Open, eventsAfterOpen));
         }
 
         protected async Task TestModifyOrder(OrderTemplate template)
@@ -127,51 +151,38 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             async Task<OrderCmdResult> ModifyCommand() =>
                 _asyncMode ? await Bot.ModifyOrderAsync(request) : Bot.ModifyOrder(request);
 
-            //_eventManager.AddEvent<OrderModifiedEventArgs>();
-
-            await WaitSuccessfulServerRequest<OrderModifiedEventArgs>(ModifyCommand);
+            await WaitSuccServerRequest(ModifyCommand, OrderEvents.Modify);
         }
 
         protected async Task TestCancelOrder(OrderTemplate template)
         {
-            //PrintLog(template.GetInfo(TestOrderAction.Cancel));
-
             async Task<OrderCmdResult> CancelCommand() =>
                 _asyncMode ? await Bot.CancelOrderAsync(template.Id) : Bot.CancelOrder(template.Id);
 
-            await WaitSuccessfulServerRequest<OrderCanceledEventArgs>(CancelCommand);
-
-            //response.ThrowIfFailed(TestOrderAction.Cancel);
-
-            //await WaitAndStoreEvent<OrderCanceledEventArgs>(template, CancelEventTimeout);
+            await WaitSuccServerRequest(CancelCommand, OrderEvents.Cancel);
         }
 
         protected async Task TestCloseOrder(OrderTemplate template, double? volume = null)
         {
-            //PrintLog(template.GetInfo(TestOrderAction.Close));
-
             var request = template.GetCloseRequest(volume);
 
             async Task<OrderCmdResult> CloseCommand() =>
                 _asyncMode ? await Bot.CloseOrderAsync(request) : Bot.CloseOrder(request);
 
-            await WaitSuccessfulServerRequest<OrderClosedEventArgs>(CloseCommand);
-
-            //response.ThrowIfFailed(TestOrderAction.Close);
-
-            //template.Verification(volume == null);
-
-            //await WaitAndStoreEvent<OrderClosedEventArgs>(template, CloseEventTimeout);
+            await WaitSuccServerRequest(CloseCommand, OrderEvents.Close);
         }
 
-        private async Task<Order> WaitSuccessfulServerRequest<TEvent>(Func<Task<OrderCmdResult>> request)
+        private async Task<Order> WaitSuccServerRequest(Func<Task<OrderCmdResult>> request, Type initialEvent, params Type[] events)
         {
             int attemptsCount = 0;
 
-            _eventManager.AddEvent<TEvent>();
+            _eventManager.AddExpectedEvent(initialEvent);
+            _eventManager.AddExpectedEvents(events);
 
             do
             {
+                Bot.PrintDebug($"Start request Async = {_asyncMode}");
+
                 var result = await request();
 
                 if (result.IsCompleted)

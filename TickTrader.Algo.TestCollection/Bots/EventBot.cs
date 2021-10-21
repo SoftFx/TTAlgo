@@ -15,6 +15,8 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         protected override void Init()
         {
+            Status.Flush();
+            Status.WriteLine("Start");
             //Necessary for lazy initialization of the calculator
             var calc = Account.CalculateOrderMargin(Symbol.Name, OrderType.Limit, OrderSide.Buy, 0.1, 0, 1, 0);
 
@@ -44,15 +46,15 @@ namespace TickTrader.Algo.TestCollection.Bots
         {
             _msgBuilder.Append("EVENT ").Append(eventName);
             _msgBuilder.PrintPropertiesColumnOfLines(data);
+
+            Status.Write($"{typeof(TData).Name}");
+
             DoPrint();
         }
 
         private void DoPrint()
         {            
-            var msg = _msgBuilder.ToString();
-
-            Print(msg);
-            Status.Write(msg);
+            Print(_msgBuilder.ToString());
 
             _msgBuilder.Clear();
         }

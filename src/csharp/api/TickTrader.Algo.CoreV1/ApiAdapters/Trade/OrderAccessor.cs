@@ -2,6 +2,7 @@
 using System;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.CalculatorInterfaces;
 
@@ -16,6 +17,9 @@ namespace TickTrader.Algo.CoreV1
         internal SymbolInfo SymbolInfo { get; set; }
 
         internal double LotSize => SymbolInfo?.LotSize ?? 1;
+
+
+        internal OrderAccessor() { } //for DeepCopy method
 
         internal OrderAccessor(SymbolInfo symbol, OrderInfo info = null)
         {
@@ -86,6 +90,8 @@ namespace TickTrader.Algo.CoreV1
 
         string Order.OcoRelatedOrderId => Info.OcoRelatedOrderId;
 
+        Order Order.DeepCopy() => this.DeepCopy();
+
         internal bool IsSameOrderId(OrderAccessor other) => other != null && string.Equals(Info.Id, other.Info.Id);
 
         internal bool IsSameOrder(OrderAccessor other) => IsSameOrderId(other) && Info.Type == other.Info.Type;
@@ -103,6 +109,7 @@ namespace TickTrader.Algo.CoreV1
         {
             return response != null && response.IsCompleted ? response.Value : double.NaN;
         }
+
 
         internal sealed class WriteEntity : Order, IOrderCalcInfo, IMarginCalculateRequest, IProfitCalculateRequest
         {
@@ -295,6 +302,11 @@ namespace TickTrader.Algo.CoreV1
                 StopPrice = newStopPirce;
 
                 EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldAmount, oldPrice, oldStopPrice, oldType, false));
+            }
+
+            public Order DeepCopy()
+            {
+                throw new NotImplementedException();
             }
         }
     }
