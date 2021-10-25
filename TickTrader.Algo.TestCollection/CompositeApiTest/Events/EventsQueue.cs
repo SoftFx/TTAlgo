@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
     internal abstract class EventsQueue
     {
+        private readonly SortedDictionary<string, OrderTemplate> _currentTemplates;
+        private readonly LinkedList<OrderTemplate> _expectedToOpenTemplates;
+
         private readonly List<(Type Event, OrderTemplate Order)> _expected;
         private readonly List<EventsQueueNode> _origin;
-
-        private OrderTemplate _expectedTemplate;
 
 
         protected int ExpectedCount => _expected?.Count ?? 0;
@@ -20,20 +22,68 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         protected EventsQueue()
         {
+            _currentTemplates = new SortedDictionary<string, OrderTemplate>();
+            _expectedToOpenTemplates = new LinkedList<OrderTemplate>();
+
             _expected = new List<(Type, OrderTemplate)>(1 << 4);
             _origin = new List<EventsQueueNode>(1 << 4);
         }
 
+
+        internal virtual void RegistryNewTemplate(OrderTemplate template) => _expectedToOpenTemplates.AddLast(template);
 
         internal virtual void AddExpectedEvent(Type type) => _expected.Add((type, null));
 
         internal virtual void AddOriginEvent(EventsQueueNode node) => _origin.Add(node);
 
 
-        protected void VerifyOriginQueue(string mainOrderId)
+        protected void UpdateTemplates(Type @event, SingleOrderEventArgs args)
         {
-            //GenerateExpectedTemplates(mainOrderId);
+            var orderId = args.Order.Id;
 
+            if (@event == OrderEvents.Open)
+            {
+                var template = _expectedToOpenTemplates.First.Value;
+                _expectedToOpenTemplates.RemoveFirst();
+
+                _currentTemplates.Add(orderId, template.ToOpen(orderId));
+            }
+
+            if (@event == OrderEvents.Activate)
+            {
+                var template = _currentTemplates[orderId];
+                _currentTemplates.Remove(orderId);
+
+                _expectedToOpenTemplates.AddFirst(template.ToActivate());
+            }
+
+            if (@event == OrderEvents.Cancel)
+            {
+                _currentTemplates.Remove(orderId);
+            }
+
+            if (@event == OrderEvents.Close)
+            {
+                _currentTemplates.Remove(orderId);
+            }
+        }
+
+        protected void UpdateTemplates(Type @event, DoubleOrderEventArgs args)
+        {
+            var oldOrderId = args.OldOrder.Id;
+
+            if (@event == OrderEvents.Fill)
+            {
+                var template = _currentTemplates[oldOrderId].ToFilled();
+                _currentTemplates.Remove(oldOrderId);
+
+                if (template.IsGrossAcc)
+                    _expectedToOpenTemplates.AddFirst(template.ToGrossPosition());
+            }
+        }
+
+        protected void VerifyOriginQueue()
+        {
             if (!FullOriginQueue)
                 throw EventException.UnexpectedCount(ExpectedCount, OriginCount);
 
@@ -41,17 +91,17 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 CompareEvents(_expected[i], _origin[i]);
         }
 
-        protected void SetNewTemplate(OrderTemplate template)
+        protected void ClearQueues()
         {
-            _expectedTemplate = template?.Copy();
-
+            _expectedToOpenTemplates.Clear();
+            _currentTemplates.Clear();
             _expected.Clear();
             _origin.Clear();
         }
 
         private void GenerateExpectedTemplates(string orderId)
         {
-            _expected[0] = (_expected[0].Event, _expectedTemplate.ToOpen(orderId).Copy());
+            //_expected[0] = (_expected[0].Event, _expectedTemplate.ToOpen(orderId).Copy());
 
             for (int i = 1; i < ExpectedCount; ++i)
             {

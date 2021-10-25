@@ -4,7 +4,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
-    internal abstract class TestGroupBase : IDisposable
+    internal abstract class TestGroupBase
     {
         private const int MaxAttemptsCount = 5;
 
@@ -13,7 +13,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         private readonly TimeSpan WaitAllFailedTestEvents = TimeSpan.FromSeconds(5);
 
         private readonly GroupStatManager _statsManager;
-        private readonly EventsQueueManager _eventManager;
+        protected readonly EventsQueueManager _eventManager; //temp is protected
 
         private bool _asyncMode;
 
@@ -30,13 +30,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
 
 
-        public void Dispose()
-        {
-            _eventManager.UnsubscribeToOrderEvents();
-        }
-
-
         protected abstract Task RunTestGroup(TestParamsSet set);
+
 
         protected async Task RunTest(Func<OrderTemplate, Task> test, TestParamsSet set, OrderTemplate template = null,
             string testInfo = null)
@@ -47,7 +42,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
                 template = template ?? set.BuildOrder();
 
-                _eventManager.SetNewTestTemplate(template);
+                _eventManager.ResetAllQueues();
+                _eventManager.RegistryNewTemplate(template);
                 _statsManager.StartNewTest(testInfo ?? test.Method.Name, _asyncMode);
 
                 await test(template);
@@ -90,10 +86,21 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
 
 
-        protected async Task OpenExecutionOrder(OrderTemplate template)
+        protected OrderTemplate RegisterAdditionalTemplate(OrderTemplate template)
+        {
+            _eventManager.RegistryNewTemplate(template);
+
+            return template;
+        }
+
+
+        protected async Task OpenExecutionOrder(OrderTemplate template, bool clearEnviroment = true)
         {
             await TestOpenOrder(template.ForExecuting(), GetExecutionEvents(template));
-            await ClearTestEnviroment(template);
+            await template.FinalExecution.Task;
+
+            if (clearEnviroment)
+                await ClearTestEnviroment(template);
         }
 
         protected async Task ModifyForExecutionOrder(OrderTemplate template)
@@ -127,6 +134,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         protected async Task RemoveOrder(OrderTemplate template)
         {
+            await template.Opened.Task;
+
             if (template.CanCloseOrder)
                 await TestCloseOrder(template);
             else
@@ -141,7 +150,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             async Task<OrderCmdResult> OpenCommand() =>
                 _asyncMode ? await Bot.OpenOrderAsync(request) : Bot.OpenOrder(request);
 
-            template.ToOpen(await WaitSuccServerRequest(OpenCommand, OrderEvents.Open, eventsAfterOpen));
+            await WaitSuccServerRequest(OpenCommand, OrderEvents.Open, eventsAfterOpen);
+            await template.Opened.Task;
         }
 
         protected async Task TestModifyOrder(OrderTemplate template)
@@ -172,7 +182,27 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await WaitSuccServerRequest(CloseCommand, OrderEvents.Close);
         }
 
-        private async Task<Order> WaitSuccServerRequest(Func<Task<OrderCmdResult>> request, Type initialEvent, params Type[] events)
+        protected async Task<OrderTemplate> TestCloseByOrders(OrderTemplate first, OrderTemplate second)
+        {
+            async Task<OrderCmdResult> CloseByCommand() =>
+                _asyncMode ? await Bot.CloseOrderByAsync(first.Id, second.Id) : Bot.CloseOrderBy(first.Id, second.Id);
+
+            var result = first + second;
+
+            if (!result.IsNull)
+            {
+                _eventManager.AddExpectedEvent(OrderEvents.Open);
+                RegisterAdditionalTemplate(result);
+            }
+
+            await WaitSuccServerRequest(CloseByCommand, OrderEvents.Close, OrderEvents.Close);
+
+            return result;
+        }
+
+
+        private async Task<Order> WaitSuccServerRequest(Func<Task<OrderCmdResult>> request, Type initialEvent,
+            params Type[] events)
         {
             int attemptsCount = 0;
 

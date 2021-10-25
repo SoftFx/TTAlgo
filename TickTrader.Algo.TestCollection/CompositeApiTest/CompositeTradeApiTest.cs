@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Api.Math;
 
 namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
@@ -30,6 +29,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         private ModificationTests _modificationTests;
         private ExecutionTests _executionTests;
         private SlippageTests _slippageTests;
+        private CloseByTests _closeByTests;
 
         private int _testCount = 0;
         //private int _errorCount = 0;
@@ -40,7 +40,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         [Parameter(DefaultValue = 0.1, DisplayName = "BaseVolume")]
         public double DefaultOrderVolume { get; set; }
 
-        [Parameter(DefaultValue = 100)]
+        [Parameter(DefaultValue = 1000)]
         public int PriceDelta { get; set; }
 
         [Parameter]
@@ -56,8 +56,12 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         [Parameter(DefaultValue = true)]
         public bool UseSlippageTests { get; set; }
 
+
         [Parameter]
-        public bool UseADCases { get; set; }
+        public bool UseCloseByTests { get; set; }
+
+        //[Parameter]
+        //public bool UseADCases { get; set; }
 
 
         internal StatManagerFactory StatManager { get; private set; }
@@ -81,7 +85,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                         var testSet = new TestParamsSet(orderType, orderSide);
 
                         await RunAllTestGroups(testSet, OrderExecOptions.None);
-
                         //if (testSet.IsLimit)
                         //    await FullTestRun(testSet, OrderExecOptions.ImmediateOrCancel);
                     }
@@ -111,7 +114,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             _modificationTests = new ModificationTests();
             _executionTests = new ExecutionTests();
             _slippageTests = new SlippageTests();
-
+            _closeByTests = new CloseByTests();
             //_testGroups = new List<TestGroupBase>
             //{
             //    _modificationTests,
@@ -134,6 +137,9 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             if (UseSlippageTests && set.IsSupportedSlippage)
                 await _slippageTests.Run(set);
 
+            if (UseCloseByTests && set.IsGrossAcc)
+                await _closeByTests.Run(set);
+
             //if (!test.IsInstantOrder)
             //{
             //    await PerfomOpenModifyTests(GenerateTemplate(test));
@@ -154,12 +160,12 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             //    await PerformADCommentsTest(test);
         }
 
-        private async Task FullOcoTestRun(TestParamsSet test)
-        {
-            test.Options = OrderExecOptions.OneCancelsTheOther;
+        //private async Task FullOcoTestRun(TestParamsSet test)
+        //{
+        //    test.Options = OrderExecOptions.OneCancelsTheOther;
 
-            await PerformOCOTests(test);
-        }
+        //    await PerformOCOTests(test);
+        //}
 
 
         //private async Task PerformExecutionTests(TestParamsSet test)
@@ -183,12 +189,12 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         //    }
         //}
 
-        private async Task PerformCloseByTests(TestParamsSet test)
-        {
-            await PrepareCloseByTest(TestAcion.CloseBySmallBig, DefaultOrderVolume * 2, test);
-            await PrepareCloseByTest(TestAcion.CloseByBigSmall, DefaultOrderVolume / 2, test);
-            await PrepareCloseByTest(TestAcion.CloseByEven, null, test);
-        }
+        //private async Task PerformCloseByTests(TestParamsSet test)
+        //{
+        //    await PrepareCloseByTest(TestAcion.CloseBySmallBig, DefaultOrderVolume * 2, test);
+        //    await PrepareCloseByTest(TestAcion.CloseByBigSmall, DefaultOrderVolume / 2, test);
+        //    await PrepareCloseByTest(TestAcion.CloseByEven, null, test);
+        //}
 
         private async Task PerformADCommentsTest(TestParamsSet test)
         {
@@ -302,28 +308,28 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         //    await WaitAndStoreEvent<OrderClosedEventArgs>(template, TPSLEventTimeout);
         //}
 
-        private async Task PrepareCloseByTest(TestAcion action, double? closeVolume, TestParamsSet test)
-        {
-            async Task func(OrderTemplate template)
-            {
-                var inversed = template.InversedCopy(closeVolume);
+        //private async Task PrepareCloseByTest(TestAcion action, double? closeVolume, TestParamsSet test)
+        //{
+        //    async Task func(OrderTemplate template)
+        //    {
+        //        var inversed = template.InversedCopy(closeVolume);
 
-                template.TP = CalculatePrice(template, 4);
-                template.SL = CalculatePrice(template, -4);
-                template.Comment = "First";
+        //        template.TP = CalculatePrice(template, 4);
+        //        template.SL = CalculatePrice(template, -4);
+        //        template.Comment = "First";
 
-                inversed.TP = CalculatePrice(inversed, 3);
-                inversed.SL = CalculatePrice(inversed, -3);
-                inversed.Comment = "Second";
+        //        inversed.TP = CalculatePrice(inversed, 3);
+        //        inversed.SL = CalculatePrice(inversed, -3);
+        //        inversed.Comment = "Second";
 
-                await TryPerformTest(() => TestOpenOrder(template));
-                await TryPerformTest(() => TestOpenOrder(inversed));
+        //        await TryPerformTest(() => TestOpenOrder(template));
+        //        await TryPerformTest(() => TestOpenOrder(inversed));
 
-                await TryPerformTest(() => TestCloseBy(template, inversed), 1);
-            }
+        //        await TryPerformTest(() => TestCloseBy(template, inversed), 1);
+        //    }
 
-            await PrepareAndRun(action, func, test, Behavior.Execution);
-        }
+        //    await PrepareAndRun(action, func, test, Behavior.Execution);
+        //}
 
         private async Task TryCatchOrderReject(OrderTemplate template)
         {
@@ -378,26 +384,26 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             return null;
         }
 
-        private double? CalculatePrice(OrderTemplate template, int coef = 1)
-        {
-            //if (template.Mode == Behavior.Pending)
-            //{
-            //    if (template.IsInstantOrder)
-            //        return CalculatePrice(template.Side, coef > 0 ? 1 : -1);
+        //private double? CalculatePrice(OrderTemplate template, int coef = 1)
+        //{
+        //    //if (template.Mode == Behavior.Pending)
+        //    //{
+        //    //    if (template.IsInstantOrder)
+        //    //        return CalculatePrice(template.Side, coef > 0 ? 1 : -1);
 
-            //    if (template.Type == OrderType.Limit)
-            //        return CalculatePrice(template.Side, -coef);
-            //}
+        //    //    if (template.Type == OrderType.Limit)
+        //    //        return CalculatePrice(template.Side, -coef);
+        //    //}
 
-            return CalculatePrice(template.Side, coef);
-        }
+        //    return CalculatePrice(template.Side, coef);
+        //}
 
-        internal double? CalculatePrice(OrderSide side, int coef)
-        {
-            var delta = coef * PriceDelta * Symbol.Point * Math.Max(1, 10 - Symbol.Digits);
+        //internal double? CalculatePrice(OrderSide side, int coef)
+        //{
+        //    var delta = coef * PriceDelta * Symbol.Point * Math.Max(1, 10 - Symbol.Digits);
 
-            return side.IsBuy() ? Symbol.Ask.Round(Symbol.Digits) + delta : Symbol.Bid.Round(Symbol.Digits) - delta;
-        }
+        //    return side.IsBuy() ? Symbol.Ask.Round(Symbol.Digits) + delta : Symbol.Bid.Round(Symbol.Digits) - delta;
+        //}
 
         #endregion
 

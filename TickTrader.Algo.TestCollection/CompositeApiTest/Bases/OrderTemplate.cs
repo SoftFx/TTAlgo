@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
 
@@ -7,7 +8,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
     public class OrderTemplate : TestParamsSet
     {
-        private string _id;
+        private string _id = string.Empty;
         private DateTime? _expiration;
 
 
@@ -15,9 +16,20 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         public bool CanCloseOrder => RealOrder.Type == OrderType.Position || RealOrder.Type == OrderType.Market;
 
+        public bool IsNull => Volume.E(0.0);
+
         public bool IsStopOrder => Type == OrderType.Stop || Type == OrderType.StopLimit;
 
         public bool IsImmediateFill => Type == OrderType.Market || (Type == OrderType.Limit && Options.HasFlag(OrderExecOptions.ImmediateOrCancel));
+
+
+        public TaskCompletionSource<bool> Opened { get; private set; }
+
+        public TaskCompletionSource<bool> OpenedGrossPosition { get; private set; }
+
+        public TaskCompletionSource<bool> Filled { get; private set; }
+
+        public TaskCompletionSource<bool> FinalExecution => IsGrossAcc ? OpenedGrossPosition : Filled;
 
 
         public double SlippagePrecision { get; }
@@ -75,6 +87,10 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         public OrderTemplate(TestParamsSet test) : base(test.Type, test.Side, test.Async)
         {
             //Mode = mode;
+            Opened = new TaskCompletionSource<bool>();
+            Filled = new TaskCompletionSource<bool>();
+            OpenedGrossPosition = new TaskCompletionSource<bool>();
+
             Options = test.Options;
 
             InitType = Type;
@@ -93,10 +109,19 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             return this;
         }
 
-        public OrderTemplate ForExecuting()
+        public OrderTemplate ForExecuting(int coef = 3)
         {
-            Price = CalculatePrice(-3);
-            StopPrice = CalculatePrice(3);
+            Price = CalculatePrice(-coef);
+            StopPrice = CalculatePrice(coef);
+
+            return this;
+        }
+
+        public OrderTemplate ForGrossPositionPending(int coef = 3, string comment = "")
+        {
+            TP = CalculatePrice(-coef);
+            SL = CalculatePrice(coef);
+            Comment = comment;
 
             return this;
         }
@@ -148,26 +173,45 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                    .MakeRequest();
         }
 
-        internal void ToOpen(Order order)
-        {
-            Id = order.Id;
-            RealOrder = Orders[Id];
-        }
+        //internal void ToOpen(Order order)
+        //{
+        //    Id = order.Id;
+        //    RealOrder = Orders[Id];
+        //}
 
         internal OrderTemplate ToOpen(string orderId)
         {
             Id = orderId;
             RealOrder = Orders[Id];
+            Opened.SetResult(true);
 
             return this;
         }
 
-        internal OrderTemplate ToActivate(string orderId)
+        internal OrderTemplate ToActivate()
         {
+            Opened = new TaskCompletionSource<bool>();
             InitType = OrderType.StopLimit;
             Type = OrderType.Limit;
 
-            return ToOpen(orderId);
+            return this;
+        }
+
+        internal OrderTemplate ToFilled()
+        {
+            Filled.SetResult(true);
+
+            return this;
+        }
+
+        internal OrderTemplate ToGrossPosition()
+        {
+            Opened = new TaskCompletionSource<bool>();
+            InitType = Type;
+            Type = OrderType.Position;
+            OpenedGrossPosition.SetResult(true);
+
+            return this;
         }
 
         public void UpdateTemplate(Order order, bool activate = false, bool position = false)
@@ -310,7 +354,16 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
 
         //add deep copy trigger property later
-        public OrderTemplate Copy() => (OrderTemplate)MemberwiseClone();
+        public OrderTemplate Copy()
+        {
+            var copy = (OrderTemplate)MemberwiseClone();
+
+            copy.Opened = new TaskCompletionSource<bool>();
+            copy.Filled = new TaskCompletionSource<bool>();
+            copy.OpenedGrossPosition = new TaskCompletionSource<bool>();
+
+            return copy;
+        }
 
         public OrderTemplate InversedCopy(double? volume = null)
         {
@@ -320,6 +373,17 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             copy.Volume = volume ?? Volume;
 
             return copy;
+        }
+
+        public static OrderTemplate operator +(OrderTemplate first, OrderTemplate second)
+        {
+            var resultCopy = first.Volume > second.Volume ? first.Copy() : second.Copy();
+
+            resultCopy.Volume = first.Side == second.Side ?
+                                first.Volume + second.Volume :
+                                Math.Abs(first.Volume - second.Volume);
+
+            return resultCopy;
         }
     }
 }

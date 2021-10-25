@@ -22,7 +22,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         private readonly OrderList _orders;
 
         private TaskCompletionSource<bool> _allEventsReceivedTask = new TaskCompletionSource<bool>();
-        private OrderTemplate _mainTestTemplate;
         private TimeSpan _totalWaitingTime;
 
 
@@ -51,11 +50,10 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             base.AddExpectedEvent(type);
         }
 
-        internal void SetNewTestTemplate(OrderTemplate template)
+        internal void ResetAllQueues()
         {
-            SetNewTemplate(template);
+            ClearQueues();
 
-            _mainTestTemplate = template;
             _totalWaitingTime = TimeSpan.Zero;
             _allEventsReceivedTask = new TaskCompletionSource<bool>();
         }
@@ -67,7 +65,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             if (await Task.WhenAny(eventTask, Task.Delay(_totalWaitingTime)) != eventTask)
                 throw EventException.TimeoutException;
 
-            VerifyOriginQueue(/*_mainTestTemplate.Id*/null);
+            VerifyOriginQueue();
         }
 
         internal void SubscribeToOrderEvents()
@@ -106,35 +104,24 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         private void OnCollectionEventFired<T>(T args)
         {
             var eventType = typeof(T);
-            var orderId = string.Empty;
 
             _bot.PrintDebug($"Event {eventType.Name} received");
 
             switch (args)
             {
                 case SingleOrderEventArgs single:
-                    orderId = single.Order.Id;
+                    UpdateTemplates(eventType, single);
                     AddOriginEvent(new EventsQueueNode(eventType, single));
                     break;
 
                 case DoubleOrderEventArgs @double:
-                    orderId = @double.NewOrder.Id;
+                    UpdateTemplates(eventType, @double);
                     AddOriginEvent(new EventsQueueNode(eventType, @double));
                     break;
             }
 
-            UpdateMainTemplate(eventType, orderId);
-
             if (FullOriginQueue)
                 _allEventsReceivedTask?.TrySetResult(true);
-        }
-
-        private void UpdateMainTemplate(Type @event, string orderId)
-        {
-            if (@event == OrderEvents.Open)
-                _mainTestTemplate?.ToOpen(orderId);
-            if (@event == OrderEvents.Activate)
-                _mainTestTemplate?.ToActivate(orderId);
         }
     }
 }
