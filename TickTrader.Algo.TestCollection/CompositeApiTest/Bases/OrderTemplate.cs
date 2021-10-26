@@ -100,9 +100,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         public OrderTemplate ForPending(int coef = 3)
         {
-            //if (IsInstantOrder)
-            //    return CalculatePrice(coef > 0 ? 1 : -1);
-
             Price = CalculatePrice(coef);
             StopPrice = CalculatePrice(-coef);
 
@@ -126,7 +123,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             return this;
         }
 
-        internal double? CalculatePrice(int coef) // check coef
+        internal double? CalculatePrice(int coef)
         {
             var delta = coef * PriceDelta * Symbol.Point;
 

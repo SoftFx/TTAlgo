@@ -30,6 +30,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         private ExecutionTests _executionTests;
         private SlippageTests _slippageTests;
         private CloseByTests _closeByTests;
+        private ADTests _automaticDilerTests;
 
         private int _testCount = 0;
         //private int _errorCount = 0;
@@ -115,6 +116,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             _executionTests = new ExecutionTests();
             _slippageTests = new SlippageTests();
             _closeByTests = new CloseByTests();
+            _automaticDilerTests = new ADTests();
+
             //_testGroups = new List<TestGroupBase>
             //{
             //    _modificationTests,
@@ -139,6 +142,9 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             if (UseCloseByTests && set.IsGrossAcc)
                 await _closeByTests.Run(set);
+
+            //if (UseADCases)
+            //    await _automaticDilerTests.Run(set);
 
             //if (!test.IsInstantOrder)
             //{

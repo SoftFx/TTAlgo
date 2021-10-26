@@ -17,8 +17,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         protected override async Task RunTestGroup(TestParamsSet set)
         {
-            _eventManager.ResetAllQueues();
-
             var template = RegisterAdditionalTemplate(set.BuildOrder().ForPending());
 
             await TestOpenOrder(template).WithTimeoutAfter(WaitEventsTimeout); //remove timeout for open
@@ -49,7 +47,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             if (template.IsSupportedSlippage) //should be last, if slippage = 0 server behavior is unpredictable
                 await RunSlippageModifyTest(template);
 
-            await RemoveOrder(template).WithTimeoutAfter(WaitEventsTimeout); ;
+            await RemoveOrder(template).WithTimeoutAfter(WaitEventsTimeout);
         }
 
 

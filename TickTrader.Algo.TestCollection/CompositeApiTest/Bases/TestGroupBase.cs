@@ -13,7 +13,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         private readonly TimeSpan WaitAllFailedTestEvents = TimeSpan.FromSeconds(5);
 
         private readonly GroupStatManager _statsManager;
-        protected readonly EventsQueueManager _eventManager; //temp is protected
+        private readonly EventsQueueManager _eventManager;
 
         private bool _asyncMode;
 
@@ -69,6 +69,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
                 _asyncMode = false;
                 await RunTestGroup(set);
+
+                _eventManager.ResetAllQueues();
 
                 _asyncMode = true;
                 await RunTestGroup(set);
@@ -143,6 +145,16 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
 
 
+        protected async Task OpenRejectOrder(OrderTemplate template)
+        {
+            var request = template.GetOpenRequest();
+
+            async Task<OrderCmdResult> OpenCommand() =>
+                _asyncMode ? await Bot.OpenOrderAsync(request) : Bot.OpenOrder(request);
+
+            await WaitRejectSeverRequest(OpenCommand);
+        }
+
         protected async Task TestOpenOrder(OrderTemplate template, params Type[] eventsAfterOpen)
         {
             var request = template.GetOpenRequest();
@@ -205,6 +217,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             params Type[] events)
         {
             int attemptsCount = 0;
+            OrderCmdResultCodes resultCode;
 
             _eventManager.AddExpectedEvent(initialEvent);
             _eventManager.AddExpectedEvents(events);
@@ -218,14 +231,40 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 if (result.IsCompleted)
                     return result.ResultingOrder;
 
-                if (result.ResultCode.IsServerError())
+                resultCode = result.ResultCode;
+
+                if (resultCode.IsServerError())
                     await Task.Delay(DelayBetweenServerRequests);
                 else
-                    throw new ServerRequestException($"{result.ResultCode}");
+                    throw new ServerRequestException(resultCode);
             }
             while (++attemptsCount <= MaxAttemptsCount);
 
-            throw ServerRequestException.ServerException;
+            throw new ServerRequestException(resultCode);
+        }
+
+        private async Task WaitRejectSeverRequest(Func<Task<OrderCmdResult>> request)
+        {
+            int attemptsCount = 0;
+            OrderCmdResultCodes resultCode;
+
+            do
+            {
+                Bot.PrintDebug($"Start reject request Async = {_asyncMode}");
+
+                var result = await request();
+
+                resultCode = result.ResultCode;
+
+                if (resultCode.IsExpectedServerReject())
+                    return;
+                else
+                if (resultCode.IsServerError())
+                    await Task.Delay(DelayBetweenServerRequests);
+                else
+                    throw new ServerRequestException(resultCode);
+            }
+            while (++attemptsCount <= MaxAttemptsCount);
         }
     }
 }

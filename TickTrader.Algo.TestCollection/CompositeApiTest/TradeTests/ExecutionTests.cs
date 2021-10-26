@@ -17,7 +17,9 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             if (set.IsSupportedIoC)
                 await RunTest(FillIoCExecutionTest, set);
-            //add rejectIocTest
+
+            if (set.IsLimitIoC)
+                await RunTest(RejectIoCExecutionTest, set);
 
             if (!set.IsInstantOrder)
             {
@@ -43,6 +45,14 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             template.Options = Api.OrderExecOptions.ImmediateOrCancel;
 
             await OpenExecutionOrder(template);
+        }
+
+        private async Task RejectIoCExecutionTest(OrderTemplate template)
+        {
+            template.Price = template.CalculatePrice(10);
+            template.Options = Api.OrderExecOptions.ImmediateOrCancel;
+
+            await OpenRejectOrder(template);
         }
 
         private async Task FillByModifyExecutionTest(OrderTemplate template)

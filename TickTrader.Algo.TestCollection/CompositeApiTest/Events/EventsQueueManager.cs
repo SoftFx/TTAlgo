@@ -62,7 +62,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             var eventTask = _allEventsReceivedTask.Task;
 
-            if (await Task.WhenAny(eventTask, Task.Delay(_totalWaitingTime)) != eventTask)
+            if (ExpectedCount > 0 && await Task.WhenAny(eventTask, Task.Delay(_totalWaitingTime)) != eventTask)
                 throw EventException.TimeoutException;
 
             VerifyOriginQueue();
@@ -70,6 +70,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         internal void SubscribeToOrderEvents()
         {
+            ResetAllQueues();
+
             _orders.Opened += OnCollectionEventFired;
             _orders.Filled += OnCollectionEventFired;
             _orders.Closed += OnCollectionEventFired;
