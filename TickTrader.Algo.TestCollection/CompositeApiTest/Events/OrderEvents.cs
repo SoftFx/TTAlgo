@@ -23,9 +23,13 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         //shoud be after initialization single events
         internal static Type[] FillOrderEvents { get; } = new Type[] { Fill };
 
+        internal static Type[] PartialFillOrderEvents { get; } = new Type[] { Fill, Fill };
+
         internal static Type[] FillStopLimitEvents { get; } = new[] { Activate, Open, Fill };
 
         internal static Type[] FillOnGrossOrderEvents { get; } = new Type[] { Fill, Open };
+
+        internal static Type[] PartialFillGrossOrderEvents { get; } = new Type[] { Fill, Open, Fill, Open };
 
         internal static Type[] FillOnGrossStopLimitEvents { get; } = new[] { Activate, Open, Fill, Open };
     }

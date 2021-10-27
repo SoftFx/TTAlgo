@@ -80,10 +80,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         public OrderTemplate BuildOrder()
         {
-            return new OrderTemplate(this)
-            {
-                Volume = BaseOrderVolume,
-            };
+            return new OrderTemplate(this, BaseOrderVolume);
         }
 
         public string Info(TestAcion action) => $"{(Async ? "Async " : "")}{action} {Side} {Type} order ({Options})";

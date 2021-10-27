@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
@@ -61,6 +62,10 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         public double? TP { get; set; }
 
+        public double ReqVolume { get; set; }
+
+        public double RemVolume { get; set; }
+
         public double Volume { get; set; }
 
         public double? Slippage { get; set; }
@@ -82,14 +87,21 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         public string OcoRelatedOrderId { get; set; }
 
 
+        public List<OrderTemplate> FilledParts { get; private set; }
+
+
         public OrderTemplate() { }
 
-        public OrderTemplate(TestParamsSet test) : base(test.Type, test.Side, test.Async)
+        public OrderTemplate(TestParamsSet test, double volume) : base(test.Type, test.Side, test.Async)
         {
             //Mode = mode;
+            ReqVolume = volume;
+            RemVolume = volume;
+            Volume = volume;
             Opened = new TaskCompletionSource<bool>();
             Filled = new TaskCompletionSource<bool>();
             OpenedGrossPosition = new TaskCompletionSource<bool>();
+            FilledParts = new List<OrderTemplate>();
 
             Options = test.Options;
 
@@ -120,7 +132,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             SL = CalculatePrice(coef);
             Comment = comment;
 
-            return this;
+            return ForExecuting(coef);
         }
 
         internal double? CalculatePrice(int coef)
@@ -194,10 +206,22 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             return this;
         }
 
-        internal OrderTemplate ToFilled()
+        internal OrderTemplate ToFilled(double filledVolume)
         {
-            Filled.SetResult(true);
+            RemVolume -= filledVolume;
 
+            if (RemVolume.Gt(0.0))
+            {
+                var filledPart = Copy();
+                filledPart.Volume = filledVolume;
+                filledPart.Filled.SetResult(true);
+
+                FilledParts.Add(filledPart);
+
+                return filledPart;
+            }
+
+            Filled.SetResult(true);
             return this;
         }
 
@@ -357,6 +381,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             copy.Opened = new TaskCompletionSource<bool>();
             copy.Filled = new TaskCompletionSource<bool>();
+            copy.FilledParts = new List<OrderTemplate>();
             copy.OpenedGrossPosition = new TaskCompletionSource<bool>();
 
             return copy;
@@ -368,6 +393,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             copy.Side = Side == OrderSide.Buy ? OrderSide.Sell : OrderSide.Buy;
             copy.Volume = volume ?? Volume;
+            copy.RemVolume = copy.Volume;
+            copy.ReqVolume = copy.Volume;
 
             return copy;
         }
@@ -379,6 +406,9 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             resultCopy.Volume = first.Side == second.Side ?
                                 first.Volume + second.Volume :
                                 Math.Abs(first.Volume - second.Volume);
+
+            resultCopy.RemVolume = resultCopy.Volume;
+            resultCopy.ReqVolume = resultCopy.Volume;
 
             return resultCopy;
         }

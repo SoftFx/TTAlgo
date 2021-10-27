@@ -96,13 +96,16 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
 
 
-        protected async Task OpenExecutionOrder(OrderTemplate template, bool clearEnviroment = true)
+        protected async Task OpenExecutionOrder(OrderTemplate template)
         {
-            await TestOpenOrder(template.ForExecuting(), GetExecutionEvents(template));
-            await template.FinalExecution.Task;
+            await OpenOrderAndWaitExecution(template.ForExecuting());
+            await ClearTestEnviroment(template);
+        }
 
-            if (clearEnviroment)
-                await ClearTestEnviroment(template);
+        protected async Task OpenOrderAndWaitExecution(OrderTemplate template, Type[] events = null)
+        {
+            await TestOpenOrder(template, events ?? GetExecutionEvents(template));
+            await template.FinalExecution.Task;
         }
 
         protected async Task ModifyForExecutionOrder(OrderTemplate template)
@@ -112,6 +115,15 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             _eventManager.AddExpectedEvents(GetExecutionEvents(template));
 
             await ClearTestEnviroment(template);
+        }
+
+        protected async Task ClearTestEnviroment(OrderTemplate template)
+        {
+            if (template.IsGrossAcc)
+            {
+                await Task.Delay(WaitToUpdateGrossPositions);
+                await RemoveOrder(template);
+            }
         }
 
         private static Type[] GetExecutionEvents(OrderTemplate template)
@@ -125,21 +137,17 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             return events;
         }
 
-        private async Task ClearTestEnviroment(OrderTemplate template)
-        {
-            if (template.IsGrossAcc)
-            {
-                await Task.Delay(WaitToUpdateGrossPositions);
-                await RemoveOrder(template);
-            }
-        }
-
         protected async Task RemoveOrder(OrderTemplate template)
         {
             await template.Opened.Task;
 
             if (template.CanCloseOrder)
+            {
+                foreach (var filledPart in template.FilledParts)
+                    await TestCloseOrder(filledPart);
+
                 await TestCloseOrder(template);
+            }
             else
                 await TestCancelOrder(template);
         }

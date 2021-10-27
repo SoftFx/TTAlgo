@@ -74,11 +74,16 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             if (@event == OrderEvents.Fill)
             {
-                var template = _currentTemplates[oldOrderId].ToFilled();
-                _currentTemplates.Remove(oldOrderId);
+                var filledVolume = args.NewOrder.LastFillVolume;
 
-                if (template.IsGrossAcc)
-                    _expectedToOpenTemplates.AddFirst(template.ToGrossPosition());
+                var baseTemplate = _currentTemplates[oldOrderId];
+                var filledPart = baseTemplate.ToFilled(filledVolume);
+
+                if (baseTemplate == filledPart)
+                    _currentTemplates.Remove(oldOrderId);
+
+                if (baseTemplate.IsGrossAcc)
+                    _expectedToOpenTemplates.AddFirst(filledPart.ToGrossPosition());
             }
         }
 

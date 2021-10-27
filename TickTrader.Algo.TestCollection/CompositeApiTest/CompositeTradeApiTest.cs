@@ -61,8 +61,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         [Parameter]
         public bool UseCloseByTests { get; set; }
 
-        //[Parameter]
-        //public bool UseADCases { get; set; }
+        [Parameter]
+        public bool UseADCases { get; set; }
 
 
         internal StatManagerFactory StatManager { get; private set; }
@@ -143,8 +143,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             if (UseCloseByTests && set.IsGrossAcc)
                 await _closeByTests.Run(set);
 
-            //if (UseADCases)
-            //    await _automaticDilerTests.Run(set);
+            if (UseADCases)
+                await _automaticDilerTests.Run(set);
 
             //if (!test.IsInstantOrder)
             //{
@@ -202,16 +202,16 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         //    await PrepareCloseByTest(TestAcion.CloseByEven, null, test);
         //}
 
-        private async Task PerformADCommentsTest(TestParamsSet test)
-        {
-            await PrepareAndRun(TestAcion.ADReject, TestCommentRejectAD, test, Behavior.Execution);
+        //private async Task PerformADCommentsTest(TestParamsSet test)
+        //{
+        //    await PrepareAndRun(TestAcion.ADReject, TestCommentRejectAD, test, Behavior.Execution);
 
-            if (test.IsSupportedSlippage)
-                await PrepareSlippageTest(test, TestPartialSlippageAD);
+        //    if (test.IsSupportedSlippage)
+        //        await PrepareSlippageTest(test, TestPartialSlippageAD);
 
-            if (test.Type != OrderType.StopLimit && !test.IsLimitIoC) // Limit IoC incorrect behavior
-                await PrepareAndRun(TestAcion.ADPartialActivate, TestCommentPartialActivateAD, test);
-        }
+        //    if (test.Type != OrderType.StopLimit && !test.IsLimitIoC) // Limit IoC incorrect behavior
+        //        await PrepareAndRun(TestAcion.ADPartialActivate, TestCommentPartialActivateAD, test);
+        //}
 
         private async static Task PrepareSlippageTest(TestParamsSet test, Func<double?, TestParamsSet, Task> func)
         {
@@ -772,61 +772,61 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         #region AD Comments test
 
-        private async Task TestCommentRejectAD(OrderTemplate template)
-        {
-            var commentModel = new CommentModelManager { new CommentActionModel(ADCases.Reject) };
+        //private async Task TestCommentRejectAD(OrderTemplate template)
+        //{
+        //    var commentModel = new ADCommentsList { new ActionADComment(ADCases.Reject) };
 
-            template.Comment = commentModel.GetComment();
+        //    template.Comment = commentModel.GetComment();
 
-            await TryCatchOrderReject(template);
-        }
+        //    await TryCatchOrderReject(template);
+        //}
 
-        private async Task TestPartialSlippageAD(double? slippage, TestParamsSet test)
-        {
-            async Task func(OrderTemplate template)
-            {
-                template.Slippage = slippage;
+        //private async Task TestPartialSlippageAD(double? slippage, TestParamsSet test)
+        //{
+        //    async Task func(OrderTemplate template)
+        //    {
+        //        template.Slippage = slippage;
 
-                await TestCommentPartialActivateAD(template);
-            }
+        //        await TestCommentPartialActivateAD(template);
+        //    }
 
-            await PrepareAndRun(TestAcion.PartialActiveWithSlippage, func, test);
-        }
+        //    await PrepareAndRun(TestAcion.PartialActiveWithSlippage, func, test);
+        //}
 
-        private async Task TestCommentPartialActivateAD(OrderTemplate template)
-        {
-            var isImmediateFill = template.IsImmediateFill; // should be redone
+        //private async Task TestCommentPartialActivateAD(OrderTemplate template)
+        //{
+        //    var isImmediateFill = template.IsImmediateFill; // should be redone
 
-            var customVolume = 0.2 * DefaultOrderVolume * Symbol.ContractSize;
+        //    var customVolume = 0.2 * DefaultOrderVolume * Symbol.ContractSize;
 
-            var commentModel = new CommentModelManager
-            {
-                new OrderCommentActionModel(template.IsInstantOrder ? ADCases.Confirm : ADCases.Activate, customVolume)
-            };
+        //    var commentModel = new ADCommentsList
+        //    {
+        //        new OrderADComment(template.IsInstantOrder ? ADCases.Confirm : ADCases.Activate, customVolume)
+        //    };
 
-            if (!isImmediateFill)
-                commentModel.Add(new OrderCommentActionModel(ADCases.Activate, null));
+        //    if (!isImmediateFill)
+        //        commentModel.Add(new OrderADComment(ADCases.Activate, null));
 
-            template.Comment = commentModel.GetComment();
+        //    template.Comment = commentModel.GetComment();
 
-            await TryPerformTest(() => TestOpenOrder(template));
+        //    await TryPerformTest(() => TestOpenOrder(template));
 
-            if (!isImmediateFill)
-                await TryPerformTest(() => TestEventFillOrder(template), 1);
+        //    if (!isImmediateFill)
+        //        await TryPerformTest(() => TestEventFillOrder(template), 1);
 
-            if (Account.Type == AccountTypes.Gross)
-            {
-                template.Id = template.RelatedId; // should be redone
+        //    if (Account.Type == AccountTypes.Gross)
+        //    {
+        //        template.Id = template.RelatedId; // should be redone
 
-                await TryPerformTest(() => TestCloseOrder(template));
+        //        await TryPerformTest(() => TestCloseOrder(template));
 
-                if (!isImmediateFill)
-                {
-                    template.Id = template.RelatedId;
-                    await TryPerformTest(() => TestCloseOrder(template));
-                }
-            }
-        }
+        //        if (!isImmediateFill)
+        //        {
+        //            template.Id = template.RelatedId;
+        //            await TryPerformTest(() => TestCloseOrder(template));
+        //        }
+        //    }
+        //}
         #endregion
 
         #region Specific Tests

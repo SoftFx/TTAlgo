@@ -62,7 +62,7 @@
     <Compile Include="CompositeApiTest\Statistic\StatManagerFactory.cs" />
     <Compile Include="CompositeApiTest\Bases\OrderTemplate.cs" />
     <Compile Include="CompositeApiTest\Bases\TestParamsSet.cs" />
-    <Compile Include="CompositeApiTest\CommentModel.cs" />
+    <Compile Include="CompositeApiTest\TradeTests\ADTests\ADComments.cs" />
     <Compile Include="CompositeApiTest\CompositeTradeApiTest.cs" />
     <Compile Include="CompositeApiTest\HistoryOrderTemplate.cs" />
     <Compile Include="Bots\AccDisplayBot.cs" />
@@ -117,7 +117,7 @@
     <Compile Include="Bots\Trade\ExecuteLimits.cs" />
     <Compile Include="Bots\Trade\FastTradingBot.cs" />
     <Compile Include="Bots\Trade\OpenRequestsInSecond.cs" />
-    <Compile Include="CompositeApiTest\TradeTests\ADTests.cs" />
+    <Compile Include="CompositeApiTest\TradeTests\ADTests\ADTests.cs" />
     <Compile Include="CompositeApiTest\TradeTests\CloseByTests.cs" />
     <Compile Include="CompositeApiTest\TradeTests\ExecutionTests.cs" />
     <Compile Include="CompositeApiTest\TradeTests\ModificationTests.cs" />
