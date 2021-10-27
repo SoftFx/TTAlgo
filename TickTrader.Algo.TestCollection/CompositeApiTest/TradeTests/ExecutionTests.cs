@@ -18,7 +18,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             if (set.IsSupportedIoC)
                 await RunTest(FillIoCExecutionTest, set);
 
-            if (set.IsLimitIoC)
+            if (set.IsSupportedRejectedIoC)
                 await RunTest(RejectIoCExecutionTest, set);
 
             if (!set.IsInstantOrder)

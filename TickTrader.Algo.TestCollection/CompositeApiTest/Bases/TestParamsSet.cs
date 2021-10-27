@@ -51,7 +51,10 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         public bool IsSupportedIoC => Type == OrderType.StopLimit || Type == OrderType.Limit;
 
+        public bool IsSupportedRejectedIoC => Type == OrderType.Limit;
+
         public bool IsSupportedOcO => (Type == OrderType.Stop || Type == OrderType.Limit) && !IsGrossAcc;
+
 
         public bool IsStopLimit => Type == OrderType.StopLimit;
 
