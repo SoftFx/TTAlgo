@@ -9,22 +9,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
     [TradeBot(DisplayName = "Composite Trade API Test", Version = "2.0", Category = "Auto Tests", SetupMainSymbol = true)]
     public class CompositeTradeApiTest : TradeBot
     {
-        private readonly TimeSpan OpenEventTimeout = TimeSpan.FromSeconds(5);
-        private readonly TimeSpan ActivateEventTimeout = TimeSpan.FromSeconds(10);
-        private readonly TimeSpan FillEventTimeout = TimeSpan.FromSeconds(10);
-        private readonly TimeSpan ModifyEventTimeout = TimeSpan.FromSeconds(10);
-        //private readonly TimeSpan TPSLEventTimeout = TimeSpan.FromSeconds(20);
-        private readonly TimeSpan CancelEventTimeout = TimeSpan.FromSeconds(5);
-        private readonly TimeSpan CloseEventTimeout = TimeSpan.FromSeconds(5);
-        //private readonly TimeSpan ExpirationEventTimeout = TimeSpan.FromSeconds(25);
-        private readonly TimeSpan PauseBetweenOrders = TimeSpan.FromMilliseconds(500);
-        //private readonly TimeSpan PauseBeforeAndAfterTests = TimeSpan.FromSeconds(2);
-        //private readonly TimeSpan TimeToExpire = TimeSpan.FromSeconds(3);
-
         private readonly List<HistoryOrderTemplate> _historyStorage = new List<HistoryOrderTemplate>();
-        private TaskCompletionSource<object> _eventWaiter;
-
-        //private List<TestGroupBase> _testGroups;
 
         private ModificationTests _modificationTests;
         private ExecutionTests _executionTests;
@@ -32,8 +17,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         private CloseByTests _closeByTests;
         private ADTests _automaticDilerTests;
 
-        private int _testCount = 0;
-        //private int _errorCount = 0;
 
         [Parameter(DefaultValue = false)]
         public bool UseDebug { get; set; }
@@ -101,7 +84,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         protected override void OnStop()
         {
-            //_testGroups.ForEach(u => u.Dispose());
             GroupTestReport.ResetStaticFields();
             Exit();
         }
@@ -117,12 +99,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             _slippageTests = new SlippageTests();
             _closeByTests = new CloseByTests();
             _automaticDilerTests = new ADTests();
-
-            //_testGroups = new List<TestGroupBase>
-            //{
-            //    _modificationTests,
-            //    _executionTests,
-            //};
 
             await Task.Delay(2000);
         }
@@ -145,367 +121,113 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             if (UseADCases)
                 await _automaticDilerTests.Run(set);
-
-            //if (!test.IsInstantOrder)
-            //{
-            //    await PerfomOpenModifyTests(GenerateTemplate(test));
-
-            //    //if (test.Async && test.Type != OrderType.Market) //incorrect for Gross Market
-            //    //    await ModifyCancelTest(GenerateTemplate(test));
-            //}
-
-            //await PerformExecutionTests(test);
-
-            //if (!test.Async && Account.Type == AccountTypes.Gross && test.Type == OrderType.Market) //if test.async = true throw error
-            //    await PerformCloseByTests(test);
-
-            //if (test.IsSupportedSlippage)
-            //    await PrepareSlippageTest(test, PrepareOpenSlippageTest);
-
-            //if (IncludeADCases)
-            //    await PerformADCommentsTest(test);
         }
 
-        //private async Task FullOcoTestRun(TestParamsSet test)
-        //{
-        //    test.Options = OrderExecOptions.OneCancelsTheOther;
-
-        //    await PerformOCOTests(test);
-        //}
-
-
-        //private async Task PerformExecutionTests(TestParamsSet test)
-        //{
-        //    await PrepareAndRun(TestAcion.Fill, PerformOrderFillExecutionTest, test, Behavior.Execution);
-
-        //    if (test.IsLimitIoC) //Market order was ignored on server side
-        //        await PrepareAndRun(TestAcion.RejectIoC, PerformRejectIocExecutionTest, test, Behavior.Execution);
-
-        //    if (Account.Type == AccountTypes.Gross)
-        //    {
-        //        await PrepareAndRun(TestAcion.ExecutionTP, PerformTakeProfitExecutionTest, test, Behavior.Execution);
-        //        await PrepareAndRun(TestAcion.ExecutionSL, PerformStopLossExecutionTest, test, Behavior.Execution);
-        //    }
-
-        //    if (!test.IsInstantOrder && Account.Type != AccountTypes.Gross)
-        //    {
-        //        await PrepareAndRun(TestAcion.FillByModify, PerformFillByModifyExecutionTest, test);
-        //        await PrepareAndRun(TestAcion.Expiration, PerformExpirationExecutionTest, test);
-        //        await PrepareAndRun(TestAcion.Cancel, PerformCancelExecutionTest, test);
-        //    }
-        //}
-
-        //private async Task PerformCloseByTests(TestParamsSet test)
-        //{
-        //    await PrepareCloseByTest(TestAcion.CloseBySmallBig, DefaultOrderVolume * 2, test);
-        //    await PrepareCloseByTest(TestAcion.CloseByBigSmall, DefaultOrderVolume / 2, test);
-        //    await PrepareCloseByTest(TestAcion.CloseByEven, null, test);
-        //}
-
-        //private async Task PerformADCommentsTest(TestParamsSet test)
-        //{
-        //    await PrepareAndRun(TestAcion.ADReject, TestCommentRejectAD, test, Behavior.Execution);
-
-        //    if (test.IsSupportedSlippage)
-        //        await PrepareSlippageTest(test, TestPartialSlippageAD);
-
-        //    if (test.Type != OrderType.StopLimit && !test.IsLimitIoC) // Limit IoC incorrect behavior
-        //        await PrepareAndRun(TestAcion.ADPartialActivate, TestCommentPartialActivateAD, test);
-        //}
-
-        private async static Task PrepareSlippageTest(TestParamsSet test, Func<double?, TestParamsSet, Task> func)
+        private void CleanUpWorkspace()
         {
-            await func(null, test);
-            await func(0, test);
-            await func(TestParamsSet.Symbol.Slippage / 2, test);
-            await func(TestParamsSet.Symbol.Slippage * 2, test);
-        }
+            Status.WriteLine("Cleaning up...");
 
-        //private async Task PrepareOpenSlippageTest(double? slippage, TestParamsSet test)
-        //{
-        //    async Task func(OrderTemplate template)
-        //    {
-        //        template.Slippage = slippage;
+            foreach (var netPosition in Account.NetPositions.ToList())
+                CloseNetPosition(CloseNetPositionRequest.Template.Create().WithParams(netPosition.Symbol).MakeRequest());
 
-        //        //    if (template.Type == OrderType.Market)
-        //        //        await PerformOrderFillExecutionTest(template);
-        //        //    else
-        //        //        await PerformCancelExecutionTest(template);
-        //    }
-
-        //    await PrepareAndRun(TestAcion.OpenSlippage, func, test, test.Type == OrderType.Market ? Behavior.Execution : Behavior.Pending);
-        //}
-
-        #region Tests
-
-        //private async Task PerformOrderFillExecutionTest(OrderTemplate template)
-        //{
-        //    template.Volume = 4 * DefaultOrderVolume;
-
-        //    await TryPerformTest(() => TestOpenOrder(template));
-
-        //    if (Account.Type == AccountTypes.Gross)
-        //    {
-        //        await TryPerformTest(() => TestCloseOrder(template, template.Volume / 4));
-        //        await TryPerformTest(() => TestCloseOrder(template));
-        //    }
-        //}
-
-        //private async Task PerformRejectIocExecutionTest(OrderTemplate template)
-        //{
-        //    template.Price = CalculatePrice(template, -5);
-
-        //    await TryCatchOrderReject(template);
-        //}
-
-        //private async Task PerformFillByModifyExecutionTest(OrderTemplate template)
-        //{
-        //    template.Volume = 4 * DefaultOrderVolume;
-        //    template.Price = CalculatePrice(template.Side, -5);
-
-        //    await TryPerformTest(() => TestOpenOrder(template, fill: false));
-
-        //    template.Price = CalculatePrice(template.Side, 2);
-        //    template.StopPrice = CalculatePrice(template.Side, -1);
-
-        //    await TryPerformTest(() => TestModifyOrder(template));
-        //    await TryPerformTest(() => TestEventFillOrder(template), 1);
-
-        //    if (Account.Type == AccountTypes.Gross)
-        //    {
-        //        await TryPerformTest(() => TestCloseOrder(template, template.Volume / 4));
-        //        await TryPerformTest(() => TestCloseOrder(template));
-        //    }
-        //}
-
-        //private async Task PerformCancelExecutionTest(OrderTemplate template)
-        //{
-        //    await TryPerformTest(() => TestOpenOrder(template, false));
-        //    await TryPerformTest(() => TestCancelOrder(template));
-        //}
-
-        //private async Task PerformExpirationExecutionTest(OrderTemplate template)
-        //{
-        //    template.Expiration = DateTime.Now + TimeToExpire;
-
-        //    await TryPerformTest(() => TestOpenOrder(template, false));
-
-        //    await WaitAndStoreEvent<OrderExpiredEventArgs>(template, ExpirationEventTimeout + TimeToExpire);
-        //}
-
-        //private async Task PerformTakeProfitExecutionTest(OrderTemplate template)
-        //{
-        //    template.TP = CalculatePrice(template, -2);
-
-        //    await RunOpenWithCloseEvent(template);
-        //}
-
-        //private async Task PerformStopLossExecutionTest(OrderTemplate template)
-        //{
-        //    template.SL = CalculatePrice(template, 2);
-
-        //    await RunOpenWithCloseEvent(template);
-        //}
-
-        //private async Task RunOpenWithCloseEvent(OrderTemplate template)
-        //{
-        //    await TryPerformTest(() => TestOpenOrder(template));
-
-        //    await WaitAndStoreEvent<OrderClosedEventArgs>(template, TPSLEventTimeout);
-        //}
-
-        //private async Task PrepareCloseByTest(TestAcion action, double? closeVolume, TestParamsSet test)
-        //{
-        //    async Task func(OrderTemplate template)
-        //    {
-        //        var inversed = template.InversedCopy(closeVolume);
-
-        //        template.TP = CalculatePrice(template, 4);
-        //        template.SL = CalculatePrice(template, -4);
-        //        template.Comment = "First";
-
-        //        inversed.TP = CalculatePrice(inversed, 3);
-        //        inversed.SL = CalculatePrice(inversed, -3);
-        //        inversed.Comment = "Second";
-
-        //        await TryPerformTest(() => TestOpenOrder(template));
-        //        await TryPerformTest(() => TestOpenOrder(inversed));
-
-        //        await TryPerformTest(() => TestCloseBy(template, inversed), 1);
-        //    }
-
-        //    await PrepareAndRun(action, func, test, Behavior.Execution);
-        //}
-
-        private async Task TryCatchOrderReject(OrderTemplate template)
-        {
-            try
+            foreach (var order in Account.Orders.ToList())
             {
-                await TestOpenOrder(template);
-            }
-            catch
-            {
-                return;
-            }
-
-            throw new Exception("Order not rejected!");
-        }
-
-        private async Task PrepareAndRun(TestAcion action, Func<OrderTemplate, Task> func, TestParamsSet test, Behavior mode = Behavior.Pending)
-        {
-            await Delay(PauseBetweenOrders);
-
-            WriteTest(test.Info(action));
-
-            try
-            {
-                await func(GenerateTemplate(test, mode));
-            }
-            catch (Exception ex)
-            {
-                WriteError(ex);
+                if (order.Type == OrderType.Position)
+                    CloseOrder(CloseOrderRequest.Template.Create().WithParams(order.Id).MakeRequest());
+                else
+                    CancelOrder(order.Id);
             }
         }
 
-        private OrderTemplate GenerateTemplate(TestParamsSet test, Behavior mode = Behavior.Pending)
+        internal void PrintDebug(string message)
         {
-            //var template = new OrderTemplate(test, mode)
-            //{
-            //    Volume = DefaultOrderVolume,
-            //};
-
-            //if (mode == Behavior.Execution)
-            //{
-            //    template.Price = CalculatePrice(template, 2);
-            //    template.StopPrice = CalculatePrice(template, -1);
-            //}
-            //else
-            //{
-            //    template.Price = CalculatePrice(template, 3);
-            //    template.StopPrice = CalculatePrice(template, 3);
-            //}
-
-            //return template;
-
-            return null;
+            if (UseDebug)
+                Print(message);
         }
-
-        //private double? CalculatePrice(OrderTemplate template, int coef = 1)
-        //{
-        //    //if (template.Mode == Behavior.Pending)
-        //    //{
-        //    //    if (template.IsInstantOrder)
-        //    //        return CalculatePrice(template.Side, coef > 0 ? 1 : -1);
-
-        //    //    if (template.Type == OrderType.Limit)
-        //    //        return CalculatePrice(template.Side, -coef);
-        //    //}
-
-        //    return CalculatePrice(template.Side, coef);
-        //}
-
-        //internal double? CalculatePrice(OrderSide side, int coef)
-        //{
-        //    var delta = coef * PriceDelta * Symbol.Point * Math.Max(1, 10 - Symbol.Digits);
-
-        //    return side.IsBuy() ? Symbol.Ask.Round(Symbol.Digits) + delta : Symbol.Bid.Round(Symbol.Digits) - delta;
-        //}
-
-        #endregion
 
         #region Test Order Actions
 
-        private async Task TestOpenOrder(OrderTemplate template, bool activate = true, bool fill = true)
-        {
-            PrintDebug(template.GetInfo(TestOrderAction.Open));
+        //private async Task TestOpenOrder(OrderTemplate template, bool activate = true, bool fill = true)
+        //{
+        //    var request = OpenOrderRequest.Template.Create().WithParams(Symbol.Name, template.Side, template.Type, template.Volume,
+        //        template.Price, template.StopPrice, template.MaxVisibleVolume, template.TP, template.SL, template.Comment, template.Options,
+        //        "tag", template.Expiration, template.GetSlippageInPercent()).MakeRequest();
 
-            var request = OpenOrderRequest.Template.Create().WithParams(Symbol.Name, template.Side, template.Type, template.Volume,
-                template.Price, template.StopPrice, template.MaxVisibleVolume, template.TP, template.SL, template.Comment, template.Options,
-                "tag", template.Expiration, template.GetSlippageInPercent()).MakeRequest();
+        //    var response = template.Async ? await OpenOrderAsync(request) : OpenOrder(request);
 
-            var response = template.Async ? await OpenOrderAsync(request) : OpenOrder(request);
+        //    response.ThrowIfFailed(TestOrderAction.Open);
 
-            response.ThrowIfFailed(TestOrderAction.Open);
+        //    await WaitOpenAndUpdateTemplate(template);
 
-            await WaitOpenAndUpdateTemplate(template);
+        //    if (!activate && !template.IsImmediateFill)
+        //        try
+        //        {
+        //            template.Verification();
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            PrintError(ex.Message);
+        //        }
 
-            if (!activate && !template.IsImmediateFill)
-                try
-                {
-                    template.Verification();
-                }
-                catch (Exception ex)
-                {
-                    PrintError(ex.Message);
-                }
+        //    if ((activate && fill) || template.IsImmediateFill)
+        //        await TryPerformTest(() => TestEventFillOrder(template), 1);
+        //}
 
-            if ((activate && fill) || template.IsImmediateFill)
-                await TryPerformTest(() => TestEventFillOrder(template), 1);
-        }
+        //private async Task TestCancelOrder(OrderTemplate template)
+        //{
+        //    var response = template.Async ? await CancelOrderAsync(template.Id) : CancelOrder(template.Id);
 
-        private async Task TestCancelOrder(OrderTemplate template)
-        {
-            PrintDebug(template.GetInfo(TestOrderAction.Cancel));
+        //    response.ThrowIfFailed(TestOrderAction.Cancel);
 
-            var response = template.Async ? await CancelOrderAsync(template.Id) : CancelOrder(template.Id);
+        //    await WaitAndStoreEvent<OrderCanceledEventArgs>(template, CancelEventTimeout);
+        //}
 
-            response.ThrowIfFailed(TestOrderAction.Cancel);
+        //private async Task TestCloseOrder(OrderTemplate template, double? volume = null)
+        //{
+        //    var request = CloseOrderRequest.Template.Create().WithParams(template.Id, volume, template.GetSlippageInPercent()).MakeRequest();
 
-            await WaitAndStoreEvent<OrderCanceledEventArgs>(template, CancelEventTimeout);
-        }
+        //    var response = template.Async ? await CloseOrderAsync(request) : CloseOrder(request);
 
-        private async Task TestCloseOrder(OrderTemplate template, double? volume = null)
-        {
-            PrintDebug(template.GetInfo(TestOrderAction.Close));
+        //    response.ThrowIfFailed(TestOrderAction.Close);
 
-            var request = CloseOrderRequest.Template.Create().WithParams(template.Id, volume, template.GetSlippageInPercent()).MakeRequest();
+        //    template.Verification(volume == null);
 
-            var response = template.Async ? await CloseOrderAsync(request) : CloseOrder(request);
+        //    await WaitAndStoreEvent<OrderClosedEventArgs>(template, CloseEventTimeout);
+        //}
 
-            response.ThrowIfFailed(TestOrderAction.Close);
+        //private async Task TestCloseBy(OrderTemplate template, OrderTemplate inversed)
+        //{
+        //    var resultCopy = template.Volume < inversed.Volume ? inversed.Copy() : template.Copy();
 
-            template.Verification(volume == null);
+        //    var response = template.Async ? await CloseOrderByAsync(template.Id, inversed.Id) : CloseOrderBy(template.Id, inversed.Id);
 
-            await WaitAndStoreEvent<OrderClosedEventArgs>(template, CloseEventTimeout);
-        }
+        //    response.ThrowIfFailed(TestOrderAction.CloseBy);
 
-        private async Task TestCloseBy(OrderTemplate template, OrderTemplate inversed)
-        {
-            PrintDebug(template.GetInfo(TestOrderAction.CloseBy));
+        //    if (template.Volume != inversed.Volume)
+        //        await WaitOpenAndUpdateTemplate(resultCopy);
 
-            var resultCopy = template.Volume < inversed.Volume ? inversed.Copy() : template.Copy();
+        //    await WaitAndStoreEvent<OrderClosedEventArgs>(template.Volume < inversed.Volume ? inversed : template, CloseEventTimeout);
+        //    await WaitAndStoreEvent<OrderClosedEventArgs>(template.Volume < inversed.Volume ? template : inversed, CloseEventTimeout);
 
-            var response = template.Async ? await CloseOrderByAsync(template.Id, inversed.Id) : CloseOrderBy(template.Id, inversed.Id);
+        //    if (template.Volume != inversed.Volume)
+        //        await TryPerformTest(() => TestCloseOrder(resultCopy));
+        //}
 
-            response.ThrowIfFailed(TestOrderAction.CloseBy);
+        //private async Task TestModifyOrder(OrderTemplate template)
+        //{
+        //    var request = GetModifyRequest(template);
 
-            if (template.Volume != inversed.Volume)
-                await WaitOpenAndUpdateTemplate(resultCopy);
+        //    var response = template.Async ? await ModifyOrderAsync(request) : ModifyOrder(request);
 
-            await WaitAndStoreEvent<OrderClosedEventArgs>(template.Volume < inversed.Volume ? inversed : template, CloseEventTimeout);
-            await WaitAndStoreEvent<OrderClosedEventArgs>(template.Volume < inversed.Volume ? template : inversed, CloseEventTimeout);
+        //    response.ThrowIfFailed(TestOrderAction.Modify);
 
-            if (template.Volume != inversed.Volume)
-                await TryPerformTest(() => TestCloseOrder(resultCopy));
-        }
+        //    await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
 
-        private async Task TestModifyOrder(OrderTemplate template)
-        {
-            PrintDebug(template.GetInfo(TestOrderAction.Modify));
+        //    template.Verification();
+        //}
 
-            var request = GetModifyRequest(template);
-
-            var response = template.Async ? await ModifyOrderAsync(request) : ModifyOrder(request);
-
-            response.ThrowIfFailed(TestOrderAction.Modify);
-
-            await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
-
-            template.Verification();
-        }
-
-        private static ModifyOrderRequest GetModifyRequest(OrderTemplate template) => ModifyOrderRequest.Template.Create().WithParams(template.Id, template.Price, template.StopPrice, template.Volume, template.MaxVisibleVolume,
-                template.TP, template.SL, template.Comment, template.Expiration, template.Options, template.GetSlippageInPercent()).MakeRequest();
+        //private static ModifyOrderRequest GetModifyRequest(OrderTemplate template) => ModifyOrderRequest.Template.Create().WithParams(template.Id, template.Price, template.StopPrice, template.Volume, template.MaxVisibleVolume,
+        //        template.TP, template.SL, template.Comment, template.Expiration, template.Options, template.GetSlippageInPercent()).MakeRequest();
 
 
         #endregion
@@ -630,254 +352,55 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         #region Event Verification
 
-        private async Task TestEventFillOrder(OrderTemplate template)
-        {
-            if (template.Type == OrderType.StopLimit)
-            {
-                await WaitAndStoreEvent<OrderActivatedEventArgs>(template, ActivateEventTimeout);
-                await WaitOpenAndUpdateTemplate(template, true);
-            }
-
-            await WaitAndStoreEvent<OrderFilledEventArgs>(template, FillEventTimeout, Account.Type != AccountTypes.Gross);
-
-            if (Account.Type == AccountTypes.Gross)
-            {
-                PrintDebug("To Position");
-                await WaitOpenAndUpdateTemplate(template, true, true);
-            }
-        }
-
-        private async Task WaitOpenAndUpdateTemplate(OrderTemplate template, bool activate = false, bool position = false)
-        {
-            var args = await WaitEvent<OrderOpenedEventArgs>(OpenEventTimeout);
-
-            template.UpdateTemplate(args.Order, activate, position);
-        }
-
-        private async Task WaitAndStoreEvent<T>(OrderTemplate template, TimeSpan delay, bool store = true)
-        {
-            var args = await WaitEvent<T>(delay);
-
-            if (store)
-                _historyStorage.Add(HistoryOrderTemplate.Create(template, args));
-        }
-
-        private async Task<TArgs> WaitEvent<TArgs>(TimeSpan waitTimeout)
-        {
-            _eventWaiter = new TaskCompletionSource<object>();
-            var eventTask = _eventWaiter.Task;
-
-            if (await Task.WhenAny(Delay(waitTimeout), eventTask) != eventTask)
-                throw new Exception($"Timeout reached while wating for event {typeof(TArgs).Name}");
-
-            var argsObj = await eventTask;
-
-            if (argsObj is TArgs args)
-            {
-                PrintDebug($"Event received: {argsObj.GetType().Name}");
-                return args;
-            }
-
-            throw new Exception($"Unexpected event: Received {argsObj.GetType().Name} while expecting {typeof(TArgs).Name}");
-        }
-
-        //private void OnEventFired<TArgs>(TArgs args)
+        //private async Task TestEventFillOrder(OrderTemplate template)
         //{
-        //    if (_eventWaiter != null)
+        //    if (template.Type == OrderType.StopLimit)
         //    {
-        //        var waiterCopy = _eventWaiter;
-        //        _eventWaiter = null;
-        //        waiterCopy.SetResult(args); // note: function may start wating for new event inside SetResult(), so _eventWaiter = null should be before SetResult()
-        //    }
-        //    else
-        //        throw new Exception($"Unexpected event: {args.GetType().Name}");
-        //}
-
-        #endregion
-
-        #region Misc methods
-
-
-
-        private void CleanUpWorkspace()
-        {
-            Status.WriteLine("Cleaning up...");
-
-            foreach (var netPosition in Account.NetPositions.ToList())
-                CloseNetPosition(CloseNetPositionRequest.Template.Create().WithParams(netPosition.Symbol).MakeRequest());
-
-            foreach (var order in Account.Orders.ToList())
-            {
-                if (order.Type == OrderType.Position)
-                    CloseOrder(CloseOrderRequest.Template.Create().WithParams(order.Id).MakeRequest());
-                else
-                    CancelOrder(order.Id);
-            }
-        }
-
-        private void UpdateStatus()
-        {
-            //Status.WriteLine($"{_statisticManager}");
-            Status.Flush();
-        }
-
-        internal void PrintDebug(string message)
-        {
-            if (UseDebug)
-                Print(message);
-        }
-
-        private void WriteTest(string message)
-        {
-            Print($"Test №{++_testCount} {message}");
-            UpdateStatus();
-        }
-
-        private void WriteError(Exception ex)
-        {
-            //++_errorCount;
-            PrintError(ex.Message);
-            UpdateStatus();
-        }
-
-        private async Task TryPerformTest(Func<Task> func, int? count = null)
-        {
-            int attemptsFailed = 0;
-            int attemptsBorder = count ?? 5;
-
-            while (attemptsFailed < attemptsBorder)
-            {
-                try
-                {
-                    await func();
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    if (++attemptsFailed >= attemptsBorder || ex is VerificationException) //Verification should be second
-                    {
-                        WriteError(ex);
-                        attemptsFailed = attemptsBorder;
-                    }
-                    else
-                    {
-                        PrintError(ex.Message);
-                        Print("Attempt failed, retrying.");
-                    }
-                }
-            }
-        }
-        #endregion
-
-
-        #region AD Comments test
-
-        //private async Task TestCommentRejectAD(OrderTemplate template)
-        //{
-        //    var commentModel = new ADCommentsList { new ActionADComment(ADCases.Reject) };
-
-        //    template.Comment = commentModel.GetComment();
-
-        //    await TryCatchOrderReject(template);
-        //}
-
-        //private async Task TestPartialSlippageAD(double? slippage, TestParamsSet test)
-        //{
-        //    async Task func(OrderTemplate template)
-        //    {
-        //        template.Slippage = slippage;
-
-        //        await TestCommentPartialActivateAD(template);
+        //        await WaitAndStoreEvent<OrderActivatedEventArgs>(template, ActivateEventTimeout);
+        //        await WaitOpenAndUpdateTemplate(template, true);
         //    }
 
-        //    await PrepareAndRun(TestAcion.PartialActiveWithSlippage, func, test);
-        //}
-
-        //private async Task TestCommentPartialActivateAD(OrderTemplate template)
-        //{
-        //    var isImmediateFill = template.IsImmediateFill; // should be redone
-
-        //    var customVolume = 0.2 * DefaultOrderVolume * Symbol.ContractSize;
-
-        //    var commentModel = new ADCommentsList
-        //    {
-        //        new OrderADComment(template.IsInstantOrder ? ADCases.Confirm : ADCases.Activate, customVolume)
-        //    };
-
-        //    if (!isImmediateFill)
-        //        commentModel.Add(new OrderADComment(ADCases.Activate, null));
-
-        //    template.Comment = commentModel.GetComment();
-
-        //    await TryPerformTest(() => TestOpenOrder(template));
-
-        //    if (!isImmediateFill)
-        //        await TryPerformTest(() => TestEventFillOrder(template), 1);
+        //    await WaitAndStoreEvent<OrderFilledEventArgs>(template, FillEventTimeout, Account.Type != AccountTypes.Gross);
 
         //    if (Account.Type == AccountTypes.Gross)
         //    {
-        //        template.Id = template.RelatedId; // should be redone
-
-        //        await TryPerformTest(() => TestCloseOrder(template));
-
-        //        if (!isImmediateFill)
-        //        {
-        //            template.Id = template.RelatedId;
-        //            await TryPerformTest(() => TestCloseOrder(template));
-        //        }
+        //        PrintDebug("To Position");
+        //        await WaitOpenAndUpdateTemplate(template, true, true);
         //    }
         //}
-        #endregion
-
-        #region Specific Tests
-
-        private async Task ModifyCancelTest(TestParamsSet test)
-        {
-            async Task func(OrderTemplate template)
-            {
-                await TryPerformTest(() => TestOpenOrder(template, false));
-
-                template.Volume *= 0.3;
-
-                var request = GetModifyRequest(template);
-
-                var t1 = ModifyOrderAsync(request);
-                await Task.Delay(10);
-                var t2 = ModifyOrderAsync(request);
-
-                await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
-                await WaitAndStoreEvent<OrderCanceledEventArgs>(template, CancelEventTimeout);
-
-                await Task.WhenAll(t1, t2);
-            }
-
-            await PrepareAndRun(TestAcion.ModifyCancel, func, test, Behavior.Pending);
-        }
 
 
-        private async Task PerformOCOTests(TestParamsSet test)
-        {
-            async Task func(OrderTemplate first)
-            {
-                var second = GenerateTemplate(new TestParamsSet(OrderType.Stop, test.Side, test.Async) { Options = test.Options });
+        //private async Task WaitAndStoreEvent<T>(OrderTemplate template, TimeSpan delay, bool store = true)
+        //{
+        //    var args = await WaitEvent<T>(delay);
 
-                await TryPerformTest(() => TestOpenOrder(first));
+        //    if (store)
+        //        _historyStorage.Add(HistoryOrderTemplate.Create(template, args));
+        //}
 
-                second.OcoRelatedOrderId = first.Id;
-                //second.Options = OrderExecOptions.OneCancelsTheOther;
 
-                await TryPerformTest(() => TestOpenOrder(second));
+        //private async Task ModifyCancelTest(TestParamsSet test)
+        //{
+        //    async Task func(OrderTemplate template)
+        //    {
+        //        await TryPerformTest(() => TestOpenOrder(template, false));
 
-                first.OcoRelatedOrderId = second.Id;
-                //second.Options = OrderExecOptions.OneCancelsTheOther;
+        //        template.Volume *= 0.3;
 
-                first.Verification();
-                //await TryPerformTest(() => TestCloseBy(template, inversed), 1);
-            }
+        //        var request = GetModifyRequest(template);
 
-            await PrepareAndRun(TestAcion.OpenOCO, func, test, Behavior.Pending);
-        }
+        //        var t1 = ModifyOrderAsync(request);
+        //        await Task.Delay(10);
+        //        var t2 = ModifyOrderAsync(request);
 
+        //        await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
+        //        await WaitAndStoreEvent<OrderCanceledEventArgs>(template, CancelEventTimeout);
+
+        //        await Task.WhenAll(t1, t2);
+        //    }
+
+        //    //await PrepareAndRun(TestAcion.ModifyCancel, func, test, Behavior.Pending);
+        //}
         #endregion
     }
 }

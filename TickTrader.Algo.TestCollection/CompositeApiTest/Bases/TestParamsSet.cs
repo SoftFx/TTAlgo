@@ -2,19 +2,7 @@
 
 namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
-    public enum Behavior { Execution, Pending }
-
-    public enum TestAcion
-    {
-        Fill, FillByModify, RejectIoC, ExecutionTP, ExecutionSL, Cancel, Expiration, ADReject, ADPartialActivate,
-        CloseByBigSmall, CloseBySmallBig, CloseByEven, OpenSlippage, PartialActiveWithSlippage, ModifyCancel,
-        OpenOCO,
-    }
-
-    public enum TestOrderAction { Open, Modify, Close, Cancel, CloseBy };
-
-
-    public class TestParamsSet
+    internal class TestParamsSet
     {
         public static Symbol Symbol { get; private set; }
 
@@ -30,8 +18,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         public OrderType Type { get; protected set; }
 
         public OrderSide Side { get; protected set; }
-
-        public bool Async { get; private set; }
 
         public OrderExecOptions Options { get; set; }
 
@@ -63,11 +49,12 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         public TestParamsSet() { }
 
-        public TestParamsSet(OrderType type, OrderSide side, bool async = false)
+        public TestParamsSet(OrderType type, OrderSide side)
         {
             Type = type;
             Side = side;
         }
+
 
         public static void FillBaseParameters(CompositeTradeApiTest bot)
         {
@@ -78,14 +65,9 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             Symbol = bot.Symbol;
         }
 
-        public OrderTemplate BuildOrder()
-        {
-            return new OrderTemplate(this, BaseOrderVolume);
-        }
 
-        public string Info(TestAcion action) => $"{(Async ? "Async " : "")}{action} {Side} {Type} order ({Options})";
+        public OrderTemplate BuildOrder() => new OrderTemplate(this, BaseOrderVolume);
 
-        protected virtual string GetInfo() => $"{(Async ? "Async " : "")}{TestOrderAction.Open} {Side} {Type} order (options: {Options})";
 
         public override string ToString() => $"Type={Type} Side={Side}";
     }
