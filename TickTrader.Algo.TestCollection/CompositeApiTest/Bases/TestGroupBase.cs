@@ -40,10 +40,13 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             {
                 Bot.PrintDebug("Start test");
 
-                template = template ?? set.BuildOrder();
-
                 _eventManager.ResetAllQueues();
-                _eventManager.RegistryNewTemplate(template);
+
+                if (template != null)
+                    RegisterAdditionalTemplate(template);
+                else
+                    template = set.BuildOrder();
+
                 _statsManager.StartNewTest(testInfo ?? test.Method.Name, _asyncMode);
 
                 await test(template);
@@ -88,7 +91,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
 
 
-        protected OrderTemplate RegisterAdditionalTemplate(OrderTemplate template)
+        private OrderTemplate RegisterAdditionalTemplate(OrderTemplate template)
         {
             _eventManager.RegistryNewTemplate(template);
 
@@ -170,6 +173,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             async Task<OrderCmdResult> OpenCommand() =>
                 _asyncMode ? await Bot.OpenOrderAsync(request) : Bot.OpenOrder(request);
 
+            RegisterAdditionalTemplate(template);
+
             await WaitSuccServerRequest(OpenCommand, OrderEvents.Open, eventsAfterOpen);
             await template.Opened.Task;
         }
@@ -184,12 +189,12 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await WaitSuccServerRequest(ModifyCommand, OrderEvents.Modify);
         }
 
-        protected async Task TestCancelOrder(OrderTemplate template)
+        protected async Task TestCancelOrder(OrderTemplate template, params Type[] eventsAfterCancel)
         {
             async Task<OrderCmdResult> CancelCommand() =>
                 _asyncMode ? await Bot.CancelOrderAsync(template.Id) : Bot.CancelOrder(template.Id);
 
-            await WaitSuccServerRequest(CancelCommand, OrderEvents.Cancel);
+            await WaitSuccServerRequest(CancelCommand, OrderEvents.Cancel, eventsAfterCancel);
         }
 
         protected async Task TestCloseOrder(OrderTemplate template, double? volume = null)

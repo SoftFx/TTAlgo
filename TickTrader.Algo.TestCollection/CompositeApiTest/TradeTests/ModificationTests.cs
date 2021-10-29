@@ -17,7 +17,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         protected override async Task RunTestGroup(TestParamsSet set)
         {
-            var template = RegisterAdditionalTemplate(set.BuildOrder().ForPending());
+            var template = set.BuildOrder().ForPending();
 
             await TestOpenOrder(template).WithTimeoutAfter(WaitEventsTimeout); //remove timeout for open
 

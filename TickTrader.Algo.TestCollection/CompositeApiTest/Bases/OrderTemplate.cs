@@ -67,6 +67,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         public string OcoRelatedOrderId { get; set; }
 
+        public bool OcoEqualVolume { get; set; }
 
         public List<OrderTemplate> FilledParts { get; private set; }
 
@@ -130,6 +131,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             return OpenOrderRequest.Template.Create()
                    .WithParams(Symbol.Name, Side, Type, Volume, Price, StopPrice)
+                   .WithOCOParams(OcoEqualVolume, OcoRelatedOrderId)
                    .WithMaxVisibleVolume(MaxVisibleVolume)
                    .WithSlippage(GetSlippageInPercent())
                    .WithExpiration(Expiration)
@@ -234,7 +236,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
 
         //add deep copy trigger property later
-        public OrderTemplate Copy()
+        public OrderTemplate Copy(double? newVolume = null)
         {
             var copy = (OrderTemplate)MemberwiseClone();
 
@@ -242,16 +244,16 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             copy.Filled = new TaskCompletionSource<bool>();
             copy.FilledParts = new List<OrderTemplate>();
             copy.OpenedGrossPosition = new TaskCompletionSource<bool>();
+            copy.SetVolume(newVolume ?? Volume);
 
             return copy;
         }
 
         public OrderTemplate InversedCopy(double? newVolume = null)
         {
-            var copy = Copy();
+            var copy = Copy(newVolume);
 
-            copy.Side = Side == OrderSide.Buy ? OrderSide.Sell : OrderSide.Buy;
-            copy.SetVolume(newVolume ?? Volume);
+            copy.Side = Side.Inversed();
 
             return copy;
         }

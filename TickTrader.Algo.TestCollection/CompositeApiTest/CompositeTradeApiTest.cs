@@ -16,6 +16,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         private SlippageTests _slippageTests;
         private CloseByTests _closeByTests;
         private ADTests _automaticDilerTests;
+        private OCOTests _ocoTests;
 
 
         [Parameter(DefaultValue = false)]
@@ -39,6 +40,9 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         [Parameter(DefaultValue = true)]
         public bool UseSlippageTests { get; set; }
+
+        [Parameter(DefaultValue = true)]
+        public bool UseOCOTests { get; set; }
 
 
         [Parameter]
@@ -65,13 +69,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             foreach (OrderType orderType in Enum.GetValues(typeof(OrderType)))
                 foreach (OrderSide orderSide in Enum.GetValues(typeof(OrderSide)))
                     if (orderType != OrderType.Position)
-                    {
-                        var testSet = new TestParamsSet(orderType, orderSide);
-
-                        await RunAllTestGroups(testSet, OrderExecOptions.None);
-                        //if (testSet.IsLimit)
-                        //    await FullTestRun(testSet, OrderExecOptions.ImmediateOrCancel);
-                    }
+                        await RunAllTestGroups(new TestParamsSet(orderType, orderSide));
 
             //Print("Waiting for trade reports to load...");
             //await Delay(PauseBeforeAndAfterTests);
@@ -99,14 +97,13 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             _slippageTests = new SlippageTests();
             _closeByTests = new CloseByTests();
             _automaticDilerTests = new ADTests();
+            _ocoTests = new OCOTests(UseADCases);
 
             await Task.Delay(2000);
         }
 
-        private async Task RunAllTestGroups(TestParamsSet set, OrderExecOptions options)
+        private async Task RunAllTestGroups(TestParamsSet set)
         {
-            set.Options = options;
-
             if (UseModificationTests && !set.IsInstantOrder)
                 await _modificationTests.Run(set);
 
@@ -121,6 +118,9 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             if (UseADCases)
                 await _automaticDilerTests.Run(set);
+
+            if (UseOCOTests && set.IsSupportedOCO)
+                await _ocoTests.Run(set);
         }
 
         private void CleanUpWorkspace()
@@ -146,7 +146,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
 
         #region Test Order Actions
-
         //private async Task TestOpenOrder(OrderTemplate template, bool activate = true, bool fill = true)
         //{
         //    var request = OpenOrderRequest.Template.Create().WithParams(Symbol.Name, template.Side, template.Type, template.Volume,

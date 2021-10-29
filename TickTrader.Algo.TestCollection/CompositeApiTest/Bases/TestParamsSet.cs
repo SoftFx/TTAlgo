@@ -39,7 +39,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         public bool IsSupportedRejectedIoC => Type == OrderType.Limit;
 
-        public bool IsSupportedOcO => (Type == OrderType.Stop || Type == OrderType.Limit) && !IsGrossAcc;
+        public bool IsSupportedOCO => (Type == OrderType.Stop || Type == OrderType.Limit) && !IsGrossAcc;
 
 
         public bool IsStopLimit => Type == OrderType.StopLimit;
@@ -66,7 +66,24 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
 
 
-        public OrderTemplate BuildOrder() => new OrderTemplate(this, BaseOrderVolume);
+        public OrderTemplate BuildOrder(OrderType? type = null, double? newVolume = null)
+        {
+            var template = new OrderTemplate(this, newVolume ?? BaseOrderVolume)
+            {
+                Type = type ?? Type,
+            };
+
+            return template;
+        }
+
+        public static OrderTemplate operator !(TestParamsSet order)
+        {
+            var template = order.BuildOrder();
+
+            template.Side = order.Side.Inversed();
+
+            return template;
+        }
 
 
         public override string ToString() => $"Type={Type} Side={Side}";

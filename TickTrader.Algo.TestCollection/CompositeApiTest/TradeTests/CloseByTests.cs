@@ -30,7 +30,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private async Task RunCloseByTest(OrderTemplate template, double? closeVolume)
         {
-            var inversed = RegisterAdditionalTemplate(template.InversedCopy(closeVolume));
+            var inversed = template.InversedCopy(closeVolume);
 
             await OpenOrderAndWaitExecution(template.ForGrossPositionPending(4, "First"));
             await OpenOrderAndWaitExecution(inversed.ForGrossPositionPending(5, "Second"));
