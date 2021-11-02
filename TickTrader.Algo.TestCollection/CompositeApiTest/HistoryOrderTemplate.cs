@@ -4,7 +4,7 @@ using TickTrader.Algo.Api.Math;
 
 namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
-    internal sealed class HistoryOrderTemplate : OrderTemplate
+    internal sealed class HistoryOrderTemplate : OrderStateTemplate
     {
         ////public string OrderId { get; }
         ////public AccountTypes AccType { get; }
@@ -22,12 +22,12 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         public OrderType TradeRecordType { get; private set; }
 
-        private HistoryOrderTemplate(OrderTemplate template)
+        private HistoryOrderTemplate(OrderStateTemplate template)
         {
             Id = template.Id;
             Side = template.Side;
             Type = template.Type;
-            InitType = template.InitType;
+            //InitType = template.InitType;
             Volume = template.Volume;
             Price = template.Price;
             StopPrice = template.StopPrice;
@@ -37,42 +37,42 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             Options = template.Options;
         }
 
-        private static HistoryOrderTemplate Create(OrderTemplate template, OrderFilledEventArgs args) =>
+        private static HistoryOrderTemplate Create(OrderStateTemplate template, OrderFilledEventArgs args) =>
             new HistoryOrderTemplate(template)
             {
                 TradeReportAction = TradeExecActions.OrderFilled,
                 TradeReportTimestamp = args.OldOrder.Modified
             };
 
-        private static HistoryOrderTemplate Create(OrderTemplate template, OrderActivatedEventArgs args) =>
+        private static HistoryOrderTemplate Create(OrderStateTemplate template, OrderActivatedEventArgs args) =>
             new HistoryOrderTemplate(template)
             {
                 TradeReportAction = TradeExecActions.OrderActivated,
                 TradeReportTimestamp = args.Order.Modified
             };
 
-        private static HistoryOrderTemplate Create(OrderTemplate template, OrderClosedEventArgs args) =>
+        private static HistoryOrderTemplate Create(OrderStateTemplate template, OrderClosedEventArgs args) =>
             new HistoryOrderTemplate(template)
             {
                 TradeReportAction = TradeExecActions.PositionClosed,
                 TradeReportTimestamp = args.Order.Modified
             };
 
-        private static HistoryOrderTemplate Create(OrderTemplate template, OrderCanceledEventArgs args) =>
+        private static HistoryOrderTemplate Create(OrderStateTemplate template, OrderCanceledEventArgs args) =>
             new HistoryOrderTemplate(template)
             {
                 TradeReportAction = TradeExecActions.OrderCanceled,
                 TradeReportTimestamp = args.Order.Modified
             };
 
-        private static HistoryOrderTemplate Create(OrderTemplate template, OrderExpiredEventArgs args) =>
+        private static HistoryOrderTemplate Create(OrderStateTemplate template, OrderExpiredEventArgs args) =>
             new HistoryOrderTemplate(template)
             {
                 TradeReportAction = TradeExecActions.OrderExpired,
                 TradeReportTimestamp = args.Order.Modified
             };
 
-        public static HistoryOrderTemplate Create(OrderTemplate template, object args)
+        public static HistoryOrderTemplate Create(OrderStateTemplate template, object args)
         {
             if (args is OrderFilledEventArgs)
                 return Create(template, (OrderFilledEventArgs)args);
@@ -101,8 +101,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             AssertEquals(nameof(report.TradeRecordType), Type, report.TradeRecordType);
             AssertEquals(nameof(report.Tag), Tag, report.Tag);
 
-            if (IsSupportedSlippage)
-                CheckSlippage(report.Slippage.Value, (realSlippage, expectedSlippage) => AssertEquals(nameof(Slippage), expectedSlippage, realSlippage));
+            //if (IsSupportedSlippage)
+            //    CheckSlippage(report.Slippage.Value, (realSlippage, expectedSlippage) => AssertEquals(nameof(Slippage), expectedSlippage, realSlippage));
 
             TestReqOpenPrice(report);
         }

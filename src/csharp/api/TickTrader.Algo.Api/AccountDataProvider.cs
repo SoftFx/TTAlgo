@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Api
         AccountTypes Type { get; }
         OrderList Orders { get; }
         NetPositionList NetPositions { get; }
-        AssetList Assets { get; }
+        List Assets { get; }
         TradeHistory TradeHistory { get; }
         TriggerHistory TriggerHistory { get; }
         OrderList OrdersByTag(string orderTag);

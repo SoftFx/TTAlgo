@@ -33,7 +33,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         protected abstract Task RunTestGroup(TestParamsSet set);
 
 
-        protected async Task RunTest(Func<OrderTemplate, Task> test, TestParamsSet set, OrderTemplate template = null,
+        protected async Task RunTest(Func<OrderStateTemplate, Task> test, TestParamsSet set, OrderStateTemplate template = null,
             string testInfo = null)
         {
             try
@@ -91,27 +91,30 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
 
 
-        private OrderTemplate RegisterAdditionalTemplate(OrderTemplate template)
+        private OrderStateTemplate RegisterAdditionalTemplate(OrderStateTemplate template)
         {
+            foreach (var linkOrder in template.LinkedOrders)
+                _eventManager.RegistryNewTemplate((OrderStateTemplate)linkOrder);
+
             _eventManager.RegistryNewTemplate(template);
 
             return template;
         }
 
 
-        protected async Task OpenExecutionOrder(OrderTemplate template)
+        protected async Task OpenExecutionOrder(OrderStateTemplate template)
         {
             await OpenOrderAndWaitExecution(template.ForExecuting());
             await ClearTestEnviroment(template);
         }
 
-        protected async Task OpenOrderAndWaitExecution(OrderTemplate template, Type[] events = null)
+        protected async Task OpenOrderAndWaitExecution(OrderStateTemplate template, Type[] events = null)
         {
             await TestOpenOrder(template, events ?? GetExecutionEvents(template));
             await template.FinalExecution.Task;
         }
 
-        protected async Task ModifyForExecutionOrder(OrderTemplate template)
+        protected async Task ModifyForExecutionOrder(OrderStateTemplate template)
         {
             await TestModifyOrder(template.ForExecuting());
 
@@ -120,7 +123,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await ClearTestEnviroment(template);
         }
 
-        protected async Task ClearTestEnviroment(OrderTemplate template)
+        protected async Task ClearTestEnviroment(OrderStateTemplate template)
         {
             if (template.IsGrossAcc)
             {
@@ -129,7 +132,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             }
         }
 
-        private static Type[] GetExecutionEvents(OrderTemplate template)
+        private static Type[] GetExecutionEvents(OrderStateTemplate template)
         {
             var isGross = template.IsGrossAcc;
             var events = isGross ? OrderEvents.FillOnGrossOrderEvents : OrderEvents.FillOrderEvents;
@@ -140,7 +143,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             return events;
         }
 
-        protected async Task RemoveOrder(OrderTemplate template)
+        protected async Task RemoveOrder(OrderStateTemplate template)
         {
             await template.Opened.Task;
 
@@ -156,7 +159,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
 
 
-        protected async Task OpenRejectOrder(OrderTemplate template)
+        protected async Task OpenRejectOrder(OrderStateTemplate template)
         {
             var request = template.GetOpenRequest();
 
@@ -166,7 +169,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await WaitRejectSeverRequest(OpenCommand);
         }
 
-        protected async Task TestOpenOrder(OrderTemplate template, params Type[] eventsAfterOpen)
+        protected async Task TestOpenOrder(OrderStateTemplate template, params Type[] eventsAfterOpen)
         {
             var request = template.GetOpenRequest();
 
@@ -179,7 +182,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await template.Opened.Task;
         }
 
-        protected async Task TestModifyOrder(OrderTemplate template)
+        protected async Task TestModifyOrder(OrderStateTemplate template)
         {
             var request = template.GetModifyRequest();
 
@@ -189,7 +192,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await WaitSuccServerRequest(ModifyCommand, OrderEvents.Modify);
         }
 
-        protected async Task TestCancelOrder(OrderTemplate template, params Type[] eventsAfterCancel)
+        protected async Task TestCancelOrder(OrderStateTemplate template, params Type[] eventsAfterCancel)
         {
             async Task<OrderCmdResult> CancelCommand() =>
                 _asyncMode ? await Bot.CancelOrderAsync(template.Id) : Bot.CancelOrder(template.Id);
@@ -197,7 +200,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await WaitSuccServerRequest(CancelCommand, OrderEvents.Cancel, eventsAfterCancel);
         }
 
-        protected async Task TestCloseOrder(OrderTemplate template, double? volume = null)
+        protected async Task TestCloseOrder(OrderStateTemplate template, double? volume = null)
         {
             var request = template.GetCloseRequest(volume);
 
@@ -207,7 +210,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await WaitSuccServerRequest(CloseCommand, OrderEvents.Close);
         }
 
-        protected async Task<OrderTemplate> TestCloseByOrders(OrderTemplate first, OrderTemplate second)
+        protected async Task<OrderStateTemplate> TestCloseByOrders(OrderStateTemplate first, OrderStateTemplate second)
         {
             async Task<OrderCmdResult> CloseByCommand() =>
                 _asyncMode ? await Bot.CloseOrderByAsync(first.Id, second.Id) : Bot.CloseOrderBy(first.Id, second.Id);

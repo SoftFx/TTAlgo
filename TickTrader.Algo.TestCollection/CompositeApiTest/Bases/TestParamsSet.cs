@@ -66,21 +66,12 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
 
 
-        public OrderTemplate BuildOrder(OrderType? type = null, double? newVolume = null)
+        public OrderStateTemplate BuildOrder(OrderType? type = null, double? newVolume = null)
         {
-            var template = new OrderTemplate(this, newVolume ?? BaseOrderVolume)
+            var template = new OrderStateTemplate(this, newVolume ?? BaseOrderVolume)
             {
                 Type = type ?? Type,
             };
-
-            return template;
-        }
-
-        public static OrderTemplate operator !(TestParamsSet order)
-        {
-            var template = order.BuildOrder();
-
-            template.Side = order.Side.Inversed();
 
             return template;
         }

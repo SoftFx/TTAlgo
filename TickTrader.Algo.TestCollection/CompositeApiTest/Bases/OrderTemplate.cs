@@ -1,37 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Linq;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
 
 namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
-    internal class OrderTemplate : TestParamsSet
+    internal abstract class OrderTemplate : TestParamsSet
     {
+        private readonly double _slippagePrecision;
         private DateTime? _expiration;
 
 
-        public Order RealOrder { get; private set; }
-
-        public bool CanCloseOrder => RealOrder.Type == OrderType.Position || RealOrder.Type == OrderType.Market;
-
         public bool IsNull => Volume.E(0.0);
 
-
-        public TaskCompletionSource<bool> Opened { get; private set; }
-
-        public TaskCompletionSource<bool> OpenedGrossPosition { get; private set; }
-
-        public TaskCompletionSource<bool> Filled { get; private set; }
-
-        public TaskCompletionSource<bool> FinalExecution => IsGrossAcc ? OpenedGrossPosition : Filled;
+        public OrderType InitType { get; }
 
 
-        public double SlippagePrecision { get; }
-
-        public OrderType InitType { get; protected set; }
-
-        public string Id { get; set; } = string.Empty;
+        public string Id { get; protected set; } = string.Empty;
 
         public double? Price { get; set; }
 
@@ -69,56 +55,23 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         public bool OcoEqualVolume { get; set; }
 
-        public List<OrderTemplate> FilledParts { get; private set; }
+        public List<OrderTemplate> LinkedOrders { get; protected set; }
 
 
-        public OrderTemplate() { }
+        internal OrderTemplate() { }
 
-        public OrderTemplate(TestParamsSet test, double volume) : base(test.Type, test.Side)
+        internal OrderTemplate(TestParamsSet set, double volume) : base(set.Type, set.Side)
         {
-            SetVolume(volume);
-            Opened = new TaskCompletionSource<bool>();
-            Filled = new TaskCompletionSource<bool>();
-            OpenedGrossPosition = new TaskCompletionSource<bool>();
-            FilledParts = new List<OrderTemplate>();
+            _slippagePrecision = Math.Pow(10, Math.Max(Symbol.Digits, 4));
 
-            Options = test.Options;
+            LinkedOrders = new List<OrderTemplate>();
 
             InitType = Type;
-            SlippagePrecision = Math.Pow(10, Math.Max(Symbol.Digits, 4));
+            Options = set.Options;
+
+            SetVolume(volume);
         }
 
-        private void SetVolume(double volume)
-        {
-            ReqVolume = volume;
-            RemVolume = volume;
-            Volume = volume;
-        }
-
-        public OrderTemplate ForPending(int coef = 3)
-        {
-            Price = CalculatePrice(coef);
-            StopPrice = CalculatePrice(-coef);
-
-            return this;
-        }
-
-        public OrderTemplate ForExecuting(int coef = 3)
-        {
-            Price = CalculatePrice(-coef);
-            StopPrice = CalculatePrice(coef);
-
-            return this;
-        }
-
-        public OrderTemplate ForGrossPositionPending(int coef = 3, string comment = "")
-        {
-            TP = CalculatePrice(-coef);
-            SL = CalculatePrice(coef);
-            Comment = comment;
-
-            return ForExecuting(coef);
-        }
 
         internal double? CalculatePrice(int coef)
         {
@@ -127,10 +80,19 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             return Side.IsBuy() ? Symbol.Ask - delta : Symbol.Bid + delta;
         }
 
+        protected void SetVolume(double volume)
+        {
+            ReqVolume = volume;
+            RemVolume = volume;
+            Volume = volume;
+        }
+
+
         internal OpenOrderRequest GetOpenRequest()
         {
             return OpenOrderRequest.Template.Create()
                    .WithParams(Symbol.Name, Side, Type, Volume, Price, StopPrice)
+                   .WithSubOpenRequests(LinkedOrders.Select(u => u.GetOpenRequest())?.ToArray())
                    .WithOCOParams(OcoEqualVolume, OcoRelatedOrderId)
                    .WithMaxVisibleVolume(MaxVisibleVolume)
                    .WithSlippage(GetSlippageInPercent())
@@ -168,106 +130,12 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                    .MakeRequest();
         }
 
-        internal OrderTemplate ToOpen(string orderId)
-        {
-            Id = orderId;
-            RealOrder = Orders[Id];
-            Opened.SetResult(true);
-
-            return this;
-        }
-
-        internal OrderTemplate ToActivate()
-        {
-            Opened = new TaskCompletionSource<bool>();
-            InitType = OrderType.StopLimit;
-            Type = OrderType.Limit;
-
-            return this;
-        }
-
-        internal OrderTemplate ToFilled(double filledVolume)
-        {
-            RemVolume -= filledVolume;
-
-            if (RemVolume.Gt(0.0))
-            {
-                var filledPart = Copy();
-                filledPart.Volume = filledVolume;
-                filledPart.Filled.SetResult(true);
-
-                FilledParts.Add(filledPart);
-
-                return filledPart;
-            }
-
-            Filled.SetResult(true);
-            return this;
-        }
-
-        internal OrderTemplate ToGrossPosition()
-        {
-            Opened = new TaskCompletionSource<bool>();
-            InitType = Type;
-            Type = OrderType.Position;
-            OpenedGrossPosition.SetResult(true);
-
-            return this;
-        }
-
-        public double? GetSlippageInPercent()
+        private double? GetSlippageInPercent()
         {
             if (Slippage != null)
                 Slippage = SlippageConverters.SlippagePipsToFractions(Slippage.Value, (IsSupportedStopPrice ? StopPrice : Price).Value, Symbol);
 
             return Slippage;
-        }
-
-        protected double CeilSlippage(double slippage) => Math.Round(Math.Ceiling(slippage * SlippagePrecision) / SlippagePrecision, Symbol.Digits);
-
-        protected double GetMaxSlippage() => SlippageConverters.SlippagePipsToFractions(Symbol.Slippage, (IsSupportedStopPrice ? StopPrice : Price).Value, Symbol);
-
-        protected void CheckSlippage(double serverSlippage, Action<double, double> comparer)
-        {
-            var calcSlippage = GetMaxSlippage();
-            var expectedSlippage = CeilSlippage(Slippage == null || Slippage.Value > calcSlippage ? calcSlippage : Slippage.Value);
-
-            comparer(expectedSlippage, CeilSlippage(serverSlippage));
-        }
-
-        //add deep copy trigger property later
-        public OrderTemplate Copy(double? newVolume = null)
-        {
-            var copy = (OrderTemplate)MemberwiseClone();
-
-            copy.Opened = new TaskCompletionSource<bool>();
-            copy.Filled = new TaskCompletionSource<bool>();
-            copy.FilledParts = new List<OrderTemplate>();
-            copy.OpenedGrossPosition = new TaskCompletionSource<bool>();
-            copy.SetVolume(newVolume ?? Volume);
-
-            return copy;
-        }
-
-        public OrderTemplate InversedCopy(double? newVolume = null)
-        {
-            var copy = Copy(newVolume);
-
-            copy.Side = Side.Inversed();
-
-            return copy;
-        }
-
-        public static OrderTemplate operator +(OrderTemplate first, OrderTemplate second)
-        {
-            var resultCopy = first.Volume > second.Volume ? first.Copy() : second.Copy();
-            var resultVolume = first.Side == second.Side ?
-                               first.Volume + second.Volume :
-                               Math.Abs(first.Volume - second.Volume);
-
-            resultCopy.SetVolume(resultVolume);
-
-            return resultCopy;
         }
     }
 }

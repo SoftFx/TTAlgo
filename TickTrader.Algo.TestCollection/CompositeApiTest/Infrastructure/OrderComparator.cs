@@ -16,7 +16,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             _originType = typeof(Order);
         }
 
-        private OrderComparator(Order origin, OrderTemplate template)
+        private OrderComparator(Order origin, OrderStateTemplate template)
         {
             _originOrder = origin;
 
@@ -92,10 +92,21 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         //    return cur.EI(Price);
         //}
 
+        //protected double CeilSlippage(double slippage) => Math.Round(Math.Ceiling(slippage * _slippagePrecision) / _slippagePrecision, Symbol.Digits);
 
-        internal static void Compare(Order originalOrder, OrderTemplate template) => new OrderComparator(originalOrder, template);
+        //protected double GetMaxSlippage() => SlippageConverters.SlippagePipsToFractions(Symbol.Slippage, (IsSupportedStopPrice ? StopPrice : Price).Value, Symbol);
 
-        internal static void CompareWithRealOrder(OrderTemplate template) => new OrderComparator(template.RealOrder.DeepCopy(), template);
+        //protected void CheckSlippage(double serverSlippage, Action<double, double> comparer)
+        //{
+        //    var calcSlippage = GetMaxSlippage();
+        //    var expectedSlippage = CeilSlippage(Slippage == null || Slippage.Value > calcSlippage ? calcSlippage : Slippage.Value);
+
+        //    comparer(expectedSlippage, CeilSlippage(serverSlippage));
+        //}
+
+        internal static void Compare(Order originalOrder, OrderStateTemplate template) => new OrderComparator(originalOrder, template);
+
+        internal static void CompareWithRealOrder(OrderStateTemplate template) => new OrderComparator(template.RealOrder.DeepCopy(), template);
 
 
         private void CheckOriginalValue<T>(T expectedValue, string propertyName)

@@ -17,7 +17,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
 
 
-        private async Task RunSlippageTests(Func<OrderTemplate, double?, Task> test, TestParamsSet set, string testInfo)
+        private async Task RunSlippageTests(Func<OrderStateTemplate, double?, Task> test, TestParamsSet set, string testInfo)
         {
             await RunTest(t => test(t, null), set, testInfo: testInfo);
             await RunTest(t => test(t, 0.0), set, testInfo: testInfo);
@@ -25,14 +25,14 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await RunTest(t => test(t, TestParamsSet.Symbol.Slippage * 2), set, testInfo: testInfo);
         }
 
-        private async Task ExecutionOrderWithSlippageTest(OrderTemplate template, double? slippage)
+        private async Task ExecutionOrderWithSlippageTest(OrderStateTemplate template, double? slippage)
         {
             template.Slippage = slippage;
 
             await OpenExecutionOrder(template);
         }
 
-        private async Task OpenPendingWithSlippageTest(OrderTemplate template, double? slippage)
+        private async Task OpenPendingWithSlippageTest(OrderStateTemplate template, double? slippage)
         {
             template.Slippage = slippage;
 

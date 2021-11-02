@@ -28,9 +28,9 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await RunTest(t => RunCloseByTest(t, volume), set, testInfo: testInfo);
         }
 
-        private async Task RunCloseByTest(OrderTemplate template, double? closeVolume)
+        private async Task RunCloseByTest(OrderStateTemplate template, double? closeVolume)
         {
-            var inversed = template.InversedCopy(closeVolume);
+            var inversed = !template.Copy(closeVolume);
 
             await OpenOrderAndWaitExecution(template.ForGrossPositionPending(4, "First"));
             await OpenOrderAndWaitExecution(inversed.ForGrossPositionPending(5, "Second"));

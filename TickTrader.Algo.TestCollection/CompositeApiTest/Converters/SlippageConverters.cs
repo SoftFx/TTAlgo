@@ -14,7 +14,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 case SlippageType.Pips:
                     return SlippagePipsToPercent(slippage, price, symbol) / 100;
                 default:
-                    throw new ArgumentException("Unsupported");
+                    throw new ArgumentException($"Unsupported slippage type {symbol.SlippageType}");
             }
         }
 
@@ -25,9 +25,9 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 case SlippageType.Percent:
                     return slippage;
                 case SlippageType.Pips:
-                    return slippage * Math.Pow(10, -symbol.Digits) * 100 / price;
+                    return slippage * symbol.Point * 100 / price;
                 default:
-                    throw new ArgumentException("Unsupported");
+                    throw new ArgumentException($"Unsupported slippage type {symbol.SlippageType}");
             }
         }
     }

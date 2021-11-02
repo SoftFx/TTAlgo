@@ -6,10 +6,10 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
     internal abstract class EventsQueue
     {
-        private readonly SortedDictionary<string, OrderTemplate> _currentTemplates;
-        private readonly LinkedList<OrderTemplate> _expectedToOpenTemplates;
+        private readonly SortedDictionary<string, OrderStateTemplate> _currentTemplates;
+        private readonly LinkedList<OrderStateTemplate> _expectedToOpenTemplates;
 
-        private readonly List<(Type Event, OrderTemplate Order)> _expected;
+        private readonly List<(Type Event, OrderStateTemplate Order)> _expected;
         private readonly List<EventsQueueNode> _origin;
 
 
@@ -22,15 +22,15 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         protected EventsQueue()
         {
-            _currentTemplates = new SortedDictionary<string, OrderTemplate>();
-            _expectedToOpenTemplates = new LinkedList<OrderTemplate>();
+            _currentTemplates = new SortedDictionary<string, OrderStateTemplate>();
+            _expectedToOpenTemplates = new LinkedList<OrderStateTemplate>();
 
-            _expected = new List<(Type, OrderTemplate)>(1 << 4);
+            _expected = new List<(Type, OrderStateTemplate)>(1 << 4);
             _origin = new List<EventsQueueNode>(1 << 4);
         }
 
 
-        internal virtual void RegistryNewTemplate(OrderTemplate template) => _expectedToOpenTemplates.AddLast(template);
+        internal virtual void RegistryNewTemplate(OrderStateTemplate template) => _expectedToOpenTemplates.AddLast(template);
 
         internal virtual void AddExpectedEvent(Type type) => _expected.Add((type, null));
 
@@ -121,7 +121,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             }
         }
 
-        private static void CompareEvents((Type Event, OrderTemplate Order) expect, EventsQueueNode origin)
+        private static void CompareEvents((Type Event, OrderStateTemplate Order) expect, EventsQueueNode origin)
         {
             if (expect.Event != origin.Event)
                 throw EventException.UnexpectedEvent(expect.Event, origin.Event);

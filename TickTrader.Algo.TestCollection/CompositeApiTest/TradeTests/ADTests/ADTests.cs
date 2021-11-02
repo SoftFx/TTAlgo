@@ -34,28 +34,32 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private async Task ADSlippageTests(TestParamsSet set)
         {
-            await RunTest(t => ADActivateWithSlippage(t, null), set);
-            await RunTest(t => ADActivateWithSlippage(t, 0.0), set);
-            await RunTest(t => ADActivateWithSlippage(t, TestParamsSet.Symbol.Slippage / 2), set);
-            await RunTest(t => ADActivateWithSlippage(t, TestParamsSet.Symbol.Slippage * 2), set);
+            await RunActivateWithSlippage(set, null);
+            await RunActivateWithSlippage(set, 0.0);
+            await RunActivateWithSlippage(set, TestParamsSet.Symbol.Slippage / 2);
+            await RunActivateWithSlippage(set, TestParamsSet.Symbol.Slippage * 2);
         }
 
+        private async Task RunActivateWithSlippage(TestParamsSet set, double? slippage)
+        {
+            await RunTest(t => ADActivateWithSlippage(t, slippage), set, testInfo: nameof(ADActivateWithSlippage));
+        }
 
-        private async Task ADActivateWithSlippage(OrderTemplate template, double? slippage)
+        private async Task ADActivateWithSlippage(OrderStateTemplate template, double? slippage)
         {
             template.Slippage = slippage;
 
             await ADActivate(template);
         }
 
-        private async Task ADReject(OrderTemplate template)
+        private async Task ADReject(OrderStateTemplate template)
         {
             template.Comment = ADCommentsList.WithReject;
 
             await OpenRejectOrder(template.ForExecuting());
         }
 
-        private async Task ADConfirm(OrderTemplate template)
+        private async Task ADConfirm(OrderStateTemplate template)
         {
             template.Price = template.CalculatePrice(10);
             template.Options = Api.OrderExecOptions.ImmediateOrCancel;
@@ -65,7 +69,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await ClearTestEnviroment(template);
         }
 
-        private async Task ADActivate(OrderTemplate template)
+        private async Task ADActivate(OrderStateTemplate template)
         {
             template.Comment = ADCommentsList.WithActivate(_partialFillVolume);
 
