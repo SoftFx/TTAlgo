@@ -5,7 +5,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
 {
-    internal sealed class AssetsCollection : TradeEntityCollection<AssetAccessor, Asset>, List
+    internal sealed class AssetsCollection : TradeEntityCollection<AssetAccessor, Asset>, AssetList
     {
         public AssetsCollection(PluginBuilder builder) : base(builder) { }
 

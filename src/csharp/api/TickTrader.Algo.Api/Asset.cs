@@ -16,7 +16,7 @@ namespace TickTrader.Algo.Api
         bool IsNull { get; }
     }
 
-    public interface List : IEnumerable<Asset>
+    public interface AssetList : IEnumerable<Asset>
     {
         int Count { get; }
 

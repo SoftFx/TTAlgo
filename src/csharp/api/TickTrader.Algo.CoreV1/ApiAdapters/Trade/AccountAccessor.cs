@@ -237,7 +237,7 @@ namespace TickTrader.Algo.CoreV1
             return InstanceId == order.InstanceId;
         }
 
-        List AccountDataProvider.Assets => Assets;
+        AssetList AccountDataProvider.Assets => Assets;
         NetPositionList AccountDataProvider.NetPositions => NetPositions;
         TradeHistory AccountDataProvider.TradeHistory => HistoryProvider;
         TriggerHistory AccountDataProvider.TriggerHistory => HistoryProvider;
