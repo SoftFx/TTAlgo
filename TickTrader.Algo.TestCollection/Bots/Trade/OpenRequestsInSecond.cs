@@ -17,6 +17,10 @@ namespace TickTrader.Algo.TestCollection.Bots.Trade
         [Parameter(DisplayName = "Open Mode")]
         public OpenMode Mode { get; set; }
 
+        [Parameter(DefaultValue = 0.1)]
+        public double Volume { get; set; }
+
+
         protected override void Init()
         {
             _stopwatch = new Stopwatch();
@@ -89,7 +93,7 @@ namespace TickTrader.Algo.TestCollection.Bots.Trade
             _run = false;
         }
 
-        private Task SendRequest(OrderSide side) => OpenOrderAsync(OpenOrderRequest.Template.Create().WithParams(Symbol.Name, side, OrderType.Market, 1.0, 0.1, null).MakeRequest());
+        private Task SendRequest(OrderSide side) => OpenOrderAsync(OpenOrderRequest.Template.Create().WithParams(Symbol.Name, side, OrderType.Market, Volume, 0.1, null).MakeRequest());
     }
 
     public enum OpenMode { Uniform, Exponential }
