@@ -186,7 +186,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private async Task RunModifyTest(OrderStateTemplate template, TestAction action = TestAction.Modify, [CallerMemberName] string testName = "")
         {
-            await RunTest(TestModifyOrder, null, template, $"{action} {testName}");
+            await RunTest(t => TestModifyOrder(t), null, template, $"{action} {testName}");
         }
     }
 }

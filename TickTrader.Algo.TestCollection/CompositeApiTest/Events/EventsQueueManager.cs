@@ -109,18 +109,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             _bot.PrintDebug($"Event {eventType.Name} received");
 
-            switch (args)
-            {
-                case SingleOrderEventArgs single:
-                    UpdateTemplates(eventType, single);
-                    AddOriginEvent(new EventsQueueNode(eventType, single));
-                    break;
-
-                case DoubleOrderEventArgs @double:
-                    UpdateTemplates(eventType, @double);
-                    AddOriginEvent(new EventsQueueNode(eventType, @double));
-                    break;
-            }
+            OriginEventReceived(eventType, args);
 
             if (FullOriginQueue)
                 _allEventsReceivedTask?.TrySetResult(true);

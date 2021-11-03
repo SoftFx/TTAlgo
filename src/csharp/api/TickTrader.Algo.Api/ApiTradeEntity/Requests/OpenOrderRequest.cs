@@ -240,7 +240,7 @@ namespace TickTrader.Algo.Api
                 return this;
             }
 
-            public Template WithOCOParams(bool equalVolume, string relatedId)
+            public Template WithOCOParams(string relatedId, bool equalVolume = true)
             {
                 return WithOptions(_options | OrderExecOptions.OneCancelsTheOther).WithOCOEqualVolume(equalVolume).WithOCORelatedOrderId(relatedId);
             }

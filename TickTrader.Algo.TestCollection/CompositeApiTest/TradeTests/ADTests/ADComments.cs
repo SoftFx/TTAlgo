@@ -41,6 +41,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest.ADComments
 
         public static string WithConfirm { get; }
 
+        public static string WithActivate { get; }
 
         static ADCommentsList()
         {
@@ -55,18 +56,39 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest.ADComments
             {
                 new ActionADComment(ADTokens.Confirm)
             }.ToString();
+
+            WithActivate = new ADCommentsList
+            {
+                _remaningActivationToken
+            }.ToString();
         }
 
         private ADCommentsList() { }
 
 
-        public static string WithActivate(double partialVolume) =>
+        public static string WithPartialActivate(double partialVolume) =>
             new ADCommentsList
             {
-                new OrderADComment(ADTokens.Activate, partialVolume),
+                GetPartialComment(partialVolume),
+            }.ToString();
+
+        public static string WithPartialToFullActivate(double partialVolume) =>
+            new ADCommentsList
+            {
+                GetPartialComment(partialVolume),
                 _remaningActivationToken,
             }.ToString();
 
+
+        private static OrderADComment GetPartialComment(double partialVolume)
+        {
+            return new OrderADComment(ADTokens.Activate, ToVolumeInLots(partialVolume));
+        }
+
+        private static double ToVolumeInLots(double volume)
+        {
+            return volume * TestParamsSet.Symbol.ContractSize;
+        }
 
         public override string ToString()
         {

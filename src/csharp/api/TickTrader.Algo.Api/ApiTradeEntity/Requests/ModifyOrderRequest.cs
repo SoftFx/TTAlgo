@@ -192,6 +192,11 @@ namespace TickTrader.Algo.Api
                 return this;
             }
 
+            public Template WithOCOParams(string relatedId, bool equalVolume = true)
+            {
+                return WithOptions(_options | OrderExecOptions.OneCancelsTheOther).WithOCOEqualVolume(equalVolume).WithOCORelatedOrderId(relatedId);
+            }
+
             public Template WithOCOEqualVolume(bool? equalVolume)
             {
                 _ocoEqualVolume = equalVolume;

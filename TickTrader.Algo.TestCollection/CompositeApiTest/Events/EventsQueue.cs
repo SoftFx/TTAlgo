@@ -32,12 +32,47 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         internal virtual void RegistryNewTemplate(OrderStateTemplate template) => _expectedToOpenTemplates.AddLast(template);
 
+        internal virtual void RegisterExistingTemplate(OrderStateTemplate template) =>
+          _currentTemplates.Add(template.Id, template);
+
         internal virtual void AddExpectedEvent(Type type) => _expected.Add((type, null));
 
-        internal virtual void AddOriginEvent(EventsQueueNode node) => _origin.Add(node);
+
+        protected void VerifyOriginQueue()
+        {
+            if (!FullOriginQueue)
+                throw EventException.UnexpectedCount(ExpectedCount, OriginCount);
+
+            for (int i = 0; i < ExpectedCount; ++i)
+                CompareEvents(_expected[i], _origin[i]);
+        }
+
+        protected void OriginEventReceived<T>(Type eventType, T args)
+        {
+            switch (args)
+            {
+                case SingleOrderEventArgs single:
+                    _origin.Add(new EventsQueueNode(eventType, single));
+                    UpdateTemplates(eventType, single);
+                    break;
+
+                case DoubleOrderEventArgs @double:
+                    _origin.Add(new EventsQueueNode(eventType, @double));
+                    UpdateTemplates(eventType, @double);
+                    break;
+            }
+        }
+
+        protected void ClearQueues()
+        {
+            _expectedToOpenTemplates.Clear();
+            _currentTemplates.Clear();
+            _expected.Clear();
+            _origin.Clear();
+        }
 
 
-        protected void UpdateTemplates(Type @event, SingleOrderEventArgs args)
+        private void UpdateTemplates(Type @event, SingleOrderEventArgs args)
         {
             var orderId = args.Order.Id;
 
@@ -68,7 +103,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             }
         }
 
-        protected void UpdateTemplates(Type @event, DoubleOrderEventArgs args)
+        private void UpdateTemplates(Type @event, DoubleOrderEventArgs args)
         {
             var oldOrderId = args.OldOrder.Id;
 
@@ -85,23 +120,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 if (baseTemplate.IsGrossAcc)
                     _expectedToOpenTemplates.AddFirst(filledPart.ToGrossPosition());
             }
-        }
-
-        protected void VerifyOriginQueue()
-        {
-            if (!FullOriginQueue)
-                throw EventException.UnexpectedCount(ExpectedCount, OriginCount);
-
-            for (int i = 0; i < ExpectedCount; ++i)
-                CompareEvents(_expected[i], _origin[i]);
-        }
-
-        protected void ClearQueues()
-        {
-            _expectedToOpenTemplates.Clear();
-            _currentTemplates.Clear();
-            _expected.Clear();
-            _origin.Clear();
         }
 
         private void GenerateExpectedTemplates(string orderId)

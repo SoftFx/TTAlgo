@@ -5,15 +5,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
     internal sealed class ADTests : TestGroupBase
     {
-        private readonly double _partialFillVolume;
-
         protected override string GroupName => nameof(ADTests);
-
-
-        internal ADTests()
-        {
-            _partialFillVolume = 0.2 * TestParamsSet.BaseOrderVolume * TestParamsSet.Symbol.ContractSize;
-        }
 
 
         protected async override Task RunTestGroup(TestParamsSet set)
@@ -71,7 +63,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private async Task ADActivate(OrderStateTemplate template)
         {
-            template.Comment = ADCommentsList.WithActivate(_partialFillVolume);
+            template.Comment = ADCommentsList.WithPartialToFullActivate(0.2 * TestParamsSet.BaseOrderVolume);
 
             await OpenOrderAndWaitExecution(template.ForPending(), template.IsGrossAcc ?
                   OrderEvents.PartialFillGrossOrderEvents : OrderEvents.PartialFillOrderEvents);

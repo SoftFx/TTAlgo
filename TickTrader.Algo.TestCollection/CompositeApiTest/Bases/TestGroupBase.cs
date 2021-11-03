@@ -43,7 +43,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 _eventManager.ResetAllQueues();
 
                 if (template != null)
-                    RegisterAdditionalTemplate(template);
+                    _eventManager.RegisterExistingTemplate(template);
                 else
                     template = set.BuildOrder();
 
@@ -182,14 +182,14 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await template.Opened.Task;
         }
 
-        protected async Task TestModifyOrder(OrderStateTemplate template)
+        protected async Task TestModifyOrder(OrderStateTemplate template, params Type[] eventsAfterModify)
         {
             var request = template.GetModifyRequest();
 
             async Task<OrderCmdResult> ModifyCommand() =>
                 _asyncMode ? await Bot.ModifyOrderAsync(request) : Bot.ModifyOrder(request);
 
-            await WaitSuccServerRequest(ModifyCommand, OrderEvents.Modify);
+            await WaitSuccServerRequest(ModifyCommand, OrderEvents.Modify, eventsAfterModify);
         }
 
         protected async Task TestCancelOrder(OrderStateTemplate template, params Type[] eventsAfterCancel)
