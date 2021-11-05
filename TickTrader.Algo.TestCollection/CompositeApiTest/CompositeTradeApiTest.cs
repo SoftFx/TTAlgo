@@ -57,7 +57,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         protected override void Init()
         {
-            TestParamsSet.FillBaseParameters(this);
+            OrderBaseSet.FillBaseParameters(this);
             TestGroupBase.Bot = this;
             StatManagerFactory.Bot = this;
         }
@@ -69,7 +69,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             foreach (OrderType orderType in Enum.GetValues(typeof(OrderType)))
                 foreach (OrderSide orderSide in Enum.GetValues(typeof(OrderSide)))
                     if (orderType != OrderType.Position)
-                        await RunAllTestGroups(new TestParamsSet(orderType, orderSide));
+                        await RunAllTestGroups(new OrderBaseSet(orderType, orderSide));
 
             //Print("Waiting for trade reports to load...");
             //await Delay(PauseBeforeAndAfterTests);
@@ -102,7 +102,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await Task.Delay(2000);
         }
 
-        private async Task RunAllTestGroups(TestParamsSet set)
+        private async Task RunAllTestGroups(OrderBaseSet set)
         {
             if (UseModificationTests && !set.IsInstantOrder)
                 await _modificationTests.Run(set);
@@ -378,7 +378,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         //}
 
 
-        //private async Task ModifyCancelTest(TestParamsSet test)
+        //private async Task ModifyCancelTest(OrderBaseSet test)
         //{
         //    async Task func(OrderTemplate template)
         //    {

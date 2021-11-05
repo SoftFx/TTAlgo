@@ -8,7 +8,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         protected override string GroupName => nameof(ADTests);
 
 
-        protected async override Task RunTestGroup(TestParamsSet set)
+        protected async override Task RunTestGroup(OrderBaseSet set)
         {
             await RunTest(ADReject, set);
 
@@ -24,15 +24,15 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             }
         }
 
-        private async Task ADSlippageTests(TestParamsSet set)
+        private async Task ADSlippageTests(OrderBaseSet set)
         {
             await RunActivateWithSlippage(set, null);
             await RunActivateWithSlippage(set, 0.0);
-            await RunActivateWithSlippage(set, TestParamsSet.Symbol.Slippage / 2);
-            await RunActivateWithSlippage(set, TestParamsSet.Symbol.Slippage * 2);
+            await RunActivateWithSlippage(set, OrderBaseSet.Symbol.Slippage / 2);
+            await RunActivateWithSlippage(set, OrderBaseSet.Symbol.Slippage * 2);
         }
 
-        private async Task RunActivateWithSlippage(TestParamsSet set, double? slippage)
+        private async Task RunActivateWithSlippage(OrderBaseSet set, double? slippage)
         {
             await RunTest(t => ADActivateWithSlippage(t, slippage), set, testInfo: nameof(ADActivateWithSlippage));
         }
@@ -63,7 +63,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private async Task ADActivate(OrderStateTemplate template)
         {
-            template.Comment = ADCommentsList.WithPartialToFullActivate(0.2 * TestParamsSet.BaseOrderVolume);
+            template.Comment = ADCommentsList.WithPartialToFullActivate(0.2 * OrderBaseSet.BaseOrderVolume);
 
             await OpenOrderAndWaitExecution(template.ForPending(), template.IsGrossAcc ?
                   OrderEvents.PartialFillGrossOrderEvents : OrderEvents.PartialFillOrderEvents);

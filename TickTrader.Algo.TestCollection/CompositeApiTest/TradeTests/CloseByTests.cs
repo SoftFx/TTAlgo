@@ -8,7 +8,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         protected override string GroupName => nameof(CloseByTests);
 
 
-        protected async override Task RunTestGroup(TestParamsSet set)
+        protected async override Task RunTestGroup(OrderBaseSet set)
         {
             await CloseBigBySmallTest(set);
             await CloseSmallByBigTest(set);
@@ -16,14 +16,14 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
 
 
-        private Task CloseBigBySmallTest(TestParamsSet set) => RunCloseByTest(set, TestParamsSet.BaseOrderVolume / 2);
+        private Task CloseBigBySmallTest(OrderBaseSet set) => RunCloseByTest(set, OrderBaseSet.BaseOrderVolume / 2);
 
-        private Task CloseSmallByBigTest(TestParamsSet set) => RunCloseByTest(set, TestParamsSet.BaseOrderVolume * 2);
+        private Task CloseSmallByBigTest(OrderBaseSet set) => RunCloseByTest(set, OrderBaseSet.BaseOrderVolume * 2);
 
-        private Task CloseByEvenTest(TestParamsSet set) => RunCloseByTest(set, null);
+        private Task CloseByEvenTest(OrderBaseSet set) => RunCloseByTest(set, null);
 
 
-        private async Task RunCloseByTest(TestParamsSet set, double? volume, [CallerMemberName] string testInfo = null)
+        private async Task RunCloseByTest(OrderBaseSet set, double? volume, [CallerMemberName] string testInfo = null)
         {
             await RunTest(t => RunCloseByTest(t, volume), set, testInfo: testInfo);
         }

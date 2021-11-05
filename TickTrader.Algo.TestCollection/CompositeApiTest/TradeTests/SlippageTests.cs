@@ -8,7 +8,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         protected override string GroupName => nameof(SlippageTests);
 
 
-        protected async override Task RunTestGroup(TestParamsSet set)
+        protected async override Task RunTestGroup(OrderBaseSet set)
         {
             if (set.IsInstantOrder)
                 await RunSlippageTests(ExecutionOrderWithSlippageTest, set, nameof(ExecutionOrderWithSlippageTest));
@@ -17,12 +17,12 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
 
 
-        private async Task RunSlippageTests(Func<OrderStateTemplate, double?, Task> test, TestParamsSet set, string testInfo)
+        private async Task RunSlippageTests(Func<OrderStateTemplate, double?, Task> test, OrderBaseSet set, string testInfo)
         {
             await RunTest(t => test(t, null), set, testInfo: testInfo);
             await RunTest(t => test(t, 0.0), set, testInfo: testInfo);
-            await RunTest(t => test(t, TestParamsSet.Symbol.Slippage / 2), set, testInfo: testInfo);
-            await RunTest(t => test(t, TestParamsSet.Symbol.Slippage * 2), set, testInfo: testInfo);
+            await RunTest(t => test(t, OrderBaseSet.Symbol.Slippage / 2), set, testInfo: testInfo);
+            await RunTest(t => test(t, OrderBaseSet.Symbol.Slippage * 2), set, testInfo: testInfo);
         }
 
         private async Task ExecutionOrderWithSlippageTest(OrderStateTemplate template, double? slippage)

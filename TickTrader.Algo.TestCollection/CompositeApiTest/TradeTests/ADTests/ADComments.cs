@@ -87,7 +87,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest.ADComments
 
         private static double ToVolumeInLots(double volume)
         {
-            return volume * TestParamsSet.Symbol.ContractSize;
+            return volume * OrderBaseSet.Symbol.ContractSize;
         }
 
         public override string ToString()

@@ -11,7 +11,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         protected override string GroupName => nameof(ExecutionTests);
 
 
-        protected override async Task RunTestGroup(TestParamsSet set)
+        protected override async Task RunTestGroup(OrderBaseSet set)
         {
             await RunTest(FillExecutionTest, set);
 

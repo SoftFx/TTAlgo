@@ -27,7 +27,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
 
 
-        internal void StartTestGroupWatch(string name, TestParamsSet testSet)
+        internal void StartTestGroupWatch(string name, OrderBaseSet testSet)
         {
             _groupInfo = $"{name} {testSet}";
             _currentTestInfo = string.Empty;

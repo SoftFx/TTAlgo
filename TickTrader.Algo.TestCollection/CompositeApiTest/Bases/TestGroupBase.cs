@@ -30,10 +30,10 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
 
 
-        protected abstract Task RunTestGroup(TestParamsSet set);
+        protected abstract Task RunTestGroup(OrderBaseSet set);
 
 
-        protected async Task RunTest(Func<OrderStateTemplate, Task> test, TestParamsSet set, OrderStateTemplate template = null,
+        protected async Task RunTest(Func<OrderStateTemplate, Task> test, OrderBaseSet set, OrderStateTemplate template = null,
             string testInfo = null)
         {
             try
@@ -63,7 +63,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             }
         }
 
-        public async Task Run(TestParamsSet set)
+        public async Task Run(OrderBaseSet set)
         {
             try
             {
@@ -94,7 +94,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         private OrderStateTemplate RegisterAdditionalTemplate(OrderStateTemplate template)
         {
             foreach (var linkOrder in template.LinkedOrders)
-                _eventManager.RegistryNewTemplate((OrderStateTemplate)linkOrder);
+                _eventManager.RegistryNewTemplate(linkOrder.WithOCO(template));
 
             _eventManager.RegistryNewTemplate(template);
 
@@ -147,6 +147,9 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             await template.Opened.Task;
 
+            if (template?.RealOrder?.IsNull ?? true)
+                return;
+
             if (template.CanCloseOrder)
             {
                 foreach (var filledPart in template.FilledParts)
@@ -155,7 +158,15 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 await TestCloseOrder(template);
             }
             else
-                await TestCancelOrder(template);
+            {
+                if (template?.RelatedOcoTemplate?.RealOrder?.IsNull ?? true)
+                    await TestCancelOrder(template);
+                else
+                {
+                    await TestCancelOrder(template, OrderEvents.Cancel);
+                    await template.RelatedOcoTemplate.Canceled.Task;
+                }
+            }
         }
 
 

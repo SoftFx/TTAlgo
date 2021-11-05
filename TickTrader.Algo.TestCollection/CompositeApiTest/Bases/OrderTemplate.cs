@@ -6,7 +6,7 @@ using TickTrader.Algo.Api.Math;
 
 namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
-    internal abstract class OrderTemplate : TestParamsSet
+    internal abstract class OrderTemplate : OrderBaseSet
     {
         private readonly double _slippagePrecision;
         private DateTime? _expiration;
@@ -55,16 +55,18 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         public bool OcoEqualVolume { get; set; }
 
-        public List<OrderTemplate> LinkedOrders { get; protected set; }
+        internal OrderStateTemplate RelatedOcoTemplate { get; private set;}
+
+        internal List<OrderStateTemplate> LinkedOrders { get; set; }
 
 
         internal OrderTemplate() { }
 
-        internal OrderTemplate(TestParamsSet set, double volume) : base(set.Type, set.Side)
+        internal OrderTemplate(OrderBaseSet set, double volume) : base(set.Type, set.Side)
         {
             _slippagePrecision = Math.Pow(10, Math.Max(Symbol.Digits, 4));
 
-            LinkedOrders = new List<OrderTemplate>();
+            LinkedOrders = new List<OrderStateTemplate>();
 
             InitType = Type;
             Options = set.Options;
@@ -87,6 +89,33 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             Volume = volume;
         }
 
+        internal OrderStateTemplate WithOCO(OrderStateTemplate mainOrder, bool equalVolume = false)
+        {
+            Options |= OrderExecOptions.OneCancelsTheOther;
+            OcoRelatedOrderId = mainOrder.Id;
+            OcoEqualVolume = equalVolume;
+            RelatedOcoTemplate = mainOrder;
+
+            return (OrderStateTemplate)this;
+        }
+
+        internal OrderStateTemplate WithLinkedOCO(OrderStateTemplate mainOrder)
+        {
+            Options |= OrderExecOptions.OneCancelsTheOther;
+            LinkedOrders.Add(mainOrder);
+            RelatedOcoTemplate = mainOrder;
+
+            return (OrderStateTemplate)this;
+        }
+
+        internal OrderStateTemplate WithRemovedOCO()
+        {
+            Options &= ~OrderExecOptions.OneCancelsTheOther;
+            OcoRelatedOrderId = null;
+            RelatedOcoTemplate = null;
+
+            return (OrderStateTemplate)this;
+        }
 
         internal OpenOrderRequest GetOpenRequest()
         {

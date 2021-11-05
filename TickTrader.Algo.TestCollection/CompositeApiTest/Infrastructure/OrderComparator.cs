@@ -21,7 +21,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             _originOrder = origin;
 
             CheckOriginalValue(template == null, nameof(Order.IsNull));
-            CheckOriginalValue(TestParamsSet.Symbol.Name, nameof(Order.Symbol));
+            CheckOriginalValue(OrderBaseSet.Symbol.Name, nameof(Order.Symbol));
 
             CheckOriginalValue(template.Id, nameof(Order.Id));
             CheckOriginalValue(template.Type, nameof(Order.Type));

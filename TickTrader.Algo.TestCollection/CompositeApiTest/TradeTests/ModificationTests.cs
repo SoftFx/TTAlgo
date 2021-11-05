@@ -15,7 +15,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         protected override string GroupName => nameof(ModificationTests);
 
 
-        protected override async Task RunTestGroup(TestParamsSet set)
+        protected override async Task RunTestGroup(OrderBaseSet set)
         {
             var template = set.BuildOrder().ForPending();
 
@@ -53,8 +53,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private async Task RunMaxVisibleVolumeModifyTests(OrderStateTemplate template)
         {
-            await MaxVisibleVolumeTest(template, TestAction.Add, TestParamsSet.BaseOrderVolume);
-            await MaxVisibleVolumeTest(template, TestAction.Modify, TestParamsSet.Symbol.MinTradeVolume);
+            await MaxVisibleVolumeTest(template, TestAction.Add, OrderBaseSet.BaseOrderVolume);
+            await MaxVisibleVolumeTest(template, TestAction.Modify, OrderBaseSet.Symbol.MinTradeVolume);
             await MaxVisibleVolumeTest(template, TestAction.Delete, -1);
         }
 
@@ -101,8 +101,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private async Task RunSlippageModifyTest(OrderStateTemplate template)
         {
-            await SlippageTest(template, TestAction.Add, TestParamsSet.Symbol.Slippage / 2);
-            await SlippageTest(template, TestAction.Modify, TestParamsSet.Symbol.Slippage * 2);
+            await SlippageTest(template, TestAction.Add, OrderBaseSet.Symbol.Slippage / 2);
+            await SlippageTest(template, TestAction.Modify, OrderBaseSet.Symbol.Slippage * 2);
             await SlippageTest(template, TestAction.Delete, 0);
         }
 

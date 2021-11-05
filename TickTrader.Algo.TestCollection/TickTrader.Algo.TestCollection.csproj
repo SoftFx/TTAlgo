@@ -62,7 +62,7 @@
     <Compile Include="CompositeApiTest\Events\EventsQueueManager.cs" />
     <Compile Include="CompositeApiTest\Statistic\StatManagerFactory.cs" />
     <Compile Include="CompositeApiTest\Bases\OrderStateTemplate.cs" />
-    <Compile Include="CompositeApiTest\Bases\TestParamsSet.cs" />
+    <Compile Include="CompositeApiTest\Bases\OrderBaseSet.cs" />
     <Compile Include="CompositeApiTest\TradeTests\ADTests\ADComments.cs" />
     <Compile Include="CompositeApiTest\CompositeTradeApiTest.cs" />
     <Compile Include="CompositeApiTest\HistoryOrderTemplate.cs" />

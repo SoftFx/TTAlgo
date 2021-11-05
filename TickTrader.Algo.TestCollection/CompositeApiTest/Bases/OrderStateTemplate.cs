@@ -31,7 +31,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         public OrderStateTemplate() { }
 
-        public OrderStateTemplate(TestParamsSet test, double volume) : base(test, volume)
+        public OrderStateTemplate(OrderBaseSet test, double volume) : base(test, volume)
         {
             ResetTemplateStates();
         }
@@ -81,6 +81,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             }
 
             Filled.SetResult(true);
+            RealOrder = null;
+
             return this;
         }
 
@@ -103,6 +105,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         internal OrderStateTemplate ToCancel()
         {
             Canceled.SetResult(true);
+            RealOrder = null;
 
             return this;
         }

@@ -2,7 +2,7 @@
 
 namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
-    internal class TestParamsSet
+    internal class OrderBaseSet
     {
         public static Symbol Symbol { get; private set; }
 
@@ -47,9 +47,9 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         public bool IsPosition => Type == OrderType.Position;
 
 
-        public TestParamsSet() { }
+        public OrderBaseSet() { }
 
-        public TestParamsSet(OrderType type, OrderSide side)
+        public OrderBaseSet(OrderType type, OrderSide side)
         {
             Type = type;
             Side = side;
