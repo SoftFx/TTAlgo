@@ -19,6 +19,10 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         public TaskCompletionSource<bool> Filled { get; private set; }
 
+        public TaskCompletionSource<bool> Canceled { get; private set; }
+
+        public TaskCompletionSource<bool> Modified { get; private set; }
+
         public TaskCompletionSource<bool> FinalExecution => IsGrossAcc ? OpenedGrossPosition : Filled;
 
 
@@ -29,12 +33,19 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         public OrderStateTemplate(TestParamsSet test, double volume) : base(test, volume)
         {
-            Opened = new TaskCompletionSource<bool>();
-            Filled = new TaskCompletionSource<bool>();
-            OpenedGrossPosition = new TaskCompletionSource<bool>();
-            FilledParts = new List<OrderStateTemplate>();
+            ResetTemplateStates();
         }
 
+        private void ResetTemplateStates()
+        {
+            OpenedGrossPosition = new TaskCompletionSource<bool>();
+
+            Opened = new TaskCompletionSource<bool>();
+            Filled = new TaskCompletionSource<bool>();
+            FilledParts = new List<OrderStateTemplate>();
+            Canceled = new TaskCompletionSource<bool>();
+            Modified = new TaskCompletionSource<bool>();
+        }
 
         internal OrderStateTemplate ToOpen(string orderId)
         {
@@ -73,16 +84,28 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             return this;
         }
 
+        internal OrderStateTemplate ToModified()
+        {
+            Modified.TrySetResult(true);
+
+            return this;
+        }
+
         internal OrderStateTemplate ToGrossPosition()
         {
             Opened = new TaskCompletionSource<bool>();
-            //InitType = Type;
             Type = OrderType.Position;
             OpenedGrossPosition.SetResult(true);
 
             return this;
         }
 
+        internal OrderStateTemplate ToCancel()
+        {
+            Canceled.SetResult(true);
+
+            return this;
+        }
 
         internal OrderStateTemplate ForPending(int coef = 3)
         {
@@ -115,11 +138,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             var copy = (OrderStateTemplate)MemberwiseClone();
 
-            copy.Opened = new TaskCompletionSource<bool>();
-            copy.Filled = new TaskCompletionSource<bool>();
-            copy.FilledParts = new List<OrderStateTemplate>();
-            copy.OpenedGrossPosition = new TaskCompletionSource<bool>();
-            copy.LinkedOrders = new List<OrderTemplate>();
+            copy.ResetTemplateStates();
             copy.SetVolume(newVolume ?? Volume);
 
             return copy;

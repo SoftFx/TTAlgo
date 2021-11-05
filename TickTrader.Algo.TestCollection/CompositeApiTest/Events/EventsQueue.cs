@@ -94,6 +94,9 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             if (@event == OrderEvents.Cancel)
             {
+                var template = _currentTemplates[orderId];
+                template.ToCancel();
+
                 _currentTemplates.Remove(orderId);
             }
 
@@ -119,6 +122,12 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
                 if (baseTemplate.IsGrossAcc)
                     _expectedToOpenTemplates.AddFirst(filledPart.ToGrossPosition());
+            }
+
+            if (@event == OrderEvents.Modify)
+            {
+                var baseTemplate = _currentTemplates[oldOrderId];
+                baseTemplate.ToModified();
             }
         }
 

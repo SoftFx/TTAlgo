@@ -190,6 +190,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 _asyncMode ? await Bot.ModifyOrderAsync(request) : Bot.ModifyOrder(request);
 
             await WaitSuccServerRequest(ModifyCommand, OrderEvents.Modify, eventsAfterModify);
+            await template.Modified.Task;
         }
 
         protected async Task TestCancelOrder(OrderStateTemplate template, params Type[] eventsAfterCancel)
@@ -198,6 +199,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 _asyncMode ? await Bot.CancelOrderAsync(template.Id) : Bot.CancelOrder(template.Id);
 
             await WaitSuccServerRequest(CancelCommand, OrderEvents.Cancel, eventsAfterCancel);
+            await template.Canceled.Task;
         }
 
         protected async Task TestCloseOrder(OrderStateTemplate template, double? volume = null)

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.CompositeApiTest
@@ -24,8 +25,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 await RunOpenOCOTest(set, ocoType, false);
                 await RunOpenOCOTest(set, ocoType, true);
 
-                //await ModifyOCOTests(set, ocoType, false);
-                //await ModifyOCOTests(set, ocoType, true);
+                await ModifyOCOTests(set, ocoType, false);
+                await ModifyOCOTests(set, ocoType, true);
 
                 if (_useAD)
                 {
@@ -100,6 +101,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             ocoOrder.Comment = ADComments.ADCommentsList.WithActivate;
 
             await TestOpenOrder(ocoOrder, OrderEvents.Modify, OrderEvents.Fill, OrderEvents.Cancel);
+            await mainOrder.Canceled.Task;
         }
 
         private async Task PartialFillOCOOrder(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
@@ -112,6 +114,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             ocoOrder.Comment = ADComments.ADCommentsList.WithPartialActivate(ocoOrder.Volume * 0.8);
 
             await TestOpenOrder(ocoOrder, OrderEvents.Modify, OrderEvents.Fill, OrderEvents.Cancel);
+            await mainOrder.Canceled.Task;
+
             await RemoveOrder(ocoOrder);
         }
 
@@ -131,41 +135,48 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private async Task ModifyOCOTests(TestParamsSet set, OrderType ocoType, bool invertedSide)
         {
-            var mainOrder = set.BuildOrder();
-            var ocoOrder = BuildOCOOrder(set, ocoType, invertedSide);
+            async Task RunModifyOCOTest(Func<OrderStateTemplate, OrderStateTemplate, bool, Task> test, bool equalVolume)
+            {
+                var mainOrder = set.BuildOrder().ForPending();
+                var ocoOrder = BuildOCOOrder(set, ocoType, invertedSide);
 
+                await RunTest(_ => test(mainOrder, ocoOrder, equalVolume), null, mainOrder, testInfo: $"{GetTestInfo(test.Method.Name, ocoOrder)} equalVolume={equalVolume}");
+
+                await TestCancelOrder(ocoOrder, OrderEvents.Cancel);
+
+                if (string.IsNullOrEmpty(ocoOrder.OcoRelatedOrderId))
+                    await TestCancelOrder(mainOrder);
+                else
+                    await mainOrder.Canceled.Task;
+            }
+
+            await RunModifyOCOTest(CreateOCOLinkViaModify, equalVolume: true);
+            await RunModifyOCOTest(CreateOCOLinkViaModify, equalVolume: false);
+
+            await RunModifyOCOTest(BreakOCOLinkViaModify, equalVolume: true);
+            await RunModifyOCOTest(BreakOCOLinkViaModify, equalVolume: false);
+        }
+
+        private async Task CreateOCOLinkViaModify(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder, bool equalVolume)
+        {
             await TestOpenOrder(mainOrder.ForPending());
             await TestOpenOrder(ocoOrder);
 
-            await RunTest(_ => CreateOCOLink(ocoOrder, mainOrder.Id), null, mainOrder, nameof(CreateOCOLink));
-            await RunTest(_ => ModifyEqualOCOVolume(ocoOrder, true), null, mainOrder, nameof(ModifyEqualOCOVolume));
-            await RunTest(_ => ModifyEqualOCOVolume(ocoOrder, false), null, mainOrder, nameof(ModifyEqualOCOVolume));
-            await RunTest(_ => RemoveOCOLink(ocoOrder), null, mainOrder, nameof(RemoveOCOLink));
-
-            await RemoveOrder(mainOrder);
-        }
-
-        private async Task CreateOCOLink(OrderStateTemplate ocoOrder, string relatedOrderId)
-        {
-            ocoOrder.OcoRelatedOrderId = relatedOrderId;
+            ocoOrder.OcoRelatedOrderId = mainOrder.Id;
+            ocoOrder.OcoEqualVolume = equalVolume;
             ocoOrder.Options = OrderExecOptions.OneCancelsTheOther;
 
             await TestModifyOrder(ocoOrder, OrderEvents.Modify);
         }
 
-        private async Task RemoveOCOLink(OrderStateTemplate ocoOrder)
+        private async Task BreakOCOLinkViaModify(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder, bool equalVolume)
         {
+            await CreateOCOLinkViaModify(mainOrder, ocoOrder, equalVolume);
+
             ocoOrder.Options = OrderExecOptions.None;
             ocoOrder.OcoRelatedOrderId = null;
 
             await TestModifyOrder(ocoOrder, OrderEvents.Modify);
-        }
-
-        private async Task ModifyEqualOCOVolume(OrderStateTemplate ocoOrder, bool equalVolume)
-        {
-            ocoOrder.OcoEqualVolume = equalVolume;
-
-            await TestModifyOrder(ocoOrder);
         }
 
         private static OrderStateTemplate BuildOCOOrder(TestParamsSet set, OrderType ocoType, bool invertedSide)
