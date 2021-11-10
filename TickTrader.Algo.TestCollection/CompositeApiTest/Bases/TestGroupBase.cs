@@ -222,6 +222,12 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
 
 
+        protected async Task TestCancelOrders(params OrderStateTemplate[] orders)
+        {
+            foreach (var order in orders)
+                await TestCancelOrder(order);
+        }
+
         protected async Task TestCancelOrder(OrderStateTemplate template, params Type[] eventsAfterCancel)
         {
             async Task<OrderCmdResult> CancelCommand() =>

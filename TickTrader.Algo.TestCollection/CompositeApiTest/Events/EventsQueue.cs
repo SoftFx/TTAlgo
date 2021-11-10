@@ -94,6 +94,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             if (@event == OrderEvents.Cancel)
             {
+                //if (!_currentTemplates.TryGetValue(orderId, out var template))
+                //    return;
                 var template = _currentTemplates[orderId];
                 template.ToCancel();
 
