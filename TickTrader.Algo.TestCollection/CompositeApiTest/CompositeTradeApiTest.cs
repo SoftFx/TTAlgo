@@ -28,8 +28,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         [Parameter(DefaultValue = 1000)]
         public int PriceDelta { get; set; }
 
-        [Parameter]
-        public bool LoadAllHistory { get; set; }
+        //[Parameter]
+        //public bool LoadAllHistory { get; set; }
 
 
         [Parameter(DefaultValue = true)]
@@ -235,8 +235,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private async Task FullHistoryTestRun()
         {
-            if (LoadAllHistory)
-                ReportsIteratorTest();
+            //if (LoadAllHistory)
+            //    ReportsIteratorTest();
 
             await DoQueryTests(false);
             await DoQueryTests(true);

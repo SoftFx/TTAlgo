@@ -6,6 +6,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
     internal sealed class OCOTests : TestGroupBase
     {
+        private enum RejectType { Open, Modify };
+
         private readonly bool _useAD;
 
 
@@ -52,7 +54,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             await RunOCOTest(OpenOCO, set, ocoSet, true);
             await RunOCOTest(OpenOCO, set, ocoSet, false);
-            await RunOCOTest(OpenLinkedOCO, set, ocoSet);
+            await RunOCOTest(OpenLinkedOCO, set, ocoSet, true);
         }
 
         private async Task RunFillTests(OrderBaseSet set, OrderBaseSet ocoSet)
@@ -83,30 +85,43 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await RunOCOTest(RejectOCOWithIoC, set, ocoSet);
             await RunOCOTest(RejectOpen3OCO, set, ocoSet);
 
-            if (ocoSet.IsSupportedStopPrice)
-                await RunOCOTest(RejectOCOWithStopLimit, set, ocoSet);
-            else
-                await RunOCOTest(RejectOCOLimitWithLimit, set, ocoSet);
+            await RunCommonRejectTests(set, ocoSet, RejectType.Open, RunOpenOCORejectTest);
 
-            //for pair limit/stop price for Buy must be less than Sell
+            //for pair limit/ stop price for Buy must be less than Sell
             if (IsLimitStopPair(set, ocoSet) && set.Side != ocoSet.Side)
-                await RunOCOTest(RejectIncorrecLimitPrice, set, ocoSet);
+                await RunOCOTest(RejectIncorrectLimitPrice, set, ocoSet);
         }
 
         private async Task RunModifyRejectTests(OrderBaseSet set, OrderBaseSet ocoSet)
         {
-            await RunOCOTest(RejectModifyWithNullRelatedId, set, ocoSet);
-            await RunOCOTest(RejectModifyWithIncorrectRelatedId, set, ocoSet);
+            Task RunRejectModifyRelatedId(string value)
+            {
+                return RunOCOTest((mainOrder, _) => RejectModifyRelatedId(mainOrder, value),
+                                  set, ocoSet, testInfo: $"{nameof(RejectModifyRelatedId)}={value}");
+            }
+
+            await RunRejectModifyRelatedId(null);
+            await RunRejectModifyRelatedId("0");
             await RunOCOTest(RejectModify3OCO, set, ocoSet);
 
-            if (ocoSet.IsSupportedStopPrice)
-                await RunOCOTest(RejectModifyOCOWithStopLimit, set, ocoSet);
-            else
-                await RunOCOTest(RejectModifyOCOLimitWithLimit, set, ocoSet);
+            await RunCommonRejectTests(set, ocoSet, RejectType.Modify, RunOpenModifyReject);
 
             //for pair limit/stop price for Buy must be less than Sell
             if (IsLimitStopPair(set, ocoSet) && set.Side != ocoSet.Side)
                 await RunOCOTest(RejectModifyWithIncorrectPrices, set, ocoSet);
+        }
+
+        private async Task RunCommonRejectTests(OrderBaseSet set, OrderBaseSet ocoSet, RejectType type,
+                                                Func<OrderStateTemplate, OrderStateTemplate, OrderCmdResultCodes, Task> testHandler)
+        {
+            if (ocoSet.IsSupportedStopPrice)
+                await RunRejectOCOTest(RejectOCOWithStopLimit, testHandler, set, ocoSet, type);
+            else
+                await RunRejectOCOTest(RejectOCOLimitWithLimit, testHandler, set, ocoSet, type);
+
+            ////for pair limit/stop price for Buy must be less than Sell
+            //if (IsLimitStopPair(set, ocoSet) && set.Side != ocoSet.Side)
+            //    await RunRejectOCOTest(RejectOCOLimitWithLimit, testHandler, set, ocoSet, type);
         }
 
 
@@ -205,7 +220,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await RunOpenOCORejectTest(mainOrder, ocoOrder, OrderCmdResultCodes.Unsupported);
         }
 
-        private async Task RejectIncorrecLimitPrice(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
+        private async Task RejectIncorrectLimitPrice(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
         {
             ocoOrder = ocoOrder.ForPending(ocoOrder.Type == OrderType.Limit ? 2 : 4);
 
@@ -220,18 +235,14 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await TestOpenReject(thirdOrder.WithOCO(mainOrder), OrderCmdResultCodes.OCOAlreadyExists);
         }
 
-        private async Task RejectOCOWithStopLimit(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
+        private Task<(OrderStateTemplate, OrderStateTemplate)> RejectOCOWithStopLimit(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
         {
-            ocoOrder = ocoOrder.BuildOrder(OrderType.StopLimit);
-
-            await RunOpenOCORejectTest(mainOrder, ocoOrder, OrderCmdResultCodes.Unsupported);
+            return Task.FromResult((mainOrder, ocoOrder.BuildOrder(OrderType.StopLimit)));
         }
 
-        private async Task RejectOCOLimitWithLimit(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
+        private Task<(OrderStateTemplate, OrderStateTemplate)> RejectOCOLimitWithLimit(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
         {
-            mainOrder = mainOrder.BuildOrder(OrderType.Limit);
-
-            await RunOpenOCORejectTest(mainOrder, ocoOrder, OrderCmdResultCodes.Unsupported);
+            return Task.FromResult((mainOrder.BuildOrder(OrderType.Limit), ocoOrder));
         }
 
         private async Task RunOpenOCORejectTest(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder, OrderCmdResultCodes expectedError)
@@ -243,17 +254,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
 
 
-        private Task RejectModifyWithNullRelatedId(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
-        {
-            return RejectModifyRelatedId(mainOrder, ocoOrder, null);
-        }
-
-        private Task RejectModifyWithIncorrectRelatedId(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
-        {
-            return RejectModifyRelatedId(mainOrder, ocoOrder, "0");
-        }
-
-        private async Task RejectModifyRelatedId(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder, string value)
+        private async Task RejectModifyRelatedId(OrderStateTemplate mainOrder, string value)
         {
             await TestOpenOrder(mainOrder);
 
@@ -270,7 +271,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             ocoOrder = ocoOrder.ForPending(ocoOrder.Type == OrderType.Limit ? 2 : 4);
 
-            await RunRejectModifyOCOTest(mainOrder, ocoOrder, OrderCmdResultCodes.IncorrectPrice);
+            await RunModifyReject(mainOrder, ocoOrder, OrderCmdResultCodes.IncorrectPrice);
         }
 
         private async Task RejectModify3OCO(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
@@ -280,38 +281,45 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await OpenOCO(mainOrder, ocoOrder);
             await TestOpenOrder(thirdOrder.ForPending());
 
-            await RunRejectModifyOCOTest(thirdOrder, mainOrder, OrderCmdResultCodes.OCOAlreadyExists);
+            await TestModifyReject(ocoOrder.WithOCO(mainOrder), OrderCmdResultCodes.OCOAlreadyExists);
+            await TestCancelOrder(thirdOrder);
         }
 
-        private async Task RejectModifyOCOWithStopLimit(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
+        private async Task RunOpenModifyReject(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder, OrderCmdResultCodes expectedCode)
         {
-            ocoOrder = ocoOrder.BuildOrder(OrderType.StopLimit).ForPending();
-
             await TestOpenOrders(mainOrder, ocoOrder);
-            await RunRejectModifyOCOTest(mainOrder, ocoOrder, OrderCmdResultCodes.Unsupported);
-            await TestCancelOrder(ocoOrder);
+            await RunModifyReject(mainOrder, ocoOrder, expectedCode);
         }
 
-        private async Task RejectModifyOCOLimitWithLimit(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
-        {
-            mainOrder = mainOrder.BuildOrder(OrderType.Limit).ForPending();
-
-            await TestOpenOrders(mainOrder, ocoOrder);
-            await RunRejectModifyOCOTest(mainOrder, ocoOrder, OrderCmdResultCodes.Unsupported);
-        }
-
-        private async Task RunRejectModifyOCOTest(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder, OrderCmdResultCodes expectedCode)
+        private async Task RunModifyReject(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder, OrderCmdResultCodes expectedCode)
         {
             await TestModifyReject(ocoOrder.WithOCO(mainOrder), expectedCode);
             await TestCancelOrder(mainOrder);
+            await TestCancelOrder(ocoOrder);
         }
 
 
-        private async Task RunOCOTest(Func<OrderStateTemplate, OrderStateTemplate, Task> test, OrderBaseSet set, OrderBaseSet ocoSet, bool equalVolume = false)
+        private Task RunRejectOCOTest(Func<OrderStateTemplate, OrderStateTemplate, Task<(OrderStateTemplate, OrderStateTemplate)>> rejectTest,
+                                      Func<OrderStateTemplate, OrderStateTemplate, OrderCmdResultCodes, Task> testHandler,
+                                      OrderBaseSet set, OrderBaseSet ocoSet, RejectType type,
+                                      OrderCmdResultCodes expectedError = OrderCmdResultCodes.Unsupported)
+        {
+            async Task RejectTest(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
+            {
+                (mainOrder, ocoOrder) = await rejectTest(mainOrder, ocoOrder);
+                await testHandler(mainOrder, ocoOrder, expectedError);
+            }
+
+            return RunOCOTest(RejectTest, set, ocoSet, testInfo: $"{type} {rejectTest.Method.Name}");
+        }
+
+        private async Task RunOCOTest(Func<OrderStateTemplate, OrderStateTemplate, Task> test, OrderBaseSet set, OrderBaseSet ocoSet,
+                                      bool equalVolume = false, string testInfo = null)
         {
             async Task OCOTestEnviroment(OrderStateTemplate mainOrder)
             {
-                var ocoOrder = ocoSet.BuildOrder().ForPending(ocoSet.Type == OrderType.Limit ? 4 : 2); //for pair limit/stop price for Buy must be less than Sell
+                var ocoOrder = ocoSet.BuildOrder(newVolume: mainOrder.Volume / 2)
+                                     .ForPending(ocoSet.Type == OrderType.Limit ? 4 : 2); //for pair limit/stop price for Buy must be less than Sell
 
                 ocoOrder.OcoEqualVolume = equalVolume;
 
@@ -322,7 +330,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                     await RemoveOrder(ocoOrder);
             }
 
-            await RunTest(OCOTestEnviroment, set, testInfo: $"{test.Method.Name} OCO=({ocoSet}) equalVolume={equalVolume}");
+            await RunTest(OCOTestEnviroment, set, testInfo: $"{testInfo ?? test.Method.Name} OCO=({ocoSet}) equalVolume={equalVolume}");
         }
 
         private static bool IsLimitStopPair(OrderBaseSet mainOrder, OrderBaseSet ocoOrder)
