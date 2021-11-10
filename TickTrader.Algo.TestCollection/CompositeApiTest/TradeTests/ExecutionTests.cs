@@ -5,9 +5,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
     internal sealed class ExecutionTests : TestGroupBase
     {
-        private readonly TimeSpan TimeToExpire = TimeSpan.FromSeconds(4);
-
-
         protected override string GroupName => nameof(ExecutionTests);
 
 
@@ -52,25 +49,23 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             template.Price = template.CalculatePrice(10);
             template.Options = Api.OrderExecOptions.ImmediateOrCancel;
 
-            await OpenRejectOrder(template);
+            await TestOpenReject(template);
         }
 
         private async Task FillByModifyExecutionTest(OrderStateTemplate template)
         {
-            await TestOpenOrder(template.ForPending());
+            await TestOpenOrder(template);
             await ModifyForExecutionOrder(template);
         }
 
         private async Task ExpirationExecutionTest(OrderStateTemplate template)
         {
-            template.Expiration = DateTime.Now + TimeToExpire;
-
-            await TestOpenOrder(template.ForPending(), OrderEvents.Expire);
+            await TestOpenOrder(template.WithExpiration(4), OrderEvents.Expire);
         }
 
         private async Task CancelExecutionTest(OrderStateTemplate template)
         {
-            await TestOpenOrder(template.ForPending());
+            await TestOpenOrder(template);
             await TestCancelOrder(template);
         }
 

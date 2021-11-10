@@ -48,7 +48,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             template.Comment = ADCommentsList.WithReject;
 
-            await OpenRejectOrder(template.ForExecuting());
+            await TestOpenReject(template.ForExecuting());
         }
 
         private async Task ADConfirm(OrderStateTemplate template)
@@ -65,7 +65,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             template.Comment = ADCommentsList.WithPartialToFullActivate(0.2 * OrderBaseSet.BaseOrderVolume);
 
-            await OpenOrderAndWaitExecution(template.ForPending(), template.IsGrossAcc ?
+            await OpenOrderAndWaitExecution(template, template.IsGrossAcc ?
                   OrderEvents.PartialFillGrossOrderEvents : OrderEvents.PartialFillOrderEvents);
             await ClearTestEnviroment(template);
         }

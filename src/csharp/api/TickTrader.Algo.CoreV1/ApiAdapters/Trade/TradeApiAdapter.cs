@@ -441,6 +441,8 @@ namespace TickTrader.Algo.CoreV1
                 return;
             if (!ValidateMaxVisibleVolumeLots(request.MaxVisibleAmount, smbMetadata, type, request.NewAmount ?? request.CurrentAmount, ref code))
                 return;
+            if (!ValidateRelatedOCO(request.ExecOptions, request.OcoRelatedOrderId, ref code))
+                return;
 
             request.NewAmount = RoundVolume(request.NewAmount, smbMetadata);
             request.MaxVisibleAmount = RoundVolume(request.MaxVisibleAmount, smbMetadata);
@@ -836,6 +838,21 @@ namespace TickTrader.Algo.CoreV1
                 return true;
 
             if (subCnt == 0 && string.IsNullOrEmpty(relatedOrderId))
+            {
+                code = OrderCmdResultCodes.OCORelatedIdNotFound;
+                return false;
+            }
+
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool ValidateRelatedOCO(Domain.OrderExecOptions? options, string relatedOrderId, ref OrderCmdResultCodes code)
+        {
+            if (options == null || !options.Value.HasFlag(Domain.OrderExecOptions.OneCancelsTheOther))
+                return true;
+
+            if (string.IsNullOrEmpty(relatedOrderId) || !TryGetOrder(relatedOrderId, out _, ref code))
             {
                 code = OrderCmdResultCodes.OCORelatedIdNotFound;
                 return false;

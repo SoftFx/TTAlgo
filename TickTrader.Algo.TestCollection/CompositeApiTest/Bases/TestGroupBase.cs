@@ -94,7 +94,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         private OrderStateTemplate RegisterAdditionalTemplate(OrderStateTemplate template)
         {
             foreach (var linkOrder in template.LinkedOrders)
-                _eventManager.RegistryNewTemplate(linkOrder.WithOCO(template));
+                _eventManager.RegistryNewTemplate(linkOrder);
 
             _eventManager.RegistryNewTemplate(template);
 
@@ -170,14 +170,10 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
 
 
-        protected async Task OpenRejectOrder(OrderStateTemplate template)
+        protected async Task TestOpenOrders(params OrderStateTemplate[] orders)
         {
-            var request = template.GetOpenRequest();
-
-            async Task<OrderCmdResult> OpenCommand() =>
-                _asyncMode ? await Bot.OpenOrderAsync(request) : Bot.OpenOrder(request);
-
-            await WaitRejectSeverRequest(OpenCommand);
+            foreach (var order in orders)
+                await TestOpenOrder(order);
         }
 
         protected async Task TestOpenOrder(OrderStateTemplate template, params Type[] eventsAfterOpen)
@@ -193,6 +189,17 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await template.Opened.Task;
         }
 
+        protected async Task TestOpenReject(OrderStateTemplate template, OrderCmdResultCodes errorCode = OrderCmdResultCodes.DealerReject)
+        {
+            var request = template.GetOpenRequest();
+
+            async Task<OrderCmdResult> OpenCommand() =>
+                _asyncMode ? await Bot.OpenOrderAsync(request) : Bot.OpenOrder(request);
+
+            await WaitRejectSeverRequest(OpenCommand, errorCode);
+        }
+
+
         protected async Task TestModifyOrder(OrderStateTemplate template, params Type[] eventsAfterModify)
         {
             var request = template.GetModifyRequest();
@@ -204,6 +211,17 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await template.Modified.Task;
         }
 
+        protected async Task TestModifyReject(OrderStateTemplate template, OrderCmdResultCodes errorCode)
+        {
+            var request = template.GetModifyRequest();
+
+            async Task<OrderCmdResult> ModifyCommand() =>
+                _asyncMode ? await Bot.ModifyOrderAsync(request) : Bot.ModifyOrder(request);
+
+            await WaitRejectSeverRequest(ModifyCommand, errorCode);
+        }
+
+
         protected async Task TestCancelOrder(OrderStateTemplate template, params Type[] eventsAfterCancel)
         {
             async Task<OrderCmdResult> CancelCommand() =>
@@ -212,6 +230,15 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await WaitSuccServerRequest(CancelCommand, OrderEvents.Cancel, eventsAfterCancel);
             await template.Canceled.Task;
         }
+
+        protected async Task TestCancelReject(OrderStateTemplate template, OrderCmdResultCodes errorCode)
+        {
+            async Task<OrderCmdResult> CancelCommand() =>
+                _asyncMode ? await Bot.CancelOrderAsync(template.Id) : Bot.CancelOrder(template.Id);
+
+            await WaitRejectSeverRequest(CancelCommand, errorCode);
+        }
+
 
         protected async Task TestCloseOrder(OrderStateTemplate template, double? volume = null)
         {
@@ -272,7 +299,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             throw new ServerRequestException(resultCode);
         }
 
-        private async Task WaitRejectSeverRequest(Func<Task<OrderCmdResult>> request)
+        private async Task WaitRejectSeverRequest(Func<Task<OrderCmdResult>> request, OrderCmdResultCodes expectedError)
         {
             int attemptsCount = 0;
             OrderCmdResultCodes resultCode;
@@ -285,7 +312,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
                 resultCode = result.ResultCode;
 
-                if (resultCode.IsExpectedServerReject())
+                if (resultCode == expectedError)
                     return;
                 else
                 if (resultCode.IsServerError())

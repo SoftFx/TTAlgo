@@ -55,7 +55,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         public bool OcoEqualVolume { get; set; }
 
-        internal OrderStateTemplate RelatedOcoTemplate { get; private set;}
+        internal OrderStateTemplate RelatedOcoTemplate { get; private set; }
 
         internal List<OrderStateTemplate> LinkedOrders { get; set; }
 
@@ -89,23 +89,36 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             Volume = volume;
         }
 
-        internal OrderStateTemplate WithOCO(OrderStateTemplate mainOrder, bool equalVolume = false)
+        internal OrderStateTemplate WithOCO(OrderStateTemplate mainOrder)
         {
             Options |= OrderExecOptions.OneCancelsTheOther;
             OcoRelatedOrderId = mainOrder.Id;
-            OcoEqualVolume = equalVolume;
             RelatedOcoTemplate = mainOrder;
 
             return (OrderStateTemplate)this;
         }
 
+        internal OrderStateTemplate WithExpiration(int seconds)
+        {
+            Expiration = DateTime.UtcNow + TimeSpan.FromSeconds(seconds);
+
+            return (OrderStateTemplate)this;
+        }
+
+        internal OrderStateTemplate WithOCO(OrderStateTemplate mainOrder, bool equalVolume)
+        {
+            OcoEqualVolume = equalVolume;
+
+            return WithOCO(mainOrder);
+        }
+
         internal OrderStateTemplate WithLinkedOCO(OrderStateTemplate mainOrder)
         {
             Options |= OrderExecOptions.OneCancelsTheOther;
-            LinkedOrders.Add(mainOrder);
+            LinkedOrders.Add(mainOrder.WithOCO((OrderStateTemplate)this).WithFullLinkedOCOProperies());
             RelatedOcoTemplate = mainOrder;
 
-            return (OrderStateTemplate)this;
+            return WithFullLinkedOCOProperies();
         }
 
         internal OrderStateTemplate WithRemovedOCO()
@@ -116,6 +129,20 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             return (OrderStateTemplate)this;
         }
+
+        private OrderStateTemplate WithFullLinkedOCOProperies()
+        {
+            Comment = "OCO order";
+
+            if (IsSupportedSlippage)
+                Slippage = Symbol.Slippage / 2;
+
+            if (IsSupportedMaxVisibleVolume)
+                MaxVisibleVolume = Volume / 2;
+
+            return WithExpiration(60);
+        }
+
 
         internal OpenOrderRequest GetOpenRequest()
         {

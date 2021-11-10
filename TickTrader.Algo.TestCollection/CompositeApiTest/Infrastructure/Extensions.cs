@@ -32,18 +32,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             }
         }
 
-        public static bool IsExpectedServerReject(this OrderCmdResultCodes code)
-        {
-            switch (code)
-            {
-                case OrderCmdResultCodes.DealerReject:
-                    return true;
-
-                default:
-                    return false;
-            }
-        }
-
         public static async Task WithTimeoutAfter(this Task task, TimeSpan timeout)
         {
             await task;

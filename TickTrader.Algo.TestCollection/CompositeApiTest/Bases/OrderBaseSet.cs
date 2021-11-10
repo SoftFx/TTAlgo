@@ -73,7 +73,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 Type = type ?? Type,
             };
 
-            return template;
+            return template.ForPending();
         }
 
 

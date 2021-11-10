@@ -1067,7 +1067,9 @@ namespace TickTrader.Algo.Account.Fdk2
                                 return Domain.OrderExecReport.Types.CmdResultCode.MaxVisibleVolumeNotSupported;
                             else if (message.StartsWith("Order Not Found") || message.EndsWith("was not found."))
                                 return Domain.OrderExecReport.Types.CmdResultCode.OrderNotFound;
-                            else if (message.StartsWith("Invalid order type") || message.Contains("is not supported"))
+                            else if (message.StartsWith("Invalid order type") || message.Contains("is not supported") ||
+                                    (message.StartsWith("Option") && message.Contains("cannot be used")) ||
+                                    message.StartsWith("OCO flag is used only for"))
                                 return Domain.OrderExecReport.Types.CmdResultCode.Unsupported;
                             else if (message.StartsWith("Invalid AmountChange") || message == "Cannot modify amount.")
                                 return Domain.OrderExecReport.Types.CmdResultCode.InvalidAmountChange;
@@ -1087,9 +1089,8 @@ namespace TickTrader.Algo.Account.Fdk2
                                 return Domain.OrderExecReport.Types.CmdResultCode.IncorrectPrice;
                             else if (message.Contains("has different Symbol"))
                                 return Domain.OrderExecReport.Types.CmdResultCode.IncorrectSymbol;
-                            else if (message.StartsWith("OCO flag is used only for"))
-                                return Domain.OrderExecReport.Types.CmdResultCode.IncorrectType;
-                            else if (message.EndsWith("Remove OCO relation first."))
+                            else if (message.EndsWith("Remove OCO relation first.") ||
+                                    (message.StartsWith("Related order") && message.EndsWith("already has OCO flag.")))
                                 return Domain.OrderExecReport.Types.CmdResultCode.OcoAlreadyExists;
                             else if (message.StartsWith("No Dealer"))
                                 return Domain.OrderExecReport.Types.CmdResultCode.DealerReject;

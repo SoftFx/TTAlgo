@@ -36,7 +36,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             template.Slippage = slippage;
 
-            await TestOpenOrder(template.ForPending());
+            await TestOpenOrder(template);
             await TestCancelOrder(template);
         }
     }
