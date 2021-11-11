@@ -32,24 +32,21 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             }
         }
 
-        private async Task FillExecutionTest(OrderStateTemplate template)
-        {
-            await OpenExecutionOrder(template);
-        }
+        private Task FillExecutionTest(OrderStateTemplate template) => OpenExecutionOrder(template);
 
-        private async Task FillIoCExecutionTest(OrderStateTemplate template)
+        private Task FillIoCExecutionTest(OrderStateTemplate template)
         {
             template.Options = Api.OrderExecOptions.ImmediateOrCancel;
 
-            await OpenExecutionOrder(template);
+            return OpenExecutionOrder(template);
         }
 
-        private async Task RejectIoCExecutionTest(OrderStateTemplate template)
+        private Task RejectIoCExecutionTest(OrderStateTemplate template)
         {
             template.Price = template.CalculatePrice(10);
             template.Options = Api.OrderExecOptions.ImmediateOrCancel;
 
-            await TestOpenReject(template);
+            return TestOpenReject(template);
         }
 
         private async Task FillByModifyExecutionTest(OrderStateTemplate template)
@@ -58,9 +55,9 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await ModifyForExecutionOrder(template);
         }
 
-        private async Task ExpirationExecutionTest(OrderStateTemplate template)
+        private Task ExpirationExecutionTest(OrderStateTemplate template)
         {
-            await TestOpenOrder(template.WithExpiration(4), OrderEvents.Expire);
+            return TestOpenOrder(template.WithExpiration(4), OrderEvents.Expire);
         }
 
         private async Task CancelExecutionTest(OrderStateTemplate template)
@@ -69,18 +66,18 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await TestCancelOrder(template);
         }
 
-        private async Task TakeProfitExecutionTest(OrderStateTemplate template)
+        private Task TakeProfitExecutionTest(OrderStateTemplate template)
         {
             template.TP = template.CalculatePrice(-2);
 
-            await OpenExecutionOrder(template);
+            return OpenExecutionOrder(template);
         }
 
-        private async Task StopLossExecutionTest(OrderStateTemplate template)
+        private Task StopLossExecutionTest(OrderStateTemplate template)
         {
             template.SL = template.CalculatePrice(2);
 
-            await OpenExecutionOrder(template);
+            return OpenExecutionOrder(template);
         }
     }
 }

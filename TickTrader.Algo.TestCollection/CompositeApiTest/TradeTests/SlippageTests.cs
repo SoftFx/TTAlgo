@@ -25,11 +25,11 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await RunTest(t => test(t, OrderBaseSet.Symbol.Slippage * 2), set, testInfo: testInfo);
         }
 
-        private async Task ExecutionOrderWithSlippageTest(OrderStateTemplate template, double? slippage)
+        private Task ExecutionOrderWithSlippageTest(OrderStateTemplate template, double? slippage)
         {
             template.Slippage = slippage;
 
-            await OpenExecutionOrder(template);
+            return OpenExecutionOrder(template);
         }
 
         private async Task OpenPendingWithSlippageTest(OrderStateTemplate template, double? slippage)

@@ -122,11 +122,11 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
 
 
-        private async Task FullFillOCOOrder(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
+        private Task FullFillOCOOrder(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
         {
             ocoOrder.Comment = ADComments.ADCommentsList.WithActivate;
 
-            await OpenOcoOrderWithActivation(mainOrder, ocoOrder);
+            return OpenOcoOrderWithActivation(mainOrder, ocoOrder);
         }
 
         private async Task PartialFillOCOOrder(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
@@ -189,11 +189,11 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
 
 
-        private async Task RejectOCOWithIoC(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
+        private Task RejectOCOWithIoC(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder)
         {
             ocoOrder.Options = OrderExecOptions.ImmediateOrCancel;
 
-            await RunOpenOpenRejectTest(mainOrder, ocoOrder, OrderCmdResultCodes.Unsupported);
+            return RunOpenOpenRejectTest(mainOrder, ocoOrder, OrderCmdResultCodes.Unsupported);
         }
 
         private async Task RunOpenOpenRejectTest(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder, OrderCmdResultCodes expectedError)
@@ -294,8 +294,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
 
 
-        private async Task RunOCOTest(Func<OrderStateTemplate, OrderStateTemplate, Task> test, OrderBaseSet set, OrderBaseSet ocoSet,
-                                      bool equalVolume = false, string testInfo = null)
+        private Task RunOCOTest(Func<OrderStateTemplate, OrderStateTemplate, Task> test, OrderBaseSet set, OrderBaseSet ocoSet,
+                                bool equalVolume = false, string testInfo = null)
         {
             async Task OCOTestEnviroment(OrderStateTemplate mainOrder)
             {
@@ -311,7 +311,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                     await RemoveOrder(ocoOrder);
             }
 
-            await RunTest(OCOTestEnviroment, set, testInfo: $"{testInfo ?? test.Method.Name} OCO=({ocoSet}) equalVolume={equalVolume}");
+            return RunTest(OCOTestEnviroment, set, testInfo: $"{testInfo ?? test.Method.Name} OCO=({ocoSet}) equalVolume={equalVolume}");
         }
 
         private static bool IsLimitStopPair(OrderBaseSet mainOrder, OrderBaseSet ocoOrder)

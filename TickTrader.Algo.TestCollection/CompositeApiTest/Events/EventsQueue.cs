@@ -32,8 +32,11 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         internal virtual void RegistryNewTemplate(OrderStateTemplate template) => _expectedToOpenTemplates.AddLast(template);
 
-        internal virtual void RegisterExistingTemplate(OrderStateTemplate template) =>
-          _currentTemplates.Add(template.Id, template);
+        internal virtual void RegisterExistingTemplate(OrderStateTemplate template)
+        {
+            if (!_currentTemplates.ContainsKey(template.Id))
+                _currentTemplates.Add(template.Id, template);
+        }
 
         internal virtual void AddExpectedEvent(Type type) => _expected.Add((type, null));
 
@@ -81,7 +84,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 var template = _expectedToOpenTemplates.First.Value;
                 _expectedToOpenTemplates.RemoveFirst();
 
-                _currentTemplates.Add(orderId, template.ToOpen(orderId));
+                RegisterExistingTemplate(template.ToOpen(orderId)); //for modify tests
+                //_currentTemplates.Add(orderId, template.ToOpen(orderId));
             }
 
             if (@event == OrderEvents.Activate)

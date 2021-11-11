@@ -9,8 +9,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
     {
         private enum TestAction { Add, Modify, Delete };
 
-        private readonly TimeSpan WaitEventsTimeout = TimeSpan.FromMilliseconds(500);
-
 
         protected override string GroupName => nameof(ModificationTests);
 
@@ -19,7 +17,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             var template = set.BuildOrder();
 
-            await TestOpenOrder(template).WithTimeoutAfter(WaitEventsTimeout); //remove timeout for open
+            await TestOpenOrder(template);
 
             await VolumeModifyTests(template, 2);
             await RunTagModifyTests(template);
@@ -47,7 +45,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             if (template.IsSupportedSlippage) //should be last, if slippage = 0 server behavior is unpredictable
                 await RunSlippageModifyTest(template);
 
-            await RemoveOrder(template).WithTimeoutAfter(WaitEventsTimeout);
+            await RemoveOrder(template);
         }
 
 
@@ -107,86 +105,86 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         }
 
 
-        private async Task VolumeModifyTests(OrderStateTemplate template, int coef)
+        private Task VolumeModifyTests(OrderStateTemplate template, int coef)
         {
             template.Volume *= coef;
 
-            await RunModifyTest(template);
+            return RunModifyTest(template);
         }
 
-        private async Task PriceModifyTests(OrderStateTemplate template, int coef)
+        private Task PriceModifyTests(OrderStateTemplate template, int coef)
         {
             template.Price = template.ForPending(coef).Price;
 
-            await RunModifyTest(template);
+            return RunModifyTest(template);
         }
 
-        private async Task StopPriceModifyTests(OrderStateTemplate template, int coef)
+        private Task StopPriceModifyTests(OrderStateTemplate template, int coef)
         {
             template.StopPrice = template.ForPending(coef).StopPrice;
 
-            await RunModifyTest(template);
+            return RunModifyTest(template);
         }
 
-        private async Task ExpirationTest(OrderStateTemplate template, TestAction action, DateTime? value)
+        private Task ExpirationTest(OrderStateTemplate template, TestAction action, DateTime? value)
         {
             template.Expiration = value;
 
-            await RunModifyTest(template, action);
+            return RunModifyTest(template, action);
         }
 
-        private async Task MaxVisibleVolumeTest(OrderStateTemplate template, TestAction action, double value)
+        private Task MaxVisibleVolumeTest(OrderStateTemplate template, TestAction action, double value)
         {
             template.MaxVisibleVolume = value;
 
-            await RunModifyTest(template, action);
+            return RunModifyTest(template, action);
         }
 
-        private async Task TakeProfitTest(OrderStateTemplate template, TestAction action, int coef)
+        private Task TakeProfitTest(OrderStateTemplate template, TestAction action, int coef)
         {
             template.TP = template.CalculatePrice(coef);
 
-            await RunModifyTest(template, action);
+            return RunModifyTest(template, action);
         }
 
-        private async Task StopLossTest(OrderStateTemplate template, TestAction action, int coef)
+        private Task StopLossTest(OrderStateTemplate template, TestAction action, int coef)
         {
             template.SL = template.CalculatePrice(coef);
 
-            await RunModifyTest(template, action);
+            return RunModifyTest(template, action);
         }
 
-        private async Task CommentTest(OrderStateTemplate template, TestAction action, string comment)
+        private Task CommentTest(OrderStateTemplate template, TestAction action, string comment)
         {
             template.Comment = comment;
 
-            await RunModifyTest(template, action);
+            return RunModifyTest(template, action);
         }
 
-        private async Task TagTest(OrderStateTemplate template, TestAction action, string tag)
+        private Task TagTest(OrderStateTemplate template, TestAction action, string tag)
         {
             template.Tag = tag;
 
-            await RunModifyTest(template, action);
+            return RunModifyTest(template, action);
         }
 
-        private async Task OptionsTest(OrderStateTemplate template, TestAction action, OrderExecOptions value)
+        private Task OptionsTest(OrderStateTemplate template, TestAction action, OrderExecOptions value)
         {
             template.Options = value;
 
-            await RunModifyTest(template, action);
+            return RunModifyTest(template, action);
         }
 
-        private async Task SlippageTest(OrderStateTemplate template, TestAction action, double? value)
+        private Task SlippageTest(OrderStateTemplate template, TestAction action, double? value)
         {
             template.Slippage = value;
 
-            await RunModifyTest(template, action);
+            return RunModifyTest(template, action);
         }
 
-        private async Task RunModifyTest(OrderStateTemplate template, TestAction action = TestAction.Modify, [CallerMemberName] string testName = "")
+        private Task RunModifyTest(OrderStateTemplate template, TestAction action = TestAction.Modify, [CallerMemberName] string testName = "")
         {
-            await RunTest(t => TestModifyOrder(t), null, template, $"{action} {testName}");
+            return RunTest(t => TestModifyOrder(t), null, template, $"{action} {testName}");
         }
     }
 }

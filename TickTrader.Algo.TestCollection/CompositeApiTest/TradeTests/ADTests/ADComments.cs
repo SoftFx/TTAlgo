@@ -43,6 +43,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest.ADComments
 
         public static string WithActivate { get; }
 
+
         static ADCommentsList()
         {
             _remaningActivationToken = new OrderADComment(ADTokens.Activate, null);

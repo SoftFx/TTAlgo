@@ -23,9 +23,9 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         private Task CloseByEvenTest(OrderBaseSet set) => RunCloseByTest(set, null);
 
 
-        private async Task RunCloseByTest(OrderBaseSet set, double? volume, [CallerMemberName] string testInfo = null)
+        private Task RunCloseByTest(OrderBaseSet set, double? volume, [CallerMemberName] string testInfo = null)
         {
-            await RunTest(t => RunCloseByTest(t, volume), set, testInfo: testInfo);
+            return RunTest(t => RunCloseByTest(t, volume), set, testInfo: testInfo);
         }
 
         private async Task RunCloseByTest(OrderStateTemplate template, double? closeVolume)

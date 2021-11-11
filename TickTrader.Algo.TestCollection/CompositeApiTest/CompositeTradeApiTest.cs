@@ -10,14 +10,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
     public class CompositeTradeApiTest : TradeBot
     {
         private readonly List<HistoryOrderTemplate> _historyStorage = new List<HistoryOrderTemplate>();
-
-        private ModificationTests _modificationTests;
-        private ExecutionTests _executionTests;
-        private SlippageTests _slippageTests;
-        private CloseByTests _closeByTests;
-        private ADTests _automaticDilerTests;
-        private OCOTests _ocoTests;
-
+        private List<(Predicate<OrderBaseSet> Condition, TestGroupBase Tests)> _testGroups;
 
         [Parameter(DefaultValue = false)]
         public bool UseDebug { get; set; }
@@ -92,35 +85,24 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             StatManager = new StatManagerFactory();
 
-            _modificationTests = new ModificationTests();
-            _executionTests = new ExecutionTests();
-            _slippageTests = new SlippageTests();
-            _closeByTests = new CloseByTests();
-            _automaticDilerTests = new ADTests();
-            _ocoTests = new OCOTests(UseADCases);
+            _testGroups = new List<(Predicate<OrderBaseSet>, TestGroupBase)>
+            {
+                (s => UseModificationTests && !s.IsInstantOrder, new ModificationTests()),
+                (s => UseSlippageTests && s.IsSupportedSlippage, new SlippageTests()),
+                (s => UseOCOTests && s.IsSupportedOCO, new OCOTests(UseADCases)),
+                (s => UseCloseByTests && s.IsGrossAcc, new CloseByTests()),
+                (_ => UseExecutionTests, new ExecutionTests()),
+                (_ => UseADCases, new ADTests()),
+            };
 
-            await Task.Delay(2000);
+            await Task.Delay(2000); // wait while all orders have been canceled
         }
 
         private async Task RunAllTestGroups(OrderBaseSet set)
         {
-            if (UseModificationTests && !set.IsInstantOrder)
-                await _modificationTests.Run(set);
-
-            if (UseExecutionTests)
-                await _executionTests.Run(set);
-
-            if (UseSlippageTests && set.IsSupportedSlippage)
-                await _slippageTests.Run(set);
-
-            if (UseCloseByTests && set.IsGrossAcc)
-                await _closeByTests.Run(set);
-
-            if (UseADCases)
-                await _automaticDilerTests.Run(set);
-
-            if (UseOCOTests && set.IsSupportedOCO)
-                await _ocoTests.Run(set);
+            foreach (var group in _testGroups)
+                if (group.Condition(set))
+                    await group.Tests.Run(set);
         }
 
         private void CleanUpWorkspace()
