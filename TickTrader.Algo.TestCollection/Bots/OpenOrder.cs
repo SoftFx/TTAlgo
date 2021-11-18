@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
@@ -58,8 +59,8 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter]
         public OtoTriggerOpenType OtoTriggerType { get; set; }
 
-        [Parameter(DisplayName = "OtoTriggerTime Timeout(s)", DefaultValue = null, IsRequired = false)]
-        public int? OtoTriggerTimeTimeout { get; set; }
+        [Parameter(DisplayName = "OtoTriggerTime", DefaultValue = "2022/01/01 00:00:00", IsRequired = false)]
+        public string OtoTriggerTime { get; set; }
 
         [Parameter]
         public string OtoTriggeredById { get; set; }
@@ -71,9 +72,17 @@ namespace TickTrader.Algo.TestCollection.Bots
 
             if (OtoTriggerType != OtoTriggerOpenType.None)
             {
+                DateTime? otoTime = null;
+
+                if (!string.IsNullOrEmpty(OtoTriggerTime))
+                {
+                    otoTime = DateTime.ParseExact(OtoTriggerTime, "yyyy/MM/dd HH:mm:ss", CultureInfo.InvariantCulture);
+                    otoTime = DateTime.SpecifyKind(otoTime.Value, DateTimeKind.Utc);
+                }
+
                 otoTrigger = ContingentOrderTrigger.Create(Convert(OtoTriggerType))
-                .WithTriggerTime(OtoTriggerTimeTimeout.HasValue ? DateTime.Now + TimeSpan.FromSeconds(OtoTriggerTimeTimeout.Value) : (DateTime?)null)
-                .WithOrderIdTriggeredBy(OtoTriggeredById);
+                                                   .WithTriggerTime(otoTime)
+                                                   .WithOrderIdTriggeredBy(OtoTriggeredById);
             }
 
             var request = OpenOrderRequest.Template.Create()
