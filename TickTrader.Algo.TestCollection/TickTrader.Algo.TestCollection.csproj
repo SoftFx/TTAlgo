@@ -135,6 +135,7 @@
     <Compile Include="Indicators\PrintIndicator.cs" />
     <Compile Include="Lib\DateTimeExt.cs" />
     <Compile Include="Lib\PrintExt.cs" />
+    <Compile Include="OpenOCOWithTriggerBot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
