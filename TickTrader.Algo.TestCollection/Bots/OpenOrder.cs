@@ -59,7 +59,7 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter]
         public OtoTriggerOpenType OtoTriggerType { get; set; }
 
-        [Parameter(DisplayName = "OtoTriggerTime", DefaultValue = "2022/01/01 00:00:00", IsRequired = false)]
+        [Parameter(DisplayName = "OtoTriggerTime", DefaultValue = "2022/01/01 00:00:00.000", IsRequired = false)]
         public string OtoTriggerTime { get; set; }
 
         [Parameter]
@@ -76,8 +76,10 @@ namespace TickTrader.Algo.TestCollection.Bots
 
                 if (!string.IsNullOrEmpty(OtoTriggerTime))
                 {
-                    otoTime = DateTime.ParseExact(OtoTriggerTime, "yyyy/MM/dd HH:mm:ss", CultureInfo.InvariantCulture);
+                    otoTime = DateTime.ParseExact(OtoTriggerTime, "yyyy/MM/dd HH:mm:ss.fff", CultureInfo.InvariantCulture);
                     otoTime = DateTime.SpecifyKind(otoTime.Value, DateTimeKind.Utc);
+
+                    //otoTime = otoTime.Value.AddMilliseconds(-otoTime.Value.Millisecond);
                 }
 
                 otoTrigger = ContingentOrderTrigger.Create(Convert(OtoTriggerType))
