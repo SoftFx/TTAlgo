@@ -37,6 +37,9 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         [Parameter(DefaultValue = true)]
         public bool UseOCOTests { get; set; }
 
+        [Parameter(DefaultValue = true)]
+        public bool UseOTOTests { get; set; }
+
 
         [Parameter]
         public bool UseCloseByTests { get; set; }
@@ -91,6 +94,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 (s => UseSlippageTests && s.IsSupportedSlippage, new SlippageTests()),
                 (s => UseOCOTests && s.IsSupportedOCO, new OCOTests(UseADCases)),
                 (s => UseCloseByTests && s.IsGrossAcc, new CloseByTests()),
+                (s => UseOTOTests && s.IsSupportedOTO, new OTOTests()),
                 (_ => UseExecutionTests, new ExecutionTests()),
                 (_ => UseADCases, new ADTests()),
             };
@@ -357,30 +361,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         //    if (store)
         //        _historyStorage.Add(HistoryOrderTemplate.Create(template, args));
-        //}
-
-
-        //private async Task ModifyCancelTest(OrderBaseSet test)
-        //{
-        //    async Task func(OrderTemplate template)
-        //    {
-        //        await TryPerformTest(() => TestOpenOrder(template, false));
-
-        //        template.Volume *= 0.3;
-
-        //        var request = GetModifyRequest(template);
-
-        //        var t1 = ModifyOrderAsync(request);
-        //        await Task.Delay(10);
-        //        var t2 = ModifyOrderAsync(request);
-
-        //        await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
-        //        await WaitAndStoreEvent<OrderCanceledEventArgs>(template, CancelEventTimeout);
-
-        //        await Task.WhenAll(t1, t2);
-        //    }
-
-        //    //await PrepareAndRun(TestAcion.ModifyCancel, func, test, Behavior.Pending);
         //}
         #endregion
     }

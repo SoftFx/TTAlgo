@@ -101,9 +101,12 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                 //if (!_currentTemplates.TryGetValue(orderId, out var template))
                 //    return;
                 var template = _currentTemplates[orderId];
-                template.ToCancel();
-
                 _currentTemplates.Remove(orderId);
+
+                if (template.IsOnTimeTrigger && template.TriggerTime <= DateTime.UtcNow)
+                    _expectedToOpenTemplates.AddFirst(template.ToOnTimeTriggerReceived());
+                else
+                    template.ToCancel();
             }
 
             if (@event == OrderEvents.Close)

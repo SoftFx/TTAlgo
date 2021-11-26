@@ -17,6 +17,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         public TaskCompletionSource<bool> OpenedGrossPosition { get; private set; }
 
+        public TaskCompletionSource<bool> OnTimeTriggerReceived { get; private set; }
+
         public TaskCompletionSource<bool> Filled { get; private set; }
 
         public TaskCompletionSource<bool> Canceled { get; private set; }
@@ -36,6 +38,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             ResetTemplateStates();
         }
 
+
         private void ResetTemplateStates()
         {
             OpenedGrossPosition = new TaskCompletionSource<bool>();
@@ -45,10 +48,14 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             FilledParts = new List<OrderStateTemplate>();
             Canceled = new TaskCompletionSource<bool>();
             Modified = new TaskCompletionSource<bool>();
+            OnTimeTriggerReceived = new TaskCompletionSource<bool>();
         }
 
         internal OrderStateTemplate ToOpen(string orderId)
         {
+            if (Canceled.Task.IsCompleted)
+                Canceled = new TaskCompletionSource<bool>(); //for triggers
+
             Id = orderId;
             RealOrder = Orders[Id];
             Opened.SetResult(true);
@@ -97,6 +104,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             Opened = new TaskCompletionSource<bool>();
             Type = OrderType.Position;
+
             OpenedGrossPosition.SetResult(true);
 
             return this;
@@ -106,6 +114,17 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             Canceled.SetResult(true);
             RealOrder = null;
+
+            return this;
+        }
+
+        internal OrderStateTemplate ToOnTimeTriggerReceived()
+        {
+            Opened = new TaskCompletionSource<bool>();
+            RealOrder = null;
+            TriggerType = null;
+
+            OnTimeTriggerReceived.SetResult(true);
 
             return this;
         }

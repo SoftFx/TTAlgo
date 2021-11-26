@@ -4,6 +4,8 @@ using System.Linq;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
 
+using TriggerTypes = TickTrader.Algo.Api.ContingentOrderTrigger.TriggerType;
+
 namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
     internal abstract class OrderTemplate : OrderBaseSet
@@ -13,6 +15,9 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
 
         public bool IsNull => Volume.E(0.0);
+
+        public bool IsOnTimeTrigger => TriggerType.HasValue && TriggerType.Value == TriggerTypes.OnTime;
+
 
         public OrderType InitType { get; }
 
@@ -51,6 +56,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             }
         }
 
+
         public string OcoRelatedOrderId { get; set; }
 
         public bool OcoEqualVolume { get; set; }
@@ -58,6 +64,13 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         internal OrderStateTemplate RelatedOcoTemplate { get; private set; }
 
         internal List<OrderStateTemplate> LinkedOrders { get; set; }
+
+
+        public TriggerTypes? TriggerType { get; set; }
+
+        public DateTime? TriggerTime { get; set; }
+
+        public string OrderIdTriggeredBy { get; set; }
 
 
         internal OrderTemplate() { }
@@ -112,11 +125,11 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             return WithOCO(mainOrder);
         }
 
-        internal OrderStateTemplate WithLinkedOCO(OrderStateTemplate mainOrder)
+        internal OrderStateTemplate WithLinkedOCO(OrderStateTemplate linkedOrder)
         {
             Options |= OrderExecOptions.OneCancelsTheOther;
-            LinkedOrders.Add(mainOrder.WithOCO((OrderStateTemplate)this).WithFullLinkedOCOProperies());
-            RelatedOcoTemplate = mainOrder;
+            LinkedOrders.Add(linkedOrder.WithOCO((OrderStateTemplate)this).WithFullLinkedOCOProperies());
+            RelatedOcoTemplate = linkedOrder;
 
             return WithFullLinkedOCOProperies();
         }
@@ -143,15 +156,31 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             return WithExpiration(60);
         }
 
+        internal OrderStateTemplate WithOnTimeTrigger(int seconds)
+        {
+            var utcNow = DateTime.UtcNow;
+
+            return WithOnTimeTrigger((utcNow + TimeSpan.FromSeconds(seconds)).AddMilliseconds(-utcNow.Millisecond));
+        }
+
+        internal OrderStateTemplate WithOnTimeTrigger(DateTime? triggerTime)
+        {
+            TriggerType = TriggerTypes.OnTime;
+            TriggerTime = triggerTime;
+
+            return (OrderStateTemplate)this;
+        }
+
 
         internal OpenOrderRequest GetOpenRequest()
         {
             return OpenOrderRequest.Template.Create()
                    .WithParams(Symbol.Name, Side, Type, Volume, Price, StopPrice)
                    .WithSubOpenRequests(LinkedOrders.Select(u => u.GetOpenRequest())?.ToArray())
+                   .WithContingentOrderTrigger(BuildTrigger())
+                   .WithOCORelatedOrderId(OcoRelatedOrderId)
                    .WithMaxVisibleVolume(MaxVisibleVolume)
                    .WithSlippage(GetSlippageInPercent())
-                   .WithOCORelatedOrderId(OcoRelatedOrderId)
                    .WithOCOEqualVolume(OcoEqualVolume)
                    .WithExpiration(Expiration)
                    .WithComment(Comment)
@@ -166,9 +195,10 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             return ModifyOrderRequest.Template.Create()
                    .WithParams(Id, Price)
+                   .WithContingentOrderTrigger(BuildTrigger())
+                   .WithOCORelatedOrderId(OcoRelatedOrderId)
                    .WithMaxVisibleVolume(MaxVisibleVolume)
                    .WithSlippage(GetSlippageInPercent())
-                   .WithOCORelatedOrderId(OcoRelatedOrderId)
                    .WithOCOEqualVolume(OcoEqualVolume)
                    .WithExpiration(Expiration)
                    .WithStopPrice(StopPrice)
@@ -187,6 +217,11 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
                    .WithParams(Id, volume)
                    .WithSlippage(GetSlippageInPercent())
                    .MakeRequest();
+        }
+
+        private ContingentOrderTrigger BuildTrigger()
+        {
+            return TriggerType != null ? ContingentOrderTrigger.Create(TriggerType.Value, TriggerTime, OrderIdTriggeredBy) : null;
         }
 
         private double? GetSlippageInPercent()

@@ -29,7 +29,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         public bool IsLimitIoC => Type == OrderType.Limit && Options.HasFlag(OrderExecOptions.ImmediateOrCancel);
 
-        public bool IsSupportedMaxVisibleVolume => Type != OrderType.Stop && Type != OrderType.Position;
+        public bool IsSupportedMaxVisibleVolume => IsSupportedIoC;
 
         public bool IsSupportedSlippage => Type == OrderType.Stop || Type == OrderType.Market;
 
@@ -40,6 +40,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         public bool IsSupportedRejectedIoC => Type == OrderType.Limit;
 
         public bool IsSupportedOCO => (Type == OrderType.Stop || Type == OrderType.Limit) && !IsGrossAcc;
+
+        public bool IsSupportedOTO => Type != OrderType.StopLimit;
 
 
         public bool IsStopLimit => Type == OrderType.StopLimit;
