@@ -575,7 +575,7 @@ namespace TickTrader.Algo.Account.Fdk2
                 try
                 {
                     var result = await operationDef(request);
-                    return new OrderInteropResult(Domain.OrderExecReport.Types.CmdResultCode.Ok, ConvertToEr(result, operationId));
+                    return new OrderInteropResult(Domain.OrderExecReport.Types.CmdResultCode.Ok, ConvertToEr(result));
                 }
                 catch (ExecutionException ex)
                 {
@@ -932,7 +932,7 @@ namespace TickTrader.Algo.Account.Fdk2
             };
         }
 
-        private static List<ExecutionReport> ConvertToEr(List<SFX.ExecutionReport> reports, string operationId)
+        private static List<ExecutionReport> ConvertToEr(List<SFX.ExecutionReport> reports)
         {
             var result = new List<ExecutionReport>(reports.Count);
 
