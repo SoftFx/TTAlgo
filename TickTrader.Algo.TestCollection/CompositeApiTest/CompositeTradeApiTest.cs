@@ -91,10 +91,10 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             _testGroups = new List<(Predicate<OrderBaseSet>, TestGroupBase)>
             {
                 (s => UseModificationTests && !s.IsInstantOrder, new ModificationTests()),
-                (s => UseSlippageTests && s.IsSupportedSlippage, new SlippageTests()),
                 (s => UseOCOTests && s.IsSupportedOCO, new OCOTests(UseADCases)),
+                (s => UseOTOTests && s.IsSupportedOTO, new OTOTests(UseOCOTests, UseADCases)),
+                (s => UseSlippageTests && s.IsSupportedSlippage, new SlippageTests()),
                 (s => UseCloseByTests && s.IsGrossAcc, new CloseByTests()),
-                (s => UseOTOTests && s.IsSupportedOTO, new OTOTests()),
                 (_ => UseExecutionTests, new ExecutionTests()),
                 (_ => UseADCases, new ADTests()),
             };

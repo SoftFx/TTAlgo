@@ -8,9 +8,9 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
     {
         private enum RejectType { Open, Modify };
 
-        private delegate Task RejectTestHandler(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder, OrderCmdResultCodes expectedError);
-
         private readonly bool _useAD;
+
+        private delegate Task RejectTestHandler(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder, OrderCmdResultCodes expectedError);
 
 
         protected override string GroupName => nameof(OCOTests);

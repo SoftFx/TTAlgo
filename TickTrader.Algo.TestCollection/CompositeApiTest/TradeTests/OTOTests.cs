@@ -8,27 +8,134 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 {
     internal sealed class OTOTests : TestGroupBase
     {
-        private delegate Task OTOTest(OrderStateTemplate order);
+        private readonly bool _useOCO, _useAD;
+
+        private delegate Task TriggerTimeTest(OrderStateTemplate order);
+        private delegate Task TriggerTest(OrderStateTemplate order, OrderStateTemplate trigger);
         private delegate Task OCOwithOTOTest(OrderStateTemplate mainOrder, OrderStateTemplate ocoOrder);
 
         protected override string GroupName => nameof(OTOTests);
 
 
+        internal OTOTests(bool useOCO, bool useAD)
+        {
+            _useOCO = true;/* useOCO;*/
+            _useAD = true;/* useAD;*/
+        }
+
+
         protected override async Task RunTestGroup(OrderBaseSet set)
         {
             await RunOnTimeTriggerTests(set);
+            await RunOnExpiredTriggerTests(set);
         }
 
+
+        private async Task RunOnExpiredTriggerTests(OrderBaseSet triggerSet)
+        {
+            Task RunTests(OrderType orderType)
+            {
+                var orderSet = new OrderBaseSet(orderType, triggerSet.Side);
+
+                return RunAllExpiredTests(orderSet, triggerSet);
+            }
+
+            await RunTests(OrderType.Limit);
+            await RunTests(OrderType.Stop);
+
+            var incorrectSet = new OrderBaseSet(OrderType.StopLimit, triggerSet.Side);
+
+            await RunOnExpiredTest(RejectOpenExpiredTriggerWithStopLimit, incorrectSet, triggerSet);
+
+            if (!triggerSet.IsInstantOrder)
+                await RunOnExpiredTest(RejectOpenExpiredTriggerWithStopLimit, triggerSet, incorrectSet);
+        }
+
+        private async Task RunAllExpiredTests(OrderBaseSet orderSet, OrderBaseSet triggerSet)
+        {
+            await RunOnExpiredTest(OpenAndCancelExpiredTrigger, orderSet, triggerSet);
+
+            if (!triggerSet.IsInstantOrder)
+                await RunOnExpiredTest(OpenExpiredTriggerWithExpiration, orderSet, triggerSet);
+            //await RunOnExpiredTest(OpenAndTriggeredExpiredTrigger, orderSet, triggerSet); wait fix on TTS side
+
+            //await RunOnExpiredTest(RejectExpiredTriggerExpirationLessThanOrderExpiration, orderSet, triggerSet); wait fix on TTS side
+            await RunOnExpiredTest(RejectedExpiredTriggerWithoutTriggeredId, orderSet, triggerSet);
+            await RunOnExpiredTest(RejectExpiredTriggerToOrderWithoutExpiration, orderSet, triggerSet);
+
+            //if (_useAD) #invalid
+            //{
+            //    await RunOnExpiredTest(FullFillWithOnExpiredTrigger, orderSet, triggerSet);
+            //}
+        }
+
+        private async Task RejectOpenExpiredTriggerWithStopLimit(OrderStateTemplate order, OrderStateTemplate trigger)
+        {
+            await TestOpenOrder(order.WithExpiration(5));
+            await TestOpenReject(trigger.WithOnExpiredTrigger(order), OrderCmdResultCodes.IncorrectTriggerOrderType);
+            await TestCancelOrder(order);
+        }
+
+        private async Task OpenAndCancelExpiredTrigger(OrderStateTemplate order, OrderStateTemplate trigger)
+        {
+            await TestOpenOrder(order.WithExpiration(5));
+            await TestOpenOrder(trigger.WithOnExpiredTrigger(order));
+            await TestCancelOrder(order, OrderEvents.Cancel);
+            await trigger.Canceled.Task;
+        }
+
+        private Task OpenExpiredTriggerWithExpiration(OrderStateTemplate order, OrderStateTemplate trigger)
+        {
+            return OpenAndCancelExpiredTrigger(order, trigger.WithExpiration(10));
+        }
+
+        private async Task OpenAndTriggeredExpiredTrigger(OrderStateTemplate order, OrderStateTemplate trigger)
+        {
+            await TestOpenOrder(order.WithExpiration(5));
+            await TestOpenOrder(trigger.WithOnExpiredTrigger(order), OrderEvents.Expire, OrderEvents.Cancel, OrderEvents.Open);
+            await TestCancelOrder(trigger);
+        }
+
+        private async Task RejectExpiredTriggerExpirationLessThanOrderExpiration(OrderStateTemplate order, OrderStateTemplate trigger)
+        {
+            await TestOpenOrder(order.WithExpiration(10));
+            await TestOpenReject(trigger.WithOnExpiredTrigger(order).WithExpiration(5), OrderCmdResultCodes.IncorrectConditionsForTrigger);
+            await TestCancelOrder(order);
+        }
+
+        private Task RejectedExpiredTriggerWithoutTriggeredId(OrderStateTemplate _, OrderStateTemplate trigger)
+        {
+            trigger.TriggerType = TriggerType.OnPendingOrderExpired;
+
+            return TestOpenReject(trigger, OrderCmdResultCodes.IncorrectTriggerOrderId);
+        }
+
+        private async Task RejectExpiredTriggerToOrderWithoutExpiration(OrderStateTemplate order, OrderStateTemplate trigger)
+        {
+            await TestOpenOrder(order);
+            await TestOpenReject(trigger.WithOnExpiredTrigger(order), OrderCmdResultCodes.IncorrectExpiration);
+            await TestCancelOrder(order);
+        }
+
+        private async Task FullFillWithOnExpiredTrigger(OrderStateTemplate order, OrderStateTemplate trigger)
+        {
+            await TestOpenOrder(order.WithExpiration(20));
+            await TestOpenOrder(trigger.WithOnExpiredTrigger(order));
+
+            order.Comment = ADComments.ADCommentsList.WithActivate;
+            await TestModifyOrder(order, OrderEvents.Cancel);
+            await trigger.Canceled.Task;
+        }
 
         private async Task RunOnTimeTriggerTests(OrderBaseSet set)
         {
             if (set.IsInstantOrder)
                 await RunOnTimeTest(OpenInstantOnTime, set, 2);
             else
-                await RunOnTimeTest(OpenPendingOnTime, set);
+                await RunOnTimeTest(OpenPendingOnTime, set, 4);
 
-            await RunOnTimeTest(RejectWithIncorrectTime, set, -10);
-            await RunOnTimeTest(RejectWithNullTime, set, 10);
+            await RunOnTimeTest(RejectWithIncorrectTime, set, -30);
+            await RunOnTimeTest(RejectWithNullTime, set);
 
             if (!set.IsInstantOrder)
                 await RunOnTimeTest(RejectWithExpirationLessThanOnTime, set);
@@ -50,12 +157,12 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         private async Task RunOnTimeModifyTests(OrderBaseSet set)
         {
             //await RunOnTimeTest(ModifyOnTimeTest, set, 30); wait fix on TTS side
-            await RunOnTimeTest(ModifyPropertyTest, set, 30);
+            await RunOnTimeTest(ModifyPropertyTest, set);
 
             //await RunOnTimeTest(RejectModifyOnTime, set, 30); wait fix on TTS side
 
             if (!set.IsInstantOrder)
-                await RunOnTimeTest(RejectModifyExpiration, set, 30);
+                await RunOnTimeTest(RejectModifyExpiration, set);
 
             //if (set.IsSupportedOCO)
             //    await RunOnTimeOCOModifyTests(set); # wait TTs fix
@@ -70,17 +177,17 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             if (currentTriggerType != TriggerType.OnPendingOrderExpired)
             {
-                await RunOnTimeTest(ModifyToPendingOrderExpired, set, 30);
-                await RunOnTimeTest(RejectModifyToPendingOrderExpiredWithoutExpiration, set, 30);
-                await RunOnTimeTest(RejectModifyToPendingOrderExpiredWithoutTriggerId, set, 30);
-                await RunOnTimeTest(RejectModifyToPendingOrderExpiredWithIncorrectid, set, 30);
+                await RunOnTimeTest(ModifyToPendingOrderExpired, set);
+                await RunOnTimeTest(RejectModifyToPendingOrderExpiredWithoutExpiration, set);
+                await RunOnTimeTest(RejectModifyToPendingOrderExpiredWithoutTriggerId, set);
+                await RunOnTimeTest(RejectModifyToPendingOrderExpiredWithIncorrectid, set);
             }
 
             if (currentTriggerType != TriggerType.OnPendingOrderPartiallyFilled)
             {
-                await RunOnTimeTest(ModifyToPendingOrderPartiallyFilled, set, 30);
-                await RunOnTimeTest(RejectModifyToPendingOrderPartiallyFilledWithoutTriggerId, set, 30);
-                await RunOnTimeTest(RejectModifyToPendingOrderPartiallyFilledWithIncorrectId, set, 30);
+                await RunOnTimeTest(ModifyToPendingOrderPartiallyFilled, set);
+                await RunOnTimeTest(RejectModifyToPendingOrderPartiallyFilledWithoutTriggerId, set);
+                await RunOnTimeTest(RejectModifyToPendingOrderPartiallyFilledWithIncorrectId, set);
             }
         }
 
@@ -96,10 +203,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await TestOpenOrder(order);
             await TestOpenOrder(secondOrder);
 
-            order.TriggerType = TriggerType.OnPendingOrderExpired;
-            order.OrderIdTriggeredBy = secondOrder.Id;
+            await TestModifyOrder(order.WithOnExpiredTrigger(secondOrder));
 
-            await TestModifyOrder(order);
             await TestCancelOrder(order);
             await TestCancelOrder(secondOrder);
         }
@@ -111,10 +216,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await TestOpenOrder(order);
             await TestOpenOrder(secondOrder);
 
-            order.TriggerType = TriggerType.OnPendingOrderExpired;
-            order.OrderIdTriggeredBy = secondOrder.Id;
+            await TestModifyReject(order.WithOnExpiredTrigger(secondOrder), OrderCmdResultCodes.IncorrectExpiration);
 
-            await TestModifyReject(order, OrderCmdResultCodes.IncorrectExpiration);
             await TestCancelOrder(order);
             await TestCancelOrder(secondOrder);
         }
@@ -122,22 +225,14 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         private async Task RejectModifyToPendingOrderExpiredWithoutTriggerId(OrderStateTemplate order)
         {
             await TestOpenOrder(order);
-
-            order.TriggerType = TriggerType.OnPendingOrderExpired;
-            order.OrderIdTriggeredBy = null;
-
-            await TestModifyReject(order, OrderCmdResultCodes.IncorrectTriggerOrderId);
+            await TestModifyReject(order.WithOnExpiredTrigger(orderTriggeredById: null), OrderCmdResultCodes.IncorrectTriggerOrderId);
             await TestCancelOrder(order);
         }
 
         private async Task RejectModifyToPendingOrderExpiredWithIncorrectid(OrderStateTemplate order)
         {
             await TestOpenOrder(order);
-
-            order.TriggerType = TriggerType.OnPendingOrderExpired;
-            order.OrderIdTriggeredBy = "0";
-
-            await TestModifyReject(order, OrderCmdResultCodes.OrderNotFound);
+            await TestModifyReject(order.WithOnExpiredTrigger(orderTriggeredById: "0"), OrderCmdResultCodes.OrderNotFound);
             await TestCancelOrder(order);
         }
 
@@ -149,10 +244,8 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await TestOpenOrder(order);
             await TestOpenOrder(secondOrder);
 
-            order.TriggerType = TriggerType.OnPendingOrderPartiallyFilled;
-            order.OrderIdTriggeredBy = secondOrder.Id;
+            await TestModifyOrder(order.WithOnPartialFilledTrigger(secondOrder));
 
-            await TestModifyOrder(order);
             await TestCancelOrder(order);
             await TestCancelOrder(secondOrder);
         }
@@ -160,22 +253,14 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         private async Task RejectModifyToPendingOrderPartiallyFilledWithoutTriggerId(OrderStateTemplate order)
         {
             await TestOpenOrder(order);
-
-            order.TriggerType = TriggerType.OnPendingOrderPartiallyFilled;
-            order.OrderIdTriggeredBy = null;
-
-            await TestModifyReject(order, OrderCmdResultCodes.IncorrectTriggerOrderId);
+            await TestModifyReject(order.WithOnPartialFilledTrigger(orderTriggeredById: null), OrderCmdResultCodes.IncorrectTriggerOrderId);
             await TestCancelOrder(order);
         }
 
         private async Task RejectModifyToPendingOrderPartiallyFilledWithIncorrectId(OrderStateTemplate order)
         {
             await TestOpenOrder(order);
-
-            order.TriggerType = TriggerType.OnPendingOrderPartiallyFilled;
-            order.OrderIdTriggeredBy = "0";
-
-            await TestModifyReject(order, OrderCmdResultCodes.OrderNotFound);
+            await TestModifyReject(order.WithOnPartialFilledTrigger(orderTriggeredById: "0"), OrderCmdResultCodes.OrderNotFound);
             await TestCancelOrder(order);
         }
 
@@ -209,10 +294,10 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private async Task RunOnTimeCancelTests(OrderBaseSet set)
         {
-            await RunOnTimeTest(OpenCancelOnTime, set, 1000);
+            await RunOnTimeTest(OpenCancelOnTime, set);
 
             if (!set.IsInstantOrder)
-                await RunOnTimeTest(CancelWithExpiration, set);
+                await RunOnTimeTest(CancelWithExpiration, set, 4);
 
             if (set.IsSupportedOCO)
                 await RunOCOTriggerTest(OpenCancelOnTimeOCO, set, new OrderBaseSet(OrderType.Stop, set.Side));
@@ -252,7 +337,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private Task RejectWithExpirationLessThanOnTime(OrderStateTemplate order)
         {
-            return TestOpenReject(order.WithExpiration(4).WithOnTimeTrigger(8), OrderCmdResultCodes.IncorrectTriggerTime);
+            return TestOpenReject(order.WithExpiration(10), OrderCmdResultCodes.IncorrectTriggerTime);
         }
 
         private Task RejectWithIncorrectType(OrderBaseSet set)
@@ -261,7 +346,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             {
                 return TestOpenReject(order, OrderCmdResultCodes.IncorrectTriggerOrderType);
             }
-
 
             set = new OrderBaseSet(OrderType.StopLimit, set.Side);
 
@@ -358,14 +442,15 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             await TestModifyOrder(order.WithOnTimeTrigger(60));
 
+            order.FillAdditionalProperties();
             order.Volume *= 0.9;
             order.Comment = "Modified OnTime trigger comment";
 
-            if (order.IsSupportedMaxVisibleVolume)
-                order.MaxVisibleVolume = order.Volume * 0.9;
+            //if (order.IsSupportedMaxVisibleVolume)
+            //    order.MaxVisibleVolume = order.Volume * 0.9;
 
-            if (order.IsSupportedSlippage)
-                order.Slippage = OrderBaseSet.Symbol.Slippage * 0.9;
+            //if (order.IsSupportedSlippage)
+            //    order.Slippage = OrderBaseSet.Symbol.Slippage * 0.9;
 
             if (order.WithOnTimeTrigger(4).IsInstantOrder)
             {
@@ -415,22 +500,34 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             return RunTest(OCOTestEnviroment, set, testInfo: $"{testInfo ?? test.Method.Name} TriggerType={TriggerType.OnTime} OCO =({ocoSet}) equalVolume={equalVolume}");
         }
 
-        private Task RunOnTimeTest(OTOTest test, OrderBaseSet set, int seconds = 4, string testInfo = null)
+        private Task RunOnTimeTest(TriggerTimeTest test, OrderBaseSet set, int seconds = 30, string testInfo = null)
         {
-            Task OTOTest(OrderStateTemplate order)
+            Task OnTimeTest(OrderStateTemplate order)
             {
-                if (order.IsSupportedMaxVisibleVolume)
-                    order.MaxVisibleVolume = order.Volume * 0.9;
+                //if (order.IsSupportedMaxVisibleVolume)
+                //    order.MaxVisibleVolume = order.Volume * 0.9;
 
-                if (order.IsSupportedSlippage)
-                    order.Slippage = OrderBaseSet.Symbol.Slippage * 0.9;
+                //if (order.IsSupportedSlippage)
+                //    order.Slippage = OrderBaseSet.Symbol.Slippage * 0.9;
 
-                order.Comment = $"TriggerOrder Type={TriggerType.OnTime}";
+                //order.Comment = $"TriggerOrder Type={TriggerType.OnTime}";
 
-                return test(order.WithOnTimeTrigger(seconds));
+                return test(order.FillAdditionalProperties().WithOnTimeTrigger(seconds));
             }
 
-            return RunTest(OTOTest, set, testInfo: $"{testInfo ?? test.Method.Name} TriggerType={TriggerType.OnTime} Seconds={seconds}");
+            return RunTest(OnTimeTest, set, testInfo: $"{testInfo ?? test.Method.Name} TriggerType={TriggerType.OnTime} Seconds={seconds}");
+        }
+
+        private Task RunOnExpiredTest(TriggerTest test, OrderBaseSet orderSet, OrderBaseSet triggerSet, string testInfo = null)
+        {
+            Task OnTriggerTest(OrderStateTemplate order)
+            {
+                var trigger = triggerSet.BuildOrder();
+
+                return test(order, trigger.FillAdditionalProperties());
+            }
+
+            return RunTest(OnTriggerTest, orderSet, testInfo: $"{testInfo ?? test.Method.Name} TriggerType={TriggerType.OnPendingOrderExpired} Order={orderSet} Trigger={triggerSet}");
         }
     }
 }

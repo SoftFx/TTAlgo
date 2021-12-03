@@ -143,18 +143,23 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             return (OrderStateTemplate)this;
         }
 
-        private OrderStateTemplate WithFullLinkedOCOProperies()
+        internal OrderStateTemplate FillAdditionalProperties(double coef = 0.9)
         {
-            Comment = "OCO order";
+            Comment = $"{Options}";
+
+            if (TriggerType != null)
+                Comment += $" TriggerType = {TriggerType}";
 
             if (IsSupportedSlippage)
-                Slippage = Symbol.Slippage / 2;
+                Slippage = Symbol.Slippage * coef;
 
             if (IsSupportedMaxVisibleVolume)
-                MaxVisibleVolume = Volume / 2;
+                MaxVisibleVolume = Volume * coef;
 
-            return WithExpiration(60);
+            return (OrderStateTemplate)this;
         }
+
+        private OrderStateTemplate WithFullLinkedOCOProperies() => FillAdditionalProperties().WithExpiration(60);
 
         internal OrderStateTemplate WithOnTimeTrigger(int seconds)
         {
@@ -170,6 +175,27 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             return (OrderStateTemplate)this;
         }
+
+        internal OrderStateTemplate WithOnExpiredTrigger(OrderStateTemplate order) => WithOnExpiredTrigger(order.Id);
+
+        internal OrderStateTemplate WithOnExpiredTrigger(string orderTriggeredById)
+        {
+            TriggerType = TriggerTypes.OnPendingOrderExpired;
+            OrderIdTriggeredBy = orderTriggeredById;
+
+            return (OrderStateTemplate)this;
+        }
+
+        internal OrderStateTemplate WithOnPartialFilledTrigger(OrderStateTemplate order) => WithOnPartialFilledTrigger(order.Id);
+
+        internal OrderStateTemplate WithOnPartialFilledTrigger(string orderTriggeredById)
+        {
+            TriggerType = TriggerTypes.OnPendingOrderPartiallyFilled;
+            OrderIdTriggeredBy = orderTriggeredById;
+
+            return (OrderStateTemplate)this;
+        }
+
 
 
         internal OpenOrderRequest GetOpenRequest()
