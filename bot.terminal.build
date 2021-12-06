@@ -50,6 +50,8 @@
 
     <call target="CleanOutput" />
 
+    <call target="PrintMSBuildVersion" />
+
     <call target="SetupMSBuild" />
     <call target="RestoreNugetPackages" />
 
@@ -99,6 +101,12 @@
       </fileset>
     </delete>
 
+  </target>
+
+  <target name="PrintMSBuildVersion">
+    <exec program="${MSBuildDir}msbuild.exe">
+      <arg line="--version">
+    </exec>
   </target>
 
   <target name="RestoreNugetPackages">
