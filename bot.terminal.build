@@ -105,7 +105,7 @@
 
   <target name="PrintMSBuildVersion">
     <exec program="${MSBuildDir}msbuild.exe">
-      <arg line="--version">
+      <arg line="--version" />
     </exec>
   </target>
 
