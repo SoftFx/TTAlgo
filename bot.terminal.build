@@ -50,7 +50,7 @@
 
     <call target="CleanOutput" />
 
-    <call target="PrintMSBuildVersion" />
+    <call target="PrintEnvInfo" />
 
     <call target="SetupMSBuild" />
     <call target="RestoreNugetPackages" />
@@ -103,10 +103,25 @@
 
   </target>
 
-  <target name="PrintMSBuildVersion">
-    <exec program="${MSBuildDir}msbuild.exe">
+  <target name="PrintEnvInfo">
+
+    <exec program="${MSBuildDir}msbuild.exe" verbose="true">
       <arg line="--version" />
     </exec>
+
+    <exec program="dotnet" verbose="true">
+      <arg line="build" />
+      <arg line="--version" />
+    </exec>
+
+    <exec program="dotnet" verbose="true">
+      <arg line="--list-sdks" />
+    </exec>
+
+    <exec program="dotnet" verbose="true">
+      <arg line="--list-runtimes" />
+    </exec>
+
   </target>
 
   <target name="RestoreNugetPackages">
