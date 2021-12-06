@@ -25,6 +25,8 @@ namespace TickTrader.Algo.Account.Fdk2
         private const int DisconnectTimeoutMs = 60 * 1000;
         private const int DownloadTimeoutMs = 120 * 1000;
 
+        private static readonly object _clientSessionCtorLock = new object();
+
         private IAlgoLogger logger;
 
         public IFeedServerApi FeedApi => this;
@@ -47,6 +49,22 @@ namespace TickTrader.Algo.Account.Fdk2
 
         public event Action<IServerInterop, ConnectionErrorInfo> Disconnected;
 
+
+        static SfxInterop()
+        {
+            if (Environment.ProcessorCount > 8)
+            {
+                SoftFX.Net.Core.ClientSession.ConfigureLogServices(5);
+                SoftFX.Net.Core.ClientSession.ConfigureSessionQueues(5);
+            }
+            else
+            {
+                SoftFX.Net.Core.ClientSession.ConfigureLogServices(3);
+                SoftFX.Net.Core.ClientSession.ConfigureSessionQueues(3);
+            }
+        }
+
+
         public SfxInterop(ConnectionOptions options, string loggerId)
         {
             logger = AlgoLoggerFactory.GetLogger<SfxInterop>(loggerId);
@@ -68,14 +86,17 @@ namespace TickTrader.Algo.Account.Fdk2
 
             var logsDir = options.LogsFolder;
 
-            _feedProxy = new FDK.Client.QuoteFeed("feed.proxy", logEvents, logStates, logMessages, port: 5041, validateClientCertificate: ValidateCertificate,
-                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir);
-            _feedHistoryProxy = new FDK.Client.QuoteStore("feed.history.proxy", logEvents, logStates, logMessages, port: 5042, validateClientCertificate: ValidateCertificate,
-                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir);
-            _tradeProxy = new FDK.Client.OrderEntry("trade.proxy", logEvents, logStates, logMessages, port: 5043, validateClientCertificate: ValidateCertificate,
-                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir);
-            _tradeHistoryProxy = new FDK.Client.TradeCapture("trade.history.proxy", logEvents, logStates, logMessages, port: 5044, validateClientCertificate: ValidateCertificate,
-                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir);
+            lock (_clientSessionCtorLock) // ensure ClientSessions get shared queues in specific order
+            {
+                _feedProxy = new FDK.Client.QuoteFeed("feed.proxy", logEvents, logStates, logMessages, port: 5041, validateClientCertificate: ValidateCertificate,
+                    connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir, optimizationType: SoftFX.Net.Core.OptimizationType.Throughput2);
+                _feedHistoryProxy = new FDK.Client.QuoteStore("feed.history.proxy", logEvents, logStates, logMessages, port: 5042, validateClientCertificate: ValidateCertificate,
+                    connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir, optimizationType: SoftFX.Net.Core.OptimizationType.Throughput2);
+                _tradeProxy = new FDK.Client.OrderEntry("trade.proxy", logEvents, logStates, logMessages, port: 5043, validateClientCertificate: ValidateCertificate,
+                    connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir, optimizationType: SoftFX.Net.Core.OptimizationType.Throughput2);
+                _tradeHistoryProxy = new FDK.Client.TradeCapture("trade.history.proxy", logEvents, logStates, logMessages, port: 5044, validateClientCertificate: ValidateCertificate,
+                    connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir, optimizationType: SoftFX.Net.Core.OptimizationType.Throughput2);
+            }
 
             _feedProxyAdapter = new Fdk2FeedAdapter(_feedProxy, logger);
             _feedHistoryProxyAdapter = new Fdk2FeedHistoryAdapter(_feedHistoryProxy, logger);
