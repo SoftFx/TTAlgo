@@ -14,7 +14,7 @@
   },
   "Protocol": {
     "ListeningPort": "Port that is used for AlgoTerminal connection. It should be different from web server ports.",
-    "LogDirectoryName": "Directory where AlgoTermianl connection logs will be stored.",
+    "LogDirectoryName": "Directory where AlgoTerminal connection logs will be stored.",
     "LogMessages": "Enables writing messages sent over AlgoTerminal connection to logs. Only for troubleshooting, has severe impact on performance."
   },
   "Fdk": {
