@@ -126,44 +126,12 @@
 
   <target name="RestoreNugetPackages">
 
-    <exec program="${ToolsFolder}nuget.exe" workingdir="${SourcesDir}" verbose="true">
+    <exec program="dotnet">
       <arg line="restore" />
       <arg line="${SolutionFile}" />
-      <arg line="-Recursive" />
-      <arg line="-NonInteractive" />
-      <arg line="-Verbosity detailed" />
-      <arg line='-MSBuildPath "${MSBuildDir}."' />
-    </exec>
-
-    <exec program="dotnet">
-      <arg line="restore" />
-      <arg line="${IsolationNetCoreProject}" />
       <arg line="--force" />
       <arg line="--verbosity detailed" />
     </exec>
-
-    <exec program="dotnet">
-      <arg line="restore" />
-      <arg line="${RuntimeV1NetCoreProject}" />
-      <arg line="--force" />
-      <arg line="--verbosity detailed" />
-    </exec>
-
-    <fileset basedir="${SourcesDir}src/csharp/tests" id="TestProj">
-      <include name="**/*.csproj" />
-    </fileset>
-
-    <foreach item="File" property="TestProjectPath">
-      <in><items refid="TestProj" /></in>
-      <do>
-        <exec program="dotnet">
-          <arg line="restore" />
-          <arg line="${TestProjectPath}" />
-          <arg line="--force" />
-          <arg line="--verbosity detailed" />
-        </exec>
-      </do>
-    </foreach>
 
   </target>
 
