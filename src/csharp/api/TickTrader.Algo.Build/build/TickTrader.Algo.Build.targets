@@ -1,0 +1,17 @@
+<Project>
+
+  <UsingTask TaskName="TickTrader.Algo.Build.CreatePackageV1" AssemblyFile="$(TickTraderAlgoBuildAssemblyFile)"/>
+
+  <Target Name="CreateAlgoPackage" AfterTargets="AfterBuild" Condition=" '$(SkipCreateAlgoPackage)' == 'false' ">
+  
+    <TickTrader.Algo.Build.CreatePackageV1
+        BinPath="$(OutDir)"
+        MainAssemblyName="test1.dll"
+        ProjectFilePath="123"
+        TargetFramework="$(TargetFramework)"
+        PackageName="$(AlgoPackageName)"
+        OutputPath="$(AlgoPackageOutputPath)" />
+
+  </Target>
+
+</Project>

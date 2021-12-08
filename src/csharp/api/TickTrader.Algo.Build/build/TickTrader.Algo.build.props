@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <!-- <TickTraderAlgoBuildAssemblyFile Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)..\build\net472\TickTrader.Algo.Build.dll</TickTraderAlgoBuildAssemblyFile>
+    <TickTraderAlgoBuildAssemblyFile Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\build\netstandard2.0\TickTrader.Algo.Build.dll</TickTraderAlgoBuildAssemblyFile> -->
+    <TickTraderAlgoBuildAssemblyFile>$(MSBuildThisFileDirectory)..\build\netstandard2.0\TickTrader.Algo.Build.dll</TickTraderAlgoBuildAssemblyFile>
+
+    <SkipCreateAlgoPackage>false</SkipCreateAlgoPackage>
+    <AlgoPackageName></AlgoPackageName>
+    <AlgoPackageOutputPath></AlgoPackageOutputPath>
+  </PropertyGroup>
+</Project>

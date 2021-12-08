@@ -48,25 +48,25 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sfx", "Sfx", "{F174B9A6-C8BD-4525-BC5D-AC1E6ABFBE8F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Calculator", "modules\FDK2\Calculator\Calculator.csproj", "{D52DA7C0-3DD2-4E26-BBCE-F9A2DC09AA9D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Calculator", "modules\FDK2\Calculator\Calculator.csproj", "{D52DA7C0-3DD2-4E26-BBCE-F9A2DC09AA9D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "modules\FDK2\Client\Client.csproj", "{23D9DE1A-92C0-42FC-875B-5881CE8433D4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Client", "modules\FDK2\Client\Client.csproj", "{23D9DE1A-92C0-42FC-875B-5881CE8433D4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "modules\FDK2\Common\Common.csproj", "{D52DA7C0-3CF2-4E26-BBCE-F9A2DC09589D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "modules\FDK2\Common\Common.csproj", "{D52DA7C0-3CF2-4E26-BBCE-F9A2DC09589D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Extended", "modules\FDK2\Extended\Extended.csproj", "{EC1A8251-1B9A-4BBE-8A8C-BC8CD7DA60E0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Extended", "modules\FDK2\Extended\Extended.csproj", "{EC1A8251-1B9A-4BBE-8A8C-BC8CD7DA60E0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Standard", "modules\FDK2\Standard\Standard.csproj", "{EC1A8251-119A-44BE-8A8C-BC7823876763}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Standard", "modules\FDK2\Standard\Standard.csproj", "{EC1A8251-119A-44BE-8A8C-BC7823876763}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "modules\FDK2\modules\sfx\DotNet\Core\Core.csproj", "{2A4856E5-8D40-41F7-88D1-57D1888DB660}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "modules\FDK2\modules\sfx\DotNet\Core\Core.csproj", "{2A4856E5-8D40-41F7-88D1-57D1888DB660}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderEntry", "modules\FDK2\modules\sfx\DotNet\OrderEntry\OrderEntry.csproj", "{5BFFF9BD-D17C-4A73-AD7D-0E047FAEC28B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderEntry", "modules\FDK2\modules\sfx\DotNet\OrderEntry\OrderEntry.csproj", "{5BFFF9BD-D17C-4A73-AD7D-0E047FAEC28B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuoteFeed", "modules\FDK2\modules\sfx\DotNet\QuoteFeed\QuoteFeed.csproj", "{451E16C9-DDEC-4ADD-B5CF-E04C96095675}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuoteFeed", "modules\FDK2\modules\sfx\DotNet\QuoteFeed\QuoteFeed.csproj", "{451E16C9-DDEC-4ADD-B5CF-E04C96095675}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuoteStore", "modules\FDK2\modules\sfx\DotNet\QuoteStore\QuoteStore.csproj", "{451E16C9-DDEC-4ADD-B5CF-E03498347475}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuoteStore", "modules\FDK2\modules\sfx\DotNet\QuoteStore\QuoteStore.csproj", "{451E16C9-DDEC-4ADD-B5CF-E03498347475}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeCapture", "modules\FDK2\modules\sfx\DotNet\TradeCapture\TradeCapture.csproj", "{451E16C9-DDEC-4ADD-B5CF-C34546647475}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradeCapture", "modules\FDK2\modules\sfx\DotNet\TradeCapture\TradeCapture.csproj", "{451E16C9-DDEC-4ADD-B5CF-C34546647475}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.BotAgent.Configurator", "TickTrader.BotAgent.Configurator\TickTrader.BotAgent.Configurator.csproj", "{55E667BC-D245-4CAD-9FDC-79BA2438F709}"
 EndProject
@@ -170,7 +170,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.Logging", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.Server.PublicAPI", "src\csharp\core\TickTrader.Algo.Server.PublicAPI\TickTrader.Algo.Server.PublicAPI.csproj", "{230B301B-8E19-4256-9CFE-4BAE77121711}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.Server.Common", "src\csharp\core\TickTrader.Algo.Server.Common\TickTrader.Algo.Server.Common.csproj", "{21C4C9FB-30B4-4F22-8259-EA16B4FA8147}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.Server.Common", "src\csharp\core\TickTrader.Algo.Server.Common\TickTrader.Algo.Server.Common.csproj", "{21C4C9FB-30B4-4F22-8259-EA16B4FA8147}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.Build", "src\csharp\api\TickTrader.Algo.Build\TickTrader.Algo.Build.csproj", "{054A5553-7116-4F54-AF76-5D9D0243C327}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -959,6 +961,18 @@ Global
 		{21C4C9FB-30B4-4F22-8259-EA16B4FA8147}.Release|x64.Build.0 = Release|Any CPU
 		{21C4C9FB-30B4-4F22-8259-EA16B4FA8147}.Release|x86.ActiveCfg = Release|Any CPU
 		{21C4C9FB-30B4-4F22-8259-EA16B4FA8147}.Release|x86.Build.0 = Release|Any CPU
+		{054A5553-7116-4F54-AF76-5D9D0243C327}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{054A5553-7116-4F54-AF76-5D9D0243C327}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{054A5553-7116-4F54-AF76-5D9D0243C327}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{054A5553-7116-4F54-AF76-5D9D0243C327}.Debug|x64.Build.0 = Debug|Any CPU
+		{054A5553-7116-4F54-AF76-5D9D0243C327}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{054A5553-7116-4F54-AF76-5D9D0243C327}.Debug|x86.Build.0 = Debug|Any CPU
+		{054A5553-7116-4F54-AF76-5D9D0243C327}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{054A5553-7116-4F54-AF76-5D9D0243C327}.Release|Any CPU.Build.0 = Release|Any CPU
+		{054A5553-7116-4F54-AF76-5D9D0243C327}.Release|x64.ActiveCfg = Release|Any CPU
+		{054A5553-7116-4F54-AF76-5D9D0243C327}.Release|x64.Build.0 = Release|Any CPU
+		{054A5553-7116-4F54-AF76-5D9D0243C327}.Release|x86.ActiveCfg = Release|Any CPU
+		{054A5553-7116-4F54-AF76-5D9D0243C327}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1031,6 +1045,7 @@ Global
 		{C085F935-D531-40E0-9221-608AA673C513} = {20363DD1-DC16-41EE-AA8A-77306EB75479}
 		{230B301B-8E19-4256-9CFE-4BAE77121711} = {C5AE642C-4A61-47BD-9272-69909998B71D}
 		{21C4C9FB-30B4-4F22-8259-EA16B4FA8147} = {C5AE642C-4A61-47BD-9272-69909998B71D}
+		{054A5553-7116-4F54-AF76-5D9D0243C327} = {0B8EB813-E541-46DB-ADCC-2EA529D74B16}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {676AD27B-E03C-4277-A423-E2533F837976}
