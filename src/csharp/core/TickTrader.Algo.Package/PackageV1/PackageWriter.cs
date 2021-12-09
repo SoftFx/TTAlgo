@@ -29,7 +29,7 @@ namespace TickTrader.Algo.Package.V1
             this.trace = traceWriteAction;
         }
 
-        public void Save(string targetFolder, string pckgFileName = null)
+        public void Save(string targetFolder, string pkgFileName = null)
         {
             if (string.IsNullOrEmpty(targetFolder))
                 throw new ArgumentException("targetFolder is empty.");
@@ -40,13 +40,15 @@ namespace TickTrader.Algo.Package.V1
             if (string.IsNullOrEmpty(SrcFolder))
                 throw new Exception("SrcFolder is not set.");
 
-            if (string.IsNullOrEmpty(pckgFileName))
-                pckgFileName = Path.GetFileNameWithoutExtension(MainFileName) + DefaultExtension;
+            if (string.IsNullOrEmpty(pkgFileName))
+                pkgFileName = Path.GetFileNameWithoutExtension(MainFileName) + DefaultExtension;
+            else if (!pkgFileName.EndsWith(DefaultExtension))
+                pkgFileName += DefaultExtension;
 
-            string pckgPath = Path.Combine(targetFolder, pckgFileName);
+            string pckgPath = Path.Combine(targetFolder, pkgFileName);
 
             trace("Creating Algo package...");
-            trace("\tPackage name = " + pckgFileName);
+            trace("\tPackage name = " + pkgFileName);
             trace("\tSource folder = " + SrcFolder);
             trace("\tOutput file  = " + pckgPath);
 

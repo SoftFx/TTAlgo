@@ -1,0 +1,7 @@
+<Project>
+    <PropertyGroup>
+        <Company>Soft-FX</Company>
+        <Product>TickTrader Algo</Product>
+        <Copyright>Copyright © Soft-FX 2017-2021</Copyright>
+    </PropertyGroup>
+</Project>

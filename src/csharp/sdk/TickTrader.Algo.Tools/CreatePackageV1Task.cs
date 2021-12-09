@@ -4,11 +4,11 @@ using System;
 using System.IO;
 using TickTrader.Algo.Package.V1;
 
-namespace TickTrader.Algo.Build
+namespace TickTrader.Algo.Tools
 {
     public class CreatePackageV1 : Task
     {
-        private static readonly string AlgoCommonRepositoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "AlgoRepository");
+        private static readonly string AlgoCommonRepositoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "AlgoTerminal", "AlgoRepository");
 
 
         [Required]
@@ -32,6 +32,13 @@ namespace TickTrader.Algo.Build
         {
             try
             {
+                var mainFilePath = Path.Combine(BinPath, MainAssemblyName);
+                if (!File.Exists(mainFilePath))
+                {
+                    Log.LogError("Main assembly file not found. Check if project type is library and file exists '{0}'", mainFilePath);
+                    return false;
+                }
+
                 var writer = new PackageWriter(msg => Log.LogMessage(MessageImportance.High, msg));
                 writer.SrcFolder = BinPath;
                 writer.MainFileName = MainAssemblyName;
@@ -46,7 +53,7 @@ namespace TickTrader.Algo.Build
             }
             catch (Exception ex)
             {
-                Log.LogError("TTAlgo.Build Create PackageV1: {0}", ex.Message);
+                Log.LogError("TTAlgo.Build Create PackageV1 failed: {0}", ex.Message);
                 return false;
             }
 

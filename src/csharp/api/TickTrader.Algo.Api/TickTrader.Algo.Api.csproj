@@ -10,10 +10,9 @@
     <Id>TickTrader.Algo.Api</Id>
     <Version>1.5.1</Version>
     <Title>TickTrader.Algo.Api</Title>
-    <Authors>SoftFX</Authors>
-    <RequireLicenseAcceptance>false</RequireLicenseAcceptance>
-    <Description>TickTrader.Algo.Api</Description>
-    <Copyright>Copyright © 2017-2021</Copyright>
+    <Authors>Soft-FX</Authors>
+    <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
+    <Description>TickTrader Algo Api for bots and indicators</Description>
     <Tags>SoftFX;TickTrader</Tags>
     <PackageIcon>images\icon.png</PackageIcon>
   </PropertyGroup>
