@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="TickTrader.Algo.Api" Version="1.5.0" />
+    <PackageReference Include="TickTrader.Algo.Tools" Version="1.0.0-beta" />
+  </ItemGroup>
+
+</Project>
