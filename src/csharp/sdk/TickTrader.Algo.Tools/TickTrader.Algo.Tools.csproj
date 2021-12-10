@@ -12,6 +12,7 @@
     <Description>TickTrader Algo package build tools</Description>
     <Tags>SoftFX;TickTrader</Tags>
     <Authors>Soft-FX</Authors>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
     <PackageIcon>images\icon.png</PackageIcon>
 

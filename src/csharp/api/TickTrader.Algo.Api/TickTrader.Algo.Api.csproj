@@ -13,6 +13,7 @@
     <Description>TickTrader Algo Api for bots and indicators</Description>
     <Tags>SoftFX;TickTrader</Tags>
     <Authors>Soft-FX</Authors>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
     <PackageIcon>images\icon.png</PackageIcon>
   </PropertyGroup>
