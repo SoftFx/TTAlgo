@@ -19,7 +19,7 @@
   <property name="VsTemplatesProject"     value="${SourcesDir}TickTrader.Algo.VS.Templates\TickTrader.Algo.VS.Templates.csproj"/>
 
   <property name="CoreBinDir"          value="${SourcesDir}TickTrader.Algo.Core\bin\${Configuration}" />
-  <property name="VsPackageBinDir"     value="${SourcesDir}TickTrader.Algo.VS.Package\bin\${Configuration}"/>
+  <property name="VsPackageBinDir"     value="${SourcesDir}src\csharp\sdk\TickTrader.Algo.VS.Package\bin\${Configuration}"/>
   <property name="TerminalBinDir"      value="${SourcesDir}TickTrader.BotTerminal\bin\${Configuration}\net472\" />
   <property name="AlgoServerBinDir"         value="${SourcesDir}TickTrader.BotAgent\bin\${Configuration}\net472\publish\" />
   <property name="ConfiguratorBinDir"  value="${SourcesDir}TickTrader.BotAgent.Configurator\bin\${Configuration}\net472\" />

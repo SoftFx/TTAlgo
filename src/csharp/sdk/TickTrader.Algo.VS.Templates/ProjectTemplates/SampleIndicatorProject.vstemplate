@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<VSTemplate Version="3.0.0" Type="Project" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005" xmlns:sdk="http://schemas.microsoft.com/developer/vstemplate-sdkextension/2010">
+  <TemplateData>
+    <Name>Sample Indicator</Name>
+    <Description>Creates sample indicator</Description>
+    <Icon>TTAlgoLogo64.ico</Icon>
+    <ProjectType>CSharp</ProjectType>
+    <SortOrder>1000</SortOrder>
+    <TemplateID>TickTrader.Algo.VSTemplate.SampleIndicatorProject.CSharp</TemplateID>
+    <TemplateGroupID>TickTrader.Algo.VSTemplate.SampleIndicatorProject</TemplateGroupID>
+    <CreateNewFolder>true</CreateNewFolder>
+    <DefaultName>Indicator</DefaultName>
+    <ProvideDefaultName>true</ProvideDefaultName>
+    <LocationField>Enabled</LocationField>
+    <EnableLocationBrowseButton>true</EnableLocationBrowseButton>
+    <CreateInPlace>true</CreateInPlace>
+    <LanguageTag>CSharp</LanguageTag>
+    <ProjectTypeTag>TTAlgo</ProjectTypeTag>
+    <!--<PlatformTag>Windows</PlatformTag>-->
+  </TemplateData>
+  <TemplateContent>
+    <Project File="ProjectTemplate.csproj" ReplaceParameters="true">
+      <ProjectItem ReplaceParameters="true" TargetFileName="README.md" OpenInEditor="true">SampleIndicator.md</ProjectItem>
+      <ProjectItem ReplaceParameters="true" TargetFileName="$safeprojectname$.cs" OpenInEditor="true">SampleIndicator.cs</ProjectItem>
+    </Project>
+  </TemplateContent>
+</VSTemplate>
