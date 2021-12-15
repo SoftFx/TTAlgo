@@ -1,10 +1,11 @@
-﻿using TickTrader.Algo.Api;
+﻿using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 
-namespace $rootnamespace$
+namespace EmptyTradeBot
 {
-    [TradeBot(Category = "My bots", DisplayName = "$itemname$", Version = "1.0",
-        Description = "My awesome $itemname$")]
-    public class $safeitemname$ : TradeBot
+    [TradeBot(Category = "My bots", DisplayName = "EmptyTradeBot", Version = "1.0",
+        Description = "My awesome EmptyTradeBot")]
+    public class EmptyTradeBot : TradeBot
     {
         protected override void Init()
         {

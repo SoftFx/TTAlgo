@@ -1,10 +1,10 @@
 ﻿using TickTrader.Algo.Api;
 
-namespace $safeprojectname$
+namespace SampleIndicator
 {
-    [Indicator(Category = "My indicators", DisplayName = "$projectname$", Version = "1.0",
-        Description = "My awesome $projectname$")]
-	public class $safeprojectname$ : Indicator
+    [Indicator(Category = "My indicators", DisplayName = "SampleIndicator", Version = "1.0",
+        Description = "My awesome SampleIndicator")]
+    public class SampleIndicator : Indicator
     {
         private bool _initFailed;
 
