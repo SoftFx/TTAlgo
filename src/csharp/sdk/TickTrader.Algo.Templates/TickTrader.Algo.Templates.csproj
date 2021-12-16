@@ -28,4 +28,9 @@
     <Compile Remove="**\*" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="templates\EmptyIndicatorItem\README.md" />
+    <None Remove="templates\EmptyTradeBotItem\README.md" />
+  </ItemGroup>
+
 </Project>
