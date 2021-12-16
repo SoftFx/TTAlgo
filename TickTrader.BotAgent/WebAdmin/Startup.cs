@@ -1,21 +1,21 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.SpaServices.Webpack;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Mvc.Razor;
-using TickTrader.BotAgent.WebAdmin.Server.Core;
-using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
-using TickTrader.BotAgent.WebAdmin.Server.Extensions;
-using TickTrader.BotAgent.BA;
-using TickTrader.BotAgent.WebAdmin.Server.Core.Auth;
+using Newtonsoft.Json.Serialization;
 using System;
-using TickTrader.BotAgent.WebAdmin.Server.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Mvc;
+using TickTrader.BotAgent.WebAdmin.Server.Core;
+using TickTrader.BotAgent.WebAdmin.Server.Core.Auth;
+using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 using TickTrader.BotAgent.WebAdmin.Server.Hubs;
+using TickTrader.BotAgent.WebAdmin.Server.Models;
+using TickTrader.BotAgent.WebAdmin.Server.Settings;
 
 namespace TickTrader.BotAgent.WebAdmin
 {

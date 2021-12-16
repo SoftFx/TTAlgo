@@ -1233,6 +1233,8 @@ namespace TickTrader.Algo.Account.Fdk2
 
         private static Domain.QuoteInfo Convert(SFX.Quote fdkTick)
         {
+            var timeOfReceive = DateTime.UtcNow;
+
             var data = new Domain.QuoteData()
             {
                 Time = fdkTick.CreatingTime.ToTimestamp(),
@@ -1242,7 +1244,7 @@ namespace TickTrader.Algo.Account.Fdk2
                 AskBytes = ConvertLevel2(fdkTick.Asks),
             };
 
-            return new Domain.QuoteInfo(fdkTick.Symbol, data);
+            return new Domain.QuoteInfo(fdkTick.Symbol, data, timeOfReceive: timeOfReceive);
         }
 
         private static ByteString ConvertLevel2(List<QuoteEntry> book)

@@ -31,7 +31,7 @@ namespace TickTrader.Algo.Domain
 
 
         public QuoteData(DateTime time, double? bid, double? ask)
-            : this(time.ToUniversalTime().ToTimestamp(), bid,ask)
+            : this(time.ToUniversalTime().ToTimestamp(), bid, ask)
         {
         }
 
@@ -147,6 +147,11 @@ namespace TickTrader.Algo.Domain
         public Timestamp Timestamp => _data.Time;
 
 
+        public DateTime TimeOfReceive { get; }
+
+        public double QuoteDelay { get; }
+
+
         public QuoteInfo(string symbol) // empty rate
             : this(symbol, new QuoteData(), null)
         {
@@ -167,7 +172,7 @@ namespace TickTrader.Algo.Domain
         {
         }
 
-        public QuoteInfo(string symbol, QuoteData data, int? depth = null)
+        public QuoteInfo(string symbol, QuoteData data, int? depth = null, DateTime? timeOfReceive = null)
         {
             _symbol = symbol;
             _data = data;
@@ -175,6 +180,9 @@ namespace TickTrader.Algo.Domain
 
             _bidBytes = _data.BidBytes.ToByteArray();
             _askBytes = _data.AskBytes.ToByteArray();
+
+            TimeOfReceive = timeOfReceive ?? DateTime.UtcNow;
+            QuoteDelay = (TimeOfReceive - Time.ToUniversalTime()).TotalMilliseconds;
         }
 
         private QuoteInfo() { }
@@ -202,6 +210,10 @@ namespace TickTrader.Algo.Domain
             return _data;
         }
 
+        public string GetDelayInfo()
+        {
+            return $"{Symbol} Delay={QuoteDelay}ms, AggTime={Time:dd-MM-yyyy HH:mm:ss.fffff}, ClientTime={TimeOfReceive:dd-MM-yyyy HH:mm:ss.fffff}";
+        }
 
         #region IRateInfo
 
@@ -217,4 +229,6 @@ namespace TickTrader.Algo.Domain
 
         #endregion
     }
+
+
 }

@@ -1,5 +1,4 @@
-﻿using ActorSharp;
-using Caliburn.Micro;
+﻿using Caliburn.Micro;
 using NLog;
 using NLog.Config;
 using System;
@@ -10,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using TickTrader.Algo.Account;
 using TickTrader.Algo.Account.Fdk2;
+using TickTrader.Algo.Account.Settings;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
@@ -201,7 +201,22 @@ namespace TickTrader.BotTerminal
 
                 var connectionOptions = ConnectionOptions.CreateForTerminal(Properties.Settings.Default.EnableConnectionLogs, EnvService.Instance.LogFolder);
 
-                var clientHandler = new ClientModel.ControlHandler((options, loggerId) => new SfxInterop(options, loggerId),connectionOptions, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy, "0");
+                var accountSettings = new AccountModelSettings("0")
+                {
+                    ConnectionSettings = new ConnectionSettings
+                    {
+                        AccountFactory = (options, loggerId) => new SfxInterop(options, loggerId),
+                        Options = connectionOptions,
+                    },
+
+                    HistoryProviderSettings = new HistoryProviderSettings
+                    {
+                        FolderPath = EnvService.Instance.FeedHistoryCacheFolder,
+                        Options = FeedHistoryFolderOptions.ServerHierarchy,
+                    },
+                };
+
+                var clientHandler = new ClientModel.ControlHandler(accountSettings);
                 var dataHandler = clientHandler.CreateDataHandler();
                 await dataHandler.Init();
 

@@ -1,16 +1,16 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
-using System.Xml;
 using System.Threading.Tasks;
-using TickTrader.BotAgent.Infrastructure;
+using System.Xml;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Server;
 using TickTrader.Algo.Server.Persistence;
-using TickTrader.Algo.Core.Lib;
+using TickTrader.BotAgent.Infrastructure;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
-using Microsoft.Extensions.Configuration;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -40,13 +40,20 @@ namespace TickTrader.BotAgent.BA.Models
         public async Task InitAsync(IConfiguration config)
         {
             var settings = new AlgoServerSettings();
+            var monitoringSettings = config.GetMonitoringSettings();
+
             settings.DataFolder = AppDomain.CurrentDomain.BaseDirectory;
             settings.EnableAccountLogs = config.GetFdkSettings().EnableLogs;
             settings.RuntimeSettings.EnableDevMode = config.GetAlgoSettings().EnableDevMode;
             settings.PkgStorage.AddLocation(SharedConstants.LocalRepositoryId, envService.AlgoRepositoryFolder);
             settings.PkgStorage.UploadLocationId = SharedConstants.LocalRepositoryId;
 
+            settings.MonitoringSettings.QuoteMonitoring.EnableMonitoring = monitoringSettings.QuoteMonitoring.EnableMonitoring;
+            settings.MonitoringSettings.QuoteMonitoring.AccetableQuoteDelay = monitoringSettings.QuoteMonitoring.AccetableQuoteDelay;
+            settings.MonitoringSettings.QuoteMonitoring.AlertsDelay = monitoringSettings.QuoteMonitoring.AlertsDelay;
+
             await _algoServer.Init(settings);
+
             if (await _algoServer.NeedLegacyState())
             {
                 await _algoServer.LoadLegacyState(BuildServerSavedState());

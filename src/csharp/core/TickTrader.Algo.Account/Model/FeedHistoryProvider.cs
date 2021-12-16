@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using TickTrader.Algo.Account.Settings;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage;
@@ -21,19 +22,18 @@ namespace TickTrader.Algo.Account
         private FeedCache.Handler _diskCache = new FeedCache.Handler(SpawnLocal<FeedCache>());
         private IFeedServerApi _feedProxy;
 
-        private void Init(string onlieDataFolder, FeedHistoryFolderOptions folderOptions, string loggerId)
+        private void Init(HistoryProviderSettings settings, string loggerId)
         {
             logger = AlgoLoggerFactory.GetLogger<FeedHistoryProviderModel>(loggerId);
-            _dataFolder = onlieDataFolder;
-            _folderOptions = folderOptions;
+            _dataFolder = settings.FolderPath;
+            _folderOptions = settings.Options;
         }
 
         internal class ControlHandler : Handler<FeedHistoryProviderModel>
         {
-            public ControlHandler(ConnectionModel connection, string onlieDataFolder, FeedHistoryFolderOptions folderOptions, string loggerId)
-                : base(SpawnLocal<FeedHistoryProviderModel>())
+            public ControlHandler(HistoryProviderSettings settings, string loggerId) : base(SpawnLocal<FeedHistoryProviderModel>())
             {
-                Actor.Send(a => a.Init(onlieDataFolder, folderOptions, loggerId));
+                Actor.Send(a => a.Init(settings, loggerId));
             }
 
             public Task Start(IFeedServerApi api, string server, string login) => Actor.Call(a => a.Start(api, server, login));

@@ -1,27 +1,27 @@
-using System.IO;
 using Microsoft.AspNetCore.Hosting;
-using TickTrader.BotAgent.WebAdmin;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Diagnostics;
 using Newtonsoft.Json;
-using TickTrader.BotAgent.WebAdmin.Server.Models;
-using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 using NLog;
-using System.Globalization;
-using NLog.Web;
 using NLog.Extensions.Logging;
+using NLog.Web;
+using System;
 using System.Collections.Generic;
-using TickTrader.BotAgent.Hosting;
-using TickTrader.Algo.Server;
-using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Package;
-using TickTrader.Algo.Isolation.NetFx;
-using TickTrader.Algo.CoreV1;
-using TickTrader.Algo.Logging;
-using TickTrader.Algo.Server.Common;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
 using TickTrader.Algo.Async.Actors;
+using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.CoreV1;
+using TickTrader.Algo.Isolation.NetFx;
+using TickTrader.Algo.Logging;
+using TickTrader.Algo.Package;
+using TickTrader.Algo.Server;
+using TickTrader.Algo.Server.Common;
+using TickTrader.BotAgent.Hosting;
+using TickTrader.BotAgent.WebAdmin;
+using TickTrader.BotAgent.WebAdmin.Server.Extensions;
+using TickTrader.BotAgent.WebAdmin.Server.Settings;
 
 namespace TickTrader.BotAgent
 {
@@ -104,7 +104,7 @@ namespace TickTrader.BotAgent
 
             return new WebHostBuilder()
                 .UseConfiguration(config)
-                .ConfigureAppConfiguration((context, builder) => 
+                .ConfigureAppConfiguration((context, builder) =>
                 {
                     // Thanks Microsoft for not doing this in UseConfiguration
                     // I enjoy spending hours in framework sources
@@ -160,6 +160,7 @@ namespace TickTrader.BotAgent
                 currentSettings.Protocol = AppSettings.Default.Protocol;
                 anyChanges = true;
             }
+
             if (currentSettings.Credentials.Login != null)
             {
                 var oldCreds = currentSettings.Credentials;
@@ -168,14 +169,22 @@ namespace TickTrader.BotAgent
                 currentSettings.Credentials.AdminPassword = oldCreds.Password;
                 anyChanges = true;
             }
+
             if (currentSettings.Fdk == null)
             {
                 currentSettings.Fdk = AppSettings.Default.Fdk;
                 anyChanges = true;
             }
+
             if (currentSettings.Algo == null)
             {
                 currentSettings.Algo = AppSettings.Default.Algo;
+                anyChanges = true;
+            }
+
+            if (currentSettings.Monitoring == null)
+            {
+                currentSettings.Monitoring = AppSettings.Default.Monitoring;
                 anyChanges = true;
             }
 

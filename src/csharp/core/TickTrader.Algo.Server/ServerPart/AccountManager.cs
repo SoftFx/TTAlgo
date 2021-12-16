@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Account;
+using TickTrader.Algo.Account.Settings;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
@@ -127,8 +128,7 @@ namespace TickTrader.Algo.Server
 
             try
             {
-                var client = new ClientModel.ControlHandler2(KnownAccountFactories.Fdk2, _server.AccountOptions,
-                        _server.Env.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerClientHierarchy, "test" + Guid.NewGuid().ToString("N"));
+                var client = new ClientModel.ControlHandler2(_server.GetDefaultClientSettings($"test{Guid.NewGuid():N}"));
 
                 await client.OpenHandler();
 
@@ -203,15 +203,17 @@ namespace TickTrader.Algo.Server
             }
 
             await ActorSystem.StopActor(acc)
-                    .OnException(ex => _logger.Error(ex, $"Failed to stop actor {acc.Name}"));
+                             .OnException(ex => _logger.Error(ex, $"Failed to stop actor {acc.Name}"));
         }
 
-        private void Validate(string server, string userId, AccountCreds creds)
+        private static void Validate(string server, string userId, AccountCreds creds)
         {
             if (string.IsNullOrWhiteSpace(server))
                 throw new AlgoException("Server is required");
+
             if (string.IsNullOrWhiteSpace(userId))
                 throw new AlgoException("UserId is required");
+
             switch (creds.AuthScheme)
             {
                 case AccountCreds.SimpleAuthSchemeId:

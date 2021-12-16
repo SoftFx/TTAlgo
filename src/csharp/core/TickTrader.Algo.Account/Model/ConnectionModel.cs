@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using TickTrader.Algo.Account.Settings;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
@@ -32,12 +33,13 @@ namespace TickTrader.Algo.Account
         private ActorEvent _deinitListeners = new ActorEvent();
         private ActorEvent<StateInfo> _stateListeners = new ActorEvent<StateInfo>();
 
-        public ConnectionModel(ServerInteropFactory accFactory, ConnectionOptions options, string loggerId)
+        public ConnectionModel(ConnectionSettings settings, string loggerId)
         {
-            _loggerId = loggerId;
             logger = AlgoLoggerFactory.GetLogger<ConnectionModel>(loggerId);
-            _options = options;
-            _accFactory = accFactory;
+
+            _loggerId = loggerId;
+            _options = settings.Options;
+            _accFactory = settings.AccountFactory;
 
             Func<bool> canRecconect = () => _options.AutoReconnect && wasConnected
                 && LastErrorCode != ConnectionErrorInfo.Types.ErrorCode.BlockedAccount
