@@ -1,4 +1,5 @@
-﻿using TickTrader.Algo.Api;
+﻿using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 
 namespace SampleTradeBot
 {
@@ -6,27 +7,60 @@ namespace SampleTradeBot
         Description = "My awesome SampleTradeBot")]
     public class SampleTradeBot : TradeBot
     {
-        [Parameter(DisplayName = "Param 1", DefaultValue = 2)]
-        public int IntParam { get; set; }
+        private Task _tradeTask;
 
-        [Parameter(DisplayName = "Param 2", DefaultValue = 1.2)]
-        public double DoubleParam { get; set; }
 
-        public enum Variants { Varitan1, Variant2, Variant3 }
-        [Parameter(DisplayName = "Param 3", DefaultValue = Variants.Variant3)]
-        public Variants EnumParam { get; set; }
+        [Parameter(DisplayName = "Position Side", DefaultValue = OrderSide.Buy)]
+        public OrderSide PositionSide { get; set; }
 
-        [Input]
-        public DataSeries PriceInput { get; set; }
+        [Parameter(DisplayName = "Volume", DefaultValue = 0.2)]
+        public double Volume { get; set; }
 
-        protected override void Init()
+        [Parameter(DisplayName = "Time to wait", DefaultValue = 1000)]
+        public int TimeToWait { get; set; }
+
+
+        protected override void OnStart()
         {
-            // TO DO: Put your initialization logic here...
+            if (Account.Type != AccountTypes.Net)
+            {
+                PrintError("This bot is designed to work only on net accounts");
+                Exit();
+                return;
+            }
+            if (TimeToWait < 100)
+            {
+                PrintError("Delay is too small");
+                Exit();
+                return;
+            }
+
+            _tradeTask = TradeLoop();
         }
 
-        protected override void OnQuote(Quote quote)
+        protected override async Task AsyncStop()
         {
-            // TO DO: Put your logic here...
+            Print("Stop requested. Awaiting trade loop");
+
+            if (_tradeTask != null)
+                await _tradeTask;
+        }
+
+        protected async Task TradeLoop()
+        {
+            var positionOpenRequest = OpenOrderRequest.Template.Create()
+                .WithParams(Symbol.Name, PositionSide, OrderType.Market, Volume, null, null)
+                .MakeRequest();
+            var positionCloseRequest = OpenOrderRequest.Template.Create()
+                .WithParams(Symbol.Name, PositionSide == OrderSide.Buy ? OrderSide.Sell : OrderSide.Buy, OrderType.Market, Volume, null, null)
+                .MakeRequest();
+
+            while (!IsStopped)
+            {
+                await OpenOrderAsync(positionOpenRequest);
+                await Delay(TimeToWait);
+                await OpenOrderAsync(positionCloseRequest);
+            }
         }
     }
 }
