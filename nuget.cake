@@ -2,15 +2,15 @@
 // ARGUMENTS
 ///////////////////////////////////////////////////////////////////////////////
 
-var target = Argument("Target", "Push");
-var buildNumber = Argument("BuildNumber", 0);
-var configuration = Argument("Configuration", "Release");
-var solutionDir = Argument("SolutionDir", "./");
-var artifactsDirName = Argument("ArtifactsDirName", "artifacts.nuget");
-var targetProject = Argument("TargetProject", "api");
-var versionSuffix = Argument("VersionSuffix", "");
-var nugetKey = Argument("NugetKey", "never push real key to git");
-var details = Argument<DotNetVerbosity>("Details", DotNetVerbosity.Detailed);
+var target = ConsoleOrBuildSystemArgument("Target", "Push");
+var buildNumber = ConsoleOrBuildSystemArgument("BuildNumber", 0);
+var configuration = ConsoleOrBuildSystemArgument("Configuration", "Release");
+var solutionDir = ConsoleOrBuildSystemArgument("SolutionDir", "./");
+var artifactsDirName = ConsoleOrBuildSystemArgument("ArtifactsDirName", "artifacts.nuget");
+var targetProject = ConsoleOrBuildSystemArgument("TargetProject", "api");
+var versionSuffix = ConsoleOrBuildSystemArgument("VersionSuffix", "");
+var nugetKey = ConsoleOrBuildSystemArgument("NugetKey", "never push real key to git");
+var details = ConsoleOrBuildSystemArgument<DotNetVerbosity>("Details", DotNetVerbosity.Detailed);
 
 var solutionPath = DirectoryPath.FromString(solutionDir);
 var projects = new Dictionary<string, string> { 
@@ -42,7 +42,7 @@ Setup(ctx =>
     Information("Calculated package version: {0}", pkgVersion);
 
     if (BuildSystem.IsRunningOnTeamCity)
-        BuildSystem.TeamCity.SetBuildNumber(pkgVersion);
+        TeamCity.SetBuildNumber(pkgVersion);
 });
 
 // Teardown(ctx =>
@@ -56,7 +56,7 @@ Setup(ctx =>
 Task("Clean")
     .Does(() =>
 {
-    var block = BuildSystem.IsRunningOnTeamCity ? BuildSystem.TeamCity.Block("Clean") : null;
+    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("Clean") : null;
 
     try
     {
@@ -76,7 +76,7 @@ Task("Pack")
     .IsDependentOn("Clean")
     .Does(() =>
 {
-    var block = BuildSystem.IsRunningOnTeamCity ? BuildSystem.TeamCity.Block("Pack") : null;
+    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("Pack") : null;
 
     try
     {
@@ -97,7 +97,7 @@ Task("Push")
     .IsDependentOn("Pack")
     .Does(() =>
 {
-    var block = BuildSystem.IsRunningOnTeamCity ? BuildSystem.TeamCity.Block("Push") : null;
+    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("Push") : null;
 
     try
     {
@@ -129,4 +129,17 @@ public void PrintArguments()
     Information("VersionSuffix: {0}", versionSuffix);
     Information("Details: {0}", details);
     Information("Nuget key invalid: {0}", nugetKey.Contains(' '));
+}
+
+public string ConsoleOrBuildSystemArgument(string name, string defautValue) => ConsoleOrBuildSystemArgument<string>(name, defautValue);
+
+public T ConsoleOrBuildSystemArgument<T>(string name, T defautValue)
+{
+    if (HasArgument(name))
+        return Argument<T>(name, defautValue);
+
+    if (BuildSystem.IsRunningOnTeamCity)
+        return EnvironmentVariable<T>($"system_{name}", defautValue);
+
+    return defautValue;
 }
