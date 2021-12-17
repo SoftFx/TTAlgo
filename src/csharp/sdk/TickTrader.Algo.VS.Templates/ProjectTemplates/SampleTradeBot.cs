@@ -1,4 +1,5 @@
-﻿using TickTrader.Algo.Api;
+﻿using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 
 namespace $safeprojectname$
 {
