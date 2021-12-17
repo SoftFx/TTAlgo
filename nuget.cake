@@ -129,7 +129,7 @@ public void PrintArguments()
     Information("TargetProject: {0}", targetProject);
     Information("VersionSuffix: {0}", versionSuffix);
     Information("Details: {0}", details);
-    Information("Nuget key invalid: {0}", nugetKey.Contains(' '));
+    Information("Nuget key invalid: {0}", HidePartially(nugetKey));
 }
 
 public string ConsoleOrBuildSystemArgument(string name, string defautValue) => ConsoleOrBuildSystemArgument<string>(name, defautValue);
@@ -142,7 +142,7 @@ public T ConsoleOrBuildSystemArgument<T>(string name, T defautValue)
     if (BuildSystem.IsRunningOnTeamCity
         && TeamCity.Environment.Build.BuildProperties.TryGetValue(name, out var teamCityProperty))
     {
-        Information("Found Teamcity property: {0}={1}", name, name.Contains("ApiKey") ? $"{teamCityProperty.Length} symbols" : teamCityProperty);
+        Information("Found Teamcity property: {0}", name);
 
         const string envVarName = "env_TempTeamCityProperty";
         Environment.SetEnvironmentVariable(envVarName, teamCityProperty, EnvironmentVariableTarget.Process);
@@ -150,4 +150,22 @@ public T ConsoleOrBuildSystemArgument<T>(string name, T defautValue)
     }
 
     return defautValue;
+}
+
+public string HidePartially(string src)
+{
+    var len = src.Length;
+    var sb = new StringBuilder();
+    var i = 0;
+    while (i < len)
+    {
+        var cnt = Math.Min(5, len - i);
+        if (i % 10 == 0)
+            sb.Append(src, i, cnt);
+        else 
+            sb.Append('*', cnt);
+
+        i += cnt;
+    }
+    return sb.ToString();
 }
