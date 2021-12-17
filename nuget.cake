@@ -38,7 +38,8 @@ Setup(ctx =>
     // this is expected to throw if VersionPrefix is not in correct format
     var versionPrefix = new Version(XmlPeek(projectPath, "//VersionPrefix"));
 
-    var pkgVersion = string.IsNullOrEmpty(versionSuffix) ? $"{versionPrefix}" : $"{versionPrefix}-{versionSuffix}.{buildNumber}";
+    versionSuffix = string.IsNullOrEmpty(versionSuffix) ? versionSuffix : $"{versionSuffix}.{buildNumber}";
+    var pkgVersion = string.IsNullOrEmpty(versionSuffix) ? $"{versionPrefix}" : $"{versionPrefix}-{versionSuffix}";
     Information("Calculated package version: {0}", pkgVersion);
 
     if (BuildSystem.IsRunningOnTeamCity)
@@ -141,7 +142,7 @@ public T ConsoleOrBuildSystemArgument<T>(string name, T defautValue)
     if (BuildSystem.IsRunningOnTeamCity
         && TeamCity.Environment.Build.BuildProperties.TryGetValue(name, out var teamCityProperty))
     {
-        Information("Found Teamcity property: {0}={1}", name, teamCityProperty);
+        Information("Found Teamcity property: {0}={1}", name, name.Contains("ApiKey") ? teamCityProperty : $"{teamCityProperty.Length} symbols");
 
         const string envVarName = "env_TempTeamCityProperty";
         Environment.SetEnvironmentVariable(envVarName, teamCityProperty, EnvironmentVariableTarget.Process);
