@@ -9,7 +9,7 @@ var solutionDir = ConsoleOrBuildSystemArgument("SolutionDir", "./");
 var artifactsDirName = ConsoleOrBuildSystemArgument("ArtifactsDirName", "artifacts.nuget");
 var targetProject = ConsoleOrBuildSystemArgument("TargetProject", "api");
 var versionSuffix = ConsoleOrBuildSystemArgument("VersionSuffix", "");
-var nugetKey = ConsoleOrBuildSystemArgument("NugetKey", "never push real key to git");
+var nugetKey = ConsoleOrBuildSystemArgument("NugetApiKey", "never push real key to git");
 var details = ConsoleOrBuildSystemArgument<DotNetVerbosity>("Details", DotNetVerbosity.Detailed);
 
 var solutionPath = DirectoryPath.FromString(solutionDir);
@@ -136,10 +136,17 @@ public string ConsoleOrBuildSystemArgument(string name, string defautValue) => C
 public T ConsoleOrBuildSystemArgument<T>(string name, T defautValue)
 {
     if (HasArgument(name))
-        return Argument<T>(name, defautValue);
+        return Argument<T>(name);
 
-    if (BuildSystem.IsRunningOnTeamCity)
-        return EnvironmentVariable<T>($"system_{name}", defautValue);
+    if (BuildSystem.IsRunningOnTeamCity
+        && TeamCity.Environment.Build.BuildProperties.TryGetValue(name, out var teamCityProperty))
+    {
+        Information("Found Teamcity property: {0}={1}", name, teamCityProperty);
+
+        const string envVarName = "env_TempTeamCityProperty";
+        Environment.SetEnvironmentVariable(envVarName, teamCityProperty, EnvironmentVariableTarget.Process);
+        return EnvironmentVariable<T>(envVarName, defautValue);
+    }
 
     return defautValue;
 }
