@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Account
             _sendNotification = settings.NotificationMethod;
 
             _stats = new QuoteStats(settings.AccetableQuoteDelay);
-            _sender = new Timer(settings.AlertsDelay * 60000);
+            _sender = new Timer(settings.AlertsDelay);
 
             _sender.Elapsed += SendNotification;
         }
@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Account
 
         private void SendNotification(object sender, ElapsedEventArgs e)
         {
-            _sendNotification?.Invoke($"Account {_connection.CurrentLogin}. {_stats}");
+            _sendNotification?.Invoke($"TTS={_connection.CurrentServer} acc={_connection.CurrentLogin}. {_stats}");
             _stats.ResetStats();
             _sender.Stop();
         }

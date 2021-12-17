@@ -23,7 +23,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Settings
         internal static QuoteMonitoringSettings Default { get; } = new QuoteMonitoringSettings
         {
             EnableMonitoring = false,
-            AccetableQuoteDelay = 1000,
+            AccetableQuoteDelay = 60000,
             AlertsDelay = 1,
         };
     }
