@@ -142,7 +142,7 @@ public T ConsoleOrBuildSystemArgument<T>(string name, T defautValue)
     if (BuildSystem.IsRunningOnTeamCity
         && TeamCity.Environment.Build.BuildProperties.TryGetValue(name, out var teamCityProperty))
     {
-        Information("Found Teamcity property: {0}={1}", name, name.Contains("ApiKey") ? teamCityProperty : $"{teamCityProperty.Length} symbols");
+        Information("Found Teamcity property: {0}={1}", name, name.Contains("ApiKey") ? $"{teamCityProperty.Length} symbols" : teamCityProperty);
 
         const string envVarName = "env_TempTeamCityProperty";
         Environment.SetEnvironmentVariable(envVarName, teamCityProperty, EnvironmentVariableTarget.Process);
