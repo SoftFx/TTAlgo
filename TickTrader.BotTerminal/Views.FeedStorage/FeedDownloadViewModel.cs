@@ -157,7 +157,7 @@ namespace TickTrader.BotTerminal
                         downloadedCount += info.Count;
                         var msg = "Downloading... " + downloadedCount + " bars are downloaded.";
                         if (watch.ElapsedMilliseconds > 0)
-                            msg += "\nBar per second: " + Math.Round(((double)downloadedCount * 1000) / watch.ElapsedMilliseconds);
+                            msg += "\nBars per second: " + Math.Round(((double)downloadedCount * 1000) / watch.ElapsedMilliseconds);
                         observer.SetMessage(msg);
                     }
 
