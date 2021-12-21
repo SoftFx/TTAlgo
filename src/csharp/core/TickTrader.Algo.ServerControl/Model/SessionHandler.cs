@@ -52,7 +52,7 @@ namespace TickTrader.Algo.ServerControl.Model
             if (Interlocked.CompareExchange(ref _closeFlag, 1, 0) != 0)
                 return;
 
-            _writer.TryComplete();
+            _writer?.TryComplete();
             _closeTokenSrc?.Cancel();
 
             _logger.Info($"Closed update stream - {reason}");

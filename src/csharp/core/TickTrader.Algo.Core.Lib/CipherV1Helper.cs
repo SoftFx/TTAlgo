@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Core.Lib
         }
 
 
-        private const int SecretKeySize = 4096;
+        public const int SecretKeySize = 4096;
         private const int BlockSize = 16;
         private const int CipherKeySize = 32;
         // This constant determines the number of iterations for the password bytes generation function.
@@ -27,9 +27,9 @@ namespace TickTrader.Algo.Core.Lib
             var secretKey = ArrayPool<byte>.Shared.Rent(SecretKeySize);
             var saltData = ArrayPool<byte>.Shared.Rent(CipherKeySize);
 
-            var dataBlockCnt = System.Math.DivRem(plainData.Count, BlockSize, out var blockRemainder);
-            if (blockRemainder != 0)
-                dataBlockCnt++;
+            // https://datatracker.ietf.org/doc/html/rfc5652#section-6.3
+            // Padding adds extra block if data length is multiple of block size
+            var dataBlockCnt = plainData.Count / BlockSize + 1;
             var cipherLength = CipherKeySize + BlockSize * dataBlockCnt;
             var cipherData = ArrayPool<byte>.Shared.Rent(cipherLength);
 
