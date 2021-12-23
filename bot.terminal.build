@@ -108,6 +108,10 @@
 
     <exec program="dotnet" verbose="true">
       <arg line="build" />
+      <arg line="--version" />
+    </exec>
+
+    <exec program="dotnet" verbose="true">
       <arg line="--info" />
     </exec>
 
