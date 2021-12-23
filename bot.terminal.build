@@ -15,10 +15,7 @@
   <property name="TerminalProject"     value="${SourcesDir}TickTrader.BotTerminal\TickTrader.BotTerminal.csproj" />
   <property name="AlgoServerProject"        value="${SourcesDir}TickTrader.BotAgent\TickTrader.BotAgent.csproj" />
 
-  <property name="VsPackageProject"     value="${SourcesDir}TickTrader.Algo.VS.Package\TickTrader.Algo.VS.Package.csproj"/>
-  <property name="VsTemplatesProject"     value="${SourcesDir}TickTrader.Algo.VS.Templates\TickTrader.Algo.VS.Templates.csproj"/>
-
-  <property name="CoreBinDir"          value="${SourcesDir}TickTrader.Algo.Core\bin\${Configuration}" />
+  <property name="CoreBinDir"          value="${SourcesDir}src\csharp\api\TickTrader.Algo.CoreV1\bin\${Configuration}" />
   <property name="VsPackageBinDir"     value="${SourcesDir}src\csharp\sdk\TickTrader.Algo.VS.Package\bin\${Configuration}"/>
   <property name="TerminalBinDir"      value="${SourcesDir}TickTrader.BotTerminal\bin\${Configuration}\net472\" />
   <property name="AlgoServerBinDir"         value="${SourcesDir}TickTrader.BotAgent\bin\${Configuration}\net472\publish\" />
@@ -111,15 +108,7 @@
 
     <exec program="dotnet" verbose="true">
       <arg line="build" />
-      <arg line="--version" />
-    </exec>
-
-    <exec program="dotnet" verbose="true">
-      <arg line="--list-sdks" />
-    </exec>
-
-    <exec program="dotnet" verbose="true">
-      <arg line="--list-runtimes" />
+      <arg line="--info" />
     </exec>
 
   </target>
@@ -131,26 +120,6 @@
       <arg line="${SolutionFile}" />
       <arg line="--force" />
       <arg line="--verbosity detailed" />
-    </exec>
-
-    <exec program="${ToolsFolder}nuget.exe" workingdir="${SourcesDir}" verbose="true">
-      <arg line="restore" />
-      <arg line="${VsPackageProject}" />
-      <arg line="-Recursive" />
-      <arg line="-NonInteractive" />
-      <arg line="-Verbosity detailed" />
-      <arg line='-MSBuildPath "${MSBuildDir}."' />
-      <arg line="-SolutionDirectory ${SourcesDir}" />
-    </exec>
-
-    <exec program="${ToolsFolder}nuget.exe" workingdir="${SourcesDir}" verbose="true">
-      <arg line="restore" />
-      <arg line="${VsTemplatesProject}" />
-      <arg line="-Recursive" />
-      <arg line="-NonInteractive" />
-      <arg line="-Verbosity detailed" />
-      <arg line='-MSBuildPath "${MSBuildDir}."' />
-      <arg line="-SolutionDirectory ${SourcesDir}" />
     </exec>
 
   </target>

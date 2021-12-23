@@ -129,7 +129,7 @@ public void PrintArguments()
     Information("TargetProject: {0}", targetProject);
     Information("VersionSuffix: {0}", versionSuffix);
     Information("Details: {0}", details);
-    Information("Nuget key invalid: {0}", HidePartially(nugetKey));
+    Information("NugetKey: {0}", HidePartially(nugetKey));
 }
 
 public string ConsoleOrBuildSystemArgument(string name, string defautValue) => ConsoleOrBuildSystemArgument<string>(name, defautValue);
