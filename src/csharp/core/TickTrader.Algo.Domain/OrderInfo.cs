@@ -125,7 +125,7 @@ namespace TickTrader.Algo.Domain
 
             if (CompositeTag.TryParse(info.UserTag, out CompositeTag compositeTag))
             {
-                UserTag = compositeTag.Tag;
+                UserTag = compositeTag.Tag ?? string.Empty;
                 InstanceId = compositeTag.Key;
             }
             else
