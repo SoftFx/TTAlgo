@@ -56,7 +56,7 @@
     <call target="PublishAlgoServer" />
     <call target="PublishPublicAPI" />
 
-    <call target="CreatePackages" />
+    <!-- <call target="CreatePackages" /> -->
     <call target="CreateZipArtifacts" />
 
     <call target="AlgoInstaller" />
@@ -137,18 +137,24 @@
   </target>
 
   <target name="BuildSolution">
-<!--
+
     <property name="MSBuild.Target" value="Build" />
     <property name="MSBuild.TargetFile" value="${SolutionFile}" />
-    <call target="RunMSBuildSolution" />
--->
-    <exec program="dotnet">
-      <arg line="build" />
-      <arg line="${SolutionFile}" />
-      <arg line="-c ${Configuration}" />
-      <arg line="-v Normal" />
-      <arg line="/p:AlgoPackage_Create=true" />
-      <arg line="/p:AlgoPackage_OutputPath=${OutputFolder}" />
+    <property name="MSBuild.Platform" value="Any CPU" />
+    <exec program="${MSBuildDir}msbuild.exe" >
+      <arg value="${MSBuild.TargetFile}" />
+      <arg value="/t:${MSBuild.Target}" />
+      <arg value="/maxcpucount" />
+      <arg value="/fl" />
+      <arg value="/flp:Verbosity=Normal;LogFile=${MSBuild.Output}" />
+      <arg value="/clp:NoItemAndPropertyList" />
+      <arg value="/verbosity:n" />
+      <arg value="/nologo" />
+      <arg value="/p:Configuration=${MSBuild.Configuration}" />
+      <arg value="/p:Platform=${MSBuild.Platform}" />
+      <arg value="/p:SolutionDir=${MSBuild.SolutionDir}" />
+      <arg value="/p:AlgoPackage_Create=true" />
+      <arg value="/p:AlgoPackage_OutputPath=${OutputFolder}" />
     </exec>
 
   </target>
