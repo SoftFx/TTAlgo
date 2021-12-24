@@ -137,18 +137,34 @@
   </target>
 
   <target name="BuildSolution">
-
+<!--
     <property name="MSBuild.Target" value="Build" />
     <property name="MSBuild.TargetFile" value="${SolutionFile}" />
     <call target="RunMSBuildSolution" />
+-->
+    <exec program="dotnet">
+      <arg line="build" />
+      <arg line="${SolutionFile}" />
+      <arg line="-c ${Configuration}" />
+      <arg line="-v Normal" />
+      <arg line="/p:AlgoPackage_Create=true" />
+      <arg line="/p:AlgoPackage_OutputPath=${OutputFolder}" />
+    </exec>
 
   </target>
 
   <target name="PublishAlgoServer">
-
+<!--
     <property name="MSBuild.Target" value="Publish" />
     <property name="MSBuild.TargetFile" value="${AlgoServerProject}" />
     <call target="RunMSBuildProject" />
+-->
+    <exec program="dotnet">
+      <arg line="publish" />
+      <arg line="${AlgoServerProject}" />
+      <arg line="-c ${Configuration}" />
+      <arg line="-v Normal" />
+    </exec>
 
   </target>
 

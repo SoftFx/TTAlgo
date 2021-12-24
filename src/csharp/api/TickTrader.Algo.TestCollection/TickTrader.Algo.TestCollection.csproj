@@ -1,11 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>algo.snk</AssemblyOriginatorKeyFile>
-
-    <AlgoPackage_Create>false</AlgoPackage_Create>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,7 +9,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="TickTrader.Algo.Tools" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Net" />
   </ItemGroup>
 
 </Project>
