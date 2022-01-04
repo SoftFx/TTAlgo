@@ -212,7 +212,7 @@ namespace TickTrader.Algo.Domain
 
         public string GetDelayInfo()
         {
-            return $"{Symbol} Delay={QuoteDelay}ms, AggTime={Time:dd-MM-yyyy HH:mm:ss.fffff}, ClientTime={TimeOfReceive:dd-MM-yyyy HH:mm:ss.fffff}";
+            return $"{Symbol} Delay={QuoteDelay}ms, ServerTime={Time:dd-MM-yyyy HH:mm:ss.fffff}, ClientTime={TimeOfReceive:dd-MM-yyyy HH:mm:ss.fffff}";
         }
 
         #region IRateInfo

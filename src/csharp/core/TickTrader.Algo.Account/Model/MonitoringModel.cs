@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Account
 
         private void SendNotification(object sender, ElapsedEventArgs e)
         {
-            _sendNotification?.Invoke($"TTS={_connection.CurrentServer} acc={_connection.CurrentLogin}. {_stats}");
+            _sendNotification?.Invoke($"TTS={_connection.CurrentServer} acc={_connection.CurrentLogin}.\n{_stats}");
             _stats.ResetStats();
             _sender.Stop();
         }
@@ -44,7 +44,7 @@ namespace TickTrader.Algo.Account
             private readonly int _maxDelay;
 
             private QuoteInfo _worstQuote;
-            private int _delaysReceived;
+            private long _delaysReceived, _totalQuotes;
 
 
             internal QuoteStats(int maxDelay)
@@ -65,6 +65,9 @@ namespace TickTrader.Algo.Account
                         _worstQuote = quote;
                 }
 
+                if (_delaysReceived > 0)
+                    _totalQuotes++;
+
                 return badQuote;
             }
 
@@ -72,11 +75,14 @@ namespace TickTrader.Algo.Account
             {
                 _worstQuote = null;
                 _delaysReceived = 0;
+                _totalQuotes = 0;
             }
 
             public override string ToString()
             {
-                return $"Delays have been found: {_delaysReceived}. Worst quote: {_worstQuote.GetDelayInfo()}";
+                var percent = _totalQuotes == 0 ? 0 : (double)_delaysReceived / _totalQuotes;
+
+                return $"Delays in {percent * 100:F4}% quotes (delays={_delaysReceived}, total={_totalQuotes}).\nWorst quote: {_worstQuote.GetDelayInfo()}";
             }
         }
     }
