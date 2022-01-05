@@ -50,7 +50,7 @@ namespace TickTrader.Algo.CoreV1
                 TakeProfit = apiRequest.TakeProfit,
                 Slippage = apiRequest.Slippage,
                 Comment = apiRequest.Comment,
-                Tag = CompositeTag.NewTag(isolationTag, apiRequest.Tag),
+                Tag = apiRequest.Tag != null ? CompositeTag.NewTag(isolationTag, apiRequest.Tag) : null,
                 Expiration = apiRequest.Expiration?.ToUniversalTime().ToTimestamp(),
                 ExecOptions = apiRequest.Options?.ToDomainEnum(),
                 OcoRelatedOrderId = apiRequest.OcoRelatedOrderId,
