@@ -210,7 +210,10 @@ Task("PublishPublicApi")
          Verbosity = details,
          NoBuild = true,
          OutputDirectory = publishPath.Combine("public-api"),
+         Framework = "net472"
       });
+
+      DeleteFiles(publishPath.CombineWithFilePath("public-api/libgrpc_csharp_ext*").ToString());
    }
    finally
    {
@@ -234,6 +237,7 @@ Task("PrepareArtifacts")
       CopyFiles(vsExtensionPath.ToString(), publishPath.Combine("terminal/Redist/"));
       CopyFiles(artifactsPath.CombineWithFilePath("TickTrader.Algo.NewsIndicator.ttalgo").ToString(), publishPath.Combine("terminal/AlgoRepository/"));
 
+      CreateDirectory(publishPath.Combine("server/Configurator/"));
       CopyFiles(publishPath.Combine("configurator/**/*.*").ToString(), publishPath.Combine("server/Configurator/"));
    }
    finally
@@ -253,7 +257,7 @@ Task("ZipArtifacts")
       Zip(publishPath.Combine("terminal"), artifactsPath.CombineWithFilePath($"AlgoTerminal {buildId}.x64.zip"));
       Zip(publishPath.Combine("server"), artifactsPath.CombineWithFilePath($"AlgoServer {buildId}.x64.zip"));
       Zip(publishPath.Combine("configurator"), artifactsPath.CombineWithFilePath($"AlgoServer Configurator {buildId}.x64.zip"));
-      Zip(publishPath.Combine("public-api"), artifactsPath.CombineWithFilePath($"PublicAPI {buildId}.zip"));
+      Zip(publishPath.Combine("public-api"), artifactsPath.CombineWithFilePath($"PublicAPI {buildId}.net472.zip"));
    }
    finally
    {
