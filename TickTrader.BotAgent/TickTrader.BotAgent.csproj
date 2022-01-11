@@ -90,6 +90,7 @@
   </Target>
 
   <Target Name="PrepublishScript" BeforeTargets="PrepareForPublish">
+    <Exec Command="npm install" />
     <Exec Command="npm run build_prod" />
   </Target>
 

@@ -133,7 +133,7 @@ Task("BuildSdk")
       var msBuildSettings = new MSBuildSettings {
          ToolPath = msBuildPath,
          Configuration = configuration,
-         Verbosity = Enum.Parse<Verbosity>(details.ToString()),
+         Verbosity = Verbosity.Normal,
       };
 
       MSBuild(sdkSolutionPath, msBuildSettings);
