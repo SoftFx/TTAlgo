@@ -1,3 +1,5 @@
+#tool nuget:?package=vswhere&version=2.8.4
+
 ///////////////////////////////////////////////////////////////////////////////
 // ARGUMENTS
 ///////////////////////////////////////////////////////////////////////////////
@@ -11,13 +13,14 @@ var artifactsDirName = ConsoleOrBuildSystemArgument("ArtifactsDirName", "artifac
 var details = ConsoleOrBuildSystemArgument<DotNetVerbosity>("Details", DotNetVerbosity.Normal);
 var skipTests = ConsoleOrBuildSystemArgument("SkipTests", false); // used on TeamCity to enable test results integration
 var nsisDirPath = ConsoleOrBuildSystemArgument("NsisPath", @"c:/Program Files (x86)/NSIS/");
+var msBuildDirPath = ConsoleOrBuildSystemArgument("MSBuildPath", "");
 
 var solutionDirPath = DirectoryPath.FromString(solutionDir);
 var publishPath = solutionDirPath.Combine("bin");
 var buildId = $"{version}.{buildNumber}.0";
 var artifactsPath = solutionDirPath.Combine(artifactsDirName);
 var mainSolutionPath = solutionDirPath.CombineWithFilePath("Algo.sln");
-var sdkSolutionPath = solutionDirPath.CombineWithFilePath("src/csharp/sdk/TickTrader.Algo.Sdk.sln");
+var sdkSolutionPath = solutionDirPath.CombineWithFilePath("src/csharp/TickTrader.Algo.Sdk.sln");
 var nsisPath = DirectoryPath.FromString(nsisDirPath).CombineWithFilePath("makensis.exe");
 var publishProjectPaths = new Dictionary<string, FilePath>()
 {
@@ -41,6 +44,16 @@ Setup(ctx =>
 
    if (exitCode != 0)
       throw new Exception($"Failed to get .NET SDK info: {exitCode}");
+
+   if (string.IsNullOrEmpty(msBuildDirPath))
+   {
+      var paths = VSWhereAll(new VSWhereAllSettings{ Requires="Microsoft.VisualStudio.Workload.VisualStudioExtension" });
+      Information("Found {0} vs installation that have VisualStudioExtension workload", paths.Count);
+      foreach (var path in paths)
+      {
+         Information("\t{0}", path);
+      }
+   }
 });
 
 // Teardown(ctx =>
@@ -71,11 +84,11 @@ Task("Clean")
    }
 });
 
-Task("Build")
+Task("BuildMainProject")
    .IsDependentOn("Clean")
    .Does(() =>
 {
-   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("Build") : null;
+   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("BuildMainProject") : null;
    
    try
    {
@@ -87,8 +100,6 @@ Task("Build")
          Verbosity = details,
          MSBuildSettings = msBuildSettings,
       });
-
-      var msBuildSettingsSdk = new MSBuildSettings();
    }
    finally
    {
@@ -96,8 +107,49 @@ Task("Build")
    }
 });
 
+Task("BuildSdk")
+   .IsDependentOn("Clean")
+   .Does(() =>
+{
+   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("BuildSdk") : null;
+   
+   try
+   {
+      DotNetRestore(sdkSolutionPath.ToString());
+
+      var msBuildPath = DirectoryPath.FromString(msBuildDirPath).CombineWithFilePath("MSBuild.exe").ToString();
+      if (!System.IO.File.Exists(msBuildPath))
+      {
+         Information("Looking for MSBuild with VS extension SDK. File '{0}' doesn't exists");
+
+         var vsInstallPath = VSWhereLatest(new VSWhereLatestSettings{ Requires = "Microsoft.VisualStudio.Workload.VisualStudioExtension" });
+         msBuildPath = GetFiles(vsInstallPath.CombineWithFilePath("MSBuild/**/Bin/MSBuild.exe").ToString()).FirstOrDefault()?.ToString();
+         if (string.IsNullOrEmpty(msBuildPath))
+            throw new Exception("Failed to resolve MSBuild with VS extension sdk");
+
+         Information("Found MSBuild at '{0}'", msBuildPath);
+      }
+
+      var msBuildSettings = new MSBuildSettings {
+         ToolPath = msBuildPath,
+         Configuration = configuration,
+         Verbosity = Enum.Parse<Verbosity>(details.ToString()),
+      };
+
+      MSBuild(sdkSolutionPath, msBuildSettings);
+   }
+   finally
+   {
+      block?.Dispose();
+   }
+});
+
+Task("BuildAll")
+   .IsDependentOn("BuildMainProject")
+   .IsDependentOn("BuildSdk");
+
 Task("Test")
-   .IsDependentOn("Build")
+   .IsDependentOn("BuildAll")
    .Does(() =>
 {
    if (skipTests)

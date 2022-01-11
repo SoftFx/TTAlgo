@@ -254,3 +254,5 @@ algo.metadata
 
 package-lock.json
 *Uninstall.nsi
+
+tools/vswhere*
