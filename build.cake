@@ -237,7 +237,6 @@ Task("PublishServer")
       DotNetPublish(projectPath.ToString(), new DotNetPublishSettings {
          Configuration = configuration,
          Verbosity = details,
-         NoBuild = true,
          OutputDirectory = publishPath.Combine("server"),
       });
    }
