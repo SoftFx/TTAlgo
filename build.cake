@@ -8,14 +8,14 @@ var target = ConsoleOrBuildSystemArgument("Target", "CreateAllArtifacts");
 var buildNumber = ConsoleOrBuildSystemArgument("BuildNumber", 0);
 var version = ConsoleOrBuildSystemArgument("Version", "1.19");
 var configuration = ConsoleOrBuildSystemArgument("Configuration", "Release");
-var solutionDir = ConsoleOrBuildSystemArgument("SolutionDir", "./");
+var sourcesDir = ConsoleOrBuildSystemArgument("SourcesDir", "./");
 var artifactsDirName = ConsoleOrBuildSystemArgument("ArtifactsDirName", "artifacts.build");
 var details = ConsoleOrBuildSystemArgument<DotNetVerbosity>("Details", DotNetVerbosity.Normal);
 var skipTests = ConsoleOrBuildSystemArgument("SkipTests", false); // used on TeamCity to enable test results integration
 var nsisDirPath = ConsoleOrBuildSystemArgument("NsisPath", @"c:/Program Files (x86)/NSIS/");
 var msBuildDirPath = ConsoleOrBuildSystemArgument("MSBuildPath", "");
 
-var solutionDirPath = DirectoryPath.FromString(solutionDir);
+var solutionDirPath = DirectoryPath.FromString(sourcesDir);
 var publishPath = solutionDirPath.Combine("bin");
 var buildId = $"{version}.{buildNumber}.0";
 var artifactsPath = solutionDirPath.Combine(artifactsDirName);
@@ -38,7 +38,7 @@ var vsExtensionPath = solutionDirPath.CombineWithFilePath($"src/csharp/sdk/TickT
 Setup(ctx =>
 {
    var exitCode = StartProcess("dotnet", new ProcessSettings {
-      WorkingDirectory = solutionDir,
+      WorkingDirectory = sourcesDir,
       Arguments = "--info"
     });
 
@@ -352,7 +352,7 @@ public void PrintArguments()
    Information("BuildNumber: {0}", buildNumber);
    Information("Version: {0}", version);
    Information("Configuration: {0}", configuration);
-   Information("SolutionDir: {0}", solutionDir);
+   Information("SourcesDir: {0}", sourcesDir);
    Information("ArtifactsDirName: {0}", artifactsDirName);
    Information("Details: {0}", details);
    Information("SkipTests: {0}", skipTests);
