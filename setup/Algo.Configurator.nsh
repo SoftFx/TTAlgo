@@ -3,7 +3,7 @@
 
 !define CONFIGURATOR_NAME "AlgoServer Configurator"
 !define CONFIGURATOR_DISPLAY_NAME "${BASE_NAME} ${CONFIGURATOR_NAME}"
-!define CONFIGURATOR_BINDIR "..\TickTrader.BotAgent.Configurator\bin\Release\net472"
+!define CONFIGURATOR_BINDIR "..\bin\configurator"
 !define CONFIGURATOR_EXE "TickTrader.AlgoServer.Configurator.exe"
 !define CONFIGURATOR_LOCK_FILE "applock"
 

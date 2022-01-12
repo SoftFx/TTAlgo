@@ -43,7 +43,7 @@
 !define BASE_NAME "TickTrader"
 !define BASE_INSTDIR "$PROGRAMFILES64\${BASE_NAME}"
 
-!define OUTPUT_DIR "..\build.ouput"
+!define OUTPUT_DIR "..\artifacts.build"
 !define ICONS_DIR "..\icons"
 !define BANNER_PATH "banner.bmp"
 !define BANNER_TMP_PATH "$PLUGINSDIR\banner.bmp"

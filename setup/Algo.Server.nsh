@@ -3,7 +3,7 @@
 
 !define ALGOSERVER_NAME "AlgoServer"
 !define ALGOSERVER_DISPLAY_NAME "${BASE_NAME} ${ALGOSERVER_NAME}"
-!define ALGOSERVER_BINDIR "..\TickTrader.BotAgent\bin\Release\net472\publish"
+!define ALGOSERVER_BINDIR "..\bin\server\"
 !define ALGOSERVER_EXE "TickTrader.AlgoServer.exe"
 
 !define SERVICE_NAME_BASE "_TTAlgoServer"

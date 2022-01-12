@@ -15,21 +15,24 @@ var skipTests = ConsoleOrBuildSystemArgument("SkipTests", false); // used on Tea
 var nsisDirPath = ConsoleOrBuildSystemArgument("NsisPath", @"c:/Program Files (x86)/NSIS/");
 var msBuildDirPath = ConsoleOrBuildSystemArgument("MSBuildPath", "");
 
-var solutionDirPath = DirectoryPath.FromString(sourcesDir);
-var publishPath = solutionDirPath.Combine("bin");
+var sourcesDirPath = DirectoryPath.FromString(sourcesDir);
 var buildId = $"{version}.{buildNumber}.0";
-var artifactsPath = solutionDirPath.Combine(artifactsDirName);
-var mainSolutionPath = solutionDirPath.CombineWithFilePath("Algo.sln");
-var sdkSolutionPath = solutionDirPath.CombineWithFilePath("src/csharp/TickTrader.Algo.Sdk.sln");
+var artifactsPath = sourcesDirPath.Combine(artifactsDirName);
+var mainSolutionPath = sourcesDirPath.CombineWithFilePath("Algo.sln");
+var sdkSolutionPath = sourcesDirPath.CombineWithFilePath("src/csharp/TickTrader.Algo.Sdk.sln");
 var nsisPath = DirectoryPath.FromString(nsisDirPath).CombineWithFilePath("makensis.exe");
-var publishProjectPaths = new Dictionary<string, FilePath>()
-{
-   { "terminal", solutionDirPath.CombineWithFilePath("TickTrader.BotTerminal/TickTrader.BotTerminal.csproj") },
-   { "configurator", solutionDirPath.CombineWithFilePath("TickTrader.BotAgent.Configurator/TickTrader.BotAgent.Configurator.csproj") },
-   { "server", solutionDirPath.CombineWithFilePath("TickTrader.BotAgent/TickTrader.BotAgent.csproj") },
-   { "public-api", solutionDirPath.CombineWithFilePath("src/csharp/core/TickTrader.Algo.Server.PublicAPI/TickTrader.Algo.Server.PublicAPI.csproj") },
-};
-var vsExtensionPath = solutionDirPath.CombineWithFilePath($"src/csharp/sdk/TickTrader.Algo.VS.Package/bin/${configuration}/TickTrader.Algo.VS.Package.vsix");
+var setupDirPath = sourcesDirPath.Combine("setup");
+
+var outputPath = sourcesDirPath.Combine("bin");
+var terminalProjectPath = sourcesDirPath.CombineWithFilePath("TickTrader.BotTerminal/TickTrader.BotTerminal.csproj");
+var terminalBinPath = outputPath.Combine("terminal");
+var serverProjectPath = sourcesDirPath.CombineWithFilePath("TickTrader.BotAgent/TickTrader.BotAgent.csproj");
+var serverBinPath = outputPath.Combine("server");
+var configuratorProjectPath = sourcesDirPath.CombineWithFilePath("TickTrader.BotAgent.Configurator/TickTrader.BotAgent.Configurator.csproj");
+var configuratorBinPath = outputPath.Combine("configurator");
+var publicApiProjectPath = sourcesDirPath.CombineWithFilePath("src/csharp/core/TickTrader.Algo.Server.PublicAPI/TickTrader.Algo.Server.PublicAPI.csproj");
+var publicApiBinPath = outputPath.Combine("public-api");
+var vsExtensionPath = sourcesDirPath.CombineWithFilePath($"src/csharp/sdk/TickTrader.Algo.VS.Package/bin/${configuration}/TickTrader.Algo.VS.Package.vsix");
 
 ///////////////////////////////////////////////////////////////////////////////
 // SETUP / TEARDOWN
@@ -75,7 +78,7 @@ Task("Clean")
          Configuration = configuration,
          Verbosity = details,
       });
-      CleanDirectory(publishPath);
+      CleanDirectory(outputPath);
       CleanDirectory(artifactsPath);
    }
    finally
@@ -162,7 +165,7 @@ Task("Test")
    
    try
    {
-      var testProjects = GetFiles(solutionDirPath.Combine("src/csharp/tests/**/*.csproj").ToString());
+      var testProjects = GetFiles(sourcesDirPath.Combine("src/csharp/tests/**/*.csproj").ToString());
       foreach(var testProj in testProjects)
       {
          DotNetTest(testProj.ToString(), new DotNetTestSettings {
@@ -185,14 +188,12 @@ Task("PublishTerminal")
    
    try
    {
-      var projectPath = publishProjectPaths["terminal"];
-
       // we need to change post-build tasks to work with publish
-      DotNetBuild(projectPath.ToString(), new DotNetBuildSettings {
+      DotNetBuild(terminalProjectPath.FullPath, new DotNetBuildSettings {
          Configuration = configuration,
          Verbosity = details,
          NoRestore = true,
-         OutputDirectory = publishPath.Combine("terminal"),
+         OutputDirectory = terminalBinPath,
       });
    }
    finally
@@ -209,13 +210,11 @@ Task("PublishConfigurator")
    
    try
    {
-      var projectPath = publishProjectPaths["configurator"];
-
-      DotNetPublish(projectPath.ToString(), new DotNetPublishSettings {
+      DotNetPublish(configuratorProjectPath.FullPath, new DotNetPublishSettings {
          Configuration = configuration,
          Verbosity = details,
          NoBuild = true,
-         OutputDirectory = publishPath.Combine("configurator"),
+         OutputDirectory = configuratorBinPath,
       });
    }
    finally
@@ -232,12 +231,10 @@ Task("PublishServer")
    
    try
    {
-      var projectPath = publishProjectPaths["server"];
-
-      DotNetPublish(projectPath.ToString(), new DotNetPublishSettings {
+      DotNetPublish(serverProjectPath.FullPath, new DotNetPublishSettings {
          Configuration = configuration,
          Verbosity = details,
-         OutputDirectory = publishPath.Combine("server"),
+         OutputDirectory = serverBinPath,
       });
    }
    finally
@@ -254,17 +251,15 @@ Task("PublishPublicApi")
    
    try
    {
-      var projectPath = publishProjectPaths["public-api"];
-
-      DotNetPublish(projectPath.ToString(), new DotNetPublishSettings {
+      DotNetPublish(publicApiProjectPath.FullPath, new DotNetPublishSettings {
          Configuration = configuration,
          Verbosity = details,
          NoBuild = true,
-         OutputDirectory = publishPath.Combine("public-api"),
+         OutputDirectory = publicApiBinPath,
          Framework = "net472"
       });
 
-      DeleteFiles(publishPath.CombineWithFilePath("public-api/libgrpc_csharp_ext*").ToString());
+      DeleteFiles(publicApiBinPath.CombineWithFilePath("libgrpc_csharp_ext*").ToString());
    }
    finally
    {
@@ -283,13 +278,18 @@ Task("PrepareArtifacts")
 
    try
    {
-      CreateDirectory(publishPath.Combine("terminal/Redist/"));
-      CreateDirectory(publishPath.Combine("terminal/AlgoRepository/"));
-      CopyFiles(vsExtensionPath.ToString(), publishPath.Combine("terminal/Redist/"));
-      CopyFiles(artifactsPath.CombineWithFilePath("TickTrader.Algo.NewsIndicator.ttalgo").ToString(), publishPath.Combine("terminal/AlgoRepository/"));
+      var redistPath = terminalBinPath.Combine("Redist");
+      var repoPath = terminalBinPath.Combine("AlgoRepository");
 
-      CreateDirectory(publishPath.Combine("server/Configurator/"));
-      CopyFiles(publishPath.Combine("configurator/**/*.*").ToString(), publishPath.Combine("server/Configurator/"));
+      CreateDirectory(redistPath);
+      CreateDirectory(repoPath);
+      CopyFiles(vsExtensionPath.FullPath, redistPath);
+      CopyFiles(vsExtensionPath.FullPath, artifactsPath);
+      CopyFiles(artifactsPath.CombineWithFilePath("TickTrader.Algo.NewsIndicator.ttalgo").FullPath, repoPath);
+
+      var configuratorInstallPath = serverBinPath.Combine("Configurator");
+      CreateDirectory(configuratorInstallPath);
+      CopyFiles(configuratorBinPath.Combine("**/*.*").ToString(), configuratorInstallPath);
    }
    finally
    {
@@ -305,10 +305,10 @@ Task("ZipArtifacts")
 
    try
    {
-      Zip(publishPath.Combine("terminal"), artifactsPath.CombineWithFilePath($"AlgoTerminal {buildId}.x64.zip"));
-      Zip(publishPath.Combine("server"), artifactsPath.CombineWithFilePath($"AlgoServer {buildId}.x64.zip"));
-      Zip(publishPath.Combine("configurator"), artifactsPath.CombineWithFilePath($"AlgoServer Configurator {buildId}.x64.zip"));
-      Zip(publishPath.Combine("public-api"), artifactsPath.CombineWithFilePath($"PublicAPI {buildId}.net472.zip"));
+      Zip(terminalBinPath, artifactsPath.CombineWithFilePath($"AlgoTerminal {buildId}.x64.zip"));
+      Zip(serverBinPath, artifactsPath.CombineWithFilePath($"AlgoServer {buildId}.x64.zip"));
+      Zip(configuratorBinPath, artifactsPath.CombineWithFilePath($"AlgoServer Configurator {buildId}.x64.zip"));
+      Zip(publicApiBinPath, artifactsPath.CombineWithFilePath($"PublicAPI {buildId}.net472.zip"));
    }
    finally
    {
@@ -331,6 +331,14 @@ Task("CreateInstaller")
          else
             throw new Exception("Failed to create installer: NSIS not found!");
       }
+
+      CreateUninstallScript(terminalBinPath, setupDirPath.CombineWithFilePath("Terminal.Uninstall.nsi"));
+      CreateUninstallScript(serverBinPath, setupDirPath.CombineWithFilePath("AlgoServer.Uninstall.nsi"));
+      CreateUninstallScript(configuratorBinPath, setupDirPath.CombineWithFilePath("Configurator.Uninstall.nsi"));
+
+      StartProcess(nsisPath, new ProcessSettings {
+         Arguments = $"/DPRODUCT_BUILD={buildId} {setupDirPath.CombineWithFilePath("Algo.Setup.nsi").FullPath}",
+      });
    }
    finally
    {
@@ -376,4 +384,27 @@ public T ConsoleOrBuildSystemArgument<T>(string name, T defautValue)
     }
 
     return defautValue;
+}
+
+public void CreateUninstallScript(DirectoryPath appDir, FilePath scriptPath)
+{
+   var sb = new StringBuilder();
+   CleanUpInstallDir(new DirectoryInfo(appDir.FullPath), sb, "$INSTDIR");
+   System.IO.File.WriteAllText(scriptPath.FullPath, sb.ToString());
+}
+
+private void CleanUpInstallDir(DirectoryInfo appDirectory, StringBuilder nsisScript, string instDirFullPath)
+{
+   foreach (var file in appDirectory.GetFiles())
+   {
+      nsisScript.AppendLine($"\tDelete \"{instDirFullPath}\\{file.Name}\"");
+   }
+
+   foreach (var subDir in appDirectory.GetDirectories())
+   {
+      CleanUpInstallDir(subDir, nsisScript, $"{instDirFullPath}\\{subDir.Name}");
+   }
+
+   nsisScript.AppendLine($"\tRMDir \"{instDirFullPath}\\\"");
+   nsisScript.AppendLine();
 }
