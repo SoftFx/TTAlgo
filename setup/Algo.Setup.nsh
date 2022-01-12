@@ -33,7 +33,7 @@
 !endif
 
 !ifndef LICENSE_FILE
-    !define LICENSE_FILE "license.txt"
+    !define LICENSE_FILE "../LICENSE"
 !endif
 
 !ifndef SETUP_FILENAME
