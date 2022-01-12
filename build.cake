@@ -32,7 +32,7 @@ var configuratorProjectPath = sourcesDirPath.CombineWithFilePath("TickTrader.Bot
 var configuratorBinPath = outputPath.Combine("configurator");
 var publicApiProjectPath = sourcesDirPath.CombineWithFilePath("src/csharp/core/TickTrader.Algo.Server.PublicAPI/TickTrader.Algo.Server.PublicAPI.csproj");
 var publicApiBinPath = outputPath.Combine("public-api");
-var vsExtensionPath = sourcesDirPath.CombineWithFilePath($"src/csharp/sdk/TickTrader.Algo.VS.Package/bin/${configuration}/TickTrader.Algo.VS.Package.vsix");
+var vsExtensionPath = sourcesDirPath.CombineWithFilePath($"src/csharp/sdk/TickTrader.Algo.VS.Package/bin/{configuration}/TickTrader.Algo.VS.Package.vsix");
 
 ///////////////////////////////////////////////////////////////////////////////
 // SETUP / TEARDOWN
@@ -123,7 +123,7 @@ Task("BuildSdk")
       var msBuildPath = DirectoryPath.FromString(msBuildDirPath).CombineWithFilePath("MSBuild.exe").ToString();
       if (!System.IO.File.Exists(msBuildPath))
       {
-         Information("Looking for MSBuild with VS extension SDK. File '{0}' doesn't exists");
+         Information("Looking for MSBuild with VS extension SDK. File '{0}' doesn't exists", msBuildPath);
 
          var vsInstallPath = VSWhereLatest(new VSWhereLatestSettings{ Requires = "Microsoft.VisualStudio.Workload.VisualStudioExtension" });
          msBuildPath = GetFiles(vsInstallPath.CombineWithFilePath("MSBuild/**/Bin/MSBuild.exe").ToString()).FirstOrDefault()?.ToString();
