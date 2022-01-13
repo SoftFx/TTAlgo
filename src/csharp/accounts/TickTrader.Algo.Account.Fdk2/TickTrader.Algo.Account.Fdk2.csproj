@@ -1,17 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <UseFdk2Src>false</UseFdk2Src>
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\modules\FDK2\Client\Client.csproj" />
     <ProjectReference Include="..\..\core\TickTrader.Algo.Account\TickTrader.Algo.Account.csproj" />
-  </ItemGroup>
-
-  <ItemGroup Label="FDK2 references">
-    <ProjectReference Include="..\..\..\..\modules\FDK2\Client\Client.csproj" Condition=" '$(UseFdk2Src)' == 'true' " />
-    <PackageReference Include="SoftFX.FDK2" Version="2.28.305" Condition=" '$(UseFdk2Src)' != 'true' " />
   </ItemGroup>
 
 </Project>
