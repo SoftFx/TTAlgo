@@ -256,3 +256,4 @@ package-lock.json
 *Uninstall.nsi
 
 tools/vswhere*
+FDK2.Build.props
