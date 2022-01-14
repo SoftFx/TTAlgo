@@ -67,7 +67,7 @@ namespace TickTrader.BotTerminal
 
             SetupPage.PluginSelected += () =>
             {
-                OptimizationPage.SetPluign(SetupPage.SelectedPlugin.Value.Descriptor, SetupPage.PluginConfig);
+                OptimizationPage.SetPluign(SetupPage.SelectedPlugin.Value.Descriptor);
             };
 
             OptimizationResultsPage.ShowDetailsRequested += async r =>

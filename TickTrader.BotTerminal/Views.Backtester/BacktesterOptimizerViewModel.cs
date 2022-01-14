@@ -93,7 +93,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void SetPluign(PluginDescriptor descriptor, PluginConfig config)
+        public void SetPluign(PluginDescriptor descriptor)
         {
             _descriptor = descriptor;
 
@@ -103,13 +103,11 @@ namespace TickTrader.BotTerminal
 
             if (descriptor.IsTradeBot)
             {
-                var properties = config.UnpackProperties();
                 foreach (var p in descriptor.Parameters)
                 {
-                    var pSetup = properties.FirstOrDefault(ps => ps.PropertyId == p.Id) as IParameterConfig;
                     var model = ParamSeekSetModel.Create(p);
                     if (model != null)
-                        Parameters.Add(new ParamSeekSetupModel(this, model, p, pSetup));
+                        Parameters.Add(new ParamSeekSetupModel(this, model, p));
                 }
 
                 //canOptimize = Parameters.Count > 0;
@@ -147,13 +145,11 @@ namespace TickTrader.BotTerminal
         {
             private BacktesterOptimizerViewModel _parent;
             private Property<ParamSeekSetModel> _modelProp;
-            private IParameterConfig _config;
             private Property<string> _descriptionProp;
 
-            public ParamSeekSetupModel(BacktesterOptimizerViewModel parent, ParamSeekSetModel model, ParameterDescriptor descriptor, IParameterConfig config)
+            public ParamSeekSetupModel(BacktesterOptimizerViewModel parent, ParamSeekSetModel model, ParameterDescriptor descriptor)
             {
                 _parent = parent;
-                _config = config;
                 Descriptor = descriptor;
                 _modelProp = AddProperty(model);
                 _descriptionProp = AddProperty<string>();
@@ -199,7 +195,7 @@ namespace TickTrader.BotTerminal
                 }
                 else
                 {
-                    _descriptionProp.Value = _config.ValObj?.ToString();
+                    _descriptionProp.Value = Descriptor.DefaultValue;
                     CaseCountProp.Value = 1;
                 }
             }
