@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Rpc
         ConnectionRequest = 0,
         ConnectionSuccess = 1,
         ConnectionError = 2,
-        HeartbeatMismatch = 3,
+        ConnectionOutOfSync = 3,
         DisconnectRequest = 4,
         DisconnectNotification = 5,
     }
@@ -60,7 +60,7 @@ namespace TickTrader.Algo.Rpc
         private IRpcHandler _rpcHandler;
         private Task _heartbeatTask;
         private CancellationTokenSource _heartbeatCancelTokenSrc;
-        private int _inHeartbeatCnt, _outHeartbeatCnt;
+        private ulong _heartbeatCnt, _lastReceiveCnt;
         //private TaskCompletionSource<bool> _initTaskSrc;
         private TaskCompletionSource<bool> _connectTaskSrc;
         private TaskCompletionSource<bool> _disconnectTaskSrc;
@@ -174,6 +174,7 @@ namespace TickTrader.Algo.Rpc
 
         private async Task HandleEvent(RpcSessionEvent sessionEvent)
         {
+            _logger.Debug($"Event {sessionEvent}");
             if (State == RpcSessionState.Disconnected && sessionEvent == RpcSessionEvent.ConnectionRequest)
             {
                 ChangeState(RpcSessionState.Connecting);
@@ -201,7 +202,7 @@ namespace TickTrader.Algo.Rpc
             {
                 await DisconnectRoutine(false, true);
             }
-            else if (State == RpcSessionState.Connected && sessionEvent == RpcSessionEvent.HeartbeatMismatch)
+            else if (State == RpcSessionState.Connected && sessionEvent == RpcSessionEvent.ConnectionOutOfSync)
             {
                 SendMessage(RpcMessage.Notification(_sessionId, new DisconnectMsg { Reason = _disconnectReason }));
                 await DisconnectRoutine(false, true);
@@ -393,12 +394,12 @@ namespace TickTrader.Algo.Rpc
             {
                 while (!cancelToken.IsCancellationRequested)
                 {
-                    _outHeartbeatCnt++;
+                    _heartbeatCnt++;
                     SendMessage(HeartbeatMessage);
-                    if (Math.Abs(_inHeartbeatCnt - _outHeartbeatCnt) > RpcConstants.HeartbeatCntThreshold)
+                    if (_lastReceiveCnt + RpcConstants.HeartbeatCntThreshold < _heartbeatCnt)
                     {
-                        _disconnectReason = $"Heartbeat count mismatch. Connection is out of sync (In: {_inHeartbeatCnt} / Out: {_outHeartbeatCnt}).";
-                        PushEvent(RpcSessionEvent.HeartbeatMismatch);
+                        _disconnectReason = $"Connection is out of sync (last receive: {_lastReceiveCnt} / {_heartbeatCnt}).";
+                        PushEvent(RpcSessionEvent.ConnectionOutOfSync);
                         return;
                     }
                     await Task.Delay(RpcConstants.HeartbeatTimeout, cancelToken).ConfigureAwait(false);
@@ -411,9 +412,10 @@ namespace TickTrader.Algo.Rpc
         {
             //_logger.Debug("Handle msg: {msg}", new { msg.Flags, msg.CallId, msg.ProxyId, Payload = new { msg.Payload.TypeUrl, msg.Payload.Value } });
 
+            _lastReceiveCnt = _heartbeatCnt;
             if (msg.Payload.Is(Heartbeat.Descriptor))
             {
-                _inHeartbeatCnt++;
+                // msg already handled
             }
             else if (msg.Payload.Is(ConnectRequest.Descriptor))
             {
