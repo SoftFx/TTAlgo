@@ -50,7 +50,7 @@ namespace TickTrader.Algo.Backtester
             return QueryAll(options);
         }
 
-        IAsyncEnumerator<TradeReport> TradeHistory.GetAsync(ThQueryOptions options)
+        Api.IAsyncEnumerator<TradeReport> TradeHistory.GetAsync(ThQueryOptions options)
         {
             return QueryAll(options).SimulateAsync();
         }
@@ -75,12 +75,12 @@ namespace TickTrader.Algo.Backtester
             return QueryRange(DateTime.MinValue, to, options);
         }
 
-        IAsyncEnumerator<TradeReport> TradeHistory.GetRangeAsync(DateTime from, DateTime to, ThQueryOptions options)
+        Api.IAsyncEnumerator<TradeReport> TradeHistory.GetRangeAsync(DateTime from, DateTime to, ThQueryOptions options)
         {
             return QueryRange(from, to, options).SimulateAsync();
         }
 
-        IAsyncEnumerator<TradeReport> TradeHistory.GetRangeAsync(DateTime to, ThQueryOptions options)
+        Api.IAsyncEnumerator<TradeReport> TradeHistory.GetRangeAsync(DateTime to, ThQueryOptions options)
         {
             return QueryRange(DateTime.MinValue, to, options).SimulateAsync();
         }
@@ -159,17 +159,17 @@ namespace TickTrader.Algo.Backtester
             throw new NotImplementedException();
         }
 
-        IAsyncEnumerator<TriggerReport> TriggerHistory.GetAsync(ThQueryOptions options)
+        Api.IAsyncEnumerator<TriggerReport> TriggerHistory.GetAsync(ThQueryOptions options)
         {
             throw new NotImplementedException();
         }
 
-        IAsyncEnumerator<TriggerReport> TriggerHistory.GetRangeAsync(DateTime from, DateTime to, ThQueryOptions options)
+        Api.IAsyncEnumerator<TriggerReport> TriggerHistory.GetRangeAsync(DateTime from, DateTime to, ThQueryOptions options)
         {
             throw new NotImplementedException();
         }
 
-        IAsyncEnumerator<TriggerReport> TriggerHistory.GetRangeAsync(DateTime to, ThQueryOptions options)
+        Api.IAsyncEnumerator<TriggerReport> TriggerHistory.GetRangeAsync(DateTime to, ThQueryOptions options)
         {
             throw new NotImplementedException();
         }
