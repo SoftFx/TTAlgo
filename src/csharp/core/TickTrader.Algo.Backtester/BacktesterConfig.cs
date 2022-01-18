@@ -37,7 +37,7 @@ namespace TickTrader.Algo.Backtester
         public void Save(string filePath)
         {
             using (var file = File.Open(filePath, FileMode.Create))
-            using (var zip = new ZipArchive(file))
+            using (var zip = new ZipArchive(file, ZipArchiveMode.Update))
             {
                 WriteZipEntryAsJson(zip, "core.json", Core);
                 WriteZipEntryAsJson(zip, "account.json", Account);
@@ -100,8 +100,8 @@ namespace TickTrader.Algo.Backtester
     public class BacktesterCoreConfig
     {
         public BacktesterMode Mode { get; set; }
-        public DateTime? EmulationPeriodStart { get; set; }
-        public DateTime? EmulationPeriodEnd { get; set; }
+        public DateTime? EmulateFrom { get; set; }
+        public DateTime? EmulateTo { get; set; }
         public Dictionary<string, Feed.Types.Timeframe> FeedConfig { get; set; } = new Dictionary<string, Feed.Types.Timeframe>();
         public string ConfigUri { get; set; }
 
@@ -110,14 +110,15 @@ namespace TickTrader.Algo.Backtester
         public Feed.Types.Timeframe ModelTimeframe { get; set; }
 
         // advanced
-        public int WarmupSize { get; set; } = 10;
+        public int WarmupValue { get; set; } = 10;
         public WarmupUnitTypes WarmupUnits { get; set; } = WarmupUnitTypes.Bars;
         public uint ServerPingMs { get; set; } = 200;
+        public JournalOptions JournalFlags { get; set; }
     }
 
     public class BacktesterAccountConfig
     {
-        public AccountInfo.Types.Type AccountType { get; set; }
+        public AccountInfo.Types.Type Type { get; set; }
         public string BalanceCurrency { get; set; }
         public int Leverage { get; set; } = 100;
         public double InitialBalance { get; set; } = 10000;

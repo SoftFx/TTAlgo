@@ -53,7 +53,7 @@ namespace TickTrader.FeedStorage
 
         public void Start()
         {
-            var poolManager = new SeriesStorage.Lmdb.LmdbManager(_dataBaseFolder, true);
+            var poolManager = BinaryStorageManagerFactory.Create(_dataBaseFolder, true);
             _dataBase = SeriesDatabase.Create(poolManager);
         }
 

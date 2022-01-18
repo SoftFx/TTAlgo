@@ -15,6 +15,7 @@ using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.ServerControl;
+using TickTrader.FeedStorage;
 
 namespace TickTrader.BotTerminal
 {
@@ -241,6 +242,35 @@ namespace TickTrader.BotTerminal
                 optimizer.CommonSettings.Currencies.Add(rec.Key, rec.Value);
 
             Settings.Apply(optimizer.CommonSettings);
+        }
+
+        public void Apply(BacktesterConfig config)
+        {
+            config.Core.EmulateFrom = DateTime.SpecifyKind(DateRange.From, DateTimeKind.Utc);
+            config.Core.EmulateTo = DateTime.SpecifyKind(DateRange.To, DateTimeKind.Utc);
+            Settings.Apply(config);
+            config.SetPluginConfig(PluginConfig);
+
+            config.Core.MainSymbol = MainSymbolSetup.SelectedSymbol.Value.Name;
+            config.Core.MainTimeframe = MainTimeFrame.Value;
+            config.Core.ModelTimeframe = SelectedModel.Value;
+
+            foreach (var symbolSetup in FeedSymbols)
+            {
+                var smbData = symbolSetup.SelectedSymbol.Value;
+                var symbolName = smbData.Name;
+                if (!config.Core.FeedConfig.ContainsKey(symbolName))
+                {
+                    config.Core.FeedConfig.Add(symbolName, symbolSetup.SelectedTimeframe.Value);
+                    config.TradeServer.Symbols.Add(symbolName, smbData.StorageEntity);
+                }
+            }
+
+            foreach (var currency in _client.Currencies.Snapshot)
+            {
+                var c = CustomCurrency.FromAlgo(currency.Value);
+                config.TradeServer.Currencies.Add(c.Name, c);
+            }
         }
 
         #region Saving Results

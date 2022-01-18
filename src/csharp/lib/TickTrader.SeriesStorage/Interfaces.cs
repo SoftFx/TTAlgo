@@ -210,4 +210,15 @@ namespace TickTrader.SeriesStorage
         void Commit();
         void Abort();
     }
+
+    public static class BinaryStorageManagerFactory
+    {
+        private static Func<string, bool, IBinaryStorageManager> _factoryFunc;
+
+
+        public static void Init(Func<string, bool, IBinaryStorageManager> factoryFunc) => _factoryFunc = factoryFunc;
+
+
+        public static IBinaryStorageManager Create(string baseFolder, bool readOnly = false) => _factoryFunc(baseFolder, readOnly);
+    }
 }

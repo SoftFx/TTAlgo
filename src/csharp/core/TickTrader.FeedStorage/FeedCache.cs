@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
 using TickTrader.SeriesStorage;
-using TickTrader.SeriesStorage.Lmdb;
 
 namespace TickTrader.FeedStorage
 {
@@ -172,7 +171,7 @@ namespace TickTrader.FeedStorage
             if (Database != null)
                 throw new InvalidOperationException("Already started!");
 
-            Database = SeriesDatabase.Create(new LmdbManager(folder));
+            Database = SeriesDatabase.Create(BinaryStorageManagerFactory.Create(folder));
 
             Refresh();
         }

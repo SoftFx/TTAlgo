@@ -1,17 +1,17 @@
 ﻿using System;
 using System.IO;
 
-namespace TickTrader.SeriesStorage.Protobuf
+namespace TickTrader.SeriesStorage.ProtoSerializer
 {
-    public class ProtoSliceSerializer<TValue> : ISliceSerializer<TValue>
+    public class ProtoValueSerializer<TValue> : IValueSerializer<TValue>
     {
-        public TValue[] Deserialize(ArraySegment<byte> bytes)
+        public TValue Deserialize(ArraySegment<byte> bytes)
         {
             using (var stream = new MemoryStream(bytes.Array, bytes.Offset, bytes.Count))
-                return ProtoBuf.Serializer.Deserialize<TValue[]>(stream);
+                return ProtoBuf.Serializer.Deserialize<TValue>(stream);
         }
 
-        public ArraySegment<byte> Serialize(TValue[] val)
+        public ArraySegment<byte> Serialize(TValue val)
         {
             using (var stream = new MemoryStream())
             {

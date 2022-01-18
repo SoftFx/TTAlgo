@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 using TickTrader.SeriesStorage;
-using TickTrader.SeriesStorage.Protobuf;
+using TickTrader.SeriesStorage.ProtoSerializer;
 
 namespace TickTrader.FeedStorage
 {

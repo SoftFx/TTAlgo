@@ -69,6 +69,8 @@ namespace TickTrader.Algo.Backtester
         WriteTrade = 8,
         WriteOrderModifications = 128,
         WriteAlert = 256,
+
+        Default = Enabled | WriteCustom | WriteInfo | WriteTrade | WriteAlert,
     }
 
     public enum EmulatorStates { WarmingUp, Running, Paused, Stopping, Stopped }

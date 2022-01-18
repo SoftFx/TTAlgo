@@ -20,6 +20,8 @@ using TickTrader.Algo.Package;
 using TickTrader.Algo.Server;
 using TickTrader.Algo.Server.Common;
 using TickTrader.FeedStorage;
+using TickTrader.SeriesStorage;
+using TickTrader.SeriesStorage.Lmdb;
 using TickTrader.WpfWindowsSupportLibrary;
 
 namespace TickTrader.BotTerminal
@@ -57,6 +59,7 @@ namespace TickTrader.BotTerminal
                 PackageLoadContext.Init(PackageLoadContextProvider.Create);
                 PackageExplorer.Init(PackageV1Explorer.Create());
                 PluginLogWriter.Init(NLogPluginLogWriter.Create);
+                BinaryStorageManagerFactory.Init((folder, readOnly) => new LmdbManager(folder, readOnly));
             }
         }
 

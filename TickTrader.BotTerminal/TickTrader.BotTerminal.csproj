@@ -34,6 +34,7 @@
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Isolation.NetFx\TickTrader.Algo.Isolation.NetFx.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.ServerControl\TickTrader.Algo.ServerControl.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server\TickTrader.Algo.Server.csproj" />
+    <ProjectReference Include="..\src\csharp\lib\TickTrader.SeriesStorage.Lmdb\TickTrader.SeriesStorage.Lmdb.csproj" />
     <ProjectReference Include="..\src\csharp\lib\TickTrader.SeriesStorage\TickTrader.SeriesStorage.csproj" />
     <ProjectReference Include="..\TickTrader.WpfWindowsSupportLibrary\TickTrader.WpfWindowsSupportLibrary.csproj" />
   </ItemGroup>

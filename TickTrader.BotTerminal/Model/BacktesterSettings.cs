@@ -16,7 +16,7 @@ namespace TickTrader.BotTerminal
         public int WarmupValue { get; set; } = 10;
         public WarmupUnitTypes WarmupUnits { get; set; } = WarmupUnitTypes.Bars;
 
-        public JournalOptions JournalSettings { get; set; } = JournalOptions.Enabled | JournalOptions.WriteCustom | JournalOptions.WriteInfo | JournalOptions.WriteTrade | JournalOptions.WriteAlert;
+        public JournalOptions JournalSettings { get; set; } = JournalOptions.Default;
 
         public void Apply(Backtester tester)
         {
@@ -33,6 +33,21 @@ namespace TickTrader.BotTerminal
             settings.ServerPing = TimeSpan.FromMilliseconds(ServerPingMs);
             settings.WarmupSize = WarmupValue;
             settings.WarmupUnits = WarmupUnits;
+        }
+
+        public void Apply(BacktesterConfig config)
+        {
+            if (ServerPingMs < 0)
+                throw new ArgumentException("Invalid ping value");
+            config.Core.ServerPingMs = (uint)ServerPingMs;
+            config.Core.WarmupValue = WarmupValue;
+            config.Core.WarmupUnits = WarmupUnits;
+            config.Core.JournalFlags = JournalSettings;
+
+            config.Account.Type = AccType;
+            config.Account.Leverage = Leverage;
+            config.Account.InitialBalance = InitialBalance;
+            config.Account.BalanceCurrency = BalanceCurrency;
         }
 
         public string ToText(bool compact)

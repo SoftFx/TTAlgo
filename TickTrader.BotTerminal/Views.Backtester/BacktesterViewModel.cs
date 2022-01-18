@@ -135,6 +135,11 @@ namespace TickTrader.BotTerminal
 
                 SetupPage.CheckDuplicateSymbols();
 
+                var config = new BacktesterConfig();
+                SetupPage.Apply(config);
+                var fileName = $"Backtester-in.{DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss", CultureInfo.InvariantCulture)}.zip";
+                config.Save(System.IO.Path.Combine(EnvService.Instance.BacktestResultsFolder, fileName));
+
                 _emulteFrom = DateTime.SpecifyKind(SetupPage.DateRange.From, DateTimeKind.Utc);
                 _emulateTo = DateTime.SpecifyKind(SetupPage.DateRange.To, DateTimeKind.Utc);
 
@@ -164,12 +169,8 @@ namespace TickTrader.BotTerminal
             //var packageRef = _env.LocalAgent.Library.GetPackageRef(SelectedPlugin.Value.Info.Key.GetPackageKey());
             //var pluginRef = _env.LocalAgent.Library.GetPluginRef(SetupPage.SelectedPlugin.Value.Key);
             PluginDescriptor pDescriptor = null;
-            //var pluginSetupModel = new PluginSetupModel(pluginRef, this, this);
 
             _descriptorCache = pDescriptor;
-
-            //if (PluginConfig != null)
-            //    pluginSetupModel.Load(PluginConfig);
 
             if (SetupPage.Mode == TesterModes.Optimization)
                 await DoOptimization(observer, cToken, pDescriptor, SetupPage.PluginConfig, chartSymbol, chartTimeframe, chartPriceLayer);
