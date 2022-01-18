@@ -171,10 +171,6 @@ namespace TickTrader.BotTerminal
             //if (PluginConfig != null)
             //    pluginSetupModel.Load(PluginConfig);
 
-            // TODO: place correctly to avoid domain unload during backtester run
-            //packageRef.IncrementRef();
-            //packageRef.DecrementRef();
-
             if (SetupPage.Mode == TesterModes.Optimization)
                 await DoOptimization(observer, cToken, pDescriptor, SetupPage.PluginConfig, chartSymbol, chartTimeframe, chartPriceLayer);
             else

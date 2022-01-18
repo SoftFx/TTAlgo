@@ -78,7 +78,7 @@ namespace TickTrader.BotTerminal
 
         public override Task<bool> CanCloseAsync(CancellationToken cancellationToken = default)
         {
-            if (!_isCompleted)
+            if (_isCompleted)
                 return base.CanCloseAsync(cancellationToken);
             else
                 return Task.FromResult(false);
