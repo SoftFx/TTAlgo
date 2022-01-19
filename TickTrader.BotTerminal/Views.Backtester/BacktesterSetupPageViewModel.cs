@@ -33,7 +33,7 @@ namespace TickTrader.BotTerminal
         private readonly IReadOnlyList<ISetupSymbolInfo> _observableSymbolTokens;
         private readonly IVarSet<SymbolKey, ISetupSymbolInfo> _symbolTokens;
         private BacktesterPluginSetupViewModel _openedPluginSetup;
-        private readonly OptionalItem<TesterModes> _optModeItem;
+        private readonly OptionalItem<BacktesterMode> _optModeItem;
 
         public BacktesterSetupPageViewModel(TraderClientModel client, SymbolCatalog catalog, AlgoEnvironment env, BoolVar isRunning)
         {
@@ -72,7 +72,7 @@ namespace TickTrader.BotTerminal
             AvailableModels = _var.AddProperty<List<Feed.Types.Timeframe>>();
             SelectedModel = _var.AddProperty<Feed.Types.Timeframe>(Feed.Types.Timeframe.M1);
 
-            ModeProp = _var.AddProperty<OptionalItem<TesterModes>>();
+            ModeProp = _var.AddProperty<OptionalItem<BacktesterMode>>();
             PluginErrorProp = _var.AddProperty<string>();
 
             SelectedPlugin = new Property<AlgoPluginViewModel>();
@@ -103,11 +103,11 @@ namespace TickTrader.BotTerminal
             var sortedSymbolTokens = _symbolTokens.OrderBy((k, v) => k, new SymbolKeyComparer());
             _observableSymbolTokens = sortedSymbolTokens.AsObservable();
 
-            Modes = new List<OptionalItem<TesterModes>>
+            Modes = new List<OptionalItem<BacktesterMode>>
             {
-                new OptionalItem<TesterModes>(TesterModes.Backtesting),
-                new OptionalItem<TesterModes>(TesterModes.Visualization),
-                new OptionalItem<TesterModes>(TesterModes.Optimization)
+                new OptionalItem<BacktesterMode>(BacktesterMode.Backtesting),
+                new OptionalItem<BacktesterMode>(BacktesterMode.Visualization),
+                new OptionalItem<BacktesterMode>(BacktesterMode.Optimization)
             };
             _optModeItem = Modes.Last();
             ModeProp.Value = Modes[0];
@@ -179,9 +179,9 @@ namespace TickTrader.BotTerminal
         //public PluginConfig PluginConfig { get; private set; }
         public Property<string> TradeSettingsSummary { get; private set; }
         //public BoolProperty IsVisualizationEnabled { get; }
-        public List<OptionalItem<TesterModes>> Modes { get; }
-        public Property<OptionalItem<TesterModes>> ModeProp { get; private set; }
-        public TesterModes Mode => ModeProp.Value.Value;
+        public List<OptionalItem<BacktesterMode>> Modes { get; }
+        public Property<OptionalItem<BacktesterMode>> ModeProp { get; private set; }
+        public BacktesterMode Mode => ModeProp.Value.Value;
         public BoolProperty SaveResultsToFile { get; }
         public BoolVar IsPluginSelected { get; }
         public BoolVar IsTradeBotSelected { get; }
@@ -246,10 +246,11 @@ namespace TickTrader.BotTerminal
 
         public void Apply(BacktesterConfig config)
         {
+            config.Core.Mode = Mode;
             config.Core.EmulateFrom = DateTime.SpecifyKind(DateRange.From, DateTimeKind.Utc);
             config.Core.EmulateTo = DateTime.SpecifyKind(DateRange.To, DateTimeKind.Utc);
             Settings.Apply(config);
-            config.SetPluginConfig(PluginConfig);
+            config.SetPluginConfig(PluginConfig ?? new PluginConfig { Key = SelectedPlugin.Value.Key });
 
             config.Core.MainSymbol = MainSymbolSetup.SelectedSymbol.Value.Name;
             config.Core.MainTimeframe = MainTimeFrame.Value;
@@ -582,12 +583,5 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
-    }
-
-    public enum TesterModes
-    {
-        Backtesting,
-        Visualization,
-        Optimization
     }
 }
