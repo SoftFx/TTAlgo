@@ -22,6 +22,8 @@ using TickTrader.BotAgent.Hosting;
 using TickTrader.BotAgent.WebAdmin;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 using TickTrader.BotAgent.WebAdmin.Server.Settings;
+using TickTrader.SeriesStorage;
+using TickTrader.SeriesStorage.Lmdb;
 
 namespace TickTrader.BotAgent
 {
@@ -46,6 +48,8 @@ namespace TickTrader.BotAgent
 
             PackageLoadContext.Init(PackageLoadContextProvider.Create);
             PackageExplorer.Init(PackageV1Explorer.Create());
+
+            BinaryStorageManagerFactory.Init((folder, readOnly) => new LmdbManager(folder, readOnly));
 
             var logger = LogManager.GetLogger(nameof(Program));
 
