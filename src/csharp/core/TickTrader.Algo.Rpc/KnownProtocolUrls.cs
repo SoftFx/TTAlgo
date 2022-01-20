@@ -5,5 +5,6 @@
         public const string RuntimeV1 = "api/runtime/v1";
         public const string ServerClientV1 = "server/client/v1";
         public const string AccountClientFDK2 = "account/client/fdk2";
+        public const string BacktesterV1 = "api/backtester/v1";
     }
 }

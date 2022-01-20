@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package ticktrader.algo.domain;
+
+option csharp_namespace = "TickTrader.Algo.Domain";
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
+
+import "common.proto";
+
+message AttachBacktesterRequest {
+    string id = 1;
+}
+
+message AttachBacktesterResponse {
+    bool success = 1;
+}
+
+message StartBacktesterRequest { // void response
+    string config_path = 1;
+}
+
+message StopBacktesterRequest { } // void response
+
+message BacktesterProgressUpdate {
+    string id = 1;
+    uint64 current = 2;
+    uint64 total = 3;
+}
+
+message BacktesterStoppedMsg {
+    string id = 1;
+}

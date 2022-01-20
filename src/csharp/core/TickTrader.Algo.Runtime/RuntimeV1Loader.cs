@@ -12,6 +12,8 @@ namespace TickTrader.Algo.Runtime
     {
         public const int AbortTimeout = 10000;
 
+        private static readonly ProtocolSpec ExpectedProtocol = new ProtocolSpec { Url = KnownProtocolUrls.RuntimeV1, MajorVerion = 1, MinorVerion = 0 };
+
         private readonly RpcClient _client;
         private readonly PluginRuntimeV1Handler _handler;
 
@@ -22,7 +24,7 @@ namespace TickTrader.Algo.Runtime
 
         public RuntimeV1Loader()
         {
-            _client = new RpcClient(new TcpFactory(), this, new ProtocolSpec { Url = KnownProtocolUrls.RuntimeV1, MajorVerion = 1, MinorVerion = 0 });
+            _client = new RpcClient(new TcpFactory(), this, ExpectedProtocol);
             _handler = new PluginRuntimeV1Handler(this);
         }
 
@@ -84,12 +86,7 @@ namespace TickTrader.Algo.Runtime
 
         IRpcHandler IRpcHost.GetRpcHandler(ProtocolSpec protocol)
         {
-            switch (protocol.Url)
-            {
-                case KnownProtocolUrls.RuntimeV1:
-                    return _handler;
-            }
-            return null;
+            return ExpectedProtocol.Url == protocol.Url ? _handler : null;
         }
 
         #endregion IRpcHost implementation

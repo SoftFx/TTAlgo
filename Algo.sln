@@ -6,7 +6,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lib", "Lib", "{20363DD1-DC1
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Terminal", "Terminal", "{DFCF5276-C414-4F2F-B664-D3EB3BEAB44E}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BotAgent", "BotAgent", "{EAFDF5CB-7010-4EA0-8D57-4D5035362975}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{EAFDF5CB-7010-4EA0-8D57-4D5035362975}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.BotTerminal", "TickTrader.BotTerminal\TickTrader.BotTerminal.csproj", "{D5C53515-D7E3-476F-9119-3102FE30E425}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -152,6 +152,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.TestCollection", "src\csharp\api\TickTrader.Algo.TestCollection\TickTrader.Algo.TestCollection.csproj", "{0366990E-0E37-4C23-A51C-874B28A981CF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.VersionTest", "src\csharp\api\TickTrader.Algo.VersionTest\TickTrader.Algo.VersionTest.csproj", "{CF4C2154-8C84-4C8B-81DC-0B577B98431E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.BacktesterV1Host", "src\csharp\apps\TickTrader.Algo.BacktesterV1Host\TickTrader.Algo.BacktesterV1Host.csproj", "{7E2C0529-C16A-486B-B4A4-E84E1AB34B10}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -871,6 +873,18 @@ Global
 		{CF4C2154-8C84-4C8B-81DC-0B577B98431E}.Release|x64.Build.0 = Release|Any CPU
 		{CF4C2154-8C84-4C8B-81DC-0B577B98431E}.Release|x86.ActiveCfg = Release|Any CPU
 		{CF4C2154-8C84-4C8B-81DC-0B577B98431E}.Release|x86.Build.0 = Release|Any CPU
+		{7E2C0529-C16A-486B-B4A4-E84E1AB34B10}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E2C0529-C16A-486B-B4A4-E84E1AB34B10}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E2C0529-C16A-486B-B4A4-E84E1AB34B10}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7E2C0529-C16A-486B-B4A4-E84E1AB34B10}.Debug|x64.Build.0 = Debug|Any CPU
+		{7E2C0529-C16A-486B-B4A4-E84E1AB34B10}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7E2C0529-C16A-486B-B4A4-E84E1AB34B10}.Debug|x86.Build.0 = Debug|Any CPU
+		{7E2C0529-C16A-486B-B4A4-E84E1AB34B10}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E2C0529-C16A-486B-B4A4-E84E1AB34B10}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E2C0529-C16A-486B-B4A4-E84E1AB34B10}.Release|x64.ActiveCfg = Release|Any CPU
+		{7E2C0529-C16A-486B-B4A4-E84E1AB34B10}.Release|x64.Build.0 = Release|Any CPU
+		{7E2C0529-C16A-486B-B4A4-E84E1AB34B10}.Release|x86.ActiveCfg = Release|Any CPU
+		{7E2C0529-C16A-486B-B4A4-E84E1AB34B10}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -937,6 +951,7 @@ Global
 		{EC7E5D91-11E1-4A4E-AC29-2E1617503188} = {0B8EB813-E541-46DB-ADCC-2EA529D74B16}
 		{0366990E-0E37-4C23-A51C-874B28A981CF} = {0B8EB813-E541-46DB-ADCC-2EA529D74B16}
 		{CF4C2154-8C84-4C8B-81DC-0B577B98431E} = {0B8EB813-E541-46DB-ADCC-2EA529D74B16}
+		{7E2C0529-C16A-486B-B4A4-E84E1AB34B10} = {D4DDCC9E-81DB-4294-9060-A8C1AB363672}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {676AD27B-E03C-4277-A423-E2533F837976}

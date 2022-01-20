@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net472</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\core\TickTrader.Algo.Backtester\TickTrader.Algo.Backtester.csproj" />
+    <ProjectReference Include="..\..\core\TickTrader.Algo.Isolation.NetFx\TickTrader.Algo.Isolation.NetFx.csproj" />
+    <ProjectReference Include="..\..\core\TickTrader.Algo.Rpc.OverTcp\TickTrader.Algo.Rpc.OverTcp.csproj" />
+    <ProjectReference Include="..\..\core\TickTrader.Algo.Rpc\TickTrader.Algo.Rpc.csproj" />
+    <ProjectReference Include="..\..\lib\TickTrader.Algo.Logging\TickTrader.Algo.Logging.csproj" />
+  </ItemGroup>
+
+</Project>
