@@ -138,7 +138,8 @@ namespace TickTrader.BotTerminal
                 var config = new BacktesterConfig();
                 SetupPage.Apply(config);
                 var fileName = $"Backtester-in.{DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss", CultureInfo.InvariantCulture)}.zip";
-                config.Save(System.IO.Path.Combine(EnvService.Instance.BacktestResultsFolder, fileName));
+                var configPath = System.IO.Path.Combine(EnvService.Instance.BacktestResultsFolder, fileName);
+                config.Save(configPath);
 
                 _emulteFrom = DateTime.SpecifyKind(SetupPage.DateRange.From, DateTimeKind.Utc);
                 _emulateTo = DateTime.SpecifyKind(SetupPage.DateRange.To, DateTimeKind.Utc);
@@ -150,11 +151,32 @@ namespace TickTrader.BotTerminal
 
                 cToken.ThrowIfCancellationRequested();
 
-                await SetupAndRunBacktester(observer, cToken);
+                await RunBacktester(observer, configPath, cToken);
+
+                //await SetupAndRunBacktester(observer, cToken);
             }
             catch (OperationCanceledException)
             {
                 observer.SetMessage("Canceled.");
+            }
+        }
+
+        private async Task RunBacktester(IActionObserver observer, string configPath, CancellationToken cToken)
+        {
+            var progressMin = _emulteFrom.GetAbsoluteDay();
+
+            observer.StartProgress(progressMin, _emulateTo.GetAbsoluteDay());
+            observer.SetMessage("Emulating...");
+
+            try
+            {
+                BacktesterRunner.Instance.BinDirPath = System.IO.Path.Combine(EnvService.Instance.AppFolder, "bin", "backtester");
+                var tester = await BacktesterRunner.Instance.NewInstance();
+                await tester.Start(configPath);
+            }
+            finally
+            {
+                //tester?.Dispose();
             }
         }
 

@@ -140,12 +140,15 @@
   <Target Name="CopyBinaries" AfterTargets="Build">
     <ItemGroup>
       <RuntimeV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.RuntimeV1Host.NetFx\bin\$(Configuration)\net472\*.*" />
+      <BacktesterV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.BacktesterV1Host\bin\$(Configuration)\net472\*.*" />
     </ItemGroup>
     <Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(TargetDir)AlgoRuntime\" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(BacktesterV1Binaries)" DestinationFolder="$(TargetDir)bin\backtester\" SkipUnchangedFiles="true" />
   </Target>
 
   <Target Name="CleanGeneratedFiles" AfterTargets="Clean">
     <RemoveDir Directories="$(TargetDir)AlgoRuntime\" />
+    <RemoveDir Directories="$(TargetDir)bin\" />
     <RemoveDir Directories="$(TargetDir)Resources\" />
   </Target>
 
