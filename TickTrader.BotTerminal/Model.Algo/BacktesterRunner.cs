@@ -109,7 +109,9 @@ namespace TickTrader.BotTerminal
                 _instanceMap.Add(id, backtester);
                 await backtester.Ask(BacktesterControlActor.InitCmd.Instance);
 
-                return new BacktesterController(backtester);
+                var wrapper = new BacktesterController(backtester);
+                await wrapper.Init();
+                return wrapper;
             }
 
             private IActorRef GetExistingInstance(BacktesterInstanceRequest request)
@@ -159,6 +161,8 @@ namespace TickTrader.BotTerminal
             {
                 if (payload.Is(BacktesterStoppedMsg.Descriptor))
                     _backtester.Tell(payload.Unpack<BacktesterStoppedMsg>());
+                else if (payload.Is(BacktesterProgressUpdate.Descriptor))
+                    _backtester.Tell(payload.Unpack<BacktesterProgressUpdate>());
 
                 else throw new System.NotImplementedException();
             }

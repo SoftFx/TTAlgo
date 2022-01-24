@@ -5,10 +5,6 @@ package ticktrader.algo.domain;
 option csharp_namespace = "TickTrader.Algo.Domain";
 
 import "google/protobuf/wrappers.proto";
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/any.proto";
-
-import "common.proto";
 
 message AttachBacktesterRequest {
     string id = 1;
@@ -32,4 +28,5 @@ message BacktesterProgressUpdate {
 
 message BacktesterStoppedMsg {
     string id = 1;
+    google.protobuf.StringValue error_msg = 2;
 }

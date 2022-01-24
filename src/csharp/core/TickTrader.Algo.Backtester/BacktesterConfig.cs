@@ -36,7 +36,7 @@ namespace TickTrader.Algo.Backtester
 
         public void Save(string filePath)
         {
-            using (var file = File.Open(filePath, FileMode.Create))
+            using (var file = File.Open(filePath, FileMode.CreateNew))
             using (var zip = new ZipArchive(file, ZipArchiveMode.Update))
             {
                 WriteZipEntryAsJson(zip, "core.json", Core);

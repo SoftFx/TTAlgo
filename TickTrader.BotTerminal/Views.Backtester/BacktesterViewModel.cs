@@ -163,23 +163,23 @@ namespace TickTrader.BotTerminal
 
         private async Task RunBacktester(IActionObserver observer, string configPath, CancellationToken cToken)
         {
-            var progressMin = _emulteFrom.GetAbsoluteDay();
+            //var progressMin = _emulteFrom.GetAbsoluteDay();
 
-            observer.StartProgress(progressMin, _emulateTo.GetAbsoluteDay());
+            //observer.StartProgress(progressMin, _emulateTo.GetAbsoluteDay());
+            observer.StartProgress(0, 10);
             observer.SetMessage("Emulating...");
 
-            try
+            BacktesterRunner.Instance.BinDirPath = System.IO.Path.Combine(EnvService.Instance.AppFolder, "bin", "backtester");
+            using (var tester = await BacktesterRunner.Instance.NewInstance())
             {
-                BacktesterRunner.Instance.BinDirPath = System.IO.Path.Combine(EnvService.Instance.AppFolder, "bin", "backtester");
-                var tester = await BacktesterRunner.Instance.NewInstance();
-                await tester.Start(configPath);
-                await tester.AwaitStop();
+                using (var reg = cToken.Register(() => tester.Stop()))
+                {
+                    tester.OnProgressUpdate.Subscribe(update => Execute.OnUIThread(() => observer.SetProgress(update.Current)));
+                    await tester.Start(configPath);
+                    await tester.AwaitStop();
 
-                observer.SetMessage("Success");
-            }
-            finally
-            {
-                //tester?.Dispose();
+                    observer.SetMessage("Success");
+                }
             }
         }
 

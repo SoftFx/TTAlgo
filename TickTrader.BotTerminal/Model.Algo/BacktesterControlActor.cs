@@ -18,13 +18,14 @@ namespace TickTrader.BotTerminal
         private readonly string _exePath;
         private readonly string _address;
         private readonly int _port;
+        private readonly List<TaskCompletionSource<object>> _awaitStopList = new List<TaskCompletionSource<object>>();
+        private readonly ActorEventSource<BacktesterProgressUpdate> _progressEventSrc = new ActorEventSource<BacktesterProgressUpdate>();
 
         private IAlgoLogger _logger;
         private RpcSession _session;
         private TaskCompletionSource<object> _initTaskSrc;
         private Process _process;
         private CancellationTokenSource _killProcessCancelSrc;
-        private List<TaskCompletionSource<object>> _awaitStopList = new List<TaskCompletionSource<object>>();
 
 
         private BacktesterControlActor(string id, string exePath, string address, int port)
@@ -42,6 +43,8 @@ namespace TickTrader.BotTerminal
             Receive<StopBacktesterRequest>(Stop);
             Receive<BacktesterController.AwaitStopRequest>(AwaitStop);
             Receive<BacktesterStoppedMsg>(OnStopped);
+            Receive<BacktesterController.SubscribeToProgressUpdatesCmd>(SubscribeToProgressUpdates);
+            Receive<BacktesterProgressUpdate>(OnProgressUpdate);
         }
 
 
@@ -108,10 +111,30 @@ namespace TickTrader.BotTerminal
 
         private void OnStopped(BacktesterStoppedMsg msg)
         {
-            foreach(var awaiter in _awaitStopList)
+            var hasError = !string.IsNullOrEmpty(msg.ErrorMsg);
+            Exception error = default;
+            if (hasError)
+                error = new AlgoException(msg.ErrorMsg);
+
+            foreach (var awaiter in _awaitStopList)
             {
-                awaiter.TrySetResult(null);
+                if (hasError)
+                    awaiter.TrySetException(error);
+                else
+                    awaiter.TrySetResult(null);
             }
+
+            _awaitStopList.Clear();
+        }
+
+        private void SubscribeToProgressUpdates(BacktesterController.SubscribeToProgressUpdatesCmd cmd)
+        {
+            _progressEventSrc.Subscribe(cmd.Sink);
+        }
+
+        private void OnProgressUpdate(BacktesterProgressUpdate msg)
+        {
+            _progressEventSrc.DispatchEvent(msg);
         }
 
 

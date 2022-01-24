@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Backtester;
 using TickTrader.Algo.Core.Lib;
@@ -14,6 +16,7 @@ namespace TickTrader.Algo.BacktesterV1Host
         private BacktesterV1HostHandler _handler;
 
         private IAlgoLogger _logger;
+        private CancellationTokenSource _cancelTokenSrc;
 
 
         private BacktesterV1Actor(string id, BacktesterV1HostHandler handler)
@@ -52,6 +55,7 @@ namespace TickTrader.Algo.BacktesterV1Host
 
             _logger.Debug("Started successfully");
 
+            _cancelTokenSrc = new CancellationTokenSource();
             var _ = RunInternal(config);
         }
 
@@ -59,17 +63,31 @@ namespace TickTrader.Algo.BacktesterV1Host
         {
             _logger.Debug("Stopping...");
 
+            _cancelTokenSrc?.Cancel();
+
             _logger.Debug("Stopped");
         }
 
 
         private async Task RunInternal(BacktesterConfig config)
         {
-            await Task.Delay(100);
+            try
+            {
+                const ulong total = 10;
+                for (ulong i = 0; i < total; i++)
+                {
+                    await Task.Delay(1000, _cancelTokenSrc.Token);
+                    _handler.SendProgress(i, total);
+                }
 
-            _handler.SendStoppedMsg();
+                _handler.SendStoppedMsg(null);
 
-            _logger.Debug("Finished");
+                _logger.Debug("Finished");
+            }
+            catch (Exception ex)
+            {
+                _handler.SendStoppedMsg(ex.Message);
+            }
         }
     }
 }

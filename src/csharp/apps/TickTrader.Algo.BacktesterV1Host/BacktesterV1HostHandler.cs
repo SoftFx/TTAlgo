@@ -32,9 +32,15 @@ namespace TickTrader.Algo.BacktesterV1Host
             return context.TaskSrc.Task;
         }
 
-        public void SendStoppedMsg()
+        public void SendStoppedMsg(string errorMsg)
         {
-            _session.Tell(RpcMessage.Notification(new BacktesterStoppedMsg { Id = _id }));
+            _session.Tell(RpcMessage.Notification(new BacktesterStoppedMsg { Id = _id, ErrorMsg = errorMsg }));
+        }
+
+        public void SendProgress(ulong current, ulong total)
+        {
+            var msg = new BacktesterProgressUpdate { Id = _id, Current = current, Total = total };
+            _session.Tell(RpcMessage.Notification(msg));
         }
 
 
@@ -44,11 +50,7 @@ namespace TickTrader.Algo.BacktesterV1Host
             _rpcStateSub = session.StateChanged.Subscribe(OnStateChange);
         }
 
-        public void HandleNotification(string proxyId, string callId, Any payload)
-        {
-            if (payload.Is(BacktesterStoppedMsg.Descriptor))
-                BacktesterStoppedNotificationHandler(payload);
-        }
+        public void HandleNotification(string proxyId, string callId, Any payload) => throw new NotImplementedException();
 
         public Task<Any> HandleRequest(string proxyId, string callId, Any payload)
         {
