@@ -141,14 +141,17 @@ namespace TickTrader.BotTerminal
             var p = new NLogFileParams { LogDirectory = EnvService.Instance.JournalFolder, Layout = NLogHelper.SimpleLogLayout };
 
             p.FileNameSuffix = "journal";
+            p.ArchiveDirectory = Path.Combine(p.LogDirectory, "Archive");
+
             var journalTarget = NLogHelper.CreateAsyncFileTarget(p, 500, 10000);
-            config.AddRule(LogLevel.Trace, LogLevel.Trace, journalTarget, string.Concat("*", nameof(EventJournal)), true);
+            config.AddRule(LogLevel.Trace, LogLevel.Fatal, journalTarget, $"*Journal*", true);
 
             p.LogDirectory = EnvService.Instance.LogFolder;
+            p.ArchiveDirectory = Path.Combine(p.LogDirectory, "Archive");
 
             p.FileNameSuffix = "alert";
             var alertTarget = NLogHelper.CreateAsyncFileTarget(p, 100, 1000);
-            config.AddRule(LogLevel.Trace, LogLevel.Trace, alertTarget, string.Concat("*", nameof(AlertViewModel)), true);
+            config.AddRule(LogLevel.Trace, LogLevel.Fatal, alertTarget, $"*{nameof(AlertViewModel)}", true);
 
             p.Layout = NLogHelper.NormalLogLayout;
 
