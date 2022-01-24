@@ -20,8 +20,8 @@ namespace TickTrader.Algo.Backtester
 
         public static BacktesterConfig Load(string filePath)
         {
-            using (var file = File.Open(filePath, FileMode.Create))
-            using (var zip = new ZipArchive(file))
+            using (var file = File.Open(filePath, FileMode.Open))
+            using (var zip = new ZipArchive(file, ZipArchiveMode.Read))
             {
                 return new BacktesterConfig
                 {

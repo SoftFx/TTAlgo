@@ -10,6 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{EAFDF5
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.BotTerminal", "TickTrader.BotTerminal\TickTrader.BotTerminal.csproj", "{D5C53515-D7E3-476F-9119-3102FE30E425}"
 	ProjectSection(ProjectDependencies) = postProject
+		{7E2C0529-C16A-486B-B4A4-E84E1AB34B10} = {7E2C0529-C16A-486B-B4A4-E84E1AB34B10}
 		{641642C7-87EA-4AE7-830A-A8A0610F374F} = {641642C7-87EA-4AE7-830A-A8A0610F374F}
 	EndProjectSection
 EndProject

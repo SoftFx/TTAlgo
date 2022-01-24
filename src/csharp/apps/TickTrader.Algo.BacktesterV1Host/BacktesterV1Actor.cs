@@ -51,6 +51,8 @@ namespace TickTrader.Algo.BacktesterV1Host
             _logger.Debug($"PluginId = {config.PluginConfig.Key.DescriptorId}");
 
             _logger.Debug("Started successfully");
+
+            var _ = RunInternal(config);
         }
 
         private async Task Stop(StopBacktesterRequest request)
@@ -58,6 +60,16 @@ namespace TickTrader.Algo.BacktesterV1Host
             _logger.Debug("Stopping...");
 
             _logger.Debug("Stopped");
+        }
+
+
+        private async Task RunInternal(BacktesterConfig config)
+        {
+            await Task.Delay(100);
+
+            _handler.SendStoppedMsg();
+
+            _logger.Debug("Finished");
         }
     }
 }

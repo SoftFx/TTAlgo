@@ -173,6 +173,9 @@ namespace TickTrader.BotTerminal
                 BacktesterRunner.Instance.BinDirPath = System.IO.Path.Combine(EnvService.Instance.AppFolder, "bin", "backtester");
                 var tester = await BacktesterRunner.Instance.NewInstance();
                 await tester.Start(configPath);
+                await tester.AwaitStop();
+
+                observer.SetMessage("Success");
             }
             finally
             {

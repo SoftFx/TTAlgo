@@ -157,7 +157,10 @@ namespace TickTrader.BotTerminal
 
             public void HandleNotification(string proxyId, string callId, Any payload)
             {
-                throw new System.NotImplementedException();
+                if (payload.Is(BacktesterStoppedMsg.Descriptor))
+                    _backtester.Tell(payload.Unpack<BacktesterStoppedMsg>());
+
+                else throw new System.NotImplementedException();
             }
 
             public Task<Any> HandleRequest(string proxyId, string callId, Any payload)

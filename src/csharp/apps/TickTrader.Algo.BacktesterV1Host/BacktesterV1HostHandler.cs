@@ -32,6 +32,11 @@ namespace TickTrader.Algo.BacktesterV1Host
             return context.TaskSrc.Task;
         }
 
+        public void SendStoppedMsg()
+        {
+            _session.Tell(RpcMessage.Notification(new BacktesterStoppedMsg { Id = _id }));
+        }
+
 
         public void SetSession(RpcSession session)
         {
@@ -39,13 +44,17 @@ namespace TickTrader.Algo.BacktesterV1Host
             _rpcStateSub = session.StateChanged.Subscribe(OnStateChange);
         }
 
-        public void HandleNotification(string proxyId, string callId, Any payload) => throw new NotImplementedException();
+        public void HandleNotification(string proxyId, string callId, Any payload)
+        {
+            if (payload.Is(BacktesterStoppedMsg.Descriptor))
+                BacktesterStoppedNotificationHandler(payload);
+        }
 
         public Task<Any> HandleRequest(string proxyId, string callId, Any payload)
         {
-            if (payload.Is(StartRuntimeRequest.Descriptor))
+            if (payload.Is(StartBacktesterRequest.Descriptor))
                 return StartBacktesterRequestHandler(payload);
-            else if (payload.Is(StopRuntimeRequest.Descriptor))
+            else if (payload.Is(StopBacktesterRequest.Descriptor))
                 return StopBacktesterRequestHandler(payload);
 
             return Task.FromResult(default(Any));
@@ -88,6 +97,12 @@ namespace TickTrader.Algo.BacktesterV1Host
             var response = payload.Unpack<AttachBacktesterResponse>();
             taskSrc.TrySetResult(response.Success);
             return true;
+        }
+
+        private void BacktesterStoppedNotificationHandler(Any payload)
+        {
+            var msg = payload.Unpack<BacktesterStoppedMsg>();
+            _backtester.Tell(msg);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,6 +24,7 @@ namespace TickTrader.BotTerminal
         private TaskCompletionSource<object> _initTaskSrc;
         private Process _process;
         private CancellationTokenSource _killProcessCancelSrc;
+        private List<TaskCompletionSource<object>> _awaitStopList = new List<TaskCompletionSource<object>>();
 
 
         private BacktesterControlActor(string id, string exePath, string address, int port)
@@ -37,6 +39,9 @@ namespace TickTrader.BotTerminal
             Receive<ConnectSessionCmd, bool>(ConnectSession);
             Receive<ProcessExitedMsg>(OnProcessExited);
             Receive<StartBacktesterRequest>(Start);
+            Receive<StopBacktesterRequest>(Stop);
+            Receive<BacktesterController.AwaitStopRequest>(AwaitStop);
+            Receive<BacktesterStoppedMsg>(OnStopped);
         }
 
 
@@ -85,6 +90,28 @@ namespace TickTrader.BotTerminal
             var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(request), context);
             return context.TaskSrc.Task;
+        }
+
+        private Task Stop(StopBacktesterRequest request)
+        {
+            var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
+            _session.Ask(RpcMessage.Request(request), context);
+            return context.TaskSrc.Task;
+        }
+
+        private Task AwaitStop(BacktesterController.AwaitStopRequest request)
+        {
+            var taskSrc = new TaskCompletionSource<object>();
+            _awaitStopList.Add(taskSrc);
+            return taskSrc.Task;
+        }
+
+        private void OnStopped(BacktesterStoppedMsg msg)
+        {
+            foreach(var awaiter in _awaitStopList)
+            {
+                awaiter.TrySetResult(null);
+            }
         }
 
 
