@@ -9,6 +9,8 @@ using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Isolation.NetFx;
 using TickTrader.Algo.Logging;
 using TickTrader.Algo.Package;
+using TickTrader.SeriesStorage;
+using TickTrader.SeriesStorage.Lmdb;
 
 namespace TickTrader.Algo.BacktesterV1Host
 {
@@ -40,6 +42,7 @@ namespace TickTrader.Algo.BacktesterV1Host
             PackageLoadContext.Init(PackageLoadContextProvider.Create);
             PackageExplorer.Init(PackageV1Explorer.Create());
             PluginLogWriter.Init(NLogPluginLogWriter.Create);
+            BinaryStorageManagerFactory.Init((folder, readOnly) => new LmdbManager(folder, readOnly));
 
             BacktesterV1Loader loader = null;
             var isFailed = false;

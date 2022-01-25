@@ -9,11 +9,20 @@ using TickTrader.FeedStorage;
 
 namespace TickTrader.Algo.Backtester
 {
+    public enum BacktesterMode { Backtesting, Optimization, Visualization }
+
     public class BacktesterConfig
     {
-        public BacktesterCoreConfig Core { get; private set; } = new BacktesterCoreConfig();
-        public BacktesterAccountConfig Account { get; private set; } = new BacktesterAccountConfig();
-        public BacktesterTradeServerConfig TradeServer { get; private set; } = new BacktesterTradeServerConfig();
+        private VersionInfo _version = new VersionInfo();
+
+
+        public int ConfigVersion => _version.ConfigVersion;
+        public int PackageVersion => _version.PackageVersion;
+
+        public CoreConfig Core { get; private set; } = new CoreConfig();
+        public AccountConfig Account { get; private set; } = new AccountConfig();
+        public TradeServerConfig TradeServer { get; private set; } = new TradeServerConfig();
+        public EnvInfo Env { get; private set; } = new EnvInfo();
 
         public PluginConfig PluginConfig { get; private set; }
 
@@ -25,9 +34,11 @@ namespace TickTrader.Algo.Backtester
             {
                 return new BacktesterConfig
                 {
-                    Core = ReadZipEntryAsJson<BacktesterCoreConfig>(zip, "core.json"),
-                    Account = ReadZipEntryAsJson<BacktesterAccountConfig>(zip, "account.json"),
-                    TradeServer = ReadZipEntryAsJson<BacktesterTradeServerConfig>(zip, "trade-server.json"),
+                    _version = ReadZipEntryAsJson<VersionInfo>(zip, "version.json"),
+                    Core = ReadZipEntryAsJson<CoreConfig>(zip, "core.json"),
+                    Account = ReadZipEntryAsJson<AccountConfig>(zip, "account.json"),
+                    TradeServer = ReadZipEntryAsJson<TradeServerConfig>(zip, "trade-server.json"),
+                    Env = ReadZipEntryAsJson<EnvInfo>(zip, "env.json"),
                     PluginConfig = ReadZipEntryAsProtoMsg(zip, "plugin.cfg", PluginConfig.Parser),
                 };
             }
@@ -39,9 +50,11 @@ namespace TickTrader.Algo.Backtester
             using (var file = File.Open(filePath, FileMode.CreateNew))
             using (var zip = new ZipArchive(file, ZipArchiveMode.Update))
             {
+                WriteZipEntryAsJson(zip, "version.json", _version);
                 WriteZipEntryAsJson(zip, "core.json", Core);
                 WriteZipEntryAsJson(zip, "account.json", Account);
                 WriteZipEntryAsJson(zip, "trade-server.json", TradeServer);
+                WriteZipEntryAsJson(zip, "env.json", Env);
                 WriteZipEntryAsProtoMsg(zip, "plugin.cfg", PluginConfig);
             }
         }
@@ -50,6 +63,19 @@ namespace TickTrader.Algo.Backtester
         {
             Core.ConfigUri = PluginConfig.Descriptor.FullName;
             PluginConfig = config;
+        }
+
+        public void Validate()
+        {
+            var core = Core;
+            if (core.Mode != BacktesterMode.Backtesting)
+                throw new AlgoException("Mode not supported yet!");
+            if (core.EmulateFrom == core.EmulateTo)
+                throw new AlgoException("Zero range!");
+            if (core.ServerPingMs < 0)
+                throw new ArgumentException("Invalid ping value");
+            if (Account.Type == AccountInfo.Types.Type.Cash)
+                throw new ArgumentException("Cash accounts are not supported");
         }
 
 
@@ -93,41 +119,54 @@ namespace TickTrader.Algo.Backtester
                 data.WriteTo(stream);
             }
         }
-    }
 
-    public enum BacktesterMode { Backtesting, Optimization, Visualization }
 
-    public class BacktesterCoreConfig
-    {
-        public BacktesterMode Mode { get; set; }
-        public DateTime? EmulateFrom { get; set; }
-        public DateTime? EmulateTo { get; set; }
-        public Dictionary<string, Feed.Types.Timeframe> FeedConfig { get; set; } = new Dictionary<string, Feed.Types.Timeframe>();
-        public string ConfigUri { get; set; }
+        private class VersionInfo
+        {
+            public int ConfigVersion { get; set; } = 1;
+            public int PackageVersion { get; set; } = 1;
+        }
 
-        public string MainSymbol { get; set; }
-        public Feed.Types.Timeframe MainTimeframe { get; set; }
-        public Feed.Types.Timeframe ModelTimeframe { get; set; }
+        public class CoreConfig
+        {
+            public BacktesterMode Mode { get; set; }
+            public DateTime EmulateFrom { get; set; }
+            public DateTime EmulateTo { get; set; }
+            public Dictionary<string, Feed.Types.Timeframe> FeedConfig { get; set; } = new Dictionary<string, Feed.Types.Timeframe>();
+            public string ConfigUri { get; set; }
 
-        // advanced
-        public int WarmupValue { get; set; } = 10;
-        public WarmupUnitTypes WarmupUnits { get; set; } = WarmupUnitTypes.Bars;
-        public uint ServerPingMs { get; set; } = 200;
-        public JournalOptions JournalFlags { get; set; }
-    }
+            public string MainSymbol { get; set; }
+            public Feed.Types.Timeframe MainTimeframe { get; set; }
+            public Feed.Types.Timeframe ModelTimeframe { get; set; }
 
-    public class BacktesterAccountConfig
-    {
-        public AccountInfo.Types.Type Type { get; set; }
-        public string BalanceCurrency { get; set; }
-        public int Leverage { get; set; } = 100;
-        public double InitialBalance { get; set; } = 10000;
-        public Dictionary<string, AssetInfo> InitialAssets { get; } = new Dictionary<string, AssetInfo>();
-    }
+            // advanced
+            public int WarmupValue { get; set; } = 10;
+            public WarmupUnitTypes WarmupUnits { get; set; } = WarmupUnitTypes.Bars;
+            public uint ServerPingMs { get; set; } = 200;
+            public JournalOptions JournalFlags { get; set; }
+        }
 
-    public class BacktesterTradeServerConfig
-    {
-        public Dictionary<string, CustomSymbol> Symbols { get; } = new Dictionary<string, CustomSymbol>();
-        public Dictionary<string, CustomCurrency> Currencies { get; } = new Dictionary<string, CustomCurrency>();
+        public class AccountConfig
+        {
+            public AccountInfo.Types.Type Type { get; set; }
+            public string BalanceCurrency { get; set; }
+            public int Leverage { get; set; } = 100;
+            public double InitialBalance { get; set; } = 10000;
+            public Dictionary<string, AssetInfo> InitialAssets { get; } = new Dictionary<string, AssetInfo>();
+        }
+
+        public class TradeServerConfig
+        {
+            public Dictionary<string, CustomSymbol> Symbols { get; } = new Dictionary<string, CustomSymbol>();
+            public Dictionary<string, CustomCurrency> Currencies { get; } = new Dictionary<string, CustomCurrency>();
+        }
+
+        public class EnvInfo
+        {
+            public string PackagePath { get; set; }
+            public string FeedCachePath { get; set; }
+            public string ResultsPath { get; set; }
+            public string WorkingFolderPath { get; set; }
+        }
     }
 }

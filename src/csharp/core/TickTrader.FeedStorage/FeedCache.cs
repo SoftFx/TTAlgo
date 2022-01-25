@@ -82,6 +82,8 @@ namespace TickTrader.FeedStorage
 
             public IVarSet<FeedCacheKey> Keys => _series?.Keys;
 
+            public string DataBaseFolder => _baseFolder;
+
             public ActorCallback<FeedCacheKey> RemoveCallback { get => removeCallback; set => removeCallback = value; }
 
             public Task Start(string folder)

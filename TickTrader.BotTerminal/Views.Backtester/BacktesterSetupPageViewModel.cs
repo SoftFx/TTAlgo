@@ -250,7 +250,10 @@ namespace TickTrader.BotTerminal
             config.Core.EmulateFrom = DateTime.SpecifyKind(DateRange.From, DateTimeKind.Utc);
             config.Core.EmulateTo = DateTime.SpecifyKind(DateRange.To, DateTimeKind.Utc);
             Settings.Apply(config);
-            config.SetPluginConfig(PluginConfig ?? new PluginConfig { Key = SelectedPlugin.Value.Key });
+
+            var selectedPlugin = SelectedPlugin.Value;
+            config.Env.PackagePath = selectedPlugin.PackageInfo.Identity.FilePath;
+            config.SetPluginConfig(PluginConfig ?? new PluginConfig { Key = selectedPlugin.Key });
 
             config.Core.MainSymbol = MainSymbolSetup.SelectedSymbol.Value.Name;
             config.Core.MainTimeframe = MainTimeFrame.Value;

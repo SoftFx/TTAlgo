@@ -6,7 +6,7 @@ namespace TickTrader.FeedStorage
 {
     public sealed class BarCrossDomainReader : CrossDomainReader<BarData>
     {
-        internal BarCrossDomainReader(string dataBaseFolder, CrossDomainReaderRequest request) : base(dataBaseFolder, request)
+        public BarCrossDomainReader(string dataBaseFolder, CrossDomainReaderRequest request) : base(dataBaseFolder, request)
         { }
 
         protected override SeriesStorage<DateTime, BarData> GetSeriesStorage()

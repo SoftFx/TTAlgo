@@ -137,15 +137,19 @@ namespace TickTrader.BotTerminal
 
                 var config = new BacktesterConfig();
                 SetupPage.Apply(config);
-                var fileName = $"Backtester-in.{DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss", CultureInfo.InvariantCulture)}.zip";
-                var configPath = System.IO.Path.Combine(EnvService.Instance.BacktestResultsFolder, fileName);
+                var decriptorName = SetupPage.SelectedPlugin.Value.Descriptor.DisplayName;
+                var fileNamePrefix = $"{decriptorName}.{DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss", CultureInfo.InvariantCulture)}";
+                var pathPrefix = System.IO.Path.Combine(EnvService.Instance.BacktestResultsFolder, fileNamePrefix);
+                config.Env.ResultsPath = pathPrefix + ".out.zip";
+                config.Env.FeedCachePath = _client.FeedHistory.Cache.DataBaseFolder;
+                config.Env.WorkingFolderPath = EnvService.Instance.AlgoWorkingFolder;
+
+                var configPath = pathPrefix + ".in.zip";
                 config.Save(configPath);
+                config.Validate();
 
                 _emulteFrom = DateTime.SpecifyKind(SetupPage.DateRange.From, DateTimeKind.Utc);
                 _emulateTo = DateTime.SpecifyKind(SetupPage.DateRange.To, DateTimeKind.Utc);
-
-                if (_emulteFrom == _emulateTo)
-                    throw new Exception("Zero range!");
 
                 await SetupPage.PrecacheData(observer, cToken, _emulteFrom, _emulateTo);
 
