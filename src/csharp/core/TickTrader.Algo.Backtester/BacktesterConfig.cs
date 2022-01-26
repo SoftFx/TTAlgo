@@ -152,13 +152,13 @@ namespace TickTrader.Algo.Backtester
             public string BalanceCurrency { get; set; }
             public int Leverage { get; set; } = 100;
             public double InitialBalance { get; set; } = 10000;
-            public Dictionary<string, AssetInfo> InitialAssets { get; } = new Dictionary<string, AssetInfo>();
+            public Dictionary<string, AssetInfo> InitialAssets { get; set; } = new Dictionary<string, AssetInfo>();
         }
 
         public class TradeServerConfig
         {
-            public Dictionary<string, CustomSymbol> Symbols { get; } = new Dictionary<string, CustomSymbol>();
-            public Dictionary<string, CustomCurrency> Currencies { get; } = new Dictionary<string, CustomCurrency>();
+            public Dictionary<string, CustomSymbol> Symbols { get; set; } = new Dictionary<string, CustomSymbol>();
+            public Dictionary<string, CustomCurrency> Currencies { get; set; } = new Dictionary<string, CustomCurrency>();
         }
 
         public class EnvInfo

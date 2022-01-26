@@ -130,6 +130,10 @@ namespace TickTrader.Algo.BacktesterV1Host
 
                 try
                 {
+#if DEBUG
+                    await Task.Delay(10000);
+#endif
+
                     //backtester.Executor.LogUpdated += JournalPage.Append;
                     //backtester.Executor.TradeHistoryUpdated += Executor_TradeHistoryUpdated;
 
@@ -140,8 +144,6 @@ namespace TickTrader.Algo.BacktesterV1Host
                     PluginConfigLoader.ApplyConfig(backtester, config.PluginConfig, config.Core.MainSymbol, config.Env.WorkingFolderPath);
 
                     var _ = SendProgressLoop();
-                    await Task.Delay(10000);
-                    _logger.Debug($"Main symbol: {backtester.CommonSettings.MainSymbol}");
                     await backtester.Run(_cancelTokenSrc.Token);
                 }
                 finally

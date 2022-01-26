@@ -16,7 +16,6 @@ namespace TickTrader.Algo.Backtester
         private static int IdSeed;
 
         private readonly PluginKey _pluginKey;
-        private ISyncContext _sync;
         private readonly FeedEmulator _feed;
         private readonly PluginExecutorCore _executorCore;
         private readonly BacktesterMarshaller _marshaller;
@@ -27,7 +26,6 @@ namespace TickTrader.Algo.Backtester
             _pluginKey = pluginKey ?? throw new ArgumentNullException(nameof(pluginKey));
             var metadata = PackageMetadataCache.GetPlugin(pluginKey) ?? throw new ArgumentException("metadata not found", nameof(pluginKey));
             PluginInfo = metadata.Descriptor;
-            _sync = syncObj;
             _executorCore = new PluginExecutorCore(pluginKey);
             _marshaller = new BacktesterMarshaller(_executorCore, syncObj);
             _executorCore.Metadata = this;
@@ -46,11 +44,11 @@ namespace TickTrader.Algo.Backtester
             CommonSettings.BalanceCurrency = "USD";
             CommonSettings.AccountType = AccountInfo.Types.Type.Gross;
 
-            _control.StateUpdated += s => _sync.Send(() =>
+            _control.StateUpdated += s =>
             {
                 State = s;
                 StateChanged?.Invoke(s);
-            });
+            };
         }
 
         public CommonTestSettings CommonSettings { get; } = new CommonTestSettings();
