@@ -43,6 +43,8 @@ namespace TickTrader.Algo.Backtester
             return _history.Select(r => r.Info).GetPagedEnumerator(pageSize);
         }
 
+        public IEnumerable<TradeReportInfo> LocalGetReports() => _history.Select(r => r.Info);
+
         #region TradeHistory implementation
 
         IEnumerable<TradeReport> TradeHistory.Get(ThQueryOptions options)

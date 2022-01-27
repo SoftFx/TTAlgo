@@ -1,6 +1,10 @@
-﻿using System;
+﻿using Google.Protobuf;
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
@@ -62,6 +66,7 @@ namespace TickTrader.Algo.Backtester
         //public WarmupUnitTypes WarmupUnits { get; set; } = WarmupUnitTypes.Bars;
         public DateTime? CurrentTimePoint => _control?.EmulationTimePoint;
         public JournalOptions JournalFlags { get; set; } = JournalOptions.Enabled | JournalOptions.WriteInfo | JournalOptions.WriteCustom | JournalOptions.WriteTrade | JournalOptions.WriteAlert;
+        public string JournalPath { get; set; }
         public EmulatorStates State { get; private set; }
         public event Action<EmulatorStates> StateChanged;
         public event Action<Exception> ErrorOccurred { add => Executor.ErrorOccurred += value; remove => Executor.ErrorOccurred -= value; }
@@ -209,6 +214,96 @@ namespace TickTrader.Algo.Backtester
         public TestingStatistics GetStats()
         {
             return _control.Collector.Stats;
+        }
+
+        public void SaveResults(string resultsPath)
+        {
+            var descriptor = PluginInfo;
+            var mainTimeframe = CommonSettings.MainTimeframe;
+
+            using (var file = File.Open(resultsPath, FileMode.CreateNew))
+            using (var zip = new ZipArchive(file, ZipArchiveMode.Update))
+            {
+                SaveJson(zip, "stats.json", _control.Collector.Stats);
+
+                zip.CreateEntryFromFile(JournalPath, "journal.csv");
+                File.Delete(JournalPath);
+
+                foreach (var symbol in SymbolDataConfig.Keys)
+                {
+                    SaveCsv(zip, $"feed.{symbol}.csv", _control.Collector.LocalGetSymbolHistory(symbol, mainTimeframe));
+                }
+
+                foreach(var output in descriptor.Outputs)
+                {
+                    var id = output.Id;
+                    SaveCsv(zip, $"output.{id}.csv", _control.Collector.LocalGetOutputData(id));
+                }
+
+                if (descriptor.IsTradeBot)
+                {
+                    SaveCsv(zip, "equity.csv", _control.Collector.LocalGetEquityHistory(mainTimeframe));
+                    SaveCsv(zip, "margin.csv", _control.Collector.LocalGetMarginHistory(mainTimeframe));
+
+                    SaveBase64(zip, "trade-history.bs64", _control.TradeHistory.LocalGetReports());
+                }
+            }
+        }
+
+
+        private static void SaveJson<T>(ZipArchive zip, string entryName, T data)
+        {
+            var entry = zip.CreateEntry(entryName);
+            using (var stream = entry.Open())
+            using (var writer = new Utf8JsonWriter(stream))
+            {
+                JsonSerializer.Serialize(writer, data);
+            }
+        }
+
+        private static void SaveCsv(ZipArchive zip, string entryName, IEnumerable<BarData> data)
+        {
+            var entry = zip.CreateEntry(entryName);
+            using (var stream = entry.Open())
+            using (var writer = new StreamWriter(stream))
+            {
+                writer.Write("DateTime,Open,High,Low,Close");
+
+                foreach (var bar in data)
+                {
+                    writer.WriteLine();
+                    writer.Write("{0},{1},{2},{3},{4}", InvariantFormat.CsvFormat(bar.OpenTime.ToDateTime()), bar.Open, bar.High, bar.Low, bar.Close);
+                }
+            }
+        }
+
+        private static void SaveCsv(ZipArchive zip, string entryName, IEnumerable<OutputPoint> data)
+        {
+            var entry = zip.CreateEntry(entryName);
+            using (var stream = entry.Open())
+            using (var writer = new StreamWriter(stream))
+            {
+                writer.Write("DateTime,Index,Value");
+
+                foreach (var point in data)
+                {
+                    writer.WriteLine();
+                    writer.Write("{0},{1},{2},{3},{4}", InvariantFormat.CsvFormat(point.Time.ToDateTime()), point.Index, point.Value);
+                }
+            }
+        }
+
+        private static void SaveBase64(ZipArchive zip, string entryName, IEnumerable<TradeReportInfo> data)
+        {
+            var entry = zip.CreateEntry(entryName);
+            using (var stream = entry.Open())
+            using (var writer = new StreamWriter(stream))
+            {
+                foreach (var report in data)
+                {
+                    writer.Write(report.ToByteString().ToBase64());
+                }
+            }
         }
 
         #region IPluginSetupTarget

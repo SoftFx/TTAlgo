@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.CoreV1;
@@ -25,6 +27,7 @@ namespace TickTrader.Algo.Backtester
         private Feed.Types.Timeframe _mainTimeframe;
         private string _lastStatus;
         private TimeKeyGenerator _logKeyGen = new TimeKeyGenerator();
+        private StreamWriter _journalWriter;
 
         public const string EquityStreamName = "Equity";
         public const string MarginStreamName = "Margin";
@@ -82,6 +85,12 @@ namespace TickTrader.Algo.Backtester
 
             //if (!string.IsNullOrWhiteSpace(_lastStatus))
             //    AddEvent(LogSeverities.Custom, _lastStatus);
+
+            if (_journalWriter != null)
+            {
+                _journalWriter.Flush();
+                _journalWriter.Dispose();
+            }
         }
 
         public void Dispose()
@@ -149,6 +158,12 @@ namespace TickTrader.Algo.Backtester
             WriteTrade = WriteJournal && flags.HasFlag(JournalOptions.WriteTrade);
             WriteOrderModifications = WriteJournal && WriteTrade && flags.HasFlag(JournalOptions.WriteOrderModifications);
             WriteAlert = WriteJournal && flags.HasFlag(JournalOptions.WriteAlert);
+
+            if (WriteJournal)
+            {
+                _journalWriter = new StreamWriter(settings.JournalPath, false);
+                _journalWriter.Write("UnixSeconds,Nanos,Severity,Message,Details");
+            }
         }
 
         private bool CheckFilter(Domain.PluginLogRecord.Types.LogSeverity severity)
@@ -166,14 +181,27 @@ namespace TickTrader.Algo.Backtester
             return false;
         }
 
-        public void AddEvent(Domain.PluginLogRecord.Types.LogSeverity severity, string message, string description = null)
+        public void AddEvent(Domain.PluginLogRecord.Types.LogSeverity severity, string message, string details = null)
         {
             if (CheckFilter(severity))
             {
-                var record = new Domain.PluginLogRecord(_logKeyGen.NextKey(VirtualTimepoint), severity, message, description);
-                _executor.OnUpdate(record);
+                var timeUtc = _logKeyGen.NextKey(VirtualTimepoint);
 
-                //_events.Add();
+                // Streaming refactoring for visualizer
+                //var record = new Domain.PluginLogRecord(timeUtc, severity, message, description);
+                //_executor.OnUpdate(record);
+
+                // hot path: avoid allocation/boxing in Write(string format, params object[] args)
+                _journalWriter.WriteLine();
+                _journalWriter.Write(timeUtc.Seconds);
+                _journalWriter.Write(',');
+                _journalWriter.Write(timeUtc.Nanos);
+                _journalWriter.Write(',');
+                _journalWriter.Write(severity);
+                _journalWriter.Write(',');
+                _journalWriter.Write(message);
+                _journalWriter.Write(',');
+                _journalWriter.Write(details);
             }
         }
 
@@ -211,10 +239,12 @@ namespace TickTrader.Algo.Backtester
         {
             const int pageSize = 4000;
 
-            if (_mainTimeframe == targetTimeframe)
-                return barCollection.GetPagedEnumerator(pageSize);
-            else
-                return barCollection.Transform(targetTimeframe).GetPagedEnumerator(pageSize);
+            return TransformBars(barCollection, targetTimeframe).GetPagedEnumerator(pageSize);
+        }
+
+        private IEnumerable<BarData> TransformBars(IEnumerable<BarData> bars, Feed.Types.Timeframe targetTimeframe)
+        {
+            return _mainTimeframe == targetTimeframe ? bars : bars.Transform(targetTimeframe);
         }
 
         private IPagedEnumerator<T> MarshalLongCollection<T>(IEnumerable<T> collection)
@@ -226,12 +256,20 @@ namespace TickTrader.Algo.Backtester
 
         internal IEnumerable<BarData> LocalGetEquityHistory(Feed.Types.Timeframe targetTimeframe)
         {
-            return _equityCollector.Snapshot.Transform(targetTimeframe);
+            return TransformBars(_equityCollector.Snapshot, targetTimeframe);
         }
 
         internal IEnumerable<BarData> LocalGetMarginHistory(Feed.Types.Timeframe targetTimeframe)
         {
-            return _marginCollector.Snapshot.Transform(targetTimeframe);
+            return TransformBars(_marginCollector.Snapshot, targetTimeframe);
+        }
+
+        internal IEnumerable<BarData> LocalGetSymbolHistory(string symbol, Feed.Types.Timeframe targetTimeframe)
+        {
+            if (!_symbolDataCollectors.TryGetValue(symbol, out var collector))
+                return Enumerable.Empty<BarData>();
+
+            return TransformBars(collector.Snapshot, targetTimeframe);
         }
 
         #region Output collection
@@ -241,6 +279,14 @@ namespace TickTrader.Algo.Backtester
             var collector = _outputCollectors[id];
             var data = collector.Snapshot;
             return MarshalLongCollection(data);
+        }
+
+        internal IEnumerable<OutputPoint> LocalGetOutputData(string id)
+        {
+            if (!_outputCollectors.TryGetValue(id, out var collector))
+                return Enumerable.Empty<OutputPoint>();
+
+            return collector.Snapshot;
         }
 
         #endregion
