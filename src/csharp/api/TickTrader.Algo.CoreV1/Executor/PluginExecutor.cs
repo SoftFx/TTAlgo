@@ -655,6 +655,7 @@ namespace TickTrader.Algo.CoreV1
             _tradeFixtureFactory = tradeFixtureFactory;
             _timerFixture = timerFixture;
             _builderFactory = builderFactory;
+            _pluginLogger = pluginLogger;
             _enableUpdateMarshaling = false;
         }
 

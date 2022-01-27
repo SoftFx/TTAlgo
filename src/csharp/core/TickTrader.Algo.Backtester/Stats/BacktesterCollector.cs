@@ -162,7 +162,7 @@ namespace TickTrader.Algo.Backtester
             if (WriteJournal)
             {
                 _journalWriter = new StreamWriter(settings.JournalPath, false);
-                _journalWriter.Write("UnixSeconds,Nanos,Severity,Message,Details");
+                _journalWriter.Write("DateTime,Severity,Message,Details");
             }
         }
 
@@ -193,9 +193,7 @@ namespace TickTrader.Algo.Backtester
 
                 // hot path: avoid allocation/boxing in Write(string format, params object[] args)
                 _journalWriter.WriteLine();
-                _journalWriter.Write(timeUtc.Seconds);
-                _journalWriter.Write(',');
-                _journalWriter.Write(timeUtc.Nanos);
+                _journalWriter.Write(InvariantFormat.CsvFormat(timeUtc.ToDateTime()));
                 _journalWriter.Write(',');
                 _journalWriter.Write(severity);
                 _journalWriter.Write(',');
