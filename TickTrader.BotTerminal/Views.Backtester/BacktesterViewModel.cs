@@ -157,6 +157,10 @@ namespace TickTrader.BotTerminal
 
                 await RunBacktester(observer, configPath, cToken);
 
+                cToken.ThrowIfCancellationRequested();
+
+                await LoadResults(observer, config, SetupPage.SelectedPlugin.Value.Descriptor);
+
                 //await SetupAndRunBacktester(observer, cToken);
             }
             catch (OperationCanceledException)
@@ -181,10 +185,20 @@ namespace TickTrader.BotTerminal
                     tester.OnProgressUpdate.Subscribe(update => Execute.OnUIThread(() => observer.SetProgress(update.Current)));
                     await tester.Start(configPath);
                     await tester.AwaitStop();
-
-                    observer.SetMessage("Success");
                 }
             }
+        }
+
+        private async Task LoadResults(IActionObserver observer, BacktesterConfig config, PluginDescriptor pluginInfo)
+        {
+            observer.SetMessage("Loading results...");
+
+            var results = await Task.Run(() => BacktesterResults.Load(config.Env.ResultsPath));
+
+            await LoadStats(observer, results, pluginInfo);
+            await LoadJournal(observer, results);
+            await LoadChartData(config, results, pluginInfo, observer);
+            await LoadTradeHistory(observer, results);
         }
 
         private async Task SetupAndRunBacktester(IActionObserver observer, CancellationToken cToken)
@@ -224,7 +238,7 @@ namespace TickTrader.BotTerminal
                     PluginConfigLoader.ApplyConfig(backtester, pluginConfig, backtester.CommonSettings.MainSymbol, EnvService.Instance.AlgoWorkingFolder);
 
                     backtester.Executor.LogUpdated += JournalPage.Append;
-                    backtester.Executor.TradeHistoryUpdated += Executor_TradeHistoryUpdated;
+                    backtester.Executor.TradeHistoryUpdated += AddTradeHistoryReport;
 
                     if (SetupPage.Mode == BacktesterMode.Visualization)
                     {
@@ -264,8 +278,8 @@ namespace TickTrader.BotTerminal
                         FireOnStop(backtester);
                     }
 
-                    await LoadStats(observer, backtester);
-                    await LoadChartData(backtester, observer);
+                    //await LoadStats(observer, backtester);
+                    //await LoadChartData(backtester, observer);
 
                     if (SetupPage.SaveResultsToFile.Value)
                         await SaveResults(pDescriptor, pluginConfig, observer);
@@ -412,45 +426,67 @@ namespace TickTrader.BotTerminal
             OptimizationResultsPage.Stop(tester);
         }
 
-        private void Executor_TradeHistoryUpdated(TradeReportInfo record)
+        private async Task LoadJournal(IActionObserver observer, BacktesterResults results)
         {
-            var currencies = _client.Currencies;
-            var symbols = _testingSymbols.Select(kv => kv.Value).ToDictionary(m => m.Name);
+            observer.SetMessage("Loading journal...");
 
+            await Task.Run(() =>
+            {
+                foreach (var record in results.Journal)
+                {
+                    JournalPage.Append(record);
+                }
+            });
+        }
+
+        private async Task LoadTradeHistory(IActionObserver observer, BacktesterResults results)
+        {
+            observer.SetMessage("Loading trade history...");
+
+            await Task.Run(() =>
+            {
+                foreach (var report in results.TradeHistory)
+                {
+                    AddTradeHistoryReport(report);
+                }
+            });
+        }
+
+        private void AddTradeHistoryReport(TradeReportInfo record)
+        {
             var accType = SetupPage.Settings.AccType;
-            var trRep = BaseTransactionModel.Create(accType, record, 5, symbols.GetOrDefault(record.Symbol));
+            var trRep = BaseTransactionModel.Create(accType, record, 5, _testingSymbols.GetOrDefault(record.Symbol));
             TradeHistoryPage.Append(trRep);
             ChartPage.Append(accType, trRep);
         }
 
-        private async Task LoadStats(IActionObserver observer, Backtester tester)
+        private async Task LoadStats(IActionObserver observer, BacktesterResults results, PluginDescriptor pluginInfo)
         {
             observer.SetMessage("Loading testing result data...");
 
-            var statProperties = await Task.Factory.StartNew(() => tester.GetStats());
-            ResultsPage.ShowReport(statProperties, tester.PluginInfo, null);
+            ResultsPage.ShowReport(results.Stats, pluginInfo, null);
         }
 
-        private async Task LoadChartData(Backtester backtester, IActionObserver observer)
+        private async Task LoadChartData(BacktesterConfig config, BacktesterResults results, PluginDescriptor pluginInfo, IActionObserver observer)
         {
-            var mainSymbol = backtester.CommonSettings.MainSymbol;
-            var timeFrame = backtester.CommonSettings.MainTimeframe;
-            var count = backtester.GetSymbolHistoryBarCount(mainSymbol);
+            var mainSymbol = config.Core.MainSymbol;
+            var timeFrame = config.Core.MainTimeframe;
+            //var count = results.Feed[mainSymbol].Count;
 
-            timeFrame = BarExtentions.AdjustTimeframe(timeFrame, count, 500, out count);
+            //timeFrame = BarExtentions.AdjustTimeframe(timeFrame, count, 500, out count);
 
-            //observer.SetMessage("Loading feed chart data ...");
-            //var feedChartData = await LoadBarSeriesAsync(tester.GetMainSymbolHistory(timeFrame), observer, timeFrame, count);
+            observer.SetMessage("Loading feed chart data ...");
+            await ChartPage.LoadMainChart(results.Feed[mainSymbol], timeFrame);
 
-            if (backtester.PluginInfo.IsTradeBot)
+            if (pluginInfo.IsTradeBot)
             {
                 observer.SetMessage("Loading equity chart data...");
-                var equityChartData = await LoadBarSeriesAsync(backtester.GetEquityHistory(timeFrame), observer, timeFrame, count);
+                var equityChartData = await LoadBarSeriesAsync(results.Equity);
 
                 ResultsPage.AddEquityChart(equityChartData);
 
                 observer.SetMessage("Loading margin chart data...");
-                var marginChartData = await LoadBarSeriesAsync(backtester.GetMarginHistory(timeFrame), observer, timeFrame, count);
+                var marginChartData = await LoadBarSeriesAsync(results.Margin);
 
                 ResultsPage.AddMarginChart(marginChartData);
             }
@@ -460,21 +496,17 @@ namespace TickTrader.BotTerminal
             //ChartPage.SetMarginSeries(marginChartData);
         }
 
-        private Task<OhlcDataSeries<DateTime, double>> LoadBarSeriesAsync(IPagedEnumerator<BarData> src, IActionObserver observer, Feed.Types.Timeframe timeFrame, int totalCount)
+        private Task<OhlcDataSeries<DateTime, double>> LoadBarSeriesAsync(IEnumerable<BarData> src)
         {
-            observer.StartProgress(0, totalCount);
-
             return Task.Run(() =>
             {
                 var chartData = new OhlcDataSeries<DateTime, double>();
 
-                foreach (var bar in src.JoinPages(i => observer.SetProgress(i)))
+                foreach (var bar in src)
                 {
                     if (!double.IsNaN(bar.Open))
                         chartData.Append(bar.OpenTime.ToDateTime(), bar.Open, bar.High, bar.Low, bar.Close);
                 }
-
-                observer.SetProgress(totalCount);
 
                 return chartData;
             });

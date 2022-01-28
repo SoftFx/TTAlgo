@@ -5,6 +5,7 @@ using SciChart.Charting.Visuals.Axes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using TickTrader.Algo.Backtester;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
@@ -99,6 +100,25 @@ namespace TickTrader.BotTerminal
             backtester.OnChartUpdate -= Backtester_OnChartUpdate;
             backtester.Executor.SymbolRateUpdated -= Executor_SymbolRateUpdated;
             backtester.Executor.TradesUpdated -= Executor_TradesUpdated;
+        }
+
+        public async Task LoadMainChart(IEnumerable<BarData> bars, Feed.Types.Timeframe timeframe)
+        {
+            _barVector = new ChartBarVectorWithMarkers(timeframe);
+            _mainSeries.DataSeries = _barVector.SciChartdata;
+            _markerSeries.DataSeries = _barVector.MarkersData;
+
+            ChartControlModel.SetTimeframe(timeframe);
+            //ChartControlModel.SymbolInfo.Value = mainSymbol;
+
+            await Task.Run(() =>
+            {
+                foreach (var bar in bars)
+                {
+                    _barVector.AppendBarPart(bar);
+                    ApplyPostponedMarkers();
+                }
+            });
         }
 
         private void Backtester_OnChartUpdate(BarData bar, string symbol, DataSeriesUpdate.Types.UpdateAction action)

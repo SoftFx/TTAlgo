@@ -1,4 +1,5 @@
 ﻿using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -288,7 +289,7 @@ namespace TickTrader.Algo.Backtester
                 foreach (var point in data)
                 {
                     writer.WriteLine();
-                    writer.Write("{0},{1},{2},{3},{4}", InvariantFormat.CsvFormat(point.Time.ToDateTime()), point.Index, point.Value);
+                    writer.Write("{0},{1},{2}", InvariantFormat.CsvFormat(point.Time.ToDateTime()), point.Index, Any.Pack(point.Value).ToByteString().ToBase64());
                 }
             }
         }
@@ -299,8 +300,11 @@ namespace TickTrader.Algo.Backtester
             using (var stream = entry.Open())
             using (var writer = new StreamWriter(stream))
             {
+                writer.Write("Base64 TradeReportInfo protobuf data"); // header is added on purpose
+
                 foreach (var report in data)
                 {
+                    writer.WriteLine();
                     writer.Write(report.ToByteString().ToBase64());
                 }
             }
