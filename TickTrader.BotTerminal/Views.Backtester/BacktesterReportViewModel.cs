@@ -156,11 +156,12 @@ namespace TickTrader.BotTerminal
                 props.Add("Swap", stats.TotalSwap.FormatPlain(balanceNumbersFormat));
             }
 
-            props.Add("Testing time", Format(stats.Elapsed));
+            var elapsed = TimeSpan.FromMilliseconds(stats.ElapsedMs);
+            props.Add("Testing time", Format(elapsed));
 
             var tickPerSecond = "N/A";
-            if (stats.Elapsed.TotalSeconds > 0)
-                tickPerSecond = (stats.TicksCount / stats.Elapsed.TotalSeconds).ToString("N0");
+            if (elapsed.TotalSeconds > 0)
+                tickPerSecond = (stats.TicksCount / elapsed.TotalSeconds).ToString("N0");
 
             props.Add("Testing speed (tps)", tickPerSecond);
 

@@ -73,7 +73,7 @@ namespace TickTrader.Algo.Backtester
             var mainVector = feed?.GetBarBuilder(_mainSymbol, _mainTimeframe, Feed.Types.MarketSide.Bid);
             Stats.BarsCount = mainVector?.Count ?? 0;
 
-            Stats.Elapsed = DateTime.UtcNow - _startTime;
+            Stats.ElapsedMs = (DateTime.UtcNow - _startTime).TotalMilliseconds;
 
             StopOutputCollectors();
 

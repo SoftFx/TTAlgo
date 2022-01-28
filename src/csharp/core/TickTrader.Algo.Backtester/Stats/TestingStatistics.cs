@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Backtester
         public int OrderModifications { get; set; }
         public int OrderModificationRejected { get; set; }
 
-        public TimeSpan Elapsed { get; set; }
+        public double ElapsedMs { get; set; }
 
         public double GrossProfit { get; set; }
         public double GrossLoss { get; set; }
