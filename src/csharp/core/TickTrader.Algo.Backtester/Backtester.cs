@@ -225,28 +225,28 @@ namespace TickTrader.Algo.Backtester
             using (var file = File.Open(resultsPath, FileMode.CreateNew))
             using (var zip = new ZipArchive(file, ZipArchiveMode.Update))
             {
-                SaveJson(zip, "stats.json", _control.Collector.Stats);
+                BacktesterResults.SaveJson(zip, "stats.json", _control.Collector.Stats);
 
                 zip.CreateEntryFromFile(JournalPath, "journal.csv");
                 File.Delete(JournalPath);
 
                 foreach (var symbol in SymbolDataConfig.Keys)
                 {
-                    SaveCsv(zip, $"feed.{symbol}.csv", _control.Collector.LocalGetSymbolHistory(symbol, mainTimeframe));
+                    BacktesterResults.SaveBarData(zip, $"feed.{symbol}.csv", _control.Collector.LocalGetSymbolHistory(symbol, mainTimeframe));
                 }
 
                 foreach(var output in descriptor.Outputs)
                 {
                     var id = output.Id;
-                    SaveCsv(zip, $"output.{id}.csv", _control.Collector.LocalGetOutputData(id));
+                    BacktesterResults.SaveOutputData(zip, $"output.{id}.csv", _control.Collector.LocalGetOutputData(id));
                 }
 
                 if (descriptor.IsTradeBot)
                 {
-                    SaveCsv(zip, "equity.csv", _control.Collector.LocalGetEquityHistory(mainTimeframe));
-                    SaveCsv(zip, "margin.csv", _control.Collector.LocalGetMarginHistory(mainTimeframe));
+                    BacktesterResults.SaveBarData(zip, "equity.csv", _control.Collector.LocalGetEquityHistory(mainTimeframe));
+                    BacktesterResults.SaveBarData(zip, "margin.csv", _control.Collector.LocalGetMarginHistory(mainTimeframe));
 
-                    SaveBase64(zip, "trade-history.bs64", _control.TradeHistory.LocalGetReports());
+                    BacktesterResults.SaveTradeHistory(zip, _control.TradeHistory.LocalGetReports());
                 }
             }
         }

@@ -430,13 +430,13 @@ namespace TickTrader.BotTerminal
         {
             observer.SetMessage("Loading journal...");
 
-            await Task.Run(() =>
-            {
+            //await Task.Run(() =>
+            //{
                 foreach (var record in results.Journal)
                 {
                     JournalPage.Append(record);
                 }
-            });
+            //});
         }
 
         private async Task LoadTradeHistory(IActionObserver observer, BacktesterResults results)

@@ -1,4 +1,7 @@
-﻿using Google.Protobuf.WellKnownTypes;
+﻿using CsvHelper;
+using CsvHelper.Configuration;
+using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -40,24 +43,57 @@ namespace TickTrader.Algo.Backtester
                     {
                         var symbol = Path.GetFileNameWithoutExtension(entryName).Substring(5);
                         var data = new List<BarData>();
-                        TryReadZipEntryAsCsv(zip, entryName, ParseBarData, data);
+                        TryReadZipEntryAsCsv2<BarData, CsvMapping.ForBarData>(zip, entryName, ParseBarData, data);
                         res.Feed.Add(symbol, data);
                     }
                     else if (entryName.StartsWith("output"))
                     {
                         var outputId = Path.GetFileNameWithoutExtension(entryName).Substring(7);
                         var data = new List<OutputPoint>();
-                        TryReadZipEntryAsCsv(zip, entryName, ParseOutputPoint, data);
+                        TryReadZipEntryAsCsv2<OutputPoint, CsvMapping.ForOutputPoint>(zip, entryName, ParseOutputPoint, data);
                         res.Outputs.Add(outputId, data);
                     }
                 }
 
-                TryReadZipEntryAsCsv(zip, "journal.csv", ParseLogRecord, res.Journal);
-                TryReadZipEntryAsCsv(zip, "equity.csv", ParseBarData, res.Equity);
-                TryReadZipEntryAsCsv(zip, "margin.csv", ParseBarData, res.Margin);
+                TryReadZipEntryAsCsv2<PluginLogRecord, CsvMapping.ForLogRecord>(zip, "journal.csv", ParseLogRecord, res.Journal);
+                TryReadZipEntryAsCsv2<BarData, CsvMapping.ForBarData>(zip, "equity.csv", ParseBarData, res.Equity);
+                TryReadZipEntryAsCsv2<BarData, CsvMapping.ForBarData>(zip, "margin.csv", ParseBarData, res.Margin);
                 TryReadZipEntryAsCsv(zip, "trade-history.bd64", ParseTradeReport, res.TradeHistory);
             }
             return res;
+        }
+
+
+        internal static void SaveJson<T>(ZipArchive zip, string entryName, T data)
+        {
+            var entry = zip.CreateEntry(entryName);
+            using (var stream = entry.Open())
+            using (var writer = new Utf8JsonWriter(stream))
+            {
+                JsonSerializer.Serialize(writer, data);
+            }
+        }
+
+        internal static void SaveBarData(ZipArchive zip, string entryName, IEnumerable<BarData> bars) => SaveZipEntryAsCsv<BarData, CsvMapping.ForBarData>(zip, entryName, bars);
+
+        internal static void SaveOutputData(ZipArchive zip, string entryName, IEnumerable<OutputPoint> points) => SaveZipEntryAsCsv<OutputPoint, CsvMapping.ForOutputPoint>(zip, entryName, points);
+
+        internal static void SaveTradeHistory(ZipArchive zip, IEnumerable<TradeReportInfo> reports)
+        {
+            var entry = zip.CreateEntry("trade-history.bd64");
+            using (var stream = entry.Open())
+            using (var writer = new StreamWriter(stream))
+            {
+                writer.Write("Base64 TradeReportInfo protobuf data"); // header is added on purpose
+
+                foreach (var report in reports)
+                {
+                    writer.WriteLine();
+                    writer.Write(report.ToByteString().ToBase64());
+                }
+            }
+
+            SaveZipEntryAsCsv<TradeReportInfo, CsvMapping.ForTradeReport>(zip, "trade-history.csv", reports);
         }
 
 
@@ -88,6 +124,35 @@ namespace TickTrader.Algo.Backtester
                     storage.Add(parser(dataStr));
                     dataStr = reader.ReadLine();
                 }
+            }
+        }
+
+        private static void TryReadZipEntryAsCsv2<T, TMap>(ZipArchive zip, string entryName, Func<string, T> parser, List<T> storage)
+            where TMap : ClassMap<T>
+        {
+            var entry = zip.GetEntry(entryName);
+            if (entry == null)
+                return;
+
+            using (var stream = entry.Open())
+            using (var reader = new StreamReader(stream))
+            using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+            {
+                csv.Context.RegisterClassMap<TMap>();
+                storage.AddRange(csv.GetRecords<T>());
+            }
+        }
+
+        private static void SaveZipEntryAsCsv<T, TMap>(ZipArchive zip, string entryName, IEnumerable<T> data)
+            where TMap : ClassMap<T>
+        {
+            var entry = zip.CreateEntry(entryName);
+            using (var stream = entry.Open())
+            using (var writer = new StreamWriter(stream))
+            using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+            {
+                csv.Context.RegisterClassMap<TMap>();
+                csv.WriteRecords(data);
             }
         }
 

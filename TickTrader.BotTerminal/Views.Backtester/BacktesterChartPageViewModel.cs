@@ -111,14 +111,18 @@ namespace TickTrader.BotTerminal
             ChartControlModel.SetTimeframe(timeframe);
             //ChartControlModel.SymbolInfo.Value = mainSymbol;
 
+            //var dataSeries = new SciChart.Charting.Model.DataSeries.OhlcDataSeries<DateTime, double>();
+
             await Task.Run(() =>
             {
                 foreach (var bar in bars)
                 {
                     _barVector.AppendBarPart(bar);
-                    ApplyPostponedMarkers();
+                    //dataSeries.Append(bar.OpenTime.ToDateTime(), bar.Open, bar.High, bar.Low, bar.Close);
                 }
             });
+
+            //_mainSeries.DataSeries = dataSeries;
         }
 
         private void Backtester_OnChartUpdate(BarData bar, string symbol, DataSeriesUpdate.Types.UpdateAction action)
