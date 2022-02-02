@@ -214,41 +214,9 @@ namespace TickTrader.Algo.Backtester
 
         #endregion
 
-        public IPagedEnumerator<BarData> GetSymbolHistory(string symbol, Feed.Types.Timeframe timeframe)
-        {
-            var collector = _symbolDataCollectors.GetOrDefault(symbol);
-            if (collector != null)
-                return MarshalBars(collector.Snapshot, timeframe);
-            return null;
-        }
-
-        public IPagedEnumerator<BarData> GetEquityHistory(Feed.Types.Timeframe timeframe)
-        {
-            return MarshalBars(_equityCollector.Snapshot, timeframe);
-        }
-
-        public IPagedEnumerator<BarData> GetMarginHistory(Feed.Types.Timeframe timeframe)
-        {
-            return MarshalBars(_marginCollector.Snapshot, timeframe);
-        }
-
-        private IPagedEnumerator<BarData> MarshalBars(IEnumerable<BarData> barCollection, Feed.Types.Timeframe targetTimeframe)
-        {
-            const int pageSize = 4000;
-
-            return TransformBars(barCollection, targetTimeframe).GetPagedEnumerator(pageSize);
-        }
-
         private IEnumerable<BarData> TransformBars(IEnumerable<BarData> bars, Feed.Types.Timeframe targetTimeframe)
         {
             return _mainTimeframe == targetTimeframe ? bars : bars.Transform(targetTimeframe);
-        }
-
-        private IPagedEnumerator<T> MarshalLongCollection<T>(IEnumerable<T> collection)
-        {
-            const int pageSize = 4000;
-
-            return collection.GetPagedEnumerator(pageSize);
         }
 
         internal IEnumerable<BarData> LocalGetEquityHistory(Feed.Types.Timeframe targetTimeframe)
@@ -270,13 +238,6 @@ namespace TickTrader.Algo.Backtester
         }
 
         #region Output collection
-
-        public IPagedEnumerator<OutputPoint> GetOutputData(string id)
-        {
-            var collector = _outputCollectors[id];
-            var data = collector.Snapshot;
-            return MarshalLongCollection(data);
-        }
 
         internal IEnumerable<OutputPoint> LocalGetOutputData(string id)
         {

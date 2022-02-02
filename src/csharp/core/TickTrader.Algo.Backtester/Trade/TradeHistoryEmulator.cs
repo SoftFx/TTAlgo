@@ -36,13 +36,6 @@ namespace TickTrader.Algo.Backtester
             _history = new List<TradeReportAdapter>();
         }
 
-        public IPagedEnumerator<Domain.TradeReportInfo> Marshal()
-        {
-            const int pageSize = 4000;
-
-            return _history.Select(r => r.Info).GetPagedEnumerator(pageSize);
-        }
-
         public IEnumerable<TradeReportInfo> LocalGetReports() => _history.Select(r => r.Info);
 
         #region TradeHistory implementation

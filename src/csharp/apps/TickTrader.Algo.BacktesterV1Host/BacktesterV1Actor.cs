@@ -124,7 +124,7 @@ namespace TickTrader.Algo.BacktesterV1Host
 
         private async Task DoBacktesting(BacktesterConfig config, DateTime from, DateTime to)
         {
-            using (var backtester = new Backtester.Backtester(config.PluginConfig.Key, null, from, to))
+            using (var backtester = new Backtester.Backtester(config.PluginConfig.Key, from, to))
             {
                 OnStartEmulation(backtester);
 
