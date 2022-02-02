@@ -1,7 +1,6 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
 using Google.Protobuf;
-using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -43,22 +42,22 @@ namespace TickTrader.Algo.Backtester
                     {
                         var symbol = Path.GetFileNameWithoutExtension(entryName).Substring(5);
                         var data = new List<BarData>();
-                        TryReadZipEntryAsCsv2<BarData, CsvMapping.ForBarData>(zip, entryName, ParseBarData, data);
+                        TryReadZipEntryAsCsv<BarData, CsvMapping.ForBarData>(zip, entryName, data);
                         res.Feed.Add(symbol, data);
                     }
                     else if (entryName.StartsWith("output"))
                     {
                         var outputId = Path.GetFileNameWithoutExtension(entryName).Substring(7);
                         var data = new List<OutputPoint>();
-                        TryReadZipEntryAsCsv2<OutputPoint, CsvMapping.ForOutputPoint>(zip, entryName, ParseOutputPoint, data);
+                        TryReadZipEntryAsCsv<OutputPoint, CsvMapping.ForOutputPoint>(zip, entryName, data);
                         res.Outputs.Add(outputId, data);
                     }
                 }
 
-                TryReadZipEntryAsCsv2<PluginLogRecord, CsvMapping.ForLogRecord>(zip, "journal.csv", ParseLogRecord, res.Journal);
-                TryReadZipEntryAsCsv2<BarData, CsvMapping.ForBarData>(zip, "equity.csv", ParseBarData, res.Equity);
-                TryReadZipEntryAsCsv2<BarData, CsvMapping.ForBarData>(zip, "margin.csv", ParseBarData, res.Margin);
-                TryReadZipEntryAsCsv(zip, "trade-history.bd64", ParseTradeReport, res.TradeHistory);
+                TryReadZipEntryAsCsv<PluginLogRecord, CsvMapping.ForLogRecord>(zip, "journal.csv", res.Journal);
+                TryReadZipEntryAsCsv<BarData, CsvMapping.ForBarData>(zip, "equity.csv", res.Equity);
+                TryReadZipEntryAsCsv<BarData, CsvMapping.ForBarData>(zip, "margin.csv", res.Margin);
+                TryReadZipEntry(zip, "trade-history.bd64", ParseTradeReport, res.TradeHistory);
             }
             return res;
         }
@@ -108,7 +107,7 @@ namespace TickTrader.Algo.Backtester
             }
         }
 
-        private static void TryReadZipEntryAsCsv<T>(ZipArchive zip, string entryName, Func<string, T> parser, List<T> storage)
+        private static void TryReadZipEntry<T>(ZipArchive zip, string entryName, Func<string, T> parser, List<T> storage)
         {
             var entry = zip.GetEntry(entryName);
             if (entry == null)
@@ -127,7 +126,7 @@ namespace TickTrader.Algo.Backtester
             }
         }
 
-        private static void TryReadZipEntryAsCsv2<T, TMap>(ZipArchive zip, string entryName, Func<string, T> parser, List<T> storage)
+        private static void TryReadZipEntryAsCsv<T, TMap>(ZipArchive zip, string entryName, List<T> storage)
             where TMap : ClassMap<T>
         {
             var entry = zip.GetEntry(entryName);
@@ -154,42 +153,6 @@ namespace TickTrader.Algo.Backtester
                 csv.Context.RegisterClassMap<TMap>();
                 csv.WriteRecords(data);
             }
-        }
-
-        private static PluginLogRecord ParseLogRecord(string dataStr)
-        {
-            var parts = dataStr.Split(',');
-            return new PluginLogRecord
-            {
-                TimeUtc = DateTime.Parse(parts[0], CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal).ToUniversalTime().ToTimestamp(),
-                Severity = (PluginLogRecord.Types.LogSeverity)System.Enum.Parse(typeof(PluginLogRecord.Types.LogSeverity), parts[1]),
-                Message = parts[2],
-                Details = parts[3],
-            };
-        }
-
-        private static BarData ParseBarData(string dataStr)
-        {
-            var parts = dataStr.Split(',');
-            return new BarData
-            {
-                OpenTime = DateTime.Parse(parts[0], CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal).ToUniversalTime().ToTimestamp(),
-                Open = double.Parse(parts[1]),
-                High = double.Parse(parts[2]),
-                Low = double.Parse(parts[3]),
-                Close = double.Parse(parts[4])
-            };
-        }
-
-        private static OutputPoint ParseOutputPoint(string dataStr)
-        {
-            var parts = dataStr.Split(',');
-            return new OutputPoint
-            {
-                Time = DateTime.Parse(parts[0], CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal).ToUniversalTime().ToTimestamp(),
-                Index = int.Parse(parts[1]),
-                Value = (Any)Any.Descriptor.Parser.ParseFrom(Convert.FromBase64String(parts[2]))
-            };
         }
 
         private static TradeReportInfo ParseTradeReport(string dataStr)

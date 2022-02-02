@@ -17,7 +17,7 @@ namespace TickTrader.BotTerminal
             _outputId = outputId ?? throw new ArgumentNullException("setup.Id");
             _executor = executor ?? throw new ArgumentNullException("executor");
 
-            executor.OutputUpdate += Executor_OutputUpdate;
+            //executor.OutputUpdate += Executor_OutputUpdate;
         }
 
         private void Executor_OutputUpdate(DataSeriesUpdate update)
@@ -47,7 +47,7 @@ namespace TickTrader.BotTerminal
 
         public void Dispose()
         {
-            _executor.OutputUpdate -= Executor_OutputUpdate;
+            //_executor.OutputUpdate -= Executor_OutputUpdate;
         }
     }
 }

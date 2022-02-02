@@ -5,16 +5,13 @@ using NLog;
 using SciChart.Charting.Model.DataSeries;
 using System;
 using System.Collections.Generic;
-using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using System.Globalization;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Backtester;
-using TickTrader.Algo.CoreV1;
 
 namespace TickTrader.BotTerminal
 {
@@ -201,187 +198,31 @@ namespace TickTrader.BotTerminal
             await LoadTradeHistory(observer, results);
         }
 
-        private async Task SetupAndRunBacktester(IActionObserver observer, CancellationToken cToken)
+        private void FireOnStart(SymbolData mainSymbol, BacktesterConfig config)
         {
-            var chartSymbol = SetupPage.MainSymbolSetup.SelectedSymbol.Value;
-            var chartTimeframe = SetupPage.MainSymbolSetup.SelectedTimeframe.Value;
-            var chartPriceLayer = Feed.Types.MarketSide.Bid;
-
-            SetupPage.InitToken();
-
-            //var packageRef = _env.LocalAgent.Library.GetPackageRef(SelectedPlugin.Value.Info.Key.GetPackageKey());
-            //var pluginRef = _env.LocalAgent.Library.GetPluginRef(SetupPage.SelectedPlugin.Value.Key);
-            PluginDescriptor pDescriptor = null;
-
-            _descriptorCache = pDescriptor;
-
-            if (SetupPage.Mode == BacktesterMode.Optimization)
-                await DoOptimization(observer, cToken, pDescriptor, SetupPage.PluginConfig, chartSymbol, chartTimeframe, chartPriceLayer);
-            else
-                await DoBacktesting(observer, cToken, pDescriptor, SetupPage.PluginConfig, chartSymbol, chartTimeframe, chartPriceLayer);
-        }
-
-        private async Task DoBacktesting(IActionObserver observer, CancellationToken cToken, PluginDescriptor pDescriptor, PluginConfig pluginConfig,
-            SymbolData chartSymbol, Feed.Types.Timeframe chartTimeframe, Feed.Types.MarketSide chartPriceLayer)
-        {
-            var progressMin = _emulteFrom.GetAbsoluteDay();
-
-            observer.StartProgress(progressMin, _emulateTo.GetAbsoluteDay());
-            observer.SetMessage("Emulating...");
-
-            using (var backtester = new Backtester(pluginConfig.Key, new DispatcherSync(), _emulteFrom, _emulateTo))
+            if (config.Core.Mode == BacktesterMode.Backtesting)
             {
-                OnStartTesting(backtester);
-
-                try
-                {
-                    PluginConfigLoader.ApplyConfig(backtester, pluginConfig, backtester.CommonSettings.MainSymbol, EnvService.Instance.AlgoWorkingFolder);
-
-                    backtester.Executor.LogUpdated += JournalPage.Append;
-                    backtester.Executor.TradeHistoryUpdated += AddTradeHistoryReport;
-
-                    if (SetupPage.Mode == BacktesterMode.Visualization)
-                    {
-                        _isVisualizing.Set();
-
-                        var delay = SpeedToDelayMap[SelectedSpeed.Value];
-                        backtester.SetExecDelay(delay);
-                        backtester.StreamExecReports = true;
-                    }
-
-                    Exception execError = null;
-
-                    System.Action updateProgressAction = () => observer.SetProgress(backtester.CurrentTimePoint?.GetAbsoluteDay() ?? progressMin);
-
-                    using (new UiUpdateTimer(updateProgressAction))
-                    {
-                        try
-                        {
-                            SetupPage.Apply(backtester, _emulteFrom, _emulateTo, _isVisualizing.Value);
-                            backtester.Feed.AddBarBuilder(chartSymbol.Name, chartTimeframe, chartPriceLayer);
-
-                            _testingSymbols = backtester.CommonSettings.Symbols;
-
-                            FireOnStart(chartSymbol, pluginConfig, backtester);
-
-                            _hasDataToSave.Set();
-
-                            await Task.Run(() => backtester.Run(cToken));
-
-                            observer.SetProgress(_emulateTo.GetAbsoluteDay());
-                        }
-                        catch (Exception ex)
-                        {
-                            execError = ex;
-                        }
-
-                        FireOnStop(backtester);
-                    }
-
-                    //await LoadStats(observer, backtester);
-                    //await LoadChartData(backtester, observer);
-
-                    if (SetupPage.SaveResultsToFile.Value)
-                        await SaveResults(pDescriptor, pluginConfig, observer);
-
-                    if (execError != null)
-                    {
-                        if (execError is AlgoOperationCanceledException)
-                            observer.SetMessage("Canceled by user!");
-                        else
-                            throw execError; //observer.SetMessage(execError.Message);
-                    }
-                    else
-                        observer.SetMessage("Done.");
-                }
-                finally
-                {
-                    OnStopTesting();
-                    //backtester = null;
-                }
+                FireOnStartBacktesting(mainSymbol, config);
+            }
+            else if (config.Core.Mode == BacktesterMode.Optimization)
+            {
+                FireOnStartOptimizing();
             }
         }
 
-        private async Task DoOptimization(IActionObserver observer, CancellationToken cToken, PluginDescriptor pDescriptor, PluginConfig pluginConfig,
-            SymbolData chartSymbol, Feed.Types.Timeframe chartTimeframe, Feed.Types.MarketSide chartPriceLayer)
+        private void FireOnStop(BacktesterConfig config)
         {
-            using (var optimizer = new Optimizer(pluginConfig.Key, new DispatcherSync()))
+            if (config.Core.Mode == BacktesterMode.Backtesting)
             {
-                OnStartTesting(optimizer);
-
-                try
-                {
-                    PluginConfigLoader.ApplyConfig(optimizer, pluginConfig, optimizer.CommonSettings.MainSymbol, EnvService.Instance.AlgoWorkingFolder);
-
-                    Exception execError = null;
-
-                    try
-                    {
-                        SetupPage.Apply(optimizer, _emulteFrom, _emulateTo);
-
-                        optimizer.Feed.AddBarBuilder(chartSymbol.Name, chartTimeframe, chartPriceLayer);
-
-                        _testingSymbols = optimizer.CommonSettings.Symbols;
-
-                        // setup params
-                        OptimizationPage.Apply(optimizer);
-
-                        FireOnStart(optimizer);
-
-                        _hasDataToSave.Set();
-
-                        var maxProgress = optimizer.MaxCasesNo;
-
-                        observer.StartProgress(0, maxProgress);
-                        observer.SetMessage(GetOptimizationProgressMessage(maxProgress, 0));
-
-                        Action<OptCaseReport, long> repHandler = (r, cl) =>
-                        {
-                            var progress = maxProgress - cl;
-                            observer.SetProgress(progress);
-                            observer.SetMessage(GetOptimizationProgressMessage(maxProgress, progress));
-                            OptimizationResultsPage.Update(r);
-                        };
-
-                        optimizer.CaseCompleted += repHandler;
-
-                        try
-                        {
-                            await Task.Run(() => optimizer.Run(cToken));
-                        }
-                        finally
-                        {
-                            optimizer.CaseCompleted -= repHandler;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        execError = ex;
-                    }
-
-                    FireOnStop(optimizer);
-
-                    if (SetupPage.SaveResultsToFile.Value)
-                        await OptimizationResultsPage.SaveReportAsync(pDescriptor, observer);
-
-                    if (execError != null)
-                    {
-                        if (execError is AlgoOperationCanceledException)
-                            observer.SetMessage("Canceled by user!");
-                        else
-                            throw execError; //observer.SetMessage(execError.Message);
-                    }
-                    else
-                        observer.SetMessage("Done.");
-                }
-                finally
-                {
-                    OnStopTesting();
-                }
+                FireOnStopBacktesting();
+            }
+            else if (config.Core.Mode == BacktesterMode.Optimization)
+            {
+                FireOnStopOptimizing();
             }
         }
 
-        private void FireOnStart(SymbolData mainSymbol, PluginConfig config, Backtester tester)
+        private void FireOnStartBacktesting(SymbolData mainSymbol, BacktesterConfig config)
         {
             var symbols = SetupPage.FeedSymbols.Select(ss => ss.SelectedSymbol.Value.InfoEntity).ToList();
             var currecnies = _client.Currencies.Snapshot.Values.ToList();
@@ -391,11 +232,11 @@ namespace TickTrader.BotTerminal
             TradeHistoryPage.IsVisible = true;
             ResultsPage.IsVisible = true;
 
-            ChartPage.OnStart(IsVisualizing.Value, mainSymbol.InfoEntity, config, tester, symbols);
+            ChartPage.OnStart(IsVisualizing.Value, mainSymbol.InfoEntity, config, symbols);
             if (IsVisualizing.Value)
             {
                 TradesPage.IsVisible = true;
-                TradesPage.Start(tester, currecnies, symbols);
+                TradesPage.Start(config, currecnies, symbols);
             }
             else
                 TradesPage.IsVisible = false;
@@ -403,14 +244,14 @@ namespace TickTrader.BotTerminal
             OptimizationResultsPage.Hide();
         }
 
-        private void FireOnStop(Backtester tester)
+        private void FireOnStopBacktesting()
         {
-            ChartPage.OnStop(tester);
+            ChartPage.OnStop();
             if (IsVisualizing.Value)
-                TradesPage.Stop(tester);
+                TradesPage.Stop();
         }
 
-        private void FireOnStart(Optimizer tester)
+        private void FireOnStartOptimizing()
         {
             JournalPage.IsVisible = false;
             ChartPage.IsVisible = false;
@@ -418,12 +259,12 @@ namespace TickTrader.BotTerminal
             TradeHistoryPage.IsVisible = false;
             ResultsPage.IsVisible = false;
 
-            OptimizationResultsPage.Start(OptimizationPage.GetSelectedParams(), tester);
+            OptimizationResultsPage.Start(OptimizationPage.GetSelectedParams());
         }
 
-        private void FireOnStop(Optimizer tester)
+        private void FireOnStopOptimizing()
         {
-            OptimizationResultsPage.Stop(tester);
+            OptimizationResultsPage.Stop();
         }
 
         private async Task LoadJournal(IActionObserver observer, BacktesterResults results)
@@ -432,10 +273,10 @@ namespace TickTrader.BotTerminal
 
             //await Task.Run(() =>
             //{
-                foreach (var record in results.Journal)
-                {
-                    JournalPage.Append(record);
-                }
+            foreach (var record in results.Journal)
+            {
+                JournalPage.Append(record);
+            }
             //});
         }
 
@@ -612,82 +453,6 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        private void OnStartTesting(ITestExecController tester)
-        {
-            _tester = tester;
-            _tester.StateChanged += _backtester_StateChanged;
-            _tester.ErrorOccurred += Executor_ErrorOccurred;
-        }
-
-        private void OnStopTesting()
-        {
-            _tester.StateChanged -= _backtester_StateChanged;
-            _tester.ErrorOccurred -= Executor_ErrorOccurred;
-            _stateProp.Value = EmulatorStates.Stopped;
-            _tester = null;
-        }
-
-        private void _backtester_StateChanged(EmulatorStates state)
-        {
-            _stateProp.Value = state;
-        }
-
-        private void Executor_ErrorOccurred(Exception ex)
-        {
-            _logger.Error(ex, "Error occurred in backtester!");
-        }
-
         #endregion
-
-        #region Results saving
-
-        private async Task SaveResults(PluginDescriptor pDescriptor, PluginConfig pluginConfig, IActionObserver observer)
-        {
-            var fileName = pDescriptor.DisplayName + " " + DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss", CultureInfo.InvariantCulture) + ".zip";
-            var filePath = System.IO.Path.Combine(EnvService.Instance.BacktestResultsFolder, fileName);
-
-            using (var stream = System.IO.File.Open(filePath, System.IO.FileMode.Create, System.IO.FileAccess.Write, System.IO.FileShare.None))
-            {
-                using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Create))
-                {
-                    var jounralEntry = archive.CreateEntry("journal.txt", CompressionLevel.Optimal);
-
-                    using (var entryStream = jounralEntry.Open())
-                        await JournalPage.SaveToFile(entryStream, observer);
-
-                    var tradeReportsEntry = archive.CreateEntry("trades.csv", CompressionLevel.Optimal);
-                    using (var entryStream = tradeReportsEntry.Open())
-                        await TradeHistoryPage.SaveAsCsv(entryStream, observer);
-
-                    observer.SetMessage("Saving report...");
-
-                    var summaryEntry = archive.CreateEntry("report.txt", CompressionLevel.Optimal);
-                    using (var entryStream = summaryEntry.Open())
-                        await Task.Run(() => ResultsPage.SaveAsText(entryStream));
-
-                    var setupEntry = archive.CreateEntry("setup.txt", CompressionLevel.Optimal);
-                    using (var entryStream = setupEntry.Open())
-                        await Task.Run(() => SetupPage.SaveTestSetupAsText(pDescriptor, pluginConfig, entryStream, _emulteFrom, _emulateTo));
-
-                    if (pDescriptor.IsTradeBot)
-                    {
-                        var equityEntry = archive.CreateEntry("equity.csv", CompressionLevel.Optimal);
-                        using (var entryStream = equityEntry.Open())
-                            await Task.Run(() => ResultsPage.SaveEquityCsv(entryStream, observer));
-
-                        var marginEntry = archive.CreateEntry("margin.csv", CompressionLevel.Optimal);
-                        using (var entryStream = marginEntry.Open())
-                            await Task.Run(() => ResultsPage.SaveMarginCsv(entryStream, observer));
-                    }
-                }
-            }
-        }
-
-        #endregion
-
-        private string GetOptimizationProgressMessage(long max, long progress)
-        {
-            return string.Format("Optimizing... {0}/{1}", progress, max);
-        }
     }
 }

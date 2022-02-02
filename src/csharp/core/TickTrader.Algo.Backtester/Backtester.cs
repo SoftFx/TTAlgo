@@ -1,11 +1,8 @@
-﻿using Google.Protobuf;
-using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
@@ -251,64 +248,6 @@ namespace TickTrader.Algo.Backtester
             }
         }
 
-
-        private static void SaveJson<T>(ZipArchive zip, string entryName, T data)
-        {
-            var entry = zip.CreateEntry(entryName);
-            using (var stream = entry.Open())
-            using (var writer = new Utf8JsonWriter(stream))
-            {
-                JsonSerializer.Serialize(writer, data);
-            }
-        }
-
-        private static void SaveCsv(ZipArchive zip, string entryName, IEnumerable<BarData> data)
-        {
-            var entry = zip.CreateEntry(entryName);
-            using (var stream = entry.Open())
-            using (var writer = new StreamWriter(stream))
-            {
-                writer.Write("DateTime,Open,High,Low,Close");
-
-                foreach (var bar in data)
-                {
-                    writer.WriteLine();
-                    writer.Write("{0},{1},{2},{3},{4}", InvariantFormat.CsvFormat(bar.OpenTime.ToDateTime()), bar.Open, bar.High, bar.Low, bar.Close);
-                }
-            }
-        }
-
-        private static void SaveCsv(ZipArchive zip, string entryName, IEnumerable<OutputPoint> data)
-        {
-            var entry = zip.CreateEntry(entryName);
-            using (var stream = entry.Open())
-            using (var writer = new StreamWriter(stream))
-            {
-                writer.Write("DateTime,Index,Value");
-
-                foreach (var point in data)
-                {
-                    writer.WriteLine();
-                    writer.Write("{0},{1},{2}", InvariantFormat.CsvFormat(point.Time.ToDateTime()), point.Index, Any.Pack(point.Value).ToByteString().ToBase64());
-                }
-            }
-        }
-
-        private static void SaveBase64(ZipArchive zip, string entryName, IEnumerable<TradeReportInfo> data)
-        {
-            var entry = zip.CreateEntry(entryName);
-            using (var stream = entry.Open())
-            using (var writer = new StreamWriter(stream))
-            {
-                writer.Write("Base64 TradeReportInfo protobuf data"); // header is added on purpose
-
-                foreach (var report in data)
-                {
-                    writer.WriteLine();
-                    writer.Write(report.ToByteString().ToBase64());
-                }
-            }
-        }
 
         #region IPluginSetupTarget
 

@@ -55,51 +55,34 @@ namespace TickTrader.BotTerminal
 
         public AlgoChartViewModel ChartControlModel { get; }
 
-        public void OnStart(bool visualizing, SymbolInfo mainSymbol, PluginConfig config, Backtester backtester, IEnumerable<SymbolInfo> symbols)
+        public void OnStart(bool visualizing, SymbolInfo mainSymbol, BacktesterConfig config, IEnumerable<SymbolInfo> symbols)
         {
             _visualizing = visualizing;
-            _acctype = backtester.CommonSettings.AccountType;
-            _mainSymbol = backtester.CommonSettings.MainSymbol;
+            _acctype = config.Account.Type;
+            _mainSymbol = config.Core.MainSymbol;
             _symbolMap = symbols.ToDictionary(s => s.Name);
 
             Clear();
 
-            _barVector = new ChartBarVectorWithMarkers(backtester.CommonSettings.MainTimeframe);
+            _barVector = new ChartBarVectorWithMarkers(config.Core.MainTimeframe);
             _mainSeries.DataSeries = _barVector.SciChartdata;
             _markerSeries.DataSeries = _barVector.MarkersData;
 
-            ChartControlModel.SetTimeframe(backtester.CommonSettings.MainTimeframe);
+            ChartControlModel.SetTimeframe(config.Core.MainTimeframe);
             ChartControlModel.SymbolInfo.Value = mainSymbol;
-
-            if (visualizing)
-            {
-                backtester.OutputDataMode = TestDataSeriesFlags.Stream | TestDataSeriesFlags.Realtime;
-
-                backtester.Executor.SymbolRateUpdated += Executor_SymbolRateUpdated;
-                backtester.Executor.TradesUpdated += Executor_TradesUpdated;
-            }
-            else
-            {
-                backtester.OutputDataMode = TestDataSeriesFlags.Stream;
-                
-                backtester.OnChartUpdate += Backtester_OnChartUpdate;
-            }
             
-            var adapter = new BacktesterAdapter(config, backtester);
-            var outputGroup = new OutputGroupViewModel(adapter, ChartControlModel.ChartWindowId.Value, this, mainSymbol,
-                ChartControlModel.IsCrosshairEnabled.Var);
-            ChartControlModel.OutputGroups.Add(outputGroup);
+            //var adapter = new BacktesterAdapter(config, backtester);
+            //var outputGroup = new OutputGroupViewModel(adapter, ChartControlModel.ChartWindowId.Value, this, mainSymbol,
+            //    ChartControlModel.IsCrosshairEnabled.Var);
+            //ChartControlModel.OutputGroups.Add(outputGroup);
 
             _actionIdSeed = 0;
 
             _postponedMarkers.Clear();
         }
 
-        public void OnStop(Backtester backtester)
+        public void OnStop()
         {
-            backtester.OnChartUpdate -= Backtester_OnChartUpdate;
-            backtester.Executor.SymbolRateUpdated -= Executor_SymbolRateUpdated;
-            backtester.Executor.TradesUpdated -= Executor_TradesUpdated;
         }
 
         public async Task LoadMainChart(IEnumerable<BarData> bars, Feed.Types.Timeframe timeframe)
@@ -123,37 +106,6 @@ namespace TickTrader.BotTerminal
             });
 
             //_mainSeries.DataSeries = dataSeries;
-        }
-
-        private void Backtester_OnChartUpdate(BarData bar, string symbol, DataSeriesUpdate.Types.UpdateAction action)
-        {
-            if (action == DataSeriesUpdate.Types.UpdateAction.Append)
-            {
-                _barVector.AppendBarPart(bar);
-                ApplyPostponedMarkers();
-            }
-        }
-
-        private void Executor_SymbolRateUpdated(IRateInfo update)
-        {
-            if (update.Symbol == _mainSymbol)
-            {
-                ChartControlModel.SetCurrentRate(update);
-
-                if (update is QuoteInfo)
-                {
-                    var q = (QuoteInfo)update;
-                    _barVector.AppendQuote(q.Timestamp, q.Bid, 1);
-                }
-                else if (update is BarRateUpdate)
-                {
-                    var bar = ((BarRateUpdate)update).BidBar;
-                    if (bar != null)
-                        _barVector.AppendBarPart(bar);
-                }
-
-                ApplyPostponedMarkers();
-            }
         }
 
         public void Clear()

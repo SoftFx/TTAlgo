@@ -14,13 +14,13 @@ namespace TickTrader.Algo.Backtester
         {
             _syncContext = updatesSync;
 
-            Core = executorCore;
+            //Core = executorCore;
 
-            Core.IsGlobalMarshalingEnabled = true;
-            Core.IsBunchingRequired = _syncContext != null;
+            //Core.IsGlobalMarshalingEnabled = true;
+            //Core.IsBunchingRequired = _syncContext != null;
 
-            Core.MarshalUpdate = MarshalUpdate;
-            Core.MarshalUpdates = MarshalUpdatesToContext;
+            //Core.MarshalUpdate = MarshalUpdate;
+            //Core.MarshalUpdates = MarshalUpdatesToContext;
         }
 
         internal PluginExecutorCore Core { get; private set; }

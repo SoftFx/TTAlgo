@@ -197,16 +197,6 @@ namespace TickTrader.Algo.Backtester
                 var record = new PluginLogRecord(timeUtc, severity, message, details);
                 //_executor.OnUpdate(record);
 
-                // hot path: avoid allocation/boxing in Write(string format, params object[] args)
-                //_journalWriter.WriteLine();
-                //_journalWriter.Write(InvariantFormat.CsvFormat(timeUtc.ToDateTime()));
-                //_journalWriter.Write(',');
-                //_journalWriter.Write(severity);
-                //_journalWriter.Write(',');
-                //_journalWriter.Write(message);
-                //_journalWriter.Write(',');
-                //_journalWriter.Write(details);
-
                 _journalCsvWriter.NextRecord();
                 _journalCsvWriter.WriteRecord(record);
             }

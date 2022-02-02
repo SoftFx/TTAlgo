@@ -28,27 +28,21 @@ namespace TickTrader.BotTerminal
             _client.Clear();
         }
 
-        public void Start(Backtester backtester, IEnumerable<CurrencyInfo> currencies, IEnumerable<SymbolInfo> symbols)
+        public void Start(BacktesterConfig config, IEnumerable<CurrencyInfo> currencies, IEnumerable<SymbolInfo> symbols)
         {
-            var settings = backtester.CommonSettings;
-            var accInfo = new AccountInfo(settings.InitialBalance, settings.BalanceCurrency, null);
-            accInfo.Leverage = settings.Leverage;
+            var accSettings = config.Account;
+            var accInfo = new AccountInfo(accSettings.InitialBalance, accSettings.BalanceCurrency, null);
+            accInfo.Leverage = accSettings.Leverage;
             accInfo.Id = "1";
-            accInfo.Type = settings.AccountType;
+            accInfo.Type = accSettings.Type;
 
             _client.Init(accInfo, symbols, currencies);
-
-            backtester.Executor.TradesUpdated += Executor_TradesUpdated;
-            backtester.Executor.SymbolRateUpdated += Executor_SymbolRateUpdated;
 
             _connection.EmulateConnect();
         }
 
-        public void Stop(Backtester backtester)
+        public void Stop()
         {
-            backtester.Executor.TradesUpdated -= Executor_TradesUpdated;
-            backtester.Executor.SymbolRateUpdated -= Executor_SymbolRateUpdated;
-
             _connection.EmulateDisconnect();
             _client.Deinit();
         }
