@@ -31,7 +31,7 @@ namespace TickTrader.BotTerminal
         private void CreateOuput<T>(Backtester backtester, IOutputConfig output)
         {
             var id = output.PropertyId;
-            var adapter = new TesterOutputCollector<T>(id, backtester.Executor);
+            var adapter = new TesterOutputCollector<T>(id);//, backtester.Executor);
             _outputs.Add(id, adapter);
         }
 
