@@ -102,7 +102,7 @@ namespace TickTrader.Algo.Backtester
         }
 
 
-        private void WriteZipEntryAsJson<T>(ZipArchive zip, string entryName, T value)
+        private static void WriteZipEntryAsJson<T>(ZipArchive zip, string entryName, T value)
         {
             var entry = zip.CreateEntry(entryName);
             using (var stream = entry.Open())
@@ -112,7 +112,7 @@ namespace TickTrader.Algo.Backtester
             }
         }
 
-        private void WriteZipEntryAsProtoMsg(ZipArchive zip, string entryName, IMessage data)
+        private static void WriteZipEntryAsProtoMsg(ZipArchive zip, string entryName, IMessage data)
         {
             var entry = zip.CreateEntry(entryName);
             using (var stream = entry.Open())

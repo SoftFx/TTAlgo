@@ -39,6 +39,7 @@ namespace TickTrader.Algo.Backtester
     {
         CommonTestSettings CommonSettings { get; }
         JournalOptions JournalFlags { get; }
+        string JournalPath { get; }
 
         //TestDataSeriesFlags ChartDataMode { get; }
         Dictionary<string, TestDataSeriesFlags> SymbolDataConfig { get; }

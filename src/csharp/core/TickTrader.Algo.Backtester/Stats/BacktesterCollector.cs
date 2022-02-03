@@ -1,5 +1,9 @@
-﻿using System;
+﻿using CsvHelper;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.CoreV1;
@@ -25,6 +29,8 @@ namespace TickTrader.Algo.Backtester
         private Feed.Types.Timeframe _mainTimeframe;
         private string _lastStatus;
         private TimeKeyGenerator _logKeyGen = new TimeKeyGenerator();
+        private StreamWriter _journalWriter;
+        private CsvWriter _journalCsvWriter;
 
         public const string EquityStreamName = "Equity";
         public const string MarginStreamName = "Margin";
@@ -70,7 +76,7 @@ namespace TickTrader.Algo.Backtester
             var mainVector = feed?.GetBarBuilder(_mainSymbol, _mainTimeframe, Feed.Types.MarketSide.Bid);
             Stats.BarsCount = mainVector?.Count ?? 0;
 
-            Stats.Elapsed = DateTime.UtcNow - _startTime;
+            Stats.ElapsedMs = (DateTime.UtcNow - _startTime).TotalMilliseconds;
 
             StopOutputCollectors();
 
@@ -82,6 +88,13 @@ namespace TickTrader.Algo.Backtester
 
             //if (!string.IsNullOrWhiteSpace(_lastStatus))
             //    AddEvent(LogSeverities.Custom, _lastStatus);
+
+            if (_journalWriter != null)
+            {
+                _journalCsvWriter.Flush();
+                _journalCsvWriter.Dispose();
+                _journalWriter.Dispose();
+            }
         }
 
         public void Dispose()
@@ -149,98 +162,89 @@ namespace TickTrader.Algo.Backtester
             WriteTrade = WriteJournal && flags.HasFlag(JournalOptions.WriteTrade);
             WriteOrderModifications = WriteJournal && WriteTrade && flags.HasFlag(JournalOptions.WriteOrderModifications);
             WriteAlert = WriteJournal && flags.HasFlag(JournalOptions.WriteAlert);
+
+            if (WriteJournal)
+            {
+                _journalWriter = new StreamWriter(settings.JournalPath, false);
+                _journalCsvWriter = new CsvWriter(_journalWriter, CultureInfo.InvariantCulture);
+                _journalCsvWriter.Context.RegisterClassMap<CsvMapping.ForLogRecord>();
+                _journalCsvWriter.WriteHeader<PluginLogRecord>();
+            }
         }
 
-        private bool CheckFilter(Domain.PluginLogRecord.Types.LogSeverity severity)
+        private bool CheckFilter(PluginLogRecord.Types.LogSeverity severity)
         {
             switch (severity)
             {
-                case Domain.PluginLogRecord.Types.LogSeverity.Info: return WriteInfo;
-                case Domain.PluginLogRecord.Types.LogSeverity.Custom: return WriteCustom;
-                case Domain.PluginLogRecord.Types.LogSeverity.Error: return WriteJournal;
-                case Domain.PluginLogRecord.Types.LogSeverity.Trade: return WriteTrade;
-                case Domain.PluginLogRecord.Types.LogSeverity.TradeFail: return WriteTrade;
-                case Domain.PluginLogRecord.Types.LogSeverity.TradeSuccess: return WriteTrade;
-                case Domain.PluginLogRecord.Types.LogSeverity.Alert: return WriteAlert;
+                case PluginLogRecord.Types.LogSeverity.Info: return WriteInfo;
+                case PluginLogRecord.Types.LogSeverity.Custom: return WriteCustom;
+                case PluginLogRecord.Types.LogSeverity.Error: return WriteJournal;
+                case PluginLogRecord.Types.LogSeverity.Trade: return WriteTrade;
+                case PluginLogRecord.Types.LogSeverity.TradeFail: return WriteTrade;
+                case PluginLogRecord.Types.LogSeverity.TradeSuccess: return WriteTrade;
+                case PluginLogRecord.Types.LogSeverity.Alert: return WriteAlert;
             }
             return false;
         }
 
-        public void AddEvent(Domain.PluginLogRecord.Types.LogSeverity severity, string message, string description = null)
+        public void AddEvent(PluginLogRecord.Types.LogSeverity severity, string message, string details = null)
         {
             if (CheckFilter(severity))
             {
-                var record = new Domain.PluginLogRecord(_logKeyGen.NextKey(VirtualTimepoint), severity, message, description);
-                _executor.OnUpdate(record);
+                var timeUtc = _logKeyGen.NextKey(VirtualTimepoint);
 
-                //_events.Add();
+                // Streaming refactoring for visualizer
+                var record = new PluginLogRecord(timeUtc, severity, message, details);
+                //_executor.OnUpdate(record);
+
+                _journalCsvWriter.NextRecord();
+                _journalCsvWriter.WriteRecord(record);
             }
         }
 
         public void LogTrade(string message)
         {
-            AddEvent(Domain.PluginLogRecord.Types.LogSeverity.TradeSuccess, message);
+            AddEvent(PluginLogRecord.Types.LogSeverity.TradeSuccess, message);
         }
 
         public void LogTradeFail(string message)
         {
-            AddEvent(Domain.PluginLogRecord.Types.LogSeverity.TradeFail, message);
+            AddEvent(PluginLogRecord.Types.LogSeverity.TradeFail, message);
         }
 
         #endregion
 
-        public IPagedEnumerator<BarData> GetSymbolHistory(string symbol, Feed.Types.Timeframe timeframe)
+        private IEnumerable<BarData> TransformBars(IEnumerable<BarData> bars, Feed.Types.Timeframe targetTimeframe)
         {
-            var collector = _symbolDataCollectors.GetOrDefault(symbol);
-            if (collector != null)
-                return MarshalBars(collector.Snapshot, timeframe);
-            return null;
-        }
-
-        public IPagedEnumerator<BarData> GetEquityHistory(Feed.Types.Timeframe timeframe)
-        {
-            return MarshalBars(_equityCollector.Snapshot, timeframe);
-        }
-
-        public IPagedEnumerator<BarData> GetMarginHistory(Feed.Types.Timeframe timeframe)
-        {
-            return MarshalBars(_marginCollector.Snapshot, timeframe);
-        }
-
-        private IPagedEnumerator<BarData> MarshalBars(IEnumerable<BarData> barCollection, Feed.Types.Timeframe targetTimeframe)
-        {
-            const int pageSize = 4000;
-
-            if (_mainTimeframe == targetTimeframe)
-                return barCollection.GetPagedEnumerator(pageSize);
-            else
-                return barCollection.Transform(targetTimeframe).GetPagedEnumerator(pageSize);
-        }
-
-        private IPagedEnumerator<T> MarshalLongCollection<T>(IEnumerable<T> collection)
-        {
-            const int pageSize = 4000;
-
-            return collection.GetPagedEnumerator(pageSize);
+            return _mainTimeframe == targetTimeframe ? bars : bars.Transform(targetTimeframe);
         }
 
         internal IEnumerable<BarData> LocalGetEquityHistory(Feed.Types.Timeframe targetTimeframe)
         {
-            return _equityCollector.Snapshot.Transform(targetTimeframe);
+            return TransformBars(_equityCollector.Snapshot, targetTimeframe);
         }
 
         internal IEnumerable<BarData> LocalGetMarginHistory(Feed.Types.Timeframe targetTimeframe)
         {
-            return _marginCollector.Snapshot.Transform(targetTimeframe);
+            return TransformBars(_marginCollector.Snapshot, targetTimeframe);
+        }
+
+        internal IEnumerable<BarData> LocalGetSymbolHistory(string symbol, Feed.Types.Timeframe targetTimeframe)
+        {
+            if (!_symbolDataCollectors.TryGetValue(symbol, out var collector))
+                return Enumerable.Empty<BarData>();
+
+            return TransformBars(collector.Snapshot, targetTimeframe);
         }
 
         #region Output collection
 
-        public IPagedEnumerator<OutputPoint> GetOutputData(string id)
+        internal IEnumerable<OutputPoint> LocalGetOutputData(string id)
         {
-            var collector = _outputCollectors[id];
-            var data = collector.Snapshot;
-            return MarshalLongCollection(data);
+            if (!_outputCollectors.TryGetValue(id, out var collector))
+                return Enumerable.Empty<OutputPoint>();
+
+            return collector.Snapshot;
         }
 
         #endregion
@@ -312,47 +316,47 @@ namespace TickTrader.Algo.Backtester
 
         void IPluginLogger.OnError(Exception ex)
         {
-            AddEvent(Domain.PluginLogRecord.Types.LogSeverity.Error, ex.Message);
+            AddEvent(PluginLogRecord.Types.LogSeverity.Error, ex.Message);
         }
 
         void IPluginLogger.OnError(string message, Exception ex)
         {
-            AddEvent(Domain.PluginLogRecord.Types.LogSeverity.Error, message);
+            AddEvent(PluginLogRecord.Types.LogSeverity.Error, message);
         }
 
         void IPluginLogger.OnError(string message)
         {
-            AddEvent(Domain.PluginLogRecord.Types.LogSeverity.Error, message);
+            AddEvent(PluginLogRecord.Types.LogSeverity.Error, message);
         }
 
         void IPluginLogger.OnExit()
         {
-            AddEvent(Domain.PluginLogRecord.Types.LogSeverity.Info, "Bot called Exit()");
+            AddEvent(PluginLogRecord.Types.LogSeverity.Info, "Bot called Exit()");
         }
 
         void IPluginLogger.OnInitialized()
         {
-            AddEvent(Domain.PluginLogRecord.Types.LogSeverity.Info, "Initialized");
+            AddEvent(PluginLogRecord.Types.LogSeverity.Info, "Initialized");
         }
 
         void IPluginLogger.OnPrint(string entry)
         {
-            AddEvent(Domain.PluginLogRecord.Types.LogSeverity.Custom, entry);
+            AddEvent(PluginLogRecord.Types.LogSeverity.Custom, entry);
         }
 
         void IPluginLogger.OnPrint(string entry, params object[] parameters)
         {
-            AddEvent(Domain.PluginLogRecord.Types.LogSeverity.Custom, string.Format(entry, parameters));
+            AddEvent(PluginLogRecord.Types.LogSeverity.Custom, string.Format(entry, parameters));
         }
 
         void IPluginLogger.OnPrintError(string entry)
         {
-            AddEvent(Domain.PluginLogRecord.Types.LogSeverity.Error, entry);
+            AddEvent(PluginLogRecord.Types.LogSeverity.Error, entry);
         }
 
         void IPluginLogger.OnPrintError(string entry, params object[] parameters)
         {
-            AddEvent(Domain.PluginLogRecord.Types.LogSeverity.Error, string.Format(entry, parameters));
+            AddEvent(PluginLogRecord.Types.LogSeverity.Error, string.Format(entry, parameters));
         }
 
         void IPluginLogger.OnPrintInfo(string info)
@@ -362,27 +366,27 @@ namespace TickTrader.Algo.Backtester
         void IPluginLogger.OnPrintTrade(string entry)
         {
 
-            AddEvent(Domain.PluginLogRecord.Types.LogSeverity.Trade, entry);
+            AddEvent(PluginLogRecord.Types.LogSeverity.Trade, entry);
         }
 
         void IPluginLogger.OnPrintTradeFail(string entry)
         {
-            AddEvent(Domain.PluginLogRecord.Types.LogSeverity.TradeFail, entry);
+            AddEvent(PluginLogRecord.Types.LogSeverity.TradeFail, entry);
         }
 
         void IPluginLogger.OnPrintTradeSuccess(string entry)
         {
-            AddEvent(Domain.PluginLogRecord.Types.LogSeverity.TradeSuccess, entry);
+            AddEvent(PluginLogRecord.Types.LogSeverity.TradeSuccess, entry);
         }
 
         void IPluginLogger.OnStart()
         {
-            AddEvent(Domain.PluginLogRecord.Types.LogSeverity.Info, "Start");
+            AddEvent(PluginLogRecord.Types.LogSeverity.Info, "Start");
         }
 
         void IPluginLogger.OnStop()
         {
-            AddEvent(Domain.PluginLogRecord.Types.LogSeverity.Info, "Stop");
+            AddEvent(PluginLogRecord.Types.LogSeverity.Info, "Stop");
         }
 
         void IPluginLogger.UpdateStatus(string status)
@@ -404,7 +408,7 @@ namespace TickTrader.Algo.Backtester
 
         void IPluginLogger.OnPrintAlert(string entry)
         {
-            AddEvent(Domain.PluginLogRecord.Types.LogSeverity.Alert, entry);
+            AddEvent(PluginLogRecord.Types.LogSeverity.Alert, entry);
         }
 
         #endregion

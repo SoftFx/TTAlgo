@@ -404,6 +404,7 @@ namespace TickTrader.Algo.Backtester
             #region IBacktesterSettings
 
             JournalOptions IBacktesterSettings.JournalFlags => JournalOptions.Disabled;
+            string IBacktesterSettings.JournalPath => null;
             Dictionary<string, TestDataSeriesFlags> IBacktesterSettings.SymbolDataConfig => new Dictionary<string, TestDataSeriesFlags>();
             TestDataSeriesFlags IBacktesterSettings.MarginDataMode => TestDataSeriesFlags.Snapshot;
             TestDataSeriesFlags IBacktesterSettings.EquityDataMode => TestDataSeriesFlags.Snapshot;

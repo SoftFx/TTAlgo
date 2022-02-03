@@ -6,7 +6,6 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Backtester;
@@ -137,7 +136,7 @@ namespace TickTrader.BotTerminal
 
             _var.TriggerOnChange(MainSymbolSetup.SelectedTimeframe, a =>
             {
-                AvailableModels.Value = EnumHelper.AllValues<Feed.Types.Timeframe>().Where(t => t >= a.New && t != Feed.Types.Timeframe.TicksLevel2).ToList();
+                AvailableModels.Value = EnumHelper.AllValues<Feed.Types.Timeframe>().Where(t => t <= a.New && t != Feed.Types.Timeframe.TicksLevel2).Concat(new[] { Feed.Types.Timeframe.Ticks }).ToList();
 
                 if (_openedPluginSetup != null)
                     _openedPluginSetup.Setup.SelectedTimeFrame = a.New.ToApi();
@@ -280,72 +279,6 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        #region Saving Results
-
-        public void SaveTestSetupAsText(PluginDescriptor pDescriptor, PluginConfig config, System.IO.Stream stream, DateTime from, DateTime to)
-        {
-            using (var writer = new System.IO.StreamWriter(stream))
-            {
-                writer.WriteLine(FeedSetupToText(from, to));
-                writer.WriteLine(TradeSetupToText());
-                writer.WriteLine(PluginSetupToText(pDescriptor, config, false));
-            }
-        }
-
-        private string FeedSetupToText(DateTime from, DateTime to)
-        {
-            var writer = new StringBuilder();
-
-            writer.AppendLine("Main symbol: " + MainSymbolSetup.AsText());
-            writer.AppendLine("Model: based on " + SelectedModel.Value);
-
-            writer.AppendLine("Symbols data feed: " + MainSymbolSetup.AsText());
-            foreach (var addSymbols in FeedSymbols)
-                writer.AppendLine("+Symbol " + addSymbols.AsText());
-
-            writer.AppendFormat("Period: {0} to {1}", from.ToShortDateString(), to.ToShortDateString());
-
-            return writer.ToString();
-        }
-
-        private string TradeSetupToText()
-        {
-            return Settings.ToText(false);
-        }
-
-        private string PluginSetupToText(PluginDescriptor pDescriptor, PluginConfig config, bool compact)
-        {
-            var writer = new StringBuilder();
-
-            if (pDescriptor.IsIndicator)
-                writer.AppendFormat("Indicator: {0} v{1}", pDescriptor.DisplayName, pDescriptor.Version).AppendLine();
-            else if (pDescriptor.IsTradeBot)
-                writer.AppendFormat("Trade Bot: {0} v{1}", pDescriptor.DisplayName, pDescriptor.Version).AppendLine();
-
-            //int count = 0;
-            //foreach (var param in setup.Parameters)
-            //{
-            //    if (compact && count > 0)
-            //        writer.Append(", ");
-            //    writer.AppendFormat("{0}={1}", param.DisplayName, param.GetQuotedValue());
-            //    if (!compact)
-            //        writer.AppendLine();
-            //    count++;
-            //}
-
-            //foreach (var input in setup.Inputs)
-            //{
-            //    if (compact)
-            //        writer.Append(' ');
-            //    writer.AppendFormat("{0} = {1}", input.DisplayName, input.ValueAsText);
-            //    if (!compact)
-            //        writer.AppendLine();
-            //}
-
-            return writer.ToString();
-        }
-
-        #endregion
 
         [Conditional("DEBUG")]
         public void PrintCacheData()

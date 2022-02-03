@@ -124,22 +124,22 @@ namespace TickTrader.Algo.BacktesterV1Host
 
         private async Task DoBacktesting(BacktesterConfig config, DateTime from, DateTime to)
         {
-            using (var backtester = new Backtester.Backtester(config.PluginConfig.Key, null, from, to))
+            using (var backtester = new Backtester.Backtester(config.PluginConfig.Key, from, to))
             {
                 OnStartEmulation(backtester);
 
                 try
                 {
 #if DEBUG
-                    await Task.Delay(10000);
+                    //await Task.Delay(10000);
 #endif
-
-                    //backtester.Executor.LogUpdated += JournalPage.Append;
-                    //backtester.Executor.TradeHistoryUpdated += Executor_TradeHistoryUpdated;
 
                     ConfigureCommonSettings(config, backtester.CommonSettings);
                     ConfigureFeed(config, backtester.Feed, from, to);
                     backtester.JournalFlags = config.Core.JournalFlags;
+                    backtester.JournalPath = $"journal.{_id}.csv";
+                    backtester.SymbolDataConfig[config.Core.MainSymbol] = TestDataSeriesFlags.Snapshot;
+                    backtester.OutputDataMode = TestDataSeriesFlags.Snapshot;
 
                     PluginConfigLoader.ApplyConfig(backtester, config.PluginConfig, config.Core.MainSymbol, config.Env.WorkingFolderPath);
 
@@ -149,6 +149,17 @@ namespace TickTrader.Algo.BacktesterV1Host
                 finally
                 {
                     OnStopEmulation(backtester);
+                }
+
+                _logger.Debug("Saving results...");
+
+                try
+                {
+                    backtester.SaveResults(config.Env.ResultsPath);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, "Failed to save results");
                 }
             }
         }

@@ -1,9 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
@@ -34,22 +30,6 @@ namespace TickTrader.BotTerminal
         public void Append(BaseTransactionModel report)
         {
             _reports.Add(report);
-        }
-
-        public async Task SaveAsCsv(Stream entryStream, IActionObserver observer)
-        {
-            long progress = 0;
-
-            observer.SetMessage("Saving trades...");
-            observer.StartProgress(0, _reports.Count);
-
-            System.Action writeCsvAction = () => TradeReportCsvSerializer.Serialize(
-                _reports, entryStream, GridView.GetAccTypeValue(), i => Interlocked.Exchange(ref progress, i));
-
-            System.Action updateProgressAction = () => observer.SetProgress(Interlocked.Read(ref progress));
-
-            using (new UiUpdateTimer(updateProgressAction))
-                await Task.Factory.StartNew(writeCsvAction);
         }
     }
 }

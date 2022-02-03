@@ -5,6 +5,7 @@ using SciChart.Charting.Visuals.Axes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using TickTrader.Algo.Backtester;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
@@ -54,82 +55,57 @@ namespace TickTrader.BotTerminal
 
         public AlgoChartViewModel ChartControlModel { get; }
 
-        public void OnStart(bool visualizing, SymbolInfo mainSymbol, PluginConfig config, Backtester backtester, IEnumerable<SymbolInfo> symbols)
+        public void OnStart(bool visualizing, SymbolInfo mainSymbol, BacktesterConfig config, IEnumerable<SymbolInfo> symbols)
         {
             _visualizing = visualizing;
-            _acctype = backtester.CommonSettings.AccountType;
-            _mainSymbol = backtester.CommonSettings.MainSymbol;
+            _acctype = config.Account.Type;
+            _mainSymbol = config.Core.MainSymbol;
             _symbolMap = symbols.ToDictionary(s => s.Name);
 
             Clear();
 
-            _barVector = new ChartBarVectorWithMarkers(backtester.CommonSettings.MainTimeframe);
+            _barVector = new ChartBarVectorWithMarkers(config.Core.MainTimeframe);
             _mainSeries.DataSeries = _barVector.SciChartdata;
             _markerSeries.DataSeries = _barVector.MarkersData;
 
-            ChartControlModel.SetTimeframe(backtester.CommonSettings.MainTimeframe);
+            ChartControlModel.SetTimeframe(config.Core.MainTimeframe);
             ChartControlModel.SymbolInfo.Value = mainSymbol;
-
-            if (visualizing)
-            {
-                backtester.OutputDataMode = TestDataSeriesFlags.Stream | TestDataSeriesFlags.Realtime;
-
-                backtester.Executor.SymbolRateUpdated += Executor_SymbolRateUpdated;
-                backtester.Executor.TradesUpdated += Executor_TradesUpdated;
-            }
-            else
-            {
-                backtester.OutputDataMode = TestDataSeriesFlags.Stream;
-                
-                backtester.OnChartUpdate += Backtester_OnChartUpdate;
-            }
             
-            var adapter = new BacktesterAdapter(config, backtester);
-            var outputGroup = new OutputGroupViewModel(adapter, ChartControlModel.ChartWindowId.Value, this, mainSymbol,
-                ChartControlModel.IsCrosshairEnabled.Var);
-            ChartControlModel.OutputGroups.Add(outputGroup);
+            //var adapter = new BacktesterAdapter(config, backtester);
+            //var outputGroup = new OutputGroupViewModel(adapter, ChartControlModel.ChartWindowId.Value, this, mainSymbol,
+            //    ChartControlModel.IsCrosshairEnabled.Var);
+            //ChartControlModel.OutputGroups.Add(outputGroup);
 
             _actionIdSeed = 0;
 
             _postponedMarkers.Clear();
         }
 
-        public void OnStop(Backtester backtester)
+        public void OnStop()
         {
-            backtester.OnChartUpdate -= Backtester_OnChartUpdate;
-            backtester.Executor.SymbolRateUpdated -= Executor_SymbolRateUpdated;
-            backtester.Executor.TradesUpdated -= Executor_TradesUpdated;
         }
 
-        private void Backtester_OnChartUpdate(BarData bar, string symbol, DataSeriesUpdate.Types.UpdateAction action)
+        public async Task LoadMainChart(IEnumerable<BarData> bars, Feed.Types.Timeframe timeframe)
         {
-            if (action == DataSeriesUpdate.Types.UpdateAction.Append)
+            _barVector = new ChartBarVectorWithMarkers(timeframe);
+            _mainSeries.DataSeries = _barVector.SciChartdata;
+            _markerSeries.DataSeries = _barVector.MarkersData;
+
+            ChartControlModel.SetTimeframe(timeframe);
+            //ChartControlModel.SymbolInfo.Value = mainSymbol;
+
+            //var dataSeries = new SciChart.Charting.Model.DataSeries.OhlcDataSeries<DateTime, double>();
+
+            await Task.Run(() =>
             {
-                _barVector.AppendBarPart(bar);
-                ApplyPostponedMarkers();
-            }
-        }
-
-        private void Executor_SymbolRateUpdated(IRateInfo update)
-        {
-            if (update.Symbol == _mainSymbol)
-            {
-                ChartControlModel.SetCurrentRate(update);
-
-                if (update is QuoteInfo)
+                foreach (var bar in bars)
                 {
-                    var q = (QuoteInfo)update;
-                    _barVector.AppendQuote(q.Timestamp, q.Bid, 1);
+                    _barVector.AppendBarPart(bar);
+                    //dataSeries.Append(bar.OpenTime.ToDateTime(), bar.Open, bar.High, bar.Low, bar.Close);
                 }
-                else if (update is BarRateUpdate)
-                {
-                    var bar = ((BarRateUpdate)update).BidBar;
-                    if (bar != null)
-                        _barVector.AppendBarPart(bar);
-                }
+            });
 
-                ApplyPostponedMarkers();
-            }
+            //_mainSeries.DataSeries = dataSeries;
         }
 
         public void Clear()

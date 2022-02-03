@@ -3,9 +3,7 @@ using SciChart.Charting.Model.DataSeries;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Backtester;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
@@ -41,79 +39,6 @@ namespace TickTrader.BotTerminal
             LargeCharts.Clear();
             _equityData = null;
             _marginData = null;
-        }
-
-        public void SaveAsText(Stream file)
-        {
-            SaveProps(file, StatProperties.Value);
-        }
-
-        public static void SaveAsText(Stream file, bool isTradeBot, TestingStatistics stats)
-        {
-            var props = FormatStats(isTradeBot, stats);
-            SaveProps(file, props);
-        }
-
-        private static void SaveProps(Stream file, Dictionary<string, string> props)
-        {
-            using (var writer = new StreamWriter(file))
-            {
-                foreach (var prop in props)
-                {
-                    writer.Write(prop.Key);
-                    writer.Write(": ");
-                    writer.WriteLine(prop.Value);
-                }
-            }
-        }
-
-        public Task SaveMarginCsv(Stream entryStream, IActionObserver observer)
-        {
-            return SaveCsv(entryStream, observer, "margin", _marginData);
-        }
-
-        public Task SaveEquityCsv(Stream entryStream, IActionObserver observer)
-        {
-            return SaveCsv(entryStream, observer, "equity", _equityData);
-        }
-
-        private Task SaveCsv(Stream entryStream, IActionObserver observer, string dataName, OhlcDataSeries<DateTime, double> data)
-        {
-            return Task.Factory.StartNew(() =>
-            {
-                observer.SetMessage("Saving " + dataName + "...");
-
-                SaveCsv(entryStream, data);
-            });
-            
-        }
-
-        public static void SaveCsv(Stream entryStream, IEnumerable<BarData> data)
-        {
-            using (var writer = new StreamWriter(entryStream))
-            {
-                writer.Write("DateTime,Open,High,Low,Close");
-
-                foreach (var bar in data)
-                {
-                    writer.WriteLine();
-                    writer.Write("{0},{1},{2},{3},{4}", InvariantFormat.CsvFormat(bar.OpenTime.ToDateTime()), bar.Open, bar.High, bar.Low, bar.Close);
-                }
-            }
-        }
-
-        public static void SaveCsv(Stream entryStream, OhlcDataSeries<DateTime, double> data)
-        {
-            using (var writer = new StreamWriter(entryStream))
-            {
-                writer.Write("DateTime,Open,High,Low,Close");
-
-                for (int i = 0; i < data.Count; i++)
-                {
-                    writer.WriteLine();
-                    writer.Write("{0},{1},{2},{3},{4}", InvariantFormat.CsvFormat(data.XValues[i]), data.OpenValues[i], data.HighValues[i], data.LowValues[i], data.CloseValues[i]);
-                }
-            }
         }
 
         public void ShowReport(TestingStatistics newStats, PluginDescriptor descriptor, long? id)
@@ -156,11 +81,12 @@ namespace TickTrader.BotTerminal
                 props.Add("Swap", stats.TotalSwap.FormatPlain(balanceNumbersFormat));
             }
 
-            props.Add("Testing time", Format(stats.Elapsed));
+            var elapsed = TimeSpan.FromMilliseconds(stats.ElapsedMs);
+            props.Add("Testing time", Format(elapsed));
 
             var tickPerSecond = "N/A";
-            if (stats.Elapsed.TotalSeconds > 0)
-                tickPerSecond = (stats.TicksCount / stats.Elapsed.TotalSeconds).ToString("N0");
+            if (elapsed.TotalSeconds > 0)
+                tickPerSecond = (stats.TicksCount / elapsed.TotalSeconds).ToString("N0");
 
             props.Add("Testing speed (tps)", tickPerSecond);
 
