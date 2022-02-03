@@ -4,6 +4,7 @@ using Machinarium.Qnil;
 using Machinarium.Var;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -12,6 +13,8 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
+using TickTrader.FeedStorage;
+using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.BotTerminal
 {
@@ -20,17 +23,17 @@ namespace TickTrader.BotTerminal
         private VarContext _context = new VarContext();
         private List<FeedImporter> _importers = new List<FeedImporter>();
 
-        public FeedImportViewModel(SymbolCatalog catalog, SymbolData initialSymbol)
+        public FeedImportViewModel(ISymbolCatalog catalog, ISymbolData initialSymbol)
         {
             _importers.Add(new CsvFeedImporter());
 
-            Symbols = catalog.ObservableSymbols;
+            Symbols = new ObservableCollection<SymbolData>(catalog.AllSymbols); //add with custom
 
             DisplayName = "Import Series";
 
             SelectedTimeFrame = _context.AddProperty(Feed.Types.Timeframe.M1);
             SelectedPriceType = _context.AddProperty(Feed.Types.MarketSide.Bid);
-            SelectedSymbol = _context.AddProperty<SymbolData>(initialSymbol);
+            SelectedSymbol = _context.AddProperty<ISymbolData>(initialSymbol);
             SelectedImporter = _context.AddProperty<FeedImporter>(_importers[0]);
             ActionRunner = new ActionViewModel();
             IsActionVisible = _context.AddBoolProperty();
@@ -53,10 +56,10 @@ namespace TickTrader.BotTerminal
         public ActionViewModel ActionRunner { get; }
         public Property<Feed.Types.Timeframe> SelectedTimeFrame { get; }
         public Property<Feed.Types.MarketSide> SelectedPriceType { get; }
-        public Property<SymbolData> SelectedSymbol { get; }
+        public Property<ISymbolData> SelectedSymbol { get; }
         public IEnumerable<Feed.Types.Timeframe> AvailableTimeFrames => EnumHelper.AllValues<Feed.Types.Timeframe>();
         public IEnumerable<Feed.Types.MarketSide> AvailablePriceTypes => EnumHelper.AllValues<Feed.Types.MarketSide>();
-        public IObservableList<SymbolData> Symbols { get; }
+        public ObservableCollection<SymbolData> Symbols { get; }
         public BoolVar CanImport { get; }
         public BoolVar CanCancel { get; }
         public BoolVar IsInputEnabled { get; }

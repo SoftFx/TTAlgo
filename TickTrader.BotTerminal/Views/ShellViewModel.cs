@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Threading;
 using TickTrader.Algo.Account;
 using TickTrader.FeedStorage;
+using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.BotTerminal
 {
@@ -27,13 +28,13 @@ namespace TickTrader.BotTerminal
         private bool isClosed;
         private AlgoEnvironment algoEnv;
         private SymbolManagerViewModel _smbManager;
-        private SymbolCatalog _symbolsData;
-        private CustomFeedStorage.Handler _userSymbols;
+        private ISymbolCatalog _symbolsData;
+        //private CustomFeedStorage.Handler _userSymbols;
         private BotAgentManager _botAgentManager;
 
-        public ShellViewModel(ClientModel.Data commonClient, CustomFeedStorage.Handler customFeedStorage)
+        public ShellViewModel(ClientModel.Data commonClient)
         {
-            _userSymbols = customFeedStorage;
+            //_userSymbols = customFeedStorage;
 
             DisplayName = EnvService.Instance.ApplicationName;
 
@@ -62,7 +63,12 @@ namespace TickTrader.BotTerminal
 
             Trade = new TradeInfoViewModel(clientModel, cManager, storage.ProfileManager);
 
-            _symbolsData = new SymbolCatalog(customFeedStorage, clientModel);
+            var customStorageSettings = new CustomStorageSettings
+            {
+                FolderPath = EnvService.Instance.CustomFeedCacheFolder
+            };
+
+            _symbolsData = StorageFactory.BuildCatalog(clientModel, customStorageSettings);
 
             TradeHistory = new TradeHistoryViewModel(clientModel, cManager, storage.ProfileManager);
 
@@ -318,7 +324,7 @@ namespace TickTrader.BotTerminal
             try
             {
                 await cManager.Disconnect();
-                await _userSymbols.Stop();
+                await _symbolsData.Close();
                 await _botAgentManager.ShutdownDisconnect();
                 await storage.Stop();
             }

@@ -58,7 +58,7 @@ namespace TickTrader.Algo.Account
             _connection = new ConnectionModel(settings.ConnectionSettings, loggerId);
             _tradeHistory = new TradeHistoryProvider(_connection, loggerId);
             _tradeApi = new PluginTradeApiProvider(_connection);
-            _feedHistory = new FeedHistoryProviderModel.ControlHandler(settings.HistoryProviderSettings, loggerId);
+            _feedHistory = new FeedHistoryProviderModel.ControlHandler(/*settings.HistoryProviderSettings, */loggerId);
 
             if (settings.Monitoring?.EnableQuoteMonitoring ?? false)
                 _quoteMonitoring = new QuoteMonitoringModel(_connection, settings.Monitoring);

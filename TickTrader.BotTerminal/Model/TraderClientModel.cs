@@ -1,18 +1,21 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using Machinarium.Qnil;
+using Machinarium.Var;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Machinarium.Qnil;
-using TickTrader.Algo.Core;
-using Machinarium.Var;
-using TickTrader.Algo.Core.Infrastructure;
-using TickTrader.Algo.Domain;
-using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Account;
+using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Infrastructure;
+using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
+using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.BotTerminal
 {
-    internal class TraderClientModel : EntityBase, IConnectionStatusInfo
+    internal class TraderClientModel : EntityBase, IConnectionStatusInfo, IClientFeedProvider
     {
         private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
         private ClientModel.Data _core;
@@ -32,7 +35,7 @@ namespace TickTrader.BotTerminal
 
             Account = _core.Cache.Account;
             Symbols = _core.Symbols;
-            SortedSymbols = Symbols.Select((k, v)=> v).OrderBy((k, v) => k).AsObservable();
+            SortedSymbols = Symbols.Select((k, v) => v).OrderBy((k, v) => k).AsObservable();
 
             var orderedCurrencies = Currencies.OrderBy((k, v) => k);
             SortedCurrencies = orderedCurrencies.AsObservable();
@@ -121,6 +124,27 @@ namespace TickTrader.BotTerminal
                 logger.Error(ex, "Connection_Deinitalizing() failed.");
             }
         }
+
+
+        bool IClientFeedProvider.IsAvailable => _isConnected.Value;
+
+        List<SymbolInfo> IClientFeedProvider.Symbols => Symbols.Snapshot.Values.ToList();
+
+        Task<(DateTime?, DateTime?)> IClientFeedProvider.GetAvailableSymbolRange(string symbol, Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide? priceType)
+        {
+            return Connection.FeedProxy.GetAvailableRange(symbol, priceType ?? Feed.Types.MarketSide.Bid, timeFrame);
+        }
+
+        void IClientFeedProvider.DownloadBars(ActorSharp.BlockingChannel<BarData> stream, string symbol, Timestamp from, Timestamp to, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe)
+        {
+            Connection.FeedProxy.DownloadBars(stream, symbol, from, to, marketSide, timeframe);
+        }
+
+        void IClientFeedProvider.DownloadQuotes(ActorSharp.BlockingChannel<QuoteInfo> stream, string symbol, Timestamp from, Timestamp to, bool includeLevel2)
+        {
+            Connection.FeedProxy.DownloadQuotes(stream, symbol, from, to, includeLevel2);
+        }
+
 
         public bool IsConnecting { get; private set; }
         public BoolVar IsConnected => _isConnected.Var;

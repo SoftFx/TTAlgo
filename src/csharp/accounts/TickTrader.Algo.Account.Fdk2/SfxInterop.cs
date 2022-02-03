@@ -426,18 +426,18 @@ namespace TickTrader.Algo.Account.Fdk2
             }
         }
 
-        public async Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(string symbol, Domain.Feed.Types.MarketSide marketSide, Domain.Feed.Types.Timeframe timeframe)
+        public async Task<(DateTime?, DateTime?)> GetAvailableRange(string symbol, Domain.Feed.Types.MarketSide marketSide, Domain.Feed.Types.Timeframe timeframe)
         {
             if (timeframe.IsTicks())
             {
                 var level2 = timeframe == Domain.Feed.Types.Timeframe.TicksLevel2;
                 var info = await _feedHistoryProxyAdapter.GetQuotesHistoryInfoAsync(symbol, level2);
-                return new Tuple<DateTime?, DateTime?>(info.AvailFrom, info.AvailTo);
+                return (info.AvailFrom, info.AvailTo);
             }
             else // bars
             {
                 var info = await _feedHistoryProxyAdapter.GetBarsHistoryInfoAsync(symbol, ToBarPeriod(timeframe), ConvertBack(marketSide));
-                return new Tuple<DateTime?, DateTime?>(info.AvailFrom, info.AvailTo);
+                return (info.AvailFrom, info.AvailTo);
             }
         }
 

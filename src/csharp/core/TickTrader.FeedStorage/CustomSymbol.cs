@@ -1,12 +1,18 @@
-﻿using ProtoBuf;
+﻿using Google.Protobuf.WellKnownTypes;
+using Machinarium.Qnil;
+using ProtoBuf;
 using System;
+using System.Threading.Tasks;
+using TickTrader.Algo.Core.Setup;
+using TickTrader.Algo.Domain;
+using TickTrader.FeedStorage.Api;
 
-namespace TickTrader.FeedStorage
+namespace TickTrader.FeedStorage.Api
 {
     public enum CustomCommissionType { Percentage, Points, Money }
 
     [ProtoContract]
-    public class CustomSymbol
+    public class CustomSymbol : ISymbolData
     {
         [ProtoIgnore]
         internal Guid StorageId { get; set; }
@@ -69,6 +75,23 @@ namespace TickTrader.FeedStorage
         [ProtoMember(27)]
         public string MinCommissionCurr { get; set; }
 
+        string ISymbolData.Name => throw new NotImplementedException();
+
+        string ISymbolData.Description => throw new NotImplementedException();
+
+        string ISymbolData.Key => throw new NotImplementedException();
+
+        string ISymbolData.Security => throw new NotImplementedException();
+
+        bool ISymbolData.IsCustom => throw new NotImplementedException();
+
+        SymbolInfo ISymbolData.InfoEntity => throw new NotImplementedException();
+
+        CustomSymbol ISymbolData.StorageEntity => throw new NotImplementedException();
+
+        bool ISymbolData.IsDataAvailable => throw new NotImplementedException();
+
+        IVarSet<SymbolStorageSeries> ISymbolData.SeriesCollection => throw new NotImplementedException();
 
         public Algo.Domain.SymbolInfo ToAlgo()
         {
@@ -190,6 +213,26 @@ namespace TickTrader.FeedStorage
                 default:
                     throw new InvalidCastException($"Commission type not found: {type}");
             }
+        }
+
+        Task<(DateTime?, DateTime?)> ISymbolData.GetAvailableRange(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide? priceType)
+        {
+            throw new NotImplementedException();
+        }
+
+        void ISymbolData.WriteSlice(Feed.Types.Timeframe frame, Feed.Types.MarketSide priceType, Timestamp from, Timestamp to, BarData[] values)
+        {
+            throw new NotImplementedException();
+        }
+
+        void ISymbolData.WriteSlice(Feed.Types.Timeframe timeFrame, Timestamp from, Timestamp to, QuoteInfo[] values)
+        {
+            throw new NotImplementedException();
+        }
+
+        SymbolToken ISymbolData.ToSymbolToken()
+        {
+            throw new NotImplementedException();
         }
     }
 }

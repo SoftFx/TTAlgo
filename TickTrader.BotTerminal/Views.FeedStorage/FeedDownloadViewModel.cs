@@ -3,12 +3,14 @@ using Machinarium.Qnil;
 using Machinarium.Var;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage;
+using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.BotTerminal
 {
@@ -16,20 +18,22 @@ namespace TickTrader.BotTerminal
     {
         private readonly VarContext varContext = new VarContext();
         private TraderClientModel _client;
+        private readonly ISymbolCatalog _catalog;
 
-        public FeedDownloadViewModel(TraderClientModel clientModel, SymbolCatalog catalog, SymbolData symbol = null)
+        public FeedDownloadViewModel(TraderClientModel clientModel, ISymbolCatalog catalog, ISymbolData symbol = null)
         {
+            _catalog = catalog;
             _client = clientModel;
 
             //Symbols = clientModel.Symbols.Select((k, v) => (SymbolModel)v).OrderBy((k, v) => k).Chain().AsObservable();
-            Symbols = catalog.ObservableOnlineSymbols;
+            Symbols = new ObservableCollection<SymbolData>(catalog.AllSymbols);
 
             DownloadObserver = new ActionViewModel();
             DateRange = new DateRangeSelectionViewModel();
 
             SelectedTimeFrame = varContext.AddProperty(Feed.Types.Timeframe.M1);
             SelectedPriceType = varContext.AddProperty(Feed.Types.MarketSide.Bid);
-            SelectedSymbol = varContext.AddProperty<SymbolData>(symbol);
+            SelectedSymbol = varContext.AddProperty<ISymbolData>(symbol);
             ShowDownloadUi = varContext.AddBoolProperty();
 
             IsRangeLoaded = varContext.AddBoolProperty();
@@ -49,7 +53,7 @@ namespace TickTrader.BotTerminal
 
         public IEnumerable<Feed.Types.Timeframe> AvailableTimeFrames => TimeFrameModel.AllTimeFrames;
         public IEnumerable<Feed.Types.MarketSide> AvailablePriceTypes => EnumHelper.AllValues<Feed.Types.MarketSide>();
-        public IObservableList<SymbolData> Symbols { get; }
+        public ObservableCollection<SymbolData> Symbols { get; }
         public DateRangeSelectionViewModel DateRange { get; }
         public ActionViewModel DownloadObserver { get; }
 
@@ -57,7 +61,7 @@ namespace TickTrader.BotTerminal
 
         public BoolProperty ShowDownloadUi { get; private set; }
         public BoolProperty IsRangeLoaded { get; private set; }
-        public Property<SymbolData> SelectedSymbol { get; private set; }
+        public Property<ISymbolData> SelectedSymbol { get; private set; }
         public BoolVar DownloadEnabled { get; private set; }
         public BoolVar CancelEnabled { get; private set; }
         public BoolVar IsPriceTypeActual { get; private set; }
@@ -77,7 +81,6 @@ namespace TickTrader.BotTerminal
 
         public void Dispose()
         {
-            Symbols.Dispose();
             varContext.Dispose();
         }
 
@@ -109,14 +112,14 @@ namespace TickTrader.BotTerminal
             DownloadObserver.Start(DownloadAsync);
         }
 
-        private async void UpdateAvailableRange(SymbolData smb)
+        private async void UpdateAvailableRange(ISymbolData smb)
         {
             IsRangeLoaded.Value = false;
             DateRange.Reset();
 
             if (smb != null)
             {
-                var range = await  smb.GetAvailableRange(Feed.Types.Timeframe.M1);
+                var range = await smb.GetAvailableRange(Feed.Types.Timeframe.M1);
 
                 if (SelectedSymbol.Value == smb)
                 {
@@ -142,7 +145,7 @@ namespace TickTrader.BotTerminal
 
             observer?.StartProgress(fromUtc.GetAbsoluteDay(), toUtc.GetAbsoluteDay());
 
-            var barEnumerator = await _client.FeedHistory.DownloadBarSeriesToStorage(symbol, timeFrame, priceType, fromUtc, toUtc);
+            var barEnumerator = await _catalog.DownloadBarSeriesToStorage(symbol, timeFrame, priceType, fromUtc, toUtc);
 
             try
             {
@@ -191,7 +194,7 @@ namespace TickTrader.BotTerminal
 
             observer?.StartProgress(fromUtc.GetAbsoluteDay(), toUtc.GetAbsoluteDay());
 
-            var tickEnumerator = await _client.FeedHistory.DownloadTickSeriesToStorage(symbol, timeFrame, fromUtc, toUtc);
+            var tickEnumerator = await _catalog.DownloadTickSeriesToStorage(symbol, timeFrame, fromUtc, toUtc);
 
             try
             {

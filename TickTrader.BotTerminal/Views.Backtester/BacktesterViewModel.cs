@@ -15,12 +15,16 @@ using System.Globalization;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Backtester;
 using TickTrader.Algo.CoreV1;
+using TickTrader.FeedStorage;
+using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.BotTerminal
 {
     internal class BacktesterViewModel : Conductor<Page>.Collection.OneActive, IWindowModel
     {
         private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
+        private readonly ISymbolCatalog _catalog;
 
         private AlgoEnvironment _env;
         private IShell _shell;
@@ -42,12 +46,13 @@ namespace TickTrader.BotTerminal
 
         private static readonly int[] SpeedToDelayMap = new int[] { 256, 128, 64, 32, 16, 8, 4, 2, 1, 0 };
 
-        public BacktesterViewModel(AlgoEnvironment env, TraderClientModel client, SymbolCatalog catalog, IShell shell, ProfileManager profile)
+        public BacktesterViewModel(AlgoEnvironment env, TraderClientModel client, ISymbolCatalog catalog, IShell shell, ProfileManager profile)
         {
             DisplayName = "Backtester";
 
             _env = env ?? throw new ArgumentNullException("env");
             _shell = shell ?? throw new ArgumentNullException("shell");
+            _catalog = catalog;
             _client = client;
 
             _hasDataToSave = _var.AddBoolProperty();
@@ -141,7 +146,7 @@ namespace TickTrader.BotTerminal
                 var fileNamePrefix = $"{decriptorName}.{DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss", CultureInfo.InvariantCulture)}";
                 var pathPrefix = System.IO.Path.Combine(EnvService.Instance.BacktestResultsFolder, fileNamePrefix);
                 config.Env.ResultsPath = pathPrefix + ".out.zip";
-                config.Env.FeedCachePath = _client.FeedHistory.Cache.DataBaseFolder;
+                config.Env.FeedCachePath = _catalog.OnlineCollection.StorageFolder;
                 config.Env.WorkingFolderPath = EnvService.Instance.AlgoWorkingFolder;
 
                 var configPath = pathPrefix + ".in.zip";

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.FeedStorage;
+using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.BotTerminal
 {

@@ -3,6 +3,7 @@ using Machinarium.Qnil;
 using Machinarium.Var;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage;
+using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.BotTerminal
 {
@@ -20,13 +22,13 @@ namespace TickTrader.BotTerminal
         private TraderClientModel _clientModel;
         private FeedHistoryProviderModel.Handler _historyProvider;
         private WindowManager _wndManager;
-        private SymbolCatalog _catalog;
+        private ISymbolCatalog _catalog;
         private VarContext _varContext = new VarContext();
         private VarDictionary<string, SymbolInfo> _onlineSymbols = new VarDictionary<string, SymbolInfo>();
-        private IVarSet<SymbolKey, ManagedSymbolViewModel> _customManagedSymbols;
-        private IVarSet<SymbolKey, ManagedSymbolViewModel> _onlineManagedSymbols;
+        private List<ManagedSymbolViewModel> _customManagedSymbols;
+        private List<ManagedSymbolViewModel> _onlineManagedSymbols;
 
-        public SymbolManagerViewModel(TraderClientModel clientModel, SymbolCatalog catalog, WindowManager wndManager)
+        public SymbolManagerViewModel(TraderClientModel clientModel, ISymbolCatalog catalog, WindowManager wndManager)
         {
             _clientModel = clientModel;
             _historyProvider = clientModel.FeedHistory;
@@ -41,18 +43,18 @@ namespace TickTrader.BotTerminal
             //var onlineSeries = onlineCacheKeys.Transform(k => new CacheSeriesInfoViewModel(k, this, _historyProvider.Cache, false));
             //var customSeries = customCacheKeys.Transform(k => new CacheSeriesInfoViewModel(k, this, customStorage, true));
 
-            _onlineManagedSymbols = catalog.OnlineSymbols.Select((k, v) => new ManagedSymbolViewModel(this, v, "Online Symbols"));
-            _customManagedSymbols = catalog.CustomSymbols.Select((k, v) => new ManagedSymbolViewModel(this, v, "Custom Symbols"));
+            _onlineManagedSymbols = catalog.OnlineCollection.Symbols.Select(v => new ManagedSymbolViewModel(this, v, "Online Symbols")).ToList();
+            _customManagedSymbols = catalog.CustomCollection.Symbols.Select(v => new ManagedSymbolViewModel(this, v, "Custom Symbols")).ToList();
 
-            var symbolsBySecurity = _onlineManagedSymbols.GroupBy((k, v) => v.Security);
-            var groupsBySecurity = symbolsBySecurity.TransformToList((k, v) => new ManageSymbolGrouping(v.GroupKey, v.TransformToList((k1, v1) => v1)));
+            var symbolsBySecurity = _onlineManagedSymbols.GroupBy(v => v.Security);
+            var groupsBySecurity = symbolsBySecurity.Select(v => new ManageSymbolGrouping(v.Key, v.ToList())).ToList();
 
-            var onlineGroup = new ManageSymbolGrouping("Online", _onlineManagedSymbols.TransformToList((k, v) => v), groupsBySecurity);
-            var customGroup = new ManageSymbolGrouping("Custom", _customManagedSymbols.TransformToList((k, v) => v));
+            var onlineGroup = new ManageSymbolGrouping("Online", _onlineManagedSymbols, groupsBySecurity);
+            var customGroup = new ManageSymbolGrouping("Custom", _customManagedSymbols);
 
             RootGroups = new ManageSymbolGrouping[] { customGroup, onlineGroup };
             SelectedGroup = _varContext.AddProperty<ManageSymbolGrouping>(customGroup);
-            Symbols = _varContext.AddProperty<IObservableList<ManagedSymbolViewModel>>();
+            Symbols = _varContext.AddProperty<ObservableCollection<ManagedSymbolViewModel>>();
             SymbolFilter = _varContext.AddProperty<string>();
             SelectedSymbol = _varContext.AddProperty<ManagedSymbolViewModel>();
             CacheSeries = SelectedSymbol.Var.Ref(s => s.Series);
@@ -67,14 +69,14 @@ namespace TickTrader.BotTerminal
                     _onlineSymbols.Add(i.Key, i.Value);
             });
 
-            _onlineManagedSymbols.EnableAutodispose();
-            _customManagedSymbols.EnableAutodispose();
+            //_onlineManagedSymbols.EnableAutodispose();
+            //_customManagedSymbols.EnableAutodispose();
         }
 
         public Property<ManageSymbolGrouping> SelectedGroup { get; }
         public ManageSymbolGrouping[] RootGroups { get; }
 
-        public Property<IObservableList<ManagedSymbolViewModel>> Symbols { get; }
+        public Property<ObservableCollection<ManagedSymbolViewModel>> Symbols { get; }
         public Var<IEnumerable<CacheSeriesInfoViewModel>> CacheSeries { get; }
         public Property<ManagedSymbolViewModel> SelectedSymbol { get; }
         public Property<string> SymbolFilter { get; }
@@ -96,15 +98,15 @@ namespace TickTrader.BotTerminal
         {
             var symbolSet = SelectedGroup.Value.SymbolList;
 
-            if (Symbols.Value != null)
-                Symbols.Value.Dispose();
+            //if (Symbols.Value != null)
+            //    Symbols.Value.Dispose();
 
             string filter = SymbolFilter.Value;
 
             if (string.IsNullOrWhiteSpace(filter))
-                Symbols.Value = symbolSet.AsObservable();
+                Symbols.Value = new ObservableCollection<ManagedSymbolViewModel>(symbolSet);
             else
-                Symbols.Value = symbolSet.Where(s => ContainsIgnoreCase(s.Name, filter)).Chain().AsObservable();
+                Symbols.Value = new ObservableCollection<ManagedSymbolViewModel>(symbolSet.Where(s => ContainsIgnoreCase(s.Name, filter)));
         }
 
         private static bool ContainsIgnoreCase(string str, string searchStr)
@@ -122,7 +124,7 @@ namespace TickTrader.BotTerminal
             Download(SelectedSymbol.Value?.Model);
         }
 
-        public void Download(SymbolData symbol)
+        public void Download(ISymbolData symbol)
         {
             _wndManager.ShowDialog(new FeedDownloadViewModel(_clientModel, _catalog, symbol), this);
         }
@@ -132,10 +134,10 @@ namespace TickTrader.BotTerminal
             Import(SelectedSymbol.Value.Model);
         }
 
-        public void Import(SymbolData symbol)
+        public void Import(ISymbolData symbol)
         {
-            using (var symbolList = _customManagedSymbols.TransformToList())
-                _wndManager.ShowDialog(new FeedImportViewModel(_catalog, symbol), this);
+            //using (var symbolList = _customManagedSymbols.TransformToList())
+            _wndManager.ShowDialog(new FeedImportViewModel(_catalog, symbol), this);
         }
 
         public void AddSymbol()
@@ -144,23 +146,23 @@ namespace TickTrader.BotTerminal
 
             if (_wndManager.ShowDialog(model, this).Result == true)
             {
-                var actionModel = new ActionDialogViewModel("Adding symbol...", () => _catalog.AddCustomSymbol(model.GetResultingSymbol()));
+                var actionModel = new ActionDialogViewModel("Adding symbol...", () => _catalog.CustomCollection.TryAddSymbol(model.GetResultingSymbol()));
                 _wndManager.ShowDialog(actionModel, this);
             }
         }
 
-        public void EditSymbol(SymbolData symbol)
+        public void EditSymbol(ISymbolData symbol)
         {
             var model = new SymbolCfgEditorViewModel(((CustomSymbolData)symbol).Entity, _clientModel.SortedCurrenciesNames, HasSymbol);
 
             if (_wndManager.ShowDialog(model, this).Result == true)
             {
-                var actionModel = new ActionDialogViewModel("Saving symbol settings...", () => _catalog.Update(model.GetResultingSymbol()));
+                var actionModel = new ActionDialogViewModel("Saving symbol settings...", () => _catalog.CustomCollection.TryUpdateSymbol(model.GetResultingSymbol()));
                 _wndManager.ShowDialog(actionModel, this);
             }
         }
 
-        public void CopySymbol(SymbolData symbol)
+        public void CopySymbol(ISymbolData symbol)
         {
             CustomSymbol smb = null;
             if (symbol is CustomSymbolData)
@@ -176,7 +178,7 @@ namespace TickTrader.BotTerminal
 
             if (_wndManager.ShowDialog(model, this).Result == true)
             {
-                var actionModel = new ActionDialogViewModel("Saving symbol settings...", () => _catalog.AddCustomSymbol(model.GetResultingSymbol()));
+                var actionModel = new ActionDialogViewModel("Saving symbol settings...", () => _catalog.CustomCollection.TryAddSymbol(model.GetResultingSymbol()));
                 _wndManager.ShowDialog(actionModel, this);
             }
         }
@@ -186,9 +188,9 @@ namespace TickTrader.BotTerminal
             _wndManager.ShowDialog(new FeedExportViewModel(series.Model), this);
         }
 
-        public void RemoveSymbol(SymbolData symbolModel)
+        public void RemoveSymbol(ISymbolData symbolModel)
         {
-            var actionModel = new ActionDialogViewModel("Removing symbol...", () => symbolModel.Remove());
+            var actionModel = new ActionDialogViewModel("Removing symbol...", () => _catalog.CustomCollection.TryRemoveSymbol((CustomSymbol)symbolModel));
             _wndManager.ShowDialog(actionModel, this);
         }
 
@@ -203,8 +205,8 @@ namespace TickTrader.BotTerminal
             CanUpdateSizes = false;
 
             var toUpdate = new List<ManagedSymbolViewModel>();
-            toUpdate.AddRange(_onlineManagedSymbols.Snapshot.Values);
-            toUpdate.AddRange(_customManagedSymbols.Snapshot.Values);
+            toUpdate.AddRange(_onlineManagedSymbols);
+            toUpdate.AddRange(_customManagedSymbols);
 
             foreach (var item in toUpdate)
                 item.ResetSize();
@@ -218,8 +220,8 @@ namespace TickTrader.BotTerminal
         private bool HasSymbol(string smbName)
         {
             smbName = smbName.Trim();
-            return _onlineManagedSymbols.Snapshot.ContainsKey(new SymbolKey(smbName, SymbolConfig.Types.SymbolOrigin.Online))
-                || _customManagedSymbols.Snapshot.ContainsKey(new SymbolKey(smbName, SymbolConfig.Types.SymbolOrigin.Custom));
+            return _catalog.OnlineCollection[smbName/*new SymbolKey(smbName, SymbolConfig.Types.SymbolOrigin.Online)*/] != null &&
+                   _catalog.CustomCollection[smbName/*new SymbolKey(smbName, SymbolConfig.Types.SymbolOrigin.Custom)*/] != null;
         }
     }
 
@@ -270,7 +272,7 @@ namespace TickTrader.BotTerminal
     {
         private IVarSet<CacheSeriesInfoViewModel> _series;
 
-        public ManagedSymbolViewModel(SymbolManagerViewModel parent, SymbolData model, string category)
+        public ManagedSymbolViewModel(SymbolManagerViewModel parent, ISymbolData model, string category)
         {
             Model = model;
             Parent = parent;
@@ -282,7 +284,7 @@ namespace TickTrader.BotTerminal
 
         protected SymbolManagerViewModel Parent { get; private set; }
 
-        public SymbolData Model { get; }
+        public ISymbolData Model { get; }
         public string Description => Model.Description;
         public string Security => Model.Security;
         public string Name => Model.Name;
@@ -349,20 +351,22 @@ namespace TickTrader.BotTerminal
 
     internal class ManageSymbolGrouping
     {
-        public ManageSymbolGrouping(string name, IVarList<ManagedSymbolViewModel> symbols,
-            IVarList<ManageSymbolGrouping> childGroups = null)
+        public ManageSymbolGrouping(string name, IList<ManagedSymbolViewModel> symbols,
+            IList<ManageSymbolGrouping> childGroups = null)
         {
             GroupName = name;
             SymbolList = symbols;
-            Symbols = symbols.AsObservable();
+            Symbols = new ObservableCollection<ManagedSymbolViewModel>(symbols);
             GroupList = childGroups;
-            Childs = childGroups?.AsObservable();
+
+            if (childGroups != null)
+                Childs = new ObservableCollection<ManageSymbolGrouping>(childGroups);
         }
 
         public string GroupName { get; }
-        public IVarList<ManagedSymbolViewModel> SymbolList { get; }
-        public IVarList<ManageSymbolGrouping> GroupList { get; }
-        public IObservableList<ManageSymbolGrouping> Childs { get; }
-        public IObservableList<ManagedSymbolViewModel> Symbols { get; }
+        public IList<ManagedSymbolViewModel> SymbolList { get; }
+        public IList<ManageSymbolGrouping> GroupList { get; }
+        public ObservableCollection<ManageSymbolGrouping> Childs { get; }
+        public ObservableCollection<ManagedSymbolViewModel> Symbols { get; }
     }
 }

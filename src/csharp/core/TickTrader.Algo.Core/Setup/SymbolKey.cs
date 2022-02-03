@@ -60,4 +60,15 @@ namespace TickTrader.Algo.Core.Setup
                 return y.Origin.CompareTo(x.Origin);
         }
     }
+
+    public class SetupSymbolInfoComparer : IComparer<ISetupSymbolInfo>
+    {
+        public int Compare(ISetupSymbolInfo x, ISetupSymbolInfo y)
+        {
+            if (x.Origin == y.Origin)
+                return x.Name.CompareTo(y.Name);
+            else
+                return y.Origin.CompareTo(x.Origin);
+        }
+    }
 }

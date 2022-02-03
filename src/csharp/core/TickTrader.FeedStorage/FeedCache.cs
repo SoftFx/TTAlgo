@@ -145,7 +145,7 @@ namespace TickTrader.FeedStorage
             public Task<KeyRange<DateTime>> GetFirstRange(string symbol, Feed.Types.Timeframe frame, Feed.Types.MarketSide? marketSide, DateTime from, DateTime to)
                 => _ref.Call(a => a.GetFirstRange(symbol, frame, marketSide, from, to));
 
-            public Task<Tuple<DateTime?, DateTime?>> GetRange(FeedCacheKey key)
+            public Task<(DateTime?, DateTime?)> GetRange(FeedCacheKey key)
                 => _ref.Call(a => a.GetRange(key));
 
             public Task<double?> GetCollectionSize(FeedCacheKey key)
@@ -211,7 +211,7 @@ namespace TickTrader.FeedStorage
             }
         }
 
-        protected Tuple<DateTime?, DateTime?> GetRange(FeedCacheKey key)
+        protected (DateTime?, DateTime?) GetRange(FeedCacheKey key)
         {
             CheckState();
 
@@ -226,7 +226,7 @@ namespace TickTrader.FeedStorage
                 max = r.To;
             }
 
-            return new Tuple<DateTime?, DateTime?>(min, max);
+            return (min, max);
         }
 
         //private Task<Tuple<DateTime, DateTime>> GetRangeAsync(FeedCacheKey key, bool custom)

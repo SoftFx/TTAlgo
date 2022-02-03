@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Text.Json;
 using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage;
+using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.Algo.Backtester
 {
