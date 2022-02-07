@@ -61,7 +61,7 @@ namespace TickTrader.BotTerminal
     {
         public StorageSymbolKey(string name, SymbolConfig.Types.SymbolOrigin origin) : base(name, origin) { }
 
-        bool IEqualityComparer<ISymbolKey>.Equals(ISymbolKey x, ISymbolKey y) => x.Name == y.Name && x.Origin == y.Origin && x.Id == y.Id;
+        bool IEqualityComparer<ISymbolKey>.Equals(ISymbolKey x, ISymbolKey y) => x.Name == y.Name && x.Origin == y.Origin;
 
         int IEqualityComparer<ISymbolKey>.GetHashCode(ISymbolKey obj) => base.GetHashCode();
     }
@@ -77,6 +77,11 @@ namespace TickTrader.BotTerminal
         public static StorageSymbolKey ToKey(this ISymbolKey info)
         {
             return new StorageSymbolKey(info.Name, info.Origin);
+        }
+
+        public static ISetupSymbolInfo ToKey(this ISymbolData data)
+        {
+            return new StorageSymbolKey(data.Name, data.Origin);
         }
     }
 

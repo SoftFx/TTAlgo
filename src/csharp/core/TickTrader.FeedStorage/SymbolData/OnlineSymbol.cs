@@ -23,7 +23,6 @@ namespace TickTrader.FeedStorage
         }
 
         public override bool IsCustom => false;
-        public override string Key => "online->" + Name;
         public override string Description => _symbolInfo.Description;
         public override string Security => _symbolInfo.Security;
         public override ISymbolInfo InfoEntity => _symbolInfo;
@@ -119,11 +118,6 @@ namespace TickTrader.FeedStorage
         public override Task Remove()
         {
             throw new InvalidOperationException("Cannot remove online symbol!");
-        }
-
-        public override SymbolToken ToSymbolToken()
-        {
-            return new SymbolToken(Name, SymbolConfig.Types.SymbolOrigin.Online);
         }
     }
 }

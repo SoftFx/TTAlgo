@@ -97,7 +97,7 @@ namespace TickTrader.BotTerminal
             var predefinedSymbolTokens = new VarDictionary<SymbolKey, ISetupSymbolInfo>();
             predefinedSymbolTokens.Add(_mainSymbolToken.GetKey(), _mainSymbolToken);
 
-            var existingSymbolTokens = _catalog.AllSymbols.Select(s => (ISetupSymbolInfo)s.ToSymbolToken()).ToList();
+            var existingSymbolTokens = _catalog.AllSymbols.Select(s => s.ToKey()).ToList();
             existingSymbolTokens.AddRange(predefinedSymbolTokens.Values);
 
            // _symbolTokens = VarCollection.Combine(predefinedSymbolTokens, existingSymbolTokens);
@@ -152,7 +152,7 @@ namespace TickTrader.BotTerminal
                     _mainSymbolToken.Id = a.New.Name;
 
                     if (_openedPluginSetup != null)
-                        _openedPluginSetup.Setup.MainSymbol = a.New.StorageKey.ToKey();
+                        _openedPluginSetup.Setup.MainSymbol = a.New.Key.ToKey();
 
                     MainSymbolShadowSetup.SelectedSymbolName.Value = a.New.Name;
                 }
@@ -298,7 +298,7 @@ namespace TickTrader.BotTerminal
                     ? new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.PluginInfo, this, this.GetSetupContextInfo())
                     : new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.PluginInfo, this, this.GetSetupContextInfo(), PluginConfig);
                 //_localWnd.OpenMdiWindow(wndKey, _openedPluginSetup);
-                _openedPluginSetup.Setup.MainSymbol = MainSymbolSetup.SelectedSymbol.Value.StorageKey.ToKey();
+                _openedPluginSetup.Setup.MainSymbol = MainSymbolSetup.SelectedSymbol.Value.Key.ToKey();
                 _openedPluginSetup.Setup.SelectedTimeFrame = MainSymbolSetup.SelectedTimeframe.Value.ToApi();
                 _openedPluginSetup.Closed += PluginSetupClosed;
                 _openedPluginSetup.Setup.ConfigLoaded += Setup_ConfigLoaded;

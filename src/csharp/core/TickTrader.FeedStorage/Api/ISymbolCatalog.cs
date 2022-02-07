@@ -69,19 +69,14 @@ namespace TickTrader.FeedStorage.Api
         string Name { get; }
 
         SymbolConfig.Types.SymbolOrigin Origin { get; }
-
-        string Id { get; }
     }
 
 
-    public interface ISymbolData
+    public interface ISymbolData : ISymbolKey
     {
-        ISymbolKey StorageKey { get; }
-
-        string Name { get; }
+        ISymbolKey Key { get; }
 
         string Description { get; }
-        string Key { get; }
         string Security { get; }
         bool IsCustom { get; }
         ISymbolInfo InfoEntity { get; }
@@ -89,8 +84,6 @@ namespace TickTrader.FeedStorage.Api
         bool IsDataAvailable { get; }
 
         IVarSet<SymbolStorageSeries> SeriesCollection { get; }
-
-        SymbolToken ToSymbolToken();
 
 
         Task<(DateTime?, DateTime?)> GetAvailableRange(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide? priceType = null);

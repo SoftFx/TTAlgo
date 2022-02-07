@@ -31,7 +31,6 @@ namespace TickTrader.FeedStorage
 
         public string Name { get; }
         public abstract string Description { get; }
-        public abstract string Key { get; }
         public abstract string Security { get; }
         public abstract bool IsCustom { get; }
         public abstract ISymbolInfo InfoEntity { get; }
@@ -42,9 +41,7 @@ namespace TickTrader.FeedStorage
 
         public IVarSet<SymbolStorageSeries> SeriesCollection { get; }
 
-        public ISymbolKey StorageKey => this;
-
-        string ISymbolKey.Id => Name;
+        public ISymbolKey Key => this;
 
         public abstract Task<(DateTime?, DateTime?)> GetAvailableRange(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide? priceType = null);
 
@@ -53,7 +50,6 @@ namespace TickTrader.FeedStorage
 
         public abstract Task Remove();
 
-        public abstract SymbolToken ToSymbolToken();
 
         public BarCrossDomainReader GetCrossDomainBarReader(Feed.Types.Timeframe frame, Feed.Types.MarketSide priceType, DateTime from, DateTime to)
         {

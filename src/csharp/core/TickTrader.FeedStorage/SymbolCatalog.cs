@@ -66,7 +66,7 @@ namespace TickTrader.FeedStorage
             //var token = symbol.ToSymbolToken();
             //var key = new SymbolKey(token.Name, token.Origin);
 
-            _allSymbols.Add(symbol.StorageKey, symbol);
+            _allSymbols.Add(symbol.Key, symbol);
         }
 
         public async Task<ISymbolCatalog> ConnectClient(IOnlineStorageSettings settings)

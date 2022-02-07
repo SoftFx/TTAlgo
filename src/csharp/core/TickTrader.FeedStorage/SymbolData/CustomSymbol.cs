@@ -21,7 +21,6 @@ namespace TickTrader.FeedStorage
         }
 
         public CustomSymbol Entity => _symbolInfo;
-        public override string Key => "custom->";
         public override bool IsCustom => true;
         public override string Description => _symbolInfo.Description;
         public override string Security => "";
@@ -44,11 +43,6 @@ namespace TickTrader.FeedStorage
         public override Task Remove()
         {
             return _storage.Remove(_symbolInfo.Name);
-        }
-
-        public override SymbolToken ToSymbolToken()
-        {
-            return new SymbolToken(Name, SymbolConfig.Types.SymbolOrigin.Custom);
         }
     }
 }

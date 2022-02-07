@@ -75,11 +75,8 @@ namespace TickTrader.FeedStorage.Api
         [ProtoMember(27)]
         public string MinCommissionCurr { get; set; }
 
-        string ISymbolData.Name => throw new NotImplementedException();
-
         string ISymbolData.Description => throw new NotImplementedException();
 
-        string ISymbolData.Key => throw new NotImplementedException();
 
         string ISymbolData.Security => throw new NotImplementedException();
 
@@ -93,7 +90,9 @@ namespace TickTrader.FeedStorage.Api
 
         IVarSet<SymbolStorageSeries> ISymbolData.SeriesCollection => throw new NotImplementedException();
 
-        public ISymbolKey StorageKey => throw new NotImplementedException();
+        public ISymbolKey Key => throw new NotImplementedException();
+
+        public SymbolConfig.Types.SymbolOrigin Origin => throw new NotImplementedException();
 
         public Algo.Domain.SymbolInfo ToAlgo()
         {
@@ -232,7 +231,12 @@ namespace TickTrader.FeedStorage.Api
             throw new NotImplementedException();
         }
 
-        SymbolToken ISymbolData.ToSymbolToken()
+        public bool Equals(ISymbolKey x, ISymbolKey y)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int GetHashCode(ISymbolKey obj)
         {
             throw new NotImplementedException();
         }
