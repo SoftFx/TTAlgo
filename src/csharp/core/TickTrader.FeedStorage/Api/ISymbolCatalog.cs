@@ -11,9 +11,9 @@ namespace TickTrader.FeedStorage.Api
 {
     public interface ISymbolCatalog
     {
-        ISymbolData this[ISetupSymbolInfo name] { get; }
+        ISymbolData this[ISymbolKey name] { get; }
 
-        List<ISymbolData> AllSymbols { get; }
+        IReadOnlyList<ISymbolData> AllSymbols { get; }
 
 
         ISymbolCollection<ISymbolData> OnlineCollection { get; }
@@ -21,9 +21,11 @@ namespace TickTrader.FeedStorage.Api
         ISymbolCollection<ISymbolData> CustomCollection { get; }
 
 
-        Task<ISymbolCatalog> Connect(IOnlineStorageSettings settings);
+        Task<ISymbolCatalog> ConnectClient(IOnlineStorageSettings settings);
 
-        Task CloseCatalog();
+        Task<ISymbolCatalog> OpenCustomStorage(ICustomStorageSettings settings);
+
+        Task CloseCustomStorage();
 
 
         Task<ActorChannel<SliceInfo>> DownloadBarSeriesToStorage(string symbol, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide, DateTime from, DateTime to);
@@ -56,10 +58,22 @@ namespace TickTrader.FeedStorage.Api
         event Action<T, T> SymbolUpdated;
     }
 
+    public interface ISymbolKey : IEqualityComparer<ISymbolKey>
+    {
+        string Name { get; }
+
+        SymbolConfig.Types.SymbolOrigin Origin { get; }
+
+        string Id { get; }
+    }
+
 
     public interface ISymbolData
     {
+        ISymbolKey StorageKey { get; }
+
         string Name { get; }
+
         string Description { get; }
         string Key { get; }
         string Security { get; }

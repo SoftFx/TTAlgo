@@ -105,7 +105,11 @@ namespace TickTrader.FeedStorage
 
             //public Task Refresh() => _ref.Call(r => r.Refresh());
 
-            public Task Stop() => _ref.Call(a => a.Stop());
+            public Task Stop()
+            {
+                IsStarted = false;
+                return _ref.Call(a => a.Stop());
+            }
 
             public Task Put(FeedCacheKey key, DateTime from, DateTime to, QuoteInfo[] values)
                 => Put(key.Symbol, key.TimeFrame, from, to, values);
@@ -184,7 +188,7 @@ namespace TickTrader.FeedStorage
             if (Database != null)
                 throw new InvalidOperationException("Already started!");
 
-            Database = SeriesDatabase.Create(BinaryStorageManagerFactory.Create(folder));
+            Database = SeriesDatabase.Create(StorageFactory.BuildBinaryStorage(folder));
 
             Refresh();
         }

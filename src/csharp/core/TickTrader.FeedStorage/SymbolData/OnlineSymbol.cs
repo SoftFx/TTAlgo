@@ -30,6 +30,8 @@ namespace TickTrader.FeedStorage
         public override CustomSymbol StorageEntity => CustomSymbol.FromAlgo(_symbolInfo);
         public override bool IsDataAvailable => _provider.FeedProxy.IsAvailable;
 
+        public override SymbolConfig.Types.SymbolOrigin Origin => SymbolConfig.Types.SymbolOrigin.Online;
+
         public override Task<(DateTime?, DateTime?)> GetAvailableRange(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide? priceType = null)
         {
             return _provider.FeedProxy.GetAvailableSymbolRange(_symbolInfo.Name, timeFrame, priceType ?? Feed.Types.MarketSide.Bid);

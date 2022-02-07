@@ -2,6 +2,7 @@
 using Google.Protobuf.WellKnownTypes;
 using Machinarium.Qnil;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -10,11 +11,12 @@ using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
+using TickTrader.FeedStorage.Api;
 using TickTrader.SeriesStorage;
 
-namespace TickTrader.FeedStorage.Api
+namespace TickTrader.FeedStorage
 {
-    public abstract class SymbolData : ISymbolData
+    public abstract class SymbolData : ISymbolData, ISymbolKey
     {
         private IVarSet<FeedCacheKey> _keys;
         private FeedCache.Handler _storage;
@@ -36,7 +38,13 @@ namespace TickTrader.FeedStorage.Api
         public abstract CustomSymbol StorageEntity { get; }
         public abstract bool IsDataAvailable { get; }
 
+        public abstract SymbolConfig.Types.SymbolOrigin Origin { get; }
+
         public IVarSet<SymbolStorageSeries> SeriesCollection { get; }
+
+        public ISymbolKey StorageKey => this;
+
+        string ISymbolKey.Id => Name;
 
         public abstract Task<(DateTime?, DateTime?)> GetAvailableRange(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide? priceType = null);
 
@@ -85,47 +93,15 @@ namespace TickTrader.FeedStorage.Api
             _keys.Dispose();
             SeriesCollection.Dispose();
         }
-    }
 
-    public class CustomSymbolData : SymbolData
-    {
-        private CustomSymbol _symbolInfo;
-        private CustomFeedStorage.Handler _storage;
-
-        public CustomSymbolData(CustomSymbol symbol, CustomFeedStorage.Handler storage)
-            : base(symbol.Name, storage)
+        bool IEqualityComparer<ISymbolKey>.Equals(ISymbolKey x, ISymbolKey y)
         {
-            _symbolInfo = symbol;
-            _storage = storage;
+            return x.Name == y.Name && x.Origin == x.Origin;
         }
 
-        public CustomSymbol Entity => _symbolInfo;
-        public override string Key => "custom->";
-        public override bool IsCustom => true;
-        public override string Description => _symbolInfo.Description;
-        public override string Security => "";
-        public override SymbolInfo InfoEntity => _symbolInfo.ToAlgo();
-        public override CustomSymbol StorageEntity => _symbolInfo;
-        public override bool IsDataAvailable => true;
-
-        public override Task<(DateTime?, DateTime?)> GetAvailableRange(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide? priceType = null)
+        int IEqualityComparer<ISymbolKey>.GetHashCode(ISymbolKey obj)
         {
-            return _storage.GetRange(new FeedCacheKey(_symbolInfo.Name, timeFrame, priceType));
-        }
-
-        public override Task DownloadToStorage(IActionObserver observer, bool showStats, CancellationToken cancelToken, Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide priceType, DateTime from, DateTime to)
-        {
-            return Task.CompletedTask;
-        }
-
-        public override Task Remove()
-        {
-            return _storage.Remove(_symbolInfo.Name);
-        }
-
-        public override SymbolToken ToSymbolToken()
-        {
-            return new SymbolToken(Name, SymbolConfig.Types.SymbolOrigin.Custom);
+            return HashCode.GetComposite(Name, Origin);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using ActorSharp;
+using Machinarium.Qnil;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -12,31 +13,33 @@ namespace TickTrader.FeedStorage
 {
     internal sealed class SymbolCatalog : ISymbolCatalog
     {
-        private readonly ConcurrentDictionary<ISetupSymbolInfo, ISymbolData> _allSymbols;
+        private readonly VarDictionary<ISymbolKey, ISymbolData> _allSymbols;
         private readonly CustomFeedStorage.Handler _customStorage;
 
         //private readonly FeedProvider _feedProvider;
         private FeedProvider.Handler _feedHandler;
         private readonly IClientFeedProvider _client;
-        private readonly ICustomStorageSettings _customStorageSettings;
 
 
         public ISymbolCollection<ISymbolData> OnlineCollection => _feedHandler?.Cache.Collection;
 
         public ISymbolCollection<ISymbolData> CustomCollection => _customStorage?.Collection;
 
-        public ISymbolData this[ISetupSymbolInfo key] => _allSymbols.TryGetValue(key, out var value) ? value : null;
+        public ISymbolData this[ISymbolKey key] => _allSymbols.TryGetValue(key, out var value) ? value : null;
 
-        List<ISymbolData> ISymbolCatalog.AllSymbols => _allSymbols.Values.ToList();
+        IReadOnlyList<ISymbolData> ISymbolCatalog.AllSymbols => _allSymbols.OrderBy((k, v) => k).Snapshot;
 
 
-        public SymbolCatalog(IClientFeedProvider client, ICustomStorageSettings settings)
+        public SymbolCatalog(IClientFeedProvider client)
         {
             _client = client;
-            _customStorageSettings = settings;
+
+            var a = new VarDictionary<ISetupSymbolInfo, ISymbolData>();
+
+            var b = a.OrderBy((k, v) => v.Name).Snapshot;
 
             //_feedProvider = new FeedProvider();
-            _allSymbols = new ConcurrentDictionary<ISetupSymbolInfo, ISymbolData>();
+            _allSymbols = new VarDictionary<ISymbolKey, ISymbolData>();
             _customStorage = new CustomFeedStorage.Handler(Actor.SpawnLocal<CustomFeedStorage>());
 
 
@@ -64,22 +67,14 @@ namespace TickTrader.FeedStorage
 
         private void SymbolAddedHandler(ISymbolData symbol)
         {
-            var token = symbol.ToSymbolToken();
-            var key = new SymbolKey(token.Name, token.Origin);
+            //var token = symbol.ToSymbolToken();
+            //var key = new SymbolKey(token.Name, token.Origin);
 
-            _allSymbols.TryAdd(key, symbol);
+            _allSymbols.Add(symbol.StorageKey, symbol);
         }
 
-        public async Task<ISymbolCatalog> Connect(IOnlineStorageSettings settings)
+        public async Task<ISymbolCatalog> ConnectClient(IOnlineStorageSettings settings)
         {
-            if (!_customStorage.IsStarted)
-            {
-                await _customStorage.Start(_customStorageSettings.FolderPath);
-
-                CustomCollection.Symbols.ForEach(SymbolAddedHandler);
-                CustomCollection.SymbolAdded += SymbolAddedHandler;
-            }
-
             //await _customStorage.SyncData();
             // if storage don't run
 
@@ -95,6 +90,20 @@ namespace TickTrader.FeedStorage
 
             return this;
         }
+
+        public async Task<ISymbolCatalog> OpenCustomStorage(ICustomStorageSettings settings)
+        {
+            if (!_customStorage.IsStarted)
+            {
+                await _customStorage.Start(settings.FolderPath);
+
+                CustomCollection.Symbols.ForEach(SymbolAddedHandler);
+                CustomCollection.SymbolAdded += SymbolAddedHandler;
+            }
+
+            return this;
+        }
+
 
         //private void InitNewCollectionToAllSymbols(List<ISymbolData> symbols)
         //{
@@ -147,7 +156,7 @@ namespace TickTrader.FeedStorage
         //    throw new Exception("Unsupported symbol origin: " + info.Origin);
         //}
 
-        public async Task CloseCatalog()
+        public async Task CloseCustomStorage()
         {
             await _customStorage.Stop();
         }

@@ -65,15 +65,10 @@ namespace TickTrader.BotTerminal
 
             Trade = new TradeInfoViewModel(clientModel, cManager, storage.ProfileManager);
 
-            var customStorageSettings = new CustomStorageSettings
-            {
-                FolderPath = EnvService.Instance.CustomFeedCacheFolder
-            };
-
             //setting for initialization binary storage
-            BinaryStorageManagerFactory.Init((folder, readOnly) => new LmdbManager(folder, readOnly));
+            StorageFactory.InitBinaryStorage((folder, readOnly) => new LmdbManager(folder, readOnly));
 
-            _symbolsCatalog = StorageFactory.BuildCatalog(clientModel, customStorageSettings);
+            _symbolsCatalog = StorageFactory.BuildCatalog(clientModel);
 
             TradeHistory = new TradeHistoryViewModel(clientModel, cManager, storage.ProfileManager);
 
@@ -156,6 +151,11 @@ namespace TickTrader.BotTerminal
             var login = cManager.Creds.Login;
             var server = cManager.Creds.Server.Address;
 
+            var customStorageSettings = new CustomStorageSettings
+            {
+                FolderPath = EnvService.Instance.CustomFeedCacheFolder
+            };
+
             var settings = new OnlineStorageSettings
             {
                 Login = login,
@@ -164,7 +164,8 @@ namespace TickTrader.BotTerminal
                 Options = FeedStorageFolderOptions.ServerHierarchy,
             };
 
-            await _symbolsCatalog.Connect(settings);
+            await _symbolsCatalog.OpenCustomStorage(customStorageSettings);
+            await _symbolsCatalog.ConnectClient(settings);
             await ProfileManager.LoadConnectionProfile(server, login, token);
         }
 
@@ -233,21 +234,6 @@ namespace TickTrader.BotTerminal
 
             return Task.FromResult(isConfirmed);
         }
-
-        //public override void CanClose(Action<bool> callback)
-        //{
-        //    bool hasRunningBots = algoEnv.LocalAgent.HasRunningBots;
-
-        //    var exit = new ConfirmationDialogViewModel(DialogButton.YesNo, hasRunningBots ? DialogMode.Warning : DialogMode.Question, DialogMessages.ExitTitle, DialogMessages.ExitMessage, algoEnv.LocalAgent.HasRunningBots ? DialogMessages.BotsWorkError : null);
-        //    wndManager.ShowDialog(exit, this);
-
-        //    var isConfirmed = exit.DialogResult == DialogResult.OK;
-
-        //    if (isConfirmed)
-        //        StopTerminal(true);
-
-        //    callback(isConfirmed);
-        //}
 
         private async void StopTerminal(bool stopAlgoServer)
         {
@@ -341,7 +327,7 @@ namespace TickTrader.BotTerminal
             try
             {
                 await cManager.Disconnect();
-                await _symbolsCatalog.CloseCatalog();
+                await _symbolsCatalog.CloseCustomStorage();
                 await _botAgentManager.ShutdownDisconnect();
                 await storage.Stop();
             }

@@ -93,6 +93,8 @@ namespace TickTrader.FeedStorage.Api
 
         IVarSet<SymbolStorageSeries> ISymbolData.SeriesCollection => throw new NotImplementedException();
 
+        public ISymbolKey StorageKey => throw new NotImplementedException();
+
         public Algo.Domain.SymbolInfo ToAlgo()
         {
             return new Algo.Domain.SymbolInfo

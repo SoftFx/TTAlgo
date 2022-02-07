@@ -12,6 +12,7 @@ using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.ServerControl;
+using TickTrader.FeedStorage.Api;
 using AlgoApi = TickTrader.Algo.Server.PublicAPI;
 
 namespace TickTrader.BotTerminal
@@ -22,6 +23,7 @@ namespace TickTrader.BotTerminal
         Edit,
     }
 
+
     public sealed class PluginConfigViewModel : PropertyChangedBase
     {
         private readonly VarContext _var = new VarContext();
@@ -31,7 +33,7 @@ namespace TickTrader.BotTerminal
         private List<InputSetupViewModel> _barBasedInputs;
         private List<OutputSetupViewModel> _outputs;
         private AlgoApi.Feed.Types.Timeframe _selectedTimeFrame;
-        private ISetupSymbolInfo _mainSymbol;
+        private StorageSymbolKey _mainSymbol;
         private MappingInfo _selectedMapping;
         private string _instanceId;
         private IPluginIdProvider _idProvider;
@@ -87,9 +89,9 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public IReadOnlyList<SymbolKey> AvailableSymbols { get; private set; }
+        public IReadOnlyList<StorageSymbolKey> AvailableSymbols { get; private set; }
 
-        public ISetupSymbolInfo MainSymbol
+        public StorageSymbolKey MainSymbol
         {
             get { return _mainSymbol; }
             set
@@ -282,7 +284,7 @@ namespace TickTrader.BotTerminal
         {
             SelectedModel.Value = AlgoApi.Feed.Types.Timeframe.Ticks;
             SelectedTimeFrame = SetupMetadata.Context.DefaultTimeFrame.ToApi();
-            MainSymbol = AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol.ToKey());
+            MainSymbol = (StorageSymbolKey)AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol.ToKey());
             SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(SetupMetadata.Context.DefaultMapping);
             InstanceId = _idProvider.GeneratePluginId(Descriptor);
 
