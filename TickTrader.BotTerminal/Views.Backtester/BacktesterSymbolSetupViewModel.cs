@@ -32,7 +32,7 @@ namespace TickTrader.BotTerminal
 
             SetupType = type;
 
-            AvailableSymbols = new ObservableCollection<SymbolData>(catalog.AllSymbols);
+            AvailableSymbols = new ObservableCollection<SymbolData>(catalog.AllSymbols.Cast<SymbolData>());
             AvailableSymbols.CollectionChanged += Symbols_CollectionChanged;
 
             if (type == SymbolSetupType.Main)

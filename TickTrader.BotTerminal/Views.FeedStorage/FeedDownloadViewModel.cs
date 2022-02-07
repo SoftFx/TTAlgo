@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
@@ -26,7 +27,7 @@ namespace TickTrader.BotTerminal
             _client = clientModel;
 
             //Symbols = clientModel.Symbols.Select((k, v) => (SymbolModel)v).OrderBy((k, v) => k).Chain().AsObservable();
-            Symbols = new ObservableCollection<SymbolData>(catalog.AllSymbols);
+            Symbols = new ObservableCollection<SymbolData>(catalog.AllSymbols.Cast<SymbolData>());
 
             DownloadObserver = new ActionViewModel();
             DateRange = new DateRangeSelectionViewModel();

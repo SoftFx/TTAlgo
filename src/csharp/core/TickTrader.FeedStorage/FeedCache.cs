@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
+using TickTrader.FeedStorage.Api;
 using TickTrader.SeriesStorage;
 
 namespace TickTrader.FeedStorage
@@ -42,6 +43,12 @@ namespace TickTrader.FeedStorage
             private string _baseFolder;
             private ActorCallback<FeedCacheKey> addCallback;
             private ActorCallback<FeedCacheKey> removeCallback;
+
+
+            internal SymbolCollection<ISymbolData> Collection { get; private set; }
+
+            internal bool IsStarted { get; private set; }
+
 
             public Handler(Ref<FeedCache> actorRef)
             {
@@ -82,14 +89,18 @@ namespace TickTrader.FeedStorage
 
             public IVarSet<FeedCacheKey> Keys => _series?.Keys;
 
-            public string DataBaseFolder => _baseFolder;
+            //public string DataBaseFolder => _baseFolder;
 
             public ActorCallback<FeedCacheKey> RemoveCallback { get => removeCallback; set => removeCallback = value; }
 
-            public Task Start(string folder)
+            public async Task Start(string folder)
             {
+                IsStarted = true;
+                Collection = new SymbolCollection<ISymbolData>(folder);
                 _baseFolder = folder;
-                return _ref.Call(a => a.Start(folder));
+
+                await _ref.Call(a => a.Start(folder));
+                await SyncData();
             }
 
             //public Task Refresh() => _ref.Call(r => r.Refresh());

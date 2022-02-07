@@ -2,6 +2,7 @@
 using Google.Protobuf.WellKnownTypes;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
@@ -13,28 +14,29 @@ namespace TickTrader.FeedStorage
     {
         private const int SliceMaxSize = 4000;
 
-        private readonly string _dataFolder;
+        private string _dataFolder;
 
         private FeedCache.Handler _diskCache = new FeedCache.Handler(SpawnLocal<FeedCache>());
-        
+
         private FeedCache.Handler Cache => _diskCache;
 
         internal IClientFeedProvider FeedProxy { get; private set; }
-        private FeedStorageFolderOptions _folderOptions;
+
+        //internal SymbolCollection<ISymbolData> Collection { get; private set; }
+
+        //private FeedStorageFolderOptions _folderOptions;
         //private IAlgoLogger logger;
 
 
-        public FeedProvider(/*HistoryProviderSettings settings*/)
-        {
-            //_dataFolder = settings.FolderPath;
-            //_folderOptions = settings.Options;
-        }
+        //public FeedProvider(IClientFeedProvider feed, IOnlineStorageSettings settings)
+        //{
 
-        internal async Task Start(IClientFeedProvider feed, IOnlineStorageSettings settings)
+        //}
+
+        internal void Init(IClientFeedProvider feed, IOnlineStorageSettings settings)
         {
             var dataFolder = settings.FolderPath;
             var folderOptions = settings.Options;
-            FeedProxy = feed;
 
             var onlineFolder = dataFolder;
             if (folderOptions == FeedStorageFolderOptions.ServerHierarchy || folderOptions == FeedStorageFolderOptions.ServerClientHierarchy)
@@ -42,8 +44,12 @@ namespace TickTrader.FeedStorage
             if (folderOptions == FeedStorageFolderOptions.ServerClientHierarchy)
                 onlineFolder = Path.Combine(onlineFolder, PathHelper.Escape(settings.Login));
 
+            _dataFolder = onlineFolder;
+            FeedProxy = feed;
+            //Collection = new SymbolCollection<ISymbolData>(onlineFolder);
+
             //await _diskCache.SyncData();
-            await _diskCache.Start(onlineFolder);
+            //return _diskCache.Start(onlineFolder);
         }
 
         private async Task Stop()
@@ -66,17 +72,27 @@ namespace TickTrader.FeedStorage
 
             public FeedCache.Handler Cache { get; private set; }
 
+            //internal SymbolCollection<ISymbolData> Collection { get; private set; }
 
 
-            public Handler() : base(SpawnLocal<FeedProvider>()) { }
+            public Handler(IClientFeedProvider feed, IOnlineStorageSettings settings) : base(SpawnLocal<FeedProvider>())
+            {
+                Actor.Send(a => a.Init(feed, settings));
+            }
 
 
             public async Task Init()
             {
                 Cache = await Actor.Call(a => a._diskCache);
                 FeedProxy = await Actor.Call(a => a.FeedProxy);
+                //Collection = await Actor.Call(a => a.Collection);
 
-                await Cache.SyncData();
+                var folder = await Actor.Call(a => a._dataFolder);
+
+                await Cache.Start(folder);
+                //await Cache.SyncData();
+
+                Cache.Collection.Initialize(FeedProxy.Symbols.Select(s => new OnlineSymbol(s, this)));
             }
 
 

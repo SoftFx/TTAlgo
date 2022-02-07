@@ -324,7 +324,7 @@ namespace TickTrader.BotTerminal
 
         private void Setup_ConfigLoaded(PluginConfigViewModel config)
         {
-            MainSymbolSetup.SelectedSymbol.Value = _catalog[config.MainSymbol.Name]; //change to config.MainSymbol
+            MainSymbolSetup.SelectedSymbol.Value = (SymbolData)_catalog[config.MainSymbol]; //change to config.MainSymbol
             MainSymbolSetup.SelectedSymbolName.Value = MainSymbolSetup.SelectedSymbol.Value.Name;
             MainSymbolSetup.SelectedTimeframe.Value = config.SelectedTimeFrame.ToServer();
         }

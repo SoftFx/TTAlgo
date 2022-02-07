@@ -377,8 +377,6 @@ namespace TickTrader.Algo.Account
                     a._deinitListeners.Add(_deinitListener);
                     return a.State;
                 });
-
-                //FeedProxy = await Actor.Call(a => a.FeedProxy);
             }
 
             public Task<ConnectionErrorInfo> Connect(string userName, string password, string address, CancellationToken cToken)
@@ -401,13 +399,17 @@ namespace TickTrader.Algo.Account
                 });
             }
 
-            private Task FireInitEvent()
+            private async Task FireInitEvent()
             {
-                return Initalizing.InvokeAsync(this, CancellationToken.None);
+                FeedProxy = await Actor.Call(a => a.FeedProxy);
+
+                await Initalizing.InvokeAsync(this, CancellationToken.None);
             }
 
             private Task FireDeinitEvent()
             {
+                FeedProxy = null;
+
                 return Deinitalizing.InvokeAsync(this, CancellationToken.None);
             }
 

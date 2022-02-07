@@ -11,6 +11,8 @@ using System.Windows.Threading;
 using TickTrader.Algo.Account;
 using TickTrader.FeedStorage;
 using TickTrader.FeedStorage.Api;
+using TickTrader.SeriesStorage;
+using TickTrader.SeriesStorage.Lmdb;
 
 namespace TickTrader.BotTerminal
 {
@@ -28,7 +30,7 @@ namespace TickTrader.BotTerminal
         private bool isClosed;
         private AlgoEnvironment algoEnv;
         private SymbolManagerViewModel _smbManager;
-        private ISymbolCatalog _symbolsData;
+        private ISymbolCatalog _symbolsCatalog;
         //private CustomFeedStorage.Handler _userSymbols;
         private BotAgentManager _botAgentManager;
 
@@ -68,7 +70,10 @@ namespace TickTrader.BotTerminal
                 FolderPath = EnvService.Instance.CustomFeedCacheFolder
             };
 
-            _symbolsData = StorageFactory.BuildCatalog(clientModel, customStorageSettings);
+            //setting for initialization binary storage
+            BinaryStorageManagerFactory.Init((folder, readOnly) => new LmdbManager(folder, readOnly));
+
+            _symbolsCatalog = StorageFactory.BuildCatalog(clientModel, customStorageSettings);
 
             TradeHistory = new TradeHistoryViewModel(clientModel, cManager, storage.ProfileManager);
 
@@ -148,7 +153,19 @@ namespace TickTrader.BotTerminal
 
         private async Task LoadConnectionProfile(object sender, CancellationToken token)
         {
-            await ProfileManager.LoadConnectionProfile(cManager.Creds.Server.Address, cManager.Creds.Login, token);
+            var login = cManager.Creds.Login;
+            var server = cManager.Creds.Server.Address;
+
+            var settings = new OnlineStorageSettings
+            {
+                Login = login,
+                Server = server,
+                FolderPath = EnvService.Instance.FeedHistoryCacheFolder,
+                Options = FeedStorageFolderOptions.ServerHierarchy,
+            };
+
+            await _symbolsCatalog.Connect(settings);
+            await ProfileManager.LoadConnectionProfile(server, login, token);
         }
 
         public bool CanConnect { get; private set; }
@@ -324,7 +341,7 @@ namespace TickTrader.BotTerminal
             try
             {
                 await cManager.Disconnect();
-                await _symbolsData.Close();
+                await _symbolsCatalog.CloseCatalog();
                 await _botAgentManager.ShutdownDisconnect();
                 await storage.Stop();
             }
@@ -419,7 +436,7 @@ namespace TickTrader.BotTerminal
         public void OpenStorageManager()
         {
             if (_smbManager == null)
-                _smbManager = new SymbolManagerViewModel(clientModel, _symbolsData, ToolWndManager);
+                _smbManager = new SymbolManagerViewModel(clientModel, _symbolsCatalog, ToolWndManager);
 
             wndManager.ShowDialog(_smbManager, this);
         }
@@ -428,7 +445,7 @@ namespace TickTrader.BotTerminal
         {
             if (Backtester == null)
             {
-                Backtester = new BacktesterViewModel(algoEnv, clientModel, _symbolsData, this, storage.ProfileManager);
+                Backtester = new BacktesterViewModel(algoEnv, clientModel, _symbolsCatalog, this, storage.ProfileManager);
                 Backtester.Deactivated += Backtester_Deactivated;
             }
 

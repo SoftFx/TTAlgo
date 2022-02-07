@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\lib\TickTrader.SeriesStorage.Lmdb\TickTrader.SeriesStorage.Lmdb.csproj" />
     <ProjectReference Include="..\..\lib\TickTrader.SeriesStorage\TickTrader.SeriesStorage.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Domain\TickTrader.Algo.Domain.csproj" />

@@ -1,6 +1,6 @@
 ﻿using ActorSharp;
-using Machinarium.Qnil;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,21 +12,22 @@ namespace TickTrader.FeedStorage
 {
     internal sealed class SymbolCatalog : ISymbolCatalog
     {
+        private readonly ConcurrentDictionary<ISetupSymbolInfo, ISymbolData> _allSymbols;
         private readonly CustomFeedStorage.Handler _customStorage;
-        private readonly FeedCache.Handler _onlineSymbolsStorag;
-        private readonly FeedProvider _feedProvider;
+
+        //private readonly FeedProvider _feedProvider;
         private FeedProvider.Handler _feedHandler;
         private readonly IClientFeedProvider _client;
         private readonly ICustomStorageSettings _customStorageSettings;
 
 
-        public ISymbolCollection<SymbolData> OnlineCollection => throw new NotImplementedException();
+        public ISymbolCollection<ISymbolData> OnlineCollection => _feedHandler?.Cache.Collection;
 
-        public ISymbolCollection<CustomSymbol> CustomCollection => throw new NotImplementedException();
+        public ISymbolCollection<ISymbolData> CustomCollection => _customStorage?.Collection;
 
-        public SymbolData this[string name] => throw new NotImplementedException();
+        public ISymbolData this[ISetupSymbolInfo key] => _allSymbols.TryGetValue(key, out var value) ? value : null;
 
-        List<SymbolData> ISymbolCatalog.AllSymbols => throw new NotImplementedException();
+        List<ISymbolData> ISymbolCatalog.AllSymbols => _allSymbols.Values.ToList();
 
 
         public SymbolCatalog(IClientFeedProvider client, ICustomStorageSettings settings)
@@ -34,13 +35,13 @@ namespace TickTrader.FeedStorage
             _client = client;
             _customStorageSettings = settings;
 
-            _feedProvider = new FeedProvider();
-
+            //_feedProvider = new FeedProvider();
+            _allSymbols = new ConcurrentDictionary<ISetupSymbolInfo, ISymbolData>();
             _customStorage = new CustomFeedStorage.Handler(Actor.SpawnLocal<CustomFeedStorage>());
 
 
-            CustomSymbols = _customStorage.Symbols.Select<SymbolKey, CustomSymbol, SymbolData>(
-                (k, s) => new CustomSymbolData(s, _customStorage));
+            //CustomSymbols = _customStorage.Symbols.Select<SymbolKey, CustomSymbol, SymbolData>(
+            //    (k, s) => new CustomSymbolData(s, _customStorage));
 
             //var sortedOnlineList = OnlineSymbols.OrderBy((k, v) => v.Name);
             //var sortedCustomList = CustomSymbols.OrderBy((k, v) => v.Name);
@@ -61,43 +62,68 @@ namespace TickTrader.FeedStorage
             //};
         }
 
+        private void SymbolAddedHandler(ISymbolData symbol)
+        {
+            var token = symbol.ToSymbolToken();
+            var key = new SymbolKey(token.Name, token.Origin);
+
+            _allSymbols.TryAdd(key, symbol);
+        }
+
         public async Task<ISymbolCatalog> Connect(IOnlineStorageSettings settings)
         {
-            await StartCustomStorage(_customStorageSettings);
-            await _customStorage.SyncData();
+            if (!_customStorage.IsStarted)
+            {
+                await _customStorage.Start(_customStorageSettings.FolderPath);
+
+                CustomCollection.Symbols.ForEach(SymbolAddedHandler);
+                CustomCollection.SymbolAdded += SymbolAddedHandler;
+            }
+
+            //await _customStorage.SyncData();
             // if storage don't run
 
-            await _feedProvider.Start(_client, settings);
-            _feedHandler = new FeedProvider.Handler();
+            //await _feedProvider.Start(_client, settings);
 
+            _feedHandler = new FeedProvider.Handler(_client, settings);
+
+            await _feedHandler.Init();
+
+            OnlineCollection.Symbols.ForEach(SymbolAddedHandler);
+            OnlineCollection.SymbolAdded += SymbolAddedHandler;
             //OnlineSymbols = _client.Symbols.Select(s => CreateSymbolData(s, _feedHandler));
 
             return this;
         }
 
-        private Task StartCustomStorage(ICustomStorageSettings settings)
-        {
-            return _customStorage.Start(settings.FolderPath);
-        }
+        //private void InitNewCollectionToAllSymbols(List<ISymbolData> symbols)
+        //{
+        //    symbols.ForEach(SymbolAddedHandler);
+        //}
 
-        public IVarSet<SymbolKey, SymbolData> AllSymbols { get; }
-        public IVarSet<SymbolKey, SymbolData> OnlineSymbols { get; private set; }
-        public IVarSet<SymbolKey, SymbolData> CustomSymbols { get; }
+        //private Task StartCustomStorage(ICustomStorageSettings settings)
+        //{
+        //    return 
+        //}
 
-        public IObservableList<SymbolData> ObservableSymbols { get; }
-        public IObservableList<SymbolData> ObservableOnlineSymbols { get; }
-        public IObservableList<SymbolData> ObservableCustomSymbols { get; }
+        //public IVarSet<SymbolKey, SymbolData> AllSymbols { get; }
+        //public IVarSet<SymbolKey, SymbolData> OnlineSymbols { get; private set; }
+        //public IVarSet<SymbolKey, SymbolData> CustomSymbols { get; }
+
+        //public IObservableList<SymbolData> ObservableSymbols { get; }
+        //public IObservableList<SymbolData> ObservableOnlineSymbols { get; }
+        //public IObservableList<SymbolData> ObservableCustomSymbols { get; }
 
 
-        public Task AddCustomSymbol(CustomSymbol customSymbol)
-        {
-            return _customStorage.Add(customSymbol);
-        }
+        //public Task AddCustomSymbol(CustomSymbol customSymbol)
+        //{
+        //    return _customStorage.Add(customSymbol);
+        //}
 
-        public Task Update(CustomSymbol customSymbol)
-        {
-            return _customStorage.Update(customSymbol);
-        }
+        //public Task Update(CustomSymbol customSymbol)
+        //{
+        //    return _customStorage.Update(customSymbol);
+        //}
 
         public Task<ActorChannel<SliceInfo>> DownloadBarSeriesToStorage(string symbol, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide, DateTime from, DateTime to)
         {
@@ -109,28 +135,28 @@ namespace TickTrader.FeedStorage
             return _feedHandler?.DownloadTickSeriesToStorage(symbol, timeframe, from, to);
         }
 
-        public SymbolData GetSymbol(ISetupSymbolInfo info)
-        {
-            var key = new SymbolKey(info.Name, info.Origin);
+        //public SymbolData GetSymbol(ISetupSymbolInfo info)
+        //{
+        //    var key = new SymbolKey(info.Name, info.Origin);
 
-            if (info.Origin == SymbolConfig.Types.SymbolOrigin.Online)
-                return OnlineSymbols.Snapshot[key];
-            else if (info.Origin == SymbolConfig.Types.SymbolOrigin.Custom)
-                return CustomSymbols.Snapshot[key];
+        //    //if (info.Origin == SymbolConfig.Types.SymbolOrigin.Online)
+        //    //    return OnlineSymbols.Snapshot[key];
+        //    //else if (info.Origin == SymbolConfig.Types.SymbolOrigin.Custom)
+        //    //    return CustomSymbols.Snapshot[key];
 
-            throw new Exception("Unsupported symbol origin: " + info.Origin);
-        }
+        //    throw new Exception("Unsupported symbol origin: " + info.Origin);
+        //}
 
-        public async Task Close()
+        public async Task CloseCatalog()
         {
             await _customStorage.Stop();
         }
 
-        private KeyValuePair<SymbolKey, SymbolData> CreateSymbolData(SymbolInfo smb, FeedProvider.Handler provider)
-        {
-            var key = new SymbolKey(smb.Name, SymbolConfig.Types.SymbolOrigin.Online);
-            var data = new OnlineSymbolData(smb, provider);
-            return new KeyValuePair<SymbolKey, SymbolData>(key, data);
-        }
+        //private KeyValuePair<SymbolKey, SymbolData> CreateSymbolData(SymbolInfo smb, FeedProvider.Handler provider)
+        //{
+        //    var key = new SymbolKey(smb.Name, SymbolConfig.Types.SymbolOrigin.Online);
+        //    var data = new OnlineSymbol(smb, provider);
+        //    return new KeyValuePair<SymbolKey, SymbolData>(key, data);
+        //}
     }
 }

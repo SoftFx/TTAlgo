@@ -27,7 +27,7 @@ namespace TickTrader.BotTerminal
         {
             _importers.Add(new CsvFeedImporter());
 
-            Symbols = new ObservableCollection<SymbolData>(catalog.AllSymbols); //add with custom
+            Symbols = new ObservableCollection<SymbolData>(catalog.AllSymbols.Cast<SymbolData>()); //add with custom
 
             DisplayName = "Import Series";
 
