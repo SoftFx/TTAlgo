@@ -4,7 +4,7 @@ using Machinarium.Qnil;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core.Setup;
+//using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage.Api;
 using TickTrader.SeriesStorage;
@@ -34,7 +34,7 @@ namespace TickTrader.FeedStorage
         public new class Handler : FeedCache.Handler
         {
             private Ref<CustomFeedStorage> _ref;
-            private VarDictionary<SymbolKey, CustomSymbol> _symbols = new VarDictionary<SymbolKey, CustomSymbol>();
+            private VarDictionary<ISymbolKey, CustomSymbol> _symbols = new VarDictionary<ISymbolKey, CustomSymbol>();
             private ActorCallback<EntityUpdateArgs<CustomSymbol>> _smbChangedCallback;
 
 
@@ -95,10 +95,10 @@ namespace TickTrader.FeedStorage
             public Task Remove(string symbol) => _ref.Call(a => a.Remove(symbol));
             public Task Update(CustomSymbol symbolCfg) => _ref.Call(a => a.Update(symbolCfg));
 
-            private SymbolKey GetKey(CustomSymbol smb)
-            {
-                return new SymbolKey(smb.Name, SymbolConfig.Types.SymbolOrigin.Custom);
-            }
+            //private SymbolKey GetKey(CustomSymbol smb)
+            //{
+            //    return new SymbolKey(smb.Name, SymbolConfig.Types.SymbolOrigin.Custom);
+            //}
         }
 
         protected override void Start(string dbFolder)
