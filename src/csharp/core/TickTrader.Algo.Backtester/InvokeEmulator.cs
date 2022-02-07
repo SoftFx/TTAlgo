@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Calculator;
-using TickTrader.Algo.Calculator.AlgoMarket;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Domain;
@@ -52,7 +50,7 @@ namespace TickTrader.Algo.Backtester
         public ScheduleEmulator Scheduler { get; } = new ScheduleEmulator();
         public EmulatorStates State { get; private set; }
 
-        public event Action<SymbolMarketNode> RateUpdated;
+        public event Action<IRateInfo> RateUpdated;
         public event Action<EmulatorStates> StateUpdated;
 
         #region InvokeStartegy implementation
@@ -60,6 +58,7 @@ namespace TickTrader.Algo.Backtester
         protected override void OnInit()
         {
             _feedQueue = new FeedQueue(FStartegy);
+            MarketData.StartCalculators();
         }
 
         public override void Abort()
@@ -476,8 +475,8 @@ namespace TickTrader.Algo.Backtester
 
             DelayExecution();
 
-            //var bufferUpdate = OnFeedUpdate(rate, out var node);
-            RateUpdated?.Invoke(/*node*/null);
+            var bufferUpdate = OnFeedUpdate(rate);
+            RateUpdated?.Invoke(rate);
             _collector.OnRateUpdate(rate);
 
             var acc = Builder.Account;

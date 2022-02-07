@@ -10,6 +10,7 @@ namespace TickTrader.Algo.Backtester
         //private static List<ActivationRecord> NoActivatons = Enumerable.Empty<ActivationRecord>();
 
         private readonly AlgoMarketState _state;
+        private readonly Dictionary<string, ActivationRegistry> _activationIndex = new Dictionary<string, ActivationRegistry>();
 
         private List<ActivationRecord> _result = new List<ActivationRecord>();
 
@@ -25,22 +26,22 @@ namespace TickTrader.Algo.Backtester
         /// <param name="acc"></param>
         public ActivationRecord AddOrder(OrderAccessor order, IRateInfo currentRate)
         {
-            //var node = _state.GetSymbolNodeOrNull(order.Info.Symbol);
-            //var index = node.ActivationIndex as ActivationRegistry;
-            //if (index == null)
-            var index = new ActivationRegistry();
+            var symbol = order.Info.Symbol;
+            if (!_activationIndex.TryGetValue(symbol, out var index))
+            {
+                index = new ActivationRegistry();
+                _activationIndex.Add(symbol, index);
+            }
 
             return index.AddOrder(order, currentRate);
         }
 
         public bool RemoveOrder(OrderAccessor order)
         {
-            //var node = _state.GetSymbolNodeOrNull(order.Info.Symbol);
-            //var index = node.ActivationIndex as ActivationRegistry;
-            //if (index == null)
-            return false;
+            if (!_activationIndex.TryGetValue(order.Info.Symbol, out var index))
+                return false;
 
-            //return index.RemoveOrder(order);
+            return index.RemoveOrder(order);
         }
 
         //public void ResetOrderActivation(OrderAccessor order)
@@ -58,11 +59,11 @@ namespace TickTrader.Algo.Backtester
         /// </summary>
         /// <param name="rate"></param>
         /// <returns></returns>
-        public List<ActivationRecord> CheckPendingOrders(SymbolMarketNode node)
+        public List<ActivationRecord> CheckPendingOrders(IRateInfo rate)
         {
             _result.Clear();
-            //var index = node.ActivationIndex as ActivationRegistry;
-            //index?.CheckPendingOrders((QuoteInfo)node.SymbolInfo.LastQuote, _result);
+            if (_activationIndex.TryGetValue(rate.Symbol, out var index))
+                index.CheckPendingOrders(rate, _result);
             return _result;
         }
     }

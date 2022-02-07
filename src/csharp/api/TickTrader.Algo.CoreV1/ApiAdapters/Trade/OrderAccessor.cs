@@ -24,13 +24,18 @@ namespace TickTrader.Algo.CoreV1
         internal OrderAccessor(SymbolInfo symbol, OrderInfo info = null)
         {
             SymbolInfo = symbol;
-            Info = info ?? new OrderInfo() { Symbol = symbol.Name };
-
-            if (Info.SymbolInfo == null)
-                Info.SetSymbol(symbol);
-
-            if (info != null)
-                Info.Update(info);
+            
+            if (info == null)
+            {
+                info = new OrderInfo() { Symbol = symbol.Name };
+                info.SetSymbol(symbol);
+            }
+            else
+            {
+                if (info.SymbolInfo == null)
+                    info.SetSymbol(symbol);
+            }
+            Info = info;
 
             Entity = new WriteEntity(info.SymbolInfo);
             ContingentTrigger = info.OtoTrigger?.ToApi();

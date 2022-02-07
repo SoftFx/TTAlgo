@@ -125,8 +125,7 @@ namespace TickTrader.Algo.Backtester
             {
                 OrderCmdResultCodes error = OrderCmdResultCodes.UnknownError;
 
-                ISymbolCalculator calc = null; /*_calcFixture.GetCalculator(request.Symbol);*/
-                var smbMetadata = calc.SymbolInfo;
+                var smbMetadata = _context.Builder.Symbols.GetOrNull(request.Symbol).Info;
 
                 var roundedVolumeLots = RoundVolume(request.Volume, smbMetadata);
 
@@ -148,12 +147,12 @@ namespace TickTrader.Algo.Backtester
                         using (JournalScope())
                         {
                             VerifyAmout(volume, smbMetadata);
-                            ValidateOrderTypeForAccount(request.Type, calc.SymbolInfo);
-                            ValidateTypeAndPrice(request.Type, price, stopPrice, sl, tp, maxVisibleVolume, request.Options, calc.SymbolInfo);
+                            ValidateOrderTypeForAccount(request.Type, smbMetadata);
+                            ValidateTypeAndPrice(request.Type, price, stopPrice, sl, tp, maxVisibleVolume, request.Options, smbMetadata);
 
                             //Facade.ValidateExpirationTime(Request.Expiration, _acc);
 
-                            var order = OpenOrder(calc, request.Type.ToDomainEnum(), request.Side.ToDomainEnum(), volume, maxVisibleVolume, price, stopPrice, sl, tp, request.Comment, request.Options.ToDomainEnum(), request.Tag, request.Expiration, OpenOrderOptions.None);
+                            var order = OpenOrder(smbMetadata, request.Type.ToDomainEnum(), request.Side.ToDomainEnum(), volume, maxVisibleVolume, price, stopPrice, sl, tp, request.Comment, request.Options.ToDomainEnum(), request.Tag, request.Expiration, OpenOrderOptions.None);
 
                             _collector.OnOrderOpened();
 
@@ -436,11 +435,9 @@ namespace TickTrader.Algo.Backtester
             return (++_orderIdSeed).ToString();
         }
 
-        private OrderAccessor OpenOrder(ISymbolCalculator orderCalc, OrderInfo.Types.Type orderType, OrderInfo.Types.Side side, double volume, double? maxVisibleVolume, double? price, double? stopPrice,
+        private OrderAccessor OpenOrder(SymbolInfo symbolInfo, OrderInfo.Types.Type orderType, OrderInfo.Types.Side side, double volume, double? maxVisibleVolume, double? price, double? stopPrice,
             double? sl, double? tp, string comment, Domain.OrderExecOptions execOptions, string tag, DateTime? expiration, OpenOrderOptions options)
         {
-            var symbolInfo = orderCalc.SymbolInfo;
-
             var order = new OrderAccessor(symbolInfo);
 
             order.Entity.Id = NewOrderId();
@@ -503,7 +500,7 @@ namespace TickTrader.Algo.Backtester
             if (orderType == OrderInfo.Types.Type.Stop || orderType == OrderInfo.Types.Type.StopLimit)
                 order.Entity.StopPrice = stopPrice;
 
-            _calcFixture.ValidateNewOrder(order, orderCalc);
+            _calcFixture.ValidateNewOrder(order);
 
             //string comment = null;
 
@@ -1465,9 +1462,9 @@ namespace TickTrader.Algo.Backtester
             return info;
         }
 
-        internal void CheckActivation(SymbolMarketNode node)
+        internal void CheckActivation(IRateInfo rate)
         {
-            var records = _activator.CheckPendingOrders(node);
+            var records = _activator.CheckPendingOrders(rate);
             for (int i = 0; i < records.Count; i++)
                 ActivateOrderTransaction(records[i]);
         }
@@ -1611,7 +1608,7 @@ namespace TickTrader.Algo.Backtester
             //    report.FillAccountBalanceConversionRates(mAcc.BalanceCurrency, mAcc.Balance);
             //}
 
-            OpenOrder(order.Info.Calculator, OrderInfo.Types.Type.Limit, order.Info.Side, order.Entity.RemainingAmount, null, order.Info.Price,
+            OpenOrder(order.SymbolInfo, OrderInfo.Types.Type.Limit, order.Info.Side, order.Entity.RemainingAmount, null, order.Info.Price,
                 order.Info.StopPrice, order.Info.StopLoss, order.Info.TakeProfit, order.Info.Comment, order.Info.Options.ToOrderExecOptions(), order.Entity.UserTag, order.Info.Expiration.ToDateTime(), OpenOrderOptions.SkipDealing);
         }
 
@@ -1869,7 +1866,8 @@ namespace TickTrader.Algo.Backtester
                 {
                     using (JournalScope())
                     {
-                        OpenOrder(pos.Info.Calculator, OrderInfo.Types.Type.Market, pos.Info.Side.Revert(), pos.Info.Volume, null, null, null, null, null, "",
+                        var smbInfo = _context.Builder.Symbols.GetOrNull(pos.Info.Symbol).Info;
+                        OpenOrder(smbInfo, OrderInfo.Types.Type.Market, pos.Info.Side.Revert(), pos.Info.Volume, null, null, null, null, null, "",
                             Domain.OrderExecOptions.None, null, null, OpenOrderOptions.SkipDealing | OpenOrderOptions.FakeOrder);
                     }
                 }

@@ -131,7 +131,7 @@ namespace TickTrader.Algo.BacktesterV1Host
                 try
                 {
 #if DEBUG
-                    //await Task.Delay(10000);
+                    await Task.Delay(10000);
 #endif
 
                     ConfigureCommonSettings(config, backtester.CommonSettings);

@@ -161,7 +161,7 @@ namespace TickTrader.Algo.CoreV1
 
         public Action<Exception> OnFatalError { get; set; }
 
-        public void ValidateNewOrder(OrderAccessor newOrder, ISymbolCalculator fCalc) //for Emulator
+        public void ValidateNewOrder(OrderAccessor newOrder) //for Emulator
         {
             if (Acc.IsMarginType)
             {
