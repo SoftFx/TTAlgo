@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Calculator
             Buy = new SideCalc(this, OrderInfo.Types.Side.Buy, Calculator);
             Sell = new SideCalc(this, OrderInfo.Types.Side.Sell, Calculator);
 
-            var hedge = Calculator?.SymbolInfo?.Margin.Hedged ?? 0.5;
+            var hedge = node.SymbolInfo?.MarginHedged ?? 0.5;
             _hedgeFormulPart = 2 * hedge - 1;
 
             _node.SymbolInfo.RateUpdated += Recalculate;
