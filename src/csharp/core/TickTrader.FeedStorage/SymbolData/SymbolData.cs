@@ -34,7 +34,7 @@ namespace TickTrader.FeedStorage
         public abstract string Key { get; }
         public abstract string Security { get; }
         public abstract bool IsCustom { get; }
-        public abstract SymbolInfo InfoEntity { get; }
+        public abstract ISymbolInfo InfoEntity { get; }
         public abstract CustomSymbol StorageEntity { get; }
         public abstract bool IsDataAvailable { get; }
 

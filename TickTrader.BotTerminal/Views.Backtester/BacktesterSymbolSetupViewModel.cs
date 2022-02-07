@@ -109,7 +109,7 @@ namespace TickTrader.BotTerminal
 
         public string AsText()
         {
-            var smb = SelectedSymbol.Value.InfoEntity;
+            var smb = (SymbolInfo)SelectedSymbol.Value.InfoEntity;
             var swapLong = smb.Swap.Enabled ? smb.Swap.SizeLong : 0;
             var swapShort = smb.Swap.Enabled ? smb.Swap.SizeShort : 0;
 
@@ -259,7 +259,7 @@ namespace TickTrader.BotTerminal
             var precacheFrom = GetLocalFrom(fromLimit);
             var precacheTo = GetLocalTo(toLimit);
 
-            settings.Symbols.Add(smbData.Name, smbData.InfoEntity);
+            settings.Symbols.Add(smbData.Name, (SymbolInfo)smbData.InfoEntity);
 
             if (baseTimeFrame == Feed.Types.Timeframe.Ticks || baseTimeFrame == Feed.Types.Timeframe.TicksLevel2)
             {

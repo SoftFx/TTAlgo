@@ -230,7 +230,7 @@ namespace TickTrader.BotTerminal
 
         private void FireOnStartBacktesting(SymbolData mainSymbol, BacktesterConfig config)
         {
-            var symbols = SetupPage.FeedSymbols.Select(ss => ss.SelectedSymbol.Value.InfoEntity).ToList();
+            var symbols = SetupPage.FeedSymbols.Select(ss => (SymbolInfo)ss.SelectedSymbol.Value.InfoEntity).ToList();
             var currecnies = _client.Currencies.Snapshot.Values.ToList();
 
             JournalPage.IsVisible = true;
@@ -238,7 +238,7 @@ namespace TickTrader.BotTerminal
             TradeHistoryPage.IsVisible = true;
             ResultsPage.IsVisible = true;
 
-            ChartPage.OnStart(IsVisualizing.Value, mainSymbol.InfoEntity, config, symbols);
+            ChartPage.OnStart(IsVisualizing.Value, (SymbolInfo)mainSymbol.InfoEntity, config, symbols);
             if (IsVisualizing.Value)
             {
                 TradesPage.IsVisible = true;

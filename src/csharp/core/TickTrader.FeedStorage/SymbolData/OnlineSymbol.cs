@@ -11,7 +11,7 @@ using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.FeedStorage
 {
-    public class OnlineSymbol : SymbolData
+    internal class OnlineSymbol : SymbolData
     {
         private readonly SymbolInfo _symbolInfo;
         private readonly FeedProvider.Handler _provider;
@@ -26,7 +26,7 @@ namespace TickTrader.FeedStorage
         public override string Key => "online->" + Name;
         public override string Description => _symbolInfo.Description;
         public override string Security => _symbolInfo.Security;
-        public override SymbolInfo InfoEntity => _symbolInfo;
+        public override ISymbolInfo InfoEntity => _symbolInfo;
         public override CustomSymbol StorageEntity => CustomSymbol.FromAlgo(_symbolInfo);
         public override bool IsDataAvailable => _provider.FeedProxy.IsAvailable;
 

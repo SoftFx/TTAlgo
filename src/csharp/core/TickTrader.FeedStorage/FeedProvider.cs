@@ -10,7 +10,7 @@ using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.FeedStorage
 {
-    public class FeedProvider : Actor
+    internal class FeedProvider : Actor
     {
         private const int SliceMaxSize = 4000;
 
@@ -95,6 +95,10 @@ namespace TickTrader.FeedStorage
                 Cache.Collection.Initialize(FeedProxy.Symbols.Select(s => new OnlineSymbol(s, this)));
             }
 
+            public Task Stop()
+            {
+                return Actor.Call(a => a.Stop());
+            }
 
             public async Task<ActorChannel<SliceInfo>> DownloadTickSeriesToStorage(string symbol, Feed.Types.Timeframe timeframe, DateTime from, DateTime to)
             {

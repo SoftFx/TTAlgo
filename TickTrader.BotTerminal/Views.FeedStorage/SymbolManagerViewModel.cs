@@ -171,7 +171,7 @@ namespace TickTrader.BotTerminal
             }
             else
             {
-                smb = CustomSymbol.FromAlgo(symbol.InfoEntity);
+                smb = CustomSymbol.FromAlgo((SymbolInfo)symbol.InfoEntity);
             }
 
             var model = new SymbolCfgEditorViewModel(smb, _clientModel.SortedCurrenciesNames, HasSymbol, true);

@@ -85,7 +85,7 @@ namespace TickTrader.FeedStorage.Api
 
         bool ISymbolData.IsCustom => throw new NotImplementedException();
 
-        SymbolInfo ISymbolData.InfoEntity => throw new NotImplementedException();
+        ISymbolInfo ISymbolData.InfoEntity => throw new NotImplementedException();
 
         CustomSymbol ISymbolData.StorageEntity => throw new NotImplementedException();
 

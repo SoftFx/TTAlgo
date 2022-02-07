@@ -34,10 +34,6 @@ namespace TickTrader.FeedStorage
         {
             _client = client;
 
-            var a = new VarDictionary<ISetupSymbolInfo, ISymbolData>();
-
-            var b = a.OrderBy((k, v) => v.Name).Snapshot;
-
             //_feedProvider = new FeedProvider();
             _allSymbols = new VarDictionary<ISymbolKey, ISymbolData>();
             _customStorage = new CustomFeedStorage.Handler(Actor.SpawnLocal<CustomFeedStorage>());
@@ -90,6 +86,8 @@ namespace TickTrader.FeedStorage
 
             return this;
         }
+
+        public Task DisconnectClient() => _feedHandler.Stop();
 
         public async Task<ISymbolCatalog> OpenCustomStorage(ICustomStorageSettings settings)
         {
@@ -156,9 +154,11 @@ namespace TickTrader.FeedStorage
         //    throw new Exception("Unsupported symbol origin: " + info.Origin);
         //}
 
-        public async Task CloseCustomStorage()
+        public Task CloseCustomStorage() =>_customStorage.Stop();
+
+        public Task CloseCatalog()
         {
-            await _customStorage.Stop();
+            return DisconnectClient().ContinueWith(_ => CloseCustomStorage()).Unwrap();
         }
 
         //private KeyValuePair<SymbolKey, SymbolData> CreateSymbolData(SymbolInfo smb, FeedProvider.Handler provider)

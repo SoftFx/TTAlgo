@@ -23,9 +23,15 @@ namespace TickTrader.FeedStorage.Api
 
         Task<ISymbolCatalog> ConnectClient(IOnlineStorageSettings settings);
 
+        Task DisconnectClient();
+
+
         Task<ISymbolCatalog> OpenCustomStorage(ICustomStorageSettings settings);
 
         Task CloseCustomStorage();
+
+
+        Task CloseCatalog();
 
 
         Task<ActorChannel<SliceInfo>> DownloadBarSeriesToStorage(string symbol, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide, DateTime from, DateTime to);
@@ -78,7 +84,7 @@ namespace TickTrader.FeedStorage.Api
         string Key { get; }
         string Security { get; }
         bool IsCustom { get; }
-        SymbolInfo InfoEntity { get; }
+        ISymbolInfo InfoEntity { get; }
         CustomSymbol StorageEntity { get; }
         bool IsDataAvailable { get; }
 

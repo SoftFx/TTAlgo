@@ -25,7 +25,7 @@ namespace TickTrader.FeedStorage
         public override bool IsCustom => true;
         public override string Description => _symbolInfo.Description;
         public override string Security => "";
-        public override SymbolInfo InfoEntity => _symbolInfo.ToAlgo();
+        public override ISymbolInfo InfoEntity => _symbolInfo.ToAlgo();
         public override CustomSymbol StorageEntity => _symbolInfo;
         public override bool IsDataAvailable => true;
 

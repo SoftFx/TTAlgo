@@ -327,7 +327,7 @@ namespace TickTrader.BotTerminal
             try
             {
                 await cManager.Disconnect();
-                await _symbolsCatalog.CloseCustomStorage();
+                await _symbolsCatalog.CloseCatalog();
                 await _botAgentManager.ShutdownDisconnect();
                 await storage.Stop();
             }
