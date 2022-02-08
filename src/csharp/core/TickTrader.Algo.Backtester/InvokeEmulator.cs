@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -43,6 +44,7 @@ namespace TickTrader.Algo.Backtester
         }
 
         public DateTime UnsafeVirtualTimePoint { get { return _timePoint; } }
+        public Timestamp UnsafeVirtualTimestamp => _timePoint.ToUniversalTime().ToTimestamp();
         public DateTime SafeVirtualTimePoint => _timePoint;
         public DateTime SlimUpdateVirtualTimePoint => new DateTime(Interlocked.Read(ref _safeTimePoint));
         public override int FeedQueueSize => 0;

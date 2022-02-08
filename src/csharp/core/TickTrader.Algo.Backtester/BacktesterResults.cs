@@ -13,6 +13,9 @@ namespace TickTrader.Algo.Backtester
 {
     public class BacktesterResults
     {
+        private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions { NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals };
+
+
         public TestingStatistics Stats { get; private set; }
 
         public Dictionary<string, List<BarData>> Feed { get; } = new Dictionary<string, List<BarData>>();
@@ -69,7 +72,7 @@ namespace TickTrader.Algo.Backtester
             using (var stream = entry.Open())
             using (var writer = new Utf8JsonWriter(stream))
             {
-                JsonSerializer.Serialize(writer, data);
+                JsonSerializer.Serialize(writer, data, _jsonOptions);
             }
         }
 
@@ -103,7 +106,7 @@ namespace TickTrader.Algo.Backtester
             {
                 var data = new byte[entry.Length];
                 stream.Read(data, 0, data.Length);
-                return JsonSerializer.Deserialize<T>(data);
+                return JsonSerializer.Deserialize<T>(data, _jsonOptions);
             }
         }
 

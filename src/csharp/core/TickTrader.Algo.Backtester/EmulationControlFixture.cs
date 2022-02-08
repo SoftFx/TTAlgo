@@ -29,7 +29,7 @@ namespace TickTrader.Algo.Backtester
             Collector = new BacktesterCollector(executor);
             InvokeEmulator = new InvokeEmulator(settings, Collector, Feed, executor.Start, executor.EmulateStop);
             TradeHistory = new TradeHistoryEmulator();
-            TradeHistory.OnReportAdded += TradeHistory_OnReportAdded;
+            //TradeHistory.OnReportAdded += TradeHistory_OnReportAdded;
             Executor = executor;
         }
 
@@ -101,10 +101,10 @@ namespace TickTrader.Algo.Backtester
             Collector.Dispose();
         }
 
-        private void TradeHistory_OnReportAdded(TradeReportAdapter rep)
-        {
-            Executor.OnUpdate(rep.Info);
-        }
+        //private void TradeHistory_OnReportAdded(TradeReportAdapter rep)
+        //{
+        //    Executor.OnUpdate(rep.Info);
+        //}
 
         private Exception WrapException(Exception ex)
         {

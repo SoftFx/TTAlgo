@@ -25,7 +25,7 @@ namespace TickTrader.Algo.Backtester
             else if (order.Info.RemainingAmount > 0)
                 update.OnOrderAdded(order);
             else
-                update.OrderUpdate = order.Entity.GetInfo();
+                update.OrderUpdate = order.Info.Clone();
             if (fillInfo.NetPos != null)
             {
                 update.OnPositionChanged(fillInfo.NetPos.ResultingPosition);
@@ -112,55 +112,55 @@ namespace TickTrader.Algo.Backtester
         private void OnInstantOrderOpened(OrderAccessor order)
         {
             OrderEntityAction = Domain.OrderExecReport.Types.EntityAction.NoAction;
-            OrderUpdate = order.Entity.GetInfo();
+            OrderUpdate = order.Info.Clone();
         }
 
         private void OnOrderAdded(OrderAccessor order)
         {
             OrderEntityAction = Domain.OrderExecReport.Types.EntityAction.Added;
-            OrderUpdate = order.Entity.GetInfo();
+            OrderUpdate = order.Info.Clone();
         }
 
         private void OnOrderAdded(Domain.OrderExecReport.Types.ExecAction execAction, OrderAccessor order)
         {
             OrderExecAction = execAction;
             OrderEntityAction = Domain.OrderExecReport.Types.EntityAction.Added;
-            OrderUpdate = order.Entity.GetInfo();
+            OrderUpdate = order.Info.Clone();
         }
 
         private void OnOrderReplaced(Domain.OrderExecReport.Types.ExecAction execAction, OrderAccessor order)
         {
             OrderExecAction = execAction;
             OrderEntityAction = Domain.OrderExecReport.Types.EntityAction.Updated;
-            OrderUpdate = order.Entity.GetInfo();
+            OrderUpdate = order.Info.Clone();
         }
 
         private void OnOrderRemoved(Domain.OrderExecReport.Types.ExecAction execAction, OrderAccessor order)
         {
             OrderExecAction = execAction;
             OrderEntityAction = Domain.OrderExecReport.Types.EntityAction.Removed;
-            OrderUpdate = order.Entity.GetInfo();
+            OrderUpdate = order.Info.Clone();
         }
 
         private void OnPositionAdded(Domain.OrderExecReport.Types.ExecAction execAction, OrderAccessor order)
         {
             PositionExecAction = execAction;
             PositionEntityAction = Domain.OrderExecReport.Types.EntityAction.Added;
-            PositionUpdate = order.Entity.GetInfo();
+            PositionUpdate = order.Info.Clone();
         }
 
         private void OnPositionReplaced(Domain.OrderExecReport.Types.ExecAction execAction, OrderAccessor order)
         {
             PositionExecAction = execAction;
             PositionEntityAction = Domain.OrderExecReport.Types.EntityAction.Updated;
-            PositionUpdate = order.Entity.GetInfo();
+            PositionUpdate = order.Info.Clone();
         }
 
         private void OnPositionRemoved(Domain.OrderExecReport.Types.ExecAction execAction, OrderAccessor order)
         {
             PositionExecAction = execAction;
             PositionEntityAction = Domain.OrderExecReport.Types.EntityAction.Removed;
-            PositionUpdate = order.Entity.GetInfo();
+            PositionUpdate = order.Info.Clone();
         }
 
         private void OnPositionChanged(PositionAccessor pos)

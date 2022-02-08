@@ -110,29 +110,30 @@ namespace TickTrader.Algo.CoreV1
 
         public TradeReportAdapter FillGenericOrderData(CalculatorFixture acc, OrderAccessor orderAccessor)
         {
+            var orderInfo = orderAccessor.Info;
             var order = orderAccessor.Entity;
 
-            Info.OrderOpened = order.Created?.ToTimestamp();
-            Info.OrderModified = order.Modified?.ToTimestamp();
-            Info.OrderId = order.Id;
+            Info.OrderOpened = orderInfo.Created;
+            Info.OrderModified = orderInfo.Modified;
+            Info.OrderId = orderInfo.Id;
             Info.ActionId = order.ActionNo;
             //Entity.ParentOrderId = order.ParentOrderId;
             //ClientOrderId = order.ClientOrderId;
-            Info.OrderType = order.Type;
-            Info.RequestedOrderType = order.InitialType;
-            Info.OpenQuantity = order.RequestedAmount;
-            Info.RemainingQuantity = order.RemainingAmount;
+            Info.OrderType = orderInfo.Type;
+            Info.RequestedOrderType = orderInfo.InitialType;
+            Info.OpenQuantity = orderInfo.RequestedAmount;
+            Info.RemainingQuantity = orderInfo.RemainingAmount;
             //Entity.OrderHiddenAmount = order.HiddenAmount;
             //Entity.OrderMaxVisibleAmount = order.MaxVisibleAmount;
-            Info.Price = order.Price ?? double.NaN;
-            Info.StopPrice = order.StopPrice ?? double.NaN;
-            Info.OrderSide = order.Side;
+            Info.Price = orderInfo.Price ?? double.NaN;
+            Info.StopPrice = orderInfo.StopPrice ?? double.NaN;
+            Info.OrderSide = orderInfo.Side;
             //Entity.SymbolRef = order.SymbolRef;
             //Entity.SymbolPrecision = order.SymbolPrecision;
-            Info.Expiration = order.Expiration?.ToTimestamp();
+            Info.Expiration = orderInfo.Expiration;
             //Entity.Magic = order.Magic;
-            Info.StopLoss = order.StopLoss ?? double.NaN;
-            Info.TakeProfit = order.TakeProfit ?? double.NaN;
+            Info.StopLoss = orderInfo.StopLoss ?? double.NaN;
+            Info.TakeProfit = orderInfo.TakeProfit ?? double.NaN;
             //TransferringCoefficient = order.TransferringCoefficient;
 
             if (order.Type == Domain.OrderInfo.Types.Type.Position)
@@ -145,9 +146,9 @@ namespace TickTrader.Algo.CoreV1
             //ReducedCloseCommissionFlag = order.IsReducedCloseCommission;
 
             // comments and tags
-            Info.Comment = order.Comment;
+            Info.Comment = orderInfo.Comment;
             //ManagerComment = order.ManagerComment;
-            Info.Tag = order.UserTag;
+            Info.Tag = orderInfo.UserTag;
             //ManagerTag = order.ManagerTag;
 
             //rates
@@ -158,7 +159,7 @@ namespace TickTrader.Algo.CoreV1
             //Entity.ReqOpenPrice = order.ReqOpenPrice;
             //Entity.ReqOpenQuantity = order.ReqOpenAmount;
 
-            Info.OrderOptions = orderAccessor.Entity.Options;
+            Info.OrderOptions = orderInfo.Options;
             //ClientApp = order.ClientApp;
 
             FillSymbolConversionRates(acc, orderAccessor.SymbolInfo);
@@ -168,14 +169,16 @@ namespace TickTrader.Algo.CoreV1
 
         public TradeReportAdapter FillClosePosData(OrderAccessor order, DateTime closeTime, double closeAmount, double closePrice, double? requestAmount, double? requestPrice, string posById)
         {
-            Info.PositionQuantity = order.Entity.RequestedAmount;
-            Info.PositionLeavesQuantity = order.Entity.RemainingAmount;
+            var orderInfo = order.Info;
+
+            Info.PositionQuantity = orderInfo.RequestedAmount;
+            Info.PositionLeavesQuantity = orderInfo.RemainingAmount;
             Info.PositionCloseQuantity = closeAmount;
-            Info.PositionOpened = order.Entity.PositionCreated.ToTimestamp();
-            Info.PositionOpenPrice = order.Info.Price ?? 0;
-            Info.PositionClosed = closeTime.ToTimestamp();
+            Info.PositionOpened = order.Entity.PositionCreated.ToUniversalTime().ToTimestamp();
+            Info.PositionOpenPrice = orderInfo.Price ?? 0;
+            Info.PositionClosed = closeTime.ToUniversalTime().ToTimestamp();
             Info.PositionClosePrice = closePrice;
-            Info.PositionModified = order.Info.Modified;
+            Info.PositionModified = orderInfo.Modified;
             Info.PositionById = posById;
             Info.RequestedClosePrice = requestPrice;
             Info.RequestedCloseQuantity = requestAmount;

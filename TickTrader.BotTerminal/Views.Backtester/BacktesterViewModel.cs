@@ -190,6 +190,8 @@ namespace TickTrader.BotTerminal
         {
             observer.SetMessage("Loading results...");
 
+            _testingSymbols = config.TradeServer.Symbols.Values.Select(s => s.ToAlgo()).ToDictionary(s => s.Name);
+
             var results = await Task.Run(() => BacktesterResults.Load(config.Env.ResultsPath));
 
             await LoadStats(observer, results, pluginInfo);
@@ -284,13 +286,13 @@ namespace TickTrader.BotTerminal
         {
             observer.SetMessage("Loading trade history...");
 
-            await Task.Run(() =>
-            {
+            //await Task.Run(() =>
+            //{
                 foreach (var report in results.TradeHistory)
                 {
                     AddTradeHistoryReport(report);
                 }
-            });
+            //});
         }
 
         private void AddTradeHistoryReport(TradeReportInfo record)

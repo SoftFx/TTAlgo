@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.CoreV1;
@@ -7,20 +8,20 @@ namespace TickTrader.Algo.Backtester
 {
     internal class OrderExpirationEmulator
     {
-        private SortedDictionary<DateTime, LinkedList<OrderAccessor>> innerMap;
+        private SortedDictionary<Timestamp, LinkedList<OrderAccessor>> innerMap;
 
         public int Count { get; private set; }
 
         public OrderExpirationEmulator()
         {
-            innerMap = new SortedDictionary<DateTime, LinkedList<OrderAccessor>>();
+            innerMap = new SortedDictionary<Timestamp, LinkedList<OrderAccessor>>();
         }
 
         public bool AddOrder(OrderAccessor order)
         {
-            if (order.Entity.IsPending && order.Entity.Expiration != null)
+            if (order.Entity.IsPending && order.Info.Expiration != null)
             {
-                GetOrAddDateList(order.Entity.Expiration.Value).AddLast(order);
+                GetOrAddDateList(order.Info.Expiration).AddLast(order);
                 Count++;
                 return true;
             }
@@ -29,10 +30,10 @@ namespace TickTrader.Algo.Backtester
 
         public void RemoveOrder(OrderAccessor order)
         {
-            if (order.Entity.IsPending && order.Entity.Expiration != null)
+            if (order.Entity.IsPending && order.Info.Expiration != null)
             {
                 LinkedList<OrderAccessor> list;
-                if (innerMap.TryGetValue(order.Entity.Expiration.Value, out list))
+                if (innerMap.TryGetValue(order.Info.Expiration, out list))
                 {
                     if (list.Remove(order))
                         Count--;
@@ -40,7 +41,7 @@ namespace TickTrader.Algo.Backtester
             }
         }
 
-        private LinkedList<OrderAccessor> GetOrAddDateList(DateTime dt)
+        private LinkedList<OrderAccessor> GetOrAddDateList(Timestamp dt)
         {
             LinkedList<OrderAccessor> list;
             if (!innerMap.TryGetValue(dt, out list))
@@ -54,12 +55,13 @@ namespace TickTrader.Algo.Backtester
 
         public List<OrderAccessor> GetExpiredOrders(DateTime refTime)
         {
+            var refTimestamp = refTime.ToTimestamp();
             List<OrderAccessor> expiredOrders = new List<OrderAccessor>();
 
             while (innerMap.Count > 0)
             {
-                KeyValuePair<DateTime, LinkedList<OrderAccessor>> list = innerMap.First();
-                if (list.Key <= refTime)
+                KeyValuePair<Timestamp, LinkedList<OrderAccessor>> list = innerMap.First();
+                if (list.Key <= refTimestamp)
                 {
                     expiredOrders.AddRange(list.Value);
                     if (innerMap.Remove(list.Key))
@@ -74,10 +76,10 @@ namespace TickTrader.Algo.Backtester
 
         public bool FindOrder(OrderAccessor order)
         {
-            if (order.Entity.Expiration != null)
+            if (order.Info.Expiration != null)
             {
                 LinkedList<OrderAccessor> list;
-                if (innerMap.TryGetValue(order.Entity.Expiration.Value, out list))
+                if (innerMap.TryGetValue(order.Info.Expiration, out list))
                 {
                     return list.Contains(order);
                 }

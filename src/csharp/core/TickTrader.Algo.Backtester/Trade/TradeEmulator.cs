@@ -265,7 +265,7 @@ namespace TickTrader.Algo.Backtester
                         StopLoss = sl,
                         TakeProfit = tp,
                         Comment = comment,
-                        Expiration = request.Expiration.Value.ToTimestamp(),
+                        Expiration = request.Expiration.Value.ToUniversalTime().ToTimestamp(),
                         MaxVisibleAmount = (double?)orderMaxVisibleVolume,
                         ExecOptions = request.Options?.ToDomainEnum(),
                     };
@@ -440,22 +440,24 @@ namespace TickTrader.Algo.Backtester
         {
             var order = new OrderAccessor(symbolInfo);
 
-            order.Entity.Id = NewOrderId();
+            order.Info.Id = NewOrderId();
             //order.SymbolPrecision = symbolInfo.Digits;
-            order.Entity.RequestedAmount = volume;
-            order.Entity.RemainingAmount = volume;
-            order.Entity.MaxVisibleAmount = maxVisibleVolume;
+            order.Info.RequestedAmount = volume;
+            order.Info.RemainingAmount = volume;
+            order.Info.MaxVisibleAmount = maxVisibleVolume;
 
-            order.Entity.Side = side;
-            order.Entity.Type = orderType;
-            order.Entity.Symbol = symbolInfo.Name;
-            order.Entity.Created = _scheduler.UnsafeVirtualTimePoint;
-            order.Entity.Modified = _scheduler.UnsafeVirtualTimePoint;
-            order.Entity.Comment = comment;
+            order.Info.Side = side;
+            order.Info.Type = orderType;
+            order.Info.Symbol = symbolInfo.Name;
+            order.Info.Comment = comment;
+
+            var timestamp = _scheduler.UnsafeVirtualTimestamp;
+            order.Info.Created = timestamp;
+            order.Info.Modified = timestamp;
 
             //order.ClientOrderId = request.ClientOrderId;
             //order.Status = OrderStatuses.New;
-            order.Entity.InitialType = orderType;
+            order.Info.InitialType = orderType;
             //order.ParentOrderId = request.ParentOrderId;
 
             //double? price = (double?)request.Price;
@@ -485,20 +487,20 @@ namespace TickTrader.Algo.Backtester
             //    //LogTransactionDetails(() => slippageCalculationMessage, JournalEntrySeverities.Info);
             //}
 
-            order.Entity.StopLoss = sl;
-            order.Entity.TakeProfit = tp;
+            order.Info.StopLoss = sl;
+            order.Info.TakeProfit = tp;
             //order.TransferringCoefficient = request.TransferringCoefficient;
-            order.Entity.UserTag = tag;
-            order.Entity.InstanceId = _acc.InstanceId;
-            order.Entity.Expiration = expiration;
-            order.Entity.Options = execOptions.ToOrderOptions();
+            order.Info.UserTag = tag;
+            order.Info.InstanceId = _acc.InstanceId;
+            order.Info.Expiration = expiration.HasValue ? expiration.Value.ToUniversalTime().ToTimestamp() : null;
+            order.Info.Options = execOptions.ToOrderOptions();
             //order.ReqOpenPrice = clientPrice;
             //order.ReqOpenAmount = clientAmount;
 
             if (orderType != OrderInfo.Types.Type.Stop)
-                order.Entity.Price = price;
+                order.Info.Price = price;
             if (orderType == OrderInfo.Types.Type.Stop || orderType == OrderInfo.Types.Type.StopLimit)
-                order.Entity.StopPrice = stopPrice;
+                order.Info.StopPrice = stopPrice;
 
             _calcFixture.ValidateNewOrder(order);
 
@@ -663,11 +665,11 @@ namespace TickTrader.Algo.Backtester
             //if (Request.MaxVisibleAmount.HasValue && (Request.MaxVisibleAmount.Value >= 0))
             //Facade.VerifyMaxVisibleAmout(Request.MaxVisibleAmount, securityCfg, symbolInfo, Request.IsClientRequest);
 
-            var newVolume = request.NewAmount ?? order.Entity.RequestedAmount;
+            var newVolume = request.NewAmount ?? order.Info.RequestedAmount;
             var newPrice = request.Price ?? order.Info.Price;
             var newStopPrice = request.StopPrice ?? order.Info.StopPrice;
 
-            bool volumeChanged = newVolume != order.Entity.RequestedAmount;
+            bool volumeChanged = newVolume != order.Info.RequestedAmount;
 
             // Check margin of the modified order
             if (volumeChanged)
@@ -765,11 +767,11 @@ namespace TickTrader.Algo.Backtester
 
             var newVol = request.NewAmount;
 
-            if (order.Entity.IsPending && newVol.HasValue && newVol != order.Entity.RequestedAmount)
+            if (order.Entity.IsPending && newVol.HasValue && newVol != order.Info.RequestedAmount)
             {
-                var filledVolume = order.Entity.RequestedAmount - order.Info.RemainingAmount;
+                var filledVolume = order.Info.RequestedAmount - order.Info.RemainingAmount;
 
-                order.Entity.RequestedAmount = newVol.Value;
+                order.Info.RequestedAmount = newVol.Value;
                 order.Entity.ChangeRemAmount(newVol.Value - filledVolume);
 
                 // Recalculate commission if necessary.
@@ -782,11 +784,11 @@ namespace TickTrader.Algo.Backtester
             {
                 if (request.MaxVisibleAmount.Value < 0)
                 {
-                    order.Entity.MaxVisibleAmount = null;
+                    order.Info.MaxVisibleAmount = null;
                 }
                 else
                 {
-                    order.Entity.MaxVisibleAmount = request.MaxVisibleAmount;
+                    order.Info.MaxVisibleAmount = request.MaxVisibleAmount;
                     //order.Options = order.Options.SetFlag(OrderExecutionOptions.HiddenIceberg);
                 }
             }
@@ -795,7 +797,7 @@ namespace TickTrader.Algo.Backtester
             {
                 if (order.Info.Type == OrderInfo.Types.Type.Limit || order.Info.Type == OrderInfo.Types.Type.StopLimit)
                 {
-                    order.Entity.Price = request.Price.Value;
+                    order.Info.Price = request.Price.Value;
                     //order.ReqOpenPrice = request.Price.Value;
                 }
             }
@@ -804,7 +806,7 @@ namespace TickTrader.Algo.Backtester
             {
                 if (order.Info.Type == OrderInfo.Types.Type.Stop || order.Info.Type == OrderInfo.Types.Type.StopLimit)
                 {
-                    order.Entity.StopPrice = request.StopPrice ?? order.Info.StopPrice;
+                    order.Info.StopPrice = request.StopPrice ?? order.Info.StopPrice;
                     //order.ReqOpenPrice = request.StopPrice.Value;
                 }
             }
@@ -819,22 +821,22 @@ namespace TickTrader.Algo.Backtester
             {
                 var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
                 if (request.Expiration.ToDateTime() > epoch)
-                    order.Entity.Expiration = request.Expiration.ToDateTime();
+                    order.Info.Expiration = request.Expiration;
                 else
-                    order.Entity.Expiration = null;
+                    order.Info.Expiration = null;
             }
 
             if (_acc.Type == AccountInfo.Types.Type.Gross)
             {
                 if (request.StopLoss.HasValue)
-                    order.Entity.StopLoss = (request.StopLoss.Value != 0) ? request.StopLoss : null;
+                    order.Info.StopLoss = (request.StopLoss.Value != 0) ? request.StopLoss : null;
                 if (request.TakeProfit.HasValue)
-                    order.Entity.TakeProfit = (request.TakeProfit.Value != 0) ? request.TakeProfit : null;
+                    order.Info.TakeProfit = (request.TakeProfit.Value != 0) ? request.TakeProfit : null;
             }
 
-            order.Entity.Comment = request.Comment ?? order.Info.Comment;
-            order.Entity.UserTag = request.Tag == null ? order.Entity.UserTag : CompositeTag.ExtarctUserTarg(request.Tag);
-            order.Entity.Modified = _scheduler.UnsafeVirtualTimePoint;
+            order.Info.Comment = request.Comment ?? order.Info.Comment;
+            order.Info.UserTag = request.Tag == null ? order.Info.UserTag : CompositeTag.ExtarctUserTarg(request.Tag);
+            order.Info.Modified = _scheduler.UnsafeVirtualTimestamp;
             //order.Magic = request.Magic ?? order.Magic;
 
             // calculate reduced commission options
@@ -953,9 +955,9 @@ namespace TickTrader.Algo.Backtester
             //order.AggrFillPrice += fillAmount * fillPrice;
             //order.AverageFillPrice = order.AggrFillPrice / (order.Amount - order.RemainingAmount);
             //order.Entity.Filled = OperationContext.ExecutionTime;
-            order.Entity.Modified = _scheduler.UnsafeVirtualTimePoint;
-            order.Entity.LastFillPrice = fillPrice;
-            order.Entity.LastFillAmount = fillAmount;
+            order.Info.Modified = _scheduler.UnsafeVirtualTimestamp;
+            order.Info.LastFillPrice = fillPrice;
+            order.Info.LastFillAmount = fillAmount;
 
             if ((_acc.Type == AccountInfo.Types.Type.Net) || (_acc.Type == AccountInfo.Types.Type.Cash))
             {
@@ -1089,7 +1091,7 @@ namespace TickTrader.Algo.Backtester
             report.FillGenericOrderData(_calcFixture, order);
             report.FillAccountSpecificFields(_calcFixture);
             report.Info.RemainingQuantity = 0;
-            report.Info.MaxVisibleQuantity = (double?)order.Entity.MaxVisibleAmount;
+            report.Info.MaxVisibleQuantity = order.Info.MaxVisibleAmount;
 
             if (_acc.IsMarginType)
             {
@@ -1139,21 +1141,24 @@ namespace TickTrader.Algo.Backtester
             else
             {
                 position = new OrderAccessor(smb);
-                position.Entity.Id = NewOrderId();
-                position.Entity.Symbol = smb.Name;
+                position.Info.Id = NewOrderId();
+                position.Info.Symbol = smb.Name;
                 //position.ClientOrderId = Guid.NewGuid().ToString("D");
-                position.Entity.Side = side;
-                position.Entity.Created = _scheduler.UnsafeVirtualTimePoint;
+                position.Info.Side = side;
                 position.Entity.PositionCreated = ExecutionTime;
                 //position.SymbolPrecision = smb.Digits;
 
+                var timestamp = _scheduler.UnsafeVirtualTimestamp;
+                position.Info.Created = timestamp;
+                position.Info.Modified = timestamp;
+
                 if (parentOrder != null)
                 {
-                    position.Entity.MaxVisibleAmount = parentOrder.Entity.MaxVisibleAmount;
-                    position.Entity.StopLoss = parentOrder.Entity.StopLoss;
-                    position.Entity.TakeProfit = parentOrder.Entity.TakeProfit;
-                    position.Entity.Comment = parentOrder.Entity.Comment;
-                    position.Entity.UserTag = parentOrder.Entity.UserTag;
+                    position.Info.MaxVisibleAmount = parentOrder.Info.MaxVisibleAmount;
+                    position.Info.StopLoss = parentOrder.Info.StopLoss;
+                    position.Info.TakeProfit = parentOrder.Info.TakeProfit;
+                    position.Info.Comment = parentOrder.Info.Comment;
+                    position.Info.UserTag = parentOrder.Info.UserTag;
                     //position.ManagerComment = parentOrder.ManagerComment;
                     //position.ManagerTag = parentOrder.ManagerTag;
                     //position.Magic = parentOrder.Magic;
@@ -1171,7 +1176,7 @@ namespace TickTrader.Algo.Backtester
             }
 
             //position.ParentOrderId = (parentOrder != null) ? parentOrder.OrderId : position.OrderId;
-            position.Entity.InitialType = (parentOrder != null) ? parentOrder.Entity.InitialType : OrderInfo.Types.Type.Market;
+            position.Info.InitialType = (parentOrder != null) ? parentOrder.Info.InitialType : OrderInfo.Types.Type.Market;
 
             //position.Entity.Type = OrderType.Position;
             //position.Status = OrderStatuses.Calculated;
@@ -1185,20 +1190,19 @@ namespace TickTrader.Algo.Backtester
             //else
             //    position.Entity.StopPrice = null;
 
-            position.Entity.RequestedAmount = posAmount;
+            position.Info.RequestedAmount = posAmount;
             //position.RemainingAmount = posAmount;
-            position.Entity.Modified = _scheduler.UnsafeVirtualTimePoint;
-            position.Entity.Expiration = null;
+            position.Info.Expiration = null;
 
-            if (_acc.Type == AccountInfo.Types.Type.Gross && position.Entity.TakeProfit.HasValue)
-            {
-                double? currentRateBid = ((QuoteInfo)currentRate)?.NullableBid();
-                double? currentRateAsk = ((QuoteInfo)currentRate)?.NullableAsk();
-                //position.IsReducedCloseCommission = ((position.Side == OrderSide.Buy && currentRateBid.HasValue &&
-                //                                      position.TakeProfit > currentRateBid) ||
-                //                                     (position.Side == OrderSide.Sell && currentRateAsk.HasValue &&
-                //                                      position.TakeProfit < currentRateAsk));
-            }
+            //if (_acc.Type == AccountInfo.Types.Type.Gross && position.Info.TakeProfit.HasValue)
+            //{
+            //    double? currentRateBid = ((QuoteInfo)currentRate)?.NullableBid();
+            //    double? currentRateAsk = ((QuoteInfo)currentRate)?.NullableAsk();
+            //    //position.IsReducedCloseCommission = ((position.Side == OrderSide.Buy && currentRateBid.HasValue &&
+            //    //                                      position.TakeProfit > currentRateBid) ||
+            //    //                                     (position.Side == OrderSide.Sell && currentRateAsk.HasValue &&
+            //    //                                      position.TakeProfit < currentRateAsk));
+            //}
 
             // increase reported action number
             position.Entity.ActionNo++;
@@ -1357,7 +1361,8 @@ namespace TickTrader.Algo.Backtester
             var smb = fromOrder.SymbolInfo;
             var position = _acc.NetPositions.GetOrCreatePosition(smb.Name, NewOrderId());
             //position.Increase(fillAmount, fillPrice, fromOrder.Info.Side);
-            position.Info.Modified = _scheduler.UnsafeVirtualTimePoint.ToTimestamp();
+            var timestamp = _scheduler.UnsafeVirtualTimestamp;
+            position.Info.Modified = timestamp;
 
             var charges = new TradeChargesInfo();
 
@@ -1386,7 +1391,7 @@ namespace TickTrader.Algo.Backtester
 
             tradeReport.FillAccountSpecificFields(_calcFixture);
             tradeReport.FillPosData(position, fillPrice, 0/*fromOrder.MarginRateCurrent*/);
-            tradeReport.Info.PositionOpened = _scheduler.UnsafeVirtualTimePoint.ToTimestamp();
+            tradeReport.Info.PositionOpened = timestamp;
             //tradeReport.Entity.OpenConversionRate = (double?)fromOrder.MarginRateCurrent;
 
             //LogTransactionDetails(() => "Final position: " + position.GetBriefInfo(), JournalEntrySeverities.Info, TransactDetails.Create(position.Id, position.Symbol));
@@ -1438,7 +1443,7 @@ namespace TickTrader.Algo.Backtester
                 //    _acc.NetPositions.RemovePosition(position.Symbol);
 
                 report.Info.TransactionAmount += (double)balanceMovement;
-                report.Info.PositionClosed = ExecutionTime.ToTimestamp();
+                report.Info.PositionClosed = ExecutionTime.ToUniversalTime().ToTimestamp();
                 //report.Entity.PositionOpenPrice = (double)openPrice;
                 report.Info.PositionClosePrice = (double)closePrice;
                 report.Info.PositionCloseQuantity = (double)oneSideClosingAmount;
@@ -1609,7 +1614,7 @@ namespace TickTrader.Algo.Backtester
             //}
 
             OpenOrder(order.SymbolInfo, OrderInfo.Types.Type.Limit, order.Info.Side, order.Entity.RemainingAmount, null, order.Info.Price,
-                order.Info.StopPrice, order.Info.StopLoss, order.Info.TakeProfit, order.Info.Comment, order.Info.Options.ToOrderExecOptions(), order.Entity.UserTag, order.Info.Expiration.ToDateTime(), OpenOrderOptions.SkipDealing);
+                order.Info.StopPrice, order.Info.StopLoss, order.Info.TakeProfit, order.Info.Comment, order.Info.Options.ToOrderExecOptions(), order.Info.UserTag, order.Info.Expiration.ToDateTime(), OpenOrderOptions.SkipDealing);
         }
 
         private void ClosePosition(OrderAccessor position, TradeReportInfo.Types.Reason trReason, double? reqAmount, double? reqPrice,
@@ -1651,8 +1656,8 @@ namespace TickTrader.Algo.Backtester
             //position.CloseConversionRate = profit >= 0 ? fCalc.PositiveProfitConversionRate.Value : fCalc.NegativeProfitConversionRate.Value;
 
             position.Entity.ClosePrice = closePrice;
-            position.Entity.LastFillPrice = (double)closePrice;
-            position.Entity.LastFillAmount = actualCloseAmount;
+            position.Info.LastFillPrice = closePrice;
+            position.Info.LastFillAmount = actualCloseAmount;
 
             //if (managerComment != null)
             //    position.ManagerComment = managerComment;
@@ -1671,17 +1676,17 @@ namespace TickTrader.Algo.Backtester
                 position.Entity.ChangeRemAmount(newRemainingAmount);
                 //position.Status = OrderStatuses.Calculated;
 
-                if (position.Entity.Swap != null)
+                if (position.Info.Swap != null)
                 {
                     var partialSwap = CommisionEmulator.GetPartialSwap(position.Entity.Swap, k, _calcFixture.RoundingDigits);
 
                     charges.Swap = position.Entity.Swap - partialSwap;
-                    position.Entity.Swap = partialSwap;
+                    position.Info.Swap = partialSwap;
                 }
             }
             else
             {
-                charges.Swap = position.Entity.Swap;
+                charges.Swap = position.Info.Swap;
                 position.Entity.ChangeRemAmount(0);
             }
 
@@ -1723,7 +1728,7 @@ namespace TickTrader.Algo.Backtester
             _acc.Balance += totalProfit;
 
             // Update modify timestamp.
-            position.Entity.Modified = _scheduler.UnsafeVirtualTimePoint;
+            position.Info.Modified = _scheduler.UnsafeVirtualTimestamp;
 
             var historyAmount = nullify ? 0 : actualCloseAmount;
 

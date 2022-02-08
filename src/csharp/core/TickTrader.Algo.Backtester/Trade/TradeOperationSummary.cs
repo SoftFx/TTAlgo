@@ -235,9 +235,9 @@ namespace TickTrader.Algo.Backtester
                 _builder.Append(order.Info.RequestedAmount);
             else
                 _builder.Append(order.Info.RequestedAmount).Append('/').Append(order.Info.RequestedAmount);
-            if (order.Entity.Price != null)
+            if (order.Info.Price != null)
                 _builder.Append(" price=").AppendNumber(order.Info.Price ?? 0, priceFormat);
-            if (order.Entity.StopPrice != null)
+            if (order.Info.StopPrice != null)
                 _builder.Append(" stopPrice=").AppendNumber(order.Info.StopPrice ?? 0, priceFormat);
         }
 
@@ -245,9 +245,9 @@ namespace TickTrader.Algo.Backtester
         {
             var priceFormat = FormatExtentions.CreateTradeFormatInfo(5);
 
-            var tp = order.Entity.TakeProfit;
-            var sl = order.Entity.StopLoss;
-            var comment = order.Entity.Comment;
+            var tp = order.Info.TakeProfit;
+            var sl = order.Info.StopLoss;
+            var comment = order.Info.Comment;
 
             if (tp != null)
                 _builder.Append(", tp=").AppendNumber(tp.Value, priceFormat);
@@ -265,10 +265,11 @@ namespace TickTrader.Algo.Backtester
 
         private void PrintCharges(TradeChargesInfo charges)
         {
-            var profitFormat = new NumberFormatInfo { NumberDecimalDigits = charges.CurrencyInfo.Digits };
-
             if (charges != null && charges.Commission != 0)
+            {
+                var profitFormat = new NumberFormatInfo { NumberDecimalDigits = charges.CurrencyInfo.Digits };
                 _builder.Append(" commission=").AppendNumber(charges.Commission, profitFormat);
+            }
         }
 
         private void PrintQuote(IRateInfo update, SymbolAccessor smbInfo)

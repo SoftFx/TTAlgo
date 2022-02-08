@@ -1,6 +1,4 @@
-﻿using System;
-using TickTrader.Algo.Calculator;
-using TickTrader.Algo.Core;
+﻿using TickTrader.Algo.Core;
 using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Domain;
 
@@ -20,7 +18,7 @@ namespace TickTrader.Algo.Backtester
 
         public static void OnGrossPositionOpened(OrderAccessor position, SymbolInfo cfg, CalculatorFixture calc)
         {
-            var commis = CalculateMarginCommission(position.Info.Calculator, position.Entity.RequestedAmount, cfg, calc, position.IsReducedOpenCommission());
+            var commis = CalculateMarginCommission(position.Info.Calculator, position.Info.RequestedAmount, cfg, calc, position.IsReducedOpenCommission());
             position.Entity.ChangeCommission(commis);
         }
 
@@ -36,7 +34,7 @@ namespace TickTrader.Algo.Backtester
                 {
                     // charge comission in proportion of close amount to remaining amount
                     charges.Commission = RoundValue((position.Entity.Commission * k), calc.RoundingDigits);
-                    position.Entity.Commission = RoundValue((position.Entity.Commission - charges.Commission), calc.RoundingDigits);
+                    position.Info.Commission = RoundValue((position.Entity.Commission - charges.Commission), calc.RoundingDigits);
                 }
             //}
 
