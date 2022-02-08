@@ -10,7 +10,7 @@ namespace TickTrader.Algo.Account.Settings
         // change all properties to init
         public ConnectionSettings ConnectionSettings { get; set; }
 
-        public HistoryProviderSettings HistoryProviderSettings { get; set; }
+        //public HistoryProviderSettings HistoryProviderSettings { get; set; }
 
         public AccountMonitoringSettings Monitoring { get; set; }
 
@@ -27,13 +27,5 @@ namespace TickTrader.Algo.Account.Settings
         public ServerInteropFactory AccountFactory { get; set; }
 
         public ConnectionOptions Options { get; set; }
-    }
-
-
-    public sealed class HistoryProviderSettings
-    {
-        public string FolderPath { get; set; }
-
-        public FeedHistoryFolderOptions Options { get; set; }
     }
 }

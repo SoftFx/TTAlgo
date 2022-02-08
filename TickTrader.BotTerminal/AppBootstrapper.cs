@@ -214,24 +214,24 @@ namespace TickTrader.BotTerminal
                         AccountFactory = (options, loggerId) => new SfxInterop(options, loggerId),
                         Options = connectionOptions,
                     },
-
-                    HistoryProviderSettings = new HistoryProviderSettings
-                    {
-                        FolderPath = EnvService.Instance.FeedHistoryCacheFolder,
-                        Options = FeedHistoryFolderOptions.ServerHierarchy,
-                    },
                 };
 
                 var clientHandler = new ClientModel.ControlHandler(accountSettings);
                 var dataHandler = clientHandler.CreateDataHandler();
                 await dataHandler.Init();
 
-                var customStorage = new CustomFeedStorage.Handler(ActorSharp.Actor.SpawnLocal<CustomFeedStorage>());
-                await customStorage.SyncData();
-                await customStorage.Start(EnvService.Instance.CustomFeedCacheFolder);
+                //OnlineStorageSettings = new OnlineStorageSettings
+                //{
+                //    FolderPath = EnvService.Instance.FeedHistoryCacheFolder,
+                //    Options = FeedHistoryFolderOptions.ServerHierarchy,
+                //},
+
+                //var customStorage = new CustomFeedStorage.Handler(ActorSharp.Actor.SpawnLocal<CustomFeedStorage>());
+                //await customStorage.SyncData();
+                //await customStorage.Start(EnvService.Instance.CustomFeedCacheFolder);
 
                 _container.RegisterInstance(typeof(ClientModel.Data), null, dataHandler);
-                _container.RegisterInstance(typeof(CustomFeedStorage.Handler), null, customStorage);
+                //_container.RegisterInstance(typeof(CustomFeedStorage.Handler), null, customStorage);
                 _container.Singleton<IWindowManager, Caliburn.Micro.WindowManager>();
                 _container.Singleton<IEventAggregator, EventAggregator>();
                 _container.Singleton<ShellViewModel>();

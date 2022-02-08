@@ -120,11 +120,11 @@ namespace TickTrader.Algo.Server
                     Options = AccountOptions,
                 },
 
-                HistoryProviderSettings = new HistoryProviderSettings
-                {
-                    FolderPath = Env.FeedHistoryCacheFolder,
-                    Options = FeedHistoryFolderOptions.ServerClientHierarchy,
-                },
+                //HistoryProviderSettings = new HistoryProviderSettings
+                //{
+                //    FolderPath = Env.FeedHistoryCacheFolder,
+                //    Options = FeedHistoryFolderOptions.ServerClientHierarchy,
+                //},
 
                 Monitoring = new AccountMonitoringSettings
                 {

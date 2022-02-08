@@ -4,15 +4,16 @@ using Machinarium.Var;
 using NLog;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Backtester;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage;
+using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.BotTerminal
 {
@@ -24,16 +25,15 @@ namespace TickTrader.BotTerminal
         private Property<string> _errorProp;
         private bool _suppressRangeUpdates;
 
-        public BacktesterSymbolSetupViewModel(SymbolSetupType type, IObservableList<SymbolData> symbols, Var<SymbolData> smbSource = null)
+        public BacktesterSymbolSetupViewModel(SymbolSetupType type, ISymbolCatalog catalog, Var<SymbolData> smbSource = null)
         {
             _requestsCount = AddIntProperty();
             _errorProp = AddProperty<string>();
 
             SetupType = type;
 
-            AvailableSymbols = symbols;
-
-            symbols.CollectionChanged += Symbols_CollectionChanged;
+            AvailableSymbols = new ObservableCollection<SymbolData>(catalog.AllSymbols.Cast<SymbolData>());
+            AvailableSymbols.CollectionChanged += Symbols_CollectionChanged;
 
             if (type == SymbolSetupType.Main)
                 AvailableTimeFrames = TimeFrameModel.BarTimeFrames;
@@ -87,7 +87,7 @@ namespace TickTrader.BotTerminal
         public IEnumerable<Feed.Types.Timeframe> AvailableTimeFrames { get; }
         public IEnumerable<DownloadPriceChoices> AvailablePriceTypes => EnumHelper.AllValues<DownloadPriceChoices>();
         public Property<List<Feed.Types.Timeframe>> AvailableBases { get; }
-        public IObservableList<SymbolData> AvailableSymbols { get; }
+        public ObservableCollection<SymbolData> AvailableSymbols { get; }
         public Validable<string> SelectedSymbolName { get; }
         public Validable<SymbolData> SelectedSymbol { get; }
         public Property<Feed.Types.Timeframe> SelectedTimeframe { get; }
@@ -109,7 +109,7 @@ namespace TickTrader.BotTerminal
 
         public string AsText()
         {
-            var smb = SelectedSymbol.Value.InfoEntity;
+            var smb = (SymbolInfo)SelectedSymbol.Value.InfoEntity;
             var swapLong = smb.Swap.Enabled ? smb.Swap.SizeLong : 0;
             var swapShort = smb.Swap.Enabled ? smb.Swap.SizeShort : 0;
 
@@ -149,7 +149,7 @@ namespace TickTrader.BotTerminal
                 try
                 {
                     var range = await smb.GetAvailableRange(timeFrame, Feed.Types.MarketSide.Bid);
-                    if (range != null && range.Item1 != null && range.Item2 != null)
+                    if (range.Item1 != null && range.Item2 != null)
                     {
                         AvailableRange.Value = new Tuple<DateTime, DateTime>(range.Item1.Value.Date, range.Item2.Value.Date + TimeSpan.FromDays(1));
                         _errorProp.Value = null;
@@ -259,7 +259,7 @@ namespace TickTrader.BotTerminal
             var precacheFrom = GetLocalFrom(fromLimit);
             var precacheTo = GetLocalTo(toLimit);
 
-            settings.Symbols.Add(smbData.Name, smbData.InfoEntity);
+            settings.Symbols.Add(smbData.Name, (SymbolInfo)smbData.InfoEntity);
 
             if (baseTimeFrame == Feed.Types.Timeframe.Ticks || baseTimeFrame == Feed.Types.Timeframe.TicksLevel2)
             {

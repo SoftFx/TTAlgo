@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
+using TickTrader.FeedStorage.Api;
 using TickTrader.SeriesStorage;
 
 namespace TickTrader.FeedStorage
@@ -42,6 +43,12 @@ namespace TickTrader.FeedStorage
             private string _baseFolder;
             private ActorCallback<FeedCacheKey> addCallback;
             private ActorCallback<FeedCacheKey> removeCallback;
+
+
+            internal SymbolCollection<ISymbolData> Collection { get; private set; }
+
+            internal bool IsStarted { get; private set; }
+
 
             public Handler(Ref<FeedCache> actorRef)
             {
@@ -82,19 +89,27 @@ namespace TickTrader.FeedStorage
 
             public IVarSet<FeedCacheKey> Keys => _series?.Keys;
 
-            public string DataBaseFolder => _baseFolder;
+            //public string DataBaseFolder => _baseFolder;
 
             public ActorCallback<FeedCacheKey> RemoveCallback { get => removeCallback; set => removeCallback = value; }
 
-            public Task Start(string folder)
+            public async Task Start(string folder)
             {
+                IsStarted = true;
+                Collection = new SymbolCollection<ISymbolData>(folder);
                 _baseFolder = folder;
-                return _ref.Call(a => a.Start(folder));
+
+                await _ref.Call(a => a.Start(folder));
+                await SyncData();
             }
 
             //public Task Refresh() => _ref.Call(r => r.Refresh());
 
-            public Task Stop() => _ref.Call(a => a.Stop());
+            public Task Stop()
+            {
+                IsStarted = false;
+                return _ref.Call(a => a.Stop());
+            }
 
             public Task Put(FeedCacheKey key, DateTime from, DateTime to, QuoteInfo[] values)
                 => Put(key.Symbol, key.TimeFrame, from, to, values);
@@ -145,7 +160,7 @@ namespace TickTrader.FeedStorage
             public Task<KeyRange<DateTime>> GetFirstRange(string symbol, Feed.Types.Timeframe frame, Feed.Types.MarketSide? marketSide, DateTime from, DateTime to)
                 => _ref.Call(a => a.GetFirstRange(symbol, frame, marketSide, from, to));
 
-            public Task<Tuple<DateTime?, DateTime?>> GetRange(FeedCacheKey key)
+            public Task<(DateTime?, DateTime?)> GetRange(FeedCacheKey key)
                 => _ref.Call(a => a.GetRange(key));
 
             public Task<double?> GetCollectionSize(FeedCacheKey key)
@@ -173,7 +188,7 @@ namespace TickTrader.FeedStorage
             if (Database != null)
                 throw new InvalidOperationException("Already started!");
 
-            Database = SeriesDatabase.Create(BinaryStorageManagerFactory.Create(folder));
+            Database = SeriesDatabase.Create(StorageFactory.BuildBinaryStorage(folder));
 
             Refresh();
         }
@@ -211,7 +226,7 @@ namespace TickTrader.FeedStorage
             }
         }
 
-        protected Tuple<DateTime?, DateTime?> GetRange(FeedCacheKey key)
+        protected (DateTime?, DateTime?) GetRange(FeedCacheKey key)
         {
             CheckState();
 
@@ -226,7 +241,7 @@ namespace TickTrader.FeedStorage
                 max = r.To;
             }
 
-            return new Tuple<DateTime?, DateTime?>(min, max);
+            return (min, max);
         }
 
         //private Task<Tuple<DateTime, DateTime>> GetRangeAsync(FeedCacheKey key, bool custom)

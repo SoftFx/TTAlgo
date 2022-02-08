@@ -6,8 +6,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\lib\Machinarium\Machinarium.csproj" />
-    <ProjectReference Include="..\TickTrader.Algo.Calculator\TickTrader.Algo.Calculator.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.Domain\TickTrader.Algo.Domain.csproj" />
+    <ProjectReference Include="..\TickTrader.FeedStorage\TickTrader.FeedStorage.csproj" />
   </ItemGroup>
 
 </Project>

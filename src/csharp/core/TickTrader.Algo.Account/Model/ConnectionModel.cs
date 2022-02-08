@@ -352,6 +352,7 @@ namespace TickTrader.Algo.Account
             public string CurrentLogin { get; private set; }
             public string CurrentServer { get; private set; }
             public string CurrentProtocol { get; private set; }
+            public IFeedServerApi FeedProxy { get; private set; }
 
             public event AsyncEventHandler Initalizing;
             public event AsyncEventHandler Deinitalizing;
@@ -398,13 +399,17 @@ namespace TickTrader.Algo.Account
                 });
             }
 
-            private Task FireInitEvent()
+            private async Task FireInitEvent()
             {
-                return Initalizing.InvokeAsync(this, CancellationToken.None);
+                FeedProxy = await Actor.Call(a => a.FeedProxy);
+
+                await Initalizing.InvokeAsync(this, CancellationToken.None);
             }
 
             private Task FireDeinitEvent()
             {
+                FeedProxy = null;
+
                 return Deinitalizing.InvokeAsync(this, CancellationToken.None);
             }
 

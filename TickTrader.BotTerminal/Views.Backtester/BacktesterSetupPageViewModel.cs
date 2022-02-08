@@ -15,6 +15,7 @@ using TickTrader.Algo.Domain;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.ServerControl;
 using TickTrader.FeedStorage;
+using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.BotTerminal
 {
@@ -23,7 +24,7 @@ namespace TickTrader.BotTerminal
         private readonly VarContext _var = new VarContext();
         private readonly TraderClientModel _client;
         private readonly AlgoEnvironment _env;
-        private SymbolCatalog _catalog;
+        private ISymbolCatalog _catalog;
         private WindowManager _localWnd;
         private readonly BoolProperty _isDateRangeValid;
         private readonly BoolProperty _allSymbolsValid;
@@ -34,7 +35,7 @@ namespace TickTrader.BotTerminal
         private BacktesterPluginSetupViewModel _openedPluginSetup;
         private readonly OptionalItem<BacktesterMode> _optModeItem;
 
-        public BacktesterSetupPageViewModel(TraderClientModel client, SymbolCatalog catalog, AlgoEnvironment env, BoolVar isRunning)
+        public BacktesterSetupPageViewModel(TraderClientModel client, ISymbolCatalog catalog, AlgoEnvironment env, BoolVar isRunning)
         {
             DisplayName = "Setup";
 
@@ -96,11 +97,13 @@ namespace TickTrader.BotTerminal
             var predefinedSymbolTokens = new VarDictionary<SymbolKey, ISetupSymbolInfo>();
             predefinedSymbolTokens.Add(_mainSymbolToken.GetKey(), _mainSymbolToken);
 
-            var existingSymbolTokens = _catalog.AllSymbols.Select((k, s) => (ISetupSymbolInfo)s.ToSymbolToken());
-            _symbolTokens = VarCollection.Combine(predefinedSymbolTokens, existingSymbolTokens);
+            var existingSymbolTokens = _catalog.AllSymbols.Select(s => s.ToKey()).ToList();
+            existingSymbolTokens.AddRange(predefinedSymbolTokens.Values);
 
-            var sortedSymbolTokens = _symbolTokens.OrderBy((k, v) => k, new SymbolKeyComparer());
-            _observableSymbolTokens = sortedSymbolTokens.AsObservable();
+           // _symbolTokens = VarCollection.Combine(predefinedSymbolTokens, existingSymbolTokens);
+
+            var sortedSymbolTokens = existingSymbolTokens.OrderBy(u => u, new SetupSymbolInfoComparer()).ToList();
+            _observableSymbolTokens = sortedSymbolTokens.AsReadOnly();
 
             Modes = new List<OptionalItem<BacktesterMode>>
             {
@@ -149,7 +152,7 @@ namespace TickTrader.BotTerminal
                     _mainSymbolToken.Id = a.New.Name;
 
                     if (_openedPluginSetup != null)
-                        _openedPluginSetup.Setup.MainSymbol = a.New.ToSymbolToken();
+                        _openedPluginSetup.Setup.MainSymbol = a.New.Key.ToKey();
 
                     MainSymbolShadowSetup.SelectedSymbolName.Value = a.New.Name;
                 }
@@ -295,7 +298,7 @@ namespace TickTrader.BotTerminal
                     ? new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.PluginInfo, this, this.GetSetupContextInfo())
                     : new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.PluginInfo, this, this.GetSetupContextInfo(), PluginConfig);
                 //_localWnd.OpenMdiWindow(wndKey, _openedPluginSetup);
-                _openedPluginSetup.Setup.MainSymbol = MainSymbolSetup.SelectedSymbol.Value.ToSymbolToken();
+                _openedPluginSetup.Setup.MainSymbol = MainSymbolSetup.SelectedSymbol.Value.Key.ToKey();
                 _openedPluginSetup.Setup.SelectedTimeFrame = MainSymbolSetup.SelectedTimeframe.Value.ToApi();
                 _openedPluginSetup.Closed += PluginSetupClosed;
                 _openedPluginSetup.Setup.ConfigLoaded += Setup_ConfigLoaded;
@@ -321,7 +324,7 @@ namespace TickTrader.BotTerminal
 
         private void Setup_ConfigLoaded(PluginConfigViewModel config)
         {
-            MainSymbolSetup.SelectedSymbol.Value = _catalog.GetSymbol(config.MainSymbol);
+            MainSymbolSetup.SelectedSymbol.Value = (SymbolData)_catalog[config.MainSymbol]; //change to config.MainSymbol
             MainSymbolSetup.SelectedSymbolName.Value = MainSymbolSetup.SelectedSymbol.Value.Name;
             MainSymbolSetup.SelectedTimeframe.Value = config.SelectedTimeFrame.ToServer();
         }
@@ -336,7 +339,7 @@ namespace TickTrader.BotTerminal
 
         private BacktesterSymbolSetupViewModel CreateSymbolSetupModel(SymbolSetupType type, Var<SymbolData> symbolSrc = null)
         {
-            var smb = new BacktesterSymbolSetupViewModel(type, _catalog.ObservableSymbols, symbolSrc);
+            var smb = new BacktesterSymbolSetupViewModel(type, _catalog, symbolSrc);
             smb.Removed += Smb_Removed;
             smb.OnAdd += AddSymbol;
 

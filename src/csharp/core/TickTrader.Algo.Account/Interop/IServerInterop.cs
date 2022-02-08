@@ -1,10 +1,10 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using ActorSharp;
-using TickTrader.Algo.Domain;
+﻿using ActorSharp;
 using Google.Protobuf.WellKnownTypes;
+using System;
+using System.Threading;
 using System.Threading.Channels;
+using System.Threading.Tasks;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Account
 {
@@ -56,10 +56,14 @@ namespace TickTrader.Algo.Account
         Task<SymbolInfo[]> GetSymbols();
         Task<QuoteInfo[]> SubscribeToQuotes(string[] symbols, int depth);
         Task<QuoteInfo[]> GetQuoteSnapshot(string[] symbols, int depth);
-        void DownloadBars(BlockingChannel<BarData> stream, string symbol, Timestamp from, Timestamp to, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe);
+
         Task<BarData[]> DownloadBarPage(string symbol, Timestamp from, int count, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe);
-        void DownloadQuotes(BlockingChannel<QuoteInfo> stream, string symbol, Timestamp from, Timestamp to, bool includeLevel2);
         Task<QuoteInfo[]> DownloadQuotePage(string symbol, Timestamp from, int count, bool includeLevel2);
-        Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe);
+
+        void DownloadBars(BlockingChannel<BarData> stream, string symbol, Timestamp from, Timestamp to, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe);
+
+        void DownloadQuotes(BlockingChannel<QuoteInfo> stream, string symbol, Timestamp from, Timestamp to, bool includeLevel2);
+
+        Task<(DateTime?, DateTime?)> GetAvailableRange(string symbol, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe);
     }
 }

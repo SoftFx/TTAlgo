@@ -4,8 +4,9 @@ using Machinarium.Qnil;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core.Setup;
+//using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
+using TickTrader.FeedStorage.Api;
 using TickTrader.SeriesStorage;
 using TickTrader.SeriesStorage.ProtoSerializer;
 
@@ -33,62 +34,71 @@ namespace TickTrader.FeedStorage
         public new class Handler : FeedCache.Handler
         {
             private Ref<CustomFeedStorage> _ref;
-            private VarDictionary<SymbolKey, CustomSymbol> _symbols = new VarDictionary<SymbolKey, CustomSymbol>();
+            private VarDictionary<ISymbolKey, CustomSymbol> _symbols = new VarDictionary<ISymbolKey, CustomSymbol>();
             private ActorCallback<EntityUpdateArgs<CustomSymbol>> _smbChangedCallback;
+
+
+            //internal SymbolCollection<CustomSymbol> Collection { get; private set; }
 
             public Handler(Ref<CustomFeedStorage> actorRef) : base(actorRef.Cast<CustomFeedStorage, FeedCache>())
             {
                 _ref = actorRef;
+
+                //Collection = new SymbolCollection<CustomSymbol>();
             }
 
-            public async override Task SyncData()
+            public override async Task SyncData()
             {
-                _symbols.Clear();
+                //_symbols.Clear();
 
                 await base.SyncData();
 
-                _smbChangedCallback = ActorCallback.Create<EntityUpdateArgs<CustomSymbol>>(u =>
-                {
-                    if (u.Action == EntityUpdateActions.Add)
-                        _symbols.Add(GetKey(u.Entity), u.Entity);
-                    else if (u.Action == EntityUpdateActions.Remove)
-                        _symbols.Remove(GetKey(u.Entity));
-                    else if (u.Action == EntityUpdateActions.Replace)
-                        _symbols[GetKey(u.Entity)] = u.Entity;
-                });
+                var smb = await _ref.Call(a => a._symbols);
 
-                var snapshot = await _ref.Call(a =>
-                {
-                    a._symbolChangeListeners.Add(_smbChangedCallback);
-                    return a._symbols.Values.ToList();
-                });
+                Collection.Initialize(smb.Values.ToList());
 
-                foreach (var smb in snapshot)
-                    _symbols.Add(GetKey(smb), smb);
+                //_smbChangedCallback = ActorCallback.Create<EntityUpdateArgs<CustomSymbol>>(u =>
+                //{
+                //    if (u.Action == EntityUpdateActions.Add)
+                //        _symbols.Add(GetKey(u.Entity), u.Entity);
+                //    else if (u.Action == EntityUpdateActions.Remove)
+                //        _symbols.Remove(GetKey(u.Entity));
+                //    else if (u.Action == EntityUpdateActions.Replace)
+                //        _symbols[GetKey(u.Entity)] = u.Entity;
+                //});
+
+                //var snapshot = await _ref.Call(a =>
+                //{
+                //    a._symbolChangeListeners.Add(_smbChangedCallback);
+                //    return a._symbols.Values.ToList();
+                //});
+
+                //foreach (var smb in snapshot)
+                //    _symbols.Add(GetKey(smb), smb);
             }
 
-            public override void Dispose()
-            {
-                if (_smbChangedCallback != null)
-                {
-                    _symbols.Clear();
-                    _ref.Send(a => a._symbolChangeListeners.Remove(_smbChangedCallback));
-                    _smbChangedCallback = null;
-                }
+            //public override void Dispose()
+            //{
+            //    if (_smbChangedCallback != null)
+            //    {
+            //        _symbols.Clear();
+            //        _ref.Send(a => a._symbolChangeListeners.Remove(_smbChangedCallback));
+            //        _smbChangedCallback = null;
+            //    }
 
-                base.Dispose();
-            }
+            //    base.Dispose();
+            //}
 
-            public IVarSet<SymbolKey, CustomSymbol> Symbols => _symbols;
+            //public IVarSet<SymbolKey, CustomSymbol> Symbols => _symbols;
 
             public Task Add(CustomSymbol newSymbol) => _ref.Call(a => a.Add(newSymbol));
             public Task Remove(string symbol) => _ref.Call(a => a.Remove(symbol));
             public Task Update(CustomSymbol symbolCfg) => _ref.Call(a => a.Update(symbolCfg));
 
-            private SymbolKey GetKey(CustomSymbol smb)
-            {
-                return new SymbolKey(smb.Name, SymbolConfig.Types.SymbolOrigin.Custom);
-            }
+            //private SymbolKey GetKey(CustomSymbol smb)
+            //{
+            //    return new SymbolKey(smb.Name, SymbolConfig.Types.SymbolOrigin.Custom);
+            //}
         }
 
         protected override void Start(string dbFolder)
@@ -131,8 +141,6 @@ namespace TickTrader.FeedStorage
             newSymbol.StorageId = Guid.NewGuid();
             _metadataStorage.Write(newSymbol.StorageId, newSymbol);
             _symbols.Add(newSymbol.Name, newSymbol);
-
-
         }
 
         private void Update(CustomSymbol symbolCfg)
