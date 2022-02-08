@@ -99,5 +99,13 @@ namespace TickTrader.FeedStorage
         {
             return HashCode.GetComposite(Name, Origin);
         }
+
+        int IComparable<ISymbolKey>.CompareTo(ISymbolKey other)
+        {
+            if (Origin == other.Origin)
+                return Name.CompareTo(other.Name);
+            else
+                return Origin.CompareTo(other.Origin);
+        }
     }
 }

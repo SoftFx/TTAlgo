@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
@@ -64,6 +65,14 @@ namespace TickTrader.BotTerminal
         bool IEqualityComparer<ISymbolKey>.Equals(ISymbolKey x, ISymbolKey y) => x.Name == y.Name && x.Origin == y.Origin;
 
         int IEqualityComparer<ISymbolKey>.GetHashCode(ISymbolKey obj) => base.GetHashCode();
+
+        int IComparable<ISymbolKey>.CompareTo(ISymbolKey other)
+        {
+            if (Origin == other.Origin)
+                return Name.CompareTo(other.Name);
+            else
+                return Origin.CompareTo(other.Origin);
+        }
     }
 
 

@@ -64,7 +64,7 @@ namespace TickTrader.FeedStorage.Api
         event Action<T, T> SymbolUpdated;
     }
 
-    public interface ISymbolKey : IEqualityComparer<ISymbolKey>
+    public interface ISymbolKey : IEqualityComparer<ISymbolKey>, IComparable<ISymbolKey>
     {
         string Name { get; }
 

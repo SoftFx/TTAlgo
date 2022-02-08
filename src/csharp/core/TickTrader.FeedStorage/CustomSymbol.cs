@@ -240,5 +240,10 @@ namespace TickTrader.FeedStorage.Api
         {
             throw new NotImplementedException();
         }
+
+        public int CompareTo(ISymbolKey other)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

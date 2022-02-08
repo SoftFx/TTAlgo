@@ -1980,7 +1980,7 @@ namespace TickTrader.Algo.Backtester
                     foreach (OrderAccessor order in positions)
                     {
                         CalculationError error = CalculationError.None;
-                        double swap = double.NaN;/*((OrderCalculator)order.Info.Calculator).CalculateSwap((double)order.Info.RemainingAmount, order.Info.Side, ExecutionTime, out var error);*/
+                        double swap = 0.0;/*((OrderCalculator)order.Info.Calculator).CalculateSwap((double)order.Info.RemainingAmount, order.Info.Side, ExecutionTime, out var error);*/
 
                         if (error != CalculationError.None)
                         {
