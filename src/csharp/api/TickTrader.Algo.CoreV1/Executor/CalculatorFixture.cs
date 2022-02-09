@@ -2,7 +2,7 @@
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Calculator;
 using TickTrader.Algo.Calculator.AlgoMarket;
-using TickTrader.Algo.Calculator.TradeSpeсificsCalculators;
+using TickTrader.Algo.Calculator.TradeSpecificsCalculators;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.CalculatorInterfaces;

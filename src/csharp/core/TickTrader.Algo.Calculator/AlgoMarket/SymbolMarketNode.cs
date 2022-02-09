@@ -1,5 +1,5 @@
 ﻿using TickTrader.Algo.Calculator.Conversions;
-using TickTrader.Algo.Calculator.TradeSpeсificsCalculators;
+using TickTrader.Algo.Calculator.TradeSpecificsCalculators;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Infrastructure;
 using TickTrader.Algo.Domain;

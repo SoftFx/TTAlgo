@@ -1,5 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using TickTrader.Algo.Calculator.TradeSpeсificsCalculators;
+using TickTrader.Algo.Calculator.TradeSpecificsCalculators;
 
 namespace TickTrader.Algo.Calculator.Tests.MarginCalculations
 {
