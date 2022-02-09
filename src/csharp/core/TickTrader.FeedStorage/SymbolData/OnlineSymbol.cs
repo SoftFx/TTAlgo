@@ -4,41 +4,36 @@ using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
-using TickTrader.FeedStorage.Api;
 
 
 namespace TickTrader.FeedStorage
 {
-    internal class OnlineSymbol : SymbolData
+    internal sealed class OnlineSymbol : BaseSymbol
     {
-        private readonly SymbolInfo _symbolInfo;
         private readonly FeedProvider.Handler _provider;
 
-        public OnlineSymbol(SymbolInfo symbol, FeedProvider.Handler provider) : base(symbol.Name, provider.Cache)
-        {
-            _symbolInfo = symbol ?? throw new ArgumentNullException("symbol");
-            _provider = provider;
-        }
 
-        public override bool IsCustom => false;
-        public override string Description => _symbolInfo.Description;
-        public override string Security => _symbolInfo.Security;
-        public override ISymbolInfo InfoEntity => _symbolInfo;
-        public override CustomSymbol StorageEntity => CustomSymbol.FromAlgo(_symbolInfo);
-        public override bool IsDataAvailable => _provider.FeedProxy.IsAvailable;
+        public override bool IsDownloadAvailable => _provider.FeedProxy.IsAvailable;
 
         public override SymbolConfig.Types.SymbolOrigin Origin => SymbolConfig.Types.SymbolOrigin.Online;
 
+
+        public OnlineSymbol(ISymbolInfo symbol, FeedProvider.Handler provider) : base(symbol, provider.Cache)
+        {
+            _provider = provider;
+        }
+
+
         public override Task<(DateTime?, DateTime?)> GetAvailableRange(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide? priceType = null)
         {
-            return _provider.FeedProxy.GetAvailableSymbolRange(_symbolInfo.Name, timeFrame, priceType ?? Feed.Types.MarketSide.Bid);
+            return _provider.FeedProxy.GetAvailableSymbolRange(Name, timeFrame, priceType ?? Feed.Types.MarketSide.Bid);
         }
+
 
         public async override Task DownloadToStorage(IActionObserver observer, bool showStats, CancellationToken cancelToken, Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide priceType, DateTime from, DateTime to)
         {
-            var symbol = _symbolInfo.Name;
+            var symbol = Name;
 
             var watch = Stopwatch.StartNew();
             int downloadedCount = 0;
@@ -113,11 +108,6 @@ namespace TickTrader.FeedStorage
 
                 observer.SetMessage("Completed: " + downloadedCount + " ticks were downloaded.");
             }
-        }
-
-        public override Task Remove()
-        {
-            throw new InvalidOperationException("Cannot remove online symbol!");
         }
     }
 }

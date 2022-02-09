@@ -9,9 +9,9 @@ namespace TickTrader.FeedStorage
 {
     public class SymbolStorageSeries
     {
-        private FeedCache.Handler _storage;
+        private FeedStorageBase.FeedHandler _storage;
 
-        public SymbolStorageSeries(FeedCacheKey key, SymbolData symbolModel, FeedCache.Handler storage)
+        public SymbolStorageSeries(FeedCacheKey key, ISymbolData symbolModel, FeedStorageBase.FeedHandler storage)
         {
             Key = key;
             Symbol = symbolModel;
@@ -19,7 +19,7 @@ namespace TickTrader.FeedStorage
         }
 
         public FeedCacheKey Key { get; }
-        public SymbolData Symbol { get; }
+        public ISymbolData Symbol { get; }
 
         public Task<double?> GetCollectionSize()
         {

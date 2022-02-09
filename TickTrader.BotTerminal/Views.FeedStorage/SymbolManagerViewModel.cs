@@ -146,39 +146,39 @@ namespace TickTrader.BotTerminal
 
             if (_wndManager.ShowDialog(model, this).Result == true)
             {
-                var actionModel = new ActionDialogViewModel("Adding symbol...", () => _catalog.CustomCollection.TryAddSymbol(model.GetResultingSymbol()));
+                var actionModel = new ActionDialogViewModel("Adding symbol...", () => _catalog.CustomCollection.TryAddSymbol(model));
                 _wndManager.ShowDialog(actionModel, this);
             }
         }
 
         public void EditSymbol(ISymbolData symbol)
         {
-            var model = new SymbolCfgEditorViewModel(((CustomSymbolData)symbol).Entity, _clientModel.SortedCurrenciesNames, HasSymbol);
+            var model = new SymbolCfgEditorViewModel((ICustomInfo)symbol, _clientModel.SortedCurrenciesNames, HasSymbol);
 
             if (_wndManager.ShowDialog(model, this).Result == true)
             {
-                var actionModel = new ActionDialogViewModel("Saving symbol settings...", () => _catalog.CustomCollection.TryUpdateSymbol(model.GetResultingSymbol()));
+                var actionModel = new ActionDialogViewModel("Saving symbol settings...", () => _catalog.CustomCollection.TryUpdateSymbol(model));
                 _wndManager.ShowDialog(actionModel, this);
             }
         }
 
         public void CopySymbol(ISymbolData symbol)
         {
-            CustomSymbol smb = null;
-            if (symbol is CustomSymbolData)
-            {
-                smb = ((CustomSymbolData)symbol).Entity;
-            }
-            else
-            {
-                smb = CustomSymbol.FromAlgo((SymbolInfo)symbol.InfoEntity);
-            }
+            var smb = (ICustomInfo)symbol;
+            //if (symbol is CustomSymbol)
+            //{
+            //    smb = ((CustomSymbol)symbol).Entity;
+            //}
+            //else
+            //{
+            //    //smb = CustomSymbol.FromAlgo((SymbolInfo)symbol.InfoEntity);
+            //}
 
             var model = new SymbolCfgEditorViewModel(smb, _clientModel.SortedCurrenciesNames, HasSymbol, true);
 
             if (_wndManager.ShowDialog(model, this).Result == true)
             {
-                var actionModel = new ActionDialogViewModel("Saving symbol settings...", () => _catalog.CustomCollection.TryAddSymbol(model.GetResultingSymbol()));
+                var actionModel = new ActionDialogViewModel("Saving symbol settings...", () => _catalog.CustomCollection.TryAddSymbol(model));
                 _wndManager.ShowDialog(actionModel, this);
             }
         }
@@ -190,7 +190,7 @@ namespace TickTrader.BotTerminal
 
         public void RemoveSymbol(ISymbolData symbolModel)
         {
-            var actionModel = new ActionDialogViewModel("Removing symbol...", () => _catalog.CustomCollection.TryRemoveSymbol((CustomSymbol)symbolModel));
+            var actionModel = new ActionDialogViewModel("Removing symbol...", () => _catalog.CustomCollection.TryRemoveSymbol(symbolModel));
             _wndManager.ShowDialog(actionModel, this);
         }
 
@@ -285,8 +285,8 @@ namespace TickTrader.BotTerminal
         protected SymbolManagerViewModel Parent { get; private set; }
 
         public ISymbolData Model { get; }
-        public string Description => Model.Description;
-        public string Security => Model.Security;
+        public string Description => Model.Info.Description;
+        public string Security => Model.Info.Security;
         public string Name => Model.Name;
         public string Category { get; }
         public bool IsCustom => Model.IsCustom;

@@ -16,9 +16,9 @@ namespace TickTrader.FeedStorage
 
         private string _dataFolder;
 
-        private FeedCache.Handler _diskCache = new FeedCache.Handler(SpawnLocal<FeedCache>());
+        private OnlineFeedStorage.Handler _diskCache = new OnlineFeedStorage.Handler(SpawnLocal<OnlineFeedStorage>());
 
-        private FeedCache.Handler Cache => _diskCache;
+        private OnlineFeedStorage.Handler Cache => _diskCache;
 
         internal IClientFeedProvider FeedProxy { get; private set; }
 
@@ -70,7 +70,7 @@ namespace TickTrader.FeedStorage
         {
             public IClientFeedProvider FeedProxy { get; private set; }
 
-            public FeedCache.Handler Cache { get; private set; }
+            public OnlineFeedStorage.Handler Cache { get; private set; }
 
             //internal SymbolCollection<ISymbolData> Collection { get; private set; }
 
@@ -92,7 +92,7 @@ namespace TickTrader.FeedStorage
                 await Cache.Start(folder);
                 //await Cache.SyncData();
 
-                Cache.Collection.Initialize(FeedProxy.Symbols.Select(s => new OnlineSymbol(s, this)));
+                //Cache.Collection.Initialize(FeedProxy.Symbols.Select(s => new OnlineSymbol(s, this)));
             }
 
             public Task Stop()

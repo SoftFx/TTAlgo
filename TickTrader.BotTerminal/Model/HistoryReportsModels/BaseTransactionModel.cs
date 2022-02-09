@@ -21,14 +21,14 @@ namespace TickTrader.BotTerminal
 
         public BaseTransactionModel() { }
 
-        protected BaseTransactionModel(SymbolInfo symbol)
+        protected BaseTransactionModel(ISymbolInfo symbol)
         {
             PriceDigits = symbol?.Digits ?? -1;
             LotSize = symbol?.LotSize ?? 1;
             ProfitDigits = -1;
         }
 
-        public BaseTransactionModel(TradeReportInfo transaction, SymbolInfo symbol, int profitDigits) : this(symbol)
+        public BaseTransactionModel(TradeReportInfo transaction, ISymbolInfo symbol, int profitDigits) : this(symbol)
         {
             ProfitDigits = profitDigits;
 
@@ -100,7 +100,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public static BaseTransactionModel Create<T>(AccountInfo.Types.Type accountType, T tTransaction, int balanceDigits, SymbolInfo symbol = null)
+        public static BaseTransactionModel Create<T>(AccountInfo.Types.Type accountType, T tTransaction, int balanceDigits, ISymbolInfo symbol = null)
         {
             switch (tTransaction)
             {

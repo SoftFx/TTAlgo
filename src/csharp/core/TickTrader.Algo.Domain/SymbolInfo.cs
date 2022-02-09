@@ -55,25 +55,17 @@ namespace TickTrader.Algo.Domain
 
         string ISymbolInfo.ProfitCurrency => CounterCurrency; // QuoteCurrency.Name; //??? maybe, QuoteCurrency == CounterCurrency
 
-        string ISymbolInfo.NodeKey => $"{BaseCurrency}{CounterCurrency}";
-
-        double ISymbolInfo.Point => Math.Pow(10, -Digits);
-
-        double ISymbolInfo.DefaultSlippage => Slippage.DefaultValue ?? 0;
-
         double ISymbolInfo.StopOrderMarginReduction => Margin.StopOrderReduction ?? 1;
 
         double ISymbolInfo.HiddenLimitOrderMarginReduction => Margin.HiddenLimitOrderReduction ?? 1;
 
         double ISymbolInfo.MarginHedged => Margin.Hedged;
 
-        public int ProfitDigits => 2; //redone
 
         MarginInfo.Types.CalculationMode ISymbolInfo.MarginMode => Margin.Mode;
 
         double ISymbolInfo.MarginFactor => Margin.Factor;
 
-        double ISymbolInfo.ContractSizeFractional => LotSize;
 
         SwapInfo.Types.Type ISymbolInfo.SwapType => Swap.Type;
 
@@ -88,13 +80,13 @@ namespace TickTrader.Algo.Domain
 
     public interface ISymbolInfo : IBaseSymbolInfo
     {
-        double DefaultSlippage { get; }
-        double Point { get; }
         double Bid { get; }
         double Ask { get; }
         bool HasBid { get; }
         bool HasAsk { get; }
         int Digits { get; }
+        string Description { get; }
+        string Security { get; }
         double LotSize { get; }
 
         Domain.MarginInfo.Types.CalculationMode MarginMode { get; }
@@ -102,8 +94,6 @@ namespace TickTrader.Algo.Domain
         double MarginHedged { get; }
         string MarginCurrency { get; }
         string ProfitCurrency { get; }
-        string NodeKey { get; }
-        double ContractSizeFractional { get; }
 
         Domain.SwapInfo.Types.Type SwapType { get; }
         int TripleSwapDay { get; }
@@ -120,7 +110,6 @@ namespace TickTrader.Algo.Domain
 
         void Update(ISymbolInfo newInfo);
         IQuoteInfo LastQuote { get; }
-        int ProfitDigits { get; }
     }
 
     public interface IBaseSymbolInfo

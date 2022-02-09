@@ -27,7 +27,7 @@ namespace TickTrader.BotTerminal
             _client = clientModel;
 
             //Symbols = clientModel.Symbols.Select((k, v) => (SymbolModel)v).OrderBy((k, v) => k).Chain().AsObservable();
-            Symbols = new ObservableCollection<SymbolData>(catalog.AllSymbols.Cast<SymbolData>());
+            Symbols = new ObservableCollection<BaseSymbol>(catalog.AllSymbols.Cast<BaseSymbol>());
 
             DownloadObserver = new ActionViewModel();
             DateRange = new DateRangeSelectionViewModel();
@@ -54,7 +54,7 @@ namespace TickTrader.BotTerminal
 
         public IEnumerable<Feed.Types.Timeframe> AvailableTimeFrames => TimeFrameModel.AllTimeFrames;
         public IEnumerable<Feed.Types.MarketSide> AvailablePriceTypes => EnumHelper.AllValues<Feed.Types.MarketSide>();
-        public ObservableCollection<SymbolData> Symbols { get; }
+        public ObservableCollection<BaseSymbol> Symbols { get; }
         public DateRangeSelectionViewModel DateRange { get; }
         public ActionViewModel DownloadObserver { get; }
 

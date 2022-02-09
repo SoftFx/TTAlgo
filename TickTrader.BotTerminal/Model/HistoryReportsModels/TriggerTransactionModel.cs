@@ -4,7 +4,7 @@ namespace TickTrader.BotTerminal
 {
     internal sealed class TriggerTransactionModel : BaseTransactionModel
     {
-        public TriggerTransactionModel(TriggerReportInfo report, SymbolInfo symbol, AccountInfo.Types.Type accType) : base(symbol)
+        public TriggerTransactionModel(TriggerReportInfo report, ISymbolInfo symbol, AccountInfo.Types.Type accType) : base(symbol)
         {
             TriggeredByOrder = report.OrderIdTriggeredBy;
             OCORelatedOrderId = report.RelatedOrderId;

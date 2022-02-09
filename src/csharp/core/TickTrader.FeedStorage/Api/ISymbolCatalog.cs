@@ -1,10 +1,7 @@
 ﻿using ActorSharp;
-using Google.Protobuf.WellKnownTypes;
-using Machinarium.Qnil;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.FeedStorage.Api
@@ -16,9 +13,9 @@ namespace TickTrader.FeedStorage.Api
         IReadOnlyList<ISymbolData> AllSymbols { get; }
 
 
-        ISymbolCollection<ISymbolData> OnlineCollection { get; }
+        ISymbolCollection<ISymbolInfo> OnlineCollection { get; }
 
-        ISymbolCollection<ISymbolData> CustomCollection { get; }
+        ISymbolCollection<ICustomInfo> CustomCollection { get; }
 
 
         Task<ISymbolCatalog> ConnectClient(IOnlineStorageSettings settings);
@@ -40,56 +37,27 @@ namespace TickTrader.FeedStorage.Api
     }
 
 
-    public interface ISymbolCollection<T> where T : ISymbolData
+    public interface ISymbolCollection<T>
     {
         string StorageFolder { get; }
 
-        T this[string name] { get; }
+        ISymbolData this[string name] { get; }
 
 
-        List<T> Symbols { get; }
+        List<ISymbolData> Symbols { get; }
 
 
-        bool TryAddSymbol(T symbol);
+        Task<bool> TryAddSymbol(T symbol);
 
-        bool TryUpdateSymbol(T symbol);
+        Task<bool> TryUpdateSymbol(T symbol);
 
-        bool TryRemoveSymbol(T symbol);
-
-
-        event Action<T> SymbolAdded;
-
-        event Action<T> SymbolRemoved;
-
-        event Action<T, T> SymbolUpdated;
-    }
-
-    public interface ISymbolKey : IEqualityComparer<ISymbolKey>
-    {
-        string Name { get; }
-
-        SymbolConfig.Types.SymbolOrigin Origin { get; }
-    }
+        Task<bool> TryRemoveSymbol(ISymbolKey symbol);
 
 
-    public interface ISymbolData : ISymbolKey
-    {
-        ISymbolKey Key { get; }
+        event Action<ISymbolData> SymbolAdded;
 
-        string Description { get; }
-        string Security { get; }
-        bool IsCustom { get; }
-        ISymbolInfo InfoEntity { get; }
-        CustomSymbol StorageEntity { get; }
-        bool IsDataAvailable { get; }
+        event Action<ISymbolData> SymbolRemoved;
 
-        IVarSet<SymbolStorageSeries> SeriesCollection { get; }
-
-
-        Task<(DateTime?, DateTime?)> GetAvailableRange(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide? priceType = null);
-
-        void WriteSlice(Feed.Types.Timeframe frame, Feed.Types.MarketSide priceType, Timestamp from, Timestamp to, BarData[] values);
-
-        void WriteSlice(Feed.Types.Timeframe timeFrame, Timestamp from, Timestamp to, QuoteInfo[] values);
+        event Action<ISymbolData, ISymbolData> SymbolUpdated;
     }
 }

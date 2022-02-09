@@ -5,9 +5,9 @@ namespace TickTrader.BotTerminal
 {
     sealed class CashTransactionModel : BaseTransactionModel
     {
-        public CashTransactionModel(TradeReportInfo transaction, SymbolInfo symbol, int profitDigits) : base(transaction, symbol, profitDigits)
+        public CashTransactionModel(TradeReportInfo transaction, ISymbolInfo symbol, int profitDigits) : base(transaction, symbol, profitDigits)
         {
-            ProfitDigits = symbol?.ProfitDigits ?? -1;
+            ProfitDigits = symbol != null ? 2 : -1;
 
             if (GetTransactionSide(transaction) == TransactionSide.Buy)
             {

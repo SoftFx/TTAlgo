@@ -61,9 +61,9 @@ namespace TickTrader.FeedStorage
         public override bool Equals(object obj)
         {
             return obj is FeedCacheKey other &&
-                string.Equals(other.Symbol, Symbol) &&
-                other.MarketSide == MarketSide &&
-                other.TimeFrame == TimeFrame;
+                   string.Equals(other.Symbol, Symbol) &&
+                   other.MarketSide == MarketSide &&
+                   other.TimeFrame == TimeFrame;
         }
 
         public override int GetHashCode()

@@ -25,14 +25,14 @@ namespace TickTrader.BotTerminal
         private Property<string> _errorProp;
         private bool _suppressRangeUpdates;
 
-        public BacktesterSymbolSetupViewModel(SymbolSetupType type, ISymbolCatalog catalog, Var<SymbolData> smbSource = null)
+        public BacktesterSymbolSetupViewModel(SymbolSetupType type, ISymbolCatalog catalog, Var<BaseSymbol> smbSource = null)
         {
             _requestsCount = AddIntProperty();
             _errorProp = AddProperty<string>();
 
             SetupType = type;
 
-            AvailableSymbols = new ObservableCollection<SymbolData>(catalog.AllSymbols.Cast<SymbolData>());
+            AvailableSymbols = new ObservableCollection<BaseSymbol>(catalog.AllSymbols.Cast<BaseSymbol>());
             AvailableSymbols.CollectionChanged += Symbols_CollectionChanged;
 
             if (type == SymbolSetupType.Main)
@@ -42,7 +42,7 @@ namespace TickTrader.BotTerminal
 
             SelectedTimeframe = AddProperty<Feed.Types.Timeframe>();
             SelectedPriceType = AddProperty<DownloadPriceChoices>();
-            SelectedSymbol = AddValidable<SymbolData>();
+            SelectedSymbol = AddValidable<BaseSymbol>();
             SelectedSymbolName = AddValidable<string>();
             AvailableBases = AddProperty<List<Feed.Types.Timeframe>>();
 
@@ -87,9 +87,9 @@ namespace TickTrader.BotTerminal
         public IEnumerable<Feed.Types.Timeframe> AvailableTimeFrames { get; }
         public IEnumerable<DownloadPriceChoices> AvailablePriceTypes => EnumHelper.AllValues<DownloadPriceChoices>();
         public Property<List<Feed.Types.Timeframe>> AvailableBases { get; }
-        public ObservableCollection<SymbolData> AvailableSymbols { get; }
+        public ObservableCollection<BaseSymbol> AvailableSymbols { get; }
         public Validable<string> SelectedSymbolName { get; }
-        public Validable<SymbolData> SelectedSymbol { get; }
+        public Validable<BaseSymbol> SelectedSymbol { get; }
         public Property<Feed.Types.Timeframe> SelectedTimeframe { get; }
         public Property<DownloadPriceChoices> SelectedPriceType { get; }
         public Property<Tuple<DateTime, DateTime>> AvailableRange { get; }
@@ -109,7 +109,7 @@ namespace TickTrader.BotTerminal
 
         public string AsText()
         {
-            var smb = (SymbolInfo)SelectedSymbol.Value.InfoEntity;
+            var smb = (SymbolInfo)SelectedSymbol.Value.Info;
             var swapLong = smb.Swap.Enabled ? smb.Swap.SizeLong : 0;
             var swapShort = smb.Swap.Enabled ? smb.Swap.SizeShort : 0;
 
@@ -142,7 +142,7 @@ namespace TickTrader.BotTerminal
 
             var smb = SelectedSymbol.Value;
 
-            if (smb != null && smb.IsDataAvailable)
+            if (smb != null && smb.IsDownloadAvailable)
             {
                 _requestsCount.Value++;
 
@@ -259,7 +259,7 @@ namespace TickTrader.BotTerminal
             var precacheFrom = GetLocalFrom(fromLimit);
             var precacheTo = GetLocalTo(toLimit);
 
-            settings.Symbols.Add(smbData.Name, (SymbolInfo)smbData.InfoEntity);
+            settings.Symbols.Add(smbData.Name, (SymbolInfo)smbData.Info);
 
             if (baseTimeFrame == Feed.Types.Timeframe.Ticks || baseTimeFrame == Feed.Types.Timeframe.TicksLevel2)
             {

@@ -4,7 +4,7 @@ namespace TickTrader.BotTerminal
 {
     internal sealed class NetTransactionModel : BaseTransactionModel
     {
-        public NetTransactionModel(TradeReportInfo transaction, SymbolInfo model, int profitDigits) : base(transaction, model, profitDigits) { }
+        public NetTransactionModel(TradeReportInfo transaction, ISymbolInfo model, int profitDigits) : base(transaction, model, profitDigits) { }
 
         protected override double? GetOpenPrice(TradeReportInfo transaction)
         {

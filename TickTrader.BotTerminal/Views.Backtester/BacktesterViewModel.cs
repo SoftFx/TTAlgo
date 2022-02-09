@@ -37,7 +37,7 @@ namespace TickTrader.BotTerminal
         private BoolProperty _isRunning;
         private BoolProperty _isVisualizing;
         private ITestExecController _tester;
-        private Dictionary<string, SymbolInfo> _testingSymbols;
+        private Dictionary<string, ISymbolInfo> _testingSymbols;
         private Property<EmulatorStates> _stateProp;
         private BoolProperty _pauseRequestedProp;
         private BoolProperty _resumeRequestedProp;
@@ -196,7 +196,7 @@ namespace TickTrader.BotTerminal
         {
             observer.SetMessage("Loading results...");
 
-            _testingSymbols = config.TradeServer.Symbols.Values.Select(s => s.ToAlgo()).ToDictionary(s => s.Name);
+            _testingSymbols = config.TradeServer.Symbols.Values.Select(s => s.Info).ToDictionary(s => s.Name);
 
             var results = await Task.Run(() => BacktesterResults.Load(config.Env.ResultsPath));
 
@@ -206,7 +206,7 @@ namespace TickTrader.BotTerminal
             await LoadTradeHistory(observer, results);
         }
 
-        private void FireOnStart(SymbolData mainSymbol, BacktesterConfig config)
+        private void FireOnStart(BaseSymbol mainSymbol, BacktesterConfig config)
         {
             if (config.Core.Mode == BacktesterMode.Backtesting)
             {
@@ -230,9 +230,9 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void FireOnStartBacktesting(SymbolData mainSymbol, BacktesterConfig config)
+        private void FireOnStartBacktesting(BaseSymbol mainSymbol, BacktesterConfig config)
         {
-            var symbols = SetupPage.FeedSymbols.Select(ss => (SymbolInfo)ss.SelectedSymbol.Value.InfoEntity).ToList();
+            var symbols = SetupPage.FeedSymbols.Select(ss => (SymbolInfo)ss.SelectedSymbol.Value.Info).ToList();
             var currecnies = _client.Currencies.Snapshot.Values.ToList();
 
             JournalPage.IsVisible = true;
@@ -240,7 +240,7 @@ namespace TickTrader.BotTerminal
             TradeHistoryPage.IsVisible = true;
             ResultsPage.IsVisible = true;
 
-            ChartPage.OnStart(IsVisualizing.Value, (SymbolInfo)mainSymbol.InfoEntity, config, symbols);
+            ChartPage.OnStart(IsVisualizing.Value, (SymbolInfo)mainSymbol.Info, config, symbols);
             if (IsVisualizing.Value)
             {
                 TradesPage.IsVisible = true;

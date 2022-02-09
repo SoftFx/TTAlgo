@@ -4,7 +4,7 @@ namespace TickTrader.BotTerminal
 {
     internal sealed class GrossTransactionModel : BaseTransactionModel
     {
-        public GrossTransactionModel(TradeReportInfo transaction, SymbolInfo symbol, int profitDigits) : base(transaction, symbol, profitDigits)
+        public GrossTransactionModel(TradeReportInfo transaction, ISymbolInfo symbol, int profitDigits) : base(transaction, symbol, profitDigits)
         {
             if (transaction.PositionId != null)
             {

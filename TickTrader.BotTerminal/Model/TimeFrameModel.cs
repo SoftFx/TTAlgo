@@ -1,6 +1,6 @@
 ﻿using TickTrader.Algo.Domain;
 
-namespace TickTrader.FeedStorage
+namespace TickTrader.BotTerminal
 {
     public static class TimeFrameModel
     {

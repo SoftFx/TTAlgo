@@ -9,46 +9,54 @@ using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage.Api;
 using TickTrader.SeriesStorage;
 
 namespace TickTrader.FeedStorage
 {
-    public abstract class SymbolData : ISymbolData, ISymbolKey
+    public abstract class BaseSymbol : ISymbolData, ISymbolKey
     {
-        private IVarSet<FeedCacheKey> _keys;
-        private FeedCache.Handler _storage;
+        private readonly IVarSet<FeedCacheKey> _keys;
+        protected FeedStorageBase.FeedHandler _storage;
 
-        public SymbolData(string name, FeedCache.Handler storage)
+
+        public ISymbolKey Key => this;
+
+        public string Name => Info.Name;
+
+        public bool IsCustom => Origin == SymbolConfig.Types.SymbolOrigin.Custom;
+
+
+        public virtual bool IsDownloadAvailable => true;
+
+
+        public ISymbolInfo Info { get; }
+
+        public abstract SymbolConfig.Types.SymbolOrigin Origin { get; }
+
+
+        public BaseSymbol(ISymbolInfo info, FeedStorageBase.FeedHandler storage)
         {
+            Info = info;
             _storage = storage;
-            Name = name;
+
             _keys = storage.Keys.Where(k => k.Symbol == Name);
             SeriesCollection = _keys.Transform(k => new SymbolStorageSeries(k, this, storage));
         }
 
-        public string Name { get; }
-        public abstract string Description { get; }
-        public abstract string Security { get; }
-        public abstract bool IsCustom { get; }
-        public abstract ISymbolInfo InfoEntity { get; }
-        public abstract CustomSymbol StorageEntity { get; }
-        public abstract bool IsDataAvailable { get; }
-
-        public abstract SymbolConfig.Types.SymbolOrigin Origin { get; }
 
         public IVarSet<SymbolStorageSeries> SeriesCollection { get; }
 
-        public ISymbolKey Key => this;
 
         public abstract Task<(DateTime?, DateTime?)> GetAvailableRange(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide? priceType = null);
 
-        public abstract Task DownloadToStorage(IActionObserver observer, bool showStats, CancellationToken cancelToken,
-            Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide priceType, DateTime from, DateTime to);
-
-        public abstract Task Remove();
+        public virtual Task DownloadToStorage(IActionObserver observer, bool showStats, CancellationToken cancelToken,
+                                              Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide priceType,
+                                              DateTime from, DateTime to)
+        {
+            return Task.CompletedTask;
+        }
 
 
         public BarCrossDomainReader GetCrossDomainBarReader(Feed.Types.Timeframe frame, Feed.Types.MarketSide priceType, DateTime from, DateTime to)

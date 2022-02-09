@@ -268,7 +268,7 @@ namespace TickTrader.BotTerminal
                 if (!config.Core.FeedConfig.ContainsKey(symbolName))
                 {
                     config.Core.FeedConfig.Add(symbolName, symbolSetup.SelectedTimeframe.Value);
-                    config.TradeServer.Symbols.Add(symbolName, smbData.StorageEntity);
+                    config.TradeServer.Symbols.Add(symbolName, smbData);
                 }
             }
 
@@ -324,7 +324,7 @@ namespace TickTrader.BotTerminal
 
         private void Setup_ConfigLoaded(PluginConfigViewModel config)
         {
-            MainSymbolSetup.SelectedSymbol.Value = (SymbolData)_catalog[config.MainSymbol]; //change to config.MainSymbol
+            MainSymbolSetup.SelectedSymbol.Value = (BaseSymbol)_catalog[config.MainSymbol]; //change to config.MainSymbol
             MainSymbolSetup.SelectedSymbolName.Value = MainSymbolSetup.SelectedSymbol.Value.Name;
             MainSymbolSetup.SelectedTimeframe.Value = config.SelectedTimeFrame.ToServer();
         }
@@ -337,7 +337,7 @@ namespace TickTrader.BotTerminal
             UpdateSymbolsState();
         }
 
-        private BacktesterSymbolSetupViewModel CreateSymbolSetupModel(SymbolSetupType type, Var<SymbolData> symbolSrc = null)
+        private BacktesterSymbolSetupViewModel CreateSymbolSetupModel(SymbolSetupType type, Var<BaseSymbol> symbolSrc = null)
         {
             var smb = new BacktesterSymbolSetupViewModel(type, _catalog, symbolSrc);
             smb.Removed += Smb_Removed;

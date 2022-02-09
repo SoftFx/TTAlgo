@@ -158,7 +158,7 @@ namespace TickTrader.Algo.Backtester
 
         public class TradeServerConfig
         {
-            public Dictionary<string, CustomSymbol> Symbols { get; set; } = new Dictionary<string, CustomSymbol>();
+            public Dictionary<string, ISymbolData> Symbols { get; set; } = new Dictionary<string, ISymbolData>();
             public Dictionary<string, CustomCurrency> Currencies { get; set; } = new Dictionary<string, CustomCurrency>();
         }
 

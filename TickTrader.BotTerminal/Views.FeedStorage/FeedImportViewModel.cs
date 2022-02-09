@@ -27,7 +27,7 @@ namespace TickTrader.BotTerminal
         {
             _importers.Add(new CsvFeedImporter());
 
-            Symbols = new ObservableCollection<SymbolData>(catalog.AllSymbols.Cast<SymbolData>()); //add with custom
+            Symbols = new ObservableCollection<BaseSymbol>(catalog.AllSymbols.Cast<BaseSymbol>()); //add with custom
 
             DisplayName = "Import Series";
 
@@ -59,7 +59,7 @@ namespace TickTrader.BotTerminal
         public Property<ISymbolData> SelectedSymbol { get; }
         public IEnumerable<Feed.Types.Timeframe> AvailableTimeFrames => EnumHelper.AllValues<Feed.Types.Timeframe>();
         public IEnumerable<Feed.Types.MarketSide> AvailablePriceTypes => EnumHelper.AllValues<Feed.Types.MarketSide>();
-        public ObservableCollection<SymbolData> Symbols { get; }
+        public ObservableCollection<BaseSymbol> Symbols { get; }
         public BoolVar CanImport { get; }
         public BoolVar CanCancel { get; }
         public BoolVar IsInputEnabled { get; }
