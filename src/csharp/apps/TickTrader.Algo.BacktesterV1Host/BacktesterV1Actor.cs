@@ -146,6 +146,10 @@ namespace TickTrader.Algo.BacktesterV1Host
                     var _ = SendProgressLoop();
                     await backtester.Run(_cancelTokenSrc.Token);
                 }
+                catch(Exception ex)
+                {
+                    _logger.Error(ex, "Fatal emulation error");
+                }
                 finally
                 {
                     OnStopEmulation(backtester);

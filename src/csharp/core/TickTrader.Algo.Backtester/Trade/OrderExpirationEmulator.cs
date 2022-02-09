@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.CoreV1;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Backtester
 {
@@ -19,7 +20,7 @@ namespace TickTrader.Algo.Backtester
 
         public bool AddOrder(OrderAccessor order)
         {
-            if (order.Entity.IsPending && order.Info.Expiration != null)
+            if (order.Info.Type.IsPending() && order.Info.Expiration != null)
             {
                 GetOrAddDateList(order.Info.Expiration).AddLast(order);
                 Count++;
@@ -30,7 +31,7 @@ namespace TickTrader.Algo.Backtester
 
         public void RemoveOrder(OrderAccessor order)
         {
-            if (order.Entity.IsPending && order.Info.Expiration != null)
+            if (order.Info.Type.IsPending() && order.Info.Expiration != null)
             {
                 LinkedList<OrderAccessor> list;
                 if (innerMap.TryGetValue(order.Info.Expiration, out list))

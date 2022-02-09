@@ -136,9 +136,9 @@ namespace TickTrader.Algo.CoreV1
             Info.TakeProfit = orderInfo.TakeProfit ?? double.NaN;
             //TransferringCoefficient = order.TransferringCoefficient;
 
-            if (order.Type == Domain.OrderInfo.Types.Type.Position)
+            if (orderInfo.Type == Domain.OrderInfo.Types.Type.Position)
             {
-                Info.PositionId = order.Id;
+                Info.PositionId = orderInfo.Id;
                 //Entity.OrderId = order.ParentOrderId ?? -1;
             }
 

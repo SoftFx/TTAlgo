@@ -144,6 +144,42 @@ namespace TickTrader.Algo.Domain
         }
 
         public string GetSnapshotString() => ToString();
+
+        public void SetSwap(double swap)
+        {
+            var oldSwap = Swap;
+            Swap = swap;
+            SwapChanged?.Invoke(new OrderPropArgs<double>(this, oldSwap, swap));
+        }
+
+        public void ChangeCommission(double newCommision)
+        {
+            var oldCom = Commission;
+            Commission = newCommision;
+            CommissionChanged?.Invoke(new OrderPropArgs<double>(this, oldCom, newCommision));
+        }
+
+        public void ChangeRemaningAmount(double newAmount)
+        {
+            var oldAmount = RemainingAmount;
+            RemainingAmount = newAmount;
+            EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldAmount, Price, StopPrice, Type, false));
+        }
+
+        public void ChangeEssentials(OrderInfo.Types.Type newType, double newAmount, double? newPrice, double? newStopPirce)
+        {
+            var oldPrice = Price;
+            var oldType = Type;
+            var oldAmount = RemainingAmount;
+            var oldStopPrice = StopPrice;
+
+            Type = newType;
+            RemainingAmount = newAmount;
+            Price = newPrice;
+            StopPrice = newStopPirce;
+
+            EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldAmount, oldPrice, oldStopPrice, oldType, false));
+        }
     }
 
     public static class OrderOptionsExtensions
