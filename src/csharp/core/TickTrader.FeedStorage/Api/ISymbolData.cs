@@ -7,7 +7,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.FeedStorage.Api
 {
-    public interface ISymbolKey : IEqualityComparer<ISymbolKey>
+    public interface ISymbolKey : IEqualityComparer<ISymbolKey>, IComparable<ISymbolKey>
     {
         string Name { get; }
 

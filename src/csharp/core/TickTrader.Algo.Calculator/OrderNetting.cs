@@ -1,4 +1,4 @@
-﻿using TickTrader.Algo.Calculator.TradeSpeсificsCalculators;
+﻿using TickTrader.Algo.Calculator.TradeSpecificsCalculators;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.CalculatorInterfaces;
 

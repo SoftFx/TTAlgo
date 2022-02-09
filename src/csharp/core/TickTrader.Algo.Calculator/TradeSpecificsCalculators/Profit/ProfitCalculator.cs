@@ -4,7 +4,7 @@ using TickTrader.Algo.Core.Lib.Math;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.CalculatorInterfaces;
 
-namespace TickTrader.Algo.Calculator.TradeSpeсificsCalculators
+namespace TickTrader.Algo.Calculator.TradeSpecificsCalculators
 {
     internal interface IProfitCalculationInfo
     {

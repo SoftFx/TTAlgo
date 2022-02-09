@@ -1,7 +1,7 @@
 ﻿using System;
 using TickTrader.Algo.Domain.CalculatorInterfaces;
 
-namespace TickTrader.Algo.Calculator.TradeSpeсificsCalculators
+namespace TickTrader.Algo.Calculator.TradeSpecificsCalculators
 {
     public class CalculateResponseBase<T> : ICalculateResponse<T>
     {

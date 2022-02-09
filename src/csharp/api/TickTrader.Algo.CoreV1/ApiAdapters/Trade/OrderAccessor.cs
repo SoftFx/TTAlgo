@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.Core.Lib;
@@ -37,7 +36,7 @@ namespace TickTrader.Algo.CoreV1
             }
             Info = info;
 
-            Entity = new WriteEntity(info.SymbolInfo, info);
+            Entity = new WriteEntity();
             ContingentTrigger = info.OtoTrigger?.ToApi();
         }
 
@@ -116,113 +115,12 @@ namespace TickTrader.Algo.CoreV1
         }
 
 
-        internal sealed class WriteEntity : IOrderCalcInfo, IMarginCalculateRequest, IProfitCalculateRequest
+        internal sealed class WriteEntity
         {
-            private OrderInfo _order;
-
-            public event Action<OrderEssentialsChangeArgs> EssentialsChanged;
-            public event Action<OrderPropArgs<double>> SwapChanged;
-            public event Action<OrderPropArgs<double>> CommissionChanged;
-
-            public WriteEntity(SymbolInfo info, OrderInfo order)
-            {
-                SymbolInfo = info;
-                _order = order;
-            }
-
-            public string Id => _order.Id;
-            public string Symbol => _order.Symbol;
-            public OrderInfo.Types.Side Side => _order.Side;
-            public OrderInfo.Types.Type Type => _order.Type;
-            public double? StopPrice => _order.StopPrice;
-            public double RemainingAmount => _order.RemainingAmount;
-            public double Commission => _order.Commission;
-            public double Swap => _order.Swap;
-            double IMarginProfitCalc.Price => _order.Price.Value;
-            public string GetSnapshotString() => _order.GetSnapshotString();
-
-            public double Margin => ProcessResponse(Calculator?.Margin?.Calculate(this));
-            public double Profit => ProcessResponse(Calculator?.Profit.Calculate(this));
-
-            public bool IsPending => _order.Type == OrderInfo.Types.Type.Limit || _order.Type == OrderInfo.Types.Type.StopLimit || _order.Type == OrderInfo.Types.Type.Stop;
-
-            public bool IsHidden => _order.MaxVisibleAmount.HasValue && _order.MaxVisibleAmount.Value < 1e-9;
-
             public short ActionNo { get; internal set; }
             public double? OpenConversionRate { get; internal set; }
             public double? ClosePrice { get; set; }
             internal DateTime PositionCreated { get; set; }
-            public string OcoRelatedOrderId { get; internal set; }
-            #region API Order
-
-            public ISymbolCalculator Calculator { get; set; }
-
-            public double CashMargin { get; set; }
-
-            public SymbolInfo SymbolInfo { get; }
-
-
-            OrderInfo.Types.Type IMarginCalculateRequest.Type => _order.Type;
-
-            double IMarginCalculateRequest.Volume => _order.RemainingAmount;
-
-            bool IMarginCalculateRequest.IsHiddenLimit => IsHidden && _order.Type.IsLimit();
-
-
-            double IProfitCalculateRequest.Price => _order.Price ?? 0.0;
-
-            double IProfitCalculateRequest.Volume => _order.RemainingAmount;
-
-            OrderInfo.Types.Side IProfitCalculateRequest.Side => _order.Side;
-
-            public IContingentOrderTrigger ContingentTrigger => null;
-
-            public bool IgnoreCalculation => false;
-
-            #endregion
-
-            internal void SetSwap(double swap)
-            {
-                var oldSwap = _order.Swap;
-                _order.Swap = swap;
-                SwapChanged?.Invoke(new OrderPropArgs<double>(this, oldSwap, swap));
-            }
-
-            internal void ChangeCommission(double newCommision)
-            {
-                var oldCom = _order.Commission;
-                _order.Commission = newCommision;
-                CommissionChanged?.Invoke(new OrderPropArgs<double>(this, oldCom, newCommision));
-            }
-
-            internal void ChangeRemAmount(double newAmount)
-            {
-                var order = _order;
-                var oldAmount = order.RemainingAmount;
-                order.RemainingAmount = newAmount;
-                EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldAmount, order.Price, order.StopPrice, order.Type, false));
-            }
-
-            internal void ChangeEssentials(OrderInfo.Types.Type newType, double newAmount, double? newPrice, double? newStopPirce)
-            {
-                var order = _order;
-                var oldPrice = order.Price;
-                var oldType = order.Type;
-                var oldAmount = order.RemainingAmount;
-                var oldStopPrice = order.StopPrice;
-
-                order.Type = newType;
-                order.RemainingAmount = newAmount;
-                order.Price = newPrice;
-                order.StopPrice = newStopPirce;
-
-                EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldAmount, oldPrice, oldStopPrice, oldType, false));
-            }
-
-            public Order DeepCopy()
-            {
-                throw new NotImplementedException();
-            }
         }
     }
 }
