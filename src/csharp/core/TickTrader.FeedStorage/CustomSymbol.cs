@@ -3,9 +3,7 @@ using Machinarium.Qnil;
 using ProtoBuf;
 using System;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
-using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.FeedStorage.Api
 {
@@ -90,9 +88,9 @@ namespace TickTrader.FeedStorage.Api
 
         IVarSet<SymbolStorageSeries> ISymbolData.SeriesCollection => throw new NotImplementedException();
 
-        public ISymbolKey Key => throw new NotImplementedException();
+        ISymbolKey ISymbolData.Key => throw new NotImplementedException();
 
-        public SymbolConfig.Types.SymbolOrigin Origin => throw new NotImplementedException();
+        SymbolConfig.Types.SymbolOrigin ISymbolKey.Origin => throw new NotImplementedException();
 
         public Algo.Domain.SymbolInfo ToAlgo()
         {
