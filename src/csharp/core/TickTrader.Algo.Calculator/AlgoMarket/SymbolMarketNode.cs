@@ -7,7 +7,7 @@ using TickTrader.Algo.Domain.CalculatorInterfaces;
 
 namespace TickTrader.Algo.Calculator.AlgoMarket
 {
-    public class SymbolMarketNode : ISymbolCalculator, IProfitCalculationInfo, IMarginCalculationInfo
+    public class SymbolMarketNode : ISymbolCalculator, IProfitCalculationInfo, IMarginCalculationInfo, ICalculationSwapInfo
     {
         private readonly IMarketStateAccountInfo _account;
 
@@ -20,6 +20,10 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
         public IMarginCalculator Margin { get; private set; }
 
         public IProfitCalculator Profit { get; private set; }
+
+        public ISwapCalculator Swap { get; private set; }
+
+        public ICommissionCalculator Commission { get; private set; }
 
 
         public SymbolMarketNode(IMarketStateAccountInfo acc, ISymbolInfo smb)
@@ -40,6 +44,7 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
 
             Margin = new MarginCalculator(this, marginFormula);
             Profit = new ProfitCalculator(this, positiveFormula, negativeFormula);
+            Swap = new SwapCalculator(this, marginFormula, positiveFormula, negativeFormula);
         }
 
         public ISymbolInfo SymbolInfo { get; private set; }
@@ -60,6 +65,18 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
         double? IMarginCalculationInfo.StopOrderReduction => SymbolInfo.StopOrderMarginReduction;
 
         double? IMarginCalculationInfo.HiddenLimitOrderReduction => SymbolInfo.HiddenLimitOrderMarginReduction;
+
+        bool ICalculationSwapInfo.Enabled => SymbolInfo.SwapEnabled;
+
+        SwapInfo.Types.Type ICalculationSwapInfo.Type => SymbolInfo.SwapType;
+
+        int ICalculationSwapInfo.TripleSwapDay => SymbolInfo.TripleSwapDay;
+
+        double? ICalculationSwapInfo.SwapSizeLong => SymbolInfo.SwapSizeLong;
+
+        double? ICalculationSwapInfo.SwapSizeShort => SymbolInfo.SwapSizeShort;
+
+        int ICalculationSwapInfo.SymbolDigits => SymbolInfo.Digits;
 
 
         public void Update(SymbolInfo smb)

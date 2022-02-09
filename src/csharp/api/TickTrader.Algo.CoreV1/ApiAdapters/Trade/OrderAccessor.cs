@@ -121,7 +121,6 @@ namespace TickTrader.Algo.CoreV1
             public double? OpenConversionRate { get; internal set; }
             public double? ClosePrice { get; set; }
             internal DateTime PositionCreated { get; set; }
-            public string OcoRelatedOrderId { get; internal set; }
         }
     }
 }
