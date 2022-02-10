@@ -98,6 +98,11 @@ namespace TickTrader.FeedStorage
             SeriesCollection.Dispose();
         }
 
+
+        string ISymbolKey.Name => Name; // protection for correct object serialization
+
+        SymbolConfig.Types.SymbolOrigin ISymbolKey.Origin => Origin;
+
         bool IEqualityComparer<ISymbolKey>.Equals(ISymbolKey x, ISymbolKey y)
         {
             return x.Name == y.Name && x.Origin == x.Origin;

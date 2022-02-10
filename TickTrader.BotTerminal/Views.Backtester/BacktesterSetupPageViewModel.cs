@@ -268,7 +268,7 @@ namespace TickTrader.BotTerminal
                 if (!config.Core.FeedConfig.ContainsKey(symbolName))
                 {
                     config.Core.FeedConfig.Add(symbolName, symbolSetup.SelectedTimeframe.Value);
-                    config.TradeServer.Symbols.Add(symbolName, smbData);
+                    config.TradeServer.Symbols.Add(symbolName, new SymbolInfo(smbData.Info));
                 }
             }
 

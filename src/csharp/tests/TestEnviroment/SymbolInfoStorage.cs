@@ -47,8 +47,8 @@ namespace TestEnviroment
             foreach (var symbol in Symbols.Values)
                 symbol.BuildNewQuote();
 
-            Bid = Symbols.ToDictionary(k => k.Key, v => v.Value.Bid);
-            Ask = Symbols.ToDictionary(k => k.Key, v => v.Value.Ask);
+            Bid = Symbols.ToDictionary(k => k.Key, v => v.Value.Bid ?? double.NaN);
+            Ask = Symbols.ToDictionary(k => k.Key, v => v.Value.Ask ?? double.NaN);
         }
 
         public void ResetAllRateUpdate()

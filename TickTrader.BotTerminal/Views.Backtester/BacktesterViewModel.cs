@@ -196,7 +196,7 @@ namespace TickTrader.BotTerminal
         {
             observer.SetMessage("Loading results...");
 
-            _testingSymbols = config.TradeServer.Symbols.Values.Select(s => s.Info).ToDictionary(s => s.Name);
+            _testingSymbols = config.TradeServer.Symbols.Values.ToDictionary(s => s.Name, v => (ISymbolInfo)v);
 
             var results = await Task.Run(() => BacktesterResults.Load(config.Env.ResultsPath));
 

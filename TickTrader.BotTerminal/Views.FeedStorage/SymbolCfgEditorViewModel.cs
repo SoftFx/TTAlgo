@@ -266,6 +266,8 @@ namespace TickTrader.BotTerminal
 
         int IBaseSymbolInfo.GroupSortOrder => 1;
 
+        bool ISymbolInfo.TradeAllowed => true;
+
         #endregion
 
         public void Ok()

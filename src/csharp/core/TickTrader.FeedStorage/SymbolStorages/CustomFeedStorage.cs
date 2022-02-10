@@ -15,10 +15,10 @@ namespace TickTrader.FeedStorage
     {
         private const string CustomSymbolsCollectionName = "customSymbols";
 
-        private readonly ActorEvent<DictionaryUpdateArgs<string, CustomData>> _symbolChangeListeners = new ActorEvent<DictionaryUpdateArgs<string, CustomData>>();
+        private readonly ActorEvent<DictionaryUpdateArgs<string, CustomInfo>> _symbolChangeListeners = new ActorEvent<DictionaryUpdateArgs<string, CustomInfo>>();
 
-        private VarDictionary<string, CustomData> _commonSymbols = new VarDictionary<string, CustomData>();
-        private ICollectionStorage<Guid, CustomData> _customSymbolsCollection;
+        private VarDictionary<string, CustomInfo> _commonSymbols = new VarDictionary<string, CustomInfo>();
+        private ICollectionStorage<Guid, CustomInfo> _customSymbolsCollection;
 
 
         public CustomFeedStorage() : base()
@@ -31,7 +31,7 @@ namespace TickTrader.FeedStorage
         {
             base.Start(dbFolder);
 
-            _customSymbolsCollection = Database.GetCollection(CustomSymbolsCollectionName, new GuidKeySerializer(), new ProtoValueSerializer<CustomData>());
+            _customSymbolsCollection = Database.GetCollection(CustomSymbolsCollectionName, new GuidKeySerializer(), new ProtoValueSerializer<CustomInfo>());
             _commonSymbols.Clear();
 
 
@@ -55,7 +55,7 @@ namespace TickTrader.FeedStorage
 
         protected override bool IsSpecialCollection(string name) => name == CustomSymbolsCollectionName;
 
-        public bool Add(CustomData newSymbol)
+        public bool Add(CustomInfo newSymbol)
         {
             if (_commonSymbols.ContainsKey(newSymbol.Name))
                 return false;
@@ -67,7 +67,7 @@ namespace TickTrader.FeedStorage
             return true;
         }
 
-        private void Update(CustomData symbolCfg)
+        private void Update(CustomInfo symbolCfg)
         {
             CheckState();
 
@@ -90,7 +90,7 @@ namespace TickTrader.FeedStorage
         {
             CheckState();
 
-            if (_commonSymbols.TryGetValue(symbol, out CustomData smbEntity))
+            if (_commonSymbols.TryGetValue(symbol, out CustomInfo smbEntity))
             {
                 var toRemove = Keys.Snapshot.Where(k => k.Symbol == symbol).ToList();
 
@@ -103,18 +103,18 @@ namespace TickTrader.FeedStorage
             }
         }
 
-        private void SendUpdatesToListeners(DictionaryUpdateArgs<string, CustomData> update) => _symbolChangeListeners.FireAndForget(update);
+        private void SendUpdatesToListeners(DictionaryUpdateArgs<string, CustomInfo> update) => _symbolChangeListeners.FireAndForget(update);
 
 
         internal sealed class Handler : FeedHandler
         {
-            private readonly ActorCallback<DictionaryUpdateArgs<string, CustomData>> _smbChangedCallback;
+            private readonly ActorCallback<DictionaryUpdateArgs<string, CustomInfo>> _smbChangedCallback;
             private readonly Ref<CustomFeedStorage> _ref;
 
 
             public Handler(Ref<CustomFeedStorage> actorRef) : base(actorRef.Cast<CustomFeedStorage, FeedStorageBase>())
             {
-                _smbChangedCallback = ActorCallback.Create<DictionaryUpdateArgs<string, CustomData>>(UpdateCollectionHandler);
+                _smbChangedCallback = ActorCallback.Create<DictionaryUpdateArgs<string, CustomInfo>>(UpdateCollectionHandler);
                 _ref = actorRef;
             }
 
@@ -133,7 +133,7 @@ namespace TickTrader.FeedStorage
 
             public override Task<bool> TryAddSymbol(ISymbolInfo symbol)
             {
-                return _ref.Call(a => a.Add(CustomData.ToData(symbol)));
+                return _ref.Call(a => a.Add(CustomInfo.ToData(symbol)));
             }
 
             public override Task<bool> TryUpdateSymbol(ISymbolInfo symbol)
@@ -154,7 +154,7 @@ namespace TickTrader.FeedStorage
                 base.Dispose();
             }
 
-            private void UpdateCollectionHandler(DictionaryUpdateArgs<string, CustomData> update)
+            private void UpdateCollectionHandler(DictionaryUpdateArgs<string, CustomInfo> update)
             {
                 switch (update.Action)
                 {
@@ -170,7 +170,7 @@ namespace TickTrader.FeedStorage
                 }
             }
 
-            private void AddNewCustomSymbol(CustomData data) => _symbols[data.Name] = new CustomSymbol(data, this);
+            private void AddNewCustomSymbol(CustomInfo data) => _symbols[data.Name] = new CustomSymbol(data, this);
         }
     }
 }

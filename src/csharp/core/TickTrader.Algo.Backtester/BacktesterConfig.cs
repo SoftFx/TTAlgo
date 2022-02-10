@@ -6,7 +6,6 @@ using System.IO.Compression;
 using System.Text.Json;
 using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage;
-using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.Algo.Backtester
 {
@@ -104,11 +103,19 @@ namespace TickTrader.Algo.Backtester
 
         private static void WriteZipEntryAsJson<T>(ZipArchive zip, string entryName, T value)
         {
-            var entry = zip.CreateEntry(entryName);
-            using (var stream = entry.Open())
-            using (var writer = new Utf8JsonWriter(stream))
+            try
             {
-                JsonSerializer.Serialize(writer, value);
+
+                var entry = zip.CreateEntry(entryName);
+                using (var stream = entry.Open())
+                using (var writer = new Utf8JsonWriter(stream))
+                {
+                    JsonSerializer.Serialize(writer, value);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
         }
 
@@ -158,7 +165,7 @@ namespace TickTrader.Algo.Backtester
 
         public class TradeServerConfig
         {
-            public Dictionary<string, ISymbolData> Symbols { get; set; } = new Dictionary<string, ISymbolData>();
+            public Dictionary<string, SymbolInfo> Symbols { get; set; } = new Dictionary<string, SymbolInfo>();
             public Dictionary<string, CustomCurrency> Currencies { get; set; } = new Dictionary<string, CustomCurrency>();
         }
 

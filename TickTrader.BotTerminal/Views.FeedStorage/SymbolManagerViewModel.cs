@@ -267,8 +267,8 @@ namespace TickTrader.BotTerminal
             Parent = parent;
             Category = category;
 
-            _series = model.SeriesCollection.Select(s => new CacheSeriesInfoViewModel(s, parent));
-            Series = _series.TransformToList().AsObservable();
+            //_series = model.SeriesCollection.Select(s => new CacheSeriesInfoViewModel(s, parent));
+            //Series = _series.TransformToList().AsObservable();
         }
 
         protected SymbolManagerViewModel Parent { get; private set; }

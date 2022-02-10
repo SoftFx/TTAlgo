@@ -105,6 +105,9 @@ namespace TickTrader.FeedStorage
 
         private void UnsubscribeCollection(ISymbolCollection collection)
         {
+            if (collection == null)
+                return;
+
             collection.SymbolAdded -= SymbolAddedHandler;
             collection.SymbolRemoved -= SymbolRemovedHandler;
             collection.SymbolUpdated -= SymbolUpdateHandler;

@@ -38,7 +38,7 @@ namespace TickTrader.FeedStorage
 
         public abstract class FeedHandler : ISymbolCollection
         {
-            protected readonly VarDictionary<string, ISymbolData> _symbols = new VarDictionary<string, ISymbolData>();
+            internal readonly VarDictionary<string, ISymbolData> _symbols = new VarDictionary<string, ISymbolData>();
 
             private VarDictionary<FeedCacheKey, object> _series;
             private readonly Ref<FeedStorageBase> _ref;

@@ -92,6 +92,10 @@ namespace TickTrader.FeedStorage
                 await Cache.Start(folder);
                 //await Cache.SyncData();
 
+                foreach (var s in FeedProxy.Symbols)
+                {
+                    Cache._symbols.Add(s.Name, new OnlineSymbol(s, this));
+                }
                 //Cache.Collection.Initialize(FeedProxy.Symbols.Select(s => new OnlineSymbol(s, this)));
             }
 

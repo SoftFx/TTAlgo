@@ -4,9 +4,14 @@ namespace TickTrader.Algo.Domain
 {
     public partial class SymbolInfo : ISymbolInfoWithRate
     {
-        public double Bid { get; private set; } = double.NaN;
+        public double? Bid { get; private set; }
 
-        public double Ask { get; private set; } = double.NaN;
+        public double? Ask { get; private set; }
+
+
+        double ISymbolInfoWithRate.Bid => Bid ?? double.NaN;
+
+        double ISymbolInfoWithRate.Ask => Ask ?? double.NaN;
 
         bool ISymbolInfoWithRate.HasBid => LastQuote?.HasBid ?? false;
 
@@ -18,7 +23,54 @@ namespace TickTrader.Algo.Domain
         public event Action<ISymbolInfo> RateUpdated;
 
 
-        public void Update(SymbolInfo info)
+        public SymbolInfo(ISymbolInfo info)
+        {
+            Name = info.Name;
+            BaseCurrency = info.MarginCurrency;
+            CounterCurrency = info.ProfitCurrency;
+            Digits = info.Digits;
+            LotSize = info.LotSize;
+            Description = info.Description;
+            TradeAllowed = info.TradeAllowed;
+
+            MinTradeVolume = info.MinVolume;
+            MaxTradeVolume = info.MaxVolume;
+            TradeVolumeStep = info.VolumeStep;
+
+            Slippage = new SlippageInfo
+            {
+                DefaultValue = info.Slippage,
+            };
+
+            Commission = new CommissonInfo
+            {
+                Commission = info.Commission,
+                LimitsCommission = info.LimitsCommission,
+                ValueType = info.CommissionType,
+                MinCommission = info.MinCommission,
+                MinCommissionCurrency = info.MinCommissionCurr,
+            };
+
+            Swap = new SwapInfo
+            {
+                Enabled = info.SwapEnabled,
+                Type = info.SwapType,
+                SizeLong = info.SwapSizeLong,
+                SizeShort = info.SwapSizeShort,
+                TripleSwapDay = info.TripleSwapDay,
+            };
+
+            Margin = new MarginInfo
+            {
+                Mode = info.MarginMode,
+                Hedged = info.MarginHedged,
+                Factor = info.MarginFactor,
+                StopOrderReduction = info.StopOrderMarginReduction,
+                HiddenLimitOrderReduction = info.HiddenLimitOrderMarginReduction,
+            };
+        }
+
+        public ISymbolInfoWithRate Update(SymbolInfo info)
         {
             //Name = info.Name; //is key in symbol dicts
             TradeAllowed = info.TradeAllowed;
@@ -39,16 +91,18 @@ namespace TickTrader.Algo.Domain
             SortOrder = info.SortOrder;
             GroupSortOrder = info.GroupSortOrder;
 
-            UpdateRate(info.LastQuote);
+            return UpdateRate(info.LastQuote);
         }
 
-        public void UpdateRate(IQuoteInfo quote)
+        public ISymbolInfoWithRate UpdateRate(IQuoteInfo quote)
         {
-            LastQuote = quote;
-            Bid = quote?.Bid ?? double.NaN;
-            Ask = quote?.Ask ?? double.NaN;
+            Bid = quote?.Bid;
+            Ask = quote?.Ask;
 
+            LastQuote = quote;
             RateUpdated?.Invoke(this);
+
+            return this;
         }
 
 
@@ -125,6 +179,8 @@ namespace TickTrader.Algo.Domain
 
         int Slippage { get; }
 
+        bool TradeAllowed { get; }
+
 
         double MaxVolume { get; }
 
@@ -189,8 +245,8 @@ namespace TickTrader.Algo.Domain
         event Action<ISymbolInfo> RateUpdated;
 
 
-        void Update(SymbolInfo newInfo);
+        ISymbolInfoWithRate Update(SymbolInfo info);
 
-        void UpdateRate(IQuoteInfo quote); //Update Ask, Bid, LastQuote
+        ISymbolInfoWithRate UpdateRate(IQuoteInfo quote); //Update Ask, Bid, LastQuote
     }
 }

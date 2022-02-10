@@ -26,7 +26,7 @@ namespace TickTrader.FeedStorage.Api
 
         bool IsDownloadAvailable { get; }
 
-        IVarSet<SymbolStorageSeries> SeriesCollection { get; }
+        //IVarSet<SymbolStorageSeries> SeriesCollection { get; }
 
 
         Task<(DateTime?, DateTime?)> GetAvailableRange(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide? priceType = null);

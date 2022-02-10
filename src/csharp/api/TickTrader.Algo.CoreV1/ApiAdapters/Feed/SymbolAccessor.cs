@@ -41,9 +41,9 @@ namespace TickTrader.Algo.CoreV1
 
         Currency Symbol.CounterCurrencyInfo => _currencies.GetOrNull(Info.CounterCurrency) ?? Null.Currency;
 
-        double Symbol.Bid => Info.Bid;
+        double Symbol.Bid => Info?.Bid ?? double.NaN;
 
-        double Symbol.Ask => Info.Ask;
+        double Symbol.Ask => Info?.Ask ?? double.NaN;
 
         Quote Symbol.LastQuote => Info.LastQuote == null ? Null.Quote : new QuoteEntity((QuoteInfo)Info.LastQuote);
 
