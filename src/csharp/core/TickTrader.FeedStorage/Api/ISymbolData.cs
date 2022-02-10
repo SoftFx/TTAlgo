@@ -19,15 +19,10 @@ namespace TickTrader.FeedStorage.Api
     {
         ISymbolKey Key { get; }
 
-        //string Description { get; }
-
-        //string Security { get; }
-
-        bool IsCustom { get; }
-
         ISymbolInfo Info { get; }
 
-        //ICustomData StorageEntity { get; }
+
+        bool IsCustom { get; }
 
         bool IsDownloadAvailable { get; }
 

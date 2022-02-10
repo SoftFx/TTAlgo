@@ -61,7 +61,7 @@ namespace TickTrader.FeedStorage
 
 
         [ProtoMember(17)]
-        public MarginInfo.Types.CalculationMode ProfitMode { get; set; }
+        public ProfitInfo.Types.CalculationMode ProfitMode { get; set; }
 
 
         [ProtoMember(18)]
@@ -94,23 +94,6 @@ namespace TickTrader.FeedStorage
 
         [ProtoMember(27)]
         public string MinCommissionCurr { get; set; }
-
-
-        double ISymbolInfo.Bid => throw new NotImplementedException();
-
-        double ISymbolInfo.Ask => throw new NotImplementedException();
-
-        bool ISymbolInfo.HasBid => throw new NotImplementedException();
-
-        bool ISymbolInfo.HasAsk => throw new NotImplementedException();
-
-        IQuoteInfo ISymbolInfo.LastQuote => throw new NotImplementedException();
-
-        event Action<ISymbolInfo> ISymbolInfo.RateUpdated { add { } remove { } }
-
-        void ISymbolInfo.UpdateRate(IQuoteInfo quote) => throw new NotImplementedException();
-
-        void ISymbolInfo.Update(ISymbolInfo newInfo) => throw new NotImplementedException();
 
 
         int IBaseSymbolInfo.SortOrder => 1;

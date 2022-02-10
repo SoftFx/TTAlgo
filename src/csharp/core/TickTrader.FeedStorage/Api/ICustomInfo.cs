@@ -6,13 +6,9 @@
 
         string Description { get; }
 
-        string MarginCurrency { get; } //BaseCurrency
-
-        string ProfitCurrency { get; }
+        double LotSize { get; }
 
         int Digits { get; }
-
-        double LotSize { get; }
 
         int Slippage { get; }
 
@@ -37,8 +33,12 @@
         int TripleSwapDay { get; }
 
 
-        Algo.Domain.MarginInfo.Types.CalculationMode ProfitMode { get; }
+        string ProfitCurrency { get; }
 
+        Algo.Domain.ProfitInfo.Types.CalculationMode ProfitMode { get; }
+
+
+        string MarginCurrency { get; } //BaseCurrency
 
         Algo.Domain.MarginInfo.Types.CalculationMode MarginMode { get; }
 

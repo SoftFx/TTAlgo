@@ -9,7 +9,7 @@ namespace TickTrader.FeedStorage
 {
     public class SymbolStorageSeries
     {
-        private FeedStorageBase.FeedHandler _storage;
+        private readonly FeedStorageBase.FeedHandler _storage;
 
         public SymbolStorageSeries(FeedCacheKey key, ISymbolData symbolModel, FeedStorageBase.FeedHandler storage)
         {

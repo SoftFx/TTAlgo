@@ -26,7 +26,7 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
         public ICommissionCalculator Commission { get; private set; }
 
 
-        public SymbolMarketNode(IMarketStateAccountInfo acc, ISymbolInfo smb)
+        public SymbolMarketNode(IMarketStateAccountInfo acc, ISymbolInfoWithRate smb)
         {
             _account = acc;
 
@@ -47,7 +47,7 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
             Swap = new SwapCalculator(this, marginFormula, positiveFormula, negativeFormula);
         }
 
-        public ISymbolInfo SymbolInfo { get; private set; }
+        public ISymbolInfoWithRate SymbolInfo { get; private set; }
 
         public bool IsShadowCopy { get; private set; }
 

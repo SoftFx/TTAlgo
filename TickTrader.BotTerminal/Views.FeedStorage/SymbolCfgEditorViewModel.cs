@@ -65,7 +65,7 @@ namespace TickTrader.BotTerminal
             SwapSizeLong = _varContext.AddDoubleValidable(symbol?.SwapSizeLong ?? -4.38);
             SwapSizeLongStr = _varContext.AddConverter(SwapSizeLong, percentConverter); ;
 
-            SelectedProfitMode = _varContext.AddValidable(symbol?.ProfitMode ?? Algo.Domain.MarginInfo.Types.CalculationMode.Forex);
+            SelectedProfitMode = _varContext.AddValidable(symbol?.ProfitMode ?? Algo.Domain.ProfitInfo.Types.CalculationMode.Forex);
 
             SelectedMarginMode = _varContext.AddValidable(symbol?.MarginMode ?? Algo.Domain.MarginInfo.Types.CalculationMode.Forex);
             MarginHedged = _varContext.AddDoubleValidable(symbol?.MarginHedged ?? 0.5);
@@ -179,8 +179,8 @@ namespace TickTrader.BotTerminal
         public BoolValidable TripleSwap { get; }
 
         public Validable<string> ProfitCurr { get; }
-        public Validable<Algo.Domain.MarginInfo.Types.CalculationMode> SelectedProfitMode { get; }
-        public IEnumerable<Algo.Domain.MarginInfo.Types.CalculationMode> ProfitModes => EnumHelper.AllValues<Algo.Domain.MarginInfo.Types.CalculationMode>();
+        public Validable<Algo.Domain.ProfitInfo.Types.CalculationMode> SelectedProfitMode { get; }
+        public IEnumerable<Algo.Domain.ProfitInfo.Types.CalculationMode> ProfitModes => EnumHelper.AllValues<Algo.Domain.ProfitInfo.Types.CalculationMode>();
 
         public Validable<Algo.Domain.MarginInfo.Types.CalculationMode> SelectedMarginMode { get; }
         public IEnumerable<Algo.Domain.MarginInfo.Types.CalculationMode> MarginModes => EnumHelper.AllValues<Algo.Domain.MarginInfo.Types.CalculationMode>();
@@ -239,7 +239,7 @@ namespace TickTrader.BotTerminal
 
         int ICustomInfo.TripleSwapDay => TripleSwap.Value ? (int)DayOfWeek.Wednesday : 0;
 
-        MarginInfo.Types.CalculationMode ICustomInfo.ProfitMode => SelectedProfitMode.Value;
+        ProfitInfo.Types.CalculationMode ICustomInfo.ProfitMode => SelectedProfitMode.Value;
 
         MarginInfo.Types.CalculationMode ICustomInfo.MarginMode => SelectedMarginMode.Value;
 
