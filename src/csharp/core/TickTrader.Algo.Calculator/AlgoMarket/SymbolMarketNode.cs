@@ -45,6 +45,7 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
             Margin = new MarginCalculator(this, marginFormula);
             Profit = new ProfitCalculator(this, positiveFormula, negativeFormula);
             Swap = new SwapCalculator(this, marginFormula, positiveFormula, negativeFormula);
+            Commission = new CommissionCalculator(this, marginFormula, negativeFormula, null);
         }
 
         public ISymbolInfo SymbolInfo { get; private set; }
