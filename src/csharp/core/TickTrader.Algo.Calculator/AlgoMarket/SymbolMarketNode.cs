@@ -7,7 +7,7 @@ using TickTrader.Algo.Domain.CalculatorInterfaces;
 
 namespace TickTrader.Algo.Calculator.AlgoMarket
 {
-    public class SymbolMarketNode : ISymbolCalculator, IProfitCalculationInfo, IMarginCalculationInfo, ICalculationSwapInfo
+    public class SymbolMarketNode : ISymbolCalculator, IProfitCalculationInfo, IMarginCalculationInfo, ISwapCalculationInfo, ICommissionCalculationInfo
     {
         private readonly IMarketStateAccountInfo _account;
 
@@ -66,18 +66,29 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
 
         double? IMarginCalculationInfo.HiddenLimitOrderReduction => SymbolInfo.HiddenLimitOrderMarginReduction;
 
-        bool ICalculationSwapInfo.Enabled => SymbolInfo.SwapEnabled;
+        bool ISwapCalculationInfo.Enabled => SymbolInfo.SwapEnabled;
 
-        SwapInfo.Types.Type ICalculationSwapInfo.Type => SymbolInfo.SwapType;
+        SwapInfo.Types.Type ISwapCalculationInfo.Type => SymbolInfo.SwapType;
 
-        int ICalculationSwapInfo.TripleSwapDay => SymbolInfo.TripleSwapDay;
+        int ISwapCalculationInfo.TripleSwapDay => SymbolInfo.TripleSwapDay;
 
-        double? ICalculationSwapInfo.SwapSizeLong => SymbolInfo.SwapSizeLong;
+        double? ISwapCalculationInfo.SwapSizeLong => SymbolInfo.SwapSizeLong;
 
-        double? ICalculationSwapInfo.SwapSizeShort => SymbolInfo.SwapSizeShort;
+        double? ISwapCalculationInfo.SwapSizeShort => SymbolInfo.SwapSizeShort;
 
-        int ICalculationSwapInfo.SymbolDigits => SymbolInfo.Digits;
+        int ISwapCalculationInfo.SymbolDigits => SymbolInfo.Digits;
 
+        CommissonInfo.Types.ValueType ICommissionCalculationInfo.Type => SymbolInfo.CommissionType;
+
+        double ICommissionCalculationInfo.LotSize => SymbolInfo.LotSize;
+
+        double ICommissionCalculationInfo.SymbolDigits => SymbolInfo.Digits;
+
+        double ICommissionCalculationInfo.TakerFee => SymbolInfo.Commission;
+
+        double ICommissionCalculationInfo.MakerFee => SymbolInfo.LimitsCommission;
+
+        double ICommissionCalculationInfo.MinCommission => SymbolInfo.MinCommission;
 
         public void Update(SymbolInfo smb)
         {

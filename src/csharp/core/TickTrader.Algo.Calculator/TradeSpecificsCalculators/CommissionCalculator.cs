@@ -7,14 +7,20 @@ namespace TickTrader.Algo.Calculator.TradeSpecificsCalculators
 {
     internal interface ICommissionCalculationInfo
     {
-        Domain.CommissonInfo.Types.ValueType Type { get; }
+        CommissonInfo.Types.ValueType Type { get; }
 
         double LotSize { get; }
 
-        double Point { get; }
+        double SymbolDigits { get; }
+
+        double TakerFee { get; }
+
+        double MakerFee { get; }
+
+        double MinCommission { get; }
     }
 
-    internal sealed class CommissionCalculator
+    internal sealed class CommissionCalculator: ICommissionCalculator
     {
         private readonly ICommissionCalculationInfo _info;
 
@@ -26,6 +32,11 @@ namespace TickTrader.Algo.Calculator.TradeSpecificsCalculators
             _info = info;
             _marginRate = marginRate;
             _profitCalculator = profitCalculator;
+        }
+
+        public ICalculateResponse<double> Calculate(ICommissionCalculateRequest request)
+        {
+            return ResponseFactory.Build(0, CalculationError.None);
         }
 
         public double CalculateCommission(double amount, double cValue, out CalculationError error)
@@ -49,7 +60,7 @@ namespace TickTrader.Algo.Calculator.TradeSpecificsCalculators
 
                 case CommissonInfo.Types.ValueType.Points:
                     //_profit convertion rate error???
-                    commission *= _info.Point * _marginRate.Value;
+                    //commission *= _info.Point * _marginRate.Value;
                     //commission = _profitCalculator.ConvertionRate(commission).Value;
                     break;
 

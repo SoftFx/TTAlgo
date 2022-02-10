@@ -76,6 +76,16 @@ namespace TickTrader.Algo.Domain
         double ISymbolInfo.SwapSizeLong => Swap.SizeLong ?? 0;
 
         double ISymbolInfo.SwapSizeShort => Swap.SizeShort ?? 0;
+
+        CommissonInfo.Types.ValueType ISymbolInfo.CommissionType => Commission.ValueType;
+
+        double ISymbolInfo.Commission => Commission.Commission;
+
+        double ISymbolInfo.LimitsCommission => Commission.LimitsCommission;
+
+        double ISymbolInfo.MinCommission => Commission.MinCommission;
+
+        string ISymbolInfo.MinCommissionCurr => Commission.MinCommissionCurrency;
     }
 
     public interface ISymbolInfo : IBaseSymbolInfo
@@ -100,6 +110,13 @@ namespace TickTrader.Algo.Domain
         bool SwapEnabled { get; }
         double SwapSizeLong { get; }
         double SwapSizeShort { get; }
+
+        CommissonInfo.Types.ValueType CommissionType { get; }
+        double Commission { get; }
+        double LimitsCommission { get; }
+        double MinCommission { get; }
+        string MinCommissionCurr { get; }
+
 
         double StopOrderMarginReduction { get; }
         double HiddenLimitOrderMarginReduction { get; }

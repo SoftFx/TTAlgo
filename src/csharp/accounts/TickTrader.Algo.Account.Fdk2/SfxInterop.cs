@@ -696,6 +696,8 @@ namespace TickTrader.Algo.Account.Fdk2
                     Commission = info.Commission,
                     LimitsCommission = info.LimitsCommission,
                     ValueType = Convert(info.CommissionType),
+                    MinCommission = info.MinCommission,
+                    MinCommissionCurrency = info.MinCommissionCurrency,
                 },
 
                 Margin = new Domain.MarginInfo
