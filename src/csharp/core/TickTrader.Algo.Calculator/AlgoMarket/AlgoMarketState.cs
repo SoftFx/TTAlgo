@@ -23,7 +23,7 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
 
         public IMarketStateAccountInfo Account { get; private set; }
 
-        public IEnumerable<SymbolInfo> Symbols { get; private set; }
+        public IEnumerable<ISymbolInfoWithRate> Symbols { get; private set; }
 
         public IEnumerable<ICurrencyInfo> Currencies { get; private set; }
 
@@ -41,7 +41,7 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
             Ask = new Dictionary<string, ISideNode>();
         }
 
-        public void Init(IMarketStateAccountInfo account, IEnumerable<SymbolInfo> symbolList, IEnumerable<CurrencyInfo> currencyList)
+        public void Init(IMarketStateAccountInfo account, IEnumerable<ISymbolInfoWithRate> symbolList, IEnumerable<CurrencyInfo> currencyList)
         {
             Account = account;
             Symbols = symbolList;
@@ -74,7 +74,7 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
             }
         }
 
-        public ISymbolCalculator GetCalculator(SymbolInfo symbol)
+        public ISymbolCalculator GetCalculator(ISymbolInfoWithRate symbol)
         {
             if (!_marketNodes.TryGetValue(symbol.Name, out var calculator))
             {
@@ -85,7 +85,7 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
             return calculator;
         }
 
-        private SymbolMarketNode AddNewMarketNode(SymbolInfo symbol)
+        private SymbolMarketNode AddNewMarketNode(ISymbolInfoWithRate symbol)
         {
             var node = new SymbolMarketNode(Account, symbol);
 

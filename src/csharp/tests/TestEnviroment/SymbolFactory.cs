@@ -47,7 +47,7 @@ namespace TestEnviroment
         };
 
 
-        public static SymbolInfo BuildSymbol(string baseCurr, string counterCurr)
+        public static ISymbolInfoWithRate BuildSymbol(string baseCurr, string counterCurr)
         {
             var symbol = _prototype.DeepCopy();
 

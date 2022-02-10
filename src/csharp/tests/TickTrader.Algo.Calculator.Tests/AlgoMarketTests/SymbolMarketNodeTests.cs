@@ -8,7 +8,7 @@ namespace TickTrader.Algo.Calculator.Tests.AlgoMarketStateTests
     [TestClass]
     public sealed class SymbolMarketNodeTests : AlgoMarketEmulator
     {
-        private SymbolInfo _symbol;
+        private ISymbolInfoWithRate _symbol;
         private SymbolMarketNode _node;
 
         [TestInitialize]

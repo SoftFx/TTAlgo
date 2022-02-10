@@ -91,7 +91,7 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
 
         double ICommissionCalculationInfo.MinCommission => SymbolInfo.MinCommission;
 
-        public void Update(SymbolInfo smb)
+        public void Update(ISymbolInfoWithRate smb)
         {
             IsShadowCopy = smb == null;
 

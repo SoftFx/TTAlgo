@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Calculator.Tests
         protected AccountEmulator _account;
 
 
-        internal Dictionary<string, SymbolInfo> Symbol => _symbolStorage.Symbols;
+        internal Dictionary<string, ISymbolInfoWithRate> Symbol => _symbolStorage.Symbols;
 
         internal Dictionary<string, CurrencyInfo> Currency => _currencyStorage.Currency;
 

@@ -21,7 +21,7 @@ namespace TickTrader.Algo.Calculator.Tests.MarginCalculations
 
         protected override ICalculateResponse<double> ActualValue => MarginCalculator(new MarginRequest(_volume, _orderType, _isHiddenOrder));
 
-        protected override Func<double> ExpectedValue => () => _volume * _conversionRate() * MainSymbol.Margin.Factor / _leverage * (_marginFactor ?? 1.0);
+        protected override Func<double> ExpectedValue => () => _volume * _conversionRate() * MainSymbol.MarginFactor / _leverage * (_marginFactor ?? 1.0);
 
 
         [TestInitialize]
@@ -58,7 +58,7 @@ namespace TickTrader.Algo.Calculator.Tests.MarginCalculations
             Y = "USD";
 
             _leverage = 3;
-            _marginFactor = MainSymbol.Margin.HiddenLimitOrderReduction;
+            _marginFactor = MainSymbol.HiddenLimitOrderMarginReduction;
 
             InitEnviromentState(X + Y);
 
@@ -77,7 +77,7 @@ namespace TickTrader.Algo.Calculator.Tests.MarginCalculations
 
             _leverage = 2;
             _volume = 0.01;
-            _marginFactor = MainSymbol.Margin.StopOrderReduction;
+            _marginFactor = MainSymbol.StopOrderMarginReduction;
 
             InitEnviromentState(X + Y);
 
@@ -181,7 +181,7 @@ namespace TickTrader.Algo.Calculator.Tests.MarginCalculations
             _leverage = 10;
             _volume = 0.3;
             _conversionRate = () => Symbol[Y + C].Ask / Symbol[Z + C].Bid * Symbol[X + Y].Ask;
-            _marginFactor = MainSymbol.Margin.StopOrderReduction;
+            _marginFactor = MainSymbol.StopOrderMarginReduction;
 
             InitEnviromentState(X + Y, Y + C, Z + C);
 
@@ -203,7 +203,7 @@ namespace TickTrader.Algo.Calculator.Tests.MarginCalculations
             _leverage = 10;
             _volume = 0.3;
             _conversionRate = () => Symbol[Y + C].Ask / Symbol[Z + C].Bid * Symbol[X + Y].Ask;
-            _marginFactor = MainSymbol.Margin.StopOrderReduction;
+            _marginFactor = MainSymbol.StopOrderMarginReduction;
 
             InitEnviromentState(X + Y, Y + C, Z + C);
 
@@ -239,7 +239,7 @@ namespace TickTrader.Algo.Calculator.Tests.MarginCalculations
             _leverage = 10;
             _volume = 0.3;
             _conversionRate = () => Symbol[Y + C].Ask / Symbol[Z + C].Bid * Symbol[X + Y].Ask;
-            _marginFactor = MainSymbol.Margin.HiddenLimitOrderReduction;
+            _marginFactor = MainSymbol.HiddenLimitOrderMarginReduction;
 
             InitEnviromentState(X + Y, Y + C, Z + C);
 
@@ -261,7 +261,7 @@ namespace TickTrader.Algo.Calculator.Tests.MarginCalculations
             _leverage = 5;
             _volume = 0.3;
             _conversionRate = () => Symbol[Y + C].Ask / Symbol[Z + C].Bid * Symbol[X + Y].Ask;
-            _marginFactor = MainSymbol.Margin.HiddenLimitOrderReduction;
+            _marginFactor = MainSymbol.HiddenLimitOrderMarginReduction;
 
             InitEnviromentState(X + Y, Y + C, Z + C);
 
@@ -285,7 +285,7 @@ namespace TickTrader.Algo.Calculator.Tests.MarginCalculations
             _leverage = 5;
             _volume = 0.3;
             _conversionRate = () => Symbol[Y + C].Ask / Symbol[Z + C].Bid * Symbol[X + Y].Ask;
-            _marginFactor = MainSymbol.Margin.HiddenLimitOrderReduction;
+            _marginFactor = MainSymbol.HiddenLimitOrderMarginReduction;
 
             InitEnviromentState(X + Y, Y + C, Z + C);
 
