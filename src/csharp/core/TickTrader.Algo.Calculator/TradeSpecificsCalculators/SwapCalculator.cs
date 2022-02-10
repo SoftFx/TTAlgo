@@ -5,7 +5,7 @@ using TickTrader.Algo.Domain.CalculatorInterfaces;
 
 namespace TickTrader.Algo.Calculator.TradeSpecificsCalculators
 {
-    interface ICalculationSwapInfo
+    interface ISwapCalculationInfo
     {
         bool Enabled { get; }
 
@@ -23,12 +23,12 @@ namespace TickTrader.Algo.Calculator.TradeSpecificsCalculators
 
     public sealed class SwapCalculator : ISwapCalculator
     {
-        private readonly ICalculationSwapInfo _info;
+        private readonly ISwapCalculationInfo _info;
         private readonly IConversionFormula _marginRate, _positiveRate, _negativeRate;
         private double _swapModifierLong, _swapModifierShort;
 
 
-        internal SwapCalculator(ICalculationSwapInfo info, IConversionFormula marginFormula, IConversionFormula positiveFormula, IConversionFormula negativeFormula)
+        internal SwapCalculator(ISwapCalculationInfo info, IConversionFormula marginFormula, IConversionFormula positiveFormula, IConversionFormula negativeFormula)
         {
             _info = info;
             _marginRate = marginFormula;
