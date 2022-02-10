@@ -85,5 +85,9 @@ namespace TickTrader.Algo.Domain.CalculatorInterfaces
         OrderInfo.Types.Side Side { get; }
 
         double Volume { get; }
+
+        bool IsReducedCommission { get; }
+
+        bool IsHiddenOrIceberg { get; }
     }
 }

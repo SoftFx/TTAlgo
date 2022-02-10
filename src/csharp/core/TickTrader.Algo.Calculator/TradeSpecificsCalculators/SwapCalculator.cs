@@ -84,7 +84,7 @@ namespace TickTrader.Algo.Calculator.TradeSpecificsCalculators
 
                 if (_info.Type == SwapInfo.Types.Type.Points)
                 {
-                    return swapSize / Math.Pow(10, _info.SymbolDigits);
+                    return swapSize * Math.Pow(10, -_info.SymbolDigits);
                 }
                 else if (_info.Type == SwapInfo.Types.Type.PercentPerYear)
                 {
