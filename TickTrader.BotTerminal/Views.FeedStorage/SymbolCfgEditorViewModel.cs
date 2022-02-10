@@ -5,15 +5,14 @@ using System;
 using System.Collections.Generic;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
-using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.BotTerminal
 {
-    internal class SymbolCfgEditorViewModel : Screen, IWindowModel, ICustomInfo
+    internal class SymbolCfgEditorViewModel : Screen, IWindowModel, ISymbolInfo
     {
         private readonly VarContext _varContext = new VarContext();
 
-        public SymbolCfgEditorViewModel(ICustomInfo symbol, IObservableList<string> availableCurrencies, Predicate<string> symbolExistsFunc, bool createNew = false)
+        public SymbolCfgEditorViewModel(ISymbolInfo symbol, IObservableList<string> availableCurrencies, Predicate<string> symbolExistsFunc, bool createNew = false)
         {
             if (symbol == null)
             {
@@ -209,57 +208,63 @@ namespace TickTrader.BotTerminal
 
         public BoolVar IsValid { get; }
 
-        string ICustomInfo.Name => Name.Value.Trim();
+        string IBaseSymbolInfo.Name => Name.Value.Trim();
 
-        string ICustomInfo.Description => Description.Value;
+        string ISymbolInfo.Description => Description.Value;
 
-        string ICustomInfo.MarginCurrency => BaseCurr.Value.Trim();
+        string ISymbolInfo.MarginCurrency => BaseCurr.Value.Trim();
 
-        string ICustomInfo.ProfitCurrency => ProfitCurr.Value.Trim();
+        string ISymbolInfo.ProfitCurrency => ProfitCurr.Value.Trim();
 
-        int ICustomInfo.Digits => Digits.Value;
+        int ISymbolInfo.Digits => Digits.Value;
 
-        double ICustomInfo.LotSize => ContractSize.Value;
+        double ISymbolInfo.LotSize => ContractSize.Value;
 
-        int ICustomInfo.Slippage => Slippage.Value;
+        int ISymbolInfo.Slippage => Slippage.Value;
 
-        double ICustomInfo.MaxVolume => MaxVolume.Value;
+        double ISymbolInfo.MaxVolume => MaxVolume.Value;
 
-        double ICustomInfo.MinVolume => MinVolume.Value;
+        double ISymbolInfo.MinVolume => MinVolume.Value;
 
-        double ICustomInfo.VolumeStep => VolumeStep.Value;
+        double ISymbolInfo.VolumeStep => VolumeStep.Value;
 
-        bool ICustomInfo.SwapEnabled => SwapEnabled.Value;
+        bool ISymbolInfo.SwapEnabled => SwapEnabled.Value;
 
-        SwapInfo.Types.Type ICustomInfo.SwapType => SelectedSwapType.Value;
+        SwapInfo.Types.Type ISymbolInfo.SwapType => SelectedSwapType.Value;
 
-        double ICustomInfo.SwapSizeShort => SwapSizeShort.Value;
+        double ISymbolInfo.SwapSizeShort => SwapSizeShort.Value;
 
-        double ICustomInfo.SwapSizeLong => SwapSizeLong.Value;
+        double ISymbolInfo.SwapSizeLong => SwapSizeLong.Value;
 
-        int ICustomInfo.TripleSwapDay => TripleSwap.Value ? (int)DayOfWeek.Wednesday : 0;
+        int ISymbolInfo.TripleSwapDay => TripleSwap.Value ? (int)DayOfWeek.Wednesday : 0;
 
-        ProfitInfo.Types.CalculationMode ICustomInfo.ProfitMode => SelectedProfitMode.Value;
+        ProfitInfo.Types.CalculationMode ISymbolInfo.ProfitMode => SelectedProfitMode.Value;
 
-        MarginInfo.Types.CalculationMode ICustomInfo.MarginMode => SelectedMarginMode.Value;
+        MarginInfo.Types.CalculationMode ISymbolInfo.MarginMode => SelectedMarginMode.Value;
 
-        double ICustomInfo.MarginHedged => MarginHedged.Value;
+        double ISymbolInfo.MarginHedged => MarginHedged.Value;
 
-        double ICustomInfo.MarginFactor => MarginFactor.Value;
+        double ISymbolInfo.MarginFactor => MarginFactor.Value;
 
-        double ICustomInfo.StopOrderMarginReduction => StopOrderMarginReduction.Value;
+        double ISymbolInfo.StopOrderMarginReduction => StopOrderMarginReduction.Value;
 
-        double ICustomInfo.HiddenLimitOrderMarginReduction => HiddenLimitOrderMarginReduction.Value;
+        double ISymbolInfo.HiddenLimitOrderMarginReduction => HiddenLimitOrderMarginReduction.Value;
 
-        double ICustomInfo.Commission => Commission.Value;
+        double ISymbolInfo.Commission => Commission.Value;
 
-        CommissonInfo.Types.ValueType ICustomInfo.CommissionType => SelectedCommissionType.Value;
+        CommissonInfo.Types.ValueType ISymbolInfo.CommissionType => SelectedCommissionType.Value;
 
-        double ICustomInfo.LimitsCommission => LimitsCommission.Value;
+        double ISymbolInfo.LimitsCommission => LimitsCommission.Value;
 
-        double ICustomInfo.MinCommission => MinCommission.Value;
+        double ISymbolInfo.MinCommission => MinCommission.Value;
 
-        string ICustomInfo.MinCommissionCurr => SelectedMinCommissionCurr.Value;
+        string ISymbolInfo.MinCommissionCurr => SelectedMinCommissionCurr.Value;
+
+        string ISymbolInfo.Security => string.Empty;
+
+        int IBaseSymbolInfo.SortOrder => 1;
+
+        int IBaseSymbolInfo.GroupSortOrder => 1;
 
         #endregion
 

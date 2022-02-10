@@ -1,12 +1,11 @@
 ﻿using ProtoBuf;
 using System;
 using TickTrader.Algo.Domain;
-using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.FeedStorage
 {
     [ProtoContract]
-    internal sealed class CustomData : ICustomInfo, ISymbolInfo
+    internal sealed class CustomData : ISymbolInfo
     {
         [ProtoIgnore]
         internal Guid StorageId { get; set; }
@@ -103,7 +102,7 @@ namespace TickTrader.FeedStorage
         string ISymbolInfo.Security => string.Empty;
 
 
-        public static CustomData ToData(ICustomInfo info)
+        public static CustomData ToData(ISymbolInfo info)
         {
             return new CustomData
             {

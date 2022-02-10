@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Account;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage;
 using TickTrader.FeedStorage.Api;
@@ -153,7 +152,7 @@ namespace TickTrader.BotTerminal
 
         public void EditSymbol(ISymbolData symbol)
         {
-            var model = new SymbolCfgEditorViewModel((ICustomInfo)symbol, _clientModel.SortedCurrenciesNames, HasSymbol);
+            var model = new SymbolCfgEditorViewModel(symbol.Info, _clientModel.SortedCurrenciesNames, HasSymbol);
 
             if (_wndManager.ShowDialog(model, this).Result == true)
             {
@@ -164,17 +163,7 @@ namespace TickTrader.BotTerminal
 
         public void CopySymbol(ISymbolData symbol)
         {
-            var smb = (ICustomInfo)symbol;
-            //if (symbol is CustomSymbol)
-            //{
-            //    smb = ((CustomSymbol)symbol).Entity;
-            //}
-            //else
-            //{
-            //    //smb = CustomSymbol.FromAlgo((SymbolInfo)symbol.InfoEntity);
-            //}
-
-            var model = new SymbolCfgEditorViewModel(smb, _clientModel.SortedCurrenciesNames, HasSymbol, true);
+            var model = new SymbolCfgEditorViewModel(symbol.Info, _clientModel.SortedCurrenciesNames, HasSymbol, true);
 
             if (_wndManager.ShowDialog(model, this).Result == true)
             {
@@ -190,7 +179,7 @@ namespace TickTrader.BotTerminal
 
         public void RemoveSymbol(ISymbolData symbolModel)
         {
-            var actionModel = new ActionDialogViewModel("Removing symbol...", () => _catalog.CustomCollection.TryRemoveSymbol(symbolModel));
+            var actionModel = new ActionDialogViewModel("Removing symbol...", () => _catalog.CustomCollection.TryRemoveSymbol(symbolModel.Name));
             _wndManager.ShowDialog(actionModel, this);
         }
 

@@ -13,9 +13,9 @@ namespace TickTrader.FeedStorage.Api
         IReadOnlyList<ISymbolData> AllSymbols { get; }
 
 
-        ISymbolCollection<ISymbolInfo> OnlineCollection { get; }
+        ISymbolCollection OnlineCollection { get; }
 
-        ISymbolCollection<ICustomInfo> CustomCollection { get; }
+        ISymbolCollection CustomCollection { get; }
 
 
         Task<ISymbolCatalog> ConnectClient(IOnlineStorageSettings settings);
@@ -37,7 +37,7 @@ namespace TickTrader.FeedStorage.Api
     }
 
 
-    public interface ISymbolCollection<T>
+    public interface ISymbolCollection
     {
         string StorageFolder { get; }
 
@@ -47,11 +47,11 @@ namespace TickTrader.FeedStorage.Api
         List<ISymbolData> Symbols { get; }
 
 
-        Task<bool> TryAddSymbol(T symbol);
+        Task<bool> TryAddSymbol(ISymbolInfo symbol);
 
-        Task<bool> TryUpdateSymbol(T symbol);
+        Task<bool> TryUpdateSymbol(ISymbolInfo symbol);
 
-        Task<bool> TryRemoveSymbol(ISymbolKey symbol);
+        Task<bool> TryRemoveSymbol(string symbolName);
 
 
         event Action<ISymbolData> SymbolAdded;

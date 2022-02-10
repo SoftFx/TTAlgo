@@ -36,7 +36,7 @@ namespace TickTrader.FeedStorage
         }
 
 
-        public abstract class FeedHandler
+        public abstract class FeedHandler : ISymbolCollection
         {
             protected readonly VarDictionary<string, ISymbolData> _symbols = new VarDictionary<string, ISymbolData>();
 
@@ -78,11 +78,11 @@ namespace TickTrader.FeedStorage
             }
 
 
-            //public abstract Task<bool> TryAddSymbol(TData symbol);
+            public abstract Task<bool> TryAddSymbol(ISymbolInfo symbol);
 
-            //public abstract Task<bool> TryUpdateSymbol(TData symbol);
+            public abstract Task<bool> TryUpdateSymbol(ISymbolInfo symbol);
 
-            //public abstract Task<bool> TryRemoveSymbol(ISymbolKey symbol);
+            public abstract Task<bool> TryRemoveSymbol(string name);
 
 
             public Task Stop()

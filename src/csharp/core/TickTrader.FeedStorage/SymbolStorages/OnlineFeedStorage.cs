@@ -14,7 +14,7 @@ namespace TickTrader.FeedStorage
         }
 
 
-        internal sealed class Handler : FeedHandler, ISymbolCollection<ISymbolInfo>
+        internal sealed class Handler : FeedHandler
         {
             private readonly Ref<OnlineFeedStorage> _ref;
 
@@ -24,17 +24,17 @@ namespace TickTrader.FeedStorage
             }
 
 
-            public Task<bool> TryAddSymbol(ISymbolInfo symbol)
+            public override Task<bool> TryAddSymbol(ISymbolInfo symbol)
             {
                 throw new System.NotImplementedException();
             }
 
-            public Task<bool> TryRemoveSymbol(ISymbolKey symbol)
+            public override Task<bool> TryRemoveSymbol(string symbol)
             {
                 throw new System.NotImplementedException();
             }
 
-            public Task<bool> TryUpdateSymbol(ISymbolInfo symbol)
+            public override Task<bool> TryUpdateSymbol(ISymbolInfo symbol)
             {
                 throw new System.NotImplementedException();
             }

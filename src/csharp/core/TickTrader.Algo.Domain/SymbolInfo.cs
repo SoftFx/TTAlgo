@@ -51,6 +51,10 @@ namespace TickTrader.Algo.Domain
             RateUpdated?.Invoke(this);
         }
 
+
+        int ISymbolInfo.Slippage => (int)(Slippage.DefaultValue ?? 0);
+
+
         double ISymbolInfo.MaxVolume => MaxTradeVolume;
 
         double ISymbolInfo.MinVolume => MinTradeVolume;
@@ -118,6 +122,8 @@ namespace TickTrader.Algo.Domain
         double LotSize { get; }
 
         int Digits { get; }
+
+        int Slippage { get; }
 
 
         double MaxVolume { get; }

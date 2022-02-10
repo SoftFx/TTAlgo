@@ -19,9 +19,9 @@ namespace TickTrader.FeedStorage
         private FeedProvider.Handler _feedHandler;
 
 
-        public ISymbolCollection<ISymbolInfo> OnlineCollection => _feedHandler?.Cache;
+        public ISymbolCollection OnlineCollection => _feedHandler?.Cache;
 
-        public ISymbolCollection<ICustomInfo> CustomCollection => _customStorage;
+        public ISymbolCollection CustomCollection => _customStorage;
 
         public IReadOnlyList<ISymbolData> AllSymbols => _allSymbols.OrderBy((k, v) => k).Snapshot;
 
@@ -94,7 +94,7 @@ namespace TickTrader.FeedStorage
 
 
 
-        private void SubscribeToCollection<T>(ISymbolCollection<T> collection)
+        private void SubscribeToCollection(ISymbolCollection collection)
         {
             collection.Symbols.ForEach(SymbolAddedHandler);
 
@@ -103,7 +103,7 @@ namespace TickTrader.FeedStorage
             collection.SymbolUpdated += SymbolUpdateHandler;
         }
 
-        private void UnsubscribeCollection<T>(ISymbolCollection<T> collection)
+        private void UnsubscribeCollection(ISymbolCollection collection)
         {
             collection.SymbolAdded -= SymbolAddedHandler;
             collection.SymbolRemoved -= SymbolRemovedHandler;

@@ -4,6 +4,7 @@ using Machinarium.Qnil;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage.Api;
 using TickTrader.SeriesStorage;
 using TickTrader.SeriesStorage.ProtoSerializer;
@@ -105,7 +106,7 @@ namespace TickTrader.FeedStorage
         private void SendUpdatesToListeners(DictionaryUpdateArgs<string, CustomData> update) => _symbolChangeListeners.FireAndForget(update);
 
 
-        internal sealed class Handler : FeedHandler, ISymbolCollection<ICustomInfo>
+        internal sealed class Handler : FeedHandler
         {
             private readonly ActorCallback<DictionaryUpdateArgs<string, CustomData>> _smbChangedCallback;
             private readonly Ref<CustomFeedStorage> _ref;
@@ -130,17 +131,17 @@ namespace TickTrader.FeedStorage
                 snapshot.ForEach(AddNewCustomSymbol);
             }
 
-            public Task<bool> TryAddSymbol(ICustomInfo symbol)
+            public override Task<bool> TryAddSymbol(ISymbolInfo symbol)
             {
                 return _ref.Call(a => a.Add(CustomData.ToData(symbol)));
             }
 
-            public Task<bool> TryUpdateSymbol(ICustomInfo symbol)
+            public override Task<bool> TryUpdateSymbol(ISymbolInfo symbol)
             {
                 throw new NotImplementedException();
             }
 
-            public Task<bool> TryRemoveSymbol(ISymbolKey symbol)
+            public override Task<bool> TryRemoveSymbol(string name)
             {
                 throw new NotImplementedException();
             }
