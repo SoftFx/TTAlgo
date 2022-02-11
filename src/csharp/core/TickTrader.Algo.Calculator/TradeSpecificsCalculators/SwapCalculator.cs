@@ -78,9 +78,9 @@ namespace TickTrader.Algo.Calculator.TradeSpecificsCalculators
             {
                 double swapSize = 0.0;
                 if (side.IsBuy())
-                    return _info.SwapSizeLong ?? 0;
+                    swapSize = _info.SwapSizeLong ?? 0;
                 else if (side.IsSell())
-                    return _info.SwapSizeShort ?? 0;
+                    swapSize = _info.SwapSizeShort ?? 0;
 
                 if (_info.Type == SwapInfo.Types.Type.Points)
                 {

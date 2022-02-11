@@ -71,6 +71,8 @@ namespace TickTrader.Algo.Domain.CalculatorInterfaces
         OrderInfo.Types.Side Side { get; }
 
         double Volume { get; }
+
+        double? ClosePrice { get; }
     }
 
     public interface ISwapCalculateRequest

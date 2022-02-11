@@ -7,6 +7,7 @@ using TickTrader.Algo.Api.Ext;
 using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.Calculator;
 using TickTrader.Algo.Calculator.AlgoMarket;
+using TickTrader.Algo.Calculator.TradeSpecificsCalculators;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.CoreV1;
@@ -1639,15 +1640,17 @@ namespace TickTrader.Algo.Backtester
             else if ((price != null) && (price.Value > 0))
             {
                 closePrice = price.Value;
-                profit = 0.0;
+                var profitRes = fCalc.Profit.Calculate(new ProfitRequest(position.Info.Price ?? 0, actualCloseAmount, position.Info.Side, closePrice));
+                profit = RoundMoney(profitRes.Value, _calcFixture.RoundingDigits);
                 //profit = RoundMoney(((OrderCalculator)fCalc).CalculateProfitInternal(position.Info.Price ?? 0, (double)actualCloseAmount, closePrice, position.Info.Side, out _), _calcFixture.RoundingDigits);
             }
             else
             {
                 // calculator must be another
                 // profit = RoundMoney(fCalc.CalculateProfit(position.Price, (double)actualCloseAmount, position.Side, out var error), _calcFixture.RoundingDigits);
-                profit = 0;
-                closePrice = 0; // can't calculate close price
+                var profitRes = fCalc.Profit.Calculate(new ProfitRequest(position.Info.Price ?? 0, actualCloseAmount, position.Info.Side));
+                profit = RoundMoney(profitRes.Value, _calcFixture.RoundingDigits);
+                closePrice = (position.Info.Side.IsBuy() ? fCalc.SymbolInfo.Bid : fCalc.SymbolInfo.Ask) ?? -1.0; // can't calculate close price
             }
 
             //position.CloseConversionRate = profit >= 0 ? fCalc.PositiveProfitConversionRate.Value : fCalc.NegativeProfitConversionRate.Value;
@@ -1938,16 +1941,17 @@ namespace TickTrader.Algo.Backtester
             {
                 if (info.Info.Swap.Enabled && info.Info.LastQuote != null && _scheduler.UnsafeVirtualTimePoint - info.Info.LastQuote.Time <= TimeSpan.FromHours(1))
                 {
+                    var symbolCalc = _context.MarketData.GetCalculator(info.Info);
                     double swapAmount = 0;
 
                     if (_acc.Type == AccountInfo.Types.Type.Gross)
                     {
-                        if (UpdateGrossSwaps(info, out swapAmount))
+                        if (UpdateGrossSwaps(symbolCalc, out swapAmount))
                             updated = true;
                     }
                     else if (_acc.Type == AccountInfo.Types.Type.Net)
                     {
-                        if (UpdateNetSwaps(info, out swapAmount))
+                        if (UpdateNetSwaps(symbolCalc, out swapAmount))
                             updated = true;
                     }
 
@@ -1963,91 +1967,89 @@ namespace TickTrader.Algo.Backtester
                 _collector.LogTrade("Rollover, totalSwap=" + totalSwap.FormatPlain(_acc.BalanceCurrencyFormat));
         }
 
-        public bool UpdateGrossSwaps(SymbolAccessor smbInfo, out double totalSwap)
+        public bool UpdateGrossSwaps(ISymbolCalculator symbolCalc, out double totalSwap)
         {
             bool swapUpdated = false;
             totalSwap = 0;
 
-            if (smbInfo.Info.Swap.Enabled)
+            var positions = _acc.Orders.Values.Where(o => o.Info.Type == OrderInfo.Types.Type.Position && o.Info.Symbol == symbolCalc.SymbolInfo.Name).ToList(); // Perf. warning: .ToList()
+
+            if (positions != null)
             {
-                var positions = _acc.Orders.Values.Where(o => o.Info.Type == OrderInfo.Types.Type.Position && o.Info.Symbol == smbInfo.Info.Name).ToList(); // Perf. warning: .ToList()
-
-                if (positions != null)
+                foreach (OrderAccessor order in positions)
                 {
-                    foreach (OrderAccessor order in positions)
+                    var calc = order.Info.Calculator;
+
+                    var swapRes = calc.Swap.Calculate(order.Info, ExecutionTime);
+                    //double swap = 0.0;/*((OrderCalculator)order.Info.Calculator).CalculateSwap((double)order.Info.RemainingAmount, order.Info.Side, ExecutionTime, out var error);*/
+
+                    if (swapRes.Error != CalculationError.None)
                     {
-                        CalculationError error = CalculationError.None;
-                        double swap = 0.0;/*((OrderCalculator)order.Info.Calculator).CalculateSwap((double)order.Info.RemainingAmount, order.Info.Side, ExecutionTime, out var error);*/
-
-                        if (error != CalculationError.None)
-                        {
-                            //LogTransactionDetails(() => $"Swap not charged: account={acc.AccountLogin} symbol={smbInfo.Name} volume={order.RemainingAmount} reason={ex.CalcError}. {ex.Message}",
-                            //JournalEntrySeverities.Error, TransactDetails.Create(order.OrderId, null), acc.SkipLogging);
-                            return swapUpdated;
-                        }
-
-                        var roundedSwap = RoundMoney(swap, _acc.BalanceCurrencyInfo.Digits);
-
-                        if (roundedSwap != 0)
-                        {
-                            order.Info.SetSwap(order.Info.Swap + roundedSwap);
-                            //LogTransactionDetails(() => $"Swap charged: account={acc.AccountLogin} symbol={order.Symbol} side={order.Side} volume={order.RemainingAmount:G29} charged={swap:G29} total={order.Swap:G29} currency={acc.BalanceCurrency}",
-                            //    JournalEntrySeverities.Info, TransactDetails.Create(order.OrderId, null), acc.SkipLogging);
-
-                            // execution report
-                            if (_sendReports)
-                                _context.SendExtUpdate(TesterTradeTransaction.OnRolloverUpdate(order));
-
-                            swapUpdated = true;
-                        }
-
-                        totalSwap += roundedSwap;
+                        //LogTransactionDetails(() => $"Swap not charged: account={acc.AccountLogin} symbol={smbInfo.Name} volume={order.RemainingAmount} reason={ex.CalcError}. {ex.Message}",
+                        //JournalEntrySeverities.Error, TransactDetails.Create(order.OrderId, null), acc.SkipLogging);
+                        return swapUpdated;
                     }
+
+                    var roundedSwap = RoundMoney(swapRes.Value, _acc.BalanceCurrencyInfo.Digits);
+
+                    if (roundedSwap != 0)
+                    {
+                        order.Info.SetSwap(order.Info.Swap + roundedSwap);
+                        //LogTransactionDetails(() => $"Swap charged: account={acc.AccountLogin} symbol={order.Symbol} side={order.Side} volume={order.RemainingAmount:G29} charged={swap:G29} total={order.Swap:G29} currency={acc.BalanceCurrency}",
+                        //    JournalEntrySeverities.Info, TransactDetails.Create(order.OrderId, null), acc.SkipLogging);
+
+                        // execution report
+                        if (_sendReports)
+                            _context.SendExtUpdate(TesterTradeTransaction.OnRolloverUpdate(order));
+
+                        swapUpdated = true;
+                    }
+
+                    totalSwap += roundedSwap;
                 }
             }
 
             return swapUpdated;
         }
 
-        public bool UpdateNetSwaps(SymbolAccessor smbInfo, out double totalSwap)
+        public bool UpdateNetSwaps(ISymbolCalculator symbolCalc, out double totalSwap)
         {
             totalSwap = 0;
 
-            if (smbInfo.Info.Swap.Enabled)
+            PositionAccessor pos = _acc.NetPositions.GetOrNull(symbolCalc.SymbolInfo.Name);
+
+            if (pos != null)
             {
-                PositionAccessor pos = _acc.NetPositions.GetOrNull(smbInfo.Info.Name);
+                var swapRes = symbolCalc.Swap.Calculate(pos.Info, ExecutionTime);
+                //double swap = ((OrderCalculator)pos.Info.Calculator).CalculateSwap((double)pos.Long.Amount, OrderInfo.Types.Side.Buy, ExecutionTime, out error)
+                //               + ((OrderCalculator)pos.Info.Calculator).CalculateSwap((double)pos.Short.Amount, OrderInfo.Types.Side.Sell, ExecutionTime, out error);
 
-                if (pos != null)
+                if (swapRes.Error != CalculationError.None)
+                    return false;
+
+                //if (error != CalcErrorCodes.None)
+                //{
+                //Func<string> errMsg = () => $"Swap not charged: account={acc.AccountLogin} side={netPos.Side} symbol={smbInfo.Name} volume={netPos.Amount:G29} reason={ex.CalcError}. {ex.Message}";
+                //LogTransactionDetails(errMsg, JournalEntrySeverities.Error, TransactDetails.Create(netPos.Id, null), acc.SkipLogging);
+                //return false;
+                //}
+
+                double roundedSwap = RoundMoney(swapRes.Value, _acc.BalanceCurrencyInfo.Digits);
+
+                if (roundedSwap != 0)
                 {
-                    var error = CalculationError.None;
-                    double swap = 0.0;
-                    //double swap = ((OrderCalculator)pos.Info.Calculator).CalculateSwap((double)pos.Long.Amount, OrderInfo.Types.Side.Buy, ExecutionTime, out error)
-                    //               + ((OrderCalculator)pos.Info.Calculator).CalculateSwap((double)pos.Short.Amount, OrderInfo.Types.Side.Sell, ExecutionTime, out error);
+                    pos.Info.Swap += (double)roundedSwap;
 
-                    //if (error != CalcErrorCodes.None)
-                    //{
-                    //Func<string> errMsg = () => $"Swap not charged: account={acc.AccountLogin} side={netPos.Side} symbol={smbInfo.Name} volume={netPos.Amount:G29} reason={ex.CalcError}. {ex.Message}";
-                    //LogTransactionDetails(errMsg, JournalEntrySeverities.Error, TransactDetails.Create(netPos.Id, null), acc.SkipLogging);
-                    //return false;
-                    //}
+                    totalSwap += roundedSwap;
 
-                    double roundedSwap = RoundMoney(swap, _acc.BalanceCurrencyInfo.Digits);
+                    //LogTransactionDetails(() => $"Swap charged: account={acc.AccountLogin} symbol={smbInfo.Name} side={netPos.Side} volume={netPos.Amount:G29} charged={roundedSwap:G29} total={netPos.Swap:G29} currency={acc.BalanceCurrency}",
+                    //    JournalEntrySeverities.Info, TransactDetails.Create(netPos.Id, null), acc.SkipLogging);
 
-                    if (roundedSwap != 0)
-                    {
-                        pos.Info.Swap += (double)roundedSwap;
+                    // execution report
+                    if (_sendReports)
+                        _context.SendExtUpdate(TesterTradeTransaction.OnRolloverUpdate(pos));
 
-                        totalSwap += roundedSwap;
-
-                        //LogTransactionDetails(() => $"Swap charged: account={acc.AccountLogin} symbol={smbInfo.Name} side={netPos.Side} volume={netPos.Amount:G29} charged={roundedSwap:G29} total={netPos.Swap:G29} currency={acc.BalanceCurrency}",
-                        //    JournalEntrySeverities.Info, TransactDetails.Create(netPos.Id, null), acc.SkipLogging);
-
-                        // execution report
-                        if (_sendReports)
-                            _context.SendExtUpdate(TesterTradeTransaction.OnRolloverUpdate(pos));
-
-                        return true;
-                    }
+                    return true;
                 }
             }
 

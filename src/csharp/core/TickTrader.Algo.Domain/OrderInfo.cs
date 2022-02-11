@@ -16,7 +16,7 @@ namespace TickTrader.Algo.Domain
     }
 
 
-    public partial class OrderInfo : IOrderUpdateInfo, IOrderCalcInfo, IOrderLogDetailsInfo, IMarginCalculateRequest, IProfitCalculateRequest
+    public partial class OrderInfo : IOrderUpdateInfo, IOrderCalcInfo, IOrderLogDetailsInfo, IMarginCalculateRequest, IProfitCalculateRequest, ISwapCalculateRequest
     {
         public OrderOptions Options
         {
@@ -64,6 +64,13 @@ namespace TickTrader.Algo.Domain
         double IProfitCalculateRequest.Volume => RemainingAmount;
 
         Types.Side IProfitCalculateRequest.Side => Side;
+
+        double? IProfitCalculateRequest.ClosePrice => null;
+
+
+        Types.Side ISwapCalculateRequest.Side => Side;
+
+        double ISwapCalculateRequest.Volume => RemainingAmount;
 
 
         public event Action<OrderEssentialsChangeArgs> EssentialsChanged;

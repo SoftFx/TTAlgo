@@ -3,7 +3,7 @@ using TickTrader.Algo.Domain.CalculatorInterfaces;
 
 namespace TickTrader.Algo.Domain
 {
-    public partial class PositionInfo : IPositionInfo, IMarginCalculateRequest, IProfitCalculateRequest
+    public partial class PositionInfo : IPositionInfo, IMarginCalculateRequest, IProfitCalculateRequest, ISwapCalculateRequest
     {
         public ISymbolCalculator Calculator { get; set; }
 
@@ -17,7 +17,22 @@ namespace TickTrader.Algo.Domain
 
         double IMarginProfitCalc.RemainingAmount => Volume;
 
+
+        double IMarginCalculateRequest.Volume => Volume;
+
         bool IMarginCalculateRequest.IsHiddenLimit => false;
+
+        double IProfitCalculateRequest.Price => Price;
+
+        OrderInfo.Types.Side IProfitCalculateRequest.Side => Side;
+
+        double IProfitCalculateRequest.Volume => Volume;
+
+        double? IProfitCalculateRequest.ClosePrice => null;
+
+        OrderInfo.Types.Side ISwapCalculateRequest.Side => Side;
+
+        double ISwapCalculateRequest.Volume => Volume;
 
 
         public string GetSnapshotString() => ToString();
