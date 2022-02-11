@@ -1357,25 +1357,27 @@ namespace TickTrader.Algo.Backtester
         internal NetPositionOpenInfo OpenNetPositionFromOrder(OrderAccessor fromOrder, double fillAmount, double fillPrice, TradeReportAdapter tradeReport)
         {
             var smb = fromOrder.SymbolInfo;
+            var symbolCalc = _context.MarketData.GetCalculator(smb);
+            var fillSide = fromOrder.Info.Side;
             var position = _acc.NetPositions.GetOrCreatePosition(smb.Name, NewOrderId());
-            //position.Increase(fillAmount, fillPrice, fromOrder.Info.Side);
+            var posInfo = position.Info;
             var timestamp = _scheduler.UnsafeVirtualTimestamp;
-            position.Info.Modified = timestamp;
+            posInfo.Modified = timestamp;
 
             var charges = new TradeChargesInfo();
 
             // commission
             CommisionEmulator.OnNetPositionOpened(fromOrder, position, fillAmount, smb, charges, _calcFixture);
 
-            tradeReport.Info.Commission = (double)charges.Commission;
+            tradeReport.Info.Commission = charges.Commission;
             //tradeReport.Entity.AgentCommission = (double)charges.AgentCommission;
             //tradeReport.Entity.MinCommissionCurrency = (double)charges.MinCommissionCurrency;
             //tradeReport.Entity.MinCommissionConversionRate =  (double)charges.MinCommissionConversionRate;
 
             var balanceMovement = charges.Total;
-            tradeReport.Info.TransactionAmount = (double)balanceMovement;
+            tradeReport.Info.TransactionAmount = balanceMovement;
 
-            if (fromOrder.Info.Type == OrderInfo.Types.Type.Market || fromOrder.Info.RemainingAmount == 0)
+            if (fromOrder.Info.Type.IsMarket() || fromOrder.Info.RemainingAmount.E(0))
                 _acc.Orders.Remove(fromOrder.Info);
 
             // journal;
@@ -1383,9 +1385,72 @@ namespace TickTrader.Algo.Backtester
             //JournalEntrySeverities.Info, TransactDetails.Create(position.Id, position.Symbol));
 
             var openInfo = new NetPositionOpenInfo();
-            openInfo.CloseInfo = DoNetSettlement(position, tradeReport, fromOrder.Info.Side);
             openInfo.Charges = charges;
             openInfo.ResultingPosition = position;
+            openInfo.CloseInfo = new NetPositionCloseInfo();
+            if (posInfo.IsEmpty)
+            {
+                posInfo.Side = fillSide;
+                posInfo.Price = fillPrice;
+                posInfo.Volume = fillAmount;
+            }
+            else if (posInfo.Side == fillSide)
+            {
+                var posPrice = posInfo.Price;
+                var posAmount = posInfo.Volume;
+                posInfo.Price = (posPrice * posAmount + fillPrice * fillAmount) / (posAmount + fillAmount);
+                posInfo.Volume = posAmount + fillAmount;
+            }
+            else
+            {
+                var posPrice = posInfo.Price;
+                var posAmount = posInfo.Volume;
+                var closingAmount = Math.Min(fillAmount, posAmount);
+                var closableAmount = Math.Max(fillAmount, posAmount);
+
+                if (posAmount > fillAmount)
+                {
+                    posInfo.Volume = posAmount - fillAmount;
+                }
+                else
+                {
+                    posInfo.Side = fillSide;
+                    posInfo.Price = fillPrice;
+                    posInfo.Volume = fillAmount - posAmount;
+                }
+
+                if (position.Info.IsEmpty)
+                    _acc.NetPositions.RemovePosition(smb.Name);
+
+                var k = closingAmount / closableAmount;
+                var closeSwap = RoundMoney(k * position.Info.Swap, _calcFixture.RoundingDigits);
+                posInfo.Swap -= closeSwap;
+
+                var profitRes = symbolCalc.Profit.Calculate(new ProfitRequest(fillPrice, closingAmount, fillSide, posPrice));
+                if (profitRes.Error != CalculationError.None)
+                    throw new Exception();
+                var profit = RoundMoney(profitRes.Value, _calcFixture.RoundingDigits);
+
+                balanceMovement += profit + closeSwap;
+
+                tradeReport.Info.TransactionAmount += (double)balanceMovement;
+                tradeReport.Info.PositionClosed = ExecutionTime.ToUniversalTime().ToTimestamp();
+                tradeReport.Info.PositionOpenPrice = fillPrice;
+                tradeReport.Info.PositionClosePrice = posPrice;
+                tradeReport.Info.PositionCloseQuantity = closingAmount;
+                tradeReport.Info.Swap += closeSwap;
+                //report.Entity.CloseConversionRate = (double)profitRate;
+
+                openInfo.CloseInfo.CloseAmount = closingAmount;
+                openInfo.CloseInfo.ClosePrice = posPrice;
+                openInfo.CloseInfo.BalanceMovement = balanceMovement;
+
+                _collector.OnPositionClosed(ExecutionTime, profit, charges.Commission, closeSwap);
+
+                //LogTransactionDetails(() => "Position closed: symbol=" + position.Symbol + " amount=" + oneSideClosingAmount + " open=" + openPrice + " close=" + closePrice
+                //                            + " profit=" + profit + " swap=" + closeSwap,
+                //    JournalEntrySeverities.Info, TransactDetails.Create(position.Id, position.Symbol));
+            }
 
             tradeReport.FillAccountSpecificFields(_calcFixture);
             tradeReport.FillPosData(position, fillPrice, 0/*fromOrder.MarginRateCurrent*/);
@@ -1404,65 +1469,6 @@ namespace TickTrader.Algo.Backtester
             _collector.OnCommisionCharged(charges.Commission);
 
             return openInfo;
-        }
-
-        public NetPositionCloseInfo DoNetSettlement(PositionAccessor position, TradeReportAdapter report, OrderInfo.Types.Side fillSide = OrderInfo.Types.Side.Buy)
-        {
-            var oneSideClosingAmount = 0.0; //Math.Min(position.Short.Amount, position.Long.Amount);
-            var oneSideClosableAmount = position.Info.Volume; // Math.Max(position.Short.Amount, position.Long.Amount);
-            var balanceMovement = 0.0;
-            var closePrice = 0.0;
-            //NetAccountModel acc = position.Acc;
-
-            var copy = position.Clone();
-            var isClosed = position.Info.IsEmpty;
-
-            if (oneSideClosingAmount > 0)
-            {
-                var k = oneSideClosingAmount / oneSideClosableAmount;
-                var closeSwap = RoundMoney(k * position.Info.Swap, _calcFixture.RoundingDigits);
-                //var openPrice = fillSide == OrderInfo.Types.Side.Buy ? position.Long.Price : position.Short.Price;
-                //closePrice = fillSide == OrderInfo.Types.Side.Buy ? position.Short.Price : position.Long.Price;
-
-                double profit = 0.0;
-                var error = CalculationError.None;
-                //var profit = RoundMoney(((OrderCalculator)position.Info.Calculator).CalculateProfitInternal((double)openPrice, (double)oneSideClosingAmount, (double)closePrice,
-                //    fillSide, out var error), _calcFixture.RoundingDigits);
-
-                if (error != CalculationError.None)
-                    throw new Exception();
-
-                //position.DecreaseBothSides(oneSideClosingAmount);
-
-                position.Info.Swap -= (double)closeSwap;
-                balanceMovement = profit + closeSwap;
-
-                //if (position.IsEmpty)
-                //    _acc.NetPositions.RemovePosition(position.Symbol);
-
-                report.Info.TransactionAmount += (double)balanceMovement;
-                report.Info.PositionClosed = ExecutionTime.ToUniversalTime().ToTimestamp();
-                //report.Entity.PositionOpenPrice = (double)openPrice;
-                report.Info.PositionClosePrice = (double)closePrice;
-                report.Info.PositionCloseQuantity = (double)oneSideClosingAmount;
-                report.Info.Swap += (double)closeSwap;
-                //report.Entity.CloseConversionRate = (double)profitRate;
-
-                //LogTransactionDetails(() => "Position closed: symbol=" + position.Symbol + " amount=" + oneSideClosingAmount + " open=" + openPrice + " close=" + closePrice
-                //                            + " profit=" + profit + " swap=" + closeSwap,
-                //    JournalEntrySeverities.Info, TransactDetails.Create(position.Id, position.Symbol));
-
-                _collector.OnPositionClosed(ExecutionTime, (double)profit, 0, (double)closeSwap);
-            }
-
-            _scheduler.EnqueueEvent(b => b.Account.NetPositions.FirePositionUpdated(new PositionModifiedEventArgsImpl(copy, position, isClosed)));
-
-            var info = new NetPositionCloseInfo();
-            info.CloseAmount = oneSideClosingAmount;
-            info.ClosePrice = closePrice;
-            info.BalanceMovement = balanceMovement;
-
-            return info;
         }
 
         internal void CheckActivation(IRateInfo rate)
