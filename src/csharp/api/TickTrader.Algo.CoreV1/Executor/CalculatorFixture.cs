@@ -163,6 +163,8 @@ namespace TickTrader.Algo.CoreV1
 
         public void ValidateNewOrder(OrderAccessor newOrder) //for Emulator
         {
+            LazyInit();
+
             if (Acc.IsMarginType)
             {
                 //fCalc.UpdateMargin(newOrder, acc);
