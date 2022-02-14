@@ -25,8 +25,8 @@
 
                 <DataGridTemplateColumn Header="" CellTemplate="{StaticResource SeverityMarkerTemplate}" MaxWidth="18" MinWidth="18"/>
 
-                <DataGridTextColumn SortMemberPath="Time" 
-                                    Binding="{Binding Time.Timestamp, Converter={StaticResource UtcExtDateTimeFormat}}"
+                <DataGridTextColumn SortMemberPath="TimeKey" 
+                                    Binding="{Binding TimeKey.Timestamp, Converter={StaticResource UtcExtDateTimeFormat}}"
                                     SortDirection="Ascending" Header="{l:Resx Journal_Time}" Width="126"/>
 
                 <DataGridTextColumn Binding="{Binding Message}" Header="{l:Resx Journal_Message}" Width="3*"/>

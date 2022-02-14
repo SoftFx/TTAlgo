@@ -279,12 +279,14 @@ namespace TickTrader.BotTerminal
         {
             observer.SetMessage("Loading journal...");
 
+            await JournalPage.LoadJournal(results);
+
             //await Task.Run(() =>
             //{
-            foreach (var record in results.Journal)
-            {
-                JournalPage.Append(record);
-            }
+            //foreach (var record in results.Journal)
+            //{
+            //    JournalPage.Append(record);
+            //}
             //});
         }
 

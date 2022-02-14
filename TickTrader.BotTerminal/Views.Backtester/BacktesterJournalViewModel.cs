@@ -1,4 +1,6 @@
 ﻿using System.Collections.ObjectModel;
+using System.Threading.Tasks;
+using TickTrader.Algo.Backtester;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
@@ -12,7 +14,7 @@ namespace TickTrader.BotTerminal
             DisplayName = "Journal";
         }
 
-        public ObservableCollection<PluginLogRecord> JournalRecords { get; } = new ObservableCollection<PluginLogRecord>();
+        public ObservableCollection<JournalMsg> JournalRecords { get; private set; } = new ObservableCollection<JournalMsg>();
 
         //public void SetData(List<BotLogRecord> records)
         //{
@@ -21,12 +23,43 @@ namespace TickTrader.BotTerminal
 
         public void Append(PluginLogRecord record)
         {
-            JournalRecords.Add(record);
+            JournalRecords.Add(new JournalMsg(record));
         }
 
         public void Clear()
         {
             JournalRecords.Clear();
+        }
+
+        public async Task LoadJournal(BacktesterResults results)
+        {
+            var records = new ObservableCollection<JournalMsg>();
+            await Task.Run(() =>
+            {
+                foreach(var record in results.Journal)
+                {
+                    records.Add(new JournalMsg(record));
+                }
+            });
+
+            JournalRecords = records;
+            NotifyOfPropertyChange(nameof(JournalRecords));
+        }
+
+
+        public sealed class JournalMsg : BaseJournalMessage
+        {
+            private readonly PluginLogRecord _record;
+
+
+            public PluginLogRecord.Types.LogSeverity Severity => _record.Severity;
+
+
+            public JournalMsg(PluginLogRecord record) : base(record.TimeUtc)
+            {
+                _record = record;
+                Message = record.Message;
+            }
         }
     }
 }
