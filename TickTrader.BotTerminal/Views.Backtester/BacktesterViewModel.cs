@@ -177,7 +177,8 @@ namespace TickTrader.BotTerminal
             //var progressMin = _emulteFrom.GetAbsoluteDay();
 
             //observer.StartProgress(progressMin, _emulateTo.GetAbsoluteDay());
-            observer.StartProgress(0, 10);
+            const int progressMax = 100;
+            observer.StartProgress(0, progressMax);
             observer.SetMessage("Emulating...");
 
             BacktesterRunner.Instance.BinDirPath = System.IO.Path.Combine(EnvService.Instance.AppFolder, "bin", "backtester");
@@ -185,7 +186,7 @@ namespace TickTrader.BotTerminal
             {
                 using (var reg = cToken.Register(() => tester.Stop()))
                 {
-                    tester.OnProgressUpdate.Subscribe(update => Execute.OnUIThread(() => observer.SetProgress(update.Current)));
+                    tester.OnProgressUpdate.Subscribe(update => Execute.OnUIThread(() => observer.SetProgress(progressMax * update.Current / update.Total)));
                     await tester.Start(configPath);
                     await tester.AwaitStop();
                 }
@@ -296,10 +297,10 @@ namespace TickTrader.BotTerminal
 
             //await Task.Run(() =>
             //{
-                foreach (var report in results.TradeHistory)
-                {
-                    AddTradeHistoryReport(report);
-                }
+            foreach (var report in results.TradeHistory)
+            {
+                AddTradeHistoryReport(report);
+            }
             //});
         }
 

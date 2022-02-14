@@ -92,7 +92,6 @@ namespace TickTrader.Algo.BacktesterV1Host
                 var from = DateTime.SpecifyKind(config.Core.EmulateFrom, DateTimeKind.Utc);
                 var to = DateTime.SpecifyKind(config.Core.EmulateTo, DateTimeKind.Utc);
 
-                //await RunInternal(config); // stub
                 await DoBacktesting(config, from, to);
 
                 _handler.SendStoppedMsg(null);
@@ -108,20 +107,6 @@ namespace TickTrader.Algo.BacktesterV1Host
             }
         }
 
-        private async Task RunInternal(BacktesterConfig config)
-        {
-            const ulong total = 10;
-            for (ulong i = 0; i < total; i++)
-            {
-                await Task.Delay(1000, _cancelTokenSrc.Token);
-                _handler.SendProgress(i, total);
-            }
-
-            _handler.SendStoppedMsg(null);
-
-            _logger.Debug("Finished");
-        }
-
         private async Task DoBacktesting(BacktesterConfig config, DateTime from, DateTime to)
         {
             using (var backtester = new Backtester.Backtester(config.PluginConfig.Key, from, to))
@@ -131,7 +116,12 @@ namespace TickTrader.Algo.BacktesterV1Host
                 try
                 {
 #if DEBUG
-                    await Task.Delay(10000);
+                    const int timeOut = 20;
+                    for (ulong i = 0; i < timeOut; i++)
+                    {
+                        await Task.Delay(500, _cancelTokenSrc.Token);
+                        _handler.SendProgress(i, timeOut);
+                    }
 #endif
 
                     ConfigureCommonSettings(config, backtester.CommonSettings);
@@ -143,10 +133,10 @@ namespace TickTrader.Algo.BacktesterV1Host
 
                     PluginConfigLoader.ApplyConfig(backtester, config.PluginConfig, config.Core.MainSymbol, config.Env.WorkingFolderPath);
 
-                    var _ = SendProgressLoop();
+                    var _ = SendProgressLoop(backtester, from, to);
                     await backtester.Run(_cancelTokenSrc.Token);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     _logger.Error(ex, "Fatal emulation error");
                 }
@@ -154,6 +144,8 @@ namespace TickTrader.Algo.BacktesterV1Host
                 {
                     OnStopEmulation(backtester);
                 }
+
+                _handler.SendProgress(100, 100);
 
                 _logger.Debug("Saving results...");
 
@@ -165,6 +157,8 @@ namespace TickTrader.Algo.BacktesterV1Host
                 {
                     _logger.Error(ex, "Failed to save results");
                 }
+
+                _cancelTokenSrc.Cancel();
             }
         }
 
@@ -223,15 +217,17 @@ namespace TickTrader.Algo.BacktesterV1Host
             feedEmulator.AddBarBuilder(core.MainSymbol, core.MainTimeframe, Feed.Types.MarketSide.Bid);
         }
 
-        private async Task SendProgressLoop()
+        private async Task SendProgressLoop(Backtester.Backtester backtester, DateTime from, DateTime to)
         {
             try
             {
+                var offset = from.GetAbsoluteDay();
+                var total = to.GetAbsoluteDay() - offset;
                 var token = _cancelTokenSrc.Token;
                 while (!token.IsCancellationRequested)
                 {
-                    //_handler.SendProgress(backtester.CurrentTimePoint?.GetAbsoluteDay() ?? progressMin);
-                    await Task.Delay(1000, token);
+                    _handler.SendProgress(backtester.CurrentTimePoint?.GetAbsoluteDay() - offset ?? 0, total);
+                    await Task.Delay(500, token);
                 }
             }
             catch (TaskCanceledException) { }

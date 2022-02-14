@@ -22,8 +22,8 @@ message StopBacktesterRequest { } // void response
 
 message BacktesterProgressUpdate {
     string id = 1;
-    uint64 current = 2;
-    uint64 total = 3;
+    double current = 2;
+    double total = 3;
 }
 
 message BacktesterStoppedMsg {

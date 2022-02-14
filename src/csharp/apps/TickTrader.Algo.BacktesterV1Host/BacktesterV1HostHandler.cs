@@ -37,7 +37,7 @@ namespace TickTrader.Algo.BacktesterV1Host
             _session.Tell(RpcMessage.Notification(new BacktesterStoppedMsg { Id = _id, ErrorMsg = errorMsg }));
         }
 
-        public void SendProgress(ulong current, ulong total)
+        public void SendProgress(double current, double total)
         {
             var msg = new BacktesterProgressUpdate { Id = _id, Current = current, Total = total };
             _session.Tell(RpcMessage.Notification(msg));
