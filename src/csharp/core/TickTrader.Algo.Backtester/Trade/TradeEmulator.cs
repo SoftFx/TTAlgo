@@ -1229,8 +1229,7 @@ namespace TickTrader.Algo.Backtester
             //    Logger.Info(() => OperationContext.LogPrefix + "Create new position: " + position);
 
             // register order
-            //DO TOT DELETE, WE WILL DECIDE WHAT TO DO LATER
-            //RegisterOrder(position, (RateUpdate)position.Calculator.CurrentRate);
+            RegisterOrder(position, currentRate);
 
             //position.FireChanged();
 
