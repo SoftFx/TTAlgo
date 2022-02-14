@@ -266,7 +266,7 @@ namespace TickTrader.Algo.Backtester
                         StopLoss = sl,
                         TakeProfit = tp,
                         Comment = comment,
-                        Expiration = request.Expiration.Value.ToUniversalTime().ToTimestamp(),
+                        Expiration = request.Expiration.HasValue ? request.Expiration.Value.ToUniversalTime().ToTimestamp() : null,
                         MaxVisibleAmount = (double?)orderMaxVisibleVolume,
                         ExecOptions = request.Options?.ToDomainEnum(),
                     };
@@ -813,7 +813,7 @@ namespace TickTrader.Algo.Backtester
             //    order.Options = request.ImmediateOrCancelFlag.Value ? order.Options.SetFlag(OrderExecutionOptions.ImmediateOrCancel) : order.Options.ClearFlag(OrderExecutionOptions.ImmediateOrCancel);
             //}
 
-            if (orderType.IsPending())
+            if (request.Expiration != null && orderType.IsPending())
             {
                 var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
                 if (request.Expiration.ToDateTime() > epoch)
