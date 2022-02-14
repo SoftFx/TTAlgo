@@ -66,7 +66,7 @@ namespace TickTrader.Algo.Calculator.TradeSpecificsCalculators
                     break;
             }
 
-            commissionAmount = Math.Max(commissionAmount, minCommissionAmount);
+            commissionAmount = -Math.Max(commissionAmount, minCommissionAmount);
 
             return ResponseFactory.Build(commissionAmount, calcError);
         }

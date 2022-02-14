@@ -1119,6 +1119,7 @@ namespace TickTrader.Algo.Backtester
             OrderAccessor position;
             //TradeChargesInfo charges = new TradeChargesInfo();
             var currentRate = _calcFixture.GetCurrentRateOrNull(smb.Name);
+            var symbolCalc = _context.MarketData.GetCalculator(smb);
             var wasTmpOrder = parentOrder.Info.Type == OrderInfo.Types.Type.Market
                 || (parentOrder.Info.Type == OrderInfo.Types.Type.Limit && parentOrder.Info.IsImmediateOrCancel);
 
@@ -1217,7 +1218,9 @@ namespace TickTrader.Algo.Backtester
             //position.Entity.OpenConversionRate = position.MarginRateCurrent;
 
             // calculate commission
-            CommisionEmulator.OnGrossPositionOpened(position, position.SymbolInfo, _calcFixture);
+            //CommisionEmulator.OnGrossPositionOpened(position, position.SymbolInfo, _calcFixture);
+            var commissionRes = symbolCalc.Commission.Calculate(new CommissionRequest(position.Info.Side, position.Info.RemainingAmount, false, false));
+            position.Info.ChangeCommission(RoundMoney(commissionRes.Value, _calcFixture.RoundingDigits));
 
             //// log
             //if (transformOrder)
@@ -1367,15 +1370,17 @@ namespace TickTrader.Algo.Backtester
             var charges = new TradeChargesInfo();
 
             // commission
-            CommisionEmulator.OnNetPositionOpened(fromOrder, position, fillAmount, smb, charges, _calcFixture);
+            var commissionRes = symbolCalc.Commission.Calculate(new CommissionRequest(fromOrder.Info.Side, fillAmount, false, fromOrder.Info.MaxVisibleAmount.HasValue));
+            var commission = RoundMoney(commissionRes.Value, _calcFixture.RoundingDigits);
+            //CommisionEmulator.OnNetPositionOpened(fromOrder, position, fillAmount, smb, charges, _calcFixture);
+            charges.Commission = commission;
 
-            tradeReport.Info.Commission = charges.Commission;
+            tradeReport.Info.Commission = commission;
             //tradeReport.Entity.AgentCommission = (double)charges.AgentCommission;
             //tradeReport.Entity.MinCommissionCurrency = (double)charges.MinCommissionCurrency;
             //tradeReport.Entity.MinCommissionConversionRate =  (double)charges.MinCommissionConversionRate;
 
-            var balanceMovement = charges.Total;
-            tradeReport.Info.TransactionAmount = balanceMovement;
+            var balanceMovement = commission;
 
             if (fromOrder.Info.Type.IsMarket() || fromOrder.Info.RemainingAmount.E(0))
                 _acc.Orders.Remove(fromOrder.Info);
@@ -1433,7 +1438,6 @@ namespace TickTrader.Algo.Backtester
 
                 balanceMovement += profit + closeSwap;
 
-                tradeReport.Info.TransactionAmount += (double)balanceMovement;
                 tradeReport.Info.PositionClosed = ExecutionTime.ToUniversalTime().ToTimestamp();
                 tradeReport.Info.PositionOpenPrice = fillPrice;
                 tradeReport.Info.PositionClosePrice = posPrice;
@@ -1443,15 +1447,16 @@ namespace TickTrader.Algo.Backtester
 
                 openInfo.CloseInfo.CloseAmount = closingAmount;
                 openInfo.CloseInfo.ClosePrice = posPrice;
-                openInfo.CloseInfo.BalanceMovement = balanceMovement;
+                openInfo.CloseInfo.BalanceMovement = profit + closeSwap;
 
-                _collector.OnPositionClosed(ExecutionTime, profit, charges.Commission, closeSwap);
+                _collector.OnPositionClosed(ExecutionTime, profit, 0, closeSwap);
 
                 //LogTransactionDetails(() => "Position closed: symbol=" + position.Symbol + " amount=" + oneSideClosingAmount + " open=" + openPrice + " close=" + closePrice
                 //                            + " profit=" + profit + " swap=" + closeSwap,
                 //    JournalEntrySeverities.Info, TransactDetails.Create(position.Id, position.Symbol));
             }
 
+            tradeReport.Info.TransactionAmount = balanceMovement;
             tradeReport.FillAccountSpecificFields(_calcFixture);
             tradeReport.FillPosData(position, fillPrice, 0/*fromOrder.MarginRateCurrent*/);
             tradeReport.Info.PositionOpened = timestamp;
@@ -1459,14 +1464,13 @@ namespace TickTrader.Algo.Backtester
 
             //LogTransactionDetails(() => "Final position: " + position.GetBriefInfo(), JournalEntrySeverities.Info, TransactDetails.Create(position.Id, position.Symbol));
 
-            balanceMovement += openInfo.CloseInfo.BalanceMovement;
             //execReport.Profit = new ExecProfitInfo(balanceMovement, acc.Balance, acc.BalanceCurrency);
             //SendExecutionReport(execReport, acc);
             //SendPositionReport(acc, CreatePositionReport(acc, PositionReportType.CreatePosition, position.SymbolRef, balanceMovement));
 
             _acc.Balance += balanceMovement;
 
-            _collector.OnCommisionCharged(charges.Commission);
+            _collector.OnCommisionCharged(commission);
 
             return openInfo;
         }
@@ -1673,6 +1677,10 @@ namespace TickTrader.Algo.Backtester
             //position.IsReducedCloseCommission = position.IsReducedCloseCommission && trReason == Domain.TradeReportInfo.Types.Reason.TakeProfitAct;
 
             var charges = new TradeChargesInfo();
+            charges.CurrencyInfo = _acc.BalanceCurrencyInfo;
+
+            // two-way commission is no longer used on TTS
+            //CommisionEmulator.OnGrossPositionClosed(position, actualCloseAmount, smb, charges, _calcFixture);
 
             if (partialClose)
             {
@@ -1682,16 +1690,25 @@ namespace TickTrader.Algo.Backtester
                 position.Info.ChangeRemaningAmount(newRemainingAmount);
                 //position.Status = OrderStatuses.Calculated;
 
-                if (position.Info.Swap != null)
+                var swap = position.Info.Swap;
+                if (!swap.E(0))
                 {
-                    var partialSwap = CommisionEmulator.GetPartialSwap(position.Info.Swap, k, _calcFixture.RoundingDigits);
+                    var remainingSwap = k * swap;
+                    charges.Swap = RoundMoney(swap - remainingSwap, _calcFixture.RoundingDigits);
+                    position.Info.SetSwap(RoundMoney(remainingSwap, _calcFixture.RoundingDigits));
+                }
 
-                    charges.Swap = position.Info.Swap - partialSwap;
-                    position.Info.Swap = partialSwap;
+                var commission = position.Info.Commission;
+                if (!commission.E(0))
+                {
+                    var remainingCommission = k * commission;
+                    charges.Commission = RoundMoney(commission - remainingCommission, _calcFixture.RoundingDigits);
+                    position.Info.ChangeCommission(RoundMoney(remainingCommission, _calcFixture.RoundingDigits));
                 }
             }
             else
             {
+                charges.Commission = position.Info.Commission;
                 charges.Swap = position.Info.Swap;
                 position.Info.ChangeRemaningAmount(0);
             }
@@ -1700,8 +1717,6 @@ namespace TickTrader.Algo.Backtester
             //    CommissionStrategy.OnRollover(position, actualCloseAmount, charges, acc);
             //else
             //    CommissionStrategy.OnPositionClosed(position, actualCloseAmount, charges, acc);)
-
-            CommisionEmulator.OnGrossPositionClosed(position, actualCloseAmount, smb, charges, _calcFixture);
 
             if (dropCommission)
             {
