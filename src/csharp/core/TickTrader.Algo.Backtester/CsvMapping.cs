@@ -83,7 +83,7 @@ namespace TickTrader.Algo.Backtester
 
             public string ConvertToString(object value, IWriterRow row, MemberMapData memberMapData)
             {
-                return InvariantFormat.CsvFormat(((Timestamp)value).ToDateTime());
+                return InvariantFormat.CsvFormat(((Timestamp)value).ToDateTime().ToUniversalTime());
             }
         }
     }

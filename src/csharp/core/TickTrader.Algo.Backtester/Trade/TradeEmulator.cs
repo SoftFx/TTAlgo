@@ -266,7 +266,7 @@ namespace TickTrader.Algo.Backtester
                         StopLoss = sl,
                         TakeProfit = tp,
                         Comment = comment,
-                        Expiration = request.Expiration.HasValue ? request.Expiration.Value.ToUniversalTime().ToTimestamp() : null,
+                        Expiration = request.Expiration?.ToUniversalTime().ToTimestamp(),
                         MaxVisibleAmount = (double?)orderMaxVisibleVolume,
                         ExecOptions = request.Options?.ToDomainEnum(),
                     };
