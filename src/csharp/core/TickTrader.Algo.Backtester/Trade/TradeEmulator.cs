@@ -1367,6 +1367,7 @@ namespace TickTrader.Algo.Backtester
             posInfo.Modified = timestamp;
 
             var charges = new TradeChargesInfo();
+            charges.CurrencyInfo = _acc.BalanceCurrencyInfo;
 
             // commission
             var commissionRes = symbolCalc.Commission.Calculate(new CommissionRequest(fromOrder.Info.Side, fillAmount, false, fromOrder.Info.MaxVisibleAmount.HasValue));
