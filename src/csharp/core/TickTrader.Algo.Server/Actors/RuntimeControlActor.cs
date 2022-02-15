@@ -21,6 +21,7 @@ namespace TickTrader.Algo.Server
         public const int KillTimeout = 2000;
 
         private static readonly TimeSpan KeepAliveThreshold = TimeSpan.FromMinutes(2);
+        private static readonly int _serverProcId = Process.GetCurrentProcess().Id;
 
         private readonly AlgoServerPrivate _server;
         private readonly RuntimeConfig _config;
@@ -267,12 +268,13 @@ namespace TickTrader.Algo.Server
 
         private bool StartProcess()
         {
+            var rpcParams = new RpcProxyParams { Address = _server.Address, Port = _server.BoundPort, ProxyId = _id, ParentProcId = _serverProcId };
             var startInfo = new ProcessStartInfo(_server.Env.RuntimeExePath)
             {
-                UseShellExecute = true,
-                Arguments = string.Join(" ", _server.Address, _server.BoundPort.ToString(), $"\"{_id}\""),
+                UseShellExecute = false,
                 WorkingDirectory = _server.Env.AppFolder,
             };
+            rpcParams.SaveAsEnvVars(startInfo.Environment);
 
             _process = Process.Start(startInfo);
             _process.Exited += OnProcessExit;

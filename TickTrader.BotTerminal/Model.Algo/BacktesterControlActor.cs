@@ -140,12 +140,13 @@ namespace TickTrader.BotTerminal
 
         private bool StartProcess()
         {
+            var rpcParams = new RpcProxyParams { Address = _address, Port = _port, ProxyId = _id, };
             var startInfo = new ProcessStartInfo(_exePath)
             {
-                UseShellExecute = true,
-                Arguments = string.Join(" ", _address, _port.ToString(), $"\"{_id}\""),
+                UseShellExecute = false,
                 //WorkingDirectory = _server.Env.AppFolder,
             };
+            rpcParams.SaveAsEnvVars(startInfo.Environment);
 
             _process = Process.Start(startInfo);
             _process.Exited += OnProcessExit;

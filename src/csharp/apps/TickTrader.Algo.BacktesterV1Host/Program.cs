@@ -9,6 +9,7 @@ using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Isolation.NetFx;
 using TickTrader.Algo.Logging;
 using TickTrader.Algo.Package;
+using TickTrader.Algo.Rpc;
 using TickTrader.SeriesStorage;
 using TickTrader.SeriesStorage.Lmdb;
 
@@ -18,15 +19,22 @@ namespace TickTrader.Algo.BacktesterV1Host
     {
         static void Main(string[] args)
         {
-            if (args.Length < 3)
-                Environment.FailFast(string.Join(", ", args));
+            RpcProxyParams rpcParams = null;
+            try
+            {
+                rpcParams = RpcProxyParams.ReadFromEnvVars(Environment.GetEnvironmentVariables());
+            }
+            catch (Exception ex)
+            {
+                Environment.FailFast(ex.ToString());
+            }
 
-            ConfigureLogging(args[2]);
+            ConfigureLogging(rpcParams.ProxyId);
 
-            RunBacktester(args).Wait();
+            RunBacktester(rpcParams).Wait();
         }
 
-        private static async Task RunBacktester(string[] args)
+        private static async Task RunBacktester(RpcProxyParams rpcParams)
         {
             AlgoLoggerFactory.Init(NLogLoggerAdapter.Create);
 
@@ -34,9 +42,9 @@ namespace TickTrader.Algo.BacktesterV1Host
 
             SetupGlobalExceptionLogging(logger);
 
-            var id = args[2];
-            var address = args[0];
-            var port = args[1];
+            var id = rpcParams.ProxyId;
+            var address = rpcParams.Address;
+            var port = rpcParams.Port;
             logger.Info("Starting backtester with id {backtesterId} at server {address}:{port}", id, address, port);
 
             PackageLoadContext.Init(PackageLoadContextProvider.Create);
@@ -50,7 +58,7 @@ namespace TickTrader.Algo.BacktesterV1Host
             {
 
                 loader = new BacktesterV1Loader(id);
-                await loader.Init(address, int.Parse(port));
+                await loader.Init(address, port);
             }
             catch (Exception ex)
             {

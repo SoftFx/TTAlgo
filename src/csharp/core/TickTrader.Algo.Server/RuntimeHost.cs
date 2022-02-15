@@ -36,7 +36,7 @@ namespace TickTrader.Algo.Server
         {
             _runtime = new RuntimeV1Loader();
 
-            await Task.Run(() => _runtime.Init(address, port, proxyId));
+            await Task.Run(() => _runtime.Init(address, port, proxyId, 0));
         }
 
         public async Task Stop()
