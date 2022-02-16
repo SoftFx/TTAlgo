@@ -1220,7 +1220,7 @@ namespace TickTrader.Algo.Backtester
             // calculate commission
             //CommisionEmulator.OnGrossPositionOpened(position, position.SymbolInfo, _calcFixture);
             var commissionRes = symbolCalc.Commission.Calculate(new CommissionRequest(position.Info.Side, position.Info.RemainingAmount, false, false));
-            position.Info.ChangeCommission(RoundMoney(commissionRes.Value, _calcFixture.RoundingDigits));
+            position.Info.ChangeCommission(RoundMoney(2 * commissionRes.Value, _calcFixture.RoundingDigits)); // one-way commission mode
 
             //// log
             //if (transformOrder)
