@@ -1431,7 +1431,7 @@ namespace TickTrader.Algo.Backtester
                 var closeSwap = RoundMoney(k * position.Info.Swap, _calcFixture.RoundingDigits);
                 posInfo.Swap -= closeSwap;
 
-                var profitRes = symbolCalc.Profit.Calculate(new ProfitRequest(fillPrice, closingAmount, fillSide, posPrice));
+                var profitRes = symbolCalc.Profit.Calculate(new ProfitRequest(posPrice, closingAmount, fillSide, fillPrice));
                 if (profitRes.Error != CalculationError.None)
                     throw new Exception();
                 var profit = RoundMoney(profitRes.Value, _calcFixture.RoundingDigits);
@@ -1439,8 +1439,8 @@ namespace TickTrader.Algo.Backtester
                 balanceMovement += profit + closeSwap;
 
                 tradeReport.Info.PositionClosed = ExecutionTime.ToUniversalTime().ToTimestamp();
-                tradeReport.Info.PositionOpenPrice = fillPrice;
-                tradeReport.Info.PositionClosePrice = posPrice;
+                tradeReport.Info.PositionOpenPrice = posPrice;
+                tradeReport.Info.PositionClosePrice = fillPrice;
                 tradeReport.Info.PositionCloseQuantity = closingAmount;
                 tradeReport.Info.Swap += closeSwap;
                 //report.Entity.CloseConversionRate = (double)profitRate;
