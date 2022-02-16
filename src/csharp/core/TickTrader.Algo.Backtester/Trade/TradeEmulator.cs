@@ -1960,7 +1960,7 @@ namespace TickTrader.Algo.Backtester
 
             foreach (SymbolAccessor info in _context.Builder.Symbols)
             {
-                if (info.Info.Swap.Enabled && info.Info.LastQuote != null && _scheduler.UnsafeVirtualTimePoint - info.Info.LastQuote.Time <= TimeSpan.FromHours(1))
+                if (info.Info.Swap.Enabled && info.Info.LastQuote != null)// && _scheduler.UnsafeVirtualTimePoint - info.Info.LastQuote.Time <= TimeSpan.FromHours(1))
                 {
                     var symbolCalc = _context.MarketData.GetCalculator(info.Info);
                     double swapAmount = 0;

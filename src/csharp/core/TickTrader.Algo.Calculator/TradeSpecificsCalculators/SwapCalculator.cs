@@ -55,9 +55,11 @@ namespace TickTrader.Algo.Calculator.TradeSpecificsCalculators
             if (_info.TripleSwapDay > 0)
             {
                 var nowDayOfWeek = now.DayOfWeek;
-                if (nowDayOfWeek == DayOfWeek.Saturday || nowDayOfWeek == DayOfWeek.Sunday)
+                // Skip Saturday/Sunday and Sunday/Monday rollover
+                if (nowDayOfWeek == DayOfWeek.Sunday || nowDayOfWeek == DayOfWeek.Monday)
                     return ResponseFactory.Build(0, CalculationError.None);
-                else if (_info.TripleSwapDay == nowDayOfWeek - DayOfWeek.Monday)
+                // Triple swap on Wednesday/Thursday rollover
+                else if (nowDayOfWeek == DayOfWeek.Thursday)
                     swapModifier *= 3;
             }
 
