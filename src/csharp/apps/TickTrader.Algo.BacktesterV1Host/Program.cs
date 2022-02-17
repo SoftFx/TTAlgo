@@ -6,6 +6,7 @@ using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.CoreV1;
+using TickTrader.Algo.Domain;
 using TickTrader.Algo.Isolation.NetFx;
 using TickTrader.Algo.Logging;
 using TickTrader.Algo.Package;
@@ -19,25 +20,57 @@ namespace TickTrader.Algo.BacktesterV1Host
     {
         static void Main(string[] args)
         {
-            RpcProxyParams rpcParams = null;
+            string proxyId = null;
+            Func<Task> backtesterRunFactory = null;
+            if (args.Length == 0)
+            {
+                RpcProxyParams rpcParams = null;
+                try
+                {
+                    rpcParams = RpcProxyParams.ReadFromEnvVars(Environment.GetEnvironmentVariables());
+                }
+                catch (Exception ex)
+                {
+                    Environment.FailFast(ex.ToString());
+                }
+
+                proxyId = rpcParams.ProxyId;
+                backtesterRunFactory = () => RunBacktester(rpcParams);
+            }
+            if (args.Length == 1)
+            {
+                var configPath = args[0];
+                if (!File.Exists(configPath))
+                    Environment.FailFast($"Config file '{configPath}' not found");
+
+                proxyId = Path.GetFileNameWithoutExtension(configPath);
+                backtesterRunFactory = () => RunBacktesterDetached(configPath);
+            }
+
+            if (backtesterRunFactory == null)
+                Environment.FailFast("Can't determine specified action");
+            if (string.IsNullOrEmpty(proxyId))
+                Environment.FailFast("ProxyId can't be empty string");
+
             try
             {
-                rpcParams = RpcProxyParams.ReadFromEnvVars(Environment.GetEnvironmentVariables());
+                ConfigureLogging(proxyId);
+
+                PackageLoadContext.Init(PackageLoadContextProvider.Create);
+                PackageExplorer.Init(PackageV1Explorer.Create());
+                PluginLogWriter.Init(NLogPluginLogWriter.Create);
+                BinaryStorageManagerFactory.Init((folder, readOnly) => new LmdbManager(folder, readOnly));
             }
             catch (Exception ex)
             {
                 Environment.FailFast(ex.ToString());
             }
 
-            ConfigureLogging(rpcParams.ProxyId);
-
-            RunBacktester(rpcParams).Wait();
+            backtesterRunFactory().Wait();
         }
 
         private static async Task RunBacktester(RpcProxyParams rpcParams)
         {
-            AlgoLoggerFactory.Init(NLogLoggerAdapter.Create);
-
             var logger = LogManager.GetLogger("MainLoop");
 
             SetupGlobalExceptionLogging(logger);
@@ -46,11 +79,6 @@ namespace TickTrader.Algo.BacktesterV1Host
             var address = rpcParams.Address;
             var port = rpcParams.Port;
             logger.Info("Starting backtester with id {backtesterId} at server {address}:{port}", id, address, port);
-
-            PackageLoadContext.Init(PackageLoadContextProvider.Create);
-            PackageExplorer.Init(PackageV1Explorer.Create());
-            PluginLogWriter.Init(NLogPluginLogWriter.Create);
-            BinaryStorageManagerFactory.Init((folder, readOnly) => new LmdbManager(folder, readOnly));
 
             BacktesterV1Loader loader = null;
             var isFailed = false;
@@ -75,6 +103,45 @@ namespace TickTrader.Algo.BacktesterV1Host
             try
             {
                 await loader.Deinit();
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Failed to deinit backtester.");
+                Environment.FailFast("Failed to deinit backtester.");
+            }
+        }
+
+        private static async Task RunBacktesterDetached(string configPath)
+        {
+            var logger = LogManager.GetLogger("MainLoop");
+
+            SetupGlobalExceptionLogging(logger);
+
+            var id = Path.GetFileNameWithoutExtension(configPath);
+            var callbackStub = new BacktesterCallbackStub();
+            var backtester = BacktesterV1Actor.Create(id, callbackStub);
+            var started = false;
+            try
+            {
+                logger.Info("Starting backtester with config {configPath}", configPath);
+
+                await backtester.Ask(new StartBacktesterRequest { ConfigPath = configPath });
+                started = true;
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, $"Failed to start");
+            }
+
+            if (started)
+            {
+                await callbackStub.AwaitStop();
+                logger.Info("Backtester finished.");
+            }
+
+            try
+            {
+                await ActorSystem.StopActor(backtester);
             }
             catch (Exception ex)
             {

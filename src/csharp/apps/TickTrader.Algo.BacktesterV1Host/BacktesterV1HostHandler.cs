@@ -7,7 +7,7 @@ using TickTrader.Algo.Rpc;
 
 namespace TickTrader.Algo.BacktesterV1Host
 {
-    public class BacktesterV1HostHandler : IRpcHandler
+    public class BacktesterV1HostHandler : IRpcHandler, IBacktesterV1Callback
     {
         private readonly string _id;
         private RpcSession _session;

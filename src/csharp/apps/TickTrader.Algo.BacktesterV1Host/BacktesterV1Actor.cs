@@ -12,28 +12,35 @@ using TickTrader.FeedStorage;
 
 namespace TickTrader.Algo.BacktesterV1Host
 {
+    internal interface IBacktesterV1Callback
+    {
+        void SendStoppedMsg(string message);
+
+        void SendProgress(double current, double total);
+    }
+
     internal class BacktesterV1Actor : Actor
     {
         private readonly string _id;
-        private BacktesterV1HostHandler _handler;
+        private IBacktesterV1Callback _callback;
 
         private IAlgoLogger _logger;
         private CancellationTokenSource _cancelTokenSrc;
 
 
-        private BacktesterV1Actor(string id, BacktesterV1HostHandler handler)
+        private BacktesterV1Actor(string id, IBacktesterV1Callback callback)
         {
             _id = id;
-            _handler = handler;
+            _callback = callback;
 
             Receive<StartBacktesterRequest>(Start);
             Receive<StopBacktesterRequest>(Stop);
         }
 
 
-        public static IActorRef Create(string id, BacktesterV1HostHandler handler)
+        public static IActorRef Create(string id, IBacktesterV1Callback callback)
         {
-            return ActorSystem.SpawnLocal(() => new BacktesterV1Actor(id, handler), $"{nameof(BacktesterV1Actor)} ({id})");
+            return ActorSystem.SpawnLocal(() => new BacktesterV1Actor(id, callback), $"{nameof(BacktesterV1Actor)} ({id})");
         }
 
 
@@ -94,7 +101,7 @@ namespace TickTrader.Algo.BacktesterV1Host
 
                 await DoBacktesting(config, from, to);
 
-                _handler.SendStoppedMsg(null);
+                _callback.SendStoppedMsg(null);
             }
             catch (TaskCanceledException)
             {
@@ -103,7 +110,7 @@ namespace TickTrader.Algo.BacktesterV1Host
             catch (Exception ex)
             {
                 _logger.Error(ex, "Run failed");
-                _handler.SendStoppedMsg(ex.Message);
+                _callback.SendStoppedMsg(ex.Message);
             }
         }
 
@@ -120,7 +127,7 @@ namespace TickTrader.Algo.BacktesterV1Host
                     for (ulong i = 0; i < timeOut; i++)
                     {
                         await Task.Delay(500, _cancelTokenSrc.Token);
-                        _handler.SendProgress(i, timeOut);
+                        _callback.SendProgress(i, timeOut);
                     }
 #endif
 
@@ -145,7 +152,7 @@ namespace TickTrader.Algo.BacktesterV1Host
                     OnStopEmulation(backtester);
                 }
 
-                _handler.SendProgress(100, 100);
+                _callback.SendProgress(100, 100);
 
                 _logger.Debug("Saving results...");
 
@@ -226,7 +233,7 @@ namespace TickTrader.Algo.BacktesterV1Host
                 var token = _cancelTokenSrc.Token;
                 while (!token.IsCancellationRequested)
                 {
-                    _handler.SendProgress(backtester.CurrentTimePoint?.GetAbsoluteDay() - offset ?? 0, total);
+                    _callback.SendProgress(backtester.CurrentTimePoint?.GetAbsoluteDay() - offset ?? 0, total);
                     await Task.Delay(500, token);
                 }
             }
