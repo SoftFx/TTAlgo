@@ -1412,22 +1412,30 @@ namespace TickTrader.Algo.Backtester
                 var posSide = posInfo.Side;
                 var posAmount = posInfo.Volume;
                 var closingAmount = Math.Min(fillAmount, posAmount);
-                var closableAmount = Math.Max(fillAmount, posAmount);
+                double closeSwap;
 
-                posInfo.Volume = posAmount - fillAmount;
-                if (posInfo.Volume.Lt(0))
+                if (posAmount.Lt(fillAmount))
                 {
                     posInfo.Side = fillSide;
                     posInfo.Price = fillPrice;
                     posInfo.Volume = fillAmount - posAmount;
+
+                    // all existing swap goes away, since position changes side
+                    closeSwap = posInfo.Swap;
+                    posInfo.Swap = 0.0;
+                }
+                else
+                {
+                    posInfo.Volume = posAmount - fillAmount;
+
+                    // partial close, removing part of swap
+                    var k = fillAmount / posAmount;
+                    closeSwap = RoundMoney(k * position.Info.Swap, _calcFixture.RoundingDigits);
+                    posInfo.Swap -= closeSwap;
                 }
 
                 if (position.Info.IsEmpty)
                     _acc.NetPositions.RemovePosition(smb.Name);
-
-                var k = closingAmount / closableAmount;
-                var closeSwap = RoundMoney(k * position.Info.Swap, _calcFixture.RoundingDigits);
-                posInfo.Swap -= closeSwap;
 
                 var profitRes = symbolCalc.Profit.Calculate(new ProfitRequest(posPrice, closingAmount, posSide, fillPrice));
                 if (profitRes.Error != CalculationError.None)
