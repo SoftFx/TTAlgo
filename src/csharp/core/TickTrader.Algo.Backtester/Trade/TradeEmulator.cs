@@ -1453,7 +1453,8 @@ namespace TickTrader.Algo.Backtester
 
                 openInfo.CloseInfo.CloseAmount = closingAmount;
                 openInfo.CloseInfo.ClosePrice = posPrice;
-                openInfo.CloseInfo.BalanceMovement = profit + closeSwap;
+                openInfo.CloseInfo.Profit = profit;
+                openInfo.CloseInfo.Swap = closeSwap;
 
                 _collector.OnPositionClosed(ExecutionTime, profit, 0, closeSwap);
 

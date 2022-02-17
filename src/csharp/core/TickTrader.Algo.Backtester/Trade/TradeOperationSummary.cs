@@ -146,13 +146,14 @@ namespace TickTrader.Algo.Backtester
 
             _builder.Append(" at price ").AppendNumber(price, priceFormat);
             _builder.Append(", profit=").AppendNumber(profit, profitFormat);
+            _builder.Append(", swap=").AppendNumber(charges.Swap, profitFormat);
 
             PrintCharges(charges);
         }
 
         public void AddNetCloseAction(NetPositionCloseInfo closeInfo, SymbolInfo symbol, CurrencyInfo balanceCurrInfo, TradeChargesInfo charges = null)
         {
-            if (closeInfo.CloseAmount == 0)
+            if (closeInfo.CloseAmount.E(0))
                 return;
 
             var priceFormat = FormatExtentions.CreateTradeFormatInfo(5);
@@ -162,7 +163,8 @@ namespace TickTrader.Algo.Backtester
             StartNewAction();
             _builder.Append("Closed net position for ").AppendNumber(closeAmountLost);
             _builder.Append(" at price ").AppendNumber(closeInfo.ClosePrice, priceFormat);
-            _builder.Append(", profit=").AppendNumber(closeInfo.BalanceMovement, profitFormat);
+            _builder.Append(", profit=").AppendNumber(closeInfo.Profit, profitFormat);
+            _builder.Append(", swap=").AppendNumber(closeInfo.Swap, profitFormat);
 
             if (charges != null)
                 PrintCharges(charges);
