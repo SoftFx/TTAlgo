@@ -48,16 +48,6 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private class ProcessExitedMsg
-        {
-            public int ExitCode { get; }
-
-            public ProcessExitedMsg(int exitCode)
-            {
-                ExitCode = exitCode;
-            }
-        }
-
 
         private class Impl : Actor, IRpcHost
         {
@@ -79,6 +69,7 @@ namespace TickTrader.BotTerminal
 
                 Receive<NewInstanceRequest, BacktesterController>(GetNewInstance);
                 Receive<BacktesterInstanceRequest, IActorRef>(GetExistingInstance);
+                Receive<BacktesterControlActor.InstanceShutdownMsg>(OnInstanceShutdown);
             }
 
 
@@ -99,13 +90,13 @@ namespace TickTrader.BotTerminal
                 var id = Guid.NewGuid().ToString("N");
                 var exePath = Path.Combine(_parent.BinDirPath, "TickTrader.Algo.BacktesterV1Host.exe");
 
-                if (_instanceMap.Count == 0)
+                if (_server == null)
                 {
                     _server = new RpcServer(new TcpFactory(), this);
                     await _server.Start(Address, 0);
                 }
 
-                var backtester = BacktesterControlActor.Create(id, exePath, Address, _server.BoundPort);
+                var backtester = BacktesterControlActor.Create(id, exePath, Address, _server.BoundPort, Self);
                 _instanceMap.Add(id, backtester);
                 await backtester.Ask(BacktesterControlActor.InitCmd.Instance);
 
@@ -119,6 +110,16 @@ namespace TickTrader.BotTerminal
                 var id = request.Id;
                 _instanceMap.TryGetValue(id, out var instance);
                 return instance;
+            }
+
+            private void OnInstanceShutdown(BacktesterControlActor.InstanceShutdownMsg msg)
+            {
+                var id = msg.Id;
+                if (_instanceMap.TryGetValue(id, out var backtester))
+                {
+                    _instanceMap.Remove(id);
+                    var _ = ActorSystem.StopActor(backtester);
+                }
             }
 
 

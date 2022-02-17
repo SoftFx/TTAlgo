@@ -26,6 +26,7 @@ namespace TickTrader.BotTerminal
         public void Dispose()
         {
             _progressEventSrc.Dispose();
+            _actor.Tell(BacktesterControlActor.DeinitCmd.Instance);
         }
 
 

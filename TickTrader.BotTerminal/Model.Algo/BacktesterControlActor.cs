@@ -12,12 +12,13 @@ namespace TickTrader.BotTerminal
 {
     internal class BacktesterControlActor : Actor
     {
-        public const int KillTimeout = 2000;
+        public const int KillTimeout = 20000;
 
         private readonly string _id;
         private readonly string _exePath;
         private readonly string _address;
         private readonly int _port;
+        private readonly IActorRef _parent;
         private readonly List<TaskCompletionSource<object>> _awaitStopList = new List<TaskCompletionSource<object>>();
         private readonly ActorEventSource<BacktesterProgressUpdate> _progressEventSrc = new ActorEventSource<BacktesterProgressUpdate>();
 
@@ -28,12 +29,13 @@ namespace TickTrader.BotTerminal
         private CancellationTokenSource _killProcessCancelSrc;
 
 
-        private BacktesterControlActor(string id, string exePath, string address, int port)
+        private BacktesterControlActor(string id, string exePath, string address, int port, IActorRef parent)
         {
             _id = id;
             _exePath = exePath;
             _address = address;
             _port = port;
+            _parent = parent;
 
             Receive<InitCmd>(Init);
             Receive<DeinitCmd>(Deinit);
@@ -48,9 +50,9 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public static IActorRef Create(string id, string exePath, string address, int port)
+        public static IActorRef Create(string id, string exePath, string address, int port, IActorRef parent)
         {
-            return ActorSystem.SpawnLocal(() => new BacktesterControlActor(id, exePath, address, port), $"{nameof(BacktesterControlActor)} ({id})");
+            return ActorSystem.SpawnLocal(() => new BacktesterControlActor(id, exePath, address, port, parent), $"{nameof(BacktesterControlActor)} ({id})");
         }
 
 
@@ -72,6 +74,7 @@ namespace TickTrader.BotTerminal
             if (_session != null)
             {
                 _session.Disconnect("Backtester deinit");
+                ScheduleKillProcess();
             }
         }
 
@@ -181,6 +184,7 @@ namespace TickTrader.BotTerminal
             {
                 _initTaskSrc.TrySetException(new Exception("Backtester process failed to start"));
             }
+            _parent.Tell(new InstanceShutdownMsg(_id));
         }
 
         private void OnProcessExit(object sender, EventArgs args)
@@ -221,6 +225,16 @@ namespace TickTrader.BotTerminal
             public ProcessExitedMsg(int exitCode)
             {
                 ExitCode = exitCode;
+            }
+        }
+
+        public class InstanceShutdownMsg
+        {
+            public string Id { get; }
+
+            public InstanceShutdownMsg(string id)
+            {
+                Id = id;
             }
         }
     }
