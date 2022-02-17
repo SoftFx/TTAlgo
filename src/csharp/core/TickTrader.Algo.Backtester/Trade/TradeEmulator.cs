@@ -102,8 +102,8 @@ namespace TickTrader.Algo.Backtester
 
         public void Stop()
         {
-            CloseAllPositions(TradeReportInfo.Types.Reason.Rollover);
-            CancelAllPendings(TradeReportInfo.Types.Reason.Rollover);
+            CloseAllPositions(TradeReportInfo.Types.Reason.DealerDecision);
+            CancelAllPendings(TradeReportInfo.Types.Reason.DealerDecision);
         }
 
         public void PreRestart()
