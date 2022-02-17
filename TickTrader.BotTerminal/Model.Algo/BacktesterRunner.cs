@@ -22,10 +22,13 @@ namespace TickTrader.BotTerminal
 
         public string BinDirPath { get; set; }
 
+        public string WorkDir { get; set; }
+
 
         private BacktesterRunner()
         {
             BinDirPath = Path.Combine(Directory.GetCurrentDirectory(), "bin", "backtester");
+            WorkDir = Directory.GetCurrentDirectory();
             _impl = Impl.Create(this);
         }
 
@@ -54,6 +57,7 @@ namespace TickTrader.BotTerminal
             private const string Address = "127.0.0.1";
 
             private static readonly ProtocolSpec ExpectedProtocol = new ProtocolSpec { Url = KnownProtocolUrls.BacktesterV1, MajorVerion = 1, MinorVerion = 0 };
+            private static readonly int _parentProcId = Process.GetCurrentProcess().Id;
 
             private readonly BacktesterRunner _parent;
             private readonly Dictionary<string, Process> _processMap = new Dictionary<string, Process>();
@@ -96,7 +100,8 @@ namespace TickTrader.BotTerminal
                     await _server.Start(Address, 0);
                 }
 
-                var backtester = BacktesterControlActor.Create(id, exePath, Address, _server.BoundPort, Self);
+                var rpcParams = new RpcProxyParams { ProxyId = id, Address = Address, Port = _server.BoundPort, ParentProcId = _parentProcId };
+                var backtester = BacktesterControlActor.Create(rpcParams, exePath, _parent.WorkDir, Self);
                 _instanceMap.Add(id, backtester);
                 await backtester.Ask(BacktesterControlActor.InitCmd.Instance);
 

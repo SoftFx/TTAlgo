@@ -14,10 +14,9 @@ namespace TickTrader.BotTerminal
     {
         public const int KillTimeout = 20000;
 
-        private readonly string _id;
+        private readonly RpcProxyParams _rpcParams;
         private readonly string _exePath;
-        private readonly string _address;
-        private readonly int _port;
+        private readonly string _workDir;
         private readonly IActorRef _parent;
         private readonly List<TaskCompletionSource<object>> _awaitStopList = new List<TaskCompletionSource<object>>();
         private readonly ActorEventSource<BacktesterProgressUpdate> _progressEventSrc = new ActorEventSource<BacktesterProgressUpdate>();
@@ -29,12 +28,11 @@ namespace TickTrader.BotTerminal
         private CancellationTokenSource _killProcessCancelSrc;
 
 
-        private BacktesterControlActor(string id, string exePath, string address, int port, IActorRef parent)
+        private BacktesterControlActor(RpcProxyParams rpcParams, string exePath, string workDir, IActorRef parent)
         {
-            _id = id;
+            _rpcParams = rpcParams;
             _exePath = exePath;
-            _address = address;
-            _port = port;
+            _workDir = workDir;
             _parent = parent;
 
             Receive<InitCmd>(Init);
@@ -50,9 +48,9 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public static IActorRef Create(string id, string exePath, string address, int port, IActorRef parent)
+        public static IActorRef Create(RpcProxyParams rpcParams, string exePath, string workDir, IActorRef parent)
         {
-            return ActorSystem.SpawnLocal(() => new BacktesterControlActor(id, exePath, address, port, parent), $"{nameof(BacktesterControlActor)} ({id})");
+            return ActorSystem.SpawnLocal(() => new BacktesterControlActor(rpcParams, exePath, workDir, parent), $"{nameof(BacktesterControlActor)} ({rpcParams.ProxyId})");
         }
 
 
@@ -143,13 +141,12 @@ namespace TickTrader.BotTerminal
 
         private bool StartProcess()
         {
-            var rpcParams = new RpcProxyParams { Address = _address, Port = _port, ProxyId = _id, };
             var startInfo = new ProcessStartInfo(_exePath)
             {
                 UseShellExecute = false,
-                //WorkingDirectory = _server.Env.AppFolder,
+                WorkingDirectory = _workDir,
             };
-            rpcParams.SaveAsEnvVars(startInfo.Environment);
+            _rpcParams.SaveAsEnvVars(startInfo.Environment);
 
             _process = Process.Start(startInfo);
             _process.Exited += OnProcessExit;
@@ -184,7 +181,7 @@ namespace TickTrader.BotTerminal
             {
                 _initTaskSrc.TrySetException(new Exception("Backtester process failed to start"));
             }
-            _parent.Tell(new InstanceShutdownMsg(_id));
+            _parent.Tell(new InstanceShutdownMsg(_rpcParams.ProxyId));
         }
 
         private void OnProcessExit(object sender, EventArgs args)
