@@ -46,7 +46,8 @@ namespace TickTrader.Algo.Backtester
         {
         }
 
-        public NumberFormatInfo AccountCurrencyFormat { get; set; }
+        public NumberFormatInfo BalanceCurrencyFormat { get; set; }
+        public NumberFormatInfo PriceFormat { get; } = FormatExtentions.CreateTradeFormatInfo(5);
         public PluginLogRecord.Types.LogSeverity Severity { get; private set; }
         public bool IsEmpty => _builder.Length == 0;
 
@@ -75,8 +76,6 @@ namespace TickTrader.Algo.Backtester
 
         public void AddOpenFailAction(OrderType type, string symbol, OrderSide side, double amountLots, OrderCmdResultCodes error, AccountAccessor acc)
         {
-            var currFormat = acc.BalanceCurrencyFormat;
-
             SetTradeFaileSeverity();
 
             StartNewAction();
@@ -84,7 +83,7 @@ namespace TickTrader.Algo.Backtester
             _builder.Append($"Rejected order {type} {symbol} {side} {amountLots} reason={error}");
 
             if (acc.IsMarginType)
-                _builder.Append(" freeMargin=").AppendNumber(acc.Equity - acc.Margin, currFormat);
+                _builder.Append(" freeMargin=").AppendNumber(acc.Equity - acc.Margin, BalanceCurrencyFormat);
         }
 
         public void AddModificationAction(OrderAccessor oldOrder, OrderAccessor newOrder)
@@ -99,7 +98,7 @@ namespace TickTrader.Algo.Backtester
         public void AddFillAction(OrderAccessor order, FillInfo info)
         {
             var smbInfo = order.SymbolInfo;
-            var priceFormat = FormatExtentions.CreateTradeFormatInfo(5);
+            var priceFormat = PriceFormat;
             var fillAmountLots = info.FillAmount / smbInfo.LotSize;
 
             StartNewAction();
@@ -135,10 +134,10 @@ namespace TickTrader.Algo.Backtester
             //return _builder.ToString();
         }
 
-        public void AddGrossCloseAction(OrderAccessor pos, double profit, double price, TradeChargesInfo charges, CurrencyInfo balanceCurrInf)
+        public void AddGrossCloseAction(OrderAccessor pos, double profit, double price, TradeChargesInfo charges)
         {
-            var priceFormat = FormatExtentions.CreateTradeFormatInfo(5);
-            var profitFormat = new NumberFormatInfo { NumberDecimalDigits = balanceCurrInf.Digits };
+            var priceFormat = PriceFormat;
+            var profitFormat = BalanceCurrencyFormat;
 
             StartNewAction();
             _builder.Append($"Closed position ");
@@ -151,14 +150,14 @@ namespace TickTrader.Algo.Backtester
             PrintCharges(charges);
         }
 
-        public void AddNetCloseAction(NetPositionCloseInfo closeInfo, SymbolInfo symbol, CurrencyInfo balanceCurrInfo, TradeChargesInfo charges = null)
+        public void AddNetCloseAction(NetPositionCloseInfo closeInfo, SymbolInfo symbol, TradeChargesInfo charges = null)
         {
             if (closeInfo.CloseAmount.E(0))
                 return;
 
-            var priceFormat = FormatExtentions.CreateTradeFormatInfo(5);
+            var priceFormat = PriceFormat;
             var closeAmountLost = closeInfo.CloseAmount / symbol.LotSize;
-            var profitFormat = new NumberFormatInfo { NumberDecimalDigits = balanceCurrInfo.Digits };
+            var profitFormat = BalanceCurrencyFormat;
 
             StartNewAction();
             _builder.Append("Closed net position for ").AppendNumber(closeAmountLost);
@@ -177,7 +176,7 @@ namespace TickTrader.Algo.Backtester
 
             StartNewAction();
 
-            var priceFormat = FormatExtentions.CreateTradeFormatInfo(5);
+            var priceFormat = PriceFormat;
 
             _builder.Append("Final position ");
             _builder.Append(pos.Symbol).Append(' ');
@@ -192,9 +191,9 @@ namespace TickTrader.Algo.Backtester
 
             StartNewAction();
             _builder.Append("Stop out! margin level: ").AppendNumber(acc.MarginLevel, "N2");
-            _builder.Append(" balance: ").AppendNumber(acc.Balance, acc.BalanceCurrencyFormat);
-            _builder.Append(" equity: ").AppendNumber(acc.Equity, acc.BalanceCurrencyFormat);
-            _builder.Append(" margin: ").AppendNumber(acc.Margin, acc.BalanceCurrencyFormat);
+            _builder.Append(" balance: ").AppendNumber(acc.Balance, BalanceCurrencyFormat);
+            _builder.Append(" equity: ").AppendNumber(acc.Equity, BalanceCurrencyFormat);
+            _builder.Append(" margin: ").AppendNumber(acc.Margin, BalanceCurrencyFormat);
             _builder.Append(" last quote: ");
             PrintQuote(lastRate, rateSymbol);
         }
@@ -230,7 +229,7 @@ namespace TickTrader.Algo.Backtester
 
         private void PrintAmountAndPrice(OrderAccessor order)
         {
-            var priceFormat = FormatExtentions.CreateTradeFormatInfo(5);
+            var priceFormat = PriceFormat;
 
             _builder.Append($", amount=");
             if (order.Info.RequestedAmount == order.Info.RequestedAmount || order.Info.RequestedAmount == 0)
@@ -245,7 +244,7 @@ namespace TickTrader.Algo.Backtester
 
         private void PrintAuxFields(OrderAccessor order)
         {
-            var priceFormat = FormatExtentions.CreateTradeFormatInfo(5);
+            var priceFormat = PriceFormat;
 
             var tp = order.Info.TakeProfit;
             var sl = order.Info.StopLoss;
@@ -269,14 +268,14 @@ namespace TickTrader.Algo.Backtester
         {
             if (charges != null && charges.Commission != 0)
             {
-                var profitFormat = new NumberFormatInfo { NumberDecimalDigits = charges.CurrencyInfo.Digits };
-                _builder.Append(" commission=").AppendNumber(charges.Commission, profitFormat);
+                var profitFormat = BalanceCurrencyFormat;
+                _builder.Append(", commission=").AppendNumber(charges.Commission, profitFormat);
             }
         }
 
         private void PrintQuote(IRateInfo update, SymbolAccessor smbInfo)
         {
-            var priceFormat = FormatExtentions.CreateTradeFormatInfo(5);
+            var priceFormat = PriceFormat;
 
             if (update != null)
             {

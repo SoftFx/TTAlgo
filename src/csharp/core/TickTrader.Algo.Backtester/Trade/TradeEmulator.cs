@@ -89,7 +89,7 @@ namespace TickTrader.Algo.Backtester
                 _acc.Balance = _settings.CommonSettings.InitialBalance;
                 _acc.Leverage = _settings.CommonSettings.Leverage;
                 _acc.UpdateCurrency(_settings.CommonSettings.Currencies.GetOrDefault(_settings.CommonSettings.BalanceCurrency));
-                _opSummary.AccountCurrencyFormat = _acc.BalanceCurrencyFormat;
+                _opSummary.BalanceCurrencyFormat = new System.Globalization.NumberFormatInfo { NumberDecimalDigits = _acc.BalanceCurrencyInfo?.Digits ?? 2 };
             }
             else if (_acc.IsCashType)
             {
@@ -594,7 +594,7 @@ namespace TickTrader.Algo.Backtester
             if (fillInfo.NetPos != null)
             {
                 var closeActionCharges = isFakeOrder ? fillInfo.NetPos.Charges : null;
-                _opSummary.AddNetCloseAction(fillInfo.NetPos.CloseInfo, order.SymbolInfo, _acc.BalanceCurrencyInfo, closeActionCharges);
+                _opSummary.AddNetCloseAction(fillInfo.NetPos.CloseInfo, order.SymbolInfo, closeActionCharges);
                 _opSummary.AddNetPositionNotification(fillInfo.NetPos.ResultingPosition, order.SymbolInfo);
             }
 
@@ -1582,7 +1582,7 @@ namespace TickTrader.Algo.Backtester
                     _opSummary.AddFillAction(record.Order, fillInfo);
                     if (fillInfo.NetPos != null)
                     {
-                        _opSummary.AddNetCloseAction(fillInfo.NetPos.CloseInfo, record.Order.SymbolInfo, _acc.BalanceCurrencyInfo);
+                        _opSummary.AddNetCloseAction(fillInfo.NetPos.CloseInfo, record.Order.SymbolInfo);
                         _opSummary.AddNetPositionNotification(fillInfo.NetPos.ResultingPosition, fillInfo.SymbolInfo);
                     }
                 }
@@ -1834,7 +1834,7 @@ namespace TickTrader.Algo.Backtester
                 _context.SendExtUpdate(TesterTradeTransaction.OnClosePosition(remove, position, (double)_acc.Balance));
 
             // summary
-            _opSummary.AddGrossCloseAction(position, profit, closePrice, charges, _acc.BalanceCurrencyInfo);
+            _opSummary.AddGrossCloseAction(position, profit, closePrice, charges);
             _collector.OnPositionClosed(_scheduler.UnsafeVirtualTimePoint, (double)profit, (double)charges.Commission, (double)charges.Swap);
 
             //return profitInfo;
@@ -1992,7 +1992,7 @@ namespace TickTrader.Algo.Backtester
                 RecalculateAccount();
 
             if (affectedSymbolsCount > 0)
-                _collector.LogTrade("Rollover, totalSwap=" + totalSwap.FormatPlain(_acc.BalanceCurrencyFormat));
+                _collector.LogTrade("Rollover, totalSwap=" + totalSwap.FormatPlain(_opSummary.BalanceCurrencyFormat));
         }
 
         public bool UpdateGrossSwaps(ISymbolCalculator symbolCalc, out double totalSwap)
