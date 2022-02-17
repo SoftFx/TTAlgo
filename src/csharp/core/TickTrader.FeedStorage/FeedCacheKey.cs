@@ -1,9 +1,10 @@
 ﻿using System;
 using TickTrader.Algo.Domain;
+using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.FeedStorage
 {
-    public class FeedCacheKey
+    public class FeedCacheKey : ISeriesKey
     {
         private static readonly char[] _codeSeparators = new char[] { '_' };
 
@@ -14,8 +15,7 @@ namespace TickTrader.FeedStorage
 
         public Feed.Types.MarketSide? MarketSide { get; }
 
-
-        internal string CodeString => $"{Symbol}_{TimeFrame}_{MarketSide?.ToString() ?? string.Empty}";
+        public string FullInfo => $"{Symbol}_{TimeFrame}_{MarketSide?.ToString() ?? string.Empty}";
 
 
         public FeedCacheKey(string symbol, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide? priceType = null)

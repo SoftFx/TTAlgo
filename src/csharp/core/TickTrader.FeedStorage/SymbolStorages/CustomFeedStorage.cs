@@ -95,7 +95,7 @@ namespace TickTrader.FeedStorage
                 var toRemove = Keys.Snapshot.Where(k => k.Symbol == symbol).ToList();
 
                 // clear cache 
-                toRemove.ForEach(RemoveSeries);
+                toRemove.ForEach(u => RemoveSeries(u));
 
                 // remove symbol
                 _customSymbolsCollection.Remove(smbEntity.StorageId);

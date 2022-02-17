@@ -1,10 +1,8 @@
 ﻿using ActorSharp;
 using Machinarium.Qnil;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage.Api;
 
 
@@ -80,18 +78,6 @@ namespace TickTrader.FeedStorage
         {
             return DisconnectClient().ContinueWith(_ => CloseCustomStorage()).Unwrap();
         }
-
-
-        public Task<ActorChannel<SliceInfo>> DownloadBarSeriesToStorage(string symbol, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide, DateTime from, DateTime to)
-        {
-            return _feedHandler?.DownloadBarSeriesToStorage(symbol, timeframe, marketSide, from, to);
-        }
-
-        public Task<ActorChannel<SliceInfo>> DownloadTickSeriesToStorage(string symbol, Feed.Types.Timeframe timeframe, DateTime from, DateTime to)
-        {
-            return _feedHandler?.DownloadTickSeriesToStorage(symbol, timeframe, from, to);
-        }
-
 
 
         private void SubscribeToCollection(ISymbolCollection collection)

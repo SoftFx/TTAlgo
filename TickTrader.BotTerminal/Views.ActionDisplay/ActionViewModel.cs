@@ -3,12 +3,11 @@ using Machinarium.Var;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotTerminal
 {
-    class ActionViewModel : ViewAware, IDisposable
+    internal class ActionViewModel : ViewAware, IDisposable
     {
         private readonly VarContext _context = new VarContext();
         private readonly Property<CancellationTokenSource> _cancelSrc;

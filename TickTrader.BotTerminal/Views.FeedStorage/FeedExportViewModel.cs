@@ -11,12 +11,12 @@ using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage;
 using TickTrader.FeedStorage.Api;
 
-namespace TickTrader.BotTerminal
+namespace TickTrader.BotTerminal.SymbolManager
 {
     internal class FeedExportViewModel : Screen, IWindowModel
     {
         //private FeedCacheKey _key;
-        private SymbolStorageSeries _series;
+        private IStorageSeries _series;
         private List<FeedExporter> _exporters = new List<FeedExporter>();
         private FeedExporter _selectedExporter;
         //private FeedCache.Handler _storage;
@@ -25,7 +25,7 @@ namespace TickTrader.BotTerminal
         private CancellationTokenSource _cancelExportSrc;
         private Task _exportTask;
 
-        public FeedExportViewModel(SymbolStorageSeries series)
+        public FeedExportViewModel(IStorageSeries series)
         {
             _series = series;
             var key = series.Key;
@@ -136,65 +136,65 @@ namespace TickTrader.BotTerminal
 
         private async Task DoExport()
         {
-            _cancelExportSrc = new CancellationTokenSource();
-            ShowDownloadUi = true;
-            UpdateState();
+            //_cancelExportSrc = new CancellationTokenSource();
+            //ShowDownloadUi = true;
+            //UpdateState();
 
-            try
-            {
-                var from = DateRange.From;
-                var to = DateRange.To + TimeSpan.FromDays(1);
+            //try
+            //{
+            //    var from = DateRange.From;
+            //    var to = DateRange.To + TimeSpan.FromDays(1);
 
-                await Actor.Spawn(async ()=> 
-                {
-                    ExportObserver.StartProgress(from.GetAbsoluteDay(), to.GetAbsoluteDay());
+            //    await Actor.Spawn(async ()=> 
+            //    {
+            //        ExportObserver.StartProgress(from.GetAbsoluteDay(), to.GetAbsoluteDay());
 
-                    var exporter = SelectedExporter;
+            //        var exporter = SelectedExporter;
 
-                    exporter.StartExport();
+            //        exporter.StartExport();
 
-                    try
-                    {
-                        if (!_series.Key.TimeFrame.IsTicks())
-                        {
-                            var i = _series.IterateBarCache(from, to);
+            //        try
+            //        {
+            //            if (!_series.Key.TimeFrame.IsTicks())
+            //            {
+            //                var i = _series.IterateBarCache(from, to);
 
-                            while (await i.ReadNext())
-                            {
-                                var slice = i.Current;
-                                exporter.ExportSlice(slice.From, slice.To, slice.Content);
-                                ExportObserver.SetProgress(slice.To.GetAbsoluteDay());
-                            }
-                        }
-                        else
-                        {
-                            var i = _series.IterateTickCache(from, to);
+            //                while (await i.ReadNext())
+            //                {
+            //                    var slice = i.Current;
+            //                    exporter.ExportSlice(slice.From, slice.To, slice.Content);
+            //                    ExportObserver.SetProgress(slice.To.GetAbsoluteDay());
+            //                }
+            //            }
+            //            else
+            //            {
+            //                var i = _series.IterateTickCache(from, to);
 
-                            while (await i.ReadNext())
-                            {
-                                var slice = i.Current;
-                                exporter.ExportSlice(slice.From, slice.To, slice.Content);
-                                ExportObserver.SetProgress(slice.To.GetAbsoluteDay());
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        exporter.EndExport();
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                ExportObserver.SetMessage("Error:" + ex.Message);
-            }
-            finally
-            {
-                _cancelExportSrc = null;
-                UpdateState();
-            }
+            //                while (await i.ReadNext())
+            //                {
+            //                    var slice = i.Current;
+            //                    exporter.ExportSlice(slice.From, slice.To, slice.Content);
+            //                    ExportObserver.SetProgress(slice.To.GetAbsoluteDay());
+            //                }
+            //            }
+            //        }
+            //        finally
+            //        {
+            //            exporter.EndExport();
+            //        }
+            //    });
+            //}
+            //catch (Exception ex)
+            //{
+            //    ExportObserver.SetMessage("Error:" + ex.Message);
+            //}
+            //finally
+            //{
+            //    _cancelExportSrc = null;
+            //    UpdateState();
+            //}
 
-            await TryCloseAsync();
+            //await TryCloseAsync();
         }
 
         private async void UpdateAvailableRange()
@@ -203,8 +203,8 @@ namespace TickTrader.BotTerminal
             DateRange.Reset();
 
             var key = _series.Key;
-            var range = await _series.Symbol.GetAvailableRange(key.TimeFrame, key.MarketSide);
-
+            //var range = await _series.Symbol.GetAvailableRange(key.TimeFrame, key.MarketSide);
+            (DateTime?, DateTime?) range = default;
             DateTime from = DateTime.UtcNow.Date;
             DateTime to = from;
 

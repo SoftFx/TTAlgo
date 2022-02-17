@@ -9,9 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using TickTrader.Algo.Account;
-using TickTrader.FeedStorage;
+using TickTrader.BotTerminal.SymbolManager;
 using TickTrader.FeedStorage.Api;
-using TickTrader.SeriesStorage;
 using TickTrader.SeriesStorage.Lmdb;
 
 namespace TickTrader.BotTerminal

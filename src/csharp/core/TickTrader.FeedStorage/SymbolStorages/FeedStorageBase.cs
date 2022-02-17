@@ -203,7 +203,7 @@ namespace TickTrader.FeedStorage
             public Task<double?> GetCollectionSize(FeedCacheKey key)
                 => _ref.Call(a => a.GetCollectionSize(key));
 
-            public Task RemoveSeries(FeedCacheKey seriesKey)
+            public Task<bool> RemoveSeries(FeedCacheKey seriesKey)
                 => _ref.Call(a => a.RemoveSeries(seriesKey));
 
             public BarCrossDomainReader CreateBarCrossDomainReader(CrossDomainReaderRequest request)
@@ -433,23 +433,32 @@ namespace TickTrader.FeedStorage
             ISeriesStorage<DateTime> collection;
 
             if (key.TimeFrame.IsTick())
-                collection = Database.GetSeries(new DateTimeKeySerializer(), TickSerializer.GetSerializer(key), b => b.Time.ToUniversalTime(), key.CodeString, true);
+                collection = Database.GetSeries(new DateTimeKeySerializer(), TickSerializer.GetSerializer(key), b => b.Time.ToUniversalTime(), key.FullInfo, true);
             else
-                collection = Database.GetSeries(new DateTimeKeySerializer(), new BarSerializer(key.TimeFrame), b => b.OpenTime.ToDateTime(), key.CodeString, false);
+                collection = Database.GetSeries(new DateTimeKeySerializer(), new BarSerializer(key.TimeFrame), b => b.OpenTime.ToDateTime(), key.FullInfo, false);
 
             _series.Add(key, collection);
 
             return collection;
         }
 
-        protected void RemoveSeries(FeedCacheKey seriesKey)
+        protected bool RemoveSeries(FeedCacheKey seriesKey)
         {
-            CheckState();
-
-            if (_series.TryGetValue(seriesKey, out ISeriesStorage<DateTime> series))
+            try
             {
-                series.Drop();
-                _series.Remove(seriesKey);
+                CheckState();
+
+                if (_series.TryGetValue(seriesKey, out ISeriesStorage<DateTime> series))
+                {
+                    series.Drop();
+                    _series.Remove(seriesKey);
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
             }
         }
 
@@ -478,7 +487,7 @@ namespace TickTrader.FeedStorage
         {
             try
             {
-                Debug.WriteLine("Cache data " + key.CodeString + ":");
+                Debug.WriteLine("Cache data " + key.FullInfo + ":");
 
                 var count = 0;
                 var group = new List<KeyRange<DateTime>>();

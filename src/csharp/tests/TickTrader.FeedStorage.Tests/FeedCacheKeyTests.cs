@@ -42,7 +42,7 @@ namespace TickTrader.FeedStorage.Tests
         {
             var key = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.M1, Feed.Types.MarketSide.Bid);
 
-            Assert.AreEqual(key.CodeString, "EURUSD_M1_Bid");
+            Assert.AreEqual(key.FullInfo, "EURUSD_M1_Bid");
         }
 
         [TestMethod]
@@ -50,7 +50,7 @@ namespace TickTrader.FeedStorage.Tests
         {
             var key = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.MN);
 
-            Assert.AreEqual(key.CodeString, "EURUSD_MN_");
+            Assert.AreEqual(key.FullInfo, "EURUSD_MN_");
         }
 
         [TestMethod]

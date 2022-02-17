@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage.Api;
@@ -17,8 +16,10 @@ namespace TickTrader.FeedStorage
 {
     public abstract class BaseSymbol : ISymbolData, ISymbolKey
     {
+        private protected readonly FeedStorageBase.FeedHandler _storage;
+
+        private readonly List<SymbolStorageSeries> _series;
         private readonly IVarSet<FeedCacheKey> _keys;
-        protected FeedStorageBase.FeedHandler _storage;
 
 
         public ISymbolKey Key => this;
@@ -36,17 +37,23 @@ namespace TickTrader.FeedStorage
         public abstract SymbolConfig.Types.SymbolOrigin Origin { get; }
 
 
+
+        public event Action<IStorageSeries> SeriesAdded;
+
+        public event Action<IStorageSeries> SeriesRemoved;
+
+
         public BaseSymbol(ISymbolInfo info, FeedStorageBase.FeedHandler storage)
         {
             Info = info;
             _storage = storage;
 
             _keys = storage.Keys.Where(k => k.Symbol == Name);
-            SeriesCollection = _keys.Transform(k => new SymbolStorageSeries(k, this, storage));
+            _series = _keys.Snapshot.Select(k => new SymbolStorageSeries(k, _storage)).ToList();
         }
 
 
-        public IVarSet<SymbolStorageSeries> SeriesCollection { get; }
+        public List<IStorageSeries> SeriesCollection => _series.Cast<IStorageSeries>().ToList();
 
 
         public abstract Task<(DateTime?, DateTime?)> GetAvailableRange(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide? priceType = null);
@@ -95,7 +102,7 @@ namespace TickTrader.FeedStorage
         public virtual void OnRemoved()
         {
             _keys.Dispose();
-            SeriesCollection.Dispose();
+            //SeriesCollection.Dispose();
         }
 
 
@@ -120,5 +127,9 @@ namespace TickTrader.FeedStorage
             else
                 return Origin.CompareTo(other.Origin);
         }
+
+        public abstract Task<ActorChannel<SliceInfo>> DownloadBarSeriesToStorage(Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide, DateTime from, DateTime to);
+
+        public abstract Task<ActorChannel<SliceInfo>> DownloadTickSeriesToStorage(Feed.Types.Timeframe timeframe, DateTime from, DateTime to);
     }
 }

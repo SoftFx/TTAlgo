@@ -6,10 +6,17 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotTerminal
 {
-    internal class ActionDialogViewModel : Screen, IWindowModel
+    internal sealed class ActionDialogViewModel : Screen, IWindowModel
     {
-        private CancellationTokenSource _cancelSrc;
+        private readonly CancellationTokenSource _cancelSrc;
         private bool _isCompleted;
+
+        public bool IsCancellable => _cancelSrc != null;
+
+        public bool IsIndeterminate => Progress == null;
+
+        public ProgressViewModel Progress { get; private set; }
+
 
         public ActionDialogViewModel(string actionName, Func<Task> factory)
         {
@@ -83,13 +90,5 @@ namespace TickTrader.BotTerminal
             else
                 return Task.FromResult(false);
         }
-        //public override void CanCloseAsync(Action<bool> callback)
-        //{
-        //    callback(_isCompleted);
-        //}
-
-        public bool IsCancellable => _cancelSrc != null;
-        public bool IsIndeterminate => Progress == null;
-        public ProgressViewModel Progress { get; private set; } 
     }
 }

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
-namespace TickTrader.BotTerminal
+namespace TickTrader.BotTerminal.SymbolManager
 {
     internal class SymbolCfgEditorViewModel : Screen, IWindowModel, ISymbolInfo
     {
@@ -54,7 +54,7 @@ namespace TickTrader.BotTerminal
             SelectedMinCommissionCurr = _varContext.AddValidable(symbol?.MinCommissionCurr ?? "USD");
 
 
-            var percentConverter = new StringToDouble(Math.Max(Digits.Value + 1, 6), symbol.SwapType == Algo.Domain.SwapInfo.Types.Type.PercentPerYear);
+            var percentConverter = new StringToDouble(Math.Max(Digits.Value + 1, 6), symbol?.SwapType == Algo.Domain.SwapInfo.Types.Type.PercentPerYear);
 
             SwapEnabled = _varContext.AddBoolValidable(symbol?.SwapEnabled ?? true);
             TripleSwap = _varContext.AddBoolValidable(symbol?.TripleSwapDay > 0);

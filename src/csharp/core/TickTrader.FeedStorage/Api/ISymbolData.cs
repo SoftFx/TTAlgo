@@ -1,5 +1,5 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using Machinarium.Qnil;
+﻿using ActorSharp;
+using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -26,10 +26,20 @@ namespace TickTrader.FeedStorage.Api
 
         bool IsDownloadAvailable { get; }
 
-        //IVarSet<SymbolStorageSeries> SeriesCollection { get; }
+        List<IStorageSeries> SeriesCollection { get; }
+
+
+        event Action<IStorageSeries> SeriesAdded;
+
+        event Action<IStorageSeries> SeriesRemoved;
 
 
         Task<(DateTime?, DateTime?)> GetAvailableRange(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide? priceType = null);
+
+        Task<ActorChannel<SliceInfo>> DownloadBarSeriesToStorage(Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide, DateTime from, DateTime to);
+
+        Task<ActorChannel<SliceInfo>> DownloadTickSeriesToStorage(Feed.Types.Timeframe timeframe, DateTime from, DateTime to);
+
 
         void WriteSlice(Feed.Types.Timeframe frame, Feed.Types.MarketSide priceType, Timestamp from, Timestamp to, BarData[] values);
 

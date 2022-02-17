@@ -16,7 +16,7 @@ using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage;
 using TickTrader.FeedStorage.Api;
 
-namespace TickTrader.BotTerminal
+namespace TickTrader.BotTerminal.SymbolManager
 {
     internal class FeedImportViewModel : Screen, IWindowModel
     {

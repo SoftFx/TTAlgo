@@ -1,50 +1,48 @@
 ﻿using Caliburn.Micro;
-using Machinarium.Qnil;
 using Machinarium.Var;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
-using TickTrader.FeedStorage;
 using TickTrader.FeedStorage.Api;
 
-namespace TickTrader.BotTerminal
+namespace TickTrader.BotTerminal.SymbolManager
 {
-    internal class FeedDownloadViewModel : Screen, IWindowModel, IDisposable
+    internal sealed class FeedDownloadViewModel : Screen, IWindowModel, IDisposable
     {
         private readonly VarContext varContext = new VarContext();
-        private TraderClientModel _client;
+
+        private readonly TraderClientModel _client;
         private readonly ISymbolCatalog _catalog;
+
 
         public FeedDownloadViewModel(TraderClientModel clientModel, ISymbolCatalog catalog, ISymbolData symbol = null)
         {
             _catalog = catalog;
             _client = clientModel;
 
-            //Symbols = clientModel.Symbols.Select((k, v) => (SymbolModel)v).OrderBy((k, v) => k).Chain().AsObservable();
-            Symbols = new ObservableCollection<BaseSymbol>(catalog.AllSymbols.Cast<BaseSymbol>());
+            Symbols = new ObservableCollection<ISymbolData>(catalog.AllSymbols);
 
             DownloadObserver = new ActionViewModel();
             DateRange = new DateRangeSelectionViewModel();
 
             SelectedTimeFrame = varContext.AddProperty(Feed.Types.Timeframe.M1);
             SelectedPriceType = varContext.AddProperty(Feed.Types.MarketSide.Bid);
-            SelectedSymbol = varContext.AddProperty<ISymbolData>(symbol);
+            SelectedSymbol = varContext.AddProperty(symbol);
             ShowDownloadUi = varContext.AddBoolProperty();
 
             IsRangeLoaded = varContext.AddBoolProperty();
             IsPriceTypeActual = !SelectedTimeFrame.Var.IsTicks();
             IsBusy = DownloadObserver.IsRunning;
 
-            DownloadEnabled = _client.IsConnected & IsRangeLoaded.Var & !IsBusy;
+            DownloadEnabled = (SelectedSymbol.Value?.IsDownloadAvailable ?? true) & IsRangeLoaded.Var & !IsBusy;
             CancelEnabled = !IsBusy | DownloadObserver.CanCancel;
 
-            varContext.TriggerOnChange(SelectedSymbol.Var, a => UpdateAvailableRange(SelectedSymbol.Value));
+            varContext.TriggerOnChange(SelectedSymbol.Var, a => UpdateAvailableRange(a.New));
 
             varContext.TriggerOnChange(IsBusy, a => System.Diagnostics.Debug.WriteLine("IsBusy = " + a.New));
             varContext.TriggerOnChange(DownloadObserver.CanCancel, a => System.Diagnostics.Debug.WriteLine("Observer.CanCancel = " + a.New));
@@ -54,28 +52,28 @@ namespace TickTrader.BotTerminal
 
         public IEnumerable<Feed.Types.Timeframe> AvailableTimeFrames => TimeFrameModel.AllTimeFrames;
         public IEnumerable<Feed.Types.MarketSide> AvailablePriceTypes => EnumHelper.AllValues<Feed.Types.MarketSide>();
-        public ObservableCollection<BaseSymbol> Symbols { get; }
+        public ObservableCollection<ISymbolData> Symbols { get; }
         public DateRangeSelectionViewModel DateRange { get; }
         public ActionViewModel DownloadObserver { get; }
 
         #region Observable Properties
 
-        public BoolProperty ShowDownloadUi { get; private set; }
-        public BoolProperty IsRangeLoaded { get; private set; }
-        public Property<ISymbolData> SelectedSymbol { get; private set; }
-        public BoolVar DownloadEnabled { get; private set; }
-        public BoolVar CancelEnabled { get; private set; }
-        public BoolVar IsPriceTypeActual { get; private set; }
+        public BoolProperty ShowDownloadUi { get; }
+        public BoolProperty IsRangeLoaded { get; }
+        public Property<ISymbolData> SelectedSymbol { get;  }
+        public BoolVar DownloadEnabled { get; }
+        public BoolVar CancelEnabled { get; }
+        public BoolVar IsPriceTypeActual { get; }
         public BoolVar IsBusy { get; private set; }
-        public Property<Feed.Types.Timeframe> SelectedTimeFrame { get; private set; }
-        public Property<Feed.Types.MarketSide> SelectedPriceType { get; private set; }
+        public Property<Feed.Types.Timeframe> SelectedTimeFrame { get; }
+        public Property<Feed.Types.MarketSide> SelectedPriceType { get; }
 
         #endregion
 
         public void Cancel()
         {
             if (IsBusy.Value)
-                DownloadObserver.Cancel();  
+                DownloadObserver.Cancel();
             else
                 TryCloseAsync();
         }
@@ -91,21 +89,10 @@ namespace TickTrader.BotTerminal
             return base.TryCloseAsync(dialogResult);
         }
 
-        //public override void TryClose(bool? dialogResult = default(bool?))
-        //{
-        //    base.TryClose(dialogResult);
-        //    Dispose();
-        //}
-
         public override Task<bool> CanCloseAsync(CancellationToken cancellationToken = default)
         {
             return Task.FromResult(!IsBusy.Value);
         }
-
-        //public override void CanClose(Action<bool> callback)
-        //{
-        //    callback(!IsBusy.Value);
-        //}
 
         public void Download()
         {
@@ -146,7 +133,7 @@ namespace TickTrader.BotTerminal
 
             observer?.StartProgress(fromUtc.GetAbsoluteDay(), toUtc.GetAbsoluteDay());
 
-            var barEnumerator = await _catalog.DownloadBarSeriesToStorage(symbol, timeFrame, priceType, fromUtc, toUtc);
+            var barEnumerator = await _catalog.OnlineCollection[symbol].DownloadBarSeriesToStorage(timeFrame, priceType, fromUtc, toUtc);
 
             try
             {
@@ -195,7 +182,7 @@ namespace TickTrader.BotTerminal
 
             observer?.StartProgress(fromUtc.GetAbsoluteDay(), toUtc.GetAbsoluteDay());
 
-            var tickEnumerator = await _catalog.DownloadTickSeriesToStorage(symbol, timeFrame, fromUtc, toUtc);
+            var tickEnumerator = await _catalog.OnlineCollection[symbol].DownloadTickSeriesToStorage(timeFrame, fromUtc, toUtc);
 
             try
             {
@@ -226,7 +213,7 @@ namespace TickTrader.BotTerminal
             }
             finally
             {
-                 await tickEnumerator.Close();
+                await tickEnumerator.Close();
             }
         }
 

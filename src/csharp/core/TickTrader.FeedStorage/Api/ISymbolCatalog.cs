@@ -1,5 +1,4 @@
-﻿using ActorSharp;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
@@ -29,11 +28,6 @@ namespace TickTrader.FeedStorage.Api
 
 
         Task CloseCatalog();
-
-
-        Task<ActorChannel<SliceInfo>> DownloadBarSeriesToStorage(string symbol, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide, DateTime from, DateTime to);
-
-        Task<ActorChannel<SliceInfo>> DownloadTickSeriesToStorage(string symbol, Feed.Types.Timeframe timeframe, DateTime from, DateTime to);
     }
 
 

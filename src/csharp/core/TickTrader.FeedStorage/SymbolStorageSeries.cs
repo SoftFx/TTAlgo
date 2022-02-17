@@ -7,38 +7,43 @@ using TickTrader.SeriesStorage;
 
 namespace TickTrader.FeedStorage
 {
-    public class SymbolStorageSeries
+    internal sealed class SymbolStorageSeries : IStorageSeries
     {
         private readonly FeedStorageBase.FeedHandler _storage;
+        private readonly FeedCacheKey _key;
 
-        public SymbolStorageSeries(FeedCacheKey key, ISymbolData symbolModel, FeedStorageBase.FeedHandler storage)
+
+        public ISeriesKey Key => _key;
+
+        public double? Size { get; private set; }
+
+
+        public SymbolStorageSeries(FeedCacheKey key, FeedStorageBase.FeedHandler storage)
         {
-            Key = key;
-            Symbol = symbolModel;
+            _key = key;
             _storage = storage;
         }
 
-        public FeedCacheKey Key { get; }
-        public ISymbolData Symbol { get; }
-
-        public Task<double?> GetCollectionSize()
+        public Task<bool> TryRemove()
         {
-            return _storage.GetCollectionSize(Key);
-        }
-
-        public Task Remove()
-        {
-            return _storage.RemoveSeries(Key);
+            return _storage.RemoveSeries(_key);
         }
 
         public ActorChannel<Slice<DateTime, BarData>> IterateBarCache(DateTime from, DateTime to)
         {
-            return _storage.IterateBarCacheAsync(Key, from, to);
+            return _storage.IterateBarCacheAsync(_key, from, to);
         }
 
         public ActorChannel<Slice<DateTime, QuoteInfo>> IterateTickCache(DateTime from, DateTime to)
         {
-            return _storage.IterateTickCacheAsync(Key, from, to);
+            return _storage.IterateTickCacheAsync(_key, from, to);
+        }
+
+        internal async Task<IStorageSeries> LoadSize()
+        {
+            Size = await _storage.GetCollectionSize(_key);
+
+            return this;
         }
     }
 }

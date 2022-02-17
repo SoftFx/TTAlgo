@@ -15,7 +15,7 @@ namespace TickTrader.FeedStorage
                 new DateTimeKeySerializer(),
                 new BarSerializer(_request.Key.TimeFrame),
                 b => b.OpenTime.ToDateTime(),
-                _request.Key.CodeString,
+                _request.Key.FullInfo,
                 false);
         }
     }
