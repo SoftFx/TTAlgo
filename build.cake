@@ -32,6 +32,8 @@ var configuratorProjectPath = sourcesDirPath.CombineWithFilePath("TickTrader.Bot
 var configuratorBinPath = outputPath.Combine("configurator");
 var publicApiProjectPath = sourcesDirPath.CombineWithFilePath("src/csharp/core/TickTrader.Algo.Server.PublicAPI/TickTrader.Algo.Server.PublicAPI.csproj");
 var publicApiBinPath = outputPath.Combine("public-api");
+var symbolStorageProjectPath = sourcesDirPath.CombineWithFilePath("src/csharp/core/TickTrader.FeedStorage/TickTrader.FeedStorage.csproj");
+var symbolStorageBinPath = outputPath.Combine("symbol-storage");
 var vsExtensionPath = sourcesDirPath.CombineWithFilePath($"src/csharp/sdk/TickTrader.Algo.VS.Package/bin/{configuration}/TickTrader.Algo.VS.Package.vsix");
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -92,7 +94,7 @@ Task("BuildMainProject")
    .Does(() =>
 {
    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("BuildMainProject") : null;
-   
+
    try
    {
       var msBuildSettings = new DotNetMSBuildSettings();
@@ -115,7 +117,7 @@ Task("BuildSdk")
    .Does(() =>
 {
    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("BuildSdk") : null;
-   
+
    try
    {
       DotNetRestore(sdkSolutionPath.ToString());
@@ -162,7 +164,7 @@ Task("Test")
    }
 
    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("Test") : null;
-   
+
    try
    {
       var testProjects = GetFiles(sourcesDirPath.Combine("src/csharp/tests/**/*.csproj").ToString());
@@ -185,7 +187,7 @@ Task("PublishTerminal")
    .Does(() =>
 {
    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishTerminal") : null;
-   
+
    try
    {
       // we need to change post-build tasks to work with publish
@@ -207,7 +209,7 @@ Task("PublishConfigurator")
    .Does(() =>
 {
    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishConfigurator") : null;
-   
+
    try
    {
       DotNetPublish(configuratorProjectPath.FullPath, new DotNetPublishSettings {
@@ -228,7 +230,7 @@ Task("PublishServer")
    .Does(() =>
 {
    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishServer") : null;
-   
+
    try
    {
       DotNetPublish(serverProjectPath.FullPath, new DotNetPublishSettings {
@@ -248,7 +250,7 @@ Task("PublishPublicApi")
    .Does(() =>
 {
    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishPublicApi") : null;
-   
+
    try
    {
       DotNetPublish(publicApiProjectPath.FullPath, new DotNetPublishSettings {
@@ -267,11 +269,33 @@ Task("PublishPublicApi")
    }
 });
 
+Task("PublishSymbolStorage")
+   .IsDependentOn("Test")
+   .Does(() =>
+{
+   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishSymbolStorage") : null;
+
+   try
+   {
+      DotNetPublish(symbolStorageProjectPath.FullPath, new DotNetPublishSettings {
+         Configuration = configuration,
+         Verbosity = details,
+         NoBuild = true,
+         OutputDirectory = symbolStorageBinPath,
+      });
+   }
+   finally
+   {
+      block?.Dispose();
+   }
+});
+
 Task("PrepareArtifacts")
    .IsDependentOn("PublishTerminal")
    .IsDependentOn("PublishConfigurator")
    .IsDependentOn("PublishServer")
    .IsDependentOn("PublishPublicApi")
+   .IsDependentOn("PublishSymbolStorage")
    .Does(() =>
 {
    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PrepareArtifacts") : null;
@@ -309,6 +333,7 @@ Task("ZipArtifacts")
       Zip(serverBinPath, artifactsPath.CombineWithFilePath($"AlgoServer {buildId}.x64.zip"));
       Zip(configuratorBinPath, artifactsPath.CombineWithFilePath($"AlgoServer Configurator {buildId}.x64.zip"));
       Zip(publicApiBinPath, artifactsPath.CombineWithFilePath($"PublicAPI {buildId}.net472.zip"));
+      Zip(symbolStorageBinPath, artifactsPath.CombineWithFilePath($"SymbolStorage {buildId}.x64.zip"));
    }
    finally
    {
@@ -321,7 +346,7 @@ Task("CreateInstaller")
    .Does(() =>
 {
    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("CreateInstaller") : null;
-   
+
    try
    {
       if (!System.IO.File.Exists(nsisPath.MakeAbsolute(Context.Environment).ToString()))
