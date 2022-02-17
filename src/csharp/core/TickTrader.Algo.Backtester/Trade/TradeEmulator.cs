@@ -1409,15 +1409,13 @@ namespace TickTrader.Algo.Backtester
             else
             {
                 var posPrice = posInfo.Price;
+                var posSide = posInfo.Side;
                 var posAmount = posInfo.Volume;
                 var closingAmount = Math.Min(fillAmount, posAmount);
                 var closableAmount = Math.Max(fillAmount, posAmount);
 
-                if (posAmount > fillAmount)
-                {
-                    posInfo.Volume = posAmount - fillAmount;
-                }
-                else
+                posInfo.Volume = posAmount - fillAmount;
+                if (posInfo.Volume.Lt(0))
                 {
                     posInfo.Side = fillSide;
                     posInfo.Price = fillPrice;
@@ -1431,7 +1429,7 @@ namespace TickTrader.Algo.Backtester
                 var closeSwap = RoundMoney(k * position.Info.Swap, _calcFixture.RoundingDigits);
                 posInfo.Swap -= closeSwap;
 
-                var profitRes = symbolCalc.Profit.Calculate(new ProfitRequest(posPrice, closingAmount, fillSide, fillPrice));
+                var profitRes = symbolCalc.Profit.Calculate(new ProfitRequest(posPrice, closingAmount, posSide, fillPrice));
                 if (profitRes.Error != CalculationError.None)
                     throw new Exception();
                 var profit = RoundMoney(profitRes.Value, _calcFixture.RoundingDigits);

@@ -38,7 +38,13 @@ namespace TickTrader.Algo.Calculator.TradeSpecificsCalculators
         private double PriceDelta(IProfitCalculateRequest request)
         {
             if (request.ClosePrice.HasValue)
-                return request.ClosePrice.Value - request.Price;
+            {
+                if (request.Side.IsBuy())
+                    return request.ClosePrice.Value - request.Price;
+
+                if (request.Side.IsSell())
+                    return request.Price - request.ClosePrice.Value;
+            }
 
             if (request.Side.IsBuy() && _info.Bid.HasValue)
                 return _info.Bid.Value - request.Price;
