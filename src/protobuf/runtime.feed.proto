@@ -52,18 +52,6 @@ message MarginInfo {
     google.protobuf.DoubleValue hidden_limit_order_reduction = 5;
 }
 
-message ProfitInfo {
-    enum CalculationMode {
-        FOREX = 0;
-        CFD = 1;
-        FUTURES = 2;
-        CFD_INDEX = 3;
-        CFD_LEVERAGE = 4;
-    }
-
-    CalculationMode mode = 1;
-}
-
 message SwapInfo {
     enum Type {
         POINTS = 0;
@@ -105,7 +93,6 @@ message SymbolInfo {
     google.protobuf.StringValue security = 16;
     int32 sort_order = 17;
     int32 group_sort_order = 18;
-    ProfitInfo profit = 19;
 }
 
 message SymbolListRequest { }

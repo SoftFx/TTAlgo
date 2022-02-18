@@ -709,11 +709,6 @@ namespace TickTrader.Algo.Account.Fdk2
                     HiddenLimitOrderReduction = info.HiddenLimitOrderMarginReduction,
                 },
 
-                Profit = new Domain.ProfitInfo
-                {
-                    Mode = Convert(info.ProfitCalcMode),
-                },
-
                 Swap = new Domain.SwapInfo
                 {
                     Enabled = info.SwapEnabled,
@@ -772,19 +767,6 @@ namespace TickTrader.Algo.Account.Fdk2
                 case MarginCalcMode.CfdLeverage: return Domain.MarginInfo.Types.CalculationMode.CfdLeverage;
                 case MarginCalcMode.Forex: return Domain.MarginInfo.Types.CalculationMode.Forex;
                 case MarginCalcMode.Futures: return Domain.MarginInfo.Types.CalculationMode.Futures;
-                default: throw new NotImplementedException();
-            }
-        }
-
-        private static Domain.ProfitInfo.Types.CalculationMode Convert(ProfitCalcMode mode)
-        {
-            switch (mode)
-            {
-                case ProfitCalcMode.Cfd: return Domain.ProfitInfo.Types.CalculationMode.Cfd;
-                case ProfitCalcMode.CfdIndex: return Domain.ProfitInfo.Types.CalculationMode.CfdIndex;
-                case ProfitCalcMode.CfdLeverage: return Domain.ProfitInfo.Types.CalculationMode.CfdLeverage;
-                case ProfitCalcMode.Forex: return Domain.ProfitInfo.Types.CalculationMode.Forex;
-                case ProfitCalcMode.Futures: return Domain.ProfitInfo.Types.CalculationMode.Futures;
                 default: throw new NotImplementedException();
             }
         }

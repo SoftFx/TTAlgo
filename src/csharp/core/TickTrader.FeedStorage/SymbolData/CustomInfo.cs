@@ -60,38 +60,34 @@ namespace TickTrader.FeedStorage
 
 
         [ProtoMember(17)]
-        public ProfitInfo.Types.CalculationMode ProfitMode { get; set; }
-
-
-        [ProtoMember(18)]
         public MarginInfo.Types.CalculationMode MarginMode { get; set; }
 
-        [ProtoMember(19)]
+        [ProtoMember(18)]
         public double MarginHedged { get; set; }
 
-        [ProtoMember(20)]
+        [ProtoMember(19)]
         public double MarginFactor { get; set; }
 
-        [ProtoMember(21)]
+        [ProtoMember(20)]
         public double StopOrderMarginReduction { get; set; }
 
-        [ProtoMember(22)]
+        [ProtoMember(21)]
         public double HiddenLimitOrderMarginReduction { get; set; }
 
 
-        [ProtoMember(23)]
+        [ProtoMember(22)]
         public double Commission { get; set; }
 
-        [ProtoMember(24)]
+        [ProtoMember(23)]
         public CommissonInfo.Types.ValueType CommissionType { get; set; }
 
-        [ProtoMember(25)]
+        [ProtoMember(24)]
         public double LimitsCommission { get; set; }
 
-        [ProtoMember(26)]
+        [ProtoMember(25)]
         public double MinCommission { get; set; }
 
-        [ProtoMember(27)]
+        [ProtoMember(26)]
         public string MinCommissionCurr { get; set; }
 
 

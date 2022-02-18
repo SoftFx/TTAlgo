@@ -84,7 +84,6 @@ namespace TickTrader.Algo.Domain
             Slippage = info.Slippage;
             Commission = info.Commission;
             Margin = info.Margin;
-            Profit = info.Profit;
             Swap = info.Swap;
             Description = info.Description;
             Security = info.Security;
@@ -130,8 +129,6 @@ namespace TickTrader.Algo.Domain
 
 
         string ISymbolInfo.ProfitCurrency => CounterCurrency;
-
-        ProfitInfo.Types.CalculationMode ISymbolInfo.ProfitMode => Profit.Mode;
 
 
         bool ISymbolInfo.SwapEnabled => Swap.Enabled;
@@ -203,8 +200,6 @@ namespace TickTrader.Algo.Domain
 
 
         string ProfitCurrency { get; }
-
-        ProfitInfo.Types.CalculationMode ProfitMode { get; }
 
 
         bool SwapEnabled { get; }
