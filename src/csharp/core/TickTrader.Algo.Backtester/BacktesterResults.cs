@@ -1,7 +1,5 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
-using Google.Protobuf;
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -60,7 +58,7 @@ namespace TickTrader.Algo.Backtester
                 TryReadZipEntryAsCsv<PluginLogRecord, CsvMapping.ForLogRecord>(zip, "journal.csv", res.Journal);
                 TryReadZipEntryAsCsv<BarData, CsvMapping.ForBarData>(zip, "equity.csv", res.Equity);
                 TryReadZipEntryAsCsv<BarData, CsvMapping.ForBarData>(zip, "margin.csv", res.Margin);
-                TryReadZipEntry(zip, "trade-history.bd64", ParseTradeReport, res.TradeHistory);
+                TryReadZipEntryAsCsv<TradeReportInfo, CsvMapping.ForTradeReport>(zip, "trade-history.csv", res.TradeHistory);
             }
             return res;
         }
@@ -80,23 +78,7 @@ namespace TickTrader.Algo.Backtester
 
         internal static void SaveOutputData(ZipArchive zip, string entryName, IEnumerable<OutputPoint> points) => SaveZipEntryAsCsv<OutputPoint, CsvMapping.ForOutputPoint>(zip, entryName, points);
 
-        internal static void SaveTradeHistory(ZipArchive zip, IEnumerable<TradeReportInfo> reports)
-        {
-            var entry = zip.CreateEntry("trade-history.bd64");
-            using (var stream = entry.Open())
-            using (var writer = new StreamWriter(stream))
-            {
-                writer.Write("Base64 TradeReportInfo protobuf data"); // header is added on purpose
-
-                foreach (var report in reports)
-                {
-                    writer.WriteLine();
-                    writer.Write(report.ToByteString().ToBase64());
-                }
-            }
-
-            SaveZipEntryAsCsv<TradeReportInfo, CsvMapping.ForTradeReport>(zip, "trade-history.csv", reports);
-        }
+        internal static void SaveTradeHistory(ZipArchive zip, IEnumerable<TradeReportInfo> reports) => SaveZipEntryAsCsv<TradeReportInfo, CsvMapping.ForTradeReport>(zip, "trade-history.csv", reports);
 
 
         private static T ReadZipEntryAsJson<T>(ZipArchive zip, string entryName)
@@ -107,25 +89,6 @@ namespace TickTrader.Algo.Backtester
                 var data = new byte[entry.Length];
                 stream.Read(data, 0, data.Length);
                 return JsonSerializer.Deserialize<T>(data, _jsonOptions);
-            }
-        }
-
-        private static void TryReadZipEntry<T>(ZipArchive zip, string entryName, Func<string, T> parser, List<T> storage)
-        {
-            var entry = zip.GetEntry(entryName);
-            if (entry == null)
-                return;
-
-            using (var stream = entry.Open())
-            using (var reader = new StreamReader(stream))
-            {
-                var header = reader.ReadLine(); // skip header
-                var dataStr = reader.ReadLine();
-                while (!string.IsNullOrEmpty(dataStr))
-                {
-                    storage.Add(parser(dataStr));
-                    dataStr = reader.ReadLine();
-                }
             }
         }
 
@@ -156,11 +119,6 @@ namespace TickTrader.Algo.Backtester
                 csv.Context.RegisterClassMap<TMap>();
                 csv.WriteRecords(data);
             }
-        }
-
-        private static TradeReportInfo ParseTradeReport(string dataStr)
-        {
-            return (TradeReportInfo)TradeReportInfo.Descriptor.Parser.ParseFrom(Convert.FromBase64String(dataStr));
         }
     }
 }
