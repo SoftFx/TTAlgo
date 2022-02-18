@@ -1,11 +1,13 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
 using Machinarium.Var;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Globalization;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Data;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.FeedStorage.Api;
@@ -43,7 +45,7 @@ namespace TickTrader.BotTerminal.SymbolManager
 
             DisplayName = "Symbol Manager";
 
-            FilterString = _varContext.AddProperty<string>(string.Empty);
+            FilterString = _varContext.AddProperty(string.Empty);
             SelectedSymbol = _varContext.AddProperty<SymbolViewModel>();
             SelectedGroup = _varContext.AddProperty<CollectionViewGroup>();
 
@@ -52,6 +54,9 @@ namespace TickTrader.BotTerminal.SymbolManager
             AllSymbolsView.GroupDescriptions.Add(new PropertyGroupDescription(SymbolViewModel.TypeHeader));
             AllSymbolsView.GroupDescriptions.Add(new PropertyGroupDescription(SymbolViewModel.SecurityHeader));
             AllSymbolsView.Filter = FilterGroup;
+
+            SubscribeHandlersToCollection(_catalog.OnlineCollection);
+            SubscribeHandlersToCollection(_catalog.CustomCollection);
 
             _varContext.TriggerOnChange(FilterString.Var, _ => AllSymbolsView.Refresh());
 
@@ -63,9 +68,40 @@ namespace TickTrader.BotTerminal.SymbolManager
             //});
         }
 
+        private void SubscribeHandlersToCollection(ISymbolCollection collection)
+        {
+            collection.SymbolAdded += AddSymbolHandler;
+            collection.SymbolRemoved += RemoveSymbolHandler;
+            collection.SymbolUpdated += UpdateSymbolHandler;
+        }
+
+        private void UnsubscribeHandlersToCollection(ISymbolCollection collection)
+        {
+            collection.SymbolAdded -= AddSymbolHandler;
+            collection.SymbolRemoved -= RemoveSymbolHandler;
+            collection.SymbolUpdated -= UpdateSymbolHandler;
+        }
+
+        private void UpdateSymbolHandler(ISymbolData oldSymbol, ISymbolData newSymbol)
+        {
+            RemoveSymbolHandler(oldSymbol);
+            AddSymbolHandler(newSymbol);
+        }
+
+        private void AddSymbolHandler(ISymbolData smb) => _allSymbols.Add(new SymbolViewModel(this, smb));
+
+        private void RemoveSymbolHandler(ISymbolData smb)
+        {
+            var symbolViewModel = _allSymbols.FirstOrDefault(u => u.Name == smb.Name);
+
+            if (symbolViewModel != null)
+                _allSymbols.Remove(symbolViewModel);
+        }
+
+
         private bool FilterGroup(object obj)
         {
-            return !(obj is SymbolViewModel smb) || string.Compare(smb.Name, FilterString.Value.Trim(), true, CultureInfo.InvariantCulture) >= 0;
+            return !(obj is SymbolViewModel smb) || smb.Name.IndexOf(FilterString.Value, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         public void UpdateSizes()
@@ -161,6 +197,14 @@ namespace TickTrader.BotTerminal.SymbolManager
         {
             smbName = smbName.Trim();
             return _catalog.OnlineCollection[smbName] != null && _catalog.CustomCollection[smbName] != null;
+        }
+
+        public override Task<bool> CanCloseAsync(CancellationToken cancellationToken = default)
+        {
+            UnsubscribeHandlersToCollection(_catalog.OnlineCollection);
+            UnsubscribeHandlersToCollection(_catalog.CustomCollection);
+
+            return base.CanCloseAsync(cancellationToken);
         }
     }
 }

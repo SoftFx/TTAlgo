@@ -29,7 +29,7 @@ namespace TickTrader.BotTerminal.SymbolManager
 
         public ISymbolData Model { get; }
         public string Description => Model.Info.Description;
-        public string Security => Model.Info.Security;
+        public string Security => string.IsNullOrEmpty(Model.Info.Security) ? Name : Model.Info.Security;
         public string Name => Model.Name;
         public bool IsCustom => Model.IsCustom;
         public bool IsOnline => !Model.IsCustom;
