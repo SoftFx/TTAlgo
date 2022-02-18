@@ -6,7 +6,7 @@ namespace TickTrader.BotTerminal
     {
         public GrossTransactionModel(TradeReportInfo transaction, ISymbolInfo symbol, int profitDigits) : base(transaction, symbol, profitDigits)
         {
-            if (transaction.PositionId != null)
+            if (!string.IsNullOrEmpty(transaction.PositionId))
             {
                 UniqueId = GetUniqueId(transaction, transaction.PositionId, out _);
 

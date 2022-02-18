@@ -158,7 +158,15 @@ namespace TickTrader.BotTerminal
 
                 cToken.ThrowIfCancellationRequested();
 
-                await RunBacktester(observer, configPath, cToken);
+                try
+                {
+                    FireOnStart(SetupPage.MainSymbolSetup.SelectedSymbol.Value, config);
+                    await RunBacktester(observer, configPath, cToken);
+                }
+                finally
+                {
+                    FireOnStop(config);
+                }
 
                 cToken.ThrowIfCancellationRequested();
 
@@ -204,8 +212,9 @@ namespace TickTrader.BotTerminal
 
             await LoadStats(observer, results, pluginInfo);
             await LoadJournal(observer, results);
-            await LoadChartData(config, results, pluginInfo, observer);
-            await LoadTradeHistory(observer, results);
+            var reports = await LoadTradeHistory(observer, results);
+            await LoadChartData(config, results, pluginInfo, reports, observer);
+            TradeHistoryPage.LoadTradeHistory(reports);
         }
 
         private void FireOnStart(BaseSymbol mainSymbol, BacktesterConfig config)
@@ -292,17 +301,23 @@ namespace TickTrader.BotTerminal
             //});
         }
 
-        private async Task LoadTradeHistory(IActionObserver observer, BacktesterResults results)
+        private async Task<List<BaseTransactionModel>> LoadTradeHistory(IActionObserver observer, BacktesterResults results)
         {
             observer.SetMessage("Loading trade history...");
 
-            //await Task.Run(() =>
-            //{
-            foreach (var report in results.TradeHistory)
+            var tradeHistory = new List<BaseTransactionModel>(results.TradeHistory.Count);
+            var accType = SetupPage.Settings.AccType;
+
+            await Task.Run(() =>
             {
-                AddTradeHistoryReport(report);
-            }
-            //});
+                foreach (var record in results.TradeHistory)
+                {
+                    var trRep = BaseTransactionModel.Create(accType, record, 5, _testingSymbols.GetOrDefault(record.Symbol));
+                    tradeHistory.Add(trRep);
+                }
+            });
+
+            return tradeHistory;
         }
 
         private void AddTradeHistoryReport(TradeReportInfo record)
@@ -310,7 +325,6 @@ namespace TickTrader.BotTerminal
             var accType = SetupPage.Settings.AccType;
             var trRep = BaseTransactionModel.Create(accType, record, 5, _testingSymbols.GetOrDefault(record.Symbol));
             TradeHistoryPage.Append(trRep);
-            ChartPage.Append(accType, trRep);
         }
 
         private async Task LoadStats(IActionObserver observer, BacktesterResults results, PluginDescriptor pluginInfo)
@@ -320,16 +334,16 @@ namespace TickTrader.BotTerminal
             ResultsPage.ShowReport(results.Stats, pluginInfo, null);
         }
 
-        private async Task LoadChartData(BacktesterConfig config, BacktesterResults results, PluginDescriptor pluginInfo, IActionObserver observer)
+        private async Task LoadChartData(BacktesterConfig config, BacktesterResults results, PluginDescriptor pluginInfo, IEnumerable<BaseTransactionModel> tradeHistory, IActionObserver observer)
         {
             var mainSymbol = config.Core.MainSymbol;
-            var timeFrame = config.Core.MainTimeframe;
+            var mainTimeFrame = config.Core.MainTimeframe;
             //var count = results.Feed[mainSymbol].Count;
 
             //timeFrame = BarExtentions.AdjustTimeframe(timeFrame, count, 500, out count);
 
             observer.SetMessage("Loading feed chart data ...");
-            await ChartPage.LoadMainChart(results.Feed[mainSymbol], timeFrame);
+            await ChartPage.LoadMainChart(results.Feed[mainSymbol], mainTimeFrame, tradeHistory);
 
             if (pluginInfo.IsTradeBot)
             {

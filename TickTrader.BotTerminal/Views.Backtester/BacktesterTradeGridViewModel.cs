@@ -16,7 +16,6 @@ namespace TickTrader.BotTerminal
             GridView.ConvertTimeToLocal = false;
             GridView.IsSlippageSupported = false;
             GridView.AccType.Value = AccountInfo.Types.Type.Gross;
-            GridView.SetCollection(_reports);
         }
 
         public TradeHistoryGridViewModel GridView { get; }
@@ -24,12 +23,18 @@ namespace TickTrader.BotTerminal
         public void OnTesterStart(AccountInfo.Types.Type newAccType)
         {
             _reports.Clear();
+            GridView.SetCollection(_reports);
             GridView.AccType.Value = newAccType;
         }
 
         public void Append(BaseTransactionModel report)
         {
             _reports.Add(report);
+        }
+
+        public void LoadTradeHistory(ICollection<BaseTransactionModel> reports)
+        {
+            GridView.SetCollection(reports);
         }
     }
 }
