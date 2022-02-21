@@ -3,7 +3,6 @@ using Machinarium.Var;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
@@ -60,7 +59,7 @@ namespace TickTrader.BotTerminal.SymbolManager
 
         public BoolProperty ShowDownloadUi { get; }
         public BoolProperty IsRangeLoaded { get; }
-        public Property<ISymbolData> SelectedSymbol { get;  }
+        public Property<ISymbolData> SelectedSymbol { get; }
         public BoolVar DownloadEnabled { get; }
         public BoolVar CancelEnabled { get; }
         public BoolVar IsPriceTypeActual { get; }
@@ -126,98 +125,7 @@ namespace TickTrader.BotTerminal.SymbolManager
             }
         }
 
-        private async Task<long> DownloadBars(IActionObserver observer, CancellationToken cancelToken, string symbol, Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide priceType, DateTime from, DateTime to)
-        {
-            var fromUtc = from.ToUniversalTime();
-            var toUtc = to.ToUniversalTime();
-
-            observer?.StartProgress(fromUtc.GetAbsoluteDay(), toUtc.GetAbsoluteDay());
-
-            var barEnumerator = await _catalog.OnlineCollection[symbol].DownloadBarSeriesToStorage(timeFrame, priceType, fromUtc, toUtc);
-
-            try
-            {
-                var watch = Stopwatch.StartNew();
-                long downloadedCount = 0;
-
-                while (await barEnumerator.ReadNext())
-                {
-                    var info = barEnumerator.Current;
-                    if (info.Count > 0)
-                    {
-                        downloadedCount += info.Count;
-                        var msg = "Downloading... " + downloadedCount + " bars are downloaded.";
-                        if (watch.ElapsedMilliseconds > 0)
-                            msg += "\nBars per second: " + Math.Round(((double)downloadedCount * 1000) / watch.ElapsedMilliseconds);
-                        observer.SetMessage(msg);
-                    }
-
-                    observer?.SetProgress(info.To.GetAbsoluteDay());
-
-                    if (cancelToken.IsCancellationRequested)
-                    {
-                        await barEnumerator.Close();
-                        observer.SetMessage("Canceled. " + downloadedCount + " bars were downloaded.");
-                        return downloadedCount;
-                    }
-                }
-
-                observer.SetMessage("Completed. " + downloadedCount + " bars were downloaded.");
-
-                return downloadedCount;
-            }
-            finally
-            {
-                await barEnumerator.Close();
-            }
-        }
-
-        private async Task<long> DownloadTicks(IActionObserver observer, CancellationToken cancelToken, string symbol, Feed.Types.Timeframe timeFrame, DateTime from, DateTime to)
-        {
-            var fromUtc = from.ToUniversalTime();
-            var toUtc = to.ToUniversalTime();
-
-            var watch = Stopwatch.StartNew();
-            long downloadedCount = 0;
-
-            observer?.StartProgress(fromUtc.GetAbsoluteDay(), toUtc.GetAbsoluteDay());
-
-            var tickEnumerator = await _catalog.OnlineCollection[symbol].DownloadTickSeriesToStorage(timeFrame, fromUtc, toUtc);
-
-            try
-            {
-                while (await tickEnumerator.ReadNext())
-                {
-                    var info = tickEnumerator.Current;
-                    if (info.Count > 0)
-                    {
-                        downloadedCount += info.Count;
-                        var msg = "Downloading... " + downloadedCount + " ticks are downloaded.";
-                        if (watch.ElapsedMilliseconds > 0)
-                            msg += "\nTicks per second: " + Math.Round(((double)downloadedCount * 1000) / watch.ElapsedMilliseconds);
-                        observer.SetMessage(msg);
-                    }
-
-                    observer?.SetProgress(info.From.GetAbsoluteDay());
-
-                    if (cancelToken.IsCancellationRequested)
-                    {
-                        observer.SetMessage("Canceled! " + downloadedCount + " ticks were downloaded.");
-                        return downloadedCount;
-                    }
-                }
-
-                observer.SetMessage("Completed: " + downloadedCount + " ticks were downloaded.");
-
-                return downloadedCount;
-            }
-            finally
-            {
-                await tickEnumerator.Close();
-            }
-        }
-
-        private async Task DownloadAsync(IActionObserver observer, CancellationToken cancelToken)
+        private async Task DownloadAsync(IActionObserver observer)
         {
             var symbol = SelectedSymbol.Value.Name;
             var timeFrame = SelectedTimeFrame.Value;
@@ -230,9 +138,9 @@ namespace TickTrader.BotTerminal.SymbolManager
             try
             {
                 if (timeFrame.IsTicks())
-                    await DownloadTicks(observer, cancelToken, symbol, timeFrame, from, to);
+                    await _catalog.OnlineCollection[symbol].DownloadTicksWithObserver(observer, timeFrame, from, to);
                 else
-                    await DownloadBars(observer, cancelToken, symbol, timeFrame, priceType, from, to);
+                    await _catalog.OnlineCollection[symbol].DownloadBarWithObserver(observer, timeFrame, priceType, from, to);
             }
             catch (Exception)
             {

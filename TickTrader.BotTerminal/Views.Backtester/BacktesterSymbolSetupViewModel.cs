@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Backtester;
 using TickTrader.Algo.Core.Lib;
@@ -170,14 +169,14 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public Task PrecacheData(IActionObserver observer, CancellationToken cToken, DateTime fromLimit, DateTime toLimit)
+        public Task PrecacheData(IActionObserver observer, DateTime fromLimit, DateTime toLimit)
         {
-            return PrecacheData(observer, cToken, fromLimit, toLimit, SelectedTimeframe.Value);
+            return PrecacheData(observer, fromLimit, toLimit, SelectedTimeframe.Value);
         }
 
-        public async Task PrecacheData(IActionObserver observer, CancellationToken cToken, DateTime fromLimit, DateTime toLimit, Feed.Types.Timeframe timeFrameChoice)
+        public async Task PrecacheData(IActionObserver observer, DateTime fromLimit, DateTime toLimit, Feed.Types.Timeframe timeFrameChoice)
         {
-            if (cToken.IsCancellationRequested)
+            if (observer.CancelationToken.IsCancellationRequested)
                 return;
 
             if (SetupType == SymbolSetupType.Main)
@@ -197,18 +196,20 @@ namespace TickTrader.BotTerminal
 
             if (!smb.IsCustom)
             {
+                observer.ShowMessages = false;
+
                 if (timeFrameChoice == Feed.Types.Timeframe.Ticks || timeFrameChoice == Feed.Types.Timeframe.TicksLevel2)
                 {
                     // ticks
-                    await smb.DownloadToStorage(observer, false, cToken, timeFrameChoice, Feed.Types.MarketSide.Bid, precacheFrom, precacheTo);
+                    await smb.DownloadTicksWithObserver(observer, timeFrameChoice, precacheFrom, precacheTo);
                 }
                 else // bars
                 {
                     if (priceChoice == DownloadPriceChoices.Bid | priceChoice == DownloadPriceChoices.Both)
-                        await smb.DownloadToStorage(observer, false, cToken, timeFrameChoice, Feed.Types.MarketSide.Bid, precacheFrom, precacheTo);
+                        await smb.DownloadBarWithObserver(observer, timeFrameChoice, Feed.Types.MarketSide.Bid, precacheFrom, precacheTo);
 
                     if (priceChoice == DownloadPriceChoices.Ask | priceChoice == DownloadPriceChoices.Both)
-                        await smb.DownloadToStorage(observer, false, cToken, timeFrameChoice, Feed.Types.MarketSide.Ask, precacheFrom, precacheTo);
+                        await smb.DownloadBarWithObserver(observer, timeFrameChoice, Feed.Types.MarketSide.Ask, precacheFrom, precacheTo);
                 }
             }
         }

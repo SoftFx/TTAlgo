@@ -54,10 +54,12 @@ namespace TickTrader.BotTerminal
             Completion = Handle(() => Task.Factory.StartNew(() => action(Progress, _cancelSrc.Value.Token)));
         }
 
-        public void Start(Func<IActionObserver, CancellationToken, Task> asyncAction)
+        public void Start(Func<IActionObserver, Task> asyncAction)
         {
             _cancelSrc.Value = new CancellationTokenSource();
-            Completion = Handle(() => asyncAction(Progress, _cancelSrc.Value.Token));
+
+            Progress.CancelationToken = _cancelSrc.Value.Token;
+            Completion = Handle(() => asyncAction(Progress));
         }
 
         private async Task Handle(Func<Task> workerTaskFactory)
@@ -68,18 +70,18 @@ namespace TickTrader.BotTerminal
             try
             {
                 await workerTaskFactory();
-                Progress.Stop();
+                Progress.StopProgress();
             }
             catch (AggregateException ex)
             {
                 var fex = ex.FlattenAsPossible();
                 if (!(fex is TaskCanceledException))
-                    Progress.Stop(fex.Message);
+                    Progress.StopProgress(fex.Message);
             }
             catch (TaskCanceledException) { }
             catch (Exception ex)
             {
-                Progress.Stop(ex.Message);
+                Progress.StopProgress(ex.Message);
             }
 
             _isRunning.Clear();

@@ -5,7 +5,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
-using TickTrader.FeedStorage.Api;
 using TickTrader.SeriesStorage;
 using TickTrader.SeriesStorage.ProtoSerializer;
 

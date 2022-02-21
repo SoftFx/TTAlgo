@@ -124,10 +124,12 @@ namespace TickTrader.BotTerminal
         public BacktesterOptimizerViewModel OptimizationPage { get; }
         public OptimizationResultsPageViewModel OptimizationResultsPage { get; } = new OptimizationResultsPageViewModel();
 
-        private async Task DoEmulation(IActionObserver observer, CancellationToken cToken)
+        private async Task DoEmulation(IActionObserver observer)
         {
             try
             {
+                var cToken = observer.CancelationToken;
+
                 _isVisualizing.Clear();
                 ChartPage.Clear();
                 ResultsPage.Clear();
@@ -154,7 +156,7 @@ namespace TickTrader.BotTerminal
                 _emulteFrom = DateTime.SpecifyKind(SetupPage.DateRange.From, DateTimeKind.Utc);
                 _emulateTo = DateTime.SpecifyKind(SetupPage.DateRange.To, DateTimeKind.Utc);
 
-                await SetupPage.PrecacheData(observer, cToken, _emulteFrom, _emulateTo);
+                await SetupPage.PrecacheData(observer, _emulteFrom, _emulateTo);
 
                 cToken.ThrowIfCancellationRequested();
 

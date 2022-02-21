@@ -206,12 +206,12 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public async Task PrecacheData(IActionObserver observer, CancellationToken cToken, DateTime from, DateTime to)
+        public async Task PrecacheData(IActionObserver observer, DateTime from, DateTime to)
         {
-            await MainSymbolSetup.PrecacheData(observer, cToken, from, to, SelectedModel.Value);
+            await MainSymbolSetup.PrecacheData(observer, from, to, SelectedModel.Value);
 
             foreach (var symbolSetup in FeedSymbols)
-                await symbolSetup.PrecacheData(observer, cToken, from, to);
+                await symbolSetup.PrecacheData(observer, from, to);
         }
 
         public void InitToken()

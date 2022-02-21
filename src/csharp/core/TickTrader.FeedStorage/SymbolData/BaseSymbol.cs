@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
@@ -58,12 +57,9 @@ namespace TickTrader.FeedStorage
 
         public abstract Task<(DateTime?, DateTime?)> GetAvailableRange(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide? priceType = null);
 
-        public virtual Task DownloadToStorage(IActionObserver observer, bool showStats, CancellationToken cancelToken,
-                                              Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide priceType,
-                                              DateTime from, DateTime to)
-        {
-            return Task.CompletedTask;
-        }
+        public abstract Task<ActorChannel<SliceInfo>> DownloadBarSeriesToStorage(Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide, DateTime from, DateTime to);
+
+        public abstract Task<ActorChannel<SliceInfo>> DownloadTickSeriesToStorage(Feed.Types.Timeframe timeframe, DateTime from, DateTime to);
 
 
         public BarCrossDomainReader GetCrossDomainBarReader(Feed.Types.Timeframe frame, Feed.Types.MarketSide priceType, DateTime from, DateTime to)
@@ -127,9 +123,5 @@ namespace TickTrader.FeedStorage
             else
                 return Origin.CompareTo(other.Origin);
         }
-
-        public abstract Task<ActorChannel<SliceInfo>> DownloadBarSeriesToStorage(Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide, DateTime from, DateTime to);
-
-        public abstract Task<ActorChannel<SliceInfo>> DownloadTickSeriesToStorage(Feed.Types.Timeframe timeframe, DateTime from, DateTime to);
     }
 }
