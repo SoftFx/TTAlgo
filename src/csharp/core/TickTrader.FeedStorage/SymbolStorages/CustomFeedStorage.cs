@@ -4,6 +4,7 @@ using Machinarium.Qnil;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.SeriesStorage;
 using TickTrader.SeriesStorage.ProtoSerializer;
@@ -15,8 +16,8 @@ namespace TickTrader.FeedStorage
         private const string CustomSymbolsCollectionName = "customSymbols";
 
         private readonly ActorEvent<DictionaryUpdateArgs<string, CustomInfo>> _symbolChangeListeners = new ActorEvent<DictionaryUpdateArgs<string, CustomInfo>>();
+        private readonly VarDictionary<string, CustomInfo> _commonSymbols = new VarDictionary<string, CustomInfo>();
 
-        private VarDictionary<string, CustomInfo> _commonSymbols = new VarDictionary<string, CustomInfo>();
         private ICollectionStorage<Guid, CustomInfo> _customSymbolsCollection;
 
 
@@ -32,7 +33,6 @@ namespace TickTrader.FeedStorage
 
             _customSymbolsCollection = Database.GetCollection(CustomSymbolsCollectionName, new GuidKeySerializer(), new ProtoValueSerializer<CustomInfo>());
             _commonSymbols.Clear();
-
 
             foreach (var entry in _customSymbolsCollection.Iterate(Guid.Empty))
             {
@@ -54,55 +54,51 @@ namespace TickTrader.FeedStorage
 
         protected override bool IsSpecialCollection(string name) => name == CustomSymbolsCollectionName;
 
-        public bool Add(CustomInfo newSymbol)
+
+        public bool AddSymbol(CustomInfo newSymbol)
         {
             if (_commonSymbols.ContainsKey(newSymbol.Name))
                 return false;
 
-            newSymbol.StorageId = Guid.NewGuid();
-            _customSymbolsCollection.Write(newSymbol.StorageId, newSymbol);
+            WriteSymbolToCollection(newSymbol);
+
             _commonSymbols.Add(newSymbol.Name, newSymbol);
 
             return true;
         }
 
-        private void Update(CustomInfo symbolCfg)
+        private bool UpdateSymbol(CustomInfo newSymbol)
         {
-            CheckState();
+            if (!_commonSymbols.TryGetValue(newSymbol.Name, out var oldSymbol) || oldSymbol.Name != newSymbol.Name)
+                return false;
 
-            var oldEntity = _commonSymbols[symbolCfg.Name];
+            WriteSymbolToCollection(newSymbol, oldSymbol.StorageId);
 
-            if (oldEntity.Name != symbolCfg.Name)
-                throw new ArgumentException("Changing name is not supported!");
+            _commonSymbols[oldSymbol.Name] = newSymbol;
 
-            symbolCfg.StorageId = oldEntity.StorageId;
-            _customSymbolsCollection.Write(oldEntity.StorageId, symbolCfg);
-            _commonSymbols[symbolCfg.Name] = symbolCfg;
+            return true;
         }
 
-        private Task RemoveAsync(string symbol)
+        private bool RemoveSymbol(string symbolName)
         {
-            return Task.Factory.StartNew(() => Remove(symbol));
-        }
+            if (!_commonSymbols.TryGetValue(symbolName, out var smb))
+                return false;
 
-        private void Remove(string symbol)
-        {
-            CheckState();
+            Keys.Snapshot.Where(k => k.Symbol == symbolName).ForEach(u => RemoveSeries(u)); // clear cache
 
-            if (_commonSymbols.TryGetValue(symbol, out CustomInfo smbEntity))
-            {
-                var toRemove = Keys.Snapshot.Where(k => k.Symbol == symbol).ToList();
+            _customSymbolsCollection.Remove(smb.StorageId); // remove symbol
+            _commonSymbols.Remove(symbolName);
 
-                // clear cache 
-                toRemove.ForEach(u => RemoveSeries(u));
-
-                // remove symbol
-                _customSymbolsCollection.Remove(smbEntity.StorageId);
-                _commonSymbols.Remove(symbol);
-            }
+            return true;
         }
 
         private void SendUpdatesToListeners(DictionaryUpdateArgs<string, CustomInfo> update) => _symbolChangeListeners.FireAndForget(update);
+
+        private void WriteSymbolToCollection(CustomInfo smb, Guid? key = null)
+        {
+            smb.StorageId = key ?? Guid.NewGuid();
+            _customSymbolsCollection.Write(smb.StorageId, smb);
+        }
 
 
         internal sealed class Handler : FeedHandler
@@ -132,17 +128,17 @@ namespace TickTrader.FeedStorage
 
             public override Task<bool> TryAddSymbol(ISymbolInfo symbol)
             {
-                return _ref.Call(a => a.Add(CustomInfo.ToData(symbol)));
+                return _ref.Call(a => a.AddSymbol(CustomInfo.ToData(symbol)));
             }
 
             public override Task<bool> TryUpdateSymbol(ISymbolInfo symbol)
             {
-                throw new NotImplementedException();
+                return _ref.Call(a => a.UpdateSymbol(CustomInfo.ToData(symbol)));
             }
 
             public override Task<bool> TryRemoveSymbol(string name)
             {
-                throw new NotImplementedException();
+                return _ref.Call(a => a.RemoveSymbol(name));
             }
 
 
