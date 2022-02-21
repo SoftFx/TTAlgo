@@ -2,7 +2,7 @@
 using System;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
-
+using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.FeedStorage
 {
@@ -21,12 +21,12 @@ namespace TickTrader.FeedStorage
             return _storage.GetRange(new FeedCacheKey(Name, timeFrame, priceType));
         }
 
-        public override Task<ActorChannel<SliceInfo>> DownloadBarSeriesToStorage(Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide, DateTime from, DateTime to)
+        public override Task<ActorChannel<ISliceInfo>> DownloadBarSeriesToStorage(Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide, DateTime from, DateTime to)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ActorChannel<SliceInfo>> DownloadTickSeriesToStorage(Feed.Types.Timeframe timeframe, DateTime from, DateTime to)
+        public override Task<ActorChannel<ISliceInfo>> DownloadTickSeriesToStorage(Feed.Types.Timeframe timeframe, DateTime from, DateTime to)
         {
             throw new NotImplementedException();
         }

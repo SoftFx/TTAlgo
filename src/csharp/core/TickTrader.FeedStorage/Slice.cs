@@ -1,8 +1,9 @@
 ﻿using System;
+using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.FeedStorage
 {
-    public class SliceInfo
+    internal class SliceInfo : ISliceInfo
     {
         public SliceInfo(DateTime from, DateTime to, int count)
         {
@@ -16,7 +17,7 @@ namespace TickTrader.FeedStorage
         public DateTime To { get; }
     }
 
-    public class Slice<T> : SliceInfo
+    internal class Slice<T> : SliceInfo
     {
         public Slice(DateTime from, DateTime to, T[] list)
             : base(from, to, list.Length)

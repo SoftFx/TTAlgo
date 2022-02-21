@@ -115,13 +115,14 @@ namespace TickTrader.FeedStorage
             {
                 if (_series != null)
                 {
-                    _series = null;
                     _series.Clear();
                     _ref.Send(a =>
                     {
                         a._addListeners.Remove(addCallback);
                         a._removeListeners.Remove(removeCallback);
                     });
+
+                    _series = null;
                 }
             }
 

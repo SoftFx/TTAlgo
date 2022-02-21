@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
-using TickTrader.FeedStorage;
 using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.BotTerminal
@@ -45,7 +44,7 @@ namespace TickTrader.BotTerminal
             return (from, to);
         }
 
-        private static async Task DownloadChannelHadler(ActorChannel<SliceInfo> channel, IActionObserver observer, string entityName)
+        private static async Task DownloadChannelHadler(ActorChannel<ISliceInfo> channel, IActionObserver observer, string entityName)
         {
             var downloadedCount = 0L;
             var watch = Stopwatch.StartNew();

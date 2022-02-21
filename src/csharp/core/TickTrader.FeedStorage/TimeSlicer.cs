@@ -62,7 +62,7 @@ namespace TickTrader.FeedStorage
             return _cachedPage.Count >= _pageSize + 1 && !dupTime;
         }
 
-        public Slice<T> CompleteSlice(bool last)
+        internal Slice<T> CompleteSlice(bool last)
         {
             var sliceFrom = _count == 0 && _from != null ? _from.Value : _getTime(_cachedPage.First());
             _count++;
