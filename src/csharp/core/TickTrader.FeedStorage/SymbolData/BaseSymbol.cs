@@ -9,16 +9,13 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage.Api;
-using TickTrader.SeriesStorage;
 
 namespace TickTrader.FeedStorage
 {
     public abstract class BaseSymbol : ISymbolData, ISymbolKey
     {
+        private readonly VarDictionary<ISeriesKey, SymbolStorageSeries> _serieses;
         private protected readonly FeedStorageBase.FeedHandler _storage;
-
-        private readonly List<SymbolStorageSeries> _series;
-        private readonly IVarSet<FeedCacheKey> _keys;
 
 
         public ISymbolKey Key => this;
@@ -36,6 +33,8 @@ namespace TickTrader.FeedStorage
         public abstract SymbolConfig.Types.SymbolOrigin Origin { get; }
 
 
+        public List<IStorageSeries> SeriesCollection => _serieses.Snapshot.Values.Cast<IStorageSeries>().ToList();
+
 
         public event Action<IStorageSeries> SeriesAdded;
 
@@ -44,15 +43,11 @@ namespace TickTrader.FeedStorage
 
         public BaseSymbol(ISymbolInfo info, FeedStorageBase.FeedHandler storage)
         {
-            Info = info;
+            _serieses = new VarDictionary<ISeriesKey, SymbolStorageSeries>();
             _storage = storage;
 
-            _keys = storage.Keys.Where(k => k.Symbol == Name);
-            _series = _keys.Snapshot.Select(k => new SymbolStorageSeries(k, _storage)).ToList();
+            Info = info;
         }
-
-
-        public List<IStorageSeries> SeriesCollection => _series.Cast<IStorageSeries>().ToList();
 
 
         public abstract Task<(DateTime?, DateTime?)> GetAvailableRange(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide? priceType = null);
@@ -60,6 +55,17 @@ namespace TickTrader.FeedStorage
         public abstract Task<ActorChannel<ISliceInfo>> DownloadBarSeriesToStorage(Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide, DateTime from, DateTime to);
 
         public abstract Task<ActorChannel<ISliceInfo>> DownloadTickSeriesToStorage(Feed.Types.Timeframe timeframe, DateTime from, DateTime to);
+
+
+        internal void AddSeries()
+        {
+
+        }
+
+        internal void RemoveSeries()
+        {
+
+        }
 
 
         public BarCrossDomainReader GetCrossDomainBarReader(Feed.Types.Timeframe frame, Feed.Types.MarketSide priceType, DateTime from, DateTime to)
@@ -82,11 +88,11 @@ namespace TickTrader.FeedStorage
             _storage.Put(Name, timeFrame, from.ToDateTime(), to.ToDateTime(), values).Wait();
         }
 
-        public BlockingChannel<Slice<DateTime, BarData>> ReadCachedBars(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide priceType, DateTime from, DateTime to)
-        {
-            var seriesKey = new FeedCacheKey(Name, timeFrame, priceType);
-            return _storage.IterateBarCache(seriesKey, from, to);
-        }
+        //public BlockingChannel<Slice<DateTime, BarData>> ReadCachedBars(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide priceType, DateTime from, DateTime to)
+        //{
+        //    var seriesKey = new FeedCacheKey(Name, timeFrame, priceType);
+        //    return _storage.IterateBarCache(seriesKey, from, to);
+        //}
 
         [Conditional("DEBUG")]
         public void PrintCacheData(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide? priceType)
@@ -95,11 +101,11 @@ namespace TickTrader.FeedStorage
             _storage.PrintSlices(seriesKey);
         }
 
-        public virtual void OnRemoved()
-        {
-            _keys.Dispose();
-            //SeriesCollection.Dispose();
-        }
+        //public virtual void OnRemoved()
+        //{
+        //    _keys.Dispose();
+        //    //SeriesCollection.Dispose();
+        //}
 
 
         string ISymbolKey.Name => Name; // protection for correct object serialization

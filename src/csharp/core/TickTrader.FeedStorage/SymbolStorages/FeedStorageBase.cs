@@ -39,7 +39,7 @@ namespace TickTrader.FeedStorage
         public abstract class FeedHandler : ISymbolCollection
         {
             //todo FeedProvider should be fixed
-            internal readonly VarDictionary<string, ISymbolData> _symbols = new VarDictionary<string, ISymbolData>();
+            internal readonly VarDictionary<string, BaseSymbol> _symbols = new VarDictionary<string, BaseSymbol>();
 
             private VarDictionary<FeedCacheKey, object> _series;
             private readonly Ref<FeedStorageBase> _ref;
@@ -52,7 +52,7 @@ namespace TickTrader.FeedStorage
             public event Action<ISymbolData, ISymbolData> SymbolUpdated;
 
 
-            public List<ISymbolData> Symbols => _symbols.Values.ToList();
+            public List<ISymbolData> Symbols => _symbols.Values.Cast<ISymbolData>().ToList();
 
             public ISymbolData this[string name] => _symbols.GetOrDefault(name);
 
@@ -126,7 +126,7 @@ namespace TickTrader.FeedStorage
                 }
             }
 
-            private void SendCollectionUpdates(DictionaryUpdateArgs<string, ISymbolData> update)
+            private void SendCollectionUpdates(DictionaryUpdateArgs<string, BaseSymbol> update)
             {
                 switch (update.Action)
                 {
@@ -145,10 +145,6 @@ namespace TickTrader.FeedStorage
             }
 
             public IVarSet<FeedCacheKey> Keys => _series?.Keys;
-
-            //public string DataBaseFolder => _baseFolder;
-
-            //public ActorCallback<FeedCacheKey> RemoveCallback { get => removeCallback; set => removeCallback = value; }
 
             public Task Put(FeedCacheKey key, DateTime from, DateTime to, QuoteInfo[] values)
                 => Put(key.Symbol, key.TimeFrame, from, to, values);
@@ -196,17 +192,16 @@ namespace TickTrader.FeedStorage
                 return channel;
             }
 
-            public Task<KeyRange<DateTime>> GetFirstRange(string symbol, Feed.Types.Timeframe frame, Feed.Types.MarketSide? marketSide, DateTime from, DateTime to)
-                => _ref.Call(a => a.GetFirstRange(symbol, frame, marketSide, from, to));
+            //public Task<KeyRange<DateTime>> GetFirstRange(string symbol, Feed.Types.Timeframe frame, Feed.Types.MarketSide? marketSide, DateTime from, DateTime to)
+            //    => _ref.Call(a => a.GetFirstRange(symbol, frame, marketSide, from, to));
 
-            public Task<(DateTime?, DateTime?)> GetRange(FeedCacheKey key)
-                => _ref.Call(a => a.GetRange(key));
 
-            public Task<double?> GetCollectionSize(FeedCacheKey key)
-                => _ref.Call(a => a.GetCollectionSize(key));
+            public Task<(DateTime?, DateTime?)> GetRange(FeedCacheKey key) => _ref.Call(a => a.GetRange(key));
 
-            public Task<bool> RemoveSeries(FeedCacheKey seriesKey)
-                => _ref.Call(a => a.RemoveSeries(seriesKey));
+            public Task<double?> GetCollectionSize(FeedCacheKey key) => _ref.Call(a => a.GetCollectionSize(key));
+
+            public Task<bool> RemoveSeries(FeedCacheKey seriesKey) => _ref.Call(a => a.RemoveSeries(seriesKey));
+
 
             public BarCrossDomainReader CreateBarCrossDomainReader(CrossDomainReaderRequest request)
             {
@@ -273,7 +268,7 @@ namespace TickTrader.FeedStorage
             DateTime? min = null;
             DateTime? max = null;
 
-            foreach (var r in IterateCacheKeysInternal(key))
+            foreach (var r in IterateCacheKeysInternal(key, DateTime.MinValue, DateTime.MaxValue))
             {
                 if (min == null)
                     min = r.From;
@@ -304,26 +299,21 @@ namespace TickTrader.FeedStorage
             return GetSeries(key)?.GetFirstRange(from, to);
         }
 
-        private KeyRange<DateTime> GetLastRange(string symbol, Feed.Types.Timeframe frame, Feed.Types.MarketSide? marketSide, DateTime from, DateTime to)
-        {
-            CheckState();
+        //private KeyRange<DateTime> GetLastRange(string symbol, Feed.Types.Timeframe frame, Feed.Types.MarketSide? marketSide, DateTime from, DateTime to)
+        //{
+        //    CheckState();
 
-            var key = new FeedCacheKey(symbol, frame, marketSide);
-            return GetSeries(key)?.GetFirstRange(from, to);
-        }
+        //    var key = new FeedCacheKey(symbol, frame, marketSide);
+        //    return GetSeries(key)?.GetFirstRange(from, to);
+        //}
 
-        private Slice<DateTime, BarData> GetFirstBarSlice(string symbol, Feed.Types.Timeframe frame, Feed.Types.MarketSide marketSide, DateTime from, DateTime to)
-        {
-            CheckState();
+        //private Slice<DateTime, BarData> GetFirstBarSlice(string symbol, Feed.Types.Timeframe frame, Feed.Types.MarketSide marketSide, DateTime from, DateTime to)
+        //{
+        //    CheckState();
 
-            var key = new FeedCacheKey(symbol, frame, marketSide);
-            return GetSeries<BarData>(key)?.GetFirstSlice(from, to);
-        }
-
-        private IEnumerable<KeyRange<DateTime>> IterateCacheKeysInternal(FeedCacheKey key)
-        {
-            return IterateCacheKeysInternal(key, DateTime.MinValue, DateTime.MaxValue);
-        }
+        //    var key = new FeedCacheKey(symbol, frame, marketSide);
+        //    return GetSeries<BarData>(key)?.GetFirstSlice(from, to);
+        //}
 
         private IEnumerable<KeyRange<DateTime>> IterateCacheKeysInternal(FeedCacheKey cacheId, DateTime from, DateTime to)
         {
