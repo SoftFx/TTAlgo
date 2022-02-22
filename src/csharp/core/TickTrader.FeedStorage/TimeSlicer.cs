@@ -5,7 +5,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.FeedStorage
 {
-    public static class TimeSlicer
+    internal static class TimeSlicer
     {
         public static TimeSlicer<BarData> GetBarSlicer(int pageSize, DateTime? from = null, DateTime? to = null)
         {

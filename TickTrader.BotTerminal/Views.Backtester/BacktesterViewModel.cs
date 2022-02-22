@@ -219,7 +219,7 @@ namespace TickTrader.BotTerminal
             TradeHistoryPage.LoadTradeHistory(reports);
         }
 
-        private void FireOnStart(BaseSymbol mainSymbol, BacktesterConfig config)
+        private void FireOnStart(ISymbolData mainSymbol, BacktesterConfig config)
         {
             if (config.Core.Mode == BacktesterMode.Backtesting)
             {
@@ -243,9 +243,9 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void FireOnStartBacktesting(BaseSymbol mainSymbol, BacktesterConfig config)
+        private void FireOnStartBacktesting(ISymbolData mainSymbol, BacktesterConfig config)
         {
-            var symbols = SetupPage.FeedSymbols.Select(ss => (SymbolInfo)ss.SelectedSymbol.Value.Info).ToList();
+            var symbols = SetupPage.FeedSymbols.Select(ss => ss.SelectedSymbol.Value.Info).ToList();
             var currecnies = _client.Currencies.Snapshot.Values.ToList();
 
             JournalPage.IsVisible = true;

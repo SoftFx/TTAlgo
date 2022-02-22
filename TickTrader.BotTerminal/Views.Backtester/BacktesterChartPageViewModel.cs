@@ -25,7 +25,7 @@ namespace TickTrader.BotTerminal
         private bool _visualizing;
         private AccountInfo.Types.Type _acctype;
         private string _mainSymbol;
-        private Dictionary<string, SymbolInfo> _symbolMap;
+        private Dictionary<string, ISymbolInfo> _symbolMap;
 
         public BacktesterChartPageViewModel()
         {
@@ -55,7 +55,7 @@ namespace TickTrader.BotTerminal
 
         public AlgoChartViewModel ChartControlModel { get; }
 
-        public void OnStart(bool visualizing, SymbolInfo mainSymbol, BacktesterConfig config, IEnumerable<SymbolInfo> symbols)
+        public void OnStart(bool visualizing, SymbolInfo mainSymbol, BacktesterConfig config, IEnumerable<ISymbolInfo> symbols)
         {
             _visualizing = visualizing;
             _acctype = config.Account.Type;

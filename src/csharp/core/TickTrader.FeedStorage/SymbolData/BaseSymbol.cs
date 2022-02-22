@@ -12,7 +12,7 @@ using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.FeedStorage
 {
-    public abstract class BaseSymbol : ISymbolData, ISymbolKey
+    internal abstract class BaseSymbol : ISymbolData, ISymbolKey
     {
         private readonly VarDictionary<ISeriesKey, SymbolStorageSeries> _serieses;
         private protected readonly FeedStorageBase.FeedHandler _storage;

@@ -13,7 +13,7 @@ using TickTrader.SeriesStorage;
 
 namespace TickTrader.FeedStorage
 {
-    public abstract class FeedStorageBase : Actor
+    internal abstract class FeedStorageBase : Actor
     {
         private readonly ActorEvent<FeedCacheKey> _addListeners = new ActorEvent<FeedCacheKey>();
         private readonly ActorEvent<FeedCacheKey> _removeListeners = new ActorEvent<FeedCacheKey>();
@@ -37,7 +37,7 @@ namespace TickTrader.FeedStorage
         }
 
 
-        public abstract class FeedHandler : ISymbolCollection
+        internal abstract class FeedHandler : ISymbolCollection
         {
             //todo FeedProvider should be fixed
             internal readonly VarDictionary<string, BaseSymbol> _symbols = new VarDictionary<string, BaseSymbol>();

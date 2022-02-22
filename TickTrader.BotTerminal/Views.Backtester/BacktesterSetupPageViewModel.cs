@@ -324,7 +324,7 @@ namespace TickTrader.BotTerminal
 
         private void Setup_ConfigLoaded(PluginConfigViewModel config)
         {
-            MainSymbolSetup.SelectedSymbol.Value = (BaseSymbol)_catalog[config.MainSymbol]; //change to config.MainSymbol
+            MainSymbolSetup.SelectedSymbol.Value = _catalog[config.MainSymbol];
             MainSymbolSetup.SelectedSymbolName.Value = MainSymbolSetup.SelectedSymbol.Value.Name;
             MainSymbolSetup.SelectedTimeframe.Value = config.SelectedTimeFrame.ToServer();
         }
@@ -337,7 +337,7 @@ namespace TickTrader.BotTerminal
             UpdateSymbolsState();
         }
 
-        private BacktesterSymbolSetupViewModel CreateSymbolSetupModel(SymbolSetupType type, Var<BaseSymbol> symbolSrc = null)
+        private BacktesterSymbolSetupViewModel CreateSymbolSetupModel(SymbolSetupType type, Var<ISymbolData> symbolSrc = null)
         {
             var smb = new BacktesterSymbolSetupViewModel(type, _catalog, symbolSrc);
             smb.Removed += Smb_Removed;
