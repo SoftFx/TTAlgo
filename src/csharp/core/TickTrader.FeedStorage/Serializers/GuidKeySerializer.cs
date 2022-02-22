@@ -1,7 +1,7 @@
 ﻿using System;
 using TickTrader.SeriesStorage;
 
-namespace TickTrader.FeedStorage
+namespace TickTrader.FeedStorage.Serializers
 {
     public class GuidKeySerializer : IKeySerializer<Guid>
     {

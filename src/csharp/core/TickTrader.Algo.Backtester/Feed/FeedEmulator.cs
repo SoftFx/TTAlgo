@@ -6,10 +6,23 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
-using TickTrader.FeedStorage;
 
 namespace TickTrader.Algo.Backtester
 {
+    public interface ICrossDomainStorage
+    {
+        void Start();
+
+        void Stop();
+    }
+
+
+    public interface ICrossDomainStorage<T> : ICrossDomainStorage
+    {
+        IEnumerable<T> GetStream();
+    }
+
+
     public class FeedEmulator : IFeedProvider, IFeedHistoryProvider, ISyncContext
     {
         private List<ICrossDomainStorage> _storages = new List<ICrossDomainStorage>();

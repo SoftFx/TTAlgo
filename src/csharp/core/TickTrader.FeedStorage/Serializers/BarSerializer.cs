@@ -5,9 +5,9 @@ using TickTrader.Algo.Domain;
 using TickTrader.SeriesStorage;
 using TickTrader.SeriesStorage.LightSerializer;
 
-namespace TickTrader.FeedStorage
+namespace TickTrader.FeedStorage.Serializers
 {
-    internal class BarSerializer : ISliceSerializer<BarData>
+    public class BarSerializer : ISliceSerializer<BarData>
     {
         private readonly LightObjectReader _reader = new LightObjectReader();
         public readonly BarSampler _sampler;

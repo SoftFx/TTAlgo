@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage.Api;
+using TickTrader.FeedStorage.Serializers;
 using TickTrader.SeriesStorage;
 
 namespace TickTrader.FeedStorage
@@ -203,15 +204,15 @@ namespace TickTrader.FeedStorage
             public Task<bool> RemoveSeries(FeedCacheKey seriesKey) => _ref.Call(a => a.RemoveSeries(seriesKey));
 
 
-            public BarCrossDomainReader CreateBarCrossDomainReader(CrossDomainReaderRequest request)
-            {
-                return new BarCrossDomainReader(StorageFolder, request);
-            }
+            //public BarCrossDomainReader CreateBarCrossDomainReader(CrossDomainReaderRequest request)
+            //{
+            //    return new BarCrossDomainReader(StorageFolder, request);
+            //}
 
-            public TickCrossDomainReader CreateTickCrossDomainReader(CrossDomainReaderRequest request)
-            {
-                return new TickCrossDomainReader(StorageFolder, request);
-            }
+            //public TickCrossDomainReader CreateTickCrossDomainReader(CrossDomainReaderRequest request)
+            //{
+            //    return new TickCrossDomainReader(StorageFolder, request);
+            //}
 
             [Conditional("DEBUG")]
             public void PrintSlices(FeedCacheKey key) => _ref.Send(a => a.PrintSlices(key));

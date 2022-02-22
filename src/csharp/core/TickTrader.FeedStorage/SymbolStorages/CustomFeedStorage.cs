@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
+using TickTrader.FeedStorage.Serializers;
 using TickTrader.SeriesStorage;
 using TickTrader.SeriesStorage.ProtoSerializer;
 

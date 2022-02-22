@@ -6,9 +6,9 @@ using TickTrader.Algo.Domain;
 using TickTrader.SeriesStorage;
 using TickTrader.SeriesStorage.LightSerializer;
 
-namespace TickTrader.FeedStorage
+namespace TickTrader.FeedStorage.Serializers
 {
-    internal static class TickSerializer
+    public static class TickSerializer
     {
         public static ISliceSerializer<QuoteInfo> GetSerializer(FeedCacheKey key)
         {

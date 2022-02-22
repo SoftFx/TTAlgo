@@ -1,23 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using TickTrader.Algo.Backtester;
+using TickTrader.FeedStorage;
 using TickTrader.SeriesStorage;
 
-namespace TickTrader.FeedStorage
+namespace TickTrader.Algo.BacktesterV1Host
 {
-    public interface ICrossDomainStorage
-    {
-        void Start();
-
-        void Stop();
-    }
-
-
-    public interface ICrossDomainStorage<T> : ICrossDomainStorage
-    {
-        IEnumerable<T> GetStream();
-    }
-
-
     public sealed class CrossDomainReaderRequest
     {
         public FeedCacheKey Key { get; }

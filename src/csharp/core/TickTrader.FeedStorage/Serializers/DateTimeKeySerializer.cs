@@ -1,9 +1,9 @@
 ﻿using System;
 using TickTrader.SeriesStorage;
 
-namespace TickTrader.FeedStorage
+namespace TickTrader.FeedStorage.Serializers
 {
-    internal sealed class DateTimeKeySerializer : IKeySerializer<DateTime>
+    public sealed class DateTimeKeySerializer : IKeySerializer<DateTime>
     {
         public int KeySize => 8;
 

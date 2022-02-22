@@ -1,6 +1,5 @@
 ﻿using Caliburn.Micro;
 using Google.Protobuf.WellKnownTypes;
-using Machinarium.Qnil;
 using Machinarium.Var;
 using System;
 using System.Collections.Generic;
@@ -13,7 +12,6 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
-using TickTrader.FeedStorage;
 using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.BotTerminal.SymbolManager
@@ -27,7 +25,7 @@ namespace TickTrader.BotTerminal.SymbolManager
         {
             _importers.Add(new CsvFeedImporter());
 
-            Symbols = new ObservableCollection<BaseSymbol>(catalog.AllSymbols.Cast<BaseSymbol>()); //add with custom
+            Symbols = new ObservableCollection<ISymbolData>(catalog.AllSymbols); //add with custom
 
             DisplayName = "Import Series";
 
@@ -59,7 +57,7 @@ namespace TickTrader.BotTerminal.SymbolManager
         public Property<ISymbolData> SelectedSymbol { get; }
         public IEnumerable<Feed.Types.Timeframe> AvailableTimeFrames => EnumHelper.AllValues<Feed.Types.Timeframe>();
         public IEnumerable<Feed.Types.MarketSide> AvailablePriceTypes => EnumHelper.AllValues<Feed.Types.MarketSide>();
-        public ObservableCollection<BaseSymbol> Symbols { get; }
+        public ObservableCollection<ISymbolData> Symbols { get; }
         public BoolVar CanImport { get; }
         public BoolVar CanCancel { get; }
         public BoolVar IsInputEnabled { get; }

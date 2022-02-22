@@ -9,6 +9,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Backtester;
+using TickTrader.Algo.BacktesterV1Host;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage;
@@ -20,12 +21,16 @@ namespace TickTrader.BotTerminal
     {
         private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
+        private readonly ISymbolCatalog _catalog;
+
         private IntProperty _requestsCount;
         private Property<string> _errorProp;
         private bool _suppressRangeUpdates;
 
         public BacktesterSymbolSetupViewModel(SymbolSetupType type, ISymbolCatalog catalog, Var<BaseSymbol> smbSource = null)
         {
+            _catalog = catalog;
+
             _requestsCount = AddIntProperty();
             _errorProp = AddProperty<string>();
 
@@ -257,6 +262,7 @@ namespace TickTrader.BotTerminal
                 return;
             }
 
+            var folderPath = smbData.IsCustom ? _catalog.CustomCollection.StorageFolder : _catalog.OnlineCollection.StorageFolder;
             var precacheFrom = GetLocalFrom(fromLimit);
             var precacheTo = GetLocalTo(toLimit);
 
@@ -264,7 +270,7 @@ namespace TickTrader.BotTerminal
 
             if (baseTimeFrame == Feed.Types.Timeframe.Ticks || baseTimeFrame == Feed.Types.Timeframe.TicksLevel2)
             {
-                TickCrossDomainReader feed = smbData.GetCrossDomainTickReader(baseTimeFrame, precacheFrom, precacheTo);
+                TickCrossDomainReader feed = new TickCrossDomainReader(folderPath, smbData.Name, baseTimeFrame, precacheFrom, precacheTo);
 
                 feedEmulator.AddSource(smbData.Name, feed);
             }
@@ -274,10 +280,12 @@ namespace TickTrader.BotTerminal
                 BarCrossDomainReader askFeed = null;
 
                 if (priceChoice == DownloadPriceChoices.Bid | priceChoice == DownloadPriceChoices.Both)
-                    bidFeed = smbData.GetCrossDomainBarReader(baseTimeFrame, Feed.Types.MarketSide.Bid, precacheFrom, precacheTo);
+                    bidFeed = new BarCrossDomainReader(folderPath, smbData.Name, baseTimeFrame, Feed.Types.MarketSide.Bid, precacheFrom, precacheTo);
+                    //bidFeed = smbData.GetCrossDomainBarReader(baseTimeFrame, Feed.Types.MarketSide.Bid, precacheFrom, precacheTo);
 
                 if (priceChoice == DownloadPriceChoices.Ask | priceChoice == DownloadPriceChoices.Both)
-                    askFeed = smbData.GetCrossDomainBarReader(baseTimeFrame, Feed.Types.MarketSide.Ask, precacheFrom, precacheTo);
+                    askFeed = new BarCrossDomainReader(folderPath, smbData.Name, baseTimeFrame, Feed.Types.MarketSide.Ask, precacheFrom, precacheTo);
+                    //askFeed = smbData.GetCrossDomainBarReader(baseTimeFrame, Feed.Types.MarketSide.Ask, precacheFrom, precacheTo);
 
                 feedEmulator.AddSource(smbData.Name, baseTimeFrame, bidFeed, askFeed);
             }
