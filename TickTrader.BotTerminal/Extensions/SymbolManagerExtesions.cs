@@ -10,7 +10,7 @@ namespace TickTrader.BotTerminal
 {
     public static class SymbolManagerExtensions
     {
-        public static async Task DownloadBarWithObserver(this ISymbolData symbol, IActionObserver observer, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide, DateTime from, DateTime to)
+        public static async Task DownloadBarWithObserver(this ISymbolData symbol, IActionObserver observer, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide, DateTime from, DateTime to, bool showStats = true)
         {
             observer.SetMessage($"Downloading bars {symbol.Name} {timeframe} {marketSide}");
 
@@ -18,11 +18,11 @@ namespace TickTrader.BotTerminal
 
             var barEnumerator = await symbol.DownloadBarSeriesToStorage(timeframe, marketSide, from, to);
 
-            await DownloadChannelHadler(barEnumerator, observer, "bars");
+            await DownloadChannelHadler(barEnumerator, observer, "bars", showStats);
         }
 
 
-        public static async Task DownloadTicksWithObserver(this ISymbolData symbol, IActionObserver observer, Feed.Types.Timeframe timeFrame, DateTime from, DateTime to)
+        public static async Task DownloadTicksWithObserver(this ISymbolData symbol, IActionObserver observer, Feed.Types.Timeframe timeFrame, DateTime from, DateTime to, bool showStats = true)
         {
             observer.SetMessage($"Downloading ticks {symbol.Name} {timeFrame}");
 
@@ -30,7 +30,7 @@ namespace TickTrader.BotTerminal
 
             var tickEnumerator = await symbol.DownloadTickSeriesToStorage(timeFrame, from, to);
 
-            await DownloadChannelHadler(tickEnumerator, observer, "ticks");
+            await DownloadChannelHadler(tickEnumerator, observer, "ticks", showStats);
         }
 
 
@@ -44,7 +44,7 @@ namespace TickTrader.BotTerminal
             return (from, to);
         }
 
-        private static async Task DownloadChannelHadler(ActorChannel<ISliceInfo> channel, IActionObserver observer, string entityName)
+        private static async Task DownloadChannelHadler(ActorChannel<ISliceInfo> channel, IActionObserver observer, string entityName, bool showStats)
         {
             var downloadedCount = 0L;
             var watch = Stopwatch.StartNew();
@@ -59,12 +59,15 @@ namespace TickTrader.BotTerminal
                     {
                         downloadedCount += info.Count;
 
-                        var msg = $"Downloading... {downloadedCount} {entityName} are downloaded.";
+                        if (showStats)
+                        {
+                            var msg = $"Downloading... {downloadedCount} {entityName} are downloaded.";
 
-                        if (watch.ElapsedMilliseconds > 0)
-                            msg += $"\nSpeed: {Math.Round(downloadedCount * 1000D / watch.ElapsedMilliseconds)} {entityName} per second";
+                            if (watch.ElapsedMilliseconds > 0)
+                                msg += $"\nSpeed: {Math.Round(downloadedCount * 1000D / watch.ElapsedMilliseconds)} {entityName} per second";
 
-                        observer.SetMessage(msg);
+                            observer.SetMessage(msg);
+                        }
                     }
 
                     observer.SetProgress(info.To.GetAbsoluteDay());
@@ -84,6 +87,7 @@ namespace TickTrader.BotTerminal
             }
             finally
             {
+                watch.Stop();
                 await channel.Close();
             }
         }

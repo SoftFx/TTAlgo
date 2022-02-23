@@ -201,20 +201,18 @@ namespace TickTrader.BotTerminal
 
             if (!smb.IsCustom)
             {
-                observer.ShowMessages = false;
-
                 if (timeFrameChoice == Feed.Types.Timeframe.Ticks || timeFrameChoice == Feed.Types.Timeframe.TicksLevel2)
                 {
                     // ticks
-                    await smb.DownloadTicksWithObserver(observer, timeFrameChoice, precacheFrom, precacheTo);
+                    await smb.DownloadTicksWithObserver(observer, timeFrameChoice, precacheFrom, precacheTo, false);
                 }
                 else // bars
                 {
                     if (priceChoice == DownloadPriceChoices.Bid | priceChoice == DownloadPriceChoices.Both)
-                        await smb.DownloadBarWithObserver(observer, timeFrameChoice, Feed.Types.MarketSide.Bid, precacheFrom, precacheTo);
+                        await smb.DownloadBarWithObserver(observer, timeFrameChoice, Feed.Types.MarketSide.Bid, precacheFrom, precacheTo, false);
 
                     if (priceChoice == DownloadPriceChoices.Ask | priceChoice == DownloadPriceChoices.Both)
-                        await smb.DownloadBarWithObserver(observer, timeFrameChoice, Feed.Types.MarketSide.Ask, precacheFrom, precacheTo);
+                        await smb.DownloadBarWithObserver(observer, timeFrameChoice, Feed.Types.MarketSide.Ask, precacheFrom, precacheTo, false);
                 }
             }
         }
