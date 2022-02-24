@@ -1,6 +1,6 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using SciChart.Charting.Model.DataSeries;
+﻿using SciChart.Charting.Model.DataSeries;
 using System;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
@@ -26,27 +26,20 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        protected override void AppendInternal(DateTime time, Any data)
+        protected override void AppendInternal(OutputPoint p)
         {
-            _seriesData.Append(time, UnpackValue(data));
+            _seriesData.Append(TimeMs.ToUtc(p.Time), p.Value);
         }
 
-        protected override void UpdateInternal(int index, DateTime time, Any data)
+        protected override void UpdateInternal(OutputPoint p)
         {
-            _seriesData.Update(index, UnpackValue(data));
+            var index = _seriesData.FindIndex(TimeMs.ToUtc(p.Time));
+            _seriesData.Update(index, p.Value);
         }
 
         protected override void Clear()
         {
             _seriesData.Clear();
-        }
-
-        private double UnpackValue(Any data)
-        {
-            var y = NanValue;
-            if (data != null)
-                y = data.Unpack<DoubleValue>().Value;
-            return y;
         }
     }
 }

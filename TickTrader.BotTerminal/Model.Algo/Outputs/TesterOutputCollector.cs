@@ -19,17 +19,15 @@ namespace TickTrader.BotTerminal
             //executor.OutputUpdate += Executor_OutputUpdate;
         }
 
-        private void Executor_OutputUpdate(DataSeriesUpdate update)
+        private void Executor_OutputUpdate(OutputSeriesUpdate update)
         {
             if (update.SeriesId == _outputId)
             {
-                if (update.Value.Is(OutputPoint.Descriptor))
+                switch (update.UpdateAction)
                 {
-                    var point = update.Value.Unpack<OutputPoint>();
-                    if (update.UpdateAction == DataSeriesUpdate.Types.UpdateAction.Append)
-                        Appended?.Invoke(point);
-                    else if (update.UpdateAction == DataSeriesUpdate.Types.UpdateAction.Update)
-                        Updated?.Invoke(point);
+                    case DataSeriesUpdate.Types.Action.Append: Appended?.Invoke(update.Points[0].Unpack()); break;
+                    case DataSeriesUpdate.Types.Action.Update: Updated?.Invoke(update.Points[0].Unpack()); break;
+                    case DataSeriesUpdate.Types.Action.Reset: break;
                 }
             }
         }
@@ -41,7 +39,7 @@ namespace TickTrader.BotTerminal
 
         public event Action<OutputPoint> Appended;
         public event Action<OutputPoint> Updated;
-        public event Action<OutputPointRange> SnapshotAppended { add { } remove { } }
+        public event Action<OutputPoint[]> SnapshotAppended { add { } remove { } }
         public event Action<int> Truncated { add { } remove { } }
 
         public void Dispose()

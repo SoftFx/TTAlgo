@@ -1,23 +1,24 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
 {
+    public delegate OutputPoint OutputPointFactory<T>(long time, T value);
+
     public static class OutputPointFactory
     {
-        private static Dictionary<System.Type, object> _knownFactories = new Dictionary<System.Type, object>();
+        private static Dictionary<Type, object> _knownFactories = new Dictionary<Type, object>();
 
         static OutputPointFactory()
         {
-            Add(d => Any.Pack(new DoubleValue { Value = d }), a => a.Unpack<DoubleValue>().Value);
-            Add<Api.Marker>(m => Any.Pack(((MarkerEntity)m).GetInfo()), a => MarkerEntity.From(a.Unpack<MarkerInfo>()));
+            Add<double>(PackDouble);
+            Add<Api.Marker>(PackMarker);
         }
 
-        private static void Add<T>(Func<T, Any> packFunc, Func<Any, T> unpackFunc)
+        private static void Add<T>(OutputPointFactory<T> factory)
         {
-            _knownFactories.Add(typeof(T), new OutputPointFactory<T>(packFunc, unpackFunc));
+            _knownFactories.Add(typeof(T), factory);
         }
 
         public static OutputPointFactory<T> Get<T>()
@@ -27,29 +28,16 @@ namespace TickTrader.Algo.CoreV1
 
             throw new ArgumentException($"{typeof(T).FullName} is not supported");
         }
-    }
-
-    public class OutputPointFactory<T>
-    {
-        private Func<T, Any> _packFunc;
-        private Func<Any, T> _unpackFunc;
 
 
-        public OutputPointFactory(Func<T, Any> packFunc, Func<Any, T> unpackFunc)
+        private static OutputPoint PackDouble(long time, double value)
         {
-            _packFunc = packFunc;
-            _unpackFunc = unpackFunc;
+            return new OutputPoint(time, value);
         }
 
-
-        public Any PackValue(T val)
+        private static OutputPoint PackMarker(long time, Api.Marker marker)
         {
-            return _packFunc(val);
-        }
-
-        public T UnpackValue(Any val)
-        {
-            return _unpackFunc(val);
+            return new OutputPoint(time, marker.Y, ((MarkerEntity)marker).GetInfo());
         }
     }
 }

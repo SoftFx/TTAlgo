@@ -126,8 +126,8 @@ namespace TickTrader.Algo.Backtester
                 _symbolDataCollectors.Add(symbol, collector);
             }
 
-            _equityCollector = new ChartDataCollector(settings.EquityDataMode, DataSeriesUpdate.Types.Type.NamedStream, EquityStreamName, _executor.OnUpdate, mainVector.Ref);
-            _marginCollector = new ChartDataCollector(settings.MarginDataMode, DataSeriesUpdate.Types.Type.NamedStream, MarginStreamName, _executor.OnUpdate, mainVector.Ref);
+            _equityCollector = new ChartDataCollector(settings.EquityDataMode, BarSeriesUpdate.Types.Type.NamedStream, EquityStreamName, _executor.OnUpdate, mainVector.Ref);
+            _marginCollector = new ChartDataCollector(settings.MarginDataMode, BarSeriesUpdate.Types.Type.NamedStream, MarginStreamName, _executor.OnUpdate, mainVector.Ref);
         }
 
         internal void SetupOutput<T>(string outputId, TestDataSeriesFlags flags)

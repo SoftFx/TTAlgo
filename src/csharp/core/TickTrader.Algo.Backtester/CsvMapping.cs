@@ -39,9 +39,8 @@ namespace TickTrader.Algo.Backtester
         {
             public ForOutputPoint()
             {
-                Map(p => p.Time).Index(0).Name("TimeUtc").TypeConverter<ProtoTimestampTypeConverter>();
-                Map(p => p.Index).Index(1).Name("Index");
-                Map(p => p.Value).Index(2).Name("Value").TypeConverter<ProtoAnyTypeConverter>();
+                Map(p => p.Time).Index(0).Name("TimeUtc").TypeConverter<TimeMsTypeConverter>();
+                Map(p => p.Value).Index(1).Name("Value");
             }
         }
 
@@ -136,6 +135,27 @@ namespace TickTrader.Algo.Backtester
                     return string.Empty;
 
                 return $"{InvariantFormat.CsvFormat(time.ToDateTime().ToUniversalTime())}+{time.Nanos % 1_000_000}";
+            }
+        }
+
+        private class TimeMsTypeConverter : ITypeConverter
+        {
+            public object ConvertFromString(string text, IReaderRow row, MemberMapData memberMapData)
+            {
+                if (string.IsNullOrEmpty(text))
+                    return 0;
+
+                var time = DateTime.Parse(text, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+                return TimeMs.FromDateTime(time);
+            }
+
+            public string ConvertToString(object value, IWriterRow row, MemberMapData memberMapData)
+            {
+                if (!(value is long))
+                    return string.Empty;
+
+                var timeMs = (long)value;
+                return InvariantFormat.CsvFormat(TimeMs.ToUtc(timeMs));
             }
         }
     }

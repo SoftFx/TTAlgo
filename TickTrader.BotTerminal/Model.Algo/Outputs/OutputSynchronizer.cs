@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
@@ -18,8 +17,8 @@ namespace TickTrader.BotTerminal
             _emptyValue = emptyValue;
         }
 
-        public Action<DateTime, Any> DoAppend { get; set; }
-        public Action<int, DateTime, Any> DoUpdate { get; set; }
+        public Action<OutputPoint> DoAppend { get; set; }
+        public Action<OutputPoint> DoUpdate { get; set; }
 
         public void Start(ITimeVectorRef baseVector)
         {
@@ -37,7 +36,7 @@ namespace TickTrader.BotTerminal
 
             foreach (var point in points)
             {
-                var pointTime = point.Time.ToDateTime();
+                var pointTime = TimeMs.ToTimestamp(point.Time);
 
                 if (syncIndex >= 0)
                 {
@@ -50,14 +49,14 @@ namespace TickTrader.BotTerminal
 
                         var baseTime = _baseVector[syncIndex];
 
-                        if (baseTime == point.Time)
+                        if (baseTime == pointTime)
                         {
                             // hit -> append point
-                            DoAppend?.Invoke(pointTime, point.Value);
+                            DoAppend?.Invoke(point);
                             _size++;
                             break; // take next point
                         }
-                        else if (point.Time < baseTime)
+                        else if (pointTime < baseTime)
                         {
                             // miss => base vector does not have this point -> skip point
                             break; // take next point
@@ -65,25 +64,25 @@ namespace TickTrader.BotTerminal
                         else // if (pointTime < baseTime)
                         {
                             // miss -> base vector contains point we dont have -> fill empty point
-                            DoAppend?.Invoke(pointTime, null);
+                            DoAppend?.Invoke(point);
                             _size++;
                         }
                     }
                 }
-                else if (point.Time >= _baseVector[0])
+                else if (pointTime >= _baseVector[0])
                     syncIndex = Append(point);
             }
         }
 
         public int Append(OutputPoint point)
         {
-            var pointTime = point.Time.ToDateTime();
-            var index = _baseVector.BinarySearch(point.Time, BinarySearchTypes.Exact);
+            var pointTime = TimeMs.ToTimestamp(point.Time);
+            var index = _baseVector.BinarySearch(pointTime, BinarySearchTypes.Exact);
 
             if (index >= 0)
             {
                 FillEmptySpace(index - 1);
-                DoAppend?.Invoke(pointTime, point.Value);
+                DoAppend?.Invoke(point);
                 _size++;
             }
 
@@ -92,12 +91,12 @@ namespace TickTrader.BotTerminal
 
         public void Update(OutputPoint point)
         {
-            var pointTime = point.Time.ToDateTime();
-            var index = _baseVector.BinarySearch(point.Time, BinarySearchTypes.Exact);
+            var pointTime = TimeMs.ToTimestamp(point.Time);
+            var index = _baseVector.BinarySearch(pointTime, BinarySearchTypes.Exact);
             if (index >= 0)
             {
                 FillEmptySpace(index);
-                DoUpdate?.Invoke(index, pointTime, point.Value);
+                DoUpdate?.Invoke(point);
             }
         }
 
@@ -109,8 +108,8 @@ namespace TickTrader.BotTerminal
         {
             while (_size <= targetSize)
             {
-                var pointTime = _baseVector[_size];
-                DoAppend?.Invoke(pointTime.ToDateTime(), null);
+                var pointTime = TimeMs.FromTimestamp(_baseVector[_size]);
+                DoAppend?.Invoke(new OutputPoint(pointTime, double.NaN));
                 _size++;
             }
         }

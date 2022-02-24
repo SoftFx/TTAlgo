@@ -10,7 +10,7 @@ namespace TickTrader.Algo.Server
         //private readonly RuntimeControlModel _host;
         private readonly ChannelEventSource<PluginLogRecord> _logEventSrc = new ChannelEventSource<PluginLogRecord>();
         private readonly ChannelEventSource<PluginStatusUpdate> _statusEventSrc = new ChannelEventSource<PluginStatusUpdate>();
-        private readonly ChannelEventSource<DataSeriesUpdate> _outputEventSrc = new ChannelEventSource<DataSeriesUpdate>();
+        private readonly ChannelEventSource<OutputSeriesUpdate> _outputEventSrc = new ChannelEventSource<OutputSeriesUpdate>();
         private readonly ChannelEventSource<ExecutorStateUpdate> _stateEventSrc = new ChannelEventSource<ExecutorStateUpdate>();
 
 
@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Server
 
         public IEventSource<PluginStatusUpdate> StatusUpdated => _statusEventSrc;
 
-        public IEventSource<DataSeriesUpdate> OutputUpdated => _outputEventSrc;
+        public IEventSource<OutputSeriesUpdate> OutputUpdated => _outputEventSrc;
 
         public IEventSource<ExecutorStateUpdate> StateUpdated => _stateEventSrc;
 
@@ -68,7 +68,7 @@ namespace TickTrader.Algo.Server
             _statusEventSrc.Writer.TryWrite(update);
         }
 
-        internal void OnDataSeriesUpdate(DataSeriesUpdate update)
+        internal void OnDataSeriesUpdate(OutputSeriesUpdate update)
         {
             _outputEventSrc.Writer.TryWrite(update);
         }

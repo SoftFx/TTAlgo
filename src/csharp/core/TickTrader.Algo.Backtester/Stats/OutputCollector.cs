@@ -19,7 +19,6 @@ namespace TickTrader.Algo.Backtester
         private TestDataSeriesFlags _flags;
         private Action<object> _onRealtimeUpdate;
         private Action<object> _onTruncateUpdate;
-        private int _indexShift;
 
         public OutputCollector(string outputId, OutputFixture<T> fixture, Action<object> onUpdate, TestDataSeriesFlags flags)
         {
@@ -46,7 +45,7 @@ namespace TickTrader.Algo.Backtester
 
                         fixture.Appended += Fixture_Appended;
                         fixture.Updated += Fixture_Updated;
-                        fixture.RangeAppended += Fixture_AllUpdated;
+                        fixture.ResetAll += Fixture_AllUpdated;
                     }
                     else
                     {
@@ -80,8 +79,8 @@ namespace TickTrader.Algo.Backtester
                 // copy all data from buffer to update
                 for (int i = 0; i < _fixture.Count; i++)
                 {
-                    var point = _fixture[i].WithNewIndex(-1);
-                    var update = new DataSeriesUpdate(DataSeriesUpdate.Types.Type.Output, _outputId, DataSeriesUpdate.Types.UpdateAction.Append, point);
+                    var point = _fixture[i];
+                    var update = new OutputSeriesUpdate(_outputId, DataSeriesUpdate.Types.Action.Append, new OutputPointWire(point));
                     _onTruncateUpdate(update);
                 }
             }
@@ -89,35 +88,37 @@ namespace TickTrader.Algo.Backtester
 
         private void Fixture_Updated(OutputPoint point)
         {
-            var adjustedPoint = point.WithNewIndex(point.Index + _indexShift);
-            var update = new DataSeriesUpdate(DataSeriesUpdate.Types.Type.Output, _outputId, DataSeriesUpdate.Types.UpdateAction.Update, adjustedPoint);
+            var update = new OutputSeriesUpdate(_outputId, DataSeriesUpdate.Types.Action.Update, new OutputPointWire(point));
             _onRealtimeUpdate(update);
         }
 
         private void Fixture_Appended(OutputPoint point)
         {
-            var adjustedPoint = point.WithNewIndex(point.Index + _indexShift);
-            var update = new DataSeriesUpdate(DataSeriesUpdate.Types.Type.Output, _outputId, DataSeriesUpdate.Types.UpdateAction.Append, adjustedPoint);
+            var update = new OutputSeriesUpdate(_outputId, DataSeriesUpdate.Types.Action.Append, new OutputPointWire(point));
             _onRealtimeUpdate(update);
         }
 
-        private void Fixture_AllUpdated(OutputPointRange range)
+        private void Fixture_AllUpdated()
         {
-            foreach (var point in range.Points)
-                Fixture_Appended(point);
+            var cnt = _fixture.Count;
+            var update = new OutputSeriesUpdate(_outputId, DataSeriesUpdate.Types.Action.Reset);
+            update.Points.Capacity = cnt;
+            for (var i = 0; i < cnt; i++)
+            {
+                update.Points.Add(new OutputPointWire(_fixture[i]));
+            }
+            _onRealtimeUpdate(update);
         }
 
         private void OnTruncate(int size)
         {
             for (int i = 0; i < size; i++)
             {
-                var point = _fixture[i].WithNewIndex(-1);
-                var update = new DataSeriesUpdate(DataSeriesUpdate.Types.Type.Output, _outputId, DataSeriesUpdate.Types.UpdateAction.Append, point);
+                var point = _fixture[i];
+                var update = new OutputSeriesUpdate(_outputId, DataSeriesUpdate.Types.Action.Append, new OutputPointWire(point));
                 _onTruncateUpdate?.Invoke(update);
                 Snapshot?.Add(point);
             }
-
-            _indexShift += size;
         }
     }
 }

@@ -9,6 +9,7 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/any.proto";
 
 import "common.proto";
+import "runtime.feed.proto";
 import "runtime.package.proto";
 
 
@@ -34,33 +35,43 @@ message PluginStatusUpdate {
     google.protobuf.StringValue message = 2;
 }
 
-message OutputPoint {
-    google.protobuf.Timestamp time = 1;
-    int32 index = 2;
-    google.protobuf.Any value = 3;
-}
+message OutputPointWire {
+    enum Type {
+        DOUBLE = 0;
+        MARKER = 1;
+    }
 
-message OutputPointRange {
-    repeated OutputPoint points = 1;
+    int64 time = 1;
+    double value = 2;
+    Type type = 3;
+    bytes metadata = 4;
 }
 
 message DataSeriesUpdate {
-    enum Type {
-        OUTPUT = 0;
-        SYMBOL_RATE = 1;
-        NAMED_STREAM = 2;
-    }
-
-    enum UpdateAction {
+    enum Action {
         APPEND = 0;
         UPDATE = 1;
+        RESET = 2;
+    }
+}
+
+message OutputSeriesUpdate {
+    google.protobuf.StringValue series_id = 1;
+    DataSeriesUpdate.Action update_action = 2;
+    repeated OutputPointWire points = 3;
+    int32 buffer_truncated_by = 4;
+}
+
+message BarSeriesUpdate {
+    enum Type {
+        SYMBOL_RATE = 0;
+        NAMED_STREAM = 1;
     }
 
     Type series_type = 1;
     google.protobuf.StringValue series_id = 2;
-    UpdateAction update_action = 3;
-    google.protobuf.Any value = 4;
-    int32 buffer_truncated_by = 5;
+    DataSeriesUpdate.Action update_action = 3;
+    BarData bar = 4;
 }
 
 message MarkerInfo {
@@ -74,10 +85,9 @@ message MarkerInfo {
         SQUARE = 6;
     }
 
-    double y = 1;
-    google.protobuf.StringValue display_text = 2;
-    IconType icon = 3;
-    uint32 color_argb = 4;
+    google.protobuf.StringValue display_text = 1;
+    IconType icon = 2;
+    uint32 color_argb = 3;
 }
 
 

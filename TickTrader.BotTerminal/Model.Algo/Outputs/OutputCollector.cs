@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Server;
@@ -16,7 +17,7 @@ namespace TickTrader.BotTerminal
 
         event Action<OutputPoint> Appended;
         event Action<OutputPoint> Updated;
-        event Action<OutputPointRange> SnapshotAppended;
+        event Action<OutputPoint[]> SnapshotAppended;
         event Action<int> Truncated;
     }
 
@@ -41,7 +42,7 @@ namespace TickTrader.BotTerminal
 
         public event Action<OutputPoint> Appended;
         public event Action<OutputPoint> Updated;
-        public event Action<OutputPointRange> SnapshotAppended;
+        public event Action<OutputPoint[]> SnapshotAppended;
         public event Action<int> Truncated;
 
         public virtual void Dispose()
@@ -49,25 +50,18 @@ namespace TickTrader.BotTerminal
             _outputSub.Dispose();
         }
 
-        private void Executor_OutputUpdate(DataSeriesUpdate update)
+        private void Executor_OutputUpdate(OutputSeriesUpdate update)
         {
             if (update.SeriesId == _outputId)
             {
                 if (update.BufferTruncatedBy > 0)
                     OnTruncate(update.BufferTruncatedBy);
 
-                if (update.Value.Is(OutputPointRange.Descriptor))
-                    OnSnapshot(update.Value.Unpack<OutputPointRange>());
-                else
+                switch (update.UpdateAction)
                 {
-                    if (update.Value.Is(OutputPoint.Descriptor))
-                    {
-                        var point = update.Value.Unpack<OutputPoint>();
-                        if (update.UpdateAction == DataSeriesUpdate.Types.UpdateAction.Append)
-                            OnAppend(point);
-                        else if (update.UpdateAction == DataSeriesUpdate.Types.UpdateAction.Update)
-                            OnUpdate(point);
-                    }
+                    case DataSeriesUpdate.Types.Action.Append: OnAppend(update.Points[0].Unpack()); break;
+                    case DataSeriesUpdate.Types.Action.Update: OnUpdate(update.Points[0].Unpack()); break;
+                    case DataSeriesUpdate.Types.Action.Reset: OnSnapshot(update.Points.Select(p => p.Unpack()).ToArray()); break;
                 }
             }
         }
@@ -77,7 +71,7 @@ namespace TickTrader.BotTerminal
             Appended?.Invoke(point);
         }
 
-        protected virtual void OnSnapshot(OutputPointRange points)
+        protected virtual void OnSnapshot(OutputPoint[] points)
         {
             SnapshotAppended?.Invoke(points);
         }
@@ -110,15 +104,16 @@ namespace TickTrader.BotTerminal
             base.OnAppend(point);
         }
 
-        protected override void OnSnapshot(OutputPointRange range)
+        protected override void OnSnapshot(OutputPoint[] range)
         {
-            _cache.AddRange(range.Points);
+            _cache.AddRange(range);
             base.OnSnapshot(range);
         }
 
         protected override void OnUpdate(OutputPoint point)
         {
-            _cache[point.Index] = point;
+            var index = _cache.BinarySearchBy(p => p.Time, point.Time);
+            _cache[index] = point;
             base.OnUpdate(point);
         }
 

@@ -90,7 +90,6 @@ namespace TickTrader.Algo.CoreV1
         {
             return new MarkerInfo
             {
-                Y = Y,
                 DisplayText = DisplayText,
                 ColorArgb = Color.ToArgb(ApiColorConverter.GreenColor),
                 Icon = Icon.ToDomainEnum(),
@@ -101,7 +100,6 @@ namespace TickTrader.Algo.CoreV1
         {
             return new MarkerEntity
             {
-                _y = info.Y,
                 _color = info.ColorArgb.FromArgb(),
                 _text = info.DisplayText,
                 _icon = info.Icon.ToApiEnum(),

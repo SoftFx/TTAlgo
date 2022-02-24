@@ -66,7 +66,7 @@ namespace TickTrader.Algo.Backtester
 
         public event Action<EmulatorStates> StateChanged;
         public event Action<Exception> ErrorOccurred;
-        public event Action<BarData, string, DataSeriesUpdate.Types.UpdateAction> OnChartUpdate;
+        public event Action<BarData, string, DataSeriesUpdate.Types.Action> OnChartUpdate;
         public event Action<DataSeriesUpdate> OnOutputUpdate;
 
         public Dictionary<string, TestDataSeriesFlags> SymbolDataConfig { get; } = new Dictionary<string, TestDataSeriesFlags>();
