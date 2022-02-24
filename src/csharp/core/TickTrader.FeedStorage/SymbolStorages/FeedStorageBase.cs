@@ -340,13 +340,13 @@ namespace TickTrader.FeedStorage
             }
         }
 
-        protected Slice<DateTime, BarData> QueryBarCache(string symbol, Feed.Types.Timeframe frame, Feed.Types.MarketSide marketSide, DateTime from, DateTime to)
-        {
-            CheckState();
+        //protected Slice<DateTime, BarData> QueryBarCache(string symbol, Feed.Types.Timeframe frame, Feed.Types.MarketSide marketSide, DateTime from, DateTime to)
+        //{
+        //    CheckState();
 
-            var key = new FeedCacheKey(symbol, frame, marketSide);
-            return GetSeries<BarData>(key)?.GetFirstSlice(from, to);
-        }
+        //    var key = new FeedCacheKey(symbol, frame, marketSide);
+        //    return GetSeries<BarData>(key)?.GetFirstSlice(from, to);
+        //}
 
         protected void Put(FeedCacheKey key, DateTime from, DateTime to, BarData[] values)
         {
@@ -356,10 +356,10 @@ namespace TickTrader.FeedStorage
             collection.Write(from, to, values);
         }
 
-        protected void Put(string symbol, Feed.Types.Timeframe frame, Feed.Types.MarketSide marketSide, DateTime from, DateTime to, BarData[] values)
-        {
-            Put(new FeedCacheKey(symbol, frame, marketSide), from, to, values);
-        }
+        //protected void Put(string symbol, Feed.Types.Timeframe frame, Feed.Types.MarketSide marketSide, DateTime from, DateTime to, BarData[] values)
+        //{
+        //    Put(new FeedCacheKey(symbol, frame, marketSide), from, to, values);
+        //}
 
         #endregion
 
@@ -389,14 +389,14 @@ namespace TickTrader.FeedStorage
             collection.Write(from, to, values);
         }
 
-        protected void Put(string symbol, Feed.Types.Timeframe timeFrame, Slice<DateTime, QuoteInfo> slice)
-        {
-            CheckState();
+        //protected void Put(string symbol, Feed.Types.Timeframe timeFrame, Slice<DateTime, QuoteInfo> slice)
+        //{
+        //    CheckState();
 
-            var key = new FeedCacheKey(symbol, timeFrame);
-            var collection = GetSeries<QuoteInfo>(key, true);
-            collection.Write(slice);
-        }
+        //    var key = new FeedCacheKey(symbol, timeFrame);
+        //    var collection = GetSeries<QuoteInfo>(key, true);
+        //    collection.Write(slice);
+        //}
 
         #endregion
 
@@ -495,11 +495,12 @@ namespace TickTrader.FeedStorage
             var from = slices[0].From;
             var to = slices.Last().To;
 
-            Debug.Write("Cluster " + from + " - " + to + ":");
-            foreach (var slice in slices)
-                Debug.Write(" [" + slice.From + "- " + slice.To + "]");
+            Debug.Write($"Cluster {from} - {to}:");
 
-            Debug.WriteLine("");
+            foreach (var slice in slices)
+                Debug.Write($" [{slice.From} - {slice.To}]");
+
+            Debug.WriteLine(string.Empty);
         }
     }
 }

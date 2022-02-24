@@ -28,6 +28,7 @@ namespace TickTrader.FeedStorage
         }
     }
 
+
     public class TimeSlicer<T>
     {
         private DateTime? _from;
@@ -39,7 +40,7 @@ namespace TickTrader.FeedStorage
         private int _pageSize;
         private DateTime _lastItemTime;
         private int _count;
-        
+
         public TimeSlicer(int pageSize, DateTime? from, DateTime? to, Func<T, DateTime> getItemTime, Func<T, DateTime> getItemEndTime = null)
         {
             _pageSize = pageSize;

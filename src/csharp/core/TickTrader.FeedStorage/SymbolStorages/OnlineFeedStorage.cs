@@ -122,11 +122,10 @@ namespace TickTrader.FeedStorage
 
                 switch (folderOptions)
                 {
-                    case FeedStorageFolderOptions.NoHierarchy:
-                        return Path.Combine(dataFolder, PathHelper.Escape(settings.Server));
                     case FeedStorageFolderOptions.ServerHierarchy:
+                        return Path.Combine(dataFolder, PathHelper.Escape(settings.Server));
                     case FeedStorageFolderOptions.ServerClientHierarchy:
-                        return Path.Combine(dataFolder, PathHelper.Escape(settings.Login));
+                        return Path.Combine(dataFolder, PathHelper.Escape(settings.Server), PathHelper.Escape(settings.Login));
                     default:
                         return dataFolder;
                 }
