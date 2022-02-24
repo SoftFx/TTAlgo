@@ -15,9 +15,7 @@ namespace TickTrader.FeedStorage
 {
     internal abstract class FeedStorageBase : Actor
     {
-        private readonly ActorEvent<FeedCacheKey> _addListeners = new ActorEvent<FeedCacheKey>();
-        private readonly ActorEvent<FeedCacheKey> _removeListeners = new ActorEvent<FeedCacheKey>();
-
+        private readonly ActorEvent<(DLinqAction, FeedCacheKey)> _seriesListeners = new ActorEvent<(DLinqAction action, FeedCacheKey key)>();
         private readonly VarDictionary<FeedCacheKey, ISeriesStorage<DateTime>> _series = new VarDictionary<FeedCacheKey, ISeriesStorage<DateTime>>();
 
         protected IVarSet<FeedCacheKey> Keys => _series.Keys;
@@ -27,26 +25,19 @@ namespace TickTrader.FeedStorage
 
         public FeedStorageBase()
         {
-            _series.Updated += a =>
-            {
-                if (a.Action == DLinqAction.Insert)
-                    _addListeners.FireAndForget(a.Key);
-                else if (a.Action == DLinqAction.Remove)
-                    _removeListeners.FireAndForget(a.Key);
-            };
+            _series.Updated += SendSeriesUpdates;
         }
+
+        private void SendSeriesUpdates(DictionaryUpdateArgs<FeedCacheKey, ISeriesStorage<DateTime>> args) => _seriesListeners.FireAndForget((args.Action, args.Key));
 
 
         internal abstract class FeedHandler : ISymbolCollection
         {
-            //todo FeedProvider should be fixed
-            internal readonly VarDictionary<string, BaseSymbol> _symbols = new VarDictionary<string, BaseSymbol>();
+            protected readonly VarDictionary<string, BaseSymbol> _symbols = new VarDictionary<string, BaseSymbol>();
 
-            private VarDictionary<FeedCacheKey, object> _series;
+            private readonly ActorCallback<(DLinqAction, FeedCacheKey)> _seriesChangeCallback;
             private readonly Ref<FeedStorageBase> _ref;
 
-            private ActorCallback<FeedCacheKey> addCallback;
-            private ActorCallback<FeedCacheKey> removeCallback;
 
             public event Action<ISymbolData> SymbolAdded;
             public event Action<ISymbolData> SymbolRemoved;
@@ -66,6 +57,8 @@ namespace TickTrader.FeedStorage
             public FeedHandler(Ref<FeedStorageBase> actorRef)
             {
                 _ref = actorRef;
+                _seriesChangeCallback = ActorCallback.Create<(DLinqAction, FeedCacheKey)>(UpdateSeriesHandler);
+
                 _symbols.Updated += SendCollectionUpdates;
             }
 
@@ -75,9 +68,12 @@ namespace TickTrader.FeedStorage
                 IsStarted = true;
                 StorageFolder = folder;
 
-                await _ref.Call(a => a.Start(folder));
-                await SyncData();
+                await _ref.Call(a => a.OpenDatabase(folder));
+                await SyncSymbolCollection();
+                await SyncStorageSeries();
             }
+
+            protected abstract Task SyncSymbolCollection();
 
 
             public abstract Task<bool> TryAddSymbol(ISymbolInfo symbol);
@@ -87,65 +83,32 @@ namespace TickTrader.FeedStorage
             public abstract Task<bool> TryRemoveSymbol(string name);
 
 
-            public Task Stop()
+            protected async Task SyncStorageSeries()
             {
-                _symbols.Updated -= SendCollectionUpdates;
-                IsStarted = false;
-                return _ref.Call(a => a.Stop());
-            }
-
-            public virtual async Task SyncData()
-            {
-                _series = new VarDictionary<FeedCacheKey, object>();
-
-                addCallback = ActorCallback.Create<FeedCacheKey>(k => _series.Add(k, null));
-                removeCallback = ActorCallback.Create<FeedCacheKey>(k => _series.Remove(k));
-
                 var snapshot = await _ref.Call(a =>
                 {
-                    a._addListeners.Add(addCallback);
-                    a._removeListeners.Add(removeCallback);
+                    a._seriesListeners.Add(_seriesChangeCallback);
                     return a._series.Keys.Snapshot.ToList();
                 });
 
                 foreach (var key in snapshot)
-                    _series.Add(key, null);
+                    if (_symbols.TryGetValue(key.Symbol, out var symbol))
+                        symbol.AddSeries(key);
+            }
+
+            public Task Stop()
+            {
+                _ref?.Send(a => a._seriesListeners.Remove(_seriesChangeCallback));
+
+                IsStarted = false;
+
+                return _ref.Call(a => a.CloseDatabase());
             }
 
             public virtual void Dispose()
             {
-                if (_series != null)
-                {
-                    _series.Clear();
-                    _ref.Send(a =>
-                    {
-                        a._addListeners.Remove(addCallback);
-                        a._removeListeners.Remove(removeCallback);
-                    });
-
-                    _series = null;
-                }
+                _symbols.Updated -= SendCollectionUpdates;
             }
-
-            private void SendCollectionUpdates(DictionaryUpdateArgs<string, BaseSymbol> update)
-            {
-                switch (update.Action)
-                {
-                    case DLinqAction.Insert:
-                        SymbolAdded?.Invoke(update.NewItem);
-                        break;
-                    case DLinqAction.Remove:
-                        SymbolRemoved?.Invoke(update.OldItem);
-                        break;
-                    case DLinqAction.Replace:
-                        SymbolUpdated?.Invoke(update.OldItem, update.NewItem);
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            public IVarSet<FeedCacheKey> Keys => _series?.Keys;
 
             public Task Put(FeedCacheKey key, DateTime from, DateTime to, QuoteInfo[] values)
                 => Put(key.Symbol, key.TimeFrame, from, to, values);
@@ -153,8 +116,8 @@ namespace TickTrader.FeedStorage
             public Task Put(string symbol, Feed.Types.Timeframe timeframe, DateTime from, DateTime to, QuoteInfo[] values)
                 => _ref.Call(a => a.Put(symbol, timeframe, from, to, values));
 
-            public Task Put(string symbol, Feed.Types.Timeframe timeframe, Slice<DateTime, QuoteInfo> slice)
-                => _ref.Call(a => a.Put(symbol, timeframe, slice));
+            //public Task Put(string symbol, Feed.Types.Timeframe timeframe, Slice<DateTime, QuoteInfo> slice)
+            //    => _ref.Call(a => a.Put(symbol, timeframe, slice));
 
             public Task Put(FeedCacheKey key, DateTime from, DateTime to, BarData[] values)
                 => _ref.Call(a => a.Put(key, from, to, values));
@@ -203,57 +166,72 @@ namespace TickTrader.FeedStorage
 
             public Task<bool> RemoveSeries(FeedCacheKey seriesKey) => _ref.Call(a => a.RemoveSeries(seriesKey));
 
-
-            //public BarCrossDomainReader CreateBarCrossDomainReader(CrossDomainReaderRequest request)
-            //{
-            //    return new BarCrossDomainReader(StorageFolder, request);
-            //}
-
-            //public TickCrossDomainReader CreateTickCrossDomainReader(CrossDomainReaderRequest request)
-            //{
-            //    return new TickCrossDomainReader(StorageFolder, request);
-            //}
-
             [Conditional("DEBUG")]
             public void PrintSlices(FeedCacheKey key) => _ref.Send(a => a.PrintSlices(key));
 
+
+            private void UpdateSeriesHandler((DLinqAction Action, FeedCacheKey Key) update)
+            {
+                if (!_symbols.TryGetValue(update.Key.Symbol, out var symbol))
+                    return;
+
+                switch (update.Action)
+                {
+                    case DLinqAction.Insert:
+                        symbol.AddSeries(update.Key);
+                        break;
+                    case DLinqAction.Remove:
+                        symbol.RemoveSeries(update.Key);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            private void SendCollectionUpdates(DictionaryUpdateArgs<string, BaseSymbol> update)
+            {
+                switch (update.Action)
+                {
+                    case DLinqAction.Insert:
+                        SymbolAdded?.Invoke(update.NewItem);
+                        break;
+                    case DLinqAction.Remove:
+                        SymbolRemoved?.Invoke(update.OldItem);
+                        break;
+                    case DLinqAction.Replace:
+                        SymbolUpdated?.Invoke(update.OldItem, update.NewItem);
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
 
-        protected virtual void Start(string folder)
+        protected void OpenDatabase(string folder)
         {
             if (Database != null)
                 throw new InvalidOperationException("Already started!");
 
             Database = SeriesDatabase.Create(StorageFactory.BuildBinaryStorage(folder));
 
-            Refresh();
+            LoadStoredData();
         }
 
-        protected virtual void Refresh()
+        protected virtual void LoadStoredData(string skippedCollection = null)
         {
             _series.Clear();
 
-            var loadedKeys = new List<FeedCacheKey>();
+            var loadedKeys = new List<FeedCacheKey>(1 << 5);
 
             foreach (var collectionName in Database.Collections)
-            {
-                if (!IsSpecialCollection(collectionName))
-                {
-                    if (FeedCacheKey.TryParse(collectionName, out var key))
-                        loadedKeys.Add(key);
-                }
-            }
+                if (collectionName != skippedCollection && FeedCacheKey.TryParse(collectionName, out var key))
+                    loadedKeys.Add(key);
 
             foreach (var key in loadedKeys)
                 CreateCollection(key);
         }
 
-        protected virtual bool IsSpecialCollection(string name)
-        {
-            return false;
-        }
-
-        protected virtual void Stop()
+        protected virtual void CloseDatabase()
         {
             if (Database != null)
             {
@@ -294,11 +272,11 @@ namespace TickTrader.FeedStorage
 
         #region Bar History
 
-        private KeyRange<DateTime> GetFirstRange(string symbol, Feed.Types.Timeframe frame, Feed.Types.MarketSide? marketSide, DateTime from, DateTime to)
-        {
-            var key = new FeedCacheKey(symbol, frame, marketSide);
-            return GetSeries(key)?.GetFirstRange(from, to);
-        }
+        //private KeyRange<DateTime> GetFirstRange(string symbol, Feed.Types.Timeframe frame, Feed.Types.MarketSide? marketSide, DateTime from, DateTime to)
+        //{
+        //    var key = new FeedCacheKey(symbol, frame, marketSide);
+        //    return GetSeries(key)?.GetFirstRange(from, to);
+        //}
 
         //private KeyRange<DateTime> GetLastRange(string symbol, Feed.Types.Timeframe frame, Feed.Types.MarketSide? marketSide, DateTime from, DateTime to)
         //{
@@ -316,7 +294,7 @@ namespace TickTrader.FeedStorage
         //    return GetSeries<BarData>(key)?.GetFirstSlice(from, to);
         //}
 
-        private IEnumerable<KeyRange<DateTime>> IterateCacheKeysInternal(FeedCacheKey cacheId, DateTime from, DateTime to)
+        protected IEnumerable<KeyRange<DateTime>> IterateCacheKeysInternal(FeedCacheKey cacheId, DateTime from, DateTime to)
         {
             for (var i = from; i < to;)
             {
@@ -328,6 +306,7 @@ namespace TickTrader.FeedStorage
                 foreach (var key in page)
                 {
                     yield return key;
+
                     i = key.To;
                 }
             }
@@ -341,10 +320,10 @@ namespace TickTrader.FeedStorage
             return new List<KeyRange<DateTime>>();
         }
 
-        private void IterateCacheKeysInternal(ActorChannel<KeyRange<DateTime>> channel, FeedCacheKey key, DateTime from, DateTime to)
-        {
-            channel.WriteAll(() => IterateCacheKeysInternal(key, from, to));
-        }
+        //private void IterateCacheKeysInternal(ActorChannel<KeyRange<DateTime>> channel, FeedCacheKey key, DateTime from, DateTime to)
+        //{
+        //    channel.WriteAll(() => IterateCacheKeysInternal(key, from, to));
+        //}
 
         protected void IterateBarCache(ActorChannel<Slice<DateTime, BarData>> channel, FeedCacheKey key, DateTime from, DateTime to)
         {

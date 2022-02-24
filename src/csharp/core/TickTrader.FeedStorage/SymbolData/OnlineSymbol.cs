@@ -7,33 +7,33 @@ namespace TickTrader.FeedStorage
 {
     internal sealed class OnlineSymbol : BaseSymbol
     {
-        private readonly FeedProvider.Handler _provider;
+        private readonly new OnlineFeedStorage.Handler _storage;
 
 
-        public override bool IsDownloadAvailable => _provider.FeedProxy.IsAvailable;
+        public override bool IsDownloadAvailable => _storage.FeedProxy.IsAvailable;
 
         public override SymbolConfig.Types.SymbolOrigin Origin => SymbolConfig.Types.SymbolOrigin.Online;
 
 
-        public OnlineSymbol(ISymbolInfo symbol, FeedProvider.Handler provider) : base(symbol, provider.Cache)
+        public OnlineSymbol(ISymbolInfo symbol, OnlineFeedStorage.Handler storage) : base(symbol, storage)
         {
-            _provider = provider;
+            _storage = storage;
         }
 
 
         public override Task<(DateTime?, DateTime?)> GetAvailableRange(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide? priceType = null)
         {
-            return _provider.FeedProxy.GetAvailableSymbolRange(Name, timeFrame, priceType ?? Feed.Types.MarketSide.Bid);
+            return _storage.FeedProxy.GetAvailableSymbolRange(Name, timeFrame, priceType ?? Feed.Types.MarketSide.Bid);
         }
 
         public override Task<ActorSharp.ActorChannel<ISliceInfo>> DownloadBarSeriesToStorage(Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide, DateTime from, DateTime to)
         {
-            return _provider?.DownloadBarSeriesToStorage(Name, timeframe, marketSide, from, to);
+            return _storage?.DownloadSeriesToStorage(new FeedCacheKey(Name, timeframe, marketSide), from, to);
         }
 
         public override Task<ActorSharp.ActorChannel<ISliceInfo>> DownloadTickSeriesToStorage(Feed.Types.Timeframe timeframe, DateTime from, DateTime to)
         {
-            return _provider.DownloadTickSeriesToStorage(Name, timeframe, from, to);
+            return _storage?.DownloadSeriesToStorage(new FeedCacheKey(Name, timeframe), from, to);
         }
     }
 }

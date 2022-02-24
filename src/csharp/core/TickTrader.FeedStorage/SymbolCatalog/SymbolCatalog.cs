@@ -12,12 +12,11 @@ namespace TickTrader.FeedStorage
     {
         private readonly VarDictionary<ISymbolKey, ISymbolData> _allSymbols;
         private readonly CustomFeedStorage.Handler _customStorage;
+        private readonly OnlineFeedStorage.Handler _onlineStorage;
         private readonly IClientFeedProvider _client;
 
-        private FeedProvider.Handler _feedHandler;
 
-
-        public ISymbolCollection OnlineCollection => _feedHandler?.Cache;
+        public ISymbolCollection OnlineCollection => _onlineStorage;
 
         public ISymbolCollection CustomCollection => _customStorage;
 
@@ -33,14 +32,13 @@ namespace TickTrader.FeedStorage
 
             _allSymbols = new VarDictionary<ISymbolKey, ISymbolData>();
             _customStorage = new CustomFeedStorage.Handler(Actor.SpawnLocal<CustomFeedStorage>());
+            _onlineStorage = new OnlineFeedStorage.Handler(Actor.SpawnLocal<OnlineFeedStorage>());
         }
 
 
         public async Task<ISymbolCatalog> ConnectClient(IOnlineStorageSettings settings)
         {
-            _feedHandler = new FeedProvider.Handler(_client, settings);
-
-            await _feedHandler.Init();
+            await _onlineStorage.Start(_client, settings);
 
             SubscribeToCollection(OnlineCollection);
 
@@ -51,7 +49,7 @@ namespace TickTrader.FeedStorage
         {
             UnsubscribeCollection(OnlineCollection);
 
-            return _feedHandler.Stop();
+            return _onlineStorage.Stop();
         }
 
 

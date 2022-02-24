@@ -15,6 +15,23 @@ namespace TickTrader.BotTerminal.SymbolManager
         internal const string SecurityHeader = nameof(Security);
 
 
+        public ISymbolData Model { get; }
+
+        public string Description => Model.Info.Description;
+
+        public string Security => string.IsNullOrEmpty(Model.Info.Security) ? Name : Model.Info.Security;
+
+        public string Name => Model.Name;
+
+        public bool IsCustom => Model.IsCustom;
+
+        public bool IsOnline => !Model.IsCustom;
+
+        public string SymbolType => IsCustom ? "Custom" : "Online";
+
+        public double? DiskSize { get; private set; }
+
+
         public ObservableCollection<SeriesViewModel> Series { get; }
 
 
@@ -25,17 +42,15 @@ namespace TickTrader.BotTerminal.SymbolManager
             Model = model;
 
             Series = new ObservableCollection<SeriesViewModel>(model.SeriesCollection.Select(u => new SeriesViewModel(u, _base)));
+
+            Model.SeriesAdded += SeriesAddHandler;
+            Model.SeriesRemoved += SeriesRemoveHandler;
         }
 
-        public ISymbolData Model { get; }
-        public string Description => Model.Info.Description;
-        public string Security => string.IsNullOrEmpty(Model.Info.Security) ? Name : Model.Info.Security;
-        public string Name => Model.Name;
-        public bool IsCustom => Model.IsCustom;
-        public bool IsOnline => !Model.IsCustom;
-        public string SymbolType => IsCustom ? "Custom" : "Online";
-        public double? DiskSize { get; private set; }
 
+        private void SeriesAddHandler(IStorageSeries obj) => Series.Add(new SeriesViewModel(obj, _base));
+
+        private void SeriesRemoveHandler(IStorageSeries obj) => Series.Remove(Series.FirstOrDefault(u => u.Info == obj.Key.FullInfo));
 
 
         public async Task UpdateSize()

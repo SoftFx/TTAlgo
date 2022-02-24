@@ -25,6 +25,9 @@ namespace TickTrader.FeedStorage
             MarketSide = TimeFrame.IsTick() ? null : priceType; //better MarketSize = priceType, fool-proof
         }
 
+        public FeedCacheKey(ISeriesKey key) : this(key.Symbol, key.TimeFrame, key.MarketSide)
+        { }
+
 
         internal static bool TryParse(string strCode, out FeedCacheKey key)
         {

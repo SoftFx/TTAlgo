@@ -14,7 +14,7 @@ namespace TickTrader.FeedStorage
 {
     internal abstract class BaseSymbol : ISymbolData, ISymbolKey
     {
-        private readonly VarDictionary<ISeriesKey, SymbolStorageSeries> _serieses;
+        private readonly VarDictionary<FeedCacheKey, IStorageSeries> _serieses;
         private protected readonly FeedStorageBase.FeedHandler _storage;
 
 
@@ -33,7 +33,7 @@ namespace TickTrader.FeedStorage
         public abstract SymbolConfig.Types.SymbolOrigin Origin { get; }
 
 
-        public List<IStorageSeries> SeriesCollection => _serieses.Snapshot.Values.Cast<IStorageSeries>().ToList();
+        public List<IStorageSeries> SeriesCollection => _serieses.Snapshot.Values.ToList();
 
 
         public event Action<IStorageSeries> SeriesAdded;
@@ -43,7 +43,7 @@ namespace TickTrader.FeedStorage
 
         public BaseSymbol(ISymbolInfo info, FeedStorageBase.FeedHandler storage)
         {
-            _serieses = new VarDictionary<ISeriesKey, SymbolStorageSeries>();
+            _serieses = new VarDictionary<FeedCacheKey, IStorageSeries>();
             _storage = storage;
 
             Info = info;
@@ -57,14 +57,26 @@ namespace TickTrader.FeedStorage
         public abstract Task<ActorChannel<ISliceInfo>> DownloadTickSeriesToStorage(Feed.Types.Timeframe timeframe, DateTime from, DateTime to);
 
 
-        internal void AddSeries()
+        internal void AddSeries(FeedCacheKey key)
         {
+            if (_serieses.ContainsKey(key))
+                return;
 
+            var newSeries = new SymbolStorageSeries(key, _storage);
+
+            _serieses.Add(key, newSeries);
+            SeriesAdded?.Invoke(newSeries);
         }
 
-        internal void RemoveSeries()
+        internal void RemoveSeries(FeedCacheKey key)
         {
+            if (!_serieses.ContainsKey(key))
+                return;
 
+            var series = _serieses[key];
+
+            _serieses.Remove(key);
+            SeriesRemoved?.Invoke(series);
         }
 
 

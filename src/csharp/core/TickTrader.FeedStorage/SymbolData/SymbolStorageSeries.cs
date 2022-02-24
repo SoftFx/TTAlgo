@@ -24,10 +24,9 @@ namespace TickTrader.FeedStorage
             _storage = storage;
         }
 
-        public Task<bool> TryRemove()
-        {
-            return _storage.RemoveSeries(_key);
-        }
+
+        public Task<bool> TryRemove() => _storage.RemoveSeries(_key);
+
 
         public ActorChannel<Slice<DateTime, BarData>> IterateBarCache(DateTime from, DateTime to)
         {
