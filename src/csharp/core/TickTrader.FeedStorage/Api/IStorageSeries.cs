@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.FeedStorage.Api
@@ -19,7 +20,10 @@ namespace TickTrader.FeedStorage.Api
     {
         ISeriesKey Key { get; }
 
-        double? Size { get; }
+        double Size { get; }
+
+
+        event Action<double> SeriesUpdated;
 
 
         Task<bool> TryRemove();

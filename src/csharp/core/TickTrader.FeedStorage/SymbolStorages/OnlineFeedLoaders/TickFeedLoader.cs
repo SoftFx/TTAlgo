@@ -25,7 +25,7 @@ namespace TickTrader.FeedStorage
 
             protected override void WriteSlice(FeedCacheKey key, Slice<QuoteInfo> slice)
             {
-                _storage.Put(key.Symbol, key.TimeFrame, slice.From, slice.To, slice.Items);
+                _storage.Put(key, slice.From, slice.To, slice.Items);
             }
         }
     }

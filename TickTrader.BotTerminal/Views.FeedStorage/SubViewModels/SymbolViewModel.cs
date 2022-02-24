@@ -9,10 +9,10 @@ namespace TickTrader.BotTerminal.SymbolManager
 {
     internal sealed class SymbolViewModel : PropertyChangedBase
     {
-        private readonly SymbolManagerViewModel _base;
-
         internal const string TypeHeader = nameof(SymbolType);
         internal const string SecurityHeader = nameof(Security);
+
+        private readonly SymbolManagerViewModel _base;
 
 
         public ISymbolData Model { get; }
@@ -29,7 +29,7 @@ namespace TickTrader.BotTerminal.SymbolManager
 
         public string SymbolType => IsCustom ? "Custom" : "Online";
 
-        public double? DiskSize { get; private set; }
+        public double DiskSize { get; private set; }
 
 
         public ObservableCollection<SeriesViewModel> Series { get; }
@@ -40,7 +40,6 @@ namespace TickTrader.BotTerminal.SymbolManager
             _base = @base;
 
             Model = model;
-
             Series = new ObservableCollection<SeriesViewModel>(model.SeriesCollection.Select(u => new SeriesViewModel(u, _base)));
 
             Model.SeriesAdded += SeriesAddHandler;
@@ -53,25 +52,18 @@ namespace TickTrader.BotTerminal.SymbolManager
         private void SeriesRemoveHandler(IStorageSeries obj) => Series.Remove(Series.FirstOrDefault(u => u.Info == obj.Key.FullInfo));
 
 
-        public async Task UpdateSize()
+        public void UpdateSize()
         {
-            var toUpdate = Series.ToList();
+            //    var toUpdate = Series.ToList();
 
-            double totalSize = 0;
-
-            foreach (var s in toUpdate)
-            {
-                await s.UpdateSize();
-                totalSize += (s.Size ?? 0);
-            }
-
-            DiskSize = totalSize;
+            //    double totalSize =  
+            DiskSize = Series.Sum(u => u.Size);
             NotifyOfPropertyChange(nameof(DiskSize));
         }
 
         public void ResetSize()
         {
-            DiskSize = null;
+            DiskSize = 0;
             NotifyOfPropertyChange(nameof(DiskSize));
             //Series.ForEach(s => s.ResetSize());
         }

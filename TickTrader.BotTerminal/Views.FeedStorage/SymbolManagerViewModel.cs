@@ -190,7 +190,7 @@ namespace TickTrader.BotTerminal.SymbolManager
                 item.ResetSize();
 
             foreach (var item in toUpdate)
-                await item.UpdateSize();
+                item.UpdateSize();
         }
 
         private bool HasSymbol(string smbName)
