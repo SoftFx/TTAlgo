@@ -48,7 +48,7 @@ namespace TickTrader.FeedStorage
         protected override void CloseDatabase()
         {
             _customSymbols.Updated -= SendSymbolsUpdates;
-            _customSymbolsCollection.Dispose();
+            _customSymbolsCollection?.Dispose();
             _customSymbolsCollection = null;
 
             base.CloseDatabase();

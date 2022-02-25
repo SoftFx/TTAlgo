@@ -118,6 +118,8 @@ namespace TickTrader.FeedStorage
 
             public Task Stop()
             {
+                _symbols.Clear();
+
                 _ref?.Send(a => a._seriesListeners.Remove(_seriesChangeCallback));
 
                 IsStarted = false;

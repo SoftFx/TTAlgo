@@ -94,6 +94,7 @@ namespace TickTrader.BotTerminal
             ConnectionLock.PropertyChanged += (s, a) => UpdateCommandStates();
 
             clientModel.Initializing += LoadConnectionProfile;
+            clientModel.Deinitializing += CloseCatalog;
             clientModel.Connected += OpenDefaultChart;
 
             storage.ProfileManager.SaveProfileSnapshot = SaveProfileSnapshot;
@@ -167,6 +168,8 @@ namespace TickTrader.BotTerminal
             await _symbolsCatalog.ConnectClient(settings);
             await ProfileManager.LoadConnectionProfile(server, login, token);
         }
+
+        private Task CloseCatalog(object sender, CancellationToken token) => _symbolsCatalog?.CloseCatalog();
 
         public bool CanConnect { get; private set; }
         public bool CanDisconnect { get; private set; }
