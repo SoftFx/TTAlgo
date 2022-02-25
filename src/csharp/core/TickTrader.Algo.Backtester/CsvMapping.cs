@@ -56,7 +56,31 @@ namespace TickTrader.Algo.Backtester
             }
         }
 
-        public class ForMarkerPoint : ClassMap<OutputPoint>
+        public readonly struct MarkerPointWrapper
+        {
+            private readonly OutputPoint _point;
+            private readonly MarkerInfo _marker;
+
+
+            public long Time => _point.Time;
+
+            public double Value => _point.Value;
+
+            public MarkerInfo.Types.IconType Icon => _marker.Icon;
+
+            public uint ColorArgb => _marker.ColorArgb;
+
+            public string DisplayText => _marker.DisplayText;
+
+
+            public MarkerPointWrapper(OutputPoint point)
+            {
+                _point = point;
+                _marker = (MarkerInfo)point.Metadata;
+            }
+        }
+
+        public class ForMarkerPoint : ClassMap<MarkerPointWrapper>
         {
             public const string Header = "TimeUtc_Marker";
 
@@ -64,9 +88,9 @@ namespace TickTrader.Algo.Backtester
             {
                 Map(p => p.Time).Index(0).Name(Header).TypeConverter<TimeMsTypeConverter>();
                 Map(p => p.Value).Index(1).Name("Value");
-                Map(p => ((MarkerInfo)p.Metadata).Icon).Index(2).Name("Icon");
-                Map(p => ((MarkerInfo)p.Metadata).ColorArgb).Index(3).Name("ColorArgb");
-                Map(p => ((MarkerInfo)p.Metadata).DisplayText).Index(4).Name("DisplayText");
+                Map(p => p.Icon).Index(2).Name("Icon");
+                Map(p => p.ColorArgb).Index(3).Name("ColorArgb");
+                Map(p => p.DisplayText).Index(4).Name("DisplayText");
             }
 
 

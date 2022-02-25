@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Text.Json;
 using TickTrader.Algo.Domain;
 
@@ -82,7 +83,7 @@ namespace TickTrader.Algo.Backtester
             var first = points[0];
             if (first.Metadata is MarkerInfo)
             {
-                SaveZipEntryAsCsv<OutputPoint, CsvMapping.ForMarkerPoint>(zip, entryName, points);
+                SaveZipEntryAsCsv<CsvMapping.MarkerPointWrapper, CsvMapping.ForMarkerPoint>(zip, entryName, points.Select(p => new CsvMapping.MarkerPointWrapper(p)));
             }
             else
             {
