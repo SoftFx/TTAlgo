@@ -73,7 +73,6 @@
                 <Button Content="{DynamicResource AddToolBarIcon}" Margin="3,0,0,0" Focusable="False" cal:Message.Attach="AddSymbol" />
                 <Button Content="{DynamicResource ImportToolBarIcon}" Margin="3,0,0,0" cal:Message.Attach="Import" Focusable="False" />
                 <Button Content="{DynamicResource DownloadToolBarIcon}" Margin="3,0,0,0" cal:Message.Attach="Download" Focusable="False"  />
-                <Button Content="{DynamicResource RefreshToolBarIcon}" Margin="3,0,0,0" cal:Message.Attach="UpdateSizes" Focusable="False" />
                 <ContentControl Content="{DynamicResource SearchToolBarIcon}" Margin="15,0,2,0" />
                 <TextBox Width="120" Margin="0,2,0,2" Text="{Binding FilterString.Value, Delay=300, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
             </ToolBar>

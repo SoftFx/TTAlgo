@@ -2,7 +2,6 @@
 using Machinarium.Qnil;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks;
 using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.BotTerminal.SymbolManager
@@ -29,7 +28,7 @@ namespace TickTrader.BotTerminal.SymbolManager
 
         public string SymbolType => IsCustom ? "Custom" : "Online";
 
-        public double DiskSize { get; private set; }
+        public double DiskSize => Series.Sum(u => u.Size);
 
 
         public ObservableCollection<SeriesViewModel> Series { get; }
@@ -44,29 +43,26 @@ namespace TickTrader.BotTerminal.SymbolManager
 
             Model.SeriesAdded += SeriesAddHandler;
             Model.SeriesRemoved += SeriesRemoveHandler;
+            Model.SeriesUpdated += SeriesUpdatedHandler;
         }
 
 
-        private void SeriesAddHandler(IStorageSeries obj) => Series.Add(new SeriesViewModel(obj, _base));
-
-        private void SeriesRemoveHandler(IStorageSeries obj) => Series.Remove(Series.FirstOrDefault(u => u.Info == obj.Key.FullInfo));
-
-
-        public void UpdateSize()
+        private void SeriesAddHandler(IStorageSeries obj)
         {
-            //    var toUpdate = Series.ToList();
+            Series.Add(new SeriesViewModel(obj, _base));
 
-            //    double totalSize =  
-            DiskSize = Series.Sum(u => u.Size);
             NotifyOfPropertyChange(nameof(DiskSize));
         }
 
-        public void ResetSize()
+        private void SeriesRemoveHandler(IStorageSeries obj)
         {
-            DiskSize = 0;
+            Series.Remove(Series.FirstOrDefault(u => u.Info == obj.Key.FullInfo));
+
             NotifyOfPropertyChange(nameof(DiskSize));
-            //Series.ForEach(s => s.ResetSize());
         }
+
+        private void SeriesUpdatedHandler(IStorageSeries obj) => NotifyOfPropertyChange(nameof(DiskSize));
+
 
         public void Download()
         {

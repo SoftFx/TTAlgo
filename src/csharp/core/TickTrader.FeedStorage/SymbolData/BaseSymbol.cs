@@ -37,9 +37,7 @@ namespace TickTrader.FeedStorage
         public List<IStorageSeries> SeriesCollection => _serieses.Values.ToList();
 
 
-        public event Action<IStorageSeries> SeriesAdded;
-
-        public event Action<IStorageSeries> SeriesRemoved;
+        public event Action<IStorageSeries> SeriesAdded, SeriesRemoved, SeriesUpdated;
 
 
         public BaseSymbol(ISymbolInfo info, FeedStorageBase.FeedHandler storage)
@@ -81,6 +79,7 @@ namespace TickTrader.FeedStorage
                 return;
 
             ((SymbolStorageSeries)series).Size = newSize;
+            SeriesUpdated?.Invoke(series);
         }
 
 

@@ -2,7 +2,6 @@
 using Machinarium.Qnil;
 using Machinarium.Var;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -82,11 +81,6 @@ namespace TickTrader.BotTerminal.SymbolManager
             collection.SymbolUpdated -= UpdateSymbolHandler;
         }
 
-        private void UpdateSymbolHandler(ISymbolData oldSymbol, ISymbolData newSymbol)
-        {
-            RemoveSymbolHandler(oldSymbol);
-            AddSymbolHandler(newSymbol);
-        }
 
         private void AddSymbolHandler(ISymbolData smb) => _allSymbols.Add(new SymbolViewModel(this, smb));
 
@@ -98,16 +92,17 @@ namespace TickTrader.BotTerminal.SymbolManager
                 _allSymbols.Remove(symbolViewModel);
         }
 
+        private void UpdateSymbolHandler(ISymbolData oldSymbol, ISymbolData newSymbol)
+        {
+            RemoveSymbolHandler(oldSymbol);
+            AddSymbolHandler(newSymbol);
+        }
 
         private bool FilterGroup(object obj)
         {
             return !(obj is SymbolViewModel smb) || smb.Name.IndexOf(FilterString.Value, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
-        public void UpdateSizes()
-        {
-            DoUpdateSizes();
-        }
 
         public void Download()
         {
@@ -178,19 +173,6 @@ namespace TickTrader.BotTerminal.SymbolManager
         {
             var actionModel = new ActionDialogViewModel("Removing series...", () => series.Remove());
             _wndManager.ShowDialog(actionModel, this);
-        }
-
-        private async void DoUpdateSizes()
-        {
-            var toUpdate = new List<SymbolViewModel>();
-            //toUpdate.AddRange(_onlineManagedSymbols);
-            //toUpdate.AddRange(_customManagedSymbols);
-
-            foreach (var item in toUpdate)
-                item.ResetSize();
-
-            foreach (var item in toUpdate)
-                item.UpdateSize();
         }
 
         private bool HasSymbol(string smbName)

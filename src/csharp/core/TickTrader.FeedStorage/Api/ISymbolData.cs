@@ -43,6 +43,8 @@ namespace TickTrader.FeedStorage.Api
 
         event Action<IStorageSeries> SeriesRemoved;
 
+        event Action<IStorageSeries> SeriesUpdated;
+
 
         Task<(DateTime?, DateTime?)> GetAvailableRange(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide? priceType = null);
 

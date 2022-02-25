@@ -13,7 +13,6 @@ namespace TickTrader.BotTerminal.SymbolManager
 
         public string Info => _series.Key.FullInfo;
 
-
         public double Size => Math.Round(_series.Size / (1024 * 1024), 2);
 
 
@@ -26,14 +25,8 @@ namespace TickTrader.BotTerminal.SymbolManager
         }
 
 
-        public void Export()
-        {
-            _parent.Export(this);
-        }
+        public void Export() => _parent.Export(this);
 
-        public async void Remove()
-        {
-            await _series.TryRemove();
-        }
+        public async void Remove() => await _series.TryRemove();
     }
 }
