@@ -239,10 +239,10 @@ namespace TickTrader.Algo.Backtester
 
         #region Output collection
 
-        internal IEnumerable<OutputPoint> LocalGetOutputData(string id)
+        internal IReadOnlyList<OutputPoint> LocalGetOutputData(string id)
         {
             if (!_outputCollectors.TryGetValue(id, out var collector))
-                return Enumerable.Empty<OutputPoint>();
+                return new List<OutputPoint>();
 
             return collector.Snapshot;
         }

@@ -35,12 +35,55 @@ namespace TickTrader.Algo.Backtester
             }
         }
 
-        public class ForOutputPoint : ClassMap<OutputPoint>
+        public class ForDoublePoint : ClassMap<OutputPoint>
         {
-            public ForOutputPoint()
+            public const string Header = "TimeUtc_Double";
+
+            public ForDoublePoint()
             {
-                Map(p => p.Time).Index(0).Name("TimeUtc").TypeConverter<TimeMsTypeConverter>();
+                Map(p => p.Time).Index(0).Name(Header).TypeConverter<TimeMsTypeConverter>();
                 Map(p => p.Value).Index(1).Name("Value");
+            }
+
+
+            public static OutputPoint Read(IReaderRow reader)
+            {
+                if (!TimeMsTypeConverter.TryReadTime(reader[0], out var time))
+                    throw new ArgumentException($"Can't read time at row {reader.CurrentIndex}");
+                if (!reader.TryGetField<double>(1, out var value))
+                    throw new ArgumentException($"Can't read y value at row {reader.CurrentIndex}");
+                return new OutputPoint(time, value);
+            }
+        }
+
+        public class ForMarkerPoint : ClassMap<OutputPoint>
+        {
+            public const string Header = "TimeUtc_Marker";
+
+            public ForMarkerPoint()
+            {
+                Map(p => p.Time).Index(0).Name(Header).TypeConverter<TimeMsTypeConverter>();
+                Map(p => p.Value).Index(1).Name("Value");
+                Map(p => ((MarkerInfo)p.Metadata).Icon).Index(2).Name("Icon");
+                Map(p => ((MarkerInfo)p.Metadata).ColorArgb).Index(3).Name("ColorArgb");
+                Map(p => ((MarkerInfo)p.Metadata).DisplayText).Index(4).Name("DisplayText");
+            }
+
+
+            public static OutputPoint Read(IReaderRow reader)
+            {
+                if (!TimeMsTypeConverter.TryReadTime(reader[0], out var time))
+                    throw new ArgumentException($"Can't read time at row {reader.CurrentIndex}");
+                if (!reader.TryGetField<double>(1, out var value))
+                    throw new ArgumentException($"Can't read y value at row {reader.CurrentIndex}");
+                if (!reader.TryGetField<MarkerInfo.Types.IconType>(2, out var icon))
+                    throw new ArgumentException($"Can't read icon type at row {reader.CurrentIndex}");
+                if (!reader.TryGetField<uint>(3, out var color))
+                    throw new ArgumentException($"Can't read market color at row {reader.CurrentIndex}");
+                if (!reader.TryGetField<string>(4, out var text))
+                    throw new ArgumentException($"Can't read market text at row {reader.CurrentIndex}");
+                var marker = new MarkerInfo { Icon = icon, ColorArgb = color, DisplayText = text };
+                return new OutputPoint(time, value, marker);
             }
         }
 
@@ -140,6 +183,16 @@ namespace TickTrader.Algo.Backtester
 
         private class TimeMsTypeConverter : ITypeConverter
         {
+            public static bool TryReadTime(string text, out long timeMs)
+            {
+                timeMs = 0;
+                if (!DateTime.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var time))
+                    return false;
+
+                timeMs = TimeMs.FromDateTime(time);
+                return true;
+            }
+
             public object ConvertFromString(string text, IReaderRow row, MemberMapData memberMapData)
             {
                 if (string.IsNullOrEmpty(text))

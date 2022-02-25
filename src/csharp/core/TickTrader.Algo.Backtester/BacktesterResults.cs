@@ -1,5 +1,6 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -50,7 +51,7 @@ namespace TickTrader.Algo.Backtester
                     {
                         var outputId = Path.GetFileNameWithoutExtension(entryName).Substring(7);
                         var data = new List<OutputPoint>();
-                        TryReadZipEntryAsCsv<OutputPoint, CsvMapping.ForOutputPoint>(zip, entryName, data);
+                        TryReadZipEntryAsOutputData(zip, entryName, data);
                         res.Outputs.Add(outputId, data);
                     }
                 }
@@ -76,7 +77,18 @@ namespace TickTrader.Algo.Backtester
 
         internal static void SaveBarData(ZipArchive zip, string entryName, IEnumerable<BarData> bars) => SaveZipEntryAsCsv<BarData, CsvMapping.ForBarData>(zip, entryName, bars);
 
-        internal static void SaveOutputData(ZipArchive zip, string entryName, IEnumerable<OutputPoint> points) => SaveZipEntryAsCsv<OutputPoint, CsvMapping.ForOutputPoint>(zip, entryName, points);
+        internal static void SaveOutputData(ZipArchive zip, string entryName, IReadOnlyList<OutputPoint> points)
+        {
+            var first = points[0];
+            if (first.Metadata is MarkerInfo)
+            {
+                SaveZipEntryAsCsv<OutputPoint, CsvMapping.ForMarkerPoint>(zip, entryName, points);
+            }
+            else
+            {
+                SaveZipEntryAsCsv<OutputPoint, CsvMapping.ForDoublePoint>(zip, entryName, points);
+            }
+        }
 
         internal static void SaveTradeHistory(ZipArchive zip, IEnumerable<TradeReportInfo> reports) => SaveZipEntryAsCsv<TradeReportInfo, CsvMapping.ForTradeReport>(zip, "trade-history.csv", reports);
 
@@ -105,6 +117,37 @@ namespace TickTrader.Algo.Backtester
             {
                 csv.Context.RegisterClassMap<TMap>();
                 storage.AddRange(csv.GetRecords<T>());
+            }
+        }
+
+        private static void TryReadZipEntryAsOutputData(ZipArchive zip, string entryName, List<OutputPoint> storage)
+        {
+            var entry = zip.GetEntry(entryName);
+            if (entry == null)
+                return;
+
+            using (var stream = entry.Open())
+            using (var reader = new StreamReader(stream))
+            using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+            {
+                if (!csv.Read())
+                    return;
+
+                if (!csv.ReadHeader())
+                    return;
+
+                Func<IReaderRow, OutputPoint> parser = null;
+                switch (csv.HeaderRecord[0])
+                {
+                    case CsvMapping.ForDoublePoint.Header: parser = CsvMapping.ForDoublePoint.Read; break;
+                    case CsvMapping.ForMarkerPoint.Header: parser = CsvMapping.ForMarkerPoint.Read; break;
+                    default: return;
+                }
+
+                while (csv.Read())
+                {
+                    storage.Add(parser(csv));
+                }
             }
         }
 
