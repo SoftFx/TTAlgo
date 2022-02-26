@@ -1238,31 +1238,27 @@ namespace TickTrader.Algo.Account.Fdk2
         {
             var timeOfReceive = DateTime.UtcNow;
 
-            var data = new Domain.QuoteData()
+            var time = fdkTick.CreatingTime.ToTimestamp();
+            var bids = ConvertLevel2(fdkTick.Bids);
+            var asks = ConvertLevel2(fdkTick.Asks);
+            return new QuoteInfo(fdkTick.Symbol, time, bids, asks, timeOfReceive: timeOfReceive)
             {
-                Time = fdkTick.CreatingTime.ToTimestamp(),
                 IsBidIndicative = fdkTick.TickType == SFX.TickTypes.IndicativeBid || fdkTick.TickType == SFX.TickTypes.IndicativeBidAsk,
                 IsAskIndicative = fdkTick.TickType == SFX.TickTypes.IndicativeAsk || fdkTick.TickType == SFX.TickTypes.IndicativeBidAsk,
-                BidBytes = ConvertLevel2(fdkTick.Bids),
-                AskBytes = ConvertLevel2(fdkTick.Asks),
             };
-
-            return new Domain.QuoteInfo(fdkTick.Symbol, data, timeOfReceive: timeOfReceive);
         }
 
-        private static ByteString ConvertLevel2(List<QuoteEntry> book)
+        private static QuoteBand[] ConvertLevel2(List<QuoteEntry> book)
         {
             var cnt = book.Count;
-            var bands = cnt > 256
-                ? new Domain.QuoteBand[cnt].AsSpan()
-                : stackalloc Domain.QuoteBand[cnt];
+            var bands = new QuoteBand[cnt];
 
             for (var i = 0; i < cnt; i++)
             {
-                bands[i] = new Domain.QuoteBand(book[i].Price, book[i].Volume);
+                bands[i] = new QuoteBand(book[i].Price, book[i].Volume);
             }
 
-            return Domain.ByteStringHelper.CopyFromUglyHack(MemoryMarshal.Cast<Domain.QuoteBand, byte>(bands));
+            return bands;
         }
 
         public static Domain.TradeReportInfo Convert(TradeTransactionReport report)

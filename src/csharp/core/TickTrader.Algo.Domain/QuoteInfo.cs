@@ -1,10 +1,11 @@
-﻿using Google.Protobuf.WellKnownTypes;
+﻿using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Runtime.InteropServices;
 
 namespace TickTrader.Algo.Domain
 {
-    public struct QuoteBand
+    public readonly struct QuoteBand
     {
         public double Price { get; }
 
@@ -92,59 +93,32 @@ namespace TickTrader.Algo.Domain
 
     public class QuoteInfo : IQuoteInfo, IRateInfo
     {
-        // hack to bypass net45 code security
-        // TODO: Remove after swiching to .NET Core
-        private byte[] _askBytes;
-        private byte[] _bidBytes;
-
         private string _symbol;
-        private QuoteData _data;
+        private QuoteBand[] _asks, _bids;
         private int? _depth;
 
 
         public string Symbol => _symbol;
 
-        public ReadOnlySpan<QuoteBand> Asks
-        {
-            get
-            {
-                //var asks = _data.Asks;
-                var asks = MemoryMarshal.Cast<byte, QuoteBand>(_askBytes);
-                return _depth.HasValue ? asks.Slice(0, Math.Min(asks.Length, _depth.Value)) : asks;
-            }
-        }
+        public bool HasAsk => _asks.Length != 0;
 
-        public ReadOnlySpan<byte> AskBytes => _askBytes;
+        public bool HasBid => _bids.Length != 0;
 
-        public ReadOnlySpan<QuoteBand> Bids
-        {
-            get
-            {
-                //var bids = _data.Bids;
-                var bids = MemoryMarshal.Cast<byte, QuoteBand>(_bidBytes);
-                return _depth.HasValue ? bids.Slice(0, Math.Min(bids.Length, _depth.Value)) : bids;
-            }
-        }
+        public bool IsAskIndicative { get; set; }
 
-        public ReadOnlySpan<byte> BidBytes => _bidBytes;
+        public bool IsBidIndicative { get; set; }
 
-        public bool HasAsk => _data.HasAsk;
+        public ReadOnlySpan<QuoteBand> Asks => !_depth.HasValue ? _asks : _asks.AsSpan(0, _depth.Value);
 
-        public bool HasBid => _data.HasBid;
+        public ReadOnlySpan<QuoteBand> Bids => !_depth.HasValue ? _bids : _bids.AsSpan(0, _depth.Value);
 
-        public bool IsAskIndicative => _data.IsAskIndicative;
+        public double Ask => HasAsk ? _asks[0].Price : double.NaN;
 
-        public bool IsBidIndicative => _data.IsBidIndicative;
+        public double Bid => HasBid ? _bids[0].Price : double.NaN;
 
-        //public double Ask => HasAsk ? _data.Asks[0].Price : double.NaN;
-        public double Ask => HasAsk ? Asks[0].Price : double.NaN;
+        public DateTime Time => Timestamp.ToDateTime().ToLocalTime();
 
-        public double Bid => HasBid ? Bids[0].Price : double.NaN;
-        //public double Bid => HasBid ? _data.Bids[0].Price : double.NaN;
-
-        public DateTime Time => _data.Time.ToDateTime().ToLocalTime();
-
-        public Timestamp Timestamp => _data.Time;
+        public Timestamp Timestamp { get; set; }
 
 
         public DateTime TimeOfReceive { get; }
@@ -153,36 +127,47 @@ namespace TickTrader.Algo.Domain
 
 
         public QuoteInfo(string symbol) // empty rate
-            : this(symbol, new QuoteData(), null)
+            : this(symbol, null, null, null)
         {
         }
 
         public QuoteInfo(string symbol, DateTime time, double? bid, double? ask)
-            : this(symbol, new QuoteData(time, bid, ask), null)
+            : this(symbol, time.ToUniversalTime().ToTimestamp(), bid, ask)
         {
         }
 
         public QuoteInfo(string symbol, Timestamp time, double? bid, double? ask)
-            : this(symbol, new QuoteData(time, bid, ask), null)
+            : this(symbol, time, bid.HasValue ? new QuoteBand[] { new QuoteBand(bid.Value, 0) } : new QuoteBand[0], ask.HasValue ? new QuoteBand[] { new QuoteBand(ask.Value, 0) } : new QuoteBand[0])
         {
         }
 
-        public QuoteInfo(FullQuoteInfo quote, int? depth = null)
-            : this(quote.Symbol, quote.Data, depth)
-        {
-        }
-
-        public QuoteInfo(string symbol, QuoteData data, int? depth = null, DateTime? timeOfReceive = null)
+        public QuoteInfo(string symbol, Timestamp time, QuoteBand[] bids, QuoteBand[] asks, int? depth = null, DateTime? timeOfReceive = null)
         {
             _symbol = symbol;
-            _data = data;
+            Timestamp = time;
             _depth = depth;
 
-            _bidBytes = _data.BidBytes.ToByteArray();
-            _askBytes = _data.AskBytes.ToByteArray();
+            _bids = bids ?? new QuoteBand[0];
+            _asks = asks ?? new QuoteBand[0];
 
             TimeOfReceive = timeOfReceive ?? DateTime.UtcNow;
             QuoteDelay = (TimeOfReceive - Time.ToUniversalTime()).TotalMilliseconds;
+        }
+
+        public QuoteInfo(FullQuoteInfo quote, int? depth = null)
+            : this(quote.Symbol, quote.Data)
+        {
+            _depth = depth;
+        }
+
+        public QuoteInfo(string symbol, QuoteData data)
+        {
+            _symbol = symbol;
+            Timestamp = data.Time;
+            IsAskIndicative = data.IsAskIndicative;
+            IsBidIndicative = data.IsBidIndicative;
+            _asks = UnpackBands(data.AskBytes);
+            _bids = UnpackBands(data.BidBytes);
         }
 
         private QuoteInfo() { }
@@ -192,27 +177,46 @@ namespace TickTrader.Algo.Domain
         {
             return new QuoteInfo
             {
-                _symbol = Symbol,
-                _data = _data,
+                _symbol = _symbol,
+                Timestamp = Timestamp,
                 _depth = depth < 1 ? (int?)null : depth,
-                _askBytes = _askBytes,
-                _bidBytes = _bidBytes,
+                _asks = _asks,
+                _bids = _bids,
             };
         }
 
         public FullQuoteInfo GetFullQuote()
         {
-            return new FullQuoteInfo { Symbol = _symbol, Data = _data };
+            return new FullQuoteInfo { Symbol = _symbol, Data = GetData() };
         }
 
         public QuoteData GetData()
         {
-            return _data;
+            return new QuoteData
+            {
+                Time = Timestamp,
+                IsAskIndicative = IsAskIndicative,
+                IsBidIndicative = IsBidIndicative,
+                AskBytes = PackBands(_asks),
+                BidBytes = PackBands(_bids),
+            };
         }
 
         public string GetDelayInfo()
         {
             return $"{Symbol} Delay={QuoteDelay}ms, ServerTime={Time:dd-MM-yyyy HH:mm:ss.fffff}, ClientTime={TimeOfReceive:dd-MM-yyyy HH:mm:ss.fffff}";
+        }
+
+
+        private static ByteString PackBands(QuoteBand[] bands)
+        {
+            var byteSpan = MemoryMarshal.Cast<QuoteBand, byte>(bands.AsSpan());
+            return ByteStringHelper.CopyFromUglyHack(byteSpan);
+        }
+
+        private static QuoteBand[] UnpackBands(ByteString data)
+        {
+            return MemoryMarshal.Cast<byte, QuoteBand>(data.Span).ToArray();
         }
 
         #region IRateInfo

@@ -41,25 +41,20 @@ namespace TickTrader.FeedStorage.Serializers
 
             private QuoteInfo ReadQuote(LightObjectReader reader)
             {
-                return new QuoteInfo(_symbol, ReadData(reader));
-            }
+                var time = reader.ReadDateTime(DateTimeKind.Utc).ToTimestamp();
 
-            private static QuoteData ReadData(LightObjectReader reader)
-            {
-                var data = new QuoteData
-                {
-                    Time = reader.ReadDateTime(DateTimeKind.Utc).ToTimestamp(),
-                    IsBidIndicative = false,
-                    IsAskIndicative = false
-                };
-
+                double? bid = null, ask = null;
                 var flags = (FieldFlags)reader.ReadByte();
                 if ((flags & FieldFlags.HasBid) != 0)
-                    data.BidBytes = ReadBook(reader);
+                    bid = reader.ReadDouble();
                 if ((flags & FieldFlags.HasAsk) != 0)
-                    data.AskBytes = ReadBook(reader);
+                    ask = reader.ReadDouble();
 
-                return data;
+                return new QuoteInfo(_symbol, time, bid, ask)
+                {
+                    IsBidIndicative = false,
+                    IsAskIndicative = false,
+                };
             }
 
             private static ByteString ReadBook(LightObjectReader reader)
@@ -77,7 +72,6 @@ namespace TickTrader.FeedStorage.Serializers
 
             private static void WriteQuote(QuoteInfo quote, LightObjectWriter writer)
             {
-
                 writer.Write(quote.Time);
 
                 var flags = quote.HasBid ? FieldFlags.HasBid : FieldFlags.Empty;
@@ -86,16 +80,10 @@ namespace TickTrader.FeedStorage.Serializers
                 writer.Write((byte)flags);
 
                 if (quote.HasBid)
-                    WriteBook(quote.Bids, writer);
+                    writer.Write(quote.Bid);
 
                 if (quote.HasAsk)
-                    WriteBook(quote.Asks, writer);
-
-            }
-
-            private static void WriteBook(ReadOnlySpan<QuoteBand> bands, LightObjectWriter writer)
-            {
-                writer.Write(bands[0].Price);
+                    writer.Write(quote.Ask);
             }
         }
 
@@ -117,35 +105,26 @@ namespace TickTrader.FeedStorage.Serializers
 
             private QuoteInfo ReadQuote(LightObjectReader reader)
             {
-                return new QuoteInfo(_symbol, ReadData(reader));
-            }
+                var time = reader.ReadDateTime(DateTimeKind.Utc).ToTimestamp();
+                var bids = ReadBook(reader);
+                var asks = ReadBook(reader);
 
-            private static QuoteData ReadData(LightObjectReader reader)
-            {
-                var data = new QuoteData
+                return new QuoteInfo(_symbol, time, bids, asks)
                 {
-                    Time = reader.ReadDateTime(DateTimeKind.Utc).ToTimestamp(),
                     IsBidIndicative = false,
                     IsAskIndicative = false,
                 };
-
-                data.BidBytes = ReadBook(reader);
-                data.AskBytes = ReadBook(reader);
-
-                return data;
             }
 
-            private static ByteString ReadBook(LightObjectReader reader)
+            private static QuoteBand[] ReadBook(LightObjectReader reader)
             {
                 var cnt = reader.ReadInt();
-                var bands = cnt > 256
-                    ? new QuoteBand[cnt].AsSpan()
-                    : stackalloc QuoteBand[cnt];
+                var bands = new QuoteBand[cnt];
 
                 var bytes = MemoryMarshal.Cast<QuoteBand, byte>(bands);
                 reader.ReadBytes(bytes);
 
-                return ByteStringHelper.CopyFromUglyHack(bytes);
+                return bands;
             }
 
             public ArraySegment<byte> Serialize(QuoteInfo[] val)
@@ -156,10 +135,10 @@ namespace TickTrader.FeedStorage.Serializers
                     writer.Write(e.Time);
 
                     writer.Write(e.Bids.Length);
-                    writer.Write(e.BidBytes);
+                    writer.Write(MemoryMarshal.Cast<QuoteBand, byte>(e.Bids));
 
                     writer.Write(e.Asks.Length);
-                    writer.Write(e.AskBytes);
+                    writer.Write(MemoryMarshal.Cast<QuoteBand, byte>(e.Asks));
                 });
                 return writer.GetBuffer();
             }

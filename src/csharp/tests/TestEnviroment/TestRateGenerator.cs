@@ -41,7 +41,7 @@ namespace TestEnviroment
 
         private static ISymbolInfoWithRate BuildQuote(ISymbolInfoWithRate symbol, double? bid, double? ask)
         {
-            symbol.UpdateRate(new QuoteInfo(symbol.Name, new QuoteData(DateTime.Now, bid, ask)));
+            symbol.UpdateRate(new QuoteInfo(symbol.Name, DateTime.Now, bid, ask));
 
             return symbol;
         }
