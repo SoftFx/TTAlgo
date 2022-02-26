@@ -141,9 +141,9 @@ namespace TickTrader.Algo.CoreV1
 
         private static Feed.Types.MarketSide? GetMarketSideForBarReduction(ReductionKey reduction)
         {
-            if (reduction == MappingDefaults.BidBarReduction)
+            if (reduction.Equals(MappingDefaults.BidBarReduction))
                 return Feed.Types.MarketSide.Bid;
-            else if (reduction == MappingDefaults.AskBarReduction)
+            else if (reduction.Equals(MappingDefaults.AskBarReduction))
                 return Feed.Types.MarketSide.Ask;
 
             return null;
