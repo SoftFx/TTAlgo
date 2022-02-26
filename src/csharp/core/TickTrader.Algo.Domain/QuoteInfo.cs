@@ -149,17 +149,9 @@ namespace TickTrader.Algo.Domain
             : this(symbol, time)
         {
             if (bid.HasValue)
-            {
-                _bidBytes = new byte[QuoteBand.Size];
-                var data = MemoryMarshal.Cast<byte, double>(_bidBytes);
-                data[0] = bid.Value;
-            }
-            else
-            {
-                _askBytes = new byte[QuoteBand.Size];
-                var data = MemoryMarshal.Cast<byte, double>(_askBytes);
-                data[0] = ask.Value;
-            }
+                _bidBytes = InitTickSide(bid.Value);
+            if (ask.HasValue)
+                _askBytes = InitTickSide(ask.Value);
         }
 
         public QuoteInfo(string symbol, Timestamp time, byte[] bids, byte[] asks, int? depth = null, DateTime? timeOfReceive = null)
@@ -258,6 +250,14 @@ namespace TickTrader.Algo.Domain
 
             var data = MemoryMarshal.Cast<byte, double>(bandBytes);
             return data[0];
+        }
+
+        private static byte[] InitTickSide(double price)
+        {
+            var bandBytes = new byte[QuoteBand.Size];
+            var data = MemoryMarshal.Cast<byte, double>(bandBytes);
+            data[0] = price;
+            return bandBytes;
         }
 
         #region IRateInfo
