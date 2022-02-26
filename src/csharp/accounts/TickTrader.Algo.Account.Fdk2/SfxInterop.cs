@@ -1248,17 +1248,18 @@ namespace TickTrader.Algo.Account.Fdk2
             };
         }
 
-        private static QuoteBand[] ConvertLevel2(List<QuoteEntry> book)
+        private static byte[] ConvertLevel2(List<QuoteEntry> book)
         {
             var cnt = book.Count;
-            var bands = new QuoteBand[cnt];
+            var bytes = new byte[QuoteBand.Size * cnt];
+            var bands = MemoryMarshal.Cast<byte, QuoteBand>(bytes);
 
             for (var i = 0; i < cnt; i++)
             {
                 bands[i] = new QuoteBand(book[i].Price, book[i].Volume);
             }
 
-            return bands;
+            return bytes;
         }
 
         public static Domain.TradeReportInfo Convert(TradeTransactionReport report)

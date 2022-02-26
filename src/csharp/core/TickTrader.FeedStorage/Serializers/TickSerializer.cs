@@ -57,12 +57,6 @@ namespace TickTrader.FeedStorage.Serializers
                 };
             }
 
-            private static ByteString ReadBook(LightObjectReader reader)
-            {
-                Span<QuoteBand> bands = stackalloc QuoteBand[] { new QuoteBand(reader.ReadDouble(), 0) };
-                return ByteStringHelper.CopyFromUglyHack(MemoryMarshal.Cast<QuoteBand, byte>(bands));
-            }
-
             public ArraySegment<byte> Serialize(QuoteInfo[] val)
             {
                 var writer = new LightObjectWriter();
@@ -116,15 +110,14 @@ namespace TickTrader.FeedStorage.Serializers
                 };
             }
 
-            private static QuoteBand[] ReadBook(LightObjectReader reader)
+            private static byte[] ReadBook(LightObjectReader reader)
             {
                 var cnt = reader.ReadInt();
-                var bands = new QuoteBand[cnt];
+                var bytes = new byte[QuoteBand.Size * cnt];
 
-                var bytes = MemoryMarshal.Cast<QuoteBand, byte>(bands);
                 reader.ReadBytes(bytes);
 
-                return bands;
+                return bytes;
             }
 
             public ArraySegment<byte> Serialize(QuoteInfo[] val)
@@ -134,11 +127,11 @@ namespace TickTrader.FeedStorage.Serializers
                 {
                     writer.Write(e.Time);
 
-                    writer.Write(e.Bids.Length);
-                    writer.Write(MemoryMarshal.Cast<QuoteBand, byte>(e.Bids));
+                    writer.Write(e.BidBytes.Length / QuoteBand.Size);
+                    writer.Write(e.BidBytes);
 
-                    writer.Write(e.Asks.Length);
-                    writer.Write(MemoryMarshal.Cast<QuoteBand, byte>(e.Asks));
+                    writer.Write(e.AskBytes.Length / QuoteBand.Size);
+                    writer.Write(e.AskBytes);
                 });
                 return writer.GetBuffer();
             }

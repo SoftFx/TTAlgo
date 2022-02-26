@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Domain;
 
@@ -10,22 +11,19 @@ namespace TickTrader.Algo.CoreV1
 
         private readonly QuoteInfo _quote;
 
+        private BookEntry[] _bidBook, _askBook;
+
 
         public QuoteEntity(QuoteInfo quote)
         {
             _quote = quote;
-
-            AskBook = quote.HasAsk ? Convert(quote.Asks) : EmptyBook;
-            BidBook = quote.HasBid ? Convert(quote.Bids) : EmptyBook;
         }
 
-        private static BookEntry[] Convert(ReadOnlySpan<QuoteBand> bands)
+        private static BookEntry[] Convert(byte[] bandBytes)
         {
-            var bandList = new BookEntry[bands.Length];
-            for (var i = 0; i < bands.Length; i++)
-            {
-                bandList[i] = new BookEntry(bands[i].Price, bands[i].Amount);
-            }
+            var bandList = new BookEntry[bandBytes.Length / QuoteBand.Size];
+            // memory layout is the same so we can simply copy bytes
+            bandBytes.AsSpan().CopyTo(MemoryMarshal.Cast<BookEntry, byte>(bandList));
             return bandList;
         }
 
@@ -38,12 +36,35 @@ namespace TickTrader.Algo.CoreV1
         public bool IsAskIndicative => _quote.IsAskIndicative;
         public bool IsBidIndicative => _quote.IsBidIndicative;
 
-        public BookEntry[] BidBook { get; private set; }
-        public BookEntry[] AskBook { get; private set; }
+        public BookEntry[] BidBook
+        {
+            get
+            {
+                if (_bidBook == null)
+                    _bidBook = _quote.HasBid ? Convert(_quote.BidBytes) : EmptyBook;
+
+                return _bidBook;
+
+            }
+        }
+
+        public BookEntry[] AskBook
+        {
+            get
+            {
+                if (_askBook == null)
+                    _askBook = _quote.HasAsk ? Convert(_quote.AskBytes) : EmptyBook;
+
+                return _askBook;
+            }
+        }
+
+        public ReadOnlySpan<BookEntry> BidSpan => MemoryMarshal.Cast<byte, BookEntry>(_quote.BidBytes);
+        public ReadOnlySpan<BookEntry> AskSpan => MemoryMarshal.Cast<byte, BookEntry>(_quote.AskBytes);
 
         public override string ToString()
         {
-            var bookDepth = Math.Max(BidBook?.Length ?? 0, AskBook?.Length ?? 0);
+            var bookDepth = Math.Max(BidSpan.Length, AskSpan.Length);
             return $"{{{Bid}{(IsBidIndicative ? "i" : "")}/{Ask}{(IsAskIndicative ? "i" : "")} {Time} d{bookDepth}}}";
         }
     }
