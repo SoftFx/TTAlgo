@@ -53,7 +53,7 @@ namespace TickTrader.BotTerminal
             _barVector.AppendRange(barArray);
 
             if (barArray.Length > 0)
-                InitBoundaries(barArray.Length, barArray.First().OpenTime.ToDateTime(), barArray.Last().OpenTime.ToDateTime());
+                InitBoundaries(barArray.Length, TimeMs.ToUtc(barArray.First().OpenTime), TimeMs.ToUtc(barArray.Last().OpenTime));
         }
 
         protected override IndicatorModel CreateIndicator(PluginConfig config)

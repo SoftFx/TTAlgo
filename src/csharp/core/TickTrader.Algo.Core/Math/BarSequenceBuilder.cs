@@ -34,7 +34,7 @@ namespace TickTrader.Algo.Core
         public event Action<BarData> BarUpdated;
         public BarSampler Sampler => _sampler;
         public Feed.Types.Timeframe TimeFrame { get; }
-        public Timestamp TimeEdge => _currentBar?.OpenTime;
+        public long TimeEdge => _currentBar?.OpenTime ?? 0;
 
         public void AppendBar(BarData bar)
         {
@@ -54,12 +54,13 @@ namespace TickTrader.Algo.Core
             //if (_currentBar != null && _currentBar.OpenTime > time)
             //    throw new ArgumentException("Invalid time sequnce!");
 
+            var timeMs = TimeMs.FromTimestamp(time);
             if (_currentBar != null)
             {
-                if (time < _currentBar.OpenTime)
+                if (timeMs < _currentBar.OpenTime)
                     throw new ArgumentException("Invalid time sequnce!");
 
-                if (time < _currentBar.CloseTime)
+                if (timeMs < _currentBar.CloseTime)
                 {
                     // append last bar
                     _currentBar.Append(price, volume);
@@ -69,7 +70,7 @@ namespace TickTrader.Algo.Core
             }
 
             // add new bar
-            var boundaries = _sampler.GetBar(time);
+            var boundaries = _sampler.GetBar(timeMs);
             var newBar = new BarData(boundaries.Open, boundaries.Close, price, volume);
             return Append(newBar);
         }
@@ -218,7 +219,7 @@ namespace TickTrader.Algo.Core
     public interface ITimeSequenceRef
     {
         Feed.Types.Timeframe TimeFrame { get; }
-        Timestamp TimeEdge { get; }
+        long TimeEdge { get; }
 
         event Action<BarData> BarOpened;
         event Action<BarData> BarClosed;

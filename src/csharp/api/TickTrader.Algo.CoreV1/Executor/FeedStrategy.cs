@@ -233,8 +233,8 @@ namespace TickTrader.Algo.CoreV1
             List<BarData> page;
 
             int i = 0;
-            var fromTime = from.ToUniversalTime().ToTimestamp();
-            var toTime = to.ToUniversalTime().ToTimestamp();
+            var fromTime = TimeMs.FromDateTime(from);
+            var toTime = TimeMs.FromDateTime(to);
             var timeRef = (backwardOrder ? to : from).ToTimestamp();
 
             if (backwardOrder)
@@ -255,7 +255,7 @@ namespace TickTrader.Algo.CoreV1
                     if (page.Count != pageSize || i >= 0)
                         break;
 
-                    timeRef = page.First().CloseTime;
+                    timeRef = TimeMs.ToTimestamp(page.First().CloseTime);
                 }
             }
             else
@@ -273,7 +273,7 @@ namespace TickTrader.Algo.CoreV1
                     if (page.Count != pageSize || i != page.Count)
                         break;
 
-                    timeRef = page.Last().OpenTime;
+                    timeRef = TimeMs.ToTimestamp(page.Last().OpenTime);
                 }
             }
         }
@@ -307,7 +307,7 @@ namespace TickTrader.Algo.CoreV1
 
                     if (page.Count < pageSize)
                         break; //last page
-                    fromTime = page.First().OpenTime.AddMilliseconds(-1);
+                    fromTime = TimeMs.ToTimestamp(page.First().OpenTime - 1);
                 }
                 else
                 {
@@ -326,7 +326,7 @@ namespace TickTrader.Algo.CoreV1
 
                     if (page.Count < pageSize)
                         break; //last page
-                    fromTime = page.Last().CloseTime.AddMilliseconds(1);
+                    fromTime = TimeMs.ToTimestamp(page.Last().CloseTime + 1);
                 }
             }
         }

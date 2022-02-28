@@ -1,6 +1,5 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System;
-using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
@@ -9,10 +8,10 @@ namespace TickTrader.Algo.Core
     {
         private QuoteInfo _lastQuote;
         private int _quoteCount;
-        private Timestamp _openTime;
-        private Timestamp _closeTime;
+        private long _openTime;
+        private long _closeTime;
 
-        public BarRateUpdate(Timestamp barStartTime, Timestamp barEndTime, QuoteInfo quote)
+        public BarRateUpdate(long barStartTime, long barEndTime, QuoteInfo quote)
         {
             _openTime = barStartTime;
             _closeTime = barEndTime;
@@ -35,7 +34,7 @@ namespace TickTrader.Algo.Core
             AskBar = askBar;
             _quoteCount = 1;
             Symbol = symbol;
-            _lastQuote = new QuoteInfo(symbol, _closeTime.AddMilliseconds(-10), bidBar.Close, askBar.Close);
+            _lastQuote = new QuoteInfo(symbol, TimeMs.ToTimestamp(_closeTime - 1), bidBar.Close, askBar.Close);
         }
 
         public BarRateUpdate(BarRateUpdate barUpdate)
@@ -93,7 +92,7 @@ namespace TickTrader.Algo.Core
                     AskBar = new BarData(barUpdate.AskBar);
             }
 
-            _lastQuote = new QuoteInfo(Symbol, quoteTime, barUpdate.BidBar?.Close, barUpdate.AskBar?.Close);
+            _lastQuote = new QuoteInfo(Symbol, TimeMs.ToTimestamp(quoteTime), barUpdate.BidBar?.Close, barUpdate.AskBar?.Close);
             _quoteCount++;
         }
 
@@ -103,10 +102,9 @@ namespace TickTrader.Algo.Core
         public BarData BidBar { get; private set; }
         public BarData AskBar { get; private set; }
         public QuoteInfo LastQuote => _lastQuote;
-        public Timestamp Time => _openTime;
 
-        DateTime IRateInfo.Time => _openTime.ToDateTime();
-        Timestamp IRateInfo.Timestamp => _openTime;
+        DateTime IRateInfo.Time => TimeMs.ToUtc(_openTime);
+        Timestamp IRateInfo.Timestamp => TimeMs.ToTimestamp(_openTime);
         double IRateInfo.Ask => AskBar.Close;
         double IRateInfo.AskHigh => AskBar.High;
         double IRateInfo.AskLow => AskBar.Low;

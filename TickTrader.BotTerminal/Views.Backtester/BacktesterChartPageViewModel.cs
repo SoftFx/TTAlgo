@@ -248,7 +248,7 @@ namespace TickTrader.BotTerminal
         {
             var markerInfo = new MarkerInfo(key, pointTime, isBuy, description);
 
-            if (_barVector.Count == 0 || _barVector.Last().CloseTime < pointTime.ToTimestamp())
+            if (_barVector.Count == 0 || _barVector.Last().CloseTime < TimeMs.FromDateTime(pointTime))
                 _postponedMarkers.Enqueue(markerInfo);
             else
                 PlaceMarker(markerInfo);
@@ -258,7 +258,7 @@ namespace TickTrader.BotTerminal
         {
             if (_barVector.Count > 0)
             {
-                var timeEdge = _barVector.Last().CloseTime.ToDateTime();
+                var timeEdge = TimeMs.ToUtc(_barVector.Last().CloseTime);
 
                 while (_postponedMarkers.Count > 0)
                 {
@@ -276,7 +276,7 @@ namespace TickTrader.BotTerminal
 
         private void PlaceMarker(MarkerInfo info)
         {
-            var index = _barVector.Ref.BinarySearch(info.Timestamp.ToTimestamp(), BinarySearchTypes.NearestHigher);
+            var index = _barVector.Ref.BinarySearch(TimeMs.FromDateTime(info.Timestamp), BinarySearchTypes.NearestHigher);
             if (index > 0)
             {
                 var existingMeta = _barVector.MarkersData.Metadata[index] as PositionMarkerMetadatda;

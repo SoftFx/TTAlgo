@@ -63,7 +63,7 @@ namespace TickTrader.Algo.Core
 
         private BarData AppendQuoteInternal(bool noThrow, Timestamp time, double price, double volume)
         {
-            var boundaries = _sampler.GetBar(time);
+            var boundaries = _sampler.GetBar(TimeMs.FromTimestamp(time));
             int currentBarIndex;
             var currentBar = GetLastItem(out currentBarIndex);
 
@@ -143,7 +143,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        protected override Timestamp GetItemTimeCoordinate(BarData item) => item.OpenTime;
+        protected override long GetItemTimeCoordinate(BarData item) => item.OpenTime;
     }
 
     public sealed class BarVector2 : BarVectorBase2

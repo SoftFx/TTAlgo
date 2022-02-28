@@ -9,7 +9,7 @@ namespace TickTrader.FeedStorage
     {
         public static TimeSlicer<BarData> GetBarSlicer(int pageSize, DateTime? from = null, DateTime? to = null)
         {
-            return new TimeSlicer<BarData>(pageSize, from, to, b => b.OpenTime.ToDateTime(), b => b.CloseTime.ToDateTime());
+            return new TimeSlicer<BarData>(pageSize, from, to, b => TimeMs.ToUtc(b.OpenTime), b => TimeMs.ToUtc(b.CloseTime));
         }
 
         public static TimeSlicer<QuoteInfo> GetQuoteSlicer(int pageSize, DateTime? from = null, DateTime? to = null)

@@ -1,16 +1,15 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 
 namespace TickTrader.Algo.Domain
 {
     public partial class BarData
     {
-        public BarData(Timestamp openTime, Timestamp closeTime, double price, double realVolume)
+        public BarData(long openTime, long closeTime, double price, double realVolume)
             : this(openTime, closeTime, price, realVolume, 1)
         {
         }
 
-        public BarData(Timestamp openTime, Timestamp closeTime, double price, double realVolume, long tickVolume)
+        public BarData(long openTime, long closeTime, double price, double realVolume, long tickVolume)
         {
             OpenTime = openTime;
             CloseTime = closeTime;
@@ -25,7 +24,7 @@ namespace TickTrader.Algo.Domain
             return new BarData() { Open = double.NaN, Close = double.NaN, High = double.NaN, Low = double.NaN, RealVolume = double.NaN, TickVolume = 0 };
         }
 
-        public static BarData CreateBlank(Timestamp openTime, Timestamp closeTime)
+        public static BarData CreateBlank(long openTime, long closeTime)
         {
             return new BarData(openTime, closeTime, 0.0, 0.0, 0);
         }

@@ -374,7 +374,7 @@ namespace TickTrader.BotTerminal
                 foreach (var bar in src)
                 {
                     if (!double.IsNaN(bar.Open))
-                        chartData.Append(bar.OpenTime.ToDateTime(), bar.Open, bar.High, bar.Low, bar.Close);
+                        chartData.Append(TimeMs.ToUtc(bar.OpenTime), bar.Open, bar.High, bar.Low, bar.Close);
                 }
 
                 return chartData;
@@ -388,7 +388,7 @@ namespace TickTrader.BotTerminal
             foreach (var bar in bars)
             {
                 if (!double.IsNaN(bar.Open))
-                    chartData.Append(bar.OpenTime.ToDateTime(), bar.Open, bar.High, bar.Low, bar.Close);
+                    chartData.Append(TimeMs.ToUtc(bar.OpenTime), bar.Open, bar.High, bar.Low, bar.Close);
             }
 
             return chartData;

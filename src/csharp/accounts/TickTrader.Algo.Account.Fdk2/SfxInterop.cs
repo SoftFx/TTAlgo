@@ -1220,8 +1220,8 @@ namespace TickTrader.Algo.Account.Fdk2
                 High = fdkBar.High,
                 Low = fdkBar.Low,
                 RealVolume = fdkBar.Volume,
-                OpenTime = fdkBar.From.ToUniversalTime().ToTimestamp(),
-                CloseTime = fdkBar.To.ToUniversalTime().ToTimestamp(),
+                OpenTime = TimeMs.FromDateTime(fdkBar.From),
+                CloseTime = TimeMs.FromDateTime(fdkBar.To),
             };
         }
 

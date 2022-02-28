@@ -290,7 +290,7 @@ namespace TickTrader.BotTerminal.SymbolManager
         {
             foreach (var val in values)
             {
-                _writer.Write(val.OpenTime.ToDateTime());
+                _writer.Write(TimeMs.ToUtc(val.OpenTime));
                 _writer.Write(",");
                 _writer.Write(val.Open);
                 _writer.Write(",");

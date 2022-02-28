@@ -98,7 +98,7 @@ namespace TickTrader.Algo.CoreV1
         {
             if (!_isBatch && _sendUpdates)
             {
-                var timeCoordinate = TimeMs.FromTimestamp(_timeRef[index]);
+                var timeCoordinate = _timeRef[index];
                 SendUpdate(new OutputPointWire(_pointFactory(timeCoordinate, data)), DataSeriesUpdate.Types.Action.Append);
             }
         }
@@ -107,7 +107,7 @@ namespace TickTrader.Algo.CoreV1
         {
             if (!_isBatch && _sendUpdates)
             {
-                var timeCoordinate = TimeMs.FromTimestamp(_timeRef[index]);
+                var timeCoordinate = _timeRef[index];
                 SendUpdate(new OutputPointWire(_pointFactory(timeCoordinate, data)), DataSeriesUpdate.Types.Action.Update);
             }
         }
@@ -125,7 +125,7 @@ namespace TickTrader.Algo.CoreV1
 
                 for (var i = 0; i < count; i++)
                 {
-                    var timeCoordinate = TimeMs.FromTimestamp(_timeRef[i]);
+                    var timeCoordinate = _timeRef[i];
                     update.Points.Add(new OutputPointWire(_pointFactory(timeCoordinate, _buffer[i])));
                 }
 

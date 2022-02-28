@@ -29,7 +29,7 @@ namespace TickTrader.Algo.Indicators.Tests.Utility
                         {
                             var bar = new BarData
                             {
-                                OpenTime = new Timestamp {Seconds = reader.ReadInt64() },
+                                OpenTime = TimeMs.FromTimestamp(new Timestamp {Seconds = reader.ReadInt64() }),
                                 Open = reader.ReadDouble(),
                                 High = reader.ReadDouble(),
                                 Low = reader.ReadDouble(),

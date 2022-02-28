@@ -16,11 +16,11 @@ namespace TickTrader.Algo.CoreV1
             _buffer = context.Builder.GetBuffer<QuoteInfo>(SymbolCode);
         }
 
-        public Timestamp this[int index] => _buffer[index].Timestamp;
+        public long this[int index] => TimeMs.FromTimestamp(_buffer[index].Timestamp);
         public int Count { get { return _buffer.Count; } }
         public bool IsLoaded { get; private set; }
         public int LastIndex => _buffer.Count - 1;
-        public Timestamp OpenTime => _buffer[0].Timestamp;
+        public long OpenTime => TimeMs.FromTimestamp(_buffer[0].Timestamp);
 
         public event Action Appended { add { } remove { } }
 

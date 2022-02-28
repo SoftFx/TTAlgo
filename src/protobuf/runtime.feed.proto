@@ -150,8 +150,8 @@ message BarInfo {
 }
 
 message BarData {
-    google.protobuf.Timestamp open_time = 1;
-    google.protobuf.Timestamp close_time = 2;
+    int64 open_time = 1;
+    int64 close_time = 2;
     double open = 3;
     double close = 4;
     double high = 5;

@@ -40,7 +40,7 @@ namespace TickTrader.Algo.CoreV1
         {
             if (!_isBatch)
             {
-                var timeCoordinate = TimeMs.FromTimestamp(_timeRef[index]);
+                var timeCoordinate = _timeRef[index];
                 Appended(_pointFactory(timeCoordinate, data));
             }
         }
@@ -49,7 +49,7 @@ namespace TickTrader.Algo.CoreV1
         {
             if (!_isBatch)
             {
-                var timeCoordinate = TimeMs.FromTimestamp(_timeRef[index]);
+                var timeCoordinate = _timeRef[index];
                 Updated(_pointFactory(timeCoordinate, data));
             }
         }
@@ -84,7 +84,7 @@ namespace TickTrader.Algo.CoreV1
         }
 
         internal int Count => _buffer.Count;
-        internal OutputPoint this[int index] => _pointFactory(TimeMs.FromTimestamp(_timeRef[index]), _buffer[index]);
+        internal OutputPoint this[int index] => _pointFactory(_timeRef[index], _buffer[index]);
         internal OutputBuffer<T> Buffer => _buffer;
 
         public event Action ResetAll = delegate { };

@@ -135,9 +135,9 @@ namespace TickTrader.Algo.Account
                 pages.Add(page);
                 pageSize -= page.Length;
 
-                from = isBackward
-                    ? page.First().OpenTime.AddMilliseconds(-1)
-                    : page.Last().CloseTime.AddMilliseconds(1);
+                from = TimeMs.ToTimestamp(isBackward
+                    ? page.First().OpenTime - 1
+                    : page.Last().CloseTime + 1);
             }
 
             return pages.ConcatAll();
@@ -184,12 +184,13 @@ namespace TickTrader.Algo.Account
 
                 logger.Debug("Downloaded bar page {0} : {1} ({2} {3} {4})", from, page.Length, symbol, marketSide, timeframe);
 
+                var toMs = TimeMs.FromTimestamp(to);
                 foreach (var bar in page)
                 {
-                    if (bar.OpenTime <= to)
+                    if (bar.OpenTime <= toMs)
                     {
                         result.Add(bar);
-                        from = bar.CloseTime;
+                        from = TimeMs.ToTimestamp(bar.CloseTime);
                     }
                     else
                         return result;

@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Core.Tests
 {
     public static class MockHelper
     {
-        internal static List<BarData> Add(this List<BarData> list, Timestamp openTime, double open,
+        internal static List<BarData> Add(this List<BarData> list, long openTime, double open,
             double? close = null, double? high = null, double? low = null)
         {
             var bar = new BarData()
@@ -31,7 +31,7 @@ namespace TickTrader.Algo.Core.Tests
         internal static List<BarData> Add(this List<BarData> list, string openTime, double open,
             double? close = null, double? high = null, double? low = null)
         {
-            return Add(list, TimestampHelper.ParseLocalDateTime(openTime), open, close, high, low);
+            return Add(list, TimeMsHelper.ParseLocalDateTime(openTime), open, close, high, low);
         }
 
         internal static QuoteInfo CreateQuote(string timestamp, double bid, double? ask)

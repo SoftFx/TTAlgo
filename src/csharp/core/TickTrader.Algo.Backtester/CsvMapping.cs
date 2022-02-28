@@ -27,7 +27,7 @@ namespace TickTrader.Algo.Backtester
         {
             public ForBarData()
             {
-                Map(b => b.OpenTime).Index(0).Name("OpenTimeUtc").TypeConverter<ProtoTimestampTypeConverter>();
+                Map(b => b.OpenTime).Index(0).Name("OpenTimeUtc").TypeConverter<TimeMsTypeConverter>();
                 Map(b => b.Open).Index(1).Name("Open");
                 Map(b => b.High).Index(2).Name("High");
                 Map(b => b.Low).Index(3).Name("Low");

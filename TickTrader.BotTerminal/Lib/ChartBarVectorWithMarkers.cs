@@ -20,7 +20,7 @@ namespace TickTrader.BotTerminal.Lib
         protected override void AddToInternalCollection(BarData bar)
         {
             base.AddToInternalCollection(bar);
-            MarkersData.Append(bar.OpenTime.ToDateTime(), bar.Open);
+            MarkersData.Append(TimeMs.ToUtc(bar.OpenTime), bar.Open);
             MarkersData.Metadata.Add(null);
         }
     }

@@ -94,7 +94,7 @@ namespace TickTrader.BotTerminal.SymbolManager
                     if (vector.Count >= pageSize + 1)
                     {
                         var page = vector.RemoveFromStart(pageSize);
-                        symbol.WriteSlice(timeFrame, priceType, page.First().OpenTime, page.Last().CloseTime, page);
+                        symbol.WriteSlice(timeFrame, priceType, TimeMs.ToTimestamp(page.First().OpenTime), TimeMs.ToTimestamp(page.Last().CloseTime), page);
                         observer.SetMessage(string.Format("Importing...  {0} bars are imported.", count));
                     }
                 }
@@ -102,7 +102,7 @@ namespace TickTrader.BotTerminal.SymbolManager
                 if (vector.Count > 0)
                 {
                     var page = vector.ToArray();
-                    symbol.WriteSlice(timeFrame, priceType, page.First().OpenTime, page.Last().CloseTime, page);
+                    symbol.WriteSlice(timeFrame, priceType, TimeMs.ToTimestamp(page.First().OpenTime), TimeMs.ToTimestamp(page.Last().CloseTime), page);
                 }
 
                 observer.SetMessage(string.Format("Done importing. {0} bars were imported.", count));
@@ -205,7 +205,7 @@ namespace TickTrader.BotTerminal.SymbolManager
 
                     var bar = new BarData
                     {
-                        OpenTime = DateTime.Parse(parts[0]).ToTimestamp(),
+                        OpenTime = TimeMs.FromDateTime(DateTime.Parse(parts[0])),
                         Open = double.Parse(parts[1]),
                         High = double.Parse(parts[2]),
                         Low = double.Parse(parts[3]),

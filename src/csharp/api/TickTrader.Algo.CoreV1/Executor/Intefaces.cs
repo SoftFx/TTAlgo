@@ -57,7 +57,7 @@ namespace TickTrader.Algo.CoreV1
     public interface ITimeRef
     {
         int LastIndex { get; }
-        Timestamp this[int index] { get; }
+        long this[int index] { get; }
         event Action Appended;
     }
 

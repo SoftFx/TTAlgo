@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Lib
 {
@@ -39,6 +40,30 @@ namespace TickTrader.Algo.Core.Lib
                 seconds -= 1;
             }
             return new Timestamp { Seconds = seconds, Nanos = (int)nanos };
+        }
+    }
+
+    public static class TimeMsHelper
+    {
+        public static long ParseLocalDateTime(string dateTimeString)
+        {
+            return TimeMs.FromDateTime(DateTime.Parse(dateTimeString, null, System.Globalization.DateTimeStyles.AssumeLocal));
+        }
+
+        public static long ParseUtcDateTime(string dateTimeString)
+        {
+            return TimeMs.FromDateTime(DateTime.Parse(dateTimeString, null, System.Globalization.DateTimeStyles.AssumeUniversal));
+        }
+
+        public static long FromDate(int year, int month, int day)
+        {
+            return FromDateAndTime(year, month, day, 0, 0, 0);
+        }
+
+        public static long FromDateAndTime(int year, int month, int day, int hour, int minute, int second)
+        {
+            var dt = new DateTime(year, month, day, hour, minute, second, DateTimeKind.Utc);
+            return TimeMs.FromDateTime(dt);
         }
     }
 }

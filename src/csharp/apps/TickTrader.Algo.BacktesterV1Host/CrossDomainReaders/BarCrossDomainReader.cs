@@ -20,7 +20,7 @@ namespace TickTrader.Algo.BacktesterV1Host
             return _dataBase.GetSeries(
                 new DateTimeKeySerializer(),
                 new BarSerializer(_request.Key.TimeFrame),
-                b => b.OpenTime.ToDateTime(),
+                b => TimeMs.ToUtc(b.OpenTime),
                 _request.Key.FullInfo,
                 false);
         }
