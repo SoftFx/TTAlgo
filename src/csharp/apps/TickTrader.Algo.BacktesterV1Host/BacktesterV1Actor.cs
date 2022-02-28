@@ -198,7 +198,7 @@ namespace TickTrader.Algo.BacktesterV1Host
             }
         }
 
-        private void ConfigureFeed(BacktesterConfig config, FeedEmulator feedEmulator, DateTime from, DateTime to)
+        private static void ConfigureFeed(BacktesterConfig config, FeedEmulator feedEmulator, DateTime from, DateTime to)
         {
             var core = config.Core;
             var feedCachePath = config.Env.FeedCachePath;
@@ -206,9 +206,9 @@ namespace TickTrader.Algo.BacktesterV1Host
             foreach (var feedCfg in core.FeedConfig)
             {
                 var symbol = feedCfg.Key;
-                var timeframe = symbol == core.MainSymbol ? core.ModelTimeframe : feedCfg.Value;
+                var timeframe = feedCfg.Value;
 
-                if (timeframe == Feed.Types.Timeframe.Ticks || timeframe == Feed.Types.Timeframe.TicksLevel2)
+                if (timeframe.IsTick())
                 {
                     var request = new CrossDomainReaderRequest(new FeedCacheKey(symbol, timeframe), from, to);
                     feedEmulator.AddSource(symbol, new TickCrossDomainReader(feedCachePath, request));
