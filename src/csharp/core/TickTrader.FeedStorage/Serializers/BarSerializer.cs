@@ -21,7 +21,7 @@ namespace TickTrader.FeedStorage.Serializers
             var writer = new LightObjectWriter();
             writer.WriteFixedSizeArray(val, (e, w) =>
             {
-                w.Write(TimeMs.ToUtc(e.OpenTime));
+                w.Write(TimeTicks.FromMs(e.OpenTime));
                 w.Write(e.Open);
                 w.Write(e.High);
                 w.Write(e.Low);
@@ -36,7 +36,7 @@ namespace TickTrader.FeedStorage.Serializers
             _reader.SetDataBuffer(bytes);
             return _reader.ReadArray((r) =>
             {
-                var time = TimeMs.FromDateTime(r.ReadDateTime(DateTimeKind.Utc));
+                var time = TimeMs.FromUtcTicks(r.ReadUtcTicks());
                 var open = r.ReadDouble();
                 var high = r.ReadDouble();
                 var low = r.ReadDouble();

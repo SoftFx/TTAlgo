@@ -49,12 +49,12 @@ namespace TickTrader.Algo.Core
             Append(bar);
         }
 
-        public BarData AppendQuote(Timestamp time, double price, double volume)
+        public BarData AppendQuote(long time, double price, double volume)
         {
             //if (_currentBar != null && _currentBar.OpenTime > time)
             //    throw new ArgumentException("Invalid time sequnce!");
 
-            var timeMs = TimeMs.FromTimestamp(time);
+            var timeMs = TimeMs.FromUtcTicks(time);
             if (_currentBar != null)
             {
                 if (timeMs < _currentBar.OpenTime)

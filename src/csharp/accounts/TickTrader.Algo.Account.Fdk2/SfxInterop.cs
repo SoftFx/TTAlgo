@@ -1238,7 +1238,7 @@ namespace TickTrader.Algo.Account.Fdk2
         {
             var timeOfReceive = DateTime.UtcNow;
 
-            var time = fdkTick.CreatingTime.ToTimestamp();
+            var time = TimeTicks.FromDateTime(fdkTick.CreatingTime);
             var bids = ConvertLevel2(fdkTick.Bids);
             var asks = ConvertLevel2(fdkTick.Asks);
             return new QuoteInfo(fdkTick.Symbol, time, bids, asks, timeOfReceive: timeOfReceive)

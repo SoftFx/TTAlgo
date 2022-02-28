@@ -128,9 +128,9 @@ namespace TickTrader.Algo.CoreV1
 
         protected override IRateInfo Aggregate(IRateInfo last, QuoteInfo quote)
         {
-            var bounds = _sampler.GetBar(TimeMs.FromTimestamp(quote.Timestamp));
+            var bounds = _sampler.GetBar(quote.UtcMs);
 
-            if (last != null && TimeMs.FromTimestamp(last.Timestamp) == bounds.Open)
+            if (last != null && last.UtcMs == bounds.Open)
             {
                 ((BarRateUpdate)last).Append(quote);
                 return null;

@@ -20,7 +20,7 @@ namespace TickTrader.Algo.CoreV1
 
         protected override Bar Convert(QuoteInfo quote)
         {
-            var timeMs = TimeMs.FromTimestamp(quote.Timestamp);
+            var timeMs = quote.UtcMs;
             return new BarEntity(new BarData(timeMs, timeMs, quote.Bid, 1));
         }
     }

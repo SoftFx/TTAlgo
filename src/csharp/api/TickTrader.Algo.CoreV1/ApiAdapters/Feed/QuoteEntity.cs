@@ -40,7 +40,7 @@ namespace TickTrader.Algo.CoreV1
         {
             get
             {
-                if (_bidBook == null)
+                if (_bidBook == null) // lazy init
                     _bidBook = _quote.HasBid ? Convert(_quote.BidBytes) : EmptyBook;
 
                 return _bidBook;
@@ -52,7 +52,7 @@ namespace TickTrader.Algo.CoreV1
         {
             get
             {
-                if (_askBook == null)
+                if (_askBook == null) // lazy init
                     _askBook = _quote.HasAsk ? Convert(_quote.AskBytes) : EmptyBook;
 
                 return _askBook;

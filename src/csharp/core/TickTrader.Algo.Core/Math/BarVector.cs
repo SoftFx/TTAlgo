@@ -56,6 +56,11 @@ namespace TickTrader.Algo.Core
 
         public void AppendQuote(Timestamp time, double price, double volume)
         {
+            _builder.AppendQuote(TimeTicks.FromTimestamp(time), price, volume);
+        }
+
+        public void AppendQuote(long time, double price, double volume)
+        {
             _builder.AppendQuote(time, price, volume);
         }
 

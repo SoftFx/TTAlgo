@@ -60,7 +60,7 @@ namespace TickTrader.Algo.CoreV1
 
         public BufferUpdateResult Update(QuoteInfo quote)
         {
-            var barBoundaries = sampler.GetBar(TimeMs.FromTimestamp(quote.Timestamp));
+            var barBoundaries = sampler.GetBar(quote.UtcMs);
             var barOpenTime = barBoundaries.Open;
             var price = _marketSide == Feed.Types.MarketSide.Ask ? quote.Ask : quote.Bid;
 

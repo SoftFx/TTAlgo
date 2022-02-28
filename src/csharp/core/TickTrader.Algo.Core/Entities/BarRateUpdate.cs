@@ -34,7 +34,7 @@ namespace TickTrader.Algo.Core
             AskBar = askBar;
             _quoteCount = 1;
             Symbol = symbol;
-            _lastQuote = new QuoteInfo(symbol, TimeMs.ToTimestamp(_closeTime - 1), bidBar.Close, askBar.Close);
+            _lastQuote = new QuoteInfo(symbol, TimeTicks.FromMs(_closeTime - 1), bidBar.Close, askBar.Close);
         }
 
         public BarRateUpdate(BarRateUpdate barUpdate)
@@ -92,7 +92,7 @@ namespace TickTrader.Algo.Core
                     AskBar = new BarData(barUpdate.AskBar);
             }
 
-            _lastQuote = new QuoteInfo(Symbol, TimeMs.ToTimestamp(quoteTime), barUpdate.BidBar?.Close, barUpdate.AskBar?.Close);
+            _lastQuote = new QuoteInfo(Symbol, TimeTicks.FromMs(quoteTime), barUpdate.BidBar?.Close, barUpdate.AskBar?.Close);
             _quoteCount++;
         }
 
@@ -103,7 +103,10 @@ namespace TickTrader.Algo.Core
         public BarData AskBar { get; private set; }
         public QuoteInfo LastQuote => _lastQuote;
 
+        long IRateInfo.UtcTicks => TimeTicks.FromMs(_openTime);
+        long IRateInfo.UtcMs => _openTime;
         DateTime IRateInfo.Time => TimeMs.ToUtc(_openTime);
+        DateTime IRateInfo.TimeUtc => TimeMs.ToUtc(_openTime);
         Timestamp IRateInfo.Timestamp => TimeMs.ToTimestamp(_openTime);
         double IRateInfo.Ask => AskBar.Close;
         double IRateInfo.AskHigh => AskBar.High;

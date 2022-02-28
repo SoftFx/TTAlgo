@@ -50,7 +50,7 @@ namespace TickTrader.BotTerminal
 
             if (Model.LastQuote != null)
             {
-                DateTime timeMargin = Model.LastQuote.Time.ToUniversalTime();
+                DateTime timeMargin = Model.LastQuote.TimeUtc;
 
                 var ticks = new QuoteInfo[0];
 

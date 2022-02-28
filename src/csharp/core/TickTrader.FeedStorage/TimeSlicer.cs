@@ -14,7 +14,7 @@ namespace TickTrader.FeedStorage
 
         public static TimeSlicer<QuoteInfo> GetQuoteSlicer(int pageSize, DateTime? from = null, DateTime? to = null)
         {
-            return new TimeSlicer<QuoteInfo>(pageSize, from, to, b => ToUtc(b.Time));
+            return new TimeSlicer<QuoteInfo>(pageSize, from, to, b => b.TimeUtc);
         }
 
         public static DateTime ToUtc(DateTime dateTime)

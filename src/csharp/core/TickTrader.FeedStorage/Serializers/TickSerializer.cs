@@ -41,7 +41,7 @@ namespace TickTrader.FeedStorage.Serializers
 
             private QuoteInfo ReadQuote(LightObjectReader reader)
             {
-                var time = reader.ReadDateTime(DateTimeKind.Utc).ToTimestamp();
+                var time = reader.ReadUtcTicks();
 
                 double? bid = null, ask = null;
                 var flags = (FieldFlags)reader.ReadByte();
@@ -66,7 +66,7 @@ namespace TickTrader.FeedStorage.Serializers
 
             private static void WriteQuote(QuoteInfo quote, LightObjectWriter writer)
             {
-                writer.Write(quote.Time);
+                writer.Write(quote.UtcTicks);
 
                 var flags = quote.HasBid ? FieldFlags.HasBid : FieldFlags.Empty;
                 flags |= quote.HasAsk ? FieldFlags.HasAsk : FieldFlags.Empty;
@@ -99,7 +99,7 @@ namespace TickTrader.FeedStorage.Serializers
 
             private QuoteInfo ReadQuote(LightObjectReader reader)
             {
-                var time = reader.ReadDateTime(DateTimeKind.Utc).ToTimestamp();
+                var time = reader.ReadUtcTicks();
                 var bids = ReadBook(reader);
                 var asks = ReadBook(reader);
 
@@ -125,7 +125,7 @@ namespace TickTrader.FeedStorage.Serializers
                 var writer = new LightObjectWriter();
                 writer.WriteFixedSizeArray(val, (e, w) =>
                 {
-                    writer.Write(e.Time);
+                    writer.Write(e.UtcTicks);
 
                     writer.Write(e.BidBytes.Length / QuoteBand.Size);
                     writer.Write(e.BidBytes);

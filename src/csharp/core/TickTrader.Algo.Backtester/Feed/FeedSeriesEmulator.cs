@@ -146,13 +146,13 @@ namespace TickTrader.Algo.Backtester
             if (quote.HasBid)
             {
                 foreach (var rec in _bidBars.Values)
-                    rec.AppendQuote(quote.Timestamp, quote.Bid, 1);
+                    rec.AppendQuote(quote.UtcTicks, quote.Bid, 1);
             }
 
             if (quote.HasAsk)
             {
                 foreach (var rec in _askBars.Values)
-                    rec.AppendQuote(quote.Timestamp, quote.Ask, 1);
+                    rec.AppendQuote(quote.UtcTicks, quote.Ask, 1);
             }
         }
     }
