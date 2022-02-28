@@ -41,7 +41,7 @@ namespace TickTrader.Algo.CoreV1
             get
             {
                 if (_bidBook == null) // lazy init
-                    _bidBook = _quote.HasBid ? Convert(_quote.BidBytes) : EmptyBook;
+                    _bidBook = _quote.HasBid ? Convert(_quote.L2Data.BidBytes) : EmptyBook;
 
                 return _bidBook;
 
@@ -53,14 +53,14 @@ namespace TickTrader.Algo.CoreV1
             get
             {
                 if (_askBook == null) // lazy init
-                    _askBook = _quote.HasAsk ? Convert(_quote.AskBytes) : EmptyBook;
+                    _askBook = _quote.HasAsk ? Convert(_quote.L2Data.AskBytes) : EmptyBook;
 
                 return _askBook;
             }
         }
 
-        public ReadOnlySpan<BookEntry> BidSpan => MemoryMarshal.Cast<byte, BookEntry>(_quote.BidBytes);
-        public ReadOnlySpan<BookEntry> AskSpan => MemoryMarshal.Cast<byte, BookEntry>(_quote.AskBytes);
+        public ReadOnlySpan<BookEntry> BidSpan => MemoryMarshal.Cast<QuoteBand, BookEntry>(_quote.L2Data.Bids);
+        public ReadOnlySpan<BookEntry> AskSpan => MemoryMarshal.Cast<QuoteBand, BookEntry>(_quote.L2Data.Asks);
 
         public override string ToString()
         {

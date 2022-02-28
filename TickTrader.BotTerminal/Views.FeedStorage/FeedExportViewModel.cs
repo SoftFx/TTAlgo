@@ -310,8 +310,8 @@ namespace TickTrader.BotTerminal.SymbolManager
             {
                 _writer.Write(val.Time.ToString("yyyy-MM-dd HH:mm:ss.fff"));
 
-                var bids = val.Bids;
-                var asks = val.Asks;
+                var bids = val.L2Data.Bids;
+                var asks = val.L2Data.Asks;
 
                 for (int i = 0; i < Math.Max(bids.Length, asks.Length); i++)
                 {

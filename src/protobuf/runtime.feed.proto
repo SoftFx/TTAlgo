@@ -118,6 +118,7 @@ message QuoteData {
     bool is_ask_indicative = 3;
     bytes bid_bytes = 4;
     bytes ask_bytes = 5;
+    bytes tick_bytes = 6;
 }
 
 message QuotePage {

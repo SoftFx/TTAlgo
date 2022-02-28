@@ -127,11 +127,11 @@ namespace TickTrader.FeedStorage.Serializers
                 {
                     writer.Write(e.UtcTicks);
 
-                    writer.Write(e.BidBytes.Length / QuoteBand.Size);
-                    writer.Write(e.BidBytes);
+                    writer.Write(e.L2Data.BidBytes.Length / QuoteBand.Size);
+                    writer.Write(e.L2Data.BidBytes);
 
-                    writer.Write(e.AskBytes.Length / QuoteBand.Size);
-                    writer.Write(e.AskBytes);
+                    writer.Write(e.L2Data.AskBytes.Length / QuoteBand.Size);
+                    writer.Write(e.L2Data.AskBytes);
                 });
                 return writer.GetBuffer();
             }

@@ -41,7 +41,7 @@ namespace TickTrader.Algo.Core.Tests
 
         internal static QuoteInfo CreateQuote(string symbol, Timestamp timestamp, double bid, double? ask = null)
         {
-            return new QuoteInfo(symbol, timestamp, bid, ask ?? bid);
+            return new QuoteInfo(symbol, TimeTicks.FromTimestamp(timestamp), bid, ask ?? bid);
         }
 
         internal static void UpdateRate(this BarSeriesFixture fixture, string timestamp, double bid, double? ask = null)

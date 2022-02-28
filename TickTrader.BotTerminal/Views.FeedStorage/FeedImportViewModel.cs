@@ -268,7 +268,7 @@ namespace TickTrader.BotTerminal.SymbolManager
                         BidBytes = ByteStringHelper.CopyFromUglyHack(MemoryMarshal.Cast<QuoteBand, byte>(bids.Slice(bidDepth))),
                     };
 
-                    yield return new QuoteInfo("", data);
+                    yield return QuoteInfo.Create("", data);
                 }
             }
         }
