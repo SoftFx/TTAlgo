@@ -230,21 +230,25 @@ namespace TickTrader.Algo.Domain
 
         public QuoteInfo Truncate(int depth)
         {
+            QuoteInfo res;
+
             if (_l2Data == null)
             {
-                return new QuoteInfo(Symbol, UtcTicks, Bid, Ask);
+                res=  new QuoteInfo(Symbol, UtcTicks, Bid, Ask);
             }
             else
             {
-                return new QuoteInfo(Symbol, UtcTicks)
+                res =new QuoteInfo(Symbol, UtcTicks, Bid, Ask)
                 {
-                    _symbol = _symbol,
                     _l2Data = _l2Data.Truncate(depth),
-                    UtcTicks = UtcTicks,
                     IsBidIndicative = IsBidIndicative,
                     IsAskIndicative = IsAskIndicative,
                 };
             }
+
+            res.IsBidIndicative = IsBidIndicative;
+            res.IsAskIndicative = IsAskIndicative;
+            return res;
         }
 
         public FullQuoteInfo GetFullQuote()
