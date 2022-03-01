@@ -76,13 +76,13 @@ namespace TickTrader.Algo.Backtester
 
         private SeriesReader GetMin(List<SeriesReader> readers)
         {
-            DateTime minTime = DateTime.MaxValue;
+            long minTime = long.MaxValue;
             SeriesReader minReader = null;
 
             for (int i = 0; i < readers.Count; i++)
             {
                 var reader = readers[i];
-                var readerTime = reader.Current.Time;
+                var readerTime = reader.Current.UtcTicks;
 
                 if (minTime > readerTime)
                 {

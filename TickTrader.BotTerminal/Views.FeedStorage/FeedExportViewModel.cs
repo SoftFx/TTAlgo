@@ -308,7 +308,7 @@ namespace TickTrader.BotTerminal.SymbolManager
         {
             foreach (var val in values)
             {
-                _writer.Write(val.Time.ToString("yyyy-MM-dd HH:mm:ss.fff"));
+                _writer.Write(val.TimeUtc.ToString("yyyy-MM-dd HH:mm:ss.fff"));
 
                 var bids = val.L2Data.Bids;
                 var asks = val.L2Data.Asks;

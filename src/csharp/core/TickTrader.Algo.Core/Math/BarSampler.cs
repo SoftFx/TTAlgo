@@ -34,7 +34,7 @@ namespace TickTrader.Algo.Core
         public abstract BarBoundaries GetBar(long timepoint);
     }
 
-    public struct BarBoundaries
+    public readonly struct BarBoundaries
     {
         public BarBoundaries(long openMs, long closeMs)
         {

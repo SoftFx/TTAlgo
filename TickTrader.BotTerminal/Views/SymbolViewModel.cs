@@ -44,7 +44,7 @@ namespace TickTrader.BotTerminal
 
         private void OnRateUpdate(QuoteInfo tick)
         {
-            QuoteTime.Value = tick.Time;
+            QuoteTime.Value = tick.TimeUtc;
 
             Bid.RateUpdate(tick.Bid);
             Ask.RateUpdate(tick.Ask);

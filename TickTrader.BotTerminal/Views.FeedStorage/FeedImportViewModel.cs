@@ -117,7 +117,7 @@ namespace TickTrader.BotTerminal.SymbolManager
                     if (page.Count >= pageSize)
                     {
                         // we cannot put ticks with same time into different chunks
-                        if (lastTick.Time != tick.Time)
+                        if (lastTick.UtcTicks != tick.UtcTicks)
                         {
                             symbol.WriteSlice(timeFrame, page[0].Timestamp, tick.Timestamp, page.ToArray());
                             observer.SetMessage(string.Format("Importing...  {0} ticks are imported.", count));
@@ -132,8 +132,8 @@ namespace TickTrader.BotTerminal.SymbolManager
 
                 if (page.Count > 0)
                 {
-                    var toCorrected = page.Last().Time + TimeSpan.FromTicks(1);
-                    symbol.WriteSlice(timeFrame, page[0].Timestamp, toCorrected.ToTimestamp(), page.ToArray());
+                    var toCorrected = TimeTicks.ToTimestamp(page.Last().UtcTicks + 1);
+                    symbol.WriteSlice(timeFrame, page[0].Timestamp, toCorrected, page.ToArray());
                 }
 
                 observer.SetMessage(string.Format("Done importing. {0} ticks were imported.", count));

@@ -24,13 +24,6 @@ namespace TickTrader.Algo.CoreV1
 
         public event Action Appended { add { } remove { } }
 
-        public Timestamp GetTimeAtIndex(int index)
-        {
-            if (index < 0 || index >= Count)
-                return null;
-            return _buffer[index].Timestamp;
-        }
-
         public void LoadFeed(Timestamp from, Timestamp to)
         {
             var data = Context.FeedHistory.QueryQuotes(SymbolCode, from, to, false);

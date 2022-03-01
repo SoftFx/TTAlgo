@@ -35,16 +35,9 @@ namespace TickTrader.Algo.CoreV1
         }
 
 
-        public BarBoundaries GetBarBounds(Timestamp time)
+        public BufferUpdateResult Update(long utcMs)
         {
-            var barBoundaries = _sampler.GetBar(TimeMs.FromTimestamp(time));
-            Update(barBoundaries);
-            return barBoundaries;
-        }
-
-        public BufferUpdateResult Update(Timestamp time)
-        {
-            var barBoundaries = _sampler.GetBar(TimeMs.FromTimestamp(time));
+            var barBoundaries = _sampler.GetBar(utcMs);
             return Update(barBoundaries);
         }
 

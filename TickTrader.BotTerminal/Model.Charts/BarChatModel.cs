@@ -74,7 +74,7 @@ namespace TickTrader.BotTerminal
             if (quote.HasBid)
             {
                 _barVector.TryAppendQuote(quote.Timestamp, quote.Bid, 1);
-                ExtendBoundaries(_barVector.Count, quote.Time);
+                ExtendBoundaries(_barVector.Count, quote.TimeUtc);
             }
         }
 

@@ -70,18 +70,18 @@ namespace TickTrader.BotTerminal
                 //}
 
                 askData.Append(
-                    ticks.Select(t => t.Time),
+                    ticks.Select(t => t.TimeUtc),
                     ticks.Select(t => t.Ask));
                 bidData.Append(
-                    ticks.Select(t => t.Time),
+                    ticks.Select(t => t.TimeUtc),
                     ticks.Select(t => t.Bid));
 
                 if (ticks.Length > 0)
                 {
                     lastSeriesQuote = ticks.Last();
 
-                    var start = ticks.First().Time;
-                    var end = ticks.Last().Time;
+                    var start = ticks.First().TimeUtc;
+                    var end = ticks.Last().TimeUtc;
                     InitBoundaries(ticks.Length, start, end);
                 }
             }
@@ -89,11 +89,11 @@ namespace TickTrader.BotTerminal
 
         protected override void ApplyUpdate(QuoteInfo update)
         {
-            if (lastSeriesQuote == null || update.Time > lastSeriesQuote.Time)
+            if (lastSeriesQuote == null || update.UtcTicks > lastSeriesQuote.UtcTicks)
             {
-                askData.Append(update.Time, update.Ask);
-                bidData.Append(update.Time, update.Bid);
-                ExtendBoundaries(askData.Count, update.Time);
+                askData.Append(update.TimeUtc, update.Ask);
+                bidData.Append(update.TimeUtc, update.Bid);
+                ExtendBoundaries(askData.Count, update.TimeUtc);
             }
         }
 

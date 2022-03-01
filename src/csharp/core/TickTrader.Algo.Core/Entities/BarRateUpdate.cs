@@ -105,9 +105,7 @@ namespace TickTrader.Algo.Core
 
         long IRateInfo.UtcTicks => TimeTicks.FromMs(_openTime);
         long IRateInfo.UtcMs => _openTime;
-        DateTime IRateInfo.Time => TimeMs.ToUtc(_openTime);
         DateTime IRateInfo.TimeUtc => TimeMs.ToUtc(_openTime);
-        Timestamp IRateInfo.Timestamp => TimeMs.ToTimestamp(_openTime);
         double IRateInfo.Ask => AskBar.Close;
         double IRateInfo.AskHigh => AskBar.High;
         double IRateInfo.AskLow => AskBar.Low;

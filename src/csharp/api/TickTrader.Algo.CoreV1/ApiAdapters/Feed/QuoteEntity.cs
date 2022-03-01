@@ -28,7 +28,7 @@ namespace TickTrader.Algo.CoreV1
         }
 
         public string Symbol => _quote.Symbol;
-        public DateTime Time => _quote.Time;
+        public DateTime Time => _quote.TimeUtc;
         public bool HasAsk => _quote.HasAsk;
         public bool HasBid => _quote.HasBid;
         public double Ask => _quote.Ask;

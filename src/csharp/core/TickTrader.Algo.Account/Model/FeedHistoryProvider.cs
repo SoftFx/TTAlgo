@@ -163,9 +163,9 @@ namespace TickTrader.Algo.Account
                 pages.Add(page);
                 count -= page.Length;
 
-                from = isBackward
-                    ? page.First().Timestamp.AddMilliseconds(-1)
-                    : page.Last().Timestamp.AddMilliseconds(1);
+                from = TimeMs.ToTimestamp(isBackward
+                    ? page.First().UtcMs - 1
+                    : page.Last().UtcMs + 1);
             }
 
             return pages.ConcatAll();
@@ -205,6 +205,7 @@ namespace TickTrader.Algo.Account
         {
             var result = new List<QuoteInfo>();
 
+            var toTicks = TimeTicks.FromTimestamp(to);
             while (true)
             {
                 var page = await _feedProxy.DownloadQuotePage(symbol, from, 4000, includeLevel2);
@@ -214,12 +215,13 @@ namespace TickTrader.Algo.Account
 
                 logger.Debug("Downloaded quote page {0} : {1} ({2} {3})", from, page.Length, symbol, includeLevel2 ? "l2" : "top");
 
+                var fromTicks = TimeTicks.FromTimestamp(from);
                 foreach (var quote in page)
                 {
-                    if (quote.Timestamp <= to)
+                    if (quote.UtcTicks <= toTicks)
                     {
                         result.Add(quote);
-                        from = quote.Timestamp;
+                        fromTicks = quote.UtcTicks;
                     }
                     else
                         return result;
@@ -227,6 +229,8 @@ namespace TickTrader.Algo.Account
 
                 if (page.Length < 5)
                     return result;
+
+                from = TimeTicks.ToTimestamp(fromTicks);
             }
         }
     }

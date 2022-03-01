@@ -26,7 +26,6 @@ namespace TickTrader.Algo.Domain
     public interface IQuoteInfo
     {
         string Symbol { get; }
-        DateTime Time { get; }
         DateTime TimeUtc { get; }
         double Ask { get; }
         double Bid { get; }
@@ -43,9 +42,7 @@ namespace TickTrader.Algo.Domain
         string Symbol { get; }
         long UtcMs { get; }
         long UtcTicks { get; }
-        DateTime Time { get; }
         DateTime TimeUtc { get; }
-        Timestamp Timestamp { get; }
         bool HasAsk { get; }
         bool HasBid { get; }
         double Ask { get; }
@@ -130,8 +127,6 @@ namespace TickTrader.Algo.Domain
 
     public class QuoteInfo : IQuoteInfo, IRateInfo
     {
-        private static readonly byte[] _emptyBands = Array.Empty<byte>();
-
         private string _symbol;
         private QuoteL2Data _l2Data;
 
@@ -153,8 +148,6 @@ namespace TickTrader.Algo.Domain
         public long UtcTicks { get; private set; }
 
         public long UtcMs => TimeMs.FromUtcTicks(UtcTicks);
-
-        public DateTime Time => TimeTicks.ToUtc(UtcTicks).ToLocalTime();
 
         public DateTime TimeUtc => TimeTicks.ToUtc(UtcTicks);
 
@@ -294,7 +287,7 @@ namespace TickTrader.Algo.Domain
 
         public string GetDelayInfo()
         {
-            return $"{Symbol} Delay={QuoteDelay}ms, ServerTime={Time:dd-MM-yyyy HH:mm:ss.fffff}, ClientTime={TimeOfReceive:dd-MM-yyyy HH:mm:ss.fffff}";
+            return $"{Symbol} Delay={QuoteDelay}ms, ServerTime={TimeUtc:dd-MM-yyyy HH:mm:ss.fffff}, ClientTime={TimeOfReceive:dd-MM-yyyy HH:mm:ss.fffff}";
         }
 
 
