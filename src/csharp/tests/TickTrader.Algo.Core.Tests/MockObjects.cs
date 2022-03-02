@@ -13,12 +13,11 @@ namespace TickTrader.Algo.Core.Tests
 {
     public static class MockHelper
     {
-        internal static List<BarData> Add(this List<BarData> list, Timestamp openTime, double open,
+        internal static List<BarData> Add(this List<BarData> list, UtcTicks openTime, double open,
             double? close = null, double? high = null, double? low = null)
         {
-            var bar = new BarData()
+            var bar = new BarData(openTime, openTime)
             {
-                OpenTime = openTime,
                 Open = open,
                 Close = close ?? open,
                 High = high ?? open,
@@ -31,17 +30,17 @@ namespace TickTrader.Algo.Core.Tests
         internal static List<BarData> Add(this List<BarData> list, string openTime, double open,
             double? close = null, double? high = null, double? low = null)
         {
-            return Add(list, TimestampHelper.ParseLocalDateTime(openTime), open, close, high, low);
+            return Add(list, UtcTicksHelper.ParseLocalDateTime(openTime), open, close, high, low);
         }
 
         internal static QuoteInfo CreateQuote(string timestamp, double bid, double? ask)
         {
-            return CreateQuote("", TimestampHelper.ParseLocalDateTime(timestamp), bid, ask);
+            return CreateQuote("", UtcTicksHelper.ParseLocalDateTime(timestamp), bid, ask);
         }
 
-        internal static QuoteInfo CreateQuote(string symbol, Timestamp timestamp, double bid, double? ask = null)
+        internal static QuoteInfo CreateQuote(string symbol, UtcTicks time, double bid, double? ask = null)
         {
-            return new QuoteInfo(symbol, timestamp, bid, ask ?? bid);
+            return new QuoteInfo(symbol, time, bid, ask ?? bid);
         }
 
         internal static void UpdateRate(this BarSeriesFixture fixture, string timestamp, double bid, double? ask = null)

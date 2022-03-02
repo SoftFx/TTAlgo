@@ -170,7 +170,7 @@ namespace TickTrader.Algo.CoreV1
                 if (update.Symbol == _mainSymbol)
                 {
                     _mainSymbolUpdateResult += result;
-                    modelUpdate += ModelTimeline.Update(update.LastQuote.Timestamp);
+                    modelUpdate += ModelTimeline.Update(update.LastQuote.Time);
                 }
                 if (modelUpdate.ExtendedBy > 0)
                 {
@@ -233,8 +233,8 @@ namespace TickTrader.Algo.CoreV1
             List<BarData> page;
 
             int i = 0;
-            var fromTime = from.ToUniversalTime().ToTimestamp();
-            var toTime = to.ToUniversalTime().ToTimestamp();
+            var fromTime = new UtcTicks(from);
+            var toTime = new UtcTicks(to);
             var timeRef = (backwardOrder ? to : from).ToTimestamp();
 
             if (backwardOrder)
@@ -255,7 +255,7 @@ namespace TickTrader.Algo.CoreV1
                     if (page.Count != pageSize || i >= 0)
                         break;
 
-                    timeRef = page.First().CloseTime;
+                    timeRef = page.First().CloseTime.ToTimestamp();
                 }
             }
             else
@@ -273,7 +273,7 @@ namespace TickTrader.Algo.CoreV1
                     if (page.Count != pageSize || i != page.Count)
                         break;
 
-                    timeRef = page.Last().OpenTime;
+                    timeRef = page.Last().OpenTime.ToTimestamp();
                 }
             }
         }
@@ -284,7 +284,7 @@ namespace TickTrader.Algo.CoreV1
             List<BarData> page;
             int pageIndex;
 
-            var fromTime = from.ToUniversalTime().ToTimestamp();
+            var fromTime = new UtcTicks(from);
             var backwardOrder = count < 0;
             count = Math.Abs(count);
 
@@ -292,7 +292,7 @@ namespace TickTrader.Algo.CoreV1
             {
                 if (backwardOrder)
                 {
-                    page = FeedHistory.QueryBars(symbol, side.ToDomainEnum(), timeFrame.ToDomainEnum(), fromTime, pageSize);
+                    page = FeedHistory.QueryBars(symbol, side.ToDomainEnum(), timeFrame.ToDomainEnum(), fromTime.ToTimestamp(), pageSize);
                     pageIndex = page.Count - 1;
 
                     while (pageIndex > 0)
@@ -307,11 +307,11 @@ namespace TickTrader.Algo.CoreV1
 
                     if (page.Count < pageSize)
                         break; //last page
-                    fromTime = page.First().OpenTime.AddMilliseconds(-1);
+                    fromTime = page.First().OpenTime.AddMs(-1);
                 }
                 else
                 {
-                    page = FeedHistory.QueryBars(symbol, side.ToDomainEnum(), timeFrame.ToDomainEnum(), fromTime, -pageSize);
+                    page = FeedHistory.QueryBars(symbol, side.ToDomainEnum(), timeFrame.ToDomainEnum(), fromTime.ToTimestamp(), -pageSize);
                     pageIndex = 0;
 
                     while (pageIndex < page.Count)
@@ -326,7 +326,7 @@ namespace TickTrader.Algo.CoreV1
 
                     if (page.Count < pageSize)
                         break; //last page
-                    fromTime = page.Last().CloseTime.AddMilliseconds(1);
+                    fromTime = page.Last().CloseTime.AddMs(1);
                 }
             }
         }
@@ -337,12 +337,12 @@ namespace TickTrader.Algo.CoreV1
             List<QuoteInfo> page;
             int pageIndex;
 
-            var fromTime = from.ToUniversalTime().ToTimestamp();
-            var toTime = to.ToUniversalTime().ToTimestamp();
+            var fromTime = new UtcTicks(from);
+            var toTime = new UtcTicks(to);
 
             if (backwardOrder)
             {
-                page = FeedHistory.QueryQuotes(symbol, toTime, -pageSize, level2);
+                page = FeedHistory.QueryQuotes(symbol, toTime.ToTimestamp(), -pageSize, level2);
                 pageIndex = page.Count - 1;
 
                 while (true)
@@ -351,15 +351,15 @@ namespace TickTrader.Algo.CoreV1
                     {
                         if (page.Count < pageSize)
                             break; //last page
-                        var timeRef = page.First().Timestamp.AddMilliseconds(-1);
-                        page = FeedHistory.QueryQuotes(symbol, timeRef, -pageSize, level2);
+                        var timeRef = page.First().Time.AddMs(-1);
+                        page = FeedHistory.QueryQuotes(symbol, timeRef.ToTimestamp(), -pageSize, level2);
                         if (page.Count == 0)
                             break;
                         pageIndex = page.Count - 1;
                     }
 
                     var item = page[pageIndex];
-                    if (item.Timestamp < fromTime)
+                    if (item.Time < fromTime)
                         break;
                     pageIndex--;
                     yield return new QuoteEntity(item);
@@ -367,7 +367,7 @@ namespace TickTrader.Algo.CoreV1
             }
             else
             {
-                page = FeedHistory.QueryQuotes(symbol, fromTime, pageSize, level2);
+                page = FeedHistory.QueryQuotes(symbol, fromTime.ToTimestamp(), pageSize, level2);
                 pageIndex = 0;
 
                 while (true)
@@ -376,15 +376,15 @@ namespace TickTrader.Algo.CoreV1
                     {
                         if (page.Count < pageSize)
                             break; //last page
-                        var timeRef = page.Last().Timestamp.AddMilliseconds(1);
-                        page = FeedHistory.QueryQuotes(symbol, timeRef, pageSize, level2);
+                        var timeRef = page.Last().Time.AddMs(1);
+                        page = FeedHistory.QueryQuotes(symbol, timeRef.ToTimestamp(), pageSize, level2);
                         if (page.Count == 0)
                             break;
                         pageIndex = 0;
                     }
 
                     var item = page[pageIndex];
-                    if (item.Timestamp > toTime)
+                    if (item.Time > toTime)
                         break;
                     pageIndex++;
                     yield return new QuoteEntity(item);
@@ -398,7 +398,7 @@ namespace TickTrader.Algo.CoreV1
             List<QuoteInfo> page;
             int pageIndex;
 
-            var fromTime = from.ToUniversalTime().ToTimestamp();
+            var fromTime = new UtcTicks(from);
             var backwardOrder = count < 0;
             count = Math.Abs(count);
 
@@ -406,7 +406,7 @@ namespace TickTrader.Algo.CoreV1
             {
                 if (backwardOrder)
                 {
-                    page = FeedHistory.QueryQuotes(symbol, fromTime, -pageSize, level2);
+                    page = FeedHistory.QueryQuotes(symbol, fromTime.ToTimestamp(), -pageSize, level2);
                     pageIndex = page.Count - 1;
 
                     while (pageIndex > 0)
@@ -421,11 +421,11 @@ namespace TickTrader.Algo.CoreV1
 
                     if (page.Count < pageSize)
                         break; //last page
-                    fromTime = page.First().Timestamp.AddMilliseconds(-1);
+                    fromTime = page.First().Time.AddMs(-1);
                 }
                 else
                 {
-                    page = FeedHistory.QueryQuotes(symbol, fromTime, pageSize, level2);
+                    page = FeedHistory.QueryQuotes(symbol, fromTime.ToTimestamp(), pageSize, level2);
                     pageIndex = 0;
 
                     while (pageIndex < page.Count)
@@ -440,7 +440,7 @@ namespace TickTrader.Algo.CoreV1
 
                     if (page.Count < pageSize)
                         break; //last page
-                    fromTime = page.Last().Timestamp.AddMilliseconds(1);
+                    fromTime = page.Last().Time.AddMs(1);
                 }
             }
         }

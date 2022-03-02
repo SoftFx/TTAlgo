@@ -4,7 +4,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
 {
-    public delegate OutputPoint OutputPointFactory<T>(long time, T value);
+    public delegate OutputPoint OutputPointFactory<T>(UtcTicks time, T value);
 
     public static class OutputPointFactory
     {
@@ -30,12 +30,12 @@ namespace TickTrader.Algo.CoreV1
         }
 
 
-        private static OutputPoint PackDouble(long time, double value)
+        private static OutputPoint PackDouble(UtcTicks time, double value)
         {
             return new OutputPoint(time, value);
         }
 
-        private static OutputPoint PackMarker(long time, Api.Marker marker)
+        private static OutputPoint PackMarker(UtcTicks time, Api.Marker marker)
         {
             return new OutputPoint(time, marker.Y, ((MarkerEntity)marker).GetInfo());
         }

@@ -300,7 +300,7 @@ namespace TickTrader.Algo.Backtester
             Stats.TicksCount += update.NumberOfQuotes;
         }
 
-        public void RegisterEquity(DateTime timepoint, double equity, double margin)
+        public void RegisterEquity(double equity, double margin)
         {
             _equityCollector.AppendQuote(equity);
             _marginCollector.AppendQuote(margin);

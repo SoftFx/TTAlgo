@@ -1,9 +1,7 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
-using TickTrader.FeedStorage;
 
 namespace TickTrader.Algo.Backtester
 {
@@ -16,7 +14,7 @@ namespace TickTrader.Algo.Backtester
         private IEnumerator<BarData> _bidE;
         private IEnumerator<BarData> _askE;
 
-        private Timestamp _lastBarTime;
+        private UtcTicks _lastBarTime;
         private BarData _lastBid;
         private BarData _lastAsk;
         private Feed.Types.Timeframe _baseTimeFrame;
@@ -172,7 +170,7 @@ namespace TickTrader.Algo.Backtester
             return new BarRateUpdate(_lastBid, _lastAsk, _symbol);
         }
 
-        private BarData CreateFiller(Timestamp barOpenTime, Timestamp barCloseTime, double price)
+        private BarData CreateFiller(UtcTicks barOpenTime, UtcTicks barCloseTime, double price)
         {
             return new BarData(barOpenTime, barCloseTime, price, 0);
         }
