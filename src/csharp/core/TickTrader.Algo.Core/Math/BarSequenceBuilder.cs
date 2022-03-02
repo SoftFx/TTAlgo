@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
@@ -34,7 +33,7 @@ namespace TickTrader.Algo.Core
         public event Action<BarData> BarUpdated;
         public BarSampler Sampler => _sampler;
         public Feed.Types.Timeframe TimeFrame { get; }
-        public long TimeEdge => _currentBar?.OpenTime ?? 0;
+        public UtcTicks TimeEdge => _currentBar?.OpenTime ?? UtcTicks.Default;
 
         public void AppendBar(BarData bar)
         {
@@ -49,18 +48,17 @@ namespace TickTrader.Algo.Core
             Append(bar);
         }
 
-        public BarData AppendQuote(long time, double price, double volume)
+        public BarData AppendQuote(UtcTicks time, double price, double volume)
         {
             //if (_currentBar != null && _currentBar.OpenTime > time)
             //    throw new ArgumentException("Invalid time sequnce!");
 
-            var timeMs = TimeMs.FromUtcTicks(time);
             if (_currentBar != null)
             {
-                if (timeMs < _currentBar.OpenTime)
+                if (time < _currentBar.OpenTime)
                     throw new ArgumentException("Invalid time sequnce!");
 
-                if (timeMs < _currentBar.CloseTime)
+                if (time < _currentBar.CloseTime)
                 {
                     // append last bar
                     _currentBar.Append(price, volume);
@@ -70,7 +68,7 @@ namespace TickTrader.Algo.Core
             }
 
             // add new bar
-            var boundaries = _sampler.GetBar(timeMs);
+            var boundaries = _sampler.GetBar(time);
             var newBar = new BarData(boundaries.Open, boundaries.Close, price, volume);
             return Append(newBar);
         }
@@ -91,11 +89,7 @@ namespace TickTrader.Algo.Core
             else
             {
                 // append
-                var entity = new BarData(bar)
-                {
-                    OpenTime = boundaries.Open,
-                    CloseTime = boundaries.Close,
-                };
+                var entity = new BarData(boundaries.Open, boundaries.Close, bar);
                 return Append(entity);
             }
 
@@ -219,7 +213,7 @@ namespace TickTrader.Algo.Core
     public interface ITimeSequenceRef
     {
         Feed.Types.Timeframe TimeFrame { get; }
-        long TimeEdge { get; }
+        UtcTicks TimeEdge { get; }
 
         event Action<BarData> BarOpened;
         event Action<BarData> BarClosed;

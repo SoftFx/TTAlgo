@@ -443,7 +443,7 @@ namespace TickTrader.FeedStorage
             if (key.TimeFrame.IsTick())
                 collection = Database.GetSeries(new DateTimeKeySerializer(), TickSerializer.GetSerializer(key), b => b.TimeUtc, key.FullInfo, true);
             else
-                collection = Database.GetSeries(new DateTimeKeySerializer(), new BarSerializer(key.TimeFrame), b => TimeMs.ToUtc(b.OpenTime), key.FullInfo, false);
+                collection = Database.GetSeries(new DateTimeKeySerializer(), new BarSerializer(key.TimeFrame), b => b.OpenTime.ToUtcDateTime(), key.FullInfo, false);
 
             _series.Add(key, collection);
 

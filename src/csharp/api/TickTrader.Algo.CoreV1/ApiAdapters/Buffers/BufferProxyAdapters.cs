@@ -20,8 +20,8 @@ namespace TickTrader.Algo.CoreV1
 
         protected override Bar Convert(QuoteInfo quote)
         {
-            var timeMs = quote.UtcMs;
-            return new BarEntity(new BarData(timeMs, timeMs, quote.Bid, 1));
+            var time = quote.Time.RoundMs();
+            return new BarEntity(new BarData(time, time.AddMs(1), quote.Bid, 1));
         }
     }
 }

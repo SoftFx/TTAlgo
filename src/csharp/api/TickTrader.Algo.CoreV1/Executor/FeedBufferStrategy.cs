@@ -21,7 +21,7 @@ namespace TickTrader.Algo.CoreV1
         }
 
         public abstract void OnBufferExtended();
-        public abstract bool InBoundaries(long timePoint);
+        public abstract bool InBoundaries(UtcTicks timePoint);
         public abstract void OnUserSetBufferSize(int newSize, out string error);
 
         protected abstract void LoadMainBuffer(ILoadableFeedBuffer buffer);
@@ -66,7 +66,7 @@ namespace TickTrader.Algo.CoreV1
     public interface ILoadableFeedBuffer
     {
         bool IsLoaded { get; }
-        long OpenTime { get; }
+        UtcTicks OpenTime { get; }
         int Count { get; }
 
         void LoadFeedFrom(Timestamp from);
@@ -102,7 +102,7 @@ namespace TickTrader.Algo.CoreV1
         {
             buffer.LoadFeed(_size);
             if (buffer.Count > 0)
-                _mainBufferStartTime = TimeMs.ToTimestamp(buffer.OpenTime);
+                _mainBufferStartTime = buffer.OpenTime.ToTimestamp();
         }
 
         protected override void LoadAuxBuffer(ILoadableFeedBuffer buffer)
@@ -125,7 +125,7 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public override bool InBoundaries(long timePoint)
+        public override bool InBoundaries(UtcTicks timePoint)
         {
             return true; // do not need to check boundaries in this strategy
         }
@@ -147,15 +147,15 @@ namespace TickTrader.Algo.CoreV1
     [Serializable]
     public class TimeSpanStrategy : FeedBufferStrategy
     {
-        private long _fromMs, _toMs;
+        private UtcTicks _fromTicks, _toTicks;
         private Timestamp _from, _to;
 
         public TimeSpanStrategy(DateTime from, DateTime to)
         {
             _from = from.ToUniversalTime().ToTimestamp();
             _to = to.ToUniversalTime().ToTimestamp();
-            _fromMs = TimeMs.FromDateTime(from);
-            _toMs = TimeMs.FromDateTime(to);
+            _fromTicks = new UtcTicks(from);
+            _toTicks = new UtcTicks(to);
         }
 
         protected override void LoadMainBuffer(ILoadableFeedBuffer buffer)
@@ -172,9 +172,9 @@ namespace TickTrader.Algo.CoreV1
         {
         }
 
-        public override bool InBoundaries(long timePoint)
+        public override bool InBoundaries(UtcTicks timePoint)
         {
-            return timePoint >= _fromMs || timePoint <= _toMs;
+            return timePoint >= _fromTicks || timePoint <= _toTicks;
         }
 
         public override void OnUserSetBufferSize(int newSize, out string error)

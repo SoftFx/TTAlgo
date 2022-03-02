@@ -44,8 +44,8 @@ namespace TickTrader.Algo.CoreV1
             get { return _data.RealVolume; }
             set { _data.RealVolume = value; }
         }
-        public DateTime OpenTime => TimeMs.ToUtc(_data.OpenTime);
-        public DateTime CloseTime => TimeMs.ToUtc(_data.CloseTime);
+        public DateTime OpenTime => _data.OpenTime.ToUtcDateTime();
+        public DateTime CloseTime => _data.CloseTime.ToUtcDateTime();
         public bool IsNull { get; }
 
         public BarEntity Clone()

@@ -2,10 +2,8 @@
 using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using TickTrader.Algo.Account.Settings;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 //using TickTrader.FeedStorage;
@@ -122,12 +120,13 @@ namespace TickTrader.Algo.Account
             var isBackward = pageSize < 0;
             pageSize = Math.Abs(pageSize);
 
+            var fromTime = new UtcTicks(from);
             while (pageSize > 0)
             {
-                if (!isBackward && from > DateTime.UtcNow.ToTimestamp())
+                if (!isBackward && fromTime > UtcTicks.Now)
                     break; // we get last bar somehow even it is out of our requested frame
 
-                var page = await _feedProxy.DownloadBarPage(symbol, from, isBackward ? -pageSize : pageSize, marketSide, timeframe);
+                var page = await _feedProxy.DownloadBarPage(symbol, fromTime.ToTimestamp(), isBackward ? -pageSize : pageSize, marketSide, timeframe);
 
                 if (page.Length == 0)
                     break;
@@ -135,9 +134,9 @@ namespace TickTrader.Algo.Account
                 pages.Add(page);
                 pageSize -= page.Length;
 
-                from = TimeMs.ToTimestamp(isBackward
-                    ? page.First().OpenTime - 1
-                    : page.Last().CloseTime + 1);
+                fromTime = isBackward
+                    ? page.First().OpenTime.AddMs(-1)
+                    : page.Last().CloseTime.AddMs(1);
             }
 
             return pages.ConcatAll();
@@ -150,12 +149,13 @@ namespace TickTrader.Algo.Account
             var isBackward = count < 0;
             count = Math.Abs(count);
 
+            var fromTime = new UtcTicks(from);
             while (count > 0)
             {
-                if (!isBackward && from > DateTime.UtcNow.ToTimestamp())
+                if (!isBackward && fromTime > UtcTicks.Now)
                     break; // we get last bar somehow even it is out of our requested frame
 
-                var page = await _feedProxy.DownloadQuotePage(symbol, from, isBackward ? -count : count, includeLevel2);
+                var page = await _feedProxy.DownloadQuotePage(symbol, fromTime.ToTimestamp(), isBackward ? -count : count, includeLevel2);
 
                 if (page.Length == 0)
                     break;
@@ -163,9 +163,9 @@ namespace TickTrader.Algo.Account
                 pages.Add(page);
                 count -= page.Length;
 
-                from = TimeMs.ToTimestamp(isBackward
-                    ? page.First().UtcMs - 1
-                    : page.Last().UtcMs + 1);
+                fromTime = isBackward
+                    ? page.First().Time.AddMs(-1)
+                    : page.Last().Time.AddMs(1);
             }
 
             return pages.ConcatAll();
@@ -175,22 +175,23 @@ namespace TickTrader.Algo.Account
         {
             var result = new List<BarData>();
 
+            var fromTime = new UtcTicks(from);
+            var toTime = new UtcTicks(to);
             while (true)
             {
-                var page = await _feedProxy.DownloadBarPage(symbol, from, 4000, marketSide, timeframe);
+                var page = await _feedProxy.DownloadBarPage(symbol, fromTime.ToTimestamp(), 4000, marketSide, timeframe);
 
                 if (page == null || page.Length == 0)
                     return result;
 
                 logger.Debug("Downloaded bar page {0} : {1} ({2} {3} {4})", from, page.Length, symbol, marketSide, timeframe);
 
-                var toMs = TimeMs.FromTimestamp(to);
                 foreach (var bar in page)
                 {
-                    if (bar.OpenTime <= toMs)
+                    if (bar.OpenTime <= toTime)
                     {
                         result.Add(bar);
-                        from = TimeMs.ToTimestamp(bar.CloseTime);
+                        fromTime = bar.CloseTime;
                     }
                     else
                         return result;
@@ -205,23 +206,23 @@ namespace TickTrader.Algo.Account
         {
             var result = new List<QuoteInfo>();
 
-            var toTicks = TimeTicks.FromTimestamp(to);
+            var fromTime = new UtcTicks(from);
+            var toTime = new UtcTicks(to);
             while (true)
             {
-                var page = await _feedProxy.DownloadQuotePage(symbol, from, 4000, includeLevel2);
+                var page = await _feedProxy.DownloadQuotePage(symbol, fromTime.ToTimestamp(), 4000, includeLevel2);
 
                 if (page == null || page.Length == 0)
                     return result;
 
                 logger.Debug("Downloaded quote page {0} : {1} ({2} {3})", from, page.Length, symbol, includeLevel2 ? "l2" : "top");
 
-                var fromTicks = TimeTicks.FromTimestamp(from);
                 foreach (var quote in page)
                 {
-                    if (quote.UtcTicks <= toTicks)
+                    if (quote.Time <= toTime)
                     {
                         result.Add(quote);
-                        fromTicks = quote.UtcTicks;
+                        fromTime = quote.Time;
                     }
                     else
                         return result;
@@ -229,8 +230,6 @@ namespace TickTrader.Algo.Account
 
                 if (page.Length < 5)
                     return result;
-
-                from = TimeTicks.ToTimestamp(fromTicks);
             }
         }
     }

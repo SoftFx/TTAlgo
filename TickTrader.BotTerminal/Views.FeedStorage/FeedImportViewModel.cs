@@ -94,7 +94,7 @@ namespace TickTrader.BotTerminal.SymbolManager
                     if (vector.Count >= pageSize + 1)
                     {
                         var page = vector.RemoveFromStart(pageSize);
-                        symbol.WriteSlice(timeFrame, priceType, TimeMs.ToTimestamp(page.First().OpenTime), TimeMs.ToTimestamp(page.Last().CloseTime), page);
+                        symbol.WriteSlice(timeFrame, priceType, page.First().OpenTime.ToTimestamp(), page.Last().CloseTime.ToTimestamp(), page);
                         observer.SetMessage(string.Format("Importing...  {0} bars are imported.", count));
                     }
                 }
@@ -102,7 +102,7 @@ namespace TickTrader.BotTerminal.SymbolManager
                 if (vector.Count > 0)
                 {
                     var page = vector.ToArray();
-                    symbol.WriteSlice(timeFrame, priceType, TimeMs.ToTimestamp(page.First().OpenTime), TimeMs.ToTimestamp(page.Last().CloseTime), page);
+                    symbol.WriteSlice(timeFrame, priceType, page.First().OpenTime.ToTimestamp(), page.Last().CloseTime.ToTimestamp(), page);
                 }
 
                 observer.SetMessage(string.Format("Done importing. {0} bars were imported.", count));
@@ -117,7 +117,7 @@ namespace TickTrader.BotTerminal.SymbolManager
                     if (page.Count >= pageSize)
                     {
                         // we cannot put ticks with same time into different chunks
-                        if (lastTick.UtcTicks != tick.UtcTicks)
+                        if (lastTick.Time != tick.Time)
                         {
                             symbol.WriteSlice(timeFrame, page[0].Timestamp, tick.Timestamp, page.ToArray());
                             observer.SetMessage(string.Format("Importing...  {0} ticks are imported.", count));
@@ -132,8 +132,8 @@ namespace TickTrader.BotTerminal.SymbolManager
 
                 if (page.Count > 0)
                 {
-                    var toCorrected = TimeTicks.ToTimestamp(page.Last().UtcTicks + 1);
-                    symbol.WriteSlice(timeFrame, page[0].Timestamp, toCorrected, page.ToArray());
+                    var toCorrected = page.Last().Time.AddTicks(1);
+                    symbol.WriteSlice(timeFrame, page[0].Timestamp, toCorrected.ToTimestamp(), page.ToArray());
                 }
 
                 observer.SetMessage(string.Format("Done importing. {0} ticks were imported.", count));
@@ -203,9 +203,9 @@ namespace TickTrader.BotTerminal.SymbolManager
 
                     lineNo++;
 
-                    var bar = new BarData
+                    var time = new UtcTicks(DateTime.Parse(parts[0]).ToUniversalTime().Ticks);
+                    var bar = new BarData(time, time) // need a timeframe to init bars correctly
                     {
-                        OpenTime = TimeMs.FromDateTime(DateTime.Parse(parts[0])),
                         Open = double.Parse(parts[1]),
                         High = double.Parse(parts[2]),
                         Low = double.Parse(parts[3]),
@@ -261,7 +261,7 @@ namespace TickTrader.BotTerminal.SymbolManager
 
                     var data = new QuoteData
                     {
-                        Time = time.ToTimestamp(),
+                        UtcTicks = time.ToUniversalTime().Ticks,
                         IsBidIndicative = false,
                         IsAskIndicative = false,
                         AskBytes = ByteStringHelper.CopyFromUglyHack(MemoryMarshal.Cast<QuoteBand, byte>(asks.Slice(askDepth))),

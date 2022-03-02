@@ -1,7 +1,4 @@
-﻿using Google.Protobuf;
-using Google.Protobuf.WellKnownTypes;
-using System;
-using System.Runtime.InteropServices;
+﻿using System;
 using TickTrader.Algo.Domain;
 using TickTrader.SeriesStorage;
 using TickTrader.SeriesStorage.LightSerializer;
@@ -41,7 +38,7 @@ namespace TickTrader.FeedStorage.Serializers
 
             private QuoteInfo ReadQuote(LightObjectReader reader)
             {
-                var time = reader.ReadUtcTicks();
+                var time = new UtcTicks(reader.ReadUtcTicks());
 
                 double? bid = null, ask = null;
                 var flags = (FieldFlags)reader.ReadByte();
@@ -66,7 +63,7 @@ namespace TickTrader.FeedStorage.Serializers
 
             private static void WriteQuote(QuoteInfo quote, LightObjectWriter writer)
             {
-                writer.Write(quote.UtcTicks);
+                writer.Write(quote.Time.Value);
 
                 var flags = quote.HasBid ? FieldFlags.HasBid : FieldFlags.Empty;
                 flags |= quote.HasAsk ? FieldFlags.HasAsk : FieldFlags.Empty;
@@ -99,7 +96,7 @@ namespace TickTrader.FeedStorage.Serializers
 
             private QuoteInfo ReadQuote(LightObjectReader reader)
             {
-                var time = reader.ReadUtcTicks();
+                var time = new UtcTicks(reader.ReadUtcTicks());
                 var bids = ReadBook(reader);
                 var asks = ReadBook(reader);
 
@@ -125,7 +122,7 @@ namespace TickTrader.FeedStorage.Serializers
                 var writer = new LightObjectWriter();
                 writer.WriteFixedSizeArray(val, (e, w) =>
                 {
-                    writer.Write(e.UtcTicks);
+                    writer.Write(e.Time.Value);
 
                     writer.Write(e.L2Data.BidBytes.Length / QuoteBand.Size);
                     writer.Write(e.L2Data.BidBytes);

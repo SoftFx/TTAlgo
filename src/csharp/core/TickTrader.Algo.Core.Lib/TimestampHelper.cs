@@ -43,27 +43,27 @@ namespace TickTrader.Algo.Core.Lib
         }
     }
 
-    public static class TimeMsHelper
+    public static class UtcTicksHelper
     {
-        public static long ParseLocalDateTime(string dateTimeString)
+        public static UtcTicks ParseLocalDateTime(string dateTimeString)
         {
-            return TimeMs.FromDateTime(DateTime.Parse(dateTimeString, null, System.Globalization.DateTimeStyles.AssumeLocal));
+            return new UtcTicks(DateTime.Parse(dateTimeString, null, System.Globalization.DateTimeStyles.AssumeLocal));
         }
 
-        public static long ParseUtcDateTime(string dateTimeString)
+        public static UtcTicks ParseUtcDateTime(string dateTimeString)
         {
-            return TimeMs.FromDateTime(DateTime.Parse(dateTimeString, null, System.Globalization.DateTimeStyles.AssumeUniversal));
+            return new UtcTicks(DateTime.Parse(dateTimeString, null, System.Globalization.DateTimeStyles.AssumeUniversal));
         }
 
-        public static long FromDate(int year, int month, int day)
+        public static UtcTicks FromDate(int year, int month, int day)
         {
             return FromDateAndTime(year, month, day, 0, 0, 0);
         }
 
-        public static long FromDateAndTime(int year, int month, int day, int hour, int minute, int second)
+        public static UtcTicks FromDateAndTime(int year, int month, int day, int hour, int minute, int second)
         {
             var dt = new DateTime(year, month, day, hour, minute, second, DateTimeKind.Utc);
-            return TimeMs.FromDateTime(dt);
+            return new UtcTicks(dt);
         }
     }
 }

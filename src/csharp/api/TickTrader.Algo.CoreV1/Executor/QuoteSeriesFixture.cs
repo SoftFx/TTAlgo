@@ -16,11 +16,11 @@ namespace TickTrader.Algo.CoreV1
             _buffer = context.Builder.GetBuffer<QuoteInfo>(SymbolCode);
         }
 
-        public long this[int index] => _buffer[index].UtcMs;
+        public UtcTicks this[int index] => _buffer[index].Time;
         public int Count { get { return _buffer.Count; } }
         public bool IsLoaded { get; private set; }
         public int LastIndex => _buffer.Count - 1;
-        public long OpenTime => _buffer[0].UtcMs;
+        public UtcTicks OpenTime => _buffer[0].Time;
 
         public event Action Appended { add { } remove { } }
 
@@ -74,11 +74,11 @@ namespace TickTrader.Algo.CoreV1
         private bool? UpdateBuffer(QuoteInfo quote)
         {
             // ticks from past are not accepted
-            if (_lastQuote?.UtcTicks > quote.UtcTicks)
+            if (_lastQuote?.Time > quote.Time)
                 return true;
 
             // chart can't process output points with equal ticks
-            var res = _lastQuote?.UtcTicks == quote.UtcTicks;
+            var res = _lastQuote?.Time == quote.Time;
             _lastQuote = quote;
             if (res)
             {

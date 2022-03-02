@@ -21,7 +21,7 @@ namespace TickTrader.FeedStorage.Serializers
             var writer = new LightObjectWriter();
             writer.WriteFixedSizeArray(val, (e, w) =>
             {
-                w.Write(TimeTicks.FromMs(e.OpenTime));
+                w.Write(e.OpenTime.Value);
                 w.Write(e.Open);
                 w.Write(e.High);
                 w.Write(e.Low);
@@ -36,14 +36,14 @@ namespace TickTrader.FeedStorage.Serializers
             _reader.SetDataBuffer(bytes);
             return _reader.ReadArray((r) =>
             {
-                var time = TimeMs.FromUtcTicks(r.ReadUtcTicks());
+                var time = new UtcTicks(r.ReadUtcTicks());
                 var open = r.ReadDouble();
                 var high = r.ReadDouble();
                 var low = r.ReadDouble();
                 var close = r.ReadDouble();
                 var volume = r.ReadDouble();
                 var boundaries = _sampler.GetBar(time);
-                return new BarData { OpenTime = boundaries.Open, CloseTime = boundaries.Close, Close = close, High = high, Open = open, Low = low, RealVolume = volume };
+                return new BarData(boundaries.Open, boundaries.Close) { Close = close, High = high, Open = open, Low = low, RealVolume = volume };
             });
         }
     }

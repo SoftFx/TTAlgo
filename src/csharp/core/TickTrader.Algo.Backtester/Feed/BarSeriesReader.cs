@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Backtester
         private IEnumerator<BarData> _bidE;
         private IEnumerator<BarData> _askE;
 
-        private long _lastBarTime;
+        private UtcTicks _lastBarTime;
         private BarData _lastBid;
         private BarData _lastAsk;
         private Feed.Types.Timeframe _baseTimeFrame;
@@ -170,7 +170,7 @@ namespace TickTrader.Algo.Backtester
             return new BarRateUpdate(_lastBid, _lastAsk, _symbol);
         }
 
-        private BarData CreateFiller(long barOpenTime, long barCloseTime, double price)
+        private BarData CreateFiller(UtcTicks barOpenTime, UtcTicks barCloseTime, double price)
         {
             return new BarData(barOpenTime, barCloseTime, price, 0);
         }

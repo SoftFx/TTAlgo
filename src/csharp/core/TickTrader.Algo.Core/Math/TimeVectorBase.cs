@@ -3,10 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    public interface ITimeVectorRef : IReadOnlyList<long>
+    public interface ITimeVectorRef : IReadOnlyList<UtcTicks>
     {
         event Action Extended;
     }
@@ -35,7 +36,7 @@ namespace TickTrader.Algo.Core
 
         protected abstract void ClearInternalCollection();
 
-        protected abstract long GetItemTimeCoordinate(T item);
+        protected abstract UtcTicks GetItemTimeCoordinate(T item);
 
         public void InitSynchronization(ITimeVectorRef masterVector, Func<int, T> fillItemFunc)
         {
@@ -105,7 +106,7 @@ namespace TickTrader.Algo.Core
             }
 
             public int Count => _vector.Count;
-            public long this[int index] => _vector.GetItemTimeCoordinate(_vector[index]);
+            public UtcTicks this[int index] => _vector.GetItemTimeCoordinate(_vector[index]);
 
             public event Action Extended;
 
@@ -114,7 +115,7 @@ namespace TickTrader.Algo.Core
                 Extended?.Invoke();
             }
 
-            public IEnumerator<long> GetEnumerator()
+            public IEnumerator<UtcTicks> GetEnumerator()
             {
                 return _vector.Select(i => _vector.GetItemTimeCoordinate(i)).GetEnumerator();
             }

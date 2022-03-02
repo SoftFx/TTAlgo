@@ -22,16 +22,16 @@ namespace TickTrader.Algo.Backtester
                 Ref.Swap(ref from, ref to);
 
             var vector = GetOrAddBuilder(marketSide, timeframe);
-            var index = vector.BinarySearchBy(b => b.OpenTime, TimeMs.FromTimestamp(from), BinarySearchTypes.NearestHigher);
+            var index = vector.BinarySearchBy(b => b.OpenTime, new UtcTicks(from), BinarySearchTypes.NearestHigher);
 
             if (index < 0)
                 yield break;
 
-            var toMs = TimeMs.FromTimestamp(to);
+            var toTime = new UtcTicks(to);
             for (var i = index; i < vector.Count; i++)
             {
                 var bar = vector[i];
-                if (bar.OpenTime > toMs)
+                if (bar.OpenTime > toTime)
                     yield break;
 
                 yield return bar;
@@ -46,7 +46,7 @@ namespace TickTrader.Algo.Backtester
                 yield break;
             else if (count > 0)
             {
-                var index = vector.BinarySearchBy(b => b.OpenTime, TimeMs.FromTimestamp(from), BinarySearchTypes.NearestHigher);
+                var index = vector.BinarySearchBy(b => b.OpenTime, new UtcTicks(from), BinarySearchTypes.NearestHigher);
 
                 if (index < 0)
                     yield break;
@@ -58,7 +58,7 @@ namespace TickTrader.Algo.Backtester
             }
             else
             {
-                var index = vector.BinarySearchBy(b => b.OpenTime, TimeMs.FromTimestamp(from), BinarySearchTypes.NearestLower);
+                var index = vector.BinarySearchBy(b => b.OpenTime, new UtcTicks(from), BinarySearchTypes.NearestLower);
 
                 if (index < 0)
                     yield break;
@@ -146,13 +146,13 @@ namespace TickTrader.Algo.Backtester
             if (quote.HasBid)
             {
                 foreach (var rec in _bidBars.Values)
-                    rec.AppendQuote(quote.UtcTicks, quote.Bid, 1);
+                    rec.AppendQuote(quote.Time, quote.Bid, 1);
             }
 
             if (quote.HasAsk)
             {
                 foreach (var rec in _askBars.Values)
-                    rec.AppendQuote(quote.UtcTicks, quote.Ask, 1);
+                    rec.AppendQuote(quote.Time, quote.Ask, 1);
             }
         }
     }

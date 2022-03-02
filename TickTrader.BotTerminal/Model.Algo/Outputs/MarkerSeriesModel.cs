@@ -30,12 +30,12 @@ namespace TickTrader.BotTerminal
 
         protected override void AppendInternal(OutputPoint p)
         {
-            _seriesData.Append(TimeMs.ToUtc(p.Time), p.Value, GetMetadata(p.Value, p.Metadata as MarkerInfo));
+            _seriesData.Append(p.Time.ToUtcDateTime(), p.Value, GetMetadata(p.Value, p.Metadata as MarkerInfo));
         }
 
         protected override void UpdateInternal(OutputPoint p)
         {
-            var index = _seriesData.FindIndex(TimeMs.ToUtc(p.Time));
+            var index = _seriesData.FindIndex(p.Time.ToUtcDateTime());
             _seriesData.Metadata[index] = GetMetadata(p.Value, p.Metadata as MarkerInfo);
             _seriesData.YValues[index] = p.Value;
         }

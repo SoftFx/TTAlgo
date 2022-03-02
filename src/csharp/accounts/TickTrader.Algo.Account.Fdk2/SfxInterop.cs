@@ -1213,15 +1213,13 @@ namespace TickTrader.Algo.Account.Fdk2
 
         internal static Domain.BarData Convert(SFX.Bar fdkBar)
         {
-            return new Domain.BarData()
+            return new Domain.BarData(new UtcTicks(fdkBar.From), new UtcTicks(fdkBar.To))
             {
                 Open = fdkBar.Open,
                 Close = fdkBar.Close,
                 High = fdkBar.High,
                 Low = fdkBar.Low,
                 RealVolume = fdkBar.Volume,
-                OpenTime = TimeMs.FromDateTime(fdkBar.From),
-                CloseTime = TimeMs.FromDateTime(fdkBar.To),
             };
         }
 
@@ -1238,7 +1236,7 @@ namespace TickTrader.Algo.Account.Fdk2
         {
             var timeOfReceive = DateTime.UtcNow;
 
-            var time = TimeTicks.FromDateTime(fdkTick.CreatingTime);
+            var time = new UtcTicks(fdkTick.CreatingTime);
             var bids = ConvertLevel2(fdkTick.Bids);
             var asks = ConvertLevel2(fdkTick.Asks);
             return new QuoteInfo(fdkTick.Symbol, time, bids, asks, timeOfReceive: timeOfReceive)

@@ -26,6 +26,7 @@ namespace TickTrader.Algo.Domain
     public interface IQuoteInfo
     {
         string Symbol { get; }
+        UtcTicks Time { get; }
         DateTime TimeUtc { get; }
         double Ask { get; }
         double Bid { get; }
@@ -40,8 +41,7 @@ namespace TickTrader.Algo.Domain
     public interface IRateInfo
     {
         string Symbol { get; }
-        long UtcMs { get; }
-        long UtcTicks { get; }
+        UtcTicks Time { get; }
         DateTime TimeUtc { get; }
         bool HasAsk { get; }
         bool HasBid { get; }
@@ -145,13 +145,11 @@ namespace TickTrader.Algo.Domain
 
         public bool IsBidIndicative { get; set; }
 
-        public long UtcTicks { get; private set; }
+        public UtcTicks Time { get; }
 
-        public long UtcMs => TimeMs.FromUtcTicks(UtcTicks);
+        public DateTime TimeUtc => Time.ToUtcDateTime();
 
-        public DateTime TimeUtc => TimeTicks.ToUtc(UtcTicks);
-
-        public Timestamp Timestamp => TimeTicks.ToTimestamp(UtcTicks);
+        public Timestamp Timestamp => Time.ToTimestamp();
 
         public QuoteL2Data L2Data
         {
@@ -171,33 +169,33 @@ namespace TickTrader.Algo.Domain
 
 
         public QuoteInfo(string symbol, DateTime time, double? bid, double? ask)
-            : this(symbol, time.ToUniversalTime().Ticks, bid, ask)
+            : this(symbol, new UtcTicks(time), bid, ask)
         {
         }
 
-        public QuoteInfo(string symbol, long utcTicks, double? bid, double? ask)
-            : this(symbol, utcTicks)
+        public QuoteInfo(string symbol, UtcTicks time, double? bid, double? ask)
+            : this(symbol, time)
         {
             Bid = bid ?? double.NaN;
             Ask = ask ?? double.NaN;
         }
 
-        public QuoteInfo(string symbol, long utcTicks, byte[] bids, byte[] asks, DateTime? timeOfReceive = null)
-            : this(symbol, utcTicks)
+        public QuoteInfo(string symbol, UtcTicks time, byte[] bids, byte[] asks, DateTime? timeOfReceive = null)
+            : this(symbol, time)
         {
             _l2Data = new QuoteL2Data(bids, asks);
             Bid = GetFirstPrice(bids);
             Ask = GetFirstPrice(asks);
 
             TimeOfReceive = timeOfReceive ?? DateTime.UtcNow;
-            QuoteDelay = TimeSpan.FromTicks(TimeOfReceive.Ticks - UtcTicks).TotalMilliseconds;
+            QuoteDelay = (TimeOfReceive - time).TotalMilliseconds;
         }
 
 
-        private QuoteInfo(string symbol, long utcTicks)
+        private QuoteInfo(string symbol, UtcTicks time)
         {
             _symbol = symbol;
-            UtcTicks = utcTicks;
+            Time = time;
         }
 
 
@@ -205,7 +203,7 @@ namespace TickTrader.Algo.Domain
 
         public static QuoteInfo Create(string symbol, QuoteData data)
         {
-            var time = TimeTicks.FromTimestamp(data.Time);
+            var time = new UtcTicks(data.UtcTicks);
             QuoteInfo res;
 
             if (data.TickBytes.IsEmpty)
@@ -234,11 +232,11 @@ namespace TickTrader.Algo.Domain
 
             if (_l2Data == null)
             {
-                res=  new QuoteInfo(Symbol, UtcTicks, Bid, Ask);
+                res=  new QuoteInfo(Symbol, Time, Bid, Ask);
             }
             else
             {
-                res =new QuoteInfo(Symbol, UtcTicks, Bid, Ask)
+                res =new QuoteInfo(Symbol, Time, Bid, Ask)
                 {
                     _l2Data = _l2Data.Truncate(depth),
                     IsBidIndicative = IsBidIndicative,
@@ -260,7 +258,7 @@ namespace TickTrader.Algo.Domain
         {
             var res = new QuoteData
             {
-                Time = Timestamp,
+                UtcTicks = Time.Value,
                 IsAskIndicative = IsAskIndicative,
                 IsBidIndicative = IsBidIndicative,
             };

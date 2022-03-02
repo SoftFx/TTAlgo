@@ -40,9 +40,9 @@ namespace TickTrader.Algo.CoreV1
         internal InputBuffer<BarData> Buffer { get; private set; }
         public int Count { get { return Buffer.Count; } }
         public int LastIndex { get { return Buffer.Count - 1; } }
-        public long this[int index] { get { return Buffer[index].OpenTime; } }
+        public UtcTicks this[int index] { get { return Buffer[index].OpenTime; } }
         public bool IsLoaded { get; private set; }
-        public long OpenTime => Buffer[0].OpenTime;
+        public UtcTicks OpenTime => Buffer[0].OpenTime;
 
         public event Action Appended;
 
@@ -60,7 +60,7 @@ namespace TickTrader.Algo.CoreV1
 
         public BufferUpdateResult Update(QuoteInfo quote)
         {
-            var barBoundaries = sampler.GetBar(quote.UtcMs);
+            var barBoundaries = sampler.GetBar(quote.Time);
             var barOpenTime = barBoundaries.Open;
             var price = _marketSide == Feed.Types.MarketSide.Ask ? quote.Ask : quote.Bid;
 
@@ -205,12 +205,12 @@ namespace TickTrader.Algo.CoreV1
             Appended?.Invoke();
         }
 
-        private BarData CreateFillingBar(long openTime)
+        private BarData CreateFillingBar(UtcTicks openTime)
         {
             return CreateFillingBar(openTime, Buffer.Count > 0 ? Buffer.Last.Close : _defaultBarValue);
         }
 
-        private BarData CreateFillingBar(long openTime, double price)
+        private BarData CreateFillingBar(UtcTicks openTime, double price)
         {
             var boundaries = sampler.GetBar(openTime);
             return new BarData(boundaries.Open, boundaries.Close, price, double.IsNaN(price) ? price : 0);

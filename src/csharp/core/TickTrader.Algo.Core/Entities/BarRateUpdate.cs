@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
@@ -8,10 +7,9 @@ namespace TickTrader.Algo.Core
     {
         private QuoteInfo _lastQuote;
         private int _quoteCount;
-        private long _openTime;
-        private long _closeTime;
+        private UtcTicks _openTime, _closeTime;
 
-        public BarRateUpdate(long barStartTime, long barEndTime, QuoteInfo quote)
+        public BarRateUpdate(UtcTicks barStartTime, UtcTicks barEndTime, QuoteInfo quote)
         {
             _openTime = barStartTime;
             _closeTime = barEndTime;
@@ -34,7 +32,7 @@ namespace TickTrader.Algo.Core
             AskBar = askBar;
             _quoteCount = 1;
             Symbol = symbol;
-            _lastQuote = new QuoteInfo(symbol, TimeTicks.FromMs(_closeTime - 1), bidBar.Close, askBar.Close);
+            _lastQuote = new QuoteInfo(symbol, _closeTime.AddMs(-1), bidBar.Close, askBar.Close);
         }
 
         public BarRateUpdate(BarRateUpdate barUpdate)
@@ -92,7 +90,7 @@ namespace TickTrader.Algo.Core
                     AskBar = new BarData(barUpdate.AskBar);
             }
 
-            _lastQuote = new QuoteInfo(Symbol, TimeTicks.FromMs(quoteTime), barUpdate.BidBar?.Close, barUpdate.AskBar?.Close);
+            _lastQuote = new QuoteInfo(Symbol, quoteTime, barUpdate.BidBar?.Close, barUpdate.AskBar?.Close);
             _quoteCount++;
         }
 
@@ -103,9 +101,8 @@ namespace TickTrader.Algo.Core
         public BarData AskBar { get; private set; }
         public QuoteInfo LastQuote => _lastQuote;
 
-        long IRateInfo.UtcTicks => TimeTicks.FromMs(_openTime);
-        long IRateInfo.UtcMs => _openTime;
-        DateTime IRateInfo.TimeUtc => TimeMs.ToUtc(_openTime);
+        UtcTicks IRateInfo.Time => _openTime;
+        DateTime IRateInfo.TimeUtc => _openTime.ToUtcDateTime();
         double IRateInfo.Ask => AskBar.Close;
         double IRateInfo.AskHigh => AskBar.High;
         double IRateInfo.AskLow => AskBar.Low;

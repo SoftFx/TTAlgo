@@ -26,7 +26,7 @@ namespace TickTrader.BotTerminal.Lib
         protected override void AddToInternalCollection(BarData bar)
         {
             _cache.Add(bar);
-            SciChartdata.Append(TimeMs.ToUtc(bar.OpenTime), bar.Open, bar.High, bar.Low, bar.Close);
+            SciChartdata.Append(bar.OpenTime.ToUtcDateTime(), bar.Open, bar.High, bar.Low, bar.Close);
             if (_autoFillMetadata)
                 SciChartdata.Metadata.Add(null);
         }

@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
@@ -51,19 +50,19 @@ namespace TickTrader.Algo.Core
             return Append(bar) != null;
         }
 
-        public BarData AppendQuote(Timestamp time, double price, double volume)
+        public BarData AppendQuote(UtcTicks time, double price, double volume)
         {
             return AppendQuoteInternal(false, time, price, volume);
         }
 
-        public BarData TryAppendQuote(Timestamp time, double price, double volume)
+        public BarData TryAppendQuote(UtcTicks time, double price, double volume)
         {
             return AppendQuoteInternal(true, time, price, volume);
         }
 
-        private BarData AppendQuoteInternal(bool noThrow, Timestamp time, double price, double volume)
+        private BarData AppendQuoteInternal(bool noThrow, UtcTicks time, double price, double volume)
         {
-            var boundaries = _sampler.GetBar(TimeMs.FromTimestamp(time));
+            var boundaries = _sampler.GetBar(time);
             int currentBarIndex;
             var currentBar = GetLastItem(out currentBarIndex);
 
@@ -108,11 +107,7 @@ namespace TickTrader.Algo.Core
             else
             {
                 // append
-                var entity = new BarData(bar)
-                {
-                    OpenTime = boundaries.Open,
-                    CloseTime = boundaries.Close
-                };
+                var entity = new BarData(boundaries.Open, boundaries.Close, bar);
                 return Append(entity);
             }
 
@@ -143,7 +138,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        protected override long GetItemTimeCoordinate(BarData item) => item.OpenTime;
+        protected override UtcTicks GetItemTimeCoordinate(BarData item) => item.OpenTime;
     }
 
     public sealed class BarVector2 : BarVectorBase2

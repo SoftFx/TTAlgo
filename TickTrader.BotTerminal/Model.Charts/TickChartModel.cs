@@ -89,7 +89,7 @@ namespace TickTrader.BotTerminal
 
         protected override void ApplyUpdate(QuoteInfo update)
         {
-            if (lastSeriesQuote == null || update.UtcTicks > lastSeriesQuote.UtcTicks)
+            if (lastSeriesQuote == null || update.Time > lastSeriesQuote.Time)
             {
                 askData.Append(update.TimeUtc, update.Ask);
                 bidData.Append(update.TimeUtc, update.Bid);

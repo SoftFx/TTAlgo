@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using TickTrader.Algo.Domain;
@@ -54,12 +53,7 @@ namespace TickTrader.Algo.Core
 
         public event Action<BarData> BarClosed { add { _builder.BarClosed += value; } remove { _builder.BarClosed -= value; } }
 
-        public void AppendQuote(Timestamp time, double price, double volume)
-        {
-            _builder.AppendQuote(TimeTicks.FromTimestamp(time), price, volume);
-        }
-
-        public void AppendQuote(long time, double price, double volume)
+        public void AppendQuote(UtcTicks time, double price, double volume)
         {
             _builder.AppendQuote(time, price, volume);
         }

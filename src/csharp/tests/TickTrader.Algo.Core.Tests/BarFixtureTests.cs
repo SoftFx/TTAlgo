@@ -33,11 +33,11 @@ namespace TickTrader.Algo.Core.Tests
 
             Assert.AreEqual(5, mainFixture.Count);
 
-            Assert.AreEqual(TimeMsHelper.ParseLocalDateTime("2017-01-16 18:29"), mainFixture.Buffer[3].OpenTime);
+            Assert.AreEqual(UtcTicksHelper.ParseLocalDateTime("2017-01-16 18:29"), mainFixture.Buffer[3].OpenTime);
             Assert.AreEqual(1.137, mainFixture.Buffer[3].Open);
             Assert.AreEqual(1.144, mainFixture.Buffer[3].Close);
 
-            Assert.AreEqual(TimeMsHelper.ParseLocalDateTime("2017-01-16 18:30"), mainFixture.Buffer[4].OpenTime);
+            Assert.AreEqual(UtcTicksHelper.ParseLocalDateTime("2017-01-16 18:30"), mainFixture.Buffer[4].OpenTime);
             Assert.AreEqual(1.149, mainFixture.Buffer[4].Open);
             Assert.AreEqual(1.201, mainFixture.Buffer[4].Close);
             Assert.AreEqual(1.201, mainFixture.Buffer[4].High);
@@ -68,8 +68,8 @@ namespace TickTrader.Algo.Core.Tests
 
             Assert.AreEqual(4, secondFixture.Count);
             Assert.AreEqual(1.391, secondFixture.Buffer[0].Open);
-            Assert.AreEqual(TimeMsHelper.ParseLocalDateTime("2017-01-16 18:25"), secondFixture.Buffer[1].OpenTime);
-            Assert.AreEqual(TimeMsHelper.ParseLocalDateTime("2017-01-16 18:27"), secondFixture.Buffer[2].OpenTime);
+            Assert.AreEqual(UtcTicksHelper.ParseLocalDateTime("2017-01-16 18:25"), secondFixture.Buffer[1].OpenTime);
+            Assert.AreEqual(UtcTicksHelper.ParseLocalDateTime("2017-01-16 18:27"), secondFixture.Buffer[2].OpenTime);
             Assert.AreEqual(1.395, secondFixture.Buffer[3].Open);
         }
 
@@ -97,8 +97,8 @@ namespace TickTrader.Algo.Core.Tests
             
             Assert.AreEqual(5, mainFixture.Count);
             Assert.AreEqual(5, secondFixture.Count);
-            Assert.AreEqual(TimeMsHelper.ParseLocalDateTime("2017-01-16 18:30"), mainFixture.Buffer[4].OpenTime);
-            Assert.AreEqual(TimeMsHelper.ParseLocalDateTime("2017-01-16 18:30"), secondFixture.Buffer[4].OpenTime);
+            Assert.AreEqual(UtcTicksHelper.ParseLocalDateTime("2017-01-16 18:30"), mainFixture.Buffer[4].OpenTime);
+            Assert.AreEqual(UtcTicksHelper.ParseLocalDateTime("2017-01-16 18:30"), secondFixture.Buffer[4].OpenTime);
         }
 
         [TestMethod]
@@ -124,14 +124,14 @@ namespace TickTrader.Algo.Core.Tests
             secondFixture.UpdateRate("2017-01-16 18:33:29", 1.099);
 
             Assert.AreEqual(3, mainFixture.Count);
-            Assert.AreEqual(TimeMsHelper.ParseLocalDateTime("2017-01-16 18:30"), mainFixture.Buffer[0].OpenTime);
-            Assert.AreEqual(TimeMsHelper.ParseLocalDateTime("2017-01-16 18:31"), mainFixture.Buffer[1].OpenTime);
-            Assert.AreEqual(TimeMsHelper.ParseLocalDateTime("2017-01-16 18:32"), mainFixture.Buffer[2].OpenTime);
+            Assert.AreEqual(UtcTicksHelper.ParseLocalDateTime("2017-01-16 18:30"), mainFixture.Buffer[0].OpenTime);
+            Assert.AreEqual(UtcTicksHelper.ParseLocalDateTime("2017-01-16 18:31"), mainFixture.Buffer[1].OpenTime);
+            Assert.AreEqual(UtcTicksHelper.ParseLocalDateTime("2017-01-16 18:32"), mainFixture.Buffer[2].OpenTime);
 
             Assert.AreEqual(3, secondFixture.Count);
-            Assert.AreEqual(TimeMsHelper.ParseLocalDateTime("2017-01-16 18:30"), secondFixture.Buffer[0].OpenTime);
-            Assert.AreEqual(TimeMsHelper.ParseLocalDateTime("2017-01-16 18:31"), secondFixture.Buffer[1].OpenTime);
-            Assert.AreEqual(TimeMsHelper.ParseLocalDateTime("2017-01-16 18:32"), secondFixture.Buffer[2].OpenTime);
+            Assert.AreEqual(UtcTicksHelper.ParseLocalDateTime("2017-01-16 18:30"), secondFixture.Buffer[0].OpenTime);
+            Assert.AreEqual(UtcTicksHelper.ParseLocalDateTime("2017-01-16 18:31"), secondFixture.Buffer[1].OpenTime);
+            Assert.AreEqual(UtcTicksHelper.ParseLocalDateTime("2017-01-16 18:32"), secondFixture.Buffer[2].OpenTime);
         }
 
         private static IFixtureContext CreateBarBasedContext()

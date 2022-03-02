@@ -27,7 +27,7 @@ namespace TickTrader.Algo.Backtester
         {
             public ForBarData()
             {
-                Map(b => b.OpenTime).Index(0).Name("OpenTimeUtc").TypeConverter<TimeMsTypeConverter>();
+                Map(b => b.OpenTime).Index(0).Name("OpenTimeUtc").TypeConverter<UtcTicksTypeConverter>();
                 Map(b => b.Open).Index(1).Name("Open");
                 Map(b => b.High).Index(2).Name("High");
                 Map(b => b.Low).Index(3).Name("Low");
@@ -41,14 +41,14 @@ namespace TickTrader.Algo.Backtester
 
             public ForDoublePoint()
             {
-                Map(p => p.Time).Index(0).Name(Header).TypeConverter<TimeMsTypeConverter>();
+                Map(p => p.Time).Index(0).Name(Header).TypeConverter<UtcTicksTypeConverter>();
                 Map(p => p.Value).Index(1).Name("Value");
             }
 
 
             public static OutputPoint Read(IReaderRow reader)
             {
-                if (!TimeMsTypeConverter.TryReadTime(reader[0], out var time))
+                if (!UtcTicksTypeConverter.TryReadTime(reader[0], out var time))
                     throw new ArgumentException($"Can't read time at row {reader.CurrentIndex}");
                 if (!reader.TryGetField<double>(1, out var value))
                     throw new ArgumentException($"Can't read y value at row {reader.CurrentIndex}");
@@ -62,7 +62,7 @@ namespace TickTrader.Algo.Backtester
             private readonly MarkerInfo _marker;
 
 
-            public long Time => _point.Time;
+            public UtcTicks Time => _point.Time;
 
             public double Value => _point.Value;
 
@@ -86,7 +86,7 @@ namespace TickTrader.Algo.Backtester
 
             public ForMarkerPoint()
             {
-                Map(p => p.Time).Index(0).Name(Header).TypeConverter<TimeMsTypeConverter>();
+                Map(p => p.Time).Index(0).Name(Header).TypeConverter<UtcTicksTypeConverter>();
                 Map(p => p.Value).Index(1).Name("Value");
                 Map(p => p.Icon).Index(2).Name("Icon");
                 Map(p => p.ColorArgb).Index(3).Name("ColorArgb");
@@ -96,7 +96,7 @@ namespace TickTrader.Algo.Backtester
 
             public static OutputPoint Read(IReaderRow reader)
             {
-                if (!TimeMsTypeConverter.TryReadTime(reader[0], out var time))
+                if (!UtcTicksTypeConverter.TryReadTime(reader[0], out var time))
                     throw new ArgumentException($"Can't read time at row {reader.CurrentIndex}");
                 if (!reader.TryGetField<double>(1, out var value))
                     throw new ArgumentException($"Can't read y value at row {reader.CurrentIndex}");
@@ -205,15 +205,15 @@ namespace TickTrader.Algo.Backtester
             }
         }
 
-        private class TimeMsTypeConverter : ITypeConverter
+        private class UtcTicksTypeConverter : ITypeConverter
         {
-            public static bool TryReadTime(string text, out long timeMs)
+            public static bool TryReadTime(string text, out UtcTicks timeTicks)
             {
-                timeMs = 0;
+                timeTicks = UtcTicks.Default;
                 if (!DateTime.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var time))
                     return false;
 
-                timeMs = TimeMs.FromDateTime(time);
+                timeTicks = new UtcTicks(time);
                 return true;
             }
 
@@ -223,16 +223,12 @@ namespace TickTrader.Algo.Backtester
                     return 0;
 
                 var time = DateTime.Parse(text, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
-                return TimeMs.FromDateTime(time);
+                return new UtcTicks(time);
             }
 
             public string ConvertToString(object value, IWriterRow row, MemberMapData memberMapData)
             {
-                if (!(value is long))
-                    return string.Empty;
-
-                var timeMs = (long)value;
-                return InvariantFormat.CsvFormat(TimeMs.ToUtc(timeMs));
+                return value is UtcTicks time ? InvariantFormat.CsvFormat(time.ToUtcDateTime()) : string.Empty;
             }
         }
     }

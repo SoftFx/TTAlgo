@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using TickTrader.Algo.Domain;
 
@@ -31,35 +30,32 @@ namespace TickTrader.Algo.Core
             throw new ArgumentException($"Timeframe '{timeFrame}' is not supported!");
         }
 
-        public abstract BarBoundaries GetBar(long timepoint);
+        public abstract BarBoundaries GetBar(UtcTicks timepoint);
     }
 
     public readonly struct BarBoundaries
     {
-        public BarBoundaries(long openMs, long closeMs)
+        public BarBoundaries(long openTicks, long closeTicks)
         {
-            Open = openMs;
-            Close = closeMs;
+            Open = new UtcTicks(openTicks);
+            Close = new UtcTicks(closeTicks);
         }
 
-        public long Open { get; }
-        public long Close { get; }
+        public UtcTicks Open { get; }
+        public UtcTicks Close { get; }
     }
 
     internal class DurationSampler : BarSampler
     {
-        private readonly long _durationMs;
+        private readonly long _duration;
 
-        public DurationSampler(TimeSpan duration)
-        {
-            _durationMs = duration.Ticks / 10_000;
-        }
+        public DurationSampler(TimeSpan duration) => _duration = duration.Ticks;
 
-        public override BarBoundaries GetBar(long timepoint)
+        public override BarBoundaries GetBar(UtcTicks timepoint)
         {
-            var delta = _durationMs - (timepoint % _durationMs);
-            var close = timepoint + delta;
-            var open = close - _durationMs;
+            var delta = _duration - (timepoint.Value % _duration);
+            var close = timepoint.Value + delta;
+            var open = close - _duration;
             return new BarBoundaries(open, close);
         }
     }
@@ -68,27 +64,27 @@ namespace TickTrader.Algo.Core
     {
         // DateTime.MinValue - Monday
         // Sunday - start of week on forex
-        public static readonly long ShiftMs = TimeSpan.FromDays(1).Ticks / 10_000;
-        public static readonly long DurationMs = TimeSpan.FromDays(7).Ticks / 10_000;
+        public static readonly long ShiftTicks = TimeSpan.FromDays(1).Ticks;
+        public static readonly long DurationTicks = TimeSpan.FromDays(7).Ticks;
 
-        public override BarBoundaries GetBar(long timepoint)
+        public override BarBoundaries GetBar(UtcTicks timepoint)
         {
-            var s = timepoint + ShiftMs;
-            var weekDelta = DurationMs - (s % DurationMs);
-            var weekEnd = s + weekDelta - ShiftMs;
-            var weekStart = weekEnd - DurationMs;
+            var s = timepoint.Value + ShiftTicks;
+            var weekDelta = DurationTicks - (s % DurationTicks);
+            var weekEnd = s + weekDelta - ShiftTicks;
+            var weekStart = weekEnd - DurationTicks;
             return new BarBoundaries(weekStart, weekEnd);
         }
     }
 
     internal class MonthSampler : BarSampler
     {
-        public override BarBoundaries GetBar(long timepoint)
+        public override BarBoundaries GetBar(UtcTicks timepoint)
         {
-            var t = TimeMs.ToUtc(timepoint);
+            var t = timepoint.ToUtcDateTime();
             var start = new DateTime(t.Year, t.Month, 1, 0, 0, 0, DateTimeKind.Utc);
             var end = start.AddMonths(1);
-            return new BarBoundaries(TimeMs.FromUtcTicks(start.Ticks), TimeMs.FromUtcTicks(end.Ticks));
+            return new BarBoundaries(start.Ticks, end.Ticks);
         }
     }
 }
