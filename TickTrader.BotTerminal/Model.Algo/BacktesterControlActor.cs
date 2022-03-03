@@ -145,6 +145,7 @@ namespace TickTrader.BotTerminal
             {
                 UseShellExecute = false,
                 WorkingDirectory = _workDir,
+                CreateNoWindow = true,
             };
             _rpcParams.SaveAsEnvVars(startInfo.Environment);
 
