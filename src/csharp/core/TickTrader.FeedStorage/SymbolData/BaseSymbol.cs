@@ -115,13 +115,7 @@ namespace TickTrader.FeedStorage
 
         string ISymbolKey.Name => Name; // protection for correct object serialization
 
-
-        bool IEqualityComparer<ISymbolKey>.Equals(ISymbolKey x, ISymbolKey y)
-        {
-            return x.Name == y.Name && x.Origin == x.Origin;
-        }
-
-        int IEqualityComparer<ISymbolKey>.GetHashCode(ISymbolKey obj)
+        public override int GetHashCode()
         {
             return HashCode.GetComposite(Name, Origin);
         }
@@ -132,6 +126,11 @@ namespace TickTrader.FeedStorage
                 return Name.CompareTo(other.Name);
             else
                 return Origin.CompareTo(other.Origin);
+        }
+
+        public bool Equals(ISymbolKey other)
+        {
+            return Origin == other.Origin && Name == other.Name;
         }
     }
 }

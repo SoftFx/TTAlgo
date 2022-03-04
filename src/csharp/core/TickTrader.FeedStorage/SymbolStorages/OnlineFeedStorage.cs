@@ -93,17 +93,32 @@ namespace TickTrader.FeedStorage
 
             public override Task<bool> TryAddSymbol(ISymbolInfo symbol)
             {
-                throw new System.NotImplementedException();
+                if (_symbols.ContainsKey(symbol.Name))
+                    return Task.FromResult(false);
+
+                _symbols.Add(symbol.Name, new OnlineSymbol(symbol, this));
+
+                return Task.FromResult(true);
             }
 
-            public override Task<bool> TryRemoveSymbol(string symbol)
+            public override Task<bool> TryRemoveSymbol(string symbolName)
             {
-                throw new System.NotImplementedException();
+                if (!_symbols.ContainsKey(symbolName))
+                    return Task.FromResult(false);
+
+                _symbols.Remove(symbolName);
+
+                return Task.FromResult(true);
             }
 
             public override Task<bool> TryUpdateSymbol(ISymbolInfo symbol)
             {
-                throw new System.NotImplementedException();
+                if (!_symbols.ContainsKey(symbol.Name))
+                    return Task.FromResult(false);
+
+                _symbols[symbol.Name] = new OnlineSymbol(symbol, this);
+
+                return Task.FromResult(true);
             }
 
 

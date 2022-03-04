@@ -49,8 +49,6 @@ namespace TickTrader.FeedStorage
         {
             UnsubscribeCollection(OnlineCollection);
 
-            OnlineCollection.Symbols.ForEach(u => _allSymbols.Remove(u));
-
             return _onlineStorage.Stop();
         }
 
@@ -70,8 +68,6 @@ namespace TickTrader.FeedStorage
         public Task CloseCustomStorage()
         {
             UnsubscribeCollection(CustomCollection);
-
-            CustomCollection.Symbols.ForEach(u => _allSymbols.Remove(u));
 
             return _customStorage.Stop();
         }
@@ -95,6 +91,8 @@ namespace TickTrader.FeedStorage
         {
             if (collection == null)
                 return;
+
+            collection.Symbols.ForEach(SymbolRemovedHandler);
 
             collection.SymbolAdded -= SymbolAddedHandler;
             collection.SymbolRemoved -= SymbolRemovedHandler;

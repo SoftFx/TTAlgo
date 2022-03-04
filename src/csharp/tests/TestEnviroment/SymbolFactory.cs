@@ -3,7 +3,7 @@ using TickTrader.Algo.Domain;
 
 namespace TestEnviroment
 {
-    internal static class SymbolFactory
+    public static class SymbolFactory
     {
         private static readonly SymbolInfo _prototype = new()
         {

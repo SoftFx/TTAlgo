@@ -123,6 +123,7 @@ namespace TickTrader.FeedStorage
                 _ref?.Send(a => a._seriesListeners.Remove(_seriesChangeCallback));
 
                 IsStarted = false;
+                StorageFolder = string.Empty;
 
                 return _ref.Call(a => a.CloseDatabase());
             }

@@ -62,9 +62,6 @@ namespace TickTrader.BotTerminal
     {
         public StorageSymbolKey(string name, SymbolConfig.Types.SymbolOrigin origin) : base(name, origin) { }
 
-        bool IEqualityComparer<ISymbolKey>.Equals(ISymbolKey x, ISymbolKey y) => x.Name == y.Name && x.Origin == y.Origin;
-
-        int IEqualityComparer<ISymbolKey>.GetHashCode(ISymbolKey obj) => base.GetHashCode();
 
         int IComparable<ISymbolKey>.CompareTo(ISymbolKey other)
         {
@@ -72,6 +69,11 @@ namespace TickTrader.BotTerminal
                 return Name.CompareTo(other.Name);
             else
                 return Origin.CompareTo(other.Origin);
+        }
+
+        public bool Equals(ISymbolKey other)
+        {
+            return Origin == other.Origin && Name == other.Name;
         }
     }
 
