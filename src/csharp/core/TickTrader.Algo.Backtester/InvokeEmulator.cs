@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Domain;
@@ -44,7 +45,7 @@ namespace TickTrader.Algo.Backtester
         }
 
         public DateTime UnsafeVirtualTimePoint { get { return _timePoint; } }
-        public Timestamp UnsafeVirtualTimestamp => _timePoint.ToUniversalTime().ToTimestamp();
+        public Timestamp UnsafeVirtualTimestamp => _timePoint.ToTimestamp();
         public DateTime SafeVirtualTimePoint => _timePoint;
         public DateTime SlimUpdateVirtualTimePoint => new DateTime(Interlocked.Read(ref _safeTimePoint));
         public override int FeedQueueSize => 0;
@@ -351,12 +352,12 @@ namespace TickTrader.Algo.Backtester
 
                 _feed.UpdateHistory(nextTick);
 
-                UpdateVirtualTimepoint(nextTick.Time);
+                UpdateVirtualTimepoint(nextTick.TimeUtc);
                 _collector.OnRateUpdate(nextTick);
 
                 if (tickCount == 1)
                 {
-                    warmupStart = nextTick.Time;
+                    warmupStart = nextTick.TimeUtc;
                     LogWarmupStart();
                 }
 
@@ -483,7 +484,7 @@ namespace TickTrader.Algo.Backtester
 
             var acc = Builder.Account;
             if (acc.IsMarginType)
-                _collector.RegisterEquity(SafeVirtualTimePoint, acc.Equity, acc.Margin);
+                _collector.RegisterEquity(acc.Equity, acc.Margin);
         }
 
         public override Task Stop(bool quick)

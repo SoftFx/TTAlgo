@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Backtester;
+using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
@@ -145,8 +146,8 @@ namespace TickTrader.BotTerminal
                     var openDescription = $"#{orderId} {trRep.Side} (open) {trRep.OpenQuantity} at price {openPrice}";
                     var closeDescription = $"#{orderId} {Revert(trRep.Side)} (close) {trRep.CloseQuantity} at price {closePrice}";
 
-                    markers[0] = new MarkerInfo(new PosMarkerKey(orderId, "a"), trRep.OpenTime, trRep.Side == TransactionSide.Buy, openDescription);
-                    markers[1] = new MarkerInfo(new PosMarkerKey(orderId, "b" + trRep.ActionId), trRep.CloseTime, trRep.Side == TransactionSide.Sell, closeDescription);
+                    markers[0] = new MarkerInfo(new PosMarkerKey(orderId, "a"), new UtcTicks(trRep.OpenTime), trRep.Side == TransactionSide.Buy, openDescription);
+                    markers[1] = new MarkerInfo(new PosMarkerKey(orderId, "b" + trRep.ActionId), new UtcTicks(trRep.CloseTime), trRep.Side == TransactionSide.Sell, closeDescription);
 
                     return 2;
                 }
@@ -158,7 +159,7 @@ namespace TickTrader.BotTerminal
                     var digits = trRep.PriceDigits;
                     var openPrice = NumberFormat.FormatPrice(trRep.OpenPrice, digits);
                     var description = $"#{orderId} {trRep.Side} {trRep.OpenQuantity} at price {openPrice}";
-                    markers[0] = new MarkerInfo(new PosMarkerKey(orderId, "f" + trRep.ActionId), trRep.OpenTime, trRep.Side == TransactionSide.Buy, description);
+                    markers[0] = new MarkerInfo(new PosMarkerKey(orderId, "f" + trRep.ActionId), new UtcTicks(trRep.OpenTime), trRep.Side == TransactionSide.Buy, description);
 
                     return 1;
                 }
@@ -188,7 +189,7 @@ namespace TickTrader.BotTerminal
                         var openPrice = NumberFormat.FormatPrice(order.Price, digits);
                         var openDescription = $"#{order.Id} {order.Side} (open) {order.RequestedAmount / lotSize} {order.Symbol} at price {openPrice}";
 
-                        AddMarker(new PosMarkerKey(order.Id, "a" + _actionIdSeed), order.Created.ToDateTime(), order.Side == OrderInfo.Types.Side.Buy, openDescription);
+                        AddMarker(new PosMarkerKey(order.Id, "a" + _actionIdSeed), order.Created, order.Side == OrderInfo.Types.Side.Buy, openDescription);
                     }
                     else
                     {
@@ -200,7 +201,7 @@ namespace TickTrader.BotTerminal
                         var openPrice = NumberFormat.FormatPrice(order.Price, digits);
                         var openDescription = $"#{order.Id} {order.Side} (open) {order.RequestedAmount / lotSize} {order.Symbol} at price {openPrice}";
 
-                        AddMarker(new PosMarkerKey(order.Id, "b" + _actionIdSeed), order.Created.ToDateTime(), order.Side == OrderInfo.Types.Side.Buy, openDescription);
+                        AddMarker(new PosMarkerKey(order.Id, "b" + _actionIdSeed), order.Created, order.Side == OrderInfo.Types.Side.Buy, openDescription);
                     }
                 }
 
@@ -213,7 +214,7 @@ namespace TickTrader.BotTerminal
                     var closePrice = NumberFormat.FormatPrice(order.LastFillPrice, digits);
                     var closeDescription = $"#{order.Id} {order.Side.Revert()} (close) {order.LastFillAmount / lotSize} {order.Symbol} at price {closePrice}";
 
-                    AddMarker(new PosMarkerKey(order.Id, "c" + _actionIdSeed), order.Modified.ToDateTime(), order.Side == OrderInfo.Types.Side.Sell, closeDescription);
+                    AddMarker(new PosMarkerKey(order.Id, "c" + _actionIdSeed), order.Modified, order.Side == OrderInfo.Types.Side.Sell, closeDescription);
                 }
             }
             else if (_acctype == AccountInfo.Types.Type.Net)
@@ -227,7 +228,7 @@ namespace TickTrader.BotTerminal
                     var lotSize = symbol?.LotSize ?? 1;
                     var openPrice = NumberFormat.FormatPrice(order.LastFillPrice, digits);
                     var description = $"#{order.Id} {order.Side} {order.LastFillAmount / lotSize} at price {openPrice}";
-                    AddMarker(new PosMarkerKey(order.Id, "f" + _actionIdSeed), order.Modified.ToDateTime(), order.Side == OrderInfo.Types.Side.Buy, description);
+                    AddMarker(new PosMarkerKey(order.Id, "f" + _actionIdSeed), order.Modified, order.Side == OrderInfo.Types.Side.Buy, description);
                 }
             }
         }
@@ -244,11 +245,12 @@ namespace TickTrader.BotTerminal
 
         private Queue<MarkerInfo> _postponedMarkers = new Queue<MarkerInfo>();
 
-        private void AddMarker(PosMarkerKey key, DateTime pointTime, bool isBuy, string description)
+        private void AddMarker(PosMarkerKey key, Timestamp pointTime, bool isBuy, string description)
         {
-            var markerInfo = new MarkerInfo(key, pointTime, isBuy, description);
+            var time = new UtcTicks(pointTime);
+            var markerInfo = new MarkerInfo(key, time, isBuy, description);
 
-            if (_barVector.Count == 0 || _barVector.Last().CloseTime < pointTime.ToTimestamp())
+            if (_barVector.Count == 0 || _barVector.Last().CloseTime < time)
                 _postponedMarkers.Enqueue(markerInfo);
             else
                 PlaceMarker(markerInfo);
@@ -258,13 +260,13 @@ namespace TickTrader.BotTerminal
         {
             if (_barVector.Count > 0)
             {
-                var timeEdge = _barVector.Last().CloseTime.ToDateTime();
+                var timeEdge = _barVector.Last().CloseTime;
 
                 while (_postponedMarkers.Count > 0)
                 {
                     var info = _postponedMarkers.Peek();
 
-                    if (info.Timestamp < timeEdge)
+                    if (info.Time < timeEdge)
                     {
                         _postponedMarkers.Dequeue();
                         PlaceMarker(info);
@@ -276,7 +278,7 @@ namespace TickTrader.BotTerminal
 
         private void PlaceMarker(MarkerInfo info)
         {
-            var index = _barVector.Ref.BinarySearch(info.Timestamp.ToTimestamp(), BinarySearchTypes.NearestHigher);
+            var index = _barVector.Ref.BinarySearch(info.Time, BinarySearchTypes.NearestHigher);
             if (index > 0)
             {
                 var existingMeta = _barVector.MarkersData.Metadata[index] as PositionMarkerMetadatda;
@@ -309,16 +311,16 @@ namespace TickTrader.BotTerminal
 
         private struct MarkerInfo
         {
-            public MarkerInfo(PosMarkerKey key, DateTime time, bool isBuy, string description)
+            public MarkerInfo(PosMarkerKey key, UtcTicks time, bool isBuy, string description)
             {
                 Key = key;
-                Timestamp = time;
+                Time = time;
                 IsBuy = isBuy;
                 Description = description;
             }
 
             public PosMarkerKey Key { get; set; }
-            public DateTime Timestamp { get; set; }
+            public UtcTicks Time { get; set; }
             public bool IsBuy { get; set; }
             public string Description { get; set; }
         }

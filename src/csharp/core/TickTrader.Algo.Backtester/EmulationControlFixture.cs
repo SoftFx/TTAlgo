@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Domain;

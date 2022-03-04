@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using TickTrader.Algo.Backtester;
+using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal

@@ -76,6 +76,8 @@ namespace TickTrader.SeriesStorage.LightSerializer
             return ByteConverter.ReadLongLe(_buffer, ref _offset);
         }
 
+        public long ReadUtcTicks() => ReadLong();
+
         public DateTime ReadDateTime(DateTimeKind kind)
         {
             return new DateTime(ReadLong(), kind);

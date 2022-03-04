@@ -20,7 +20,7 @@ namespace TickTrader.Algo.BacktesterV1Host
             return _dataBase.GetSeries(
                 new DateTimeKeySerializer(),
                 TickSerializer.GetSerializer(_request.Key),
-                b => b.Time,
+                b => b.TimeUtc,
                 _request.Key.FullInfo,
                 true);
         }

@@ -7,7 +7,6 @@ using SciChart.Charting.Model.ChartSeries;
 using TickTrader.BotTerminal.Lib;
 using TickTrader.Algo.Domain;
 using Google.Protobuf.WellKnownTypes;
-using TickTrader.Algo.Server;
 
 namespace TickTrader.BotTerminal
 {
@@ -53,7 +52,7 @@ namespace TickTrader.BotTerminal
             _barVector.AppendRange(barArray);
 
             if (barArray.Length > 0)
-                InitBoundaries(barArray.Length, barArray.First().OpenTime.ToDateTime(), barArray.Last().OpenTime.ToDateTime());
+                InitBoundaries(barArray.Length, barArray.First().OpenTime.ToUtcDateTime(), barArray.Last().OpenTime.ToUtcDateTime());
         }
 
         protected override IndicatorModel CreateIndicator(PluginConfig config)
@@ -73,8 +72,8 @@ namespace TickTrader.BotTerminal
         {
             if (quote.HasBid)
             {
-                _barVector.TryAppendQuote(quote.Timestamp, quote.Bid, 1);
-                ExtendBoundaries(_barVector.Count, quote.Time);
+                _barVector.TryAppendQuote(quote.Time, quote.Bid, 1);
+                ExtendBoundaries(_barVector.Count, quote.TimeUtc);
             }
         }
 

@@ -290,7 +290,7 @@ namespace TickTrader.BotTerminal.SymbolManager
         {
             foreach (var val in values)
             {
-                _writer.Write(val.OpenTime.ToDateTime());
+                _writer.Write(val.OpenTime.ToUtcDateTime());
                 _writer.Write(",");
                 _writer.Write(val.Open);
                 _writer.Write(",");
@@ -308,10 +308,10 @@ namespace TickTrader.BotTerminal.SymbolManager
         {
             foreach (var val in values)
             {
-                _writer.Write(val.Time.ToString("yyyy-MM-dd HH:mm:ss.fff"));
+                _writer.Write(val.TimeUtc.ToString("yyyy-MM-dd HH:mm:ss.fff"));
 
-                var bids = val.Bids;
-                var asks = val.Asks;
+                var bids = val.L2Data.Bids;
+                var asks = val.L2Data.Asks;
 
                 for (int i = 0; i < Math.Max(bids.Length, asks.Length); i++)
                 {

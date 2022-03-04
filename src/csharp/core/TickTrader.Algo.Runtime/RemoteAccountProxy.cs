@@ -239,7 +239,7 @@ namespace TickTrader.Algo.Runtime
             var context = new RpcResponseTaskContext<QuotePage>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(Id, new FeedSnapshotRequest()), context);
             var res = await context.TaskSrc.Task;
-            return res.Quotes.Select(q => new QuoteInfo(q)).ToList();
+            return res.Quotes.Select(QuoteInfo.Create).ToList();
         }
 
         internal async Task<List<QuoteInfo>> ModifyFeedSubscriptionAsync(ModifyFeedSubscriptionRequest request)
@@ -247,7 +247,7 @@ namespace TickTrader.Algo.Runtime
             var context = new RpcResponseTaskContext<QuotePage>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(Id, request), context);
             var res = await context.TaskSrc.Task.ConfigureAwait(false);
-            return res.Quotes.Select(q => new QuoteInfo(q)).ToList();
+            return res.Quotes.Select(QuoteInfo.Create).ToList();
         }
 
         internal Task CancelAllFeedSubscriptionsAsync()
@@ -271,7 +271,7 @@ namespace TickTrader.Algo.Runtime
             _session.Ask(RpcMessage.Request(Id, request), context);
             var res = await context.TaskSrc.Task;
             var symbol = res.Symbol;
-            return res.Quotes.Select(q => new QuoteInfo(symbol, q)).ToList();
+            return res.Quotes.Select(q => QuoteInfo.Create(symbol, q)).ToList();
         }
 
         private void OrderExecReportNotificationHandler(Any payload)
@@ -292,13 +292,13 @@ namespace TickTrader.Algo.Runtime
         private void FullQuoteInfoNotificationHandler(Any payload)
         {
             var quote = payload.Unpack<FullQuoteInfo>();
-            _rateEventSrc.Send(new QuoteInfo(quote));
+            _rateEventSrc.Send(QuoteInfo.Create(quote));
         }
 
         private void QuotePageNotificationHandler(Any payload)
         {
             var page = payload.Unpack<QuotePage>();
-            _rateListEventSrc.Send(page.Quotes.Select(q => new QuoteInfo(q)).ToList());
+            _rateListEventSrc.Send(page.Quotes.Select(QuoteInfo.Create).ToList());
         }
 
 

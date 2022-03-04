@@ -273,6 +273,7 @@ namespace TickTrader.Algo.Server
             {
                 UseShellExecute = false,
                 WorkingDirectory = _server.Env.AppFolder,
+                CreateNoWindow = true,
             };
             rpcParams.SaveAsEnvVars(startInfo.Environment);
 

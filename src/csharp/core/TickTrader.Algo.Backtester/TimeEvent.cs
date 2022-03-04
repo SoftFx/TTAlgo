@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace TickTrader.Algo.Backtester
 {
-    internal struct TimeEvent : IComparable<TimeEvent>
+    internal readonly struct TimeEvent : IComparable<TimeEvent>
     {
         public TimeEvent(DateTime time, bool isTrade, object content)
         {

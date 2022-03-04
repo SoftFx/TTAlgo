@@ -18,7 +18,8 @@ namespace TickTrader.Algo.CoreV1
 
         public BarEntity MapValue(QuoteInfo quote)
         {
-            var res = new BarEntity(BarData.CreateBlank(quote.Timestamp, quote.Timestamp));
+            var time = quote.Time.RoundMs();
+            var res = new BarEntity(BarData.CreateBlank(time, time.AddMs(1)));
             _barReductionInstance.Reduce(new QuoteEntity(quote), res);
             return res;
         }

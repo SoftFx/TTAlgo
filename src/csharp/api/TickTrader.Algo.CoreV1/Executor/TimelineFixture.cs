@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
@@ -35,14 +34,7 @@ namespace TickTrader.Algo.CoreV1
         }
 
 
-        public BarBoundaries GetBarBounds(Timestamp time)
-        {
-            var barBoundaries = _sampler.GetBar(time);
-            Update(barBoundaries);
-            return barBoundaries;
-        }
-
-        public BufferUpdateResult Update(Timestamp time)
+        public BufferUpdateResult Update(UtcTicks time)
         {
             var barBoundaries = _sampler.GetBar(time);
             return Update(barBoundaries);
@@ -58,7 +50,7 @@ namespace TickTrader.Algo.CoreV1
 
             if (_timeline.Count > 0)
             {
-                var lastOpenTime = _timeline.Count == 0 ? new Timestamp() : _timeline[_timeline.Count - 1].Open;
+                var lastOpenTime = _timeline.Count == 0 ? UtcTicks.Default : _timeline[_timeline.Count - 1].Open;
 
                 if (barOpenTime < lastOpenTime)
                     return new BufferUpdateResult();

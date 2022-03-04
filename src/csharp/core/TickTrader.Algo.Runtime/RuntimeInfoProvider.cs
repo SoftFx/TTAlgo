@@ -81,7 +81,7 @@ namespace TickTrader.Algo.Runtime
             var symbolDict = _symbols.ToDictionary(k => k.Name, v => v);
 
             foreach (var quote in _quotes)
-                symbolDict[quote.Symbol].UpdateRate(new QuoteInfo(quote));
+                symbolDict[quote.Symbol].UpdateRate(QuoteInfo.Create(quote));
         }
 
         #region IPluginMetadata

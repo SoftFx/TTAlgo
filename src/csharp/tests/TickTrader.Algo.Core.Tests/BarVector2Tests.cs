@@ -15,14 +15,14 @@ namespace TickTrader.Algo.Core.Tests
             var master = BarVector2.Create(Feed.Types.Timeframe.D);
             var slave = BarVector2.Create(master);
 
-            slave.AppendQuote(TimestampHelper.FromDate(2017, 1, 1), 1.1, 0);
-            slave.AppendQuote(TimestampHelper.FromDate(2017, 1, 2), 1.2, 0);
-            slave.AppendQuote(TimestampHelper.FromDate(2017, 1, 4), 1.4, 0);
+            slave.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 1), 1.1, 0);
+            slave.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 2), 1.2, 0);
+            slave.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 4), 1.4, 0);
 
-            master.AppendQuote(TimestampHelper.FromDate(2017, 1, 1), 5.1, 0);
-            master.AppendQuote(TimestampHelper.FromDate(2017, 1, 3), 5.3, 0);
-            master.AppendQuote(TimestampHelper.FromDate(2017, 1, 4), 5.4, 0);
-            master.AppendQuote(TimestampHelper.FromDate(2017, 1, 5), 5.5, 0);
+            master.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 1), 5.1, 0);
+            master.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 3), 5.3, 0);
+            master.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 4), 5.4, 0);
+            master.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 5), 5.5, 0);
 
             Assert.AreEqual(4, master.Count);
             Assert.AreEqual(5.1, master[0].Open);
@@ -43,17 +43,17 @@ namespace TickTrader.Algo.Core.Tests
             var master = BarVector2.Create(Feed.Types.Timeframe.D);
             var slave = BarVector2.Create(master);
 
-            master.AppendQuote(TimestampHelper.FromDate(2017, 1, 1), 5.1, 0);
-            master.AppendQuote(TimestampHelper.FromDate(2017, 1, 3), 5.3, 0);
-            master.AppendQuote(TimestampHelper.FromDate(2017, 1, 4), 5.4, 0); // +
-            master.AppendQuote(TimestampHelper.FromDate(2017, 1, 5), 5.5, 0);
-            master.AppendQuote(TimestampHelper.FromDate(2017, 1, 6), 5.6, 0); // +
+            master.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 1), 5.1, 0);
+            master.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 3), 5.3, 0);
+            master.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 4), 5.4, 0); // +
+            master.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 5), 5.5, 0);
+            master.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 6), 5.6, 0); // +
 
-            slave.AppendQuote(TimestampHelper.FromDate(2016, 12, 27), 0.27, 0); // -
-            slave.AppendQuote(TimestampHelper.FromDate(2016, 12, 29), 0.29, 0); // -
-            slave.AppendQuote(TimestampHelper.FromDate(2017, 1, 2), 1.2, 0); // -
-            slave.AppendQuote(TimestampHelper.FromDate(2017, 1, 4), 1.4, 0); // +
-            slave.AppendQuote(TimestampHelper.FromDate(2017, 1, 6), 1.6, 0); // +
+            slave.AppendQuote(UtcTicksHelper.FromDate(2016, 12, 27), 0.27, 0); // -
+            slave.AppendQuote(UtcTicksHelper.FromDate(2016, 12, 29), 0.29, 0); // -
+            slave.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 2), 1.2, 0); // -
+            slave.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 4), 1.4, 0); // +
+            slave.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 6), 1.6, 0); // +
 
 
             Assert.AreEqual(5, master.Count);
@@ -78,15 +78,15 @@ namespace TickTrader.Algo.Core.Tests
             var master = BarVector2.Create(Feed.Types.Timeframe.D);
             var slave = BarVector2.Create(master);
 
-            master.AppendQuote(TimestampHelper.FromDate(2017, 1, 1), 5.1, 0);
-            master.AppendQuote(TimestampHelper.FromDate(2017, 1, 3), 5.3, 0);
-            master.AppendQuote(TimestampHelper.FromDate(2017, 1, 4), 5.4, 0); // +
-            master.AppendQuote(TimestampHelper.FromDate(2017, 1, 5), 5.5, 0);
-            master.AppendQuote(TimestampHelper.FromDate(2017, 1, 6), 5.6, 0); // +
+            master.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 1), 5.1, 0);
+            master.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 3), 5.3, 0);
+            master.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 4), 5.4, 0); // +
+            master.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 5), 5.5, 0);
+            master.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 6), 5.6, 0); // +
 
-            slave.AppendQuote(TimestampHelper.FromDate(2017, 1, 2), 1.2, 0); // -
-            slave.AppendQuote(TimestampHelper.FromDate(2017, 1, 4), 1.4, 0); // +
-            slave.AppendQuote(TimestampHelper.FromDate(2017, 1, 6), 1.6, 0); // +
+            slave.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 2), 1.2, 0); // -
+            slave.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 4), 1.4, 0); // +
+            slave.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 6), 1.6, 0); // +
 
             Assert.AreEqual(5, master.Count);
             Assert.AreEqual(5.1, master[0].Open);
@@ -110,17 +110,17 @@ namespace TickTrader.Algo.Core.Tests
             var master = BarVector2.Create(Feed.Types.Timeframe.D);
             var slave = BarVector2.Create(master);
 
-            master.AppendQuote(TimestampHelper.FromDate(2017, 1, 1), 5.1, 0);
-            master.AppendQuote(TimestampHelper.FromDate(2017, 1, 3), 5.3, 0);
-            master.AppendQuote(TimestampHelper.FromDate(2017, 1, 4), 5.4, 0); // +
-            master.AppendQuote(TimestampHelper.FromDate(2017, 1, 5), 5.5, 0);
-            master.AppendQuote(TimestampHelper.FromDate(2017, 1, 6), 5.6, 0); // +
+            master.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 1), 5.1, 0);
+            master.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 3), 5.3, 0);
+            master.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 4), 5.4, 0); // +
+            master.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 5), 5.5, 0);
+            master.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 6), 5.6, 0); // +
 
-            slave.AppendQuote(TimestampHelper.FromDate(2017, 1, 1), 1.1, 0); // -
-            slave.AppendQuote(TimestampHelper.FromDate(2017, 1, 3), 1.3, 0); // -
-            slave.AppendQuote(TimestampHelper.FromDate(2017, 1, 4), 1.4, 0); // -
-            slave.AppendQuote(TimestampHelper.FromDate(2017, 1, 5), 1.5, 0); // +
-            slave.AppendQuote(TimestampHelper.FromDate(2017, 1, 6), 1.6, 0); // +
+            slave.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 1), 1.1, 0); // -
+            slave.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 3), 1.3, 0); // -
+            slave.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 4), 1.4, 0); // -
+            slave.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 5), 1.5, 0); // +
+            slave.AppendQuote(UtcTicksHelper.FromDate(2017, 1, 6), 1.6, 0); // +
 
             Assert.AreEqual(5, master.Count);
             Assert.AreEqual(5.1, master[0].Open);

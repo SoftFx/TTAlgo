@@ -36,7 +36,7 @@ namespace TickTrader.BotTerminal
 
             foreach (var point in points)
             {
-                var pointTime = TimeMs.ToTimestamp(point.Time);
+                var pointTime = point.Time;
 
                 if (syncIndex >= 0)
                 {
@@ -76,7 +76,7 @@ namespace TickTrader.BotTerminal
 
         public int Append(OutputPoint point)
         {
-            var pointTime = TimeMs.ToTimestamp(point.Time);
+            var pointTime = point.Time;
             var index = _baseVector.BinarySearch(pointTime, BinarySearchTypes.Exact);
 
             if (index >= 0)
@@ -91,7 +91,7 @@ namespace TickTrader.BotTerminal
 
         public void Update(OutputPoint point)
         {
-            var pointTime = TimeMs.ToTimestamp(point.Time);
+            var pointTime = point.Time;
             var index = _baseVector.BinarySearch(pointTime, BinarySearchTypes.Exact);
             if (index >= 0)
             {
@@ -108,7 +108,7 @@ namespace TickTrader.BotTerminal
         {
             while (_size <= targetSize)
             {
-                var pointTime = TimeMs.FromTimestamp(_baseVector[_size]);
+                var pointTime = _baseVector[_size];
                 DoAppend?.Invoke(new OutputPoint(pointTime, double.NaN));
                 _size++;
             }

@@ -5,7 +5,7 @@ namespace TickTrader.Algo.Domain
     public readonly struct OutputPoint
     {
         // X coordinate
-        public long Time { get; }
+        public UtcTicks Time { get; }
 
         // Y coordinate
         public double Value { get; }
@@ -13,14 +13,14 @@ namespace TickTrader.Algo.Domain
         public object Metadata { get; }
 
 
-        public OutputPoint(long time, double value)
+        public OutputPoint(UtcTicks time, double value)
         {
             Time = time;
             Value = value;
             Metadata = null;
         }
 
-        public OutputPoint(long time, double value, MarkerInfo marker)
+        public OutputPoint(UtcTicks time, double value, MarkerInfo marker)
         {
             Time = time;
             Value = value;
@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Domain
     {
         public OutputPointWire(OutputPoint point)
         {
-            Time = point.Time;
+            Time = point.Time.Value;
             Value = point.Value;
             Type = Types.Type.Double;
             switch(point.Metadata)
@@ -51,10 +51,10 @@ namespace TickTrader.Algo.Domain
             switch (Type)
             {
                 case Types.Type.Double: break;
-                case Types.Type.Marker: return new OutputPoint(Time, Value, (MarkerInfo)MarkerInfo.Descriptor.Parser.ParseFrom(Metadata));
+                case Types.Type.Marker: return new OutputPoint(new UtcTicks(Time), Value, (MarkerInfo)MarkerInfo.Descriptor.Parser.ParseFrom(Metadata));
             }
 
-            return new OutputPoint(Time, Value);
+            return new OutputPoint(new UtcTicks(Time), Value);
         }
     }
 }

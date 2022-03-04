@@ -28,12 +28,12 @@ namespace TickTrader.BotTerminal
 
         protected override void AppendInternal(OutputPoint p)
         {
-            _seriesData.Append(TimeMs.ToUtc(p.Time), p.Value);
+            _seriesData.Append(p.Time.ToUtcDateTime(), p.Value);
         }
 
         protected override void UpdateInternal(OutputPoint p)
         {
-            var index = _seriesData.FindIndex(TimeMs.ToUtc(p.Time));
+            var index = _seriesData.FindIndex(p.Time.ToUtcDateTime());
             _seriesData.Update(index, p.Value);
         }
 

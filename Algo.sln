@@ -157,6 +157,7 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.BacktesterV1Host", "src\csharp\apps\TickTrader.Algo.BacktesterV1Host\TickTrader.Algo.BacktesterV1Host.csproj", "{7E2C0529-C16A-486B-B4A4-E84E1AB34B10}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.FeedStorage.Api.Tests", "src\csharp\tests\TickTrader.FeedStorage.Api.Tests\TickTrader.FeedStorage.Api.Tests.csproj", "{5BC1C82B-CC91-4DA8-A10F-CEC097ABC326}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.BacktesterApi", "src\csharp\core\TickTrader.Algo.BacktesterApi\TickTrader.Algo.BacktesterApi.csproj", "{D50FAF09-2A1B-44D6-A791-8D4C5221518F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -900,6 +901,18 @@ Global
 		{5BC1C82B-CC91-4DA8-A10F-CEC097ABC326}.Release|x64.Build.0 = Release|Any CPU
 		{5BC1C82B-CC91-4DA8-A10F-CEC097ABC326}.Release|x86.ActiveCfg = Release|Any CPU
 		{5BC1C82B-CC91-4DA8-A10F-CEC097ABC326}.Release|x86.Build.0 = Release|Any CPU
+		{D50FAF09-2A1B-44D6-A791-8D4C5221518F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D50FAF09-2A1B-44D6-A791-8D4C5221518F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D50FAF09-2A1B-44D6-A791-8D4C5221518F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D50FAF09-2A1B-44D6-A791-8D4C5221518F}.Debug|x64.Build.0 = Debug|Any CPU
+		{D50FAF09-2A1B-44D6-A791-8D4C5221518F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D50FAF09-2A1B-44D6-A791-8D4C5221518F}.Debug|x86.Build.0 = Debug|Any CPU
+		{D50FAF09-2A1B-44D6-A791-8D4C5221518F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D50FAF09-2A1B-44D6-A791-8D4C5221518F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D50FAF09-2A1B-44D6-A791-8D4C5221518F}.Release|x64.ActiveCfg = Release|Any CPU
+		{D50FAF09-2A1B-44D6-A791-8D4C5221518F}.Release|x64.Build.0 = Release|Any CPU
+		{D50FAF09-2A1B-44D6-A791-8D4C5221518F}.Release|x86.ActiveCfg = Release|Any CPU
+		{D50FAF09-2A1B-44D6-A791-8D4C5221518F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -968,6 +981,7 @@ Global
 		{CF4C2154-8C84-4C8B-81DC-0B577B98431E} = {0B8EB813-E541-46DB-ADCC-2EA529D74B16}
 		{7E2C0529-C16A-486B-B4A4-E84E1AB34B10} = {D4DDCC9E-81DB-4294-9060-A8C1AB363672}
 		{5BC1C82B-CC91-4DA8-A10F-CEC097ABC326} = {EFB9D6C3-7008-41DF-A75B-6C0E8DEF0CDA}
+		{D50FAF09-2A1B-44D6-A791-8D4C5221518F} = {C5AE642C-4A61-47BD-9272-69909998B71D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {676AD27B-E03C-4277-A423-E2533F837976}

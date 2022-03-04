@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Backtester;
+using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
@@ -218,32 +218,6 @@ namespace TickTrader.BotTerminal
         {
             var mainSymbol = MainSymbolSetup.SelectedSymbol.Value;
             _mainSymbolToken.Id = mainSymbol.Name;
-        }
-
-        public void Apply(Backtester backtester, DateTime from, DateTime to, bool isVisualizing)
-        {
-            MainSymbolSetup.Apply(backtester, from, to, SelectedModel.Value, isVisualizing);
-
-            foreach (var symbolSetup in FeedSymbols)
-                symbolSetup.Apply(backtester, from, to, isVisualizing);
-
-            foreach (var rec in _client.Currencies.Snapshot)
-                backtester.CommonSettings.Currencies.Add(rec.Key, rec.Value);
-
-            Settings.Apply(backtester);
-        }
-
-        public void Apply(Optimizer optimizer, DateTime from, DateTime to)
-        {
-            MainSymbolSetup.Apply(optimizer, from, to, SelectedModel.Value);
-
-            foreach (var symbolSetup in FeedSymbols)
-                symbolSetup.Apply(optimizer, from, to);
-
-            foreach (var rec in _client.Currencies.Snapshot)
-                optimizer.CommonSettings.Currencies.Add(rec.Key, rec.Value);
-
-            Settings.Apply(optimizer.CommonSettings);
         }
 
         public void Apply(BacktesterConfig config)
