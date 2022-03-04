@@ -4,9 +4,17 @@ namespace TickTrader.Algo.Domain
 {
     public partial class BarData
     {
-        public UtcTicks OpenTime => new UtcTicks(OpenTimeRaw);
+        public UtcTicks OpenTime
+        {
+            get => new UtcTicks(OpenTimeRaw);
+            set => OpenTimeRaw = value.Value;
+        }
 
-        public UtcTicks CloseTime => new UtcTicks(CloseTimeRaw);
+        public UtcTicks CloseTime
+        {
+            get => new UtcTicks(CloseTimeRaw);
+            set => CloseTimeRaw = value.Value;
+        }
 
 
         public BarData(UtcTicks openTime, UtcTicks closeTime, double price, double realVolume)
