@@ -3,10 +3,35 @@ using System.IO;
 
 namespace TickTrader.FeedStorage.Api.Tests
 {
-    internal sealed class OnlineStorageSettings : IOnlineStorageSettings
+    public abstract class StorageSettings
     {
+        internal const string DatabaseFolder = "StorageFolder";
+
         private static int _number;
 
+
+        public string FolderPath { get; }
+
+
+        internal StorageSettings()
+        {
+            FolderPath = Path.Combine(Environment.CurrentDirectory, $"{DatabaseFolder}_{++_number}");
+        }
+
+        internal virtual string GetExpectedPath()
+        {
+            return FolderPath;
+        }
+    }
+
+
+    public sealed class CustomStorageSettings : StorageSettings, ICustomStorageSettings
+    {
+    }
+
+
+    public sealed class OnlineStorageSettings : StorageSettings, IOnlineStorageSettings
+    {
         internal const string DefaultLogin = "TestUser";
         internal const string DefaultServer = "TestServer";
         internal const FeedStorageFolderOptions DefaultOptions = FeedStorageFolderOptions.ServerClientHierarchy;
@@ -16,18 +41,10 @@ namespace TickTrader.FeedStorage.Api.Tests
 
         public string Server { get; set; } = DefaultServer;
 
-        public string FolderPath { get; set; }
-
         public FeedStorageFolderOptions Options { get; set; } = FeedStorageFolderOptions.ServerClientHierarchy;
 
 
-        internal OnlineStorageSettings()
-        {
-            FolderPath = Path.Combine(Environment.CurrentDirectory, $"{TestsBase.DatabaseFolder}_{++_number}");
-        }
-
-
-        internal string GetExpectedPath()
+        internal override string GetExpectedPath()
         {
             switch (Options)
             {
@@ -36,7 +53,7 @@ namespace TickTrader.FeedStorage.Api.Tests
                 case FeedStorageFolderOptions.ServerClientHierarchy:
                     return Path.Combine(FolderPath, Server, Login);
                 default:
-                    return FolderPath;
+                    return base.GetExpectedPath();
             }
         }
     }

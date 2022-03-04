@@ -20,6 +20,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
         {
             _originOrder = origin;
 
+            //try to use CallerMemberNameAttribute instead nameof
             CheckOriginalValue(template == null, nameof(Order.IsNull));
             CheckOriginalValue(OrderBaseSet.Symbol.Name, nameof(Order.Symbol));
 

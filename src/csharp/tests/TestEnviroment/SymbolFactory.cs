@@ -9,6 +9,8 @@ namespace TestEnviroment
         {
             TradeAllowed = true,
             Digits = 5,
+            Security = string.Empty,
+            Description = "test",
             LotSize = 100000,
             MinTradeVolume = 0.01,
             MaxTradeVolume = 1000,
