@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Text;
-using TickTrader.Algo.Backtester;
+using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
@@ -17,23 +17,6 @@ namespace TickTrader.BotTerminal
         public WarmupUnitTypes WarmupUnits { get; set; } = WarmupUnitTypes.Bars;
 
         public JournalOptions JournalSettings { get; set; } = JournalOptions.Default;
-
-        public void Apply(Backtester tester)
-        {
-            Apply(tester.CommonSettings);
-            tester.JournalFlags = JournalSettings;
-        }
-
-        public void Apply(CommonTestSettings settings)
-        {
-            settings.InitialBalance = InitialBalance;
-            settings.BalanceCurrency = BalanceCurrency;
-            settings.Leverage = Leverage;
-            settings.AccountType = AccType;
-            settings.ServerPing = TimeSpan.FromMilliseconds(ServerPingMs);
-            settings.WarmupSize = WarmupValue;
-            settings.WarmupUnits = WarmupUnits;
-        }
 
         public void Apply(BacktesterConfig config)
         {

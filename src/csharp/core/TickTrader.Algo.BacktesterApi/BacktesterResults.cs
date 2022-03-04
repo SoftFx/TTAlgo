@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text.Json;
 using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.Backtester
+namespace TickTrader.Algo.BacktesterApi
 {
     public class BacktesterResults
     {
@@ -66,7 +66,7 @@ namespace TickTrader.Algo.Backtester
         }
 
 
-        internal static void SaveJson<T>(ZipArchive zip, string entryName, T data)
+        public static void SaveJson<T>(ZipArchive zip, string entryName, T data)
         {
             var entry = zip.CreateEntry(entryName);
             using (var stream = entry.Open())
@@ -76,9 +76,9 @@ namespace TickTrader.Algo.Backtester
             }
         }
 
-        internal static void SaveBarData(ZipArchive zip, string entryName, IEnumerable<BarData> bars) => SaveZipEntryAsCsv<BarData, CsvMapping.ForBarData>(zip, entryName, bars);
+        public static void SaveBarData(ZipArchive zip, string entryName, IEnumerable<BarData> bars) => SaveZipEntryAsCsv<BarData, CsvMapping.ForBarData>(zip, entryName, bars);
 
-        internal static void SaveOutputData(ZipArchive zip, string entryName, IReadOnlyList<OutputPoint> points)
+        public static void SaveOutputData(ZipArchive zip, string entryName, IReadOnlyList<OutputPoint> points)
         {
             var first = points[0];
             if (first.Metadata is MarkerInfo)
@@ -91,7 +91,7 @@ namespace TickTrader.Algo.Backtester
             }
         }
 
-        internal static void SaveTradeHistory(ZipArchive zip, IEnumerable<TradeReportInfo> reports) => SaveZipEntryAsCsv<TradeReportInfo, CsvMapping.ForTradeReport>(zip, "trade-history.csv", reports);
+        public static void SaveTradeHistory(ZipArchive zip, IEnumerable<TradeReportInfo> reports) => SaveZipEntryAsCsv<TradeReportInfo, CsvMapping.ForTradeReport>(zip, "trade-history.csv", reports);
 
 
         private static T ReadZipEntryAsJson<T>(ZipArchive zip, string entryName)

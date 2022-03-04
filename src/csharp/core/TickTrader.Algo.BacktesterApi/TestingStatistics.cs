@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TickTrader.Algo.Backtester
+﻿namespace TickTrader.Algo.BacktesterApi
 {
     public class TestingStatistics
     {

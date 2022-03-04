@@ -7,9 +7,25 @@ using System.Text.Json;
 using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage;
 
-namespace TickTrader.Algo.Backtester
+namespace TickTrader.Algo.BacktesterApi
 {
     public enum BacktesterMode { Backtesting, Optimization, Visualization }
+
+    public enum WarmupUnitTypes { Bars, Ticks, Days, Hours }
+
+    [Flags]
+    public enum JournalOptions
+    {
+        Disabled = 0,
+        Enabled = 1,
+        WriteInfo = 2,
+        WriteCustom = 4,
+        WriteTrade = 8,
+        WriteOrderModifications = 128,
+        WriteAlert = 256,
+
+        Default = Enabled | WriteCustom | WriteInfo | WriteTrade | WriteAlert,
+    }
 
     public class BacktesterConfig
     {

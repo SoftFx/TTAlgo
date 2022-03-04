@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using TickTrader.Algo.Account;
 using TickTrader.Algo.Backtester;
+using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal

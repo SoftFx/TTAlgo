@@ -8,9 +8,9 @@ using System.Globalization;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.Backtester
+namespace TickTrader.Algo.BacktesterApi
 {
-    internal class CsvMapping
+    public class CsvMapping
     {
         public class ForLogRecord : ClassMap<PluginLogRecord>
         {
