@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace TickTrader.Algo.Backtester
+namespace TickTrader.Algo.BacktesterApi
 {
     public class EnumParamSet<T> : ParamSeekSet<T>
     {

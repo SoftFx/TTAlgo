@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.CoreV1;
 
 namespace TickTrader.Algo.Backtester
@@ -24,6 +25,15 @@ namespace TickTrader.Algo.Backtester
         {
             foreach (var pair in Parameters)
                 target.SetParameter(pair.Key, pair.Value);
+        }
+
+        public OptParams GetOptParams()
+        {
+            var res = new OptParams(Id);
+            foreach (var pair in Parameters)
+                res.Parameters.Add(pair.Key, pair.Value.ToString());
+
+            return res;
         }
 
         IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator()

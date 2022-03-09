@@ -8,11 +8,8 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
-using TickTrader.Algo.Backtester;
-using TickTrader.Algo.BacktesterV1Host;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
-using TickTrader.FeedStorage;
 using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.BotTerminal
@@ -215,88 +212,6 @@ namespace TickTrader.BotTerminal
                         await smb.DownloadBarWithObserver(observer, timeFrameChoice, Feed.Types.MarketSide.Ask, precacheFrom, precacheTo, false);
                 }
             }
-        }
-
-        public void Apply(Optimizer tester, DateTime fromLimit, DateTime toLimit)
-        {
-            Apply(tester.CommonSettings, tester.Feed, fromLimit, toLimit, SelectedTimeframe.Value);
-        }
-
-        public void Apply(Optimizer tester, DateTime fromLimit, DateTime toLimit, Feed.Types.Timeframe baseTimeFrame)
-        {
-            Apply(tester.CommonSettings, tester.Feed, fromLimit, toLimit, baseTimeFrame);
-        }
-
-        public void Apply(Backtester tester, DateTime fromLimit, DateTime toLimit, bool isVisualizing)
-        {
-            Apply(tester.CommonSettings, tester.Feed, fromLimit, toLimit, SelectedTimeframe.Value);
-            SetupDataOutput(tester, isVisualizing);
-        }
-
-        public void Apply(Backtester tester, DateTime fromLimit, DateTime toLimit, Feed.Types.Timeframe baseTimeFrame, bool isVisualizing)
-        {
-            Apply(tester.CommonSettings, tester.Feed, fromLimit, toLimit, baseTimeFrame);
-            SetupDataOutput(tester, isVisualizing);
-        }
-
-        public void Apply(CommonTestSettings settings, FeedEmulator feedEmulator, DateTime fromLimit, DateTime toLimit, bool isVisualizing)
-        {
-            Apply(settings, feedEmulator, fromLimit, toLimit, SelectedTimeframe.Value);
-        }
-
-        public void Apply(CommonTestSettings settings, FeedEmulator feedEmulator, DateTime fromLimit, DateTime toLimit, Feed.Types.Timeframe baseTimeFrame)
-        {
-            var smbData = SelectedSymbol.Value;
-            var priceChoice = SelectedPriceType.Value;
-
-            if (smbData == null)
-                return;
-
-            if (SetupType == SymbolSetupType.Main)
-            {
-                settings.MainSymbol = smbData.Name;
-                settings.MainTimeframe = SelectedTimeframe.Value; // SelectedTimeframe may differ from baseTimeFrame in case of main symbol
-                settings.ModelTimeframe = baseTimeFrame;
-                return;
-            }
-
-            var folderPath = smbData.IsCustom ? _catalog.CustomCollection.StorageFolder : _catalog.OnlineCollection.StorageFolder;
-            var precacheFrom = GetLocalFrom(fromLimit);
-            var precacheTo = GetLocalTo(toLimit);
-
-            settings.Symbols.Add(smbData.Name, (SymbolInfo)smbData.Info);
-
-            if (baseTimeFrame == Feed.Types.Timeframe.Ticks || baseTimeFrame == Feed.Types.Timeframe.TicksLevel2)
-            {
-                TickCrossDomainReader feed = new TickCrossDomainReader(folderPath, smbData.Name, baseTimeFrame, precacheFrom, precacheTo);
-
-                feedEmulator.AddSource(smbData.Name, feed);
-            }
-            else
-            {
-                BarCrossDomainReader bidFeed = null;
-                BarCrossDomainReader askFeed = null;
-
-                if (priceChoice == DownloadPriceChoices.Bid | priceChoice == DownloadPriceChoices.Both)
-                    bidFeed = new BarCrossDomainReader(folderPath, smbData.Name, baseTimeFrame, Feed.Types.MarketSide.Bid, precacheFrom, precacheTo);
-                    //bidFeed = smbData.GetCrossDomainBarReader(baseTimeFrame, Feed.Types.MarketSide.Bid, precacheFrom, precacheTo);
-
-                if (priceChoice == DownloadPriceChoices.Ask | priceChoice == DownloadPriceChoices.Both)
-                    askFeed = new BarCrossDomainReader(folderPath, smbData.Name, baseTimeFrame, Feed.Types.MarketSide.Ask, precacheFrom, precacheTo);
-                    //askFeed = smbData.GetCrossDomainBarReader(baseTimeFrame, Feed.Types.MarketSide.Ask, precacheFrom, precacheTo);
-
-                feedEmulator.AddSource(smbData.Name, baseTimeFrame, bidFeed, askFeed);
-            }
-        }
-
-        private void SetupDataOutput(Backtester tester, bool isVisualizing)
-        {
-            var smbData = SelectedSymbol.Value;
-
-            if (isVisualizing && SetupType != SymbolSetupType.MainShadow)
-                tester.SymbolDataConfig.Add(smbData.Name, TestDataSeriesFlags.Stream | TestDataSeriesFlags.Realtime);
-            else if (SetupType == SymbolSetupType.Main)
-                tester.SymbolDataConfig.Add(smbData.Name, TestDataSeriesFlags.Stream);
         }
 
         public void Reset()

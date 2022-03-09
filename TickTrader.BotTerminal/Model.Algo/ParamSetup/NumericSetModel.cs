@@ -1,5 +1,5 @@
 ﻿using Machinarium.Var;
-using TickTrader.Algo.Backtester;
+using TickTrader.Algo.BacktesterApi;
 
 namespace TickTrader.BotTerminal
 {

@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Threading.Tasks;
-using TickTrader.Algo.Backtester;
+using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
@@ -66,7 +62,7 @@ namespace TickTrader.BotTerminal
 
             var row = Data.NewRow();
 
-            foreach (var pair in report.Config)
+            foreach (var pair in report.Config.Parameters)
             {
                 if (_idToColumnMap.TryGetValue(pair.Key, out var colNo))
                     row[colNo] = pair.Value;

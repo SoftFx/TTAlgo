@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using TickTrader.Algo.Account;
-using TickTrader.Algo.Backtester;
 using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.Domain;
 
@@ -53,24 +52,24 @@ namespace TickTrader.BotTerminal
             _client.OnRateUpdate(update.LastQuote);
         }
 
-        private void Executor_TradesUpdated(TesterTradeTransaction tt)
-        {
-            if (tt.OrderEntityAction != Algo.Domain.OrderExecReport.Types.EntityAction.NoAction)
-                _client.Acc.UpdateOrderCollection(tt.OrderEntityAction, tt.OrderUpdate);
+        //private void Executor_TradesUpdated(TesterTradeTransaction tt)
+        //{
+        //    if (tt.OrderEntityAction != Algo.Domain.OrderExecReport.Types.EntityAction.NoAction)
+        //        _client.Acc.UpdateOrderCollection(tt.OrderEntityAction, tt.OrderUpdate);
 
-            if (tt.PositionEntityAction != Algo.Domain.OrderExecReport.Types.EntityAction.NoAction)
-                _client.Acc.UpdateOrderCollection(tt.PositionEntityAction, tt.PositionUpdate);
+        //    if (tt.PositionEntityAction != Algo.Domain.OrderExecReport.Types.EntityAction.NoAction)
+        //        _client.Acc.UpdateOrderCollection(tt.PositionEntityAction, tt.PositionUpdate);
 
-            if (tt.NetPositionUpdate != null)
-            {
-                if (tt.NetPositionUpdate.PositionCopy.IsEmpty)
-                    _client.Acc.RemovePosition(tt.NetPositionUpdate, true);
-                else
-                    _client.Acc.UpdatePosition(tt.NetPositionUpdate, true);
-            }
+        //    if (tt.NetPositionUpdate != null)
+        //    {
+        //        if (tt.NetPositionUpdate.PositionCopy.IsEmpty)
+        //            _client.Acc.RemovePosition(tt.NetPositionUpdate, true);
+        //        else
+        //            _client.Acc.UpdatePosition(tt.NetPositionUpdate, true);
+        //    }
 
-            if (tt.Balance != null)
-                _client.Acc.UpdateBalance((double)tt.Balance);
-        }
+        //    if (tt.Balance != null)
+        //        _client.Acc.UpdateBalance((double)tt.Balance);
+        //}
     }
 }

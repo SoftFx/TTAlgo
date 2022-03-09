@@ -9,11 +9,9 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Backtester;
 using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
-using TickTrader.FeedStorage;
 using TickTrader.FeedStorage.Api;
 
 

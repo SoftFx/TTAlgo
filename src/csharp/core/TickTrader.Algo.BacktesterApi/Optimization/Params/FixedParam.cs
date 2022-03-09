@@ -1,8 +1,8 @@
-﻿namespace TickTrader.Algo.Backtester
+﻿namespace TickTrader.Algo.BacktesterApi
 {
-    public class ConstParam : ParamSeekSet
+    public class FixedParam : ParamSeekSet
     {
-        public ConstParam(object constVal)
+        public FixedParam(object constVal)
         {
             Val = constVal;
         }
@@ -17,9 +17,9 @@
     }
 
 
-    public class ConstParam<T> : ParamSeekSet<T>
+    public class FixedParam<T> : ParamSeekSet<T>
     {
-        public ConstParam(T constVal)
+        public FixedParam(T constVal)
         {
             Val = constVal;
         }

@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TickTrader.Algo.Backtester;
 using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
@@ -170,68 +169,68 @@ namespace TickTrader.BotTerminal
 
         private static int _actionIdSeed;
 
-        private void Executor_TradesUpdated(TesterTradeTransaction tt)
-        {
-            _actionIdSeed++;
+        //private void Executor_TradesUpdated(TesterTradeTransaction tt)
+        //{
+        //    _actionIdSeed++;
 
-            if (_acctype == AccountInfo.Types.Type.Gross)
-            {
-                if (tt.OrderExecAction == OrderExecReport.Types.ExecAction.Filled
-                    || (tt.OrderExecAction == OrderExecReport.Types.ExecAction.Opened && tt.OrderUpdate.Type == OrderInfo.Types.Type.Position))
-                {
-                    if (tt.PositionEntityAction == OrderExecReport.Types.EntityAction.Added)
-                    {
-                        // partial fill
-                        var order = tt.PositionUpdate;
-                        var symbol = _symbolMap.GetOrDefault(order.Symbol);
-                        var lotSize = symbol?.LotSize ?? 1;
-                        var digits = symbol?.Digits ?? 5;
-                        var openPrice = NumberFormat.FormatPrice(order.Price, digits);
-                        var openDescription = $"#{order.Id} {order.Side} (open) {order.RequestedAmount / lotSize} {order.Symbol} at price {openPrice}";
+        //    if (_acctype == AccountInfo.Types.Type.Gross)
+        //    {
+        //        if (tt.OrderExecAction == OrderExecReport.Types.ExecAction.Filled
+        //            || (tt.OrderExecAction == OrderExecReport.Types.ExecAction.Opened && tt.OrderUpdate.Type == OrderInfo.Types.Type.Position))
+        //        {
+        //            if (tt.PositionEntityAction == OrderExecReport.Types.EntityAction.Added)
+        //            {
+        //                // partial fill
+        //                var order = tt.PositionUpdate;
+        //                var symbol = _symbolMap.GetOrDefault(order.Symbol);
+        //                var lotSize = symbol?.LotSize ?? 1;
+        //                var digits = symbol?.Digits ?? 5;
+        //                var openPrice = NumberFormat.FormatPrice(order.Price, digits);
+        //                var openDescription = $"#{order.Id} {order.Side} (open) {order.RequestedAmount / lotSize} {order.Symbol} at price {openPrice}";
 
-                        AddMarker(new PosMarkerKey(order.Id, "a" + _actionIdSeed), order.Created, order.Side == OrderInfo.Types.Side.Buy, openDescription);
-                    }
-                    else
-                    {
-                        // full fill or open
-                        var order = tt.OrderUpdate;
-                        var symbol = _symbolMap.GetOrDefault(order.Symbol);
-                        var lotSize = symbol?.LotSize ?? 1;
-                        var digits = symbol?.Digits ?? 5;
-                        var openPrice = NumberFormat.FormatPrice(order.Price, digits);
-                        var openDescription = $"#{order.Id} {order.Side} (open) {order.RequestedAmount / lotSize} {order.Symbol} at price {openPrice}";
+        //                AddMarker(new PosMarkerKey(order.Id, "a" + _actionIdSeed), order.Created, order.Side == OrderInfo.Types.Side.Buy, openDescription);
+        //            }
+        //            else
+        //            {
+        //                // full fill or open
+        //                var order = tt.OrderUpdate;
+        //                var symbol = _symbolMap.GetOrDefault(order.Symbol);
+        //                var lotSize = symbol?.LotSize ?? 1;
+        //                var digits = symbol?.Digits ?? 5;
+        //                var openPrice = NumberFormat.FormatPrice(order.Price, digits);
+        //                var openDescription = $"#{order.Id} {order.Side} (open) {order.RequestedAmount / lotSize} {order.Symbol} at price {openPrice}";
 
-                        AddMarker(new PosMarkerKey(order.Id, "b" + _actionIdSeed), order.Created, order.Side == OrderInfo.Types.Side.Buy, openDescription);
-                    }
-                }
+        //                AddMarker(new PosMarkerKey(order.Id, "b" + _actionIdSeed), order.Created, order.Side == OrderInfo.Types.Side.Buy, openDescription);
+        //            }
+        //        }
 
-                if (tt.PositionExecAction == OrderExecReport.Types.ExecAction.Closed)
-                {
-                    var order = tt.PositionUpdate;
-                    var symbol = _symbolMap.GetOrDefault(order.Symbol);
-                    var lotSize = symbol?.LotSize ?? 1;
-                    var digits = symbol?.Digits ?? 5;
-                    var closePrice = NumberFormat.FormatPrice(order.LastFillPrice, digits);
-                    var closeDescription = $"#{order.Id} {order.Side.Revert()} (close) {order.LastFillAmount / lotSize} {order.Symbol} at price {closePrice}";
+        //        if (tt.PositionExecAction == OrderExecReport.Types.ExecAction.Closed)
+        //        {
+        //            var order = tt.PositionUpdate;
+        //            var symbol = _symbolMap.GetOrDefault(order.Symbol);
+        //            var lotSize = symbol?.LotSize ?? 1;
+        //            var digits = symbol?.Digits ?? 5;
+        //            var closePrice = NumberFormat.FormatPrice(order.LastFillPrice, digits);
+        //            var closeDescription = $"#{order.Id} {order.Side.Revert()} (close) {order.LastFillAmount / lotSize} {order.Symbol} at price {closePrice}";
 
-                    AddMarker(new PosMarkerKey(order.Id, "c" + _actionIdSeed), order.Modified, order.Side == OrderInfo.Types.Side.Sell, closeDescription);
-                }
-            }
-            else if (_acctype == AccountInfo.Types.Type.Net)
-            {
-                if (tt.OrderExecAction == OrderExecReport.Types.ExecAction.Filled
-                    || (tt.OrderExecAction == OrderExecReport.Types.ExecAction.Opened && tt.NetPositionUpdate != null))
-                {
-                    var order = tt.OrderUpdate;
-                    var symbol = _symbolMap.GetOrDefault(order.Symbol);
-                    var digits = symbol?.Digits ?? 5;
-                    var lotSize = symbol?.LotSize ?? 1;
-                    var openPrice = NumberFormat.FormatPrice(order.LastFillPrice, digits);
-                    var description = $"#{order.Id} {order.Side} {order.LastFillAmount / lotSize} at price {openPrice}";
-                    AddMarker(new PosMarkerKey(order.Id, "f" + _actionIdSeed), order.Modified, order.Side == OrderInfo.Types.Side.Buy, description);
-                }
-            }
-        }
+        //            AddMarker(new PosMarkerKey(order.Id, "c" + _actionIdSeed), order.Modified, order.Side == OrderInfo.Types.Side.Sell, closeDescription);
+        //        }
+        //    }
+        //    else if (_acctype == AccountInfo.Types.Type.Net)
+        //    {
+        //        if (tt.OrderExecAction == OrderExecReport.Types.ExecAction.Filled
+        //            || (tt.OrderExecAction == OrderExecReport.Types.ExecAction.Opened && tt.NetPositionUpdate != null))
+        //        {
+        //            var order = tt.OrderUpdate;
+        //            var symbol = _symbolMap.GetOrDefault(order.Symbol);
+        //            var digits = symbol?.Digits ?? 5;
+        //            var lotSize = symbol?.LotSize ?? 1;
+        //            var openPrice = NumberFormat.FormatPrice(order.LastFillPrice, digits);
+        //            var description = $"#{order.Id} {order.Side} {order.LastFillAmount / lotSize} at price {openPrice}";
+        //            AddMarker(new PosMarkerKey(order.Id, "f" + _actionIdSeed), order.Modified, order.Side == OrderInfo.Types.Side.Buy, description);
+        //        }
+        //    }
+        //}
 
         private TransactionSide Revert(TransactionSide side)
         {

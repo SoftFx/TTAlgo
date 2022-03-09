@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TickTrader.Algo.Backtester
+namespace TickTrader.Algo.BacktesterApi
 {
     public static class RangeParamSet
     {

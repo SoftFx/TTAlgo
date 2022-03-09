@@ -2,6 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:cal="http://www.caliburnproject.org"
                     xmlns:l="clr-namespace:TickTrader.BotTerminal"
+                    xmlns:tester="clr-namespace:TickTrader.Algo.BacktesterApi;assembly=TickTrader.Algo.BacktesterApi"
                     xmlns:core="clr-namespace:TickTrader.Algo.Core;assembly=TickTrader.Algo.Core">
 
     <ControlTemplate x:Key="OptimizerAlgorithmSetup.Classic">
@@ -115,11 +116,11 @@
         </Grid>
 
         <ControlTemplate.Triggers>
-            <DataTrigger Binding="{Binding Algo}" Value="{x:Static l:OptimizationAlgorithms.Genetic}">
+            <DataTrigger Binding="{Binding Algo}" Value="{x:Static tester:OptimizationAlgorithms.Genetic}">
                 <Setter TargetName="GenConfigPanel" Property="Visibility" Value="Visible"/>
                 <Setter TargetName="AnnConfigPanel" Property="Visibility" Value="Collapsed"/>
             </DataTrigger>
-            <!--<DataTrigger Binding="{Binding Algo}" Value="{x:Static l:OptimizationAlgorithms.Annealing}">
+            <!--<DataTrigger Binding="{Binding Algo}" Value="{x:Static tester:OptimizationAlgorithms.Annealing}">
                 <Setter TargetName="GenConfigPanel" Property="Visibility" Value="Collapsed"/>
                 <Setter TargetName="AnnConfigPanel" Property="Visibility" Value="Visible"/>
             </DataTrigger>-->

@@ -58,16 +58,4 @@ namespace TickTrader.Algo.Backtester
         Stream          = 2,  // stream data out during the testing process
         Realtime        = 4   // real-time streaming (works only if Stream flag is set)
     }
-
-    public enum EmulatorStates { WarmingUp, Running, Paused, Stopping, Stopped }
-
-    public interface ITestExecController
-    {
-        EmulatorStates State { get; }
-        event Action<EmulatorStates> StateChanged;
-        event Action<Exception> ErrorOccurred;
-        void Pause();
-        void Resume();
-        void SetExecDelay(int delayMs);
-    }
 }
