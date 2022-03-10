@@ -31,16 +31,18 @@ namespace TickTrader.Algo.Server.Persistence
 
         public PluginConfig UnpackConfig()
         {
-            if (ConfigUri == PluginConfig.Descriptor.FullName)
+            if (ConfigUri == PluginConfig.BinaryUri)
                 return PluginConfig.Parser.ParseFrom(ByteString.FromBase64(ConfigData));
+            else if (ConfigUri == PluginConfig.JsonUri)
+                return PluginConfig.JsonParser.Parse<PluginConfig>(ConfigData);
 
             return null;
         }
 
         public void PackConfig(PluginConfig config)
         {
-            ConfigUri = PluginConfig.Descriptor.FullName;
-            ConfigData = config.ToByteString().ToBase64();
+            ConfigUri = PluginConfig.JsonUri;
+            ConfigData = PluginConfig.JsonFormatter.Format(config);
         }
     }
 }
