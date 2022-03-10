@@ -121,19 +121,11 @@ namespace TickTrader.Algo.BacktesterApi
 
         private static void WriteZipEntryAsJson<T>(ZipArchive zip, string entryName, T value)
         {
-            try
+            var entry = zip.CreateEntry(entryName);
+            using (var stream = entry.Open())
+            using (var writer = new Utf8JsonWriter(stream))
             {
-
-                var entry = zip.CreateEntry(entryName);
-                using (var stream = entry.Open())
-                using (var writer = new Utf8JsonWriter(stream))
-                {
-                    JsonSerializer.Serialize(writer, value);
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
+                JsonSerializer.Serialize(writer, value);
             }
         }
 

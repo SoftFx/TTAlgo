@@ -1,5 +1,6 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
+using Google.Protobuf;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -30,6 +31,8 @@ namespace TickTrader.Algo.BacktesterApi
 
         public List<TradeReportInfo> TradeHistory { get; } = new List<TradeReportInfo>();
 
+        public PluginDescriptor PluginDescriptor { get; private set; }
+
 
         public static BacktesterResults Load(string filePath)
         {
@@ -38,6 +41,7 @@ namespace TickTrader.Algo.BacktesterApi
             using (var zip = new ZipArchive(file))
             {
                 res.Stats = ReadZipEntryAsJson<TestingStatistics>(zip, "stats.json");
+                res.PluginDescriptor = TryReadZipEntryAsProtoJson<PluginDescriptor>(zip, "plugin-info.json", PluginDescriptor.JsonParser);
                 foreach (var entry in zip.Entries)
                 {
                     var entryName = entry.Name;
@@ -76,6 +80,16 @@ namespace TickTrader.Algo.BacktesterApi
             }
         }
 
+        public static void SaveProtoJson(ZipArchive zip, string entryName, IMessage data, JsonFormatter jsonFormatter)
+        {
+            var entry = zip.CreateEntry(entryName);
+            using (var stream = entry.Open())
+            using (var writer = new StreamWriter(stream))
+            {
+                writer.Write(jsonFormatter.Format(data));
+            }
+        }
+
         public static void SaveBarData(ZipArchive zip, string entryName, IEnumerable<BarData> bars) => SaveZipEntryAsCsv<BarData, CsvMapping.ForBarData>(zip, entryName, bars);
 
         public static void SaveOutputData(ZipArchive zip, string entryName, IReadOnlyList<OutputPoint> points)
@@ -102,6 +116,21 @@ namespace TickTrader.Algo.BacktesterApi
                 var data = new byte[entry.Length];
                 stream.Read(data, 0, data.Length);
                 return JsonSerializer.Deserialize<T>(data, _jsonOptions);
+            }
+        }
+
+        private static T TryReadZipEntryAsProtoJson<T>(ZipArchive zip, string entryName, JsonParser jsonParser)
+            where T : IMessage, new()
+        {
+            var entry = zip.GetEntry(entryName);
+            if (entry == null)
+                return default;
+
+            using (var stream = entry.Open())
+            using (var reader = new StreamReader(stream))
+            {
+                var text = reader.ReadToEnd();
+                return jsonParser.Parse<T>(text);
             }
         }
 
