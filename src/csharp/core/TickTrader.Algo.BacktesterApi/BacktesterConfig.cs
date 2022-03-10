@@ -29,6 +29,9 @@ namespace TickTrader.Algo.BacktesterApi
 
     public class BacktesterConfig
     {
+        private static readonly JsonParser _jsonParser = new JsonParser(new JsonParser.Settings(16, Google.Protobuf.Reflection.TypeRegistry.FromFiles(RuntimePluginReflection.Descriptor)));
+        private static readonly JsonFormatter _jsonFormatter = new JsonFormatter(new JsonFormatter.Settings(true, Google.Protobuf.Reflection.TypeRegistry.FromFiles(RuntimePluginReflection.Descriptor)));
+
         private VersionInfo _version = new VersionInfo();
 
 
@@ -55,7 +58,7 @@ namespace TickTrader.Algo.BacktesterApi
                     Account = ReadZipEntryAsJson<AccountConfig>(zip, "account.json"),
                     TradeServer = ReadZipEntryAsJson<TradeServerConfig>(zip, "trade-server.json"),
                     Env = ReadZipEntryAsJson<EnvInfo>(zip, "env.json"),
-                    PluginConfig = ReadZipEntryAsProtoMsg(zip, "plugin.cfg", PluginConfig.Parser),
+                    PluginConfig = ReadZipEntryAsProtoJson<PluginConfig>(zip, "plugin.cfg"),
                 };
             }
         }
@@ -71,7 +74,7 @@ namespace TickTrader.Algo.BacktesterApi
                 WriteZipEntryAsJson(zip, "account.json", Account);
                 WriteZipEntryAsJson(zip, "trade-server.json", TradeServer);
                 WriteZipEntryAsJson(zip, "env.json", Env);
-                WriteZipEntryAsProtoMsg(zip, "plugin.cfg", PluginConfig);
+                WriteZipEntryAsProtoJson(zip, "plugin.cfg", PluginConfig);
             }
         }
 
@@ -106,13 +109,15 @@ namespace TickTrader.Algo.BacktesterApi
             }
         }
 
-        private static T ReadZipEntryAsProtoMsg<T>(ZipArchive zip, string entryName, MessageParser<T> parser)
-            where T : IMessage<T>
+        private static T ReadZipEntryAsProtoJson<T>(ZipArchive zip, string entryName)
+            where T : IMessage<T>, new()
         {
             var entry = zip.GetEntry(entryName);
             using (var stream = entry.Open())
+            using (var reader = new StreamReader(stream))
             {
-                return parser.ParseFrom(stream);
+                var text = reader.ReadToEnd();
+                return _jsonParser.Parse<T>(text);
             }
         }
 
@@ -135,12 +140,13 @@ namespace TickTrader.Algo.BacktesterApi
             }
         }
 
-        private static void WriteZipEntryAsProtoMsg(ZipArchive zip, string entryName, IMessage data)
+        private static void WriteZipEntryAsProtoJson(ZipArchive zip, string entryName, IMessage data)
         {
             var entry = zip.CreateEntry(entryName);
             using (var stream = entry.Open())
+            using (var writer = new StreamWriter(stream))
             {
-                data.WriteTo(stream);
+                _jsonFormatter.Format(data, writer);
             }
         }
 
