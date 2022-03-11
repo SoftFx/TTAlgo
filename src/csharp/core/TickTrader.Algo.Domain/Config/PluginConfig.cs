@@ -8,16 +8,38 @@ namespace TickTrader.Algo.Domain
 {
     public partial class PluginConfig
     {
-        private static readonly TypeRegistry _typeRegistry = TypeRegistry.FromFiles(RuntimePluginReflection.Descriptor);
+        private static TypeRegistry _typeRegistry;
+        private static JsonParser _jsonParser;
+        private static JsonFormatter _jsonFormatter;
 
 
         public static string BinaryUri { get; } = Descriptor.FullName;
 
         public static string JsonUri { get; } = Descriptor.FullName + "/Json";
 
-        public static JsonParser JsonParser { get; } = new JsonParser(new JsonParser.Settings(16, _typeRegistry));
+        public static JsonParser JsonParser
+        {
+            get
+            {
+                TypeRegistryLazyInit();
+                if (_jsonParser == null)
+                    _jsonParser = new JsonParser(new JsonParser.Settings(16, _typeRegistry));
 
-        public static JsonFormatter JsonFormatter { get; } = new JsonFormatter(new JsonFormatter.Settings(true, _typeRegistry));
+                return _jsonParser;
+            }
+        }
+
+        public static JsonFormatter JsonFormatter
+        {
+            get
+            {
+                TypeRegistryLazyInit();
+                if (_jsonFormatter == null)
+                    _jsonFormatter = new JsonFormatter(new JsonFormatter.Settings(true, _typeRegistry));
+
+                return _jsonFormatter;
+            }
+        }
 
 
         public PluginConfig PackProperties(IEnumerable<IPropertyConfig> properties)
@@ -37,6 +59,13 @@ namespace TickTrader.Algo.Domain
                     res.Add(prop);
             }
             return res;
+        }
+
+
+        private static void TypeRegistryLazyInit()
+        {
+            if (_typeRegistry == null)
+                _typeRegistry = TypeRegistry.FromFiles(RuntimePluginReflection.Descriptor);
         }
     }
 }
