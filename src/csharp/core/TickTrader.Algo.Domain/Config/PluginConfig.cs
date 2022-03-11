@@ -13,9 +13,9 @@ namespace TickTrader.Algo.Domain
         private static JsonFormatter _jsonFormatter;
 
 
-        public static string BinaryUri { get; } = Descriptor.FullName;
+        public static string BinaryUri => Descriptor.FullName;
 
-        public static string JsonUri { get; } = Descriptor.FullName + "/Json";
+        public static string JsonUri => Descriptor.FullName + "/Json";
 
         public static JsonParser JsonParser
         {
