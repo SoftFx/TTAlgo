@@ -3,6 +3,7 @@ using System;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage.Api;
+using TickTrader.FeedStorage.StorageBase;
 
 namespace TickTrader.FeedStorage
 {

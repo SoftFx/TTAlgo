@@ -253,15 +253,6 @@ namespace TickTrader.BotTerminal
             return base.OnDeactivateAsync(close, cancellationToken);
         }
 
-        //protected override void OnDeactivate(bool close)
-        //{
-        //    DeinitWatcher(null);
-        //    SelectedAlgoServer.Packages.Updated -= UpdateAgentPackage;
-        //    _watcher.Dispose();
-
-        //    base.OnDeactivate(close);
-        //}
-
 
         protected string FullPackagePath(string fileName) => Path.Combine(SelectedFolder.Value, fileName);
 

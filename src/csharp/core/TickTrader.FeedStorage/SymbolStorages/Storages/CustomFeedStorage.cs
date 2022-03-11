@@ -10,7 +10,7 @@ using TickTrader.FeedStorage.Serializers;
 using TickTrader.SeriesStorage;
 using TickTrader.SeriesStorage.ProtoSerializer;
 
-namespace TickTrader.FeedStorage
+namespace TickTrader.FeedStorage.StorageBase
 {
     internal sealed class CustomFeedStorage : FeedStorageBase
     {
@@ -84,7 +84,7 @@ namespace TickTrader.FeedStorage
             if (!_customSymbols.TryGetValue(symbolName, out var smb))
                 return false;
 
-            Keys.Snapshot.Where(k => k.Symbol == symbolName).ForEach(u => RemoveSeries(u)); // clear cache
+            _series.Keys.Snapshot.Where(k => k.Symbol == symbolName).ForEach(u => RemoveSeries(u)); // clear cache
 
             _customSymbolsCollection.Remove(smb.StorageId); // remove symbol
             _customSymbols.Remove(symbolName);

@@ -1,21 +1,20 @@
 ﻿using ActorSharp;
 using Google.Protobuf.WellKnownTypes;
-using Machinarium.Qnil;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage.Api;
+using TickTrader.FeedStorage.StorageBase;
 
 namespace TickTrader.FeedStorage
 {
     internal abstract class BaseSymbol : ISymbolData, ISymbolKey
     {
-        private readonly ConcurrentDictionary<FeedCacheKey, IStorageSeries> _serieses;
+        private readonly ConcurrentDictionary<ISeriesKey, IStorageSeries> _series;
         private protected readonly FeedStorageBase.FeedHandler _storage;
 
 
@@ -34,7 +33,7 @@ namespace TickTrader.FeedStorage
         public abstract SymbolConfig.Types.SymbolOrigin Origin { get; }
 
 
-        public List<IStorageSeries> SeriesCollection => _serieses.Values.ToList();
+        public IReadOnlyDictionary<ISeriesKey, IStorageSeries> Series => _series;
 
 
         public event Action<IStorageSeries> SeriesAdded, SeriesRemoved, SeriesUpdated;
@@ -42,7 +41,7 @@ namespace TickTrader.FeedStorage
 
         public BaseSymbol(ISymbolInfo info, FeedStorageBase.FeedHandler storage)
         {
-            _serieses = new ConcurrentDictionary<FeedCacheKey, IStorageSeries>();
+            _series = new ConcurrentDictionary<ISeriesKey, IStorageSeries>();
             _storage = storage;
 
             Info = info;
@@ -58,34 +57,34 @@ namespace TickTrader.FeedStorage
 
         internal void AddSeries(FeedCacheKey key, double size = 0)
         {
-            if (_serieses.ContainsKey(key))
+            if (_series.ContainsKey(key))
                 return;
 
             var newSeries = new SymbolStorageSeries(key, _storage, size);
 
-            _serieses.TryAdd(key, newSeries);
+            _series.TryAdd(key, newSeries);
             SeriesAdded?.Invoke(newSeries);
         }
 
         internal void RemoveSeries(FeedCacheKey key)
         {
-            if (_serieses.TryRemove(key, out var series))
+            if (_series.TryRemove(key, out var series))
                 SeriesRemoved?.Invoke(series);
         }
 
         internal void UpdateSeries(FeedCacheKey key, double newSize)
         {
-            if (!_serieses.TryGetValue(key, out var series))
+            if (!_series.TryGetValue(key, out var series))
                 return;
 
-            ((SymbolStorageSeries)series).Size = newSize;
+            ((SymbolStorageSeries)series).UpdateSize(newSize);
             SeriesUpdated?.Invoke(series);
         }
 
 
         public void WriteSlice(Feed.Types.Timeframe frame, Feed.Types.MarketSide priceType, Timestamp from, Timestamp to, BarData[] values)
         {
-            _storage.Put(Name, frame, priceType, from.ToDateTime(), to.ToDateTime(), values).Wait();
+            //_storage.Put(Name, frame, priceType, from.ToDateTime(), to.ToDateTime(), values).Wait();
         }
 
         public void WriteSlice(Feed.Types.Timeframe timeFrame, Timestamp from, Timestamp to, QuoteInfo[] values)

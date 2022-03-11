@@ -9,9 +9,6 @@
                 <Setter Property="Margin" Value="0,0,0,2"/>
                 <Setter Property="Padding" Value="0" />
             </Style>
-            <!--<Style TargetType="ComboBox">
-                <Setter Property="Margin" Value="0,0,0,5"/>
-            </Style>-->
             <Style TargetType="Button">
                 <Setter Property="Margin" Value="5"/>
             </Style>
@@ -51,24 +48,24 @@
                         <ColumnDefinition />
                         <ColumnDefinition />
                     </Grid.ColumnDefinitions>
-                    <Button Grid.Column="0" Content="Download" cal:Message.Attach="Download" IsEnabled="{Binding DownloadEnabled.Value}" IsDefault="True" />
-                    <Button Grid.Column="1" Content="Cancel" cal:Message.Attach="Cancel" IsEnabled="{Binding CancelEnabled.Value}" IsCancel="True"/>
+                    <Button Grid.Column="0" Content="Download" cal:Message.Attach="Download" IsDefault="True" IsEnabled="{Binding DownloadEnabled.Value}"/>
+                    <Button Grid.Column="1" Content="Cancel" cal:Message.Attach="Cancel" IsCancel="True" IsEnabled="{Binding ProgressObserver.CanCancel.Value}"/>
                 </Grid>
 
-                <ContentControl Name="ProgressBar" cal:View.Model="{Binding DownloadObserver}" />
+                <ContentControl Name="ProgressBar" cal:View.Model="{Binding ProgressObserver}" />
             </StackPanel>
         </Grid>
 
         <ControlTemplate.Triggers>
-            <DataTrigger Binding="{Binding IsBusy.Value}" Value="True">
+            <DataTrigger Binding="{Binding ProgressObserver.IsRunning.Value}" Value="True">
                 <Setter Property="IsEnabled" Value="False" TargetName="SymbolConfigGroup"/>
                 <Setter Property="IsEnabled" Value="False" TargetName="RangeSelectionGroup"/>
             </DataTrigger>
-            <DataTrigger Binding="{Binding IsPriceTypeActual.Value}" Value="False">
+            <DataTrigger Binding="{Binding IsSelectedTick.Value}" Value="False">
                 <Setter Property="Visibility" Value="Hidden" TargetName="SideCombo"/>
                 <Setter Property="Visibility" Value="Hidden" TargetName="SideLabel"/>
             </DataTrigger>
-            <DataTrigger Binding="{Binding ShowDownloadUi.Value}" Value="False">
+            <DataTrigger Binding="{Binding ShowProgressUi.Value}" Value="False">
                 <Setter Property="Visibility" Value="Collapsed" TargetName="ProgressBar"/>
             </DataTrigger>
         </ControlTemplate.Triggers>

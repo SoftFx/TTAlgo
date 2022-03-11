@@ -86,9 +86,9 @@
                 <ResourceDictionary Source="Views.Backtester/OptimizerAlgorithmSetupView.xaml"/>
 
                 <ResourceDictionary Source="Views.FeedStorage/SymbolManagerView.xaml" />
-                <ResourceDictionary Source="Views.FeedStorage/FeedDownloadView.xaml" />
+                <ResourceDictionary Source="Views.FeedStorage/LoadingWindows/FeedDownloadView.xaml" />
+                <ResourceDictionary Source="Views.FeedStorage/LoadingWindows/FeedExportView.xaml" />
                 <ResourceDictionary Source="Views.FeedStorage/FeedImportView.xaml" />
-                <ResourceDictionary Source="Views.FeedStorage/FeedExportView.xaml" />
                 <ResourceDictionary Source="Views.FeedStorage/SymbolCfgEditorView.xaml" />
 
             </ResourceDictionary.MergedDictionaries>

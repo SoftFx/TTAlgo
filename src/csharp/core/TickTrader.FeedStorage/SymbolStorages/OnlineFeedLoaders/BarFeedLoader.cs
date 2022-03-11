@@ -3,7 +3,7 @@ using Google.Protobuf.WellKnownTypes;
 using System;
 using TickTrader.Algo.Domain;
 
-namespace TickTrader.FeedStorage
+namespace TickTrader.FeedStorage.StorageBase
 {
     internal partial class OnlineFeedStorage
     {

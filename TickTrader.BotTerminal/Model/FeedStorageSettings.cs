@@ -10,7 +10,7 @@ namespace TickTrader.BotTerminal
 
         public string FolderPath { get; set; }
 
-        public FeedStorageFolderOptions Options { get; set; }
+        public StorageFolderOptions Options { get; set; }
     }
 
 

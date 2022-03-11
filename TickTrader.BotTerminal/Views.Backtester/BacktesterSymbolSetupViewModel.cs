@@ -198,19 +198,20 @@ namespace TickTrader.BotTerminal
 
             if (!smb.IsCustom)
             {
-                if (timeFrameChoice == Feed.Types.Timeframe.Ticks || timeFrameChoice == Feed.Types.Timeframe.TicksLevel2)
-                {
-                    // ticks
-                    await smb.DownloadTicksWithObserver(observer, timeFrameChoice, precacheFrom, precacheTo, false);
-                }
-                else // bars
+                observer.ShowCustomMessages = false;
+
+                if (timeFrameChoice.IsTicks())
+                    await smb.DownloadTicksWithObserver(observer, timeFrameChoice, precacheFrom, precacheTo);
+                else
                 {
                     if (priceChoice == DownloadPriceChoices.Bid | priceChoice == DownloadPriceChoices.Both)
-                        await smb.DownloadBarWithObserver(observer, timeFrameChoice, Feed.Types.MarketSide.Bid, precacheFrom, precacheTo, false);
+                        await smb.DownloadBarWithObserver(observer, timeFrameChoice, Feed.Types.MarketSide.Bid, precacheFrom, precacheTo);
 
                     if (priceChoice == DownloadPriceChoices.Ask | priceChoice == DownloadPriceChoices.Both)
-                        await smb.DownloadBarWithObserver(observer, timeFrameChoice, Feed.Types.MarketSide.Ask, precacheFrom, precacheTo, false);
+                        await smb.DownloadBarWithObserver(observer, timeFrameChoice, Feed.Types.MarketSide.Ask, precacheFrom, precacheTo);
                 }
+
+                observer.ShowCustomMessages = true;
             }
         }
 

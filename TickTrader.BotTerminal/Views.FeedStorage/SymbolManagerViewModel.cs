@@ -104,26 +104,20 @@ namespace TickTrader.BotTerminal.SymbolManager
         }
 
 
-        public void Download()
+        public void Download() => Download(SelectedSymbol.Value?.Model);
+
+        public void Import() => Import(SelectedSymbol.Value?.Model);
+
+        public async void Download(ISymbolData symbol)
         {
-            Download(SelectedSymbol.Value?.Model);
+            await _wndManager.ShowDialog(new FeedDownloadViewModel(_catalog, symbol), this);
         }
 
-        public void Download(ISymbolData symbol)
+        public async void Import(ISymbolData symbol)
         {
-            _wndManager.ShowDialog(new FeedDownloadViewModel(_clientModel, _catalog, symbol), this);
+            await _wndManager.ShowDialog(new FeedImportViewModel(_catalog, symbol), this);
         }
 
-        public void Import()
-        {
-            Import(SelectedSymbol.Value?.Model);
-        }
-
-        public void Import(ISymbolData symbol)
-        {
-            //using (var symbolList = _customManagedSymbols.TransformToList())
-            _wndManager.ShowDialog(new FeedImportViewModel(_catalog, symbol), this);
-        }
 
         public void AddSymbol()
         {
@@ -158,9 +152,12 @@ namespace TickTrader.BotTerminal.SymbolManager
             }
         }
 
-        public void Export(SeriesViewModel series)
+        public async void Export(ISeriesKey key)
         {
-            //_wndManager.ShowDialog(new FeedExportViewModel(series.Model), this);
+            var smb = _catalog.OnlineCollection[key.Symbol];
+
+            if (smb != null)
+                await _wndManager.ShowDialog(new FeedExportViewModel(smb, key), this);
         }
 
         public void RemoveSymbol(ISymbolData symbolModel)

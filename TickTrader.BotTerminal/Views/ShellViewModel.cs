@@ -161,7 +161,7 @@ namespace TickTrader.BotTerminal
                 Login = login,
                 Server = server,
                 FolderPath = EnvService.Instance.FeedHistoryCacheFolder,
-                Options = FeedStorageFolderOptions.ServerHierarchy,
+                Options = StorageFolderOptions.ServerHierarchy,
             };
 
             await _symbolsCatalog.OpenCustomStorage(customStorageSettings);

@@ -36,7 +36,8 @@ namespace TickTrader.FeedStorage.Api
 
         bool IsDownloadAvailable { get; }
 
-        List<IStorageSeries> SeriesCollection { get; }
+
+        IReadOnlyDictionary<ISeriesKey, IStorageSeries> Series { get; }
 
 
         event Action<IStorageSeries> SeriesAdded;

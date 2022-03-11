@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.FeedStorage.Api;
-
+using TickTrader.FeedStorage.StorageBase;
 
 namespace TickTrader.FeedStorage
 {

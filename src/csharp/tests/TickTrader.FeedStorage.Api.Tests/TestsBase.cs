@@ -74,6 +74,9 @@ namespace TickTrader.FeedStorage.Api.Tests
 
             var newSymbols = await LoadSymbolsToCatalog(count, Collection.TryAddSymbol);
 
+            while (received.Count < count)
+                await Task.Delay(100);
+
             Collection.SymbolAdded -= AddSymbolHandler;
 
             Assert.Equal(count, _catalog.AllSymbols.Count);
@@ -101,6 +104,9 @@ namespace TickTrader.FeedStorage.Api.Tests
             foreach (var smb in newSymbols)
                 await Collection.TryRemoveSymbol(smb.Name);
 
+            while (received.Count < count)
+                await Task.Delay(100);
+
             Collection.SymbolRemoved -= RemoveSymbolHandler;
 
             Assert.Empty(_catalog.AllSymbols);
@@ -116,9 +122,14 @@ namespace TickTrader.FeedStorage.Api.Tests
         [InlineData(1000)]
         public async Task Updates_Symbols(int count)
         {
+            var receivedCount = 0;
             var received = new Dictionary<string, ISymbolData>(count);
 
-            void UpdateSymbolHandle(ISymbolData _, ISymbolData @new) => received[@new.Name] = @new;
+            void UpdateSymbolHandle(ISymbolData _, ISymbolData @new)
+            {
+                receivedCount++;
+                received[@new.Name] = @new;
+            }
 
             Collection.SymbolUpdated += UpdateSymbolHandle;
 
@@ -134,6 +145,9 @@ namespace TickTrader.FeedStorage.Api.Tests
 
                 newSymbols[smb.Name] = updatedSmb;
             }
+
+            while (receivedCount < count)
+                await Task.Delay(100);
 
             Collection.SymbolUpdated -= UpdateSymbolHandle;
 
@@ -166,7 +180,7 @@ namespace TickTrader.FeedStorage.Api.Tests
             Assert.NotNull(actual);
             Assert.Equal(actual.Origin, Origin);
             Assert.True(actual.IsDownloadAvailable);
-            Assert.NotNull(actual.SeriesCollection);
+            Assert.NotNull(actual.Series);
             Assert.Equal(actual.Name, expected.Name);
 
             AssertSymbolInfo(actual.Info, expected);

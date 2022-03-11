@@ -10,7 +10,7 @@ namespace TickTrader.BotTerminal
 {
     public static class SymbolManagerExtensions
     {
-        public static async Task DownloadBarWithObserver(this ISymbolData symbol, IActionObserver observer, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide, DateTime from, DateTime to, bool showStats = true)
+        public static async Task DownloadBarWithObserver(this ISymbolData symbol, IActionObserver observer, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide, DateTime from, DateTime to)
         {
             observer.SetMessage($"Downloading bars {symbol.Name} {timeframe} {marketSide}");
 
@@ -18,11 +18,10 @@ namespace TickTrader.BotTerminal
 
             var barEnumerator = await symbol.DownloadBarSeriesToStorage(timeframe, marketSide, from, to);
 
-            await DownloadChannelHadler(barEnumerator, observer, "bars", showStats);
+            await LoadingChannelHadler(barEnumerator, observer, "bars", "downloading");
         }
 
-
-        public static async Task DownloadTicksWithObserver(this ISymbolData symbol, IActionObserver observer, Feed.Types.Timeframe timeFrame, DateTime from, DateTime to, bool showStats = true)
+        public static async Task DownloadTicksWithObserver(this ISymbolData symbol, IActionObserver observer, Feed.Types.Timeframe timeFrame, DateTime from, DateTime to)
         {
             observer.SetMessage($"Downloading ticks {symbol.Name} {timeFrame}");
 
@@ -30,7 +29,18 @@ namespace TickTrader.BotTerminal
 
             var tickEnumerator = await symbol.DownloadTickSeriesToStorage(timeFrame, from, to);
 
-            await DownloadChannelHadler(tickEnumerator, observer, "ticks", showStats);
+            await LoadingChannelHadler(tickEnumerator, observer, "ticks", "downloading");
+        }
+
+        public static async Task ExportSeriesWithObserver(this IStorageSeries series, IActionObserver observer, IExportSeriesSettings settings)
+        {
+            observer.SetMessage($"Export series {series.Key.FullInfo}");
+
+            PrepareDate(observer, settings.From, settings.To);
+
+            var seriesEnumerator = await series.ExportSeriesToFile(settings);
+
+            await LoadingChannelHadler(seriesEnumerator, observer, series.Key.TimeFrame.IsTick() ? "ticks" : "bars", "exporting");
         }
 
 
@@ -44,7 +54,7 @@ namespace TickTrader.BotTerminal
             return (from, to);
         }
 
-        private static async Task DownloadChannelHadler(ActorChannel<ISliceInfo> channel, IActionObserver observer, string entityName, bool showStats)
+        private static async Task LoadingChannelHadler(ActorChannel<ISliceInfo> channel, IActionObserver observer, string entityName, string action)
         {
             var downloadedCount = 0L;
             var watch = Stopwatch.StartNew();
@@ -59,9 +69,9 @@ namespace TickTrader.BotTerminal
                     {
                         downloadedCount += info.Count;
 
-                        if (showStats)
+                        if (observer.ShowCustomMessages)
                         {
-                            var msg = $"Downloading... {downloadedCount} {entityName} are downloaded.";
+                            var msg = $"Processing... {downloadedCount} {entityName} are {action}.";
 
                             if (watch.ElapsedMilliseconds > 0)
                                 msg += $"\nSpeed: {Math.Round(downloadedCount * 1000D / watch.ElapsedMilliseconds)} {entityName} per second";
@@ -74,12 +84,12 @@ namespace TickTrader.BotTerminal
 
                     if (observer.CancelationToken.IsCancellationRequested)
                     {
-                        observer.SetMessage($"Canceled. {downloadedCount} {entityName} were downloaded.");
+                        observer.SetMessage($"Canceled. {downloadedCount} {entityName} were {action}.");
                         break;
                     }
                 }
 
-                observer.SetMessage($"Completed. {downloadedCount} {entityName} were downloaded.");
+                observer.SetMessage($"Completed. {downloadedCount} {entityName} were {action}.");
             }
             catch (Exception ex)
             {

@@ -25,7 +25,7 @@ namespace TickTrader.BotTerminal.SymbolManager
         }
 
 
-        public void Export() => _parent.Export(this);
+        public void Export() => _parent.Export(_series.Key);
 
         public async void Remove() => await _series.TryRemove();
     }

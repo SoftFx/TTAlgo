@@ -6,7 +6,7 @@ using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage.Api;
 
-namespace TickTrader.FeedStorage
+namespace TickTrader.FeedStorage.StorageBase
 {
     internal sealed partial class OnlineFeedStorage : FeedStorageBase
     {
@@ -137,9 +137,9 @@ namespace TickTrader.FeedStorage
 
                 switch (folderOptions)
                 {
-                    case FeedStorageFolderOptions.ServerHierarchy:
+                    case StorageFolderOptions.ServerHierarchy:
                         return Path.Combine(dataFolder, PathHelper.Escape(settings.Server));
-                    case FeedStorageFolderOptions.ServerClientHierarchy:
+                    case StorageFolderOptions.ServerClientHierarchy:
                         return Path.Combine(dataFolder, PathHelper.Escape(settings.Server), PathHelper.Escape(settings.Login));
                     default:
                         return dataFolder;

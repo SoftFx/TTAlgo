@@ -51,10 +51,10 @@ namespace TickTrader.FeedStorage.Api.Tests
         }
 
         [Theory]
-        [InlineData(FeedStorageFolderOptions.NoHierarchy)]
-        [InlineData(FeedStorageFolderOptions.ServerHierarchy)]
-        [InlineData(FeedStorageFolderOptions.ServerClientHierarchy)]
-        public async Task Check_Folder_Hierarchy(FeedStorageFolderOptions options)
+        [InlineData(StorageFolderOptions.NoHierarchy)]
+        [InlineData(StorageFolderOptions.ServerHierarchy)]
+        [InlineData(StorageFolderOptions.ServerClientHierarchy)]
+        public async Task Check_Folder_Hierarchy(StorageFolderOptions options)
         {
             await _catalog.DisconnectClient();
 

@@ -3,7 +3,7 @@ using System;
 using System.Threading.Tasks;
 using TickTrader.FeedStorage.Api;
 
-namespace TickTrader.FeedStorage
+namespace TickTrader.FeedStorage.StorageBase
 {
     internal partial class OnlineFeedStorage
     {
@@ -36,7 +36,7 @@ namespace TickTrader.FeedStorage
             public async Task<DateTime> DownloadData(ActorChannel<ISliceInfo> buffer, FeedCacheKey key, DateTime from, DateTime to)
             {
                 var inputStream = ActorChannel.NewInput<T>();
-                var barSlicer = GetTimeSlicer(from, to);
+                var timeSlicer = GetTimeSlicer(from, to);
 
                 var hasData = false;
 
@@ -47,9 +47,9 @@ namespace TickTrader.FeedStorage
                     var i = from;
                     while (await inputStream.ReadNext())
                     {
-                        if (barSlicer.Write(inputStream.Current))
+                        if (timeSlicer.Write(inputStream.Current))
                         {
-                            var slice = barSlicer.CompleteSlice(false);
+                            var slice = timeSlicer.CompleteSlice(false);
 
                             WriteSlice(key, slice);
 
@@ -62,7 +62,7 @@ namespace TickTrader.FeedStorage
                         }
                     }
 
-                    var lastSlice = barSlicer.CompleteSlice(true);
+                    var lastSlice = timeSlicer.CompleteSlice(true);
 
                     if (lastSlice != null)
                     {

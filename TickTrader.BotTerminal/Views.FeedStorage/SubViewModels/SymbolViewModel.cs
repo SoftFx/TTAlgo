@@ -39,7 +39,7 @@ namespace TickTrader.BotTerminal.SymbolManager
             _base = @base;
 
             Model = model;
-            Series = new ObservableCollection<SeriesViewModel>(model.SeriesCollection.Select(u => new SeriesViewModel(u, _base)));
+            Series = new ObservableCollection<SeriesViewModel>(model.Series.Select(u => new SeriesViewModel(u.Value, _base)));
 
             Model.SeriesAdded += SeriesAddHandler;
             Model.SeriesRemoved += SeriesRemoveHandler;

@@ -1,6 +1,6 @@
 ﻿namespace TickTrader.FeedStorage.Api
 {
-    public enum FeedStorageFolderOptions
+    public enum StorageFolderOptions
     {
         NoHierarchy, // places history right into specified folder
         ServerHierarchy, // creates subfolder for server
@@ -16,7 +16,7 @@
 
         string FolderPath { get; }
 
-        FeedStorageFolderOptions Options { get; }
+        StorageFolderOptions Options { get; }
     }
 
 

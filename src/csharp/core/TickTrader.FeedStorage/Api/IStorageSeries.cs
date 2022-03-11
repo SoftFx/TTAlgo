@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ActorSharp;
+using System;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
 
@@ -27,5 +28,7 @@ namespace TickTrader.FeedStorage.Api
 
 
         Task<bool> TryRemove();
+
+        Task<ActorChannel<ISliceInfo>> ExportSeriesToFile(IExportSeriesSettings settings);
     }
 }

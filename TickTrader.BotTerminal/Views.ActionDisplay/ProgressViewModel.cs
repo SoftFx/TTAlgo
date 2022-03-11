@@ -21,7 +21,7 @@ namespace TickTrader.BotTerminal
         public Property<string> Message { get; }
 
 
-        public bool ShowMessages { get; set; } = true;
+        public bool ShowCustomMessages { get; set; } = true;
 
         public CancellationToken CancelationToken { get; set; }
 
@@ -88,13 +88,13 @@ namespace TickTrader.BotTerminal
             {
                 IsError.Set();
                 Message.Value = errorMsg;
+                CancelationToken.ThrowIfCancellationRequested();
             }
         }
 
         public void SetMessage(string message)
         {
-            if (ShowMessages)
-                Execute.OnUIThread(() => Message.Value = message);
+            Execute.OnUIThread(() => Message.Value = message);
         }
     }
 }

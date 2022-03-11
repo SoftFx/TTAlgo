@@ -34,23 +34,23 @@ namespace TickTrader.FeedStorage.Api.Tests
     {
         internal const string DefaultLogin = "TestUser";
         internal const string DefaultServer = "TestServer";
-        internal const FeedStorageFolderOptions DefaultOptions = FeedStorageFolderOptions.ServerClientHierarchy;
+        internal const StorageFolderOptions DefaultOptions = StorageFolderOptions.ServerClientHierarchy;
 
 
         public string Login { get; set; } = DefaultLogin;
 
         public string Server { get; set; } = DefaultServer;
 
-        public FeedStorageFolderOptions Options { get; set; } = FeedStorageFolderOptions.ServerClientHierarchy;
+        public StorageFolderOptions Options { get; set; } = StorageFolderOptions.ServerClientHierarchy;
 
 
         internal override string GetExpectedPath()
         {
             switch (Options)
             {
-                case FeedStorageFolderOptions.ServerHierarchy:
+                case StorageFolderOptions.ServerHierarchy:
                     return Path.Combine(FolderPath, Server);
-                case FeedStorageFolderOptions.ServerClientHierarchy:
+                case StorageFolderOptions.ServerClientHierarchy:
                     return Path.Combine(FolderPath, Server, Login);
                 default:
                     return base.GetExpectedPath();

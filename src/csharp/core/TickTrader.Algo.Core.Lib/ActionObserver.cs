@@ -4,7 +4,7 @@ namespace TickTrader.Algo.Core.Lib
 {
     public interface IActionObserver
     {
-        bool ShowMessages { get; set; }
+        bool ShowCustomMessages { get; set; }
 
         CancellationToken CancelationToken { get; set; }
 

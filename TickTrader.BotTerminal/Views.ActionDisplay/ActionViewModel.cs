@@ -91,7 +91,11 @@ namespace TickTrader.BotTerminal
 
         public void Cancel()
         {
-            _isCanceled.Set();
+            if (CanCancel.Value)
+            {
+                _isCanceled.Set();
+                Progress.StopProgress("Canceled.");
+            }
         }
 
         public void Dispose()
