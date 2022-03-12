@@ -21,10 +21,13 @@ namespace TickTrader.FeedStorage.Api
     {
         ISeriesKey Key { get; }
 
+        DateTime? From { get; }
+
+        DateTime? To { get; }
+
         double Size { get; }
 
-
-        event Action<double> SeriesUpdated;
+        event Action<IStorageSeries> SeriesUpdated;
 
 
         Task<bool> TryRemove();

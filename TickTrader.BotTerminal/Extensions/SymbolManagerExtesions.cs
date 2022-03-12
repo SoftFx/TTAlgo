@@ -89,7 +89,8 @@ namespace TickTrader.BotTerminal
                     }
                 }
 
-                observer.SetMessage($"Completed. {downloadedCount} {entityName} were {action}.");
+                if (!observer.CancelationToken.IsCancellationRequested)
+                    observer.SetMessage($"Completed. {downloadedCount} {entityName} were {action}.");
             }
             catch (Exception ex)
             {

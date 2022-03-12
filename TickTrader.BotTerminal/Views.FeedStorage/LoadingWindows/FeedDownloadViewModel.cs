@@ -56,10 +56,13 @@ namespace TickTrader.BotTerminal.SymbolManager
         }
 
 
-        private void UpdateAvailableRange(VarChangeEventArgs<ISymbolData> args)
+        private async void UpdateAvailableRange(VarChangeEventArgs<ISymbolData> args)
         {
             if (args.New != null)
-                UpdateAvailableRange(args.New, Feed.Types.Timeframe.M1);
+            {
+                var range = await args.New.GetAvailableRange(Feed.Types.Timeframe.M1);
+                UpdateAvailableRange(range);
+            }
         }
 
         private async Task DownloadAsync(IActionObserver observer)

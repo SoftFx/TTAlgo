@@ -55,12 +55,12 @@ namespace TickTrader.FeedStorage
         public abstract Task<ActorChannel<ISliceInfo>> DownloadTickSeriesToStorage(Feed.Types.Timeframe timeframe, DateTime from, DateTime to);
 
 
-        internal void AddSeries(FeedCacheKey key, double size = 0)
+        internal void AddSeries(FeedCacheKey key)
         {
             if (_series.ContainsKey(key))
                 return;
 
-            var newSeries = new SymbolStorageSeries(key, _storage, size);
+            var newSeries = new SymbolStorageSeries(key, _storage);
 
             _series.TryAdd(key, newSeries);
             SeriesAdded?.Invoke(newSeries);
@@ -72,12 +72,12 @@ namespace TickTrader.FeedStorage
                 SeriesRemoved?.Invoke(series);
         }
 
-        internal void UpdateSeries(FeedCacheKey key, double newSize)
+        internal void UpdateSeries(FeedCacheKey key, FeedSeriesUpdate update)
         {
             if (!_series.TryGetValue(key, out var series))
                 return;
 
-            ((SymbolStorageSeries)series).UpdateSize(newSize);
+            ((SymbolStorageSeries)series).Update(update);
             SeriesUpdated?.Invoke(series);
         }
 

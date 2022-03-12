@@ -88,7 +88,6 @@ namespace TickTrader.BotTerminal
             {
                 IsError.Set();
                 Message.Value = errorMsg;
-                CancelationToken.ThrowIfCancellationRequested();
             }
         }
 

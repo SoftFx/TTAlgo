@@ -16,16 +16,18 @@ namespace TickTrader.FeedStorage
 
         public double Size { get; private set; }
 
+        public DateTime? From { get; private set; }
 
-        public event Action<double> SeriesUpdated;
+        public DateTime? To { get; private set; }
 
 
-        public SymbolStorageSeries(FeedCacheKey key, FeedStorageBase.FeedHandler storage, double size)
+        public event Action<IStorageSeries> SeriesUpdated;
+
+
+        public SymbolStorageSeries(FeedCacheKey key, FeedStorageBase.FeedHandler storage)
         {
             _key = key;
             _storage = storage;
-
-            UpdateSize(size);
         }
 
 
@@ -38,11 +40,18 @@ namespace TickTrader.FeedStorage
         }
 
 
-        internal void UpdateSize(double size)
+        internal Task<(DateTime?, DateTime?)> GetSeriesRange()
         {
-            Size = size;
+            return _storage.GetRange(_key);
+        }
 
-            SeriesUpdated?.Invoke(size);
+        internal void Update(FeedSeriesUpdate update)
+        {
+            Size = update.Size;
+            From = update.Range.Item1;
+            To = update.Range.Item2;
+
+            SeriesUpdated?.Invoke(this);
         }
     }
 }

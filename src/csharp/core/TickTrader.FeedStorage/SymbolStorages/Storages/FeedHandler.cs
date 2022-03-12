@@ -11,26 +11,29 @@ using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.FeedStorage.StorageBase
 {
+    internal readonly struct FeedSeriesUpdate
+    {
+        public DLinqAction Action { get; }
+
+        public FeedCacheKey Key { get; }
+
+        public double Size { get; }
+
+        public (DateTime?, DateTime?) Range { get; }
+
+
+        internal FeedSeriesUpdate(DLinqAction action, FeedCacheKey key, double size = 0, DateTime? from = null, DateTime? to = null)
+        {
+            Action = action;
+            Key = key;
+            Size = size;
+            Range = (from, to);
+        }
+    }
+
+
     internal partial class FeedStorageBase
     {
-        internal readonly struct FeedSeriesUpdate
-        {
-            public DLinqAction Action { get; }
-
-            public FeedCacheKey Key { get; }
-
-            public double SeriesSize { get; }
-
-
-            internal FeedSeriesUpdate(DLinqAction action, FeedCacheKey key, double size = 0)
-            {
-                Action = action;
-                Key = key;
-                SeriesSize = size;
-            }
-        }
-
-
         internal abstract class FeedHandler : ISymbolCollection
         {
             protected readonly VarDictionary<string, BaseSymbol> _symbols = new VarDictionary<string, BaseSymbol>();
@@ -95,12 +98,15 @@ namespace TickTrader.FeedStorage.StorageBase
                 var snapshot = await _ref.Call(a =>
                 {
                     a._seriesListeners.Add(_seriesChangeCallback);
-                    return a._series.Snapshot.Select(u => (u.Key, u.Value.GetSize())).ToList();
+                    return a._series.Snapshot.Select(u => a.BuildSeriesUpdate(DLinqAction.Insert, u.Key)).ToList();
                 });
 
                 foreach (var item in snapshot)
                     if (_symbols.TryGetValue(item.Key.Symbol, out var symbol))
-                        symbol.AddSeries(item.Key, item.Item2);
+                    {
+                        symbol.AddSeries(item.Key);
+                        symbol.UpdateSeries(item.Key, item);
+                    }
             }
 
             internal Task Stop()
@@ -150,7 +156,7 @@ namespace TickTrader.FeedStorage.StorageBase
                         symbol.RemoveSeries(update.Key);
                         break;
                     case DLinqAction.Replace:
-                        symbol.UpdateSeries(update.Key, update.SeriesSize);
+                        symbol.UpdateSeries(update.Key, update);
                         break;
                     default:
                         break;

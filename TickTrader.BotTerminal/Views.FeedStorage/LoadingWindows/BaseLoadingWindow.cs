@@ -3,8 +3,6 @@ using Machinarium.Var;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Domain;
-using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.BotTerminal.SymbolManager
 {
@@ -52,12 +50,10 @@ namespace TickTrader.BotTerminal.SymbolManager
         }
 
 
-        protected async void UpdateAvailableRange(ISymbolData smb, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide? priceType = null)
+        protected void UpdateAvailableRange((DateTime?, DateTime?) range)
         {
             _isRangeLoaded.Value = false;
             DateRange.Reset();
-
-            var range = await smb.GetAvailableRange(timeframe, priceType);
 
             DateTime from = DateTime.UtcNow.Date;
             DateTime to = from;

@@ -129,7 +129,15 @@ namespace TickTrader.FeedStorage.StorageBase
             var collection = GetSeries<T>(key, true);
             collection.Write(from, to, values);
 
-            _seriesListeners.FireAndForget(new FeedSeriesUpdate(DLinqAction.Replace, key, ((ISeriesStorage<DateTime>)collection).GetSize()));
+            _seriesListeners.FireAndForget(BuildSeriesUpdate(DLinqAction.Replace, key));
+        }
+
+        private FeedSeriesUpdate BuildSeriesUpdate(DLinqAction action, FeedCacheKey key)
+        {
+            var range = GetRange(key);
+            var size = GetSeries(key).GetSize();
+
+            return new FeedSeriesUpdate(action, key, size, range.Item1, range.Item2);
         }
 
         private ISeriesStorage<DateTime> CreateCollection(FeedCacheKey key)
