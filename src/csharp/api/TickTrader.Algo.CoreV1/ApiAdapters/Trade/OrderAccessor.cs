@@ -92,7 +92,7 @@ namespace TickTrader.Algo.CoreV1
 
         public override string ToString() => $"#{Info.Id} {Info.Symbol} {Info.Side} {Info.RemainingAmount}";
 
-        public OrderAccessor Clone() => new OrderAccessor(SymbolInfo, Info);
+        public OrderAccessor Clone() => new OrderAccessor(SymbolInfo, Info.Clone());
 
         public static bool IsHiddenOrder(double? maxVisibleVolume) => maxVisibleVolume != null && maxVisibleVolume.Value.E(0.0);
 
