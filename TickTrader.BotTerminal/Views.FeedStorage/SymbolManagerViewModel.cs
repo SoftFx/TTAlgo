@@ -50,6 +50,8 @@ namespace TickTrader.BotTerminal.SymbolManager
 
             AllSymbolsView = CollectionViewSource.GetDefaultView(_allSymbols);
 
+            AllSymbolsView.SortDescriptions.Add(new SortDescription(SymbolViewModel.SecurityHeader, ListSortDirection.Ascending));
+
             AllSymbolsView.GroupDescriptions.Add(new PropertyGroupDescription(SymbolViewModel.TypeHeader));
             AllSymbolsView.GroupDescriptions.Add(new PropertyGroupDescription(SymbolViewModel.SecurityHeader));
             AllSymbolsView.Filter = FilterGroup;

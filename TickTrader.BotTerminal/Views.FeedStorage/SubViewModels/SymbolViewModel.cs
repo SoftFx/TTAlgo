@@ -2,6 +2,7 @@
 using Machinarium.Qnil;
 using System.Collections.ObjectModel;
 using System.Linq;
+using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.BotTerminal.SymbolManager
@@ -16,15 +17,15 @@ namespace TickTrader.BotTerminal.SymbolManager
 
         public ISymbolData Model { get; }
 
-        public string Description => Model.Info.Description;
-
-        public string Security => string.IsNullOrEmpty(Model.Info.Security) ? Name : Model.Info.Security;
+        public string Security { get; }
 
         public string Name => Model.Name;
 
         public bool IsCustom => Model.IsCustom;
 
         public bool IsOnline => !Model.IsCustom;
+
+        public string Description => Model.Info.Description;
 
         public string SymbolType => IsCustom ? "Custom" : "Online";
 
@@ -39,6 +40,7 @@ namespace TickTrader.BotTerminal.SymbolManager
             _base = @base;
 
             Model = model;
+            Security = GetSecurity(model.Info);
             Series = new ObservableCollection<SeriesViewModel>(model.Series.Select(u => new SeriesViewModel(u.Value, _base)));
 
             Model.SeriesAdded += SeriesAddHandler;
@@ -46,6 +48,14 @@ namespace TickTrader.BotTerminal.SymbolManager
             Model.SeriesUpdated += SeriesUpdatedHandler;
         }
 
+
+        private static string GetSecurity(ISymbolInfo info)
+        {
+            if (info.Name.EndsWith("_L"))
+                return "Lasts";
+
+            return string.IsNullOrEmpty(info.Security) ? info.Name : info.Security;
+        }
 
         private void SeriesAddHandler(IStorageSeries obj)
         {

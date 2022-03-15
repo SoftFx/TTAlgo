@@ -90,11 +90,11 @@ namespace TickTrader.FeedStorage.StorageBase
             IFileHandler fileHandler;
 
             if (key.TimeFrame.IsTick())
-                fileHandler = new TickFileHandler(this, _formatters[settings.FileType], settings);
+                fileHandler = new TickFileHandler(this, _formatters[settings.FileType], key, settings);
             else
-                fileHandler = new BarFileHandler(this, _formatters[settings.FileType], settings);
+                fileHandler = new BarFileHandler(this, _formatters[settings.FileType], key, settings);
 
-            await fileHandler.ExportSeries(stream, key);
+            await fileHandler.ExportSeries(stream);
         }
 
         protected IEnumerable<KeyRange<DateTime>> IterateCacheKeysInternal(FeedCacheKey cacheId, DateTime from, DateTime to)

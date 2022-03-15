@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Runtime.CompilerServices;
 using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage.Api;
 
@@ -7,13 +9,24 @@ namespace TickTrader.FeedStorage.StorageBase
     internal sealed class TickFileHandler : BaseFileHandler<QuoteInfo>
     {
         private readonly string _doubleSeparator;
+        private readonly bool _isLevel2;
 
 
-        public TickFileHandler(FeedStorageBase storage, BaseFileFormatter formatter, IExportSeriesSettings settings) : base(storage, formatter, settings)
+        public TickFileHandler(FeedStorageBase storage, BaseFileFormatter formatter, FeedCacheKey key, IExportSeriesSettings settings) : base(storage, formatter, key, settings)
         {
             _doubleSeparator = $"{_separator}{_separator}";
+            _isLevel2 = key.TimeFrame == Feed.Types.Timeframe.TicksLevel2;
         }
 
+        protected override void PreloadLogic(StreamWriter writer)
+        {
+            if (_isLevel2)
+                _formatter.WriteTickL2FileHeader(writer);
+            else
+                _formatter.WriteTickFileHeader(writer);
+        }
+
+        protected override void PostloadLogic(StreamWriter writer) { }
 
         protected override void WriteSlice(ArraySegment<QuoteInfo> values)
         {
@@ -29,29 +42,31 @@ namespace TickTrader.FeedStorage.StorageBase
 
                 for (int i = 0; i < Math.Max(bids.Length, asks.Length); i++)
                 {
-                    if (i < bids.Length)
-                    {
-                        _writer.Write(_separator);
-                        _writer.Write(bids[i].Price);
-                        _writer.Write(_separator);
-                        _writer.Write(bids[i].Amount);
-                    }
-                    else
-                        _writer.Write(_doubleSeparator);
-
-                    if (i < asks.Length)
-                    {
-                        _writer.Write(_separator);
-                        _writer.Write(asks[i].Price);
-                        _writer.Write(_separator);
-                        _writer.Write(asks[i].Amount);
-                    }
-                    else
-                        _writer.Write(_doubleSeparator);
+                    WriteBand(i, bids);
+                    WriteBand(i, asks);
                 }
 
                 _writer.WriteLine();
             }
+        }
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void WriteBand(int index, ReadOnlySpan<QuoteBand> band)
+        {
+            if (index < band.Length)
+            {
+                _writer.Write(_separator);
+                _writer.Write(band[index].Price);
+
+                if (_isLevel2)
+                {
+                    _writer.Write(_separator);
+                    _writer.Write(band[index].Amount);
+                }
+            }
+            else
+                _writer.Write(_doubleSeparator);
         }
     }
 }

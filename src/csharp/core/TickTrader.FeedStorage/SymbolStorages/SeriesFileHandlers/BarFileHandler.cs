@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage.Api;
 
@@ -6,9 +7,14 @@ namespace TickTrader.FeedStorage.StorageBase
 {
     internal sealed class BarFileHandler : BaseFileHandler<BarData>
     {
-        public BarFileHandler(FeedStorageBase storage, BaseFileFormatter formatter, IExportSeriesSettings settings) : base(storage, formatter, settings)
+        public BarFileHandler(FeedStorageBase storage, BaseFileFormatter formatter, FeedCacheKey key, IExportSeriesSettings settings) : base(storage, formatter, key, settings)
         {
         }
+
+
+        protected override void PreloadLogic(StreamWriter writer) => _formatter.WriteBarFileHeader(writer);
+
+        protected override void PostloadLogic(StreamWriter writer) { }
 
         protected override void WriteSlice(ArraySegment<BarData> values)
         {

@@ -8,15 +8,17 @@ namespace TickTrader.FeedStorage.StorageBase
 {
     internal interface IFileHandler
     {
-        Task ExportSeries(ActorChannel<ISliceInfo> buffer, FeedCacheKey key);
+        Task ExportSeries(ActorChannel<ISliceInfo> buffer);
     }
 
 
     internal abstract class BaseFileHandler<T> : IFileHandler
     {
         private readonly FeedStorageBase _storage;
-        private readonly BaseFileFormatter _formatter;
         private readonly IExportSeriesSettings _settings;
+
+        protected readonly BaseFileFormatter _formatter;
+        protected readonly FeedCacheKey _key;
 
         protected readonly string _timeFormat;
         protected readonly char _separator;
@@ -24,20 +26,27 @@ namespace TickTrader.FeedStorage.StorageBase
         protected StreamWriter _writer;
 
 
-        protected BaseFileHandler(FeedStorageBase storage, BaseFileFormatter formatter, IExportSeriesSettings settings)
+        protected BaseFileHandler(FeedStorageBase storage, BaseFileFormatter formatter, FeedCacheKey key, IExportSeriesSettings settings)
         {
+            _key = key;
             _storage = storage;
             _formatter = formatter;
             _settings = settings;
             _separator = settings.Separator;
             _timeFormat = settings.TimeFormat;
+
+            _formatter.Separator = settings.Separator;
         }
 
 
         protected abstract void WriteSlice(ArraySegment<T> values);
 
+        protected abstract void PreloadLogic(StreamWriter writer);
 
-        public async Task ExportSeries(ActorChannel<ISliceInfo> buffer, FeedCacheKey key)
+        protected abstract void PostloadLogic(StreamWriter writer);
+
+
+        public async Task ExportSeries(ActorChannel<ISliceInfo> buffer)
         {
             var from = _settings.From.ToUniversalTime();
             var to = _settings.To.ToUniversalTime();
@@ -46,9 +55,9 @@ namespace TickTrader.FeedStorage.StorageBase
             {
                 using (_writer = new StreamWriter(File.Open(_settings.FilePath, FileMode.Create)))
                 {
-                    _formatter.PreloadLogic(_writer);
+                    PreloadLogic(_writer);
 
-                    foreach (var slice in _storage.GetSeries<T>(key)?.IterateSlices(from, to))
+                    foreach (var slice in _storage.GetSeries<T>(_key)?.IterateSlices(from, to))
                     {
                         WriteSlice(slice.Content);
 
@@ -56,7 +65,7 @@ namespace TickTrader.FeedStorage.StorageBase
                             throw new TaskCanceledException();
                     }
 
-                    _formatter.PostloadLogic(_writer);
+                    PostloadLogic(_writer);
                 }
             }
             catch (Exception ex)
