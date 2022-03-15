@@ -70,13 +70,13 @@ namespace TickTrader.Algo.Core.Config
         {
             var res = new Domain.PluginConfig
             {
-                Key = Key.Convert(),
+                Key = Key?.Convert(),
                 Timeframe = TimeFrame.Convert(),
                 ModelTimeframe = ModelTimeFrame.Convert(),
-                MainSymbol = MainSymbol.Convert(),
-                SelectedMapping = SelectedMapping.Convert(),
+                MainSymbol = MainSymbol?.Convert(),
+                SelectedMapping = SelectedMapping?.Convert(),
                 InstanceId = InstanceId,
-                Permissions = Permissions.Convert(),
+                Permissions = Permissions?.Convert(),
             };
             res.PackProperties(Properties.Select(p => p.Convert()).Where(u => u != null));
 
@@ -144,36 +144,34 @@ namespace TickTrader.Algo.Core.Config
 
     internal static class ConfigExtensions
     {
-        public static PackageKey ParsePackageKey(this string packageId)
+        public static PackageKey ParsePackageKey(this string packageId, bool isReduction)
         {
             PackageId.Unpack(packageId, out var pkgId);
 
-            RepositoryLocation location;
+            string location = pkgId.LocationId;
             switch (pkgId.LocationId)
             {
                 case SharedConstants.EmbeddedRepositoryId:
-                    location = RepositoryLocation.Embedded;
+                    location = nameof(RepositoryLocation.Embedded);
                     break;
                 case SharedConstants.LocalRepositoryId:
-                    location = RepositoryLocation.LocalRepository;
+                    location = isReduction ? nameof(RepositoryLocation.LocalExtensions) : nameof(RepositoryLocation.LocalRepository);
                     break;
                 case SharedConstants.CommonRepositoryId:
-                    location = RepositoryLocation.CommonRepository;
+                    location = isReduction ? nameof(RepositoryLocation.CommonExtensions) : nameof(RepositoryLocation.CommonExtensions);
                     break;
-                default:
-                    throw new ArgumentException("Invalid location id");
             }
             return new PackageKey { Location = location, Name = pkgId.PackageName };
         }
 
         public static PluginKey Convert(this Domain.PluginKey plugin)
         {
-            return new PluginKey(plugin.PackageId.ParsePackageKey(), plugin.DescriptorId);
+            return new PluginKey(plugin.PackageId.ParsePackageKey(false), plugin.DescriptorId);
         }
 
         public static ReductionKey Convert(this Domain.ReductionKey reduction)
         {
-            return new ReductionKey(reduction.PackageId.ParsePackageKey(), reduction.DescriptorId);
+            return new ReductionKey(reduction.PackageId.ParsePackageKey(true), reduction.DescriptorId);
         }
 
         public static MappingKey Convert(this Domain.MappingKey mapping)
@@ -278,15 +276,18 @@ namespace TickTrader.Algo.Core.Config
 
         public static string Convert(this PackageKey package)
         {
-            var locationId = SharedConstants.EmbeddedRepositoryId;
+            var locationId = package.Location;
             switch (package.Location)
             {
-                case RepositoryLocation.LocalRepository:
-                case RepositoryLocation.LocalExtensions:
+                case nameof(RepositoryLocation.Embedded):
+                    locationId = SharedConstants.EmbeddedRepositoryId;
+                    break;
+                case nameof(RepositoryLocation.LocalRepository):
+                case nameof(RepositoryLocation.LocalExtensions):
                     locationId = SharedConstants.LocalRepositoryId;
                     break;
-                case RepositoryLocation.CommonRepository:
-                case RepositoryLocation.CommonExtensions:
+                case nameof(RepositoryLocation.CommonRepository):
+                case nameof(RepositoryLocation.CommonExtensions):
                     locationId = SharedConstants.CommonRepositoryId;
                     break;
             }

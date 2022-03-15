@@ -299,7 +299,7 @@ namespace TickTrader.BotTerminal
 
         #region Load & save parameters
 
-        private const string ParamsFileFilter = "Param files (*.pub-api)|*.pub-api|All files (*.*)|*.*";
+        private const string ParamsFileFilter = "Param files (*.apr)|*.apr";
         private static readonly FileHistory _paramsFileHistory = new FileHistory();
 
         public Var<ObservableCollection<FileHistory.Entry>> ConfigLoadHistory => _paramsFileHistory.Items;
@@ -307,7 +307,7 @@ namespace TickTrader.BotTerminal
         public IEnumerable<IResult> SaveParams()
         {
             var dialog = new SaveFileDialog();
-            dialog.FileName = Descriptor.DisplayName + ".pub-api";
+            dialog.FileName = Descriptor.DisplayName + ".apr";
             dialog.Filter = ParamsFileFilter;
 
             var showAction = VmActions.ShowWin32Dialog(dialog);
@@ -321,7 +321,7 @@ namespace TickTrader.BotTerminal
                 {
                     var config = Save();
                     config.Key = Plugin.Key;
-                    config.ToApi().SaveToFile(dialog.FileName);
+                    Algo.Core.Config.PluginConfig.FromDomain(config).SaveToFile(dialog.FileName);
                 }
                 catch (Exception ex)
                 {
@@ -371,16 +371,15 @@ namespace TickTrader.BotTerminal
             try
             {
                 var ext = Path.GetExtension(filePath);
-                switch (ext)
-                {
-                    case ".apr": cfg = Algo.Core.Config.PluginConfig.LoadFromFile(filePath).ToDomain(); break;
-                    case ".pub-api": cfg = AlgoApi.PluginConfig.LoadFromFile(filePath).ToServer(); break;
-                    default: return new ArgumentException($"Unsupported file extension {ext}");
-                }
+                cfg = Algo.Core.Config.PluginConfig.LoadFromFile(filePath).ToDomain();
                 _paramsFileHistory.Add(filePath, true);
 
                 if (cfg != null)
+                {
+                    if (cfg.Key != null && cfg.Key.DescriptorId != Plugin.Key.DescriptorId)
+                        return new AlgoException($"Loaded config descriptorId '{cfg.Key.DescriptorId}' doesn't match current plugin descriptorId '{Plugin.Key.DescriptorId}'");
                     Load(cfg);
+                }
 
                 return null;
             }
