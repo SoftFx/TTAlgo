@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization;
-using System.Xml;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Package;
@@ -301,8 +299,7 @@ namespace TickTrader.BotTerminal
 
         #region Load & save parameters
 
-        private const string ParamsFileFilter = "Param files (*.apr)|*.apr";
-        private readonly XmlWriterSettings ParamsXmlSettings = new XmlWriterSettings() { Indent = true };
+        private const string ParamsFileFilter = "Param files (*.pub-api)|*.pub-api|All files (*.*)|*.*";
         private static readonly FileHistory _paramsFileHistory = new FileHistory();
 
         public Var<ObservableCollection<FileHistory.Entry>> ConfigLoadHistory => _paramsFileHistory.Items;
@@ -310,7 +307,7 @@ namespace TickTrader.BotTerminal
         public IEnumerable<IResult> SaveParams()
         {
             var dialog = new SaveFileDialog();
-            dialog.FileName = Descriptor.DisplayName + ".apr";
+            dialog.FileName = Descriptor.DisplayName + ".pub-api";
             dialog.Filter = ParamsFileFilter;
 
             var showAction = VmActions.ShowWin32Dialog(dialog);
@@ -323,10 +320,8 @@ namespace TickTrader.BotTerminal
                 try
                 {
                     var config = Save();
-                    var serializer = new DataContractSerializer(typeof(PluginConfig));
-                    using (var stream = XmlWriter.Create(dialog.FileName, ParamsXmlSettings))
-                        serializer.WriteObject(stream, config);
-                    _paramsFileHistory.Add(dialog.FileName, false);
+                    config.Key = Plugin.Key;
+                    config.ToApi().SaveToFile(dialog.FileName);
                 }
                 catch (Exception ex)
                 {
@@ -375,9 +370,13 @@ namespace TickTrader.BotTerminal
 
             try
             {
-                var serializer = new DataContractSerializer(typeof(PluginConfig));
-                using (var stream = new FileStream(filePath, FileMode.Open))
-                    cfg = (PluginConfig)serializer.ReadObject(stream);
+                var ext = Path.GetExtension(filePath);
+                switch (ext)
+                {
+                    case ".apr": cfg = Algo.Core.Config.PluginConfig.LoadFromFile(filePath).ToDomain(); break;
+                    case ".pub-api": cfg = AlgoApi.PluginConfig.LoadFromFile(filePath).ToServer(); break;
+                    default: return new ArgumentException($"Unsupported file extension {ext}");
+                }
                 _paramsFileHistory.Add(filePath, true);
 
                 if (cfg != null)

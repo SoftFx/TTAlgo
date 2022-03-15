@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Xml;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core.Config
@@ -97,6 +99,29 @@ namespace TickTrader.Algo.Core.Config
 
             return res;
         }
+
+
+        #region Export/Import
+
+        private readonly XmlWriterSettings XmlSettings = new XmlWriterSettings() { Indent = true };
+
+
+        public static PluginConfig LoadFromFile(string filePath)
+        {
+            var serializer = new DataContractSerializer(typeof(PluginConfig));
+            using (var stream = new FileStream(filePath, FileMode.Open))
+                return (PluginConfig)serializer.ReadObject(stream);
+        }
+
+
+        public void SaveToFile(string filePath)
+        {
+            var serializer = new DataContractSerializer(typeof(PluginConfig));
+            using (var stream = XmlWriter.Create(filePath, XmlSettings))
+                serializer.WriteObject(stream, this);
+        }
+
+        #endregion
     }
 
     public enum TimeFrames
