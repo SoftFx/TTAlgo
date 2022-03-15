@@ -15,7 +15,7 @@ namespace TickTrader.FeedStorage.StorageBase
 
             protected override void DownloadData(BlockingChannel<BarData> channel, FeedCacheKey key, DateTime from, DateTime to)
             {
-                _storage._feedProvider.DownloadBars(channel, key.Symbol, from.ToTimestamp(), (to - TimeSpan.FromTicks(1)).ToTimestamp(), key.MarketSide.Value, key.TimeFrame);
+                _storage._feedProvider.DownloadBars(channel, key.Symbol, from, to - TimeSpan.FromTicks(1), key.MarketSide.Value, key.TimeFrame);
             }
 
             protected override TimeSlicer<BarData> GetTimeSlicer(DateTime from, DateTime to)

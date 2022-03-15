@@ -1,5 +1,4 @@
 ﻿using ActorSharp;
-using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -37,7 +36,7 @@ namespace TickTrader.FeedStorage.Api.Tests
 
         internal ISymbolInfo GetRandomSymbol()
         {
-            var smb = (SymbolInfo)SymbolFactory.BuildSymbol(RandomGenerator.GetRandomString(3) , RandomGenerator.GetRandomString(3));
+            var smb = (SymbolInfo)SymbolFactory.BuildSymbol(RandomGenerator.GetRandomString(3), RandomGenerator.GetRandomString(3));
 
             return GetUpdatedSymbol(smb);
         }
@@ -48,12 +47,12 @@ namespace TickTrader.FeedStorage.Api.Tests
         }
 
 
-        public void DownloadBars(BlockingChannel<BarData> stream, string symbol, Timestamp from, Timestamp to, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe)
+        public void DownloadBars(BlockingChannel<BarData> stream, string symbol, DateTime from, DateTime to, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe)
         {
             throw new NotImplementedException();
         }
 
-        public void DownloadQuotes(BlockingChannel<QuoteInfo> stream, string symbol, Timestamp from, Timestamp to, bool includeLevel2)
+        public void DownloadQuotes(BlockingChannel<QuoteInfo> stream, string symbol, DateTime from, DateTime to, bool includeLevel2)
         {
             throw new NotImplementedException();
         }

@@ -1,5 +1,4 @@
 ﻿using ActorSharp;
-using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -17,8 +16,8 @@ namespace TickTrader.FeedStorage.Api
         Task<(DateTime?, DateTime?)> GetAvailableSymbolRange(string symbol, Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide? priceType = null);
 
 
-        void DownloadBars(BlockingChannel<BarData> stream, string symbol, Timestamp from, Timestamp to, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe);
+        void DownloadBars(BlockingChannel<BarData> stream, string symbol, DateTime from, DateTime to, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe);
 
-        void DownloadQuotes(BlockingChannel<QuoteInfo> stream, string symbol, Timestamp from, Timestamp to, bool includeLevel2);
+        void DownloadQuotes(BlockingChannel<QuoteInfo> stream, string symbol, DateTime from, DateTime to, bool includeLevel2);
     }
 }

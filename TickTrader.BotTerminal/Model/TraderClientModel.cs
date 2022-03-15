@@ -135,14 +135,14 @@ namespace TickTrader.BotTerminal
             return Connection.FeedProxy.GetAvailableRange(symbol, priceType ?? Feed.Types.MarketSide.Bid, timeFrame);
         }
 
-        void IClientFeedProvider.DownloadBars(ActorSharp.BlockingChannel<BarData> stream, string symbol, Timestamp from, Timestamp to, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe)
+        void IClientFeedProvider.DownloadBars(ActorSharp.BlockingChannel<BarData> stream, string symbol, DateTime from, DateTime to, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe)
         {
-            Connection.FeedProxy.DownloadBars(stream, symbol, from, to, marketSide, timeframe);
+            Connection.FeedProxy.DownloadBars(stream, symbol, from.ToTimestamp(), to.ToTimestamp(), marketSide, timeframe);
         }
 
-        void IClientFeedProvider.DownloadQuotes(ActorSharp.BlockingChannel<QuoteInfo> stream, string symbol, Timestamp from, Timestamp to, bool includeLevel2)
+        void IClientFeedProvider.DownloadQuotes(ActorSharp.BlockingChannel<QuoteInfo> stream, string symbol, DateTime from, DateTime to, bool includeLevel2)
         {
-            Connection.FeedProxy.DownloadQuotes(stream, symbol, from, to, includeLevel2);
+            Connection.FeedProxy.DownloadQuotes(stream, symbol, from.ToTimestamp(), to.ToTimestamp(), includeLevel2);
         }
 
 
