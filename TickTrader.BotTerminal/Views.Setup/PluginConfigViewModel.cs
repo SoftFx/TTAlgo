@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization;
-using System.Xml;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Package;
@@ -237,7 +235,7 @@ namespace TickTrader.BotTerminal
             Init();
         }
 
-        public void Load(PluginConfig cfg)
+        public void Load(PluginConfig cfg, bool onlyParams = false)
         {
             SelectedTimeFrame = cfg.Timeframe.ToApi();
             SelectedModel.Value = cfg.ModelTimeframe.ToApi();
@@ -247,7 +245,9 @@ namespace TickTrader.BotTerminal
             {
                 SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(cfg.SelectedMapping);
 
-                InstanceId = cfg.InstanceId;
+                if (!onlyParams)
+                    InstanceId = cfg.InstanceId;
+
                 AllowTrade = cfg.Permissions.TradeAllowed;
                 Isolated = cfg.Permissions.Isolated;
             }
@@ -302,7 +302,6 @@ namespace TickTrader.BotTerminal
         #region Load & save parameters
 
         private const string ParamsFileFilter = "Param files (*.apr)|*.apr";
-        private readonly XmlWriterSettings ParamsXmlSettings = new XmlWriterSettings() { Indent = true };
         private static readonly FileHistory _paramsFileHistory = new FileHistory();
 
         public Var<ObservableCollection<FileHistory.Entry>> ConfigLoadHistory => _paramsFileHistory.Items;
@@ -323,10 +322,8 @@ namespace TickTrader.BotTerminal
                 try
                 {
                     var config = Save();
-                    var serializer = new DataContractSerializer(typeof(PluginConfig));
-                    using (var stream = XmlWriter.Create(dialog.FileName, ParamsXmlSettings))
-                        serializer.WriteObject(stream, config);
-                    _paramsFileHistory.Add(dialog.FileName, false);
+                    config.Key = Plugin.Key;
+                    Algo.Core.Config.PluginConfig.FromDomain(config).SaveToFile(dialog.FileName);
                 }
                 catch (Exception ex)
                 {
@@ -375,13 +372,16 @@ namespace TickTrader.BotTerminal
 
             try
             {
-                var serializer = new DataContractSerializer(typeof(PluginConfig));
-                using (var stream = new FileStream(filePath, FileMode.Open))
-                    cfg = (PluginConfig)serializer.ReadObject(stream);
+                var ext = Path.GetExtension(filePath);
+                cfg = Algo.Core.Config.PluginConfig.LoadFromFile(filePath).ToDomain();
                 _paramsFileHistory.Add(filePath, true);
 
                 if (cfg != null)
-                    Load(cfg);
+                {
+                    if (cfg.Key != null && cfg.Key.DescriptorId != Plugin.Key.DescriptorId)
+                        return new AlgoException($"Loaded config descriptorId '{cfg.Key.DescriptorId}' doesn't match current plugin descriptorId '{Plugin.Key.DescriptorId}'");
+                    Load(cfg, true);
+                }
 
                 return null;
             }

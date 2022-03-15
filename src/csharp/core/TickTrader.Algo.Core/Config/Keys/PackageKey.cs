@@ -6,14 +6,14 @@ namespace TickTrader.Algo.Core.Config
     {
         public string Name { get; set; }
 
-        public RepositoryLocation Location { get; set; }
+        public string Location { get; set; }
 
 
         public PackageKey()
         {
         }
 
-        public PackageKey(string name, RepositoryLocation location)
+        public PackageKey(string name, string location)
         {
             Name = name;
             Location = location;

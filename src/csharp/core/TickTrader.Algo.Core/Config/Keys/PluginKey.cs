@@ -20,7 +20,7 @@ namespace TickTrader.Algo.Core.Config
         public string PackageName { get; set; }
 
         [DataMember]
-        public RepositoryLocation PackageLocation { get; set; }
+        public string PackageLocation { get; set; }
 
         [DataMember]
         public string DescriptorId { get; set; }
@@ -35,7 +35,7 @@ namespace TickTrader.Algo.Core.Config
         {
         }
 
-        public PluginKey(string packageName, RepositoryLocation packageLocation, string descriptorId)
+        public PluginKey(string packageName, string packageLocation, string descriptorId)
         {
             PackageName = packageName;
             PackageLocation = packageLocation;
