@@ -10,7 +10,7 @@ using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
 using TickTrader.Algo.Rpc.OverTcp;
 
-namespace TickTrader.BotTerminal
+namespace TickTrader.Algo.BacktesterApi
 {
     public class BacktesterRunner
     {

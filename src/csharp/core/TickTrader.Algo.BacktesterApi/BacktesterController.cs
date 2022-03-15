@@ -6,7 +6,7 @@ using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
-namespace TickTrader.BotTerminal
+namespace TickTrader.Algo.BacktesterApi
 {
     public class BacktesterController : IDisposable
     {

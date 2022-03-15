@@ -8,7 +8,7 @@ using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
 
-namespace TickTrader.BotTerminal
+namespace TickTrader.Algo.BacktesterApi
 {
     internal class BacktesterControlActor : Actor
     {
