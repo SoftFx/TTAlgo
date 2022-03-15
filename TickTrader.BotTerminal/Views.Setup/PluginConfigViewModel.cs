@@ -235,7 +235,7 @@ namespace TickTrader.BotTerminal
             Init();
         }
 
-        public void Load(PluginConfig cfg)
+        public void Load(PluginConfig cfg, bool onlyParams = false)
         {
             SelectedTimeFrame = cfg.Timeframe.ToApi();
             SelectedModel.Value = cfg.ModelTimeframe.ToApi();
@@ -245,7 +245,9 @@ namespace TickTrader.BotTerminal
             {
                 SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(cfg.SelectedMapping);
 
-                InstanceId = cfg.InstanceId;
+                if (!onlyParams)
+                    InstanceId = cfg.InstanceId;
+
                 AllowTrade = cfg.Permissions.TradeAllowed;
                 Isolated = cfg.Permissions.Isolated;
             }
@@ -378,7 +380,7 @@ namespace TickTrader.BotTerminal
                 {
                     if (cfg.Key != null && cfg.Key.DescriptorId != Plugin.Key.DescriptorId)
                         return new AlgoException($"Loaded config descriptorId '{cfg.Key.DescriptorId}' doesn't match current plugin descriptorId '{Plugin.Key.DescriptorId}'");
-                    Load(cfg);
+                    Load(cfg, true);
                 }
 
                 return null;

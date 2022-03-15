@@ -148,8 +148,8 @@ namespace TickTrader.Algo.Core.Config
         {
             PackageId.Unpack(packageId, out var pkgId);
 
-            string location = pkgId.LocationId;
-            switch (pkgId.LocationId)
+            string location = pkgId.LocationId; // support for custom locations
+            switch (pkgId.LocationId) // pre 1.19 compatibility
             {
                 case SharedConstants.EmbeddedRepositoryId:
                     location = nameof(RepositoryLocation.Embedded);
@@ -276,8 +276,8 @@ namespace TickTrader.Algo.Core.Config
 
         public static string Convert(this PackageKey package)
         {
-            var locationId = package.Location;
-            switch (package.Location)
+            var locationId = package.Location; // support for custom locations
+            switch (package.Location) // pre 1.19 compatibility
             {
                 case nameof(RepositoryLocation.Embedded):
                     locationId = SharedConstants.EmbeddedRepositoryId;
