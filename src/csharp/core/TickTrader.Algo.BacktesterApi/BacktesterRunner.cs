@@ -169,6 +169,8 @@ namespace TickTrader.Algo.BacktesterApi
                     _backtester.Tell(payload.Unpack<BacktesterStoppedMsg>());
                 else if (payload.Is(BacktesterProgressUpdate.Descriptor))
                     _backtester.Tell(payload.Unpack<BacktesterProgressUpdate>());
+                else if (payload.Is(BacktesterStateUpdate.Descriptor))
+                    _backtester.Tell(payload.Unpack<BacktesterStateUpdate>());
 
                 else throw new System.NotImplementedException();
             }

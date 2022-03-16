@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Async;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.BacktesterApi
 {
@@ -12,9 +11,12 @@ namespace TickTrader.Algo.BacktesterApi
     {
         private readonly IActorRef _actor;
         private readonly ChannelEventSource<BacktesterProgressUpdate> _progressEventSrc = new ChannelEventSource<BacktesterProgressUpdate>();
+        private readonly ChannelEventSource<BacktesterStateUpdate> _stateEventSrc = new ChannelEventSource<BacktesterStateUpdate>();
 
 
         public IEventSource<BacktesterProgressUpdate> OnProgressUpdate => _progressEventSrc;
+
+        public IEventSource<BacktesterStateUpdate> OnStateUpdate => _stateEventSrc;
 
 
         public BacktesterController(IActorRef actor)
@@ -50,6 +52,16 @@ namespace TickTrader.Algo.BacktesterApi
             public ChannelWriter<BacktesterProgressUpdate> Sink { get; }
 
             public SubscribeToProgressUpdatesCmd(ChannelWriter<BacktesterProgressUpdate> sink)
+            {
+                Sink = sink;
+            }
+        }
+
+        internal class SubscribeToStateUpdatesCmd
+        {
+            public ChannelWriter<BacktesterStateUpdate> Sink { get; }
+
+            public SubscribeToStateUpdatesCmd(ChannelWriter<BacktesterStateUpdate> sink)
             {
                 Sink = sink;
             }

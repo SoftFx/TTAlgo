@@ -7,9 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Protobuf Include="..\..\..\protobuf\backtester.proto">
-      <Link>protos\backtester.proto</Link>
-    </Protobuf>
     <Protobuf Include="..\..\..\protobuf\common.proto">
       <Link>protos\common.proto</Link>
     </Protobuf>

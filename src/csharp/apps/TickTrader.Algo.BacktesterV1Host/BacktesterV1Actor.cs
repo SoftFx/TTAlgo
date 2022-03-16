@@ -18,6 +18,8 @@ namespace TickTrader.Algo.BacktesterV1Host
         void SendStoppedMsg(string message);
 
         void SendProgress(double current, double total);
+
+        void SendStateUpdate(Emulator.Types.State state);
     }
 
     internal class BacktesterV1Actor : Actor
@@ -124,12 +126,12 @@ namespace TickTrader.Algo.BacktesterV1Host
                 try
                 {
 #if DEBUG
-                    const int timeOut = 20;
-                    for (ulong i = 0; i < timeOut; i++)
-                    {
-                        await Task.Delay(500, _cancelTokenSrc.Token);
-                        _callback.SendProgress(i, timeOut);
-                    }
+                    //const int timeOut = 20;
+                    //for (ulong i = 0; i < timeOut; i++)
+                    //{
+                    //    await Task.Delay(500, _cancelTokenSrc.Token);
+                    //    _callback.SendProgress(i, timeOut);
+                    //}
 #endif
 
                     ConfigureCommonSettings(config, backtester.CommonSettings);
@@ -260,6 +262,7 @@ namespace TickTrader.Algo.BacktesterV1Host
         private void OnStateChanged(EmulatorStates state)
         {
             _logger.Info($"Emulator state: {state}");
+            //_callback.SendStateUpdate(state);
         }
 
         private void OnErrorOccurred(Exception ex)

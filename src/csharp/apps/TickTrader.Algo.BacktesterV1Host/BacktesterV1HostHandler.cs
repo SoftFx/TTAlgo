@@ -2,7 +2,7 @@
 using System;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
-using TickTrader.Algo.Domain;
+using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.Rpc;
 
 namespace TickTrader.Algo.BacktesterV1Host
@@ -40,6 +40,12 @@ namespace TickTrader.Algo.BacktesterV1Host
         public void SendProgress(double current, double total)
         {
             var msg = new BacktesterProgressUpdate { Id = _id, Current = current, Total = total };
+            _session.Tell(RpcMessage.Notification(msg));
+        }
+
+        public void SendStateUpdate(Emulator.Types.State state)
+        {
+            var msg = new BacktesterStateUpdate { Id = _id, NewState = state };
             _session.Tell(RpcMessage.Notification(msg));
         }
 

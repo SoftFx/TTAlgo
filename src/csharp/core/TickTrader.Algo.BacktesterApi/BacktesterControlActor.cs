@@ -20,6 +20,7 @@ namespace TickTrader.Algo.BacktesterApi
         private readonly IActorRef _parent;
         private readonly List<TaskCompletionSource<object>> _awaitStopList = new List<TaskCompletionSource<object>>();
         private readonly ActorEventSource<BacktesterProgressUpdate> _progressEventSrc = new ActorEventSource<BacktesterProgressUpdate>();
+        private readonly ActorEventSource<BacktesterStateUpdate> _stateEventSrc = new ActorEventSource<BacktesterStateUpdate>();
 
         private IAlgoLogger _logger;
         private RpcSession _session;
@@ -45,6 +46,8 @@ namespace TickTrader.Algo.BacktesterApi
             Receive<BacktesterStoppedMsg>(OnStopped);
             Receive<BacktesterController.SubscribeToProgressUpdatesCmd>(SubscribeToProgressUpdates);
             Receive<BacktesterProgressUpdate>(OnProgressUpdate);
+            Receive<BacktesterController.SubscribeToStateUpdatesCmd>(SubscribeToStateUpdate);
+            Receive<BacktesterStateUpdate>(OnStateUpdate);
         }
 
 
@@ -136,6 +139,16 @@ namespace TickTrader.Algo.BacktesterApi
         private void OnProgressUpdate(BacktesterProgressUpdate msg)
         {
             _progressEventSrc.DispatchEvent(msg);
+        }
+
+        private void SubscribeToStateUpdate(BacktesterController.SubscribeToStateUpdatesCmd cmd)
+        {
+            _stateEventSrc.Subscribe(cmd.Sink);
+        }
+
+        private void OnStateUpdate(BacktesterStateUpdate msg)
+        {
+            _stateEventSrc.DispatchEvent(msg);
         }
 
 
