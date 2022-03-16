@@ -50,7 +50,7 @@ namespace TickTrader.FeedStorage.Tests
         {
             var key = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.MN);
 
-            Assert.AreEqual(key.FullInfo, "EURUSD_MN_");
+            Assert.AreEqual(key.FullInfo, "EURUSD_MN");
         }
 
         [TestMethod]
