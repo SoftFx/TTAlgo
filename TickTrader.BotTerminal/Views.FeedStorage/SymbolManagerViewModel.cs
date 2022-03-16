@@ -159,7 +159,7 @@ namespace TickTrader.BotTerminal.SymbolManager
             var smb = _catalog.OnlineCollection[key.Symbol];
 
             if (smb != null)
-                await _wndManager.ShowDialog(new FeedExportViewModel(smb, key), this);
+                await _wndManager.ShowDialog(new FeedExportViewModel(smb.Series[key]), this);
         }
 
         public void RemoveSymbol(ISymbolData symbolModel)

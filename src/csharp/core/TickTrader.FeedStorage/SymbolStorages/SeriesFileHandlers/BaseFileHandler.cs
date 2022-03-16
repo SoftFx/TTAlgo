@@ -50,6 +50,7 @@ namespace TickTrader.FeedStorage.StorageBase
         {
             var from = _settings.From.ToUniversalTime();
             var to = _settings.To.ToUniversalTime();
+            var hasData = false;
 
             try
             {
@@ -59,6 +60,7 @@ namespace TickTrader.FeedStorage.StorageBase
 
                     foreach (var slice in _storage.GetSeries<T>(_key)?.IterateSlices(from, to))
                     {
+                        hasData = true;
                         WriteSlice(slice.Content);
 
                         if (!await buffer.Write(new SliceInfo(slice.From, slice.To, slice.Content.Count)))
@@ -75,6 +77,9 @@ namespace TickTrader.FeedStorage.StorageBase
             finally
             {
                 await buffer.Close();
+
+                if (!hasData)
+                    File.Delete(_settings.FilePath);
             }
         }
     }

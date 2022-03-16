@@ -9,21 +9,15 @@ namespace TickTrader.FeedStorage.StorageBase
     internal sealed class TickFileHandler : BaseFileHandler<QuoteInfo>
     {
         private readonly string _doubleSeparator;
-        private readonly bool _isLevel2;
-
 
         public TickFileHandler(FeedStorageBase storage, BaseFileFormatter formatter, FeedCacheKey key, IExportSeriesSettings settings) : base(storage, formatter, key, settings)
         {
             _doubleSeparator = $"{_separator}{_separator}";
-            _isLevel2 = key.TimeFrame == Feed.Types.Timeframe.TicksLevel2;
         }
 
         protected override void PreloadLogic(StreamWriter writer)
         {
-            if (_isLevel2)
-                _formatter.WriteTickL2FileHeader(writer);
-            else
-                _formatter.WriteTickFileHeader(writer);
+            _formatter.WriteTickFileHeader(writer);
         }
 
         protected override void PostloadLogic(StreamWriter writer) { }
@@ -58,12 +52,8 @@ namespace TickTrader.FeedStorage.StorageBase
             {
                 _writer.Write(_separator);
                 _writer.Write(band[index].Price);
-
-                if (_isLevel2)
-                {
-                    _writer.Write(_separator);
-                    _writer.Write(band[index].Amount);
-                }
+                _writer.Write(_separator);
+                _writer.Write(band[index].Amount);
             }
             else
                 _writer.Write(_doubleSeparator);

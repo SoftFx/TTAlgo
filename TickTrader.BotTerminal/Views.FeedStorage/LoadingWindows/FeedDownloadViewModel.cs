@@ -67,18 +67,16 @@ namespace TickTrader.BotTerminal.SymbolManager
 
         private async Task DownloadAsync(IActionObserver observer)
         {
-            var symbol = SelectedSymbol.Value.Name;
             var timeFrame = SelectedTimeFrame.Value;
-            var priceType = SelectedPriceType.Value;
             var from = DateTime.SpecifyKind(DateRange.From, DateTimeKind.Utc);
             var to = DateTime.SpecifyKind(DateRange.To + TimeSpan.FromDays(1), DateTimeKind.Utc);
 
             observer?.SetMessage("Downloading... \n");
 
             if (timeFrame.IsTicks())
-                await _catalog.OnlineCollection[symbol].DownloadTicksWithObserver(observer, timeFrame, from, to);
+                await SelectedSymbol.Value.DownloadTicksWithObserver(observer, timeFrame, from, to);
             else
-                await _catalog.OnlineCollection[symbol].DownloadBarWithObserver(observer, timeFrame, priceType, from, to);
+                await SelectedSymbol.Value.DownloadBarWithObserver(observer, timeFrame, SelectedPriceType.Value, from, to);
         }
     }
 }

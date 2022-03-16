@@ -7,15 +7,15 @@ namespace TickTrader.FeedStorage
     public class FeedCacheKey : ISeriesKey
     {
         private static readonly char[] _codeSeparators = new char[] { '_' };
-
+        private readonly string _fullInfo;
 
         public string Symbol { get; }
+
+        public string FullInfo => _fullInfo;
 
         public Feed.Types.Timeframe TimeFrame { get; }
 
         public Feed.Types.MarketSide? MarketSide { get; }
-
-        public string FullInfo => $"{Symbol}_{TimeFrame}_{MarketSide?.ToString() ?? string.Empty}";
 
 
         public FeedCacheKey(string symbol, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide? priceType = null)
@@ -23,6 +23,11 @@ namespace TickTrader.FeedStorage
             Symbol = symbol;
             TimeFrame = timeframe;
             MarketSide = TimeFrame.IsTick() ? null : priceType; //better MarketSize = priceType, fool-proof
+
+            _fullInfo = $"{Symbol}_{TimeFrame}";
+
+            if (MarketSide.HasValue)
+                _fullInfo += $"_{MarketSide.Value}";
         }
 
 

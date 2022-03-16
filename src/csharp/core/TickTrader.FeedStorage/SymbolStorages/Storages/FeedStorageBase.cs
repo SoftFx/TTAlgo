@@ -154,7 +154,7 @@ namespace TickTrader.FeedStorage.StorageBase
             return collection;
         }
 
-        protected bool RemoveSeries(FeedCacheKey seriesKey)
+        internal bool RemoveSeries(FeedCacheKey seriesKey)
         {
             if (_series.TryGetValue(seriesKey, out ISeriesStorage<DateTime> series))
             {

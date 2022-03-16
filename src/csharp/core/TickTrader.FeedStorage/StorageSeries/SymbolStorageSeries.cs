@@ -1,6 +1,7 @@
 ﻿using ActorSharp;
 using System;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core.Lib.Math;
 using TickTrader.FeedStorage.Api;
 using TickTrader.FeedStorage.StorageBase;
 
@@ -45,13 +46,16 @@ namespace TickTrader.FeedStorage
             return _storage.GetRange(_key);
         }
 
-        internal void Update(FeedSeriesUpdate update)
+        internal async void Update(FeedSeriesUpdate update)
         {
             Size = update.Size;
             From = update.Range.Item1;
             To = update.Range.Item2;
 
             SeriesUpdated?.Invoke(this);
+
+            if (Size.E(0.0))
+                await TryRemove();
         }
     }
 }

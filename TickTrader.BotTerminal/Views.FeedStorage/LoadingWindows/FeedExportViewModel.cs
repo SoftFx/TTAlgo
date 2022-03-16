@@ -12,7 +12,6 @@ namespace TickTrader.BotTerminal.SymbolManager
 {
     internal sealed class FeedExportViewModel : BaseLoadingWindow, IExportSeriesSettings
     {
-        private readonly ISymbolData _symbol;
         private readonly IStorageSeries _series;
 
 
@@ -27,12 +26,11 @@ namespace TickTrader.BotTerminal.SymbolManager
         public Property<string> FileFilter { get; }
 
 
-        public FeedExportViewModel(ISymbolData symbol, ISeriesKey key) : base($"Export Series: {key.FullInfo})")
+        public FeedExportViewModel(IStorageSeries series) : base($"Export Series: {series.Key.FullInfo})")
         {
-            _symbol = symbol;
-            _series = symbol.Series[key];
+            _series = series;
 
-            FileName = _varContext.AddProperty(key.FullInfo);
+            FileName = _varContext.AddProperty(series.Key.FullInfo);
             FileFilter = _varContext.AddProperty<string>();
             SelectedFolder = _varContext.AddProperty(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
             SelectedFormat = _varContext.AddProperty(FileFormats.First()).AddPostTrigger(UpdateFileFilter);
