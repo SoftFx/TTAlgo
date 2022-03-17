@@ -34,6 +34,10 @@ var publicApiProjectPath = sourcesDirPath.CombineWithFilePath("src/csharp/core/T
 var publicApiBinPath = outputPath.Combine("public-api");
 var symbolStorageProjectPath = sourcesDirPath.CombineWithFilePath("src/csharp/core/TickTrader.FeedStorage/TickTrader.FeedStorage.csproj");
 var symbolStorageBinPath = outputPath.Combine("symbol-storage");
+var backtesterApiProjectPath = sourcesDirPath.CombineWithFilePath("src/csharp/core/TickTrader.Algo.BacktesterApi/TickTrader.Algo.BacktesterApi.csproj");
+var backtesterApiBinPath = outputPath.Combine("backtester-api");
+var backtesterHostProjectPath = sourcesDirPath.CombineWithFilePath("src/csharp/apps/TickTrader.Algo.BacktesterV1Host/TickTrader.Algo.BacktesterV1Host.csproj");
+var backtesterHostBinPath = outputPath.Combine("backtester-host");
 var vsExtensionPath = sourcesDirPath.CombineWithFilePath($"src/csharp/sdk/TickTrader.Algo.VS.Package/bin/{configuration}/TickTrader.Algo.VS.Package.vsix");
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -290,12 +294,59 @@ Task("PublishSymbolStorage")
    }
 });
 
-Task("PrepareArtifacts")
+Task("PublishBacktesterApi")
+   .IsDependentOn("Test")
+   .Does(() =>
+{
+   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishBacktesterApi") : null;
+
+   try
+   {
+      DotNetPublish(backtesterApiProjectPath.FullPath, new DotNetPublishSettings {
+         Configuration = configuration,
+         Verbosity = details,
+         NoBuild = true,
+         OutputDirectory = backtesterApiBinPath
+      });
+   }
+   finally
+   {
+      block?.Dispose();
+   }
+});
+
+Task("PublishBacktesterHost")
+   .IsDependentOn("Test")
+   .Does(() =>
+{
+   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishBacktesterHost") : null;
+
+   try
+   {
+      DotNetPublish(backtesterHostProjectPath.FullPath, new DotNetPublishSettings {
+         Configuration = configuration,
+         Verbosity = details,
+         NoBuild = true,
+         OutputDirectory = backtesterHostBinPath
+      });
+   }
+   finally
+   {
+      block?.Dispose();
+   }
+});
+
+Task("PublishAllProjects")
    .IsDependentOn("PublishTerminal")
    .IsDependentOn("PublishConfigurator")
    .IsDependentOn("PublishServer")
    .IsDependentOn("PublishPublicApi")
    .IsDependentOn("PublishSymbolStorage")
+   .IsDependentOn("PublishBacktesterApi")
+   .IsDependentOn("PublishBacktesterHost");
+
+Task("PrepareArtifacts")
+   .IsDependentOn("PublishAllProjects")
    .Does(() =>
 {
    var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PrepareArtifacts") : null;
@@ -334,6 +385,8 @@ Task("ZipArtifacts")
       Zip(configuratorBinPath, artifactsPath.CombineWithFilePath($"AlgoServer Configurator {buildId}.x64.zip"));
       Zip(publicApiBinPath, artifactsPath.CombineWithFilePath($"PublicAPI {buildId}.net472.zip"));
       Zip(symbolStorageBinPath, artifactsPath.CombineWithFilePath($"SymbolStorage {buildId}.x64.zip"));
+      Zip(backtesterApiBinPath, artifactsPath.CombineWithFilePath($"BacktesterApi {buildId}.zip"));
+      Zip(backtesterHostBinPath, artifactsPath.CombineWithFilePath($"BacktesterV1Host {buildId}.x64.zip"));
    }
    finally
    {
