@@ -16,10 +16,10 @@ namespace TickTrader.FeedStorage.StorageBase
     {
         private const string CustomSymbolsCollectionName = "customSymbols";
 
-        private readonly ActorEvent<DictionaryUpdateArgs<string, CustomInfo>> _symbolListeners = new ActorEvent<DictionaryUpdateArgs<string, CustomInfo>>();
-        private readonly VarDictionary<string, CustomInfo> _customSymbols = new VarDictionary<string, CustomInfo>();
+        private readonly ActorEvent<DictionaryUpdateArgs<string, CustomSymbolInfo>> _symbolListeners = new ActorEvent<DictionaryUpdateArgs<string, CustomSymbolInfo>>();
+        private readonly VarDictionary<string, CustomSymbolInfo> _customSymbols = new VarDictionary<string, CustomSymbolInfo>();
 
-        private ICollectionStorage<Guid, CustomInfo> _customSymbolsCollection;
+        private ICollectionStorage<Guid, CustomSymbolInfo> _customSymbolsCollection;
 
 
         public CustomFeedStorage() : base()
@@ -32,7 +32,7 @@ namespace TickTrader.FeedStorage.StorageBase
         {
             base.LoadStoredData(CustomSymbolsCollectionName);
 
-            _customSymbolsCollection = Database.GetCollection(CustomSymbolsCollectionName, new GuidKeySerializer(), new ProtoValueSerializer<CustomInfo>());
+            _customSymbolsCollection = Database.GetCollection(CustomSymbolsCollectionName, new GuidKeySerializer(), new ProtoValueSerializer<CustomSymbolInfo>());
             _customSymbols.Clear();
 
             foreach (var entry in _customSymbolsCollection.Iterate(Guid.Empty))
@@ -55,7 +55,7 @@ namespace TickTrader.FeedStorage.StorageBase
         }
 
 
-        public bool AddSymbol(CustomInfo newSymbol)
+        public bool AddSymbol(CustomSymbolInfo newSymbol)
         {
             if (_customSymbols.ContainsKey(newSymbol.Name))
                 return false;
@@ -67,7 +67,7 @@ namespace TickTrader.FeedStorage.StorageBase
             return true;
         }
 
-        private bool UpdateSymbol(CustomInfo newSymbol)
+        private bool UpdateSymbol(CustomSymbolInfo newSymbol)
         {
             if (!_customSymbols.TryGetValue(newSymbol.Name, out var oldSymbol) || oldSymbol.Name != newSymbol.Name)
                 return false;
@@ -92,9 +92,9 @@ namespace TickTrader.FeedStorage.StorageBase
             return true;
         }
 
-        private void SendSymbolsUpdates(DictionaryUpdateArgs<string, CustomInfo> update) => _symbolListeners.FireAndForget(update);
+        private void SendSymbolsUpdates(DictionaryUpdateArgs<string, CustomSymbolInfo> update) => _symbolListeners.FireAndForget(update);
 
-        private void WriteSymbolToCollection(CustomInfo smb, Guid? key = null)
+        private void WriteSymbolToCollection(CustomSymbolInfo smb, Guid? key = null)
         {
             smb.StorageId = key ?? Guid.NewGuid();
             _customSymbolsCollection.Write(smb.StorageId, smb);
@@ -103,13 +103,13 @@ namespace TickTrader.FeedStorage.StorageBase
 
         internal sealed class Handler : FeedHandler
         {
-            private readonly ActorCallback<DictionaryUpdateArgs<string, CustomInfo>> _smbChangedCallback;
+            private readonly ActorCallback<DictionaryUpdateArgs<string, CustomSymbolInfo>> _smbChangedCallback;
             private readonly Ref<CustomFeedStorage> _ref;
 
 
             public Handler(Ref<CustomFeedStorage> actorRef) : base(actorRef.Cast<CustomFeedStorage, FeedStorageBase>())
             {
-                _smbChangedCallback = ActorCallback.Create<DictionaryUpdateArgs<string, CustomInfo>>(UpdateCollectionHandler);
+                _smbChangedCallback = ActorCallback.Create<DictionaryUpdateArgs<string, CustomSymbolInfo>>(UpdateCollectionHandler);
                 _ref = actorRef;
             }
 
@@ -127,12 +127,12 @@ namespace TickTrader.FeedStorage.StorageBase
 
             public override Task<bool> TryAddSymbol(ISymbolInfo symbol)
             {
-                return _ref.Call(a => a.AddSymbol(CustomInfo.ToData(symbol)));
+                return _ref.Call(a => a.AddSymbol(CustomSymbolInfo.ToData(symbol)));
             }
 
             public override Task<bool> TryUpdateSymbol(ISymbolInfo symbol)
             {
-                return _ref.Call(a => a.UpdateSymbol(CustomInfo.ToData(symbol)));
+                return _ref.Call(a => a.UpdateSymbol(CustomSymbolInfo.ToData(symbol)));
             }
 
             public override Task<bool> TryRemoveSymbol(string name)
@@ -148,7 +148,7 @@ namespace TickTrader.FeedStorage.StorageBase
                 base.Dispose();
             }
 
-            private void UpdateCollectionHandler(DictionaryUpdateArgs<string, CustomInfo> update)
+            private void UpdateCollectionHandler(DictionaryUpdateArgs<string, CustomSymbolInfo> update)
             {
                 switch (update.Action)
                 {
@@ -164,7 +164,7 @@ namespace TickTrader.FeedStorage.StorageBase
                 }
             }
 
-            private void AddNewCustomSymbol(CustomInfo data) => _symbols[data.Name] = new CustomSymbol(data, this);
+            private void AddNewCustomSymbol(CustomSymbolInfo data) => _symbols[data.Name] = new CustomSymbol(data, this);
         }
     }
 }

@@ -12,7 +12,7 @@ namespace TickTrader.FeedStorage
         public override SymbolConfig.Types.SymbolOrigin Origin => SymbolConfig.Types.SymbolOrigin.Custom;
 
 
-        public CustomSymbol(CustomInfo data, CustomFeedStorage.Handler storage) : base(data, storage)
+        public CustomSymbol(CustomSymbolInfo data, CustomFeedStorage.Handler storage) : base(data, storage)
         { }
 
 

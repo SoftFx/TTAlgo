@@ -197,7 +197,7 @@ namespace TickTrader.Algo.BacktesterV1Host
             }
             foreach (var s in traderServer.Symbols)
             {
-                settings.Symbols.Add(s.Key, s.Value);
+                settings.Symbols.Add(s.Key, new SymbolInfo(s.Value));
             }
         }
 

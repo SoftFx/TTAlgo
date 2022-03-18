@@ -5,7 +5,7 @@ using TickTrader.Algo.Domain;
 namespace TickTrader.FeedStorage
 {
     [ProtoContract]
-    internal sealed class CustomInfo : ISymbolInfo
+    public sealed class CustomSymbolInfo : ISymbolInfo
     {
         [ProtoIgnore]
         internal Guid StorageId { get; set; }
@@ -100,9 +100,9 @@ namespace TickTrader.FeedStorage
         public bool TradeAllowed => true;
 
 
-        public static CustomInfo ToData(ISymbolInfo info)
+        public static CustomSymbolInfo ToData(ISymbolInfo info)
         {
-            return new CustomInfo
+            return new CustomSymbolInfo
             {
                 Name = info.Name,
                 MarginCurrency = info.MarginCurrency,

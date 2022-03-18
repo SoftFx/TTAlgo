@@ -1,5 +1,4 @@
-﻿using Google.Protobuf;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -55,7 +54,7 @@ namespace TickTrader.Algo.BacktesterApi
                     Account = ReadZipEntryAsJson<AccountConfig>(zip, "account.json"),
                     TradeServer = ReadZipEntryAsJson<TradeServerConfig>(zip, "trade-server.json"),
                     Env = ReadZipEntryAsJson<EnvInfo>(zip, "env.json"),
-                    PluginConfig = ReadZipEntryAsProtoJson<PluginConfig>(zip, "plugin-cfg.json", PluginConfig.JsonParser),
+                    PluginConfig = ReadZipEntry(zip, "plugin-cfg.apr", Algo.Core.Config.PluginConfig.LoadFromStream).ToDomain(),
                 };
             }
         }
@@ -71,7 +70,7 @@ namespace TickTrader.Algo.BacktesterApi
                 WriteZipEntryAsJson(zip, "account.json", Account);
                 WriteZipEntryAsJson(zip, "trade-server.json", TradeServer);
                 WriteZipEntryAsJson(zip, "env.json", Env);
-                WriteZipEntryAsProtoJson(zip, "plugin-cfg.json", PluginConfig, PluginConfig.JsonFormatter);
+                WriteZipEntry(zip, "plugin-cfg.apr", Algo.Core.Config.PluginConfig.FromDomain(PluginConfig), Algo.Core.Config.PluginConfig.SaveToStream);
             }
         }
 
@@ -95,49 +94,45 @@ namespace TickTrader.Algo.BacktesterApi
         }
 
 
-        private static T ReadZipEntryAsJson<T>(ZipArchive zip, string entryName)
+        private static T ReadZipEntry<T>(ZipArchive zip, string entryName, Func<Stream, T> readerFunc)
         {
             var entry = zip.GetEntry(entryName);
             using (var stream = entry.Open())
             {
-                var data = new byte[entry.Length];
-                stream.Read(data, 0, data.Length);
-                return JsonSerializer.Deserialize<T>(data);
+                return readerFunc(stream);
             }
         }
 
-        private static T ReadZipEntryAsProtoJson<T>(ZipArchive zip, string entryName, JsonParser jsonParser)
-            where T : IMessage<T>, new()
+        private static T ReadDataAsJson<T>(Stream stream)
         {
-            var entry = zip.GetEntry(entryName);
-            using (var stream = entry.Open())
-            using (var reader = new StreamReader(stream))
+            using(var reader  = new StreamReader(stream))
             {
-                var text = reader.ReadToEnd();
-                return jsonParser.Parse<T>(text);
+                var json = reader.ReadToEnd();
+                return JsonSerializer.Deserialize<T>(json);
             }
         }
 
+        private static T ReadZipEntryAsJson<T>(ZipArchive zip, string entryName) => ReadZipEntry(zip, entryName, ReadDataAsJson<T>);
 
-        private static void WriteZipEntryAsJson<T>(ZipArchive zip, string entryName, T value)
+
+        private static void WriteZipEntry<T>(ZipArchive zip, string entryName, T data, Action<Stream, T> writerFunc)
         {
             var entry = zip.CreateEntry(entryName);
             using (var stream = entry.Open())
+            {
+                writerFunc(stream, data);
+            }
+        }
+
+        private static void WriteDataAsJson<T>(Stream stream, T data)
+        {
             using (var writer = new Utf8JsonWriter(stream))
             {
-                JsonSerializer.Serialize(writer, value);
+                JsonSerializer.Serialize(writer, data);
             }
         }
 
-        private static void WriteZipEntryAsProtoJson(ZipArchive zip, string entryName, IMessage data, JsonFormatter jsonFormatter)
-        {
-            var entry = zip.CreateEntry(entryName);
-            using (var stream = entry.Open())
-            using (var writer = new StreamWriter(stream))
-            {
-                jsonFormatter.Format(data, writer);
-            }
-        }
+        private static void WriteZipEntryAsJson<T>(ZipArchive zip, string entryName, T data) => WriteZipEntry(zip, entryName, data, WriteDataAsJson);
 
 
         private class VersionInfo
@@ -176,7 +171,7 @@ namespace TickTrader.Algo.BacktesterApi
 
         public class TradeServerConfig
         {
-            public Dictionary<string, SymbolInfo> Symbols { get; set; } = new Dictionary<string, SymbolInfo>();
+            public Dictionary<string, CustomSymbolInfo> Symbols { get; set; } = new Dictionary<string, CustomSymbolInfo>();
             public Dictionary<string, CustomCurrency> Currencies { get; set; } = new Dictionary<string, CustomCurrency>();
         }
 
