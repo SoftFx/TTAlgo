@@ -77,6 +77,10 @@ namespace TickTrader.Algo.BacktesterV1Host
             PackageLoadContext.Load(pkgId, config.Env.PackagePath);
             _logger.Info("Loaded package");
 
+            var workDir = config.Env.WorkingFolderPath;
+            _logger.Debug($"Set working dir as {workDir}");
+            System.IO.Directory.SetCurrentDirectory(workDir);
+
             _logger.Info("Started");
 
             _cancelTokenSrc = new CancellationTokenSource();
