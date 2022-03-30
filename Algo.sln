@@ -60,8 +60,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sandbox", "Sandbox", "{BE89
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.Rpc.OverTcp", "src\csharp\core\TickTrader.Algo.Rpc.OverTcp\TickTrader.Algo.Rpc.OverTcp.csproj", "{B64B583D-1D18-4D74-BDB2-71388171FD36}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.Util", "src\csharp\core\TickTrader.Algo.Util\TickTrader.Algo.Util.csproj", "{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.ServerControl", "src\csharp\core\TickTrader.Algo.ServerControl\TickTrader.Algo.ServerControl.csproj", "{D250F528-CFEB-4A68-9817-A99A92E0A4E4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.Server", "src\csharp\core\TickTrader.Algo.Server\TickTrader.Algo.Server.csproj", "{80BBD05A-F622-49D5-BADD-E35B81D15D00}"
@@ -156,8 +154,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.VersionTest
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.BacktesterV1Host", "src\csharp\apps\TickTrader.Algo.BacktesterV1Host\TickTrader.Algo.BacktesterV1Host.csproj", "{7E2C0529-C16A-486B-B4A4-E84E1AB34B10}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.FeedStorage.Api.Tests", "src\csharp\tests\TickTrader.FeedStorage.Api.Tests\TickTrader.FeedStorage.Api.Tests.csproj", "{5BC1C82B-CC91-4DA8-A10F-CEC097ABC326}"
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.BacktesterApi", "src\csharp\core\TickTrader.Algo.BacktesterApi\TickTrader.Algo.BacktesterApi.csproj", "{D50FAF09-2A1B-44D6-A791-8D4C5221518F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.FeedStorage.Api.Tests", "src\csharp\tests\TickTrader.FeedStorage.Api.Tests\TickTrader.FeedStorage.Api.Tests.csproj", "{5BC1C82B-CC91-4DA8-A10F-CEC097ABC326}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.Algo.BacktesterApi", "src\csharp\core\TickTrader.Algo.BacktesterApi\TickTrader.Algo.BacktesterApi.csproj", "{D50FAF09-2A1B-44D6-A791-8D4C5221518F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -373,18 +372,6 @@ Global
 		{B64B583D-1D18-4D74-BDB2-71388171FD36}.Release|x64.Build.0 = Release|Any CPU
 		{B64B583D-1D18-4D74-BDB2-71388171FD36}.Release|x86.ActiveCfg = Release|Any CPU
 		{B64B583D-1D18-4D74-BDB2-71388171FD36}.Release|x86.Build.0 = Release|Any CPU
-		{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B}.Debug|x64.Build.0 = Debug|Any CPU
-		{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B}.Debug|x86.Build.0 = Debug|Any CPU
-		{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B}.Release|x64.ActiveCfg = Release|Any CPU
-		{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B}.Release|x64.Build.0 = Release|Any CPU
-		{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B}.Release|x86.ActiveCfg = Release|Any CPU
-		{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B}.Release|x86.Build.0 = Release|Any CPU
 		{D250F528-CFEB-4A68-9817-A99A92E0A4E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D250F528-CFEB-4A68-9817-A99A92E0A4E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D250F528-CFEB-4A68-9817-A99A92E0A4E4}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -936,7 +923,6 @@ Global
 		{64CDDAB4-5127-4EB3-B38F-36CE37E62A66} = {C5AE642C-4A61-47BD-9272-69909998B71D}
 		{95412C83-3BE8-4D58-A787-96AD459C1246} = {C5AE642C-4A61-47BD-9272-69909998B71D}
 		{B64B583D-1D18-4D74-BDB2-71388171FD36} = {C5AE642C-4A61-47BD-9272-69909998B71D}
-		{F6E91DF8-4706-4979-AF0F-259B5F9E3D0B} = {C5AE642C-4A61-47BD-9272-69909998B71D}
 		{D250F528-CFEB-4A68-9817-A99A92E0A4E4} = {C5AE642C-4A61-47BD-9272-69909998B71D}
 		{80BBD05A-F622-49D5-BADD-E35B81D15D00} = {C5AE642C-4A61-47BD-9272-69909998B71D}
 		{6C6D0FE1-83DE-4E8D-9A0B-92FFAB5735A2} = {C5AE642C-4A61-47BD-9272-69909998B71D}
