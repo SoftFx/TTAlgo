@@ -43,9 +43,9 @@ namespace TickTrader.Algo.BacktesterV1Host
             _session.Tell(RpcMessage.Notification(msg));
         }
 
-        public void SendStateUpdate(Emulator.Types.State state)
+        public void SendStateUpdate(EmulatorStates state)
         {
-            var msg = new BacktesterStateUpdate { Id = _id, NewState = state };
+            var msg = new BacktesterStateUpdate { Id = _id, NewState = Convert(state) };
             _session.Tell(RpcMessage.Notification(msg));
         }
 
@@ -111,6 +111,21 @@ namespace TickTrader.Algo.BacktesterV1Host
         {
             var msg = payload.Unpack<BacktesterStoppedMsg>();
             _backtester.Tell(msg);
+        }
+
+
+        private static Emulator.Types.State Convert(EmulatorStates state)
+        {
+            switch (state)
+            {
+                case EmulatorStates.WarmingUp: return Emulator.Types.State.WarmingUp;
+                case EmulatorStates.Running: return Emulator.Types.State.Running;
+                case EmulatorStates.Paused: return Emulator.Types.State.Paused;
+                case EmulatorStates.Stopping: return Emulator.Types.State.Stopping;
+                case EmulatorStates.Stopped: return Emulator.Types.State.Stopped;
+
+                default: throw new ArgumentException($"Unknown state {state}");
+            }
         }
     }
 }

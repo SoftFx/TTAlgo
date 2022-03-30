@@ -18,6 +18,6 @@ namespace TickTrader.Algo.BacktesterV1Host
             _awaitStopSrc.TrySetResult(message);
         }
 
-        public void SendStateUpdate(Emulator.Types.State state) { }
+        public void SendStateUpdate(EmulatorStates state) { }
     }
 }

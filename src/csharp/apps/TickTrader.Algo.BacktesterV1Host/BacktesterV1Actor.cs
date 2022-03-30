@@ -19,7 +19,7 @@ namespace TickTrader.Algo.BacktesterV1Host
 
         void SendProgress(double current, double total);
 
-        void SendStateUpdate(Emulator.Types.State state);
+        void SendStateUpdate(EmulatorStates state);
     }
 
     internal class BacktesterV1Actor : Actor
@@ -266,7 +266,7 @@ namespace TickTrader.Algo.BacktesterV1Host
         private void OnStateChanged(EmulatorStates state)
         {
             _logger.Info($"Emulator state: {state}");
-            //_callback.SendStateUpdate(state);
+            _callback.SendStateUpdate(state);
         }
 
         private void OnErrorOccurred(Exception ex)
