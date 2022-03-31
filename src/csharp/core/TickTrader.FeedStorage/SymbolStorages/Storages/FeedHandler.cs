@@ -93,6 +93,13 @@ namespace TickTrader.FeedStorage.StorageBase
                 return channel;
             }
 
+            internal async Task<ActorChannel<ISliceInfo>> ImportSeriesWithFile(FeedCacheKey key, IImportSeriesSettings settings)
+            {
+                var channel = ActorChannel.NewOutput<ISliceInfo>();
+                await _ref.OpenChannel(channel, (a, c) => a.ImportSeriesToStorage(c, key, settings));
+                return channel;
+            }
+
             protected async Task SyncStorageSeries()
             {
                 var snapshot = await _ref.Call(a =>

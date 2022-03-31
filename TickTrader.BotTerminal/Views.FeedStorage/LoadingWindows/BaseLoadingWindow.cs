@@ -14,8 +14,10 @@ namespace TickTrader.BotTerminal.SymbolManager
 
         public BoolProperty ShowProgressUi { get; }
 
-        protected BoolVar IsReadyProgress { get; }
+        protected virtual BoolVar IsReadyProgress { get; set; }
 
+
+        public FileViewManager FileManager { get; }
 
         public ActionViewModel ProgressObserver { get; }
 
@@ -28,6 +30,7 @@ namespace TickTrader.BotTerminal.SymbolManager
 
             ProgressObserver = new ActionViewModel();
             DateRange = new DateRangeSelectionViewModel();
+            FileManager = new FileViewManager(_varContext, DateRange);
 
             _isRangeLoaded = _varContext.AddBoolProperty();
 

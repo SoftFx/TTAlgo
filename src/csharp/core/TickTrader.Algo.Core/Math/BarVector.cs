@@ -5,7 +5,7 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
 {
-    public class BarVector : IReadOnlyList<BarData>
+    public class BarVector : IReadOnlyList<BarData>, ICollection<BarData>
     {
         private readonly List<BarData> _list = new List<BarData>();
         private readonly BarSequenceBuilder _builder;
@@ -98,6 +98,34 @@ namespace TickTrader.Algo.Core
         IEnumerator IEnumerable.GetEnumerator()
         {
             return _list.GetEnumerator();
+        }
+
+
+        bool ICollection<BarData>.IsReadOnly => false;
+
+        void ICollection<BarData>.Add(BarData item)
+        {
+            AppendBarPart(item);
+        }
+
+        void ICollection<BarData>.Clear()
+        {
+            _list.Clear();
+        }
+
+        bool ICollection<BarData>.Contains(BarData item)
+        {
+            return _list.Contains(item);
+        }
+
+        void ICollection<BarData>.CopyTo(BarData[] array, int arrayIndex)
+        {
+            _list.CopyTo(array, arrayIndex);
+        }
+
+        bool ICollection<BarData>.Remove(BarData item)
+        {
+            return _list.Remove(item);
         }
     }
 }

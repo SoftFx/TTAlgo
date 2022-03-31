@@ -32,6 +32,26 @@ namespace TickTrader.BotTerminal
             await LoadingChannelHadler(tickEnumerator, observer, "ticks", "downloading");
         }
 
+
+        public static async Task ImportBarWithObserver(this ISymbolData symbol, IActionObserver observer, IImportSeriesSettings settings, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide)
+        {
+            observer.SetMessage($"Downloading bars {symbol.Name} {timeframe} {marketSide}");
+
+            var barEnumerator = await symbol.ImportBarSeriesToStorage(settings, timeframe, marketSide);
+
+            await LoadingChannelHadler(barEnumerator, observer, "bars", "importing", false);
+        }
+
+        public static async Task ImportTicksWithObserver(this ISymbolData symbol, IActionObserver observer, IImportSeriesSettings settings, Feed.Types.Timeframe timeFrame)
+        {
+            observer.SetMessage($"Downloading ticks {symbol.Name} {timeFrame}");
+
+            var tickEnumerator = await symbol.ImportTickSeriesToStorage(settings, timeFrame);
+
+            await LoadingChannelHadler(tickEnumerator, observer, "ticks", "importing", false);
+        }
+
+
         public static async Task ExportSeriesWithObserver(this IStorageSeries series, IActionObserver observer, IExportSeriesSettings settings)
         {
             observer.SetMessage($"Export series {series.Key.FullInfo}");
@@ -54,7 +74,7 @@ namespace TickTrader.BotTerminal
             return (from, to);
         }
 
-        private static async Task LoadingChannelHadler(ActorChannel<ISliceInfo> channel, IActionObserver observer, string entityName, string action)
+        private static async Task LoadingChannelHadler(ActorChannel<ISliceInfo> channel, IActionObserver observer, string entityName, string action, bool setProgress = true)
         {
             var downloadedCount = 0L;
             var watch = Stopwatch.StartNew();
@@ -80,7 +100,8 @@ namespace TickTrader.BotTerminal
                         }
                     }
 
-                    observer.SetProgress(info.To.GetAbsoluteDay());
+                    if (setProgress)
+                        observer.SetProgress(info.To.GetAbsoluteDay());
 
                     if (observer.CancelationToken.IsCancellationRequested)
                     {

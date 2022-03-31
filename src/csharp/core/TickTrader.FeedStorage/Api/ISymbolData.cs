@@ -1,5 +1,4 @@
 ﻿using ActorSharp;
-using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -55,8 +54,12 @@ namespace TickTrader.FeedStorage.Api
         Task<ActorChannel<ISliceInfo>> DownloadTickSeriesToStorage(Feed.Types.Timeframe timeframe, DateTime from, DateTime to);
 
 
-        void WriteSlice(Feed.Types.Timeframe frame, Feed.Types.MarketSide priceType, Timestamp from, Timestamp to, BarData[] values);
+        Task<ActorChannel<ISliceInfo>> ImportBarSeriesToStorage(IImportSeriesSettings settings, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide);
 
-        void WriteSlice(Feed.Types.Timeframe timeFrame, Timestamp from, Timestamp to, QuoteInfo[] values);
+        Task<ActorChannel<ISliceInfo>> ImportTickSeriesToStorage(IImportSeriesSettings settings, Feed.Types.Timeframe timeframe);
+
+        //void WriteSlice(Feed.Types.Timeframe frame, Feed.Types.MarketSide priceType, Timestamp from, Timestamp to, BarData[] values);
+
+        //void WriteSlice(Feed.Types.Timeframe timeFrame, Timestamp from, Timestamp to, QuoteInfo[] values);
     }
 }

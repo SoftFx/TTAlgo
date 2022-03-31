@@ -87,14 +87,20 @@ namespace TickTrader.FeedStorage.StorageBase
 
         private async void ExportSeriesToStorage(ActorChannel<ISliceInfo> stream, FeedCacheKey key, IExportSeriesSettings settings)
         {
-            IFileHandler fileHandler;
+            await GetFileHandler(key, settings).ExportSeries(stream, settings);
+        }
 
+        private async void ImportSeriesToStorage(ActorChannel<ISliceInfo> stream, FeedCacheKey key, IImportSeriesSettings settings)
+        {
+            await GetFileHandler(key, settings).ImportSeries(stream, settings);
+        }
+
+        private IFileHandler GetFileHandler(FeedCacheKey key, IBaseFileSeriesSettings settings)
+        {
             if (key.TimeFrame.IsTick())
-                fileHandler = new TickFileHandler(this, _formatters[settings.FileType], key, settings);
+                return new TickFileHandler(this, _formatters[settings.FileType], key, settings);
             else
-                fileHandler = new BarFileHandler(this, _formatters[settings.FileType], key, settings);
-
-            await fileHandler.ExportSeries(stream);
+                return new BarFileHandler(this, _formatters[settings.FileType], key, settings);
         }
 
         protected IEnumerable<KeyRange<DateTime>> IterateCacheKeysInternal(FeedCacheKey cacheId, DateTime from, DateTime to)
@@ -124,7 +130,7 @@ namespace TickTrader.FeedStorage.StorageBase
             return new List<KeyRange<DateTime>>();
         }
 
-        protected void Put<T>(FeedCacheKey key, DateTime from, DateTime to, T[] values)
+        internal void Put<T>(FeedCacheKey key, DateTime from, DateTime to, T[] values)
         {
             var collection = GetSeries<T>(key, true);
             collection.Write(from, to, values);

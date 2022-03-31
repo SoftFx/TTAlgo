@@ -60,14 +60,8 @@ namespace TickTrader.BotTerminal.SymbolManager
             SubscribeHandlersToCollection(_catalog.CustomCollection);
 
             _varContext.TriggerOnChange(FilterString.Var, _ => AllSymbolsView.Refresh());
-
-            //_varContext.TriggerOn(clientModel.IsConnected, () =>
-            //{
-            //    _onlineSymbols.Clear();
-            //    foreach (var i in clientModel.Symbols.Snapshot)
-            //        _onlineSymbols.Add(i.Key, i.Value);
-            //});
         }
+
 
         private void SubscribeHandlersToCollection(ISymbolCollection collection)
         {
@@ -106,18 +100,24 @@ namespace TickTrader.BotTerminal.SymbolManager
         }
 
 
-        public void Download() => Download(SelectedSymbol.Value?.Model);
+        public void Download() => Download(SelectedSymbol.Value?.Model ?? _allSymbols.FirstOrDefault()?.Model);
 
-        public void Import() => Import(SelectedSymbol.Value?.Model);
+        public void Import() => Import(SelectedSymbol.Value?.Model ?? _allSymbols.FirstOrDefault()?.Model);
+
 
         public async void Download(ISymbolData symbol)
         {
-            await _wndManager.ShowDialog(new FeedDownloadViewModel(_catalog, symbol), this);
+            await _wndManager.ShowDialog(new FeedDownloadViewModel(_catalog, symbol, this), this);
         }
 
         public async void Import(ISymbolData symbol)
         {
             await _wndManager.ShowDialog(new FeedImportViewModel(_catalog, symbol), this);
+        }
+
+        public async void Export(ISeriesKey key)
+        {
+            await _wndManager.ShowDialog(new FeedExportViewModel(_catalog.OnlineCollection[key.Symbol].Series[key]), this);
         }
 
 
@@ -154,13 +154,6 @@ namespace TickTrader.BotTerminal.SymbolManager
             }
         }
 
-        public async void Export(ISeriesKey key)
-        {
-            var smb = _catalog.OnlineCollection[key.Symbol];
-
-            if (smb != null)
-                await _wndManager.ShowDialog(new FeedExportViewModel(smb.Series[key]), this);
-        }
 
         public void RemoveSymbol(ISymbolData symbolModel)
         {
@@ -173,6 +166,7 @@ namespace TickTrader.BotTerminal.SymbolManager
             var actionModel = new ActionDialogViewModel("Removing series...", () => series.Remove());
             _wndManager.ShowDialog(actionModel, this);
         }
+
 
         private bool HasSymbol(string smbName)
         {

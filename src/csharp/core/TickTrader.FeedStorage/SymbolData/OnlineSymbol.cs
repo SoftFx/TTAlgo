@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ActorSharp;
+using System;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage.Api;
@@ -8,7 +9,7 @@ namespace TickTrader.FeedStorage
 {
     internal sealed class OnlineSymbol : BaseSymbol
     {
-        private readonly new OnlineFeedStorage.Handler _storage;
+        private new readonly OnlineFeedStorage.Handler _storage;
 
 
         public override bool IsDownloadAvailable => _storage.FeedProxy.IsAvailable;
@@ -27,14 +28,14 @@ namespace TickTrader.FeedStorage
             return _storage.FeedProxy.GetAvailableSymbolRange(Name, timeFrame, priceType ?? Feed.Types.MarketSide.Bid);
         }
 
-        public override Task<ActorSharp.ActorChannel<ISliceInfo>> DownloadBarSeriesToStorage(Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide, DateTime from, DateTime to)
+        public override Task<ActorChannel<ISliceInfo>> DownloadBarSeriesToStorage(Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide, DateTime from, DateTime to)
         {
-            return _storage?.DownloadSeriesToStorage(new FeedCacheKey(Name, timeframe, marketSide), from, to);
+            return _storage?.DownloadSeriesToStorage(GetKey(timeframe, marketSide), from, to);
         }
 
-        public override Task<ActorSharp.ActorChannel<ISliceInfo>> DownloadTickSeriesToStorage(Feed.Types.Timeframe timeframe, DateTime from, DateTime to)
+        public override Task<ActorChannel<ISliceInfo>> DownloadTickSeriesToStorage(Feed.Types.Timeframe timeframe, DateTime from, DateTime to)
         {
-            return _storage?.DownloadSeriesToStorage(new FeedCacheKey(Name, timeframe), from, to);
+            return _storage?.DownloadSeriesToStorage(GetKey(timeframe), from, to);
         }
     }
 }

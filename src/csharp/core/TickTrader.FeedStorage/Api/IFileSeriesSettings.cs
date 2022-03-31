@@ -8,7 +8,8 @@ namespace TickTrader.FeedStorage.Api
         Txt,
     }
 
-    public interface IExportSeriesSettings
+
+    public interface IBaseFileSeriesSettings
     {
         SeriesFileExtensionsOptions FileType { get; }
 
@@ -17,13 +18,19 @@ namespace TickTrader.FeedStorage.Api
         char Separator { get; }
 
         string TimeFormat { get; }
+    }
 
+
+    public interface IExportSeriesSettings : IBaseFileSeriesSettings
+    {
         DateTime From { get; }
 
         DateTime To { get; }
     }
 
-    public interface IImportSeriesSettings
+
+    public interface IImportSeriesSettings : IBaseFileSeriesSettings
     {
+        bool SkipHeaderLine { get; }
     }
 }

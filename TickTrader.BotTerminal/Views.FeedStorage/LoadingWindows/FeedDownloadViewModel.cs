@@ -1,48 +1,25 @@
 ﻿using Machinarium.Var;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
+using TickTrader.FeedStorage;
 using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.BotTerminal.SymbolManager
 {
-    internal sealed class FeedDownloadViewModel : BaseLoadingWindow
+    internal sealed class FeedDownloadViewModel : BaseSymbolsLoadingWindow
     {
-        private readonly ISymbolCatalog _catalog;
-
-
-        public IEnumerable<Feed.Types.Timeframe> AvailableTimeFrames { get; } = TimeFrameModel.AllTimeFrames;
-
-        public IEnumerable<Feed.Types.MarketSide> AvailablePriceTypes { get; } = EnumHelper.AllValues<Feed.Types.MarketSide>();
-
-        public IEnumerable<ISymbolData> Symbols { get; }
-
-
-        public Property<ISymbolData> SelectedSymbol { get; }
-
-        public Property<Feed.Types.Timeframe> SelectedTimeFrame { get; }
-
-        public Property<Feed.Types.MarketSide> SelectedPriceType { get; }
+        private readonly SymbolManagerViewModel _smbManager;
 
 
         public BoolVar DownloadEnabled { get; }
 
-        public BoolVar IsSelectedTick { get; }
 
-
-        public FeedDownloadViewModel(ISymbolCatalog catalog, ISymbolData symbol) : base("Pre-download symbol")
+        public FeedDownloadViewModel(ISymbolCatalog catalog, ISymbolData symbol, SymbolManagerViewModel smbManager) : base(catalog, symbol, "Pre-download symbol")
         {
-            _catalog = catalog;
+            _smbManager = smbManager;
 
-            Symbols = catalog.AllSymbols;
-
-            SelectedTimeFrame = _varContext.AddProperty(Feed.Types.Timeframe.M1);
-            SelectedPriceType = _varContext.AddProperty(Feed.Types.MarketSide.Bid);
-            SelectedSymbol = _varContext.AddProperty(symbol);
-
-            IsSelectedTick = !SelectedTimeFrame.Var.IsTicks();
             DownloadEnabled = (SelectedSymbol.Value?.IsDownloadAvailable ?? false) & IsReadyProgress;
 
             _varContext.TriggerOnChange(SelectedSymbol.Var, UpdateAvailableRange);
@@ -53,6 +30,11 @@ namespace TickTrader.BotTerminal.SymbolManager
         {
             ShowProgressUi.Value = true;
             ProgressObserver.Start(DownloadAsync);
+        }
+
+        public void Export()
+        {
+            _smbManager.Export(new FeedCacheKey(SelectedSymbol.Value?.Name, SelectedTimeFrame.Value, SelectedPriceType.Value));
         }
 
 

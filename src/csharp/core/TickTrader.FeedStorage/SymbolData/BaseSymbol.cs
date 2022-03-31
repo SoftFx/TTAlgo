@@ -55,6 +55,17 @@ namespace TickTrader.FeedStorage
         public abstract Task<ActorChannel<ISliceInfo>> DownloadTickSeriesToStorage(Feed.Types.Timeframe timeframe, DateTime from, DateTime to);
 
 
+        public Task<ActorChannel<ISliceInfo>> ImportBarSeriesToStorage(IImportSeriesSettings settings, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide)
+        {
+            return _storage?.ImportSeriesWithFile(GetKey(timeframe, marketSide), settings);
+        }
+
+        public Task<ActorChannel<ISliceInfo>> ImportTickSeriesToStorage(IImportSeriesSettings settings, Feed.Types.Timeframe timeframe)
+        {
+            return _storage?.ImportSeriesWithFile(GetKey(timeframe), settings);
+        }
+
+
         internal void AddSeries(FeedCacheKey key)
         {
             if (_series.ContainsKey(key))
@@ -97,6 +108,11 @@ namespace TickTrader.FeedStorage
         //    var seriesKey = new FeedCacheKey(Name, timeFrame, priceType);
         //    return _storage.IterateBarCache(seriesKey, from, to);
         //}
+
+        protected FeedCacheKey GetKey(Feed.Types.Timeframe timeframe, Feed.Types.MarketSide? side = null)
+        {
+            return new FeedCacheKey(Name, timeframe, side);
+        }
 
         [Conditional("DEBUG")]
         public void PrintCacheData(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide? priceType)

@@ -24,10 +24,12 @@
         <Grid Background="{TemplateBinding Background}" IsEnabled="{bot:ValidationBinding IsReadyProgress.Value}">
             <StackPanel Margin="5">
                 <Label Content="Format:"/>
-                <ComboBox SelectedItem="{Binding SelectedFormat.Value}" ItemsSource="{Binding FileFormats}"/>
+                <ComboBox SelectedItem="{Binding FileManager.SelectedFormat.Value}" ItemsSource="{Binding FileManager.FileFormats}"/>
+
                 <GroupBox Name="RangeSelectionGroup" Padding="4" Header="Range">
                     <ContentControl cal:View.Model="{Binding DateRange}"/>
                 </GroupBox>
+
                 <GroupBox Header="Setup" Padding="4">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -37,17 +39,17 @@
                         </Grid.ColumnDefinitions>
                         <Label Grid.Column="0" Content="File Name:"/>
                         <TextBlock Grid.Column="1"
-                               Text="{Binding FileName.Value}"
-                               ToolTip="{Binding FileName.Value}"/>
+                               Text="{Binding FileManager.FileName.Value}"
+                               ToolTip="{Binding FileManager.FileName.Value}"/>
                         <bot:FlatButton Grid.Column="2" 
                                   Content="..." 
                                   Style="{DynamicResource ParamUtilityButtonStyle}" 
                                   Padding="3 0 3 0"
                                   Height="22">
                             <i:Interaction.Behaviors>
-                                <bot:SaveFileDialogBeahvior FilePath="{bot:ValidationBinding SelectedFolder.Value}" 
-                                                            FileName="{bot:ValidationBinding FileName.Value}"
-                                                            Filter="{bot:ValidationBinding FileFilter.Value}"/>
+                                <bot:SaveFileDialogBeahvior FilePath="{bot:ValidationBinding FileManager.SelectedFolder.Value}" 
+                                                            FileName="{bot:ValidationBinding FileManager.FileName.Value}"
+                                                            Filter="{bot:ValidationBinding FileManager.FileFilter.Value}"/>
                             </i:Interaction.Behaviors>
                         </bot:FlatButton>
                     </Grid>
