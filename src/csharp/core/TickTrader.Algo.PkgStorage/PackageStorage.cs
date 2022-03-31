@@ -12,9 +12,9 @@ using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Package;
 
-namespace TickTrader.Algo.Server
+namespace TickTrader.Algo.PkgStorage
 {
-    internal class PackageVersionUpdate
+    public class PackageVersionUpdate
     {
         public string PkgId { get; }
 
@@ -28,7 +28,7 @@ namespace TickTrader.Algo.Server
     }
 
 
-    internal class PackageStorage
+    public class PackageStorage
     {
         private static readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<PackageStorage>();
 
@@ -179,7 +179,7 @@ namespace TickTrader.Algo.Server
             {
                 if (File.Exists(pkgPath))
                     File.Delete(pkgPath);
-                File.Move(pkgFilePath, pkgPath);
+                File.Copy(pkgFilePath, pkgPath);
             }
             catch (Exception ex)
             {
@@ -208,8 +208,7 @@ namespace TickTrader.Algo.Server
             }
         }
 
-
-        internal PackageRef GetPkgRef(string pkgId)
+        public PackageRef GetPkgRef(string pkgId)
         {
             TryGetPkgRefByPkgId(pkgId, out var pkgRef);
             return pkgRef;

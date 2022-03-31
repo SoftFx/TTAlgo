@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 
-namespace TickTrader.Algo.Server
+namespace TickTrader.Algo.PkgStorage
 {
     public class PkgStorageSettings
     {

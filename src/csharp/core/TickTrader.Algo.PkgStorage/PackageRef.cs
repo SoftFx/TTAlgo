@@ -1,9 +1,9 @@
 ﻿using System.Threading;
 using TickTrader.Algo.Domain;
 
-namespace TickTrader.Algo.Server
+namespace TickTrader.Algo.PkgStorage
 {
-    internal class PackageRef
+    public class PackageRef
     {
         private readonly SynchronizationContext _syncContext;
         private int _refCnt;

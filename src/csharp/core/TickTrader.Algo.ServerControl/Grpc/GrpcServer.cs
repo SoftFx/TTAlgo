@@ -942,6 +942,9 @@ namespace TickTrader.Algo.ServerControl.Grpc
 
                 var pkgId = await _algoServer.UploadPackage(request.ToServer(), tmpPath);
                 res.PackageId = pkgId;
+
+                if (File.Exists(tmpPath))
+                    File.Delete(tmpPath);
             }
             catch (Exception ex)
             {

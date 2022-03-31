@@ -1,4 +1,6 @@
-﻿namespace TickTrader.Algo.Server
+﻿using TickTrader.Algo.PkgStorage;
+
+namespace TickTrader.Algo.Server
 {
     public class AlgoServerSettings
     {
