@@ -133,13 +133,6 @@ namespace TickTrader.FeedStorage.StorageBase
                 _symbols.Updated -= SendCollectionUpdates;
             }
 
-            //public Task Put(FeedCacheKey key, DateTime from, DateTime to, BarData[] values)
-            //    => _ref.Call(a => a.Put(key, from, to, values));
-
-            //public Task Put(string symbol, Feed.Types.Timeframe frame, Feed.Types.MarketSide marketSide, DateTime from, DateTime to, BarData[] values)
-            //    => Put(new FeedCacheKey(symbol, frame, marketSide), from, to, values);
-
-
 
             public Task<(DateTime?, DateTime?)> GetRange(FeedCacheKey key) => _ref.Call(a => a.GetRange(key));
 

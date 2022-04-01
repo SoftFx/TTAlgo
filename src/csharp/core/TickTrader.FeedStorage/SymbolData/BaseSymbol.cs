@@ -1,5 +1,4 @@
 ﻿using ActorSharp;
-using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -92,23 +91,6 @@ namespace TickTrader.FeedStorage
             SeriesUpdated?.Invoke(series);
         }
 
-
-        public void WriteSlice(Feed.Types.Timeframe frame, Feed.Types.MarketSide priceType, Timestamp from, Timestamp to, BarData[] values)
-        {
-            //_storage.Put(Name, frame, priceType, from.ToDateTime(), to.ToDateTime(), values).Wait();
-        }
-
-        public void WriteSlice(Feed.Types.Timeframe timeFrame, Timestamp from, Timestamp to, QuoteInfo[] values)
-        {
-            //_storage.Put(Name, timeFrame, from.ToDateTime(), to.ToDateTime(), values).Wait();
-        }
-
-        //public BlockingChannel<Slice<DateTime, BarData>> ReadCachedBars(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide priceType, DateTime from, DateTime to)
-        //{
-        //    var seriesKey = new FeedCacheKey(Name, timeFrame, priceType);
-        //    return _storage.IterateBarCache(seriesKey, from, to);
-        //}
-
         protected FeedCacheKey GetKey(Feed.Types.Timeframe timeframe, Feed.Types.MarketSide? side = null)
         {
             return new FeedCacheKey(Name, timeframe, side);
@@ -120,12 +102,6 @@ namespace TickTrader.FeedStorage
             var seriesKey = new FeedCacheKey(Name, timeFrame, priceType);
             _storage.PrintSlices(seriesKey);
         }
-
-        //public virtual void OnRemoved()
-        //{
-        //    _keys.Dispose();
-        //    //SeriesCollection.Dispose();
-        //}
 
 
         string ISymbolKey.Name => Name; // protection for correct object serialization
