@@ -87,7 +87,7 @@
                 <Setter Property="IsEnabled" Value="False" TargetName="SymbolConfigGroup"/>
                 <Setter Property="IsEnabled" Value="False" TargetName="SetupGroup" />
             </DataTrigger>
-            <DataTrigger Binding="{Binding IsSelectedTick.Value}" Value="False">
+            <DataTrigger Binding="{Binding IsSelectedTick.Value}" Value="True">
                 <Setter Property="Visibility" Value="Hidden" TargetName="SideLabel" />
                 <Setter Property="Visibility" Value="Hidden" TargetName="SideCombo" />
             </DataTrigger>

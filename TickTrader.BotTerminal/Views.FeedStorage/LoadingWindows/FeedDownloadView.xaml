@@ -49,7 +49,7 @@
                         <ColumnDefinition />
                     </Grid.ColumnDefinitions>
                     <Button Grid.Column="0" Content="Download" cal:Message.Attach="Download" IsDefault="True" IsEnabled="{Binding DownloadEnabled.Value}"/>
-                    <Button Grid.Column="1" Content="Export" cal:Message.Attach="Export" IsDefault="True" IsEnabled="{Binding DownloadEnabled.Value}"/>
+                    <Button Grid.Column="1" Content="Export" cal:Message.Attach="Export" IsDefault="True" IsEnabled="{Binding ExportEnabled.Value}"/>
                     <Button Grid.Column="2" Content="Cancel" cal:Message.Attach="Cancel" IsCancel="True" IsEnabled="{Binding ProgressObserver.CanCancel.Value}"/>
                 </Grid>
 
@@ -62,7 +62,7 @@
                 <Setter Property="IsEnabled" Value="False" TargetName="SymbolConfigGroup"/>
                 <Setter Property="IsEnabled" Value="False" TargetName="RangeSelectionGroup"/>
             </DataTrigger>
-            <DataTrigger Binding="{Binding IsSelectedTick.Value}" Value="False">
+            <DataTrigger Binding="{Binding IsSelectedTick.Value}" Value="True">
                 <Setter Property="Visibility" Value="Hidden" TargetName="SideCombo"/>
                 <Setter Property="Visibility" Value="Hidden" TargetName="SideLabel"/>
             </DataTrigger>

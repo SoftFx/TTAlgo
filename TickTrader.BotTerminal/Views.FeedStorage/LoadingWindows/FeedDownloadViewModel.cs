@@ -15,14 +15,20 @@ namespace TickTrader.BotTerminal.SymbolManager
 
         public BoolVar DownloadEnabled { get; }
 
+        public BoolProperty ExportEnabled { get; }
+
 
         public FeedDownloadViewModel(ISymbolCatalog catalog, ISymbolData symbol, SymbolManagerViewModel smbManager) : base(catalog, symbol, "Pre-download symbol")
         {
             _smbManager = smbManager;
 
             DownloadEnabled = (SelectedSymbol.Value?.IsDownloadAvailable ?? false) & IsReadyProgress;
+            ExportEnabled = _varContext.AddBoolProperty();
 
             _varContext.TriggerOnChange(SelectedSymbol.Var, UpdateAvailableRange);
+            _varContext.TriggerOnChange(SelectedSymbol.Var, CheckExistingKey);
+            _varContext.TriggerOnChange(SelectedTimeFrame.Var, CheckExistingKey);
+            _varContext.TriggerOnChange(SelectedPriceType.Var, CheckExistingKey);
         }
 
 
@@ -47,6 +53,17 @@ namespace TickTrader.BotTerminal.SymbolManager
             }
         }
 
+        private void CheckExistingKey<T>(VarChangeEventArgs<T> args)
+        {
+            var symbol = SelectedSymbol?.Value;
+            var priceType = SelectedPriceType.Value;
+            var timeframe = SelectedTimeFrame.Value;
+
+            var key = new FeedCacheKey(symbol.Name, timeframe, IsSelectedTick.Value ? (Feed.Types.MarketSide?)null : priceType);
+
+            ExportEnabled.Value = symbol.Series.TryGetValue(key, out _);
+        }
+
         private async Task DownloadAsync(IActionObserver observer)
         {
             var timeFrame = SelectedTimeFrame.Value;
@@ -59,6 +76,8 @@ namespace TickTrader.BotTerminal.SymbolManager
                 await SelectedSymbol.Value.DownloadTicksWithObserver(observer, timeFrame, from, to);
             else
                 await SelectedSymbol.Value.DownloadBarWithObserver(observer, timeFrame, SelectedPriceType.Value, from, to);
+
+            CheckExistingKey<int>(default);
         }
     }
 }

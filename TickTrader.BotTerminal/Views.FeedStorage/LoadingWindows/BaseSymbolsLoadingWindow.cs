@@ -32,7 +32,7 @@ namespace TickTrader.BotTerminal.SymbolManager
             SelectedPriceType = _varContext.AddProperty(Feed.Types.MarketSide.Bid);
             SelectedSymbol = _varContext.AddProperty(symbol);
 
-            IsSelectedTick = !SelectedTimeFrame.Var.IsTicks();
+            IsSelectedTick = SelectedTimeFrame.Var.IsTicks();
         }
     }
 }
