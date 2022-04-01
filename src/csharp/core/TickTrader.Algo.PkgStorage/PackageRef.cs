@@ -31,7 +31,7 @@ namespace TickTrader.Algo.PkgStorage
             PkgBytes = pkgBytes;
             IsObsolete = false;
 
-            _syncContext = SynchronizationContext.Current ?? throw Errors.MissingSynchronizationContext();
+            _syncContext = SynchronizationContext.Current;// ?? throw Errors.MissingSynchronizationContext();
         }
 
 

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net48;net5.0</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\api\TickTrader.Algo.CoreV1\TickTrader.Algo.CoreV1.csproj" />
+    <ProjectReference Condition="'$(TargetFramework)' != 'net5.0'" Include="..\..\core\TickTrader.Algo.Isolation.NetFx\TickTrader.Algo.Isolation.NetFx.csproj" />
+    <ProjectReference Condition="'$(TargetFramework)' == 'net5.0'" Include="..\..\core\TickTrader.Algo.Isolation.NetCore\TickTrader.Algo.Isolation.NetCore.csproj" />
+    <ProjectReference Include="..\..\core\TickTrader.Algo.PkgStorage\TickTrader.Algo.PkgStorage.csproj" />
+    <ProjectReference Include="..\..\lib\TickTrader.Algo.Logging\TickTrader.Algo.Logging.csproj" />
+  </ItemGroup>
+
+</Project>
