@@ -13,7 +13,7 @@ namespace TickTrader.BotTerminal.SymbolManager
         {
             _series = series;
 
-            FileManager.FileName.Value = series.Key.FullInfo;
+            FileManager.SetFileNameWithExtension(series.Key.FullInfo);
 
             UpdateAvailableRange((_series.From, _series.To));
         }

@@ -62,6 +62,13 @@ namespace TickTrader.BotTerminal.SymbolManager
         }
 
 
+        internal void SetFileNameWithExtension(string fileName)
+        {
+            if (!string.IsNullOrEmpty(fileName))
+                FileName.Value = Path.ChangeExtension(fileName, $".{SelectedFormat?.Value.ToString().ToLowerInvariant()}");
+        }
+
+
         private void UpdateFileFilter(SeriesFileExtensionsOptions newOptions)
         {
             switch (newOptions)
@@ -76,7 +83,7 @@ namespace TickTrader.BotTerminal.SymbolManager
                     break;
             }
 
-            FileName.Value = Path.ChangeExtension(FileName.Value, $".{newOptions.ToString().ToLowerInvariant()}");
+            SetFileNameWithExtension(FileName.Value);
         }
     }
 }
