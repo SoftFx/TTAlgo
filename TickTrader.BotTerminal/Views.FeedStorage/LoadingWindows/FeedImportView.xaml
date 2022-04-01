@@ -13,62 +13,65 @@
 
         <Grid Background="{TemplateBinding Background}">
             <StackPanel Margin="5">
-                <Grid Name="SymbolConfigGroup">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="2*" />
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <Label Content="Symbol:" Grid.Row="0" Grid.Column="0"/>
-                    <ComboBox IsEditable="False" Grid.Row="1" Grid.Column="0" Margin="0,0,5,0"
-                              ItemsSource="{Binding Symbols}" DisplayMemberPath="Name" SelectedItem="{Binding SelectedSymbol.Value}"/>
-                    <Label Content="TimeFrame:" Grid.Row="0" Grid.Column="1"/>
-                    <ComboBox IsEditable="False" Grid.Row="1" Grid.Column="1" Margin="0,0,5,0"
-                              ItemsSource="{Binding AvailableTimeFrames}" SelectedItem="{Binding SelectedTimeFrame.Value}"/>
-                    <Label Name="SideLabel" Content="Side:" Grid.Row="0" Grid.Column="2"/>
-                    <ComboBox Name="SideCombo" IsEditable="False" Grid.Row="1" Grid.Column="2"
-                              ItemsSource="{Binding AvailablePriceTypes}" SelectedItem="{Binding SelectedPriceType.Value}"/>
-                </Grid>
-
-                <Label Content="Exported format:"/>
-                <ComboBox SelectedItem="{Binding FileManager.SelectedFormat.Value}" ItemsSource="{Binding FileManager.FileFormats}"/>
-
-                <StackPanel Orientation="Horizontal">
-                    <Label Content="Skip header:"/>
-                    <CheckBox IsChecked="{bot:ValidationBinding FileManager.SkipHeader.Value}" VerticalAlignment="Center" Margin="0 2 0 0"/>
-                </StackPanel>
-
-                <GroupBox Name="SetupGroup" Header="Setup" Padding="4">
-                    <Grid>
+                <StackPanel>
+                    <Grid Name="SymbolConfigGroup">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="20" />
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <Label Grid.Column="0" Content="File Name:"/>
-                        <TextBlock Grid.Column="1"
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Label Content="Symbol:" Grid.Row="0" Grid.Column="0"/>
+                        <ComboBox IsEditable="False" Grid.Row="1" Grid.Column="0" Margin="0,0,5,0"
+                              ItemsSource="{Binding Symbols}" DisplayMemberPath="Name" SelectedItem="{Binding SelectedSymbol.Value}"/>
+                        <Label Content="TimeFrame:" Grid.Row="0" Grid.Column="1"/>
+                        <ComboBox IsEditable="False" Grid.Row="1" Grid.Column="1" Margin="0,0,5,0"
+                              ItemsSource="{Binding AvailableTimeFrames}" SelectedItem="{Binding SelectedTimeFrame.Value}"/>
+                        <Label Name="SideLabel" Content="Side:" Grid.Row="0" Grid.Column="2"/>
+                        <ComboBox Name="SideCombo" IsEditable="False" Grid.Row="1" Grid.Column="2"
+                              ItemsSource="{Binding AvailablePriceTypes}" SelectedItem="{Binding SelectedPriceType.Value}"/>
+                    </Grid>
+
+                    <StackPanel Name="ImportSettings">
+                        <Label Content="Exported format:"/>
+                        <ComboBox SelectedItem="{Binding FileManager.SelectedFormat.Value}" ItemsSource="{Binding FileManager.FileFormats}"/>
+
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Skip header:"/>
+                            <CheckBox IsChecked="{bot:ValidationBinding FileManager.SkipHeader.Value}" VerticalAlignment="Center" Margin="0 2 0 0"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <GroupBox Name="SetupGroup" Header="Setup" Padding="4">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="20" />
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Column="0" Content="File Name:"/>
+                            <TextBlock Grid.Column="1"
                                    Text="{Binding FileManager.FileName.Value}"
                                    ToolTip="{Binding FileManager.FileName.Value}"
                                    VerticalAlignment="Center"/>
-                        <bot:FlatButton Grid.Column="2" 
+                            <bot:FlatButton Grid.Column="2" 
                                   Content="..." 
                                   Style="{DynamicResource ParamUtilityButtonStyle}" 
                                   Padding="3 0 3 0"
                                   Height="22">
-                            <i:Interaction.Behaviors>
-                                <bot:OpenFileDialogBehavior FilePath="{bot:ValidationBinding FileManager.SelectedFolder.Value}" 
-                                                            FileName="{bot:ValidationBinding FileManager.FileName.Value}"
-                                                            Filter="{bot:ValidationBinding FileManager.FileFilter.Value}"/>
-                            </i:Interaction.Behaviors>
-                        </bot:FlatButton>
-                    </Grid>
-                </GroupBox>
-
+                                <i:Interaction.Behaviors>
+                                    <bot:OpenFileDialogBehavior FilePath="{bot:ValidationBinding FileManager.SelectedFolder.Value}" 
+                                                                FileName="{bot:ValidationBinding FileManager.FileName.Value}"
+                                                                Filter="{bot:ValidationBinding FileManager.FileFilter.Value}"/>
+                                </i:Interaction.Behaviors>
+                            </bot:FlatButton>
+                        </Grid>
+                    </GroupBox>
+                </StackPanel>
                 <Grid Name="Buttons">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition />
@@ -85,6 +88,7 @@
         <ControlTemplate.Triggers>
             <DataTrigger Binding="{Binding ProgressObserver.IsRunning.Value}" Value="True">
                 <Setter Property="IsEnabled" Value="False" TargetName="SymbolConfigGroup"/>
+                <Setter Property="IsEnabled" Value="False" TargetName="ImportSettings" />
                 <Setter Property="IsEnabled" Value="False" TargetName="SetupGroup" />
             </DataTrigger>
             <DataTrigger Binding="{Binding IsSelectedTick.Value}" Value="True">

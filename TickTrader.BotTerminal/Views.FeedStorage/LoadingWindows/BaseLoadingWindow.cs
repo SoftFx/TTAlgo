@@ -12,16 +12,16 @@ namespace TickTrader.BotTerminal.SymbolManager
         protected readonly BoolProperty _isRangeLoaded;
 
 
-        public BoolProperty ShowProgressUi { get; }
-
-        protected virtual BoolVar IsReadyProgress { get; set; }
-
-
         public FileViewManager FileManager { get; }
 
         public ActionViewModel ProgressObserver { get; }
 
         public DateRangeSelectionViewModel DateRange { get; }
+
+
+        public BoolProperty ShowProgressUi { get; }
+
+        public BoolVar IsReadyProgress { get; protected set; }
 
 
         internal BaseLoadingWindow(string displayName)
@@ -32,7 +32,7 @@ namespace TickTrader.BotTerminal.SymbolManager
             DateRange = new DateRangeSelectionViewModel();
             FileManager = new FileViewManager(_varContext, DateRange);
 
-            _isRangeLoaded = _varContext.AddBoolProperty();
+            _isRangeLoaded = _varContext.AddBoolProperty(true);
 
             ShowProgressUi = _varContext.AddBoolProperty();
             IsReadyProgress = _isRangeLoaded.Var & !ProgressObserver.IsRunning;

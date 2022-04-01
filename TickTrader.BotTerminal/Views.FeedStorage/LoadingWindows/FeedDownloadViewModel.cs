@@ -35,6 +35,7 @@ namespace TickTrader.BotTerminal.SymbolManager
         public void Download()
         {
             ShowProgressUi.Value = true;
+            ExportEnabled.Value = false;
             ProgressObserver.Start(DownloadAsync);
         }
 

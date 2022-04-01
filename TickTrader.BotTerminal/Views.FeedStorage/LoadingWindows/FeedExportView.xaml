@@ -21,39 +21,41 @@
             </Style>
         </ControlTemplate.Resources>
 
-        <Grid Background="{TemplateBinding Background}" IsEnabled="{bot:ValidationBinding IsReadyProgress.Value}">
+        <Grid Background="{TemplateBinding Background}">
             <StackPanel Margin="5">
-                <Label Content="Format:"/>
-                <ComboBox SelectedItem="{Binding FileManager.SelectedFormat.Value}" ItemsSource="{Binding FileManager.FileFormats}"/>
+                <StackPanel IsEnabled="{bot:ValidationBinding IsReadyProgress.Value}">
+                    <Label Content="Format:"/>
+                    <ComboBox SelectedItem="{Binding FileManager.SelectedFormat.Value}" ItemsSource="{Binding FileManager.FileFormats}"/>
 
-                <GroupBox Name="RangeSelectionGroup" Padding="4" Header="Range">
-                    <ContentControl cal:View.Model="{Binding DateRange}"/>
-                </GroupBox>
+                    <GroupBox Name="RangeSelectionGroup" Padding="4" Header="Range">
+                        <ContentControl cal:View.Model="{Binding DateRange}"/>
+                    </GroupBox>
 
-                <GroupBox Header="Setup" Padding="4">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="20" />
-                        </Grid.ColumnDefinitions>
-                        <Label Grid.Column="0" Content="File Name:"/>
-                        <TextBlock Grid.Column="1"
+                    <GroupBox Header="Setup" Padding="4">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="20" />
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Column="0" Content="File Name:"/>
+                            <TextBlock Grid.Column="1"
                                Text="{Binding FileManager.FileName.Value}"
                                ToolTip="{Binding FileManager.FileName.Value}"/>
-                        <bot:FlatButton Grid.Column="2" 
+                            <bot:FlatButton Grid.Column="2" 
                                   Content="..." 
                                   Style="{DynamicResource ParamUtilityButtonStyle}" 
                                   Padding="3 0 3 0"
                                   Height="22">
-                            <i:Interaction.Behaviors>
-                                <bot:SaveFileDialogBeahvior FilePath="{bot:ValidationBinding FileManager.SelectedFolder.Value}" 
-                                                            FileName="{bot:ValidationBinding FileManager.FileName.Value}"
-                                                            Filter="{bot:ValidationBinding FileManager.FileFilter.Value}"/>
-                            </i:Interaction.Behaviors>
-                        </bot:FlatButton>
-                    </Grid>
-                </GroupBox>
+                                <i:Interaction.Behaviors>
+                                    <bot:SaveFileDialogBeahvior FilePath="{bot:ValidationBinding FileManager.SelectedFolder.Value}" 
+                                                                FileName="{bot:ValidationBinding FileManager.FileName.Value}"
+                                                                Filter="{bot:ValidationBinding FileManager.FileFilter.Value}"/>
+                                </i:Interaction.Behaviors>
+                            </bot:FlatButton>
+                        </Grid>
+                    </GroupBox>
+                </StackPanel>
                 <Grid Name="Buttons" IsEnabled="true">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition />
