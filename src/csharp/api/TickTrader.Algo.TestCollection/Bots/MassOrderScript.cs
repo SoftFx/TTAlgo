@@ -32,6 +32,10 @@ namespace TickTrader.Algo
         [Parameter(DisplayName = "Symbols (csv)")]
         public string SymbolNames { get; set; }
 
+        [Parameter]
+        public bool UseExpiration { get; set; }
+
+
         protected override void Init()
         {
             if (Threads <= 0)
@@ -55,7 +59,7 @@ namespace TickTrader.Algo
             _workers = new Task[Threads];
 
             for (int i = 0; i < Threads; i++)
-                _workers[i] = OpenOrderLoop(symbolsToUse);
+                _workers[i] = OpenOrderLoop(symbolsToUse, i);
 
             HandleCompletion();
         }
@@ -87,9 +91,9 @@ namespace TickTrader.Algo
             return true;
         }
 
-        private async Task OpenOrderLoop(List<Symbol> symbolsToUse)
+        private async Task OpenOrderLoop(List<Symbol> symbolsToUse, int number)
         {
-            var rnd = new Random();
+            var rnd = new Random(UtcNow.Millisecond + number);
 
             while (_openedCount < OrderCount && !IsStopped)
             {
@@ -100,7 +104,12 @@ namespace TickTrader.Algo
                 var price = PickPrice(symbol, OrderType, side);
                 var stopPrice = PickPrice(symbol, OrderType, side);
                 var comment = "mass order " + _openedCount;
-                await OpenOrderAsync(symbol.Name, OrderType, side, OrderVolume, null, price, stopPrice, null, null, comment);
+                DateTime? expiration = null;
+
+                if (UseExpiration)
+                    expiration = DateTime.UtcNow.AddSeconds(rnd.Next());
+
+                await OpenOrderAsync(symbol.Name, OrderType, side, OrderVolume, null, price, stopPrice, null, null, comment, OrderExecOptions.None, null, expiration);
             }
         }
 
