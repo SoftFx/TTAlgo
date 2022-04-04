@@ -11,6 +11,8 @@ namespace TickTrader.FeedStorage.StorageBase
 
         internal virtual void WriteTickFileHeader(StreamWriter writer) { }
 
+        internal virtual void WriteTickL2FileHeader(StreamWriter writer) { }
+
 
         internal virtual void WriteFileTail(StreamWriter writer) { }
     }
@@ -26,6 +28,13 @@ namespace TickTrader.FeedStorage.StorageBase
         }
 
         internal override void WriteTickFileHeader(StreamWriter writer)
+        {
+            var header = new string[] { "Time", "Bid", "Ask" };
+
+            WriteHeader(writer, header);
+        }
+
+        internal override void WriteTickL2FileHeader(StreamWriter writer)
         {
             var header = new string[] { "Time", "BidPrice", "BidVolume", "AskPrice", "AskVolume" };
 

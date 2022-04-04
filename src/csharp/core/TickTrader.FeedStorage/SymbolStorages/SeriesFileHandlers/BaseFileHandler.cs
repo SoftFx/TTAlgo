@@ -138,7 +138,10 @@ namespace TickTrader.FeedStorage.StorageBase
             }
         }
 
-        protected DateTime ParseDate(string str) => DateTime.ParseExact(str, _timeFormat, CultureInfo.InvariantCulture);
+        protected DateTime ParseDate(string str)
+        {
+            return DateTime.SpecifyKind(DateTime.ParseExact(str, _timeFormat, CultureInfo.InvariantCulture), DateTimeKind.Utc);
+        }
 
         protected void ThrowFormatError(int lineNumber) => throw new Exception($"Invalid format at line {lineNumber}");
     }

@@ -15,6 +15,8 @@ namespace TickTrader.FeedStorage.StorageBase
         private const int StackSize = 1 << 8;
 
         private readonly string _doubleSeparator;
+        private readonly bool _isL2Tick;
+
 
         protected override ICollection<QuoteInfo> Vector { get; }
 
@@ -22,6 +24,7 @@ namespace TickTrader.FeedStorage.StorageBase
         public TickFileHandler(FeedStorageBase storage, BaseFileFormatter formatter, FeedCacheKey key, IBaseFileSeriesSettings settings) : base(storage, formatter, key, settings)
         {
             _doubleSeparator = $"{_separator}{_separator}";
+            _isL2Tick = key.TimeFrame == Feed.Types.Timeframe.TicksLevel2;
 
             Vector = new List<QuoteInfo>();
         }
@@ -29,7 +32,7 @@ namespace TickTrader.FeedStorage.StorageBase
 
         protected override void PreloadLogic(StreamWriter writer)
         {
-            _formatter.WriteTickFileHeader(writer);
+            _formatter.WriteTickL2FileHeader(writer);
         }
 
         protected override void PostloadLogic(StreamWriter writer) { }
@@ -49,17 +52,36 @@ namespace TickTrader.FeedStorage.StorageBase
 
                 for (int i = 0; i < Math.Max(bids.Length, asks.Length); i++)
                 {
-                    WriteBand(i, bids);
-                    WriteBand(i, asks);
+                    if (_isL2Tick)
+                    {
+                        WriteBandL2(i, bids);
+                        WriteBandL2(i, asks);
+                    }
+                    else
+                    {
+                        WriteBand(i, bids);
+                        WriteBand(i, asks);
+                    }
                 }
 
                 _writer.WriteLine();
             }
         }
 
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void WriteBand(int index, ReadOnlySpan<QuoteBand> band)
+        {
+            if (index < band.Length)
+            {
+                _writer.Write(_separator);
+                _writer.Write(band[index].Price);
+            }
+            else
+                _writer.Write(_separator);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void WriteBandL2(int index, ReadOnlySpan<QuoteBand> band)
         {
             if (index < band.Length)
             {
@@ -72,7 +94,30 @@ namespace TickTrader.FeedStorage.StorageBase
                 _writer.Write(_doubleSeparator);
         }
 
+
         protected override QuoteInfo ReadSlice(string line, int lineNumber)
+        {
+            return _isL2Tick ? ReadL2Slice(line, lineNumber) : ReadTick(line, lineNumber);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private QuoteInfo ReadTick(string line, int lineNumber)
+        {
+            var parts = line.Split(_separator);
+
+            if (parts.Length != 3)
+                ThrowFormatError(lineNumber);
+
+            var time = ParseDate(parts[0]);
+
+            var bid = double.Parse(parts[1]);
+            var ask = double.Parse(parts[2]);
+
+            return new QuoteInfo(string.Empty, time, bid, ask);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private QuoteInfo ReadL2Slice(string line, int lineNumber)
         {
             var parts = line.Split(_separator);
             var maxDepth = (parts.Length - 1) % 4;
@@ -88,7 +133,7 @@ namespace TickTrader.FeedStorage.StorageBase
                 ? new QuoteBand[maxDepth]
                 : stackalloc QuoteBand[maxDepth];
 
-            var time = DateTime.Parse(parts[0]);
+            var time = ParseDate(parts[0]);
 
             var bidDepth = 0;
             var askDepth = 0;
@@ -97,10 +142,11 @@ namespace TickTrader.FeedStorage.StorageBase
             {
                 // partsSpan[2] and partsSpan[3] should both have empty strings if band is not present
                 // checking partsSpan[3] should eliminate further bound checks
-                if (!string.IsNullOrEmpty(partsSpan[3]))
-                    asks[askDepth++] = new QuoteBand(double.Parse(partsSpan[2]), double.Parse(partsSpan[3]));
                 if (!string.IsNullOrEmpty(partsSpan[1]))
                     bids[bidDepth++] = new QuoteBand(double.Parse(partsSpan[0]), double.Parse(partsSpan[1]));
+
+                if (!string.IsNullOrEmpty(partsSpan[3]))
+                    asks[askDepth++] = new QuoteBand(double.Parse(partsSpan[2]), double.Parse(partsSpan[3]));
             }
 
             var data = new QuoteData
