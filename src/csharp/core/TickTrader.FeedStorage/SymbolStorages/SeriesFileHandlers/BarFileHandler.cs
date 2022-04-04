@@ -35,7 +35,7 @@ namespace TickTrader.FeedStorage.StorageBase
 
             foreach (var val in values)
             {
-                _writer.Write(val.OpenTime.ToUtcDateTime().ToString(_timeFormat));
+                _writer.Write(val.CloseTime.ToUtcDateTime().ToString(_timeFormat));
                 _writer.Write(_separator);
                 _writer.Write(val.Open);
                 _writer.Write(_separator);
