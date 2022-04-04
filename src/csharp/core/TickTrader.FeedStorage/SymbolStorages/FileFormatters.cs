@@ -22,7 +22,7 @@ namespace TickTrader.FeedStorage.StorageBase
     {
         internal override void WriteBarFileHeader(StreamWriter writer)
         {
-            var header = new string[] { "Time", "Open", "High", "Low", "Close", "Volume" };
+            var header = new string[] { "Time", "Open", "High", "Low", "Close", "Ticks count" };
 
             WriteHeader(writer, header);
         }
