@@ -73,7 +73,7 @@ namespace TickTrader.FeedStorage.StorageBase
 
                     foreach (var slice in _storage.GetSeries<T>(_key)?.IterateSlices(from, to))
                     {
-                        hasData &= slice.Content.Count > 0;
+                        hasData |= slice.Content.Count > 0;
                         WriteSliceToStream(slice.Content);
 
                         if (!await buffer.Write(new SliceInfo(slice.From, slice.To, slice.Content.Count)))
