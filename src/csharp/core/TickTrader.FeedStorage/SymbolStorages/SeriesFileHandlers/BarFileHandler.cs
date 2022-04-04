@@ -54,7 +54,7 @@ namespace TickTrader.FeedStorage.StorageBase
             var parts = line.Split(_separator);
 
             if (parts.Length != 6)
-                throw new Exception($"Invalid record at line {lineNumber}");
+                ThrowFormatError(lineNumber);
 
             var time = new UtcTicks(ParseDate(parts[0]).ToUniversalTime().Ticks);
 

@@ -78,7 +78,7 @@ namespace TickTrader.FeedStorage.StorageBase
             var maxDepth = (parts.Length - 1) % 4;
 
             if (parts.Length < 5 || maxDepth != 0)
-                throw new Exception($"Invalid record at line {lineNumber}");
+                ThrowFormatError(lineNumber);
 
             var asks = maxDepth > StackSize
                 ? new QuoteBand[maxDepth]

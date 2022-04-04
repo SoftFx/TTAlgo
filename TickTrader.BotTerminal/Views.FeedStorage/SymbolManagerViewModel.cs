@@ -117,7 +117,12 @@ namespace TickTrader.BotTerminal.SymbolManager
 
         public async void Export(ISeriesKey key)
         {
-            await _wndManager.ShowDialog(new FeedExportViewModel(_catalog.OnlineCollection[key.Symbol].Series[key]), this);
+            ISymbolData smb = _catalog.OnlineCollection[key.Symbol]; //TO DO: change after include origin in ISeriesKey
+
+            if (smb == null || !smb.Series.ContainsKey(key))
+                smb = _catalog.CustomCollection[key.Symbol];
+
+            await _wndManager.ShowDialog(new FeedExportViewModel(smb.Series[key]), this);
         }
 
 
