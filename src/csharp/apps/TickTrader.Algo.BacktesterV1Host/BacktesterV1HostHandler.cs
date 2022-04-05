@@ -107,12 +107,6 @@ namespace TickTrader.Algo.BacktesterV1Host
             return true;
         }
 
-        private void BacktesterStoppedNotificationHandler(Any payload)
-        {
-            var msg = payload.Unpack<BacktesterStoppedMsg>();
-            _backtester.Tell(msg);
-        }
-
 
         private static Emulator.Types.State Convert(EmulatorStates state)
         {
