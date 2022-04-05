@@ -38,6 +38,8 @@ var backtesterApiProjectPath = sourcesDirPath.CombineWithFilePath("src/csharp/co
 var backtesterApiBinPath = outputPath.Combine("backtester-api");
 var backtesterHostProjectPath = sourcesDirPath.CombineWithFilePath("src/csharp/apps/TickTrader.Algo.BacktesterV1Host/TickTrader.Algo.BacktesterV1Host.csproj");
 var backtesterHostBinPath = outputPath.Combine("backtester-host");
+var pkgStorageProjectPath = sourcesDirPath.CombineWithFilePath("src/csharp/core/TickTrader.Algo.PkgStorage/TickTrader.Algo.PkgStorage.csproj");
+var pkgStorageBinPath = outputPath.Combine("pkg-storage");
 var vsExtensionPath = sourcesDirPath.CombineWithFilePath($"src/csharp/sdk/TickTrader.Algo.VS.Package/bin/{configuration}/TickTrader.Algo.VS.Package.vsix");
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -336,6 +338,30 @@ Task("PublishBacktesterHost")
    }
 });
 
+Task("PublishPkgStorage")
+   .IsDependentOn("Test")
+   .Does(() =>
+{
+   var block = BuildSystem.IsRunningOnTeamCity ? TeamCity.Block("PublishPkgStorage") : null;
+
+   try
+   {
+      DotNetPublish(pkgStorageProjectPath.FullPath, new DotNetPublishSettings {
+         Configuration = configuration,
+         Verbosity = details,
+         NoBuild = true,
+         OutputDirectory = pkgStorageBinPath,
+         Framework = "net472"
+      });
+
+      DeleteFiles(pkgStorageBinPath.CombineWithFilePath("libgrpc_csharp_ext*").ToString());
+   }
+   finally
+   {
+      block?.Dispose();
+   }
+});
+
 Task("PublishAllProjects")
    .IsDependentOn("PublishTerminal")
    .IsDependentOn("PublishConfigurator")
@@ -343,7 +369,8 @@ Task("PublishAllProjects")
    .IsDependentOn("PublishPublicApi")
    .IsDependentOn("PublishSymbolStorage")
    .IsDependentOn("PublishBacktesterApi")
-   .IsDependentOn("PublishBacktesterHost");
+   .IsDependentOn("PublishBacktesterHost")
+   .IsDependentOn("PublishPkgStorage");
 
 Task("PrepareArtifacts")
    .IsDependentOn("PublishAllProjects")
@@ -387,6 +414,7 @@ Task("ZipArtifacts")
       Zip(symbolStorageBinPath, artifactsPath.CombineWithFilePath($"SymbolStorage {buildId}.x64.zip"));
       Zip(backtesterApiBinPath, artifactsPath.CombineWithFilePath($"BacktesterApi {buildId}.zip"));
       Zip(backtesterHostBinPath, artifactsPath.CombineWithFilePath($"BacktesterV1Host {buildId}.x64.zip"));
+      Zip(pkgStorageBinPath, artifactsPath.CombineWithFilePath($"PkgStorage {buildId}.net472.zip"));
    }
    finally
    {
