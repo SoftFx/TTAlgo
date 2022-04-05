@@ -1,7 +1,9 @@
 ﻿using System.Threading.Tasks;
 using TickTrader.Algo.Async;
 using TickTrader.Algo.Async.Actors;
+using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Domain;
+using TickTrader.Algo.Package;
 using TickTrader.Algo.ServerControl;
 using PublicApi = TickTrader.Algo.Server.PublicAPI;
 
@@ -59,6 +61,18 @@ namespace TickTrader.Algo.PkgStorage
         public void UploadPackage(PublicApi.UploadPackageRequest request, string pkgFilePath) => _pkgStorage.UploadPackage(request.ToServer(), pkgFilePath);
 
         public void RemovePackage(PublicApi.RemovePackageRequest request) => _pkgStorage.RemovePackage(request.ToServer());
+
+
+        static PkgStoragePublic()
+        {
+            PackageExplorer.Init(PackageV1Explorer.Create());
+#if NET472_OR_GREATER
+            PackageLoadContext.Init(Isolation.NetFx.PackageLoadContextProvider.Create);
+#endif
+#if NET5_0_OR_GREATER
+            PackageLoadContext.Init(Isolation.NetCore.PackageLoadContextProvider.Create);
+#endif
+        }
 
 
         private class EventBus : Actor

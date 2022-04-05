@@ -1,12 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.CoreV1;
-#if NET5_0_OR_GREATER
-using TickTrader.Algo.Isolation.NetCore;
-#else
-using TickTrader.Algo.Isolation.NetFx;
-#endif
 using TickTrader.Algo.Logging;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.PkgStorage;
@@ -18,8 +12,6 @@ namespace PkgStorageUsageExample
         static void Main(string[] args)
         {
             AlgoLoggerFactory.Init(ConsoleLoggerAdapter.Create);
-            PackageLoadContext.Init(PackageLoadContextProvider.Create);
-            PackageExplorer.Init(PackageV1Explorer.Create());
 
             RunPkgStorage(args[0]).Wait();
         }
