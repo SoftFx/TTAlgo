@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Backtester;
 using TickTrader.Algo.BacktesterApi;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Domain;
@@ -93,7 +94,7 @@ namespace TickTrader.Algo.BacktesterV1Host
 
             if (_cancelTokenSrc != null)
             {
-                _cancelTokenSrc?.Cancel();
+                _cancelTokenSrc.Cancel();
                 _cancelTokenSrc = null;
             }
         }
@@ -150,6 +151,10 @@ namespace TickTrader.Algo.BacktesterV1Host
                     var _ = SendProgressLoop(backtester, from, to);
                     await backtester.Run(_cancelTokenSrc.Token);
                 }
+                catch (AlgoOperationCanceledException)
+                {
+                    _logger.Info("Emulation canceled");
+                }
                 catch (Exception ex)
                 {
                     _logger.Error(ex, "Fatal emulation error");
@@ -172,7 +177,11 @@ namespace TickTrader.Algo.BacktesterV1Host
                     _logger.Error(ex, "Failed to save results");
                 }
 
-                _cancelTokenSrc.Cancel();
+                if (_cancelTokenSrc != null)
+                {
+                    _cancelTokenSrc.Cancel();
+                    _cancelTokenSrc = null;
+                }
             }
         }
 

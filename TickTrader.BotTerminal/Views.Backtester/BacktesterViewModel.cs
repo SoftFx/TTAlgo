@@ -169,15 +169,26 @@ namespace TickTrader.BotTerminal
                     FireOnStop(config);
                 }
 
+                try
+                {
+                    await LoadResults(observer, config, SetupPage.SelectedPlugin.Value.Descriptor);
+                }
+                catch(Exception ex)
+                {
+                    _logger.Error(ex, "Failed to load results");
+                    observer.SetMessage($"Can't load results: {ex.Message}");
+                }
+
                 cToken.ThrowIfCancellationRequested();
-
-                await LoadResults(observer, config, SetupPage.SelectedPlugin.Value.Descriptor);
-
-                //await SetupAndRunBacktester(observer, cToken);
             }
             catch (OperationCanceledException)
             {
                 observer.SetMessage("Canceled.");
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Error during emulation");
+                observer.SetMessage($"Emulation error: {ex.Message}");
             }
         }
 
