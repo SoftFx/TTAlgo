@@ -343,8 +343,11 @@ namespace TickTrader.BotTerminal
 
             //timeFrame = BarExtentions.AdjustTimeframe(timeFrame, count, 500, out count);
 
-            observer.SetMessage("Loading feed chart data ...");
-            await ChartPage.LoadMainChart(results.Feed[mainSymbol], mainTimeFrame, tradeHistory);
+            if (results.Feed.TryGetValue(mainSymbol, out var mainBars))
+            {
+                observer.SetMessage("Loading feed chart data ...");
+                await ChartPage.LoadMainChart(mainBars, mainTimeFrame, tradeHistory);
+            }
 
             if (pluginInfo.IsTradeBot)
             {

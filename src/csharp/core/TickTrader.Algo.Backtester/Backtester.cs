@@ -184,8 +184,11 @@ namespace TickTrader.Algo.Backtester
                 BacktesterResults.SaveJson(zip, "stats.json", _control.Collector.Stats);
                 BacktesterResults.SaveProtoJson(zip, "plugin-info.json", descriptor, PluginDescriptor.JsonFormatter);
 
-                zip.CreateEntryFromFile(JournalPath, "journal.csv");
-                File.Delete(JournalPath);
+                if (File.Exists(JournalPath))
+                {
+                    zip.CreateEntryFromFile(JournalPath, "journal.csv");
+                    File.Delete(JournalPath);
+                }
 
                 foreach (var symbol in SymbolDataConfig.Keys)
                 {
