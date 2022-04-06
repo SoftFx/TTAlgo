@@ -75,13 +75,7 @@ namespace TickTrader.FeedStorage.StorageBase
                         i = lastSlice.To;
                     }
 
-                    if (!hasData)
-                    {
-                        //WriteSlice(key, new Slice<T>(from, to, new T[0]));
-                        return to;
-                    }
-
-                    return i;
+                    return hasData ? i : to;
                 }
                 finally
                 {

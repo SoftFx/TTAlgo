@@ -169,7 +169,11 @@ namespace TickTrader.BotTerminal
             await ProfileManager.LoadConnectionProfile(server, login, token);
         }
 
-        private Task CloseCatalog(object sender, CancellationToken token) => _symbolsCatalog?.CloseCatalog();
+        private Task CloseCatalog(object sender, CancellationToken token)
+        {
+            _smbManager = null;
+            return _symbolsCatalog?.CloseCatalog();
+        }
 
         public bool CanConnect { get; private set; }
         public bool CanDisconnect { get; private set; }
@@ -196,13 +200,6 @@ namespace TickTrader.BotTerminal
                 logger.Error(ex);
             }
         }
-
-        //protected override void OnDeactivate(bool close)
-        //{
-        //    if (close)
-        //        App.Current.Shutdown();
-        //        //Shutdown();
-        //}
 
         public void ShootBots(out bool isConfirmed)
         {
@@ -446,16 +443,6 @@ namespace TickTrader.BotTerminal
             Backtester = null;
 
             return Task.CompletedTask;
-        }
-
-        //private void Backtester_Deactivated(object sender, DeactivationEventArgs e)
-        //{
-        //    Backtester.Deactivated -= Backtester_Deactivated;
-        //    Backtester = null;
-        //}
-
-        public void CloseChart(object chart)
-        {
         }
 
         private void SaveProfileSnapshot(ProfileStorageModel profileStorage)
