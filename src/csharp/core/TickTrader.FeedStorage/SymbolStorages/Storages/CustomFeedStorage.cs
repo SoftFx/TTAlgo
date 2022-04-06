@@ -83,7 +83,7 @@ namespace TickTrader.FeedStorage.StorageBase
             if (!_customSymbols.TryGetValue(symbolName, out var smb))
                 return false;
 
-            _series.Keys.Snapshot.Where(k => k.Symbol == symbolName).ForEach(u => RemoveSeries(u)); // clear cache
+            _series.Keys.Snapshot.Where(k => k.Symbol == symbolName).ToList().ForEach(u => RemoveSeries(u)); // clear cache
 
             _customSymbolsCollection.Remove(smb.StorageId); // remove symbol
             _customSymbols.Remove(symbolName);
