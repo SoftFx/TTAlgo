@@ -82,10 +82,13 @@ namespace TickTrader.BotTerminal.SymbolManager
 
         private void RemoveSymbolHandler(ISymbolData smb)
         {
-            var symbolViewModel = _allSymbols.FirstOrDefault(u => u.Name == smb.Name);
+            OnUIThread(() => // for disconnect handling
+            {
+                var symbolViewModel = _allSymbols.FirstOrDefault(u => u.Name == smb.Name);
 
-            if (symbolViewModel != null)
-                _allSymbols.Remove(symbolViewModel);
+                if (symbolViewModel != null)
+                    _allSymbols.Remove(symbolViewModel);
+            });
         }
 
         private void UpdateSymbolHandler(ISymbolData oldSymbol, ISymbolData newSymbol)
