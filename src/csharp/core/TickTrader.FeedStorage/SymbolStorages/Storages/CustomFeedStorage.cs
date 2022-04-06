@@ -22,10 +22,7 @@ namespace TickTrader.FeedStorage.StorageBase
         private ICollectionStorage<Guid, CustomSymbolInfo> _customSymbolsCollection;
 
 
-        public CustomFeedStorage() : base()
-        {
-            _customSymbols.Updated += SendSymbolsUpdates;
-        }
+        public CustomFeedStorage() : base() { }
 
 
         protected override void LoadStoredData(string skippedCollection = null)
@@ -42,11 +39,14 @@ namespace TickTrader.FeedStorage.StorageBase
 
                 _customSymbols.Add(smb.Name, smb);
             }
+
+            _customSymbols.Updated += SendSymbolsUpdates;
         }
 
 
         protected override void CloseDatabase()
         {
+            _customSymbols.Updated -= SendSymbolsUpdates;
             _customSymbolsCollection?.Dispose();
             _customSymbolsCollection = null;
 
