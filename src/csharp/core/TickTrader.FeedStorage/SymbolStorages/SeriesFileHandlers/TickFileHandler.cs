@@ -164,7 +164,7 @@ namespace TickTrader.FeedStorage.StorageBase
         protected override async Task WritePageToStorage(ActorChannel<ISliceInfo> buffer, QuoteInfo[] values)
         {
             var from = values[0].TimeUtc;
-            var to = values[values.Length - 1].TimeUtc.AddTicks(1);
+            var to = values[values.Length - 1].TimeUtc;
 
             _storage.Put(_key, from, to, values);
 

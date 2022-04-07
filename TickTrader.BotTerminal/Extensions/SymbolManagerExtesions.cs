@@ -35,7 +35,7 @@ namespace TickTrader.BotTerminal
 
         public static async Task ImportBarWithObserver(this ISymbolData symbol, IActionObserver observer, IImportSeriesSettings settings, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide)
         {
-            observer.SetMessage($"Downloading bars {symbol.Name} {timeframe} {marketSide}");
+            observer.SetMessage($"Importing bars {symbol.Name} {timeframe} {marketSide}");
 
             var barEnumerator = await symbol.ImportBarSeriesToStorage(settings, timeframe, marketSide);
 
@@ -44,7 +44,7 @@ namespace TickTrader.BotTerminal
 
         public static async Task ImportTicksWithObserver(this ISymbolData symbol, IActionObserver observer, IImportSeriesSettings settings, Feed.Types.Timeframe timeFrame)
         {
-            observer.SetMessage($"Downloading ticks {symbol.Name} {timeFrame}");
+            observer.SetMessage($"Importing ticks {symbol.Name} {timeFrame}");
 
             var tickEnumerator = await symbol.ImportTickSeriesToStorage(settings, timeFrame);
 
@@ -54,7 +54,7 @@ namespace TickTrader.BotTerminal
 
         public static async Task ExportSeriesWithObserver(this IStorageSeries series, IActionObserver observer, IExportSeriesSettings settings)
         {
-            observer.SetMessage($"Export series {series.Key.FullInfo}");
+            observer.SetMessage($"Exporting series {series.Key.FullInfo}");
 
             PrepareDate(observer, settings.From, settings.To);
 
