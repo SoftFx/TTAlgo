@@ -263,7 +263,7 @@ namespace TickTrader.BotTerminal
             TradeHistoryPage.IsVisible = true;
             ResultsPage.IsVisible = true;
 
-            ChartPage.OnStart(IsVisualizing.Value, (SymbolInfo)mainSymbol.Info, config, symbols);
+            ChartPage.OnStart(IsVisualizing.Value, new SymbolInfo(mainSymbol.Info), config, symbols);
             if (IsVisualizing.Value)
             {
                 TradesPage.IsVisible = true;
