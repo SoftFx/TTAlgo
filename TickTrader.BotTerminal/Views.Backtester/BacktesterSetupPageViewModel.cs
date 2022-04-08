@@ -100,7 +100,7 @@ namespace TickTrader.BotTerminal
             var existingSymbolTokens = _catalog.AllSymbols.Select(s => s.ToKey()).ToList();
             existingSymbolTokens.AddRange(predefinedSymbolTokens.Values);
 
-           // _symbolTokens = VarCollection.Combine(predefinedSymbolTokens, existingSymbolTokens);
+            // _symbolTokens = VarCollection.Combine(predefinedSymbolTokens, existingSymbolTokens);
 
             var sortedSymbolTokens = existingSymbolTokens.OrderBy(u => u, new SetupSymbolInfoComparer()).ToList();
             _observableSymbolTokens = sortedSymbolTokens.AsReadOnly();
@@ -238,12 +238,10 @@ namespace TickTrader.BotTerminal
             foreach (var symbolSetup in FeedSymbols)
             {
                 var smbData = symbolSetup.SelectedSymbol.Value;
-                var symbolName = smbData.Name;
-                if (!config.Core.FeedConfig.ContainsKey(symbolName))
-                {
-                    config.Core.FeedConfig.Add(symbolName, symbolSetup.SelectedTimeframe.Value);
-                    config.TradeServer.Symbols.Add(symbolName, CustomSymbolInfo.ToData(smbData.Info));
-                }
+                var smbKey = new FeedCacheKey(smbData.Name, symbolSetup.SelectedTimeframe.Value, smbData.Origin).FullInfo;
+
+                if (config.Core.FeedConfig.Add(smbKey))
+                    config.TradeServer.Symbols.Add(smbData.Name, CustomSymbolInfo.ToData(smbData.Info));
             }
 
             foreach (var currency in _client.Currencies.Snapshot)

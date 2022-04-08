@@ -41,7 +41,8 @@ namespace TickTrader.BotTerminal.SymbolManager
 
         public void Export()
         {
-            _smbManager.Export(new FeedCacheKey(SelectedSymbol.Value?.Name, SelectedTimeFrame.Value, SelectedPriceType.Value));
+            if (SelectedSymbol.Value != null)
+                _smbManager.Export(new FeedCacheKey(SelectedSymbol.Value.Name, SelectedTimeFrame.Value, SelectedSymbol.Value.Origin, SelectedPriceType.Value));
         }
 
 
@@ -56,11 +57,14 @@ namespace TickTrader.BotTerminal.SymbolManager
 
         private void CheckExistingKey<T>(VarChangeEventArgs<T> args)
         {
-            var symbol = SelectedSymbol?.Value;
+            if (SelectedSymbol.Value == null)
+                return;
+
+            var symbol = SelectedSymbol.Value;
             var priceType = SelectedPriceType.Value;
             var timeframe = SelectedTimeFrame.Value;
 
-            var key = new FeedCacheKey(symbol.Name, timeframe, IsSelectedTick.Value ? (Feed.Types.MarketSide?)null : priceType);
+            var key = new FeedCacheKey(symbol.Name, timeframe, symbol.Origin, IsSelectedTick.Value ? (Feed.Types.MarketSide?)null : priceType);
 
             ExportEnabled.Value = symbol.Series.TryGetValue(key, out _);
         }

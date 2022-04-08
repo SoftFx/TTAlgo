@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Text.Json;
 using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage;
+using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.Algo.BacktesterApi
 {
@@ -146,7 +147,7 @@ namespace TickTrader.Algo.BacktesterApi
             public BacktesterMode Mode { get; set; }
             public DateTime EmulateFrom { get; set; }
             public DateTime EmulateTo { get; set; }
-            public Dictionary<string, Feed.Types.Timeframe> FeedConfig { get; set; } = new Dictionary<string, Feed.Types.Timeframe>();
+            public SortedSet<string> FeedConfig { get; set; } = new SortedSet<string>();
             public string ConfigUri { get; set; }
 
             public string MainSymbol { get; set; }
@@ -179,6 +180,7 @@ namespace TickTrader.Algo.BacktesterApi
         {
             public string PackagePath { get; set; }
             public string FeedCachePath { get; set; }
+            public string CustomFeedCachePath { get; set; }
             public string ResultsPath { get; set; }
             public string WorkingFolderPath { get; set; }
         }

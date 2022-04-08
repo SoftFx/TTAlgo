@@ -146,6 +146,7 @@ namespace TickTrader.BotTerminal
                 var pathPrefix = System.IO.Path.Combine(EnvService.Instance.BacktestResultsFolder, fileNamePrefix);
                 config.Env.ResultsPath = pathPrefix + ".out.zip";
                 config.Env.FeedCachePath = _catalog.OnlineCollection.StorageFolder;
+                config.Env.CustomFeedCachePath = _catalog.CustomCollection.StorageFolder;
                 config.Env.WorkingFolderPath = EnvService.Instance.AlgoWorkingFolder;
 
                 var configPath = pathPrefix + ".in.zip";

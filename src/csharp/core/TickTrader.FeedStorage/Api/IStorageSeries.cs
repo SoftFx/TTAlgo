@@ -14,6 +14,8 @@ namespace TickTrader.FeedStorage.Api
         Feed.Types.Timeframe TimeFrame { get; }
 
         Feed.Types.MarketSide? MarketSide { get; }
+
+        SymbolConfig.Types.SymbolOrigin Origin { get; }
     }
 
 

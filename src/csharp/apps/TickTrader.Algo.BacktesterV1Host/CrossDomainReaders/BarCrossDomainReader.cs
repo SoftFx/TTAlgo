@@ -11,8 +11,9 @@ namespace TickTrader.Algo.BacktesterV1Host
         public BarCrossDomainReader(string dataBaseFolder, CrossDomainReaderRequest request) : base(dataBaseFolder, request)
         { }
 
-        public BarCrossDomainReader(string dataBaseFolder, string symbol, Feed.Types.Timeframe frame, Feed.Types.MarketSide priceType, DateTime from, DateTime to) :
-            base(dataBaseFolder, new CrossDomainReaderRequest(new FeedCacheKey(symbol, frame, priceType), from, to))
+        public BarCrossDomainReader(string dataBaseFolder, string symbol, Feed.Types.Timeframe frame, Feed.Types.MarketSide priceType,
+                                    SymbolConfig.Types.SymbolOrigin origin, DateTime from, DateTime to) :
+            base(dataBaseFolder, new CrossDomainReaderRequest(new FeedCacheKey(symbol, frame, origin, priceType), from, to))
         {}
 
         protected override SeriesStorage<DateTime, BarData> GetSeriesStorage()

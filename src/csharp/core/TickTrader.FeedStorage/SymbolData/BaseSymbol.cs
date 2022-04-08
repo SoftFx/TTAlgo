@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
@@ -93,14 +92,7 @@ namespace TickTrader.FeedStorage
 
         protected FeedCacheKey GetKey(Feed.Types.Timeframe timeframe, Feed.Types.MarketSide? side = null)
         {
-            return new FeedCacheKey(Name, timeframe, side);
-        }
-
-        [Conditional("DEBUG")]
-        public void PrintCacheData(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide? priceType)
-        {
-            var seriesKey = new FeedCacheKey(Name, timeFrame, priceType);
-            _storage.PrintSlices(seriesKey);
+            return new FeedCacheKey(Name, timeframe, Origin, side);
         }
 
 

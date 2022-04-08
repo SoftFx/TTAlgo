@@ -217,25 +217,28 @@ namespace TickTrader.Algo.BacktesterV1Host
         private static void ConfigureFeed(BacktesterConfig config, FeedEmulator feedEmulator, DateTime from, DateTime to)
         {
             var core = config.Core;
-            var feedCachePath = config.Env.FeedCachePath;
+
 
             foreach (var feedCfg in core.FeedConfig)
-            {
-                var symbol = feedCfg.Key;
-                var timeframe = feedCfg.Value;
+                if (FeedCacheKey.TryParse(feedCfg, out var key))
+                {
+                    var symbol = key.Symbol;
+                    var origin = key.Origin;
+                    var timeframe = key.TimeFrame;
+                    var feedCachePath = key.Origin == SymbolConfig.Types.SymbolOrigin.Online ? config.Env.FeedCachePath : config.Env.CustomFeedCachePath;
 
-                if (timeframe.IsTick())
-                {
-                    var request = new CrossDomainReaderRequest(new FeedCacheKey(symbol, timeframe), from, to);
-                    feedEmulator.AddSource(symbol, new TickCrossDomainReader(feedCachePath, request));
+                    if (timeframe.IsTick())
+                    {
+                        var request = new CrossDomainReaderRequest(new FeedCacheKey(symbol, timeframe), from, to);
+                        feedEmulator.AddSource(symbol, new TickCrossDomainReader(feedCachePath, request));
+                    }
+                    else
+                    {
+                        var bidRequest = new CrossDomainReaderRequest(new FeedCacheKey(symbol, timeframe, origin, Feed.Types.MarketSide.Bid), from, to);
+                        var askRequest = new CrossDomainReaderRequest(new FeedCacheKey(symbol, timeframe, origin, Feed.Types.MarketSide.Ask), from, to);
+                        feedEmulator.AddSource(symbol, timeframe, new BarCrossDomainReader(feedCachePath, bidRequest), new BarCrossDomainReader(feedCachePath, askRequest));
+                    }
                 }
-                else
-                {
-                    var bidRequest = new CrossDomainReaderRequest(new FeedCacheKey(symbol, timeframe, Feed.Types.MarketSide.Bid), from, to);
-                    var askRequest = new CrossDomainReaderRequest(new FeedCacheKey(symbol, timeframe, Feed.Types.MarketSide.Ask), from, to);
-                    feedEmulator.AddSource(symbol, timeframe, new BarCrossDomainReader(feedCachePath, bidRequest), new BarCrossDomainReader(feedCachePath, askRequest));
-                }
-            }
 
             feedEmulator.AddBarBuilder(core.MainSymbol, core.MainTimeframe, Feed.Types.MarketSide.Bid);
         }

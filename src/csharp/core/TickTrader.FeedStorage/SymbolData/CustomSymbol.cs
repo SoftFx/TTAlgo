@@ -19,7 +19,7 @@ namespace TickTrader.FeedStorage
 
         public override Task<(DateTime?, DateTime?)> GetAvailableRange(Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide? priceType = null)
         {
-            return _storage.GetRange(new FeedCacheKey(Name, timeFrame, priceType));
+            return _storage.GetRange(new FeedCacheKey(Name, timeFrame, Origin, priceType));
         }
 
         public override Task<ActorChannel<ISliceInfo>> DownloadBarSeriesToStorage(Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide, DateTime from, DateTime to)
