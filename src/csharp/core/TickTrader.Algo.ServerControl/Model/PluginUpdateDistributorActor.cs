@@ -27,7 +27,7 @@ namespace TickTrader.Algo.ServerControl.Model
             _logger = logger;
             _msgFormatter = msgFormatter;
 
-            Receive<PluginUpdateDistributor.AddPluginLogsSubRequest>(r => AddSession(_logSubs, r.PluginId, r.Session));
+            Receive<PluginUpdateDistributor.AddPluginLogsSubRequest>(r => AddPluginLogSub(r.PluginId, r.Session));
             Receive<PluginUpdateDistributor.RemovePluginLogsSubRequest>(r => RemoveSession(_logSubs, r.PluginId, r.SessionId));
             Receive<PluginUpdateDistributor.AddPluginStatusSubRequest>(r => AddSession(_statusSubs, r.PluginId, r.Session));
             Receive<PluginUpdateDistributor.RemovePluginStatusSubRequest>(r => RemoveSession(_statusSubs, r.PluginId, r.SessionId));
@@ -46,7 +46,7 @@ namespace TickTrader.Algo.ServerControl.Model
         }
 
 
-        private static void AddSession(Dictionary<string, PluginSubNode> map, string pluginId, SessionHandler session)
+        private static PluginSubNode AddSession(Dictionary<string, PluginSubNode> map, string pluginId, SessionHandler session)
         {
             if (!map.TryGetValue(pluginId, out var subNode))
             {
@@ -54,6 +54,18 @@ namespace TickTrader.Algo.ServerControl.Model
                 map.Add(pluginId, subNode);
             }
             subNode.AddSession(session);
+            return subNode;
+        }
+
+        private void AddPluginLogSub(string pluginId, SessionHandler session)
+        {
+            var node = AddSession(_logSubs, pluginId, session);
+            var snapshot = node.GetLogsCacheSnapshot();
+            if (TryPackUpdate(snapshot, out var packedSnapshot, true))
+            {
+                var logMsg = _msgFormatter.FormatServerUpdate(snapshot, packedSnapshot.Payload.Length, packedSnapshot.Compressed);
+                session.TryWrite(packedSnapshot, logMsg);
+            }
         }
 
         private static void RemoveSession(Dictionary<string, PluginSubNode> map, string pluginId, string sessionId)
@@ -132,7 +144,7 @@ namespace TickTrader.Algo.ServerControl.Model
             var id = node.PluginId;
             try
             {
-                var logsRes = await _server.GetBotLogsAsync(new Domain.ServerControl.PluginLogsRequest { PluginId = id, MaxCount = 100, LastLogTimeUtc = node.LastRequestTime });
+                var logsRes = await _server.GetBotLogsAsync(new Domain.ServerControl.PluginLogsRequest { PluginId = id, MaxCount = PluginSubNode.MaxLogsPerMessage, LastLogTimeUtc = node.LastRequestTime });
 
                 if (string.IsNullOrEmpty(logsRes.PluginId))
                 {
@@ -146,9 +158,7 @@ namespace TickTrader.Algo.ServerControl.Model
                 var logs = logsRes.Logs;
                 if (logs.Count > 0)
                 {
-                    node.LastRequestTime = logs[logs.Count - 1].TimeUtc;
-                    var update = new PluginLogUpdate { PluginId = id };
-                    update.Records.AddRange(logs.Select(lr => lr.ToApi()));
+                    var update = node.UpdateLogsCache(logs);
                     if (TryPackUpdate(update, out var packedUpdate, true))
                     {
                         var logMsg = _msgFormatter.FormatServerUpdate(update, packedUpdate.Payload.Length, packedUpdate.Compressed);
@@ -189,7 +199,11 @@ namespace TickTrader.Algo.ServerControl.Model
 
         private class PluginSubNode
         {
+            internal const int MaxLogsPerMessage = 100;
+
             private readonly LinkedList<SessionHandler> _sessions = new LinkedList<SessionHandler>();
+            private readonly ItemCache<LogRecordInfo> _logsCache = new ItemCache<LogRecordInfo>(MaxLogsPerMessage);
+            private readonly List<LogRecordInfo> _newLogsBuffer = new List<LogRecordInfo>(MaxLogsPerMessage);
 
 
             public string PluginId { get; }
@@ -257,6 +271,28 @@ namespace TickTrader.Algo.ServerControl.Model
             }
 
             public void RemoveAllSessions() => _sessions.Clear();
+
+
+            internal PluginLogUpdate UpdateLogsCache(IList<Domain.LogRecordInfo> logs)
+            {
+                _newLogsBuffer.Clear();
+                _newLogsBuffer.AddRange(logs.Select(lr => lr.ToApi()));
+
+                _logsCache.AddRange(_newLogsBuffer);
+
+                LastRequestTime = logs[logs.Count - 1].TimeUtc;
+                var update = new PluginLogUpdate { PluginId = PluginId };
+                update.Records.AddRange(_newLogsBuffer);
+
+                return update;
+            }
+
+            internal PluginLogUpdate GetLogsCacheSnapshot()
+            {
+                var snapshot = new PluginLogUpdate { PluginId = PluginId };
+                snapshot.Records.AddRange(_logsCache);
+                return snapshot;
+            }
         }
     }
 }
