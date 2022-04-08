@@ -229,7 +229,7 @@ namespace TickTrader.Algo.BacktesterV1Host
 
                     if (timeframe.IsTick())
                     {
-                        var request = new CrossDomainReaderRequest(new FeedCacheKey(symbol, timeframe), from, to);
+                        var request = new CrossDomainReaderRequest(new FeedCacheKey(symbol, timeframe, origin), from, to);
                         feedEmulator.AddSource(symbol, new TickCrossDomainReader(feedCachePath, request));
                     }
                     else
