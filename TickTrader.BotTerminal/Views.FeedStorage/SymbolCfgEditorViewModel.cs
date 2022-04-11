@@ -268,6 +268,8 @@ namespace TickTrader.BotTerminal.SymbolManager
 
         bool ISymbolInfo.TradeAllowed => true;
 
+        string ISymbolInfo.TradePair => $"{BaseCurr.Value}{ProfitCurr.Value}";
+
         #endregion
 
         public void Ok()

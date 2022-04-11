@@ -99,6 +99,8 @@ namespace TickTrader.FeedStorage
 
         public bool TradeAllowed => true;
 
+        public string TradePair => $"{MarginCurrency}{ProfitCurrency}";
+
 
         public static CustomSymbolInfo ToData(ISymbolInfo info)
         {

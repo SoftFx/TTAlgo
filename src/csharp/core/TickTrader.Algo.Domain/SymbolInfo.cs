@@ -8,6 +8,8 @@ namespace TickTrader.Algo.Domain
 
         public double? Ask { get; private set; }
 
+        public string TradePair => $"{BaseCurrency}{CounterCurrency}";
+
 
         double ISymbolInfoWithRate.Bid => Bid ?? double.NaN;
 
@@ -166,6 +168,8 @@ namespace TickTrader.Algo.Domain
 
     public interface ISymbolInfo : IBaseSymbolInfo
     {
+        string TradePair { get; }
+
         string Description { get; }
 
         string Security { get; }

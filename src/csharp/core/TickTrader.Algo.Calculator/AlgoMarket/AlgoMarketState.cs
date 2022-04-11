@@ -90,8 +90,8 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
             var node = new SymbolMarketNode(Account, symbol);
 
             _marketNodes[symbol.Name] = node;
-            Bid[symbol.Name] = node.Bid;
-            Ask[symbol.Name] = node.Ask;
+            Bid[symbol.TradePair] = node.Bid;
+            Ask[symbol.TradePair] = node.Ask;
 
             return node;
         }
