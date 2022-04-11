@@ -71,6 +71,8 @@ namespace TickTrader.Algo.BacktesterV1Host
 
         private static async Task RunBacktester(RpcProxyParams rpcParams)
         {
+            var resultsDir = Directory.GetCurrentDirectory();
+
             var logger = LogManager.GetLogger("MainLoop");
 
             SetupGlobalExceptionLogging(logger);
@@ -85,7 +87,7 @@ namespace TickTrader.Algo.BacktesterV1Host
             try
             {
 
-                loader = new BacktesterV1Loader(id);
+                loader = new BacktesterV1Loader(new BacktesterV1HostHandler(id, resultsDir));
                 await loader.Init(address, port);
             }
             catch (Exception ex)
@@ -113,19 +115,23 @@ namespace TickTrader.Algo.BacktesterV1Host
 
         private static async Task RunBacktesterDetached(string configPath)
         {
+            var resultsLocation = Directory.GetCurrentDirectory();
+            PathHelper.EnsureDirectoryCreated(resultsLocation);
+            var resultsDir = await BacktesterResults.Internal.CreateResultsDir(resultsLocation, configPath);
+            var id = Path.GetFileName(resultsDir);
+
             var logger = LogManager.GetLogger("MainLoop");
 
             SetupGlobalExceptionLogging(logger);
 
-            var id = Path.GetFileNameWithoutExtension(configPath);
             var callbackStub = new BacktesterCallbackStub();
-            var backtester = BacktesterV1Actor.Create(id, callbackStub);
+            var backtester = BacktesterV1Actor.Create(id, resultsDir, callbackStub);
             var started = false;
             try
             {
                 logger.Info("Starting backtester with config {configPath}", configPath);
 
-                await backtester.Ask(new StartBacktesterRequest { ConfigPath = configPath });
+                await backtester.Ask(new StartBacktesterRequest());
                 started = true;
             }
             catch (Exception ex)

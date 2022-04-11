@@ -41,7 +41,7 @@ namespace TickTrader.Algo.BacktesterApi
         }
 
 
-        public Task Start(string configPath) => _actor.Ask(new StartBacktesterRequest { ConfigPath = configPath });
+        public Task Start() => _actor.Ask(new StartBacktesterRequest());
 
         public Task Stop() => _actor.Ask(new StopBacktesterRequest());
 

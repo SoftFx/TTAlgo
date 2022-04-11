@@ -9,26 +9,28 @@ namespace TickTrader.Algo.BacktesterV1Host
 {
     public class BacktesterV1HostHandler : IRpcHandler, IBacktesterV1Callback
     {
-        private readonly string _id;
+        private readonly string _id, _resultsDir;
+
         private RpcSession _session;
         private TaskCompletionSource<bool> _disconnectedTask;
         private IDisposable _rpcStateSub;
         private IActorRef _backtester;
 
 
-        public BacktesterV1HostHandler(string id)
+        public BacktesterV1HostHandler(string id, string resultsDir)
         {
             _id = id;
+            _resultsDir = resultsDir;
             _disconnectedTask = new TaskCompletionSource<bool>();
         }
 
 
         public Task WhenDisconnected() => _disconnectedTask.Task;
 
-        public Task<bool> AttachBacktester(string backtesterId)
+        public Task<bool> AttachBacktester()
         {
             var context = new RpcResponseTaskContext<bool>(AttachBacktesterResponseHandler);
-            _session.Ask(RpcMessage.Request(new AttachBacktesterRequest { Id = backtesterId }), context);
+            _session.Ask(RpcMessage.Request(new AttachBacktesterRequest { Id = _id }), context);
             return context.TaskSrc.Task;
         }
 
@@ -82,7 +84,7 @@ namespace TickTrader.Algo.BacktesterV1Host
         private async Task<Any> StartBacktesterRequestHandler(Any payload)
         {
             var request = payload.Unpack<StartBacktesterRequest>();
-            _backtester = BacktesterV1Actor.Create(_id, this);
+            _backtester = BacktesterV1Actor.Create(_id, _resultsDir, this);
             await _backtester.Ask(request);
             return RpcHandler.VoidResponse;
         }

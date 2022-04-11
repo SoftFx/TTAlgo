@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
@@ -25,16 +26,16 @@ namespace TickTrader.Algo.BacktesterV1Host
 
     internal class BacktesterV1Actor : Actor
     {
-        private readonly string _id;
+        private readonly string _resultsDir;
         private IBacktesterV1Callback _callback;
 
         private IAlgoLogger _logger;
         private CancellationTokenSource _cancelTokenSrc;
 
 
-        private BacktesterV1Actor(string id, IBacktesterV1Callback callback)
+        private BacktesterV1Actor(string resultsDir, IBacktesterV1Callback callback)
         {
-            _id = id;
+            _resultsDir = resultsDir;
             _callback = callback;
 
             Receive<StartBacktesterRequest>(Start);
@@ -42,9 +43,9 @@ namespace TickTrader.Algo.BacktesterV1Host
         }
 
 
-        public static IActorRef Create(string id, IBacktesterV1Callback callback)
+        public static IActorRef Create(string id, string resultsDir, IBacktesterV1Callback callback)
         {
-            return ActorSystem.SpawnLocal(() => new BacktesterV1Actor(id, callback), $"{nameof(BacktesterV1Actor)} ({id})");
+            return ActorSystem.SpawnLocal(() => new BacktesterV1Actor(resultsDir, callback), $"{nameof(BacktesterV1Actor)} ({id})");
         }
 
 
@@ -64,7 +65,7 @@ namespace TickTrader.Algo.BacktesterV1Host
             // load default reduction to metadata cache
             PackageExplorer.ScanAssembly(MappingDefaults.DefaultExtPackageId, typeof(BarCloseReduction).Assembly);
 
-            var config = BacktesterConfig.Load(request.ConfigPath);
+            var config = BacktesterConfig.Load(Path.Combine(_resultsDir, BacktesterResults.ConfigFileName));
             config.Validate();
 
             var pkgId = config.PluginConfig.Key.PackageId;
@@ -126,6 +127,7 @@ namespace TickTrader.Algo.BacktesterV1Host
         {
             using (var backtester = new Backtester.Backtester(config.PluginConfig.Key, from, to))
             {
+                var execStatus = new ExecutionStatus();
                 OnStartEmulation(backtester);
 
                 try
@@ -142,7 +144,7 @@ namespace TickTrader.Algo.BacktesterV1Host
                     ConfigureCommonSettings(config, backtester.CommonSettings);
                     ConfigureFeed(config, backtester.Feed, from, to);
                     backtester.JournalFlags = config.Core.JournalFlags;
-                    backtester.JournalPath = $"journal.{_id}.csv";
+                    backtester.JournalPath = Path.Combine(_resultsDir, BacktesterResults.JournalFileName);
                     backtester.SymbolDataConfig[config.Core.MainSymbol] = TestDataSeriesFlags.Snapshot;
                     backtester.OutputDataMode = TestDataSeriesFlags.Snapshot;
 
@@ -150,14 +152,20 @@ namespace TickTrader.Algo.BacktesterV1Host
 
                     var _ = SendProgressLoop(backtester, from, to);
                     await backtester.Run(_cancelTokenSrc.Token);
+
+                    execStatus.Status = "Emulation completed";
                 }
                 catch (AlgoOperationCanceledException)
                 {
-                    _logger.Info("Emulation canceled");
+                    _logger.Info("Emulation cancelled");
+                    execStatus.Status = "Emulation cancelled";
                 }
                 catch (Exception ex)
                 {
                     _logger.Error(ex, "Fatal emulation error");
+                    execStatus.Status = "Fatal emulation error";
+                    execStatus.HasError = true;
+                    execStatus.ErrorDetails.Add(ex.Message);
                 }
                 finally
                 {
@@ -170,11 +178,26 @@ namespace TickTrader.Algo.BacktesterV1Host
 
                 try
                 {
-                    backtester.SaveResults(config.Env.ResultsPath);
+                    backtester.SaveResults(_resultsDir);
                 }
                 catch (Exception ex)
                 {
                     _logger.Error(ex, "Failed to save results");
+                    if (!execStatus.HasError)
+                    {
+                        execStatus.Status = "Failed to save results";
+                        execStatus.HasError = true;
+                    }
+                    execStatus.ErrorDetails.Add(ex.Message);
+                }
+
+                try
+                {
+                    BacktesterResults.Internal.SaveExecStatus(_resultsDir, execStatus);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, "Failed to save exec status");
                 }
 
                 if (_cancelTokenSrc != null)

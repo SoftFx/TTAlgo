@@ -12,23 +12,21 @@ namespace TickTrader.Algo.BacktesterV1Host
         private static readonly ProtocolSpec ExpectedProtocol = new ProtocolSpec { Url = KnownProtocolUrls.BacktesterV1, MajorVerion = 1, MinorVerion = 0 };
 
         private readonly IAlgoLogger _logger = AlgoLoggerFactory.GetLogger<BacktesterV1Loader>();
-        private readonly string _id;
-        private readonly RpcClient _client;
         private readonly BacktesterV1HostHandler _handler;
+        private readonly RpcClient _client;
 
 
-        public BacktesterV1Loader(string id)
+        public BacktesterV1Loader(BacktesterV1HostHandler handler)
         {
-            _id = id;
+            _handler = handler;
             _client = new RpcClient(new TcpFactory(), this, ExpectedProtocol);
-            _handler = new BacktesterV1HostHandler(id);
         }
 
 
         public async Task Init(string address, int port)
         {
             await _client.Connect(address, port).ConfigureAwait(false);
-            var attached = await _handler.AttachBacktester(_id).ConfigureAwait(false);
+            var attached = await _handler.AttachBacktester().ConfigureAwait(false);
             if (!attached)
             {
                 _logger.Error("Runtime was not attached");

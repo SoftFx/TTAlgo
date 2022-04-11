@@ -208,7 +208,7 @@ namespace TickTrader.BotTerminal
                 using (var reg = cToken.Register(() => tester.Stop()))
                 {
                     tester.OnProgressUpdate.Subscribe(update => Execute.OnUIThread(() => observer.SetProgress(progressMax * update.Current / update.Total)));
-                    await tester.Start(configPath);
+                    await tester.Start();
                     await tester.AwaitStop();
                 }
                 return tester.GetResultsPath();

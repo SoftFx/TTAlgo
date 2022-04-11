@@ -100,8 +100,8 @@ namespace TickTrader.Algo.BacktesterApi
             {
                 var configPath = request.ConfigPath;
                 var exePath = Path.Combine(_parent.BinDirPath, "TickTrader.Algo.BacktesterV1Host.exe");
-                var resultsDir = await BacktesterResults.Internal.CreateResultsDir(_parent.WorkDir, Path.GetFileNameWithoutExtension(configPath));
-                var id = Path.GetDirectoryName(resultsDir);
+                var resultsDir = await BacktesterResults.Internal.CreateResultsDir(_parent.WorkDir, configPath);
+                var id = Path.GetFileName(resultsDir);
 
                 if (_server == null)
                 {

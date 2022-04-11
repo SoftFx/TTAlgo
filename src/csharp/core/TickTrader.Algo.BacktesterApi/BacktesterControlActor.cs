@@ -83,11 +83,13 @@ namespace TickTrader.Algo.BacktesterApi
             if (_session != null)
             {
                 _initTaskSrc?.TrySetException(new System.Exception("Session already attached"));
+                _initTaskSrc = null;
                 return false;
             }
 
             _session = cmd.Session;
             _initTaskSrc?.TrySetResult(null);
+            _initTaskSrc = null;
             return true;
         }
 
@@ -152,7 +154,7 @@ namespace TickTrader.Algo.BacktesterApi
             _process.Exited += OnProcessExit;
             _process.EnableRaisingEvents = true;
 
-            _logger.Info($"Runtime host started in process {_process.Id}");
+            _logger.Info($"Backtester host started in process {_process.Id}");
 
             if (_process.HasExited) // If event was enabled after actual stop
             {
@@ -171,7 +173,7 @@ namespace TickTrader.Algo.BacktesterApi
             _killProcessCancelSrc = new CancellationTokenSource();
             TaskExt.Schedule(KillTimeout, () =>
             {
-                _logger.Info($"Runtime host didn't stop within timeout. Killing process {_process.Id}...");
+                _logger.Info($"Backtester host didn't stop within timeout. Killing process {_process.Id}...");
                 _process.Kill();
             }, _killProcessCancelSrc.Token);
         }

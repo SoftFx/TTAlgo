@@ -24,9 +24,7 @@ message AttachBacktesterResponse {
     bool success = 1;
 }
 
-message StartBacktesterRequest { // void response
-    string config_path = 1;
-}
+message StartBacktesterRequest { } // void response
 
 message StopBacktesterRequest { } // void response
 
