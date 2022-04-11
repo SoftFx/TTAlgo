@@ -111,8 +111,8 @@ namespace TickTrader.FeedStorage.StorageBase
 
             var time = ParseDate(parts[0]);
 
-            var bid = double.Parse(parts[1]);
-            var ask = double.Parse(parts[2]);
+            double.TryParse(parts[1], out var bid);
+            double.TryParse(parts[2], out var ask);
 
             return new QuoteInfo(string.Empty, time, bid, ask);
         }
