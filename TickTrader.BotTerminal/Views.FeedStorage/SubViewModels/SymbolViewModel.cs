@@ -66,7 +66,7 @@ namespace TickTrader.BotTerminal.SymbolManager
 
         private void SeriesRemoveHandler(IStorageSeries obj)
         {
-            Series.Remove(Series.FirstOrDefault(u => u.Info == obj.Key.FullInfo));
+            Series.Remove(Series.FirstOrDefault(u => u.KeyInfo == obj.Key.FullInfo));
 
             NotifyOfPropertyChange(nameof(DiskSize));
         }

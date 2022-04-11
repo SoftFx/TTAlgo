@@ -11,15 +11,23 @@ namespace TickTrader.BotTerminal.SymbolManager
 
         public string Symbol => _series.Key.Symbol;
 
-        public string Info => _series.Key.FullInfo;
-
         public double Size => Math.Round(_series.Size / (1024 * 1024), 2);
+
+        public string Info { get; }
+
+        public string KeyInfo { get; }
 
 
         public SeriesViewModel(IStorageSeries series, SymbolManagerViewModel parent)
         {
             _parent = parent;
             _series = series;
+
+            KeyInfo = series.Key.FullInfo;
+            Info = $"{series.Key.TimeFrame}";
+
+            if (!series.Key.TimeFrame.IsTicks())
+                Info += $"_{series.Key.MarketSide}";
 
             series.SeriesUpdated += _ => NotifyOfPropertyChange(nameof(Size));
         }

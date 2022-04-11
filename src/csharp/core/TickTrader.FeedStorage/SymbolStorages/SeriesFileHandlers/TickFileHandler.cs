@@ -5,6 +5,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core.Lib.Math;
 using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage.Api;
 
@@ -83,7 +84,7 @@ namespace TickTrader.FeedStorage.StorageBase
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void WriteBandL2(int index, ReadOnlySpan<QuoteBand> band)
         {
-            if (index < band.Length)
+            if (index < band.Length && band[index].Amount.Gt(0.0))
             {
                 _writer.Write(_separator);
                 _writer.Write(band[index].Price);
@@ -136,6 +137,8 @@ namespace TickTrader.FeedStorage.StorageBase
             var time = ParseDate(parts[0]);
 
             var partsSpan = parts.AsSpan(1);
+            int askCnt = 0;
+            int bidCnt = 0;
             for (var i = 0; i < maxDepth; i++)
             {
                 // partsSpan[2] and partsSpan[3] should both have empty strings if band is not present
@@ -143,10 +146,10 @@ namespace TickTrader.FeedStorage.StorageBase
                 int bandNumber = i * 4;
 
                 if (!string.IsNullOrEmpty(partsSpan[bandNumber + 1]))
-                    bids[i] = new QuoteBand(double.Parse(partsSpan[bandNumber]), double.Parse(partsSpan[bandNumber + 1]));
+                    bids[bidCnt++] = new QuoteBand(double.Parse(partsSpan[bandNumber]), double.Parse(partsSpan[bandNumber + 1]));
 
                 if (!string.IsNullOrEmpty(partsSpan[bandNumber + 3]))
-                    asks[i] = new QuoteBand(double.Parse(partsSpan[bandNumber + 2]), double.Parse(partsSpan[bandNumber + 3]));
+                    asks[askCnt++] = new QuoteBand(double.Parse(partsSpan[bandNumber + 2]), double.Parse(partsSpan[bandNumber + 3]));
             }
 
             var data = new QuoteData
@@ -155,8 +158,8 @@ namespace TickTrader.FeedStorage.StorageBase
                 IsBidIndicative = false,
                 IsAskIndicative = false,
 
-                AskBytes = ByteStringHelper.CopyFromUglyHack(MemoryMarshal.Cast<QuoteBand, byte>(asks.Slice(0))),
-                BidBytes = ByteStringHelper.CopyFromUglyHack(MemoryMarshal.Cast<QuoteBand, byte>(bids.Slice(0))),
+                BidBytes = ByteStringHelper.CopyFromUglyHack(MemoryMarshal.Cast<QuoteBand, byte>(bids.Slice(0, bidCnt))),
+                AskBytes = ByteStringHelper.CopyFromUglyHack(MemoryMarshal.Cast<QuoteBand, byte>(asks.Slice(0, askCnt))),
             };
 
             return QuoteInfo.Create(string.Empty, data);
