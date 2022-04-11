@@ -46,7 +46,12 @@ namespace TickTrader.Algo.BacktesterApi
         public static BacktesterConfig Load(string filePath)
         {
             using (var file = File.Open(filePath, FileMode.Open))
-            using (var zip = new ZipArchive(file, ZipArchiveMode.Read))
+                return Load(file);
+        }
+
+        public static BacktesterConfig Load(Stream stream)
+        {
+            using (var zip = new ZipArchive(stream, ZipArchiveMode.Read))
             {
                 return new BacktesterConfig
                 {
@@ -63,8 +68,13 @@ namespace TickTrader.Algo.BacktesterApi
 
         public void Save(string filePath)
         {
-            using (var file = File.Open(filePath, FileMode.CreateNew))
-            using (var zip = new ZipArchive(file, ZipArchiveMode.Update))
+            using (var file = File.Open(filePath, FileMode.Create))
+                Save(file);
+        }
+
+        public void Save(Stream stream)
+        {
+            using (var zip = new ZipArchive(stream, ZipArchiveMode.Update))
             {
                 WriteZipEntryAsJson(zip, "version.json", _version);
                 WriteZipEntryAsJson(zip, "core.json", Core);

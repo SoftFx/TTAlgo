@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async;
@@ -10,6 +11,7 @@ namespace TickTrader.Algo.BacktesterApi
     public class BacktesterController : IDisposable
     {
         private readonly IActorRef _actor;
+        private readonly string _resultsDir;
         private readonly ChannelEventSource<BacktesterProgressUpdate> _progressEventSrc = new ChannelEventSource<BacktesterProgressUpdate>();
         private readonly ChannelEventSource<BacktesterStateUpdate> _stateEventSrc = new ChannelEventSource<BacktesterStateUpdate>();
 
@@ -19,9 +21,10 @@ namespace TickTrader.Algo.BacktesterApi
         public IEventSource<BacktesterStateUpdate> OnStateUpdate => _stateEventSrc;
 
 
-        public BacktesterController(IActorRef actor)
+        public BacktesterController(IActorRef actor, string resultsDir)
         {
             _actor = actor;
+            _resultsDir = resultsDir;
         }
 
 
@@ -43,6 +46,16 @@ namespace TickTrader.Algo.BacktesterApi
         public Task Stop() => _actor.Ask(new StopBacktesterRequest());
 
         public Task AwaitStop() => _actor.Ask(AwaitStopRequest.Instance);
+
+        public string GetResultsPath()
+        {
+            var zipPath = _resultsDir + ".zip";
+            if (File.Exists(zipPath))
+                return zipPath;
+
+            return _resultsDir;
+
+        }
 
 
         internal class AwaitStopRequest : Singleton<AwaitStopRequest> { }

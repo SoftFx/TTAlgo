@@ -114,7 +114,7 @@ namespace TickTrader.Algo.BacktesterApi
                 _instanceMap.Add(id, backtester);
                 await backtester.Ask(BacktesterControlActor.InitCmd.Instance);
 
-                var wrapper = new BacktesterController(backtester);
+                var wrapper = new BacktesterController(backtester, resultsDir);
                 await wrapper.Init();
                 return wrapper;
             }

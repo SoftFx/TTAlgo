@@ -29,6 +29,8 @@ namespace TickTrader.Algo.BacktesterApi
 
         private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions { NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals };
 
+        private readonly string _path;
+
 
         public ExecutionStatus ExecStatus { get; private set; }
 
@@ -49,9 +51,34 @@ namespace TickTrader.Algo.BacktesterApi
         public PluginDescriptor PluginInfo { get; private set; }
 
 
-        public static BacktesterResults Load(string filePath)
+        public BacktesterResults(string path)
         {
-            var res = new BacktesterResults();
+            _path = path;
+        }
+
+
+        public static BacktesterResults Load(string path)
+        {
+            if (File.Exists(path))
+                return LoadFromZipPath(path);
+            if (Directory.Exists(path))
+                return LoadFromDirPath(path);
+
+            throw new ArgumentException($"Provided path doesn't exist: '{path}'");
+        }
+
+        public static BacktesterResults LoadFromDirPath(string dirPath)
+        {
+            var res = new BacktesterResults(dirPath)
+            {
+                ExecStatus = AsFile.TryReadJson<ExecutionStatus>(dirPath)
+            };
+            return res;
+        }
+
+        public static BacktesterResults LoadFromZipPath(string filePath)
+        {
+            var res = new BacktesterResults(filePath);
             using (var file = File.Open(filePath, FileMode.Open))
             using (var zip = new ZipArchive(file))
             {
@@ -83,6 +110,27 @@ namespace TickTrader.Algo.BacktesterApi
                 AsZipEntry.TryReadCsv<TradeReportInfo, CsvMapping.ForTradeReport>(zip, TradeHistoryFileName, res.TradeHistory);
             }
             return res;
+        }
+
+
+        public BacktesterConfig GetConfig()
+        {
+            var path = _path;
+            if (Directory.Exists(path))
+                return BacktesterConfig.Load(Path.Combine(path, ConfigFileName));
+
+            if (File.Exists(path))
+            {
+                using (var file = File.Open(path, FileMode.Open))
+                using (var zip = new ZipArchive(file))
+                {
+                    var entry = zip.GetEntry(ConfigFileName);
+                    if (entry != null)
+                        return BacktesterConfig.Load(entry.Open());
+                }
+            }
+
+            throw new AlgoException($"Backtester config not found in '{path}'");
         }
 
 
