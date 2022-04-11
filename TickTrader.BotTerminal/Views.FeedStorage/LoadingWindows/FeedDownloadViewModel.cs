@@ -1,5 +1,4 @@
 ﻿using Machinarium.Var;
-using System;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
@@ -72,8 +71,8 @@ namespace TickTrader.BotTerminal.SymbolManager
         private async Task DownloadAsync(IActionObserver observer)
         {
             var timeFrame = SelectedTimeFrame.Value;
-            var from = DateTime.SpecifyKind(DateRange.From, DateTimeKind.Utc);
-            var to = DateTime.SpecifyKind(DateRange.To + TimeSpan.FromDays(1), DateTimeKind.Utc);
+            var from = DateRange.From;
+            var to = DateRange.To;
 
             observer?.SetMessage("Downloading... \n");
 

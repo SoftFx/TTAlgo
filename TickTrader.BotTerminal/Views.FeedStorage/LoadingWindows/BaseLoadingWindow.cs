@@ -3,6 +3,8 @@ using Machinarium.Var;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core.Lib;
+
 
 namespace TickTrader.BotTerminal.SymbolManager
 {
@@ -67,7 +69,7 @@ namespace TickTrader.BotTerminal.SymbolManager
                 to = range.Item2.Value;
             }
 
-            DateRange.UpdateBoundaries(from, to);
+            DateRange.UpdateBoundaries(from, to.DayFloor());
             _isRangeLoaded.Value = true;
         }
     }
