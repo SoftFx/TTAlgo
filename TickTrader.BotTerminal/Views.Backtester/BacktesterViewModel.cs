@@ -5,7 +5,6 @@ using NLog;
 using SciChart.Charting.Model.DataSeries;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -141,15 +140,13 @@ namespace TickTrader.BotTerminal
 
                 var config = new BacktesterConfig();
                 SetupPage.Apply(config);
-                var decriptorName = SetupPage.SelectedPlugin.Value.Descriptor.DisplayName;
-                var fileNamePrefix = $"{decriptorName}.{DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss", CultureInfo.InvariantCulture)}";
-                var pathPrefix = System.IO.Path.Combine(EnvService.Instance.BacktestResultsFolder, fileNamePrefix);
-                config.Env.ResultsPath = pathPrefix + ".out.zip";
                 config.Env.FeedCachePath = _catalog.OnlineCollection.StorageFolder;
                 config.Env.CustomFeedCachePath = _catalog.CustomCollection.StorageFolder;
                 config.Env.WorkingFolderPath = EnvService.Instance.AlgoWorkingFolder;
 
-                var configPath = pathPrefix + ".in.zip";
+                var descriptorName = SetupPage.SelectedPlugin.Value.Descriptor.DisplayName;
+                var pathPrefix = System.IO.Path.Combine(EnvService.Instance.BacktestResultsFolder, descriptorName);
+                var configPath = PathHelper.GenerateUniqueFilePath(pathPrefix, ".zip");
                 config.Save(configPath);
                 config.Validate();
 
@@ -203,8 +200,8 @@ namespace TickTrader.BotTerminal
             observer.SetMessage("Emulating...");
 
             BacktesterRunner.Instance.BinDirPath = System.IO.Path.Combine(EnvService.Instance.AppFolder, "bin", "backtester");
-            BacktesterRunner.Instance.WorkDir = EnvService.Instance.AppFolder;
-            using (var tester = await BacktesterRunner.Instance.NewInstance())
+            BacktesterRunner.Instance.WorkDir = EnvService.Instance.BacktestResultsFolder;
+            using (var tester = await BacktesterRunner.Instance.NewInstance(configPath))
             {
                 using (var reg = cToken.Register(() => tester.Stop()))
                 {

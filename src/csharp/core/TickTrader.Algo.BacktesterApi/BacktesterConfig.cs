@@ -181,7 +181,6 @@ namespace TickTrader.Algo.BacktesterApi
             public string PackagePath { get; set; }
             public string FeedCachePath { get; set; }
             public string CustomFeedCachePath { get; set; }
-            public string ResultsPath { get; set; }
             public string WorkingFolderPath { get; set; }
         }
     }

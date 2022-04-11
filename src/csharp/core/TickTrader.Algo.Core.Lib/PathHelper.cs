@@ -48,5 +48,21 @@ namespace TickTrader.Algo.Core.Lib
             return _unescaper.Replace(path,
                 m => ((char)Convert.ToInt16(m.Groups[1].Value, 16)).ToString());
         }
+
+        public static string GenerateUniqueFilePath(string pathPrefix, string ext)
+        {
+            var cnt = 0;
+            var path = pathPrefix + ext;
+
+            while (File.Exists(path) && cnt < int.MaxValue)
+            {
+                path = $"{pathPrefix}{++cnt}{ext}";
+            }
+
+            if (File.Exists(path))
+                path = $"{pathPrefix}{DateTime.UtcNow.Ticks}{ext}";
+
+            return path;
+        }
     }
 }

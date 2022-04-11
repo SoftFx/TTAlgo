@@ -6,7 +6,6 @@ using System.IO;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
 using TickTrader.Algo.Rpc.OverTcp;
 
@@ -33,13 +32,21 @@ namespace TickTrader.Algo.BacktesterApi
         }
 
 
-        public Task<BacktesterController> NewInstance()
+        public Task<BacktesterController> NewInstance(string configPath)
         {
-            return _impl.Ask<BacktesterController>(NewInstanceRequest.Instance);
+            return _impl.Ask<BacktesterController>(new NewInstanceRequest(configPath));
         }
 
 
-        private class NewInstanceRequest : Singleton<NewInstanceRequest> { }
+        private class NewInstanceRequest
+        {
+            public string ConfigPath { get; set; }
+
+            public NewInstanceRequest(string configPath)
+            {
+                ConfigPath = configPath;
+            }
+        }
 
         private class BacktesterInstanceRequest
         {
@@ -91,8 +98,10 @@ namespace TickTrader.Algo.BacktesterApi
 
             private async Task<BacktesterController> GetNewInstance(NewInstanceRequest request)
             {
-                var id = Guid.NewGuid().ToString("N");
+                var configPath = request.ConfigPath;
                 var exePath = Path.Combine(_parent.BinDirPath, "TickTrader.Algo.BacktesterV1Host.exe");
+                var resultsDir = await BacktesterResults.Internal.CreateResultsDir(_parent.WorkDir, Path.GetFileNameWithoutExtension(configPath));
+                var id = Path.GetDirectoryName(resultsDir);
 
                 if (_server == null)
                 {
@@ -101,7 +110,7 @@ namespace TickTrader.Algo.BacktesterApi
                 }
 
                 var rpcParams = new RpcProxyParams { ProxyId = id, Address = Address, Port = _server.BoundPort, ParentProcId = _parentProcId };
-                var backtester = BacktesterControlActor.Create(rpcParams, exePath, _parent.WorkDir, Self);
+                var backtester = BacktesterControlActor.Create(rpcParams, exePath, resultsDir, Self);
                 _instanceMap.Add(id, backtester);
                 await backtester.Ask(BacktesterControlActor.InitCmd.Instance);
 

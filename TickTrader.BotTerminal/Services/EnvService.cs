@@ -52,7 +52,7 @@ namespace TickTrader.BotTerminal
             AppLockFilePath = Path.Combine(AppFolder, "applock");
             UserProfilesFolder = Path.Combine(AppFolder, "Profiles");
             ProfilesCacheFolder = Path.Combine(UserProfilesFolder, "Cache");
-            BacktestResultsFolder = Path.Combine(AppFolder, "Backtest Results");
+            BacktestResultsFolder = Path.Combine(AppFolder, "BacktestResults");
             //}
 
             try

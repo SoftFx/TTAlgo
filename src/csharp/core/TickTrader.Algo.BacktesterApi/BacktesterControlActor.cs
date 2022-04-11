@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Domain;
 using TickTrader.Algo.Rpc;
 
 namespace TickTrader.Algo.BacktesterApi
@@ -16,7 +15,7 @@ namespace TickTrader.Algo.BacktesterApi
 
         private readonly RpcProxyParams _rpcParams;
         private readonly string _exePath;
-        private readonly string _workDir;
+        private readonly string _resultsDir;
         private readonly IActorRef _parent;
         private readonly List<TaskCompletionSource<object>> _awaitStopList = new List<TaskCompletionSource<object>>();
         private readonly ActorEventSource<BacktesterProgressUpdate> _progressEventSrc = new ActorEventSource<BacktesterProgressUpdate>();
@@ -29,11 +28,11 @@ namespace TickTrader.Algo.BacktesterApi
         private CancellationTokenSource _killProcessCancelSrc;
 
 
-        private BacktesterControlActor(RpcProxyParams rpcParams, string exePath, string workDir, IActorRef parent)
+        private BacktesterControlActor(RpcProxyParams rpcParams, string exePath, string resultsDir, IActorRef parent)
         {
             _rpcParams = rpcParams;
             _exePath = exePath;
-            _workDir = workDir;
+            _resultsDir = resultsDir;
             _parent = parent;
 
             Receive<InitCmd>(Init);
@@ -51,9 +50,9 @@ namespace TickTrader.Algo.BacktesterApi
         }
 
 
-        public static IActorRef Create(RpcProxyParams rpcParams, string exePath, string workDir, IActorRef parent)
+        public static IActorRef Create(RpcProxyParams rpcParams, string exePath, string resultsDir, IActorRef parent)
         {
-            return ActorSystem.SpawnLocal(() => new BacktesterControlActor(rpcParams, exePath, workDir, parent), $"{nameof(BacktesterControlActor)} ({rpcParams.ProxyId})");
+            return ActorSystem.SpawnLocal(() => new BacktesterControlActor(rpcParams, exePath, resultsDir, parent), $"{nameof(BacktesterControlActor)} ({rpcParams.ProxyId})");
         }
 
 
@@ -115,20 +114,7 @@ namespace TickTrader.Algo.BacktesterApi
 
         private void OnStopped(BacktesterStoppedMsg msg)
         {
-            var hasError = !string.IsNullOrEmpty(msg.ErrorMsg);
-            Exception error = default;
-            if (hasError)
-                error = new AlgoException(msg.ErrorMsg);
-
-            foreach (var awaiter in _awaitStopList)
-            {
-                if (hasError)
-                    awaiter.TrySetException(error);
-                else
-                    awaiter.TrySetResult(null);
-            }
-
-            _awaitStopList.Clear();
+            ScheduleKillProcess();
         }
 
         private void SubscribeToProgressUpdates(BacktesterController.SubscribeToProgressUpdatesCmd cmd)
@@ -157,7 +143,7 @@ namespace TickTrader.Algo.BacktesterApi
             var startInfo = new ProcessStartInfo(_exePath)
             {
                 UseShellExecute = false,
-                WorkingDirectory = _workDir,
+                WorkingDirectory = _resultsDir,
                 CreateNoWindow = true,
             };
             _rpcParams.SaveAsEnvVars(startInfo.Environment);
@@ -179,6 +165,9 @@ namespace TickTrader.Algo.BacktesterApi
 
         private void ScheduleKillProcess()
         {
+            if (_killProcessCancelSrc != null)
+                return;
+
             _killProcessCancelSrc = new CancellationTokenSource();
             TaskExt.Schedule(KillTimeout, () =>
             {
@@ -195,6 +184,36 @@ namespace TickTrader.Algo.BacktesterApi
             {
                 _initTaskSrc.TrySetException(new Exception("Backtester process failed to start"));
             }
+            else if (msg.ExitCode != 0)
+            {
+                var status = BacktesterResults.Internal.TryReadExecStatus(_resultsDir);
+                var errorMsg = $"Backtester process failed with exit code {msg.ExitCode}";
+                if (!status.HasError)
+                {
+                    status.HasError = true;
+                    status.Status = errorMsg;
+                }
+                status.ErrorDetails.Add(errorMsg);
+                BacktesterResults.Internal.SaveExecStatus(_resultsDir, status);
+            }
+
+            Exception error = null;
+            try
+            {
+                BacktesterResults.Internal.CompressResultsDir(_resultsDir);
+            }
+            catch (Exception ex) { error = ex; }
+
+            foreach (var awaiter in _awaitStopList)
+            {
+                if (error != null)
+                    awaiter.TrySetException(error);
+                else
+                    awaiter.TrySetResult(null);
+            }
+
+            _awaitStopList.Clear();
+
             _parent.Tell(new InstanceShutdownMsg(_rpcParams.ProxyId));
         }
 
