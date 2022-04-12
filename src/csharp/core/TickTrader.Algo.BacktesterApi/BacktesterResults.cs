@@ -407,8 +407,9 @@ namespace TickTrader.Algo.BacktesterApi
 
             public static void CompressResultsDir(string dirPath)
             {
-                var fileName = Path.GetDirectoryName(dirPath) + ".zip";
+                var fileName = Path.GetFileName(dirPath) + ".zip";
                 ZipFile.CreateFromDirectory(dirPath, Path.Combine(dirPath, "..", fileName));
+                Directory.Delete(dirPath, true);
             }
 
             public static ExecutionStatus TryReadExecStatus(string resultsDirPath) => AsFile.TryReadJson<ExecutionStatus>(Path.Combine(resultsDirPath, ExecStatusFileName));
