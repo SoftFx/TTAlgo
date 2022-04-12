@@ -173,22 +173,20 @@ namespace TickTrader.BotTerminal
                 {
                     await LoadResults(observer, resultsPath);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     _logger.Error(ex, "Failed to load results");
-                    observer.SetMessage($"Can't load results: {ex.Message}");
+                    observer.StopProgress($"Can't load results: {ex.Message}");
                 }
-
-                cToken.ThrowIfCancellationRequested();
             }
             catch (OperationCanceledException)
             {
-                observer.SetMessage("Canceled.");
+                observer.StopProgress("Canceled.");
             }
             catch (Exception ex)
             {
                 _logger.Error(ex, "Error during emulation");
-                observer.SetMessage($"Emulation error: {ex.Message}");
+                observer.StopProgress($"Emulation error: {ex.Message}");
             }
         }
 
@@ -222,31 +220,23 @@ namespace TickTrader.BotTerminal
             var results = await Task.Run(() => BacktesterResults.Load(resultsPath));
 
             var execStatus = results.ExecStatus;
-            if (execStatus.HasError)
+            if (execStatus.ResultsNotCorrupted)
             {
-                var sb = new StringBuilder();
-                sb.AppendLine(execStatus.Status);
-                foreach(var error in execStatus.ErrorDetails)
-                {
-                    sb.AppendLine(error);
-                }
+                var config = results.GetConfig();
 
-                observer.SetMessage(sb.ToString());
+                _testingSymbols = config.TradeServer.Symbols.Values.ToDictionary(s => s.Name, v => (ISymbolInfo)v);
 
-                return;
+                await LoadStats(observer, results);
+                await LoadJournal(observer, results);
+                var reports = await LoadTradeHistory(observer, results);
+                await LoadChartData(config, results, reports, observer);
+                TradeHistoryPage.LoadTradeHistory(reports);
             }
 
-            var config = results.GetConfig();
-
-            _testingSymbols = config.TradeServer.Symbols.Values.ToDictionary(s => s.Name, v => (ISymbolInfo)v);
-
-            await LoadStats(observer, results);
-            await LoadJournal(observer, results);
-            var reports = await LoadTradeHistory(observer, results);
-            await LoadChartData(config, results, reports, observer);
-            TradeHistoryPage.LoadTradeHistory(reports);
-
-            observer.SetMessage(execStatus.Status);
+            if (execStatus.HasError)
+                observer.StopProgress(execStatus.ToString());
+            else
+                observer.SetMessage(execStatus.ToString());
         }
 
         private void FireOnStart(ISymbolData mainSymbol, BacktesterConfig config)

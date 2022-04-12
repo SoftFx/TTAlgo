@@ -38,6 +38,17 @@ namespace TickTrader.Algo.BacktesterApi
         }
 
 
+        internal class DisposeInstanceCmd
+        {
+            public string Id { get; }
+
+            public DisposeInstanceCmd(string id)
+            {
+                Id = id;
+            }
+        }
+
+
         private class NewInstanceRequest
         {
             public string ConfigPath { get; set; }
@@ -81,6 +92,7 @@ namespace TickTrader.Algo.BacktesterApi
                 Receive<NewInstanceRequest, BacktesterController>(GetNewInstance);
                 Receive<BacktesterInstanceRequest, IActorRef>(GetExistingInstance);
                 Receive<BacktesterControlActor.InstanceShutdownMsg>(OnInstanceShutdown);
+                Receive<DisposeInstanceCmd>(DisposeInstance);
             }
 
 
@@ -114,7 +126,7 @@ namespace TickTrader.Algo.BacktesterApi
                 _instanceMap.Add(id, backtester);
                 await backtester.Ask(BacktesterControlActor.InitCmd.Instance);
 
-                var wrapper = new BacktesterController(backtester, resultsDir);
+                var wrapper = new BacktesterController(backtester, resultsDir, Self, id);
                 await wrapper.Init();
                 return wrapper;
             }
@@ -133,6 +145,15 @@ namespace TickTrader.Algo.BacktesterApi
                 {
                     _instanceMap.Remove(id);
                     var _ = ActorSystem.StopActor(backtester);
+                }
+            }
+
+            private async Task DisposeInstance(DisposeInstanceCmd cmd)
+            {
+                var id = cmd.Id;
+                if (_instanceMap.TryGetValue(id, out var backtester))
+                {
+                    await backtester.Ask(BacktesterControlActor.DisposeCmd.Instance);
                 }
             }
 

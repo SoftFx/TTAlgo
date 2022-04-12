@@ -10,8 +10,8 @@ namespace TickTrader.Algo.BacktesterApi
 {
     public class BacktesterController : IDisposable
     {
-        private readonly IActorRef _actor;
-        private readonly string _resultsDir;
+        private readonly IActorRef _actor, _parent;
+        private readonly string _resultsDir, _id;
         private readonly ChannelEventSource<BacktesterProgressUpdate> _progressEventSrc = new ChannelEventSource<BacktesterProgressUpdate>();
         private readonly ChannelEventSource<BacktesterStateUpdate> _stateEventSrc = new ChannelEventSource<BacktesterStateUpdate>();
 
@@ -21,17 +21,19 @@ namespace TickTrader.Algo.BacktesterApi
         public IEventSource<BacktesterStateUpdate> OnStateUpdate => _stateEventSrc;
 
 
-        public BacktesterController(IActorRef actor, string resultsDir)
+        public BacktesterController(IActorRef actor, string resultsDir, IActorRef parent, string id)
         {
             _actor = actor;
             _resultsDir = resultsDir;
+            _parent = parent;
+            _id = id;
         }
 
 
         public void Dispose()
         {
             _progressEventSrc.Dispose();
-            _actor.Tell(BacktesterControlActor.DeinitCmd.Instance);
+            _parent.Tell(new BacktesterRunner.DisposeInstanceCmd(_id));
         }
 
 

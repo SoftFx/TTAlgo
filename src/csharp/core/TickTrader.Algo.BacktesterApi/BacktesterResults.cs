@@ -83,6 +83,9 @@ namespace TickTrader.Algo.BacktesterApi
             using (var zip = new ZipArchive(file))
             {
                 res.ExecStatus = AsZipEntry.TryReadJson<ExecutionStatus>(zip, ExecStatusFileName) ?? ExecutionStatus.NotFound;
+                if (!res.ExecStatus.ResultsNotCorrupted)
+                    return res;
+
                 res.Stats = AsZipEntry.TryReadJson<TestingStatistics>(zip, StatsFileName);
                 res.PluginInfo = AsZipEntry.TryReadProtoJson<PluginDescriptor>(zip, PluginInfoFileName, PluginDescriptor.JsonParser);
                 foreach (var entry in zip.Entries)

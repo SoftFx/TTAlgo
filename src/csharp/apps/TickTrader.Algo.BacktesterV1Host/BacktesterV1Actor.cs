@@ -163,9 +163,7 @@ namespace TickTrader.Algo.BacktesterV1Host
                 catch (Exception ex)
                 {
                     _logger.Error(ex, "Fatal emulation error");
-                    execStatus.Status = "Fatal emulation error";
-                    execStatus.HasError = true;
-                    execStatus.ErrorDetails.Add(ex.Message);
+                    execStatus.SetError("Fatal emulation error", ex.Message);
                 }
                 finally
                 {
@@ -179,16 +177,12 @@ namespace TickTrader.Algo.BacktesterV1Host
                 try
                 {
                     backtester.SaveResults(_resultsDir);
+                    execStatus.ResultsNotCorrupted = true;
                 }
                 catch (Exception ex)
                 {
                     _logger.Error(ex, "Failed to save results");
-                    if (!execStatus.HasError)
-                    {
-                        execStatus.Status = "Failed to save results";
-                        execStatus.HasError = true;
-                    }
-                    execStatus.ErrorDetails.Add(ex.Message);
+                    execStatus.SetError("Failed to save results", ex.Message);
                 }
 
                 try

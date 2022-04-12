@@ -26,6 +26,10 @@ namespace TickTrader.Algo.BacktesterApi
         private TaskCompletionSource<object> _initTaskSrc;
         private Process _process;
         private CancellationTokenSource _killProcessCancelSrc;
+        private bool _disposedNormal, _disposedExplicit, _killedByTimeout;
+
+
+        private bool Disposed => _disposedNormal || _disposedExplicit;
 
 
         private BacktesterControlActor(RpcProxyParams rpcParams, string exePath, string resultsDir, IActorRef parent)
@@ -36,7 +40,7 @@ namespace TickTrader.Algo.BacktesterApi
             _parent = parent;
 
             Receive<InitCmd>(Init);
-            Receive<DeinitCmd>(Deinit);
+            Receive<DisposeCmd>(Dispose);
             Receive<ConnectSessionCmd, bool>(ConnectSession);
             Receive<ProcessExitedMsg>(OnProcessExited);
             Receive<StartBacktesterRequest>(Start);
@@ -69,13 +73,14 @@ namespace TickTrader.Algo.BacktesterApi
             return _initTaskSrc.Task;
         }
 
-        private void Deinit(DeinitCmd cmd)
+        private void Dispose(DisposeCmd cmd)
         {
-            if (_session != null)
-            {
-                _session.Disconnect("Backtester deinit");
-                ScheduleKillProcess();
-            }
+            if (Disposed)
+                return;
+
+            _disposedExplicit = true;
+            _session?.Disconnect("Backtester dispose");
+            ScheduleKillProcess();
         }
 
         private bool ConnectSession(ConnectSessionCmd cmd)
@@ -93,15 +98,21 @@ namespace TickTrader.Algo.BacktesterApi
             return true;
         }
 
-        private Task Start(StartBacktesterRequest request)
+        private async Task Start(StartBacktesterRequest request)
         {
+            if (Disposed)
+                throw new ObjectDisposedException(Name);
+
             var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(request), context);
-            return context.TaskSrc.Task;
+            await context.TaskSrc.Task;
         }
 
         private Task Stop(StopBacktesterRequest request)
         {
+            if (Disposed)
+                return Task.CompletedTask;
+
             var context = new RpcResponseTaskContext<VoidResponse>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(request), context);
             return context.TaskSrc.Task;
@@ -109,6 +120,9 @@ namespace TickTrader.Algo.BacktesterApi
 
         private Task AwaitStop(BacktesterController.AwaitStopRequest request)
         {
+            if (Disposed)
+                return Task.CompletedTask;
+
             var taskSrc = new TaskCompletionSource<object>();
             _awaitStopList.Add(taskSrc);
             return taskSrc.Task;
@@ -116,6 +130,11 @@ namespace TickTrader.Algo.BacktesterApi
 
         private void OnStopped(BacktesterStoppedMsg msg)
         {
+            if (Disposed)
+                return;
+
+            _disposedNormal = true;
+            _session?.Disconnect("Backtester shutdown");
             ScheduleKillProcess();
         }
 
@@ -173,9 +192,10 @@ namespace TickTrader.Algo.BacktesterApi
             _killProcessCancelSrc = new CancellationTokenSource();
             TaskExt.Schedule(KillTimeout, () =>
             {
+                _killedByTimeout = true;
                 _logger.Info($"Backtester host didn't stop within timeout. Killing process {_process.Id}...");
                 _process.Kill();
-            }, _killProcessCancelSrc.Token);
+            }, _killProcessCancelSrc.Token, Scheduler);
         }
 
         private void OnProcessExited(ProcessExitedMsg msg)
@@ -188,15 +208,18 @@ namespace TickTrader.Algo.BacktesterApi
             }
             else if (msg.ExitCode != 0)
             {
-                var status = BacktesterResults.Internal.TryReadExecStatus(_resultsDir);
-                var errorMsg = $"Backtester process failed with exit code {msg.ExitCode}";
-                if (!status.HasError)
+                try
                 {
-                    status.HasError = true;
-                    status.Status = errorMsg;
+                    var status = BacktesterResults.Internal.TryReadExecStatus(_resultsDir) ?? new ExecutionStatus();
+                    status.SetError(_killedByTimeout
+                        ? $"Backtester process failed to stop within timeout, exit code {msg.ExitCode}"
+                        : $"Backtester process failed with exit code {msg.ExitCode}");
+                    BacktesterResults.Internal.SaveExecStatus(_resultsDir, status);
                 }
-                status.ErrorDetails.Add(errorMsg);
-                BacktesterResults.Internal.SaveExecStatus(_resultsDir, status);
+                catch(Exception ex)
+                {
+                    _logger.Error(ex, "Failed to update backtester execution status");
+                }
             }
 
             Exception error = null;
@@ -238,7 +261,7 @@ namespace TickTrader.Algo.BacktesterApi
 
         public class InitCmd : Singleton<InitCmd> { }
 
-        public class DeinitCmd : Singleton<DeinitCmd> { }
+        public class DisposeCmd : Singleton<DisposeCmd> { }
 
         public class ConnectSessionCmd
         {
