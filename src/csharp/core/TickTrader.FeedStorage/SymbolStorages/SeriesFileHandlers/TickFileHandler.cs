@@ -72,7 +72,7 @@ namespace TickTrader.FeedStorage.StorageBase
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void WriteBand(int index, ReadOnlySpan<QuoteBand> band)
         {
-            if (index < band.Length && band[index].Price.Gte(0.0))
+            if (index < band.Length && band[index].Price.Gt(0.0))
             {
                 _writer.Write(_separator);
                 _writer.Write(band[index].Price);
