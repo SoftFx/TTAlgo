@@ -145,11 +145,20 @@ namespace TickTrader.BotTerminal
                 config.Env.CustomFeedCachePath = _catalog.CustomCollection.StorageFolder;
                 config.Env.WorkingFolderPath = EnvService.Instance.AlgoWorkingFolder;
 
+                try
+                {
+                    config.Validate();
+                }
+                catch (Exception ex)
+                {
+                    observer.StopProgress($"Validation error: {ex.Message}");
+                    return;
+                }
+
                 var descriptorName = SetupPage.SelectedPlugin.Value.Descriptor.DisplayName;
                 var pathPrefix = System.IO.Path.Combine(EnvService.Instance.BacktestResultsFolder, descriptorName);
                 var configPath = PathHelper.GenerateUniqueFilePath(pathPrefix, ".zip");
                 config.Save(configPath);
-                config.Validate();
 
                 _emulteFrom = DateTime.SpecifyKind(SetupPage.DateRange.From, DateTimeKind.Utc);
                 _emulateTo = DateTime.SpecifyKind(SetupPage.DateRange.To, DateTimeKind.Utc);
