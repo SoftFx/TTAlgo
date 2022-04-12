@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using TickTrader.Algo.BacktesterApi;
 
 namespace TickTrader.Algo.BacktesterV1Host
@@ -11,10 +12,14 @@ namespace TickTrader.Algo.BacktesterV1Host
         public Task AwaitStop() => _awaitStopSrc.Task;
 
 
-        public void SendProgress(double current, double total) { }
+        public void SendProgress(double current, double total)
+        {
+            Console.WriteLine($"Progress: {current}/{total}");
+        }
 
         public void SendStoppedMsg(string message)
         {
+            Console.WriteLine($"Stopped: {message}");
             _awaitStopSrc.TrySetResult(message);
         }
 

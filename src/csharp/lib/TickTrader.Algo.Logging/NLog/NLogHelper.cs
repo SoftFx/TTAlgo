@@ -79,7 +79,7 @@ namespace TickTrader.Algo.Logging
             return logConfig;
         }
 
-        public static LoggingConfiguration CreateRuntimeConfig(string logDir)
+        public static LoggingConfiguration CreateRuntimeConfig(string logDir, bool addConsoleTarget = false)
         {
             var logConfig = new LoggingConfiguration();
 
@@ -90,6 +90,9 @@ namespace TickTrader.Algo.Logging
 
             p.FileNameSuffix = "error";
             logConfig.AddRule(LogLevel.Error, LogLevel.Fatal, CreateAsyncFileTarget(p, 200, 1000));
+
+            if (addConsoleTarget)
+                logConfig.AddRule(LogLevel.Debug, LogLevel.Fatal, new ConsoleTarget { Layout = p.Layout });
 
             return logConfig;
         }

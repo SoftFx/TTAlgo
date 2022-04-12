@@ -20,7 +20,7 @@ namespace TickTrader.Algo.BacktesterV1Host
     {
         static void Main(string[] args)
         {
-            string proxyId = null;
+            string logsDir = null;
             Func<Task> backtesterRunFactory = null;
             if (args.Length == 0)
             {
@@ -34,7 +34,7 @@ namespace TickTrader.Algo.BacktesterV1Host
                     Environment.FailFast(ex.ToString());
                 }
 
-                proxyId = rpcParams.ProxyId;
+                logsDir = Directory.GetCurrentDirectory();
                 backtesterRunFactory = () => RunBacktester(rpcParams);
             }
             if (args.Length == 1)
@@ -43,18 +43,21 @@ namespace TickTrader.Algo.BacktesterV1Host
                 if (!File.Exists(configPath))
                     Environment.FailFast($"Config file '{configPath}' not found");
 
-                proxyId = Path.GetFileNameWithoutExtension(configPath);
-                backtesterRunFactory = () => RunBacktesterDetached(configPath);
+                var resultsLocation = Path.Combine(Directory.GetCurrentDirectory(), "BacktesterResults");
+                PathHelper.EnsureDirectoryCreated(resultsLocation);
+                var resultsDir = BacktesterResults.Internal.CreateResultsDir(resultsLocation, configPath).Result;
+                logsDir = resultsDir;
+                backtesterRunFactory = () => RunBacktesterDetached(resultsDir);
             }
 
             if (backtesterRunFactory == null)
                 Environment.FailFast("Can't determine specified action");
-            if (string.IsNullOrEmpty(proxyId))
-                Environment.FailFast("ProxyId can't be empty string");
+            if (string.IsNullOrEmpty(logsDir))
+                Environment.FailFast("LogsDir can't be empty string");
 
             try
             {
-                ConfigureLogging(proxyId);
+                ConfigureLogging(logsDir, args.Length != 0);
 
                 PackageLoadContext.Init(PackageLoadContextProvider.Create);
                 PackageExplorer.Init(PackageV1Explorer.Create());
@@ -113,23 +116,19 @@ namespace TickTrader.Algo.BacktesterV1Host
             }
         }
 
-        private static async Task RunBacktesterDetached(string configPath)
+        private static async Task RunBacktesterDetached(string resultsDir)
         {
-            var resultsLocation = Directory.GetCurrentDirectory();
-            PathHelper.EnsureDirectoryCreated(resultsLocation);
-            var resultsDir = await BacktesterResults.Internal.CreateResultsDir(resultsLocation, configPath);
-            var id = Path.GetFileName(resultsDir);
-
             var logger = LogManager.GetLogger("MainLoop");
 
             SetupGlobalExceptionLogging(logger);
 
+            var id = Path.GetFileName(resultsDir);
             var callbackStub = new BacktesterCallbackStub();
             var backtester = BacktesterV1Actor.Create(id, resultsDir, callbackStub);
             var started = false;
             try
             {
-                logger.Info("Starting backtester with config {configPath}", configPath);
+                logger.Info("Starting backtester with id {id}", id);
 
                 await backtester.Ask(new StartBacktesterRequest());
                 started = true;
@@ -152,15 +151,27 @@ namespace TickTrader.Algo.BacktesterV1Host
             catch (Exception ex)
             {
                 logger.Error(ex, "Failed to deinit backtester.");
-                Environment.FailFast("Failed to deinit backtester.");
+            }
+
+            try
+            {
+                LogManager.Shutdown();
+
+                BacktesterResults.Internal.CompressResultsDir(resultsDir);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Failed to shutdown backtester");
+                Console.WriteLine(ex.ToString());
             }
         }
 
-        private static void ConfigureLogging(string id)
+        private static void ConfigureLogging(string logsDir, bool addConsoleOutput)
         {
-            var logDir = Path.Combine(Directory.GetCurrentDirectory(), "Logs", "Backtester", id);
+            var logDir = Path.Combine(logsDir, "Logs");
 
-            LogManager.Configuration = NLogHelper.CreateRuntimeConfig(logDir);
+            var logConfig = NLogHelper.CreateRuntimeConfig(logDir, addConsoleOutput);
+            LogManager.Configuration = logConfig;
 
             AlgoLoggerFactory.Init(NLogLoggerAdapter.Create);
             NonBlockingFileCompressor.Setup();
