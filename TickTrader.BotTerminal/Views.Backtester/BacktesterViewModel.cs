@@ -176,6 +176,10 @@ namespace TickTrader.BotTerminal
                 finally
                 {
                     FireOnStop(config);
+#if !DEBUG
+                    // Leave config outside results archive to debug backtester host if needed
+                    System.IO.File.Delete(configPath);
+#endif
                 }
 
                 try
