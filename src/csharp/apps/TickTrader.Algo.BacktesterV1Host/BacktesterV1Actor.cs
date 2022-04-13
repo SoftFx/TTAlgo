@@ -152,12 +152,12 @@ namespace TickTrader.Algo.BacktesterV1Host
                     var _ = SendProgressLoop(backtester, from, to);
                     await backtester.Run(_cancelTokenSrc.Token);
 
-                    execStatus.Status = "Emulation completed";
+                    execStatus.AddStatus("Emulation completed");
                 }
                 catch (OperationCanceledException)
                 {
                     _logger.Info("Emulation cancelled");
-                    execStatus.Status = "Emulation cancelled";
+                    execStatus.AddStatus("Emulation cancelled");
                 }
                 catch (Exception ex)
                 {
