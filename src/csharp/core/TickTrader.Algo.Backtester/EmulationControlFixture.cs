@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Threading.Tasks;
 using TickTrader.Algo.BacktesterApi;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.CoreV1;
-using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Backtester
 {
@@ -36,18 +33,11 @@ namespace TickTrader.Algo.Backtester
 
         public bool OnStart()
         {
-            try
-            {
-                Feed.InitStorages();
+            Feed.InitStorages();
 
-                Collector.OnStart(Settings, Feed);
+            Collector.OnStart(Settings, Feed);
 
-                return InvokeEmulator.StartFeedRead();
-            }
-            catch (Exception ex)
-            {
-                throw WrapException(ex);
-            }
+            return InvokeEmulator.StartFeedRead();
         }
 
         public void OnStop()
@@ -66,14 +56,7 @@ namespace TickTrader.Algo.Backtester
 
         public void EmulateExecution(int warmupValue, WarmupUnitTypes warmupUnits)
         {
-            try
-            {
-                InvokeEmulator.EmulateExecution(warmupValue, warmupUnits);
-            }
-            catch (Exception ex)
-            {
-                throw WrapException(ex);
-            }
+            InvokeEmulator.EmulateExecution(warmupValue, warmupUnits);
         }
 
         public void CancelEmulation()
@@ -106,16 +89,5 @@ namespace TickTrader.Algo.Backtester
         //{
         //    Executor.OnUpdate(rep.Info);
         //}
-
-        private Exception WrapException(Exception ex)
-        {
-            if (ex is AlgoException)
-                return ex;
-
-            if (ex is OperationCanceledException || ex is TaskCanceledException)
-                return new AlgoOperationCanceledException(ex.Message);
-
-            return new AlgoException(ex.GetType().Name + ": " + ex.Message);
-        }
     }
 }

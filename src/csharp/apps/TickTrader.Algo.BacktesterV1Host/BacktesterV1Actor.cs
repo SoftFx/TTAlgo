@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Backtester;
 using TickTrader.Algo.BacktesterApi;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Domain;
@@ -155,7 +154,7 @@ namespace TickTrader.Algo.BacktesterV1Host
 
                     execStatus.Status = "Emulation completed";
                 }
-                catch (AlgoOperationCanceledException)
+                catch (OperationCanceledException)
                 {
                     _logger.Info("Emulation cancelled");
                     execStatus.Status = "Emulation cancelled";
