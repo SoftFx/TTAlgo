@@ -25,6 +25,8 @@ namespace TickTrader.Algo.BacktesterV1Host
 
     internal class BacktesterV1Actor : Actor
     {
+        private const double MaxProgessValue = 100;
+
         private readonly string _resultsDir;
         private IBacktesterV1Callback _callback;
 
@@ -169,7 +171,7 @@ namespace TickTrader.Algo.BacktesterV1Host
                     OnStopEmulation(backtester);
                 }
 
-                _callback.SendProgress(100, 100);
+                _callback.SendProgress(MaxProgessValue, MaxProgessValue);
 
                 _logger.Debug("Saving results...");
 
@@ -268,7 +270,9 @@ namespace TickTrader.Algo.BacktesterV1Host
                 var token = _cancelTokenSrc.Token;
                 while (!token.IsCancellationRequested)
                 {
-                    _callback.SendProgress(backtester.CurrentTimePoint?.GetAbsoluteDay() - offset ?? 0, total);
+                    var current = backtester.CurrentTimePoint?.GetAbsoluteDay();
+                    var diff = (current == null || current < offset) ? 0 : current - offset;
+                    _callback.SendProgress(MaxProgessValue * diff / total ?? 0, MaxProgessValue);
                     await Task.Delay(500, token);
                 }
             }
