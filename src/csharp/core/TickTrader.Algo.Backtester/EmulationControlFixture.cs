@@ -23,12 +23,12 @@ namespace TickTrader.Algo.Backtester
         public EmulationControlFixture(IBacktesterSettings settings, PluginExecutorCore executor, CalculatorFixture calc, FeedEmulator fEmulator)
         {
             Settings = settings;
+            Executor = executor;
+
             Feed = fEmulator ?? new FeedEmulator();
             Collector = new BacktesterCollector(executor);
-            InvokeEmulator = new InvokeEmulator(settings, Collector, Feed, executor.Start, executor.EmulateStop);
+            InvokeEmulator = new InvokeEmulator(settings, Collector, Feed, Executor);
             TradeHistory = new TradeHistoryEmulator();
-            //TradeHistory.OnReportAdded += TradeHistory_OnReportAdded;
-            Executor = executor;
         }
 
         public bool OnStart()

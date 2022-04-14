@@ -12,7 +12,7 @@ namespace TickTrader.Algo.Backtester
 {
     internal class InvokeEmulator : InvokeStartegy
     {
-        private object _syncState = new object();
+        private readonly object _syncState = new object();
         private FeedQueue _feedQueue;
         private DelayedEventsQueue _delayedQueue = new DelayedEventsQueue();
         private Queue<Action<PluginBuilder>> _tradeQueue = new Queue<Action<PluginBuilder>>();
@@ -31,17 +31,19 @@ namespace TickTrader.Algo.Backtester
         private bool _pauseRequested;
         private bool _stopPhase;
         private Exception _fatalError;
-        private Action _exStartAction;
-        private Action _extStopAction;
+        private readonly Action _exStartAction, _extStopAction;
 
-        public InvokeEmulator(IBacktesterSettings settings, BacktesterCollector collector, FeedEmulator feed, Action exStartAction, Action extStopAction)
+
+        public InvokeEmulator(IBacktesterSettings settings, BacktesterCollector collector, FeedEmulator feed, PluginExecutorCore executor)
         {
             _settings = settings;
             _collector = collector;
             _collector.InvokeEmulator = this;
             _feed = feed;
-            _exStartAction = exStartAction;
-            _extStopAction = extStopAction;
+            _exStartAction = executor.Start;
+            _extStopAction = executor.EmulateStop;
+
+            executor.OnExitRequest += _ => Cancel();
         }
 
         public DateTime UnsafeVirtualTimePoint { get { return _timePoint; } }
