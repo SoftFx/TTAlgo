@@ -18,7 +18,7 @@ namespace TickTrader.BotTerminal
 
             var barEnumerator = await symbol.DownloadBarSeriesToStorage(timeframe, marketSide, from, to);
 
-            await LoadingChannelHadler(barEnumerator, observer, "bars", "downloading");
+            await LoadingChannelHadler(barEnumerator, observer, to, "bars", "downloading");
         }
 
         public static async Task DownloadTicksWithObserver(this ISymbolData symbol, IActionObserver observer, Feed.Types.Timeframe timeFrame, DateTime from, DateTime to)
@@ -29,7 +29,7 @@ namespace TickTrader.BotTerminal
 
             var tickEnumerator = await symbol.DownloadTickSeriesToStorage(timeFrame, from, to);
 
-            await LoadingChannelHadler(tickEnumerator, observer, "ticks", "downloading");
+            await LoadingChannelHadler(tickEnumerator, observer, to, "ticks", "downloading");
         }
 
 
@@ -39,7 +39,7 @@ namespace TickTrader.BotTerminal
 
             var barEnumerator = await symbol.ImportBarSeriesToStorage(settings, timeframe, marketSide);
 
-            await LoadingChannelHadler(barEnumerator, observer, "bars", "importing", false);
+            await LoadingChannelHadler(barEnumerator, observer, DateTime.MaxValue, "bars", "importing", false);
         }
 
         public static async Task ImportTicksWithObserver(this ISymbolData symbol, IActionObserver observer, IImportSeriesSettings settings, Feed.Types.Timeframe timeFrame)
@@ -48,7 +48,7 @@ namespace TickTrader.BotTerminal
 
             var tickEnumerator = await symbol.ImportTickSeriesToStorage(settings, timeFrame);
 
-            await LoadingChannelHadler(tickEnumerator, observer, "ticks", "importing", false);
+            await LoadingChannelHadler(tickEnumerator, observer, DateTime.MaxValue, "ticks", "importing", false);
         }
 
 
@@ -56,11 +56,11 @@ namespace TickTrader.BotTerminal
         {
             observer.SetMessage($"Exporting series {series.Key.FullInfo}");
 
-            PrepareDate(observer, settings.From, settings.To);
+            var (_, to) = PrepareDate(observer, settings.From, settings.To);
 
             var seriesEnumerator = await series.ExportSeriesToFile(settings);
 
-            await LoadingChannelHadler(seriesEnumerator, observer, series.Key.TimeFrame.IsTick() ? "ticks" : "bars", "exporting");
+            await LoadingChannelHadler(seriesEnumerator, observer, to, series.Key.TimeFrame.IsTick() ? "ticks" : "bars", "exporting");
         }
 
 
@@ -74,7 +74,7 @@ namespace TickTrader.BotTerminal
             return (from, to);
         }
 
-        private static async Task LoadingChannelHadler(ActorChannel<ISliceInfo> channel, IActionObserver observer, string entityName, string action, bool setProgress = true)
+        private static async Task LoadingChannelHadler(ActorChannel<ISliceInfo> channel, IActionObserver observer, DateTime to, string entityName, string action, bool setProgress = true)
         {
             var downloadedCount = 0L;
             var watch = Stopwatch.StartNew();
@@ -111,7 +111,10 @@ namespace TickTrader.BotTerminal
                 }
 
                 if (!observer.CancelationToken.IsCancellationRequested)
+                {
+                    observer.SetProgress(to.GetAbsoluteDay());
                     observer.SetMessage($"Completed. {downloadedCount} {entityName} were {action}.");
+                }
             }
             catch (Exception ex)
             {

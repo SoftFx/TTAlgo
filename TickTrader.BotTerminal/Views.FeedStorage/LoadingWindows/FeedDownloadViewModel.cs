@@ -24,10 +24,9 @@ namespace TickTrader.BotTerminal.SymbolManager
             DownloadEnabled = (SelectedSymbol.Value?.IsDownloadAvailable ?? false) & IsReadyProgress;
             ExportEnabled = _varContext.AddBoolProperty();
 
-            _varContext.TriggerOnChange(SelectedSymbol.Var, UpdateAvailableRange);
-            _varContext.TriggerOnChange(SelectedSymbol.Var, CheckExistingKey);
-            _varContext.TriggerOnChange(SelectedTimeFrame.Var, CheckExistingKey);
-            _varContext.TriggerOnChange(SelectedPriceType.Var, CheckExistingKey);
+            _varContext.TriggerOnChange(SelectedSymbol.Var, UpdateMetadata);
+            _varContext.TriggerOnChange(SelectedTimeFrame.Var, UpdateMetadata);
+            _varContext.TriggerOnChange(SelectedPriceType.Var, UpdateMetadata);
         }
 
 
@@ -45,16 +44,24 @@ namespace TickTrader.BotTerminal.SymbolManager
         }
 
 
-        private async void UpdateAvailableRange(VarChangeEventArgs<ISymbolData> args)
+        private void UpdateMetadata<T>(VarChangeEventArgs<T> _)
         {
-            if (args.New != null)
+            UpdateAvailableRange();
+            CheckExistingKey();
+        }
+
+        private async void UpdateAvailableRange()
+        {
+            var symbol = SelectedSymbol.Value;
+
+            if (symbol != null)
             {
-                var range = await args.New.GetAvailableRange(Feed.Types.Timeframe.M1);
+                var range = await symbol.GetAvailableRange(SelectedTimeFrame.Value, SelectedPriceType.Value);
                 UpdateAvailableRange(range);
             }
         }
 
-        private void CheckExistingKey<T>(VarChangeEventArgs<T> args)
+        private void CheckExistingKey()
         {
             if (SelectedSymbol.Value == null)
                 return;
@@ -81,7 +88,7 @@ namespace TickTrader.BotTerminal.SymbolManager
             else
                 await SelectedSymbol.Value.DownloadBarWithObserver(observer, timeFrame, SelectedPriceType.Value, from, to);
 
-            CheckExistingKey<int>(default);
+            CheckExistingKey();
         }
     }
 }
