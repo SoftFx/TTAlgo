@@ -18,6 +18,7 @@ namespace TickTrader.Algo.BacktesterApi
     {
         public const string ConfigFileName = "config.zip";
         public const string ExecStatusFileName = "status.json";
+        public const string VersionFileName = "version.json";
         public const string StatsFileName = "stats.json";
         public const string PluginInfoFileName = "plugin-info.json";
         public const string FeedFilePrefix = "feed.";
@@ -30,6 +31,8 @@ namespace TickTrader.Algo.BacktesterApi
         private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions { NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals };
 
         private readonly string _path;
+
+        private VersionInfo _version = new VersionInfo();
 
 
         public ExecutionStatus ExecStatus { get; private set; }
@@ -86,6 +89,7 @@ namespace TickTrader.Algo.BacktesterApi
                 if (!res.ExecStatus.ResultsNotCorrupted)
                     return res;
 
+                res._version = AsZipEntry.TryReadJson<VersionInfo>(zip, VersionFileName);
                 res.Stats = AsZipEntry.TryReadJson<TestingStatistics>(zip, StatsFileName);
                 res.PluginInfo = AsZipEntry.TryReadProtoJson<PluginDescriptor>(zip, PluginInfoFileName, PluginDescriptor.JsonParser);
                 foreach (var entry in zip.Entries)
@@ -419,6 +423,8 @@ namespace TickTrader.Algo.BacktesterApi
 
             public static void SaveExecStatus(string resultsDirPath, ExecutionStatus status) => AsFile.SaveJson(Path.Combine(resultsDirPath, ExecStatusFileName), status);
 
+            public static void SaveVersionInfo(string resultsDirPath) => AsFile.SaveJson(Path.Combine(resultsDirPath, VersionFileName), new VersionInfo());
+
             public static void SaveStats(string resultsDirPath, TestingStatistics stats) => AsFile.SaveJson(Path.Combine(resultsDirPath, StatsFileName), stats);
 
             public static void SavePluginInfo(string resultsDirPath, PluginDescriptor pluginInfo) => AsFile.SaveProtoJson(Path.Combine(resultsDirPath, PluginInfoFileName), pluginInfo, PluginDescriptor.JsonFormatter);
@@ -442,6 +448,13 @@ namespace TickTrader.Algo.BacktesterApi
             public static void SaveMargin(string resultsDirPath, IEnumerable<BarData> bars) => SaveBarData(Path.Combine(resultsDirPath, MarginFileName), bars);
 
             public static void SaveTradeHistory(string resultsDirPath, IEnumerable<TradeReportInfo> reports) => AsFile.SaveCsv<TradeReportInfo, CsvMapping.ForTradeReport>(Path.Combine(resultsDirPath, "trade-history.csv"), reports);
+        }
+
+
+        private class VersionInfo
+        {
+            public int ResultsVersion { get; set; } = 1;
+            public string PluginInfoUri { get; set; } = PluginDescriptor.JsonUri;
         }
     }
 }

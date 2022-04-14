@@ -5,7 +5,6 @@ using System.IO.Compression;
 using System.Text.Json;
 using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage;
-using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.Algo.BacktesterApi
 {
@@ -32,9 +31,6 @@ namespace TickTrader.Algo.BacktesterApi
         private VersionInfo _version = new VersionInfo();
 
 
-        public int ConfigVersion => _version.ConfigVersion;
-        public int PackageVersion => _version.PackageVersion;
-
         public CoreConfig Core { get; private set; } = new CoreConfig();
         public AccountConfig Account { get; private set; } = new AccountConfig();
         public TradeServerConfig TradeServer { get; private set; } = new TradeServerConfig();
@@ -53,15 +49,16 @@ namespace TickTrader.Algo.BacktesterApi
         {
             using (var zip = new ZipArchive(stream, ZipArchiveMode.Read))
             {
-                return new BacktesterConfig
+                var res = new BacktesterConfig
                 {
                     _version = ReadZipEntryAsJson<VersionInfo>(zip, "version.json"),
                     Core = ReadZipEntryAsJson<CoreConfig>(zip, "core.json"),
                     Account = ReadZipEntryAsJson<AccountConfig>(zip, "account.json"),
                     TradeServer = ReadZipEntryAsJson<TradeServerConfig>(zip, "trade-server.json"),
                     Env = ReadZipEntryAsJson<EnvInfo>(zip, "env.json"),
-                    PluginConfig = ReadZipEntry(zip, "plugin-cfg.apr", Algo.Core.Config.PluginConfig.LoadFromStream).ToDomain(),
                 };
+                res.PluginConfig = ReadZipEntry(zip, res._version.PluginConfigSubPath, Algo.Core.Config.PluginConfig.LoadFromStream).ToDomain();
+                return res;
             }
         }
 
@@ -81,13 +78,12 @@ namespace TickTrader.Algo.BacktesterApi
                 WriteZipEntryAsJson(zip, "account.json", Account);
                 WriteZipEntryAsJson(zip, "trade-server.json", TradeServer);
                 WriteZipEntryAsJson(zip, "env.json", Env);
-                WriteZipEntry(zip, "plugin-cfg.apr", Algo.Core.Config.PluginConfig.FromDomain(PluginConfig), Algo.Core.Config.PluginConfig.SaveToStream);
+                WriteZipEntry(zip, _version.PluginConfigSubPath, Algo.Core.Config.PluginConfig.FromDomain(PluginConfig), Algo.Core.Config.PluginConfig.SaveToStream);
             }
         }
 
         public void SetPluginConfig(PluginConfig config)
         {
-            Core.ConfigUri = PluginConfig.JsonUri;
             PluginConfig = config;
         }
 
@@ -149,7 +145,8 @@ namespace TickTrader.Algo.BacktesterApi
         private class VersionInfo
         {
             public int ConfigVersion { get; set; } = 1;
-            public int PackageVersion { get; set; } = 1;
+            public string PluginConfigUri { get; set; } = Algo.Core.Config.PluginConfig.XmlUri;
+            public string PluginConfigSubPath { get; set; } = "plugin-cfg.apr";
         }
 
         public class CoreConfig
@@ -158,7 +155,6 @@ namespace TickTrader.Algo.BacktesterApi
             public DateTime EmulateFrom { get; set; }
             public DateTime EmulateTo { get; set; }
             public SortedSet<string> FeedConfig { get; set; } = new SortedSet<string>();
-            public string ConfigUri { get; set; }
 
             public string MainSymbol { get; set; }
             public Feed.Types.Timeframe MainTimeframe { get; set; }

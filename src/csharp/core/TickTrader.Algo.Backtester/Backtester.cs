@@ -178,6 +178,7 @@ namespace TickTrader.Algo.Backtester
             var descriptor = PluginInfo;
             var mainTimeframe = CommonSettings.MainTimeframe;
 
+            BacktesterResults.Internal.SaveVersionInfo(resultsDirPath);
             BacktesterResults.Internal.SaveStats(resultsDirPath, _control.Collector.Stats);
             BacktesterResults.Internal.SavePluginInfo(resultsDirPath, descriptor);
 

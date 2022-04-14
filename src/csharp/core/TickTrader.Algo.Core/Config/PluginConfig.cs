@@ -11,6 +11,9 @@ namespace TickTrader.Algo.Core.Config
     [DataContract(Namespace = "TTAlgo.Config.v2")]
     public class PluginConfig
     {
+        public static readonly string XmlUri = typeof(PluginConfig).FullName + "/Xml";
+
+
         [DataMember(Name = "ModelTimeFrame")]
         private TimeFrames? _modelTimeframe;
 
