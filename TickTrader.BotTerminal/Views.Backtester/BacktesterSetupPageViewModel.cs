@@ -56,8 +56,6 @@ namespace TickTrader.BotTerminal
             DateRange = new DateRangeSelectionViewModel(false);
             IsUpdatingRange = new BoolProperty();
             _isDateRangeValid = new BoolProperty();
-            MainTimeFrame = new Property<Feed.Types.Timeframe>();
-            MainTimeFrame.Value = Feed.Types.Timeframe.M1;
 
             SaveResultsToFile = new BoolProperty();
             SaveResultsToFile.Set();
@@ -176,7 +174,6 @@ namespace TickTrader.BotTerminal
         public Property<Feed.Types.Timeframe> SelectedModel { get; private set; }
         public Property<AlgoPluginViewModel> SelectedPlugin { get; private set; }
         public Property<string> PluginErrorProp { get; }
-        public Property<Feed.Types.Timeframe> MainTimeFrame { get; private set; }
         public BacktesterSymbolSetupViewModel MainSymbolSetup { get; private set; }
         public BacktesterSymbolSetupViewModel MainSymbolShadowSetup { get; private set; }
         public PluginConfig PluginConfig { get; private set; }
@@ -234,7 +231,7 @@ namespace TickTrader.BotTerminal
             config.SetPluginConfig(PluginConfig ?? new PluginConfig { Key = selectedPlugin.Key });
 
             config.Core.MainSymbol = MainSymbolSetup.SelectedSymbol.Value.Name;
-            config.Core.MainTimeframe = MainTimeFrame.Value;
+            config.Core.MainTimeframe = MainSymbolSetup.SelectedTimeframe.Value;
             config.Core.ModelTimeframe = SelectedModel.Value;
 
             foreach (var symbolSetup in FeedSymbols)
@@ -467,7 +464,7 @@ namespace TickTrader.BotTerminal
 
         #region IAlgoSetupContext
 
-        Feed.Types.Timeframe IAlgoSetupContext.DefaultTimeFrame => MainTimeFrame.Value;
+        Feed.Types.Timeframe IAlgoSetupContext.DefaultTimeFrame => MainSymbolSetup.SelectedTimeframe.Value;
 
         ISetupSymbolInfo IAlgoSetupContext.DefaultSymbol => _mainSymbolToken;
 
