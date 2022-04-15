@@ -112,7 +112,9 @@ namespace TickTrader.BotTerminal
 
                 if (!observer.CancelationToken.IsCancellationRequested)
                 {
-                    observer.SetProgress(to.GetAbsoluteDay());
+                    if (setProgress)
+                        observer.SetProgress(to.GetAbsoluteDay());
+
                     observer.SetMessage($"Completed. {downloadedCount} {entityName} were {action}.");
                 }
             }
