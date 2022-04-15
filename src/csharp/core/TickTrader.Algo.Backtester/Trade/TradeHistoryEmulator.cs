@@ -118,7 +118,7 @@ namespace TickTrader.Algo.Backtester
             }
             else
             {
-                var startIndex = _history.BinarySearchBy(r => r.ReportTime, from, BinarySearchTypes.NearestHigher);
+                var startIndex = Math.Max(_history.BinarySearchBy(r => r.ReportTime, from, BinarySearchTypes.NearestHigher), 0);
 
                 for (int i = startIndex; i < _history.Count; i++)
                 {
