@@ -136,12 +136,14 @@ namespace TickTrader.BotTerminal
 
             _var.TriggerOnChange(MainSymbolSetup.SelectedTimeframe, a =>
             {
-                AvailableModels.Value = EnumHelper.AllValues<Feed.Types.Timeframe>().Where(t => t <= a.New && t != Feed.Types.Timeframe.TicksLevel2).Concat(new[] { Feed.Types.Timeframe.Ticks }).ToList();
+                var data = EnumHelper.AllValues<Feed.Types.Timeframe>().Where(t => t <= a.New).ToList();
+                data.Add(Feed.Types.Timeframe.Ticks);
+                AvailableModels.Value = data;
 
                 if (_openedPluginSetup != null)
                     _openedPluginSetup.Setup.SelectedTimeFrame = a.New.ToApi();
 
-                if (SelectedModel.Value < a.New)
+                if (SelectedModel.Value > a.New && SelectedModel.Value != Feed.Types.Timeframe.Ticks)
                     SelectedModel.Value = a.New;
             });
 
