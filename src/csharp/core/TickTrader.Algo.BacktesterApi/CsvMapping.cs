@@ -164,6 +164,9 @@ namespace TickTrader.Algo.BacktesterApi
                 Map(t => t.PositionOpened).Index(42).Name("PosOpened").TypeConverter<ProtoTimestampTypeConverter>();
                 Map(t => t.PositionModified).Index(43).Name("PosModified").TypeConverter<ProtoTimestampTypeConverter>();
                 Map(t => t.PositionClosed).Index(44).Name("PosClosed").TypeConverter<ProtoTimestampTypeConverter>();
+
+                Map(t => t.Comment).Index(45).Name("Comment");
+                Map(t => t.Tag).Index(46).Name("Tag");
             }
         }
 
