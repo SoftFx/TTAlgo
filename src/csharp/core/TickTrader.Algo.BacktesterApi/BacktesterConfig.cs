@@ -154,7 +154,7 @@ namespace TickTrader.Algo.BacktesterApi
             public BacktesterMode Mode { get; set; }
             public DateTime EmulateFrom { get; set; }
             public DateTime EmulateTo { get; set; }
-            public SortedSet<string> FeedConfig { get; set; } = new SortedSet<string>();
+            public Dictionary<string, string> FeedConfig { get; set; } = new Dictionary<string, string>();
 
             public string MainSymbol { get; set; }
             public Feed.Types.Timeframe MainTimeframe { get; set; }

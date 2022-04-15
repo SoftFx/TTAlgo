@@ -34,6 +34,11 @@ namespace TickTrader.FeedStorage
                 FullInfo += $"{Separator}{MarketSide.Value}";
         }
 
+        public FeedCacheKey(FeedCacheKey other, Feed.Types.MarketSide? priceType = null)
+            : this(other.Symbol, other.TimeFrame, other.Origin, priceType)
+        {
+        }
+
 
         public static bool TryParse(string strCode, out FeedCacheKey key)
         {

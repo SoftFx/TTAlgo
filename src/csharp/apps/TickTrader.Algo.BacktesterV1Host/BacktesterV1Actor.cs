@@ -238,22 +238,21 @@ namespace TickTrader.Algo.BacktesterV1Host
 
 
             foreach (var feedCfg in core.FeedConfig)
-                if (FeedCacheKey.TryParse(feedCfg, out var key))
+                if (FeedCacheKey.TryParse(feedCfg.Value, out var feedKey))
                 {
-                    var symbol = key.Symbol;
-                    var origin = key.Origin;
-                    var timeframe = key.TimeFrame;
-                    var feedCachePath = key.Origin == SymbolConfig.Types.SymbolOrigin.Online ? config.Env.FeedCachePath : config.Env.CustomFeedCachePath;
+                    var symbol = feedCfg.Key;
+                    var timeframe = feedKey.TimeFrame;
+                    var feedCachePath = feedKey.Origin == SymbolConfig.Types.SymbolOrigin.Online ? config.Env.FeedCachePath : config.Env.CustomFeedCachePath;
 
                     if (timeframe.IsTick())
                     {
-                        var request = new CrossDomainReaderRequest(new FeedCacheKey(symbol, timeframe, origin), from, to);
+                        var request = new CrossDomainReaderRequest(new FeedCacheKey(feedKey), from, to);
                         feedEmulator.AddSource(symbol, new TickCrossDomainReader(feedCachePath, request));
                     }
                     else
                     {
-                        var bidRequest = new CrossDomainReaderRequest(new FeedCacheKey(symbol, timeframe, origin, Feed.Types.MarketSide.Bid), from, to);
-                        var askRequest = new CrossDomainReaderRequest(new FeedCacheKey(symbol, timeframe, origin, Feed.Types.MarketSide.Ask), from, to);
+                        var bidRequest = new CrossDomainReaderRequest(new FeedCacheKey(feedKey, Feed.Types.MarketSide.Bid), from, to);
+                        var askRequest = new CrossDomainReaderRequest(new FeedCacheKey(feedKey, Feed.Types.MarketSide.Ask), from, to);
                         feedEmulator.AddSource(symbol, timeframe, new BarCrossDomainReader(feedCachePath, bidRequest), new BarCrossDomainReader(feedCachePath, askRequest));
                     }
                 }

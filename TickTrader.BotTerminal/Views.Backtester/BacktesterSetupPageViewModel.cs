@@ -240,10 +240,14 @@ namespace TickTrader.BotTerminal
             foreach (var symbolSetup in FeedSymbols)
             {
                 var smbData = symbolSetup.SelectedSymbol.Value;
-                var smbKey = new FeedCacheKey(smbData.Name, symbolSetup.SelectedTimeframe.Value, smbData.Origin).FullInfo;
+                var symbolName = smbData.Name;
+                var smbKey = new FeedCacheKey(symbolName, symbolSetup.SelectedTimeframe.Value, smbData.Origin).FullInfo;
 
-                if (config.Core.FeedConfig.Add(smbKey))
-                    config.TradeServer.Symbols.Add(smbData.Name, CustomSymbolInfo.ToData(smbData.Info));
+                if (config.Core.FeedConfig.ContainsKey(symbolName))
+                    throw new ArgumentException("Duplicate symbol");
+
+                config.Core.FeedConfig.Add(symbolName, smbKey);
+                config.TradeServer.Symbols.Add(symbolName, CustomSymbolInfo.ToData(smbData.Info));
             }
 
             foreach (var currency in _client.Currencies.Snapshot)
