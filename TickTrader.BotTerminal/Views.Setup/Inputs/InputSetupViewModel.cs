@@ -52,7 +52,7 @@ namespace TickTrader.BotTerminal
 
         public override void Reset()
         {
-            SelectedSymbol = AvailableSymbols.ContainMainToken() ? AvailableSymbols.First() : AvailableSymbols.GetSymbolOrAny(_defaultSymbol);
+            SelectedSymbol = AvailableSymbols.GetMainTokenOrNull() ?? AvailableSymbols.GetSymbolOrAny(_defaultSymbol);
         }
 
 

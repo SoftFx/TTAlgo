@@ -228,7 +228,7 @@ namespace TickTrader.BotTerminal
 
             var selectedPlugin = SelectedPlugin.Value;
             config.Env.PackagePath = selectedPlugin.PackageInfo.Identity.FilePath;
-            config.SetPluginConfig(PluginConfig ?? new PluginConfig { Key = selectedPlugin.Key });
+            config.SetPluginConfig(PluginConfig ?? CreateDefaultPluginConfig());
 
             config.Core.MainSymbol = MainSymbolSetup.SelectedSymbol.Value.Name;
             config.Core.MainTimeframe = MainSymbolSetup.SelectedTimeframe.Value;
@@ -255,11 +255,15 @@ namespace TickTrader.BotTerminal
         }
 
 
-        [Conditional("DEBUG")]
-        public void PrintCacheData()
+        private PluginConfig CreateDefaultPluginConfig()
         {
-            MainSymbolSetup.PrintCacheData(SelectedModel.Value);
+            var setup = new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.PluginInfo, this, this.GetSetupContextInfo());
+            setup.Setup.SelectedModel.Value = SelectedModel.Value.ToApi();
+            setup.Setup.MainSymbol = MainSymbolSetup.SelectedSymbol.Value.Key.ToKey();
+            setup.Setup.SelectedTimeFrame = MainSymbolSetup.SelectedTimeframe.Value.ToApi();
+            return setup.GetConfig();
         }
+
 
         #region Plugin Setup
 
@@ -273,6 +277,7 @@ namespace TickTrader.BotTerminal
                     ? new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.PluginInfo, this, this.GetSetupContextInfo())
                     : new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.PluginInfo, this, this.GetSetupContextInfo(), PluginConfig);
                 //_localWnd.OpenMdiWindow(wndKey, _openedPluginSetup);
+                _openedPluginSetup.Setup.SelectedModel.Value = SelectedModel.Value.ToApi();
                 _openedPluginSetup.Setup.MainSymbol = MainSymbolSetup.SelectedSymbol.Value.Key.ToKey();
                 _openedPluginSetup.Setup.SelectedTimeFrame = MainSymbolSetup.SelectedTimeframe.Value.ToApi();
                 _openedPluginSetup.Closed += PluginSetupClosed;

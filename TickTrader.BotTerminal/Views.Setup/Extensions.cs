@@ -36,7 +36,12 @@ namespace TickTrader.BotTerminal
 
         public static bool ContainMainToken(this IReadOnlyList<StorageSymbolKey> availableSymbols)
         {
-            return availableSymbols.FirstOrDefault(u => u.Name == SpecialSymbols.MainSymbol && u.Origin == SymbolConfig.Types.SymbolOrigin.Token) != null;
+            return GetMainTokenOrNull(availableSymbols) != null;
+        }
+
+        public static StorageSymbolKey GetMainTokenOrNull(this IReadOnlyList<StorageSymbolKey> availableSymbols)
+        {
+            return availableSymbols.FirstOrDefault(u => u.Name == SpecialSymbols.MainSymbol && u.Origin == SymbolConfig.Types.SymbolOrigin.Token);
         }
     }
 
