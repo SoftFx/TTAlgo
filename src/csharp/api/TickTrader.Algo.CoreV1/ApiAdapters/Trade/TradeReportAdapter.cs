@@ -103,7 +103,8 @@ namespace TickTrader.Algo.CoreV1
             entity.Symbol = symbol.Name;
             entity.ReportType = repType;
             entity.TransactionReason = reason;
-            entity.Id = $"{key.Seconds}.{key.Nanos}";
+            var ms = Math.DivRem(key.Nanos, 1_000_000, out var rem);
+            entity.Id = $"{key.Seconds * 1_000 + ms}.{rem}";
             entity.IsEmulated = true;
             return new TradeReportAdapter(entity, symbol);
         }
