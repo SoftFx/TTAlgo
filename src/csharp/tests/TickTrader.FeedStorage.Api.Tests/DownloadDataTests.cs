@@ -31,6 +31,12 @@ namespace TickTrader.FeedStorage.Api.Tests
             Feed.Types.Timeframe.MN,
         };
 
+        internal static readonly Feed.Types.Timeframe[] TickTimeframes = new Feed.Types.Timeframe[]
+        {
+            Feed.Types.Timeframe.Ticks,
+            Feed.Types.Timeframe.TicksLevel2,
+        };
+
 
         internal override SymbolConfig.Types.SymbolOrigin Origin => SymbolConfig.Types.SymbolOrigin.Online;
 
@@ -63,6 +69,18 @@ namespace TickTrader.FeedStorage.Api.Tests
             }
         }
 
+        public static IEnumerable<object[]> TickTimeframeDirectionsCmb
+        {
+            get
+            {
+                foreach (var frame in TickTimeframes)
+                {
+                    yield return new object[] { frame, false };
+                    yield return new object[] { frame, true };
+                }
+            }
+        }
+
 
         public DownloadDataTests() : base()
         {
@@ -72,7 +90,7 @@ namespace TickTrader.FeedStorage.Api.Tests
 
         [Theory]
         [MemberData(nameof(CountAndDirectionsCmb))]
-        public async Task DownloadBars(int count, bool reverse)
+        public async Task Download_Bars(int count, bool reverse)
         {
             _feed.GenerateBarsFeed(MainName, DefaultTimeframe, count);
 
@@ -88,8 +106,27 @@ namespace TickTrader.FeedStorage.Api.Tests
         }
 
         [Theory]
+        [MemberData(nameof(CountAndDirectionsCmb))]
+        public async Task Download_Ticks(int count, bool reverse)
+        {
+            const Feed.Types.Timeframe timeframe = Feed.Types.Timeframe.Ticks;
+
+            _feed.GenerateTicksFeed(MainName, timeframe, count);
+
+            var receivedTicks = await AssertLoadData((from, to) => MainSymbol.DownloadTickSeriesToStorage(timeframe, from, to),
+                                                     (from, to) => MainSymbol.GetTickStream(timeframe, from, to, reverse), count);
+
+            var originValues = _feed.TickFeed[MainName][timeframe];
+
+            if (reverse)
+                originValues.Reverse();
+
+            AssertList(originValues, receivedTicks);
+        }
+
+        [Theory]
         [MemberData(nameof(BarTimeframeDirectionsCmb))]
-        public async Task GetBarStream(Feed.Types.Timeframe timeframe, bool reverse)
+        public async Task Get_BarStream(Feed.Types.Timeframe timeframe, bool reverse)
         {
             _feed.GenerateBarsFeed(MainName, timeframe, DefaultDataCnt);
 
@@ -97,6 +134,23 @@ namespace TickTrader.FeedStorage.Api.Tests
                                                     (from, to) => MainSymbol.GetBarStream(timeframe, DefaultSide, from, to, reverse), DefaultDataCnt);
 
             var originValues = _feed.BarFeed[MainName][timeframe];
+
+            if (reverse)
+                originValues.Reverse();
+
+            AssertList(originValues, receivedBars);
+        }
+
+        [Theory]
+        [MemberData(nameof(TickTimeframeDirectionsCmb))]
+        public async Task Get_TickStream(Feed.Types.Timeframe timeframe, bool reverse)
+        {
+            _feed.GenerateTicksFeed(MainName, timeframe, DefaultDataCnt);
+
+            var receivedBars = await AssertLoadData((from, to) => MainSymbol.DownloadTickSeriesToStorage(timeframe, from, to),
+                                                    (from, to) => MainSymbol.GetTickStream(timeframe, from, to, reverse), DefaultDataCnt);
+
+            var originValues = _feed.TickFeed[MainName][timeframe];
 
             if (reverse)
                 originValues.Reverse();
@@ -150,6 +204,42 @@ namespace TickTrader.FeedStorage.Api.Tests
 
                 Assert.Equal(origin.CloseTime, actual.CloseTime);
                 Assert.Equal(origin.CloseTimeRaw, actual.CloseTimeRaw);
+            }
+        }
+
+        private static void AssertList(List<QuoteInfo> expectedList, List<QuoteInfo> actualList)
+        {
+            Assert.Equal(expectedList.Count, actualList.Count);
+
+            for (int i = 0; i < expectedList.Count; ++i)
+            {
+                var origin = expectedList[i];
+                var actual = actualList[i];
+
+                Assert.Equal(origin.TimeUtc, actual.TimeUtc);
+                Assert.Equal(origin.Time, actual.Time);
+                Assert.Equal(origin.Timestamp, actual.Timestamp);
+
+                Assert.Equal(origin.Symbol, actual.Symbol);
+
+                Assert.Equal(origin.Ask, actual.Ask);
+                Assert.Equal(origin.Bid, actual.Bid);
+                Assert.Equal(origin.HasAsk, actual.HasAsk);
+                Assert.Equal(origin.HasBid, actual.HasBid);
+
+                AssertSpan(origin.L2Data.Bids, actual.L2Data.Bids);
+                AssertSpan(origin.L2Data.Asks, actual.L2Data.Asks);
+            }
+        }
+
+        private static void AssertSpan(ReadOnlySpan<QuoteBand> origin, ReadOnlySpan<QuoteBand> actual)
+        {
+            Assert.Equal(origin.Length, actual.Length);
+
+            for (int i = 0; i < origin.Length; ++i)
+            {
+                Assert.Equal(origin[i].Amount, actual[i].Amount);
+                Assert.Equal(origin[i].Price, actual[i].Price);
             }
         }
     }

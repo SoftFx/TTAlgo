@@ -82,6 +82,29 @@ namespace TickTrader.FeedStorage.Api.Tests
             BarFeed.Add(symbol, frameFeed);
         }
 
+        internal void GenerateTicksFeed(string symbol, Feed.Types.Timeframe timeframe, int count)
+        {
+            if (!TickFeed.TryGetValue(symbol, out var frameFeed))
+                frameFeed = new Dictionary<Feed.Types.Timeframe, List<QuoteInfo>>();
+
+            if (!frameFeed.TryGetValue(timeframe, out var feed))
+                feed = new List<QuoteInfo>(count);
+
+            var time = DateTime.MinValue.ToUniversalTime();
+
+            while (feed.Count < count)
+            {
+                var tick = timeframe == Feed.Types.Timeframe.Ticks ?
+                           RandomGenerator.GetTick(symbol, time) :
+                           RandomGenerator.GetTickL2(symbol, time);
+
+                feed.Add(tick);
+                time = time.AddTicks(RandomGenerator.GetRandomInt(0, 1000));
+            }
+
+            frameFeed.Add(timeframe, feed);
+            TickFeed.Add(symbol, frameFeed);
+        }
 
         public void DownloadBars(BlockingChannel<BarData> stream, string symbol, DateTime fromD, DateTime toD, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe)
         {
@@ -100,7 +123,16 @@ namespace TickTrader.FeedStorage.Api.Tests
 
         public void DownloadQuotes(BlockingChannel<QuoteInfo> stream, string symbol, DateTime from, DateTime to, bool includeLevel2)
         {
-            throw new NotImplementedException();
+            Task.Run(() =>
+            {
+                var frame = includeLevel2 ? Feed.Types.Timeframe.TicksLevel2 : Feed.Types.Timeframe.Ticks;
+
+                foreach (var tick in TickFeed[symbol][frame])
+                    if (from <= tick.TimeUtc && tick.TimeUtc <= to)
+                        stream.Write(tick);
+
+                stream.Close();
+            });
         }
 
         public Task<(DateTime?, DateTime?)> GetAvailableSymbolRange(string symbol, Feed.Types.Timeframe timeFrame, Feed.Types.MarketSide? priceType = null)

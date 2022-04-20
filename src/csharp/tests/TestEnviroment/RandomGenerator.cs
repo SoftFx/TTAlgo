@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using TickTrader.Algo.Domain;
 
 namespace TestEnviroment
@@ -54,6 +55,41 @@ namespace TestEnviroment
                 High = GetRandomDouble(1.1, 2.0),
                 Low = GetRandomDouble(0.1, 0.4),
             };
+        }
+
+        public static QuoteInfo GetTick(string symbol, DateTime time)
+        {
+            return new QuoteInfo(symbol, time, GetRandomDouble(0.1, 0.5), GetRandomDouble(0.5, 0.6));
+        }
+
+        public static QuoteInfo GetTickL2(string symbol, DateTime time)
+        {
+            var bidsBand = GetQuoteBand();
+            var asksBand = GetQuoteBand();
+
+            var data = new QuoteData
+            {
+                UtcTicks = time.ToUniversalTime().Ticks,
+                IsBidIndicative = bidsBand.Length > 0,
+                IsAskIndicative = asksBand.Length > 0,
+
+                BidBytes = ByteStringHelper.CopyFromUglyHack(MemoryMarshal.Cast<QuoteBand, byte>(bidsBand[..])),
+                AskBytes = ByteStringHelper.CopyFromUglyHack(MemoryMarshal.Cast<QuoteBand, byte>(asksBand[..])),
+            };
+
+            return QuoteInfo.Create(symbol, data);
+        }
+
+        private static Span<QuoteBand> GetQuoteBand()
+        {
+            var length = GetRandomInt(0, 100);
+
+            var bands = new QuoteBand[length];
+
+            for (int i = 0; i < length; ++i)
+                bands[i] = new QuoteBand(GetRandomDouble(0.1, 0.5), GetRandomDouble(0.1, 0.5));
+
+            return bands;
         }
     }
 }

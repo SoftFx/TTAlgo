@@ -232,11 +232,11 @@ namespace TickTrader.Algo.Domain
 
             if (_l2Data == null)
             {
-                res=  new QuoteInfo(Symbol, Time, Bid, Ask);
+                res = new QuoteInfo(Symbol, Time, Bid, Ask);
             }
             else
             {
-                res =new QuoteInfo(Symbol, Time, Bid, Ask)
+                res = new QuoteInfo(Symbol, Time, Bid, Ask)
                 {
                     _l2Data = _l2Data.Truncate(depth),
                     IsBidIndicative = IsBidIndicative,
