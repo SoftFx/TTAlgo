@@ -1629,7 +1629,7 @@ namespace TickTrader.Algo.Backtester
             //}
 
             OpenOrder(order.SymbolInfo, OrderInfo.Types.Type.Limit, order.Info.Side, order.Info.RemainingAmount, null, order.Info.Price,
-                order.Info.StopPrice, order.Info.StopLoss, order.Info.TakeProfit, order.Info.Comment, order.Info.Options.ToOrderExecOptions(), order.Info.UserTag, order.Info.Expiration.ToDateTime(), OpenOrderOptions.SkipDealing);
+                order.Info.StopPrice, order.Info.StopLoss, order.Info.TakeProfit, order.Info.Comment, order.Info.Options.ToOrderExecOptions(), order.Info.UserTag, order.Info.Expiration?.ToDateTime(), OpenOrderOptions.SkipDealing);
         }
 
         private void ClosePosition(OrderAccessor position, TradeReportInfo.Types.Reason trReason, double? reqAmount, double? reqPrice,
