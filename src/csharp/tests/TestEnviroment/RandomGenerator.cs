@@ -1,4 +1,5 @@
 ﻿using System;
+using TickTrader.Algo.Domain;
 
 namespace TestEnviroment
 {
@@ -17,8 +18,8 @@ namespace TestEnviroment
         public static byte GetRandomByte(byte min = 0, byte max = 8) =>
             (byte)_random.Next(min, max);
 
-        public static double GetRandomDouble() =>
-            _random.NextDouble() * (GetRandomBool() ? -100 : 100);
+        public static double GetRandomDouble(double min = -100.0, double max = 100.0) =>
+            _random.NextDouble() * (GetRandomBool() ? min : max);
 
         public static double GetDouble() => _random.NextDouble();
 
@@ -40,6 +41,19 @@ namespace TestEnviroment
                 bytes[i] = (byte)_random.Next(0, 255);
 
             return bytes;
+        }
+
+        public static BarData GetBarData(DateTime open, DateTime close)
+        {
+            return new BarData
+            {
+                OpenTimeRaw = open.Ticks,
+                CloseTimeRaw = close.Ticks,
+                Open = GetRandomDouble(0.5, 1.0),
+                Close = GetRandomDouble(0.5, 1.0),
+                High = GetRandomDouble(1.1, 2.0),
+                Low = GetRandomDouble(0.1, 0.4),
+            };
         }
     }
 }

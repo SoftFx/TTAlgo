@@ -3,11 +3,11 @@ using ActorSharp.Lib;
 using Machinarium.Qnil;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage.Api;
+using TickTrader.SeriesStorage;
 
 namespace TickTrader.FeedStorage.StorageBase
 {
@@ -134,12 +134,15 @@ namespace TickTrader.FeedStorage.StorageBase
             }
 
 
-            public Task<(DateTime?, DateTime?)> GetRange(FeedCacheKey key) => _ref.Call(a => a.GetRange(key));
+            internal Task<(DateTime?, DateTime?)> GetRange(FeedCacheKey key) => _ref.Call(a => a.GetRange(key));
 
-            public Task<bool> RemoveSeries(FeedCacheKey seriesKey) => _ref.Call(a => a.RemoveSeries(seriesKey));
+            internal Task<SeriesStorage<DateTime, T>> GetSeries<T>(FeedCacheKey key) => _ref.Call(a => a.GetSeries<T>(key));
 
-            [Conditional("DEBUG")]
-            public void PrintSlices(FeedCacheKey key) => _ref.Send(a => a.PrintSlices(key));
+            internal Task<bool> RemoveSeries(FeedCacheKey key) => _ref.Call(a => a.RemoveSeries(key));
+
+
+            //[Conditional("DEBUG")]
+            //public void PrintSlices(FeedCacheKey key) => _ref.Send(a => a.PrintSlices(key));
 
 
             private void UpdateSeriesHandler(FeedSeriesUpdate update)

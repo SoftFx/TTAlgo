@@ -5,7 +5,7 @@ using Xunit;
 
 namespace TickTrader.FeedStorage.Api.Tests
 {
-    public class OnlineCollectionTests : TestsBase<OnlineStorageSettings>
+    public class OnlineCollectionTests : ManageSymbolsTestsBase<OnlineStorageSettings>
     {
         internal override SymbolConfig.Types.SymbolOrigin Origin => SymbolConfig.Types.SymbolOrigin.Online;
 

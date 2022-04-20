@@ -10,6 +10,11 @@ namespace TickTrader.FeedStorage.Api.Tests
 {
     internal sealed class FeedEmulator : IClientFeedProvider
     {
+        public Dictionary<string, Dictionary<Feed.Types.Timeframe, List<BarData>>> BarFeed { get; }
+
+        public Dictionary<string, Dictionary<Feed.Types.Timeframe, List<QuoteInfo>>> TickFeed { get; }
+
+
         public bool IsAvailable { get; private set; } = true;
 
         public ISymbolInfo DefaultSymbol { get; }
@@ -20,6 +25,9 @@ namespace TickTrader.FeedStorage.Api.Tests
         private FeedEmulator()
         {
             Symbols = new List<SymbolInfo>();
+            BarFeed = new Dictionary<string, Dictionary<Feed.Types.Timeframe, List<BarData>>>();
+            TickFeed = new Dictionary<string, Dictionary<Feed.Types.Timeframe, List<QuoteInfo>>>();
+
             DefaultSymbol = (SymbolInfo)SymbolFactory.BuildSymbol("EUR", "USD");
         }
 
@@ -46,10 +54,48 @@ namespace TickTrader.FeedStorage.Api.Tests
             return GetUpdatedSymbol(((SymbolInfo)smb).DeepCopy());
         }
 
-
-        public void DownloadBars(BlockingChannel<BarData> stream, string symbol, DateTime from, DateTime to, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe)
+        internal void GenerateBarsFeed(string symbol, Feed.Types.Timeframe timeframe, int count)
         {
-            throw new NotImplementedException();
+            if (!BarFeed.TryGetValue(symbol, out var frameFeed))
+                frameFeed = new Dictionary<Feed.Types.Timeframe, List<BarData>>();
+
+            if (!frameFeed.TryGetValue(timeframe, out var feed))
+                feed = new List<BarData>(count);
+
+            var open = DateTime.MinValue.ToUniversalTime();
+
+            if (timeframe == Feed.Types.Timeframe.W) // because for Forex week starts with Sunday
+                open = open.AddDays(6);
+
+            var close = open.AddTimeframe(timeframe);
+
+            while (feed.Count < count)
+            {
+                var bar = RandomGenerator.GetBarData(open, close);
+
+                open = close;
+                close = open.AddTimeframe(timeframe);
+                feed.Add(bar);
+            }
+
+            frameFeed.Add(timeframe, feed);
+            BarFeed.Add(symbol, frameFeed);
+        }
+
+
+        public void DownloadBars(BlockingChannel<BarData> stream, string symbol, DateTime fromD, DateTime toD, Feed.Types.MarketSide marketSide, Feed.Types.Timeframe timeframe)
+        {
+            Task.Run(() =>
+            {
+                var from = fromD.Ticks;
+                var to = toD.Ticks;
+
+                foreach (var bar in BarFeed[symbol][timeframe])
+                    if (from <= bar.OpenTimeRaw && bar.CloseTimeRaw <= to)
+                        stream.Write(bar);
+
+                stream.Close();
+            });
         }
 
         public void DownloadQuotes(BlockingChannel<QuoteInfo> stream, string symbol, DateTime from, DateTime to, bool includeLevel2)

@@ -64,6 +64,23 @@ namespace TickTrader.FeedStorage
         }
 
 
+        public async Task<IEnumerable<BarData>> GetBarStream(Feed.Types.Timeframe timeframe, Feed.Types.MarketSide side, DateTime from, DateTime to, bool reversed = false)
+        {
+            var feedKey = GetKey(timeframe, side);
+            var series = await _storage.GetSeries<BarData>(feedKey);
+
+            return series?.Iterate(from, to, reversed);
+        }
+
+        public async Task<IEnumerable<QuoteInfo>> GetTickStream(Feed.Types.Timeframe timeframe, DateTime from, DateTime to, bool reversed = false)
+        {
+            var feedKey = GetKey(timeframe);
+            var series = await _storage.GetSeries<QuoteInfo>(feedKey);
+
+            return series?.Iterate(from, to, reversed);
+        }
+
+
         internal void AddSeries(FeedCacheKey key)
         {
             if (_series.ContainsKey(key))

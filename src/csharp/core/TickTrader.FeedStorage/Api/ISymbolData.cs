@@ -57,5 +57,10 @@ namespace TickTrader.FeedStorage.Api
         Task<ActorChannel<ISliceInfo>> ImportBarSeriesToStorage(IImportSeriesSettings settings, Feed.Types.Timeframe timeframe, Feed.Types.MarketSide marketSide);
 
         Task<ActorChannel<ISliceInfo>> ImportTickSeriesToStorage(IImportSeriesSettings settings, Feed.Types.Timeframe timeframe);
+
+
+        Task<IEnumerable<BarData>> GetBarStream(Feed.Types.Timeframe timeframe, Feed.Types.MarketSide side, DateTime from, DateTime to, bool reversed = false);
+
+        Task<IEnumerable<QuoteInfo>> GetTickStream(Feed.Types.Timeframe timeframe, DateTime from, DateTime to, bool reversed = false);
     }
 }

@@ -186,53 +186,53 @@ namespace TickTrader.FeedStorage.StorageBase
             return (SeriesStorage<DateTime, TVal>)GetSeries(key, addIfMissing);
         }
 
-        [Conditional("DEBUG")]
-        private void PrintSlices(FeedCacheKey key)
-        {
-            try
-            {
-                Debug.WriteLine("Cache data " + key.FullInfo + ":");
+        //[Conditional("DEBUG")]
+        //private void PrintSlices(FeedCacheKey key)
+        //{
+        //    try
+        //    {
+        //        Debug.WriteLine("Cache data " + key.FullInfo + ":");
 
-                var count = 0;
-                var group = new List<KeyRange<DateTime>>();
+        //        var count = 0;
+        //        var group = new List<KeyRange<DateTime>>();
 
-                foreach (var slice in IterateCacheKeysInternal(key, DateTime.MinValue, DateTime.MaxValue))
-                {
-                    var last = group.LastOrDefault();
-                    if (last != null && last.To != slice.From)
-                    {
-                        PrintGroup(group);
-                        group.Clear();
-                    }
+        //        foreach (var slice in IterateCacheKeysInternal(key, DateTime.MinValue, DateTime.MaxValue))
+        //        {
+        //            var last = group.LastOrDefault();
+        //            if (last != null && last.To != slice.From)
+        //            {
+        //                PrintGroup(group);
+        //                group.Clear();
+        //            }
 
-                    group.Add(slice);
-                    count++;
-                }
+        //            group.Add(slice);
+        //            count++;
+        //        }
 
-                if (group.Count > 0)
-                    PrintGroup(group);
+        //        if (group.Count > 0)
+        //            PrintGroup(group);
 
-                if (count == 0)
-                    Debug.WriteLine("Series cache is empty.");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex);
-            }
-        }
+        //        if (count == 0)
+        //            Debug.WriteLine("Series cache is empty.");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Debug.WriteLine(ex);
+        //    }
+        //}
 
-        [Conditional("DEBUG")]
-        private static void PrintGroup(List<KeyRange<DateTime>> slices)
-        {
-            var from = slices[0].From;
-            var to = slices.Last().To;
+        //[Conditional("DEBUG")]
+        //private static void PrintGroup(List<KeyRange<DateTime>> slices)
+        //{
+        //    var from = slices[0].From;
+        //    var to = slices.Last().To;
 
-            Debug.Write($"Cluster {from} - {to}:");
+        //    Debug.Write($"Cluster {from} - {to}:");
 
-            foreach (var slice in slices)
-                Debug.Write($" [{slice.From} - {slice.To}]");
+        //    foreach (var slice in slices)
+        //        Debug.Write($" [{slice.From} - {slice.To}]");
 
-            Debug.WriteLine(string.Empty);
-        }
+        //    Debug.WriteLine(string.Empty);
+        //}
     }
 }
