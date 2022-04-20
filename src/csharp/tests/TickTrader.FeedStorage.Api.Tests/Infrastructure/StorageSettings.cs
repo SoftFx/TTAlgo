@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 
 namespace TickTrader.FeedStorage.Api.Tests
 {
@@ -9,13 +10,13 @@ namespace TickTrader.FeedStorage.Api.Tests
 
         private static int _number;
 
-
         public string FolderPath { get; }
 
 
         internal StorageSettings()
         {
-            FolderPath = Path.Combine(Environment.CurrentDirectory, $"{DatabaseFolder}_{++_number}");
+            _number = Interlocked.Increment(ref _number);
+            FolderPath = Path.Combine(Environment.CurrentDirectory, $"{DatabaseFolder}_{_number}");
         }
 
         internal virtual string GetExpectedPath()

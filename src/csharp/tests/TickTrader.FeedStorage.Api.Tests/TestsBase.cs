@@ -33,9 +33,9 @@ namespace TickTrader.FeedStorage.Api.Tests
         protected List<ISymbolData> GetCatalogSymbols(List<ISymbolInfo> smb) => smb.Select(u => _catalog[GetKey(u.Name)]).ToList();
 
 
-        public void Dispose()
+        public async void Dispose()
         {
-            _catalog.CloseCatalog();
+            await _catalog.CloseCatalog();
 
             Directory.Delete(_settings.FolderPath, true);
         }
