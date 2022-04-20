@@ -158,6 +158,59 @@ namespace TickTrader.FeedStorage.Api.Tests
             AssertList(originValues, receivedBars);
         }
 
+        [Fact]
+        [Trait("Category", "Negative")]
+        public async Task Get_Nonexisted_Stream_1()
+        {
+            var stream = await MainSymbol.GetBarStream(DefaultTimeframe, DefaultSide, DateTime.MinValue, DateTime.MaxValue);
+
+            Assert.Null(stream);
+        }
+
+        [Fact]
+        [Trait("Category", "Negative")]
+        public async Task Get_Nonexisted_Stream_2()
+        {
+            _feed.GenerateBarsFeed(MainName, DefaultTimeframe, 10);
+
+            var stream = await MainSymbol.GetTickStream(Feed.Types.Timeframe.Ticks, DateTime.MinValue, DateTime.MaxValue);
+
+            Assert.Null(stream);
+        }
+
+        [Fact]
+        [Trait("Category", "Negative")]
+        public async Task Get_Nonexisted_Stream_3()
+        {
+            _feed.GenerateBarsFeed(MainName, DefaultTimeframe, 0);
+
+            var stream = await MainSymbol.GetBarStream(DefaultTimeframe, DefaultSide, DateTime.MinValue, DateTime.MaxValue);
+
+            Assert.Null(stream);
+        }
+
+        [Fact]
+        [Trait("Category", "Negative")]
+        public async Task Get_Nonexisted_Stream_4()
+        {
+            _feed.GenerateBarsFeed(MainName, DefaultTimeframe, 10);
+
+            var stream = await MainSymbol.GetBarStream(DefaultTimeframe, Feed.Types.MarketSide.Ask, DateTime.MinValue, DateTime.MaxValue);
+
+            Assert.Null(stream);
+        }
+
+        [Fact]
+        [Trait("Category", "Negative")]
+        public async Task Get_Nonexisted_Stream_5()
+        {
+            _feed.GenerateBarsFeed(MainName, DefaultTimeframe, 10);
+
+            var stream = await MainSymbol.GetBarStream(Feed.Types.Timeframe.H1, DefaultSide, DateTime.MinValue, DateTime.MaxValue);
+
+            Assert.Null(stream);
+        }
+
 
         private async Task<List<T>> AssertLoadData<T>(Func<DateTime, DateTime, Task<ActorChannel<ISliceInfo>>> downloadStreamFactory,
                                                       Func<DateTime, DateTime, Task<IEnumerable<T>>> storageStreamFactory,
