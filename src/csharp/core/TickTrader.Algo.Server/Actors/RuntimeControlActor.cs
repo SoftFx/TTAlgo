@@ -18,7 +18,7 @@ namespace TickTrader.Algo.Server
 
         public const int ConnectTimeout = 5000;
         public const int ShutdownTimeout = 10000;
-        public const int KillTimeout = 2000;
+        public const int KillTimeout = 5000;
 
         private static readonly TimeSpan KeepAliveThreshold = TimeSpan.FromMinutes(2);
         private static readonly int _serverProcId = Process.GetCurrentProcess().Id;
@@ -398,6 +398,9 @@ namespace TickTrader.Algo.Server
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to shutdown");
+            }
+            finally
+            {
                 ScheduleKillProcess();
             }
         }
