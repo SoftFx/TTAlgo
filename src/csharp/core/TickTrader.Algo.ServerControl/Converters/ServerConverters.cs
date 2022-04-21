@@ -288,9 +288,9 @@ namespace TickTrader.Algo.ServerControl
             };
         }
 
-        public static Any ToServer(this Any payload)
+        public static IPropertyConfig ToServer(this Any payload)
         {
-            IMessage message = payload;
+            IPropertyConfig message = default;
 
             if (payload.Is(Api.BoolParameterConfig.Descriptor))
                 message = payload.Unpack<Api.BoolParameterConfig>().ToServer();
@@ -317,7 +317,7 @@ namespace TickTrader.Algo.ServerControl
             else if (payload.Is(Api.MarkerSeriesOutputConfig.Descriptor))
                 message = payload.Unpack<Api.MarkerSeriesOutputConfig>().ToServer();
 
-            return Any.Pack(message);
+            return message;
         }
 
         public static PluginConfig ToServer(this Api.PluginConfig config)
@@ -333,7 +333,7 @@ namespace TickTrader.Algo.ServerControl
                 Permissions = config.Permissions.ToServer()
             };
 
-            serverConfig.Properties.AddRange(config.Properties.Select(ToServer));
+            serverConfig.PackProperties(config.Properties.Select(ToServer));
 
             return serverConfig;
         }

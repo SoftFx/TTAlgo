@@ -106,7 +106,7 @@
                     <Label Content="Mode:" Grid.Column="0" Grid.Row="1"/>
                     <StackPanel Orientation="Horizontal" Grid.Column="2" Grid.Row="1">
                         <ComboBox SelectedItem="{Binding ModeProp.Value}" ItemsSource="{Binding Modes}" DisplayMemberPath="Value"
-                                  Width="120"
+                                  Width="120" IsEnabled="False"
                                   ItemContainerStyle="{StaticResource OptionalComboBoxItemStyle}"/>
                         <CheckBox Content="Save results to file" IsChecked="{Binding SaveResultsToFile.Value}"
                                   Margin="25,0,0,0" VerticalAlignment="Center" />

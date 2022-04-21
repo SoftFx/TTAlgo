@@ -5,14 +5,9 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Calculator
 {
-    public struct StatsChange
+    public readonly struct StatsChangeToken
     {
-        public StatsChange(double margin, double equity, int errorDelta)
-        {
-            MarginDelta = margin;
-            ProfitDelta = equity;
-            ErrorDelta = errorDelta;
-        }
+        public static StatsChangeToken EmptyToken { get; } = new StatsChangeToken(0, 0, 0);
 
         public int ErrorDelta { get; }
 
@@ -20,9 +15,28 @@ namespace TickTrader.Algo.Calculator
 
         public double ProfitDelta { get; }
 
-        public static StatsChange operator +(StatsChange c1, StatsChange c2)
+
+        public StatsChangeToken(double marginDelta, double equityDelta, int errorDelta)
         {
-            return new StatsChange(c1.MarginDelta + c2.MarginDelta, c1.ProfitDelta + c2.ProfitDelta, c1.ErrorDelta + c2.ErrorDelta);
+            MarginDelta = marginDelta;
+            ProfitDelta = equityDelta;
+            ErrorDelta = errorDelta;
+        }
+
+
+        public static StatsChangeToken operator +(StatsChangeToken c1, StatsChangeToken c2)
+        {
+            return new StatsChangeToken(c1.MarginDelta + c2.MarginDelta, c1.ProfitDelta + c2.ProfitDelta, c1.ErrorDelta + c2.ErrorDelta);
+        }
+
+        public static bool operator ==(StatsChangeToken x, StatsChangeToken y)
+        {
+            return x.Equals(y);
+        }
+
+        public static bool operator !=(StatsChangeToken x, StatsChangeToken y)
+        {
+            return !x.Equals(y);
         }
     }
 

@@ -2,7 +2,7 @@
 using TestEnviroment;
 using TickTrader.Algo.Calculator.AlgoMarket;
 using TickTrader.Algo.Calculator.Conversions;
-using TickTrader.Algo.Calculator.TradeSpeсificsCalculators;
+using TickTrader.Algo.Calculator.TradeSpecificsCalculators;
 using TickTrader.Algo.Domain.CalculatorInterfaces;
 
 namespace TickTrader.Algo.Calculator.Tests.FormulaBuilderTests

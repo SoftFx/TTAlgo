@@ -5,7 +5,7 @@ namespace TestEnviroment
     public abstract class LoadSymbolBase
     {
         protected static SymbolInfoStorage _storage;
-        protected static SymbolInfo _symbol;
+        protected static ISymbolInfoWithRate _symbol;
 
         public LoadSymbolBase()
         {

@@ -52,6 +52,12 @@ namespace TickTrader.Algo.Server
                 return TradeHistoryRequestNextPageHandler(callId);
             else if (payload.Is(TradeHistoryRequestDispose.Descriptor))
                 return TradeHistoryRequestDisposeHandler(callId);
+            else if (payload.Is(TriggerHistoryRequest.Descriptor))
+                return TriggerHistoryRequestHandler(callId, payload);
+            else if (payload.Is(TriggerHistoryRequestNextPage.Descriptor))
+                return TriggerHistoryRequestNextPageHandler(callId);
+            else if (payload.Is(TriggerHistoryRequestDispose.Descriptor))
+                return TriggerHistoryRequestDisposeHandler(callId);
             else if (payload.Is(FeedSnapshotRequest.Descriptor))
                 return FeedSnapshotRequestHandler();
             else if (payload.Is(ModifyFeedSubscriptionRequest.Descriptor))
@@ -208,6 +214,45 @@ namespace TickTrader.Algo.Server
             if (_pendingRequestHandlers.TryRemove(callId, out var state))
             {
                 var enumerator = (IAsyncPagedEnumerator<TradeReportInfo>)state;
+                enumerator.Dispose();
+            }
+            return Task.FromResult<Any>(null);
+        }
+
+        private Task<Any> TriggerHistoryRequestHandler(string callId, Any payload)
+        {
+            var request = payload.Unpack<TriggerHistoryRequest>();
+            var enumerator = _account.TradeHistoryProvider.GetTriggerHistory(request.From?.ToDateTime(), request.To?.ToDateTime(), request.Options);
+            if (enumerator != null)
+            {
+                _pendingRequestHandlers.TryAdd(callId, enumerator);
+            }
+            return Task.FromResult<Any>(null);
+        }
+
+        private async Task<Any> TriggerHistoryRequestNextPageHandler(string callId)
+        {
+            _pendingRequestHandlers.TryGetValue(callId, out var state);
+            var enumerator = (IAsyncPagedEnumerator<TriggerReportInfo>)state;
+            var page = await enumerator.GetNextPage();
+            var response = new TriggerHistoryPageResponse();
+            if (page == null || page.Count == 0)
+            {
+                _pendingRequestHandlers.TryRemove(callId, out _);
+                enumerator.Dispose();
+            }
+            else
+            {
+                response.Reports.AddRange(page);
+            }
+            return Any.Pack(response);
+        }
+
+        private Task<Any> TriggerHistoryRequestDisposeHandler(string callId)
+        {
+            if (_pendingRequestHandlers.TryRemove(callId, out var state))
+            {
+                var enumerator = (IAsyncPagedEnumerator<TriggerReportInfo>)state;
                 enumerator.Dispose();
             }
             return Task.FromResult<Any>(null);

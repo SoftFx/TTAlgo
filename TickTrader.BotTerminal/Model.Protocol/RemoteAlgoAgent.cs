@@ -13,7 +13,7 @@ using AlgoServerApi = TickTrader.Algo.Server.PublicAPI;
 
 namespace TickTrader.BotTerminal
 {
-    internal class RemoteAlgoAgent : IAlgoAgent, AlgoServerApi.IAlgoServerEventHandler, IAsyncDisposable
+    internal class RemoteAlgoAgent : IAlgoAgent, AlgoServerApi.IAlgoServerEventHandler
     {
         private readonly Func<string, Task<string>> _get2FAHandler;
 
@@ -460,11 +460,6 @@ namespace TickTrader.BotTerminal
                     }
                 }
             }
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            //await UnsubscribeToAlerts();
         }
 
         #endregion

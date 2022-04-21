@@ -1,22 +1,47 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 
 namespace TickTrader.Algo.Domain
 {
     public partial class BarData
     {
-        public BarData(Timestamp openTime, Timestamp closeTime, double price, double realVolume)
+        public UtcTicks OpenTime
+        {
+            get => new UtcTicks(OpenTimeRaw);
+            set => OpenTimeRaw = value.Value;
+        }
+
+        public UtcTicks CloseTime
+        {
+            get => new UtcTicks(CloseTimeRaw);
+            set => CloseTimeRaw = value.Value;
+        }
+
+
+        public BarData(UtcTicks openTime, UtcTicks closeTime, double price, double realVolume)
             : this(openTime, closeTime, price, realVolume, 1)
         {
         }
 
-        public BarData(Timestamp openTime, Timestamp closeTime, double price, double realVolume, long tickVolume)
+        public BarData(UtcTicks openTime, UtcTicks closeTime, double price, double realVolume, long tickVolume)
         {
-            OpenTime = openTime;
-            CloseTime = closeTime;
+            OpenTimeRaw = openTime.Value;
+            CloseTimeRaw = closeTime.Value;
             Open = High = Close = Low = price;
             RealVolume = realVolume;
             TickVolume = tickVolume;
+        }
+
+        public BarData(UtcTicks openTime, UtcTicks closeTime, BarData other)
+            : this(other)
+        {
+            OpenTimeRaw = openTime.Value;
+            CloseTimeRaw = closeTime.Value;
+        }
+
+        public BarData(UtcTicks openTime, UtcTicks closeTime)
+        {
+            OpenTimeRaw = openTime.Value;
+            CloseTimeRaw = closeTime.Value;
         }
 
 
@@ -25,9 +50,9 @@ namespace TickTrader.Algo.Domain
             return new BarData() { Open = double.NaN, Close = double.NaN, High = double.NaN, Low = double.NaN, RealVolume = double.NaN, TickVolume = 0 };
         }
 
-        public static BarData CreateBlank(Timestamp openTime, Timestamp closeTime)
+        public static BarData CreateBlank(UtcTicks openTime, UtcTicks closeTime)
         {
-            return new BarData(openTime, closeTime, 0.0, 0.0, 0);
+            return new BarData(openTime, closeTime);
         }
 
 

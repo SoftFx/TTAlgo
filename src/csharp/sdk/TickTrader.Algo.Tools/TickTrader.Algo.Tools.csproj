@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- <TargetFrameworks>net472;netstandard2.0</TargetFrameworks> -->
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <VersionPrefix>1.0.0</VersionPrefix>
+  </PropertyGroup>
+
+  <PropertyGroup Label="NuGet package definition">
+    <Id>TickTrader.Algo.Tools</Id>
+    <Title>TickTrader.Algo.Tools</Title>
+    <Description>TickTrader Algo package build tools</Description>
+    <Tags>SoftFX;TickTrader</Tags>
+    <Authors>Soft-FX</Authors>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
+    <PackageIcon>images\icon.png</PackageIcon>
+
+    <BuildOutputTargetFolder>build</BuildOutputTargetFolder>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup Label="NuGet assets">
+    <None Include="icon.png" Pack="true" PackagePath="images\" />
+    <None Pack="true" PackagePath="build\" Include="build\**\*.props; build\**\*.targets;" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Framework" Version="15.1.548" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.1.548" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\core\TickTrader.Algo.Core.Lib\IoHelper.cs" Link="PackageV1\IoHelper.cs" />
+    <Compile Include="..\..\core\TickTrader.Algo.Package\PackageV1\Package.cs" Link="PackageV1\Package.cs" />
+    <Compile Include="..\..\core\TickTrader.Algo.Package\PackageV1\PackageMetadata.cs" Link="PackageV1\PackageMetadata.cs" />
+    <Compile Include="..\..\core\TickTrader.Algo.Package\PackageV1\PackageWriter.cs" Link="PackageV1\PackageWriter.cs" />
+  </ItemGroup>
+
+</Project>

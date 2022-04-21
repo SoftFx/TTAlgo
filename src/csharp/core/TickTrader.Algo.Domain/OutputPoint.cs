@@ -1,26 +1,60 @@
 ﻿using Google.Protobuf;
-using Google.Protobuf.WellKnownTypes;
 
 namespace TickTrader.Algo.Domain
 {
-    public partial class OutputPoint
+    public readonly struct OutputPoint
     {
-        public OutputPoint(Timestamp time, int index, IMessage val)
-            : this(time, index, Any.Pack(val))
-        {
-        }
+        // X coordinate
+        public UtcTicks Time { get; }
 
-        public OutputPoint(Timestamp time, int index, Any val)
+        // Y coordinate
+        public double Value { get; }
+
+        public object Metadata { get; }
+
+
+        public OutputPoint(UtcTicks time, double value)
         {
             Time = time;
-            Index = index;
-            Value = val;
+            Value = value;
+            Metadata = null;
+        }
+
+        public OutputPoint(UtcTicks time, double value, MarkerInfo marker)
+        {
+            Time = time;
+            Value = value;
+            Metadata = marker;
+        }
+    }
+
+
+    public partial class OutputPointWire
+    {
+        public OutputPointWire(OutputPoint point)
+        {
+            Time = point.Time.Value;
+            Value = point.Value;
+            Type = Types.Type.Double;
+            switch(point.Metadata)
+            {
+                case MarkerInfo marker:
+                    Type = Types.Type.Marker;
+                    Metadata = marker.ToByteString();
+                    break;
+            }
         }
 
 
-        public OutputPoint WithNewIndex(int newIndex)
+        public OutputPoint Unpack()
         {
-            return new OutputPoint(Time, newIndex, Value);
+            switch (Type)
+            {
+                case Types.Type.Double: break;
+                case Types.Type.Marker: return new OutputPoint(new UtcTicks(Time), Value, (MarkerInfo)MarkerInfo.Descriptor.Parser.ParseFrom(Metadata));
+            }
+
+            return new OutputPoint(new UtcTicks(Time), Value);
         }
     }
 }

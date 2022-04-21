@@ -51,7 +51,7 @@ namespace TickTrader.Algo.Backtester
 
         private void BarVector_BarClosed(BarData bar)
         {
-            var update = new DataSeriesUpdate(DataSeriesUpdate.Types.Type.SymbolRate, _symbol, DataSeriesUpdate.Types.UpdateAction.Append, bar);
+            var update = new BarSeriesUpdate(BarSeriesUpdate.Types.Type.SymbolRate, _symbol, DataSeriesUpdate.Types.Action.Append, bar);
             _sendUpdateAction(update);
         }
     }

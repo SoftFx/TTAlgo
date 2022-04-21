@@ -9,6 +9,7 @@ using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Isolation.NetCore;
 using TickTrader.Algo.Logging;
 using TickTrader.Algo.Package;
+using TickTrader.Algo.Rpc;
 using TickTrader.Algo.Runtime;
 
 namespace TickTrader.Algo.RuntimeV1Host.NetCore
@@ -17,21 +18,30 @@ namespace TickTrader.Algo.RuntimeV1Host.NetCore
     {
         static void Main(string[] args)
         {
-            if (args.Length < 3)
-                Environment.FailFast(string.Join(", ", args));
+            RpcProxyParams rpcParams = null;
+            try
+            {
+                rpcParams = RpcProxyParams.ReadFromEnvVars(Environment.GetEnvironmentVariables());
+            }
+            catch (Exception ex)
+            {
+                Environment.FailFast(ex.ToString());
+            }
 
-            ConfigureLogging(args[2]);
+            ConfigureLogging(rpcParams.ProxyId);
 
-            RunRuntime(args).Wait();
+            RunRuntime(rpcParams).Wait();
         }
 
-        private static async Task RunRuntime(string[] args)
+        private static async Task RunRuntime(RpcProxyParams rpcParams)
         {
+            AlgoLoggerFactory.Init(NLogLoggerAdapter.Create);
+
             var logger = LogManager.GetLogger("MainLoop");
 
             SetupGlobalExceptionLogging(logger);
 
-            logger.Info("Starting runtime with id {runtimeId} at server {address}:{port}", args[2], args[0], args[1]);
+            logger.Info("Starting runtime with id {runtimeId} at server {address}:{port}", rpcParams.ProxyId, rpcParams.Address, rpcParams.Port);
 
             PackageLoadContext.Init(PackageLoadContextProvider.Create);
             PackageExplorer.Init(PackageV1Explorer.Create());
@@ -43,7 +53,7 @@ namespace TickTrader.Algo.RuntimeV1Host.NetCore
             {
 
                 loader = new RuntimeV1Loader();
-                await loader.Init(args[0], int.Parse(args[1]), args[2]);
+                await loader.Init(rpcParams.Address, rpcParams.Port, rpcParams.ProxyId, rpcParams.ParentProcId);
             }
             catch (Exception ex)
             {

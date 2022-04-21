@@ -1,0 +1,5 @@
+<Project>
+    <PropertyGroup>
+        <UseFdk2Src>false</UseFdk2Src>
+    </PropertyGroup>
+</Project>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Backtester
@@ -39,6 +40,7 @@ namespace TickTrader.Algo.Backtester
     {
         CommonTestSettings CommonSettings { get; }
         JournalOptions JournalFlags { get; }
+        string JournalPath { get; }
 
         //TestDataSeriesFlags ChartDataMode { get; }
         Dictionary<string, TestDataSeriesFlags> SymbolDataConfig { get; }
@@ -55,31 +57,5 @@ namespace TickTrader.Algo.Backtester
         Snapshot        = 1,  // collect data as a snashot, snapshot is available at the end of testing
         Stream          = 2,  // stream data out during the testing process
         Realtime        = 4   // real-time streaming (works only if Stream flag is set)
-    }
-
-    public enum WarmupUnitTypes { Bars, Ticks, Days, Hours }
-
-    [Flags]
-    public enum JournalOptions
-    {
-        Disabled = 0,
-        Enabled = 1,
-        WriteInfo = 2,
-        WriteCustom = 4,
-        WriteTrade = 8,
-        WriteOrderModifications = 128,
-        WriteAlert = 256,
-    }
-
-    public enum EmulatorStates { WarmingUp, Running, Paused, Stopping, Stopped }
-
-    public interface ITestExecController
-    {
-        EmulatorStates State { get; }
-        event Action<EmulatorStates> StateChanged;
-        event Action<Exception> ErrorOccurred;
-        void Pause();
-        void Resume();
-        void SetExecDelay(int delayMs);
     }
 }

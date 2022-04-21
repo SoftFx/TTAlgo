@@ -47,12 +47,12 @@ namespace TickTrader.BotTerminal
             AlgoCommonRepositoryFolder = Path.Combine(appDocumentsFolder, "AlgoRepository");
             AlgoWorkingFolder = Path.Combine(AppFolder, "AlgoData");
             FeedHistoryCacheFolder = Path.Combine(AppFolder, "FeedCache");
-            CustomFeedCacheFolder = Path.Combine(AppFolder, "CustomQuoteCache");
+            CustomFeedCacheFolder = Path.Combine(AppFolder, "FeedCache", "CustomFeed");
             AppDataFolder = Path.Combine(AppFolder, "Settings");
             AppLockFilePath = Path.Combine(AppFolder, "applock");
             UserProfilesFolder = Path.Combine(AppFolder, "Profiles");
             ProfilesCacheFolder = Path.Combine(UserProfilesFolder, "Cache");
-            BacktestResultsFolder = Path.Combine(AppFolder, "Backtest Results");
+            BacktestResultsFolder = Path.Combine(AppFolder, "BacktestResults");
             //}
 
             try

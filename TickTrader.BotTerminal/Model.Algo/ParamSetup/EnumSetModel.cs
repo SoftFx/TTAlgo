@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TickTrader.Algo.Backtester;
+using TickTrader.Algo.BacktesterApi;
 
 namespace TickTrader.BotTerminal
 {

@@ -78,7 +78,7 @@ namespace TickTrader.Algo.Package.V1
             }
         }
 
-        public static Package Load(Stream stream)
+        public static Package Load(Stream stream, long maxRawPkgSize)
         {
             using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Read))
             {
@@ -86,7 +86,7 @@ namespace TickTrader.Algo.Package.V1
                 PackageMetadata metadata = null;
 
                 var rawSize = archive.Entries.Sum(e => e.Length);
-                if (rawSize > PackageLoader.MaxRawPkgSize)
+                if (rawSize > maxRawPkgSize)
                     throw new Exception($"Invalid Algo package: Unpacked size({rawSize}) exceeds limit");
 
                 foreach (var entry in archive.Entries)

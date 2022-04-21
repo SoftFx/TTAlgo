@@ -3,12 +3,14 @@ using TickTrader.Algo.Domain;
 
 namespace TestEnviroment
 {
-    internal static class SymbolFactory
+    public static class SymbolFactory
     {
         private static readonly SymbolInfo _prototype = new()
         {
             TradeAllowed = true,
             Digits = 5,
+            Security = string.Empty,
+            Description = "test",
             LotSize = 100000,
             MinTradeVolume = 0.01,
             MaxTradeVolume = 1000,
@@ -47,7 +49,7 @@ namespace TestEnviroment
         };
 
 
-        public static SymbolInfo BuildSymbol(string baseCurr, string counterCurr)
+        public static ISymbolInfoWithRate BuildSymbol(string baseCurr, string counterCurr)
         {
             var symbol = _prototype.DeepCopy();
 

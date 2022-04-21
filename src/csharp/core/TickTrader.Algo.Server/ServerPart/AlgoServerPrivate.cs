@@ -1,6 +1,7 @@
 ﻿using Google.Protobuf;
 using System.Threading.Tasks;
 using TickTrader.Algo.Account;
+using TickTrader.Algo.Account.Settings;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Rpc;
 
@@ -24,6 +25,8 @@ namespace TickTrader.Algo.Server
         public ConnectionOptions AccountOptions { get; set; }
 
         public RuntimeSettings RuntimeSettings { get; set; }
+
+        public MonitoringSettings MonitoringSettings { get; set; }
 
 
         public AlgoServerPrivate(IActorRef server, EnvService env, IActorRef eventBus, ServerStateModel savedState, AlertManagerModel alerts)
@@ -107,5 +110,30 @@ namespace TickTrader.Algo.Server
                 Id = id;
             }
         }
+
+        internal AccountModelSettings GetDefaultClientSettings(string loggerId) =>
+            new AccountModelSettings(loggerId)
+            {
+                ConnectionSettings = new ConnectionSettings
+                {
+                    AccountFactory = KnownAccountFactories.Fdk2,
+                    Options = AccountOptions,
+                },
+
+                //HistoryProviderSettings = new HistoryProviderSettings
+                //{
+                //    FolderPath = Env.FeedHistoryCacheFolder,
+                //    Options = FeedHistoryFolderOptions.ServerClientHierarchy,
+                //},
+
+                Monitoring = new AccountMonitoringSettings
+                {
+                    NotificationMethod = Alerts.SendServerAlert,
+
+                    EnableQuoteMonitoring = MonitoringSettings.QuoteMonitoring.EnableMonitoring,
+                    AccetableQuoteDelay = MonitoringSettings.QuoteMonitoring.AccetableQuoteDelay,
+                    AlertsDelay = MonitoringSettings.QuoteMonitoring.AlertsDelay,
+                },
+            };
     }
 }

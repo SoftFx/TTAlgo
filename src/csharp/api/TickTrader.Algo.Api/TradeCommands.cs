@@ -87,5 +87,8 @@ namespace TickTrader.Algo.Api
         IncorrectTriggerTime = 135,
         IncorrectTriggerOrderId = 136,
         IncorrectTriggerOrderType = 137,
+        IncorrectConditionsForTrigger = 138,
+        OCORelatedOrderIncorrectOptions = 139,
+        OCOIncorrectRelatedId = 140,
     }
 }

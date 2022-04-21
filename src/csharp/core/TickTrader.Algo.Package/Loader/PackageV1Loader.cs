@@ -20,7 +20,7 @@ namespace TickTrader.Algo.Package
         public void Init()
         {
             using (var stream = File.Open(PackagePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-                _algoPackage = V1.Package.Load(stream);
+                _algoPackage = V1.Package.Load(stream, PackageLoader.MaxRawPkgSize);
             MainAssemblyName = _algoPackage.Metadata.MainBinaryFile;
         }
 

@@ -1,6 +1,7 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:cal="http://www.caliburnproject.org"
+                    xmlns:tester="clr-namespace:TickTrader.Algo.BacktesterApi;assembly=TickTrader.Algo.BacktesterApi"
                     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
     <Style x:Key="SettingsLabel" TargetType="Label">
@@ -20,7 +21,7 @@
         <Setter Property="Margin" Value="5 0 0 4"/>
         
         <Style.Triggers>
-            <DataTrigger Binding="{Binding AlgorithmProp.Value}" Value="{x:Static l:OptimizationAlgorithms.Bruteforce}">
+            <DataTrigger Binding="{Binding AlgorithmProp.Value}" Value="{x:Static tester:OptimizationAlgorithms.Bruteforce}">
                 <Setter Property="IsEnabled" Value="False"/>
             </DataTrigger>
         </Style.Triggers>

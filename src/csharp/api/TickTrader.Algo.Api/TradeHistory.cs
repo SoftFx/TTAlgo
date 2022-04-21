@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Api
 {
+    internal interface IHistoryProvider : TradeHistory, TriggerHistory
+    {
+
+    }
+
+
     public interface TradeHistory : IEnumerable<TradeReport>
     {
         IEnumerable<TradeReport> Get(ThQueryOptions options = ThQueryOptions.None);
@@ -16,12 +20,23 @@ namespace TickTrader.Algo.Api
         IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime to, ThQueryOptions options = ThQueryOptions.None);
     }
 
+    public interface TriggerHistory : IEnumerable<TriggerReport>
+    {
+        IEnumerable<TriggerReport> Get(ThQueryOptions options = ThQueryOptions.None);
+        IEnumerable<TriggerReport> GetRange(DateTime from, DateTime to, ThQueryOptions options = ThQueryOptions.None);
+        IEnumerable<TriggerReport> GetRange(DateTime to, ThQueryOptions options = ThQueryOptions.None);
+        IAsyncEnumerator<TriggerReport> GetAsync(ThQueryOptions options = ThQueryOptions.None);
+        IAsyncEnumerator<TriggerReport> GetRangeAsync(DateTime from, DateTime to, ThQueryOptions options = ThQueryOptions.None);
+        IAsyncEnumerator<TriggerReport> GetRangeAsync(DateTime to, ThQueryOptions options = ThQueryOptions.None);
+    }
+
     [Flags]
     public enum ThQueryOptions
     {
-        None            = 0x0,
-        SkipCanceled    = 0x1,
-        Backwards       = 0x2
+        None = 0x0,
+        SkipCanceled = 0x1,
+        Backwards = 0x2,
+        SkipFailed = 0x4,
     }
 
 

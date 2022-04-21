@@ -8,8 +8,8 @@ namespace TickTrader.BotTerminal
 {
     public abstract class InputSetupViewModel : PropertySetupViewModel
     {
-        private SymbolKey _defaultSymbol;
-        private SymbolKey _selectedSymbol;
+        private StorageSymbolKey _defaultSymbol;
+        private StorageSymbolKey _selectedSymbol;
 
 
         protected SetupMetadata SetupMetadata { get; }
@@ -17,9 +17,9 @@ namespace TickTrader.BotTerminal
 
         public InputDescriptor Descriptor { get; }
 
-        public IReadOnlyList<SymbolKey> AvailableSymbols { get; private set; }
+        public IReadOnlyList<StorageSymbolKey> AvailableSymbols { get; private set; }
 
-        public SymbolKey SelectedSymbol
+        public StorageSymbolKey SelectedSymbol
         {
             get { return _selectedSymbol; }
             set
@@ -33,7 +33,7 @@ namespace TickTrader.BotTerminal
         }
 
 
-        private InputSetupViewModel(InputDescriptor descriptor, SymbolKey defaultSymbol)
+        private InputSetupViewModel(InputDescriptor descriptor, StorageSymbolKey defaultSymbol)
         {
             Descriptor = descriptor;
             _defaultSymbol = defaultSymbol;
@@ -52,7 +52,7 @@ namespace TickTrader.BotTerminal
 
         public override void Reset()
         {
-            SelectedSymbol = AvailableSymbols.ContainMainToken() ? AvailableSymbols.First() : AvailableSymbols.GetSymbolOrAny(_defaultSymbol);
+            SelectedSymbol = AvailableSymbols.GetMainTokenOrNull() ?? AvailableSymbols.GetSymbolOrAny(_defaultSymbol);
         }
 
 
@@ -72,7 +72,7 @@ namespace TickTrader.BotTerminal
         public class Invalid : InputSetupViewModel
         {
             public Invalid(InputDescriptor descriptor, object error = null)
-                : base(descriptor, (SymbolKey)null)
+                : base(descriptor, (StorageSymbolKey)null)
             {
                 if (error == null)
                     Error = new ErrorMsgModel(descriptor.ErrorCode);

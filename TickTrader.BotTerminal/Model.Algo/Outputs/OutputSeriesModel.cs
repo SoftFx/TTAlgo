@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using SciChart.Charting.Model.DataSeries;
+﻿using SciChart.Charting.Model.DataSeries;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -97,7 +96,7 @@ namespace TickTrader.BotTerminal
             if (_synchronizer != null)
                 _synchronizer.Append(point);
             else
-                AppendInternal(point.Time.ToDateTime(), point.Value);
+                AppendInternal(point);
         }
 
         private void Update(OutputPoint point)
@@ -105,17 +104,17 @@ namespace TickTrader.BotTerminal
             if (_synchronizer != null)
                 _synchronizer.Update(point);
             else
-                UpdateInternal(point.Index, point.Time.ToDateTime(), point.Value);
+                UpdateInternal(point);
         }
 
-        private void _collector_SnapshotAppended(OutputPointRange range)
+        private void _collector_SnapshotAppended(OutputPoint[] range)
         {
             if (_synchronizer != null)
-                _synchronizer.AppendSnapshot(range.Points);
+                _synchronizer.AppendSnapshot(range);
             else
             {
-                foreach (var p in range.Points)
-                    AppendInternal(p.Time.ToDateTime(), p.Value);
+                foreach (var p in range)
+                    AppendInternal(p);
             }
         }
 
@@ -126,8 +125,8 @@ namespace TickTrader.BotTerminal
 
         protected abstract T NanValue { get; }
 
-        protected abstract void AppendInternal(DateTime time, Any data);
-        protected abstract void UpdateInternal(int index, DateTime time, Any data);
+        protected abstract void AppendInternal(OutputPoint point);
+        protected abstract void UpdateInternal(OutputPoint point);
         protected abstract void Clear();
 
         public override void Dispose()

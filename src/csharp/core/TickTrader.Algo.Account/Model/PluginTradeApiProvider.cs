@@ -76,6 +76,7 @@ namespace TickTrader.Algo.Account
                 ClientOrderId = operationId,
                 OrderStatus = OrderStatus.Rejected,
                 RejectReason = rejectCode,
+                Assets = new AssetInfo[0],
             };
             OnExclusiveReport?.Invoke(rep);
         }

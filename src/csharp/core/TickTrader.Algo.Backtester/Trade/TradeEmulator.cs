@@ -7,6 +7,7 @@ using TickTrader.Algo.Api.Ext;
 using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.Calculator;
 using TickTrader.Algo.Calculator.AlgoMarket;
+using TickTrader.Algo.Calculator.TradeSpecificsCalculators;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.CoreV1;
@@ -88,7 +89,7 @@ namespace TickTrader.Algo.Backtester
                 _acc.Balance = _settings.CommonSettings.InitialBalance;
                 _acc.Leverage = _settings.CommonSettings.Leverage;
                 _acc.UpdateCurrency(_settings.CommonSettings.Currencies.GetOrDefault(_settings.CommonSettings.BalanceCurrency));
-                _opSummary.AccountCurrencyFormat = _acc.BalanceCurrencyFormat;
+                _opSummary.BalanceCurrencyFormat = new System.Globalization.NumberFormatInfo { NumberDecimalDigits = _acc.BalanceCurrencyInfo?.Digits ?? 2 };
             }
             else if (_acc.IsCashType)
             {
@@ -101,8 +102,8 @@ namespace TickTrader.Algo.Backtester
 
         public void Stop()
         {
-            CloseAllPositions(TradeReportInfo.Types.Reason.Rollover);
-            CancelAllPendings(TradeReportInfo.Types.Reason.Rollover);
+            CloseAllPositions(TradeReportInfo.Types.Reason.DealerDecision);
+            CancelAllPendings(TradeReportInfo.Types.Reason.DealerDecision);
         }
 
         public void PreRestart()
@@ -125,8 +126,7 @@ namespace TickTrader.Algo.Backtester
             {
                 OrderCmdResultCodes error = OrderCmdResultCodes.UnknownError;
 
-                ISymbolCalculator calc = null; /*_calcFixture.GetCalculator(request.Symbol);*/
-                var smbMetadata = calc.SymbolInfo;
+                var smbMetadata = _context.Builder.Symbols.GetOrNull(request.Symbol).Info;
 
                 var roundedVolumeLots = RoundVolume(request.Volume, smbMetadata);
 
@@ -134,32 +134,32 @@ namespace TickTrader.Algo.Backtester
                 {
                     //using (calc.UsageScope())
                     //{
-                        //maxVisibleVolumeLots = RoundVolume(maxVisibleVolumeLots, smbMetadata);
-                        double volume = ToUnits(roundedVolumeLots, smbMetadata);
-                        double? maxVisibleVolume = null; //ConvertNullableVolume(maxVisibleVolumeLots, smbMetadata);
-                        var price = RoundPrice(request.Price, smbMetadata, request.Side.ToDomainEnum());
-                        var stopPrice = RoundPrice(request.StopPrice, smbMetadata, request.Side.ToDomainEnum());
-                        var sl = RoundPrice(request.StopLoss, smbMetadata, request.Side.ToDomainEnum());
-                        var tp = RoundPrice(request.TakeProfit, smbMetadata, request.Side.ToDomainEnum());
+                    //maxVisibleVolumeLots = RoundVolume(maxVisibleVolumeLots, smbMetadata);
+                    double volume = ToUnits(roundedVolumeLots, smbMetadata);
+                    double? maxVisibleVolume = null; //ConvertNullableVolume(maxVisibleVolumeLots, smbMetadata);
+                    var price = RoundPrice(request.Price, smbMetadata, request.Side.ToDomainEnum());
+                    var stopPrice = RoundPrice(request.StopPrice, smbMetadata, request.Side.ToDomainEnum());
+                    var sl = RoundPrice(request.StopLoss, smbMetadata, request.Side.ToDomainEnum());
+                    var tp = RoundPrice(request.TakeProfit, smbMetadata, request.Side.ToDomainEnum());
 
-                        // emulate server ping
-                        await _scheduler.EmulateAsyncDelay(VirtualServerPing, true);
+                    // emulate server ping
+                    await _scheduler.EmulateAsyncDelay(VirtualServerPing, true);
 
-                        using (JournalScope())
-                        {
-                            VerifyAmout(volume, smbMetadata);
-                            ValidateOrderTypeForAccount(request.Type, calc.SymbolInfo);
-                            ValidateTypeAndPrice(request.Type, price, stopPrice, sl, tp, maxVisibleVolume, request.Options, calc.SymbolInfo);
+                    using (JournalScope())
+                    {
+                        VerifyAmout(volume, smbMetadata);
+                        ValidateOrderTypeForAccount(request.Type, smbMetadata);
+                        ValidateTypeAndPrice(request.Type, price, stopPrice, sl, tp, maxVisibleVolume, request.Options, smbMetadata);
 
-                            //Facade.ValidateExpirationTime(Request.Expiration, _acc);
+                        //Facade.ValidateExpirationTime(Request.Expiration, _acc);
 
-                            var order = OpenOrder(calc, request.Type.ToDomainEnum(), request.Side.ToDomainEnum(), volume, maxVisibleVolume, price, stopPrice, sl, tp, request.Comment, request.Options.ToDomainEnum(), request.Tag, request.Expiration, OpenOrderOptions.None);
+                        var order = OpenOrder(smbMetadata, request.Type.ToDomainEnum(), request.Side.ToDomainEnum(), volume, maxVisibleVolume, price, stopPrice, sl, tp, request.Comment, request.Options.ToDomainEnum(), request.Tag, request.Expiration, OpenOrderOptions.None);
 
-                            _collector.OnOrderOpened();
+                        _collector.OnOrderOpened();
 
-                            // set result
-                            return new OrderResultEntity(OrderCmdResultCodes.Ok, order.Clone(), ExecutionTime);
-                        }
+                        // set result
+                        return new OrderResultEntity(OrderCmdResultCodes.Ok, order.Clone(), ExecutionTime);
+                    }
                     //}
                 }
                 catch (OrderValidationError ex)
@@ -239,7 +239,7 @@ namespace TickTrader.Algo.Backtester
                     var orderToModify = _acc.GetOrderOrThrow(request.OrderId);
                     var smbMetadata = orderToModify.SymbolInfo;
 
-                    var orderVolume = orderToModify.Entity.RemainingAmount;
+                    var orderVolume = orderToModify.Info.RemainingAmount;
 
                     var roundedNewVolumeLots = RoundVolume(request.Volume, smbMetadata);
                     var roundedMaxVisibleVolume = RoundVolume(request.MaxVisibleVolume, smbMetadata);
@@ -266,7 +266,7 @@ namespace TickTrader.Algo.Backtester
                         StopLoss = sl,
                         TakeProfit = tp,
                         Comment = comment,
-                        Expiration = request.Expiration.Value.ToTimestamp(),
+                        Expiration = request.Expiration?.ToUniversalTime().ToTimestamp(),
                         MaxVisibleAmount = (double?)orderMaxVisibleVolume,
                         ExecOptions = request.Options?.ToDomainEnum(),
                     };
@@ -436,29 +436,29 @@ namespace TickTrader.Algo.Backtester
             return (++_orderIdSeed).ToString();
         }
 
-        private OrderAccessor OpenOrder(ISymbolCalculator orderCalc, OrderInfo.Types.Type orderType, OrderInfo.Types.Side side, double volume, double? maxVisibleVolume, double? price, double? stopPrice,
+        private OrderAccessor OpenOrder(SymbolInfo symbolInfo, OrderInfo.Types.Type orderType, OrderInfo.Types.Side side, double volume, double? maxVisibleVolume, double? price, double? stopPrice,
             double? sl, double? tp, string comment, Domain.OrderExecOptions execOptions, string tag, DateTime? expiration, OpenOrderOptions options)
         {
-            var symbolInfo = orderCalc.SymbolInfo;
-
             var order = new OrderAccessor(symbolInfo);
 
-            order.Entity.Id = NewOrderId();
+            order.Info.Id = NewOrderId();
             //order.SymbolPrecision = symbolInfo.Digits;
-            order.Entity.RequestedAmount = volume;
-            order.Entity.RemainingAmount = volume;
-            order.Entity.MaxVisibleAmount = maxVisibleVolume;
+            order.Info.RequestedAmount = volume;
+            order.Info.RemainingAmount = volume;
+            order.Info.MaxVisibleAmount = maxVisibleVolume;
 
-            order.Entity.Side = side;
-            order.Entity.Type = orderType;
-            order.Entity.Symbol = symbolInfo.Name;
-            order.Entity.Created = _scheduler.UnsafeVirtualTimePoint;
-            order.Entity.Modified = _scheduler.UnsafeVirtualTimePoint;
-            order.Entity.Comment = comment;
+            order.Info.Side = side;
+            order.Info.Type = orderType;
+            order.Info.Symbol = symbolInfo.Name;
+            order.Info.Comment = comment;
+
+            var timestamp = _scheduler.UnsafeVirtualTimestamp;
+            order.Info.Created = timestamp;
+            order.Info.Modified = timestamp;
 
             //order.ClientOrderId = request.ClientOrderId;
             //order.Status = OrderStatuses.New;
-            order.Entity.InitialType = orderType;
+            order.Info.InitialType = orderType;
             //order.ParentOrderId = request.ParentOrderId;
 
             //double? price = (double?)request.Price;
@@ -488,22 +488,22 @@ namespace TickTrader.Algo.Backtester
             //    //LogTransactionDetails(() => slippageCalculationMessage, JournalEntrySeverities.Info);
             //}
 
-            order.Entity.StopLoss = sl;
-            order.Entity.TakeProfit = tp;
+            order.Info.StopLoss = sl;
+            order.Info.TakeProfit = tp;
             //order.TransferringCoefficient = request.TransferringCoefficient;
-            order.Entity.UserTag = tag;
-            order.Entity.InstanceId = _acc.InstanceId;
-            order.Entity.Expiration = expiration;
-            order.Entity.Options = execOptions.ToOrderOptions();
+            order.Info.UserTag = tag;
+            order.Info.InstanceId = _acc.InstanceId;
+            order.Info.Expiration = expiration.HasValue ? expiration.Value.ToUniversalTime().ToTimestamp() : null;
+            order.Info.Options = execOptions.ToOrderOptions();
             //order.ReqOpenPrice = clientPrice;
             //order.ReqOpenAmount = clientAmount;
 
             if (orderType != OrderInfo.Types.Type.Stop)
-                order.Entity.Price = price;
+                order.Info.Price = price;
             if (orderType == OrderInfo.Types.Type.Stop || orderType == OrderInfo.Types.Type.StopLimit)
-                order.Entity.StopPrice = stopPrice;
+                order.Info.StopPrice = stopPrice;
 
-            _calcFixture.ValidateNewOrder(order, orderCalc);
+            _calcFixture.ValidateNewOrder(order);
 
             //string comment = null;
 
@@ -594,7 +594,7 @@ namespace TickTrader.Algo.Backtester
             if (fillInfo.NetPos != null)
             {
                 var closeActionCharges = isFakeOrder ? fillInfo.NetPos.Charges : null;
-                _opSummary.AddNetCloseAction(fillInfo.NetPos.CloseInfo, order.SymbolInfo, _acc.BalanceCurrencyInfo, closeActionCharges);
+                _opSummary.AddNetCloseAction(fillInfo.NetPos.CloseInfo, order.SymbolInfo, closeActionCharges);
                 _opSummary.AddNetPositionNotification(fillInfo.NetPos.ResultingPosition, order.SymbolInfo);
             }
 
@@ -622,7 +622,7 @@ namespace TickTrader.Algo.Backtester
 
             //ValidateType(replaceOrder);
 
-            if (!order.Entity.IsPending) // forbid to change price and volume for positions (server style!)
+            if (!order.Info.Type.IsPending()) // forbid to change price and volume for positions (server style!)
             {
                 request.Price = null;
                 request.NewAmount = null;
@@ -666,11 +666,11 @@ namespace TickTrader.Algo.Backtester
             //if (Request.MaxVisibleAmount.HasValue && (Request.MaxVisibleAmount.Value >= 0))
             //Facade.VerifyMaxVisibleAmout(Request.MaxVisibleAmount, securityCfg, symbolInfo, Request.IsClientRequest);
 
-            var newVolume = request.NewAmount ?? order.Entity.RequestedAmount;
+            var newVolume = request.NewAmount ?? order.Info.RequestedAmount;
             var newPrice = request.Price ?? order.Info.Price;
             var newStopPrice = request.StopPrice ?? order.Info.StopPrice;
 
-            bool volumeChanged = newVolume != order.Entity.RequestedAmount;
+            bool volumeChanged = newVolume != order.Info.RequestedAmount;
 
             // Check margin of the modified order
             if (volumeChanged)
@@ -762,18 +762,19 @@ namespace TickTrader.Algo.Backtester
             var currentRate = _calcFixture.GetCurrentRateOrThrow(request.Symbol);
 
             var oldOrderCopy = order.Clone();
+            var orderType = order.Info.Type;
 
-            if (order.Info.Type != OrderInfo.Types.Type.Market)
+            if (!orderType.IsMarket())
                 UnregisterOrder(order);
 
             var newVol = request.NewAmount;
 
-            if (order.Entity.IsPending && newVol.HasValue && newVol != order.Entity.RequestedAmount)
+            if (orderType.IsPending() && newVol.HasValue && newVol != order.Info.RequestedAmount)
             {
-                var filledVolume = order.Entity.RequestedAmount - order.Info.RemainingAmount;
+                var filledVolume = order.Info.RequestedAmount - order.Info.RemainingAmount;
 
-                order.Entity.RequestedAmount = newVol.Value;
-                order.Entity.ChangeRemAmount(newVol.Value - filledVolume);
+                order.Info.RequestedAmount = newVol.Value;
+                order.Info.ChangeRemaningAmount(newVol.Value - filledVolume);
 
                 // Recalculate commission if necessary.
                 //var mAcc = acc as MarginAccountModel;
@@ -781,35 +782,29 @@ namespace TickTrader.Algo.Backtester
             }
 
             // Update or reset max visible amount value
-            if (order.Entity.IsPending && request.MaxVisibleAmount.HasValue)
+            if (orderType.IsPending() && request.MaxVisibleAmount.HasValue)
             {
                 if (request.MaxVisibleAmount.Value < 0)
                 {
-                    order.Entity.MaxVisibleAmount = null;
+                    order.Info.MaxVisibleAmount = null;
                 }
                 else
                 {
-                    order.Entity.MaxVisibleAmount = request.MaxVisibleAmount;
+                    order.Info.MaxVisibleAmount = request.MaxVisibleAmount;
                     //order.Options = order.Options.SetFlag(OrderExecutionOptions.HiddenIceberg);
                 }
             }
 
-            if (request.Price.HasValue)
+            if (request.Price.HasValue && orderType.IsLimit())
             {
-                if (order.Info.Type == OrderInfo.Types.Type.Limit || order.Info.Type == OrderInfo.Types.Type.StopLimit)
-                {
-                    order.Entity.Price = request.Price.Value;
-                    //order.ReqOpenPrice = request.Price.Value;
-                }
+                order.Info.Price = request.Price.Value;
+                //order.ReqOpenPrice = request.Price.Value;
             }
 
-            if (request.StopPrice.HasValue)
+            if (request.StopPrice.HasValue && orderType.IsStop())
             {
-                if (order.Info.Type == OrderInfo.Types.Type.Stop || order.Info.Type == OrderInfo.Types.Type.StopLimit)
-                {
-                    order.Entity.StopPrice = request.StopPrice ?? order.Info.StopPrice;
-                    //order.ReqOpenPrice = request.StopPrice.Value;
-                }
+                order.Info.StopPrice = request.StopPrice.Value;
+                //order.ReqOpenPrice = request.StopPrice.Value;
             }
 
             // Change IOC option for stop-limit orders
@@ -818,26 +813,26 @@ namespace TickTrader.Algo.Backtester
             //    order.Options = request.ImmediateOrCancelFlag.Value ? order.Options.SetFlag(OrderExecutionOptions.ImmediateOrCancel) : order.Options.ClearFlag(OrderExecutionOptions.ImmediateOrCancel);
             //}
 
-            if (order.Entity.IsPending)
+            if (request.Expiration != null && orderType.IsPending())
             {
                 var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
                 if (request.Expiration.ToDateTime() > epoch)
-                    order.Entity.Expiration = request.Expiration.ToDateTime();
+                    order.Info.Expiration = request.Expiration;
                 else
-                    order.Entity.Expiration = null;
+                    order.Info.Expiration = null;
             }
 
             if (_acc.Type == AccountInfo.Types.Type.Gross)
             {
                 if (request.StopLoss.HasValue)
-                    order.Entity.StopLoss = (request.StopLoss.Value != 0) ? request.StopLoss : null;
+                    order.Info.StopLoss = (request.StopLoss.Value != 0) ? request.StopLoss : null;
                 if (request.TakeProfit.HasValue)
-                    order.Entity.TakeProfit = (request.TakeProfit.Value != 0) ? request.TakeProfit : null;
+                    order.Info.TakeProfit = (request.TakeProfit.Value != 0) ? request.TakeProfit : null;
             }
 
-            order.Entity.Comment = request.Comment ?? order.Info.Comment;
-            order.Entity.UserTag = request.Tag == null ? order.Entity.UserTag : CompositeTag.ExtarctUserTarg(request.Tag);
-            order.Entity.Modified = _scheduler.UnsafeVirtualTimePoint;
+            order.Info.Comment = request.Comment ?? order.Info.Comment;
+            order.Info.UserTag = request.Tag == null ? order.Info.UserTag : CompositeTag.ExtarctUserTarg(request.Tag);
+            order.Info.Modified = _scheduler.UnsafeVirtualTimestamp;
             //order.Magic = request.Magic ?? order.Magic;
 
             // calculate reduced commission options
@@ -877,7 +872,7 @@ namespace TickTrader.Algo.Backtester
             //    }
             //}
 
-            if (order.Info.Type != OrderInfo.Types.Type.Market)
+            if (!orderType.IsMarket())
                 RegisterOrder(order, currentRate);
 
             //_acc.CalculateOrder(order, infrustructure);
@@ -924,7 +919,9 @@ namespace TickTrader.Algo.Backtester
         // can lead to: 1) new gross position 2) net position settlement 3) asset movement
         private FillInfo FillOrder2(OrderAccessor order, double fillPrice, double fillAmount, TradeReportInfo.Types.Reason reason)
         {
-            if (order.Info.Type == OrderInfo.Types.Type.Position)
+            var orderType = order.Info.Type;
+
+            if (orderType.IsPosition())
                 throw new Exception("Order already filled #" + order.Info.Id);
 
             var copy = order.Clone();
@@ -938,7 +935,7 @@ namespace TickTrader.Algo.Backtester
             if (partialFill)
             {
                 //order.Status = OrderStatuses.Calculated;
-                order.Entity.ChangeRemAmount(order.Info.RemainingAmount - fillAmount);
+                order.Info.ChangeRemaningAmount(order.Info.RemainingAmount - fillAmount);
                 //_calcFixture.CalculateOrder(order);
 
                 //if (order.IsPending)
@@ -947,18 +944,18 @@ namespace TickTrader.Algo.Backtester
             else
             {
                 //order.Status = OrderStatuses.Filled;
-                order.Entity.ChangeRemAmount(0);
+                order.Info.ChangeRemaningAmount(0);
 
-                if (order.Entity.IsPending)
+                if (orderType.IsPending())
                     UnregisterOrder(order);
             }
 
             //order.AggrFillPrice += fillAmount * fillPrice;
             //order.AverageFillPrice = order.AggrFillPrice / (order.Amount - order.RemainingAmount);
             //order.Entity.Filled = OperationContext.ExecutionTime;
-            order.Entity.Modified = _scheduler.UnsafeVirtualTimePoint;
-            order.Entity.LastFillPrice = fillPrice;
-            order.Entity.LastFillAmount = fillAmount;
+            order.Info.Modified = _scheduler.UnsafeVirtualTimestamp;
+            order.Info.LastFillPrice = fillPrice;
+            order.Info.LastFillAmount = fillAmount;
 
             if ((_acc.Type == AccountInfo.Types.Type.Net) || (_acc.Type == AccountInfo.Types.Type.Cash))
             {
@@ -991,8 +988,8 @@ namespace TickTrader.Algo.Backtester
             if (tradeReport != null)
             {
                 tradeReport.FillGenericOrderData(_calcFixture, order);
-                tradeReport.Entity.OrderLastFillAmount = (double?)fillAmount;
-                tradeReport.Entity.OrderFillPrice = (double?)fillPrice;
+                tradeReport.Info.OrderLastFillAmount = (double?)fillAmount;
+                tradeReport.Info.OrderFillPrice = (double?)fillPrice;
 
                 if (_acc.IsMarginType)
                 {
@@ -1036,7 +1033,7 @@ namespace TickTrader.Algo.Backtester
 
         private OrderAccessor CancelOrder(OrderAccessor order, TradeReportInfo.Types.Reason trReason)
         {
-            if (order.Info.Type != OrderInfo.Types.Type.Limit && order.Info.Type != OrderInfo.Types.Type.Stop && order.Info.Type != OrderInfo.Types.Type.StopLimit)
+            if (!order.Info.Type.IsPending())
                 throw new OrderValidationError("Only Limit, Stop and StopLimit orders can be canceled. Please check the type of the order #" + order.Info.Id, OrderCmdResultCodes.OrderNotFound);
 
             var dealerReq = new CancelOrderDealerRequest(order, null /*order.SymbolInfo.Info.LastQuote*/);
@@ -1091,8 +1088,8 @@ namespace TickTrader.Algo.Backtester
             var report = _history.Create(_scheduler.UnsafeVirtualTimePoint, order.SymbolInfo, trReason == TradeReportInfo.Types.Reason.Expired ? TradeReportInfo.Types.ReportType.OrderExpired : TradeReportInfo.Types.ReportType.OrderCanceled, trReason);
             report.FillGenericOrderData(_calcFixture, order);
             report.FillAccountSpecificFields(_calcFixture);
-            report.Entity.RemainingQuantity = 0;
-            report.Entity.MaxVisibleQuantity = (double?)order.Entity.MaxVisibleAmount;
+            report.Info.RemainingQuantity = 0;
+            report.Info.MaxVisibleQuantity = order.Info.MaxVisibleAmount;
 
             if (_acc.IsMarginType)
             {
@@ -1122,6 +1119,7 @@ namespace TickTrader.Algo.Backtester
             OrderAccessor position;
             //TradeChargesInfo charges = new TradeChargesInfo();
             var currentRate = _calcFixture.GetCurrentRateOrNull(smb.Name);
+            var symbolCalc = _context.MarketData.GetCalculator(smb);
             var wasTmpOrder = parentOrder.Info.Type == OrderInfo.Types.Type.Market
                 || (parentOrder.Info.Type == OrderInfo.Types.Type.Limit && parentOrder.Info.IsImmediateOrCancel);
 
@@ -1142,21 +1140,24 @@ namespace TickTrader.Algo.Backtester
             else
             {
                 position = new OrderAccessor(smb);
-                position.Entity.Id = NewOrderId();
-                position.Entity.Symbol = smb.Name;
+                position.Info.Id = NewOrderId();
+                position.Info.Symbol = smb.Name;
                 //position.ClientOrderId = Guid.NewGuid().ToString("D");
-                position.Entity.Side = side;
-                position.Entity.Created = _scheduler.UnsafeVirtualTimePoint;
+                position.Info.Side = side;
                 position.Entity.PositionCreated = ExecutionTime;
                 //position.SymbolPrecision = smb.Digits;
 
+                var timestamp = _scheduler.UnsafeVirtualTimestamp;
+                position.Info.Created = timestamp;
+                position.Info.Modified = timestamp;
+
                 if (parentOrder != null)
                 {
-                    position.Entity.MaxVisibleAmount = parentOrder.Entity.MaxVisibleAmount;
-                    position.Entity.StopLoss = parentOrder.Entity.StopLoss;
-                    position.Entity.TakeProfit = parentOrder.Entity.TakeProfit;
-                    position.Entity.Comment = parentOrder.Entity.Comment;
-                    position.Entity.UserTag = parentOrder.Entity.UserTag;
+                    position.Info.MaxVisibleAmount = parentOrder.Info.MaxVisibleAmount;
+                    position.Info.StopLoss = parentOrder.Info.StopLoss;
+                    position.Info.TakeProfit = parentOrder.Info.TakeProfit;
+                    position.Info.Comment = parentOrder.Info.Comment;
+                    position.Info.UserTag = parentOrder.Info.UserTag;
                     //position.ManagerComment = parentOrder.ManagerComment;
                     //position.ManagerTag = parentOrder.ManagerTag;
                     //position.Magic = parentOrder.Magic;
@@ -1174,13 +1175,13 @@ namespace TickTrader.Algo.Backtester
             }
 
             //position.ParentOrderId = (parentOrder != null) ? parentOrder.OrderId : position.OrderId;
-            position.Entity.InitialType = (parentOrder != null) ? parentOrder.Entity.InitialType : OrderInfo.Types.Type.Market;
+            position.Info.InitialType = (parentOrder != null) ? parentOrder.Info.InitialType : OrderInfo.Types.Type.Market;
 
             //position.Entity.Type = OrderType.Position;
             //position.Status = OrderStatuses.Calculated;
             //position.Entity.Price = (double)openPrice; // position open price
 
-            position.Entity.ChangeEssentials(OrderInfo.Types.Type.Position, posAmount, openPrice, null);
+            position.Info.ChangeEssentials(OrderInfo.Types.Type.Position, posAmount, openPrice, null);
 
             // stop price for stops
             //if ((parentOrder != null) && (parentOrder.InitialType == OrderTypes.StopLimit || parentOrder.InitialType == OrderTypes.Stop))
@@ -1188,20 +1189,19 @@ namespace TickTrader.Algo.Backtester
             //else
             //    position.Entity.StopPrice = null;
 
-            position.Entity.RequestedAmount = posAmount;
+            position.Info.RequestedAmount = posAmount;
             //position.RemainingAmount = posAmount;
-            position.Entity.Modified = _scheduler.UnsafeVirtualTimePoint;
-            position.Entity.Expiration = null;
+            position.Info.Expiration = null;
 
-            if (_acc.Type == AccountInfo.Types.Type.Gross && position.Entity.TakeProfit.HasValue)
-            {
-                double? currentRateBid = ((QuoteInfo)currentRate)?.NullableBid();
-                double? currentRateAsk = ((QuoteInfo)currentRate)?.NullableAsk();
-                //position.IsReducedCloseCommission = ((position.Side == OrderSide.Buy && currentRateBid.HasValue &&
-                //                                      position.TakeProfit > currentRateBid) ||
-                //                                     (position.Side == OrderSide.Sell && currentRateAsk.HasValue &&
-                //                                      position.TakeProfit < currentRateAsk));
-            }
+            //if (_acc.Type == AccountInfo.Types.Type.Gross && position.Info.TakeProfit.HasValue)
+            //{
+            //    double? currentRateBid = ((QuoteInfo)currentRate)?.NullableBid();
+            //    double? currentRateAsk = ((QuoteInfo)currentRate)?.NullableAsk();
+            //    //position.IsReducedCloseCommission = ((position.Side == OrderSide.Buy && currentRateBid.HasValue &&
+            //    //                                      position.TakeProfit > currentRateBid) ||
+            //    //                                     (position.Side == OrderSide.Sell && currentRateAsk.HasValue &&
+            //    //                                      position.TakeProfit < currentRateAsk));
+            //}
 
             // increase reported action number
             position.Entity.ActionNo++;
@@ -1218,7 +1218,9 @@ namespace TickTrader.Algo.Backtester
             //position.Entity.OpenConversionRate = position.MarginRateCurrent;
 
             // calculate commission
-            CommisionEmulator.OnGrossPositionOpened(position, position.SymbolInfo, _calcFixture);
+            //CommisionEmulator.OnGrossPositionOpened(position, position.SymbolInfo, _calcFixture);
+            var commissionRes = symbolCalc.Commission.Calculate(new CommissionRequest(position.Info.Side, position.Info.RemainingAmount, false, false));
+            position.Info.ChangeCommission(RoundMoney(2 * commissionRes.Value, _calcFixture.RoundingDigits)); // one-way commission mode
 
             //// log
             //if (transformOrder)
@@ -1227,8 +1229,7 @@ namespace TickTrader.Algo.Backtester
             //    Logger.Info(() => OperationContext.LogPrefix + "Create new position: " + position);
 
             // register order
-            //DO TOT DELETE, WE WILL DECIDE WHAT TO DO LATER
-            //RegisterOrder(position, (RateUpdate)position.Calculator.CurrentRate);
+            RegisterOrder(position, currentRate);
 
             //position.FireChanged();
 
@@ -1358,24 +1359,30 @@ namespace TickTrader.Algo.Backtester
         internal NetPositionOpenInfo OpenNetPositionFromOrder(OrderAccessor fromOrder, double fillAmount, double fillPrice, TradeReportAdapter tradeReport)
         {
             var smb = fromOrder.SymbolInfo;
+            var symbolCalc = _context.MarketData.GetCalculator(smb);
+            var fillSide = fromOrder.Info.Side;
             var position = _acc.NetPositions.GetOrCreatePosition(smb.Name, NewOrderId());
-            //position.Increase(fillAmount, fillPrice, fromOrder.Info.Side);
-            position.Info.Modified = _scheduler.UnsafeVirtualTimePoint.ToTimestamp();
+            var posInfo = position.Info;
+            var timestamp = _scheduler.UnsafeVirtualTimestamp;
+            posInfo.Modified = timestamp;
 
             var charges = new TradeChargesInfo();
+            charges.CurrencyInfo = _acc.BalanceCurrencyInfo;
 
             // commission
-            CommisionEmulator.OnNetPositionOpened(fromOrder, position, fillAmount, smb, charges, _calcFixture);
+            var commissionRes = symbolCalc.Commission.Calculate(new CommissionRequest(fromOrder.Info.Side, fillAmount, false, fromOrder.Info.MaxVisibleAmount.HasValue));
+            var commission = RoundMoney(commissionRes.Value, _calcFixture.RoundingDigits);
+            //CommisionEmulator.OnNetPositionOpened(fromOrder, position, fillAmount, smb, charges, _calcFixture);
+            charges.Commission = commission;
 
-            tradeReport.Entity.Commission = (double)charges.Commission;
+            tradeReport.Info.Commission = commission;
             //tradeReport.Entity.AgentCommission = (double)charges.AgentCommission;
             //tradeReport.Entity.MinCommissionCurrency = (double)charges.MinCommissionCurrency;
             //tradeReport.Entity.MinCommissionConversionRate =  (double)charges.MinCommissionConversionRate;
 
-            var balanceMovement = charges.Total;
-            tradeReport.Entity.TransactionAmount = (double)balanceMovement;
+            var balanceMovement = commission;
 
-            if (fromOrder.Info.Type == OrderInfo.Types.Type.Market || fromOrder.Info.RemainingAmount == 0)
+            if (fromOrder.Info.Type.IsMarket() || fromOrder.Info.RemainingAmount.E(0))
                 _acc.Orders.Remove(fromOrder.Info);
 
             // journal;
@@ -1383,91 +1390,101 @@ namespace TickTrader.Algo.Backtester
             //JournalEntrySeverities.Info, TransactDetails.Create(position.Id, position.Symbol));
 
             var openInfo = new NetPositionOpenInfo();
-            openInfo.CloseInfo = DoNetSettlement(position, tradeReport, fromOrder.Info.Side);
             openInfo.Charges = charges;
             openInfo.ResultingPosition = position;
+            openInfo.CloseInfo = new NetPositionCloseInfo();
+            if (posInfo.IsEmpty)
+            {
+                posInfo.Side = fillSide;
+                posInfo.Price = fillPrice;
+                posInfo.Volume = fillAmount;
+            }
+            else if (posInfo.Side == fillSide)
+            {
+                var posPrice = posInfo.Price;
+                var posAmount = posInfo.Volume;
+                posInfo.Price = (posPrice * posAmount + fillPrice * fillAmount) / (posAmount + fillAmount);
+                posInfo.Volume = posAmount + fillAmount;
+            }
+            else
+            {
+                var posPrice = posInfo.Price;
+                var posSide = posInfo.Side;
+                var posAmount = posInfo.Volume;
+                var closingAmount = Math.Min(fillAmount, posAmount);
+                double closeSwap;
 
+                if (posAmount.Lt(fillAmount))
+                {
+                    posInfo.Side = fillSide;
+                    posInfo.Price = fillPrice;
+                    posInfo.Volume = fillAmount - posAmount;
+
+                    // all existing swap goes away, since position changes side
+                    closeSwap = posInfo.Swap;
+                    posInfo.Swap = 0.0;
+                }
+                else
+                {
+                    posInfo.Volume = posAmount - fillAmount;
+
+                    // partial close, removing part of swap
+                    var k = fillAmount / posAmount;
+                    closeSwap = RoundMoney(k * position.Info.Swap, _calcFixture.RoundingDigits);
+                    posInfo.Swap -= closeSwap;
+                }
+
+                if (position.Info.IsEmpty)
+                    _acc.NetPositions.RemovePosition(smb.Name);
+
+                var profitRes = symbolCalc.Profit.Calculate(new ProfitRequest(posPrice, closingAmount, posSide, fillPrice));
+                if (profitRes.Error != CalculationError.None)
+                    throw new Exception();
+                var profit = RoundMoney(profitRes.Value, _calcFixture.RoundingDigits);
+
+                balanceMovement += profit + closeSwap;
+
+                tradeReport.Info.PositionClosed = ExecutionTime.ToUniversalTime().ToTimestamp();
+                tradeReport.Info.PositionOpenPrice = posPrice;
+                tradeReport.Info.PositionClosePrice = fillPrice;
+                tradeReport.Info.PositionCloseQuantity = closingAmount;
+                tradeReport.Info.Swap += closeSwap;
+                //report.Entity.CloseConversionRate = (double)profitRate;
+
+                openInfo.CloseInfo.CloseAmount = closingAmount;
+                openInfo.CloseInfo.ClosePrice = posPrice;
+                openInfo.CloseInfo.Profit = profit;
+                openInfo.CloseInfo.Swap = closeSwap;
+
+                _collector.OnPositionClosed(ExecutionTime, profit, 0, closeSwap);
+
+                //LogTransactionDetails(() => "Position closed: symbol=" + position.Symbol + " amount=" + oneSideClosingAmount + " open=" + openPrice + " close=" + closePrice
+                //                            + " profit=" + profit + " swap=" + closeSwap,
+                //    JournalEntrySeverities.Info, TransactDetails.Create(position.Id, position.Symbol));
+            }
+
+            tradeReport.Info.TransactionAmount = balanceMovement;
             tradeReport.FillAccountSpecificFields(_calcFixture);
             tradeReport.FillPosData(position, fillPrice, 0/*fromOrder.MarginRateCurrent*/);
-            tradeReport.Entity.PositionOpened = _scheduler.UnsafeVirtualTimePoint.ToTimestamp();
+            tradeReport.Info.PositionOpened = timestamp;
             //tradeReport.Entity.OpenConversionRate = (double?)fromOrder.MarginRateCurrent;
 
             //LogTransactionDetails(() => "Final position: " + position.GetBriefInfo(), JournalEntrySeverities.Info, TransactDetails.Create(position.Id, position.Symbol));
 
-            balanceMovement += openInfo.CloseInfo.BalanceMovement;
             //execReport.Profit = new ExecProfitInfo(balanceMovement, acc.Balance, acc.BalanceCurrency);
             //SendExecutionReport(execReport, acc);
             //SendPositionReport(acc, CreatePositionReport(acc, PositionReportType.CreatePosition, position.SymbolRef, balanceMovement));
 
             _acc.Balance += balanceMovement;
 
-            _collector.OnCommisionCharged(charges.Commission);
+            _collector.OnCommisionCharged(commission);
 
             return openInfo;
         }
 
-        public NetPositionCloseInfo DoNetSettlement(PositionAccessor position, TradeReportAdapter report, OrderInfo.Types.Side fillSide = OrderInfo.Types.Side.Buy)
+        internal void CheckActivation(IRateInfo rate)
         {
-            var oneSideClosingAmount = 0.0; //Math.Min(position.Short.Amount, position.Long.Amount);
-            var oneSideClosableAmount = position.Info.Volume; // Math.Max(position.Short.Amount, position.Long.Amount);
-            var balanceMovement = 0.0;
-            var closePrice = 0.0;
-            //NetAccountModel acc = position.Acc;
-
-            var copy = position.Clone();
-            var isClosed = position.Info.IsEmpty;
-
-            if (oneSideClosingAmount > 0)
-            {
-                var k = oneSideClosingAmount / oneSideClosableAmount;
-                var closeSwap = RoundMoney(k * position.Info.Swap, _calcFixture.RoundingDigits);
-                //var openPrice = fillSide == OrderInfo.Types.Side.Buy ? position.Long.Price : position.Short.Price;
-                //closePrice = fillSide == OrderInfo.Types.Side.Buy ? position.Short.Price : position.Long.Price;
-
-                double profit = 0.0;
-                var error = CalculationError.None;
-                //var profit = RoundMoney(((OrderCalculator)position.Info.Calculator).CalculateProfitInternal((double)openPrice, (double)oneSideClosingAmount, (double)closePrice,
-                //    fillSide, out var error), _calcFixture.RoundingDigits);
-
-                if (error != CalculationError.None)
-                    throw new Exception();
-
-                //position.DecreaseBothSides(oneSideClosingAmount);
-
-                position.Info.Swap -= (double)closeSwap;
-                balanceMovement = profit + closeSwap;
-
-                //if (position.IsEmpty)
-                //    _acc.NetPositions.RemovePosition(position.Symbol);
-
-                report.Entity.TransactionAmount += (double)balanceMovement;
-                report.Entity.PositionClosed = ExecutionTime.ToTimestamp();
-                //report.Entity.PositionOpenPrice = (double)openPrice;
-                report.Entity.PositionClosePrice = (double)closePrice;
-                report.Entity.PositionCloseQuantity = (double)oneSideClosingAmount;
-                report.Entity.Swap += (double)closeSwap;
-                //report.Entity.CloseConversionRate = (double)profitRate;
-
-                //LogTransactionDetails(() => "Position closed: symbol=" + position.Symbol + " amount=" + oneSideClosingAmount + " open=" + openPrice + " close=" + closePrice
-                //                            + " profit=" + profit + " swap=" + closeSwap,
-                //    JournalEntrySeverities.Info, TransactDetails.Create(position.Id, position.Symbol));
-
-                _collector.OnPositionClosed(ExecutionTime, (double)profit, 0, (double)closeSwap);
-            }
-
-            _scheduler.EnqueueEvent(b => b.Account.NetPositions.FirePositionUpdated(new PositionModifiedEventArgsImpl(copy, position, isClosed)));
-
-            var info = new NetPositionCloseInfo();
-            info.CloseAmount = oneSideClosingAmount;
-            info.ClosePrice = closePrice;
-            info.BalanceMovement = balanceMovement;
-
-            return info;
-        }
-
-        internal void CheckActivation(SymbolMarketNode node)
-        {
-            var records = _activator.CheckPendingOrders(node);
+            var records = _activator.CheckPendingOrders(rate);
             for (int i = 0; i < records.Count; i++)
                 ActivateOrderTransaction(records[i]);
         }
@@ -1565,7 +1582,7 @@ namespace TickTrader.Algo.Backtester
                     _opSummary.AddFillAction(record.Order, fillInfo);
                     if (fillInfo.NetPos != null)
                     {
-                        _opSummary.AddNetCloseAction(fillInfo.NetPos.CloseInfo, record.Order.SymbolInfo, _acc.BalanceCurrencyInfo);
+                        _opSummary.AddNetCloseAction(fillInfo.NetPos.CloseInfo, record.Order.SymbolInfo);
                         _opSummary.AddNetPositionNotification(fillInfo.NetPos.ResultingPosition, fillInfo.SymbolInfo);
                     }
                 }
@@ -1611,8 +1628,8 @@ namespace TickTrader.Algo.Backtester
             //    report.FillAccountBalanceConversionRates(mAcc.BalanceCurrency, mAcc.Balance);
             //}
 
-            OpenOrder(order.Info.Calculator, OrderInfo.Types.Type.Limit, order.Info.Side, order.Entity.RemainingAmount, null, order.Info.Price,
-                order.Info.StopPrice, order.Info.StopLoss, order.Info.TakeProfit, order.Info.Comment, order.Info.Options.ToOrderExecOptions(), order.Entity.UserTag, order.Info.Expiration.ToDateTime(), OpenOrderOptions.SkipDealing);
+            OpenOrder(order.SymbolInfo, OrderInfo.Types.Type.Limit, order.Info.Side, order.Info.RemainingAmount, null, order.Info.Price,
+                order.Info.StopPrice, order.Info.StopLoss, order.Info.TakeProfit, order.Info.Comment, order.Info.Options.ToOrderExecOptions(), order.Info.UserTag, order.Info.Expiration?.ToDateTime(), OpenOrderOptions.SkipDealing);
         }
 
         private void ClosePosition(OrderAccessor position, TradeReportInfo.Types.Reason trReason, double? reqAmount, double? reqPrice,
@@ -1640,22 +1657,24 @@ namespace TickTrader.Algo.Backtester
             else if ((price != null) && (price.Value > 0))
             {
                 closePrice = price.Value;
-                profit = 0.0;
+                var profitRes = fCalc.Profit.Calculate(new ProfitRequest(position.Info.Price ?? 0, actualCloseAmount, position.Info.Side, closePrice));
+                profit = RoundMoney(profitRes.Value, _calcFixture.RoundingDigits);
                 //profit = RoundMoney(((OrderCalculator)fCalc).CalculateProfitInternal(position.Info.Price ?? 0, (double)actualCloseAmount, closePrice, position.Info.Side, out _), _calcFixture.RoundingDigits);
             }
             else
             {
                 // calculator must be another
                 // profit = RoundMoney(fCalc.CalculateProfit(position.Price, (double)actualCloseAmount, position.Side, out var error), _calcFixture.RoundingDigits);
-                profit = 0;
-                closePrice = 0; // can't calculate close price
+                var profitRes = fCalc.Profit.Calculate(new ProfitRequest(position.Info.Price ?? 0, actualCloseAmount, position.Info.Side));
+                profit = RoundMoney(profitRes.Value, _calcFixture.RoundingDigits);
+                closePrice = (position.Info.Side.IsBuy() ? fCalc.SymbolInfo.Bid : fCalc.SymbolInfo.Ask) ?? -1.0; // can't calculate close price
             }
 
             //position.CloseConversionRate = profit >= 0 ? fCalc.PositiveProfitConversionRate.Value : fCalc.NegativeProfitConversionRate.Value;
 
             position.Entity.ClosePrice = closePrice;
-            position.Entity.LastFillPrice = (double)closePrice;
-            position.Entity.LastFillAmount = actualCloseAmount;
+            position.Info.LastFillPrice = closePrice;
+            position.Info.LastFillAmount = actualCloseAmount;
 
             //if (managerComment != null)
             //    position.ManagerComment = managerComment;
@@ -1665,27 +1684,40 @@ namespace TickTrader.Algo.Backtester
             //position.IsReducedCloseCommission = position.IsReducedCloseCommission && trReason == Domain.TradeReportInfo.Types.Reason.TakeProfitAct;
 
             var charges = new TradeChargesInfo();
+            charges.CurrencyInfo = _acc.BalanceCurrencyInfo;
+
+            // two-way commission is no longer used on TTS
+            //CommisionEmulator.OnGrossPositionClosed(position, actualCloseAmount, smb, charges, _calcFixture);
 
             if (partialClose)
             {
                 var newRemainingAmount = position.Info.RemainingAmount - actualCloseAmount;
                 var k = newRemainingAmount / position.Info.RemainingAmount;
 
-                position.Entity.ChangeRemAmount(newRemainingAmount);
+                position.Info.ChangeRemaningAmount(newRemainingAmount);
                 //position.Status = OrderStatuses.Calculated;
 
-                if (position.Entity.Swap != null)
+                var swap = position.Info.Swap;
+                if (!swap.E(0))
                 {
-                    var partialSwap = CommisionEmulator.GetPartialSwap(position.Entity.Swap, k, _calcFixture.RoundingDigits);
+                    var remainingSwap = k * swap;
+                    charges.Swap = RoundMoney(swap - remainingSwap, _calcFixture.RoundingDigits);
+                    position.Info.SetSwap(RoundMoney(remainingSwap, _calcFixture.RoundingDigits));
+                }
 
-                    charges.Swap = position.Entity.Swap - partialSwap;
-                    position.Entity.Swap = partialSwap;
+                var commission = position.Info.Commission;
+                if (!commission.E(0))
+                {
+                    var remainingCommission = k * commission;
+                    charges.Commission = RoundMoney(commission - remainingCommission, _calcFixture.RoundingDigits);
+                    position.Info.ChangeCommission(RoundMoney(remainingCommission, _calcFixture.RoundingDigits));
                 }
             }
             else
             {
-                charges.Swap = position.Entity.Swap;
-                position.Entity.ChangeRemAmount(0);
+                charges.Commission = position.Info.Commission;
+                charges.Swap = position.Info.Swap;
+                position.Info.ChangeRemaningAmount(0);
             }
 
             //if (trReason == Domain.TradeReportInfo.Types.Reason.Rollover)
@@ -1693,15 +1725,13 @@ namespace TickTrader.Algo.Backtester
             //else
             //    CommissionStrategy.OnPositionClosed(position, actualCloseAmount, charges, acc);)
 
-            CommisionEmulator.OnGrossPositionClosed(position, actualCloseAmount, smb, charges, _calcFixture);
-
             if (dropCommission)
             {
                 charges.Commission = 0;
                 //charges.AgentCommission = 0;
                 //charges.MinCommissionCurrency = null;
                 //charges.MinCommissionConversionRate = null;
-                position.Entity.ChangeCommission(0);
+                position.Info.ChangeCommission(0);
                 //position.AgentCommision = null;
             }
 
@@ -1726,7 +1756,7 @@ namespace TickTrader.Algo.Backtester
             _acc.Balance += totalProfit;
 
             // Update modify timestamp.
-            position.Entity.Modified = _scheduler.UnsafeVirtualTimePoint;
+            position.Info.Modified = _scheduler.UnsafeVirtualTimestamp;
 
             var historyAmount = nullify ? 0 : actualCloseAmount;
 
@@ -1804,7 +1834,7 @@ namespace TickTrader.Algo.Backtester
                 _context.SendExtUpdate(TesterTradeTransaction.OnClosePosition(remove, position, (double)_acc.Balance));
 
             // summary
-            _opSummary.AddGrossCloseAction(position, profit, closePrice, charges, _acc.BalanceCurrencyInfo);
+            _opSummary.AddGrossCloseAction(position, profit, closePrice, charges);
             _collector.OnPositionClosed(_scheduler.UnsafeVirtualTimePoint, (double)profit, (double)charges.Commission, (double)charges.Swap);
 
             //return profitInfo;
@@ -1869,7 +1899,8 @@ namespace TickTrader.Algo.Backtester
                 {
                     using (JournalScope())
                     {
-                        OpenOrder(pos.Info.Calculator, OrderInfo.Types.Type.Market, pos.Info.Side.Revert(), pos.Info.Volume, null, null, null, null, null, "",
+                        var smbInfo = _context.Builder.Symbols.GetOrNull(pos.Info.Symbol).Info;
+                        OpenOrder(smbInfo, OrderInfo.Types.Type.Market, pos.Info.Side.Revert(), pos.Info.Volume, null, null, null, null, null, "",
                             Domain.OrderExecOptions.None, null, null, OpenOrderOptions.SkipDealing | OpenOrderOptions.FakeOrder);
                     }
                 }
@@ -1878,7 +1909,7 @@ namespace TickTrader.Algo.Backtester
 
         private void CancelAllPendings(TradeReportInfo.Types.Reason reason)
         {
-            var toCancel = _acc.Orders.Values.Where(o => o.Entity.IsPending).ToList();
+            var toCancel = _acc.Orders.Values.Where(o => o.Info.Type.IsPending()).ToList();
 
             if (toCancel.Count > 0)
             {
@@ -1936,18 +1967,19 @@ namespace TickTrader.Algo.Backtester
 
             foreach (SymbolAccessor info in _context.Builder.Symbols)
             {
-                if (info.Info.Swap.Enabled && info.Info.LastQuote != null && _scheduler.UnsafeVirtualTimePoint - info.Info.LastQuote.Time <= TimeSpan.FromHours(1))
+                if (info.Info.Swap.Enabled && info.Info.LastQuote != null)// && _scheduler.UnsafeVirtualTimePoint - info.Info.LastQuote.Time <= TimeSpan.FromHours(1))
                 {
+                    var symbolCalc = _context.MarketData.GetCalculator(info.Info);
                     double swapAmount = 0;
 
                     if (_acc.Type == AccountInfo.Types.Type.Gross)
                     {
-                        if (UpdateGrossSwaps(info, out swapAmount))
+                        if (UpdateGrossSwaps(symbolCalc, out swapAmount))
                             updated = true;
                     }
                     else if (_acc.Type == AccountInfo.Types.Type.Net)
                     {
-                        if (UpdateNetSwaps(info, out swapAmount))
+                        if (UpdateNetSwaps(symbolCalc, out swapAmount))
                             updated = true;
                     }
 
@@ -1960,94 +1992,92 @@ namespace TickTrader.Algo.Backtester
                 RecalculateAccount();
 
             if (affectedSymbolsCount > 0)
-                _collector.LogTrade("Rollover, totalSwap=" + totalSwap.FormatPlain(_acc.BalanceCurrencyFormat));
+                _collector.LogTrade("Rollover, totalSwap=" + totalSwap.FormatPlain(_opSummary.BalanceCurrencyFormat));
         }
 
-        public bool UpdateGrossSwaps(SymbolAccessor smbInfo, out double totalSwap)
+        public bool UpdateGrossSwaps(ISymbolCalculator symbolCalc, out double totalSwap)
         {
             bool swapUpdated = false;
             totalSwap = 0;
 
-            if (smbInfo.Info.Swap.Enabled)
+            var positions = _acc.Orders.Values.Where(o => o.Info.Type == OrderInfo.Types.Type.Position && o.Info.Symbol == symbolCalc.SymbolInfo.Name).ToList(); // Perf. warning: .ToList()
+
+            if (positions != null)
             {
-                var positions = _acc.Orders.Values.Where(o => o.Info.Type == OrderInfo.Types.Type.Position && o.Info.Symbol == smbInfo.Info.Name).ToList(); // Perf. warning: .ToList()
-
-                if (positions != null)
+                foreach (OrderAccessor order in positions)
                 {
-                    foreach (OrderAccessor order in positions)
+                    var calc = order.Info.Calculator;
+
+                    var swapRes = calc.Swap.Calculate(order.Info, ExecutionTime);
+                    //double swap = 0.0;/*((OrderCalculator)order.Info.Calculator).CalculateSwap((double)order.Info.RemainingAmount, order.Info.Side, ExecutionTime, out var error);*/
+
+                    if (swapRes.Error != CalculationError.None)
                     {
-                        CalculationError error = CalculationError.None;
-                        double swap = double.NaN;/*((OrderCalculator)order.Info.Calculator).CalculateSwap((double)order.Info.RemainingAmount, order.Info.Side, ExecutionTime, out var error);*/
-
-                        if (error != CalculationError.None)
-                        {
-                            //LogTransactionDetails(() => $"Swap not charged: account={acc.AccountLogin} symbol={smbInfo.Name} volume={order.RemainingAmount} reason={ex.CalcError}. {ex.Message}",
-                            //JournalEntrySeverities.Error, TransactDetails.Create(order.OrderId, null), acc.SkipLogging);
-                            return swapUpdated;
-                        }
-
-                        var roundedSwap = RoundMoney(swap, _acc.BalanceCurrencyInfo.Digits);
-
-                        if (roundedSwap != 0)
-                        {
-                            order.Entity.SetSwap(order.Entity.Swap + roundedSwap);
-                            //LogTransactionDetails(() => $"Swap charged: account={acc.AccountLogin} symbol={order.Symbol} side={order.Side} volume={order.RemainingAmount:G29} charged={swap:G29} total={order.Swap:G29} currency={acc.BalanceCurrency}",
-                            //    JournalEntrySeverities.Info, TransactDetails.Create(order.OrderId, null), acc.SkipLogging);
-
-                            // execution report
-                            if (_sendReports)
-                                _context.SendExtUpdate(TesterTradeTransaction.OnRolloverUpdate(order));
-
-                            swapUpdated = true;
-                        }
-
-                        totalSwap += roundedSwap;
+                        //LogTransactionDetails(() => $"Swap not charged: account={acc.AccountLogin} symbol={smbInfo.Name} volume={order.RemainingAmount} reason={ex.CalcError}. {ex.Message}",
+                        //JournalEntrySeverities.Error, TransactDetails.Create(order.OrderId, null), acc.SkipLogging);
+                        return swapUpdated;
                     }
+
+                    var roundedSwap = RoundMoney(swapRes.Value, _acc.BalanceCurrencyInfo.Digits);
+
+                    if (roundedSwap != 0)
+                    {
+                        order.Info.SetSwap(order.Info.Swap + roundedSwap);
+                        //LogTransactionDetails(() => $"Swap charged: account={acc.AccountLogin} symbol={order.Symbol} side={order.Side} volume={order.RemainingAmount:G29} charged={swap:G29} total={order.Swap:G29} currency={acc.BalanceCurrency}",
+                        //    JournalEntrySeverities.Info, TransactDetails.Create(order.OrderId, null), acc.SkipLogging);
+
+                        // execution report
+                        if (_sendReports)
+                            _context.SendExtUpdate(TesterTradeTransaction.OnRolloverUpdate(order));
+
+                        swapUpdated = true;
+                    }
+
+                    totalSwap += roundedSwap;
                 }
             }
 
             return swapUpdated;
         }
 
-        public bool UpdateNetSwaps(SymbolAccessor smbInfo, out double totalSwap)
+        public bool UpdateNetSwaps(ISymbolCalculator symbolCalc, out double totalSwap)
         {
             totalSwap = 0;
 
-            if (smbInfo.Info.Swap.Enabled)
+            PositionAccessor pos = _acc.NetPositions.GetOrNull(symbolCalc.SymbolInfo.Name);
+
+            if (pos != null)
             {
-                PositionAccessor pos = _acc.NetPositions.GetOrNull(smbInfo.Info.Name);
+                var swapRes = symbolCalc.Swap.Calculate(pos.Info, ExecutionTime);
+                //double swap = ((OrderCalculator)pos.Info.Calculator).CalculateSwap((double)pos.Long.Amount, OrderInfo.Types.Side.Buy, ExecutionTime, out error)
+                //               + ((OrderCalculator)pos.Info.Calculator).CalculateSwap((double)pos.Short.Amount, OrderInfo.Types.Side.Sell, ExecutionTime, out error);
 
-                if (pos != null)
+                if (swapRes.Error != CalculationError.None)
+                    return false;
+
+                //if (error != CalcErrorCodes.None)
+                //{
+                //Func<string> errMsg = () => $"Swap not charged: account={acc.AccountLogin} side={netPos.Side} symbol={smbInfo.Name} volume={netPos.Amount:G29} reason={ex.CalcError}. {ex.Message}";
+                //LogTransactionDetails(errMsg, JournalEntrySeverities.Error, TransactDetails.Create(netPos.Id, null), acc.SkipLogging);
+                //return false;
+                //}
+
+                double roundedSwap = RoundMoney(swapRes.Value, _acc.BalanceCurrencyInfo.Digits);
+
+                if (roundedSwap != 0)
                 {
-                    var error = CalculationError.None;
-                    double swap = 0.0;
-                    //double swap = ((OrderCalculator)pos.Info.Calculator).CalculateSwap((double)pos.Long.Amount, OrderInfo.Types.Side.Buy, ExecutionTime, out error)
-                    //               + ((OrderCalculator)pos.Info.Calculator).CalculateSwap((double)pos.Short.Amount, OrderInfo.Types.Side.Sell, ExecutionTime, out error);
+                    pos.Info.Swap += (double)roundedSwap;
 
-                    //if (error != CalcErrorCodes.None)
-                    //{
-                    //Func<string> errMsg = () => $"Swap not charged: account={acc.AccountLogin} side={netPos.Side} symbol={smbInfo.Name} volume={netPos.Amount:G29} reason={ex.CalcError}. {ex.Message}";
-                    //LogTransactionDetails(errMsg, JournalEntrySeverities.Error, TransactDetails.Create(netPos.Id, null), acc.SkipLogging);
-                    //return false;
-                    //}
+                    totalSwap += roundedSwap;
 
-                    double roundedSwap = RoundMoney(swap, _acc.BalanceCurrencyInfo.Digits);
+                    //LogTransactionDetails(() => $"Swap charged: account={acc.AccountLogin} symbol={smbInfo.Name} side={netPos.Side} volume={netPos.Amount:G29} charged={roundedSwap:G29} total={netPos.Swap:G29} currency={acc.BalanceCurrency}",
+                    //    JournalEntrySeverities.Info, TransactDetails.Create(netPos.Id, null), acc.SkipLogging);
 
-                    if (roundedSwap != 0)
-                    {
-                        pos.Info.Swap += (double)roundedSwap;
+                    // execution report
+                    if (_sendReports)
+                        _context.SendExtUpdate(TesterTradeTransaction.OnRolloverUpdate(pos));
 
-                        totalSwap += roundedSwap;
-
-                        //LogTransactionDetails(() => $"Swap charged: account={acc.AccountLogin} symbol={smbInfo.Name} side={netPos.Side} volume={netPos.Amount:G29} charged={roundedSwap:G29} total={netPos.Swap:G29} currency={acc.BalanceCurrency}",
-                        //    JournalEntrySeverities.Info, TransactDetails.Create(netPos.Id, null), acc.SkipLogging);
-
-                        // execution report
-                        if (_sendReports)
-                            _context.SendExtUpdate(TesterTradeTransaction.OnRolloverUpdate(pos));
-
-                        return true;
-                    }
+                    return true;
                 }
             }
 

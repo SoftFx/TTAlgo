@@ -1,5 +1,4 @@
 ﻿using Google.Protobuf;
-using Google.Protobuf.WellKnownTypes;
 using System;
 using TickTrader.Algo.Calculator.AlgoMarket;
 using TickTrader.Algo.Core;
@@ -57,7 +56,7 @@ namespace TickTrader.Algo.CoreV1
     public interface ITimeRef
     {
         int LastIndex { get; }
-        Timestamp this[int index] { get; }
+        UtcTicks this[int index] { get; }
         event Action Appended;
     }
 

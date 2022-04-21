@@ -12,7 +12,7 @@ namespace TickTrader.Algo.Calculator.Tests.TradeSpecificsCalculators
 
         protected Func<double> _conversionRate;
 
-        protected SymbolInfo MainSymbol => Symbol[X + Y];
+        protected ISymbolInfoWithRate MainSymbol => Symbol[X + Y];
 
         protected ISymbolCalculator OrderCalculator => _algoMarket.GetCalculator(MainSymbol);
 

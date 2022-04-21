@@ -29,11 +29,13 @@
   <ItemGroup>
     <ProjectReference Include="..\src\csharp\accounts\TickTrader.Algo.Account.Fdk2\TickTrader.Algo.Account.Fdk2.csproj" />
     <ProjectReference Include="..\src\csharp\api\TickTrader.Algo.CoreV1\TickTrader.Algo.CoreV1.csproj" />
+    <ProjectReference Include="..\src\csharp\apps\TickTrader.Algo.BacktesterV1Host\TickTrader.Algo.BacktesterV1Host.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Account\TickTrader.Algo.Account.csproj" />
-    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Backtester\TickTrader.Algo.Backtester.csproj" />
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.BacktesterApi\TickTrader.Algo.BacktesterApi.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Isolation.NetFx\TickTrader.Algo.Isolation.NetFx.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.ServerControl\TickTrader.Algo.ServerControl.csproj" />
     <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Server\TickTrader.Algo.Server.csproj" />
+    <ProjectReference Include="..\src\csharp\lib\TickTrader.SeriesStorage.Lmdb\TickTrader.SeriesStorage.Lmdb.csproj" />
     <ProjectReference Include="..\src\csharp\lib\TickTrader.SeriesStorage\TickTrader.SeriesStorage.csproj" />
     <ProjectReference Include="..\TickTrader.WpfWindowsSupportLibrary\TickTrader.WpfWindowsSupportLibrary.csproj" />
   </ItemGroup>
@@ -139,12 +141,15 @@
   <Target Name="CopyBinaries" AfterTargets="Build">
     <ItemGroup>
       <RuntimeV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.RuntimeV1Host.NetFx\bin\$(Configuration)\net472\*.*" />
+      <BacktesterV1Binaries Include="$(ProjectDir)..\src\csharp\apps\TickTrader.Algo.BacktesterV1Host\bin\$(Configuration)\net472\*.*" />
     </ItemGroup>
     <Copy SourceFiles="@(RuntimeV1Binaries)" DestinationFolder="$(TargetDir)AlgoRuntime\" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(BacktesterV1Binaries)" DestinationFolder="$(TargetDir)bin\backtester\" SkipUnchangedFiles="true" />
   </Target>
 
   <Target Name="CleanGeneratedFiles" AfterTargets="Clean">
     <RemoveDir Directories="$(TargetDir)AlgoRuntime\" />
+    <RemoveDir Directories="$(TargetDir)bin\" />
     <RemoveDir Directories="$(TargetDir)Resources\" />
   </Target>
 

@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.CoreV1;
@@ -16,20 +19,16 @@ namespace TickTrader.Algo.Backtester
         private static int IdSeed;
 
         private readonly PluginKey _pluginKey;
-        private ISyncContext _sync;
         private readonly FeedEmulator _feed;
         private readonly PluginExecutorCore _executorCore;
-        private readonly BacktesterMarshaller _marshaller;
         private readonly EmulationControlFixture _control;
 
-        public Backtester(PluginKey pluginKey, ISyncContext syncObj, DateTime? from, DateTime? to)
+        public Backtester(PluginKey pluginKey, DateTime? from, DateTime? to)
         {
             _pluginKey = pluginKey ?? throw new ArgumentNullException(nameof(pluginKey));
             var metadata = PackageMetadataCache.GetPlugin(pluginKey) ?? throw new ArgumentException("metadata not found", nameof(pluginKey));
             PluginInfo = metadata.Descriptor;
-            _sync = syncObj;
             _executorCore = new PluginExecutorCore(pluginKey);
-            _marshaller = new BacktesterMarshaller(_executorCore, syncObj);
             _executorCore.Metadata = this;
 
             CommonSettings.EmulationPeriodStart = from;
@@ -46,16 +45,15 @@ namespace TickTrader.Algo.Backtester
             CommonSettings.BalanceCurrency = "USD";
             CommonSettings.AccountType = AccountInfo.Types.Type.Gross;
 
-            _control.StateUpdated += s => _sync.Send(() =>
+            _control.StateUpdated += s =>
             {
                 State = s;
                 StateChanged?.Invoke(s);
-            });
+            };
         }
 
         public CommonTestSettings CommonSettings { get; } = new CommonTestSettings();
 
-        public BacktesterMarshaller Executor => _marshaller;
         public PluginDescriptor PluginInfo { get; }
         public int TradesCount => _control.TradeHistory.Count;
         public FeedEmulator Feed => _feed;
@@ -64,21 +62,13 @@ namespace TickTrader.Algo.Backtester
         //public WarmupUnitTypes WarmupUnits { get; set; } = WarmupUnitTypes.Bars;
         public DateTime? CurrentTimePoint => _control?.EmulationTimePoint;
         public JournalOptions JournalFlags { get; set; } = JournalOptions.Enabled | JournalOptions.WriteInfo | JournalOptions.WriteCustom | JournalOptions.WriteTrade | JournalOptions.WriteAlert;
+        public string JournalPath { get; set; }
         public EmulatorStates State { get; private set; }
+
         public event Action<EmulatorStates> StateChanged;
-        public event Action<Exception> ErrorOccurred { add => Executor.ErrorOccurred += value; remove => Executor.ErrorOccurred -= value; }
-
-        public event Action<BarData, string, DataSeriesUpdate.Types.UpdateAction> OnChartUpdate
-        {
-            add { Executor.ChartBarUpdated += value; }
-            remove { Executor.ChartBarUpdated -= value; }
-        }
-
-        public event Action<DataSeriesUpdate> OnOutputUpdate
-        {
-            add { Executor.OutputUpdate += value; }
-            remove { Executor.OutputUpdate -= value; }
-        }
+        public event Action<Exception> ErrorOccurred;
+        public event Action<BarData, string, DataSeriesUpdate.Types.Action> OnChartUpdate;
+        public event Action<DataSeriesUpdate> OnOutputUpdate;
 
         public Dictionary<string, TestDataSeriesFlags> SymbolDataConfig { get; } = new Dictionary<string, TestDataSeriesFlags>();
         public TestDataSeriesFlags MarginDataMode { get; set; } = TestDataSeriesFlags.Snapshot;
@@ -173,36 +163,6 @@ namespace TickTrader.Algo.Backtester
             _control.SetExecDelay(delayMs);
         }
 
-        public int GetSymbolHistoryBarCount(string symbol)
-        {
-            return _control.Collector.GetSymbolHistoryBarCount(symbol);
-        }
-
-        public IPagedEnumerator<BarData> GetSymbolHistory(string symbol, Feed.Types.Timeframe timeframe)
-        {
-            return _control.Collector.GetSymbolHistory(symbol, timeframe);
-        }
-
-        public IPagedEnumerator<BarData> GetEquityHistory(Feed.Types.Timeframe timeframe)
-        {
-            return _control.Collector.GetEquityHistory(timeframe);
-        }
-
-        public IPagedEnumerator<BarData> GetMarginHistory(Feed.Types.Timeframe timeframe)
-        {
-            return _control.Collector.GetMarginHistory(timeframe);
-        }
-
-        public IPagedEnumerator<Domain.TradeReportInfo> GetTradeHistory()
-        {
-            return _control.TradeHistory.Marshal();
-        }
-
-        public IPagedEnumerator<OutputPoint> GetOutputData(string id)
-        {
-            return _control.Collector.GetOutputData(id);
-        }
-
         public void Dispose()
         {
             _control.Dispose();
@@ -212,6 +172,38 @@ namespace TickTrader.Algo.Backtester
         {
             return _control.Collector.Stats;
         }
+
+        public void SaveResults(string resultsDirPath)
+        {
+            var descriptor = PluginInfo;
+            var mainTimeframe = CommonSettings.MainTimeframe;
+
+            BacktesterResults.Internal.SaveVersionInfo(resultsDirPath);
+            BacktesterResults.Internal.SaveStats(resultsDirPath, _control.Collector.Stats);
+            BacktesterResults.Internal.SavePluginInfo(resultsDirPath, descriptor);
+
+            // Journal should be already in correct place
+
+            foreach (var symbol in SymbolDataConfig.Keys)
+            {
+                BacktesterResults.Internal.SaveFeedData(resultsDirPath, symbol, _control.Collector.LocalGetSymbolHistory(symbol, mainTimeframe));
+            }
+
+            foreach (var output in descriptor.Outputs)
+            {
+                var id = output.Id;
+                BacktesterResults.Internal.SaveOutputData(resultsDirPath, id, _control.Collector.LocalGetOutputData(id));
+            }
+
+            if (descriptor.IsTradeBot)
+            {
+                BacktesterResults.Internal.SaveEquity(resultsDirPath, _control.Collector.LocalGetEquityHistory(mainTimeframe));
+                BacktesterResults.Internal.SaveMargin(resultsDirPath, _control.Collector.LocalGetMarginHistory(mainTimeframe));
+
+                BacktesterResults.Internal.SaveTradeHistory(resultsDirPath, _control.TradeHistory.LocalGetReports());
+            }
+        }
+
 
         #region IPluginSetupTarget
 

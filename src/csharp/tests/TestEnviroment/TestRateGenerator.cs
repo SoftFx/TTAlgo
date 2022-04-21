@@ -15,7 +15,7 @@ namespace TestEnviroment
         public static double Rate => _generator.NextDoubleInRange(MinPrice, MaxPrice);
 
 
-        public static SymbolInfo BuildNewQuote(this SymbolInfo symbol)
+        public static ISymbolInfoWithRate BuildNewQuote(this ISymbolInfoWithRate symbol)
         {
             var ask = Rate;
             var bid = Rate;
@@ -30,18 +30,18 @@ namespace TestEnviroment
             return BuildQuote(symbol, bid, ask);
         }
 
-        public static SymbolInfo BuildNullQuote(this SymbolInfo symbol) => BuildQuote(symbol, null, null);
+        public static ISymbolInfoWithRate BuildNullQuote(this ISymbolInfoWithRate symbol) => BuildQuote(symbol, null, null);
 
-        public static SymbolInfo BuildZeroQuote(this SymbolInfo symbol) => BuildQuote(symbol, 0.0, 0.0);
+        public static ISymbolInfoWithRate BuildZeroQuote(this ISymbolInfoWithRate symbol) => BuildQuote(symbol, 0.0, 0.0);
 
-        public static SymbolInfo BuildOneSideBidQuote(this SymbolInfo symbol) => BuildQuote(symbol, Rate, null);
+        public static ISymbolInfoWithRate BuildOneSideBidQuote(this ISymbolInfoWithRate symbol) => BuildQuote(symbol, Rate, null);
 
-        public static SymbolInfo BuildOneSideAskQuote(this SymbolInfo symbol) => BuildQuote(symbol, null, Rate);
+        public static ISymbolInfoWithRate BuildOneSideAskQuote(this ISymbolInfoWithRate symbol) => BuildQuote(symbol, null, Rate);
 
 
-        private static SymbolInfo BuildQuote(SymbolInfo symbol, double? bid, double? ask)
+        private static ISymbolInfoWithRate BuildQuote(ISymbolInfoWithRate symbol, double? bid, double? ask)
         {
-            symbol.UpdateRate(new QuoteInfo(symbol.Name, new QuoteData(DateTime.Now, bid, ask)));
+            symbol.UpdateRate(new QuoteInfo(symbol.Name, DateTime.Now, bid, ask));
 
             return symbol;
         }

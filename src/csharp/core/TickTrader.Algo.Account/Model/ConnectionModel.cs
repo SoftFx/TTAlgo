@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using TickTrader.Algo.Account.Settings;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
@@ -32,12 +33,13 @@ namespace TickTrader.Algo.Account
         private ActorEvent _deinitListeners = new ActorEvent();
         private ActorEvent<StateInfo> _stateListeners = new ActorEvent<StateInfo>();
 
-        public ConnectionModel(ServerInteropFactory accFactory, ConnectionOptions options, string loggerId)
+        public ConnectionModel(ConnectionSettings settings, string loggerId)
         {
-            _loggerId = loggerId;
             logger = AlgoLoggerFactory.GetLogger<ConnectionModel>(loggerId);
-            _options = options;
-            _accFactory = accFactory;
+
+            _loggerId = loggerId;
+            _options = settings.Options;
+            _accFactory = settings.AccountFactory;
 
             Func<bool> canRecconect = () => _options.AutoReconnect && wasConnected
                 && LastErrorCode != ConnectionErrorInfo.Types.ErrorCode.BlockedAccount
@@ -350,6 +352,7 @@ namespace TickTrader.Algo.Account
             public string CurrentLogin { get; private set; }
             public string CurrentServer { get; private set; }
             public string CurrentProtocol { get; private set; }
+            public IFeedServerApi FeedProxy { get; private set; }
 
             public event AsyncEventHandler Initalizing;
             public event AsyncEventHandler Deinitalizing;
@@ -396,13 +399,17 @@ namespace TickTrader.Algo.Account
                 });
             }
 
-            private Task FireInitEvent()
+            private async Task FireInitEvent()
             {
-                return Initalizing.InvokeAsync(this, CancellationToken.None);
+                FeedProxy = await Actor.Call(a => a.FeedProxy);
+
+                await Initalizing.InvokeAsync(this, CancellationToken.None);
             }
 
             private Task FireDeinitEvent()
             {
+                FeedProxy = null;
+
                 return Deinitalizing.InvokeAsync(this, CancellationToken.None);
             }
 

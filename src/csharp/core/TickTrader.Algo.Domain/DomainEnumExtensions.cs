@@ -17,9 +17,19 @@
             return type == OrderInfo.Types.Type.Stop || type == OrderInfo.Types.Type.StopLimit;
         }
 
+        public static bool IsPending(this OrderInfo.Types.Type type)
+        {
+            return type == OrderInfo.Types.Type.Limit || type == OrderInfo.Types.Type.Stop || type == OrderInfo.Types.Type.StopLimit;
+        }
+
         public static bool IsPosition(this OrderInfo.Types.Type type)
         {
             return type == OrderInfo.Types.Type.Position;
+        }
+
+        public static bool IsMarket(this OrderInfo.Types.Type type)
+        {
+            return type == OrderInfo.Types.Type.Market;
         }
 
         public static bool IsBuy(this OrderInfo.Types.Side side) => side == OrderInfo.Types.Side.Buy;

@@ -30,7 +30,7 @@ namespace TickTrader.Algo.CoreV1
             buffer.EndBatchBuild = () =>
             {
                 _isBatch = false;
-                OnRangeAppend();
+                ResetAll();
             };
             buffer.Truncated = OnTruncate;
             buffer.Truncating = OnTruncating;
@@ -41,7 +41,7 @@ namespace TickTrader.Algo.CoreV1
             if (!_isBatch)
             {
                 var timeCoordinate = _timeRef[index];
-                Appended(new OutputPoint(timeCoordinate, index, _pointFactory.PackValue(data)));
+                Appended(_pointFactory(timeCoordinate, data));
             }
         }
 
@@ -50,24 +50,8 @@ namespace TickTrader.Algo.CoreV1
             if (!_isBatch)
             {
                 var timeCoordinate = _timeRef[index];
-                Updated(new OutputPoint(timeCoordinate, index, _pointFactory.PackValue(data)));
+                Updated(_pointFactory(timeCoordinate, data));
             }
-        }
-
-        private void OnRangeAppend()
-        {
-            var count = _buffer.Count;
-
-            var range = new OutputPointRange();
-            range.Points.Capacity = count;
-
-            for (var i = 0; i < count; i++)
-            {
-                var timeCoordinate = _timeRef[i];
-                range.Points.Add(new OutputPoint(timeCoordinate, i, _pointFactory.PackValue(_buffer[i])));
-            }
-
-            RangeAppended(range);
         }
 
         private void OnTruncate(int truncateSize)
@@ -100,10 +84,10 @@ namespace TickTrader.Algo.CoreV1
         }
 
         internal int Count => _buffer.Count;
-        internal OutputPoint this[int index] => new OutputPoint(_timeRef[index], index, _pointFactory.PackValue(_buffer[index]));
+        internal OutputPoint this[int index] => _pointFactory(_timeRef[index], _buffer[index]);
         internal OutputBuffer<T> Buffer => _buffer;
 
-        public event Action<OutputPointRange> RangeAppended = delegate { };
+        public event Action ResetAll = delegate { };
         public event Action<OutputPoint> Updated = delegate { };
         public event Action<OutputPoint> Appended = delegate { };
         public event Action<int> Truncating;

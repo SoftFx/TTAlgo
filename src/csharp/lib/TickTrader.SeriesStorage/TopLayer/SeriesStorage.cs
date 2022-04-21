@@ -110,14 +110,9 @@ namespace TickTrader.SeriesStorage
         }
 
         public abstract double GetSize();
-        //{
-        //    return SliceStorage.GetSize();
-        //}
 
         public abstract void Drop();
-        //{
-        //    SliceStorage.Drop();
-        //}
+
 
         protected Slice<TKey, TValue> JoinSlices(Slice<TKey, TValue> slice1, Slice<TKey, TValue> slice2)
         {

@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Threading.Tasks;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.CoreV1;
-using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Backtester
 {
@@ -25,28 +23,21 @@ namespace TickTrader.Algo.Backtester
         public EmulationControlFixture(IBacktesterSettings settings, PluginExecutorCore executor, CalculatorFixture calc, FeedEmulator fEmulator)
         {
             Settings = settings;
+            Executor = executor;
+
             Feed = fEmulator ?? new FeedEmulator();
             Collector = new BacktesterCollector(executor);
-            InvokeEmulator = new InvokeEmulator(settings, Collector, Feed, executor.Start, executor.EmulateStop);
+            InvokeEmulator = new InvokeEmulator(settings, Collector, Feed, Executor);
             TradeHistory = new TradeHistoryEmulator();
-            TradeHistory.OnReportAdded += TradeHistory_OnReportAdded;
-            Executor = executor;
         }
 
         public bool OnStart()
         {
-            try
-            {
-                Feed.InitStorages();
+            Feed.InitStorages();
 
-                Collector.OnStart(Settings, Feed);
+            Collector.OnStart(Settings, Feed);
 
-                return InvokeEmulator.StartFeedRead();
-            }
-            catch (Exception ex)
-            {
-                throw WrapException(ex);
-            }
+            return InvokeEmulator.StartFeedRead();
         }
 
         public void OnStop()
@@ -65,14 +56,7 @@ namespace TickTrader.Algo.Backtester
 
         public void EmulateExecution(int warmupValue, WarmupUnitTypes warmupUnits)
         {
-            try
-            {
-                InvokeEmulator.EmulateExecution(warmupValue, warmupUnits);
-            }
-            catch (Exception ex)
-            {
-                throw WrapException(ex);
-            }
+            InvokeEmulator.EmulateExecution(warmupValue, warmupUnits);
         }
 
         public void CancelEmulation()
@@ -101,20 +85,9 @@ namespace TickTrader.Algo.Backtester
             Collector.Dispose();
         }
 
-        private void TradeHistory_OnReportAdded(TradeReportAdapter rep)
-        {
-            Executor.OnUpdate(rep.Entity);
-        }
-
-        private Exception WrapException(Exception ex)
-        {
-            if (ex is AlgoException)
-                return ex;
-
-            if (ex is OperationCanceledException || ex is TaskCanceledException)
-                return new AlgoOperationCanceledException(ex.Message);
-
-            return new AlgoException(ex.GetType().Name + ": " + ex.Message);
-        }
+        //private void TradeHistory_OnReportAdded(TradeReportAdapter rep)
+        //{
+        //    Executor.OnUpdate(rep.Info);
+        //}
     }
 }

@@ -479,7 +479,7 @@ namespace TickTrader.Algo.Account
                     break;
 
                 case ExecutionType.Trade:
-                    if (report.Type == Domain.OrderInfo.Types.Type.StopLimit)
+                    if (report.Type == Domain.OrderInfo.Types.Type.StopLimit || report.OrderStatus == OrderStatus.Activated)
                     {
                         return OnOrderRemoved(report, Domain.OrderExecReport.Types.ExecAction.Activated);
                     }

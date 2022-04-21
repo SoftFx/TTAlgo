@@ -223,11 +223,11 @@ namespace TickTrader.BotTerminal
     {
         public PosMarkerKey(string orderId, string actionId = null)
         {
-            OrderId = long.Parse(orderId);
+            OrderId = orderId;// long.Parse(orderId);
             ActionId = actionId;
         }
 
-        public long OrderId { get; }
+        public string OrderId { get; }
         public string ActionId { get; }
 
         int IComparable<PosMarkerKey>.CompareTo(PosMarkerKey other)

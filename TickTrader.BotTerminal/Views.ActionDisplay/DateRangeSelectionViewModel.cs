@@ -53,7 +53,7 @@ namespace TickTrader.BotTerminal
                     if (To < value)
                         To = value;
 
-                    _rangeFrom = value;
+                    _rangeFrom = DateTime.SpecifyKind(value, DateTimeKind.Utc);
                     NotifyOfPropertyChange(nameof(From));
                     NotifyOfPropertyChange(nameof(RangeFromDouble));
                 }
@@ -76,7 +76,7 @@ namespace TickTrader.BotTerminal
                     if (From > value)
                         From = value;
 
-                    _rangeTo = value;
+                    _rangeTo = DateTime.SpecifyKind(value, DateTimeKind.Utc);
                     NotifyOfPropertyChange(nameof(To));
                     NotifyOfPropertyChange(nameof(RangeToDouble));
                 }

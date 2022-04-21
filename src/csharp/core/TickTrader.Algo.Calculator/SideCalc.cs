@@ -1,54 +1,47 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.CalculatorInterfaces;
 
 namespace TickTrader.Algo.Calculator
 {
-    public class SideCalc
+    public sealed class SideCalc
     {
+        private enum NettingType { Positions, Limits, Stops, HiddenLimits }
+
+        private readonly Dictionary<NettingType, OrderNetting> _nettings;
         private readonly SymbolCalc _parent;
-        private readonly OrderNetting _positions;
-        private readonly OrderNetting _limitOrders;
-        private readonly OrderNetting _stopOrders;
-        private readonly OrderNetting _hiddendOrders;
-        private double _netPosAmount;
-        private double _netPosPrice;
+
 
         public SideCalc(SymbolCalc parent, OrderInfo.Types.Side side, ISymbolCalculator calc)
         {
             _parent = parent;
-            _positions = new OrderNetting(calc, OrderInfo.Types.Type.Position, side, false);
-            _limitOrders = new OrderNetting(calc, OrderInfo.Types.Type.Limit, side, false);
-            _stopOrders = new OrderNetting(calc, OrderInfo.Types.Type.Stop, side, false);
-            _hiddendOrders = new OrderNetting(calc, OrderInfo.Types.Type.Limit, side, true);
+
+            _nettings = new Dictionary<NettingType, OrderNetting>
+            {
+                [NettingType.HiddenLimits] = new OrderNetting(calc, OrderInfo.Types.Type.Limit, side, true),
+                [NettingType.Positions] = new OrderNetting(calc, OrderInfo.Types.Type.Position, side, false),
+                [NettingType.Limits] = new OrderNetting(calc, OrderInfo.Types.Type.Limit, side, false),
+                [NettingType.Stops] = new OrderNetting(calc, OrderInfo.Types.Type.Stop, side, false),
+            };
         }
 
-        public bool IsEmpty => _positions.IsEmpty && _limitOrders.IsEmpty && _stopOrders.IsEmpty && _hiddendOrders.IsEmpty;
+        public bool IsEmpty => _nettings.Values.All(u => u.IsEmpty);
 
         public double Margin { get; private set; }
 
-        public StatsChange Recalculate()
+        public StatsChangeToken Recalculate()
         {
-            var result = new StatsChange(0, 0, 0);
+            var deltaToken = StatsChangeToken.EmptyToken;
 
-            if (!_positions.IsEmpty)
-                result += _positions.Recalculate();
+            foreach (var netting in _nettings.Values)
+                if (!netting.IsEmpty)
+                    deltaToken += netting.Recalculate();
 
-            if (!_limitOrders.IsEmpty)
-                result += _limitOrders.Recalculate();
+            Margin += deltaToken.MarginDelta;
 
-            if (!_stopOrders.IsEmpty)
-                result += _stopOrders.Recalculate();
-
-            if (!_hiddendOrders.IsEmpty)
-                result += _hiddendOrders.Recalculate();
-
-            Margin += result.MarginDelta;
-
-            if (IsEmpty)
-                Margin = 0;
-
-            return result;
+            return deltaToken;
         }
 
         public void AddOrder(IOrderCalcInfo order)
@@ -77,11 +70,11 @@ namespace TickTrader.Algo.Calculator
         public void UpdateNetPosition(double amount, double price, PositionChangeTypes type)
         {
             if (type == PositionChangeTypes.Removed)
-                _positions.RemovePositionWithoutCalculation(amount, price);
+                _nettings[NettingType.Positions].RemovePositionWithoutCalculation(amount, price);
             else
-                _positions.UpdateNetPositionWithoutCalculation(amount, price);
+                _nettings[NettingType.Positions].UpdateNetPositionWithoutCalculation(amount, price);
 
-            var change = _positions.Recalculate();
+            var change = _nettings[NettingType.Positions].Recalculate();
             UpdateStats(change);
         }
 
@@ -89,8 +82,7 @@ namespace TickTrader.Algo.Calculator
         {
             var c1 = GetNetting(args.OldType, args.OldIsHidden).RemoveOrder(args.OldRemAmount, args.OldPrice);
             var c2 = GetNetting(args.Order.Type, args.Order.IsHidden).AddOrder(args.Order.RemainingAmount, args.Order.Price);
-            var cSum = c1 + c2;
-            UpdateStats(cSum);
+            UpdateStats(c1 + c2);
         }
 
         private OrderNetting GetNetting(OrderInfo.Types.Type orderType, bool isHidden)
@@ -98,18 +90,21 @@ namespace TickTrader.Algo.Calculator
             switch (orderType)
             {
                 case OrderInfo.Types.Type.Limit:
-                    return isHidden ? _hiddendOrders : _limitOrders;
+                    return isHidden ? _nettings[NettingType.HiddenLimits] : _nettings[NettingType.Limits];
 
-                case OrderInfo.Types.Type.Stop: return _stopOrders;
-                case OrderInfo.Types.Type.StopLimit: return _stopOrders; // StopLimit orders have same calculation logic as Stop orders
-                case OrderInfo.Types.Type.Market: return _positions; // Market orders have same calculation logic as positions
-                case OrderInfo.Types.Type.Position: return _positions;
+                case OrderInfo.Types.Type.Stop:
+                case OrderInfo.Types.Type.StopLimit: // StopLimit orders have same calculation logic as Stop orders
+                    return _nettings[NettingType.Stops];
+
+                case OrderInfo.Types.Type.Market: // Market orders have same calculation logic as positions
+                case OrderInfo.Types.Type.Position:
+                    return _nettings[NettingType.Positions];
             }
 
             throw new ArgumentException($"Unsupported Order Type: {orderType}");
         }
 
-        private void UpdateStats(StatsChange change)
+        private void UpdateStats(StatsChangeToken change)
         {
             Margin += change.MarginDelta;
             _parent.OnStatsChange(change);

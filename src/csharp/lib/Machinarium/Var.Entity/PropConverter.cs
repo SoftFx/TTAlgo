@@ -51,7 +51,7 @@ namespace Machinarium.Var
 
         string IDataErrorInfo.Error => null;
 
-        public BoolVar HasError => throw new NotImplementedException();
+        public BoolVar HasError => _error.IsEmpty();
 
         string IDataErrorInfo.this[string columnName]
         {

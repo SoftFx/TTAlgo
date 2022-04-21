@@ -39,8 +39,8 @@ namespace TickTrader.Algo.Backtester
 
         #region ITimerApi
 
-        public DateTime Now => _scheduler.SafeVirtualTimePoint;
-        public DateTime UtcNow => DateTime.SpecifyKind(Now, DateTimeKind.Utc);
+        public DateTime Now => _scheduler.SafeVirtualTimePoint.ToLocalTime();
+        public DateTime UtcNow => _scheduler.SafeVirtualTimePoint;
 
         public Timer CreateTimer(TimeSpan period, Action<Timer> callback)
         {

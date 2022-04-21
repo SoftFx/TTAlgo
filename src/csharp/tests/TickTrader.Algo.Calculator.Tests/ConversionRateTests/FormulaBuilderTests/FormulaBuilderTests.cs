@@ -11,7 +11,7 @@ namespace TickTrader.Algo.Calculator.Tests.FormulaBuilderTests
     public class FormulaBuilderTests
     {
         private static SymbolInfoStorage _storage;
-        private static SymbolInfo a, b, c;
+        private static ISymbolInfoWithRate a, b, c;
 
         private IConversionFormula _formula;
         private ISideNode _nodeBidA, _nodeBidB, _nodeAskC;

@@ -1,11 +1,11 @@
-﻿using Google.Protobuf;
-using System.IO;
+﻿using System.IO;
 using System.Threading.Tasks;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Package;
+using TickTrader.Algo.PkgStorage;
 using TickTrader.Algo.Rpc;
 using TickTrader.Algo.Rpc.OverTcp;
 using TickTrader.Algo.Server.Persistence;
@@ -101,9 +101,12 @@ namespace TickTrader.Algo.Server
             _stateManager = ServerStateManager.Create(_env.ServerStateFilePath);
             _alerts = new AlertManagerModel(AlertManager.Create());
             _savedState = new ServerStateModel(_stateManager);
-            _serverPrivate = new AlgoServerPrivate(Self, _env, _eventBus, _savedState, _alerts);
-            _serverPrivate.AccountOptions = Account.ConnectionOptions.CreateForServer(_settings.EnableAccountLogs, _env.LogFolder);
-            _serverPrivate.RuntimeSettings = _settings.RuntimeSettings;
+            _serverPrivate = new AlgoServerPrivate(Self, _env, _eventBus, _savedState, _alerts)
+            {
+                AccountOptions = Account.ConnectionOptions.CreateForServer(_settings.EnableAccountLogs, _env.LogFolder),
+                RuntimeSettings = _settings.RuntimeSettings,
+                MonitoringSettings = _settings.MonitoringSettings,
+            };
 
             _pkgStorage = new PackageStorage(_eventBus);
             _runtimes = new RuntimeManager(_serverPrivate);

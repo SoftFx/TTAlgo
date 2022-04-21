@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using TickTrader.Algo.ServerControl;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
+using TickTrader.BotAgent.WebAdmin.Server.Settings;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
 {
@@ -18,11 +19,13 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             var a = Assembly.GetExecutingAssembly();
 
             using (var s = a.GetManifestResourceStream("TickTrader.BotAgent.bot-agent.pfx"))
-            using (var r = new BinaryReader(s))
             {
-                var buffer = new byte[s.Length];
-                r.Read(buffer, 0, (int)s.Length);
-                _cert = new X509Certificate2(buffer);
+                using (var r = new BinaryReader(s))
+                {
+                    var buffer = new byte[s.Length];
+                    r.Read(buffer, 0, (int)s.Length);
+                    _cert = new X509Certificate2(buffer);
+                }
             }
         }
 
@@ -55,6 +58,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
         public static AlgoSettings GetAlgoSettings(this IConfiguration configuration)
         {
             return configuration.GetSection(nameof(AppSettings.Algo)).Get<AlgoSettings>();
+        }
+
+        public static MonitoringSettings GetMonitoringSettings(this IConfiguration configuration)
+        {
+            return configuration.GetSection(nameof(AppSettings.Monitoring)).Get<MonitoringSettings>();
         }
 
         public static X509Certificate2 GetCertificate(this IConfiguration config, string contentRoot)

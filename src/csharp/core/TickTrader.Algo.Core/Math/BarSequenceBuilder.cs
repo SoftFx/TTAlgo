@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Core
@@ -34,7 +33,7 @@ namespace TickTrader.Algo.Core
         public event Action<BarData> BarUpdated;
         public BarSampler Sampler => _sampler;
         public Feed.Types.Timeframe TimeFrame { get; }
-        public Timestamp TimeEdge => _currentBar?.OpenTime;
+        public UtcTicks TimeEdge => _currentBar?.OpenTime ?? UtcTicks.Default;
 
         public void AppendBar(BarData bar)
         {
@@ -49,7 +48,7 @@ namespace TickTrader.Algo.Core
             Append(bar);
         }
 
-        public BarData AppendQuote(Timestamp time, double price, double volume)
+        public BarData AppendQuote(UtcTicks time, double price, double volume)
         {
             //if (_currentBar != null && _currentBar.OpenTime > time)
             //    throw new ArgumentException("Invalid time sequnce!");
@@ -90,11 +89,7 @@ namespace TickTrader.Algo.Core
             else
             {
                 // append
-                var entity = new BarData(bar)
-                {
-                    OpenTime = boundaries.Open,
-                    CloseTime = boundaries.Close,
-                };
+                var entity = new BarData(boundaries.Open, boundaries.Close, bar);
                 return Append(entity);
             }
 
@@ -218,7 +213,7 @@ namespace TickTrader.Algo.Core
     public interface ITimeSequenceRef
     {
         Feed.Types.Timeframe TimeFrame { get; }
-        Timestamp TimeEdge { get; }
+        UtcTicks TimeEdge { get; }
 
         event Action<BarData> BarOpened;
         event Action<BarData> BarClosed;

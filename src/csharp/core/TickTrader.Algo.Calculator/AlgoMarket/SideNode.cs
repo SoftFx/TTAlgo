@@ -15,13 +15,13 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
         event Action ValueUpdate;
 
 
-        void Subscribe(ISymbolInfo symbol);
+        void Subscribe(ISymbolInfoWithRate symbol);
     }
 
 
     internal abstract class BaseSideNode
     {
-        protected ISymbolInfo _symbol;
+        protected ISymbolInfoWithRate _symbol;
 
 
         public CalculationError Error
@@ -40,10 +40,10 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
         public event Action ValueUpdate;
 
 
-        protected BaseSideNode(ISymbolInfo smb) => Subscribe(smb);
+        protected BaseSideNode(ISymbolInfoWithRate smb) => Subscribe(smb);
 
 
-        public void Subscribe(ISymbolInfo symbol)
+        public void Subscribe(ISymbolInfoWithRate symbol)
         {
             if (_symbol != null)
                 _symbol.RateUpdated -= SideUpdateEvent;
@@ -65,7 +65,7 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
         public override bool HasValue => _symbol?.HasAsk ?? false;
 
 
-        internal AskSideNode(ISymbolInfo smb) : base(smb) { }
+        internal AskSideNode(ISymbolInfoWithRate smb) : base(smb) { }
     }
 
 
@@ -76,6 +76,6 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
         public override bool HasValue => _symbol?.HasBid ?? false;
 
 
-        internal BidSideNode(ISymbolInfo smb) : base(smb) { }
+        internal BidSideNode(ISymbolInfoWithRate smb) : base(smb) { }
     }
 }

@@ -16,7 +16,7 @@ namespace TickTrader.Algo.Domain
     }
 
 
-    public partial class OrderInfo : IOrderUpdateInfo, IOrderCalcInfo, IOrderLogDetailsInfo, IMarginCalculateRequest, IProfitCalculateRequest
+    public partial class OrderInfo : IOrderUpdateInfo, IOrderCalcInfo, IOrderLogDetailsInfo, IMarginCalculateRequest, IProfitCalculateRequest, ISwapCalculateRequest
     {
         public OrderOptions Options
         {
@@ -33,6 +33,8 @@ namespace TickTrader.Algo.Domain
         public bool HiddenIceberg => Options.HasFlag(OrderOptions.HiddenIceberg);
 
         public bool IsHidden => MaxVisibleAmount.HasValue && MaxVisibleAmount.Value < 1e-9;
+
+        public bool IgnoreCalculation => IsContingentOrder;
 
 
         public ISymbolCalculator Calculator { get; set; }
@@ -63,6 +65,12 @@ namespace TickTrader.Algo.Domain
 
         Types.Side IProfitCalculateRequest.Side => Side;
 
+        double? IProfitCalculateRequest.ClosePrice => null;
+
+
+        Types.Side ISwapCalculateRequest.Side => Side;
+
+        double ISwapCalculateRequest.Volume => RemainingAmount;
 
 
         public event Action<OrderEssentialsChangeArgs> EssentialsChanged;
@@ -85,7 +93,7 @@ namespace TickTrader.Algo.Domain
         public void Update(IOrderUpdateInfo info)
         {
             var oldAmount = RequestedAmount;
-            var oldPrice = Type.IsStop() ? StopPrice : Price;
+            var oldPrice = Type.IsStop() ? StopPrice : Price; //? why not just price
             var oldStopPrice = StopPrice;
             var oldType = Type;
             var oldSwap = Swap;
@@ -101,7 +109,6 @@ namespace TickTrader.Algo.Domain
             InitialType = info.InitialType;
             Side = info.Side;
             MaxVisibleAmount = info.MaxVisibleAmount;
-            //Price = isStopOrder ? info.StopPrice : info.Price;
             Price = info.Price;
             StopPrice = info.StopPrice;
             Created = info.Created;
@@ -111,8 +118,8 @@ namespace TickTrader.Algo.Domain
             StopLoss = info.StopLoss;
             TakeProfit = info.TakeProfit;
             Slippage = info.Slippage;
-            Swap = (double)info.Swap;
-            Commission = (double)info.Commission;
+            Swap = info.Swap;
+            Commission = info.Commission;
             Options = info.Options;
             RequestedOpenPrice = info.RequestedOpenPrice;
             ParentOrderId = info.ParentOrderId;
@@ -125,7 +132,7 @@ namespace TickTrader.Algo.Domain
 
             if (CompositeTag.TryParse(info.UserTag, out CompositeTag compositeTag))
             {
-                UserTag = compositeTag.Tag;
+                UserTag = compositeTag.Tag ?? string.Empty;
                 InstanceId = compositeTag.Key;
             }
             else
@@ -144,6 +151,42 @@ namespace TickTrader.Algo.Domain
         }
 
         public string GetSnapshotString() => ToString();
+
+        public void SetSwap(double swap)
+        {
+            var oldSwap = Swap;
+            Swap = swap;
+            SwapChanged?.Invoke(new OrderPropArgs<double>(this, oldSwap, swap));
+        }
+
+        public void ChangeCommission(double newCommision)
+        {
+            var oldCom = Commission;
+            Commission = newCommision;
+            CommissionChanged?.Invoke(new OrderPropArgs<double>(this, oldCom, newCommision));
+        }
+
+        public void ChangeRemaningAmount(double newAmount)
+        {
+            var oldAmount = RemainingAmount;
+            RemainingAmount = newAmount;
+            EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldAmount, Price, StopPrice, Type, false));
+        }
+
+        public void ChangeEssentials(OrderInfo.Types.Type newType, double newAmount, double? newPrice, double? newStopPirce)
+        {
+            var oldPrice = Price;
+            var oldType = Type;
+            var oldAmount = RemainingAmount;
+            var oldStopPrice = StopPrice;
+
+            Type = newType;
+            RemainingAmount = newAmount;
+            Price = newPrice;
+            StopPrice = newStopPirce;
+
+            EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldAmount, oldPrice, oldStopPrice, oldType, false));
+        }
     }
 
     public static class OrderOptionsExtensions
@@ -158,6 +201,8 @@ namespace TickTrader.Algo.Domain
         double CashMargin { get; set; }
 
         SymbolInfo SymbolInfo { get; }
+
+        bool IgnoreCalculation { get; }
 
         event Action<OrderEssentialsChangeArgs> EssentialsChanged;
         event Action<OrderPropArgs<double>> SwapChanged;

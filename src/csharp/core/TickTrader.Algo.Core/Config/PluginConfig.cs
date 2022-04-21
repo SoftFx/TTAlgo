@@ -11,6 +11,9 @@ namespace TickTrader.Algo.Core.Config
     [DataContract(Namespace = "TTAlgo.Config.v2")]
     public class PluginConfig
     {
+        public static readonly string XmlUri = typeof(PluginConfig).FullName + "/Xml";
+
+
         [DataMember(Name = "ModelTimeFrame")]
         private TimeFrames? _modelTimeframe;
 
@@ -87,13 +90,13 @@ namespace TickTrader.Algo.Core.Config
         {
             var res = new PluginConfig
             {
-                Key = config.Key.Convert(),
+                Key = config.Key?.Convert(),
                 TimeFrame = config.Timeframe.Convert(),
                 ModelTimeFrame = config.ModelTimeframe.Convert(),
-                MainSymbol = config.MainSymbol.Convert(),
-                SelectedMapping = config.SelectedMapping.Convert(),
+                MainSymbol = config.MainSymbol?.Convert(),
+                SelectedMapping = config.SelectedMapping?.Convert(),
                 InstanceId = config.InstanceId,
-                Permissions = config.Permissions.Convert(),
+                Permissions = config.Permissions?.Convert(),
             };
             res.Properties.AddRange(config.UnpackProperties().Select(p => p.Convert()).Where(u => u != null));
 
@@ -103,23 +106,35 @@ namespace TickTrader.Algo.Core.Config
 
         #region Export/Import
 
-        private readonly XmlWriterSettings XmlSettings = new XmlWriterSettings() { Indent = true };
+        private static readonly XmlObjectSerializer XmlSerializer = new DataContractSerializer(typeof(PluginConfig));
+        private static readonly XmlWriterSettings XmlSettings = new XmlWriterSettings() { Indent = true };
 
 
         public static PluginConfig LoadFromFile(string filePath)
         {
-            var serializer = new DataContractSerializer(typeof(PluginConfig));
-            using (var stream = new FileStream(filePath, FileMode.Open))
-                return (PluginConfig)serializer.ReadObject(stream);
+            using (var file = File.Open(filePath, FileMode.Open))
+                return LoadFromStream(file);
         }
 
-
-        public void SaveToFile(string filePath)
+        public static PluginConfig LoadFromStream(Stream stream)
         {
-            var serializer = new DataContractSerializer(typeof(PluginConfig));
-            using (var stream = XmlWriter.Create(filePath, XmlSettings))
-                serializer.WriteObject(stream, this);
+            return (PluginConfig)XmlSerializer.ReadObject(stream);
         }
+
+        public static void SaveToFile(string filePath, PluginConfig config)
+        {
+            using (var file = File.Open(filePath, FileMode.Create))
+                SaveToStream(file, config);
+        }
+
+        public static void SaveToStream(Stream stream, PluginConfig config)
+        {
+            using (var writer = XmlWriter.Create(stream, XmlSettings))
+                XmlSerializer.WriteObject(writer, config);
+        }
+
+
+        public void SaveToFile(string filePath) => SaveToFile(filePath, this);
 
         #endregion
     }
@@ -158,7 +173,7 @@ namespace TickTrader.Algo.Core.Config
                     location = isReduction ? nameof(RepositoryLocation.LocalExtensions) : nameof(RepositoryLocation.LocalRepository);
                     break;
                 case SharedConstants.CommonRepositoryId:
-                    location = isReduction ? nameof(RepositoryLocation.CommonExtensions) : nameof(RepositoryLocation.CommonExtensions);
+                    location = isReduction ? nameof(RepositoryLocation.CommonExtensions) : nameof(RepositoryLocation.CommonRepository);
                     break;
             }
             return new PackageKey { Location = location, Name = pkgId.PackageName };

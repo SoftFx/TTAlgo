@@ -64,7 +64,7 @@ namespace TickTrader.Algo.CoreV1
             buffer.EndBatchBuild = () =>
             {
                 _isBatch = false;
-                OnRangeAppend();
+                OnResetAll();
             };
             buffer.Truncated = OnTruncate;
             buffer.Truncating = OnTruncating;
@@ -84,10 +84,9 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        private void SendUpdate<TUpdate>(TUpdate data, DataSeriesUpdate.Types.UpdateAction action)
-            where TUpdate : IMessage
+        private void SendUpdate(OutputPointWire point, DataSeriesUpdate.Types.Action action)
         {
-            var update = new DataSeriesUpdate(DataSeriesUpdate.Types.Type.Output, _outputId, action, data);
+            var update = new OutputSeriesUpdate(_outputId, action, point);
             update.BufferTruncatedBy = _truncatedBy;
             _truncatedBy = 0;
             _context.SendNotification(update);
@@ -100,7 +99,7 @@ namespace TickTrader.Algo.CoreV1
             if (!_isBatch && _sendUpdates)
             {
                 var timeCoordinate = _timeRef[index];
-                SendUpdate(new OutputPoint(timeCoordinate, index, _pointFactory.PackValue(data)), DataSeriesUpdate.Types.UpdateAction.Append);
+                SendUpdate(new OutputPointWire(_pointFactory(timeCoordinate, data)), DataSeriesUpdate.Types.Action.Append);
             }
         }
 
@@ -109,25 +108,28 @@ namespace TickTrader.Algo.CoreV1
             if (!_isBatch && _sendUpdates)
             {
                 var timeCoordinate = _timeRef[index];
-                SendUpdate(new OutputPoint(timeCoordinate, index, _pointFactory.PackValue(data)), DataSeriesUpdate.Types.UpdateAction.Update);
+                SendUpdate(new OutputPointWire(_pointFactory(timeCoordinate, data)), DataSeriesUpdate.Types.Action.Update);
             }
         }
 
-        private void OnRangeAppend()
+        private void OnResetAll()
         {
             if (_sendUpdates)
             {
                 var count = _buffer.Count;
+                var update = new OutputSeriesUpdate(_outputId, DataSeriesUpdate.Types.Action.Reset);
+                update.BufferTruncatedBy = _truncatedBy;
+                _truncatedBy = 0;
 
-                var range = new OutputPointRange();
-                range.Points.Capacity = count;
+                update.Points.Capacity = count;
 
                 for (var i = 0; i < count; i++)
                 {
-                    range.Points.Add(new OutputPoint(_timeRef[i], i, _pointFactory.PackValue(_buffer[i])));
+                    var timeCoordinate = _timeRef[i];
+                    update.Points.Add(new OutputPointWire(_pointFactory(timeCoordinate, _buffer[i])));
                 }
 
-                SendUpdate(range, DataSeriesUpdate.Types.UpdateAction.Append);
+                _context.SendNotification(update);
             }
         }
 

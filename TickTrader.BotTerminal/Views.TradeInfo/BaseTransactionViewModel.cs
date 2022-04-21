@@ -13,7 +13,7 @@ namespace TickTrader.BotTerminal
         protected readonly PricePrecisionConverter<double?> _symbolPrecision;
         protected readonly PricePrecisionConverter<double> _profitPrecision;
 
-        protected readonly SymbolInfo _symbol;
+        protected readonly ISymbolInfoWithRate _symbol;
 
         protected BaseTransactionViewModel(SymbolInfo symbol, int accountDigits)
         {

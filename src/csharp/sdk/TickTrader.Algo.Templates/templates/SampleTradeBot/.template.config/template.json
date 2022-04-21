@@ -1,0 +1,15 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "Soft-FX",
+    "classifications": [ "TTAlgo", "TradeBot", "Sample" ],
+    "identity": "TickTrader.Algo.Template.SampleTradeBot.CSharp",
+    "groupIdentity": "TickTrader.Algo.Template.SampleTradeBot",
+    "name": "TickTrader Algo trading bot sample",
+    "shortName": "ttalgo-samplebot",
+    "tags": {
+        "language": "C#",
+        "type": "project"
+    },
+    "sourceName": "SampleTradeBot",
+    "preferNameDirectory":  true
+}

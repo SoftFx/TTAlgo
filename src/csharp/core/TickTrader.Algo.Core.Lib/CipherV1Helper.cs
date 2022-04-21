@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Core.Lib
         }
 
 
-        private const int SecretKeySize = 4096;
+        public const int SecretKeySize = 4096;
         private const int BlockSize = 16;
         private const int CipherKeySize = 32;
         // This constant determines the number of iterations for the password bytes generation function.

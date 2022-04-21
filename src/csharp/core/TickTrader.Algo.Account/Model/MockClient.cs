@@ -18,7 +18,7 @@ namespace TickTrader.Algo.Account
 
         public AccountModel Acc { get; }
 
-        public void Init(Domain.AccountInfo accInfo, IEnumerable<Domain.SymbolInfo> symbols, IEnumerable<CurrencyInfo> currencies)
+        public void Init(Domain.AccountInfo accInfo, IEnumerable<ISymbolInfo> symbols, IEnumerable<CurrencyInfo> currencies)
         {
             _symbols.Clear();
             _currencies.Clear();
@@ -27,7 +27,7 @@ namespace TickTrader.Algo.Account
                 _currencies.Add(c.Name, c);
 
             foreach (var s in symbols)
-                _symbols.Add(s.Name, s);
+                _symbols.Add(s.Name, new SymbolInfo(s));
 
             Acc.Init(accInfo, new Domain.OrderInfo[0], new Domain.PositionInfo[0], new Domain.AssetInfo[0]);
             Acc.StartCalculator(this);

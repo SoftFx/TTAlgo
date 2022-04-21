@@ -13,10 +13,10 @@ namespace TickTrader.Algo.Backtester
         private BarData _currentBar;
         private bool _sendOnUpdate;
         private bool _sendOnClose;
-        private DataSeriesUpdate.Types.Type _type;
+        private BarSeriesUpdate.Types.Type _type;
         private string _streamId;
 
-        public ChartDataCollector(TestDataSeriesFlags seriesFlags, DataSeriesUpdate.Types.Type type, string seriesName, Action<object> sendUpdateAction, ITimeSequenceRef timeRef)
+        public ChartDataCollector(TestDataSeriesFlags seriesFlags, BarSeriesUpdate.Types.Type type, string seriesName, Action<object> sendUpdateAction, ITimeSequenceRef timeRef)
         {
             _timeRef = timeRef;
             _sendUpdateAction = sendUpdateAction;
@@ -36,14 +36,14 @@ namespace TickTrader.Algo.Backtester
                 _currentBar.Init(price, 1);
 
                 if (_sendOnUpdate)
-                    SendUpdate(_currentBar.Clone(), DataSeriesUpdate.Types.UpdateAction.Append);
+                    SendUpdate(_currentBar.Clone(), DataSeriesUpdate.Types.Action.Append);
             }
             else
             {
                 _currentBar.Append(price, 1);
 
                 if (_sendOnUpdate)
-                    SendUpdate(_currentBar.Clone(), DataSeriesUpdate.Types.UpdateAction.Update);
+                    SendUpdate(_currentBar.Clone(), DataSeriesUpdate.Types.Action.Update);
             }
         }
 
@@ -62,7 +62,7 @@ namespace TickTrader.Algo.Backtester
             _timeRef.BarClosed -= _timeRef_BarClosed;
         }
 
-        private void Init(TestDataSeriesFlags seriesFlags, DataSeriesUpdate.Types.Type dataType, string seriesId)
+        private void Init(TestDataSeriesFlags seriesFlags, BarSeriesUpdate.Types.Type dataType, string seriesId)
         {
             if (seriesFlags != TestDataSeriesFlags.Disabled)
             {
@@ -95,12 +95,12 @@ namespace TickTrader.Algo.Backtester
             if (_currentBar?.TickVolume > 0)
                 _snapshot?.Add(_currentBar);
             if (_sendOnClose)
-                SendUpdate(_currentBar, DataSeriesUpdate.Types.UpdateAction.Append);
+                SendUpdate(_currentBar, DataSeriesUpdate.Types.Action.Append);
         }
 
-        private void SendUpdate(BarData bar, DataSeriesUpdate.Types.UpdateAction action)
+        private void SendUpdate(BarData bar, DataSeriesUpdate.Types.Action action)
         {
-            var update = new DataSeriesUpdate(_type, _streamId, action, bar);
+            var update = new BarSeriesUpdate(_type, _streamId, action, bar);
             _sendUpdateAction(update);
         }
     }

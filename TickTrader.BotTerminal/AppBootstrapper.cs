@@ -1,5 +1,4 @@
-﻿using ActorSharp;
-using Caliburn.Micro;
+﻿using Caliburn.Micro;
 using NLog;
 using NLog.Config;
 using System;
@@ -10,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using TickTrader.Algo.Account;
 using TickTrader.Algo.Account.Fdk2;
+using TickTrader.Algo.Account.Settings;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
@@ -20,6 +20,8 @@ using TickTrader.Algo.Package;
 using TickTrader.Algo.Server;
 using TickTrader.Algo.Server.Common;
 using TickTrader.FeedStorage;
+using TickTrader.SeriesStorage;
+using TickTrader.SeriesStorage.Lmdb;
 using TickTrader.WpfWindowsSupportLibrary;
 
 namespace TickTrader.BotTerminal
@@ -57,6 +59,7 @@ namespace TickTrader.BotTerminal
                 PackageLoadContext.Init(PackageLoadContextProvider.Create);
                 PackageExplorer.Init(PackageV1Explorer.Create());
                 PluginLogWriter.Init(NLogPluginLogWriter.Create);
+                BinaryStorageManagerFactory.Init((folder, readOnly) => new LmdbManager(folder, readOnly));
             }
         }
 
@@ -138,14 +141,17 @@ namespace TickTrader.BotTerminal
             var p = new NLogFileParams { LogDirectory = EnvService.Instance.JournalFolder, Layout = NLogHelper.SimpleLogLayout };
 
             p.FileNameSuffix = "journal";
+            p.ArchiveDirectory = Path.Combine(p.LogDirectory, "Archive");
+
             var journalTarget = NLogHelper.CreateAsyncFileTarget(p, 500, 10000);
-            config.AddRule(LogLevel.Trace, LogLevel.Trace, journalTarget, string.Concat("*", nameof(EventJournal)), true);
+            config.AddRule(LogLevel.Trace, LogLevel.Fatal, journalTarget, $"*Journal*", true);
 
             p.LogDirectory = EnvService.Instance.LogFolder;
+            p.ArchiveDirectory = Path.Combine(p.LogDirectory, "Archive");
 
             p.FileNameSuffix = "alert";
             var alertTarget = NLogHelper.CreateAsyncFileTarget(p, 100, 1000);
-            config.AddRule(LogLevel.Trace, LogLevel.Trace, alertTarget, string.Concat("*", nameof(AlertViewModel)), true);
+            config.AddRule(LogLevel.Trace, LogLevel.Fatal, alertTarget, $"*{nameof(AlertViewModel)}", true);
 
             p.Layout = NLogHelper.NormalLogLayout;
 
@@ -201,16 +207,31 @@ namespace TickTrader.BotTerminal
 
                 var connectionOptions = ConnectionOptions.CreateForTerminal(Properties.Settings.Default.EnableConnectionLogs, EnvService.Instance.LogFolder);
 
-                var clientHandler = new ClientModel.ControlHandler((options, loggerId) => new SfxInterop(options, loggerId),connectionOptions, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy, "0");
+                var accountSettings = new AccountModelSettings("0")
+                {
+                    ConnectionSettings = new ConnectionSettings
+                    {
+                        AccountFactory = (options, loggerId) => new SfxInterop(options, loggerId),
+                        Options = connectionOptions,
+                    },
+                };
+
+                var clientHandler = new ClientModel.ControlHandler(accountSettings);
                 var dataHandler = clientHandler.CreateDataHandler();
                 await dataHandler.Init();
 
-                var customStorage = new CustomFeedStorage.Handler(ActorSharp.Actor.SpawnLocal<CustomFeedStorage>());
-                await customStorage.SyncData();
-                await customStorage.Start(EnvService.Instance.CustomFeedCacheFolder);
+                //OnlineStorageSettings = new OnlineStorageSettings
+                //{
+                //    FolderPath = EnvService.Instance.FeedHistoryCacheFolder,
+                //    Options = FeedHistoryFolderOptions.ServerHierarchy,
+                //},
+
+                //var customStorage = new CustomFeedStorage.Handler(ActorSharp.Actor.SpawnLocal<CustomFeedStorage>());
+                //await customStorage.SyncData();
+                //await customStorage.Start(EnvService.Instance.CustomFeedCacheFolder);
 
                 _container.RegisterInstance(typeof(ClientModel.Data), null, dataHandler);
-                _container.RegisterInstance(typeof(CustomFeedStorage.Handler), null, customStorage);
+                //_container.RegisterInstance(typeof(CustomFeedStorage.Handler), null, customStorage);
                 _container.Singleton<IWindowManager, Caliburn.Micro.WindowManager>();
                 _container.Singleton<IEventAggregator, EventAggregator>();
                 _container.Singleton<ShellViewModel>();

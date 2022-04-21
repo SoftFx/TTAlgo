@@ -1,13 +1,12 @@
 ﻿using System;
 using SciChart.Charting.Model.DataSeries;
 using TickTrader.Algo.Domain;
-using Google.Protobuf.WellKnownTypes;
 
 namespace TickTrader.BotTerminal
 {
     internal class MarkerSeriesModel : OutputSeriesModel<MarkerInfo>
     {
-        private static readonly MarkerInfo NanMarker = new MarkerInfo { ColorArgb = uint.MaxValue, Y = double.NaN };
+        private static readonly MarkerInfo NanMarker = new MarkerInfo { ColorArgb = uint.MaxValue };
 
         private XyDataSeries<DateTime, double> _seriesData;
 
@@ -29,17 +28,16 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        protected override void AppendInternal(DateTime time, Any data)
+        protected override void AppendInternal(OutputPoint p)
         {
-            var marker = UnpackValue(data);
-            _seriesData.Append(time, marker.Y, GetMetadata(marker));
+            _seriesData.Append(p.Time.ToUtcDateTime(), p.Value, GetMetadata(p.Value, p.Metadata as MarkerInfo));
         }
 
-        protected override void UpdateInternal(int index, DateTime time, Any data)
+        protected override void UpdateInternal(OutputPoint p)
         {
-            var marker = UnpackValue(data);
-            _seriesData.Metadata[index] = GetMetadata(marker);
-            _seriesData.YValues[index] = marker.Y;
+            var index = _seriesData.FindIndex(p.Time.ToUtcDateTime());
+            _seriesData.Metadata[index] = GetMetadata(p.Value, p.Metadata as MarkerInfo);
+            _seriesData.YValues[index] = p.Value;
         }
 
         protected override void Clear()
@@ -48,19 +46,11 @@ namespace TickTrader.BotTerminal
             _seriesData.Metadata.Clear();
         }
 
-        private AlgoMarkerMetadata GetMetadata(MarkerInfo marker)
+        private AlgoMarkerMetadata GetMetadata(double y, MarkerInfo marker)
         {
-            if (double.IsNaN(marker.Y))
+            if (marker == null || double.IsNaN(y))
                 return null;
             return new AlgoMarkerMetadata(marker);
-        }
-
-        private MarkerInfo UnpackValue(Any data)
-        {
-            var y = NanValue;
-            if (data != null)
-                y = data.Unpack<MarkerInfo>();
-            return y;
         }
     }
 }

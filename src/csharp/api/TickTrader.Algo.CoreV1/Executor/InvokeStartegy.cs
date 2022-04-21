@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using TickTrader.Algo.Calculator.AlgoMarket;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Domain;
 
@@ -15,9 +16,10 @@ namespace TickTrader.Algo.CoreV1
         {
         }
 
-        public void Init(PluginBuilder builder, Action<Exception> onRuntimeError, FeedStrategy fStrategy)
+        internal void Init(IFixtureContext context, Action<Exception> onRuntimeError, FeedStrategy fStrategy)
         {
-            Builder = builder;
+            Builder = context.Builder;
+            MarketData = context.MarketData;
             _onRuntimeError = onRuntimeError;
             FStartegy = fStrategy;
             OnInit();
@@ -30,6 +32,7 @@ namespace TickTrader.Algo.CoreV1
 
         protected PluginBuilder Builder { get; private set; }
         protected FeedStrategy FStartegy { get; private set; }
+        protected AlgoMarketState MarketData { get; private set; }
 
         public abstract int FeedQueueSize { get; }
 

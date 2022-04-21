@@ -224,12 +224,22 @@ namespace TickTrader.Algo.Runtime
             return context;
         }
 
+        internal IAsyncPagedEnumerator<TriggerReportInfo> GetTriggerHistory(TriggerHistoryRequest request)
+        {
+            var callId = RpcMessage.GenerateCallId();
+            var context = new PagedEnumeratorAdapter<TriggerReportInfo>(TriggerHistoryPageResponseHandler,
+                () => _session.Tell(RpcMessage.Request(Id, callId, new TriggerHistoryRequestNextPage())),
+                () => _session.Tell(RpcMessage.Request(Id, callId, new TriggerHistoryRequestDispose())));
+            _session.Ask(RpcMessage.Request(Id, callId, request), context);
+            return context;
+        }
+
         internal async Task<List<QuoteInfo>> GetFeedSnapshotAsync()
         {
             var context = new RpcResponseTaskContext<QuotePage>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(Id, new FeedSnapshotRequest()), context);
             var res = await context.TaskSrc.Task;
-            return res.Quotes.Select(q => new QuoteInfo(q)).ToList();
+            return res.Quotes.Select(QuoteInfo.Create).ToList();
         }
 
         internal async Task<List<QuoteInfo>> ModifyFeedSubscriptionAsync(ModifyFeedSubscriptionRequest request)
@@ -237,7 +247,7 @@ namespace TickTrader.Algo.Runtime
             var context = new RpcResponseTaskContext<QuotePage>(RpcHandler.SingleReponseHandler);
             _session.Ask(RpcMessage.Request(Id, request), context);
             var res = await context.TaskSrc.Task.ConfigureAwait(false);
-            return res.Quotes.Select(q => new QuoteInfo(q)).ToList();
+            return res.Quotes.Select(QuoteInfo.Create).ToList();
         }
 
         internal Task CancelAllFeedSubscriptionsAsync()
@@ -261,7 +271,7 @@ namespace TickTrader.Algo.Runtime
             _session.Ask(RpcMessage.Request(Id, request), context);
             var res = await context.TaskSrc.Task;
             var symbol = res.Symbol;
-            return res.Quotes.Select(q => new QuoteInfo(symbol, q)).ToList();
+            return res.Quotes.Select(q => QuoteInfo.Create(symbol, q)).ToList();
         }
 
         private void OrderExecReportNotificationHandler(Any payload)
@@ -282,13 +292,13 @@ namespace TickTrader.Algo.Runtime
         private void FullQuoteInfoNotificationHandler(Any payload)
         {
             var quote = payload.Unpack<FullQuoteInfo>();
-            _rateEventSrc.Send(new QuoteInfo(quote));
+            _rateEventSrc.Send(QuoteInfo.Create(quote));
         }
 
         private void QuotePageNotificationHandler(Any payload)
         {
             var page = payload.Unpack<QuotePage>();
-            _rateListEventSrc.Send(page.Quotes.Select(q => new QuoteInfo(q)).ToList());
+            _rateListEventSrc.Send(page.Quotes.Select(QuoteInfo.Create).ToList());
         }
 
 
@@ -340,7 +350,29 @@ namespace TickTrader.Algo.Runtime
             {
                 var response = payload.Unpack<TradeHistoryPageResponse>();
                 var res = new List<TradeReportInfo>(response.Reports);
-                var res2 = taskSrc.TrySetResult(res);
+
+                taskSrc.TrySetResult(res);
+
+                if (response.Reports.Count != 0)
+                    return false;
+            }
+
+            return true;
+        }
+
+        private bool TriggerHistoryPageResponseHandler(TaskCompletionSource<List<TriggerReportInfo>> taskSrc, Any payload)
+        {
+            if (payload.TryGetError(out var ex))
+            {
+                taskSrc.TrySetException(ex);
+            }
+            else
+            {
+                var response = payload.Unpack<TriggerHistoryPageResponse>();
+                var res = new List<TriggerReportInfo>(response.Reports);
+
+                taskSrc.TrySetResult(res);
+
                 if (response.Reports.Count != 0)
                     return false;
             }

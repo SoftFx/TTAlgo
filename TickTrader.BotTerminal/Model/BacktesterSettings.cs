@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Text;
-using TickTrader.Algo.Backtester;
+using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
@@ -16,23 +16,21 @@ namespace TickTrader.BotTerminal
         public int WarmupValue { get; set; } = 10;
         public WarmupUnitTypes WarmupUnits { get; set; } = WarmupUnitTypes.Bars;
 
-        public JournalOptions JournalSettings { get; set; } = JournalOptions.Enabled | JournalOptions.WriteCustom | JournalOptions.WriteInfo | JournalOptions.WriteTrade | JournalOptions.WriteAlert;
+        public JournalOptions JournalSettings { get; set; } = JournalOptions.Default;
 
-        public void Apply(Backtester tester)
+        public void Apply(BacktesterConfig config)
         {
-            Apply(tester.CommonSettings);
-            tester.JournalFlags = JournalSettings;
-        }
+            if (ServerPingMs < 0)
+                throw new ArgumentException("Invalid ping value");
+            config.Core.ServerPingMs = (uint)ServerPingMs;
+            config.Core.WarmupValue = WarmupValue;
+            config.Core.WarmupUnits = WarmupUnits;
+            config.Core.JournalFlags = JournalSettings;
 
-        public void Apply(CommonTestSettings settings)
-        {
-            settings.InitialBalance = InitialBalance;
-            settings.BalanceCurrency = BalanceCurrency;
-            settings.Leverage = Leverage;
-            settings.AccountType = AccType;
-            settings.ServerPing = TimeSpan.FromMilliseconds(ServerPingMs);
-            settings.WarmupSize = WarmupValue;
-            settings.WarmupUnits = WarmupUnits;
+            config.Account.Type = AccType;
+            config.Account.Leverage = Leverage;
+            config.Account.InitialBalance = InitialBalance;
+            config.Account.BalanceCurrency = BalanceCurrency;
         }
 
         public string ToText(bool compact)

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using TickTrader.Algo.Backtester;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
@@ -8,29 +7,27 @@ namespace TickTrader.BotTerminal
     internal class TesterOutputCollector<T> : IOutputCollector
     {
         private string _outputId;
-        private BacktesterMarshaller _executor;
+        //private BacktesterMarshaller _executor;
 
-        public TesterOutputCollector(string outputId, BacktesterMarshaller executor)
+        public TesterOutputCollector(string outputId)//, BacktesterMarshaller executor)
         {
             //OutputConfig = setup ?? throw new ArgumentNullException("setup");
             //OutputDescriptor = setup.Metadata.Descriptor;
             _outputId = outputId ?? throw new ArgumentNullException("setup.Id");
-            _executor = executor ?? throw new ArgumentNullException("executor");
+            //_executor = executor ?? throw new ArgumentNullException("executor");
 
-            executor.OutputUpdate += Executor_OutputUpdate;
+            //executor.OutputUpdate += Executor_OutputUpdate;
         }
 
-        private void Executor_OutputUpdate(DataSeriesUpdate update)
+        private void Executor_OutputUpdate(OutputSeriesUpdate update)
         {
             if (update.SeriesId == _outputId)
             {
-                if (update.Value.Is(OutputPoint.Descriptor))
+                switch (update.UpdateAction)
                 {
-                    var point = update.Value.Unpack<OutputPoint>();
-                    if (update.UpdateAction == DataSeriesUpdate.Types.UpdateAction.Append)
-                        Appended?.Invoke(point);
-                    else if (update.UpdateAction == DataSeriesUpdate.Types.UpdateAction.Update)
-                        Updated?.Invoke(point);
+                    case DataSeriesUpdate.Types.Action.Append: Appended?.Invoke(update.Points[0].Unpack()); break;
+                    case DataSeriesUpdate.Types.Action.Update: Updated?.Invoke(update.Points[0].Unpack()); break;
+                    case DataSeriesUpdate.Types.Action.Reset: break;
                 }
             }
         }
@@ -42,12 +39,12 @@ namespace TickTrader.BotTerminal
 
         public event Action<OutputPoint> Appended;
         public event Action<OutputPoint> Updated;
-        public event Action<OutputPointRange> SnapshotAppended { add { } remove { } }
+        public event Action<OutputPoint[]> SnapshotAppended { add { } remove { } }
         public event Action<int> Truncated { add { } remove { } }
 
         public void Dispose()
         {
-            _executor.OutputUpdate -= Executor_OutputUpdate;
+            //_executor.OutputUpdate -= Executor_OutputUpdate;
         }
     }
 }

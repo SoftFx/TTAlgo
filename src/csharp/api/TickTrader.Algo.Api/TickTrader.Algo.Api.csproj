@@ -4,15 +4,17 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>algo.snk</AssemblyOriginatorKeyFile>
+    <VersionPrefix>1.5.1</VersionPrefix>
+  </PropertyGroup>
 
+  <PropertyGroup Label="NuGet package definition">
     <Id>TickTrader.Algo.Api</Id>
-    <Version>1.5.1</Version>
     <Title>TickTrader.Algo.Api</Title>
-    <Authors>SoftFX</Authors>
-    <RequireLicenseAcceptance>false</RequireLicenseAcceptance>
-    <Description>TickTrader.Algo.Api</Description>
-    <Copyright>Copyright © 2017-2021</Copyright>
+    <Description>TickTrader Algo Api for bots and indicators</Description>
     <Tags>SoftFX;TickTrader</Tags>
+    <Authors>Soft-FX</Authors>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
     <PackageIcon>images\icon.png</PackageIcon>
   </PropertyGroup>
 

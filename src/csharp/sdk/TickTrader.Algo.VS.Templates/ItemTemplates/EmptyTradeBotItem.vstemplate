@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<VSTemplate Version="3.0.0" Type="Item" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005" xmlns:sdk="http://schemas.microsoft.com/developer/vstemplate-sdkextension/2010">
+  <TemplateData>
+    <Name>Empty Trade Bot</Name>
+    <Description>Item template for TTALgo trade bot</Description>
+    <Icon>TTAlgoLogo64.ico</Icon>
+    <ProjectType>CSharp</ProjectType>
+    <SortOrder>10</SortOrder>
+    <TemplateID>TickTrader.Algo.VSTemplate.EmptyTradeBotItem.CSharp</TemplateID>
+    <TemplateGroupID>TickTrader.Algo.VSTemplate.EmptyTradeBotItem</TemplateGroupID>
+    <DefaultName>TradeBot.cs</DefaultName>
+  </TemplateData>
+  <TemplateContent>
+    <ProjectItem ReplaceParameters="true" TargetFileName="$fileinputname$.cs">EmptyTradeBot.cs</ProjectItem>
+  </TemplateContent>
+</VSTemplate>

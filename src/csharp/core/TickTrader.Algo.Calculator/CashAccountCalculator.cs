@@ -135,6 +135,9 @@ namespace TickTrader.Algo.Calculator
 
         public void AddOrder(IOrderCalcInfo order)
         {
+            if (order.IgnoreCalculation)
+                return;
+
             try
             {
                 var symbol = order.SymbolInfo;
@@ -166,6 +169,10 @@ namespace TickTrader.Algo.Calculator
             try
             {
                 var order = args.Order;
+
+                if (order.IgnoreCalculation)
+                    return;
+
                 var symbol = order.SymbolInfo;
                 if (symbol == null)
                 {
@@ -203,6 +210,9 @@ namespace TickTrader.Algo.Calculator
 
         public void RemoveOrder(IOrderCalcInfo order)
         {
+            if (order.IgnoreCalculation)
+                return;
+
             try
             {
                 //OrderLightClone clone = GetOrderOrThrow(order.OrderId);

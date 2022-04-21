@@ -4,9 +4,14 @@ namespace TickTrader.Algo.Package
 {
     public static class PackageHelper
     {
-        public static string GetPackageExtensions => "Packages|*.ttalgo";
+        public const string CsvExtensions = "Table|*.csv";
 
-        public static string GetPackageAndAllExtensions => "Packages|*.ttalgo|All Files|*.*";
+        public const string TxtExtensions = "Text|*.txt";
+
+        public const string PackageExtensions = "Packages|*.ttalgo";
+
+        public const string PackageAndAllExtensions = "Packages|*.ttalgo|All Files|*.*";
+
 
         public static bool IsFileSupported(string filePath)
         {

@@ -1,4 +1,4 @@
-﻿using TickTrader.Algo.Backtester;
+﻿using TickTrader.Algo.BacktesterApi;
 
 namespace TickTrader.BotTerminal
 {

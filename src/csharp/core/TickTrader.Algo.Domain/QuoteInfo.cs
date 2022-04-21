@@ -1,11 +1,16 @@
-﻿using Google.Protobuf.WellKnownTypes;
+﻿using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 using System;
+using System.Buffers;
 using System.Runtime.InteropServices;
 
 namespace TickTrader.Algo.Domain
 {
-    public struct QuoteBand
+    public readonly struct QuoteBand
     {
+        public const int Size = 16;
+
+
         public double Price { get; }
 
         public double Amount { get; }
@@ -18,48 +23,11 @@ namespace TickTrader.Algo.Domain
         }
     }
 
-
-    public partial class QuoteData
-    {
-        public ReadOnlySpan<QuoteBand> Asks => MemoryMarshal.Cast<byte, QuoteBand>(AskBytes.Span);
-
-        public ReadOnlySpan<QuoteBand> Bids => MemoryMarshal.Cast<byte, QuoteBand>(BidBytes.Span);
-
-        public bool HasAsk => AskBytes.Length > 0;
-
-        public bool HasBid => BidBytes.Length > 0;
-
-
-        public QuoteData(DateTime time, double? bid, double? ask)
-            : this(time.ToUniversalTime().ToTimestamp(), bid,ask)
-        {
-        }
-
-        public QuoteData(Timestamp time, double? bid, double? ask)
-        {
-            Time = time;
-            SetBids(bid.HasValue ? new QuoteBand[] { new QuoteBand(bid.Value, 0) } : new QuoteBand[0]);
-            SetAsks(ask.HasValue ? new QuoteBand[] { new QuoteBand(ask.Value, 0) } : new QuoteBand[0]);
-        }
-
-
-        public void SetAsks(QuoteBand[] bands)
-        {
-            var byteSpan = MemoryMarshal.Cast<QuoteBand, byte>(bands.AsSpan());
-            AskBytes = ByteStringHelper.CopyFromUglyHack(byteSpan);
-        }
-
-        public void SetBids(QuoteBand[] bands)
-        {
-            var byteSpan = MemoryMarshal.Cast<QuoteBand, byte>(bands.AsSpan());
-            BidBytes = ByteStringHelper.CopyFromUglyHack(byteSpan);
-        }
-    }
-
     public interface IQuoteInfo
     {
         string Symbol { get; }
-        DateTime Time { get; }
+        UtcTicks Time { get; }
+        DateTime TimeUtc { get; }
         double Ask { get; }
         double Bid { get; }
 
@@ -73,8 +41,8 @@ namespace TickTrader.Algo.Domain
     public interface IRateInfo
     {
         string Symbol { get; }
-        DateTime Time { get; }
-        Timestamp Timestamp { get; }
+        UtcTicks Time { get; }
+        DateTime TimeUtc { get; }
         bool HasAsk { get; }
         bool HasBid { get; }
         double Ask { get; }
@@ -90,118 +58,259 @@ namespace TickTrader.Algo.Domain
         QuoteInfo LastQuote { get; }
     }
 
+    public class QuoteL2Data
+    {
+        private static readonly byte[] _emptyBands = Array.Empty<byte>();
+
+        private int _bidSize, _askSize;
+
+
+        public byte[] BidBytes { get; } = _emptyBands;
+
+        public byte[] AskBytes { get; } = _emptyBands;
+
+        public ReadOnlySpan<QuoteBand> Bids => GetBands(BidBytes, _bidSize);
+
+        public ReadOnlySpan<QuoteBand> Asks => GetBands(AskBytes, _askSize);
+
+
+        public QuoteL2Data(double? bid, double? ask)
+        {
+            if (bid.HasValue)
+            {
+                BidBytes = InitTickSide(bid.Value);
+                _bidSize = QuoteBand.Size;
+            }
+            if (ask.HasValue)
+            {
+                AskBytes = InitTickSide(ask.Value);
+                _askSize = QuoteBand.Size;
+            }
+        }
+
+        public QuoteL2Data(byte[] bids, byte[] asks, int? depth = null)
+        {
+            if (bids != null && bids.Length != 0)
+            {
+                BidBytes = bids;
+                _bidSize = depth.HasValue ? Math.Min(bids.Length, 16 * depth.Value) : bids.Length;
+            }
+            if (asks != null && asks.Length != 0)
+            {
+                AskBytes = asks;
+                _askSize = depth.HasValue ? Math.Min(asks.Length, 16 * depth.Value) : asks.Length;
+            }
+        }
+
+
+        public QuoteL2Data Truncate(int depth) => new QuoteL2Data(BidBytes, AskBytes, depth);
+
+
+        private static byte[] InitTickSide(double price)
+        {
+            var bandBytes = new byte[QuoteBand.Size];
+            var data = MemoryMarshal.Cast<byte, double>(bandBytes);
+            data[0] = price;
+            return bandBytes;
+        }
+
+        private static ReadOnlySpan<QuoteBand> GetBands(byte[] bandBytes, int size)
+        {
+            return MemoryMarshal.Cast<byte, QuoteBand>(bandBytes.AsSpan(0, size));
+        }
+        //private static ReadOnlySpan<QuoteBand> GetBands(byte[] bandBytes, int? depth)
+        //{
+        //    var bands = MemoryMarshal.Cast<byte, QuoteBand>(bandBytes);
+        //    return depth.HasValue ? bands.Slice(0, depth.Value) : bands;
+        //}
+    }
+
     public class QuoteInfo : IQuoteInfo, IRateInfo
     {
-        // hack to bypass net45 code security
-        // TODO: Remove after swiching to .NET Core
-        private byte[] _askBytes;
-        private byte[] _bidBytes;
-
         private string _symbol;
-        private QuoteData _data;
-        private int? _depth;
+        private QuoteL2Data _l2Data;
 
 
         public string Symbol => _symbol;
 
-        public ReadOnlySpan<QuoteBand> Asks
+        public double Bid { get; }
+
+        public double Ask { get; }
+
+        public bool HasBid => !double.IsNaN(Bid);
+
+        public bool HasAsk => !double.IsNaN(Ask);
+
+        public bool IsAskIndicative { get; set; }
+
+        public bool IsBidIndicative { get; set; }
+
+        public UtcTicks Time { get; }
+
+        public DateTime TimeUtc => Time.ToUtcDateTime();
+
+        public Timestamp Timestamp => Time.ToTimestamp();
+
+        public QuoteL2Data L2Data
         {
             get
             {
-                //var asks = _data.Asks;
-                var asks = MemoryMarshal.Cast<byte, QuoteBand>(_askBytes);
-                return _depth.HasValue ? asks.Slice(0, Math.Min(asks.Length, _depth.Value)) : asks;
+                if (_l2Data == null)
+                    _l2Data = new QuoteL2Data(double.IsNaN(Bid) ? (double?)null : Bid, double.IsNaN(Ask) ? (double?)null : Ask);
+
+                return _l2Data;
             }
         }
 
-        public ReadOnlySpan<byte> AskBytes => _askBytes;
 
-        public ReadOnlySpan<QuoteBand> Bids
-        {
-            get
-            {
-                //var bids = _data.Bids;
-                var bids = MemoryMarshal.Cast<byte, QuoteBand>(_bidBytes);
-                return _depth.HasValue ? bids.Slice(0, Math.Min(bids.Length, _depth.Value)) : bids;
-            }
-        }
+        public DateTime TimeOfReceive { get; }
 
-        public ReadOnlySpan<byte> BidBytes => _bidBytes;
+        public double QuoteDelay { get; }
 
-        public bool HasAsk => _data.HasAsk;
-
-        public bool HasBid => _data.HasBid;
-
-        public bool IsAskIndicative => _data.IsAskIndicative;
-
-        public bool IsBidIndicative => _data.IsBidIndicative;
-
-        //public double Ask => HasAsk ? _data.Asks[0].Price : double.NaN;
-        public double Ask => HasAsk ? Asks[0].Price : double.NaN;
-
-        public double Bid => HasBid ? Bids[0].Price : double.NaN;
-        //public double Bid => HasBid ? _data.Bids[0].Price : double.NaN;
-
-        public DateTime Time => _data.Time.ToDateTime().ToLocalTime();
-
-        public Timestamp Timestamp => _data.Time;
-
-
-        public QuoteInfo(string symbol) // empty rate
-            : this(symbol, new QuoteData(), null)
-        {
-        }
 
         public QuoteInfo(string symbol, DateTime time, double? bid, double? ask)
-            : this(symbol, new QuoteData(time, bid, ask), null)
+            : this(symbol, new UtcTicks(time), bid, ask)
         {
         }
 
-        public QuoteInfo(string symbol, Timestamp time, double? bid, double? ask)
-            : this(symbol, new QuoteData(time, bid, ask), null)
+        public QuoteInfo(string symbol, UtcTicks time, double? bid, double? ask)
+            : this(symbol, time)
         {
+            Bid = bid ?? double.NaN;
+            Ask = ask ?? double.NaN;
         }
 
-        public QuoteInfo(FullQuoteInfo quote, int? depth = null)
-            : this(quote.Symbol, quote.Data, depth)
+        public QuoteInfo(string symbol, UtcTicks time, byte[] bids, byte[] asks, DateTime? timeOfReceive = null)
+            : this(symbol, time)
         {
+            _l2Data = new QuoteL2Data(bids, asks);
+            Bid = GetFirstPrice(bids);
+            Ask = GetFirstPrice(asks);
+
+            TimeOfReceive = timeOfReceive ?? DateTime.UtcNow;
+            QuoteDelay = (TimeOfReceive - time).TotalMilliseconds;
         }
 
-        public QuoteInfo(string symbol, QuoteData data, int? depth = null)
+
+        private QuoteInfo(string symbol, UtcTicks time)
         {
             _symbol = symbol;
-            _data = data;
-            _depth = depth;
-
-            _bidBytes = _data.BidBytes.ToByteArray();
-            _askBytes = _data.AskBytes.ToByteArray();
+            Time = time;
         }
 
-        private QuoteInfo() { }
+
+        public static QuoteInfo Create(FullQuoteInfo quote) => Create(quote.Symbol, quote.Data);
+
+        public static QuoteInfo Create(string symbol, QuoteData data)
+        {
+            var time = new UtcTicks(data.UtcTicks);
+            QuoteInfo res;
+
+            if (data.TickBytes.IsEmpty)
+            {
+                var bids = UnpackBands(data.BidBytes);
+                var asks = UnpackBands(data.AskBytes);
+                res = new QuoteInfo(symbol, time, bids, asks);
+            }
+            else
+            {
+                var tick = MemoryMarshal.Cast<byte, double>(data.TickBytes.Span);
+                var bid = tick[0];
+                var ask = tick[1];
+                res = new QuoteInfo(symbol, time, bid, ask);
+            }
+
+            res.IsBidIndicative = data.IsBidIndicative;
+            res.IsAskIndicative = data.IsAskIndicative;
+            return res;
+        }
 
 
         public QuoteInfo Truncate(int depth)
         {
-            return new QuoteInfo
+            QuoteInfo res;
+
+            if (_l2Data == null)
             {
-                _symbol = Symbol,
-                _data = _data,
-                _depth = depth < 1 ? (int?)null : depth,
-                _askBytes = _askBytes,
-                _bidBytes = _bidBytes,
-            };
+                res = new QuoteInfo(Symbol, Time, Bid, Ask);
+            }
+            else
+            {
+                res = new QuoteInfo(Symbol, Time, Bid, Ask)
+                {
+                    _l2Data = _l2Data.Truncate(depth),
+                    IsBidIndicative = IsBidIndicative,
+                    IsAskIndicative = IsAskIndicative,
+                };
+            }
+
+            res.IsBidIndicative = IsBidIndicative;
+            res.IsAskIndicative = IsAskIndicative;
+            return res;
         }
 
         public FullQuoteInfo GetFullQuote()
         {
-            return new FullQuoteInfo { Symbol = _symbol, Data = _data };
+            return new FullQuoteInfo { Symbol = _symbol, Data = GetData() };
         }
 
         public QuoteData GetData()
         {
-            return _data;
+            var res = new QuoteData
+            {
+                UtcTicks = Time.Value,
+                IsAskIndicative = IsAskIndicative,
+                IsBidIndicative = IsBidIndicative,
+            };
+
+            if (_l2Data == null)
+            {
+                var buffer = ArrayPool<byte>.Shared.Rent(2 * sizeof(double));
+                try
+                {
+                    var tick = MemoryMarshal.Cast<byte, double>(buffer);
+                    tick[0] = Bid;
+                    tick[1] = Ask;
+                    res.TickBytes = ByteString.CopyFrom(buffer);
+                }
+                finally
+                {
+                    ArrayPool<byte>.Shared.Return(buffer);
+                }
+            }
+            else
+            {
+                res.BidBytes = PackBands(_l2Data.BidBytes);
+                res.AskBytes = PackBands(_l2Data.AskBytes);
+            }
+
+            return res;
         }
 
+        public string GetDelayInfo()
+        {
+            return $"{Symbol} Delay={QuoteDelay}ms, ServerTime={TimeUtc:dd-MM-yyyy HH:mm:ss.fffff}, ClientTime={TimeOfReceive:dd-MM-yyyy HH:mm:ss.fffff}";
+        }
+
+
+        private static ByteString PackBands(byte[] bands)
+        {
+            return ByteString.CopyFrom(bands);
+        }
+
+        private static byte[] UnpackBands(ByteString data)
+        {
+            return data.IsEmpty ? Array.Empty<byte>() : data.ToByteArray();
+        }
+
+        private static double GetFirstPrice(byte[] bandBytes)
+        {
+            if (bandBytes.Length == 0)
+                return double.NaN;
+
+            var data = MemoryMarshal.Cast<byte, double>(bandBytes);
+            return data[0];
+        }
 
         #region IRateInfo
 
@@ -217,4 +326,6 @@ namespace TickTrader.Algo.Domain
 
         #endregion
     }
+
+
 }

@@ -3,18 +3,28 @@
 namespace TickTrader.Algo.Domain
 {
     [Flags]
-    public enum TradeHistoryRequestOptions
+    public enum HistoryRequestOptions
     {
         NoOptions = 0x0,
         SkipCanceled = 0x1,
         Backwards = 0x2,
+        SkipFailed = 0x4,
     }
 
     public partial class TradeHistoryRequest
     {
-        public TradeHistoryRequestOptions Options
+        public HistoryRequestOptions Options
         {
-            get => (TradeHistoryRequestOptions)OptionsBitmask;
+            get => (HistoryRequestOptions)OptionsBitmask;
+            set => OptionsBitmask = (int)value;
+        }
+    }
+
+    public partial class TriggerHistoryRequest
+    {
+        public HistoryRequestOptions Options
+        {
+            get => (HistoryRequestOptions)OptionsBitmask;
             set => OptionsBitmask = (int)value;
         }
     }

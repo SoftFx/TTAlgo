@@ -15,6 +15,7 @@ namespace TickTrader.Algo.Server.PublicAPI
         protected readonly StateMachine<ClientStates> _stateMachine;
 
         private Timer _lossConnectionTimer;
+        private LogFactory _logFactory;
         protected ILogger _logger;
 
 
@@ -87,7 +88,10 @@ namespace TickTrader.Algo.Server.PublicAPI
                 if (_stateMachine.Current != ClientStates.Offline)
                     throw new Exception($"Cannot connect! Client is in state {_stateMachine.Current}");
 
+                var loggerConfigChanged = SessionSettings?.LogDirectory != settings.LogDirectory || SessionSettings?.ServerAddress != settings.ServerAddress;
                 SessionSettings = settings;
+                if (loggerConfigChanged)
+                    UpdateLoggerConfiguration();
 
                 _stateMachine.PushEvent(ClientEvents.Started);
             });
@@ -114,8 +118,6 @@ namespace TickTrader.Algo.Server.PublicAPI
 
         private void StartConnecting()
         {
-            _logger = LoggerHelper.GetLogger(GetType().Name, System.IO.Path.Combine(SessionSettings.LogDirectory, GetType().Name), SessionSettings.ServerAddress);
-
             LastError = null;
             Only2FAFailed = false;
 
@@ -150,6 +152,20 @@ namespace TickTrader.Algo.Server.PublicAPI
         private void StateMachineOnEventFired(object e)
         {
             _logger?.Debug($"EVENT {e}");
+        }
+
+        private void UpdateLoggerConfiguration()
+        {
+            var logConfig = LoggerHelper.CreateClientConfig(System.IO.Path.Combine(SessionSettings.LogDirectory, GetType().Name), SessionSettings.ServerAddress);
+            if (_logger == null)
+            {
+                _logFactory = new LogFactory(logConfig);
+                _logger = _logFactory.GetLogger(GetType().Name);
+            }
+            else
+            {
+                _logFactory.Configuration = logConfig;
+            }
         }
 
         public Task Disconnect()

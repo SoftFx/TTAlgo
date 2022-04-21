@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TickTrader.BotTerminal
 {
@@ -49,20 +45,18 @@ namespace TickTrader.BotTerminal
 
         public static string FormatPrecente(double value, int precision, bool suppressNaN = true) => suppressNaN && double.IsNaN(value) ? "" : GetFormattedDouble(value, "P", precision, AmountNumberInfo);
 
-        private static string GetFormattedDouble(double value, string type, int precision, NumberFormatInfo info = null)
+        private static string GetFormattedDouble(double value, string type, int precision, IFormatProvider info = null)
         {
-            if (info == null)
-                return precision >= 0 ? value.ToString($"{type}{precision}", CultureInfo.InvariantCulture) : value.ToString(CultureInfo.InvariantCulture);
-            else
-                return precision >= 0 ? value.ToString($"{type}{precision}", info) : value.ToString(info);
+            var format = info ?? CultureInfo.InvariantCulture;
+
+            return precision >= 0 ? value.ToString($"{type}{precision}", format) : value.ToString(format);
         }
 
-        private static string GetFormattedDecimal(decimal value, string type, int precision, NumberFormatInfo info = null)
+        private static string GetFormattedDecimal(decimal value, string type, int precision, IFormatProvider info = null)
         {
-            if (info == null)
-                return precision >= 0 ? value.ToString($"{type}{precision}", CultureInfo.InvariantCulture) : value.ToString(CultureInfo.InvariantCulture);
-            else
-                return precision >= 0 ? value.ToString($"{type}{precision}", info) : value.ToString(info);
+            var format = info ?? CultureInfo.InvariantCulture;
+
+            return precision >= 0 ? value.ToString($"{type}{precision}", format) : value.ToString(format);
         }
     }
 }

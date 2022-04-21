@@ -1,4 +1,6 @@
-﻿namespace TickTrader.Algo.Domain.CalculatorInterfaces
+﻿using System;
+
+namespace TickTrader.Algo.Domain.CalculatorInterfaces
 {
     public enum CalculationError
     {
@@ -16,6 +18,10 @@
         IMarginCalculator Margin { get; }
 
         IProfitCalculator Profit { get; }
+
+        ISwapCalculator Swap { get; }
+
+        ICommissionCalculator Commission { get; }
     }
 
     public interface IMarginCalculator
@@ -26,6 +32,16 @@
     public interface IProfitCalculator
     {
         ICalculateResponse<double> Calculate(IProfitCalculateRequest request);
+    }
+
+    public interface ISwapCalculator
+    {
+        ICalculateResponse<double> Calculate(ISwapCalculateRequest request, DateTime now);
+    }
+
+    public interface ICommissionCalculator
+    {
+        ICalculateResponse<double> Calculate(ICommissionCalculateRequest request);
     }
 
     public interface ICalculateResponse<T>
@@ -55,5 +71,25 @@
         OrderInfo.Types.Side Side { get; }
 
         double Volume { get; }
+
+        double? ClosePrice { get; }
+    }
+
+    public interface ISwapCalculateRequest
+    {
+        OrderInfo.Types.Side Side { get; }
+
+        double Volume { get; }
+    }
+
+    public interface ICommissionCalculateRequest
+    {
+        OrderInfo.Types.Side Side { get; }
+
+        double Volume { get; }
+
+        bool IsReducedCommission { get; }
+
+        bool IsHiddenOrIceberg { get; }
     }
 }

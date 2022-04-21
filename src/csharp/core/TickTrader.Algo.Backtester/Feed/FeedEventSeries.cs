@@ -29,7 +29,7 @@ namespace TickTrader.Algo.Backtester
         {
             var item = _nextRate;
             MoveNext();
-            return new TimeEvent(item.Time, false, item);
+            return new TimeEvent(item.TimeUtc, false, item);
         }
 
         private void MoveNext()
@@ -40,7 +40,7 @@ namespace TickTrader.Algo.Backtester
             else
             {
                 _nextRate = _e.Current;
-                NextOccurrance = _nextRate.Time;
+                NextOccurrance = _nextRate.TimeUtc;
             }
         }
 

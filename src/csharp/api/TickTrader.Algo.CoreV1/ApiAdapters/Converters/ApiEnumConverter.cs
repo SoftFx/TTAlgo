@@ -151,18 +151,23 @@ namespace TickTrader.Algo.CoreV1
                 case Domain.OrderExecReport.Types.CmdResultCode.IncorrectTriggerTime: return OrderCmdResultCodes.IncorrectTriggerTime;
                 case Domain.OrderExecReport.Types.CmdResultCode.IncorrectTriggerOrderId: return OrderCmdResultCodes.IncorrectTriggerOrderId;
                 case Domain.OrderExecReport.Types.CmdResultCode.IncorrectTriggerOrderType: return OrderCmdResultCodes.IncorrectTriggerOrderType;
+                case Domain.OrderExecReport.Types.CmdResultCode.IncorrectConditionsForTrigger: return OrderCmdResultCodes.IncorrectConditionsForTrigger;
+                case Domain.OrderExecReport.Types.CmdResultCode.OcoRelatedOrderIncorrectOptions: return OrderCmdResultCodes.OCORelatedOrderIncorrectOptions;
+                case Domain.OrderExecReport.Types.CmdResultCode.OcoIncorrectRelatedId: return OrderCmdResultCodes.OCOIncorrectRelatedId;
                 default: throw new ArgumentException($"Unsupported code {code}");
             }
         }
 
-        public static Domain.TradeHistoryRequestOptions ToDomainEnum(this ThQueryOptions options)
+        public static Domain.HistoryRequestOptions ToDomainEnum(this ThQueryOptions options)
         {
-            var res = Domain.TradeHistoryRequestOptions.NoOptions;
+            var res = Domain.HistoryRequestOptions.NoOptions;
 
             if (options.HasFlag(ThQueryOptions.SkipCanceled))
-                res |= Domain.TradeHistoryRequestOptions.SkipCanceled;
+                res |= Domain.HistoryRequestOptions.SkipCanceled;
             if (options.HasFlag(ThQueryOptions.Backwards))
-                res |= Domain.TradeHistoryRequestOptions.Backwards;
+                res |= Domain.HistoryRequestOptions.Backwards;
+            if (options.HasFlag(ThQueryOptions.SkipFailed))
+                res |= Domain.HistoryRequestOptions.SkipFailed;
 
             return res;
         }

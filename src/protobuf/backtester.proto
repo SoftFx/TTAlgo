@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package ticktrader.algo.backtesterapi;
+
+option csharp_namespace = "TickTrader.Algo.BacktesterApi";
+
+import "google/protobuf/wrappers.proto";
+
+message Emulator {
+    enum State {
+        STOPPED = 0;
+        WARMING_UP = 1;
+        RUNNING = 2;
+        PAUSED = 3;
+        STOPPING = 4;
+    }
+}
+
+message AttachBacktesterRequest {
+    string id = 1;
+}
+
+message AttachBacktesterResponse {
+    bool success = 1;
+}
+
+message StartBacktesterRequest { } // void response
+
+message StopBacktesterRequest { } // void response
+
+message BacktesterProgressUpdate {
+    string id = 1;
+    double current = 2;
+    double total = 3;
+}
+
+message BacktesterStoppedMsg {
+    string id = 1;
+    google.protobuf.StringValue error_msg = 2;
+}
+
+message BacktesterStateUpdate {
+    string id = 1;
+    Emulator.State new_state = 2;
+}

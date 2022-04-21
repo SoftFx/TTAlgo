@@ -43,11 +43,11 @@ namespace TickTrader.BotAgent.Configurator
                 else if (prop.Name.StartsWith(Viewer.Name))
                     cred = Viewer;
 
-                if (prop.Name.EndsWith(Properties.Login.ToString()))
+                if (prop.Name.EndsWith(nameof(Properties.Login)))
                     cred.Login = prop.Value.ToString();
-                else if (prop.Name.EndsWith(Properties.Password.ToString()))
+                else if (prop.Name.EndsWith(nameof(Properties.Password)))
                     cred.Password = prop.Value.ToString();
-                else if (prop.Name.EndsWith(Properties.OtpSecret.ToString()))
+                else if (prop.Name.EndsWith(nameof(Properties.OtpSecret)))
                     cred.OtpSecret = prop.Value.ToString();
             }
 

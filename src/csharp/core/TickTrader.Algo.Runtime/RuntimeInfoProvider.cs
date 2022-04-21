@@ -81,7 +81,7 @@ namespace TickTrader.Algo.Runtime
             var symbolDict = _symbols.ToDictionary(k => k.Name, v => v);
 
             foreach (var quote in _quotes)
-                symbolDict[quote.Symbol].UpdateRate(new QuoteInfo(quote));
+                symbolDict[quote.Symbol].UpdateRate(QuoteInfo.Create(quote));
         }
 
         #region IPluginMetadata
@@ -157,9 +157,14 @@ namespace TickTrader.Algo.Runtime
 
         #region ITradeHistoryProvider
 
-        public IAsyncPagedEnumerator<TradeReportInfo> GetTradeHistory(DateTime? from, DateTime? to, TradeHistoryRequestOptions options)
+        public IAsyncPagedEnumerator<TradeReportInfo> GetTradeHistory(DateTime? from, DateTime? to, HistoryRequestOptions options)
         {
             return _account.GetTradeHistory(new TradeHistoryRequest { From = from?.ToUniversalTime().ToTimestamp(), To = to?.ToUniversalTime().ToTimestamp(), Options = options });
+        }
+
+        public IAsyncPagedEnumerator<TriggerReportInfo> GetTriggerHistory(DateTime? from, DateTime? to, HistoryRequestOptions options)
+        {
+            return _account.GetTriggerHistory(new TriggerHistoryRequest { From = from?.ToUniversalTime().ToTimestamp(), To = to?.ToUniversalTime().ToTimestamp(), Options = options });
         }
 
         #endregion ITradeHistoryProvider

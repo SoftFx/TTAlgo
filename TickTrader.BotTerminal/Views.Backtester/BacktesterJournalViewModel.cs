@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Threading;
+﻿using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
@@ -16,7 +14,7 @@ namespace TickTrader.BotTerminal
             DisplayName = "Journal";
         }
 
-        public ObservableCollection<PluginLogRecord> JournalRecords { get; } = new ObservableCollection<PluginLogRecord>();
+        public ObservableCollection<JournalMsg> JournalRecords { get; private set; } = new ObservableCollection<JournalMsg>();
 
         //public void SetData(List<BotLogRecord> records)
         //{
@@ -25,7 +23,7 @@ namespace TickTrader.BotTerminal
 
         public void Append(PluginLogRecord record)
         {
-            JournalRecords.Add(record);
+            JournalRecords.Add(new JournalMsg(record));
         }
 
         public void Clear()
@@ -33,61 +31,35 @@ namespace TickTrader.BotTerminal
             JournalRecords.Clear();
         }
 
-        public async Task SaveToFile(System.IO.Stream stream, IActionObserver observer)
+        public async Task LoadJournal(BacktesterResults results)
         {
-            var records = JournalRecords;
-
-            long progress = 0;
-
-            observer.SetMessage("Saving journal...");
-            observer.StartProgress(0, records.Count);
-
-            using (new UiUpdateTimer(() => observer.SetProgress(Interlocked.Read(ref progress))))
+            var records = new ObservableCollection<JournalMsg>();
+            await Task.Run(() =>
             {
-                await Task.Run(() =>
+                foreach(var record in results.Journal)
                 {
-                    using (var writer = new System.IO.StreamWriter(stream))
-                    {
-                        for (int i = 0; i < records.Count; i++)
-                        {
-                            var record = records[i];
-                            var sevString = TxtFormat(record.Severity);
+                    records.Add(new JournalMsg(record));
+                }
+            });
 
-                            writer.Write(record.TimeUtc.ToDateTime().ToString(InvariantFormat.DateFormat));
-                            writer.Write(" [{0}] ", sevString);
-
-                            var nextLineSpaceSize = InvariantFormat.DateFormatFixedLength + 4 + sevString.Length;
-                            var msgLines = SplitIntoLines(record.Message);
-                            writer.WriteLine(msgLines[0]);
-                            for (int j = 1; j < msgLines.Length; j++)
-                            {
-                                writer.Write(new string(' ', nextLineSpaceSize));
-                                writer.WriteLine(msgLines[j]);
-                            }
-
-                            if (i % 10 == 0)
-                                Interlocked.Exchange(ref progress, i);
-                        }
-                    }
-                });
-            }
-
-            observer.StartProgress(0, records.Count);
+            JournalRecords = records;
+            NotifyOfPropertyChange(nameof(JournalRecords));
         }
 
-        private string TxtFormat(PluginLogRecord.Types.LogSeverity severity)
+
+        public sealed class JournalMsg : BaseJournalMessage
         {
-            switch (severity)
+            private readonly PluginLogRecord _record;
+
+
+            public PluginLogRecord.Types.LogSeverity Severity => _record.Severity;
+
+
+            public JournalMsg(PluginLogRecord record) : base(record.TimeUtc)
             {
-                case PluginLogRecord.Types.LogSeverity.TradeSuccess: return "Trade";
-                default: return severity.ToString();
+                _record = record;
+                Message = record.Message;
             }
         }
-
-        private string[] SplitIntoLines(string message)
-        {
-            return message.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
-        }
-
     }
 }

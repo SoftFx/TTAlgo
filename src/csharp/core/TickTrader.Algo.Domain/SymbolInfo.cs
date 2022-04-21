@@ -2,21 +2,78 @@
 
 namespace TickTrader.Algo.Domain
 {
-    public partial class SymbolInfo : ISymbolInfo
+    public partial class SymbolInfo : ISymbolInfoWithRate
     {
-        public double Bid { get; set; } = double.NaN;
-        public double Ask { get; set; } = double.NaN;
+        public double? Bid { get; private set; }
+
+        public double? Ask { get; private set; }
+
+        public string TradePair => $"{BaseCurrency}{CounterCurrency}";
+
+
+        double ISymbolInfoWithRate.Bid => Bid ?? double.NaN;
+
+        double ISymbolInfoWithRate.Ask => Ask ?? double.NaN;
+
+        bool ISymbolInfoWithRate.HasBid => LastQuote?.HasBid ?? false;
+
+        bool ISymbolInfoWithRate.HasAsk => LastQuote?.HasAsk ?? false;
 
 
         public IQuoteInfo LastQuote { get; private set; }
 
         public event Action<ISymbolInfo> RateUpdated;
 
-        public void Update(ISymbolInfo newInfo)
-        {
-            if (!(newInfo is SymbolInfo info))
-                return;
 
+        public SymbolInfo(ISymbolInfo info)
+        {
+            Name = info.Name;
+            BaseCurrency = info.MarginCurrency;
+            CounterCurrency = info.ProfitCurrency;
+            Digits = info.Digits;
+            LotSize = info.LotSize;
+            Description = info.Description;
+            TradeAllowed = info.TradeAllowed;
+
+            MinTradeVolume = info.MinVolume;
+            MaxTradeVolume = info.MaxVolume;
+            TradeVolumeStep = info.VolumeStep;
+
+            Slippage = new SlippageInfo
+            {
+                DefaultValue = info.Slippage,
+            };
+
+            Commission = new CommissonInfo
+            {
+                Commission = info.Commission,
+                LimitsCommission = info.LimitsCommission,
+                ValueType = info.CommissionType,
+                MinCommission = info.MinCommission,
+                MinCommissionCurrency = info.MinCommissionCurr,
+            };
+
+            Swap = new SwapInfo
+            {
+                Enabled = info.SwapEnabled,
+                Type = info.SwapType,
+                SizeLong = info.SwapSizeLong,
+                SizeShort = info.SwapSizeShort,
+                TripleSwapDay = info.TripleSwapDay,
+            };
+
+            Margin = new MarginInfo
+            {
+                Mode = info.MarginMode,
+                Hedged = info.MarginHedged,
+                Factor = info.MarginFactor,
+                StopOrderReduction = info.StopOrderMarginReduction,
+                HiddenLimitOrderReduction = info.HiddenLimitOrderMarginReduction,
+            };
+        }
+
+        public ISymbolInfoWithRate Update(SymbolInfo info)
+        {
             //Name = info.Name; //is key in symbol dicts
             TradeAllowed = info.TradeAllowed;
             BaseCurrency = info.BaseCurrency;
@@ -35,30 +92,34 @@ namespace TickTrader.Algo.Domain
             SortOrder = info.SortOrder;
             GroupSortOrder = info.GroupSortOrder;
 
-            UpdateRate(info.LastQuote);
+            return UpdateRate(info.LastQuote);
         }
 
-        public void UpdateRate(IQuoteInfo quote)
+        public ISymbolInfoWithRate UpdateRate(IQuoteInfo quote)
         {
-            LastQuote = quote;
-            Bid = quote?.Bid ?? double.NaN;
-            Ask = quote?.Ask ?? double.NaN;
+            Bid = quote?.Bid;
+            Ask = quote?.Ask;
 
+            LastQuote = quote;
             RateUpdated?.Invoke(this);
+
+            return this;
         }
 
-        bool ISymbolInfo.HasBid => LastQuote?.HasBid ?? false;
-        bool ISymbolInfo.HasAsk => LastQuote?.HasAsk ?? false;
+
+        int ISymbolInfo.Slippage => (int)(Slippage.DefaultValue ?? 0);
+
+
+        double ISymbolInfo.MaxVolume => MaxTradeVolume;
+
+        double ISymbolInfo.MinVolume => MinTradeVolume;
+
+        double ISymbolInfo.VolumeStep => TradeVolumeStep;
+
 
         string ISymbolInfo.MarginCurrency => BaseCurrency;
 
-        string ISymbolInfo.ProfitCurrency => CounterCurrency; // QuoteCurrency.Name; //??? maybe, QuoteCurrency == CounterCurrency
-
-        string ISymbolInfo.NodeKey => $"{BaseCurrency}{CounterCurrency}";
-
-        double ISymbolInfo.Point => Math.Pow(10, -Digits);
-
-        double ISymbolInfo.DefaultSlippage => Slippage.DefaultValue ?? 0;
+        MarginInfo.Types.CalculationMode ISymbolInfo.MarginMode => Margin.Mode;
 
         double ISymbolInfo.StopOrderMarginReduction => Margin.StopOrderReduction ?? 1;
 
@@ -66,61 +127,34 @@ namespace TickTrader.Algo.Domain
 
         double ISymbolInfo.MarginHedged => Margin.Hedged;
 
-        public int ProfitDigits => 2; //redone
-
-        MarginInfo.Types.CalculationMode ISymbolInfo.MarginMode => Margin.Mode;
-
         double ISymbolInfo.MarginFactor => Margin.Factor;
 
-        double ISymbolInfo.ContractSizeFractional => LotSize;
+
+        string ISymbolInfo.ProfitCurrency => CounterCurrency;
+
+
+        bool ISymbolInfo.SwapEnabled => Swap.Enabled;
 
         SwapInfo.Types.Type ISymbolInfo.SwapType => Swap.Type;
 
         int ISymbolInfo.TripleSwapDay => Swap.TripleSwapDay;
 
-        bool ISymbolInfo.SwapEnabled => Swap.Enabled;
-
         double ISymbolInfo.SwapSizeLong => Swap.SizeLong ?? 0;
 
         double ISymbolInfo.SwapSizeShort => Swap.SizeShort ?? 0;
+
+
+        CommissonInfo.Types.ValueType ISymbolInfo.CommissionType => Commission.ValueType;
+
+        double ISymbolInfo.Commission => Commission.Commission;
+
+        double ISymbolInfo.LimitsCommission => Commission.LimitsCommission;
+
+        double ISymbolInfo.MinCommission => Commission.MinCommission;
+
+        string ISymbolInfo.MinCommissionCurr => Commission.MinCommissionCurrency;
     }
 
-    public interface ISymbolInfo : IBaseSymbolInfo
-    {
-        double DefaultSlippage { get; }
-        double Point { get; }
-        double Bid { get; set; }
-        double Ask { get; set; }
-        bool HasBid { get; }
-        bool HasAsk { get; }
-        int Digits { get; }
-        double LotSize { get; }
-
-        Domain.MarginInfo.Types.CalculationMode MarginMode { get; }
-        double MarginFactor { get; }
-        double MarginHedged { get; }
-        string MarginCurrency { get; }
-        string ProfitCurrency { get; }
-        string NodeKey { get; }
-        double ContractSizeFractional { get; }
-
-        Domain.SwapInfo.Types.Type SwapType { get; }
-        int TripleSwapDay { get; }
-        bool SwapEnabled { get; }
-        double SwapSizeLong { get; }
-        double SwapSizeShort { get; }
-
-        double StopOrderMarginReduction { get; }
-        double HiddenLimitOrderMarginReduction { get; }
-
-        void UpdateRate(IQuoteInfo quote); //Update Ask, Bid, LastQuote
-
-        event Action<ISymbolInfo> RateUpdated;
-
-        void Update(ISymbolInfo newInfo);
-        IQuoteInfo LastQuote { get; }
-        int ProfitDigits { get; }
-    }
 
     public interface IBaseSymbolInfo
     {
@@ -129,5 +163,89 @@ namespace TickTrader.Algo.Domain
         int SortOrder { get; }
 
         int GroupSortOrder { get; }
+    }
+
+
+    public interface ISymbolInfo : IBaseSymbolInfo
+    {
+        string TradePair { get; }
+
+        string Description { get; }
+
+        string Security { get; }
+
+        double LotSize { get; }
+
+        int Digits { get; }
+
+        int Slippage { get; }
+
+        bool TradeAllowed { get; }
+
+
+        double MaxVolume { get; }
+
+        double MinVolume { get; }
+
+        double VolumeStep { get; }
+
+
+        string MarginCurrency { get; }
+
+        MarginInfo.Types.CalculationMode MarginMode { get; }
+
+        double MarginFactor { get; }
+
+        double MarginHedged { get; }
+
+        double StopOrderMarginReduction { get; }
+
+        double HiddenLimitOrderMarginReduction { get; }
+
+
+        string ProfitCurrency { get; }
+
+
+        bool SwapEnabled { get; }
+
+        SwapInfo.Types.Type SwapType { get; }
+
+        int TripleSwapDay { get; }
+
+        double SwapSizeLong { get; }
+
+        double SwapSizeShort { get; }
+
+
+        double Commission { get; }
+
+        CommissonInfo.Types.ValueType CommissionType { get; }
+
+        double LimitsCommission { get; }
+
+        double MinCommission { get; }
+
+        string MinCommissionCurr { get; }
+    }
+
+    public interface ISymbolInfoWithRate : ISymbolInfo
+    {
+        double Bid { get; }
+
+        double Ask { get; }
+
+        bool HasBid { get; }
+
+        bool HasAsk { get; }
+
+        IQuoteInfo LastQuote { get; }
+
+
+        event Action<ISymbolInfo> RateUpdated;
+
+
+        ISymbolInfoWithRate Update(SymbolInfo info);
+
+        ISymbolInfoWithRate UpdateRate(IQuoteInfo quote); //Update Ask, Bid, LastQuote
     }
 }

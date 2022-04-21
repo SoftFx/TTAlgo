@@ -187,6 +187,9 @@ message OrderExecReport {
         INCORRECT_TRIGGER_TIME = 133;
         INCORRECT_TRIGGER_ORDER_ID = 134;
         INCORRECT_TRIGGER_ORDER_TYPE = 135;
+        INCORRECT_CONDITIONS_FOR_TRIGGER = 136;
+        OCO_RELATED_ORDER_INCORRECT_OPTIONS = 137;
+        OCO_INCORRECT_RELATED_ID = 138;
     }
 
     google.protobuf.StringValue operation_id = 1;
@@ -303,6 +306,7 @@ message TradeReportInfo {
         POSITION_OPENED = 8;
         ORDER_ACTIVATED = 9;
         TRADE_MODIFIED = 10;
+        TRIGGER_ACTIVATED = 11;
     }
 
     enum Reason {
@@ -412,4 +416,48 @@ message TradeHistoryRequestDispose {
 
 message TradeHistoryPageResponse {
     repeated TradeReportInfo reports = 1;
+}
+
+message TriggerReportInfo {
+    enum TriggerResultState {
+        FAILED = 0;
+        SUCCESSFUL = 1;
+    }
+
+    google.protobuf.StringValue id = 1;
+    google.protobuf.StringValue contingent_order_id = 2;
+    google.protobuf.Timestamp transaction_time = 3;
+    ContingentOrderTrigger.TriggerType trigger_type = 4;
+    TriggerResultState trigger_state = 5;
+    google.protobuf.Timestamp trigger_time = 6;
+    google.protobuf.StringValue order_id_triggered_by = 7;
+    string symbol = 8;
+    OrderInfo.Type type = 9;
+    OrderInfo.Side side = 10;
+    google.protobuf.DoubleValue price = 11;
+    google.protobuf.DoubleValue stop_price = 12;
+    double amount = 13;
+    google.protobuf.StringValue related_order_id = 14;
+}
+
+message TriggerHistoryRequest {
+    enum Options {
+        NO_OPTIONS = 0;
+        SKIP_FAILED = 1;
+        BACKWARD = 2;
+    }
+
+    google.protobuf.Timestamp from = 1;
+    google.protobuf.Timestamp to = 2;
+    int32 options_bitmask = 3;
+}
+
+message TriggerHistoryRequestDispose {
+}
+
+message TriggerHistoryRequestNextPage {
+}
+
+message TriggerHistoryPageResponse {
+    repeated TriggerReportInfo reports = 1;
 }

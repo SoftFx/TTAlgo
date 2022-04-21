@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Threading.Tasks;
-using TickTrader.Algo.Backtester;
+using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
@@ -25,7 +21,7 @@ namespace TickTrader.BotTerminal
             DisplayName = "Optimization Results";
             IsVisible = false;
 
-            //DataView = Data.AsDataView();
+            DataView = new DataView(Data);
         }
 
         public DataTable Data { get; } = new DataTable();
@@ -33,7 +29,7 @@ namespace TickTrader.BotTerminal
 
         public event Action<OptCaseReport> ShowDetailsRequested;
 
-        public void Start(IEnumerable<ParameterDescriptor> optParams, Optimizer optimizer)
+        public void Start(IEnumerable<ParameterDescriptor> optParams)
         {
             _optParams = optParams.ToList();
 
@@ -56,7 +52,7 @@ namespace TickTrader.BotTerminal
             DataView.Sort = _metricColumn.ColumnName + " DESC";
         }
 
-        public void Stop(Optimizer optimizer)
+        public void Stop()
         {
         }
 
@@ -66,7 +62,7 @@ namespace TickTrader.BotTerminal
 
             var row = Data.NewRow();
 
-            foreach (var pair in report.Config)
+            foreach (var pair in report.Config.Parameters)
             {
                 if (_idToColumnMap.TryGetValue(pair.Key, out var colNo))
                     row[colNo] = pair.Value;
@@ -106,69 +102,6 @@ namespace TickTrader.BotTerminal
                 if (_reports.TryGetValue(id, out var report))
                     ShowDetailsRequested?.Invoke(report);
             }
-        }
-
-        public Task SaveReportAsync(PluginDescriptor pDescriptor, IActionObserver observer)
-        {
-            return Task.Run(() => SaveReport(pDescriptor, observer));
-        }
-
-        private void SaveReport(PluginDescriptor pDescriptor, IActionObserver observer)
-        {
-            var fileName = "Optimization of " + pDescriptor.DisplayName + " " + DateTime.Now.ToString("yyyy-dd-M HH-mm-ss") + ".zip";
-            var filePath = System.IO.Path.Combine(EnvService.Instance.BacktestResultsFolder, fileName);
-
-            observer.StartIndeterminateProgress();
-            observer.SetMessage("Saving report...");
-
-            using (var stream = System.IO.File.Open(filePath, System.IO.FileMode.Create, System.IO.FileAccess.Write, System.IO.FileShare.None))
-            {
-                using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Create))
-                {
-                    var resultsEntry = archive.CreateEntry("resuls.csv", CompressionLevel.Optimal);
-                    using (var entryStream = resultsEntry.Open())
-                        SaveReports(entryStream);
-
-                    observer.StartProgress(0, _reports.Count);
-
-                    var repNo = 0;
-
-                    foreach (var rep in _reports.Values)
-                    {
-                        var repFolder = rep.Config.Id + "/";
-
-                        var equityEntry = archive.CreateEntry(repFolder + "equity.csv", CompressionLevel.Optimal);
-                        using (var entryStream = equityEntry.Open())
-                            BacktesterReportViewModel.SaveCsv(entryStream, rep.Equity);
-
-                        var marginEntry = archive.CreateEntry(repFolder + "margin.csv", CompressionLevel.Optimal);
-                        using (var entryStream = marginEntry.Open())
-                            BacktesterReportViewModel.SaveCsv(entryStream, rep.Margin);
-
-                        var summaryEntry = archive.CreateEntry(repFolder + "report.txt", CompressionLevel.Optimal);
-                        using (var entryStream = summaryEntry.Open())
-                            BacktesterReportViewModel.SaveAsText(entryStream, pDescriptor.IsTradeBot, rep.Stats);
-
-                        observer.SetProgress(repNo++);
-                    }
-                }
-            }
-        }
-
-        private void SaveReports(Stream stream)
-        {
-            var reps = _reports.Values.ToList();
-            reps.OrderBy(r => r.Stats.FinalBalance);
-
-            var serializer = new CsvSerializer<OptCaseReport>();
-            serializer.AddColumn("No", r => r.Config.Id);
-
-            foreach (var p in _optParams)
-                serializer.AddColumn(p.DisplayName, r => r.Config.Parameters[p.Id].ToString());
-
-            serializer.AddColumn("Metric", r => r.Stats.FinalBalance);
-
-            serializer.Serialize(reps, stream);
         }
 
         private void Clear()

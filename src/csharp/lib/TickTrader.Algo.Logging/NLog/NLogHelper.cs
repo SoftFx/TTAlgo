@@ -15,6 +15,8 @@ namespace TickTrader.Algo.Logging
 
         public string LogDirectory { get; set; }
 
+        public string ArchiveDirectory { get; set; }
+
         public string FileNameSuffix { get; set; }
 
         public string Layout { get; set; }
@@ -41,7 +43,7 @@ namespace TickTrader.Algo.Logging
                 Layout = Layout.FromString(p.Layout),
                 Encoding = Encoding.UTF8,
                 ArchiveEvery = FileArchivePeriod.Day,
-                ArchiveFileName = Layout.FromString(Path.Combine(p.LogDirectory, $"{{#}}-{p.FileNameSuffix}{ArchiveExtension}")),
+                ArchiveFileName = Layout.FromString(Path.Combine(p.ArchiveDirectory ?? p.LogDirectory, $"{{#}}-{p.FileNameSuffix}{ArchiveExtension}")),
                 ArchiveNumbering = ArchiveNumberingMode.Date,
                 EnableArchiveFileCompression = true,
             };
@@ -77,7 +79,7 @@ namespace TickTrader.Algo.Logging
             return logConfig;
         }
 
-        public static LoggingConfiguration CreateRuntimeConfig(string logDir)
+        public static LoggingConfiguration CreateRuntimeConfig(string logDir, bool addConsoleTarget = false)
         {
             var logConfig = new LoggingConfiguration();
 
@@ -88,6 +90,9 @@ namespace TickTrader.Algo.Logging
 
             p.FileNameSuffix = "error";
             logConfig.AddRule(LogLevel.Error, LogLevel.Fatal, CreateAsyncFileTarget(p, 200, 1000));
+
+            if (addConsoleTarget)
+                logConfig.AddRule(LogLevel.Debug, LogLevel.Fatal, new ConsoleTarget { Layout = p.Layout });
 
             return logConfig;
         }

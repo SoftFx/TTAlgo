@@ -1,9 +1,5 @@
 ﻿using SciChart.Charting.Model.DataSeries;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal.Lib
@@ -20,7 +16,7 @@ namespace TickTrader.BotTerminal.Lib
         protected override void AddToInternalCollection(BarData bar)
         {
             base.AddToInternalCollection(bar);
-            MarkersData.Append(bar.OpenTime.ToDateTime(), bar.Open);
+            MarkersData.Append(bar.OpenTime.ToUtcDateTime(), bar.Open);
             MarkersData.Metadata.Add(null);
         }
     }

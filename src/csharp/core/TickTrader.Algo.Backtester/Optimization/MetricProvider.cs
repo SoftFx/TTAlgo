@@ -1,4 +1,5 @@
-﻿using TickTrader.Algo.CoreV1;
+﻿using TickTrader.Algo.BacktesterApi;
+using TickTrader.Algo.CoreV1;
 
 namespace TickTrader.Algo.Backtester
 {

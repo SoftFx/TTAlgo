@@ -1,0 +1,22 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "Soft-FX",
+    "classifications": [ "TTAlgo", "TradeBot" ],
+    "identity": "TickTrader.Algo.Template.EmptyTradeBotItem.CSharp",
+    "groupIdentity": "TickTrader.Algo.Template.EmptyTradeBotItem",
+    "name": "TickTrader Algo trading bot class",
+    "shortName": "tradebotclass",
+    "tags": {
+        "language": "C#",
+        "type": "item"
+    },
+    "sourceName": "EmptyTradeBot",
+    "symbols": {
+        "Namespace": {
+            "type": "parameter",
+            "replaces": "EmptyTradeBotNamespace",
+            "dataType": "string",
+            "defaultValue": "MyProject.Bots"
+        }
+    }
+}

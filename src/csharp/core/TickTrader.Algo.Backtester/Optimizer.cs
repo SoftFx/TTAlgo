@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.CoreV1;
@@ -135,7 +136,7 @@ namespace TickTrader.Algo.Backtester
 
         #region IPluginSetupTarget
 
-        public void SetParameter(string id, object value) => SetupParamSeek(id, new ConstParam(value));
+        public void SetParameter(string id, object value) => SetupParamSeek(id, new FixedParam(value));
         public T GetFeedStrategy<T>() where T : FeedStrategy => _core.GetFeedStrategy<T>();
         void IPluginSetupTarget.SetupOutput<T>(string id, bool enabled) => _core.SetupOutput<T>(id, enabled);
 
@@ -325,7 +326,7 @@ namespace TickTrader.Algo.Backtester
                 if (builder != null)
                     metric = MetricSelector.GetMetric(builder, collector.Stats);
 
-                var rep = new OptCaseReport(cfg, metric, collector.Stats, error);
+                var rep = new OptCaseReport(cfg.GetOptParams(), metric, collector.Stats, error);
 
                 var equitySize = collector.EquityHistorySize;
                 var compactTimeFrame = BarExtentions.AdjustTimeframe(CommonSettings.MainTimeframe, equitySize, EquityHistoryTargetSize, out _);
@@ -404,6 +405,7 @@ namespace TickTrader.Algo.Backtester
             #region IBacktesterSettings
 
             JournalOptions IBacktesterSettings.JournalFlags => JournalOptions.Disabled;
+            string IBacktesterSettings.JournalPath => null;
             Dictionary<string, TestDataSeriesFlags> IBacktesterSettings.SymbolDataConfig => new Dictionary<string, TestDataSeriesFlags>();
             TestDataSeriesFlags IBacktesterSettings.MarginDataMode => TestDataSeriesFlags.Snapshot;
             TestDataSeriesFlags IBacktesterSettings.EquityDataMode => TestDataSeriesFlags.Snapshot;

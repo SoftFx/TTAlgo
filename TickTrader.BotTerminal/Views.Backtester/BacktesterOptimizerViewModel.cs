@@ -3,23 +3,20 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using TickTrader.Algo.Backtester;
+using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
 {
-
-    public enum OptimizationAlgorithms { Bruteforce, Genetic, /*Annealing*/ }
-
     internal class BacktesterOptimizerViewModel : Page
     {
-        private static readonly Dictionary<string, MetricProvider> MetricSelectors = new Dictionary<string, MetricProvider>();
+        private static readonly Dictionary<string, OptimizationMetrics> MetricSelectors = new Dictionary<string, OptimizationMetrics>();
 
         static BacktesterOptimizerViewModel()
         {
-            MetricSelectors.Add("Equity", new MetricProvider.Equity());
-            MetricSelectors.Add("Custom", new MetricProvider.Custom());
+            MetricSelectors.Add("Equity", OptimizationMetrics.Equity);
+            MetricSelectors.Add("Custom", OptimizationMetrics.Custom);
         }
 
         private readonly GenConfig _genConfig = new GenConfig();
@@ -67,33 +64,21 @@ namespace TickTrader.BotTerminal
         public IntProperty ParallelismProp { get; } = new IntProperty();
         public IEnumerable<OptimizationAlgorithms> AvailableAlgorithms => EnumHelper.AllValues<OptimizationAlgorithms>();
         public Property<OptimizationAlgorithms> AlgorithmProp { get; } = new Property<OptimizationAlgorithms>();
-        public Dictionary<string, MetricProvider> AvailableMetrics => MetricSelectors;
-        public Property<KeyValuePair<string, MetricProvider>> SelectedMetric { get; } = new Property<KeyValuePair<string, MetricProvider>>();
+        public Dictionary<string, OptimizationMetrics> AvailableMetrics => MetricSelectors;
+        public Property<KeyValuePair<string, OptimizationMetrics>> SelectedMetric { get; } = new Property<KeyValuePair<string, OptimizationMetrics>>();
         public BoolVar CanSetup { get; }
 
-        public void Apply(Optimizer optimizer)
+        public void Apply(OptimizationConfig config)
         {
-            optimizer.DegreeOfParallelism = ParallelismProp.Value;
-            optimizer.MetricSelector = SelectedMetric.Value.Value;
+            config.Algorithm = AlgorithmProp.Value;
+            config.Metric = SelectedMetric.Value.Value;
+            config.DegreeOfParallelism = ParallelismProp.Value;
 
             foreach (var param in Parameters)
-                param.Apply(optimizer);
-
-            switch (AlgorithmProp.Value)
-            {
-                case OptimizationAlgorithms.Bruteforce:
-                    optimizer.SetSeekStrategy(new BruteforceStrategy());
-                    break;
-                case OptimizationAlgorithms.Genetic:
-                    optimizer.SetSeekStrategy(new GeneticStrategy(_genConfig));
-                    break;
-                    //case OptimizationAlgorithms.Annealing:
-                    //    optimizer.SetSeekStrategy(new AnnealingStrategy(_annConfig, _descriptor.Parameters.Count));
-                    //    break;
-            }
+                param.Apply(config);
         }
 
-        public void SetPluign(PluginDescriptor descriptor, PluginConfig config)
+        public void SetPluign(PluginDescriptor descriptor)
         {
             _descriptor = descriptor;
 
@@ -103,13 +88,11 @@ namespace TickTrader.BotTerminal
 
             if (descriptor.IsTradeBot)
             {
-                var properties = config.UnpackProperties();
                 foreach (var p in descriptor.Parameters)
                 {
-                    var pSetup = properties.FirstOrDefault(ps => ps.PropertyId == p.Id) as IParameterConfig;
                     var model = ParamSeekSetModel.Create(p);
                     if (model != null)
-                        Parameters.Add(new ParamSeekSetupModel(this, model, p, pSetup));
+                        Parameters.Add(new ParamSeekSetupModel(this, model, p));
                 }
 
                 //canOptimize = Parameters.Count > 0;
@@ -147,13 +130,11 @@ namespace TickTrader.BotTerminal
         {
             private BacktesterOptimizerViewModel _parent;
             private Property<ParamSeekSetModel> _modelProp;
-            private IParameterConfig _config;
             private Property<string> _descriptionProp;
 
-            public ParamSeekSetupModel(BacktesterOptimizerViewModel parent, ParamSeekSetModel model, ParameterDescriptor descriptor, IParameterConfig config)
+            public ParamSeekSetupModel(BacktesterOptimizerViewModel parent, ParamSeekSetModel model, ParameterDescriptor descriptor)
             {
                 _parent = parent;
-                _config = config;
                 Descriptor = descriptor;
                 _modelProp = AddProperty(model);
                 _descriptionProp = AddProperty<string>();
@@ -179,10 +160,10 @@ namespace TickTrader.BotTerminal
                 UpdateDescriptionAndCount();
             }
 
-            public void Apply(Optimizer tester)
+            public void Apply(OptimizationConfig config)
             {
-                if (SeekEnabledProp.Value)
-                    tester.SetupParamSeek(ParamId, Model.GetSeekSet());
+                //if (SeekEnabledProp.Value)
+                //    config.SetupParamSeek(ParamId, Model.GetSeekSet());
             }
 
             public void Modify()
@@ -199,7 +180,7 @@ namespace TickTrader.BotTerminal
                 }
                 else
                 {
-                    _descriptionProp.Value = _config.ValObj?.ToString();
+                    _descriptionProp.Value = Descriptor.DefaultValue;
                     CaseCountProp.Value = 1;
                 }
             }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using TickTrader.Algo.BacktesterApi;
 
 namespace TickTrader.Algo.Backtester
 {
@@ -36,7 +37,7 @@ namespace TickTrader.Algo.Backtester
             {
                 AlgoParameter parameter = null;
 
-                if (v is ConstParam p)
+                if (v is FixedParam p)
                     parameter = new AlgoParameter();
                 if (v is RangeParamSet<int> pi)
                     parameter = new AlgoParameter(pi.Min, pi.Max, pi.Step);
@@ -62,20 +63,20 @@ namespace TickTrader.Algo.Backtester
             _casesLeft = CaseCount;
         }
 
-        protected void SetResult(ParamsMessage mes, double result)
+        protected void SetResult(long configId, double result)
         {
-            if (_dispatchQueue.ContainsKey(mes.Id))
+            if (_dispatchQueue.ContainsKey(configId))
             {
-                var set = _dispatchQueue[mes.Id];
+                var set = _dispatchQueue[configId];
                 set.Result = result;
 
                 if (!BestSet.Result.HasValue || BestSet.Result < set.Result)
                     BestSet = set.Copy();
 
-                _dispatchQueue.Remove(mes.Id);
+                _dispatchQueue.Remove(configId);
             }
             else
-                throw new ArgumentException($"Unknown message id={mes.Id}");
+                throw new ArgumentException($"Unknown config id={configId}");
         }
 
         protected long SendParams(ParamsMessage dict)

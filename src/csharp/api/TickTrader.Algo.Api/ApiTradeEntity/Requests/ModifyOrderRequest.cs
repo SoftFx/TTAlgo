@@ -26,6 +26,8 @@ namespace TickTrader.Algo.Api
 
         public string Comment { get; private set; }
 
+        public string Tag { get; private set; }
+
         public bool? OcoEqualVolume { get; private set; }
 
         public string OcoRelatedOrderId { get; private set; }
@@ -48,6 +50,7 @@ namespace TickTrader.Algo.Api
             private DateTime? _expiration;
             private OrderExecOptions? _options;
             private string _comment;
+            private string _tag;
 
             private bool? _ocoEqualVolume;
             private string _ocoRelatedOrderId;
@@ -77,6 +80,7 @@ namespace TickTrader.Algo.Api
                     Expiration = _expiration,
                     Options = _options,
                     Comment = _comment,
+                    Tag = _tag,
                     OcoEqualVolume = _ocoEqualVolume,
                     OcoRelatedOrderId = _ocoRelatedOrderId,
                     OtoTrigger = _otoTrigger,
@@ -180,6 +184,17 @@ namespace TickTrader.Algo.Api
             {
                 _comment = comment;
                 return this;
+            }
+
+            public Template WithTag(string tag)
+            {
+                _tag = tag;
+                return this;
+            }
+
+            public Template WithOCOParams(string relatedId, bool equalVolume = true)
+            {
+                return WithOptions(_options | OrderExecOptions.OneCancelsTheOther).WithOCOEqualVolume(equalVolume).WithOCORelatedOrderId(relatedId);
             }
 
             public Template WithOCOEqualVolume(bool? equalVolume)

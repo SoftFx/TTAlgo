@@ -42,6 +42,11 @@
                 </DataGrid.ContextMenu>
                 <DataGrid.RowStyle>
                     <Style TargetType="DataGridRow">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding TriggerType, Converter={StaticResource NullOrEmptyToBool}}" Value="False">
+                                <Setter Property="Background" Value="#e4e4e4"/>
+                            </DataTrigger>
+                        </Style.Triggers>
                         <Setter Property="ToolTipService.IsEnabled">
                             <Setter.Value>
                                 <MultiBinding Converter="{StaticResource NullOrEmptyToBool}" >
@@ -57,6 +62,9 @@
                                     <Binding Path="SplitRatio"/>
                                     <Binding Path="ReqSlippage"/>
                                     <Binding Path="OCORelatedOrderId"/>
+                                    <Binding Path="TriggerState"/>
+                                    <Binding Path="TriggerTime"/>
+                                    <Binding Path="TriggeredByOrder"/>
                                 </MultiBinding>
                             </Setter.Value>
                         </Setter>
@@ -107,6 +115,18 @@
                                             <TextBlock Text="Related Order Id: " VerticalAlignment="Center" />
                                             <TextBlock Text="{Binding OCORelatedOrderId}" VerticalAlignment="Center" />
                                         </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Visibility="{Binding TriggerState, Converter={StaticResource NullOrEmptyToVis}}">
+                                            <TextBlock Text="Result state: " VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding TriggerState}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Visibility="{Binding TriggerTime, Converter={StaticResource NullOrEmptyToVis}}">
+                                            <TextBlock Text="Trigger Time: " VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding TriggerTime, Converter={StaticResource FullDateTimeFormat}}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Visibility="{Binding TriggeredByOrder, Converter={StaticResource NullOrEmptyToVis}}">
+                                            <TextBlock Text="Triggered By Order: " VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding TriggeredByOrder}" VerticalAlignment="Center" />
+                                        </StackPanel>
                                     </StackPanel>
 
                                     <StackPanel Visibility="{Binding IsSplitTransaction, Converter={StaticResource BoolToVis}}">
@@ -133,7 +153,14 @@
 
                     <DataGridTextColumn Header="Time" Width="130" Binding="{Binding CloseTime, Converter={StaticResource FullDateTimeFormat}}" SortMemberPath="{Binding CloseSortedNumber}"/>
 
-                    <DataGridTextColumn Header="Type" Width="100" Binding="{Binding Type, Converter={StaticResource PascalSplitString}}"/>
+                    <DataGridTextColumn Header="Type" Width="100">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding Converter="{StaticResource PascalSplitString}">
+                                <Binding Path="Type"/>
+                                <Binding Path="TriggerType"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
 
                     <DataGridTextColumn Header="Symbol" Width="100" Binding="{Binding Symbol}" />
 
@@ -268,6 +295,11 @@
                 </DataGrid.ContextMenu>
                 <DataGrid.RowStyle>
                     <Style TargetType="DataGridRow">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding TriggerType, Converter={StaticResource NullOrEmptyToBool}}" Value="False">
+                                <Setter Property="Background" Value="#e4e4e4"/>
+                            </DataTrigger>
+                        </Style.Triggers>
                         <Setter Property="ToolTipService.IsEnabled">
                             <Setter.Value>
                                 <MultiBinding Converter="{StaticResource NullOrEmptyToBool}" >
@@ -278,9 +310,10 @@
                                     <Binding Path="MaxVisibleVolume"/>
                                     <Binding Path="OrderExecutionOption"/>
                                     <Binding Path="ReqSlippage"/>
-                                    <!--<Binding Path="SplitReqVolume"/>
-                                    <Binding Path="SplitReqPrice"/>-->
                                     <Binding Path="SplitRatio"/>
+                                    <Binding Path="TriggerState"/>
+                                    <Binding Path="TriggerTime"/>
+                                    <Binding Path="TriggeredByOrder"/>
                                 </MultiBinding>
                             </Setter.Value>
                         </Setter>
@@ -316,17 +349,21 @@
                                             <TextBlock Text="Option: " VerticalAlignment="Center" />
                                             <TextBlock Text="{Binding OrderExecutionOption}" VerticalAlignment="Center" />
                                         </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Visibility="{Binding TriggerState, Converter={StaticResource NullOrEmptyToVis}}">
+                                            <TextBlock Text="Result state: " VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding TriggerState}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Visibility="{Binding TriggerTime, Converter={StaticResource NullOrEmptyToVis}}">
+                                            <TextBlock Text="Trigger Time: " VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding TriggerTime, Converter={StaticResource FullDateTimeFormat}}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Visibility="{Binding TriggeredByOrder, Converter={StaticResource NullOrEmptyToVis}}">
+                                            <TextBlock Text="Triggered By Order: " VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding TriggeredByOrder}" VerticalAlignment="Center" />
+                                        </StackPanel>
                                     </StackPanel>
 
                                     <StackPanel Visibility="{Binding IsSplitTransaction, Converter={StaticResource BoolToVis}}">
-                                        <!--<StackPanel Orientation="Horizontal" Visibility="{Binding SplitReqPrice, Converter={StaticResource NullOrEmptyToVis}}">
-                                            <TextBlock Text="Req Price: " VerticalAlignment="Center" />
-                                            <TextBlock Text="{Binding SplitReqPrice}" VerticalAlignment="Center"/>
-                                        </StackPanel>
-                                        <StackPanel Orientation="Horizontal" Visibility="{Binding SplitReqVolume, Converter={StaticResource NullOrEmptyToVis}}">
-                                            <TextBlock Text="Req Volume: " VerticalAlignment="Center" />
-                                            <TextBlock Text="{Binding SplitReqVolume}" VerticalAlignment="Center"/>
-                                        </StackPanel>-->
                                         <StackPanel Orientation="Horizontal" Visibility="{Binding SplitRatio, Converter={StaticResource NullOrEmptyToVis}}">
                                             <TextBlock Text="Split Ratio: " VerticalAlignment="Center" />
                                             <TextBlock Text="{Binding SplitRatio}" VerticalAlignment="Center"/>
@@ -345,7 +382,14 @@
 
                     <DataGridTextColumn Header="Open Time" Width="130" SortMemberPath="{Binding OpenSortedNumber}" Binding="{Binding OpenTime, Converter={StaticResource FullDateTimeFormat}}"/>
 
-                    <DataGridTextColumn Header="Type" Width="100" Binding="{Binding Type, Converter={StaticResource PascalSplitString}}"/>
+                    <DataGridTextColumn Header="Type" Width="100">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding Converter="{StaticResource PascalSplitString}">
+                                <Binding Path="Type"/>
+                                <Binding Path="TriggerType"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
 
                     <DataGridTextColumn Header="Symbol" Width="100" Binding="{Binding Symbol}"/>
 
@@ -481,6 +525,11 @@
                 </DataGrid.ContextMenu>
                 <DataGrid.RowStyle>
                     <Style TargetType="DataGridRow">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding TriggerType, Converter={StaticResource NullOrEmptyToBool}}" Value="False">
+                                <Setter Property="Background" Value="#e4e4e4"/>
+                            </DataTrigger>
+                        </Style.Triggers>
                         <Setter Property="ToolTipService.IsEnabled">
                             <Setter.Value>
                                 <MultiBinding Converter="{StaticResource NullOrEmptyToBool}" >
@@ -490,6 +539,9 @@
                                     <Binding Path="ReqSlippage"/>
                                     <Binding Path="OCORelatedOrderId"/>
                                     <Binding Path="OrderExecutionOption"/>
+                                    <Binding Path="TriggerState"/>
+                                    <Binding Path="TriggerTime"/>
+                                    <Binding Path="TriggeredByOrder"/>
                                 </MultiBinding>
                             </Setter.Value>
                         </Setter>
@@ -520,6 +572,18 @@
                                         <TextBlock Text="Related Order Id: " VerticalAlignment="Center" />
                                         <TextBlock Text="{Binding OCORelatedOrderId}" VerticalAlignment="Center" />
                                     </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding TriggerState, Converter={StaticResource NullOrEmptyToVis}}">
+                                        <TextBlock Text="Result state: " VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding TriggerState}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding TriggerTime, Converter={StaticResource NullOrEmptyToVis}}">
+                                        <TextBlock Text="Trigger Time: " VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding TriggerTime, Converter={StaticResource FullDateTimeFormat}}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding TriggeredByOrder, Converter={StaticResource NullOrEmptyToVis}}">
+                                        <TextBlock Text="Triggered By Order: " VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding TriggeredByOrder}" VerticalAlignment="Center" />
+                                    </StackPanel>
                                 </StackPanel>
                             </Setter.Value>
                         </Setter>
@@ -528,7 +592,16 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Order" Width="80" Binding="{Binding UniqueId}" />
                     <DataGridTextColumn Header="Open Time" Width="130" SortMemberPath="OpenTime" Binding="{Binding OpenTime, Converter={StaticResource FullDateTimeFormat}}"/>
-                    <DataGridTextColumn Header="Type" Width="90" Binding="{Binding Type, Converter={StaticResource PascalSplitString}}"/>
+
+                    <DataGridTextColumn Header="Type" Width="100">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding Converter="{StaticResource PascalSplitString}">
+                                <Binding Path="Type"/>
+                                <Binding Path="TriggerType"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
+
                     <DataGridTextColumn Header="Action" Width="100" Binding="{Binding ActionType}" />
                     <DataGridTextColumn Header="Symbol" Width="100" Binding="{Binding Symbol}" />
                     <DataGridTextColumn Header="Requested Quantity" Width="70" SortMemberPath="OpenQuantity" >

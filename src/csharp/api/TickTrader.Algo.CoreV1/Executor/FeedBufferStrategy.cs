@@ -1,6 +1,7 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.CoreV1
 {
@@ -20,7 +21,7 @@ namespace TickTrader.Algo.CoreV1
         }
 
         public abstract void OnBufferExtended();
-        public abstract bool InBoundaries(Timestamp timePoint);
+        public abstract bool InBoundaries(UtcTicks timePoint);
         public abstract void OnUserSetBufferSize(int newSize, out string error);
 
         protected abstract void LoadMainBuffer(ILoadableFeedBuffer buffer);
@@ -65,7 +66,7 @@ namespace TickTrader.Algo.CoreV1
     public interface ILoadableFeedBuffer
     {
         bool IsLoaded { get; }
-        Timestamp OpenTime { get; }
+        UtcTicks OpenTime { get; }
         int Count { get; }
 
         void LoadFeedFrom(Timestamp from);
@@ -101,7 +102,7 @@ namespace TickTrader.Algo.CoreV1
         {
             buffer.LoadFeed(_size);
             if (buffer.Count > 0)
-                _mainBufferStartTime = buffer.OpenTime;
+                _mainBufferStartTime = buffer.OpenTime.ToTimestamp();
         }
 
         protected override void LoadAuxBuffer(ILoadableFeedBuffer buffer)
@@ -124,7 +125,7 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public override bool InBoundaries(Timestamp timePoint)
+        public override bool InBoundaries(UtcTicks timePoint)
         {
             return true; // do not need to check boundaries in this strategy
         }
@@ -146,32 +147,34 @@ namespace TickTrader.Algo.CoreV1
     [Serializable]
     public class TimeSpanStrategy : FeedBufferStrategy
     {
-        private DateTime _from;
-        private DateTime _to;
+        private UtcTicks _fromTicks, _toTicks;
+        private Timestamp _from, _to;
 
         public TimeSpanStrategy(DateTime from, DateTime to)
         {
-            _from = from;
-            _to = to;
+            _from = from.ToUniversalTime().ToTimestamp();
+            _to = to.ToUniversalTime().ToTimestamp();
+            _fromTicks = new UtcTicks(from);
+            _toTicks = new UtcTicks(to);
         }
 
         protected override void LoadMainBuffer(ILoadableFeedBuffer buffer)
         {
-            buffer.LoadFeed(_from.ToUniversalTime().ToTimestamp(), _to.ToUniversalTime().ToTimestamp());
+            buffer.LoadFeed(_from, _to);
         }
 
         protected override void LoadAuxBuffer(ILoadableFeedBuffer buffer)
         {
-            buffer.LoadFeed(_from.ToUniversalTime().ToTimestamp(), _to.ToUniversalTime().ToTimestamp());
+            buffer.LoadFeed(_from, _to);
         }
 
         public override void OnBufferExtended()
         {
         }
 
-        public override bool InBoundaries(Timestamp timePoint)
+        public override bool InBoundaries(UtcTicks timePoint)
         {
-            return timePoint >= _from.ToUniversalTime().ToTimestamp() || timePoint <= _to.ToUniversalTime().ToTimestamp();
+            return timePoint >= _fromTicks || timePoint <= _toTicks;
         }
 
         public override void OnUserSetBufferSize(int newSize, out string error)

@@ -9,7 +9,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using TickTrader.Algo.Account;
-using TickTrader.FeedStorage;
+using TickTrader.BotTerminal.SymbolManager;
+using TickTrader.FeedStorage.Api;
+using TickTrader.SeriesStorage.Lmdb;
 
 namespace TickTrader.BotTerminal
 {
@@ -27,13 +29,13 @@ namespace TickTrader.BotTerminal
         private bool isClosed;
         private AlgoEnvironment algoEnv;
         private SymbolManagerViewModel _smbManager;
-        private SymbolCatalog _symbolsData;
-        private CustomFeedStorage.Handler _userSymbols;
+        private ISymbolCatalog _symbolsCatalog;
+        //private CustomFeedStorage.Handler _userSymbols;
         private BotAgentManager _botAgentManager;
 
-        public ShellViewModel(ClientModel.Data commonClient, CustomFeedStorage.Handler customFeedStorage)
+        public ShellViewModel(ClientModel.Data commonClient)
         {
-            _userSymbols = customFeedStorage;
+            //_userSymbols = customFeedStorage;
 
             DisplayName = EnvService.Instance.ApplicationName;
 
@@ -62,7 +64,10 @@ namespace TickTrader.BotTerminal
 
             Trade = new TradeInfoViewModel(clientModel, cManager, storage.ProfileManager);
 
-            _symbolsData = new SymbolCatalog(customFeedStorage, clientModel);
+            //setting for initialization binary storage
+            StorageFactory.InitBinaryStorage((folder, readOnly) => new LmdbManager(folder, readOnly));
+
+            _symbolsCatalog = StorageFactory.BuildCatalog(clientModel);
 
             TradeHistory = new TradeHistoryViewModel(clientModel, cManager, storage.ProfileManager);
 
@@ -89,6 +94,7 @@ namespace TickTrader.BotTerminal
             ConnectionLock.PropertyChanged += (s, a) => UpdateCommandStates();
 
             clientModel.Initializing += LoadConnectionProfile;
+            clientModel.Deinitializing += CloseCatalog;
             clientModel.Connected += OpenDefaultChart;
 
             storage.ProfileManager.SaveProfileSnapshot = SaveProfileSnapshot;
@@ -142,7 +148,31 @@ namespace TickTrader.BotTerminal
 
         private async Task LoadConnectionProfile(object sender, CancellationToken token)
         {
-            await ProfileManager.LoadConnectionProfile(cManager.Creds.Server.Address, cManager.Creds.Login, token);
+            var login = cManager.Creds.Login;
+            var server = cManager.Creds.Server.Address;
+
+            var customStorageSettings = new CustomStorageSettings
+            {
+                FolderPath = EnvService.Instance.CustomFeedCacheFolder
+            };
+
+            var settings = new OnlineStorageSettings
+            {
+                Login = login,
+                Server = server,
+                FolderPath = EnvService.Instance.FeedHistoryCacheFolder,
+                Options = StorageFolderOptions.ServerHierarchy,
+            };
+
+            await _symbolsCatalog.OpenCustomStorage(customStorageSettings);
+            await _symbolsCatalog.ConnectClient(settings);
+            await ProfileManager.LoadConnectionProfile(server, login, token);
+        }
+
+        private Task CloseCatalog(object sender, CancellationToken token)
+        {
+            _smbManager = null;
+            return _symbolsCatalog?.CloseCatalog();
         }
 
         public bool CanConnect { get; private set; }
@@ -170,13 +200,6 @@ namespace TickTrader.BotTerminal
                 logger.Error(ex);
             }
         }
-
-        //protected override void OnDeactivate(bool close)
-        //{
-        //    if (close)
-        //        App.Current.Shutdown();
-        //        //Shutdown();
-        //}
 
         public void ShootBots(out bool isConfirmed)
         {
@@ -210,21 +233,6 @@ namespace TickTrader.BotTerminal
 
             return Task.FromResult(isConfirmed);
         }
-
-        //public override void CanClose(Action<bool> callback)
-        //{
-        //    bool hasRunningBots = algoEnv.LocalAgent.HasRunningBots;
-
-        //    var exit = new ConfirmationDialogViewModel(DialogButton.YesNo, hasRunningBots ? DialogMode.Warning : DialogMode.Question, DialogMessages.ExitTitle, DialogMessages.ExitMessage, algoEnv.LocalAgent.HasRunningBots ? DialogMessages.BotsWorkError : null);
-        //    wndManager.ShowDialog(exit, this);
-
-        //    var isConfirmed = exit.DialogResult == DialogResult.OK;
-
-        //    if (isConfirmed)
-        //        StopTerminal(true);
-
-        //    callback(isConfirmed);
-        //}
 
         private async void StopTerminal(bool stopAlgoServer)
         {
@@ -318,7 +326,7 @@ namespace TickTrader.BotTerminal
             try
             {
                 await cManager.Disconnect();
-                await _userSymbols.Stop();
+                await _symbolsCatalog.CloseCatalog();
                 await _botAgentManager.ShutdownDisconnect();
                 await storage.Stop();
             }
@@ -413,7 +421,7 @@ namespace TickTrader.BotTerminal
         public void OpenStorageManager()
         {
             if (_smbManager == null)
-                _smbManager = new SymbolManagerViewModel(clientModel, _symbolsData, ToolWndManager);
+                _smbManager = new SymbolManagerViewModel(clientModel, _symbolsCatalog, ToolWndManager);
 
             wndManager.ShowDialog(_smbManager, this);
         }
@@ -422,7 +430,7 @@ namespace TickTrader.BotTerminal
         {
             if (Backtester == null)
             {
-                Backtester = new BacktesterViewModel(algoEnv, clientModel, _symbolsData, this, storage.ProfileManager);
+                Backtester = new BacktesterViewModel(algoEnv, clientModel, _symbolsCatalog, this, storage.ProfileManager);
                 Backtester.Deactivated += Backtester_Deactivated;
             }
 
@@ -435,16 +443,6 @@ namespace TickTrader.BotTerminal
             Backtester = null;
 
             return Task.CompletedTask;
-        }
-
-        //private void Backtester_Deactivated(object sender, DeactivationEventArgs e)
-        //{
-        //    Backtester.Deactivated -= Backtester_Deactivated;
-        //    Backtester = null;
-        //}
-
-        public void CloseChart(object chart)
-        {
         }
 
         private void SaveProfileSnapshot(ProfileStorageModel profileStorage)

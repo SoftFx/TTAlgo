@@ -9,10 +9,11 @@ namespace TickTrader.FeedStorage.Tests
         [TestMethod]
         public void Build_WithBarFrame()
         {
-            var key = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.D, Feed.Types.MarketSide.Bid);
+            var key = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.D, SymbolConfig.Types.SymbolOrigin.Online, Feed.Types.MarketSide.Bid);
 
             Assert.AreEqual(key.Symbol, "EURUSD");
             Assert.AreEqual(key.TimeFrame, Feed.Types.Timeframe.D);
+            Assert.AreEqual(key.Origin, SymbolConfig.Types.SymbolOrigin.Online);
             Assert.IsNotNull(key.MarketSide);
             Assert.AreEqual(key.MarketSide, Feed.Types.MarketSide.Bid);
         }
@@ -20,10 +21,11 @@ namespace TickTrader.FeedStorage.Tests
         [TestMethod]
         public void Build_WithTickFrame()
         {
-            var key = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.Ticks, Feed.Types.MarketSide.Ask);
+            var key = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.Ticks, SymbolConfig.Types.SymbolOrigin.Custom, Feed.Types.MarketSide.Ask);
 
             Assert.AreEqual(key.Symbol, "EURUSD");
             Assert.AreEqual(key.TimeFrame, Feed.Types.Timeframe.Ticks);
+            Assert.AreEqual(key.Origin, SymbolConfig.Types.SymbolOrigin.Custom);
             Assert.IsNull(key.MarketSide);
         }
 
@@ -34,30 +36,31 @@ namespace TickTrader.FeedStorage.Tests
 
             Assert.AreEqual(key.Symbol, "EURUSD");
             Assert.AreEqual(key.TimeFrame, Feed.Types.Timeframe.TicksLevel2);
+            Assert.AreEqual(key.Origin, SymbolConfig.Types.SymbolOrigin.Online);
             Assert.IsNull(key.MarketSide);
         }
 
         [TestMethod]
         public void CodeString_WithBarFrame()
         {
-            var key = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.M1, Feed.Types.MarketSide.Bid);
+            var key = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.M1, priceType: Feed.Types.MarketSide.Bid);
 
-            Assert.AreEqual(key.CodeString, "EURUSD_M1_Bid");
+            Assert.AreEqual(key.FullInfo, "EURUSD_Online_M1_Bid");
         }
 
         [TestMethod]
         public void CodeString_WithTickFrame()
         {
-            var key = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.MN);
+            var key = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.MN, SymbolConfig.Types.SymbolOrigin.Custom);
 
-            Assert.AreEqual(key.CodeString, "EURUSD_MN_");
+            Assert.AreEqual(key.FullInfo, "EURUSD_Custom_MN");
         }
 
         [TestMethod]
         public void Succ_Equals()
         {
-            var key1 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.MN, Feed.Types.MarketSide.Bid);
-            var key2 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.MN, Feed.Types.MarketSide.Bid);
+            var key1 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.MN, priceType: Feed.Types.MarketSide.Bid);
+            var key2 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.MN, priceType: Feed.Types.MarketSide.Bid);
 
             Assert.AreEqual(key1, key2);
         }
@@ -65,8 +68,8 @@ namespace TickTrader.FeedStorage.Tests
         [TestMethod]
         public void Succ_Equals2()
         {
-            var key1 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.Ticks, Feed.Types.MarketSide.Bid);
-            var key2 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.Ticks, Feed.Types.MarketSide.Bid);
+            var key1 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.Ticks, SymbolConfig.Types.SymbolOrigin.Online, Feed.Types.MarketSide.Bid);
+            var key2 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.Ticks, SymbolConfig.Types.SymbolOrigin.Online, Feed.Types.MarketSide.Bid);
 
             Assert.AreEqual(key1, key2);
         }
@@ -74,8 +77,8 @@ namespace TickTrader.FeedStorage.Tests
         [TestMethod]
         public void Succ_Equals3()
         {
-            var key1 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.Ticks, Feed.Types.MarketSide.Bid);
-            var key2 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.Ticks, Feed.Types.MarketSide.Ask);
+            var key1 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.Ticks, SymbolConfig.Types.SymbolOrigin.Custom, Feed.Types.MarketSide.Bid);
+            var key2 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.Ticks, SymbolConfig.Types.SymbolOrigin.Custom, Feed.Types.MarketSide.Ask);
 
             Assert.AreEqual(key1, key2);
             Assert.IsNull(key1.MarketSide);
@@ -83,10 +86,19 @@ namespace TickTrader.FeedStorage.Tests
         }
 
         [TestMethod]
+        public void Succ_Equals4()
+        {
+            var key1 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.Ticks, priceType: Feed.Types.MarketSide.Bid);
+            var key2 = new FeedCacheKey("eurusd", Feed.Types.Timeframe.Ticks, priceType: Feed.Types.MarketSide.Bid);
+
+            Assert.AreEqual(key1, key2);
+        }
+
+        [TestMethod]
         public void Fail_Equals()
         {
-            var key1 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.H1, Feed.Types.MarketSide.Bid);
-            var key2 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.H1, Feed.Types.MarketSide.Ask);
+            var key1 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.H1, priceType: Feed.Types.MarketSide.Bid);
+            var key2 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.H1, priceType: Feed.Types.MarketSide.Ask);
 
             Assert.AreNotEqual(key1, key2);
         }
@@ -94,8 +106,8 @@ namespace TickTrader.FeedStorage.Tests
         [TestMethod]
         public void Fail_Equals2()
         {
-            var key1 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.H1, Feed.Types.MarketSide.Bid);
-            var key2 = new FeedCacheKey("EURGBP", Feed.Types.Timeframe.H1, Feed.Types.MarketSide.Bid);
+            var key1 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.H1, priceType: Feed.Types.MarketSide.Bid);
+            var key2 = new FeedCacheKey("EURGBP", Feed.Types.Timeframe.H1, priceType: Feed.Types.MarketSide.Bid);
 
             Assert.AreNotEqual(key1, key2);
         }
@@ -103,8 +115,8 @@ namespace TickTrader.FeedStorage.Tests
         [TestMethod]
         public void Fail_Equals3()
         {
-            var key1 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.H1, Feed.Types.MarketSide.Bid);
-            var key2 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.Ticks, Feed.Types.MarketSide.Bid);
+            var key1 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.H1, priceType: Feed.Types.MarketSide.Bid);
+            var key2 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.Ticks, priceType: Feed.Types.MarketSide.Bid);
 
             Assert.AreNotEqual(key1, key2);
         }
@@ -112,7 +124,7 @@ namespace TickTrader.FeedStorage.Tests
         [TestMethod]
         public void Fail_Equals4()
         {
-            var key1 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.H1, Feed.Types.MarketSide.Bid);
+            var key1 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.H1, priceType: Feed.Types.MarketSide.Bid);
             var key2 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.Ticks);
 
             Assert.AreNotEqual(key1, key2);
@@ -121,8 +133,8 @@ namespace TickTrader.FeedStorage.Tests
         [TestMethod]
         public void Fail_Equals5()
         {
-            var key1 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.Ticks, Feed.Types.MarketSide.Bid);
-            var key2 = new FeedCacheKey("eurusd", Feed.Types.Timeframe.Ticks, Feed.Types.MarketSide.Bid);
+            var key1 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.Ticks, priceType: Feed.Types.MarketSide.Bid);
+            var key2 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.Ticks, SymbolConfig.Types.SymbolOrigin.Custom, priceType: Feed.Types.MarketSide.Bid);
 
             Assert.AreNotEqual(key1, key2);
         }
@@ -130,8 +142,17 @@ namespace TickTrader.FeedStorage.Tests
         [TestMethod]
         public void Equal_HashCode()
         {
-            var key1 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.MN, Feed.Types.MarketSide.Bid);
-            var key2 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.MN, Feed.Types.MarketSide.Bid);
+            var key1 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.MN, priceType: Feed.Types.MarketSide.Bid);
+            var key2 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.MN, priceType: Feed.Types.MarketSide.Bid);
+
+            Assert.AreEqual(key1.GetHashCode(), key2.GetHashCode());
+        }
+
+        [TestMethod]
+        public void Equal_HashCode2()
+        {
+            var key1 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.MN, priceType: Feed.Types.MarketSide.Bid);
+            var key2 = new FeedCacheKey("eurusd", Feed.Types.Timeframe.MN, priceType: Feed.Types.MarketSide.Bid);
 
             Assert.AreEqual(key1.GetHashCode(), key2.GetHashCode());
         }
@@ -139,8 +160,8 @@ namespace TickTrader.FeedStorage.Tests
         [TestMethod]
         public void NotEqual_HashCode()
         {
-            var key1 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.MN, Feed.Types.MarketSide.Bid);
-            var key2 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.MN, Feed.Types.MarketSide.Ask);
+            var key1 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.MN, priceType: Feed.Types.MarketSide.Bid);
+            var key2 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.MN, priceType: Feed.Types.MarketSide.Ask);
 
             Assert.AreNotEqual(key1.GetHashCode(), key2.GetHashCode());
         }
@@ -148,8 +169,8 @@ namespace TickTrader.FeedStorage.Tests
         [TestMethod]
         public void NotEqual_HashCode2()
         {
-            var key1 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.MN, Feed.Types.MarketSide.Bid);
-            var key2 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.M1, Feed.Types.MarketSide.Bid);
+            var key1 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.MN, priceType: Feed.Types.MarketSide.Bid);
+            var key2 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.M1, priceType: Feed.Types.MarketSide.Bid);
 
             Assert.AreNotEqual(key1.GetHashCode(), key2.GetHashCode());
         }
@@ -157,8 +178,8 @@ namespace TickTrader.FeedStorage.Tests
         [TestMethod]
         public void NotEqual_HashCode3()
         {
-            var key1 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.MN, Feed.Types.MarketSide.Bid);
-            var key2 = new FeedCacheKey("AUDUSD", Feed.Types.Timeframe.MN, Feed.Types.MarketSide.Bid);
+            var key1 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.MN, priceType: Feed.Types.MarketSide.Bid);
+            var key2 = new FeedCacheKey("AUDUSD", Feed.Types.Timeframe.MN, priceType: Feed.Types.MarketSide.Bid);
 
             Assert.AreNotEqual(key1.GetHashCode(), key2.GetHashCode());
         }
@@ -166,8 +187,8 @@ namespace TickTrader.FeedStorage.Tests
         [TestMethod]
         public void NotEqual_HashCode4()
         {
-            var key1 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.MN, Feed.Types.MarketSide.Bid);
-            var key2 = new FeedCacheKey("eurusd", Feed.Types.Timeframe.MN, Feed.Types.MarketSide.Bid);
+            var key1 = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.MN, SymbolConfig.Types.SymbolOrigin.Online, Feed.Types.MarketSide.Bid);
+            var key2 = new FeedCacheKey("eurusd", Feed.Types.Timeframe.MN, SymbolConfig.Types.SymbolOrigin.Custom, Feed.Types.MarketSide.Bid);
 
             Assert.AreNotEqual(key1.GetHashCode(), key2.GetHashCode());
         }
@@ -175,8 +196,8 @@ namespace TickTrader.FeedStorage.Tests
         [TestMethod]
         public void Succ_TryParse()
         {
-            var expect = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.M1, Feed.Types.MarketSide.Ask);
-            var result = FeedCacheKey.TryParse($"EURUSD_M1_Ask", out var actual);
+            var expect = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.M1, priceType: Feed.Types.MarketSide.Ask);
+            var result = FeedCacheKey.TryParse($"EURUSD_Online_M1_Ask", out var actual);
 
             Assert.IsTrue(result);
             Assert.AreEqual(expect, actual);
@@ -185,8 +206,8 @@ namespace TickTrader.FeedStorage.Tests
         [TestMethod]
         public void Succ_TryParse2()
         {
-            var expect = new FeedCacheKey("eurusd", Feed.Types.Timeframe.MN, Feed.Types.MarketSide.Bid);
-            var result = FeedCacheKey.TryParse($"eurusd_mn_bid", out var actual);
+            var expect = new FeedCacheKey("eurusd", Feed.Types.Timeframe.MN, SymbolConfig.Types.SymbolOrigin.Custom, Feed.Types.MarketSide.Bid);
+            var result = FeedCacheKey.TryParse($"eurusd_custom_mn_bid", out var actual);
 
             Assert.IsTrue(result);
             Assert.AreEqual(expect, actual);
@@ -195,8 +216,28 @@ namespace TickTrader.FeedStorage.Tests
         [TestMethod]
         public void Succ_TryParse3()
         {
-            var expect = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.Ticks, Feed.Types.MarketSide.Bid);
-            var result = FeedCacheKey.TryParse($"EURUSD_Ticks_", out var actual);
+            var expect = new FeedCacheKey("EURUSD", Feed.Types.Timeframe.Ticks, priceType: Feed.Types.MarketSide.Bid);
+            var result = FeedCacheKey.TryParse($"EURUSD_Online_Ticks_", out var actual);
+
+            Assert.IsTrue(result);
+            Assert.AreEqual(expect, actual);
+        }
+
+        [TestMethod]
+        public void Succ_TryParse4()
+        {
+            var expect = new FeedCacheKey("EURUSD_test", Feed.Types.Timeframe.M1, priceType: Feed.Types.MarketSide.Ask);
+            var result = FeedCacheKey.TryParse($"EURUSD_test_Online_M1_Ask", out var actual);
+
+            Assert.IsTrue(result);
+            Assert.AreEqual(expect, actual);
+        }
+
+        [TestMethod]
+        public void Succ_TryParse5()
+        {
+            var expect = new FeedCacheKey("eurusd_1_2_", Feed.Types.Timeframe.TicksLevel2, SymbolConfig.Types.SymbolOrigin.Custom, Feed.Types.MarketSide.Bid);
+            var result = FeedCacheKey.TryParse($"eurusd_1_2__custom_tickslevel2", out var actual);
 
             Assert.IsTrue(result);
             Assert.AreEqual(expect, actual);
@@ -305,6 +346,33 @@ namespace TickTrader.FeedStorage.Tests
         public void Fail_TryParse12()
         {
             var result = FeedCacheKey.TryParse("__M1_Ask", out var key);
+
+            Assert.IsFalse(result);
+            Assert.IsNull(key);
+        }
+
+        [TestMethod]
+        public void Fail_TryParse13()
+        {
+            var result = FeedCacheKey.TryParse("EURUSD_t_Online", out var key);
+
+            Assert.IsFalse(result);
+            Assert.IsNull(key);
+        }
+
+        [TestMethod]
+        public void Fail_TryParse14()
+        {
+            var result = FeedCacheKey.TryParse("EURUSD_t_Online_Ask", out var key);
+
+            Assert.IsFalse(result);
+            Assert.IsNull(key);
+        }
+
+        [TestMethod]
+        public void Fail_TryParse15()
+        {
+            var result = FeedCacheKey.TryParse("EURUSD_t_Online_MN_Bid_assas", out var key);
 
             Assert.IsFalse(result);
             Assert.IsNull(key);

@@ -90,6 +90,7 @@
   </Target>
 
   <Target Name="PrepublishScript" BeforeTargets="PrepareForPublish">
+    <Exec Command="npm install" />
     <Exec Command="npm run build_prod" />
   </Target>
 
@@ -137,9 +138,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Hosting\WindowsServiceHost.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Update="Hosting\WindowsServiceHost.cs" />
   </ItemGroup>
 
   <ItemGroup>

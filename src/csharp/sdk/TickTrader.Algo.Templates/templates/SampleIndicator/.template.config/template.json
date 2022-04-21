@@ -1,0 +1,15 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "Soft-FX",
+    "classifications": [ "TTAlgo", "Indicator", "Sample" ],
+    "identity": "TickTrader.Algo.Template.SampleIndicator.CSharp",
+    "groupIdentity": "TickTrader.Algo.Template.SampleIndicator",
+    "name": "TickTrader Algo indicator sample",
+    "shortName": "ttalgo-sampleindicator",
+    "tags": {
+        "language": "C#",
+        "type": "project"
+    },
+    "sourceName": "SampleIndicator",
+    "preferNameDirectory":  true
+}

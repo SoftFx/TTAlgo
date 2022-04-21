@@ -134,9 +134,10 @@ namespace TickTrader.Algo.Account.Fdk2
         {
             var taskSrc = new OrderResultSource(_execReportHandler);
 
-            var ttsReports = _tradeProxy.OpenOcoOrders(symbol, clientOrderId, type, side, qty, maxVisibleQty, price, stopPrice, timeInForce, expireTime, stopLoss,
-                takeProfit, comment, tag, magic, slippage, clientOrderId2, type2, side2, qty2, maxVisibleQty2, price2, stopPrice2, timeInForce2, expireTime2, stopLoss2,
-                takeProfit2, comment2, tag2, magic2, slippage2, timeout, otoTriggerType, otoTriggerTime, otoTriggereById);
+            var ttsReports = _tradeProxy.OpenOcoOrdersEx(clientOrderId, symbol, 
+                clientOrderId, type, side, qty, maxVisibleQty, price, stopPrice, timeInForce, expireTime, stopLoss, takeProfit, comment, tag, magic, slippage,
+                clientOrderId2, type2, side2, qty2, maxVisibleQty2, price2, stopPrice2, timeInForce2, expireTime2, stopLoss2,
+                takeProfit2, comment2, tag2, magic2, slippage2, otoTriggerType, otoTriggerTime, otoTriggereById, timeout);
 
             taskSrc.OnMultipleReports(ttsReports);
 

@@ -150,7 +150,7 @@ namespace TickTrader.SeriesStorage
                 if (KeyHelper.IsGreater(from, firstKey))
                     throw new ArgumentException("Slice is invalid: Content is outside the left boundary!");
 
-                if (KeyHelper.IsLessOrEqual(to, lastKey))
+                if (KeyHelper.IsLess(to, lastKey))
                     throw new ArgumentException("Slice is invalid: Content is outside the right boundary!");
             }
         }

@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Calculator;
-using TickTrader.Algo.Calculator.AlgoMarket;
+using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.CoreV1;
 using TickTrader.Algo.Domain;
@@ -12,7 +12,7 @@ namespace TickTrader.Algo.Backtester
 {
     internal class InvokeEmulator : InvokeStartegy
     {
-        private object _syncState = new object();
+        private readonly object _syncState = new object();
         private FeedQueue _feedQueue;
         private DelayedEventsQueue _delayedQueue = new DelayedEventsQueue();
         private Queue<Action<PluginBuilder>> _tradeQueue = new Queue<Action<PluginBuilder>>();
@@ -31,20 +31,23 @@ namespace TickTrader.Algo.Backtester
         private bool _pauseRequested;
         private bool _stopPhase;
         private Exception _fatalError;
-        private Action _exStartAction;
-        private Action _extStopAction;
+        private readonly Action _exStartAction, _extStopAction;
 
-        public InvokeEmulator(IBacktesterSettings settings, BacktesterCollector collector, FeedEmulator feed, Action exStartAction, Action extStopAction)
+
+        public InvokeEmulator(IBacktesterSettings settings, BacktesterCollector collector, FeedEmulator feed, PluginExecutorCore executor)
         {
             _settings = settings;
             _collector = collector;
             _collector.InvokeEmulator = this;
             _feed = feed;
-            _exStartAction = exStartAction;
-            _extStopAction = extStopAction;
+            _exStartAction = executor.Start;
+            _extStopAction = executor.EmulateStop;
+
+            executor.OnExitRequest += _ => Cancel();
         }
 
         public DateTime UnsafeVirtualTimePoint { get { return _timePoint; } }
+        public Timestamp UnsafeVirtualTimestamp => _timePoint.ToTimestamp();
         public DateTime SafeVirtualTimePoint => _timePoint;
         public DateTime SlimUpdateVirtualTimePoint => new DateTime(Interlocked.Read(ref _safeTimePoint));
         public override int FeedQueueSize => 0;
@@ -52,7 +55,7 @@ namespace TickTrader.Algo.Backtester
         public ScheduleEmulator Scheduler { get; } = new ScheduleEmulator();
         public EmulatorStates State { get; private set; }
 
-        public event Action<SymbolMarketNode> RateUpdated;
+        public event Action<IRateInfo> RateUpdated;
         public event Action<EmulatorStates> StateUpdated;
 
         #region InvokeStartegy implementation
@@ -60,6 +63,7 @@ namespace TickTrader.Algo.Backtester
         protected override void OnInit()
         {
             _feedQueue = new FeedQueue(FStartegy);
+            MarketData.StartCalculators();
         }
 
         public override void Abort()
@@ -350,12 +354,12 @@ namespace TickTrader.Algo.Backtester
 
                 _feed.UpdateHistory(nextTick);
 
-                UpdateVirtualTimepoint(nextTick.Time);
+                UpdateVirtualTimepoint(nextTick.TimeUtc);
                 _collector.OnRateUpdate(nextTick);
 
                 if (tickCount == 1)
                 {
-                    warmupStart = nextTick.Time;
+                    warmupStart = nextTick.TimeUtc;
                     LogWarmupStart();
                 }
 
@@ -476,13 +480,13 @@ namespace TickTrader.Algo.Backtester
 
             DelayExecution();
 
-            //var bufferUpdate = OnFeedUpdate(rate, out var node);
-            RateUpdated?.Invoke(/*node*/null);
+            var bufferUpdate = OnFeedUpdate(rate);
+            RateUpdated?.Invoke(rate);
             _collector.OnRateUpdate(rate);
 
             var acc = Builder.Account;
             if (acc.IsMarginType)
-                _collector.RegisterEquity(SafeVirtualTimePoint, acc.Equity, acc.Margin);
+                _collector.RegisterEquity(acc.Equity, acc.Margin);
         }
 
         public override Task Stop(bool quick)

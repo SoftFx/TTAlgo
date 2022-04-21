@@ -55,5 +55,19 @@ namespace TickTrader.Algo.CoreV1
                     throw new ArgumentException($"Unsupported trigger type: {type}");
             }
         }
+
+        public static Api.TriggerResultState ToApi(this Domain.TriggerReportInfo.Types.TriggerResultState state)
+        {
+            switch (state)
+            {
+                case Domain.TriggerReportInfo.Types.TriggerResultState.Failed:
+                    return Api.TriggerResultState.Failed;
+                case Domain.TriggerReportInfo.Types.TriggerResultState.Successful:
+                    return Api.TriggerResultState.Successful;
+
+                default:
+                    throw new ArgumentException($"Unsupported trigger state: {state}");
+            }
+        }
     }
 }

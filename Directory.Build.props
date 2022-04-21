@@ -1,0 +1,8 @@
+<Project>
+    <Import Project="FDK2.Build.props" />
+    <PropertyGroup>
+        <Company>Soft-FX</Company>
+        <Product>TickTrader Algo</Product>
+        <Copyright>Copyright © Soft-FX 2017-2022</Copyright>
+    </PropertyGroup>
+</Project>

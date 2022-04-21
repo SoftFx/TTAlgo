@@ -60,7 +60,7 @@ namespace TickTrader.Algo.CoreV1
             }
         }
 
-        public TradeHistory HistoryProvider { get; set; }
+        internal IHistoryProvider HistoryProvider { get; set; }
 
         public string Id
         {
@@ -115,7 +115,6 @@ namespace TickTrader.Algo.CoreV1
         }
         public bool Isolated { get; set; }
         public string InstanceId { get; internal set; }
-        public NumberFormatInfo BalanceCurrencyFormat { get; private set; }
 
         public bool IsMarginType => Type == AccountInfo.Types.Type.Net || Type == AccountInfo.Types.Type.Gross;
         public bool IsCashType => Type == AccountInfo.Types.Type.Cash;
@@ -145,14 +144,12 @@ namespace TickTrader.Algo.CoreV1
         {
             BalanceCurrency = currency?.Name ?? string.Empty;
             BalanceCurrencyInfo = currency;
-            BalanceCurrencyFormat = new NumberFormatInfo { NumberDecimalDigits = currency?.Digits ?? 2 };
         }
 
         internal void ResetCurrency()
         {
             BalanceCurrency = "";
             BalanceCurrencyInfo = null;
-            BalanceCurrencyFormat = null;
         }
 
         internal void FireBalanceUpdateEvent()
@@ -240,7 +237,7 @@ namespace TickTrader.Algo.CoreV1
         AssetList AccountDataProvider.Assets => Assets;
         NetPositionList AccountDataProvider.NetPositions => NetPositions;
         TradeHistory AccountDataProvider.TradeHistory => HistoryProvider;
-
+        TriggerHistory AccountDataProvider.TriggerHistory => HistoryProvider;
         internal MarginAccountCalculator MarginCalc { get; set; }
         public double Equity => GetCalc()?.Equity ?? double.NaN;
         public double Margin => GetCalc()?.Margin ?? double.NaN;

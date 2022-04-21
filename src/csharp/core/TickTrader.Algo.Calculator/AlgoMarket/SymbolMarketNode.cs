@@ -1,5 +1,5 @@
 ﻿using TickTrader.Algo.Calculator.Conversions;
-using TickTrader.Algo.Calculator.TradeSpeсificsCalculators;
+using TickTrader.Algo.Calculator.TradeSpecificsCalculators;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Infrastructure;
 using TickTrader.Algo.Domain;
@@ -7,7 +7,7 @@ using TickTrader.Algo.Domain.CalculatorInterfaces;
 
 namespace TickTrader.Algo.Calculator.AlgoMarket
 {
-    public class SymbolMarketNode : ISymbolCalculator, IProfitCalculationInfo, IMarginCalculationInfo
+    public class SymbolMarketNode : ISymbolCalculator, IProfitCalculationInfo, IMarginCalculationInfo, ISwapCalculationInfo, ICommissionCalculationInfo
     {
         private readonly IMarketStateAccountInfo _account;
 
@@ -21,8 +21,12 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
 
         public IProfitCalculator Profit { get; private set; }
 
+        public ISwapCalculator Swap { get; private set; }
 
-        public SymbolMarketNode(IMarketStateAccountInfo acc, ISymbolInfo smb)
+        public ICommissionCalculator Commission { get; private set; }
+
+
+        public SymbolMarketNode(IMarketStateAccountInfo acc, ISymbolInfoWithRate smb)
         {
             _account = acc;
 
@@ -40,9 +44,11 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
 
             Margin = new MarginCalculator(this, marginFormula);
             Profit = new ProfitCalculator(this, positiveFormula, negativeFormula);
+            Swap = new SwapCalculator(this, marginFormula, positiveFormula, negativeFormula);
+            Commission = new CommissionCalculator(this, marginFormula, negativeFormula, null);
         }
 
-        public ISymbolInfo SymbolInfo { get; private set; }
+        public ISymbolInfoWithRate SymbolInfo { get; private set; }
 
         public bool IsShadowCopy { get; private set; }
 
@@ -61,8 +67,31 @@ namespace TickTrader.Algo.Calculator.AlgoMarket
 
         double? IMarginCalculationInfo.HiddenLimitOrderReduction => SymbolInfo.HiddenLimitOrderMarginReduction;
 
+        bool ISwapCalculationInfo.Enabled => SymbolInfo.SwapEnabled;
 
-        public void Update(SymbolInfo smb)
+        SwapInfo.Types.Type ISwapCalculationInfo.Type => SymbolInfo.SwapType;
+
+        int ISwapCalculationInfo.TripleSwapDay => SymbolInfo.TripleSwapDay;
+
+        double? ISwapCalculationInfo.SwapSizeLong => SymbolInfo.SwapSizeLong;
+
+        double? ISwapCalculationInfo.SwapSizeShort => SymbolInfo.SwapSizeShort;
+
+        int ISwapCalculationInfo.SymbolDigits => SymbolInfo.Digits;
+
+        CommissonInfo.Types.ValueType ICommissionCalculationInfo.Type => SymbolInfo.CommissionType;
+
+        double ICommissionCalculationInfo.LotSize => SymbolInfo.LotSize;
+
+        double ICommissionCalculationInfo.SymbolDigits => SymbolInfo.Digits;
+
+        double ICommissionCalculationInfo.TakerFee => SymbolInfo.Commission;
+
+        double ICommissionCalculationInfo.MakerFee => SymbolInfo.LimitsCommission;
+
+        double ICommissionCalculationInfo.MinCommission => SymbolInfo.MinCommission;
+
+        public void Update(ISymbolInfoWithRate smb)
         {
             IsShadowCopy = smb == null;
 

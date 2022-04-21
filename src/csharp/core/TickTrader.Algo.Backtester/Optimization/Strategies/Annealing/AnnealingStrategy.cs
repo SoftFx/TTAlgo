@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using TickTrader.Algo.Api.Math;
+using TickTrader.Algo.BacktesterApi;
 
 namespace TickTrader.Algo.Backtester
 {
@@ -56,7 +57,7 @@ namespace TickTrader.Algo.Backtester
 
         public override long OnCaseCompleted(OptCaseReport report)
         {
-            SetResult(report.Config, report.MetricVal);
+            SetResult(report.Config.Id, report.MetricVal);
 
             if (Set == BestSet || AcceptState())
             {

@@ -113,11 +113,12 @@ message FullQuoteInfo {
 }
 
 message QuoteData {
-    google.protobuf.Timestamp time = 1;
+    int64 utc_ticks = 1;
     bool is_bid_indicative = 2;
     bool is_ask_indicative = 3;
     bytes bid_bytes = 4;
     bytes ask_bytes = 5;
+    bytes tick_bytes = 6;
 }
 
 message QuotePage {
@@ -150,8 +151,8 @@ message BarInfo {
 }
 
 message BarData {
-    google.protobuf.Timestamp open_time = 1;
-    google.protobuf.Timestamp close_time = 2;
+    int64 open_time_raw = 1;
+    int64 close_time_raw = 2;
     double open = 3;
     double close = 4;
     double high = 5;

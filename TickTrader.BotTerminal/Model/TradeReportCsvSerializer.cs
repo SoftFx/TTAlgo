@@ -8,8 +8,8 @@ namespace TickTrader.BotTerminal
 {
     internal static class TradeReportCsvSerializer
     {
-        private static readonly CsvSerializer<TransactionReport> _netSerializer = new CsvSerializer<TransactionReport>();
-        private static readonly CsvSerializer<TransactionReport> _grossSerializer = new CsvSerializer<TransactionReport>();
+        private static readonly CsvSerializer<BaseTransactionModel> _netSerializer = new CsvSerializer<BaseTransactionModel>();
+        private static readonly CsvSerializer<BaseTransactionModel> _grossSerializer = new CsvSerializer<BaseTransactionModel>();
 
         static TradeReportCsvSerializer()
         {
@@ -49,33 +49,33 @@ namespace TickTrader.BotTerminal
             AddNetOnly(s => s.AddColumn("Comment", r => r.Comment));
         }
 
-        private static void AddCommon(Action<CsvSerializer<TransactionReport>> addAction)
+        private static void AddCommon(Action<CsvSerializer<BaseTransactionModel>> addAction)
         {
             addAction(_grossSerializer);
             addAction(_netSerializer);
         }
 
-        private static void AddNetOnly(Action<CsvSerializer<TransactionReport>> addAction)
+        private static void AddNetOnly(Action<CsvSerializer<BaseTransactionModel>> addAction)
         {
             addAction(_netSerializer);
         }
 
-        private static void AddGrossOnly(Action<CsvSerializer<TransactionReport>> addAction)
+        private static void AddGrossOnly(Action<CsvSerializer<BaseTransactionModel>> addAction)
         {
             addAction(_grossSerializer);
         }
 
-        public static void Serialize(IEnumerable<TransactionReport> reports, Stream toStream, AccountInfo.Types.Type accType)
+        public static void Serialize(IEnumerable<BaseTransactionModel> reports, Stream toStream, AccountInfo.Types.Type accType)
         {
             GetByAccType(accType).Serialize(reports, toStream);
         }
 
-        public static void Serialize(IEnumerable<TransactionReport> reports, Stream toStream, AccountInfo.Types.Type accType, Action<long> progressCallback)
+        public static void Serialize(IEnumerable<BaseTransactionModel> reports, Stream toStream, AccountInfo.Types.Type accType, Action<long> progressCallback)
         {
             GetByAccType(accType).Serialize(reports, toStream, progressCallback);
         }
 
-        private static CsvSerializer<TransactionReport> GetByAccType(AccountInfo.Types.Type accType)
+        private static CsvSerializer<BaseTransactionModel> GetByAccType(AccountInfo.Types.Type accType)
         {
             if (accType == AccountInfo.Types.Type.Net)
                 return _netSerializer;

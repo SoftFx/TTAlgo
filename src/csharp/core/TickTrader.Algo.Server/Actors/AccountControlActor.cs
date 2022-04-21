@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Account;
+using TickTrader.Algo.Account.Settings;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
@@ -204,8 +205,7 @@ namespace TickTrader.Algo.Server
         {
             try
             {
-                _core = new ClientModel.ControlHandler2(KnownAccountFactories.Fdk2, _server.AccountOptions,
-                        _server.Env.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerClientHierarchy, _id);
+                _core = new ClientModel.ControlHandler2(_server.GetDefaultClientSettings(_id));
 
                 await _core.OpenHandler();
 

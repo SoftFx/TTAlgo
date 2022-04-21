@@ -5,12 +5,13 @@ using SciChart.Charting.Visuals.Axes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TickTrader.Algo.Backtester;
+using System.Threading.Tasks;
+using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
 using TickTrader.BotTerminal.Lib;
-using static TickTrader.BotTerminal.TransactionReport;
+using static TickTrader.BotTerminal.BaseTransactionModel;
 
 namespace TickTrader.BotTerminal
 {
@@ -24,7 +25,7 @@ namespace TickTrader.BotTerminal
         private bool _visualizing;
         private AccountInfo.Types.Type _acctype;
         private string _mainSymbol;
-        private Dictionary<string, SymbolInfo> _symbolMap;
+        private Dictionary<string, ISymbolInfo> _symbolMap;
 
         public BacktesterChartPageViewModel()
         {
@@ -32,7 +33,7 @@ namespace TickTrader.BotTerminal
 
             _mainSeries = new OhlcRenderableSeriesViewModel();
             _mainSeries.StyleKey = "BarChart_OhlcStyle";
-            
+
             _markerSeries = new LineRenderableSeriesViewModel();
             _markerSeries.StyleKey = "HiddenOverlayMarkerSeries_Style";
             _markerSeries.PointMarker = new PositionMarker()
@@ -54,82 +55,68 @@ namespace TickTrader.BotTerminal
 
         public AlgoChartViewModel ChartControlModel { get; }
 
-        public void OnStart(bool visualizing, SymbolInfo mainSymbol, PluginConfig config, Backtester backtester, IEnumerable<SymbolInfo> symbols)
+        public void OnStart(bool visualizing, SymbolInfo mainSymbol, BacktesterConfig config, IEnumerable<ISymbolInfo> symbols)
         {
             _visualizing = visualizing;
-            _acctype = backtester.CommonSettings.AccountType;
-            _mainSymbol = backtester.CommonSettings.MainSymbol;
+            _acctype = config.Account.Type;
+            _mainSymbol = config.Core.MainSymbol;
             _symbolMap = symbols.ToDictionary(s => s.Name);
 
             Clear();
 
-            _barVector = new ChartBarVectorWithMarkers(backtester.CommonSettings.MainTimeframe);
+            _barVector = new ChartBarVectorWithMarkers(config.Core.MainTimeframe);
             _mainSeries.DataSeries = _barVector.SciChartdata;
             _markerSeries.DataSeries = _barVector.MarkersData;
 
-            ChartControlModel.SetTimeframe(backtester.CommonSettings.MainTimeframe);
+            ChartControlModel.SetTimeframe(config.Core.MainTimeframe);
             ChartControlModel.SymbolInfo.Value = mainSymbol;
 
-            if (visualizing)
-            {
-                backtester.OutputDataMode = TestDataSeriesFlags.Stream | TestDataSeriesFlags.Realtime;
-
-                backtester.Executor.SymbolRateUpdated += Executor_SymbolRateUpdated;
-                backtester.Executor.TradesUpdated += Executor_TradesUpdated;
-            }
-            else
-            {
-                backtester.OutputDataMode = TestDataSeriesFlags.Stream;
-                
-                backtester.OnChartUpdate += Backtester_OnChartUpdate;
-            }
-            
-            var adapter = new BacktesterAdapter(config, backtester);
-            var outputGroup = new OutputGroupViewModel(adapter, ChartControlModel.ChartWindowId.Value, this, mainSymbol,
-                ChartControlModel.IsCrosshairEnabled.Var);
-            ChartControlModel.OutputGroups.Add(outputGroup);
+            //var adapter = new BacktesterAdapter(config, backtester);
+            //var outputGroup = new OutputGroupViewModel(adapter, ChartControlModel.ChartWindowId.Value, this, mainSymbol,
+            //    ChartControlModel.IsCrosshairEnabled.Var);
+            //ChartControlModel.OutputGroups.Add(outputGroup);
 
             _actionIdSeed = 0;
 
             _postponedMarkers.Clear();
         }
 
-        public void OnStop(Backtester backtester)
+        public void OnStop()
         {
-            backtester.OnChartUpdate -= Backtester_OnChartUpdate;
-            backtester.Executor.SymbolRateUpdated -= Executor_SymbolRateUpdated;
-            backtester.Executor.TradesUpdated -= Executor_TradesUpdated;
         }
 
-        private void Backtester_OnChartUpdate(BarData bar, string symbol, DataSeriesUpdate.Types.UpdateAction action)
+        public async Task LoadMainChart(IEnumerable<BarData> bars, Feed.Types.Timeframe timeframe, IEnumerable<BaseTransactionModel> tradeHistory)
         {
-            if (action == DataSeriesUpdate.Types.UpdateAction.Append)
-            {
-                _barVector.AppendBarPart(bar);
-                ApplyPostponedMarkers();
-            }
-        }
+            _barVector = new ChartBarVectorWithMarkers(timeframe);
 
-        private void Executor_SymbolRateUpdated(IRateInfo update)
-        {
-            if (update.Symbol == _mainSymbol)
-            {
-                ChartControlModel.SetCurrentRate(update);
+            ChartControlModel.SetTimeframe(timeframe);
+            //ChartControlModel.SymbolInfo.Value = mainSymbol;
 
-                if (update is QuoteInfo)
+            await Task.Run(() =>
+            {
+                foreach (var bar in bars)
                 {
-                    var q = (QuoteInfo)update;
-                    _barVector.AppendQuote(q.Timestamp, q.Bid, 1);
-                }
-                else if (update is BarRateUpdate)
-                {
-                    var bar = ((BarRateUpdate)update).BidBar;
-                    if (bar != null)
-                        _barVector.AppendBarPart(bar);
+                    _barVector.AppendBarPart(bar);
                 }
 
-                ApplyPostponedMarkers();
-            }
+                var markers = new MarkerInfo[2];
+                foreach (var tradeReport in tradeHistory)
+                {
+                    var markerCnt = CreateMarkers(ref markers, _acctype, tradeReport);
+                    if (markerCnt == 1)
+                    {
+                        PlaceMarker(markers[0]);
+                    }
+                    else if (markerCnt == 2)
+                    {
+                        PlaceMarker(markers[0]);
+                        PlaceMarker(markers[1]);
+                    }
+                }
+            });
+
+            _mainSeries.DataSeries = _barVector.SciChartdata;
+            _markerSeries.DataSeries = _barVector.MarkersData;
         }
 
         public void Clear()
@@ -140,10 +127,11 @@ namespace TickTrader.BotTerminal
             ChartControlModel.OutputGroups.Clear();
         }
 
-        public void Append(AccountInfo.Types.Type acctype, TransactionReport trRep)
+
+        private int CreateMarkers(ref MarkerInfo[] markers, AccountInfo.Types.Type acctype, BaseTransactionModel trRep)
         {
             if (_visualizing || trRep.Symbol != _mainSymbol)
-                return;
+                return 0;
 
             var orderId = trRep.OrderId;
 
@@ -157,8 +145,10 @@ namespace TickTrader.BotTerminal
                     var openDescription = $"#{orderId} {trRep.Side} (open) {trRep.OpenQuantity} at price {openPrice}";
                     var closeDescription = $"#{orderId} {Revert(trRep.Side)} (close) {trRep.CloseQuantity} at price {closePrice}";
 
-                    AddMarker(new PosMarkerKey(orderId, "a"), trRep.OpenTime, trRep.Side == TransactionSide.Buy, openDescription);
-                    AddMarker(new PosMarkerKey(orderId, "b" + trRep.ActionId), trRep.CloseTime, trRep.Side == TransactionSide.Sell, closeDescription);
+                    markers[0] = new MarkerInfo(new PosMarkerKey(orderId, "a"), new UtcTicks(trRep.OpenTime), trRep.Side == TransactionSide.Buy, openDescription);
+                    markers[1] = new MarkerInfo(new PosMarkerKey(orderId, "b" + trRep.ActionId), new UtcTicks(trRep.CloseTime), trRep.Side == TransactionSide.Sell, closeDescription);
+
+                    return 2;
                 }
             }
             else if (acctype == AccountInfo.Types.Type.Net)
@@ -168,75 +158,79 @@ namespace TickTrader.BotTerminal
                     var digits = trRep.PriceDigits;
                     var openPrice = NumberFormat.FormatPrice(trRep.OpenPrice, digits);
                     var description = $"#{orderId} {trRep.Side} {trRep.OpenQuantity} at price {openPrice}";
-                    AddMarker(new PosMarkerKey(orderId, "f" + trRep.ActionId), trRep.OpenTime, trRep.Side == TransactionSide.Buy, description);
+                    markers[0] = new MarkerInfo(new PosMarkerKey(orderId, "f" + trRep.ActionId), new UtcTicks(trRep.OpenTime), trRep.Side == TransactionSide.Buy, description);
+
+                    return 1;
                 }
             }
+
+            return 0;
         }
 
         private static int _actionIdSeed;
 
-        private void Executor_TradesUpdated(TesterTradeTransaction tt)
-        {
-            _actionIdSeed++;
+        //private void Executor_TradesUpdated(TesterTradeTransaction tt)
+        //{
+        //    _actionIdSeed++;
 
-            if (_acctype == AccountInfo.Types.Type.Gross)
-            {
-                if (tt.OrderExecAction == OrderExecReport.Types.ExecAction.Filled
-                    || (tt.OrderExecAction == OrderExecReport.Types.ExecAction.Opened && tt.OrderUpdate.Type == OrderInfo.Types.Type.Position))
-                {
-                    if (tt.PositionEntityAction == OrderExecReport.Types.EntityAction.Added)
-                    {
-                        // partial fill
-                        var order = tt.PositionUpdate;
-                        var symbol = _symbolMap.GetOrDefault(order.Symbol);
-                        var lotSize = symbol?.LotSize ?? 1;
-                        var digits = symbol?.Digits ?? 5;
-                        var openPrice = NumberFormat.FormatPrice(order.Price, digits);
-                        var openDescription = $"#{order.Id} {order.Side} (open) {order.RequestedAmount/lotSize} {order.Symbol} at price {openPrice}";
+        //    if (_acctype == AccountInfo.Types.Type.Gross)
+        //    {
+        //        if (tt.OrderExecAction == OrderExecReport.Types.ExecAction.Filled
+        //            || (tt.OrderExecAction == OrderExecReport.Types.ExecAction.Opened && tt.OrderUpdate.Type == OrderInfo.Types.Type.Position))
+        //        {
+        //            if (tt.PositionEntityAction == OrderExecReport.Types.EntityAction.Added)
+        //            {
+        //                // partial fill
+        //                var order = tt.PositionUpdate;
+        //                var symbol = _symbolMap.GetOrDefault(order.Symbol);
+        //                var lotSize = symbol?.LotSize ?? 1;
+        //                var digits = symbol?.Digits ?? 5;
+        //                var openPrice = NumberFormat.FormatPrice(order.Price, digits);
+        //                var openDescription = $"#{order.Id} {order.Side} (open) {order.RequestedAmount / lotSize} {order.Symbol} at price {openPrice}";
 
-                        AddMarker(new PosMarkerKey(order.Id, "a" + _actionIdSeed), order.Created.ToDateTime(), order.Side == OrderInfo.Types.Side.Buy, openDescription);
-                    }
-                    else
-                    {
-                        // full fill or open
-                        var order = tt.OrderUpdate;
-                        var symbol = _symbolMap.GetOrDefault(order.Symbol);
-                        var lotSize = symbol?.LotSize ?? 1;
-                        var digits = symbol?.Digits ?? 5;
-                        var openPrice = NumberFormat.FormatPrice(order.Price, digits);
-                        var openDescription = $"#{order.Id} {order.Side} (open) {order.RequestedAmount/lotSize} {order.Symbol} at price {openPrice}";
+        //                AddMarker(new PosMarkerKey(order.Id, "a" + _actionIdSeed), order.Created, order.Side == OrderInfo.Types.Side.Buy, openDescription);
+        //            }
+        //            else
+        //            {
+        //                // full fill or open
+        //                var order = tt.OrderUpdate;
+        //                var symbol = _symbolMap.GetOrDefault(order.Symbol);
+        //                var lotSize = symbol?.LotSize ?? 1;
+        //                var digits = symbol?.Digits ?? 5;
+        //                var openPrice = NumberFormat.FormatPrice(order.Price, digits);
+        //                var openDescription = $"#{order.Id} {order.Side} (open) {order.RequestedAmount / lotSize} {order.Symbol} at price {openPrice}";
 
-                        AddMarker(new PosMarkerKey(order.Id, "b" + _actionIdSeed), order.Created.ToDateTime(), order.Side == OrderInfo.Types.Side.Buy, openDescription);
-                    }
-                }
+        //                AddMarker(new PosMarkerKey(order.Id, "b" + _actionIdSeed), order.Created, order.Side == OrderInfo.Types.Side.Buy, openDescription);
+        //            }
+        //        }
 
-                if (tt.PositionExecAction == OrderExecReport.Types.ExecAction.Closed)
-                {
-                    var order = tt.PositionUpdate;
-                    var symbol = _symbolMap.GetOrDefault(order.Symbol);
-                    var lotSize = symbol?.LotSize ?? 1;
-                    var digits = symbol?.Digits ?? 5;
-                    var closePrice = NumberFormat.FormatPrice(order.LastFillPrice, digits);
-                    var closeDescription = $"#{order.Id} {order.Side.Revert()} (close) {order.LastFillAmount/lotSize} {order.Symbol} at price {closePrice}";
+        //        if (tt.PositionExecAction == OrderExecReport.Types.ExecAction.Closed)
+        //        {
+        //            var order = tt.PositionUpdate;
+        //            var symbol = _symbolMap.GetOrDefault(order.Symbol);
+        //            var lotSize = symbol?.LotSize ?? 1;
+        //            var digits = symbol?.Digits ?? 5;
+        //            var closePrice = NumberFormat.FormatPrice(order.LastFillPrice, digits);
+        //            var closeDescription = $"#{order.Id} {order.Side.Revert()} (close) {order.LastFillAmount / lotSize} {order.Symbol} at price {closePrice}";
 
-                    AddMarker(new PosMarkerKey(order.Id, "c" + _actionIdSeed), order.Modified.ToDateTime(), order.Side == OrderInfo.Types.Side.Sell, closeDescription);
-                }
-            }
-            else if (_acctype == AccountInfo.Types.Type.Net)
-            {
-                if (tt.OrderExecAction == OrderExecReport.Types.ExecAction.Filled
-                    || (tt.OrderExecAction == OrderExecReport.Types.ExecAction.Opened && tt.NetPositionUpdate != null))
-                {
-                    var order = tt.OrderUpdate;
-                    var symbol = _symbolMap.GetOrDefault(order.Symbol);
-                    var digits = symbol?.Digits ?? 5;
-                    var lotSize = symbol?.LotSize ?? 1;
-                    var openPrice = NumberFormat.FormatPrice(order.LastFillPrice, digits);
-                    var description = $"#{order.Id} {order.Side} {order.LastFillAmount/lotSize} at price {openPrice}";
-                    AddMarker(new PosMarkerKey(order.Id, "f" + _actionIdSeed), order.Modified.ToDateTime(), order.Side == OrderInfo.Types.Side.Buy, description);
-                }
-            }
-        }
+        //            AddMarker(new PosMarkerKey(order.Id, "c" + _actionIdSeed), order.Modified, order.Side == OrderInfo.Types.Side.Sell, closeDescription);
+        //        }
+        //    }
+        //    else if (_acctype == AccountInfo.Types.Type.Net)
+        //    {
+        //        if (tt.OrderExecAction == OrderExecReport.Types.ExecAction.Filled
+        //            || (tt.OrderExecAction == OrderExecReport.Types.ExecAction.Opened && tt.NetPositionUpdate != null))
+        //        {
+        //            var order = tt.OrderUpdate;
+        //            var symbol = _symbolMap.GetOrDefault(order.Symbol);
+        //            var digits = symbol?.Digits ?? 5;
+        //            var lotSize = symbol?.LotSize ?? 1;
+        //            var openPrice = NumberFormat.FormatPrice(order.LastFillPrice, digits);
+        //            var description = $"#{order.Id} {order.Side} {order.LastFillAmount / lotSize} at price {openPrice}";
+        //            AddMarker(new PosMarkerKey(order.Id, "f" + _actionIdSeed), order.Modified, order.Side == OrderInfo.Types.Side.Buy, description);
+        //        }
+        //    }
+        //}
 
         private TransactionSide Revert(TransactionSide side)
         {
@@ -250,11 +244,12 @@ namespace TickTrader.BotTerminal
 
         private Queue<MarkerInfo> _postponedMarkers = new Queue<MarkerInfo>();
 
-        private void AddMarker(PosMarkerKey key, DateTime pointTime, bool isBuy, string description)
+        private void AddMarker(PosMarkerKey key, Timestamp pointTime, bool isBuy, string description)
         {
-            var markerInfo = new MarkerInfo(key, pointTime, isBuy, description);
+            var time = new UtcTicks(pointTime);
+            var markerInfo = new MarkerInfo(key, time, isBuy, description);
 
-            if (_barVector.Count == 0 || _barVector.Last().CloseTime < pointTime.ToTimestamp())
+            if (_barVector.Count == 0 || _barVector.Last().CloseTime < time)
                 _postponedMarkers.Enqueue(markerInfo);
             else
                 PlaceMarker(markerInfo);
@@ -264,13 +259,13 @@ namespace TickTrader.BotTerminal
         {
             if (_barVector.Count > 0)
             {
-                var timeEdge = _barVector.Last().CloseTime.ToDateTime();
+                var timeEdge = _barVector.Last().CloseTime;
 
                 while (_postponedMarkers.Count > 0)
                 {
                     var info = _postponedMarkers.Peek();
 
-                    if (info.Timestamp < timeEdge)
+                    if (info.Time < timeEdge)
                     {
                         _postponedMarkers.Dequeue();
                         PlaceMarker(info);
@@ -282,11 +277,9 @@ namespace TickTrader.BotTerminal
 
         private void PlaceMarker(MarkerInfo info)
         {
-            var index = _barVector.Ref.BinarySearch(info.Timestamp.ToTimestamp(), BinarySearchTypes.NearestHigher);
+            var index = _barVector.Ref.BinarySearch(info.Time, BinarySearchTypes.NearestHigher);
             if (index > 0)
             {
-                var bar = _barVector[index];
-
                 var existingMeta = _barVector.MarkersData.Metadata[index] as PositionMarkerMetadatda;
 
                 if (existingMeta != null)
@@ -317,16 +310,16 @@ namespace TickTrader.BotTerminal
 
         private struct MarkerInfo
         {
-            public MarkerInfo(PosMarkerKey key, DateTime time, bool isBuy, string description)
+            public MarkerInfo(PosMarkerKey key, UtcTicks time, bool isBuy, string description)
             {
                 Key = key;
-                Timestamp = time;
+                Time = time;
                 IsBuy = isBuy;
                 Description = description;
             }
 
             public PosMarkerKey Key { get; set; }
-            public DateTime Timestamp { get; set; }
+            public UtcTicks Time { get; set; }
             public bool IsBuy { get; set; }
             public string Description { get; set; }
         }

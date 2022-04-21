@@ -49,22 +49,22 @@ namespace TickTrader.BotTerminal
             try
             {
                 await workerTaskFactory();
-                Progress.Stop();
+                Progress.StopProgress();
                 noErrors = true;
             }
             catch (AggregateException ex)
             {
                 var fex = ex.FlattenAsPossible();
                 if (!(fex is TaskCanceledException))
-                    Progress.Stop(fex.Message);
+                    Progress.StopProgress(fex.Message);
             }
             catch (TaskCanceledException)
             {
-                Progress.Stop("Canceled.");
+                Progress.StopProgress("Canceled.");
             }
             catch (Exception ex)
             {
-                Progress.Stop(ex.Message);
+                Progress.StopProgress(ex.Message);
             }
 
             if (noErrors)

@@ -5,22 +5,23 @@ using NLog;
 using SciChart.Charting.Model.DataSeries;
 using System;
 using System.Collections.Generic;
-using System.IO.Compression;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Core;
+using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.Core.Lib;
-using System.Globalization;
 using TickTrader.Algo.Domain;
-using TickTrader.Algo.Backtester;
-using TickTrader.Algo.CoreV1;
+using TickTrader.FeedStorage.Api;
+
 
 namespace TickTrader.BotTerminal
 {
     internal class BacktesterViewModel : Conductor<Page>.Collection.OneActive, IWindowModel
     {
         private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
+        private readonly ISymbolCatalog _catalog;
 
         private AlgoEnvironment _env;
         private IShell _shell;
@@ -35,19 +36,20 @@ namespace TickTrader.BotTerminal
         private BoolProperty _isRunning;
         private BoolProperty _isVisualizing;
         private ITestExecController _tester;
-        private Dictionary<string, SymbolInfo> _testingSymbols;
+        private Dictionary<string, ISymbolInfo> _testingSymbols;
         private Property<EmulatorStates> _stateProp;
         private BoolProperty _pauseRequestedProp;
         private BoolProperty _resumeRequestedProp;
 
         private static readonly int[] SpeedToDelayMap = new int[] { 256, 128, 64, 32, 16, 8, 4, 2, 1, 0 };
 
-        public BacktesterViewModel(AlgoEnvironment env, TraderClientModel client, SymbolCatalog catalog, IShell shell, ProfileManager profile)
+        public BacktesterViewModel(AlgoEnvironment env, TraderClientModel client, ISymbolCatalog catalog, IShell shell, ProfileManager profile)
         {
             DisplayName = "Backtester";
 
             _env = env ?? throw new ArgumentNullException("env");
             _shell = shell ?? throw new ArgumentNullException("shell");
+            _catalog = catalog;
             _client = client;
 
             _hasDataToSave = _var.AddBoolProperty();
@@ -67,7 +69,7 @@ namespace TickTrader.BotTerminal
 
             SetupPage.PluginSelected += () =>
             {
-                OptimizationPage.SetPluign(SetupPage.SelectedPlugin.Value.Descriptor, SetupPage.PluginConfig);
+                OptimizationPage.SetPluign(SetupPage.SelectedPlugin.Value.Descriptor);
             };
 
             OptimizationResultsPage.ShowDetailsRequested += async r =>
@@ -82,7 +84,7 @@ namespace TickTrader.BotTerminal
 
             _var.TriggerOnChange(SetupPage.ModeProp, a =>
             {
-                OptimizationPage.IsVisible = a.New.Value == TesterModes.Optimization;
+                OptimizationPage.IsVisible = a.New.Value == BacktesterMode.Optimization;
             });
 
             InitExecControl();
@@ -121,10 +123,12 @@ namespace TickTrader.BotTerminal
         public BacktesterOptimizerViewModel OptimizationPage { get; }
         public OptimizationResultsPageViewModel OptimizationResultsPage { get; } = new OptimizationResultsPageViewModel();
 
-        private async Task DoEmulation(IActionObserver observer, CancellationToken cToken)
+        private async Task DoEmulation(IActionObserver observer)
         {
             try
             {
+                var cToken = observer.CancelationToken;
+
                 _isVisualizing.Clear();
                 ChartPage.Clear();
                 ResultsPage.Clear();
@@ -135,215 +139,146 @@ namespace TickTrader.BotTerminal
 
                 SetupPage.CheckDuplicateSymbols();
 
+                var config = new BacktesterConfig();
+                SetupPage.Apply(config);
+                config.Env.FeedCachePath = _catalog.OnlineCollection.StorageFolder;
+                config.Env.CustomFeedCachePath = _catalog.CustomCollection.StorageFolder;
+                config.Env.WorkingFolderPath = EnvService.Instance.AlgoWorkingFolder;
+
+                try
+                {
+                    config.Validate();
+                }
+                catch (Exception ex)
+                {
+                    observer.StopProgress($"Validation error: {ex.Message}");
+                    return;
+                }
+
+                var descriptorName = SetupPage.SelectedPlugin.Value.Descriptor.DisplayName;
+                var pathPrefix = System.IO.Path.Combine(EnvService.Instance.BacktestResultsFolder, descriptorName);
+                var configPath = PathHelper.GenerateUniqueFilePath(pathPrefix, ".zip");
+                config.Save(configPath);
+
                 _emulteFrom = DateTime.SpecifyKind(SetupPage.DateRange.From, DateTimeKind.Utc);
                 _emulateTo = DateTime.SpecifyKind(SetupPage.DateRange.To, DateTimeKind.Utc);
 
-                if (_emulteFrom == _emulateTo)
-                    throw new Exception("Zero range!");
-
-                await SetupPage.PrecacheData(observer, cToken, _emulteFrom, _emulateTo);
+                await SetupPage.PrecacheData(observer, _emulteFrom, _emulateTo);
 
                 cToken.ThrowIfCancellationRequested();
 
-                await SetupAndRunBacktester(observer, cToken);
+                string resultsPath = default;
+                try
+                {
+                    FireOnStart(SetupPage.MainSymbolSetup.SelectedSymbol.Value, config);
+                    resultsPath = await RunBacktester(observer, configPath, cToken);
+                }
+                finally
+                {
+                    FireOnStop(config);
+#if !DEBUG
+                    // Leave config outside results archive to debug backtester host if needed
+                    System.IO.File.Delete(configPath);
+#endif
+                }
+
+                try
+                {
+                    await LoadResults(observer, resultsPath);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, "Failed to load results");
+                    observer.StopProgress($"Can't load results: {ex.Message}");
+                }
             }
             catch (OperationCanceledException)
             {
-                observer.SetMessage("Canceled.");
+                observer.StopProgress("Canceled.");
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Error during emulation");
+                observer.StopProgress($"Emulation error: {ex.Message}");
             }
         }
 
-        private async Task SetupAndRunBacktester(IActionObserver observer, CancellationToken cToken)
+        private async Task<string> RunBacktester(IActionObserver observer, string configPath, CancellationToken cToken)
         {
-            var chartSymbol = SetupPage.MainSymbolSetup.SelectedSymbol.Value;
-            var chartTimeframe = SetupPage.MainSymbolSetup.SelectedTimeframe.Value;
-            var chartPriceLayer = Feed.Types.MarketSide.Bid;
+            //var progressMin = _emulteFrom.GetAbsoluteDay();
 
-            SetupPage.InitToken();
-
-            //var packageRef = _env.LocalAgent.Library.GetPackageRef(SelectedPlugin.Value.Info.Key.GetPackageKey());
-            //var pluginRef = _env.LocalAgent.Library.GetPluginRef(SetupPage.SelectedPlugin.Value.Key);
-            PluginDescriptor pDescriptor = null;
-            //var pluginSetupModel = new PluginSetupModel(pluginRef, this, this);
-
-            _descriptorCache = pDescriptor;
-
-            //if (PluginConfig != null)
-            //    pluginSetupModel.Load(PluginConfig);
-
-            // TODO: place correctly to avoid domain unload during backtester run
-            //packageRef.IncrementRef();
-            //packageRef.DecrementRef();
-
-            if (SetupPage.Mode == TesterModes.Optimization)
-                await DoOptimization(observer, cToken, pDescriptor, SetupPage.PluginConfig, chartSymbol, chartTimeframe, chartPriceLayer);
-            else
-                await DoBacktesting(observer, cToken, pDescriptor, SetupPage.PluginConfig, chartSymbol, chartTimeframe, chartPriceLayer);
-        }
-
-        private async Task DoBacktesting(IActionObserver observer, CancellationToken cToken, PluginDescriptor pDescriptor, PluginConfig pluginConfig,
-            SymbolData chartSymbol, Feed.Types.Timeframe chartTimeframe, Feed.Types.MarketSide chartPriceLayer)
-        {
-            var progressMin = _emulteFrom.GetAbsoluteDay();
-
-            observer.StartProgress(progressMin, _emulateTo.GetAbsoluteDay());
+            //observer.StartProgress(progressMin, _emulateTo.GetAbsoluteDay());
+            const int progressMax = 100;
+            observer.StartProgress(0, progressMax);
             observer.SetMessage("Emulating...");
 
-            using (var backtester = new Backtester(pluginConfig.Key, new DispatcherSync(), _emulteFrom, _emulateTo))
+            BacktesterRunner.Instance.BinDirPath = System.IO.Path.Combine(EnvService.Instance.AppFolder, "bin", "backtester");
+            BacktesterRunner.Instance.WorkDir = EnvService.Instance.BacktestResultsFolder;
+            using (var tester = await BacktesterRunner.Instance.NewInstance(configPath))
             {
-                OnStartTesting(backtester);
-
-                try
+                using (var reg = cToken.Register(() => tester.Stop()))
                 {
-                    PluginConfigLoader.ApplyConfig(backtester, pluginConfig, backtester.CommonSettings.MainSymbol, EnvService.Instance.AlgoWorkingFolder);
-
-                    backtester.Executor.LogUpdated += JournalPage.Append;
-                    backtester.Executor.TradeHistoryUpdated += Executor_TradeHistoryUpdated;
-
-                    if (SetupPage.Mode == TesterModes.Visualization)
-                    {
-                        _isVisualizing.Set();
-
-                        var delay = SpeedToDelayMap[SelectedSpeed.Value];
-                        backtester.SetExecDelay(delay);
-                        backtester.StreamExecReports = true;
-                    }
-
-                    Exception execError = null;
-
-                    System.Action updateProgressAction = () => observer.SetProgress(backtester.CurrentTimePoint?.GetAbsoluteDay() ?? progressMin);
-
-                    using (new UiUpdateTimer(updateProgressAction))
-                    {
-                        try
-                        {
-                            SetupPage.Apply(backtester, _emulteFrom, _emulateTo, _isVisualizing.Value);
-                            backtester.Feed.AddBarBuilder(chartSymbol.Name, chartTimeframe, chartPriceLayer);
-
-                            _testingSymbols = backtester.CommonSettings.Symbols;
-
-                            FireOnStart(chartSymbol, pluginConfig, backtester);
-
-                            _hasDataToSave.Set();
-
-                            await Task.Run(() => backtester.Run(cToken));
-
-                            observer.SetProgress(_emulateTo.GetAbsoluteDay());
-                        }
-                        catch (Exception ex)
-                        {
-                            execError = ex;
-                        }
-
-                        FireOnStop(backtester);
-                    }
-
-                    await LoadStats(observer, backtester);
-                    await LoadChartData(backtester, observer);
-
-                    if (SetupPage.SaveResultsToFile.Value)
-                        await SaveResults(pDescriptor, pluginConfig, observer);
-
-                    if (execError != null)
-                    {
-                        if (execError is AlgoOperationCanceledException)
-                            observer.SetMessage("Canceled by user!");
-                        else
-                            throw execError; //observer.SetMessage(execError.Message);
-                    }
-                    else
-                        observer.SetMessage("Done.");
+                    tester.OnProgressUpdate.Subscribe(update => Execute.OnUIThread(() => observer.SetProgress(progressMax * update.Current / update.Total)));
+                    await tester.Start();
+                    await tester.AwaitStop();
                 }
-                finally
-                {
-                    OnStopTesting();
-                    //backtester = null;
-                }
+                return tester.GetResultsPath();
             }
         }
 
-        private async Task DoOptimization(IActionObserver observer, CancellationToken cToken, PluginDescriptor pDescriptor, PluginConfig pluginConfig,
-            SymbolData chartSymbol, Feed.Types.Timeframe chartTimeframe, Feed.Types.MarketSide chartPriceLayer)
+        private async Task LoadResults(IActionObserver observer, string resultsPath)
         {
-            using (var optimizer = new Optimizer(pluginConfig.Key, new DispatcherSync()))
+            observer.SetMessage("Loading results...");
+
+            var results = await Task.Run(() => BacktesterResults.Load(resultsPath));
+
+            var execStatus = results.ExecStatus;
+            if (execStatus.ResultsNotCorrupted)
             {
-                OnStartTesting(optimizer);
+                var config = results.GetConfig();
 
-                try
-                {
-                    PluginConfigLoader.ApplyConfig(optimizer, pluginConfig, optimizer.CommonSettings.MainSymbol, EnvService.Instance.AlgoWorkingFolder);
+                _testingSymbols = config.TradeServer.Symbols.Values.ToDictionary(s => s.Name, v => (ISymbolInfo)v);
 
-                    Exception execError = null;
+                await LoadStats(observer, results);
+                await LoadJournal(observer, results);
+                var reports = await LoadTradeHistory(observer, results);
+                await LoadChartData(config, results, reports, observer);
+                TradeHistoryPage.LoadTradeHistory(reports);
+            }
 
-                    try
-                    {
-                        SetupPage.Apply(optimizer, _emulteFrom, _emulateTo);
+            if (execStatus.HasError)
+                observer.StopProgress(execStatus.ToString());
+            else
+                observer.SetMessage(execStatus.ToString());
+        }
 
-                        optimizer.Feed.AddBarBuilder(chartSymbol.Name, chartTimeframe, chartPriceLayer);
-
-                        _testingSymbols = optimizer.CommonSettings.Symbols;
-
-                        // setup params
-                        OptimizationPage.Apply(optimizer);
-
-                        FireOnStart(optimizer);
-
-                        _hasDataToSave.Set();
-
-                        var maxProgress = optimizer.MaxCasesNo;
-
-                        observer.StartProgress(0, maxProgress);
-                        observer.SetMessage(GetOptimizationProgressMessage(maxProgress, 0));
-
-                        Action<OptCaseReport, long> repHandler = (r, cl) =>
-                        {
-                            var progress = maxProgress - cl;
-                            observer.SetProgress(progress);
-                            observer.SetMessage(GetOptimizationProgressMessage(maxProgress, progress));
-                            OptimizationResultsPage.Update(r);
-                        };
-
-                        optimizer.CaseCompleted += repHandler;
-
-                        try
-                        {
-                            await Task.Run(() => optimizer.Run(cToken));
-                        }
-                        finally
-                        {
-                            optimizer.CaseCompleted -= repHandler;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        execError = ex;
-                    }
-
-                    FireOnStop(optimizer);
-
-                    if (SetupPage.SaveResultsToFile.Value)
-                        await OptimizationResultsPage.SaveReportAsync(pDescriptor, observer);
-
-                    if (execError != null)
-                    {
-                        if (execError is AlgoOperationCanceledException)
-                            observer.SetMessage("Canceled by user!");
-                        else
-                            throw execError; //observer.SetMessage(execError.Message);
-                    }
-                    else
-                        observer.SetMessage("Done.");
-                }
-                finally
-                {
-                    OnStopTesting();
-                }
+        private void FireOnStart(ISymbolData mainSymbol, BacktesterConfig config)
+        {
+            if (config.Core.Mode == BacktesterMode.Backtesting)
+            {
+                FireOnStartBacktesting(mainSymbol, config);
+            }
+            else if (config.Core.Mode == BacktesterMode.Optimization)
+            {
+                FireOnStartOptimizing();
             }
         }
 
-        private void FireOnStart(SymbolData mainSymbol, PluginConfig config, Backtester tester)
+        private void FireOnStop(BacktesterConfig config)
         {
-            var symbols = SetupPage.FeedSymbols.Select(ss => ss.SelectedSymbol.Value.InfoEntity).ToList();
+            if (config.Core.Mode == BacktesterMode.Backtesting)
+            {
+                FireOnStopBacktesting();
+            }
+            else if (config.Core.Mode == BacktesterMode.Optimization)
+            {
+                FireOnStopOptimizing();
+            }
+        }
+
+        private void FireOnStartBacktesting(ISymbolData mainSymbol, BacktesterConfig config)
+        {
+            var symbols = SetupPage.FeedSymbols.Select(ss => ss.SelectedSymbol.Value.Info).ToList();
             var currecnies = _client.Currencies.Snapshot.Values.ToList();
 
             JournalPage.IsVisible = true;
@@ -351,11 +286,11 @@ namespace TickTrader.BotTerminal
             TradeHistoryPage.IsVisible = true;
             ResultsPage.IsVisible = true;
 
-            ChartPage.OnStart(IsVisualizing.Value, mainSymbol.InfoEntity, config, tester, symbols);
+            ChartPage.OnStart(IsVisualizing.Value, new SymbolInfo(mainSymbol.Info), config, symbols);
             if (IsVisualizing.Value)
             {
                 TradesPage.IsVisible = true;
-                TradesPage.Start(tester, currecnies, symbols);
+                TradesPage.Start(config, currecnies, symbols);
             }
             else
                 TradesPage.IsVisible = false;
@@ -363,14 +298,14 @@ namespace TickTrader.BotTerminal
             OptimizationResultsPage.Hide();
         }
 
-        private void FireOnStop(Backtester tester)
+        private void FireOnStopBacktesting()
         {
-            ChartPage.OnStop(tester);
+            ChartPage.OnStop();
             if (IsVisualizing.Value)
-                TradesPage.Stop(tester);
+                TradesPage.Stop();
         }
 
-        private void FireOnStart(Optimizer tester)
+        private void FireOnStartOptimizing()
         {
             JournalPage.IsVisible = false;
             ChartPage.IsVisible = false;
@@ -378,53 +313,85 @@ namespace TickTrader.BotTerminal
             TradeHistoryPage.IsVisible = false;
             ResultsPage.IsVisible = false;
 
-            OptimizationResultsPage.Start(OptimizationPage.GetSelectedParams(), tester);
+            OptimizationResultsPage.Start(OptimizationPage.GetSelectedParams());
         }
 
-        private void FireOnStop(Optimizer tester)
+        private void FireOnStopOptimizing()
         {
-            OptimizationResultsPage.Stop(tester);
+            OptimizationResultsPage.Stop();
         }
 
-        private void Executor_TradeHistoryUpdated(TradeReportInfo record)
+        private async Task LoadJournal(IActionObserver observer, BacktesterResults results)
         {
-            var currencies = _client.Currencies;
-            var symbols = _testingSymbols.Select(kv => kv.Value).ToDictionary(m => m.Name);
+            observer.SetMessage("Loading journal...");
 
+            await JournalPage.LoadJournal(results);
+
+            //await Task.Run(() =>
+            //{
+            //foreach (var record in results.Journal)
+            //{
+            //    JournalPage.Append(record);
+            //}
+            //});
+        }
+
+        private async Task<List<BaseTransactionModel>> LoadTradeHistory(IActionObserver observer, BacktesterResults results)
+        {
+            observer.SetMessage("Loading trade history...");
+
+            var tradeHistory = new List<BaseTransactionModel>(results.TradeHistory.Count);
             var accType = SetupPage.Settings.AccType;
-            var trRep = TransactionReport.Create(accType, record, 5, symbols.GetOrDefault(record.Symbol));
-            TradeHistoryPage.Append(trRep);
-            ChartPage.Append(accType, trRep);
+
+            await Task.Run(() =>
+            {
+                foreach (var record in results.TradeHistory)
+                {
+                    var trRep = BaseTransactionModel.Create(accType, record, 5, _testingSymbols.GetOrDefault(record.Symbol));
+                    tradeHistory.Add(trRep);
+                }
+            });
+
+            return tradeHistory;
         }
 
-        private async Task LoadStats(IActionObserver observer, Backtester tester)
+        private void AddTradeHistoryReport(TradeReportInfo record)
+        {
+            var accType = SetupPage.Settings.AccType;
+            var trRep = BaseTransactionModel.Create(accType, record, 5, _testingSymbols.GetOrDefault(record.Symbol));
+            TradeHistoryPage.Append(trRep);
+        }
+
+        private async Task LoadStats(IActionObserver observer, BacktesterResults results)
         {
             observer.SetMessage("Loading testing result data...");
 
-            var statProperties = await Task.Factory.StartNew(() => tester.GetStats());
-            ResultsPage.ShowReport(statProperties, tester.PluginInfo, null);
+            ResultsPage.ShowReport(results.Stats, results.PluginInfo, null);
         }
 
-        private async Task LoadChartData(Backtester backtester, IActionObserver observer)
+        private async Task LoadChartData(BacktesterConfig config, BacktesterResults results, IEnumerable<BaseTransactionModel> tradeHistory, IActionObserver observer)
         {
-            var mainSymbol = backtester.CommonSettings.MainSymbol;
-            var timeFrame = backtester.CommonSettings.MainTimeframe;
-            var count = backtester.GetSymbolHistoryBarCount(mainSymbol);
+            var mainSymbol = config.Core.MainSymbol;
+            var mainTimeFrame = config.Core.MainTimeframe;
+            //var count = results.Feed[mainSymbol].Count;
 
-            timeFrame = BarExtentions.AdjustTimeframe(timeFrame, count, 500, out count);
+            //timeFrame = BarExtentions.AdjustTimeframe(timeFrame, count, 500, out count);
 
-            //observer.SetMessage("Loading feed chart data ...");
-            //var feedChartData = await LoadBarSeriesAsync(tester.GetMainSymbolHistory(timeFrame), observer, timeFrame, count);
+            if (results.Feed.TryGetValue(mainSymbol, out var mainBars))
+            {
+                observer.SetMessage("Loading feed chart data ...");
+                await ChartPage.LoadMainChart(mainBars, mainTimeFrame, tradeHistory);
+            }
 
-            if (backtester.PluginInfo.IsTradeBot)
+            if (results.PluginInfo.IsTradeBot)
             {
                 observer.SetMessage("Loading equity chart data...");
-                var equityChartData = await LoadBarSeriesAsync(backtester.GetEquityHistory(timeFrame), observer, timeFrame, count);
+                var equityChartData = await LoadBarSeriesAsync(results.Equity);
 
                 ResultsPage.AddEquityChart(equityChartData);
 
                 observer.SetMessage("Loading margin chart data...");
-                var marginChartData = await LoadBarSeriesAsync(backtester.GetMarginHistory(timeFrame), observer, timeFrame, count);
+                var marginChartData = await LoadBarSeriesAsync(results.Margin);
 
                 ResultsPage.AddMarginChart(marginChartData);
             }
@@ -434,21 +401,17 @@ namespace TickTrader.BotTerminal
             //ChartPage.SetMarginSeries(marginChartData);
         }
 
-        private Task<OhlcDataSeries<DateTime, double>> LoadBarSeriesAsync(IPagedEnumerator<BarData> src, IActionObserver observer, Feed.Types.Timeframe timeFrame, int totalCount)
+        private Task<OhlcDataSeries<DateTime, double>> LoadBarSeriesAsync(IEnumerable<BarData> src)
         {
-            observer.StartProgress(0, totalCount);
-
             return Task.Run(() =>
             {
                 var chartData = new OhlcDataSeries<DateTime, double>();
 
-                foreach (var bar in src.JoinPages(i => observer.SetProgress(i)))
+                foreach (var bar in src)
                 {
                     if (!double.IsNaN(bar.Open))
-                        chartData.Append(bar.OpenTime.ToDateTime(), bar.Open, bar.High, bar.Low, bar.Close);
+                        chartData.Append(bar.OpenTime.ToUtcDateTime(), bar.Open, bar.High, bar.Low, bar.Close);
                 }
-
-                observer.SetProgress(totalCount);
 
                 return chartData;
             });
@@ -461,7 +424,7 @@ namespace TickTrader.BotTerminal
             foreach (var bar in bars)
             {
                 if (!double.IsNaN(bar.Open))
-                    chartData.Append(bar.OpenTime.ToDateTime(), bar.Open, bar.High, bar.Low, bar.Close);
+                    chartData.Append(bar.OpenTime.ToUtcDateTime(), bar.Open, bar.High, bar.Low, bar.Close);
             }
 
             return chartData;
@@ -554,82 +517,6 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        private void OnStartTesting(ITestExecController tester)
-        {
-            _tester = tester;
-            _tester.StateChanged += _backtester_StateChanged;
-            _tester.ErrorOccurred += Executor_ErrorOccurred;
-        }
-
-        private void OnStopTesting()
-        {
-            _tester.StateChanged -= _backtester_StateChanged;
-            _tester.ErrorOccurred -= Executor_ErrorOccurred;
-            _stateProp.Value = EmulatorStates.Stopped;
-            _tester = null;
-        }
-
-        private void _backtester_StateChanged(EmulatorStates state)
-        {
-            _stateProp.Value = state;
-        }
-
-        private void Executor_ErrorOccurred(Exception ex)
-        {
-            _logger.Error(ex, "Error occurred in backtester!");
-        }
-
         #endregion
-
-        #region Results saving
-
-        private async Task SaveResults(PluginDescriptor pDescriptor, PluginConfig pluginConfig, IActionObserver observer)
-        {
-            var fileName = pDescriptor.DisplayName + " " + DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss", CultureInfo.InvariantCulture) + ".zip";
-            var filePath = System.IO.Path.Combine(EnvService.Instance.BacktestResultsFolder, fileName);
-
-            using (var stream = System.IO.File.Open(filePath, System.IO.FileMode.Create, System.IO.FileAccess.Write, System.IO.FileShare.None))
-            {
-                using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Create))
-                {
-                    var jounralEntry = archive.CreateEntry("journal.txt", CompressionLevel.Optimal);
-
-                    using (var entryStream = jounralEntry.Open())
-                        await JournalPage.SaveToFile(entryStream, observer);
-
-                    var tradeReportsEntry = archive.CreateEntry("trades.csv", CompressionLevel.Optimal);
-                    using (var entryStream = tradeReportsEntry.Open())
-                        await TradeHistoryPage.SaveAsCsv(entryStream, observer);
-
-                    observer.SetMessage("Saving report...");
-
-                    var summaryEntry = archive.CreateEntry("report.txt", CompressionLevel.Optimal);
-                    using (var entryStream = summaryEntry.Open())
-                        await Task.Run(() => ResultsPage.SaveAsText(entryStream));
-
-                    var setupEntry = archive.CreateEntry("setup.txt", CompressionLevel.Optimal);
-                    using (var entryStream = setupEntry.Open())
-                        await Task.Run(() => SetupPage.SaveTestSetupAsText(pDescriptor, pluginConfig, entryStream, _emulteFrom, _emulateTo));
-
-                    if (pDescriptor.IsTradeBot)
-                    {
-                        var equityEntry = archive.CreateEntry("equity.csv", CompressionLevel.Optimal);
-                        using (var entryStream = equityEntry.Open())
-                            await Task.Run(() => ResultsPage.SaveEquityCsv(entryStream, observer));
-
-                        var marginEntry = archive.CreateEntry("margin.csv", CompressionLevel.Optimal);
-                        using (var entryStream = marginEntry.Open())
-                            await Task.Run(() => ResultsPage.SaveMarginCsv(entryStream, observer));
-                    }
-                }
-            }
-        }
-
-        #endregion
-
-        private string GetOptimizationProgressMessage(long max, long progress)
-        {
-            return string.Format("Optimizing... {0}/{1}", progress, max);
-        }
     }
 }

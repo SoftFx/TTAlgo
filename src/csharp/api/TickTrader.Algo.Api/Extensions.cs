@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Api
 {
     public static class Extensions
     {
+        public static bool IsBuy(this OrderSide side) => side == OrderSide.Buy;
+
+        public static bool IsSell(this OrderSide side) => side == OrderSide.Sell;
+
+        public static OrderSide Inversed(this OrderSide side) => side.IsBuy() ? OrderSide.Sell : OrderSide.Buy;
+
         public static IEnumerable<T> TakeExact<T>(this IEnumerable<T> src, int count)
         {
             using (var e = src.GetEnumerator())

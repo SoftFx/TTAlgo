@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using TickTrader.Algo.Domain;
@@ -10,7 +9,7 @@ namespace TickTrader.Algo.Indicators.Tests.Utility
     {
         public const long QuoteParamsSize = 48;
 
-        public static readonly DateTime StartDate = DateTime.Parse("1970.01.01 00:00:00");
+        public static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         public static List<BarData> ReadQuotes(string path)
         {
@@ -27,9 +26,9 @@ namespace TickTrader.Algo.Indicators.Tests.Utility
                     {
                         while (true)
                         {
-                            var bar = new BarData
+                            var time = new UtcTicks(UnixEpoch.AddSeconds(reader.ReadInt64()));
+                            var bar = new BarData(time, time)
                             {
-                                OpenTime = new Timestamp {Seconds = reader.ReadInt64() },
                                 Open = reader.ReadDouble(),
                                 High = reader.ReadDouble(),
                                 Low = reader.ReadDouble(),

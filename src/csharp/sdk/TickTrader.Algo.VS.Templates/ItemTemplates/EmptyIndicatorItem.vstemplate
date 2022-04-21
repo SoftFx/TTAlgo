@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<VSTemplate Version="3.0.0" Type="Item" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005" xmlns:sdk="http://schemas.microsoft.com/developer/vstemplate-sdkextension/2010">
+  <TemplateData>
+    <Name>Empty Indicator</Name>
+    <Description>Item template for TTAlgo indicator</Description>
+    <Icon>TTAlgoLogo64.ico</Icon>
+    <ProjectType>CSharp</ProjectType>
+    <SortOrder>10</SortOrder>
+    <TemplateID>TickTrader.Algo.VSTemplate.EmptyIndicatorItem.CSharp</TemplateID>
+    <TemplateGroupID>TickTrader.Algo.VSTemplate.EmptyIndicatorItem</TemplateGroupID>
+    <DefaultName>Indicator.cs</DefaultName>
+  </TemplateData>
+  <TemplateContent>
+    <ProjectItem ReplaceParameters="true" TargetFileName="$fileinputname$.cs">EmptyIndicator.cs</ProjectItem>
+  </TemplateContent>
+</VSTemplate>

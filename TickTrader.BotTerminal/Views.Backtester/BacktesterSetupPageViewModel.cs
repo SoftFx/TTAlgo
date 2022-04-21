@@ -6,15 +6,16 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Backtester;
+using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Domain;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.ServerControl;
+using TickTrader.FeedStorage;
+using TickTrader.FeedStorage.Api;
 
 namespace TickTrader.BotTerminal
 {
@@ -23,7 +24,7 @@ namespace TickTrader.BotTerminal
         private readonly VarContext _var = new VarContext();
         private readonly TraderClientModel _client;
         private readonly AlgoEnvironment _env;
-        private SymbolCatalog _catalog;
+        private ISymbolCatalog _catalog;
         private WindowManager _localWnd;
         private readonly BoolProperty _isDateRangeValid;
         private readonly BoolProperty _allSymbolsValid;
@@ -32,9 +33,9 @@ namespace TickTrader.BotTerminal
         private readonly IReadOnlyList<ISetupSymbolInfo> _observableSymbolTokens;
         private readonly IVarSet<SymbolKey, ISetupSymbolInfo> _symbolTokens;
         private BacktesterPluginSetupViewModel _openedPluginSetup;
-        private readonly OptionalItem<TesterModes> _optModeItem;
+        private readonly OptionalItem<BacktesterMode> _optModeItem;
 
-        public BacktesterSetupPageViewModel(TraderClientModel client, SymbolCatalog catalog, AlgoEnvironment env, BoolVar isRunning)
+        public BacktesterSetupPageViewModel(TraderClientModel client, ISymbolCatalog catalog, AlgoEnvironment env, BoolVar isRunning)
         {
             DisplayName = "Setup";
 
@@ -55,8 +56,6 @@ namespace TickTrader.BotTerminal
             DateRange = new DateRangeSelectionViewModel(false);
             IsUpdatingRange = new BoolProperty();
             _isDateRangeValid = new BoolProperty();
-            MainTimeFrame = new Property<Feed.Types.Timeframe>();
-            MainTimeFrame.Value = Feed.Types.Timeframe.M1;
 
             SaveResultsToFile = new BoolProperty();
             SaveResultsToFile.Set();
@@ -71,7 +70,7 @@ namespace TickTrader.BotTerminal
             AvailableModels = _var.AddProperty<List<Feed.Types.Timeframe>>();
             SelectedModel = _var.AddProperty<Feed.Types.Timeframe>(Feed.Types.Timeframe.M1);
 
-            ModeProp = _var.AddProperty<OptionalItem<TesterModes>>();
+            ModeProp = _var.AddProperty<OptionalItem<BacktesterMode>>();
             PluginErrorProp = _var.AddProperty<string>();
 
             SelectedPlugin = new Property<AlgoPluginViewModel>();
@@ -96,17 +95,19 @@ namespace TickTrader.BotTerminal
             var predefinedSymbolTokens = new VarDictionary<SymbolKey, ISetupSymbolInfo>();
             predefinedSymbolTokens.Add(_mainSymbolToken.GetKey(), _mainSymbolToken);
 
-            var existingSymbolTokens = _catalog.AllSymbols.Select((k, s) => (ISetupSymbolInfo)s.ToSymbolToken());
-            _symbolTokens = VarCollection.Combine(predefinedSymbolTokens, existingSymbolTokens);
+            var existingSymbolTokens = _catalog.AllSymbols.Select(s => s.ToKey()).ToList();
+            existingSymbolTokens.AddRange(predefinedSymbolTokens.Values);
 
-            var sortedSymbolTokens = _symbolTokens.OrderBy((k, v) => k, new SymbolKeyComparer());
-            _observableSymbolTokens = sortedSymbolTokens.AsObservable();
+            // _symbolTokens = VarCollection.Combine(predefinedSymbolTokens, existingSymbolTokens);
 
-            Modes = new List<OptionalItem<TesterModes>>
+            var sortedSymbolTokens = existingSymbolTokens.OrderBy(u => u, new SetupSymbolInfoComparer()).ToList();
+            _observableSymbolTokens = sortedSymbolTokens.AsReadOnly();
+
+            Modes = new List<OptionalItem<BacktesterMode>>
             {
-                new OptionalItem<TesterModes>(TesterModes.Backtesting),
-                new OptionalItem<TesterModes>(TesterModes.Visualization),
-                new OptionalItem<TesterModes>(TesterModes.Optimization)
+                new OptionalItem<BacktesterMode>(BacktesterMode.Backtesting),
+                new OptionalItem<BacktesterMode>(BacktesterMode.Visualization),
+                new OptionalItem<BacktesterMode>(BacktesterMode.Optimization)
             };
             _optModeItem = Modes.Last();
             ModeProp.Value = Modes[0];
@@ -133,12 +134,14 @@ namespace TickTrader.BotTerminal
 
             _var.TriggerOnChange(MainSymbolSetup.SelectedTimeframe, a =>
             {
-                AvailableModels.Value = EnumHelper.AllValues<Feed.Types.Timeframe>().Where(t => t >= a.New && t != Feed.Types.Timeframe.TicksLevel2).ToList();
+                var data = EnumHelper.AllValues<Feed.Types.Timeframe>().Where(t => t <= a.New).ToList();
+                data.Add(Feed.Types.Timeframe.Ticks);
+                AvailableModels.Value = data;
 
                 if (_openedPluginSetup != null)
                     _openedPluginSetup.Setup.SelectedTimeFrame = a.New.ToApi();
 
-                if (SelectedModel.Value < a.New)
+                if (SelectedModel.Value > a.New && SelectedModel.Value != Feed.Types.Timeframe.Ticks)
                     SelectedModel.Value = a.New;
             });
 
@@ -149,7 +152,7 @@ namespace TickTrader.BotTerminal
                     _mainSymbolToken.Id = a.New.Name;
 
                     if (_openedPluginSetup != null)
-                        _openedPluginSetup.Setup.MainSymbol = a.New.ToSymbolToken();
+                        _openedPluginSetup.Setup.MainSymbol = a.New.Key.ToKey();
 
                     MainSymbolShadowSetup.SelectedSymbolName.Value = a.New.Name;
                 }
@@ -171,16 +174,15 @@ namespace TickTrader.BotTerminal
         public Property<Feed.Types.Timeframe> SelectedModel { get; private set; }
         public Property<AlgoPluginViewModel> SelectedPlugin { get; private set; }
         public Property<string> PluginErrorProp { get; }
-        public Property<Feed.Types.Timeframe> MainTimeFrame { get; private set; }
         public BacktesterSymbolSetupViewModel MainSymbolSetup { get; private set; }
         public BacktesterSymbolSetupViewModel MainSymbolShadowSetup { get; private set; }
         public PluginConfig PluginConfig { get; private set; }
         //public PluginConfig PluginConfig { get; private set; }
         public Property<string> TradeSettingsSummary { get; private set; }
         //public BoolProperty IsVisualizationEnabled { get; }
-        public List<OptionalItem<TesterModes>> Modes { get; }
-        public Property<OptionalItem<TesterModes>> ModeProp { get; private set; }
-        public TesterModes Mode => ModeProp.Value.Value;
+        public List<OptionalItem<BacktesterMode>> Modes { get; }
+        public Property<OptionalItem<BacktesterMode>> ModeProp { get; private set; }
+        public BacktesterMode Mode => ModeProp.Value.Value;
         public BoolProperty SaveResultsToFile { get; }
         public BoolVar IsPluginSelected { get; }
         public BoolVar IsTradeBotSelected { get; }
@@ -203,12 +205,12 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public async Task PrecacheData(IActionObserver observer, CancellationToken cToken, DateTime from, DateTime to)
+        public async Task PrecacheData(IActionObserver observer, DateTime from, DateTime to)
         {
-            await MainSymbolSetup.PrecacheData(observer, cToken, from, to, SelectedModel.Value);
+            await MainSymbolSetup.PrecacheData(observer, from, to, SelectedModel.Value);
 
             foreach (var symbolSetup in FeedSymbols)
-                await symbolSetup.PrecacheData(observer, cToken, from, to);
+                await symbolSetup.PrecacheData(observer, from, to);
         }
 
         public void InitToken()
@@ -217,104 +219,51 @@ namespace TickTrader.BotTerminal
             _mainSymbolToken.Id = mainSymbol.Name;
         }
 
-        public void Apply(Backtester backtester, DateTime from, DateTime to, bool isVisualizing)
+        public void Apply(BacktesterConfig config)
         {
-            MainSymbolSetup.Apply(backtester, from, to, SelectedModel.Value, isVisualizing);
+            config.Core.Mode = Mode;
+            config.Core.EmulateFrom = DateTime.SpecifyKind(DateRange.From, DateTimeKind.Utc);
+            config.Core.EmulateTo = DateTime.SpecifyKind(DateRange.To, DateTimeKind.Utc);
+            Settings.Apply(config);
+
+            var selectedPlugin = SelectedPlugin.Value;
+            config.Env.PackagePath = selectedPlugin.PackageInfo.Identity.FilePath;
+            config.SetPluginConfig(PluginConfig ?? CreateDefaultPluginConfig());
+
+            config.Core.MainSymbol = MainSymbolSetup.SelectedSymbol.Value.Name;
+            config.Core.MainTimeframe = MainSymbolSetup.SelectedTimeframe.Value;
+            config.Core.ModelTimeframe = SelectedModel.Value;
 
             foreach (var symbolSetup in FeedSymbols)
-                symbolSetup.Apply(backtester, from, to, isVisualizing);
-
-            foreach (var rec in _client.Currencies.Snapshot)
-                backtester.CommonSettings.Currencies.Add(rec.Key, rec.Value);
-
-            Settings.Apply(backtester);
-        }
-
-        public void Apply(Optimizer optimizer, DateTime from, DateTime to)
-        {
-            MainSymbolSetup.Apply(optimizer, from, to, SelectedModel.Value);
-
-            foreach (var symbolSetup in FeedSymbols)
-                symbolSetup.Apply(optimizer, from, to);
-
-            foreach (var rec in _client.Currencies.Snapshot)
-                optimizer.CommonSettings.Currencies.Add(rec.Key, rec.Value);
-
-            Settings.Apply(optimizer.CommonSettings);
-        }
-
-        #region Saving Results
-
-        public void SaveTestSetupAsText(PluginDescriptor pDescriptor, PluginConfig config, System.IO.Stream stream, DateTime from, DateTime to)
-        {
-            using (var writer = new System.IO.StreamWriter(stream))
             {
-                writer.WriteLine(FeedSetupToText(from, to));
-                writer.WriteLine(TradeSetupToText());
-                writer.WriteLine(PluginSetupToText(pDescriptor, config, false));
+                var smbData = symbolSetup.SelectedSymbol.Value;
+                var symbolName = smbData.Name;
+                var smbKey = new FeedCacheKey(symbolName, symbolSetup.SelectedTimeframe.Value, smbData.Origin).FullInfo;
+
+                if (config.Core.FeedConfig.ContainsKey(symbolName))
+                    throw new ArgumentException("Duplicate symbol");
+
+                config.Core.FeedConfig.Add(symbolName, smbKey);
+                config.TradeServer.Symbols.Add(symbolName, CustomSymbolInfo.ToData(smbData.Info));
+            }
+
+            foreach (var currency in _client.Currencies.Snapshot)
+            {
+                var c = CustomCurrency.FromAlgo(currency.Value);
+                config.TradeServer.Currencies.Add(c.Name, c);
             }
         }
 
-        private string FeedSetupToText(DateTime from, DateTime to)
+
+        private PluginConfig CreateDefaultPluginConfig()
         {
-            var writer = new StringBuilder();
-
-            writer.AppendLine("Main symbol: " + MainSymbolSetup.AsText());
-            writer.AppendLine("Model: based on " + SelectedModel.Value);
-
-            writer.AppendLine("Symbols data feed: " + MainSymbolSetup.AsText());
-            foreach (var addSymbols in FeedSymbols)
-                writer.AppendLine("+Symbol " + addSymbols.AsText());
-
-            writer.AppendFormat("Period: {0} to {1}", from.ToShortDateString(), to.ToShortDateString());
-
-            return writer.ToString();
+            var setup = new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.PluginInfo, this, this.GetSetupContextInfo());
+            setup.Setup.SelectedModel.Value = SelectedModel.Value.ToApi();
+            setup.Setup.MainSymbol = MainSymbolSetup.SelectedSymbol.Value.Key.ToKey();
+            setup.Setup.SelectedTimeFrame = MainSymbolSetup.SelectedTimeframe.Value.ToApi();
+            return setup.GetConfig();
         }
 
-        private string TradeSetupToText()
-        {
-            return Settings.ToText(false);
-        }
-
-        private string PluginSetupToText(PluginDescriptor pDescriptor, PluginConfig config, bool compact)
-        {
-            var writer = new StringBuilder();
-
-            if (pDescriptor.IsIndicator)
-                writer.AppendFormat("Indicator: {0} v{1}", pDescriptor.DisplayName, pDescriptor.Version).AppendLine();
-            else if (pDescriptor.IsTradeBot)
-                writer.AppendFormat("Trade Bot: {0} v{1}", pDescriptor.DisplayName, pDescriptor.Version).AppendLine();
-
-            //int count = 0;
-            //foreach (var param in setup.Parameters)
-            //{
-            //    if (compact && count > 0)
-            //        writer.Append(", ");
-            //    writer.AppendFormat("{0}={1}", param.DisplayName, param.GetQuotedValue());
-            //    if (!compact)
-            //        writer.AppendLine();
-            //    count++;
-            //}
-
-            //foreach (var input in setup.Inputs)
-            //{
-            //    if (compact)
-            //        writer.Append(' ');
-            //    writer.AppendFormat("{0} = {1}", input.DisplayName, input.ValueAsText);
-            //    if (!compact)
-            //        writer.AppendLine();
-            //}
-
-            return writer.ToString();
-        }
-
-        #endregion
-
-        [Conditional("DEBUG")]
-        public void PrintCacheData()
-        {
-            MainSymbolSetup.PrintCacheData(SelectedModel.Value);
-        }
 
         #region Plugin Setup
 
@@ -328,7 +277,8 @@ namespace TickTrader.BotTerminal
                     ? new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.PluginInfo, this, this.GetSetupContextInfo())
                     : new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.PluginInfo, this, this.GetSetupContextInfo(), PluginConfig);
                 //_localWnd.OpenMdiWindow(wndKey, _openedPluginSetup);
-                _openedPluginSetup.Setup.MainSymbol = MainSymbolSetup.SelectedSymbol.Value.ToSymbolToken();
+                _openedPluginSetup.Setup.SelectedModel.Value = SelectedModel.Value.ToApi();
+                _openedPluginSetup.Setup.MainSymbol = MainSymbolSetup.SelectedSymbol.Value.Key.ToKey();
                 _openedPluginSetup.Setup.SelectedTimeFrame = MainSymbolSetup.SelectedTimeframe.Value.ToApi();
                 _openedPluginSetup.Closed += PluginSetupClosed;
                 _openedPluginSetup.Setup.ConfigLoaded += Setup_ConfigLoaded;
@@ -354,7 +304,7 @@ namespace TickTrader.BotTerminal
 
         private void Setup_ConfigLoaded(PluginConfigViewModel config)
         {
-            MainSymbolSetup.SelectedSymbol.Value = _catalog.GetSymbol(config.MainSymbol);
+            MainSymbolSetup.SelectedSymbol.Value = _catalog[config.MainSymbol];
             MainSymbolSetup.SelectedSymbolName.Value = MainSymbolSetup.SelectedSymbol.Value.Name;
             MainSymbolSetup.SelectedTimeframe.Value = config.SelectedTimeFrame.ToServer();
         }
@@ -367,9 +317,9 @@ namespace TickTrader.BotTerminal
             UpdateSymbolsState();
         }
 
-        private BacktesterSymbolSetupViewModel CreateSymbolSetupModel(SymbolSetupType type, Var<SymbolData> symbolSrc = null)
+        private BacktesterSymbolSetupViewModel CreateSymbolSetupModel(SymbolSetupType type, Var<ISymbolData> symbolSrc = null)
         {
-            var smb = new BacktesterSymbolSetupViewModel(type, _catalog.ObservableSymbols, symbolSrc);
+            var smb = new BacktesterSymbolSetupViewModel(type, _catalog, symbolSrc);
             smb.Removed += Smb_Removed;
             smb.OnAdd += AddSymbol;
 
@@ -519,7 +469,7 @@ namespace TickTrader.BotTerminal
 
         #region IAlgoSetupContext
 
-        Feed.Types.Timeframe IAlgoSetupContext.DefaultTimeFrame => MainTimeFrame.Value;
+        Feed.Types.Timeframe IAlgoSetupContext.DefaultTimeFrame => MainSymbolSetup.SelectedTimeframe.Value;
 
         ISetupSymbolInfo IAlgoSetupContext.DefaultSymbol => _mainSymbolToken;
 
@@ -552,12 +502,5 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
-    }
-
-    public enum TesterModes
-    {
-        Backtesting,
-        Visualization,
-        Optimization
     }
 }

@@ -45,10 +45,7 @@ namespace TickTrader.Algo.Isolation.NetFx
             return PackageInfo.Parser.ParseFrom(data);
         }
 
-        public PackageInfo ScanAssembly(string pkgId, Assembly assembly)
-        {
-            throw new NotSupportedException("Assembly should be loaded into isolated context explicitly");
-        }
+        public PackageInfo ScanAssembly(string pkgId, Assembly assembly) => throw new NotSupportedException("Assembly should be loaded into isolated context explicitly");
 
 
         private class ChildDomainProxy : CrossDomainObject

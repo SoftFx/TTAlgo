@@ -22,11 +22,12 @@
 [Rr]eleases/
 x64/
 x86/
-build/
+build*/
 bld/
 [Bb]in/
 [Oo]bj/
 [Bb]t.publish/
+artifacts*/
 
 # TickTrader Server specific
 src/quickfix/include
@@ -253,3 +254,6 @@ algo.metadata
 
 package-lock.json
 *Uninstall.nsi
+
+tools/vswhere*
+FDK2.Build.props

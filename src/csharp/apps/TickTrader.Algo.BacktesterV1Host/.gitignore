@@ -1,0 +1,3 @@
+# Project require user-specific paths to run properly
+# Removing it to avoid commiting changes
+launchSettings.json

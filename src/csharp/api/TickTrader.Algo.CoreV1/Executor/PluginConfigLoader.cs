@@ -34,16 +34,22 @@ namespace TickTrader.Algo.CoreV1
             if (propertyMap.TryGetValue(id, out var propConfig))
             {
                 if (propConfig is FileParameterConfig fileParam)
-                {
-                    var filePath = fileParam.FileName;
-                    if (Path.GetFullPath(filePath) != filePath)
-                        filePath = Path.Combine(workingFolder, fileParam.FileName);
-                    paramValue = new FileEntity(filePath);
-                }
+                    paramValue = CreateFileEntity(fileParam.FileName, workingFolder);
                 else if (propConfig is IParameterConfig paramConfig)
                     paramValue = paramConfig.ValObj;
             }
+            else if (param.Descriptor.DataType == "TickTrader.Algo.Api.File")
+            {
+                paramValue = CreateFileEntity(param.Descriptor.DefaultValue, workingFolder);
+            }
             setupTarget.SetParameter(id, paramValue);
+        }
+
+        private static FileEntity CreateFileEntity(string filePath, string workingFolder)
+        {
+            if (Path.GetFullPath(filePath) != filePath)
+                filePath = Path.Combine(workingFolder, filePath);
+            return new FileEntity(filePath);
         }
 
         private static void SetOutput(IPluginSetupTarget setupTarget, OutputMetadata output, Dictionary<string, IPropertyConfig> propertyMap)
@@ -141,9 +147,9 @@ namespace TickTrader.Algo.CoreV1
 
         private static Feed.Types.MarketSide? GetMarketSideForBarReduction(ReductionKey reduction)
         {
-            if (reduction == MappingDefaults.BidBarReduction)
+            if (reduction.Equals(MappingDefaults.BidBarReduction))
                 return Feed.Types.MarketSide.Bid;
-            else if (reduction == MappingDefaults.AskBarReduction)
+            else if (reduction.Equals(MappingDefaults.AskBarReduction))
                 return Feed.Types.MarketSide.Ask;
 
             return null;

@@ -5,16 +5,16 @@ using TickTrader.Algo.Domain;
 
 namespace TickTrader.FeedStorage
 {
-    public static class TimeSlicer
+    internal static class TimeSlicer
     {
         public static TimeSlicer<BarData> GetBarSlicer(int pageSize, DateTime? from = null, DateTime? to = null)
         {
-            return new TimeSlicer<BarData>(pageSize, from, to, b => b.OpenTime.ToDateTime(), b => b.CloseTime.ToDateTime());
+            return new TimeSlicer<BarData>(pageSize, from, to, b => b.OpenTime.ToUtcDateTime(), b => b.CloseTime.ToUtcDateTime());
         }
 
         public static TimeSlicer<QuoteInfo> GetQuoteSlicer(int pageSize, DateTime? from = null, DateTime? to = null)
         {
-            return new TimeSlicer<QuoteInfo>(pageSize, from, to, b => ToUtc(b.Time));
+            return new TimeSlicer<QuoteInfo>(pageSize, from, to, b => b.TimeUtc);
         }
 
         public static DateTime ToUtc(DateTime dateTime)
@@ -28,6 +28,7 @@ namespace TickTrader.FeedStorage
         }
     }
 
+
     public class TimeSlicer<T>
     {
         private DateTime? _from;
@@ -39,7 +40,7 @@ namespace TickTrader.FeedStorage
         private int _pageSize;
         private DateTime _lastItemTime;
         private int _count;
-        
+
         public TimeSlicer(int pageSize, DateTime? from, DateTime? to, Func<T, DateTime> getItemTime, Func<T, DateTime> getItemEndTime = null)
         {
             _pageSize = pageSize;
@@ -62,7 +63,7 @@ namespace TickTrader.FeedStorage
             return _cachedPage.Count >= _pageSize + 1 && !dupTime;
         }
 
-        public Slice<T> CompleteSlice(bool last)
+        internal Slice<T> CompleteSlice(bool last)
         {
             var sliceFrom = _count == 0 && _from != null ? _from.Value : _getTime(_cachedPage.First());
             _count++;

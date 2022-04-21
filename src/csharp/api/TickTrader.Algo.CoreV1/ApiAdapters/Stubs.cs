@@ -225,6 +225,8 @@ namespace TickTrader.Algo.CoreV1
         public OrderOptions Options => OrderOptions.None;
         public string OcoRelatedOrderId => string.Empty;
         public IContingentOrderTrigger ContingentTrigger => null;
+
+        public Order DeepCopy() => this;
     }
 
     [Serializable]

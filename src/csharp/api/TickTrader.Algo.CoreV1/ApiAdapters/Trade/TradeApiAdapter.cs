@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
@@ -54,8 +53,8 @@ namespace TickTrader.Algo.CoreV1
         public async Task<OrderCmdResult> OpenOrder(bool isAsync, Api.OpenOrderRequest apiRequest)
         {
             OrderResultEntity resultEntity;
-            var code = OrderCmdResultCodes.Ok;
 
+            var code = OrderCmdResultCodes.Ok;
             var domainRequest = apiRequest.ToDomain(IsolationTag);
 
             PreprocessAndValidateOpenOrderRequest(domainRequest, out var smbMetadata, ref code);
@@ -210,31 +209,12 @@ namespace TickTrader.Algo.CoreV1
             return resultEntity;
         }
 
-        public async Task<OrderCmdResult> ModifyOrder(bool isAsync, Api.ModifyOrderRequest request)
+        public async Task<OrderCmdResult> ModifyOrder(bool isAsync, Api.ModifyOrderRequest apiRequest)
         {
             OrderResultEntity resultEntity;
 
-            var domainRequest = new Domain.ModifyOrderRequest
-            {
-                OrderId = request.OrderId,
-                CurrentAmount = double.NaN,
-                NewAmount = request.Volume,
-                MaxVisibleAmount = request.MaxVisibleVolume,
-                AmountChange = double.NaN,
-                Price = request.Price,
-                StopPrice = request.StopPrice,
-                StopLoss = request.StopLoss,
-                TakeProfit = request.TakeProfit,
-                Slippage = request.Slippage,
-                Comment = request.Comment,
-                Expiration = request.Expiration?.ToUniversalTime().ToTimestamp(),
-                ExecOptions = request.Options?.ToDomainEnum(),
-                OcoRelatedOrderId = request.OcoRelatedOrderId,
-                OcoEqualVolume = request.OcoEqualVolume,
-                OtoTrigger = request.OtoTrigger?.ToDomain(),
-            };
-
             var code = OrderCmdResultCodes.Ok;
+            var domainRequest = apiRequest.ToDomain(IsolationTag);
 
             PreprocessAndValidateModifyOrderRequest(domainRequest, out var orderToModify, out var smbMetadata, ref code);
 
@@ -460,6 +440,8 @@ namespace TickTrader.Algo.CoreV1
             if (!ValidateVolumeLots(request.NewAmount, smbMetadata, ref code))
                 return;
             if (!ValidateMaxVisibleVolumeLots(request.MaxVisibleAmount, smbMetadata, type, request.NewAmount ?? request.CurrentAmount, ref code))
+                return;
+            if (!ValidateRelatedOCO(request.ExecOptions, request.OcoRelatedOrderId, ref code))
                 return;
 
             request.NewAmount = RoundVolume(request.NewAmount, smbMetadata);
@@ -856,6 +838,21 @@ namespace TickTrader.Algo.CoreV1
                 return true;
 
             if (subCnt == 0 && string.IsNullOrEmpty(relatedOrderId))
+            {
+                code = OrderCmdResultCodes.OCORelatedIdNotFound;
+                return false;
+            }
+
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool ValidateRelatedOCO(Domain.OrderExecOptions? options, string relatedOrderId, ref OrderCmdResultCodes code)
+        {
+            if (options == null || !options.Value.HasFlag(Domain.OrderExecOptions.OneCancelsTheOther))
+                return true;
+
+            if (string.IsNullOrEmpty(relatedOrderId) || !TryGetOrder(relatedOrderId, out _, ref code))
             {
                 code = OrderCmdResultCodes.OCORelatedIdNotFound;
                 return false;

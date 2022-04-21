@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using TickTrader.Algo.Account;
-using TickTrader.Algo.Backtester;
+using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.Domain;
 
 namespace TickTrader.BotTerminal
@@ -28,27 +28,21 @@ namespace TickTrader.BotTerminal
             _client.Clear();
         }
 
-        public void Start(Backtester backtester, IEnumerable<CurrencyInfo> currencies, IEnumerable<SymbolInfo> symbols)
+        public void Start(BacktesterConfig config, IEnumerable<CurrencyInfo> currencies, IEnumerable<ISymbolInfo> symbols)
         {
-            var settings = backtester.CommonSettings;
-            var accInfo = new AccountInfo(settings.InitialBalance, settings.BalanceCurrency, null);
-            accInfo.Leverage = settings.Leverage;
+            var accSettings = config.Account;
+            var accInfo = new AccountInfo(accSettings.InitialBalance, accSettings.BalanceCurrency, null);
+            accInfo.Leverage = accSettings.Leverage;
             accInfo.Id = "1";
-            accInfo.Type = settings.AccountType;
+            accInfo.Type = accSettings.Type;
 
             _client.Init(accInfo, symbols, currencies);
-
-            backtester.Executor.TradesUpdated += Executor_TradesUpdated;
-            backtester.Executor.SymbolRateUpdated += Executor_SymbolRateUpdated;
 
             _connection.EmulateConnect();
         }
 
-        public void Stop(Backtester backtester)
+        public void Stop()
         {
-            backtester.Executor.TradesUpdated -= Executor_TradesUpdated;
-            backtester.Executor.SymbolRateUpdated -= Executor_SymbolRateUpdated;
-
             _connection.EmulateDisconnect();
             _client.Deinit();
         }
@@ -58,24 +52,24 @@ namespace TickTrader.BotTerminal
             _client.OnRateUpdate(update.LastQuote);
         }
 
-        private void Executor_TradesUpdated(TesterTradeTransaction tt)
-        {
-            if (tt.OrderEntityAction != Algo.Domain.OrderExecReport.Types.EntityAction.NoAction)
-                _client.Acc.UpdateOrderCollection(tt.OrderEntityAction, tt.OrderUpdate);
+        //private void Executor_TradesUpdated(TesterTradeTransaction tt)
+        //{
+        //    if (tt.OrderEntityAction != Algo.Domain.OrderExecReport.Types.EntityAction.NoAction)
+        //        _client.Acc.UpdateOrderCollection(tt.OrderEntityAction, tt.OrderUpdate);
 
-            if (tt.PositionEntityAction != Algo.Domain.OrderExecReport.Types.EntityAction.NoAction)
-                _client.Acc.UpdateOrderCollection(tt.PositionEntityAction, tt.PositionUpdate);
+        //    if (tt.PositionEntityAction != Algo.Domain.OrderExecReport.Types.EntityAction.NoAction)
+        //        _client.Acc.UpdateOrderCollection(tt.PositionEntityAction, tt.PositionUpdate);
 
-            if (tt.NetPositionUpdate != null)
-            {
-                if (tt.NetPositionUpdate.PositionCopy.IsEmpty)
-                    _client.Acc.RemovePosition(tt.NetPositionUpdate, true);
-                else
-                    _client.Acc.UpdatePosition(tt.NetPositionUpdate, true);
-            }
+        //    if (tt.NetPositionUpdate != null)
+        //    {
+        //        if (tt.NetPositionUpdate.PositionCopy.IsEmpty)
+        //            _client.Acc.RemovePosition(tt.NetPositionUpdate, true);
+        //        else
+        //            _client.Acc.UpdatePosition(tt.NetPositionUpdate, true);
+        //    }
 
-            if (tt.Balance != null)
-                _client.Acc.UpdateBalance((double)tt.Balance);
-        }
+        //    if (tt.Balance != null)
+        //        _client.Acc.UpdateBalance((double)tt.Balance);
+        //}
     }
 }

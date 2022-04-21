@@ -25,6 +25,8 @@ namespace TickTrader.Algo.Account.Fdk2
         private const int DisconnectTimeoutMs = 60 * 1000;
         private const int DownloadTimeoutMs = 120 * 1000;
 
+        private static readonly object _clientSessionCtorLock = new object();
+
         private IAlgoLogger logger;
 
         public IFeedServerApi FeedApi => this;
@@ -47,6 +49,22 @@ namespace TickTrader.Algo.Account.Fdk2
 
         public event Action<IServerInterop, ConnectionErrorInfo> Disconnected;
 
+
+        static SfxInterop()
+        {
+            if (Environment.ProcessorCount > 8)
+            {
+                SoftFX.Net.Core.ClientSession.ConfigureLogServices(5);
+                SoftFX.Net.Core.ClientSession.ConfigureSessionQueues(5);
+            }
+            else
+            {
+                SoftFX.Net.Core.ClientSession.ConfigureLogServices(3);
+                SoftFX.Net.Core.ClientSession.ConfigureSessionQueues(3);
+            }
+        }
+
+
         public SfxInterop(ConnectionOptions options, string loggerId)
         {
             logger = AlgoLoggerFactory.GetLogger<SfxInterop>(loggerId);
@@ -68,14 +86,17 @@ namespace TickTrader.Algo.Account.Fdk2
 
             var logsDir = options.LogsFolder;
 
-            _feedProxy = new FDK.Client.QuoteFeed("feed.proxy", logEvents, logStates, logMessages, port: 5041, validateClientCertificate: ValidateCertificate,
-                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir);
-            _feedHistoryProxy = new FDK.Client.QuoteStore("feed.history.proxy", logEvents, logStates, logMessages, port: 5042, validateClientCertificate: ValidateCertificate,
-                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir);
-            _tradeProxy = new FDK.Client.OrderEntry("trade.proxy", logEvents, logStates, logMessages, port: 5043, validateClientCertificate: ValidateCertificate,
-                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir);
-            _tradeHistoryProxy = new FDK.Client.TradeCapture("trade.history.proxy", logEvents, logStates, logMessages, port: 5044, validateClientCertificate: ValidateCertificate,
-                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir);
+            lock (_clientSessionCtorLock) // ensure ClientSessions get shared queues in specific order
+            {
+                _feedProxy = new FDK.Client.QuoteFeed("feed.proxy", logEvents, logStates, logMessages, port: 5041, validateClientCertificate: ValidateCertificate,
+                    connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir, optimizationType: SoftFX.Net.Core.OptimizationType.Throughput2);
+                _feedHistoryProxy = new FDK.Client.QuoteStore("feed.history.proxy", logEvents, logStates, logMessages, port: 5042, validateClientCertificate: ValidateCertificate,
+                    connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir, optimizationType: SoftFX.Net.Core.OptimizationType.Throughput2);
+                _tradeProxy = new FDK.Client.OrderEntry("trade.proxy", logEvents, logStates, logMessages, port: 5043, validateClientCertificate: ValidateCertificate,
+                    connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir, optimizationType: SoftFX.Net.Core.OptimizationType.Throughput2);
+                _tradeHistoryProxy = new FDK.Client.TradeCapture("trade.history.proxy", logEvents, logStates, logMessages, port: 5044, validateClientCertificate: ValidateCertificate,
+                    connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir, optimizationType: SoftFX.Net.Core.OptimizationType.Throughput2);
+            }
 
             _feedProxyAdapter = new Fdk2FeedAdapter(_feedProxy, logger);
             _feedHistoryProxyAdapter = new Fdk2FeedHistoryAdapter(_feedHistoryProxy, logger);
@@ -93,6 +114,7 @@ namespace TickTrader.Algo.Account.Fdk2
             _tradeHistoryProxy.LogoutEvent += (c, m) => OnLogout(m);
             _tradeHistoryProxy.DisconnectEvent += (c, m) => OnDisconnect(m);
             _tradeHistoryProxy.TradeUpdateEvent += (c, rep) => TradeTransactionReport?.Invoke(Convert(rep));
+            _tradeHistoryProxy.TriggerReportUpdateEvent += (c, rep) => TriggerTransactionReport?.Invoke(Convert(rep));
             _feedHistoryProxy.LogoutEvent += (c, m) => OnLogout(m);
             _feedHistoryProxy.DisconnectEvent += (c, m) => OnDisconnect(m);
 
@@ -185,7 +207,9 @@ namespace TickTrader.Algo.Account.Fdk2
             await _tradeHistoryProxyAdapter.LoginAsync(login, password, "", _appType.ToString(), Guid.NewGuid().ToString());
             logger.Debug("Trade.History: Logged in.");
             await _tradeHistoryProxyAdapter.SubscribeTradesAsync(false);
-            logger.Debug("Trade.History: Subscribed.");
+            logger.Debug("Trade.History: Trades Subscribed.");
+            await _tradeHistoryProxyAdapter.SubscribeTriggersAsync(false);
+            logger.Debug("Trade.History: Triggers Subscribed.");
         }
 
         private bool ValidateCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
@@ -402,18 +426,18 @@ namespace TickTrader.Algo.Account.Fdk2
             }
         }
 
-        public async Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(string symbol, Domain.Feed.Types.MarketSide marketSide, Domain.Feed.Types.Timeframe timeframe)
+        public async Task<(DateTime?, DateTime?)> GetAvailableRange(string symbol, Domain.Feed.Types.MarketSide marketSide, Domain.Feed.Types.Timeframe timeframe)
         {
             if (timeframe.IsTicks())
             {
                 var level2 = timeframe == Domain.Feed.Types.Timeframe.TicksLevel2;
                 var info = await _feedHistoryProxyAdapter.GetQuotesHistoryInfoAsync(symbol, level2);
-                return new Tuple<DateTime?, DateTime?>(info.AvailFrom, info.AvailTo);
+                return (info.AvailFrom, info.AvailTo);
             }
             else // bars
             {
                 var info = await _feedHistoryProxyAdapter.GetBarsHistoryInfoAsync(symbol, ToBarPeriod(timeframe), ConvertBack(marketSide));
-                return new Tuple<DateTime?, DateTime?>(info.AvailFrom, info.AvailTo);
+                return (info.AvailFrom, info.AvailTo);
             }
         }
 
@@ -424,6 +448,7 @@ namespace TickTrader.Algo.Account.Fdk2
         public event Action<Domain.PositionExecReport> PositionReport;
         public event Action<ExecutionReport> ExecutionReport;
         public event Action<Domain.TradeReportInfo> TradeTransactionReport;
+        public event Action<Domain.TriggerReportInfo> TriggerTransactionReport;
         public event Action<Domain.BalanceOperation> BalanceOperation;
         public event Action<Domain.SymbolInfo[]> SymbolInfo { add { } remove { } }
         public event Action<Domain.CurrencyInfo[]> CurrencyInfo { add { } remove { } }
@@ -450,6 +475,13 @@ namespace TickTrader.Algo.Account.Fdk2
             var direction = backwards ? TimeDirection.Backward : TimeDirection.Forward;
 
             _tradeHistoryProxyAdapter.DownloadTradesAsync(direction, from?.ToUniversalTime(), to?.ToUniversalTime(), skipCancelOrders, rxStream);
+        }
+
+        public void GetTriggerReportsHistory(ChannelWriter<Domain.TriggerReportInfo> rxStream, DateTime? from, DateTime? to, bool skipFailedTriggers, bool backwards)
+        {
+            var direction = backwards ? TimeDirection.Backward : TimeDirection.Forward;
+
+            _tradeHistoryProxyAdapter.DownloadTriggerReportsAsync(direction, from?.ToUniversalTime(), to?.ToUniversalTime(), skipFailedTriggers, rxStream);
         }
 
         public Task<OrderInteropResult> SendOpenOrder(Domain.OpenOrderRequest request)
@@ -564,7 +596,7 @@ namespace TickTrader.Algo.Account.Fdk2
                 try
                 {
                     var result = await operationDef(request);
-                    return new OrderInteropResult(Domain.OrderExecReport.Types.CmdResultCode.Ok, ConvertToEr(result, operationId));
+                    return new OrderInteropResult(Domain.OrderExecReport.Types.CmdResultCode.Ok, ConvertToEr(result));
                 }
                 catch (ExecutionException ex)
                 {
@@ -664,6 +696,8 @@ namespace TickTrader.Algo.Account.Fdk2
                     Commission = info.Commission,
                     LimitsCommission = info.LimitsCommission,
                     ValueType = Convert(info.CommissionType),
+                    MinCommission = info.MinCommission,
+                    MinCommissionCurrency = info.MinCommissionCurrency,
                 },
 
                 Margin = new Domain.MarginInfo
@@ -736,6 +770,7 @@ namespace TickTrader.Algo.Account.Fdk2
                 default: throw new NotImplementedException();
             }
         }
+
 
         private static Domain.CurrencyInfo Convert(SFX.CurrencyInfo info)
         {
@@ -921,7 +956,7 @@ namespace TickTrader.Algo.Account.Fdk2
             };
         }
 
-        private static List<ExecutionReport> ConvertToEr(List<SFX.ExecutionReport> reports, string operationId)
+        private static List<ExecutionReport> ConvertToEr(List<SFX.ExecutionReport> reports)
         {
             var result = new List<ExecutionReport>(reports.Count);
 
@@ -1052,11 +1087,13 @@ namespace TickTrader.Algo.Account.Fdk2
                                 return Domain.OrderExecReport.Types.CmdResultCode.IncorrectPricePrecision;
                             else if (message.EndsWith("because close-only mode on"))
                                 return Domain.OrderExecReport.Types.CmdResultCode.CloseOnlyTrading;
-                            else if (message == "Max visible amount is not valid for market orders" || message.StartsWith("Max visible amount is valid only for"))
+                            else if (message.StartsWith("Max visible amount is not valid for") || message.StartsWith("Max visible amount is valid only for"))
                                 return Domain.OrderExecReport.Types.CmdResultCode.MaxVisibleVolumeNotSupported;
                             else if (message.StartsWith("Order Not Found") || message.EndsWith("was not found."))
                                 return Domain.OrderExecReport.Types.CmdResultCode.OrderNotFound;
-                            else if (message.StartsWith("Invalid order type") || message.Contains("is not supported"))
+                            else if (message.StartsWith("Invalid order type") || message.Contains("is not supported") ||
+                                    (message.StartsWith("Option") && message.Contains("cannot be used")) ||
+                                    message.StartsWith("OCO flag is used only for"))
                                 return Domain.OrderExecReport.Types.CmdResultCode.Unsupported;
                             else if (message.StartsWith("Invalid AmountChange") || message == "Cannot modify amount.")
                                 return Domain.OrderExecReport.Types.CmdResultCode.InvalidAmountChange;
@@ -1076,21 +1113,28 @@ namespace TickTrader.Algo.Account.Fdk2
                                 return Domain.OrderExecReport.Types.CmdResultCode.IncorrectPrice;
                             else if (message.Contains("has different Symbol"))
                                 return Domain.OrderExecReport.Types.CmdResultCode.IncorrectSymbol;
-                            else if (message.StartsWith("OCO flag is used only for"))
-                                return Domain.OrderExecReport.Types.CmdResultCode.IncorrectType;
-                            else if (message.EndsWith("Remove OCO relation first."))
+                            else if (message.EndsWith("Remove OCO relation first.") ||
+                                    (message.StartsWith("Related order") && message.EndsWith("already has OCO flag.")))
                                 return Domain.OrderExecReport.Types.CmdResultCode.OcoAlreadyExists;
                             else if (message.StartsWith("No Dealer"))
                                 return Domain.OrderExecReport.Types.CmdResultCode.DealerReject;
-                            else if (message.StartsWith("Trigger time cannot"))
+                            else if (message.StartsWith("Trigger time cannot") ||
+                                     message.Contains("must have the same trigger time"))
                                 return Domain.OrderExecReport.Types.CmdResultCode.IncorrectTriggerTime;
                             else if (message.StartsWith("Trigger Order Id"))
                                 return Domain.OrderExecReport.Types.CmdResultCode.IncorrectTriggerOrderId;
                             else if ((message.Contains("Trigger Order") && message.Contains("Type must be")) ||
-                                      message.StartsWith("Contingent orders with type") && message.EndsWith("are not supported."))
+                                      message.StartsWith("Contingent orders with type") && message.EndsWith("are not supported.") ||
+                                      message.Contains("must have the same trigger type"))
                                 return Domain.OrderExecReport.Types.CmdResultCode.IncorrectTriggerOrderType;
                             else if (message.Contains("Trigger Order") && message.Contains("Expired"))
                                 return Domain.OrderExecReport.Types.CmdResultCode.IncorrectExpiration;
+                            else if (message.EndsWith("cannot be Contingent order"))
+                                return Domain.OrderExecReport.Types.CmdResultCode.IncorrectConditionsForTrigger;
+                            else if (message.StartsWith("Cannot create OCO relation between"))
+                                return Domain.OrderExecReport.Types.CmdResultCode.OcoRelatedOrderIncorrectOptions;
+                            else if (message.StartsWith("OCO order cannot be related to itself"))
+                                return Domain.OrderExecReport.Types.CmdResultCode.OcoIncorrectRelatedId;
                         }
                         break;
                     }
@@ -1169,15 +1213,13 @@ namespace TickTrader.Algo.Account.Fdk2
 
         internal static Domain.BarData Convert(SFX.Bar fdkBar)
         {
-            return new Domain.BarData()
+            return new Domain.BarData(new UtcTicks(fdkBar.From), new UtcTicks(fdkBar.To))
             {
                 Open = fdkBar.Open,
                 Close = fdkBar.Close,
                 High = fdkBar.High,
                 Low = fdkBar.Low,
                 RealVolume = fdkBar.Volume,
-                OpenTime = fdkBar.From.ToUniversalTime().ToTimestamp(),
-                CloseTime = fdkBar.To.ToUniversalTime().ToTimestamp(),
             };
         }
 
@@ -1192,31 +1234,30 @@ namespace TickTrader.Algo.Account.Fdk2
 
         private static Domain.QuoteInfo Convert(SFX.Quote fdkTick)
         {
-            var data = new Domain.QuoteData()
+            var timeOfReceive = DateTime.UtcNow;
+
+            var time = new UtcTicks(fdkTick.CreatingTime);
+            var bids = ConvertLevel2(fdkTick.Bids);
+            var asks = ConvertLevel2(fdkTick.Asks);
+            return new QuoteInfo(fdkTick.Symbol, time, bids, asks, timeOfReceive: timeOfReceive)
             {
-                Time = fdkTick.CreatingTime.ToTimestamp(),
                 IsBidIndicative = fdkTick.TickType == SFX.TickTypes.IndicativeBid || fdkTick.TickType == SFX.TickTypes.IndicativeBidAsk,
                 IsAskIndicative = fdkTick.TickType == SFX.TickTypes.IndicativeAsk || fdkTick.TickType == SFX.TickTypes.IndicativeBidAsk,
-                BidBytes = ConvertLevel2(fdkTick.Bids),
-                AskBytes = ConvertLevel2(fdkTick.Asks),
             };
-
-            return new Domain.QuoteInfo(fdkTick.Symbol, data);
         }
 
-        private static ByteString ConvertLevel2(List<QuoteEntry> book)
+        private static byte[] ConvertLevel2(List<QuoteEntry> book)
         {
             var cnt = book.Count;
-            var bands = cnt > 256
-                ? new Domain.QuoteBand[cnt].AsSpan()
-                : stackalloc Domain.QuoteBand[cnt];
+            var bytes = new byte[QuoteBand.Size * cnt];
+            var bands = MemoryMarshal.Cast<byte, QuoteBand>(bytes);
 
             for (var i = 0; i < cnt; i++)
             {
-                bands[i] = new Domain.QuoteBand(book[i].Price, book[i].Volume);
+                bands[i] = new QuoteBand(book[i].Price, book[i].Volume);
             }
 
-            return Domain.ByteStringHelper.CopyFromUglyHack(MemoryMarshal.Cast<Domain.QuoteBand, byte>(bands));
+            return bytes;
         }
 
         public static Domain.TradeReportInfo Convert(TradeTransactionReport report)
@@ -1352,6 +1393,32 @@ namespace TickTrader.Algo.Account.Fdk2
                 res |= Domain.OrderOptions.OneCancelsTheOther;
 
             return res;
+        }
+
+        public static Domain.TriggerReportInfo Convert(SFX.ContingentOrderTriggerReport report)
+        {
+            return new Domain.TriggerReportInfo
+            {
+                Id = report.Id,
+                ContingentOrderId = report.ContingentOrderId.ToString(),
+                TransactionTime = report.TransactionTime.ToTimestamp(),
+                TriggerType = ConvertToAlgo(report.TriggerType),
+                TriggerState = Convert(report.TriggerState),
+                TriggerTime = report.TriggerTime?.ToTimestamp(),
+                OrderIdTriggeredBy = report.OrderIdTriggeredBy?.ToString(),
+                Symbol = report.Symbol,
+                Type = Convert(report.Type),
+                Side = Convert(report.Side),
+                Price = report.Price,
+                StopPrice = report.StopPrice,
+                Amount = report.Amount,
+                RelatedOrderId = report.RelatedOrderId?.ToString(),
+            };
+        }
+
+        public static Domain.TriggerReportInfo.Types.TriggerResultState Convert(TriggerResultState state)
+        {
+            return (Domain.TriggerReportInfo.Types.TriggerResultState)state;
         }
 
         public static Domain.BalanceOperation Convert(SFX.BalanceOperation op)

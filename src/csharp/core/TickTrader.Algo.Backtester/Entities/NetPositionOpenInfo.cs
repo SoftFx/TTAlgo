@@ -13,6 +13,7 @@ namespace TickTrader.Algo.Backtester
     {
         public double CloseAmount { get; set; }
         public double ClosePrice { get; set; }
-        public double BalanceMovement { get; set; }
+        public double Profit { get; set; }
+        public double Swap { get; set; }
     }
 }

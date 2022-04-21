@@ -13,5 +13,10 @@ namespace TickTrader.Algo.Core.Lib
         {
             return DateTime.MinValue + TimeSpan.FromDays(day);
         }
+
+        public static DateTime DayFloor(this DateTime val)
+        {
+            return val.Date.Ticks == val.Ticks ? val : val.Date.AddDays(1);
+        }
     }
 }

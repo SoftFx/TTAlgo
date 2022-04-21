@@ -41,7 +41,7 @@ namespace TickTrader.Algo.Backtester
             }
             else if (order.Info.Type == OrderInfo.Types.Type.Position)
             {
-                if (order.Entity.TakeProfit != null)
+                if (order.Info.TakeProfit != null)
                 {
                     ActivationRecord record = new ActivationRecord(order, ActivationType.TakeProfit);
                     ActivationIndex index = GetPositionIndex(order.Info.Side, ActivationType.TakeProfit);
@@ -50,7 +50,7 @@ namespace TickTrader.Algo.Backtester
                     added = true;
                 }
 
-                if (order.Entity.StopLoss != null)
+                if (order.Info.StopLoss != null)
                 {
                     ActivationRecord record = new ActivationRecord(order, ActivationType.StopLoss);
                     ActivationIndex index = GetPositionIndex(order.Info.Side, ActivationType.StopLoss);
@@ -126,12 +126,12 @@ namespace TickTrader.Algo.Backtester
             }
             else if (order.Info.Type == OrderInfo.Types.Type.Position)
             {
-                if (order.Entity.TakeProfit != null)
+                if (order.Info.TakeProfit != null)
                 {
                     ActivationIndex index = GetPositionIndex(order.Info.Side, ActivationType.TakeProfit);
                     result |= index.RemoveOrder(order, ActivationType.TakeProfit);
                 }
-                if (order.Entity.StopLoss != null)
+                if (order.Info.StopLoss != null)
                 {
                     ActivationIndex index = GetPositionIndex(order.Info.Side, ActivationType.StopLoss);
                     result |= index.RemoveOrder(order, ActivationType.StopLoss);
