@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 using TickTrader.FeedStorage.Api;
 
 
@@ -120,59 +121,56 @@ namespace TickTrader.BotTerminal.SymbolManager
 
         public async void Export(ISeriesKey key)
         {
-            ISymbolData smb = _catalog.OnlineCollection[key.Symbol]; //TO DO: change after include origin in ISeriesKey
-
-            if (smb == null || !smb.Series.ContainsKey(key))
-                smb = _catalog.CustomCollection[key.Symbol];
+            var smb = key.Origin.IsOnline() ? _catalog.OnlineCollection[key.Symbol] : _catalog.CustomCollection[key.Symbol];
 
             await _wndManager.ShowDialog(new FeedExportViewModel(smb.Series[key]), this);
         }
 
 
-        public void AddSymbol()
+        public async void AddSymbol()
         {
             var model = new SymbolCfgEditorViewModel(null, _clientModel.SortedCurrenciesNames, HasSymbol);
 
             if (_wndManager.ShowDialog(model, this).Result == true)
             {
-                var actionModel = new ActionDialogViewModel("Adding symbol...", () => _catalog.CustomCollection.TryAddSymbol(model));
-                _wndManager.ShowDialog(actionModel, this);
+                var actionModel = new ActionDialogViewModel("Adding symbol...", () => _catalog.CustomCollection.TryAddSymbol(model.GetSymbolInfo()));
+                await _wndManager.ShowDialog(actionModel, this);
             }
         }
 
-        public void EditSymbol(ISymbolData symbol)
+        public async void EditSymbol(ISymbolData symbol)
         {
             var model = new SymbolCfgEditorViewModel(symbol.Info, _clientModel.SortedCurrenciesNames, HasSymbol);
 
             if (_wndManager.ShowDialog(model, this).Result == true)
             {
-                var actionModel = new ActionDialogViewModel("Saving symbol settings...", () => _catalog.CustomCollection.TryUpdateSymbol(model));
-                _wndManager.ShowDialog(actionModel, this);
+                var actionModel = new ActionDialogViewModel("Saving symbol settings...", () => _catalog.CustomCollection.TryUpdateSymbol(model.GetSymbolInfo()));
+                await _wndManager.ShowDialog(actionModel, this);
             }
         }
 
-        public void CopySymbol(ISymbolData symbol)
+        public async void CopySymbol(ISymbolData symbol)
         {
             var model = new SymbolCfgEditorViewModel(symbol.Info, _clientModel.SortedCurrenciesNames, HasSymbol, true);
 
             if (_wndManager.ShowDialog(model, this).Result == true)
             {
-                var actionModel = new ActionDialogViewModel("Saving symbol settings...", () => _catalog.CustomCollection.TryAddSymbol(model));
-                _wndManager.ShowDialog(actionModel, this);
+                var actionModel = new ActionDialogViewModel("Saving symbol settings...", () => _catalog.CustomCollection.TryAddSymbol(model.GetSymbolInfo()));
+                await _wndManager.ShowDialog(actionModel, this);
             }
         }
 
 
-        public void RemoveSymbol(ISymbolData symbolModel)
+        public async void RemoveSymbol(ISymbolData symbolModel)
         {
             var actionModel = new ActionDialogViewModel("Removing symbol...", () => _catalog.CustomCollection.TryRemoveSymbol(symbolModel.Name));
-            _wndManager.ShowDialog(actionModel, this);
+            await _wndManager.ShowDialog(actionModel, this);
         }
 
-        public void RemoveSeries(SeriesViewModel series)
+        public async void RemoveSeries(SeriesViewModel series)
         {
             var actionModel = new ActionDialogViewModel("Removing series...", () => series.Remove());
-            _wndManager.ShowDialog(actionModel, this);
+            await _wndManager.ShowDialog(actionModel, this);
         }
 
 

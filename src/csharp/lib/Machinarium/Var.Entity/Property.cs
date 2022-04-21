@@ -13,7 +13,22 @@ namespace Machinarium.Var
         bool HasValue { get; }
     }
 
-    public class PropertyBase<TVar, T> : IProperty<T>, INotifyPropertyChanged, IDisposable
+
+    public class Property<T> : PropertyBase<Var<T>, T>
+    {
+        public new Property<T> AddPreTrigger(Action<T> trigger) => (Property<T>)base.AddPreTrigger(trigger);
+
+        public new Property<T> AddPostTrigger(Action<T> trigger) => (Property<T>)base.AddPostTrigger(trigger);
+    }
+
+    public class IntProperty : PropertyBase<IntVar, int> { }
+
+    public class BoolProperty : PropertyBase<BoolVar, bool> { }
+
+    public class DoubleProperty : PropertyBase<DoubleVar, double> { }
+
+
+    public abstract class PropertyBase<TVar, T> : IProperty<T>, INotifyPropertyChanged, IDisposable
         where TVar : Var<T>, new()
     {
         private List<Action<T>> _preChangeTriggers, _postChangeTriggers;
@@ -104,23 +119,11 @@ namespace Machinarium.Var
             }
         }
 
-        protected void NotificationCall()
+        protected virtual void NotificationCall()
         {
             NotifyPropertyChange(nameof(Value));
             NotifyPropertyChange(nameof(HasValue));
             NotifyPropertyChange(nameof(DisplayValue));
         }
     }
-
-    public class Property<T> : PropertyBase<Var<T>, T>
-    {
-        public new Property<T> AddPreTrigger(Action<T> trigger) => (Property<T>)base.AddPreTrigger(trigger);
-
-        public new Property<T> AddPostTrigger(Action<T> trigger) => (Property<T>)base.AddPostTrigger(trigger);
-    }
-
-    public class IntProperty : PropertyBase<IntVar, int> { }
-    public class BoolProperty : PropertyBase<BoolVar, bool> { }
-    public class DoubleProperty : PropertyBase<DoubleVar, double> { }
-    //public class DecimalProperty : PropertyBase<DecimalVar, double> { }
 }
