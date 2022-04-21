@@ -1,6 +1,7 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
 using Machinarium.Var;
+using Microsoft.Win32;
 using NLog;
 using SciChart.Charting.Model.DataSeries;
 using System;
@@ -123,27 +124,27 @@ namespace TickTrader.BotTerminal
         public BacktesterOptimizerViewModel OptimizationPage { get; }
         public OptimizationResultsPageViewModel OptimizationResultsPage { get; } = new OptimizationResultsPageViewModel();
 
+
+        private void ResetResultsView()
+        {
+            _isVisualizing.Clear();
+            ChartPage.Clear();
+            ResultsPage.Clear();
+            JournalPage.Clear();
+            TradeHistoryPage.OnTesterStart(SetupPage.Settings.AccType);
+            _hasDataToSave.Clear();
+            TradesPage.Clear();
+        }
+
         private async Task DoEmulation(IActionObserver observer)
         {
             try
             {
                 var cToken = observer.CancelationToken;
 
-                _isVisualizing.Clear();
-                ChartPage.Clear();
-                ResultsPage.Clear();
-                JournalPage.Clear();
-                TradeHistoryPage.OnTesterStart(SetupPage.Settings.AccType);
-                _hasDataToSave.Clear();
-                TradesPage.Clear();
-
                 SetupPage.CheckDuplicateSymbols();
 
-                var config = new BacktesterConfig();
-                SetupPage.Apply(config);
-                config.Env.FeedCachePath = _catalog.OnlineCollection.StorageFolder;
-                config.Env.CustomFeedCachePath = _catalog.CustomCollection.StorageFolder;
-                config.Env.WorkingFolderPath = EnvService.Instance.AlgoWorkingFolder;
+                var config = CreateConfig();
 
                 try
                 {
@@ -201,6 +202,16 @@ namespace TickTrader.BotTerminal
                 _logger.Error(ex, "Error during emulation");
                 observer.StopProgress($"Emulation error: {ex.Message}");
             }
+        }
+
+        private BacktesterConfig CreateConfig()
+        {
+            var config = new BacktesterConfig();
+            SetupPage.Apply(config);
+            config.Env.FeedCachePath = _catalog.OnlineCollection.StorageFolder;
+            config.Env.CustomFeedCachePath = _catalog.CustomCollection.StorageFolder;
+            config.Env.WorkingFolderPath = EnvService.Instance.AlgoWorkingFolder;
+            return config;
         }
 
         private async Task<string> RunBacktester(IActionObserver observer, string configPath, CancellationToken cToken)
@@ -515,6 +526,107 @@ namespace TickTrader.BotTerminal
                 _pauseRequestedProp.Clear();
                 _resumeRequestedProp.Clear();
             });
+        }
+
+        #endregion
+
+
+        #region Export/import
+
+        private const string ZipFileFilter = "Zip files (*.zip)|*.zip";
+
+        public IEnumerable<IResult> SaveConfig()
+        {
+            var dialog = new SaveFileDialog();
+            dialog.FileName = SetupPage.SelectedPlugin.Value.Descriptor.DisplayName + ".zip";
+            dialog.Filter = ZipFileFilter;
+
+            var showAction = VmActions.ShowWin32Dialog(dialog);
+            yield return showAction;
+
+            if (showAction.Result == true)
+            {
+                string saveError = null;
+
+                try
+                {
+                    var config = CreateConfig();
+                    config.Save(dialog.FileName);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, "Failed to save backtester config");
+                    saveError = ex.Message;
+                }
+
+                if (saveError != null)
+                    yield return VmActions.ShowError($"Can't save backtester config: {saveError}", "Error");
+            }
+        }
+
+        public IEnumerable<IResult> LoadConfig()
+        {
+            OpenFileDialog dialog = new OpenFileDialog();
+            dialog.Filter = ZipFileFilter;
+            dialog.CheckFileExists = true;
+
+            var showAction = VmActions.ShowWin32Dialog(dialog);
+            yield return showAction;
+
+            if (showAction.Result == true)
+            {
+
+            }
+        }
+
+        public IEnumerable<IResult> LoadResults()
+        {
+            OpenFileDialog dialog = new OpenFileDialog();
+            dialog.Filter = ZipFileFilter;
+            dialog.CheckFileExists = true;
+
+            var showAction = VmActions.ShowWin32Dialog(dialog);
+            yield return showAction;
+
+            if (showAction.Result == true)
+            {
+                string loadError = null;
+
+                try
+                {
+                    var _ = LoadResultsWrapped(dialog.FileName);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, "Failed to load backtester results");
+                    loadError = ex.Message;
+                }
+
+                if (loadError != null)
+                    yield return VmActions.ShowError($"Can't load backtester results: {loadError}", "Error");
+            }
+        }
+
+        private async Task LoadResultsWrapped(string resultsPath)
+        {
+            SetupPage.CloseSetupDialog();
+
+            IActionObserver observer = ProgressMonitor.Progress;
+            _isRunning.Set();
+
+            try
+            {
+                ResetResultsView();
+                await LoadResults(observer, resultsPath);
+                observer.StopProgress();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to load results");
+                observer.StopProgress($"Can't load results: {ex.Message}");
+            }
+
+            _isRunning.Clear();
         }
 
         #endregion
