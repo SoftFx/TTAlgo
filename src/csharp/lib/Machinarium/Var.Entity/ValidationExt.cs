@@ -60,10 +60,9 @@ namespace Machinarium.Var
         {
             bool Rule(double val) => includeLeftBound ? (val >= range.Min && val <= range.Max) : (val > range.Min && val <= range.Max);
 
+            string GetMessage() => $"Value must be in range {(includeLeftBound ? "[" : "(")}{range.Min:R}..{range.Max:R}]";
 
-            var message = $"Value must be in range {(includeLeftBound ? "[" : "(")}{range.Min:R}..{range.Max:R}]";
-
-            property.AddValidationRule(Rule, message);
+            property.AddValidationRule(Rule, GetMessage);
 
             return property;
         }

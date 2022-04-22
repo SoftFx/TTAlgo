@@ -129,7 +129,7 @@ namespace Machinarium.Var
         public void Validate(bool updateVal = true) // TODO: add after post Trigger Event
         {
             if (updateVal)
-                _valValue = Value.ToString();
+                _valValue = Value?.ToString();
 
             foreach (var rule in _rules)
                 if (!rule.Condition(Value))

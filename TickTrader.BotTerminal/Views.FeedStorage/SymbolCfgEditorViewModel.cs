@@ -137,7 +137,9 @@ namespace TickTrader.BotTerminal.SymbolManager
             var swapRange = new ValidationRange(-100, 100);
             var slippageRange = new ValidationRange(0, int.MaxValue);
 
-            Name.AddValidationRule(v => !symbolExists(v), "Symbol with such name already exists!");
+            if (!IsEditMode)
+                Name.AddValidationRule(v => !symbolExists(v), "Symbol with such name already exists!");
+
             Digits.AddValidationRange(1, 11);
 
             ProfitCurr.MustContainItem(AvailableCurrencies.ToList());
