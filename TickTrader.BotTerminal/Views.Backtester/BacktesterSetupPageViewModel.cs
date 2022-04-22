@@ -272,7 +272,7 @@ namespace TickTrader.BotTerminal
             Settings.Load(config);
 
             var pluginConfig = config.PluginConfig;
-            SelectedPlugin.Value = Plugins.FirstOrDefault(p => p.Key == pluginConfig.Key);
+            SelectedPlugin.Value = Plugins.FirstOrDefault(p => p.Key.Equals(pluginConfig.Key));
             PluginConfig = pluginConfig;
 
             SelectedModel.Value = config.Core.ModelTimeframe;
@@ -282,7 +282,9 @@ namespace TickTrader.BotTerminal
                 throw new ArgumentException($"Failed to parse symbol key '{mainSymbolCfg}'");
             FeedSymbols.Clear();
             FeedSymbols.Add(MainSymbolShadowSetup);
-            MainSymbolSetup.SelectedSymbol.Value = _catalog[new StorageSymbolKey(mainSymbolKey.Symbol, mainSymbolKey.Origin)];
+            var smbData = _catalog[new StorageSymbolKey(mainSymbolKey.Symbol, mainSymbolKey.Origin)];
+            MainSymbolSetup.SelectedSymbolName.Value = smbData.Name;
+            MainSymbolSetup.SelectedSymbol.Value = smbData;
             MainSymbolSetup.SelectedTimeframe.Value = config.Core.MainTimeframe;
             MainSymbolShadowSetup.SelectedTimeframe.Value = mainSymbolKey.TimeFrame;
 
@@ -295,7 +297,9 @@ namespace TickTrader.BotTerminal
                     throw new ArgumentException($"Failed to parse symbol key '{pair.Value}'");
 
                 var smbSetup = CreateSymbolSetupModel(SymbolSetupType.Additional);
-                smbSetup.SelectedSymbol.Value = _catalog[new StorageSymbolKey(symbolKey.Symbol, symbolKey.Origin)];
+                smbData = _catalog[new StorageSymbolKey(symbolKey.Symbol, symbolKey.Origin)];
+                smbSetup.SelectedSymbolName.Value = smbData.Name;
+                smbSetup.SelectedSymbol.Value = smbData;
                 smbSetup.SelectedTimeframe.Value = symbolKey.TimeFrame;
                 FeedSymbols.Add(smbSetup);
             }
