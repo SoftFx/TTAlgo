@@ -144,7 +144,7 @@ namespace TickTrader.BotTerminal
 
                 SetupPage.CheckDuplicateSymbols();
 
-                var config = CreateConfig();
+                var config = SetupPage.CreateConfig();
 
                 try
                 {
@@ -202,16 +202,6 @@ namespace TickTrader.BotTerminal
                 _logger.Error(ex, "Error during emulation");
                 observer.StopProgress($"Emulation error: {ex.Message}");
             }
-        }
-
-        private BacktesterConfig CreateConfig()
-        {
-            var config = new BacktesterConfig();
-            SetupPage.Apply(config);
-            config.Env.FeedCachePath = _catalog.OnlineCollection.StorageFolder;
-            config.Env.CustomFeedCachePath = _catalog.CustomCollection.StorageFolder;
-            config.Env.WorkingFolderPath = EnvService.Instance.AlgoWorkingFolder;
-            return config;
         }
 
         private async Task<string> RunBacktester(IActionObserver observer, string configPath, CancellationToken cToken)
@@ -550,7 +540,7 @@ namespace TickTrader.BotTerminal
 
                 try
                 {
-                    var config = CreateConfig();
+                    var config = SetupPage.CreateConfig();
                     config.Save(dialog.FileName);
                 }
                 catch (Exception ex)
@@ -575,7 +565,23 @@ namespace TickTrader.BotTerminal
 
             if (showAction.Result == true)
             {
+                SetupPage.CloseSetupDialog();
 
+                string loadError = null;
+
+                try
+                {
+                    var config = BacktesterConfig.Load(dialog.FileName);
+                    SetupPage.LoadConfig(config);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, "Failed to load backtester config");
+                    loadError = ex.Message;
+                }
+
+                if (loadError != null)
+                    yield return VmActions.ShowError($"Can't load backtester config: {loadError}", "Error");
             }
         }
 

@@ -254,6 +254,54 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public BacktesterConfig CreateConfig()
+        {
+            var config = new BacktesterConfig();
+            Apply(config);
+            config.Env.FeedCachePath = _catalog.OnlineCollection.StorageFolder;
+            config.Env.CustomFeedCachePath = _catalog.CustomCollection.StorageFolder;
+            config.Env.WorkingFolderPath = EnvService.Instance.AlgoWorkingFolder;
+            return config;
+        }
+
+        public void LoadConfig(BacktesterConfig config)
+        {
+            ModeProp.Value = Modes.First(m => m.Value == config.Core.Mode);
+            DateRange.From = config.Core.EmulateFrom;
+            DateRange.To = config.Core.EmulateTo;
+            Settings.Load(config);
+
+            var pluginConfig = config.PluginConfig;
+            SelectedPlugin.Value = Plugins.FirstOrDefault(p => p.Key == pluginConfig.Key);
+            PluginConfig = pluginConfig;
+
+            SelectedModel.Value = config.Core.ModelTimeframe;
+            var mainSymbolName = config.Core.MainSymbol;
+            var mainSymbolCfg = config.Core.FeedConfig[mainSymbolName];
+            if (!FeedCacheKey.TryParse(mainSymbolCfg, out var mainSymbolKey))
+                throw new ArgumentException($"Failed to parse symbol key '{mainSymbolCfg}'");
+            FeedSymbols.Clear();
+            FeedSymbols.Add(MainSymbolShadowSetup);
+            MainSymbolSetup.SelectedSymbol.Value = _catalog[new StorageSymbolKey(mainSymbolKey.Symbol, mainSymbolKey.Origin)];
+            MainSymbolSetup.SelectedTimeframe.Value = config.Core.MainTimeframe;
+            MainSymbolShadowSetup.SelectedTimeframe.Value = mainSymbolKey.TimeFrame;
+
+            foreach(var pair in config.Core.FeedConfig)
+            {
+                if (pair.Key == mainSymbolName)
+                    continue;
+
+                if (!FeedCacheKey.TryParse(pair.Value, out var symbolKey))
+                    throw new ArgumentException($"Failed to parse symbol key '{pair.Value}'");
+
+                var smbSetup = CreateSymbolSetupModel(SymbolSetupType.Additional);
+                smbSetup.SelectedSymbol.Value = _catalog[new StorageSymbolKey(symbolKey.Symbol, symbolKey.Origin)];
+                smbSetup.SelectedTimeframe.Value = symbolKey.TimeFrame;
+                FeedSymbols.Add(smbSetup);
+            }
+
+        }
+
 
         private PluginConfig CreateDefaultPluginConfig()
         {
