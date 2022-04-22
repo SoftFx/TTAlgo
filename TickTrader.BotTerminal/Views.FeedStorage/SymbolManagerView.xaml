@@ -33,6 +33,7 @@
         </Setter>
     </Style>
 
+
     <ControlTemplate x:Key="SymbolManagerView.Template.Classic">
         <Grid Background="{TemplateBinding Background}">
             <Grid.ColumnDefinitions>

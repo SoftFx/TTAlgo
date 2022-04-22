@@ -177,7 +177,7 @@ namespace TickTrader.BotTerminal.SymbolManager
         private bool HasSymbol(string smbName)
         {
             smbName = smbName.Trim();
-            return _catalog.OnlineCollection[smbName] != null && _catalog.CustomCollection[smbName] != null;
+            return _catalog.OnlineCollection[smbName] != null || _catalog.CustomCollection[smbName] != null;
         }
 
         public override Task<bool> CanCloseAsync(CancellationToken cancellationToken = default)
