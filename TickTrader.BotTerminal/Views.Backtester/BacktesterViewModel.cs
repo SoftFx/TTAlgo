@@ -177,15 +177,12 @@ namespace TickTrader.BotTerminal
                 finally
                 {
                     FireOnStop(config);
-#if !DEBUG
-                    // Leave config outside results archive to debug backtester host if needed
                     System.IO.File.Delete(configPath);
-#endif
                 }
 
                 try
                 {
-                    await LoadResults(observer, resultsPath);
+                    await LoadResults(observer, resultsPath, false);
                 }
                 catch (Exception ex)
                 {
@@ -227,7 +224,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private async Task LoadResults(IActionObserver observer, string resultsPath)
+        private async Task LoadResults(IActionObserver observer, string resultsPath, bool loadConfig)
         {
             observer.SetMessage("Loading results...");
 
@@ -237,6 +234,9 @@ namespace TickTrader.BotTerminal
             if (execStatus.ResultsNotCorrupted)
             {
                 var config = results.GetConfig();
+
+                if (loadConfig)
+                    SetupPage.LoadConfig(config);
 
                 _testingSymbols = config.TradeServer.Symbols.Values.ToDictionary(s => s.Name, v => (ISymbolInfo)v);
 
@@ -623,7 +623,7 @@ namespace TickTrader.BotTerminal
             try
             {
                 ResetResultsView();
-                await LoadResults(observer, resultsPath);
+                await LoadResults(observer, resultsPath, true);
                 observer.StopProgress();
             }
             catch (Exception ex)
