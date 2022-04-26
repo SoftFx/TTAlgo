@@ -142,6 +142,8 @@ namespace TickTrader.BotTerminal
             {
                 var cToken = observer.CancelationToken;
 
+                ResetResultsView();
+
                 SetupPage.CheckDuplicateSymbols();
 
                 var config = SetupPage.CreateConfig();

@@ -270,6 +270,7 @@ namespace TickTrader.BotTerminal
             DateRange.From = config.Core.EmulateFrom;
             DateRange.To = config.Core.EmulateTo;
             Settings.Load(config);
+            UpdateTradeSummary();
 
             var pluginConfig = config.PluginConfig;
             SelectedPlugin.Value = Plugins.FirstOrDefault(p => p.Key.Equals(pluginConfig.Key));
@@ -303,7 +304,6 @@ namespace TickTrader.BotTerminal
                 smbSetup.SelectedTimeframe.Value = symbolKey.TimeFrame;
                 FeedSymbols.Add(smbSetup);
             }
-
         }
 
 
