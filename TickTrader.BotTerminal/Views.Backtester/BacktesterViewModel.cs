@@ -238,7 +238,7 @@ namespace TickTrader.BotTerminal
                 var config = results.GetConfig();
 
                 if (loadConfig)
-                    SetupPage.LoadConfig(config);
+                    await SetupPage.LoadConfig(config);
 
                 _testingSymbols = config.TradeServer.Symbols.Values.ToDictionary(s => s.Name, v => (ISymbolInfo)v);
 
@@ -567,14 +567,11 @@ namespace TickTrader.BotTerminal
 
             if (showAction.Result == true)
             {
-                SetupPage.CloseSetupDialog();
-
                 string loadError = null;
 
                 try
                 {
-                    var config = BacktesterConfig.Load(dialog.FileName);
-                    SetupPage.LoadConfig(config);
+                    var _ = LoadConfigWrapped(dialog.FileName);
                 }
                 catch (Exception ex)
                 {
@@ -613,6 +610,29 @@ namespace TickTrader.BotTerminal
                 if (loadError != null)
                     yield return VmActions.ShowError($"Can't load backtester results: {loadError}", "Error");
             }
+        }
+
+
+        private async Task LoadConfigWrapped(string configPath)
+        {
+            SetupPage.CloseSetupDialog();
+
+            IActionObserver observer = ProgressMonitor.Progress;
+            _isRunning.Set();
+
+            try
+            {
+                ResetResultsView();
+                var config = BacktesterConfig.Load(configPath);
+                await SetupPage.LoadConfig(config);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to load config");
+                observer.StopProgress($"Can't load config: {ex.Message}");
+            }
+
+            _isRunning.Clear();
         }
 
         private async Task LoadResultsWrapped(string resultsPath)

@@ -264,11 +264,9 @@ namespace TickTrader.BotTerminal
             return config;
         }
 
-        public void LoadConfig(BacktesterConfig config)
+        public async Task LoadConfig(BacktesterConfig config)
         {
             ModeProp.Value = Modes.First(m => m.Value == config.Core.Mode);
-            DateRange.From = config.Core.EmulateFrom;
-            DateRange.To = config.Core.EmulateTo;
             Settings.Load(config);
             UpdateTradeSummary();
 
@@ -304,6 +302,14 @@ namespace TickTrader.BotTerminal
                 smbSetup.SelectedTimeframe.Value = symbolKey.TimeFrame;
                 FeedSymbols.Add(smbSetup);
             }
+
+            // Wait until available range for all symbols are updated
+            while (FeedSymbols.Any(s => s.IsUpdating.Value))
+            {
+                await Task.Delay(100);
+            }
+            DateRange.From = config.Core.EmulateFrom;
+            DateRange.To = config.Core.EmulateTo;
         }
 
 
