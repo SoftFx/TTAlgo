@@ -55,21 +55,28 @@ namespace TickTrader.BotTerminal
 
         public AlgoChartViewModel ChartControlModel { get; }
 
-        public void OnStart(bool visualizing, SymbolInfo mainSymbol, BacktesterConfig config, IEnumerable<ISymbolInfo> symbols)
+        public void Init(BacktesterConfig config)
         {
-            _visualizing = visualizing;
+            _visualizing = false;
             _acctype = config.Account.Type;
             _mainSymbol = config.Core.MainSymbol;
-            _symbolMap = symbols.ToDictionary(s => s.Name);
 
             Clear();
+
+            ChartControlModel.SetTimeframe(config.Core.MainTimeframe);
+            ChartControlModel.SymbolInfo.Value = config.TradeServer.Symbols.Values.First(s => s.Name == _mainSymbol);
+        }
+
+        public void OnStart(BacktesterConfig config)
+        {
+            Init(config);
+
+            _visualizing = true;
+            //_symbolMap = config.TradeServer.Symbols.Values.ToDictionary(s => s.Name, v => (ISymbolInfo)v);
 
             _barVector = new ChartBarVectorWithMarkers(config.Core.MainTimeframe);
             _mainSeries.DataSeries = _barVector.SciChartdata;
             _markerSeries.DataSeries = _barVector.MarkersData;
-
-            ChartControlModel.SetTimeframe(config.Core.MainTimeframe);
-            ChartControlModel.SymbolInfo.Value = mainSymbol;
 
             //var adapter = new BacktesterAdapter(config, backtester);
             //var outputGroup = new OutputGroupViewModel(adapter, ChartControlModel.ChartWindowId.Value, this, mainSymbol,
@@ -79,10 +86,6 @@ namespace TickTrader.BotTerminal
             _actionIdSeed = 0;
 
             _postponedMarkers.Clear();
-        }
-
-        public void OnStop()
-        {
         }
 
         public async Task LoadMainChart(IEnumerable<BarData> bars, Feed.Types.Timeframe timeframe, IEnumerable<BaseTransactionModel> tradeHistory)
