@@ -78,10 +78,12 @@ namespace TickTrader.BotTerminal
             _mainSeries.DataSeries = _barVector.SciChartdata;
             _markerSeries.DataSeries = _barVector.MarkersData;
 
-            //var adapter = new BacktesterAdapter(config, backtester);
-            //var outputGroup = new OutputGroupViewModel(adapter, ChartControlModel.ChartWindowId.Value, this, mainSymbol,
-            //    ChartControlModel.IsCrosshairEnabled.Var);
+            //var adapter = new BacktesterOutputAdapter(config.PluginConfig, ???);
+            //var mainSymbol = config.TradeServer.Symbols[config.Core.MainSymbol];
+            //var outputGroup = new OutputGroupViewModel(adapter, ChartControlModel.ChartWindowId.Value, this,
+            //    mainSymbol, ChartControlModel.IsCrosshairEnabled.Var);
             //ChartControlModel.OutputGroups.Add(outputGroup);
+            //adapter.Subscribe(???);
 
             _actionIdSeed = 0;
 
@@ -120,6 +122,17 @@ namespace TickTrader.BotTerminal
 
             _mainSeries.DataSeries = _barVector.SciChartdata;
             _markerSeries.DataSeries = _barVector.MarkersData;
+        }
+
+        public async Task LoadOutputs(BacktesterConfig config, BacktesterResults results)
+        {
+            var adapter = new BacktesterOutputAdapter(config.PluginConfig, results.PluginInfo);
+            var mainSymbol = config.TradeServer.Symbols[config.Core.MainSymbol];
+            var outputGroup = new OutputGroupViewModel(adapter, ChartControlModel.ChartWindowId.Value, this,
+                mainSymbol, ChartControlModel.IsCrosshairEnabled.Var);
+            ChartControlModel.OutputGroups.Add(outputGroup);
+
+            await Task.Run(() => adapter.SendSnapshots(results));
         }
 
         public void Clear()

@@ -361,6 +361,7 @@ namespace TickTrader.BotTerminal
             {
                 observer.SetMessage("Loading feed chart data ...");
                 await ChartPage.LoadMainChart(mainBars, mainTimeFrame, tradeHistory);
+                await ChartPage.LoadOutputs(config, results);
             }
 
             if (results.PluginInfo.IsTradeBot)
