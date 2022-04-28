@@ -154,7 +154,7 @@ namespace TickTrader.BotTerminal
                     return;
                 }
 
-                var descriptorName = SetupPage.SelectedPlugin.Value.Descriptor.DisplayName;
+                var descriptorName = PathHelper.Escape(SetupPage.SelectedPlugin.Value.Descriptor.DisplayName);
                 var pathPrefix = System.IO.Path.Combine(EnvService.Instance.BacktestResultsFolder, descriptorName);
                 var configPath = PathHelper.GenerateUniqueFilePath(pathPrefix, ".zip");
                 config.Save(configPath);
@@ -508,7 +508,7 @@ namespace TickTrader.BotTerminal
         public IEnumerable<IResult> SaveConfig()
         {
             var dialog = new SaveFileDialog();
-            dialog.FileName = SetupPage.SelectedPlugin.Value.Descriptor.DisplayName + ".zip";
+            dialog.FileName = PathHelper.Escape(SetupPage.SelectedPlugin.Value.Descriptor.DisplayName) + ".zip";
             dialog.Filter = ZipFileFilter;
 
             var showAction = VmActions.ShowWin32Dialog(dialog);
