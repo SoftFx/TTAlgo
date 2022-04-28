@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using TickTrader.Algo.Async;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Domain;
-using TickTrader.Algo.Server;
 
 namespace TickTrader.BotTerminal
 {
@@ -17,22 +17,22 @@ namespace TickTrader.BotTerminal
 
         event Action<OutputPoint> Appended;
         event Action<OutputPoint> Updated;
-        event Action<OutputPoint[]> SnapshotAppended;
+        event Action<IEnumerable<OutputPoint>> SnapshotAppended;
         event Action<int> Truncated;
+
+        void SendSnapshot(IEnumerable<OutputPoint> points);
     }
 
     internal class OutputCollector<T> : IOutputCollector, IDisposable
     {
         private readonly string _outputId;
-        private readonly IDisposable _outputSub;
+        private IDisposable _outputSub;
 
-        public OutputCollector(ExecutorModel executor, IOutputConfig config, OutputDescriptor descriptor)
+        public OutputCollector(IOutputConfig config, OutputDescriptor descriptor)
         {
             _outputId = config.PropertyId;
             OutputConfig = config;
             OutputDescriptor = descriptor;
-
-            _outputSub = executor.OutputUpdated.Subscribe(Executor_OutputUpdate);
         }
 
         public virtual bool IsNotSyncrhonized => false;
@@ -42,13 +42,25 @@ namespace TickTrader.BotTerminal
 
         public event Action<OutputPoint> Appended;
         public event Action<OutputPoint> Updated;
-        public event Action<OutputPoint[]> SnapshotAppended;
+        public event Action<IEnumerable<OutputPoint>> SnapshotAppended;
         public event Action<int> Truncated;
+
 
         public virtual void Dispose()
         {
             _outputSub.Dispose();
         }
+
+        public void Subscribe(IEventSource<OutputSeriesUpdate> eventSrc)
+        {
+            _outputSub = eventSrc.Subscribe(Executor_OutputUpdate);
+        }
+
+        public void SendSnapshot(IEnumerable<OutputPoint> points)
+        {
+            OnSnapshot(points);
+        }
+
 
         private void Executor_OutputUpdate(OutputSeriesUpdate update)
         {
@@ -61,7 +73,7 @@ namespace TickTrader.BotTerminal
                 {
                     case DataSeriesUpdate.Types.Action.Append: OnAppend(update.Points[0].Unpack()); break;
                     case DataSeriesUpdate.Types.Action.Update: OnUpdate(update.Points[0].Unpack()); break;
-                    case DataSeriesUpdate.Types.Action.Reset: OnSnapshot(update.Points.Select(p => p.Unpack()).ToArray()); break;
+                    case DataSeriesUpdate.Types.Action.Reset: OnSnapshot(update.Points.Select(p => p.Unpack())); break;
                 }
             }
         }
@@ -71,7 +83,7 @@ namespace TickTrader.BotTerminal
             Appended?.Invoke(point);
         }
 
-        protected virtual void OnSnapshot(OutputPoint[] points)
+        protected virtual void OnSnapshot(IEnumerable<OutputPoint> points)
         {
             SnapshotAppended?.Invoke(points);
         }
@@ -91,7 +103,7 @@ namespace TickTrader.BotTerminal
     {
         private CircularList<OutputPoint> _cache = new CircularList<OutputPoint>();
 
-        public CachingOutputCollector(ExecutorModel executor, IOutputConfig config, OutputDescriptor descriptor) : base(executor, config, descriptor)
+        public CachingOutputCollector(IOutputConfig config, OutputDescriptor descriptor) : base(config, descriptor)
         {
         }
 
@@ -104,7 +116,7 @@ namespace TickTrader.BotTerminal
             base.OnAppend(point);
         }
 
-        protected override void OnSnapshot(OutputPoint[] range)
+        protected override void OnSnapshot(IEnumerable<OutputPoint> range)
         {
             _cache.AddRange(range);
             base.OnSnapshot(range);

@@ -65,7 +65,7 @@ namespace Machinarium.Var
             {
                 isUpdating = true;
 
-                if (_convertError == null)
+                if (string.IsNullOrEmpty(_convertError))
                     _property.Var.Value = newVal;
             }
             finally
@@ -77,7 +77,7 @@ namespace Machinarium.Var
 
         private void UpdateError()
         {
-            _error.Value = _convertError == null ? _property.ErrorVar.Value : _convertError;
+            _error.Value = string.IsNullOrEmpty(_convertError) ? _property.ErrorVar.Value : _convertError;
         }
 
         private void ConvertFromProperty()

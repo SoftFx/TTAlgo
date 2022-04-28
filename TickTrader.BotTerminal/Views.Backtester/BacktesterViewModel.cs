@@ -1,13 +1,10 @@
 ﻿using Caliburn.Micro;
-using Machinarium.Qnil;
 using Machinarium.Var;
 using Microsoft.Win32;
 using NLog;
 using SciChart.Charting.Model.DataSeries;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.BacktesterApi;
@@ -37,7 +34,6 @@ namespace TickTrader.BotTerminal
         private BoolProperty _isRunning;
         private BoolProperty _isVisualizing;
         private ITestExecController _tester;
-        private Dictionary<string, ISymbolInfo> _testingSymbols;
         private Property<EmulatorStates> _stateProp;
         private BoolProperty _pauseRequestedProp;
         private BoolProperty _resumeRequestedProp;
@@ -131,7 +127,7 @@ namespace TickTrader.BotTerminal
             ChartPage.Clear();
             ResultsPage.Clear();
             JournalPage.Clear();
-            TradeHistoryPage.OnTesterStart(SetupPage.Settings.AccType);
+            TradeHistoryPage.Clear();
             _hasDataToSave.Clear();
             TradesPage.Clear();
         }
@@ -141,6 +137,8 @@ namespace TickTrader.BotTerminal
             try
             {
                 var cToken = observer.CancelationToken;
+
+                ResetResultsView();
 
                 SetupPage.CheckDuplicateSymbols();
 
@@ -156,7 +154,7 @@ namespace TickTrader.BotTerminal
                     return;
                 }
 
-                var descriptorName = SetupPage.SelectedPlugin.Value.Descriptor.DisplayName;
+                var descriptorName = PathHelper.Escape(SetupPage.SelectedPlugin.Value.Descriptor.DisplayName);
                 var pathPrefix = System.IO.Path.Combine(EnvService.Instance.BacktestResultsFolder, descriptorName);
                 var configPath = PathHelper.GenerateUniqueFilePath(pathPrefix, ".zip");
                 config.Save(configPath);
@@ -171,7 +169,7 @@ namespace TickTrader.BotTerminal
                 string resultsPath = default;
                 try
                 {
-                    FireOnStart(SetupPage.MainSymbolSetup.SelectedSymbol.Value, config);
+                    FireOnStart(config);
                     resultsPath = await RunBacktester(observer, configPath, cToken);
                 }
                 finally
@@ -236,15 +234,14 @@ namespace TickTrader.BotTerminal
                 var config = results.GetConfig();
 
                 if (loadConfig)
-                    SetupPage.LoadConfig(config);
+                    await SetupPage.LoadConfig(config);
 
-                _testingSymbols = config.TradeServer.Symbols.Values.ToDictionary(s => s.Name, v => (ISymbolInfo)v);
+                OnLoadingResults(config);
 
                 await LoadStats(observer, results);
                 await LoadJournal(observer, results);
-                var reports = await LoadTradeHistory(observer, results);
-                await LoadChartData(config, results, reports, observer);
-                TradeHistoryPage.LoadTradeHistory(reports);
+                await LoadTradeHistory(observer, results, config);
+                await LoadChartData(config, results, TradeHistoryPage.Reports, observer);
             }
 
             if (execStatus.HasError)
@@ -253,73 +250,69 @@ namespace TickTrader.BotTerminal
                 observer.SetMessage(execStatus.ToString());
         }
 
-        private void FireOnStart(ISymbolData mainSymbol, BacktesterConfig config)
+        private void FireOnStart(BacktesterConfig config)
         {
-            if (config.Core.Mode == BacktesterMode.Backtesting)
+            if (config.Core.Mode == BacktesterMode.Visualization)
             {
-                FireOnStartBacktesting(mainSymbol, config);
-            }
-            else if (config.Core.Mode == BacktesterMode.Optimization)
-            {
-                FireOnStartOptimizing();
+                JournalPage.IsVisible = true;
+                ChartPage.IsVisible = true;
+                TradeHistoryPage.IsVisible = true;
+                ResultsPage.IsVisible = true;
+                TradesPage.IsVisible = true;
+
+                OptimizationResultsPage.IsVisible = false;
+
+                ChartPage.OnStart(config);
+                TradeHistoryPage.OnStart(config);
+                TradesPage.Start(config);
             }
         }
 
         private void FireOnStop(BacktesterConfig config)
         {
-            if (config.Core.Mode == BacktesterMode.Backtesting)
+            if (config.Core.Mode == BacktesterMode.Visualization)
             {
-                FireOnStopBacktesting();
-            }
-            else if (config.Core.Mode == BacktesterMode.Optimization)
-            {
-                FireOnStopOptimizing();
+                TradesPage.Stop();
             }
         }
 
-        private void FireOnStartBacktesting(ISymbolData mainSymbol, BacktesterConfig config)
+        private void OnLoadingResults(BacktesterConfig config)
         {
-            var symbols = SetupPage.FeedSymbols.Select(ss => ss.SelectedSymbol.Value.Info).ToList();
-            var currecnies = _client.Currencies.Snapshot.Values.ToList();
+            if (config.Core.Mode == BacktesterMode.Backtesting || config.Core.Mode == BacktesterMode.Visualization)
+            {
+                OnLoadingBacktestingResults(config);
+            }
+            else if (config.Core.Mode == BacktesterMode.Optimization)
+            {
+                OnLoadingOptimizationResults();
+            }
+        }
 
+        private void OnLoadingBacktestingResults(BacktesterConfig config)
+        {
             JournalPage.IsVisible = true;
             ChartPage.IsVisible = true;
             TradeHistoryPage.IsVisible = true;
             ResultsPage.IsVisible = true;
 
-            ChartPage.OnStart(IsVisualizing.Value, new SymbolInfo(mainSymbol.Info), config, symbols);
-            if (IsVisualizing.Value)
-            {
-                TradesPage.IsVisible = true;
-                TradesPage.Start(config, currecnies, symbols);
-            }
-            else
-                TradesPage.IsVisible = false;
+            TradesPage.IsVisible = false;
+            OptimizationResultsPage.IsVisible = false;
 
-            OptimizationResultsPage.Hide();
+            ChartPage.Init(config);
+            TradeHistoryPage.Init(config);
         }
 
-        private void FireOnStopBacktesting()
-        {
-            ChartPage.OnStop();
-            if (IsVisualizing.Value)
-                TradesPage.Stop();
-        }
-
-        private void FireOnStartOptimizing()
+        private void OnLoadingOptimizationResults()
         {
             JournalPage.IsVisible = false;
             ChartPage.IsVisible = false;
-            TradesPage.IsVisible = false;
             TradeHistoryPage.IsVisible = false;
             ResultsPage.IsVisible = false;
+            TradesPage.IsVisible = false;
 
-            OptimizationResultsPage.Start(OptimizationPage.GetSelectedParams());
-        }
+            OptimizationPage.IsVisible = true;
 
-        private void FireOnStopOptimizing()
-        {
-            OptimizationResultsPage.Stop();
+            OptimizationResultsPage.Init(OptimizationPage.GetSelectedParams());
         }
 
         private async Task LoadJournal(IActionObserver observer, BacktesterResults results)
@@ -337,30 +330,16 @@ namespace TickTrader.BotTerminal
             //});
         }
 
-        private async Task<List<BaseTransactionModel>> LoadTradeHistory(IActionObserver observer, BacktesterResults results)
+        private async Task LoadTradeHistory(IActionObserver observer, BacktesterResults results, BacktesterConfig config)
         {
             observer.SetMessage("Loading trade history...");
 
-            var tradeHistory = new List<BaseTransactionModel>(results.TradeHistory.Count);
-            var accType = SetupPage.Settings.AccType;
-
-            await Task.Run(() =>
-            {
-                foreach (var record in results.TradeHistory)
-                {
-                    var trRep = BaseTransactionModel.Create(accType, record, 5, _testingSymbols.GetOrDefault(record.Symbol));
-                    tradeHistory.Add(trRep);
-                }
-            });
-
-            return tradeHistory;
+            await TradeHistoryPage.LoadTradeHistory(results, config);
         }
 
         private void AddTradeHistoryReport(TradeReportInfo record)
         {
-            var accType = SetupPage.Settings.AccType;
-            var trRep = BaseTransactionModel.Create(accType, record, 5, _testingSymbols.GetOrDefault(record.Symbol));
-            TradeHistoryPage.Append(trRep);
+            TradeHistoryPage.Append(record);
         }
 
         private async Task LoadStats(IActionObserver observer, BacktesterResults results)
@@ -382,6 +361,7 @@ namespace TickTrader.BotTerminal
             {
                 observer.SetMessage("Loading feed chart data ...");
                 await ChartPage.LoadMainChart(mainBars, mainTimeFrame, tradeHistory);
+                await ChartPage.LoadOutputs(config, results);
             }
 
             if (results.PluginInfo.IsTradeBot)
@@ -528,7 +508,7 @@ namespace TickTrader.BotTerminal
         public IEnumerable<IResult> SaveConfig()
         {
             var dialog = new SaveFileDialog();
-            dialog.FileName = SetupPage.SelectedPlugin.Value.Descriptor.DisplayName + ".zip";
+            dialog.FileName = PathHelper.Escape(SetupPage.SelectedPlugin.Value.Descriptor.DisplayName) + ".zip";
             dialog.Filter = ZipFileFilter;
 
             var showAction = VmActions.ShowWin32Dialog(dialog);
@@ -565,14 +545,11 @@ namespace TickTrader.BotTerminal
 
             if (showAction.Result == true)
             {
-                SetupPage.CloseSetupDialog();
-
                 string loadError = null;
 
                 try
                 {
-                    var config = BacktesterConfig.Load(dialog.FileName);
-                    SetupPage.LoadConfig(config);
+                    var _ = LoadConfigWrapped(dialog.FileName);
                 }
                 catch (Exception ex)
                 {
@@ -611,6 +588,29 @@ namespace TickTrader.BotTerminal
                 if (loadError != null)
                     yield return VmActions.ShowError($"Can't load backtester results: {loadError}", "Error");
             }
+        }
+
+
+        private async Task LoadConfigWrapped(string configPath)
+        {
+            SetupPage.CloseSetupDialog();
+
+            IActionObserver observer = ProgressMonitor.Progress;
+            _isRunning.Set();
+
+            try
+            {
+                ResetResultsView();
+                var config = BacktesterConfig.Load(configPath);
+                await SetupPage.LoadConfig(config);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to load config");
+                observer.StopProgress($"Can't load config: {ex.Message}");
+            }
+
+            _isRunning.Clear();
         }
 
         private async Task LoadResultsWrapped(string resultsPath)

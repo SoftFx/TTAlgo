@@ -46,7 +46,6 @@ namespace TickTrader.BotTerminal
             _allSymbolsValid = _var.AddBoolProperty();
             //_hasDataToSave = _var.AddBoolProperty();
             //_isRunning = _var.AddBoolProperty();
-            //_isVisualizing = _var.AddBoolProperty();
 
             _localWnd = new WindowManager(this);
 
@@ -56,9 +55,6 @@ namespace TickTrader.BotTerminal
             DateRange = new DateRangeSelectionViewModel(false);
             IsUpdatingRange = new BoolProperty();
             _isDateRangeValid = new BoolProperty();
-
-            SaveResultsToFile = new BoolProperty();
-            SaveResultsToFile.Set();
 
             //_availableSymbols = env.Symbols;
 
@@ -83,7 +79,6 @@ namespace TickTrader.BotTerminal
             CanSetup = !isRunning & client.IsConnected;
             //CanStop = ActionOverlay.CanCancel;
             //CanSave = !IsRunning & _hasDataToSave.Var;
-            //IsVisualizationEnabled = _var.AddBoolProperty();
 
 
             Plugins = env.LocalAgentVM.PluginList;
@@ -179,11 +174,9 @@ namespace TickTrader.BotTerminal
         public PluginConfig PluginConfig { get; private set; }
         //public PluginConfig PluginConfig { get; private set; }
         public Property<string> TradeSettingsSummary { get; private set; }
-        //public BoolProperty IsVisualizationEnabled { get; }
         public List<OptionalItem<BacktesterMode>> Modes { get; }
         public Property<OptionalItem<BacktesterMode>> ModeProp { get; private set; }
         public BacktesterMode Mode => ModeProp.Value.Value;
-        public BoolProperty SaveResultsToFile { get; }
         public BoolVar IsPluginSelected { get; }
         public BoolVar IsTradeBotSelected { get; }
         public BoolProperty IsUpdatingRange { get; private set; }
@@ -264,12 +257,11 @@ namespace TickTrader.BotTerminal
             return config;
         }
 
-        public void LoadConfig(BacktesterConfig config)
+        public async Task LoadConfig(BacktesterConfig config)
         {
             ModeProp.Value = Modes.First(m => m.Value == config.Core.Mode);
-            DateRange.From = config.Core.EmulateFrom;
-            DateRange.To = config.Core.EmulateTo;
             Settings.Load(config);
+            UpdateTradeSummary();
 
             var pluginConfig = config.PluginConfig;
             SelectedPlugin.Value = Plugins.FirstOrDefault(p => p.Key.Equals(pluginConfig.Key));
@@ -304,6 +296,13 @@ namespace TickTrader.BotTerminal
                 FeedSymbols.Add(smbSetup);
             }
 
+            // Wait until available range for all symbols are updated
+            while (FeedSymbols.Any(s => s.IsUpdating.Value))
+            {
+                await Task.Delay(100);
+            }
+            DateRange.From = config.Core.EmulateFrom;
+            DateRange.To = config.Core.EmulateTo;
         }
 
 

@@ -136,7 +136,7 @@ namespace TickTrader.BotTerminal
             _requestsCount.Value--;
         }
 
-        public async void UpdateAvailableRange(Feed.Types.Timeframe timeFrame)
+        public async Task UpdateAvailableRange(Feed.Types.Timeframe timeFrame)
         {
             if (_suppressRangeUpdates)
                 return;

@@ -161,7 +161,9 @@ namespace TickTrader.BotTerminal
 
         protected override IOutputCollector CreateOutputCollector<T>(ExecutorModel executor, IOutputConfig config, OutputDescriptor descriptor)
         {
-            return new CachingOutputCollector<T>(executor, config, descriptor);
+            var output = new CachingOutputCollector<T>(config, descriptor);
+            output.Subscribe(executor.OutputUpdated);
+            return output;
         }
 
         private void Host_Connected()

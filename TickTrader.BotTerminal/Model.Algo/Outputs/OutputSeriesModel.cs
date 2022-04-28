@@ -1,5 +1,6 @@
 ﻿using SciChart.Charting.Model.DataSeries;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Domain;
@@ -14,20 +15,17 @@ namespace TickTrader.BotTerminal
 
         public OutputDescriptor Descriptor { get; private set; }
 
-        public string PluginId { get; private set; }
-
         public IOutputConfig Config { get; private set; }
 
         public abstract IXyDataSeries SeriesData { get; }
 
-        protected void Init(IPluginModel plugin, IOutputConfig config, OutputDescriptor descriptor)
+        protected void Init(IOutputConfig config, OutputDescriptor descriptor)
         {
             Config = config;
             Descriptor = descriptor;
 
             Id = descriptor.Id;
             DisplayName = descriptor.DisplayName;
-            PluginId = plugin.InstanceId;
         }
 
         public abstract void Dispose();
@@ -107,7 +105,7 @@ namespace TickTrader.BotTerminal
                 UpdateInternal(point);
         }
 
-        private void _collector_SnapshotAppended(OutputPoint[] range)
+        private void _collector_SnapshotAppended(IEnumerable<OutputPoint> range)
         {
             if (_synchronizer != null)
                 _synchronizer.AppendSnapshot(range);

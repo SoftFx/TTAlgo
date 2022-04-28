@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using TickTrader.Algo.Account;
 using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.Domain;
@@ -28,7 +29,7 @@ namespace TickTrader.BotTerminal
             _client.Clear();
         }
 
-        public void Start(BacktesterConfig config, IEnumerable<CurrencyInfo> currencies, IEnumerable<ISymbolInfo> symbols)
+        public void Start(BacktesterConfig config)
         {
             var accSettings = config.Account;
             var accInfo = new AccountInfo(accSettings.InitialBalance, accSettings.BalanceCurrency, null);
@@ -36,7 +37,7 @@ namespace TickTrader.BotTerminal
             accInfo.Id = "1";
             accInfo.Type = accSettings.Type;
 
-            _client.Init(accInfo, symbols, currencies);
+            _client.Init(accInfo, config.TradeServer.Symbols.Values, config.TradeServer.Currencies.Values.Select(c => c.ToAlgo()));
 
             _connection.EmulateConnect();
         }

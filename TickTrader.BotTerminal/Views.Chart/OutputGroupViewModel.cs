@@ -14,7 +14,7 @@ namespace TickTrader.BotTerminal
     {
         private IPluginDataChartModel _chart;
         private List<OutputSeriesModel> _outputModels;
-        private SymbolInfo _symbol;
+        private ISymbolInfo _symbol;
         private VarList<OutputSeriesModel> _overlayOutputs;
         private VarList<IRenderableSeriesViewModel> _overlaySeries;
         private VarList<OutputPaneViewModel> _panes;
@@ -36,7 +36,7 @@ namespace TickTrader.BotTerminal
 
         public event System.Action PrecisionUpdated;
 
-        public OutputGroupViewModel(IPluginModel plugin, string windowId, IPluginDataChartModel chart, SymbolInfo symbol,
+        public OutputGroupViewModel(IPluginModel plugin, string windowId, IPluginDataChartModel chart, ISymbolInfo symbol,
             BoolVar isCrosshairEnabled)
         {
             Model = plugin;
@@ -100,9 +100,9 @@ namespace TickTrader.BotTerminal
                 var config = outputCollector.OutputConfig;
 
                 if (config is ColoredLineOutputConfig)
-                    yield return new DoubleSeriesModel(plugin, _chart, outputCollector);
+                    yield return new DoubleSeriesModel(_chart, outputCollector);
                 else if (config is MarkerSeriesOutputConfig)
-                    yield return new MarkerSeriesModel(plugin, _chart, outputCollector);
+                    yield return new MarkerSeriesModel(_chart, outputCollector);
             }
         }
 

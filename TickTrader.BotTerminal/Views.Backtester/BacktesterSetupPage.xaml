@@ -108,9 +108,6 @@
                         <ComboBox SelectedItem="{Binding ModeProp.Value}" ItemsSource="{Binding Modes}" DisplayMemberPath="Value"
                                   Width="120" IsEnabled="False"
                                   ItemContainerStyle="{StaticResource OptionalComboBoxItemStyle}"/>
-                        <CheckBox Content="Save results to file" IsChecked="{Binding SaveResultsToFile.Value}"
-                                  Margin="25,0,0,0" VerticalAlignment="Center" />
-                        <!--<CheckBox Content="Visualization" IsChecked="{Binding IsVisualizationEnabled.Value}" Margin="25,4,0,12" />-->
                     </StackPanel>
                     
                     <Label Content="Account:" Grid.Column="0" Grid.Row="2"/>
