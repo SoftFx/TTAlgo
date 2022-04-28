@@ -117,7 +117,7 @@ namespace TickTrader.FeedStorage
 
         public override int GetHashCode()
         {
-            return HashCode.GetComposite(Name, Origin);
+            return Algo.Core.Lib.HashCode.GetComposite(Name, Origin);
         }
 
         int IComparable<ISymbolKey>.CompareTo(ISymbolKey other)

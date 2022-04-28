@@ -22,25 +22,31 @@ namespace TickTrader.SeriesStorage.Lmdb
 
         public LmdbStorage(string path, bool readOnly = false)
         {
-            _env = new LightningEnvironment(path);
             _readonlyMode = readOnly;
+
             try
             {
-                _env.MaxDatabases = 100000;
-                if (Environment.Is64BitProcess)
-                    _env.MapSize = 1024L * 1024L * 1024L * 50L;
-                else
-                    _env.MapSize = 1024L * 1024L * 1024L;
-                _env.MaxReaders = 100000;
+                var config = new EnvironmentConfiguration
+                {
+                    MapSize = 1024L * 1024L * 1024L,
+                    MaxDatabases = 100000,
+                    MaxReaders = 100000,
+                    //AutoReduceMapSizeIn32BitProcess = true,
+                    //AutoResizeWindows = true,
+                };
 
-                var flags = EnvironmentOpenFlags.WriteMap | EnvironmentOpenFlags.NoSync | EnvironmentOpenFlags.NoSubDir;
+                _env = new LightningEnvironment(path, config);
+
+                var flags = EnvironmentOpenFlags.NoSync | EnvironmentOpenFlags.NoSubDir;
 
                 if (readOnly)
                     flags |= EnvironmentOpenFlags.ReadOnly;
+                else
+                    flags |= EnvironmentOpenFlags.WriteMap;
 
                 _env.Open(flags);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _env.Dispose();
                 _env = null;
@@ -95,12 +101,12 @@ namespace TickTrader.SeriesStorage.Lmdb
             var db = tr.OpenDatabase(DefaultDatabaseName, defaultDbCfg);
             var cursor = tr.CreateCursor(db);
 
-            if (cursor.MoveTo(from))
+            if (cursor.Set(from) == MDBResultCode.Success)
                 return;
 
-            while (cursor.MoveNext())
+            while (cursor.Next() == MDBResultCode.Success)
             {
-                var key = cursor.Current.Key;
+                var key = cursor.GetCurrent().key.CopyToNewArray();
 
                 if (KeyHelper.IsLess(key, to))
                     break;
@@ -133,15 +139,15 @@ namespace TickTrader.SeriesStorage.Lmdb
 
         private bool SeekNear(LightningCursor cursor, byte[] key, bool reversed = false)
         {
-            if (cursor.MoveTo(key))
+            if (cursor.Set(key) == MDBResultCode.Success)
             {
-                var iKey = cursor.Current.Key;
+                var iKey = cursor.GetCurrent().key.CopyToNewArray();
                 if (Enumerable.SequenceEqual(iKey, key))
                     return true; // exact position
                 else
                 {
                     if (!reversed)
-                        cursor.MovePrev();
+                        cursor.Previous();
                     return true;
                 }
             }
