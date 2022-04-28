@@ -87,7 +87,7 @@ namespace TickTrader.BotTerminal
     {
         public static StorageSymbolKey ToKey(this SymbolConfig info)
         {
-            return new StorageSymbolKey(info.Name, SymbolConfig.Types.SymbolOrigin.Online);
+            return new StorageSymbolKey(info.Name, info.Origin);
         }
 
         public static StorageSymbolKey ToKey(this ISymbolKey info)
