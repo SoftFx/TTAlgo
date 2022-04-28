@@ -8,6 +8,7 @@ namespace TickTrader.FeedStorage.Api.Tests
     {
         internal const string DatabaseFolder = "StorageFolder";
 
+        [ThreadStatic]
         private static int _number;
 
         public string FolderPath { get; }
@@ -16,7 +17,7 @@ namespace TickTrader.FeedStorage.Api.Tests
         internal StorageSettings()
         {
             _number = Interlocked.Increment(ref _number);
-            FolderPath = Path.Combine(Environment.CurrentDirectory, $"{DatabaseFolder}_{_number}");
+            FolderPath = Path.Combine(Environment.CurrentDirectory, $"{DatabaseFolder}_{_number}_{Environment.CurrentManagedThreadId}");
         }
 
         internal virtual string GetExpectedPath()
