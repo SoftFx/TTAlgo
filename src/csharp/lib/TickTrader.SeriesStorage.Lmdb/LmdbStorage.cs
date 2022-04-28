@@ -28,11 +28,11 @@ namespace TickTrader.SeriesStorage.Lmdb
             {
                 var config = new EnvironmentConfiguration
                 {
-                    MapSize = 1024L * 1024L * 1024L,
+                    MapSize = 1024L * 1024L * 1024L * 50, //50Gb this is max database size
                     MaxDatabases = 100000,
                     MaxReaders = 100000,
-                    //AutoReduceMapSizeIn32BitProcess = true,
-                    //AutoResizeWindows = true,
+                    AutoReduceMapSizeIn32BitProcess = true,
+                    AutoResizeWindows = true,
                 };
 
                 _env = new LightningEnvironment(path, config);
