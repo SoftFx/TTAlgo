@@ -169,6 +169,7 @@ namespace TickTrader.FeedStorage.Api.Tests
 
         protected static void AssertSymbolKey(ISymbolKey actual, ISymbolKey expected)
         {
+            Assert.Equal(actual, expected);
             Assert.Equal(actual.Name, expected.Name);
             Assert.Equal(actual.Origin, expected.Origin);
         }

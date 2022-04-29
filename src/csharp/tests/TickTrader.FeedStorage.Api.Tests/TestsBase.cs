@@ -3,11 +3,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using TickTrader.Algo.Domain;
-using TickTrader.BotTerminal;
 using TickTrader.SeriesStorage.Lmdb;
 
 namespace TickTrader.FeedStorage.Api.Tests
 {
+    public record StorageSymbolKey(string Name, SymbolConfig.Types.SymbolOrigin Origin) : ISymbolKey
+    {
+        public override int GetHashCode() => ((ISymbolKey)this).GetHashCode();
+    }
+
+
     public abstract class TestsBase<TSettings> : IDisposable where TSettings : StorageSettings, new()
     {
         private protected readonly TSettings _settings;
