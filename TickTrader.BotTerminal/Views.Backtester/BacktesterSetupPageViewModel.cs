@@ -122,6 +122,7 @@ namespace TickTrader.BotTerminal
                     UpdatePluginState(plugin.Descriptor_);
                     PluginConfig = null;
                     PluginSelected?.Invoke();
+                    CloseSetupDialog();
                 }
                 else
                     PluginConfig = null;
