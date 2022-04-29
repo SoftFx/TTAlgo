@@ -115,22 +115,6 @@ namespace TickTrader.FeedStorage
 
         string ISymbolKey.Name => Name; // protection for correct object serialization
 
-        public override int GetHashCode()
-        {
-            return Algo.Core.Lib.HashCode.GetComposite(Name, Origin);
-        }
-
-        int IComparable<ISymbolKey>.CompareTo(ISymbolKey other)
-        {
-            if (Origin == other.Origin)
-                return Name.CompareTo(other.Name);
-            else
-                return Origin.CompareTo(other.Origin);
-        }
-
-        public bool Equals(ISymbolKey other)
-        {
-            return Origin == other.Origin && Name == other.Name;
-        }
+        public override int GetHashCode() => ((ISymbolKey)this).GetHashCode();
     }
 }
