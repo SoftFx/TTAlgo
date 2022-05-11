@@ -7,7 +7,6 @@ using TickTrader.Algo.BacktesterApi;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.CoreV1;
-using TickTrader.Algo.Isolation.NetFx;
 using TickTrader.Algo.Logging;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.Rpc;
@@ -59,7 +58,7 @@ namespace TickTrader.Algo.BacktesterV1Host
             {
                 ConfigureLogging(logsDir, args.Length != 0);
 
-                PackageLoadContext.Init(PackageLoadContextProvider.Create);
+                PackageLoadContext.Init(Isolation.NetCore.PackageLoadContextProvider.Create);
                 PackageExplorer.Init(PackageV1Explorer.Create());
                 PluginLogWriter.Init(NLogPluginLogWriter.Create);
                 BinaryStorageManagerFactory.Init((folder, readOnly) => new LmdbManager(folder, readOnly));
