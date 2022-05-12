@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting.WindowsServices;
 using Newtonsoft.Json;
 using NLog;
 using NLog.Extensions.Logging;
@@ -68,7 +70,7 @@ namespace TickTrader.BotAgent
 
                 logger.Info("Starting web host");
 
-                host.Launch();
+                host.Run();
             }
             catch (Exception ex)
             {
@@ -76,7 +78,7 @@ namespace TickTrader.BotAgent
             }
         }
 
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args)
+        public static IHostBuilder CreateWebHostBuilder(string[] args)
         {
             var launchSettings = LaunchSettings.Read(args, SwitchMappings);
 
@@ -106,7 +108,8 @@ namespace TickTrader.BotAgent
 
             var cert = config.GetCertificate(pathToContentRoot);
 
-            return new WebHostBuilder()
+            var builder = Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder => webBuilder
                 .UseConfiguration(config)
                 .ConfigureAppConfiguration((context, builder) =>
                 {
@@ -131,7 +134,12 @@ namespace TickTrader.BotAgent
                         options.Environment = launchSettings.Environment;
                         options.Mode = launchSettings.Mode;
                     }))
-                .UseStartup<Startup>();
+                .UseStartup<Startup>());
+
+            if (launchSettings.Mode == LaunchMode.WindowsService)
+                builder.UseWindowsService();
+
+            return builder;
         }
 
 

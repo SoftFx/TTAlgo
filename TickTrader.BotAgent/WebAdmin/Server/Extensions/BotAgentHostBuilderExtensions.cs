@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using TickTrader.Algo.Server;
 using TickTrader.Algo.ServerControl;
 using TickTrader.Algo.ServerControl.Grpc;
@@ -11,9 +11,9 @@ using TickTrader.BotAgent.WebAdmin.Server.Protocol;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
 {
-    public static class BotAgentWebHostBuilderExtensions
+    public static class BotAgentHostBuilderExtensions
     {
-        public static IWebHostBuilder AddBotAgent(this IWebHostBuilder builder)
+        public static IHostBuilder AddBotAgent(this IHostBuilder builder)
         {
             builder.ConfigureServices(services =>
             {
@@ -25,7 +25,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             return builder;
         }
 
-        public static IWebHostBuilder AddProtocolServer(this IWebHostBuilder builder)
+        public static IHostBuilder AddProtocolServer(this IHostBuilder builder)
         {
             builder.ConfigureServices(services =>
             {
