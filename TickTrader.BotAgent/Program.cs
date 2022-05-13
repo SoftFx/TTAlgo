@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Hosting.WindowsServices;
 using Newtonsoft.Json;
 using NLog;
 using NLog.Extensions.Logging;
@@ -109,24 +108,11 @@ namespace TickTrader.BotAgent
             var cert = config.GetCertificate(pathToContentRoot);
 
             var builder = Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder => webBuilder
-                .UseConfiguration(config)
                 .ConfigureAppConfiguration((context, builder) =>
                 {
-                    // Thanks Microsoft for not doing this in UseConfiguration
-                    // I enjoy spending hours in framework sources
                     builder.Sources.Clear();
                     builder.AddConfiguration(config);
                 })
-                .UseKestrel()
-                .ConfigureKestrel((context, options) =>
-                    options.ConfigureHttpsDefaults(httpsOptions =>
-                    {
-                        httpsOptions.ServerCertificate = cert;
-                        httpsOptions.SslProtocols = System.Security.Authentication.SslProtocols.Tls12;
-                    }))
-                .UseContentRoot(pathToContentRoot)
-                .UseWebRoot(pathToWebRoot)
                 .ConfigureLogging(logging => logging.AddNLog())
                 .ConfigureServices(services =>
                     services.Configure<LaunchSettings>(options =>
@@ -134,7 +120,16 @@ namespace TickTrader.BotAgent
                         options.Environment = launchSettings.Environment;
                         options.Mode = launchSettings.Mode;
                     }))
-                .UseStartup<Startup>());
+                .ConfigureWebHostDefaults(webBuilder => webBuilder
+                    .ConfigureKestrel((context, options) =>
+                        options.ConfigureHttpsDefaults(httpsOptions =>
+                        {
+                            httpsOptions.ServerCertificate = cert;
+                            httpsOptions.SslProtocols = System.Security.Authentication.SslProtocols.Tls12;
+                        }))
+                    .UseContentRoot(pathToContentRoot)
+                    .UseWebRoot(pathToWebRoot)
+                    .UseStartup<Startup>());
 
             if (launchSettings.Mode == LaunchMode.WindowsService)
                 builder.UseWindowsService();
