@@ -108,7 +108,14 @@ namespace TickTrader.Algo.Core.Lib
                         using (var decryptor = aes.CreateDecryptor(aesKeyData, ivData))
                         using (var cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read))
                         {
-                            var plainDataLength = cryptoStream.Read(plainDataBuffer, 0, plainDataBuffer.Length);
+                            var plainDataLength = 0;
+                            var read = 0;
+                            do
+                            {
+                                read = cryptoStream.Read(plainDataBuffer, plainDataLength, plainDataBuffer.Length - plainDataLength);
+                                plainDataLength += read;
+                            }
+                            while (read > 0);
                             return new ReadOnlySequence<byte>(plainDataBuffer, 0, plainDataLength);
                         }
                     }
