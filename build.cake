@@ -126,6 +126,16 @@ Task("BuildSdk")
 
    try
    {
+      var caliburnSource = "https://www.myget.org/F/caliburn-micro-builds/api/v3/index.json"; //special source for new caliburn version
+
+      if (!NuGetHasSource(source:caliburnSource))
+      {
+         NuGetAddSource(
+            name: "Caliburn Nuget",
+            source:  caliburnSource
+         );
+      }
+
       DotNetRestore(sdkSolutionPath.ToString());
 
       var msBuildPath = DirectoryPath.FromString(msBuildDirPath).CombineWithFilePath("MSBuild.exe").ToString();
