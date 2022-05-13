@@ -117,6 +117,18 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Assets_AvailableVolume" xml:space="preserve">
+    <value>Доступный объём</value>
+  </data>
+  <data name="Assets_Currency" xml:space="preserve">
+    <value>Валюта</value>
+  </data>
+  <data name="Assets_LockedVolume" xml:space="preserve">
+    <value>Заблокированный объём</value>
+  </data>
+  <data name="Assets_Volume" xml:space="preserve">
+    <value>Объём</value>
+  </data>
   <data name="ChartType_Candle" xml:space="preserve">
     <value>Свеча</value>
   </data>
@@ -156,11 +168,20 @@
   <data name="ContextMenu_Timeline" xml:space="preserve">
     <value>Шкала времени</value>
   </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Копировать</value>
+  </data>
+  <data name="DownloadingTradeHistoryError" xml:space="preserve">
+    <value>Произошла ошибка при загрузке истории</value>
+  </data>
   <data name="Journal_Message" xml:space="preserve">
     <value>Сообщение</value>
   </data>
   <data name="Journal_Time" xml:space="preserve">
     <value>Время</value>
+  </data>
+  <data name="Menu_About" xml:space="preserve">
+    <value>О программе</value>
   </data>
   <data name="Menu_BotTrader" xml:space="preserve">
     <value>AlgoTerminal</value>
@@ -168,8 +189,14 @@
   <data name="Menu_ExitBotTrader" xml:space="preserve">
     <value>Выход</value>
   </data>
+  <data name="Menu_Help" xml:space="preserve">
+    <value>Помощь</value>
+  </data>
   <data name="Menu_Language" xml:space="preserve">
     <value>Язык</value>
+  </data>
+  <data name="Menu_LoadProfile" xml:space="preserve">
+    <value>Загрузить профиль</value>
   </data>
   <data name="Menu_LogIn" xml:space="preserve">
     <value>Логин...</value>
@@ -189,6 +216,12 @@
   <data name="Menu_Preferences" xml:space="preserve">
     <value>Настройки</value>
   </data>
+  <data name="Menu_Profile" xml:space="preserve">
+    <value>Профиль</value>
+  </data>
+  <data name="Menu_SaveProfile" xml:space="preserve">
+    <value>Сохранить профиль как</value>
+  </data>
   <data name="Menu_Theme" xml:space="preserve">
     <value>Тема</value>
   </data>
@@ -197,159 +230,6 @@
   </data>
   <data name="Order_Amount" xml:space="preserve">
     <value>Сумма</value>
-  </data>
-  <data name="Order_OrderType" xml:space="preserve">
-    <value>Тип ордера</value>
-  </data>
-  <data name="Order_Price" xml:space="preserve">
-    <value>Цена</value>
-  </data>
-  <data name="Order_Side" xml:space="preserve">
-    <value>Сторона</value>
-  </data>
-  <data name="Order_Symbol" xml:space="preserve">
-    <value>Символ</value>
-  </data>
-  <data name="Order_Volume" xml:space="preserve">
-    <value>Объем</value>
-  </data>
-  <data name="Position_Amount" xml:space="preserve">
-    <value>Сумма</value>
-  </data>
-  <data name="Position_Side" xml:space="preserve">
-    <value>Сторона</value>
-  </data>
-  <data name="Position_Symbol" xml:space="preserve">
-    <value>Символ</value>
-  </data>
-  <data name="SymbolDetails_Buy" xml:space="preserve">
-    <value>Купить</value>
-  </data>
-  <data name="SymbolDetails_Sell" xml:space="preserve">
-    <value>Продать</value>
-  </data>
-  <data name="Tab_Algo" xml:space="preserve">
-    <value>Algo Repository</value>
-  </data>
-  <data name="Tab_Assets" xml:space="preserve">
-    <value>Актив</value>
-  </data>
-  <data name="Tab_BotJournal" xml:space="preserve">
-    <value>Bot Лог</value>
-  </data>
-  <data name="Tab_History" xml:space="preserve">
-    <value>История</value>
-  </data>
-  <data name="Tab_Journal" xml:space="preserve">
-    <value>Журнал</value>
-  </data>
-  <data name="Tab_Orders" xml:space="preserve">
-    <value>Оредра</value>
-  </data>
-  <data name="Tab_Positions" xml:space="preserve">
-    <value>Позиции</value>
-  </data>
-  <data name="Tab_Symbols" xml:space="preserve">
-    <value>Символы</value>
-  </data>
-  <data name="Tab_Trade" xml:space="preserve">
-    <value>Торговля</value>
-  </data>
-  <data name="Theme_Dark" xml:space="preserve">
-    <value>Темная</value>
-  </data>
-  <data name="Theme_Light" xml:space="preserve">
-    <value>Светлая</value>
-  </data>
-  <data name="TimelineType_Real" xml:space="preserve">
-    <value>Реальная?</value>
-  </data>
-  <data name="TimelineType_Uniform" xml:space="preserve">
-    <value>Унифицированная?</value>
-  </data>
-  <data name="TimePeriod_All" xml:space="preserve">
-    <value>За все время</value>
-  </data>
-  <data name="TimePeriod_CurrentMonth" xml:space="preserve">
-    <value>Текущий месяц</value>
-  </data>
-  <data name="TimePeriod_PreviousMonth" xml:space="preserve">
-    <value>Предыдущий месяц</value>
-  </data>
-  <data name="TimePeriod_Today" xml:space="preserve">
-    <value>Сегодня</value>
-  </data>
-  <data name="TimePeriod_Yesterday" xml:space="preserve">
-    <value>Вчера</value>
-  </data>
-  <data name="TimePeriod_Custom" xml:space="preserve">
-    <value>Произвольный</value>
-  </data>
-  <data name="TimePeriod_LastSixMonths" xml:space="preserve">
-    <value>Последние 6 месяца</value>
-  </data>
-  <data name="TimePeriod_LastThreeMonths" xml:space="preserve">
-    <value>Последние 3 месяца</value>
-  </data>
-  <data name="TimePeriod_LastYear" xml:space="preserve">
-    <value>Последние 12 месяца</value>
-  </data>
-  <data name="TradeDirection_All" xml:space="preserve">
-    <value>Все направления</value>
-  </data>
-  <data name="TradeDirection_Buy" xml:space="preserve">
-    <value>Buy</value>
-  </data>
-  <data name="TradeDirection_Sell" xml:space="preserve">
-    <value>Sell</value>
-  </data>
-  <data name="DownloadingTradeHistoryError" xml:space="preserve">
-    <value>Произошла ошибка при загрузке истории</value>
-  </data>
-  <data name="Theme_Classic" xml:space="preserve">
-    <value>Классическая</value>
-  </data>
-  <data name="TimePeriod_LastHour" xml:space="preserve">
-    <value>Последний час</value>
-  </data>
-  <data name="Menu_About" xml:space="preserve">
-    <value>О программе</value>
-  </data>
-  <data name="Menu_Help" xml:space="preserve">
-    <value>Помощь</value>
-  </data>
-  <data name="Menu_LoadProfile" xml:space="preserve">
-    <value>Загрузить профиль</value>
-  </data>
-  <data name="Menu_SaveProfile" xml:space="preserve">
-    <value>Сохранить профиль как</value>
-  </data>
-  <data name="Menu_Profile" xml:space="preserve">
-    <value>Профиль</value>
-  </data>
-  <data name="Order_StopPrice" xml:space="preserve">
-    <value>Stop Price</value>
-  </data>
-  <data name="Tab_Bots" xml:space="preserve">
-    <value>Бот-экземпляры</value>
-  </data>
-  <data name="Order_OpenPrice" xml:space="preserve">
-    <value>Open Price</value>
-  </data>
-  <data name="Assets_AvailableVolume" xml:space="preserve">
-    <value>Доступный объём</value>
-  </data>
-  <data name="Assets_Currency" xml:space="preserve">
-    <value>Валюта</value>
-  </data>
-  <data name="Assets_LockedVolume" xml:space="preserve">
-    <value>Заблокированный объём</value>
-  </data>
-  <data name="Assets_Volume" xml:space="preserve">
-    <value>Объём</value>
-  </data>
-  <data name="Copy" xml:space="preserve">
-    <value>Копировать</value>
   </data>
   <data name="Order_Comment" xml:space="preserve">
     <value>Комментарий</value>
@@ -372,11 +252,29 @@
   <data name="Order_Net_P_L" xml:space="preserve">
     <value>Net P/L</value>
   </data>
+  <data name="Order_OpenPrice" xml:space="preserve">
+    <value>Open Price</value>
+  </data>
+  <data name="Order_OrderType" xml:space="preserve">
+    <value>Тип ордера</value>
+  </data>
+  <data name="Order_Price" xml:space="preserve">
+    <value>Цена</value>
+  </data>
   <data name="Order_P_L" xml:space="preserve">
     <value>P/L</value>
   </data>
+  <data name="Order_Side" xml:space="preserve">
+    <value>Сторона</value>
+  </data>
+  <data name="Order_StopPrice" xml:space="preserve">
+    <value>Stop Price</value>
+  </data>
   <data name="Order_Swap" xml:space="preserve">
     <value>Swap</value>
+  </data>
+  <data name="Order_Symbol" xml:space="preserve">
+    <value>Символ</value>
   </data>
   <data name="Order_S_L" xml:space="preserve">
     <value>S/L</value>
@@ -386,6 +284,12 @@
   </data>
   <data name="Order_T_P" xml:space="preserve">
     <value>T/P</value>
+  </data>
+  <data name="Order_Volume" xml:space="preserve">
+    <value>Объем</value>
+  </data>
+  <data name="Position_Amount" xml:space="preserve">
+    <value>Сумма</value>
   </data>
   <data name="Position_CurrentPrice" xml:space="preserve">
     <value>Текущая цена</value>
@@ -405,8 +309,14 @@
   <data name="Position_PriceDeviation" xml:space="preserve">
     <value>Отклонение цены</value>
   </data>
+  <data name="Position_Side" xml:space="preserve">
+    <value>Сторона</value>
+  </data>
   <data name="Position_Swap" xml:space="preserve">
     <value>Swap</value>
+  </data>
+  <data name="Position_Symbol" xml:space="preserve">
+    <value>Символ</value>
   </data>
   <data name="Position_Volume" xml:space="preserve">
     <value>Объём</value>
@@ -417,7 +327,100 @@
   <data name="ShowSwap" xml:space="preserve">
     <value>Показать Swap</value>
   </data>
+  <data name="String1" xml:space="preserve">
+    <value />
+  </data>
+  <data name="SymbolDetails_Buy" xml:space="preserve">
+    <value>Купить</value>
+  </data>
+  <data name="SymbolDetails_Sell" xml:space="preserve">
+    <value>Продать</value>
+  </data>
   <data name="Tab_Alert" xml:space="preserve">
     <value>Предупреждения</value>
+  </data>
+  <data name="Tab_Algo" xml:space="preserve">
+    <value>Algo Repository</value>
+  </data>
+  <data name="Tab_Assets" xml:space="preserve">
+    <value>Актив</value>
+  </data>
+  <data name="Tab_BotJournal" xml:space="preserve">
+    <value>Bot Лог</value>
+  </data>
+  <data name="Tab_Bots" xml:space="preserve">
+    <value>Бот-экземпляры</value>
+  </data>
+  <data name="Tab_History" xml:space="preserve">
+    <value>История</value>
+  </data>
+  <data name="Tab_Journal" xml:space="preserve">
+    <value>Журнал</value>
+  </data>
+  <data name="Tab_Orders" xml:space="preserve">
+    <value>Оредра</value>
+  </data>
+  <data name="Tab_Positions" xml:space="preserve">
+    <value>Позиции</value>
+  </data>
+  <data name="Tab_Symbols" xml:space="preserve">
+    <value>Символы</value>
+  </data>
+  <data name="Tab_Trade" xml:space="preserve">
+    <value>Торговля</value>
+  </data>
+  <data name="Theme_Classic" xml:space="preserve">
+    <value>Классическая</value>
+  </data>
+  <data name="Theme_Dark" xml:space="preserve">
+    <value>Темная</value>
+  </data>
+  <data name="Theme_Light" xml:space="preserve">
+    <value>Светлая</value>
+  </data>
+  <data name="TimelineType_Real" xml:space="preserve">
+    <value>Реальная?</value>
+  </data>
+  <data name="TimelineType_Uniform" xml:space="preserve">
+    <value>Унифицированная?</value>
+  </data>
+  <data name="TimePeriod_All" xml:space="preserve">
+    <value>За все время</value>
+  </data>
+  <data name="TimePeriod_CurrentMonth" xml:space="preserve">
+    <value>Текущий месяц</value>
+  </data>
+  <data name="TimePeriod_Custom" xml:space="preserve">
+    <value>Произвольный</value>
+  </data>
+  <data name="TimePeriod_LastHour" xml:space="preserve">
+    <value>Последний час</value>
+  </data>
+  <data name="TimePeriod_LastSixMonths" xml:space="preserve">
+    <value>Последние 6 месяца</value>
+  </data>
+  <data name="TimePeriod_LastThreeMonths" xml:space="preserve">
+    <value>Последние 3 месяца</value>
+  </data>
+  <data name="TimePeriod_LastYear" xml:space="preserve">
+    <value>Последние 12 месяца</value>
+  </data>
+  <data name="TimePeriod_PreviousMonth" xml:space="preserve">
+    <value>Предыдущий месяц</value>
+  </data>
+  <data name="TimePeriod_Today" xml:space="preserve">
+    <value>Сегодня</value>
+  </data>
+  <data name="TimePeriod_Yesterday" xml:space="preserve">
+    <value>Вчера</value>
+  </data>
+  <data name="TradeDirection_All" xml:space="preserve">
+    <value>Все направления</value>
+  </data>
+  <data name="TradeDirection_Buy" xml:space="preserve">
+    <value>Buy</value>
+  </data>
+  <data name="TradeDirection_Sell" xml:space="preserve">
+    <value>Sell</value>
   </data>
 </root>

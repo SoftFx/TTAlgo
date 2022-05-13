@@ -11,12 +11,12 @@ namespace TickTrader.Algo.Core.Lib
         private static readonly Task<bool> CompletedTrue = Task.FromResult(true);
         private static readonly Task<bool> CompletedFalse = Task.FromResult(false);
 
-        public static IAsyncEnumerator<T> Empty<T>()
+        public static Api.IAsyncEnumerator<T> Empty<T>()
         {
             return new EmptyAsyncEnumerator<T>();
         }
 
-        public static IAsyncEnumerator<T> AsAsync<T>(this IAsyncPagedEnumerator<T> enumerator)
+        public static Api.IAsyncEnumerator<T> AsAsync<T>(this IAsyncPagedEnumerator<T> enumerator)
         {
             if (enumerator == null)
                 return Empty<T>();
@@ -24,25 +24,25 @@ namespace TickTrader.Algo.Core.Lib
             return new AsyncEnumeratorAdapter<T>(enumerator);
         }
 
-        public static IAsyncEnumerator<TDst> Cast<TSrc, TDst>(this IAsyncEnumerator<TSrc> src)
+        public static Api.IAsyncEnumerator<TDst> Cast<TSrc, TDst>(this Api.IAsyncEnumerator<TSrc> src)
             where TSrc : TDst
         {
             return new AsyncSelect<TSrc, TDst>(src, i => (TDst)i);
         }
 
-        public static IAsyncEnumerator<TDst> Select<TSrc, TDst>(this IAsyncEnumerator<TSrc> src, Func<TSrc, TDst> selector)
+        public static Api.IAsyncEnumerator<TDst> Select<TSrc, TDst>(this Api.IAsyncEnumerator<TSrc> src, Func<TSrc, TDst> selector)
         {
             return new AsyncSelect<TSrc, TDst>(src, selector);
         }
 
         public static AsyncEnumerableChannelAdapter<T> GetAdapter<T>(Func<IAsyncPagedEnumerator<T>> factory) where T : class => new AsyncEnumerableChannelAdapter<T>(factory);
 
-        public static IAsyncEnumerator<T> SimulateAsync<T>(this IEnumerable<T> src)
+        public static Api.IAsyncEnumerator<T> SimulateAsync<T>(this IEnumerable<T> src)
         {
             return new FakeAsyncEnumerator<T>(src);
         }
 
-        internal class AsyncEnumeratorAdapter<T> : IAsyncEnumerator<T>
+        internal class AsyncEnumeratorAdapter<T> : Api.IAsyncEnumerator<T>
         {
             private static readonly Task<bool> TrueResult = Task.FromResult(true);
             private static readonly Task<bool> FalseResult = Task.FromResult(false);
@@ -92,12 +92,12 @@ namespace TickTrader.Algo.Core.Lib
             }
         }
 
-        internal class AsyncSelect<TSrc, TDst> : IAsyncEnumerator<TDst>
+        internal class AsyncSelect<TSrc, TDst> : Api.IAsyncEnumerator<TDst>
         {
-            private IAsyncEnumerator<TSrc> _srcEnumerator;
+            private Api.IAsyncEnumerator<TSrc> _srcEnumerator;
             private Func<TSrc, TDst> _selector;
 
-            public AsyncSelect(IAsyncEnumerator<TSrc> srcEnumerator, Func<TSrc, TDst> selector)
+            public AsyncSelect(Api.IAsyncEnumerator<TSrc> srcEnumerator, Func<TSrc, TDst> selector)
             {
                 _srcEnumerator = srcEnumerator;
                 _selector = selector;
@@ -116,7 +116,7 @@ namespace TickTrader.Algo.Core.Lib
             }
         }
 
-        internal class EmptyAsyncEnumerator<T> : IAsyncEnumerator<T>
+        internal class EmptyAsyncEnumerator<T> : Api.IAsyncEnumerator<T>
         {
             public T Current => default(T);
 
@@ -130,7 +130,7 @@ namespace TickTrader.Algo.Core.Lib
             }
         }
 
-        internal class FakeAsyncEnumerator<T> : IAsyncEnumerator<T>
+        internal class FakeAsyncEnumerator<T> : Api.IAsyncEnumerator<T>
         {
             private IEnumerator<T> _e;
 

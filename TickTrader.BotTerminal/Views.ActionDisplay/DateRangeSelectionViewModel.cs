@@ -1,10 +1,11 @@
-﻿using Machinarium.Var;
+﻿using Caliburn.Micro;
+using Machinarium.Var;
 using System;
 using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotTerminal
 {
-    internal class DateRangeSelectionViewModel : ObservableObject
+    internal class DateRangeSelectionViewModel : PropertyChangedBase
     {
         private DateTime _rangeFrom;
         private DateTime _rangeTo;

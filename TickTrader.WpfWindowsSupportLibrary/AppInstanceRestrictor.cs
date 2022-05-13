@@ -11,7 +11,7 @@ namespace TickTrader.WpfWindowsSupportLibrary
 
         public AppInstanceRestrictor(string appLockPath)
         {
-            _applicationName = AppDomain.CurrentDomain.SetupInformation.ApplicationName;
+            _applicationName = AppDomain.CurrentDomain.FriendlyName;
             _appLockFilePath = appLockPath;
         }
 

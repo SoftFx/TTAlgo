@@ -1,6 +1,6 @@
 ﻿using Machinarium.Qnil;
 using NLog;
-using SciChart.Charting.Visuals.Axes;
+//using SciChart.Charting.Visuals.Axes;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -17,7 +17,6 @@ using TickTrader.Algo.Domain.ServerControl;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.Server;
-using TickTrader.Algo.Server.Common;
 using TickTrader.Algo.Server.Persistence;
 using AlgoServerPublicApi = TickTrader.Algo.Server.PublicAPI;
 using File = System.IO.File;
@@ -617,7 +616,7 @@ namespace TickTrader.BotTerminal
         #region IAlgoPluginHost
 
         ITimeVectorRef IPluginDataChartModel.TimeSyncRef => null;
-        AxisBase IPluginDataChartModel.CreateXAxis() => null;
+        //AxisBase IPluginDataChartModel.CreateXAxis() => null;
 
         void IAlgoPluginHost.Lock()
         {
