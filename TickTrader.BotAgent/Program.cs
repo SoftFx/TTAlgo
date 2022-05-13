@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using NLog;
 using NLog.Extensions.Logging;
 using NLog.Web;
@@ -92,7 +91,7 @@ namespace TickTrader.BotAgent
             var pathToWebRoot = Path.Combine(pathToWebAdmin, "wwwroot");
             var pathToAppSettings = Path.Combine(pathToWebAdmin, "appsettings.json");
 
-            EnsureDefaultConfiguration(pathToAppSettings);
+            AppSettings.EnsureValidConfiguration(pathToAppSettings);
 
             var configBuilder = new ConfigurationBuilder();
             configBuilder
@@ -137,74 +136,6 @@ namespace TickTrader.BotAgent
             return builder;
         }
 
-
-        private static void EnsureDefaultConfiguration(string configFile)
-        {
-            if (!File.Exists(configFile))
-            {
-                CreateDefaultConfig(configFile);
-            }
-            else
-            {
-                MigrateConfig(configFile);
-            }
-        }
-
-        private static void CreateDefaultConfig(string configFile)
-        {
-            var appSettings = AppSettings.Default;
-            SaveConfig(configFile, appSettings);
-        }
-
-        private static void MigrateConfig(string configFile)
-        {
-            var currentSettings = JsonConvert.DeserializeObject<AppSettings>(File.ReadAllText(configFile));
-
-            var anyChanges = false;
-
-            if (currentSettings.Protocol == null)
-            {
-                currentSettings.Protocol = AppSettings.Default.Protocol;
-                anyChanges = true;
-            }
-
-            if (currentSettings.Credentials.Login != null)
-            {
-                var oldCreds = currentSettings.Credentials;
-                currentSettings.Credentials = AppSettings.Default.Credentials;
-                currentSettings.Credentials.AdminLogin = oldCreds.Login;
-                currentSettings.Credentials.AdminPassword = oldCreds.Password;
-                anyChanges = true;
-            }
-
-            if (currentSettings.Fdk == null)
-            {
-                currentSettings.Fdk = AppSettings.Default.Fdk;
-                anyChanges = true;
-            }
-
-            if (currentSettings.Algo == null)
-            {
-                currentSettings.Algo = AppSettings.Default.Algo;
-                anyChanges = true;
-            }
-
-            if (currentSettings.Monitoring == null)
-            {
-                currentSettings.Monitoring = AppSettings.Default.Monitoring;
-                anyChanges = true;
-            }
-
-            if (anyChanges)
-            {
-                SaveConfig(configFile, currentSettings);
-            }
-        }
-
-        private static void SaveConfig(string configFile, AppSettings appSettings)
-        {
-            File.WriteAllText(configFile, JsonConvert.SerializeObject(appSettings, Formatting.Indented));
-        }
 
         private static void SetupGlobalExceptionLogging(Logger log)
         {
