@@ -42,26 +42,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!--<Reference Include="SciChart.Charting">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\SciChart.Charting.dll</HintPath>
-    </Reference>
-    <Reference Include="SciChart.Core">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\SciChart.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="SciChart.Data">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\SciChart.Data.dll</HintPath>
-    </Reference>
-    <Reference Include="SciChart.Drawing">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\SciChart.Drawing.dll</HintPath>
-    </Reference>
-    <Reference Include="SciChart.Drawing.DirectX">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\SciChart.Drawing.DirectX.dll</HintPath>
-    </Reference>-->
     <Reference Include="System.Management" />
   </ItemGroup>
 

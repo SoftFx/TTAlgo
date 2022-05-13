@@ -126,12 +126,7 @@ Task("BuildSdk")
 
    try
    {
-      var restoreSettings = new DotNetRestoreSettings
-      {
-         Force = true
-      };
-
-      DotNetRestore(sdkSolutionPath.ToString(), restoreSettings);
+      DotNetRestore(sdkSolutionPath.ToString());
 
       var msBuildPath = DirectoryPath.FromString(msBuildDirPath).CombineWithFilePath("MSBuild.exe").ToString();
       if (!System.IO.File.Exists(msBuildPath))
