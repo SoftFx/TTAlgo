@@ -1,15 +1,13 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.AspNetCore.SpaServices.Webpack;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using System;
+using Microsoft.Extensions.Hosting;
+using System.Text.Json.Serialization;
 using TickTrader.BotAgent.WebAdmin.Server.Core;
 using TickTrader.BotAgent.WebAdmin.Server.Core.Auth;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
@@ -43,15 +41,18 @@ namespace TickTrader.BotAgent.WebAdmin
             services.AddSingleton<IAuthManager, AuthManager>();
 
             services.AddSignalR(options => options.EnableDetailedErrors = true)
-                .AddJsonProtocol(o => o.PayloadSerializerSettings.ContractResolver = new DefaultContractResolver());
-
-            services.AddMvc()
-                .AddJsonOptions(options =>
+                .AddJsonProtocol(o =>
                 {
-                    options.SerializerSettings.ContractResolver = new DefaultContractResolver();
-                    options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
-                })
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+                    o.PayloadSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+                    o.PayloadSerializerOptions.PropertyNamingPolicy = null;
+                });
+
+            services.AddControllersWithViews().AddJsonOptions(o =>
+            {
+                o.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+                o.JsonSerializerOptions.PropertyNamingPolicy = null;
+            });
+            //services.AddRazorPages().AddJsonOptions(o => o.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull);
 
             services.AddSwaggerGen(c => c.SwaggerDoc("v1", new Swashbuckle.AspNetCore.Swagger.Info { Title = "AlgoServer WebAPI", Version = "v1" }));
 
@@ -66,19 +67,26 @@ namespace TickTrader.BotAgent.WebAdmin
                 jwtOptions.SecurityTokenValidators.Add(tokenProvider);
                 jwtOptions.TokenValidationParameters = tokenProvider.WebValidationParams;
             });
+
+            services.AddAuthorization(options =>
+            {
+                options.DefaultPolicy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+            });
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifeTime, IServiceProvider services)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions
-                {
-                    HotModuleReplacement = true,
-                    HotModuleReplacementEndpoint = "/dist/__webpack_hmr",
-                    ConfigFile = "./WebAdmin/webpack.config"
-                });
+                //app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions
+                //{
+                //    HotModuleReplacement = true,
+                //    HotModuleReplacementEndpoint = "/dist/__webpack_hmr",
+                //    ConfigFile = "./WebAdmin/webpack.config"
+                //});
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "AlgoServer WebAPI v1"));
             }
@@ -90,24 +98,33 @@ namespace TickTrader.BotAgent.WebAdmin
             app.UseStaticFiles();
             app.UseHttpsRedirection();
 
+            app.UseRouting();
+
             app.UseJwtAuthentication();
 
             app.ObserveBotAgent();
 
             app.UseAuthentication();
+            app.UseAuthorization();
 
-            app.UseSignalR(route => route.MapHub<BAFeed>("/signalr"));
+            //app.UseSpa(config => config.Options.DefaultPage = new PathString("/"));
 
-            app.UseMvc(routes =>
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapHub<BAFeed>("/signalr").RequireAuthorization();
 
-                routes.MapSpaFallbackRoute(
-                    name: "spa-fallback",
-                    defaults: new { controller = "Home", action = "Index" });
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
             });
+
+            //app.UseMvc(routes =>
+            //{
+
+            //    routes.MapSpaFallbackRoute(
+            //        name: "spa-fallback",
+            //        defaults: new { controller = "Home", action = "Index" });
+            //});
         }
     }
 }

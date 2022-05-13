@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
+using Microsoft.Extensions.Hosting;
 using NLog;
 using NLog.Extensions.Logging;
 using NLog.Web;
@@ -13,7 +13,7 @@ using System.IO;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.CoreV1;
-using TickTrader.Algo.Isolation.NetFx;
+using TickTrader.Algo.Isolation.NetCore;
 using TickTrader.Algo.Logging;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.Server;
@@ -68,7 +68,7 @@ namespace TickTrader.BotAgent
 
                 logger.Info("Starting web host");
 
-                host.Launch();
+                host.Run();
             }
             catch (Exception ex)
             {
@@ -76,7 +76,7 @@ namespace TickTrader.BotAgent
             }
         }
 
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args)
+        public static IHostBuilder CreateWebHostBuilder(string[] args)
         {
             var launchSettings = LaunchSettings.Read(args, SwitchMappings);
 
@@ -91,7 +91,7 @@ namespace TickTrader.BotAgent
             var pathToWebRoot = Path.Combine(pathToWebAdmin, "wwwroot");
             var pathToAppSettings = Path.Combine(pathToWebAdmin, "appsettings.json");
 
-            EnsureDefaultConfiguration(pathToAppSettings);
+            AppSettings.EnsureValidConfiguration(pathToAppSettings);
 
             var configBuilder = new ConfigurationBuilder();
             configBuilder
@@ -106,24 +106,12 @@ namespace TickTrader.BotAgent
 
             var cert = config.GetCertificate(pathToContentRoot);
 
-            return new WebHostBuilder()
-                .UseConfiguration(config)
+            var builder = Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((context, builder) =>
                 {
-                    // Thanks Microsoft for not doing this in UseConfiguration
-                    // I enjoy spending hours in framework sources
                     builder.Sources.Clear();
                     builder.AddConfiguration(config);
                 })
-                .UseKestrel()
-                .ConfigureKestrel((context, options) =>
-                    options.ConfigureHttpsDefaults(httpsOptions =>
-                    {
-                        httpsOptions.ServerCertificate = cert;
-                        httpsOptions.SslProtocols = System.Security.Authentication.SslProtocols.Tls12;
-                    }))
-                .UseContentRoot(pathToContentRoot)
-                .UseWebRoot(pathToWebRoot)
                 .ConfigureLogging(logging => logging.AddNLog())
                 .ConfigureServices(services =>
                     services.Configure<LaunchSettings>(options =>
@@ -131,77 +119,23 @@ namespace TickTrader.BotAgent
                         options.Environment = launchSettings.Environment;
                         options.Mode = launchSettings.Mode;
                     }))
-                .UseStartup<Startup>();
+                .ConfigureWebHostDefaults(webBuilder => webBuilder
+                    .ConfigureKestrel((context, options) =>
+                        options.ConfigureHttpsDefaults(httpsOptions =>
+                        {
+                            httpsOptions.ServerCertificate = cert;
+                            httpsOptions.SslProtocols = System.Security.Authentication.SslProtocols.Tls12;
+                        }))
+                    .UseContentRoot(pathToContentRoot)
+                    .UseWebRoot(pathToWebRoot)
+                    .UseStartup<Startup>());
+
+            if (launchSettings.Mode == LaunchMode.WindowsService)
+                builder.UseWindowsService();
+
+            return builder;
         }
 
-
-        private static void EnsureDefaultConfiguration(string configFile)
-        {
-            if (!File.Exists(configFile))
-            {
-                CreateDefaultConfig(configFile);
-            }
-            else
-            {
-                MigrateConfig(configFile);
-            }
-        }
-
-        private static void CreateDefaultConfig(string configFile)
-        {
-            var appSettings = AppSettings.Default;
-            SaveConfig(configFile, appSettings);
-        }
-
-        private static void MigrateConfig(string configFile)
-        {
-            var currentSettings = JsonConvert.DeserializeObject<AppSettings>(File.ReadAllText(configFile));
-
-            var anyChanges = false;
-
-            if (currentSettings.Protocol == null)
-            {
-                currentSettings.Protocol = AppSettings.Default.Protocol;
-                anyChanges = true;
-            }
-
-            if (currentSettings.Credentials.Login != null)
-            {
-                var oldCreds = currentSettings.Credentials;
-                currentSettings.Credentials = AppSettings.Default.Credentials;
-                currentSettings.Credentials.AdminLogin = oldCreds.Login;
-                currentSettings.Credentials.AdminPassword = oldCreds.Password;
-                anyChanges = true;
-            }
-
-            if (currentSettings.Fdk == null)
-            {
-                currentSettings.Fdk = AppSettings.Default.Fdk;
-                anyChanges = true;
-            }
-
-            if (currentSettings.Algo == null)
-            {
-                currentSettings.Algo = AppSettings.Default.Algo;
-                anyChanges = true;
-            }
-
-            if (currentSettings.Monitoring == null)
-            {
-                currentSettings.Monitoring = AppSettings.Default.Monitoring;
-                anyChanges = true;
-            }
-
-            if (anyChanges)
-            {
-                SaveConfig(configFile, currentSettings);
-            }
-        }
-
-        private static void SaveConfig(string configFile, AppSettings appSettings)
-        {
-            File.WriteAllText(configFile, JsonConvert.SerializeObject(appSettings, Formatting.Indented));
-        }
 
         private static void SetupGlobalExceptionLogging(Logger log)
         {
