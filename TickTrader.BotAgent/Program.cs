@@ -13,7 +13,7 @@ using System.IO;
 using TickTrader.Algo.Async.Actors;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.CoreV1;
-using TickTrader.Algo.Isolation.NetFx;
+using TickTrader.Algo.Isolation.NetCore;
 using TickTrader.Algo.Logging;
 using TickTrader.Algo.Package;
 using TickTrader.Algo.Server;
