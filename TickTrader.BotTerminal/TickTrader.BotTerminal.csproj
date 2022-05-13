@@ -15,6 +15,7 @@
     <FileVersion>1.0.0.0</FileVersion>
     <EnforceCodeStyleInBuild>False</EnforceCodeStyleInBuild>
     <ApplicationIcon>Resx\Logo\algoLogoLight.ico</ApplicationIcon>
+	<SatelliteResourceLanguages>en-gb,ru-ru</SatelliteResourceLanguages>
   </PropertyGroup>
 
   <ItemGroup>
@@ -117,7 +118,7 @@
     </None>
   </ItemGroup>
 
-  <!--<Target Name="MoveResources" AfterTargets="Build">
+  <Target Name="MoveResources" AfterTargets="Build">
     <ItemGroup>
       <EnGbLocale Include="$(TargetDir)en-gb\*.resources.dll" />
       <RuRuLocale Include="$(TargetDir)ru-ru\*.resources.dll" />
@@ -126,9 +127,9 @@
     <Copy SourceFiles="@(EnGbLocale)" DestinationFolder="$(TargetDir)Resources\en-gb" />
     <Copy SourceFiles="@(RuRuLocale)" DestinationFolder="$(TargetDir)Resources\ru-ru" />
     <Copy SourceFiles="@(RuLocale)" DestinationFolder="$(TargetDir)Resources\ru" />
-    <RemoveDir Directories="$(TargetDir)en-gb;$(TargetDir)ru-ru;$(TargetDir)de;$(TargetDir)es;$(TargetDir)fr;$(TargetDir)hu;$(TargetDir)it" />
-    <RemoveDir Directories="$(TargetDir)pt-BR;$(TargetDir)ro;$(TargetDir)ru;$(TargetDir)sv;$(TargetDir)zh-Hans;$(TargetDir)cs-CZ" />
-  </Target>-->
+    <!--<RemoveDir Directories="$(TargetDir)en-gb;$(TargetDir)ru-ru;$(TargetDir)de;$(TargetDir)es;$(TargetDir)fr;$(TargetDir)hu;$(TargetDir)it" />
+    <RemoveDir Directories="$(TargetDir)pt-BR;$(TargetDir)ro;$(TargetDir)ru;$(TargetDir)sv;$(TargetDir)zh-Hans;$(TargetDir)cs-CZ" />-->
+  </Target>
 
   <Target Name="RemoveLinuxLibs" AfterTargets="Build">
     <Delete Files="$(TargetDir)\libgrpc_csharp_ext.x64.dylib;$(TargetDir)\libgrpc_csharp_ext.x64.so" />
