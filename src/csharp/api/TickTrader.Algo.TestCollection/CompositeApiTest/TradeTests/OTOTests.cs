@@ -19,15 +19,15 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         internal OTOTests(bool useOCO, bool useAD)
         {
-            _useOCO = true;/* useOCO;*/
-            _useAD = true;/* useAD;*/
+            _useOCO = useOCO;
+            _useAD = useAD;
         }
 
 
         protected override async Task RunTestGroup(OrderBaseSet set)
         {
             await RunOnTimeTriggerTests(set);
-            await RunOnExpiredTriggerTests(set);
+            //await RunOnExpiredTriggerTests(set);
         }
 
 
@@ -297,7 +297,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             await RunOnTimeTest(OpenCancelOnTime, set);
 
             if (!set.IsInstantOrder)
-                await RunOnTimeTest(CancelWithExpiration, set, 4);
+                await RunOnTimeTest(ActivateWithExpiration, set, 4);
 
             if (set.IsSupportedOCO)
                 await RunOCOTriggerTest(OpenCancelOnTimeOCO, set, new OrderBaseSet(OrderType.Stop, set.Side));
@@ -306,21 +306,21 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private async Task OpenInstantOnTime(OrderStateTemplate order)
         {
-            await TestOpenOrder(order, OrderEvents.Cancel, OrderEvents.Open, OrderEvents.Fill);
+            await TestOpenOrder(order, OrderEvents.Activate, OrderEvents.Open, OrderEvents.Fill);
             await order.OnTimeTriggerReceived.Task;
         }
 
         private async Task OpenPendingOnTime(OrderStateTemplate order)
         {
-            await TestOpenOrder(order, OrderEvents.Cancel, OrderEvents.Open);
+            await TestOpenOrder(order, OrderEvents.Activate, OrderEvents.Open);
             await order.OnTimeTriggerReceived.Task;
             await order.Opened.Task;
             await TestCancelOrder(order);
         }
 
-        private Task CancelWithExpiration(OrderStateTemplate order)
+        private Task ActivateWithExpiration(OrderStateTemplate order)
         {
-            return TestOpenOrder(order.WithExpiration(8), OrderEvents.Cancel, OrderEvents.Open, OrderEvents.Expire);
+            return TestOpenOrder(order.WithExpiration(8), OrderEvents.Activate, OrderEvents.Open, OrderEvents.Expire);
         }
 
         private Task RejectWithIncorrectTime(OrderStateTemplate order)
@@ -421,12 +421,12 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             if (order.WithOnTimeTrigger(4).IsInstantOrder)
             {
-                await TestModifyOrder(order, OrderEvents.Cancel, OrderEvents.Open, OrderEvents.Fill);
+                await TestModifyOrder(order, OrderEvents.Activate, OrderEvents.Open, OrderEvents.Fill);
                 await order.OnTimeTriggerReceived.Task;
             }
             else
             {
-                await TestModifyOrder(order, OrderEvents.Cancel, OrderEvents.Open);
+                await TestModifyOrder(order, OrderEvents.Activate, OrderEvents.Open);
                 await order.OnTimeTriggerReceived.Task;
                 await order.Opened.Task;
                 await TestCancelOrder(order);
@@ -454,12 +454,12 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             if (order.WithOnTimeTrigger(4).IsInstantOrder)
             {
-                await TestModifyOrder(order, OrderEvents.Cancel, OrderEvents.Open, OrderEvents.Fill);
+                await TestModifyOrder(order, OrderEvents.Activate, OrderEvents.Open, OrderEvents.Fill);
                 await order.OnTimeTriggerReceived.Task;
             }
             else
             {
-                await TestModifyOrder(order.ForPending(5).WithExpiration(20), OrderEvents.Cancel, OrderEvents.Open);
+                await TestModifyOrder(order.ForPending(5).WithExpiration(20), OrderEvents.Activate, OrderEvents.Open);
                 await order.OnTimeTriggerReceived.Task;
                 await order.Opened.Task;
                 await TestCancelOrder(order);
