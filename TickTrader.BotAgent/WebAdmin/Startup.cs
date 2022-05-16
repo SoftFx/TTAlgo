@@ -52,7 +52,6 @@ namespace TickTrader.BotAgent.WebAdmin
                 o.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
                 o.JsonSerializerOptions.PropertyNamingPolicy = null;
             });
-            //services.AddRazorPages().AddJsonOptions(o => o.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull);
 
             services.AddSwaggerGen(c => c.SwaggerDoc("v1", new Swashbuckle.AspNetCore.Swagger.Info { Title = "AlgoServer WebAPI", Version = "v1" }));
 
@@ -107,8 +106,6 @@ namespace TickTrader.BotAgent.WebAdmin
             app.UseAuthentication();
             app.UseAuthorization();
 
-            //app.UseSpa(config => config.Options.DefaultPage = new PathString("/"));
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapHub<BAFeed>("/signalr").RequireAuthorization();
@@ -116,15 +113,12 @@ namespace TickTrader.BotAgent.WebAdmin
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+                endpoints.MapControllerRoute(
+                    name: "spa-fallback",
+                    pattern: "{*clientRoute}",
+                    defaults: new { controller = "Home", action = "Index" });
             });
-
-            //app.UseMvc(routes =>
-            //{
-
-            //    routes.MapSpaFallbackRoute(
-            //        name: "spa-fallback",
-            //        defaults: new { controller = "Home", action = "Index" });
-            //});
         }
     }
 }
