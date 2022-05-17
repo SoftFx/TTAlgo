@@ -150,7 +150,6 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
             }
 
             await RunOnTimeCancelTests(set);
-
             await RunOnTimeModifyTests(set);
         }
 
@@ -306,7 +305,11 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
         private async Task OpenInstantOnTime(OrderStateTemplate order)
         {
-            await TestOpenOrder(order, OrderEvents.Activate, OrderEvents.Open, OrderEvents.Fill);
+            if (order.IsGrossAcc)
+                await TestOpenOrder(order, OrderEvents.Activate, OrderEvents.Open, OrderEvents.Fill, OrderEvents.Open);
+            else
+                await TestOpenOrder(order, OrderEvents.Activate, OrderEvents.Open, OrderEvents.Fill);
+
             await order.OnTimeTriggerReceived.Task;
         }
 
@@ -454,7 +457,7 @@ namespace TickTrader.Algo.TestCollection.CompositeApiTest
 
             if (order.WithOnTimeTrigger(4).IsInstantOrder)
             {
-                await TestModifyOrder(order, OrderEvents.Activate, OrderEvents.Open, OrderEvents.Fill);
+                await TestModifyOrder(order, OrderEvents.Activate, OrderEvents.Open, OrderEvents.Fill, OrderEvents.Open);
                 await order.OnTimeTriggerReceived.Task;
             }
             else
