@@ -16,6 +16,7 @@ using TickTrader.BotAgent.WebAdmin.Server.Models;
 namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 {
     [Route("api/[controller]")]
+    [ApiController]
     [Authorize]
     public class TradeBotsController : Controller
     {

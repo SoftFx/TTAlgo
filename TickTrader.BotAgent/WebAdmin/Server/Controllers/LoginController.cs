@@ -10,6 +10,7 @@ using TickTrader.BotAgent.WebAdmin.Server.Models;
 namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 {
     [Route("api/[controller]")]
+    [ApiController]
     public class LoginController : Controller
     {
         private readonly IAuthManager _authManager;

@@ -110,14 +110,9 @@ namespace TickTrader.BotAgent.WebAdmin
             {
                 endpoints.MapHub<BAFeed>("/signalr").RequireAuthorization();
 
-                endpoints.MapControllerRoute(
-                    name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapControllers();
 
-                endpoints.MapControllerRoute(
-                    name: "spa-fallback",
-                    pattern: "{*clientRoute}",
-                    defaults: new { controller = "Home", action = "Index" });
+                endpoints.MapFallbackToController("Index", "Home"); // spa fallback
             });
         }
     }
